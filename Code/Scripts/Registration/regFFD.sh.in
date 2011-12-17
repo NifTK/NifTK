@@ -1,0 +1,510 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run a NifTK niftkFFD using MIDAS regions.
+# 
+
+source _niftkCommon.sh
+
+thisprog=`basename $0`
+progdir=`dirname $0`
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+ptmpdir=/tmp/regFFD.$$
+tmpdir=${TMPDIR:-$ptmpdir}
+
+# Default values for options
+ndils=4
+ndefargs=3
+keeptmp=0
+initres=2.5
+nlevels=3;
+start_level=0
+stop_level=$(($nlevels-1))
+affine_dof_file=
+use_affine_dof=0
+target_roi=""
+use_troi=0
+source_roi=""
+use_sroi=0
+write_resampled=0
+resampled_file=""
+write_jac=0
+jacobian_file="$tmpdir/jacobian.hdr"
+write_str=0
+tmp_stretch_file="$tmpdir/stretch.str"
+stretch_file=""
+write_vec=0
+tmp_vec_file="$tmpdir/vector.vec"
+vec_file=""
+control_point_file="$tmpdir/output.mha"
+use_f3d=0
+use_invert_affine=0
+user_set_interp=0
+interp=
+user_set_iters=0
+iters=
+
+function Usage()
+{
+cat <<EOF
+
+MIDAS niftkFFD registration driver. This script is used as a MIDAS
+wrapper to the NifTK program niftkFFD for Free Form Deformation.
+
+Usage: $0 target.img source.img nreg-out.dof [-options]
+
+Where
+
+  target.img = target (or baseline) image
+  source.img = source (or repeat) image (image to be warped)
+  nreg-out.dof = Freeform registration transformation file
+  
+and [-options] are any of:
+
+  -troi target.roi
+              Target (or baseline) region of interest (MIDAS Format)
+
+  -sroi source.roi
+              Source (or repeat) region of interest (MIDAS Format)           
+  
+  -jac  jacobian.hdr
+              Image of jacobian values
+              
+  -str  filename.str
+              MIDAS stretch file 
+              
+  -vec  filename.vec
+              MIDAS vec file
+
+  -res  filename.hdr
+              Resampled output image
+
+  -dil n      Number of dilations outside target.roi (if specified by -troi)
+              in order to give the freeform deformation room to move
+              (Default = $ndils)
+
+  -inc res n  Resolution steps where res = final (smallest) control point spacing in mm 
+              (Default = $initres) and n = number of resolutions levels 
+              (Default = $nlevels)
+              
+  -lev b e    Which resolution levels to do
+              b = begin (start at 0, default $start_level)
+              e = end   (goes up to number of resolutions levels minus 1, default $stop_level)
+              
+  -adof affine.dof
+              Affine dof filename
+
+  -invertAffine
+              Invert the affine transformation.
+                             
+  -F3D        Use F3D recalage for Free Form Deformation
+  
+  -tmpdir dir Set temporary workspace directory (If not set, will
+              use environment variable \$TMPDIR, and then allocate
+              one in /tmp (e.g., $ptmpdir) if \$TMPDIR not set
+
+  -keeptmp    Keep temporary workspace directory (default = remove)
+
+  -interp [int] where int is 1 (Nearest), 2 (Linear), 3 (BSpline), 4 (Sinc),
+              to specify interpolation mode for resampled image
+              
+  -iters [int] to specify the number of iterations
+  
+EOF
+exit 127
+}
+
+if [ $# -lt $ndefargs ]; then
+    Usage
+    exitprog "$help\nError: Incorrect number of arguments...." 1
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+# Get required parameters
+target_img=$1
+source_img=$2
+nreg_dof=$3
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+  do
+  case $1 in
+    -troi)
+	  target_roi=$2
+	  use_troi=1
+	  shift 1
+	  ;;
+    -sroi)
+	  source_roi=$2
+	  use_sroi=1
+	  shift 1
+	  ;;
+    -jac)
+	  jacobian_file=$2
+	  write_jac=1
+	  shift 1
+	  ;;
+    -str)
+	  stretch_file=$2
+	  write_str=1
+	  shift 1
+	  ;;
+    -vec)
+	  vec_file=$2
+	  write_vec=1
+	  shift 1
+	  ;;
+    -res)
+	  resampled_file=$2
+	  write_resampled=1
+	  shift 1
+	  ;;	  
+    -dil)
+	  ndils=$2
+	  shift 1
+	  ;;
+    -inc)
+	  initres=$2
+	  nlevels=$3
+	  shift 2
+	  ;;
+    -lev)
+	  start_level=$2
+	  stop_level=$3
+	  shift 2
+	  ;;	  
+    -tmpdir)
+	  tmpdir=$2
+	  shift 1
+	  ;;
+    -keeptmp)
+	  keeptmp=1
+	  ;;
+    -F3D)
+	  use_f3d=1
+	  ;;	
+    -invertAffine)
+      use_invert_affine=1
+      ;;
+    -interp)
+      user_set_interp=1
+      interp=$2
+      shift 1
+      ;;
+    -iters)
+      user_set_iters=1
+      iters=$2
+      shift 1      
+      ;;	          	    
+    -adof)
+	  affine_dof_file=$2
+	  use_affine_dof=1
+	  shift 1
+	  ;;
+    -*)
+	  echo "$thisprog: invalid argument $1" 1>&2
+	  exit 2;;
+  esac
+  shift 1
+done
+
+# Check command line arguments
+
+if [ ! -f $target_img ]; then
+    exitprog "Target image $target_img does not exist" 1
+fi
+
+if [ ! -f $source_img ]; then
+    exitprog "Source image $source_img does not exist" 1
+fi
+
+if [ $use_troi -eq 1 ]; then
+    if [ ! -f $target_roi ]; then
+	exitprog "Target roi $target_roi does not exist" 1
+    fi
+fi
+
+if [ $use_sroi -eq 1 ]; then
+    if [ ! -f $source_roi ]; then
+	exitprog "Source roi $source_roi does not exist" 1
+    fi
+fi
+
+if [ $use_affine_dof -eq 1 ]; then
+    if [ ! -f $affine_dof_file ]; then
+	exitprog "Affine dof file $affine_dof_file does not exist" 1
+    fi
+fi
+
+if [ $write_jac -eq 1 ]; then
+    checkf_writeable $jacobian_file
+    if [ $? -ne 0 ]; then
+        exitprog "Error: Output jacobian file $jacobian_file is not writeable" 1
+    fi    
+fi
+
+if [ $write_str -eq 1 ]; then
+    checkf_writeable $stretch_file
+    if [ $? -ne 0 ]; then
+        exitprog "Error: Output stretch file $stretch_file is not writeable" 1
+    fi    
+fi
+
+if [ $write_vec -eq 1 ]; then
+    checkf_writeable $vec_file
+    if [ $? -ne 0 ]; then
+        exitprog "Error: Output vec file $vec_file is not writeable" 1
+    fi    
+fi
+
+if [ $write_resampled -eq 1 ]; then
+    checkf_writeable $resampled_file
+    if [ $? -ne 0 ]; then
+        exitprog "Error: Output resampled image file $resampled_file is not writeable" 1
+    fi    
+fi
+
+checkf_writeable $nreg_dof
+if [ $? -ne 0 ]; then
+    exitprog "Error: Output file $nreg_dof is not writeable" 1
+fi
+
+check_int $ndils
+if [ $? -ne 0 ]; then
+    exitprog "Error: Number of dilations is not an integer" 1
+fi
+
+check_int $nlevels
+if [ $? -ne 0 ]; then
+    echo "Error: Number of resolution levels is not an integer" 1
+fi
+
+check_int $start_level
+if [ $? -ne 0 ]; then
+    exitprog "Error: Start level is not an integer" 1
+fi
+
+check_int $stop_level
+if [ $? -ne 0 ]; then
+    exitprog "Error: Stop level is not an integer" 1
+fi
+
+if [ $ndils -gt 10 ] || [ $ndils -lt 0 ]; then
+    exitprog "Error: ndils ($ndils) is out of range [0-10]" 1
+fi
+
+if [ $nlevels -gt 4 ] || [ $nlevels -lt 0 ]; then
+    exitprog "Error: number of resolution levels ($nlevels) is out of range [1-4]" 1
+fi
+
+if [ $use_f3d -eq 1 -a $write_str -eq 1 ]; then
+    exitprog "Error: You can't have both -F3D and -str" 1    
+fi
+
+if [ $use_f3d -eq 1 -a $write_vec -eq 1 ]; then
+    exitprog "Error: You can't have both -F3D and -vec" 1    
+fi
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+	exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+message "Temp directory is $tmpdir"
+
+thedate=`date`
+message "Start time is $thedate"
+
+################################################################
+message "Copying images"
+################################################################
+execute_command "copyimg $target_img $tmpdir/target"
+execute_command "copyimg $source_img $tmpdir/source"
+
+################################################################
+message "Making masks"
+################################################################
+
+target_mask=
+if [ $use_troi -eq 1 ]; then
+  target_mask=$tmpdir/target_mask
+  if [ $use_f3d -eq 1 ]; then
+    dilationArg=$ndils
+  else
+    dilationArg=0
+  fi  
+  make_midas_mask $tmpdir/target.img $target_roi $target_mask $dilationArg
+  echo "Target mask in $target_mask"
+fi
+
+source_mask=
+if [ $use_sroi -eq 1 ]; then
+  source_mask=$tmpdir/source_mask
+  if [ $use_f3d -eq 1 ]; then
+    dilationArg=$ndils
+  else
+    dilationArg=0
+  fi  
+  make_midas_mask $tmpdir/source.img $source_roi $source_mask $dilationArg
+  echo "Source mask in $source_mask"
+fi
+
+if [ $use_f3d -eq 1 ]; then
+
+  ################################################################
+  message "Running F3D"
+  ################################################################
+
+  if [ $use_troi -eq 1 ]; then
+      targetMaskArg="-tmask ${target_mask}.img"
+  fi
+  if [ $use_sroi -eq 1 ]; then
+      sourceMaskArg="-smask ${source_mask}.img"
+  fi
+  if [ $use_affine_dof -eq 1 ]; then
+      affineDofArg=" -affineITK $affine_dof_file " 
+  fi
+
+  niftkF3DExecutable=`which recalage`
+  niftkF3DOutputExecutable=`which recalageOutput`
+  niftkF3DSettingArguments=" -sx $initres -sy $initres -sz $initres -nogpu "
+  niftkF3DFileArguments=" -target $tmpdir/target.img -source $tmpdir/source.img -output $nreg_dof $targetMaskArg $sourceMaskArg $affineDofArg "
+  
+  execute_command "$niftkF3DExecutable $niftkF3DFileArguments $niftkF3DSettingArguments"
+  
+  if [ $write_jac -eq 1 ]; then
+    execute_command "$niftkF3DOutputExecutable -cpp $nreg_dof -target $tmpdir/target.img -source $tmpdir/target.img -jacobian $jacobian_file"
+  fi
+  
+  if [ $write_resampled -eq 1 ]; then
+    execute_command "$niftkF3DOutputExecutable -cpp $nreg_dof -target $tmpdir/target.img -source $tmpdir/target.img -result $resampled_file"
+  fi
+  
+else
+
+  ################################################################
+  message "Running niftkFFD"
+  ################################################################
+
+  if [ $use_troi -eq 1 ]; then
+      targetMaskArg="-tm ${target_mask}.img"
+  fi
+  if [ $use_sroi -eq 1 ]; then
+      sourceMaskArg="-sm ${source_mask}.img"
+  fi
+  if [ $write_resampled -eq 1 ]; then
+      resampledImageArg=" -oi $resampled_file "
+  fi
+  if [ $write_jac -eq 1 ]; then 
+      jacobianImageArg=" -ji $jacobian_file "
+  fi
+  if [ $use_affine_dof -eq 1 ]; then
+      affineDofArg=" -adofin $affine_dof_file " 
+  fi
+  
+  if [ $use_invert_affine -eq 1 ]; then
+      affineDofInvertArg=" -invertAffine "
+  fi
+  
+  if [ $user_set_interp -eq 1 ]; then
+      interpolationArg=" -fi $interp "
+  fi
+
+  if [ $user_set_iters -eq 1 ]; then
+      iterationsArg=" -mi $iters "
+  fi
+  
+  niftkFFDExecutable=`which niftkFFD`
+  #niftkFFDTestingArguments=" -mi 1 -fi 2 "
+  niftkFFDSettingArguments=" -d $ndils -njc -sx $initres -sy $initres -sz $initres -ln $nlevels -stl $start_level -spl $stop_level"
+  niftkFFDFileArguments=" -ti $tmpdir/target.img -si $tmpdir/source.img -xo $control_point_file -ot $nreg_dof $targetMaskArg $sourceMaskArg $jacobianImageArg $resampledImageArg $affineDofArg $affineDofInvertArg $interpolationArg $iterationsArg "   
+
+  execute_command "$niftkFFDExecutable $niftkFFDTestingArguments $niftkFFDSettingArguments $niftkFFDFileArguments"
+
+  if [ $write_str -eq 1 -o $write_vec -eq 1 ]; then
+
+    niftkConvertToMidasStrExecutable=`which niftkConvertToMidasStr`
+    niftkConvertToMidasStrArguments=" -ti $nreg_dof -oi $tmp_stretch_file -ov $tmp_vec_file "
+    
+    execute_command "$niftkConvertToMidasStrExecutable $niftkConvertToMidasStrArguments"
+    
+    if [ $write_str -eq 1 ]; then
+      execute_command "$COPY $tmp_stretch_file $stretch_file"
+    fi
+    
+    if [ $write_vec -eq 1 ]; then
+      execute_command "$COPY $tmp_vec_file $vec_file"
+    fi
+
+  fi
+
+fi
+
+################################################################
+message "Tidying up"
+################################################################
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`date`
+message "End time is $thedate"
+
+message "Finished"
+
+exit 0

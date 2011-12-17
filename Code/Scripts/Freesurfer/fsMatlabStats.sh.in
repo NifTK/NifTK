@@ -1,0 +1,136 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+export SUBJECTS_DIR=`pwd`
+
+function Usage()
+{
+cat <<EOF
+********************************************
+* OBSELETE: Use Ged's GLM scripts in matlab.
+********************************************
+
+This script will run the FreeSurfer Matlab stats.
+
+Usage: fsMatlabStats.sh [options] nameOfAverage left.mgh right.mgh outputPrefix [ textFile1 textFile2 ... textFileN ]
+
+  You must set \$SUBJECTS_DIR
+  
+Mandatory Arguments:
+
+  nameOfAverage : The name of the directory containing the average subject.
+  
+  left.mgh      : The name of the left hemisphere file.
+                  e.g. average_lh.thickness.20.mgh
+  
+  right.mgh     : The name of the right hemisphere file. 
+                  e.g. average_rh.thickness.20.mgh
+  
+  outputPrefix  : A simple text identifier to group together all your results. 
+                  This is a prefix for all the output files. 
+                  e.g. "baseline" or "00" or "matt".
+
+  textFile1..N  : Each text file containing members of a group, and then in each 
+                  column a covariate to correct for.
+                  
+                  e.g.
+                  patient sex meanCentredAge scanner
+                  BROLI00 0   16.58419495    0
+                  CHARO00 1   -1.34183245    2
+                  CLAPA00 0   -0.999366697   0
+                  FARSA00 0   -9.193887245   1
+                           
+                  On the command line, your CONTROL group must go first.
+
+                  (note: Use dos2unix command to remove DOS characters.)
+                  (note: Use tr "\t" " " < infile > outfile to remove tabs.)
+                                                        
+Options:
+
+  -pCrit        : p value for FDR correction       [ default 0.05     ]
+  -pSat         : p value for Saturation Threshold [ default 0.0005   ]
+  
+  -pct          : Output % diff                    [ default off ]
+  -fdr          : Output FDR corrected volume      [ default off ]
+  -mpc          : Do medial plane correction       [ default off ]
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 5 ]; then
+  Usage
+fi
+
+# Set defaults
+PCRIT=0.05
+PSAT=0.0005
+PCT=0
+FDR=0
+MPC=0
+DONE_OPTIONS=FALSE
+
+# Parse command line
+
+while [ "_$1" != "_" -a "$DONE_OPTIONS" = "FALSE" ] ; do
+    if [ "$1" = "-pCrit" ] ; then
+        PCRIT=$2
+        shift 2
+    elif [ "$1" = "-pSat" ] ; then
+        PSAT=$2
+        shift 2
+    elif [ "$1" = "-pct" ] ; then
+        PCT=1
+        shift 1
+    elif [ "$1" = "-fdr" ] ; then
+        FDR=1
+        shift 1
+    elif [ "$1" = "-mpc" ] ; then
+        MPC=1
+        shift 1        
+    else
+        DONE_OPTIONS="TRUE"
+    fi
+done
+
+# Pick up mandatory options
+NAME_AVERAGE=$1
+shift
+LEFT_MGH=$1
+shift
+RIGHT_MGH=$1
+shift
+OUTPUT_PREFIX=$1
+shift
+
+echo "Using nameOfAverage=$NAME_AVERAGE, left.mgh=$LEFT_MGH, right.mgh=$RIGHT_MGH, outputPrefix=$OUTPUT_PREFIX, pCrit=$PCRIT, pSat=$PSAT, pct=$PCT, fdr=$FDR, mpc=$MPC"
+echo "Using group files: $*"
+
+source _fsInclude.sh
+    
+run_matlab_process $NAME_AVERAGE $LEFT_MGH $RIGHT_MGH $OUTPUT_PREFIX $PCRIT $PSAT $PCT $FDR $MPC "$*"
+

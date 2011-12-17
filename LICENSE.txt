@@ -1,0 +1,8 @@
+/**
+\page @NIFTK_PLATFORM@License License
+
+@NIFTK_COPYRIGHT@
+
+Not finalised yet, so NOT for distribution outside of CMIC.
+
+*/

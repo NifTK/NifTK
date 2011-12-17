@@ -1,0 +1,330 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Script to take thickness data, (say from cteRunCrossSectional.sh) and overlay
+# it on a FreeSurfer directory structure.
+
+source _niftkCommon.sh
+
+ndefargs=2
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+over_write=0
+search_radius=2
+search_steps=5
+background_value=0
+apply_talairach=0
+invert_talairach=0
+suffix=
+surface=white
+
+function Usage()
+{
+cat <<EOF
+
+This script takes a thickness image (for example, the output of cteRunCrossSectional.sh),
+and inserts it onto a FreeSurfer directory structure, effectively replacing the 
+lh.thickness and rh.thickness files.
+
+This script will by default move any existing lh/rh.thickness files to a backup file, but
+you can force the script to simply overwrite the existing one.
+
+As with other FreeSurfer scripts you MUST set SUBJECTS_DIR environment variable.
+
+Usage: cteOverlayThicknessImageOnFreeSurfer.sh thickness.nii directory [options ]
+
+Mandatory Arguments:
+
+  thickness.nii        : An image of thickness values
+  directory            : A FreeSurfer directory structure, where FreeSurfer has already been successfully and completely run.
+                         This assumes you have set SUBJECTS_DIR, so you just need the patient directory name.
+Options:
+
+  -overwrite           : Force this script to overwrite the lh/rh.thickness files.
+    
+  -radius              : Search radius. Default 2.
+  
+  -step                : Number of search steps within that radius. Default 5. 
+    
+  -background          : Background (zero) value in thickness file.
+
+  -tmproot dir         : Define a root directory for temporary files. Default /tmp
+                         The difference between this option and the next, is that this
+                         one takes the root directory (eg. /tmp) and creates a sub directory
+                         with a process ID in it. (eg. /tmp/seg.1234) whereas the next option
+                         just uses exactly what you give it.
+                            
+  -tmpdir dir          : Set temporary workspace directory.
+
+  -keeptmp             : Keep temporary workspace directory
+
+  -suffix              : Provide a suffix, so that when we move the lh/rh thickness file out the way,
+                         it is renamed to lh/rh.thickness.<suffix>
+                         
+  ******* NOTE ******* : The next two options will resample you thickness file.
+  ******* NOTE ******* : You are strongly advised to check that the files
+  
+                         <patient>/mri/T1.mgz 
+                         and
+                         <tmpdir>/thickness_resampled.nii 
+                         
+                         are registered before trusting the final results.
+                         
+                         The reason you might need the next two flags could be due to:
+                         
+                         1. You calculated thickness on images outside of FreeSurfer, so when FreeSurfer runs,
+                         is has registered to Talairach space, so you need to transform your thickness data to match.
+                         So use the -apply_talairach flag.
+                         
+                         2. If you had been given a FreeSurfer project that has already been run, and you extracted
+                         the <patient>/mri/orig/001.mgz, and generated some voxel based thickness, then you will
+                         need to apply the FreeSurfer Talairach transform to transform your volume into FreeSurfer space.
+                         So use the -apply_talairach flag.
+                         
+                         3. As above, if you used <patient>/mri/orig.mgz, or <patient>/mri/T1.mgz and calculated
+                         thickness data on that, and at the same time you (erroneously) applied the Talairach transformation
+                         when in fact these volumes are already in Talairach space, then you will need to invert the
+                         Talairach transformation.
+                         So use both the -apply_talairach -invert_talairach flags
+                         
+  -apply_talairach     : Resample the thickness values into the coordinate space of the FreeSurfer <patient>/mri/T1.mgz
+  -invert_talairach    : Used in addition to the above flag, invert the transformation.
+  
+  -surf                : Specify which surface. This should be exactly [mid|white|pial].
+  
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+thickness_image=$1
+freesurfer_directory=$2
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+	-tmproot)
+	    tmp_root=$2
+	    shift 1
+	    ;;
+    -keeptmp)
+	    keeptmp=1
+	    ;;
+	-overwrite)
+	    over_write=1
+	    ;;
+	-radius)
+	    search_radius=$2
+	    shift 1
+	    ;;
+	-suffix)
+	    suffix=$2
+	    shift 1
+	    ;;	    
+    -step)
+        search_steps=$2
+        shift 1
+        ;;
+    -background)
+        background_value=$2
+        shift 1
+        ;;	
+    -apply_talairach)
+        apply_talairach=1
+        ;;
+    -invert_talairach)
+        invert_talairach=1
+        ;;  
+    -surf)
+        surface=$2
+        shift 1
+        ;;         
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+ptmpdir=$tmp_root/cte.$$
+if [ "_$tmpdir" = "_" ]; then
+  tmpdir=$ptmpdir
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+# Check command line arguments
+
+if [ ! -f $thickness_image ]; then
+    exitprog "The thickness image does not exist!" 1
+fi
+
+if [ "_$SUBJECTS_DIR" = "_" ]; then
+    exitprog "The environment variable SUBJECTS_DIR is not set"
+fi
+
+if [ ! -d $SUBJECTS_DIR/$freesurfer_directory ]; then
+    exitprog "The FreeSurfer directory does not exist!" 1
+fi
+
+if [ ! -d $SUBJECTS_DIR/$freesurfer_directory/mri ]; then
+    exitprog "The FreeSurfer mri sub-directory does not exist!" 1
+fi
+
+if [ ! -d $SUBJECTS_DIR/$freesurfer_directory/surf ]; then
+    exitprog "The FreeSurfer surf sub-directory does not exist!" 1
+fi
+
+check_program_exists mris_convert
+check_program_exists niftkVolToFreeSurfer
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+		exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+message "Temp directory is $tmpdir"
+thedate=`$DATE`
+message "Start time is $thedate"
+
+echo "Starting $0 with:"
+echo "  thickness_image=$thickness_image"
+echo "  freesurfer_directory=$freesurfer_directory"
+echo "  keeptmp=$keeptmp"
+echo "  tmp_root=$tmp_root"
+echo "  tmpdir=$tmpdir"
+echo "  over_write=$over_write"
+echo "  search_radius=$search_radius"
+echo "  search_steps=$search_steps"
+echo "  background_value=$background_value"
+echo "  apply_talairach=$apply_talairach"
+echo "  invert_talairach=$invert_talairach"
+echo "  suffix=$suffix"
+
+################################################################
+# Start of the ACTION
+################################################################
+
+thickness_image_arg=$thickness_image
+  
+if [ $apply_talairach -eq 1 ]; then
+  
+	if [ $invert_talairach -eq 1 ]; then
+  		execute_command_or_else_stop "mri_convert $thickness_image_arg --apply_inverse_transform ${SUBJECTS_DIR}/${freesurfer_directory}/mri/transforms/talairach.xfm -oc 0 0 0 -odt float --conform ${tmpdir}/thickness_resampled.nii "
+  	else
+  		execute_command_or_else_stop "mri_convert $thickness_image_arg --apply_transform ${SUBJECTS_DIR}/${freesurfer_directory}/mri/transforms/talairach.xfm -oc 0 0 0 -odt float --conform ${tmpdir}/thickness_resampled.nii "  	
+  	fi
+
+	execute_command_or_else_stop "mri_convert ${SUBJECTS_DIR}/${freesurfer_directory}/mri/T1.mgz ${tmpdir}/T1.nii"
+
+else
+
+	execute_command_or_else_stop "mri_convert ${SUBJECTS_DIR}/${freesurfer_directory}/mri/T1.mgz ${tmpdir}/T1.nii"
+	execute_command_or_else_stop "mri_convert $thickness_image_arg ${tmpdir}/thickness_resampled.nii -odt float "
+fi
+
+thickness_image_arg=${tmpdir}/thickness_resampled.nii
+echo "Using: ${thickness_image_arg}"
+
+for f in lh rh
+do
+
+  
+  execute_command_or_else_stop "mris_convert $SUBJECTS_DIR/$freesurfer_directory/surf/${f}.${surface} ${tmpdir}/${f}.${surface}.asc"
+  execute_command_or_else_stop "niftkVolToFreeSurfer -s ${tmpdir}/${f}.${surface}.asc -v $thickness_image_arg -o ${tmpdir}/${f}.voxel.thickness.asc -radius $search_radius -steps $search_steps -b $background_value "
+  
+  if [ $over_write -eq 0 ]; then
+    if [ "_${suffix}" = "_" ]; then
+    	destination=${f}.thickness.$$
+    else
+    	destination=${f}.thickness.${suffix}
+    fi
+    if [ -f $SUBJECTS_DIR/$freesurfer_directory/surf/${f}.thickness ]; then
+    	execute_command_or_else_stop "mv $SUBJECTS_DIR/$freesurfer_directory/surf/${f}.thickness $SUBJECTS_DIR/$freesurfer_directory/surf/${destination}"
+    fi
+    
+  fi
+
+  execute_command_or_else_stop "mris_convert -c ${tmpdir}/${f}.voxel.thickness.asc ${tmpdir}/${f}.${surface}.asc $SUBJECTS_DIR/$freesurfer_directory/surf/${f}.thickness"
+done
+
+################################################################
+message "Cleanup"
+################################################################
+
+thedate=`$DATE`
+message "Time is $thedate"
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+message "Finished"
+
+

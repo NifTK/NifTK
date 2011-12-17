@@ -1,0 +1,84 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+SUBJECTS_DIR=`pwd`
+
+function check_job()
+{
+  PD=$1
+  STATUS="UNKNOWN"
+  
+  cd $SUBJECTS_DIR/${PD}/scripts
+  
+  LOG=recon-all.log
+  LAST_LINE=`tail -1 ${LOG}` 
+  LAST_LOG_DATE=`ls -lrt ${LOG} | cut -f 7-9 -d " "`
+  
+  echo "Patient: ${PD} \t\t:${LAST_LOG_DATE}:${LAST_LINE}"
+    
+}
+
+function check_is_running()
+{
+  cd $SUBJECTS_DIR
+  find . -name "IsRunning*"  
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  echo 1>&2 "This script will check the status of your FreeSurfer job."
+  echo 1>&2 ""
+  echo 1>&2 "Usage: fsCheckJob.sh ALLFR ALLHA AAAAA BBBBB etc."
+  echo 1>&2 "" 
+  echo 1>&2 "  All arguments after fsCheckJob.sh should be FreeSurfer subject directories in the current directory."
+  echo 1>&2 ""
+  exit 127
+fi
+
+source _fsInclude.sh
+    
+check_freesurfer_env
+
+check_all_directories_in_string_exists "$*"
+
+
+echo "###########################"
+echo "# Checking each log file  #" 
+echo "###########################"
+echo " "
+
+for f in $*
+do
+  check_job $f
+done
+
+echo " "
+echo "############################"
+echo "# Checking IsRunning files #" 
+echo "############################"
+echo " "
+
+check_is_running

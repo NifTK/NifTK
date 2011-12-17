@@ -1,0 +1,19 @@
+/**
+  \defgroup uk_ac_ucl_cmic_imagelookuptables uk.ac.ucl.cmic.imagelookuptables Plugin
+  \ingroup CMICPlugins
+
+  \brief Provides a drop down combo-box to select a lookup table, and min/max/window/level sliders
+  to change the intensity ranges with which images are displayed.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk), and Miklos Espak (espakm@gmail.com).
+   
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_imagelookuptables_internal Internal
+  \ingroup uk_ac_ucl_cmic_imagelookuptables
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.imagelookuptables plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

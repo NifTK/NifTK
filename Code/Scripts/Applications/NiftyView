@@ -1,0 +1,24 @@
+#!/bin/sh
+
+###########################################################
+# Inspired by, and credit, goes to the creators of fslview.
+# http://www.fmrib.ox.ac.uk/fsl/
+#
+# Matt: I tried several packaging options, and this one
+#       seemed the most workable/sensible/reasonable.
+###########################################################
+
+
+if [ -z "${NIFTK_DIR}" ] ; then
+  echo "The environment NIFTK_DIR has not been set"
+  echo "It should be set to the directory where NifTK is installed"
+  exit
+fi
+
+if [ `uname` = "Darwin" ] ; then
+    DYLD_LIBRARY_PATH=
+    ${NIFTK_DIR}/NiftyView.app/Contents/MacOS/NiftyView $@
+fi
+if [ `uname` = "Linux" ] ; then
+    ${NIFTK_DIR}/NiftyView.sh $@
+fi

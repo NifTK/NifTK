@@ -1,0 +1,180 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-12-15 13:50:36 +0000 (Thu, 15 Dec 2011) $ 
+#  Revision          : $Revision: 8023 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# 
+# Adapted from _regAIR.sh.
+# To register a image to standard space. 
+#
+
+# Error if any varaiable is not defined. 
+#set -u
+# Debug 
+#set -x
+
+# Pick up command line parameters
+
+REG_TMP_DIR=$1
+REG_RESULTS_DIR=$2
+IMAGE_DIR=$3
+BRAINREGION_DIR=$4
+BASELINE_IMG=$5      # Standard space template here. 
+BASELINE_MASK=$6
+REPEAT_IMG=$7        # Target image here. 
+REPEAT_MASK=$8
+RREG_INIT=$9
+
+# Include necessary functions
+source _regInclude.sh
+
+execute_command "tmpdir=`mktemp -d -q ~/temp/regAIR_ss.XXXXXX`"
+
+# Copy images to REG_TMP_DIR
+copy_and_unzip_analyze_image $IMAGE_DIR ${tmpdir} $BASELINE_IMG
+copy_and_unzip_analyze_image $IMAGE_DIR $REG_TMP_DIR $REPEAT_IMG
+
+# Write some logging
+BASELINE_STUDY_ID=`echo ${BASELINE_IMG} | awk -F- '{printf $1}'`
+REPEAT_STUDY_ID=`echo ${REPEAT_IMG} | awk -F- '{printf $1}'`
+BASE_OUTPUT_NAME=${REPEAT_STUDY_ID}-${BASELINE_STUDY_ID}
+DATA_LOG_PPATH=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME
+DATA_LOG_PATH=$DATA_LOG_PPATH.log
+
+echo "REGISTRATION DETAILS" > $DATA_LOG_PATH
+echo "Datetime of registration run: " `date` >> $DATA_LOG_PATH
+echo "Repeat scan study $REPEAT_IMG registered to baseline scan $BASELINE_IMG" >> $DATA_LOG_PATH
+echo "Registered image created with $BASE_OUTPUT_NAME" >> $DATA_LOG_PATH
+
+# Create masks from the images you created earlier
+# Not sure why use option "-m" just following exactly as the script generated from Midas. 
+# [-m output normalisation statistics to output_mask.txt]
+${MIDAS_BIN}/makemask ${tmpdir}/$BASELINE_IMG.img $BRAINREGION_DIR/$BASELINE_MASK ${tmpdir}/${BASELINE_IMG}_mask -m 
+${MIDAS_BIN}/makemask $REG_TMP_DIR/$REPEAT_IMG.img   $BRAINREGION_DIR/$REPEAT_MASK   $REG_TMP_DIR/${REPEAT_IMG}_mask -m 
+mv ${tmpdir}/${BASELINE_IMG}_mask.txt ${tmpdir}/${BASELINE_IMG}-00125.txt
+mv $REG_TMP_DIR/${REPEAT_IMG}_mask.txt ${REG_RESULTS_DIR}/${REPEAT_IMG}-00125.txt
+
+# Initialise these values
+PRE_ALIGN_OUTPUT="DUMMY.ini"
+FIRST_REG_OUTPUT_INI="DUMMY.ini"
+
+# The final transformation goes here:
+FINAL_REG_RESULT_AIR=
+FINAL_REG_RESULT_INI=
+
+PRE_ALIGN_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.pre 
+
+t1=`imginfo ${tmpdir}/$BASELINE_IMG.img -tanz 0.2`
+t2=`imginfo $REG_TMP_DIR/$REPEAT_IMG.img -tanz 0.2`
+
+# Do pre-alignment.
+if [ "${RREG_INIT}" != "yes" ]
+then 
+  echo "Using reg_prealign for initialisation"
+  ${MIDAS_BIN}/reg_prealign ${tmpdir}/$BASELINE_IMG.img $REG_TMP_DIR/$REPEAT_IMG.img $BRAINREGION_DIR/$BASELINE_MASK $BRAINREGION_DIR/$REPEAT_MASK $PRE_ALIGN_OUTPUT -a -6
+
+  FIRST_REG_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.first
+  FIRST_REG_OUTPUT_INI=$FIRST_REG_OUTPUT.ini
+  FIRST_REG_OUTPUT_AIR=$FIRST_REG_OUTPUT.air
+  rm -f ${FIRST_REG_OUTPUT} ${FIRST_REG_OUTPUT_INI} ${FIRST_REG_OUTPUT_AIR}
+  
+  # Use 6-dof to do the first registration. 
+  firstReg="${tmpdir}/$BASELINE_IMG $REG_TMP_DIR/$REPEAT_IMG $FIRST_REG_OUTPUT_AIR -m 6 -e1 ${tmpdir}/${BASELINE_IMG}_mask -e2 $REG_TMP_DIR/${REPEAT_IMG}_mask -f $PRE_ALIGN_OUTPUT -g $FIRST_REG_OUTPUT_INI y -p1 1 -p2 1 -s 81 1 3  -h 200 -c 0.00000001  -r 200  -x 1 -t1 $t1 -t2 $t2 -v -b2 8.0 8.0 8.0"
+  ${AIR_BIN}/alignlinear $firstReg
+else  
+  echo "Using rreg for initialisation"
+  if [ ! -f "$REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof" ]
+  then 
+    makemask ${tmpdir}/$BASELINE_IMG.img $BRAINREGION_DIR/$BASELINE_MASK ${tmpdir}/bl.img -d 8 -k -bpp 16
+    makemask $REG_TMP_DIR/$REPEAT_IMG.img  $BRAINREGION_DIR/$REPEAT_MASK ${tmpdir}/fu.img -d 8 -k -bpp 16
+    rreg ${tmpdir}/bl.hdr ${tmpdir}/fu.hdr -dofout $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof -comreg -Tp 0 -Sp 0
+  fi 
+  #transformation $REG_TMP_DIR/$REPEAT_IMG.hdr test.hdr -dofin $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof -target ${tmpdir}/$BASELINE_IMG.hdr -linear
+  
+  dims=`imginfo $REG_TMP_DIR/$REPEAT_IMG.img -dims`
+  vx=`echo ${dims} | awk '{printf $4}'`
+  vy=`echo ${dims} | awk '{printf $5}'`
+  vz=`echo ${dims} | awk '{printf $6}'`
+  min_voxel_size=${vx}
+  min_voxel_size=`echo "${vy} ${min_voxel_size}" | awk '{if ($1 < $2) print $1; else print $2}'`
+  min_voxel_size=`echo "${vz} ${min_voxel_size}" | awk '{if ($1 < $2) print $1; else print $2}'`
+  echo "min voxel size=${min_voxel_size}"
+  
+  rm -f ${PRE_ALIGN_OUTPUT} 
+  # Not exactly correct here, as the AIR package performs rotations around the z-axis (yaw), x-axis (pitch), and y-axis (roll) in that order. 
+  # IRTK does in the order of z, y, x, I think. 
+  rx=`head -n 5 $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof | tail -n 1 | awk '{printf $3"*3.14159/180"}'`
+  echo "${rx}" | bc -l  >> ${PRE_ALIGN_OUTPUT}
+  ry=`head -n 6 $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof | tail -n 1 | awk '{printf $3"*3.14159/180"}'`
+  echo "${ry}" | bc -l >> ${PRE_ALIGN_OUTPUT}
+  rz=`head -n 7 $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof | tail -n 1 | awk '{printf $3"*3.14159/180"}'`
+  echo "${rz}" | bc -l  >> ${PRE_ALIGN_OUTPUT}
+  tx2=`head -n 2  $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof | tail -n 1 | awk '{printf "2*"$3}'`
+  echo "${tx2}/${min_voxel_size}" | bc -l >> ${PRE_ALIGN_OUTPUT}  
+  ty2=`head -n 3  $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof | tail -n 1 | awk '{printf "-2*"$3}'`
+  echo "${ty2}/${min_voxel_size}" | bc -l >> ${PRE_ALIGN_OUTPUT}
+  tz2=`head -n 4  $REG_RESULTS_DIR/${BASELINE_STUDY_ID}_${REPEAT_STUDY_ID}_affine_init.dof | tail -n 1 | awk '{printf "2*"$3}'`
+  echo "${tz2}/${min_voxel_size}" | bc -l >> ${PRE_ALIGN_OUTPUT}
+  
+  FIRST_REG_OUTPUT_INI=$PRE_ALIGN_OUTPUT
+  
+fi   
+
+# Pad the 6 dof pre-alignment init file to a 9-dof one. 
+echo 1.0 >> $FIRST_REG_OUTPUT_INI
+echo 1.0 >> $FIRST_REG_OUTPUT_INI
+echo 1.0 >> $FIRST_REG_OUTPUT_INI
+
+SECOND_REG_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.second
+SECOND_REG_OUTPUT_INI=$SECOND_REG_OUTPUT.ini
+SECOND_REG_OUTPUT_AIR=$SECOND_REG_OUTPUT.air
+
+rm -f ${SECOND_REG_OUTPUT} ${SECOND_REG_OUTPUT_INI} ${SECOND_REG_OUTPUT_AIR}
+
+# Use 9-dof to do the first registration. 
+seconReg="${tmpdir}/$BASELINE_IMG $REG_TMP_DIR/$REPEAT_IMG $SECOND_REG_OUTPUT_AIR -m 9 -e1 ${tmpdir}/${BASELINE_IMG}_mask -e2 $REG_TMP_DIR/${REPEAT_IMG}_mask -f $FIRST_REG_OUTPUT_INI -g $SECOND_REG_OUTPUT_INI y -p1 1 -p2 1 -s 81 1 3  -h 200 -c 0.00000001  -r 200  -x 1 -t1 $t1 -t2 $t2 -v -b2 8.0 8.0 8.0"
+${AIR_BIN}/alignlinear $seconReg
+
+FINAL_REG_RESULT_INI=$SECOND_REG_OUTPUT_INI
+FINAL_REG_RESULT_AIR=$SECOND_REG_OUTPUT_AIR
+
+# Convert the air file to 6dof by converting the ini file from 9dof to 6dof, use alignlinear again for 0 iterations
+rm -f $SECOND_REG_OUTPUT_AIR
+TEMP_OUTPUT_INIT=/tmp/${BASE_OUTPUT_NAME}-ini_temp_file0000.ini
+head -6 $SECOND_REG_OUTPUT_INI > ${TEMP_OUTPUT_INIT}
+$AIR_BIN/alignlinear ${tmpdir}/$BASELINE_IMG $REG_TMP_DIR/$REPEAT_IMG $SECOND_REG_OUTPUT_AIR -m 6 -f ${TEMP_OUTPUT_INIT}  -e1 ${tmpdir}/${BASELINE_IMG}_mask -e2 $REG_TMP_DIR/${REPEAT_IMG}_mask -p1 1 -p2 1 -s 1 1 1  -h 1 -c 100  -r 0  -x 1 -t1 $t1 -t2 $t2 -v 
+rm -f ${TEMP_OUTPUT_INIT}
+
+# Reslice image.
+RESLICED_IMAGE=$REG_RESULTS_DIR/${BASE_OUTPUT_NAME}
+$AIR_BIN/reslice $FINAL_REG_RESULT_AIR $RESLICED_IMAGE -k -o -n 10
+$MIDAS_BIN/extend_header $RESLICED_IMAGE.img $REG_TMP_DIR/$REPEAT_IMG.img $REG_RESULTS_DIR 5
+
+# Reslice region. 
+$MIDAS_BIN/regslice $FINAL_REG_RESULT_AIR $BRAINREGION_DIR/$REPEAT_MASK $REG_TMP_DIR 5 -c -i 2
+
+rm -rf ${tmpdir}
+
+
+

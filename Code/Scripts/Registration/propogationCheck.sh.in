@@ -1,0 +1,197 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run take Midas regions, and compare using niftkSegmentationStatistics.
+# 
+source _niftkCommon.sh
+
+thisprog=`basename $0`
+progdir=`dirname $0`
+
+ptmpdir=/tmp/propReg.$$
+tmpdir=${TMPDIR:-$ptmpdir}
+
+ndefargs=3
+target_image=
+ground_truth_region=
+segmented_region=
+use_output_file=0
+output_file=
+keeptmp=0
+
+function Usage()
+{
+cat <<EOF
+
+This script takes an image and two MIDAS regions, a ground truth and a segmented example, 
+and calculates segmentation statistics, such as Dice and Jaccard.
+
+Usage: $0 baseline.img truth.roi segmented.roi
+
+Mandatory Arguments:
+
+  baseline.img     : An image that has been segmented
+  truth.roi        : Ground truth MIDAS segmentation
+  segmented.roi    : A segmentation that you want to assess.
+                        
+Options:
+
+  -output file.txt : Text file to hold output
+  -tmpdir dir      : Set temporary workspace directory (If not set, will
+                     use environment variable \$TMPDIR, and then allocate
+                     one in /tmp (e.g., $ptmpdir) if \$TMPDIR not set
+
+  -keeptmp         : Keep temporary workspace directory (default = remove)
+
+                       
+EOF
+exit 127
+}
+
+if [ $# -lt $ndefargs ]; then
+    Usage
+    exitprog "$help\nError: Incorrect number of arguments...."
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+target_image=$1
+ground_truth_region=$2
+segmented_region=$3
+output_file=$4
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+      -tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+      -output)
+	    output_file=$2
+	    use_output_file=1
+	    shift 1
+	    ;;
+      -keeptmp)
+	    keeptmp=1
+	    ;;
+      -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;    
+    esac
+    shift 1
+done
+
+if [ ! -f $target_image ]; then
+    exitprog "Target image $target_image does not exist" 1
+fi
+
+if [ ! -f $ground_truth_region ]; then
+    exitprog "Ground truth region $ground_truth_region does not exist" 1
+fi
+
+if [ ! -f $segmented_region ]; then
+    exitprog "Segmented region $segmented_region does not exist" 1
+fi
+
+if [ $use_output_file -eq 1 ]; then
+  checkf_writeable $output_file
+  if [ $? -ne 0 ]; then
+      exitprog "Error: Output file $output_file is not writeable" 1
+  fi
+fi
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+	exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+message "Temp directory is $tmpdir"
+
+thedate=`$DATE`
+message "Start time is $thedate"
+
+execute_command "cp $ground_truth_region $tmpdir/truth.roi"
+execute_command "cp $segmented_region $tmpdir/test.roi"
+
+truth_mask=$tmpdir/truth_mask
+execute_command "make_midas_mask $target_image $tmpdir/truth.roi $truth_mask 0"
+  
+test_mask=$tmpdir/test_mask
+execute_command "make_midas_mask $target_image $tmpdir/test.roi $test_mask 0"
+  
+statsExecutable=`which niftkSegmentationStatistics`
+statsArguments=" -noname -si ${truth_mask}.img ${test_mask}.img > $tmpdir/output.txt "
+execute_command "$statsExecutable $statsArguments"
+
+# Trying to put some nice format output??
+if [ $use_output_file -eq 1 ]; then
+  execute_command "cat $tmpdir/output.txt > $output_file"
+else
+  execute_command "cat $tmpdir/output.txt "
+fi
+
+################################################################
+message "Cleanup"
+################################################################
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+
+message "Finished"
+exit 0
+    

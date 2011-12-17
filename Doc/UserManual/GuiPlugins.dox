@@ -1,0 +1,22 @@
+/**
+
+\page UserManualGuiPlugins Graphical User Interface (GUI) Plugins
+
+The NiftyView GUI, built on <a href="http://www.mitk.org">MITK</a> and hence
+<a href="http://www.commontk.org">CTK</a> technology is based around "Plugins".
+These plugins each provide a discrete piece of functionality, and so to understand
+the operation of the GUI, the user should seek to understand each plugin of interest.
+
+The user documentation for each of the plugins is shown below, and these exact
+pages are available in the NiftyView GUI as help pages.
+
+\li \subpage uk.ac.ucl.cmic.gui.qt.niftyview
+\li \subpage uk.ac.ucl.cmic.imagelookuptables 
+\li \subpage uk.ac.ucl.cmic.affinetransform
+\li \subpage uk.ac.ucl.cmic.snapshot
+\li \subpage uk.ac.ucl.cmic.thumbnail
+\li \subpage uk.ac.ucl.cmic.midasnavigation
+\li \subpage uk.ac.ucl.cmic.midasgeneralsegmentor
+\li \subpage uk.ac.ucl.cmic.midasmorphologicalsegmentor
+
+*/

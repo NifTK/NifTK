@@ -1,0 +1,20 @@
+/**
+  \defgroup uk_ac_ucl_cmic_thumbnail uk.ac.ucl.cmic.thumbnail Plugin
+  \ingroup CMICPlugins
+
+  \brief Plugin that tracks the currently focussed QmitkRenderWindow in the main editor,
+  and provides a zoomed-out view, always displaying the whole scene
+  with a bounding box to inform the user of the focused view's region of interest.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk), and Anind Duttaroy (a.duttaroy@cs.ucl.ac.uk).
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_thumbnail_internal Internal
+  \ingroup uk_ac_ucl_cmic_thumbnail
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.thumbnail plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

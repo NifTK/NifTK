@@ -1,0 +1,140 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-11-04 11:47:55 +0000 (Fri, 04 Nov 2011) $ 
+#  Revision          : $Revision: 7697 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Pick up command line parameters
+BASELINE_IMG=$1
+BASELINE_MASK=$2
+REPEAT_IMG=$3
+OUTPUT_IMAGE_BASENAME=$4   # ${OUT_WI}/${num}0240-281-1
+OUTPUT_TRANSFORM=$5        # ${OUT_TRF}/${num}0240.trf
+OUTPUT_STRETCH=$6          # ${OUT_STR}/${num}0240.str
+INPUT_STRETCH=$7           # Input initial trf. 
+KBL_FILTER=$8              # k-means bilateral filter.
+NIFTK=$9                  
+PADDING=${10}
+OUTPUT_DIR=${11}
+OPTIONS=${12}              # "-u 1.0 -s ${numits} -b 0.01 -j 0.1 -c 1 -r 2 -p 281  -v -t -350  -B 0.000000055"
+
+# Include necessary functions
+source _niftkCommon.sh
+
+echo "Running on ${HOSTNAME}"
+echo "Started on `date`"
+
+INPUT_STRETCH_OPTION=""
+if [ "${INPUT_STRETCH}" != "dummy" ] 
+then 
+  INPUT_STRETCH_OPTION="-f ${INPUT_STRETCH}"
+fi 
+
+execute_command "tmpdir=`mktemp -d -q ~/temp/_fluid.XXXXXX`"
+execute_command "mkdir -p ${tmpdir}"
+function cleanup
+{
+  echo "Cleaning up..."
+  execute_command "rm -rf  ${tmpdir}"
+}
+trap "cleanup" EXIT SIGINT SIGTERM SIGKILL 
+
+if [ "${OUTPUT_DIR}" == "none" ]
+then 
+  output_dir=`dirname ${OUTPUT_IMAGE_BASENAME}`
+else  
+  output_dir=${OUTPUT_DIR}
+fi   
+mkdir -p ${output_dir}
+
+FLUID_BASELINE_IMG=${BASELINE_IMG}
+FLUID_REPEAT_IMG=${REPEAT_IMG}
+FLUID_BASELINE_MASK=${BASELINE_MASK}
+
+baseline_img_basename=`basename ${BASELINE_IMG}`
+repeat_img_basename=`basename ${REPEAT_IMG}`
+baseline_mask_basename=`basename ${BASELINE_MASK}`
+
+if [ "${KBL_FILTER}" = "yes" ]
+then 
+  FLUID_BASELINE_IMG=${output_dir}/${baseline_img_basename}
+  FLUID_REPEAT_IMG=${output_dir}/${repeat_img_basename}
+  
+  niftkKMeansWindowWithLinearRegressionNormalisationBSI \
+      ${BASELINE_IMG} ${BASELINE_MASK} \
+      ${REPEAT_IMG} ${BASELINE_MASK} \
+      ${BASELINE_IMG} ${BASELINE_MASK} \
+      ${REPEAT_IMG} ${BASELINE_MASK} \
+      1 1 1 -1 -1 ${tmpdir}/b_seg.hdr ${tmpdir}/r_seg.hdr ${FLUID_REPEAT_IMG}
+
+    niftkKBilateralImageFilter -i1 ${BASELINE_IMG} \
+                               -i2 ${FLUID_REPEAT_IMG} \
+                               -o ${FLUID_BASELINE_IMG} \
+                               -m ${BASELINE_MASK} \
+                               -d 1 -rs -1 -ds 2
+    
+    niftkKBilateralImageFilter -i1 ${FLUID_REPEAT_IMG} \
+                               -i2 ${BASELINE_IMG} \
+                               -o ${FLUID_REPEAT_IMG} \
+                               -m ${BASELINE_MASK} \
+                               -d 1 -rs -1 -ds 2
+      
+fi                              
+
+
+# Fluid registration.
+if [ "${NIFTK}" != "yes" ]
+then 
+  execute_command_or_else_stop "fluid_jo ${FLUID_REPEAT_IMG} ${FLUID_BASELINE_IMG} ${OUTPUT_IMAGE_BASENAME} ${OUTPUT_TRANSFORM} ${OUTPUT_STRETCH} -R ${BASELINE_MASK} -Q ${BASELINE_MASK} ${INPUT_STRETCH_OPTION} ${OPTIONS}" 
+else
+
+  if [ "${OPTIONS}" == "" ] 
+  then 
+    OPTIONS="-ln 3 -ri 3 -fi 3 -sim 4 -force cc -ls 0.125 -md 0.01 -cs 1 -mi 200 -rs 1.0 -mc 1e-12 -ar -abs_output 1 -mc 1.0e-15 -d 10"
+  fi 
+  size=`imginfo ${FLUID_BASELINE_IMG} -dims | awk '{printf $1" "$2" "$3}'`
+
+  niftkPadImage ${FLUID_BASELINE_IMG} ${output_dir}/${baseline_img_basename} ${PADDING} ${PADDING} ${PADDING} 0
+  niftkPadImage ${FLUID_REPEAT_IMG} ${output_dir}/${repeat_img_basename} ${PADDING} ${PADDING} ${PADDING} 0
+  FLUID_BASELINE_IMG=${output_dir}/${baseline_img_basename}
+  FLUID_REPEAT_IMG=${output_dir}/${repeat_img_basename}
+  FLUID_BASELINE_MASK=${output_dir}/${baseline_mask_basename}
+  niftkPadImage ${BASELINE_MASK} ${FLUID_BASELINE_MASK} ${PADDING} ${PADDING} ${PADDING} 0
+  
+  OUTPUT_TRANSFORM=${output_dir}/`basename ${OUTPUT_TRANSFORM}`
+  OUTPUT_STRETCH=${output_dir}/`basename ${OUTPUT_STRETCH}`
+  OUTPUT_IMAGE_BASENAME=${output_dir}/`basename ${OUTPUT_IMAGE_BASENAME}`
+
+  execute_command_or_else_stop "niftkFluid -ti ${FLUID_BASELINE_IMG} -tm ${FLUID_BASELINE_MASK} -si ${FLUID_REPEAT_IMG} -oi ${OUTPUT_IMAGE_BASENAME} -xo ${OUTPUT_TRANSFORM} -mji ${OUTPUT_STRETCH} ${OPTIONS}"
+  
+  #niftkConvertToMidasStr -ti ${OUTPUT_TRANSFORM} -oi ${OUTPUT_STRETCH} -ov ${tmpdir}/temp.trf -size ${size}
+  niftkCropMidasStr ${OUTPUT_STRETCH} ${OUTPUT_STRETCH} ${size}
+  niftkPadImage ${OUTPUT_IMAGE_BASENAME} ${OUTPUT_IMAGE_BASENAME} ${size} 0
+  
+fi   
+
+# Clean up. 
+execute_command "rm -rf  ${tmpdir}"
+
+
+echo "Finished on `date`"

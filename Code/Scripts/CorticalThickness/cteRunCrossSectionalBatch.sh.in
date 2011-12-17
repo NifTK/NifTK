@@ -1,0 +1,550 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Script to run cross section cortical thickness estimation for a batch of subjects.
+
+source _niftkCommon.sh
+
+ndefargs=1
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+use_tmp_root=0
+spm_dir=
+set_spm_dir=0
+use_fsl=0
+use_gpu=0
+atlas=
+use_atlas=0
+grey_prior= 
+use_grey=0
+white_prior=
+use_white=0
+csf_prior=
+use_csf=0
+deep_grey_prior=
+use_deep_grey=0
+internal_csf_prior=
+use_internal_csf=0
+min_classification_prob=0
+do_connected_components=0
+laplacian_epsilon=0.0001
+laplacian_iters=200
+pde_epsilon=0.0001
+pde_iters=100
+levels_pyramid=3
+levels_perform=2
+stats_atlas=
+use_stats_atlas=0
+stats_regions=
+use_stats_regions=0
+region_numbers=
+use_region_numbers=0
+dilations=2
+refine_labels=0
+iso_tropic=0.5
+resample_isotropic=0
+initp=0.5
+
+command_file=cteRunCrossSectionalBatch_$$_commands.txt  
+
+function Usage()
+{
+cat <<EOF
+
+This script runs cortical thickness estimation for a batch of subjects, using voxel based methods.
+In a nutshell, we run segmentation as described in [1], using linear [2] and non-linear [3]
+registration, then run voxel based cortical thickness estimation as described in [4].
+
+Usage: cteRunCrossSectionalBatch.sh input_file.txt [options]
+
+Mandatory Arguments:
+ 
+  input_file.txt           : A datafile containing 3 columns, tab separated
+                             1st column, the full path of the input image
+                             2nd column, the full path of the brain mask image
+                             3rd column, the basename of the output image
+                             
+                             For each output image name, the output is:
+                             
+                             <name>_thickness.nii
+                             <name>_smoothed_thickness.nii
+                             <name>_label.nii
+                             <name>_gm.nii
+                             <name>_wm.nii
+                             <name>_csf.nii  
+                             
+Options:
+
+  -spm  <directory>        : SPM directory, which if specified is added
+                             onto the front of the MATLABPATH variable
+
+  -fsl                     : Use FSL (FLIRT/FNIRT) instead of the default reg_aladin, reg_ffd.
+
+  -tmproot <directory>     : Define a root directory for temporary files. Default /tmp
+                             The difference between this option and the next, is that this
+                             one takes the root directory (eg. /tmp) and creates a sub directory
+                             with a process ID in it. (eg. /tmp/seg.1234) whereas the next option
+                             just uses exactly what you give it.
+                            
+  -tmpdir <directory>      : Set temporary workspace directory.
+
+  -keeptmp                 : Keep temporary workspace directory
+  
+  -gpu                     : If using underlying nifty_reg package, and not FSL, turn on GPU
+  
+  -levels <int>            : The number of Free-Form Deformation multi-resolution levels in pyramid. Default 3.
+  
+  -levels_to_perform <int> : The number of Free-Form Deformation multi-resolution levels to actually optimise. Default 2.
+  
+  -dilations <int>         : Number of dilations to apply to mask, when segmenting. Default 2.
+  
+  -atlas        image.nii  : Atlas image.
+  
+                             The atlas could, for example, be the
+                             one found in spm8/canonical/avg152T1.nii or avg305T1.nii
+                           
+  -grey         image.nii  : Grey matter prior, in same space as segmentation atlas. 
+  -white        image.nii  : White matter prior, in same space as segmentation atlas.
+  -csf          image.nii  : CSF prior, in same space as segmentation atlas.
+
+                             These apriori arguments could, for example, be 
+                             the priors in spm8/apriori directory.
+
+  -deep_grey     image.nii : Grey matter prior image containing only deep grey matter,
+                             in same space as segmentation atlas.
+  
+  -internal_csf  image.nii : CSF prior image, containing only internal CSF,
+                             in same space as segmentation atlas.
+
+  -isotropic <float>       : Resample to isotropic voxels after segmentation step. Default off.
+
+  -minp <float>            : When we classify GM, WM, CSF probability maps into a 3 label segmentation
+                             you can specify a minimum probability below which the voxel is ignored.
+                             This defaults to zero, and the classification picks the highest value
+                             of the GM, WM, CSF. 
+
+  -connected               : Do connected component analysis when classifying GM, WM, CSF probability maps
+                             into a 3 label segmentation.
+
+  -refine_labels           : Refines the label image, by calling cteRefineLabelImage.sh. Default off.
+    
+  -lapl_epsilon <float>    : Convergence tolerance for Laplacian solution.
+  
+  -lapl_iters <int>        : Maximum iterations for Laplacian solution.
+  
+  -pde_epsilon <float>     : Convergence tolerance for PDE solution (see [5]).
+  
+  -pde_iters <int>         : Maximum iterations for PDE solution (see [5]).
+
+  -initp                   : Target probability threshold to iterate towards when doing Lagrangian initialisation. Default 0.5.
+  
+  -stats_atlas   image.nii : An atlas image that we register to your T1 image, in order to compute region based stats.
+  
+  -stats_regions image.nii : A corresponding set of regions that will be used to extract region based stats.
+
+  -regions 1,2,3,4         : A comma separated list of region numbers to extract stats for.
+                             These region numbers should correspond to the labels in your -stats_regions image.
+                             
+                                                                                         
+[1] Manuel Jorge Cardoso, Matthew J. Clarkson, Gerard R. Ridgway,
+Marc Modat, Nick C Fox and Sebastien Ourselin, 
+"Improved Maximum A Posteriori Cortical Segmentation by Iterative Relaxation Of Priors" 
+G.-Z. Yang et al. (Eds):MICCAI 2009, Part II, LNCS 5762, pp. 441-449, 2009.
+                             
+[2] Sebastien Ourselin, A Roche, G Subsol, Xavier Pennec, and Nicholas Ayache.
+"Reconstructing a 3d structure from serial histological sections" 
+Image and Vision Computing, 19(2000) 25-31: doi:10.1016/S0262-8856(00)00052-4    
+
+[3] Marc Modat, Gerard R. Ridgway, Zeike A Taylor, Manja Lehmann,
+Josephine Barnes, Nick C Fox, David J Hawkes, and Sebastien Ourselin.
+"Fast free-form deformation using graphics processing units" 
+Comput Meth Prog Bio 2009: doi:10.1016/j.cmpb.2009.09.002
+
+[4] Oscar Acosta, Pierrick Bourgeat, Maria A. Zuluaga, Jurgen Fripp, Olivier Salvado
+Sebastien Ourselin, and the Alzheimer's Disease NeuroImaging Initiative.
+"Automated voxel-based 3D cortical thickness measurement in a combined Lagrangian-
+Eulerian PDE approach using partial volume maps"
+Medical Image Analysis 13 (2009) 730-743: doi:10.1016/j.media.2009.07.003
+
+[5] Anthony. J. Yezzi and Jerry L. Prince.
+"An Eulerian PDE approach for Computing Tissue Thickness"
+IEEE Transactions On Medical Imaging Vol 22. No 10. October 2003.
+
+EOF
+exit 127
+}
+
+function IterateThroughFile()
+{
+  local filename=$1
+  local mode=$2
+
+  n=`wc -l $filename | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+ 	output=
+ 	output_arg=
+    input=`awk 'NR-1 == '$i' {print $1}' $filename`
+    mask=`awk 'NR-1 == '$i' {print $2}' $filename`
+	output=`awk 'NR-1 == '$i' {print $3}' $filename`
+	
+	if [ "$mode" = "GENERATE" ]; then
+
+      if [ $set_spm_dir -eq 1 ]; then
+        spm_arg=" -spm $spm_dir "
+      fi
+      
+      if [ $use_fsl -eq 1 ]; then
+        fsl_arg=" -fsl "
+      fi
+
+      if [ $use_gpu -eq 1 ]; then
+        gpu_arg=" -gpu "
+      fi
+      
+      if [ $use_atlas -eq 1 ]; then
+        atlas_arg=" -atlas $atlas "
+      fi
+      
+      if [ $use_grey -eq 1 ]; then
+        grey_arg=" -grey $grey_prior "
+      fi
+      
+      if [ $use_white -eq 1 ]; then
+        white_arg=" -white $white_prior "
+      fi
+      
+      if [ $use_csf -eq 1 ]; then
+        csf_arg=" -csf $csf_prior "
+      fi
+      
+      if [ $use_deep_grey -eq 1 ]; then
+        deep_grey_arg=" -deep_grey $deep_grey_prior "
+      fi
+      
+      if [ $use_internal_csf -eq 1 ]; then
+        internal_csf_arg=" -internal_csf $internal_csf_prior"
+      fi
+
+      if [ $keeptmp -eq 1 ]; then
+        keep_tmp_arg=" -keeptmp "
+      fi
+
+      if [ $use_tmp_dir -eq 1 ]; then
+        tmp_arg=" -tmpdir $tmpdir "
+      elif [ $use_tmp_root -eq 1 ]; then
+        tmp_arg=" -tmproot $tmp_root "
+      fi
+
+      if [ $do_connected_components -eq 1 ]; then
+        connected_arg=" -connected "
+      fi
+
+      if [ ${use_stats_atlas} -eq 1 ]; then
+        stats_atlas_arg=" -stats_atlas ${stats_atlas} "
+      fi
+
+      if [ ${use_stats_regions} -eq 1 ]; then
+        stats_regions_arg=" -stats_regions ${stats_regions} "
+      fi
+         	              
+      if [ ${use_region_numbers} -eq 1 ]; then
+        stats_region_numbers_arg=" -regions ${region_numbers} "
+      fi
+
+      if [ ${refine_labels} -eq 1 ]; then
+         refine_labels_arg=" -refine_labels "
+      fi
+
+      if [ ${resample_isotropic} -eq 1]; then
+         isotropic_arg=" -isotropic ${iso_tropic} "
+      fi
+            
+	  # Generate a file of all commands
+	  echo "cteRunCrossSectional.sh $input $mask $output -levels $levels_pyramid -levels_to_perform $levels_perform -minp $min_classification_prob -lapl_epsilon $laplacian_epsilon -lapl_iters $laplacian_iters -pde_epsilon $pde_epsilon -pde_iters $pde_iters $spm_arg $fsl_arg $gpu_arg $atlas_arg $grey_arg $white_arg $csf_arg $deep_grey_arg $internal_csf_arg $keep_tmp_arg $tmp_arg $connected_arg $output_arg $stats_atlas_arg $stats_regions_arg $stats_region_numbers_arg -dilations ${dilations} ${refine_labels_arg} -initp ${initp} ${isotropic_arg} " >> $command_file
+	   
+	else
+	
+		check_file_exists $input
+		check_file_exists $mask
+		checkf_writeable $output
+
+	fi
+	
+    # Increment loop counter
+    i=$(($i+1))
+
+  done
+    
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+data_file=$1
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-tmpdir)
+	    tmpdir=$2
+	    use_tmp_dir=1
+	    shift 1
+	    ;;
+	-tmproot)
+	    tmp_root=$2
+	    use_tmp_root=1
+	    shift 1
+	    ;;
+    -keeptmp)
+	    keeptmp=1
+	    ;;
+	-spm)
+	    spm_dir=$2
+	    shift 1
+	    set_spm_dir=1
+	    ;;
+	-dilations)
+	    dilations=$2
+	    shift 1
+	    ;;	    	    
+	-atlas)
+	    atlas=$2
+	    shift 1
+	    use_atlas=1
+	    ;;
+	-grey)
+	    grey_prior=$2
+	    shift 1
+	    use_grey=1
+	    ;;
+	-white)
+	    white_prior=$2
+	    shift 1
+	    use_white=1
+	    ;;
+	-csf)
+	    csf_prior=$2
+	    shift 1
+	    use_csf=1
+	    ;;
+	-deep_grey)
+	    deep_grep_prior=$2
+	    shift 1
+	    use_deep_grey=1
+	    ;;
+	-internal_csf)
+	    internal_csf_prior=$2
+	    shift 1
+	    use_internal_csf=1
+	    ;;	    
+	-fsl)
+	    use_fsl=1
+	    ;;
+	-gpu)
+	    use_gpu=1
+	    ;;
+	-connected)
+	    do_connected_components=1
+	    ;;	
+	-minp)
+	    min_classification_prob=$2
+	    shift 1
+	    ;;
+	-lapl_epsilon)
+	    laplacian_epsilon=$2
+	    shift 1
+	    ;;
+	-lapl_iters)
+	    laplacian_iters=$2
+	    shift 1
+	    ;;
+	-pde_epsilon)
+	    pde_epsilon=$2
+	    shift 1
+	    ;;
+	-pde_iters)
+	    pde_iters=$2
+	    shift 1
+	    ;;
+	-levels)
+	    levels_pyramid=$2
+	    shift 1
+	    ;;
+	-levels_to_perform)
+	    levels_perform=$2
+	    shift 1
+	    ;;	
+	-stats_atlas)
+	    stats_atlas=$2
+	    use_stats_atlas=1
+	    shift 1
+	    ;;
+	-stats_regions)
+	    stats_regions=$2
+	    use_stats_regions=1
+	    shift 1
+	    ;;	 
+	-regions)
+	   	region_numbers=$2
+	   	use_region_numbers=1
+	   	shift 1
+	   	;;       
+	-refine_labels)
+	    refine_labels=1
+	    ;;
+	-isotropic)
+	    iso_tropic=$2
+	    resample_isotropic=1
+	    shift 1
+	    ;;      
+	-initp)
+	    initp=$2
+	    shift 1
+	    ;;	    	             	           	    	         	   		    	             	           	    	         	         	    	    	    	    	    	    	    	         	    	         
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+if [ $use_fsl -eq 1 -a $use_gpu -eq 1 ]; then
+    exitprog "Options -fsl and -gpu are mutually exclusive. If you use FSL, you wont get Marc's GPU code." 1
+fi
+
+if [ ! -f $data_file ]; then
+    exitprog "Datafile $data_file does not exist" 1
+fi
+
+if [ $use_atlas -eq 1 ]; then
+  if [ ! -f $atlas ]; then
+    exitprog "The atlas image does not exist!" 1
+  fi
+fi
+
+if [ $use_grey -eq 1 ]; then
+  if [ ! -f $grey_prior ]; then
+    exitprog "The grey matter prior image does not exist!" 1
+  fi
+fi
+
+if [ $use_white -eq 1 ]; then
+  if [ ! -f $white_prior ]; then
+    exitprog "The white matter prior image does not exist!" 1
+  fi
+fi
+
+if [ $use_csf -eq 1 ]; then
+  if [ ! -f $csf_prior ]; then
+    exitprog "The csf matter prior image does not exist!" 1
+  fi
+fi
+
+if [ $use_deep_grey -eq 1 ]; then
+  if [ ! -f $deep_grey_prior ]; then
+    exitprog "The deep grey matter prior image does not exist!" 1
+  fi
+fi
+
+if [ $use_internal_csf -eq 1 ]; then
+  if [ ! -f $internal_csf_prior ]; then
+    exitprog "The internal_csf prior image does not exist!" 1
+  fi
+fi
+
+if [ $set_spm_dir -eq 1 ]; then
+  check_directory_exists $spm_dir
+fi
+
+if [ $use_stats_atlas -eq 1 ]; then
+  if [ ! -f ${stats_atlas} ]; then
+    exitprog "The stats atlas you specified does not exist!" 1
+  fi
+fi
+
+if [ $use_stats_regions -eq 1 ]; then
+  if [ ! -f ${stats_regions} ]; then
+    exitprog "The stats regions you specified does not exist!" 1
+  fi
+fi
+
+message "Temp directory is $tmpdir"
+thedate=`$DATE`
+message "Start time is $thedate"
+
+echo "Starting $0 with:"
+echo "  atlas=$atlas"
+echo "  use_atlas=$use_atlas"
+echo "  grey_prior=$grey_prior"
+echo "  use_grey=$use_grey"
+echo "  white_prior=$white_prior"
+echo "  use_white=$use_white"
+echo "  csf_prior=$csf_prior"
+echo "  use_csf=$use_csf"
+echo "  deep_grey_prior=$deep_grey_prior"
+echo "  use_deep_grey=$use_deep_grey"
+echo "  internal_csf_prior=$internal_csf_prior"
+echo "  use_internal_csf=$use_internal_csf"
+echo "  set_spm_dir=$set_spm_dir"
+echo "  spm_dir=$spm_dir"
+echo "  tmp_root=$tmp_root"
+echo "  tmpdir=$tmpdir"
+echo "  keeptmp=$keeptmp"
+echo "  use_tmp_dir=$use_tmp_dir"
+echo "  use_tmp_root=$use_tmp_root"
+echo "  keeptmp=$keeptmp"
+echo "  use_fsl=$use_fsl"
+echo "  use_gpu=$use_gpu"
+echo "  min_classification_prob=$min_classification_prob"
+echo "  laplacian_epsilon=$laplacian_epsilon"
+echo "  laplacian_iters=$laplacian_iters"
+echo "  pde_epsilon=$pde_epsilon"
+echo "  pde_iters=$pde_iters"
+echo "  levels_pyramid=$levels_pyramid"
+echo "  levels_perform=$levels_perform"
+echo "  stats_atlas=$stats_atlas"
+echo "  stats_regions=$stats_regions"
+echo "  region_numbers=$region_numbers"
+echo "  dilations=$dilations"
+echo "  resample_isotropic=$resample_isotropic"
+echo "  iso_tropic=$iso_tropic"
+echo "  initp=$initp"
+
+IterateThroughFile $data_file "CHECK"
+
+IterateThroughFile $data_file "GENERATE"
+
+run_batch_job $command_file
+  

@@ -1,0 +1,698 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Script to run longitudinal cortical thickness estimation for a single subjects.
+
+source _niftkCommon.sh
+
+ndefargs=2
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+template_image=template.nii
+affine_iters=2
+non_rigid_iters=10
+use_previous_cpp=0
+intialize_atlas=1
+spm_dir=
+set_spm_dir=0
+final_name=
+levels_pyramid=3
+levels_perform=2
+use_reg_based=0;
+
+function Usage()
+{
+cat <<EOF
+
+This script runs longitudinal cortical thickness estimation for a single subject, using voxel based methods.
+
+Usage: cteRunLongitudinal.sh [options] 
+
+Mandatory Options:
+
+  -i image.nii              : An image
+  -m mask.nii               : A mask
+  
+                              You should have as many masks as images, and can repeatedly specify -i and -m.
+                     
+                              For example:
+                     
+                              -i image1.nii -m mask1.nii -i image2.nii -m mask2.nii
+                     
+                              Clearly, you need at least two masks and at least two images.
+                              The ordering of masks should be the same as the images.
+
+ -name <string>             : Prefix for the name of the output files
+                       
+Options:
+
+  -initialize <int>         : Initialize the atlas based on this image number. Default to 1.
+
+  -tmproot <directory>      : Define a root directory for temporary files. Default /tmp
+                              The difference between this option and the next, is that this
+                              one takes the root directory (eg. /tmp) and creates a sub directory
+                              with a process ID in it. (eg. /tmp/seg.1234) whereas the next option
+                              just uses exactly what you give it.
+                            
+  -tmpdir <directory>       : Set temporary workspace directory.
+
+  -keeptmp                  : Keep temporary workspace directory
+  
+  -affineiters <int>        : Number of affine iterations in groupwise registration. Default 2.
+  
+  -nonrigiditers <int>      : Number of non-rigid iterations in groupwise registration Default 10.
+  
+  -usepreviouscpp           : Non-rigid registration picks up the previous control points each time
+
+  -spm <directory>          : SPM directory, which if specified is added
+                              onto the front of the MATLABPATH variable
+
+  -levels                   : The number of multi-resolution levels in pyramid. Default 3.
+  
+  -levels_to_perform        : The number of multi-resolution levels to actually optimise. Default 2.
+
+  -reg                      : Default is to use Acosta's method for cortical thickness [1]
+                              -reg will switch to Das's method [2]. 
+  
+    
+[1] Oscar Acosta, Pierrick Bourgeat, Maria A. Zuluaga, Jurgen Fripp, Olivier Salvado
+Sebastien Ourselin, and the Alzheimer's Disease NeuroImaging Initiative.
+"Automated voxel-based 3D cortical thickness measurement in a combined Lagrangian-
+Eulerian PDE approach using partial volume maps"
+Medical Image Analysis 13 (2009) 730-743: doi:10.1016/j.media.2009.07.003
+   
+[2] Sandhitsu R. Das, Brian B. Avants, Murray Grossman, James C. Gee
+"Registration based cortical thickness measurement" 
+NeuroImage 45 (2009) 867-879: doi:10.1016/j.neuroimage.2008.12.016
+    
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 8 ]; then
+  Usage
+fi
+
+check_program_exists reg_aladin
+check_program_exists fslmaths
+check_program_exists fslchfiletype
+check_program_exists reg_f3d
+check_program_exists reg_tools
+check_program_exists ANTS
+check_program_exists WarpImageMultiTransform
+check_program_exists niftkCombineSegmentations
+check_program_exists niftkCTEBourgeat2008
+check_program_exists niftkCTEDas2009
+
+mask_list=""
+image_list=""
+
+cwd=`pwd`
+
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+    -m)
+        mask_list="$mask_list $2"
+        shift 1
+        ;;
+    -i)
+        image_list="$image_list $2"
+        shift 1
+        ;;
+	-tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+	-tmproot)
+	    tmp_root=$2
+	    shift 1
+	    ;;
+    -keeptmp)
+	    keeptmp=1
+	    ;;
+	-affineiters)
+	    affine_iters=$2
+	    shift 1
+	    ;;
+	-initialize)
+	    intialize_atlas=$2
+	    shift 1
+	    ;;	    
+	-nonrigiditers)
+	    non_rigid_iters=$2
+	    shift 1
+	    ;;	
+    -usepreviouscpp)
+	    use_previous_cpp=1
+	    ;;
+	-spm)
+	    spm_dir=$2
+	    shift 1
+	    set_spm_dir=1
+	    ;;
+	-name)
+	    final_name=$2
+	    shift 1
+	    ;;	
+	-levels)
+	    levels_pyramid=$2
+	    shift 1
+	    ;;
+	-levels_to_perform)
+	    levels_perform=$2
+	    shift 1
+	    ;;	   
+	-reg)
+	    use_reg_based=1
+	    ;;	        	        	    	    	    	    	    	        	    	   
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+check_all_files_in_string_exists "$mask_list"
+check_all_files_in_string_exists "$image_list"
+
+if [ "_${final_name}" = "_" ]; then
+ 	exitprog "Error: you didn't specify a -name"
+fi
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+ptmpdir=$tmp_root/ctelong.$$
+if [ "_$tmpdir" = "_" ]; then
+  tmpdir=$ptmpdir
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+if [ ! -d $tmpdir ]; then
+    execute_command_or_else_stop "mkdir $tmpdir"
+    if [ $? -ne 0 ]; then
+		exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+thedate=`$DATE`
+message "Start time is $thedate"
+
+message "Temp directory is $tmpdir"
+thedate=`$DATE`
+
+echo "Starting $0 with:"
+echo "  keeptmp=$keeptmp"
+echo "  tmp_root=$tmp_root"
+echo "  tmpdir=$tmpdir"
+echo "  affine_iters=$affine_iters"
+echo "  non_rigid_iters=$non_rigid_iters"
+echo "  use_previous_cpp=$use_previous_cpp"
+echo "  intialize_atlas=$intialize_atlas"
+echo "  set_spm_dir=$set_spm_dir"
+echo "  spm_dir=$spm_dir"
+echo "  final_name=$final_name"
+echo "  cwd=$cwd"
+echo "  levels_pyramid=$levels_pyramid"
+echo "  levels_perform=$levels_perform"
+echo "  use_reg_based=$use_reg_based"
+
+################################################################
+message "Start Main Algorithm"
+################################################################
+
+#####################################################################################
+# First copy images to temp directory.
+#####################################################################################
+i=1
+total_images=0
+
+for name in $image_list
+do
+	execute_command_or_else_stop "cp $name ${tmpdir}/${i}_image.nii"
+	i=$(($i+1))
+	total_images=$(($total_images+1))
+done
+
+i=1
+for name in $mask_list
+do
+	execute_command_or_else_stop "cp $name ${tmpdir}/${i}_mask.nii"
+	i=$(($i+1))
+done
+
+
+#####################################################################################
+# Register all images to nominated one.
+#####################################################################################
+
+affine_output_dir=${tmpdir}/atlas_affine
+
+if [ ! -d ${affine_output_dir} ]; then
+	mkdir ${affine_output_dir}
+fi
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+	if [ $i -ne ${intialize_atlas} ]; then
+		execute_command_or_else_stop "reg_aladin \
+		    -ln ${levels_pyramid} -lp ${levels_perform} \
+		    -maxit 10 \
+			-target ${tmpdir}/${intialize_atlas}_image.nii \
+			-source ${tmpdir}/${i}_image.nii \
+			-aff ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.txt \
+			-result ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.nii"
+	else
+		execute_command_or_else_stop "cp ${tmpdir}/${i}_image.nii ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.nii"
+		execute_command_or_else_stop "echo 1 0 0 0 >> ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.txt"
+		execute_command_or_else_stop "echo 0 1 0 0 >> ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.txt"
+		execute_command_or_else_stop "echo 0 0 1 0 >> ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.txt"
+		execute_command_or_else_stop "echo 0 0 0 1 >> ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.txt"
+	fi
+	
+	i=$(($i+1))
+done
+
+#####################################################################################
+# Then average them to create a first initial atlas.
+#####################################################################################
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+
+	if [ $i -eq 1 ]; then
+	  execute_command_or_else_stop "fslmaths ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.nii ${affine_output_dir}/average_in_progress.nii -odt float"
+	else
+	  execute_command_or_else_stop "fslmaths ${affine_output_dir}/average_in_progress.nii -add ${affine_output_dir}/affine_${i}_to_${intialize_atlas}.nii ${affine_output_dir}/average_in_progress.nii"
+	fi
+	
+	i=$(($i+1))
+done
+execute_command_or_else_stop "fslmaths ${affine_output_dir}/average_in_progress.nii -div ${total_images} ${affine_output_dir}/initial_average.nii"
+execute_command_or_else_stop "\rm ${affine_output_dir}/average_in_progress.nii.gz"
+execute_command_or_else_stop "fslchfiletype NIFTI ${affine_output_dir}/initial_average.nii"
+
+#############################################################################################
+# Use reg_aladin to perform groupwise affine registration, of the normalized T1 volumes.
+# This probably won't do that much, so the number of affine iterations should be small.
+#############################################################################################
+
+target_atlas=${affine_output_dir}/initial_average.nii
+
+cur_it=1
+while [ ${cur_it} -le ${affine_iters} ]
+do
+	echo "Affine Groupwise registration: Iteration ${cur_it} to target ${target_atlas}, in directory ${affine_output_dir}"
+	
+	i=1
+	while [ "$i" -le "$total_images" ]
+	do
+		echo "Affine Groupwise registration: Image ${i}"
+		
+		if [ ${cur_it} -eq 1 ]; then
+			execute_command_or_else_stop "reg_aladin \
+			    -ln ${levels_pyramid} -lp ${levels_perform} \
+			    -maxit 10 \
+				-target ${target_atlas} \
+				-source ${tmpdir}/${i}_image.nii \
+				-aff ${affine_output_dir}/affine_${cur_it}_${i}_to_atlas.txt \
+				-result ${affine_output_dir}/affine_${cur_it}_${i}_to_atlas.nii"
+		else
+			prev_it=`expr ${cur_it} - 1`
+
+			execute_command_or_else_stop "reg_aladin \
+				-ln ${levels_pyramid} -lp ${levels_perform} \
+			    -maxit 10 \
+				-target ${target_atlas} \
+				-source ${tmpdir}/${i}_image.nii \
+				-inaff ${affine_output_dir}/affine_${prev_it}_${i}_to_atlas.txt \
+				-aff ${affine_output_dir}/affine_${cur_it}_${i}_to_atlas.txt \
+				-result ${affine_output_dir}/affine_${cur_it}_${i}_to_atlas.nii"
+			
+		fi
+		i=$(($i+1))
+	done
+	
+	i=1
+	while [ "$i" -le "$total_images" ]
+	do
+		
+		if [ $i -eq 1 ]; then
+	  		execute_command_or_else_stop "fslmaths ${affine_output_dir}/affine_${cur_it}_${i}_to_atlas.nii ${affine_output_dir}/average_in_progress.nii -odt float"
+		else
+	  		execute_command_or_else_stop "fslmaths ${affine_output_dir}/average_in_progress.nii -add ${affine_output_dir}/affine_${cur_it}_${i}_to_atlas.nii ${affine_output_dir}/average_in_progress.nii"
+		fi
+		i=$(($i+1))
+	done
+	execute_command_or_else_stop "fslmaths ${affine_output_dir}/average_in_progress.nii -div ${total_images} ${affine_output_dir}/average_${cur_it}.nii"
+	execute_command_or_else_stop "\rm ${affine_output_dir}/average_in_progress.nii.gz"
+	
+	target_atlas=${affine_output_dir}/average_${cur_it}.nii
+	cur_it=$(($cur_it+1))
+done
+
+execute_command_or_else_stop "cp ${affine_output_dir}/average_${affine_iters}.nii.gz ${tmpdir}/affine_atlas.nii.gz"
+execute_command_or_else_stop "fslchfiletype NIFTI ${tmpdir}/affine_atlas.nii.gz"
+
+#####################################################################################
+# Use reg_f3d to perform groupwise non-rigid registration
+#####################################################################################
+
+target_atlas=${affine_output_dir}/average_${affine_iters}.nii
+
+nrr_output_dir=${tmpdir}/atlas_nrr
+	
+if [ ! -d ${nrr_output_dir} ]; then
+  execute_command_or_else_stop "mkdir ${nrr_output_dir}"
+fi
+
+cur_it=1	
+while [ ${cur_it} -le ${non_rigid_iters} ]
+do
+	echo "Non-rigid Groupwise registration: Iteration ${cur_it} to target ${target_atlas}, in directory ${nrr_output_dir}"
+
+	
+	i=1
+	while [ "$i" -le "$total_images" ]
+	do
+		echo "Non-rigid Groupwise registration: Image ${i}"
+
+		if [ ${cur_it} -eq 1 ]; then
+		
+			execute_command_or_else_stop "reg_f3d \
+			    -maxit 1000 -be 0.1 -ln ${levels_pyramid} -lp ${levels_perform} -sx 5 -smooS 1 \
+				-target ${target_atlas} \
+				-source ${tmpdir}/${i}_image.nii \
+				-aff ${affine_output_dir}/affine_${affine_iters}_${i}_to_atlas.txt \
+				-cpp ${nrr_output_dir}/nrr_${cur_it}_${i}_cpp.nii \
+				-result ${nrr_output_dir}/nrr_${cur_it}_${i}.nii"
+		else
+		
+			prev_it=`expr ${cur_it} - 1`
+
+			if [ $use_previous_cpp -eq 1 ]; then
+
+				execute_command_or_else_stop "reg_f3d \
+			    	-maxit 1000 -be 0.1 -ln ${levels_pyramid} -lp ${levels_perform} -sx 5 -smooS 1 \
+					-target ${target_atlas} \
+					-source ${tmpdir}/${i}_image.nii \
+					-aff ${affine_output_dir}/affine_${affine_iters}_${i}_to_atlas.txt \
+					-incpp ${nrr_output_dir}/nrr_${prev_it}_${i}_cpp.nii \
+					-result ${nrr_output_dir}/nrr_${cur_it}_${i}.nii"
+			
+			
+			else
+			
+				execute_command_or_else_stop "reg_f3d \
+			    	-maxit 1000 -be 0.1 -ln ${levels_pyramid} -lp ${levels_perform} -sx 5 -smooS 1 \
+					-target ${target_atlas} \
+					-source ${tmpdir}/${i}_image.nii \
+					-aff ${affine_output_dir}/affine_${affine_iters}_${i}_to_atlas.txt \
+					-cpp ${nrr_output_dir}/nrr_${cur_it}_${i}_cpp.nii \
+					-result ${nrr_output_dir}/nrr_${cur_it}_${i}.nii"
+			
+			fi
+			
+		fi
+		
+		i=$(($i+1))
+	done
+	
+	# Average all the control points
+	
+	i=1
+	while [ "$i" -le "$total_images" ]
+	do
+		if [ $i -eq 1 ]; then
+			execute_command_or_else_stop "cp ${nrr_output_dir}/nrr_${cur_it}_${i}_cpp.nii ${nrr_output_dir}/average_in_progess.nii"
+		else
+			execute_command_or_else_stop "reg_tools \
+							-in ${nrr_output_dir}/average_in_progess.nii \
+							-add ${nrr_output_dir}/nrr_${cur_it}_${i}_cpp.nii \
+							-out ${nrr_output_dir}/average_in_progess.nii "
+		fi
+		i=$(($i+1))						
+	done
+	
+	execute_command_or_else_stop "reg_tools \
+					-in ${nrr_output_dir}/average_in_progess.nii \
+					-divV ${total_images} \
+					-out ${nrr_output_dir}/average_cpp_${cur_it}.nii"
+						
+
+	# Now we remove the mean control point offset from each grid, and resample each source image
+	
+	i=1
+	while [ "$i" -le "$total_images" ]
+	do
+	
+		execute_command_or_else_stop "reg_tools \
+						-in ${nrr_output_dir}/nrr_${cur_it}_${i}_cpp.nii \
+						-subV ${nrr_output_dir}/average_cpp_${cur_it}.nii \
+						-out ${nrr_output_dir}/c-nrr_${cur_it}_${i}_cpp.nii"
+
+		execute_command_or_else_stop "reg_resample \
+						-target ${target_atlas} \
+						-source ${tmpdir}/${i}_image.nii \
+						-aff ${affine_output_dir}/affine_${cur_it}_${i}.txt \
+						-cpp ${nrr_output_dir}/c-nrr_${cur_it}_${i}_cpp.nii \
+						-result ${nrr_output_dir}/c-nrr_${cur_it}_${i}.nii"						
+		
+		i=$(($i+1))						
+	done
+
+	# Now average the resampled, non-linearly registered source images
+	i=1
+	while [ "$i" -le "$total_images" ]
+	do
+
+		if [ $i -eq 1 ]; then
+	  		execute_command_or_else_stop "fslmaths ${nrr_output_dir}/c-nrr_${cur_it}_${i}.nii ${nrr_output_dir}/average_in_progress.nii -odt float"
+		else
+	  		execute_command_or_else_stop "fslmaths ${nrr_output_dir}/average_in_progress.nii -add ${nrr_output_dir}/c-nrr_${cur_it}_${i}.nii ${nrr_output_dir}/average_in_progress.nii"
+		fi
+		i=$(($i+1))						
+	done
+	execute_command_or_else_stop "fslmaths ${nrr_output_dir}/average_in_progress.nii -div ${total_images} ${nrr_output_dir}/average_${cur_it}.nii"
+	execute_command_or_else_stop "\rm ${nrr_output_dir}/average_in_progress.nii.gz"
+
+	target_atlas=${nrr_output_dir}/average_${cur_it}.nii				
+	cur_it=$(($cur_it+1))
+done
+
+execute_command_or_else_stop "cp ${nrr_output_dir}/average_${non_rigid_iters}.nii.gz ${tmpdir}/non_rigid_atlas.nii.gz"
+execute_command_or_else_stop "fslchfiletype NIFTI ${tmpdir}/non_rigid_atlas.nii.gz"
+
+#########################################################################################################
+# Now we have an atlas at midpoint. Register each T1 image to that atlas, using something diffeomorphic.
+#########################################################################################################
+
+target_atlas_base=non_rigid_atlas
+target_atlas=${tmpdir}/${target_atlas_base}.nii
+diffeo_output_dir=${tmpdir}/diffeomorphic
+
+if [ ! -d ${diffeo_output_dir} ]; then
+  execute_command_or_else_stop "mkdir ${diffeo_output_dir}"
+fi
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+	execute_command_or_else_stop "ANTS 3 -m MI[${target_atlas},${tmpdir}/${i}_image.nii,1,32] -o ${diffeo_output_dir}/ANTS_${i}.nii -i 5x5x0 -r Gauss[3,0.5] -t SyN[1,2,0.1]"
+	i=$(($i+1))
+done
+	
+#####################################################################################
+# Take the registration, and propogate each segmentation to Atlas space.
+# We need to make sure we take the masks that are already in Talairach space.
+#####################################################################################
+
+# Note: We need to be in the directory where the ANTS warp files are,
+# as WarpImageMultiTransform doesn't accept pathnames for argument --ANTS-prefix
+# which is fair enough, it's a prefix, for files in the current working directory
+
+execute_command_or_else_stop "cd ${diffeo_output_dir}"
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+	execute_command_or_else_stop "WarpImageMultiTransform 3  ${tmpdir}/${i}_mask.nii ${diffeo_output_dir}/mask_${i}_in_atlas.nii -R ${target_atlas} --ANTS-prefix ANTS_${i} --use-NN "
+	i=$(($i+1))
+done
+
+execute_command_or_else_stop "cd ${cwd}"
+
+#####################################################################################
+# Do STAPLE to form an estimate of the best segmentation
+# Dilate it outwards by 1 voxel, so that Jorge segmentation can get a bit of CSF in.
+#####################################################################################
+i=1
+staple_images=
+while [ "$i" -le "$total_images" ]
+do
+	execute_command_or_else_stop "niftkThreshold -i ${diffeo_output_dir}/mask_${i}_in_atlas.nii  -o ${diffeo_output_dir}/mask_${i}_in_atlas_thresholded.nii -in 255 -out 0 -l 1" 
+	staple_images="$staple_images ${diffeo_output_dir}/mask_${i}_in_atlas_thresholded.nii "
+	i=$(($i+1))
+done
+
+execute_command_or_else_stop "niftkCombineSegmentations STAPLE 0.5 255 ${diffeo_output_dir}/stapled_mask.nii $staple_images "
+execute_command_or_else_stop "niftkDilate -i ${diffeo_output_dir}/stapled_mask.nii -o ${diffeo_output_dir}/stapled_mask_dilated.nii -r 1 -it 1 -d 255 -b 0"
+
+#####################################################################################
+# Do Jorge segmentation on Average T1, and STAPLED region.
+#####################################################################################
+
+segmentation_output_dir=${tmpdir}/segmentation
+
+if [ ! -d ${segmentation_output_dir} ]; then
+  execute_command_or_else_stop "mkdir ${segmentation_output_dir}"
+fi
+
+if [ $keeptmp -eq 1 ]; then
+  keep_tmp_arg=" -keeptmp "
+fi
+
+execute_command_or_else_stop "segRelaxPriors.sh ${target_atlas} ${diffeo_output_dir}/stapled_mask_dilated.nii -spm ${spm_dir} -tmproot ${segmentation_output_dir} ${keep_tmp_arg} -levels ${levels_pyramid} -levels_to_perform ${levels_perform} "
+ 
+#####################################################################################
+# Propogate segmentation back to each individual T1.
+#####################################################################################
+
+# Note: We need to be in the directory where the ANTS warp files are,
+# as WarpImageMultiTransform doesn't accept pathnames for argument --ANTS-prefix
+# which is fair enough, it's a prefix, for files in the current working directory
+
+execute_command_or_else_stop "cd ${diffeo_output_dir}"
+
+execute_command_or_else_stop "mv ${tmpdir}/${target_atlas_base}_* ${segmentation_output_dir} "
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+	execute_command_or_else_stop "WarpImageMultiTransform 3 ${segmentation_output_dir}/${target_atlas_base}_GMfc.nii ${segmentation_output_dir}/${i}_GMfc.nii -R ${tmpdir}/${i}_image.nii --ANTS-prefix-invert ANTS_${i} "
+	execute_command_or_else_stop "WarpImageMultiTransform 3 ${segmentation_output_dir}/${target_atlas_base}_WMfc.nii ${segmentation_output_dir}/${i}_WMfc.nii -R ${tmpdir}/${i}_image.nii --ANTS-prefix-invert ANTS_${i} "
+	execute_command_or_else_stop "WarpImageMultiTransform 3 ${segmentation_output_dir}/${target_atlas_base}_CSFfc.nii ${segmentation_output_dir}/${i}_CSFfc.nii -R ${tmpdir}/${i}_image.nii --ANTS-prefix-invert ANTS_${i} "
+	execute_command_or_else_stop "niftkCTEPrepareVolumes -g ${segmentation_output_dir}/${i}_GMfc.nii -w ${segmentation_output_dir}/${i}_WMfc.nii -c ${segmentation_output_dir}/${i}_CSFfc.nii -o ${segmentation_output_dir}/${i}_label.nii -wl 1 -gl 2 -cl 3 -connected " 
+
+	i=$(($i+1))
+done
+
+execute_command_or_else_stop "cd ${cwd}"
+
+#####################################################################################
+# Perform Voxel Based Cortical Thickness Estimation on each T1.
+#####################################################################################
+
+thickness_output_dir=${tmpdir}/thickness
+
+if [ ! -d ${thickness_output_dir} ]; then
+  execute_command_or_else_stop "mkdir ${thickness_output_dir}"
+fi
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+
+    if [ $use_reg_based -eq 1 ]; then
+        execute_command_or_else_stop "niftkCTEDas2009 -i ${segmentation_output_dir}/${i}_label.nii -gmpv ${segmentation_output_dir}/${i}_GMfc.nii -wmpv -gmpv ${segmentation_output_dir}/${i}_WMfc.nii -o ${thickness_output_dir}/${i}_thickness.nii -w 1 -g 2 -c 3 "
+    else
+        execute_command_or_else_stop "niftkCTEBourgeat2008 -i ${segmentation_output_dir}/${i}_label.nii -gmpv ${segmentation_output_dir}/${i}_GMfc.nii -o ${thickness_output_dir}/${i}_thickness.nii -w 1 -g 2 -c 3 -method 2 "    
+    fi
+	
+	i=$(($i+1))
+done
+
+#####################################################################################
+# For each voxel in Average T1, and for each timepoint, get corresponding point
+# and interpolate thickness value. Output a volume per timepoint.
+#####################################################################################
+
+# Note: We need to be in the directory where the ANTS warp files are,
+# as WarpImageMultiTransform doesn't accept pathnames for argument --ANTS-prefix
+# which is fair enough, it's a prefix, for files in the current working directory
+
+execute_command_or_else_stop "cd ${diffeo_output_dir}"
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+
+	execute_command_or_else_stop "WarpImageMultiTransform 3 ${thickness_output_dir}/${i}_thickness.nii ${tmpdir}/${i}_thickness.nii -R ${target_atlas} --ANTS-prefix ANTS_${i} "
+	i=$(($i+1))
+done
+
+execute_command_or_else_stop "cd ${cwd}"
+
+i=1
+while [ "$i" -le "$total_images" ]
+do
+	execute_command_or_else_stop "cp ${tmpdir}/${i}_thickness.nii ./${final_name}_${i}_thickness.nii" 
+	i=$(($i+1))
+done	
+
+################################################################
+message "End Main Algorithm"
+################################################################
+
+message "Cleanup"
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command_or_else_stop "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+message "Finished"

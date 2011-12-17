@@ -1,0 +1,64 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run our standard AIR linear and BSI pipeline on a batch of images,
+# as specified in an input filename.
+# 
+
+function Usage() 
+{
+cat <<EOF
+
+This script simply runs a file of commands against a cluster.
+If it can't find the cluster, it runs it directly.
+
+Usage: $0 filename
+
+Mandatory Arguments:
+ 
+  filename  : a text file containing a batch of commands, one per line.
+  
+              Remember, it't not ANY sequence of commands.
+              Each line must be a separate standalone command.
+              You can't guarantee the order, or that they will execute on the same machine.
+              
+EOF
+exit 127
+}
+
+
+# Check args
+if [ $# -ne 1 ]; then
+  Usage
+fi
+
+# Pick up command line parameters
+BATCH_COMMANDS=$1
+
+# Include functions
+source _niftkCommon.sh
+
+run_batch_job $BATCH_COMMANDS

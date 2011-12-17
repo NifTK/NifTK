@@ -1,0 +1,382 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+SUBJECTS_DIR=`pwd`
+
+function Usage()
+{
+cat <<EOF
+This script will import data into the standard FreeSurfer directory structure.
+ 
+Usage: fsImport.sh dataFile [ options ]
+ 
+Mandatory Arguments:
+
+  dataFile      : A file containing your patient names and details, like this:
+
+                  Patient ImageType Image         Mask                 WhichMask     
+                  ALLFR   I         02979-002-1   Nic_02979_1140620563 002       
+                  ALLHA   I         03920-002-1   Nic_03920_1351234123 002       
+
+                  The ImageType column must have: 
+                    "I" if the Image column contains an image name
+                    "S" if the Image column contains a study number
+                           
+                  The Image column must be:
+                    a study number                       - e.g. 02979
+                    or proper image name.                - e.g. 03920-002-1
+                                      
+                  The WhichMask column should have:
+                    If ImageType=S, then a series number - e.g. 002
+                    If ImageType=I, then anything you like, as it's not used
+                    
+Options:
+
+  -b beginRow   : is the start row in the dataFile.
+  -e endRow     : is the end row in the dataFile.
+  
+  -o ax|cor|sag : re-orient the images as they are imported.
+  
+  -s directory  : is the scans directory [ default is <current_dir>/scans ]
+  -m directory  : is the masks directory [ default is <current_dir>/masks ]
+  
+EOF
+exit 127
+}
+
+function import_files()
+{
+    DO_IMPORT=$1
+    START=$2
+    FINISH=$3
+    i=$START
+    SCAN_DIR=$4
+    MASKS_DIR=$5
+        
+	while [ "$i" -le "$FINISH" ]
+	do
+	  cd $SUBJECTS_DIR
+	  
+	  patient=`awk 'NR-1 == '$i' {print $1}' $fichier`
+	  type=`awk 'NR-1 == '$i' {print $2}' $fichier`
+	  image=`awk 'NR-1 == '$i' {print $3}' $fichier`
+	  mask=`awk 'NR-1 == '$i' {print $4}' $fichier`
+	  whichMask=`awk 'NR-1 == '$i' {print $5}' $fichier`
+
+      if [ "_$patient" = "_" -a "_$type" = "_" -a "_$image" = "_" -a "_$mask" = "_" -a "_$whichMask" = "_" ]; then
+        echo "Skipping blank line"
+      else
+       
+		  if [ "$type" != "I" -a "$type" != "S" ]; then
+		    echo "type in file $fichier must be I or S"
+		    exit 1
+		  fi
+	
+		  echo "Values read from file:patient=$patient, type=$type, image=$image, mask=$mask, whichMask=$whichMask"
+		  
+		  # This is the patient directory.
+		  t1="$patient$timepoint"
+		  
+		  # When the file specifies an image, we simply have to search for it, and make sure we have the full path.
+		  if [ "$type" = "I" ]; then
+	
+	        # We only look for .img and .hdr, not every combination of gzipped, or not gzipped.
+	        i1="$image.img"
+	        h1="$image.hdr"
+
+	        scan1=`find  $SCAN_DIR -name "$i1"`
+	        scan1h=`find  $SCAN_DIR -name "$h1"`
+
+	        echo "Looking for full path for $i1, $h1 in scan_dir=$SCAN_DIR"
+
+	        # The find command may still fail, so best check anyway.	  
+	        check_file_exists $scan1
+	        check_file_exists $scan1h
+	        	        
+	        if [ "_$mask" != "_" ]; then
+	        
+	          m1="$mask"
+	          
+	          echo "Looking for full path for $m1 in mask_dir=$MASKS_DIR"
+		  
+	          mask1=`find  $MASKS_DIR -name "$m1"`
+
+  	          check_file_exists $mask1
+	          
+		    fi
+		    
+	        echo "scan1=$scan1, scan1h=$scan1h, mask1='$mask1'"
+	
+	        echo "We are processing number : $i"
+	        echo "                  patient: $patient"
+	        echo "                  folder : $t1"
+		    echo "                  image  : $scan1"
+		    echo "                  header : $scan1h"
+		    echo "                  mask   : $mask1" 
+		  
+		  else
+		  
+		    # Here, we are checking if we have a study identifier
+	
+	        ZERO[0]=""
+	        ZERO[1]="0"
+	        ZERO[2]="00"
+	        ZERO[3]="000"
+	        ZERO[4]="0000"
+	
+	        LENGTH=${#image}
+	        echo "LENGTH=$LENGTH"
+	        LENGTH=`expr 5 - $LENGTH`
+	        study=${ZERO[$LENGTH]}$image
+	
+	        echo "Study number is $study"
+	
+			#finds 2 scans and their header and the one region
+			scan1=`find  $SCAN_DIR -name "${study}-002-1.img"`
+			scan1h=`find  $SCAN_DIR -name "${study}-002-1.hdr"`
+			scan2=`find  $SCAN_DIR -name "${study}-003-1.img"`
+			scan2h=`find  $SCAN_DIR -name "${study}-003-1.hdr"`
+			mask1=`find  $MASKS_DIR -name "???_${study}_*"`
+	
+			# this bit makes sure that the most recent brain region is used.
+			# There may on occasion be more than one if some edits have been done.
+			for file in ` ls -rt ${MASKS_DIR}/???_${study}_* `
+			do
+			  if [ -f $file ] ; then
+			    mask1=$file
+			  fi
+			done
+	
+	        echo "scan1=$scan1, scan1h=$scan1h, scan2=$scan2, scan2h=$scan2h, mask1=$mask1"
+	
+	        # The whichMask must be 002 or 003
+	        if [ "_$whichMask" != "_002" -a "_$whichMask" != "_003" ]; then
+	          echo "If you are importing by study number, you must specify 002 or 003 in column 5 denoting which study number to make a mask from"
+	          exit 1
+	        fi
+	        
+	        # The find command may still fail, so best check anyway.	  
+	        check_file_exists $scan1
+	        check_file_exists $scan1h
+	        check_file_exists $scan2
+	        check_file_exists $scan2h
+	        check_file_exists $mask1
+		  
+	        echo "We are processing number  : $i"
+	        echo "                  patient : $patient"
+	        echo "                  folder  : $t1"
+		    echo "                  image1  : $scan1"
+		    echo "                  header1 : $scan1h"
+		    echo "                  image2  : $scan2"
+		    echo "                  header2 : $scan2h"
+		    echo "                  mask    : $mask1" 
+					
+		  fi
+		  
+		  if [ "$DO_IMPORT" = "IMPORT" ]; then
+		  
+			  # this creates freesurfer directories
+			  if ! [ -d $SUBJECTS_DIR/$t1 ] ; then
+			    mksubjdirs $SUBJECTS_DIR/$t1
+			  fi
+			
+			  # copies scans into freesurfer directories 
+			  cp $scan1 $SUBJECTS_DIR/$t1/mri/
+			  cp $scan1h $SUBJECTS_DIR/$t1/mri/
+
+			  # if we have a second scan, copy that.
+			  if [ "_$scan2" != "_" -a "_$scan2h" != "_" ]; then
+	            cp $scan2 $SUBJECTS_DIR/$t1/mri/
+	            cp $scan2h $SUBJECTS_DIR/$t1/mri/
+	          fi
+			  
+			  # find full name of scan
+
+			  cd $SUBJECTS_DIR/$t1/mri/
+			  
+	          if [ "$type" = "I" ]; then
+	
+			    scan1=`find $SUBJECTS_DIR/${t1}/mri/ -name "$i1"`
+	 
+	          else
+	
+	            scan1=`find $SUBJECTS_DIR/${t1}/mri/ -name "${study}-002-1.img"`
+	            scan2=`find $SUBJECTS_DIR/${t1}/mri/ -name "${study}-003-1.img"`
+	          
+	          fi
+	          
+			  echo "scan1=$scan1"
+			  echo "scan2=$scan2"
+	
+			  # If we have 2 scans, and the whichMask flag says to use the second one, we swap them round
+			  if [ "_$scan2" != "_" -a "$whichMask" = "003" ]; then
+			  
+			    echo "Swapping scan1 and scan2"
+			    
+			    tmp_scan=$scan1
+			    scan1=$scan2
+			    scan2=$tmp_scan
+	
+	            echo "scan1=$scan1"
+	            echo "scan2=$scan2"
+			    
+			  fi
+			  
+			  # Do images
+			  
+			  j=1
+			  for f in $scan1 $scan2
+			  do
+			  
+			    echo "Processing image f=$f"
+			    fbase=`basename $f`
+			    echo "Basename is $fbase"
+			    
+			    if [ "$ORIENTATION" != "FALSE" ]; then
+			      execute_command_or_else_stop "anchange $f post_orient_${fbase}.img -orient $ORIENTATION"
+			      execute_command_or_else_stop "anchange post_orient_${fbase}.img 00${j}_00.img -flipy"
+			    else
+			      execute_command_or_else_stop "anchange $f 00${j}_00.img -flipy"
+			    fi 
+			    execute_command_or_else_stop "medcon -f 00${j}_00.hdr -c anlz"
+			    execute_command_or_else_stop "mri_convert m000-00${j}_00.img orig/00${j}.mgz"
+	
+	            # Increment loop counter
+	           j=$(($j+1))
+			    
+			  done
+
+			  # Do mask
+
+              if [ "_$mask1" != "_" ]; then
+               
+			    cp $mask1 $SUBJECTS_DIR/$t1/mri/.
+
+	            if [ "$type" = "I" ]; then
+	
+	              mask=`find $SUBJECTS_DIR/${t1}/mri/ -name "$m1"`
+	 
+	            else
+	
+	              mask=`find $SUBJECTS_DIR/${t1}/mri/ -name "???_${study}_*"`
+	          
+	            fi
+
+			    echo "mask=$mask"
+			
+			  
+			    execute_command_or_else_stop "makemask  $scan1 $mask mask -bpp 16 -val 1"
+			    if [ "$ORIENTATION" != "FALSE" ]; then
+			      execute_command_or_else_stop "anchange mask post_orient_mask.img -orient $ORIENTATION"
+			      execute_command_or_else_stop "anchange post_orient_mask.img fmask.img -flipy"
+			    else		  
+			      execute_command_or_else_stop "anchange mask.img fmask.img -flipy"
+			    fi
+			    execute_command_or_else_stop "medcon -f fmask.hdr -c anlz"
+			    execute_command_or_else_stop "mri_convert  --conform -rt nearest m000-fmask.img mask.mgz"
+
+                rm $mask
+	
+	          fi
+
+              # Tidy up
+			  rm $SUBJECTS_DIR/$t1/mri/*.img
+			  rm $SUBJECTS_DIR/$t1/mri/*.hdr
+			  rm $SUBJECTS_DIR/$t1/mri/*.log
+			  	          	
+		  fi
+      fi
+      	    	
+	  # Increment loop counter
+	  i=$(($i+1))
+	done
+
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+source _fsInclude.sh
+
+# Get the filename, and check it exists.
+filename=$1
+shift
+
+# Subjects_list holds info about subjects.  the n-1 calculates how many there are, -1 because of header line.
+fichier=$filename
+check_file_exists $fichier
+
+n=`wc -l $fichier | sed -n 's/^\(.*\) .*/\1/p'`
+n=$(($n-1))
+
+# Set defaults
+timepoint=
+ST=1
+FIN=$n
+ORIENTATION=FALSE
+SCAN_DIR=$SUBJECTS_DIR/scans
+MASKS_DIR=$SUBJECTS_DIR/masks
+
+# Parse command line
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-b" ] ; then
+        ST=$2
+        shift 2
+    elif [ "$1" = "-e" ] ; then
+        FIN=$2
+        shift 2
+    elif [ "$1" = "-o" ] ; then
+        ORIENTATION="$2"
+        shift 2
+    elif [ "$1" = "-s" ] ; then
+        SCAN_DIR=$2
+        shift 2
+    elif [ "$1" = "-m" ] ; then
+        MASKS_DIR=$2
+        shift 2        
+    else
+        Usage
+    fi
+done
+
+echo "Using file $fichier and timepoint $timepoint, and starting at $ST, and finishing at $FIN, with orientation flag=$ORIENTATION"
+echo "  scans:$SCAN_DIR"
+echo "  masks:$MASKS_DIR"
+
+check_all_midas_programs_exist
+
+check_directory_exists $SCAN_DIR
+
+#check_directory_exists $MASKS_DIR
+
+# First check that files exist
+import_files "CHECK" $ST $FIN $SCAN_DIR $MASKS_DIR
+
+# Now really do it.
+import_files "IMPORT" $ST $FIN $SCAN_DIR $MASKS_DIR

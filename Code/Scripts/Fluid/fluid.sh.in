@@ -1,0 +1,163 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-11-04 11:47:55 +0000 (Fri, 04 Nov 2011) $ 
+#  Revision          : $Revision: 7697 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : leung@drc.ion.ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+function Usage()
+{
+  cat <<EOF
+  
+This script will run the fluid registration (fluid_jo) on a whole set of images.
+
+Usage: $0 fileContainingListOfFiles [ options ] 
+
+Mandatory Arguments:
+  fileContainingListOfFiles : is a text file containing 6 columns, containing the full path of 
+                              "input baseline image", 
+                              "input baseline mask", 
+                              "input repeat image", 
+                              "output transformed image basename", 
+                              "output transform file",
+                              "output stretch file" and 
+                              "input initial trf (dummy or empty for no initialiation)". 
+  
+  e.g. 29800240-285-1_cropped.img 29800240-285-1_mask.img 29800240-286-1_cropped.img 29800240-285-1 29800240.trf 29800240.str
+  
+Options:
+  -o "fluid options"     : is options (within quotes) passed to the fluid registration (run fluid_jo for information).    [Default ""]
+  -kbl                   : filter the input images using bilateral filtering [default: no]. 
+  -niftk                 : use NifTK fluid registration [default: no]. 
+  -padding size          : [NifTK options] pad the images to the given size [default: 256]. 
+  -output output_dir     : [NifTK options] specify the output directory. 
+EOF
+exit 127
+}
+
+
+function iterate_through_input_file()
+{
+  FILEOFDETAILS=$1
+  DO_THE_CROPPING=$2
+  
+  # Iterate through file. Each line should contain
+  # baselineRegion baselineImage repeatImage
+  n=`wc -l $FILEOFDETAILS | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+  
+    BASELINE_IMG=`awk 'NR-1 == '$i' {print $1}' $FILEOFDETAILS`
+    BASELINE_MASK=`awk 'NR-1 == '$i' {print $2}' $FILEOFDETAILS`
+    REPEAT_IMG=`awk 'NR-1 == '$i' {print $3}' $FILEOFDETAILS`
+    OUTPUT_IMAGE_BASENAME=`awk 'NR-1 == '$i' {print $4}' $FILEOFDETAILS`
+    OUTPUT_TRANSFORM=`awk 'NR-1 == '$i' {print $5}' $FILEOFDETAILS`
+    OUTPUT_STRETCH=`awk 'NR-1 == '$i' {print $6}' $FILEOFDETAILS`
+    INPUT_STRETCH=`awk 'NR-1 == '$i' {print $7}' $FILEOFDETAILS`
+    
+    if [ "${INPUT_STRETCH}" == "" ]
+    then 
+      INPUT_STRETCH=dummy
+    fi 
+
+    if [ "$DO_THE_CROPPING" = "CROP" ]; then
+
+      # Generate a file of all commands
+      echo "_fluid.sh $BASELINE_IMG $BASELINE_MASK $REPEAT_IMG $OUTPUT_IMAGE_BASENAME $OUTPUT_TRANSFORM $OUTPUT_STRETCH ${INPUT_STRETCH} ${KBL_FILTER} ${NIFTK} ${PADDING} \"${OUTPUT_DIR}\" "$OPTIONS"" >> fluid_$$_commands.txt             
+
+    else
+    
+      echo "Checking for images $BASELINE_MASK, $BASELINE_IMG and $REPEAT_IMG"
+  
+      # This will stop the script if one of the files doesn't exist
+      check_file_exists $BASELINE_MASK
+      check_file_exists $BASELINE_IMG
+      check_file_exists $REPEAT_IMG
+
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+  
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+FILENAME=$1
+shift
+OPTIONS=""
+KBL_FILTER="no"
+NIFTK="no"
+PADDING=256
+OUTPUT_DIR="none"
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-o" ] ; then
+        OPTIONS=\"$2\"
+        shift 2
+    elif [ "$1" = "-kbl" ] ; then
+        KBL_FILTER="yes"
+        shift 1
+    elif [ "$1" = "-niftk" ] ; then
+        NIFTK="yes"
+        shift 1
+    elif [ "$1" = "-padding" ] ; then
+        PADDING=$2
+        shift 2
+    elif [ "$1" = "-output" ] ; then
+        OUTPUT_DIR=$2
+        shift 2 
+    fi
+done
+
+if [ "$FILENAME" = "" ]; then
+  Usage
+fi
+
+echo "Running $0 using file=$FILENAME, options=$OPTIONS"
+
+source _niftkCommon.sh
+
+check_program_exists "fluid_jo"
+
+check_file_exists $FILENAME
+
+dos_2_unix ${FILENAME}
+
+# We first simply scan through file, because then we can stop early if there are missing files
+iterate_through_input_file $FILENAME "CHECKONLY"
+
+# We then iterate through file, generating the commands
+iterate_through_input_file $FILENAME "CROP"
+
+# We then run it
+run_batch_job fluid_$$_commands.txt      
+
+
+
+

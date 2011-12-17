@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.snapshot"
+          name="CMIC Snapshot"
+          class="SnapshotView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+</plugin>

@@ -1,0 +1,179 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+SUBJECTS_DIR=`pwd`
+
+function Usage()
+{
+cat <<EOF
+This script will import data into the standard FreeSurfer directory structure.
+
+Usage: fsVoxelBasedImport.sh dataFile [ options ]
+ 
+Mandatory Arguments:
+
+  dataFile      : A file containing your images, including path and file extension.
+
+                  Patient Image           GreyMatterPV          WhiteMatterPV          CSFMatterPV    
+                  ALLFR   02979-002-1.nii 02979-002-1-brain.nii 02979-002-1-white.nii  02979-002-1-csf.nii
+                  ALLHA   03920-002-1.nii 03920-002-1-brain.nii 03920-002-1-white.nii  03920-002-1-white.nii
+
+Options:
+
+  -b beginRow   : is the start row in the dataFile.
+  -e endRow     : is the end row in the dataFile.
+    
+EOF
+exit 127
+}
+
+function convert()
+{
+  input=$1
+  output=$2
+  
+  echo "Converting ${input} to ${output}"
+  
+  niftkConvertImage -i ${input} -o /tmp/$$-0.hdr
+  anchange /tmp/$$-0.img /tmp/$$-1.img -flipy
+  medcon -f /tmp/$$-1.hdr -c anlz
+  mri_convert m000-$$-1.img ${output}
+  rm m000-$$-1*
+
+}
+
+function import_files()
+{
+    DO_IMPORT=$1
+    START=$2
+    FINISH=$3
+    i=$START
+        
+	while [ "$i" -le "$FINISH" ]
+	do
+	  cd $SUBJECTS_DIR
+	  
+	  patient=`awk 'NR-1 == '$i' {print $1}' $fichier`
+	  image=`awk 'NR-1 == '$i' {print $2}' $fichier`
+	  grey=`awk 'NR-1 == '$i' {print $3}' $fichier`
+	  white=`awk 'NR-1 == '$i' {print $4}' $fichier`
+      csf=`awk 'NR-1 == '$i' {print $5}' $fichier`
+      
+      if [ "_$patient" = "_" -a "_$image" = "_" -a "_$grey" = "_" -a "_$white" = "_" -a "_$csf" = "_" ]; then
+        echo "Skipping blank line"
+      else
+       
+		  if [ "$DO_IMPORT" = "CHECK" ]; then
+		  
+            echo "Checking I can find files: Values read from file:patient=$patient, image=$image, grey=$grey, white=$white, csf=$csf"
+
+		    if ! [ -f $image ]; then
+		      echo "Can't find image:$image"
+		      exit 1
+		    fi
+		    if ! [ -f $grey ]; then
+		      echo "Can't find grey matter PV map:$grey"
+		      exit 2
+		    fi
+		    if ! [ -f $white ]; then
+		      echo "Can't find white matter PV map:$white"
+		      exit 3
+		    fi
+
+		    if ! [ -f $csf ]; then
+		      echo "Can't find csf matter PV map:$csf"
+		      exit 3
+		    fi
+		    
+		  else
+		  
+		    echo "Importing: Values read from file:patient=$patient, image=$image, grey=$grey, white=$white, csf=$csf"
+		    
+	        # this creates freesurfer directories
+			if ! [ -d $SUBJECTS_DIR/$patient ] ; then
+			  mksubjdirs $SUBJECTS_DIR/$patient
+			fi
+			
+			convert $image $SUBJECTS_DIR/$patient/mri/orig/001.mgz
+			
+			niftkCTEPrepareVolumes -g $grey -w $white -c $csf -o /tmp/label.nii -bm /tmp/brain.nii -wm /tmp/white.nii
+			
+			convert /tmp/brain.nii $SUBJECTS_DIR/$patient/mri/mask.mgz
+			convert /tmp/white.nii $SUBJECTS_DIR/$patient/mri/wmmask.mgz
+
+		  fi
+      fi
+      	    	
+	  # Increment loop counter
+	  i=$(($i+1))
+	done
+
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+# Get the filename, and check it exists.
+filename=$1
+shift
+
+# Subjects_list holds info about subjects.  the n-1 calculates how many there are, -1 because of header line.
+fichier=$filename
+if ! [ -f $fichier ]; then
+  echo "Can't find file $fichier"
+  exit 4
+fi
+
+n=`wc -l $fichier | sed -n 's/^\(.*\) .*/\1/p'`
+n=$(($n-1))
+
+# Set defaults
+ST=1
+FIN=$n
+
+# Parse command line
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-b" ] ; then
+        ST=$2
+        shift 2
+    elif [ "$1" = "-e" ] ; then
+        FIN=$2
+        shift 2
+    else
+        Usage
+    fi
+done
+
+echo "Using file $fichier and starting at $ST, and finishing at $FIN"
+
+# First check that files exist
+import_files "CHECK" $ST $FIN 
+
+# Now really do it.
+import_files "IMPORT" $ST $FIN 

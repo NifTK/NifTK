@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.blueberry.osgi.applications">
+    <application id="uk.ac.ucl.cmic.gui.qt.niftyview">
+      <run class="QmitkNiftyViewApplication"/>
+    </application>
+  </extension>
+  
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.gui.qt.niftyview.cmicperspective"
+      name="CMIC"
+      class="QmitkNiftyViewCMICPerspective"
+	  icon="resources/icon_cmic.xpm">
+    </perspective>
+  </extension>
+
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective"
+      name="MIDAS"
+      class="QmitkNiftyViewMIDASPerspective"
+    icon="resources/icon_ion.xpm">
+    </perspective>
+  </extension>
+  
+</plugin>

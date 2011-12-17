@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+SUBJECTS_DIR=`pwd`
+
+source _fsInclude.sh
+    
+# Check args
+if [ $# -lt 1 ]; then
+  echo 1>&2 "This script will cleanup the FreeSurfer directories so you can re-run them from the beginning."
+  echo 1>&2 ""
+  echo 1>&2 "Usage: fsRunCleanups.sh ALLFR ALLHA CCCCC DDDDD etc."
+  echo 1>&2 "" 
+  echo 1>&2 "  All arguments after fsRunCleanups.sh are FreeSurfer directories under the current directory."
+  echo 1>&2 ""
+  exit 127
+fi
+
+check_freesurfer_env
+
+check_all_directories_in_string_exists "$*"
+
+# We run this one directly. No point clustering this.
+for f in $*
+do
+  _fsRunCleanup.sh $f
+done

@@ -1,0 +1,82 @@
+/**
+
+\page Dependencies The @NIFTK_PLATFORM@ Dependencies
+
+\section DependenciesIntro Introduction
+
+With the exception of NiftyView, each of the individual Nifty<Something> packages, 
+listed <a href="http://cmic.cs.ucl.ac.uk/home/software/">here</a> can be downloaded individually, 
+and by design have very few dependencies and are easy to build. This design choice was to
+satisfy the needs of the research community, where our users are typically interested in small
+lightweight packages that do a very specific job very well.
+
+So, this project contains 
+<ul>
+<li>NiftyView - a graphical user interface GUI for visualisation, and integration of algorithms.</li>
+<li>Command line applications - described \subpage UserManualCommandLineApps here.</li> 
+<li>Matlab - not yet documented.</li>
+<li>Scripts - for Unix/Linux/Mac users only.</li>
+</ul>
+as well as the means to download and install all the light-weight Nifty<Something> packages.
+
+This means it is non-trivial to understand all the software dependencies. On this page, the software
+dependencies are explained in detail.
+ 
+\section DependenciesVersions Versions
+
+This documentation page, is directly generated from the source code of the project, and the 
+current software versions are:
+<ul>
+<li>Boost: @BOOST_VERSION@ </li>
+<li>GDCM: @GDCM_VERSION@ </li>
+<li>Qt: @QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@ </li>
+<li>ITK: @NIFTK_ITK_VERSION_IN_SUPERBUILD@ </li>
+<li>VTK: @VTK_VERSION@ </li>
+<li>CTK: @CTK_REVISION_ID@ </li>
+<li>MITK: @MITK_REVISION_ID@ </li>
+<li>@NIFTK_PLATFORM@: @NIFTK_SVN_REVISION_ID@ </li>
+</ul>
+
+The software may or may not work with other versions.
+
+\section DependenciesOutline Dependencies
+
+Before building the toolkit, the user must decide whether or not they are building the GUI.
+If the user has no intention of building the GUI, and only wants scripts and command line 
+programs, then the list of dependencies is different. Thus there are two different sets
+of dependencies listed below, where -> denotes "depends upon".
+
+For NON-GUI builds:
+<ol>
+<li>ITK -> GDCM </li>
+<li>MITK -> ITK </li>
+<li>MITK -> VTK </li>
+<li>MITK -> Boost </li>
+<li>@NIFTK_PLATFORM@ -> ITK </li>
+<li>@NIFTK_PLATFORM@ -> VTK </li>
+<li>@NIFTK_PLATFORM@ -> Boost </li>
+<li>@NIFTK_PLATFORM@ -> MITK </li>
+</ol>
+
+For GUI builds:
+<ol>
+<li>VTK -> Qt</li>
+<li>ITK -> GDCM </li>
+<li>CTK -> Qt </li>
+<li>MITK -> ITK </li>
+<li>MITK -> VTK </li>
+<li>MITK -> Boost </li>
+<li>MITK -> CTK </li>
+<li>@NIFTK_PLATFORM@ -> ITK </li>
+<li>@NIFTK_PLATFORM@ -> VTK </li>
+<li>@NIFTK_PLATFORM@ -> Boost </li>
+<li>@NIFTK_PLATFORM@ -> CTK </li>
+<li>@NIFTK_PLATFORM@ -> MITK </li>
+</ol>
+
+Note: So from these lists we can see that Qt, Boost and GDCM have no dependencies, they are built without the
+knowledge of any of the other packages. Also note that the larger packages such as CTK can download and install
+additional packages, not listed here. For example CTK will download DCMTK, but as the rest of @NIFTK_PLATFORM@
+is not specifically using CMake to do a FindDCMTK we do not list it here.
+
+*/

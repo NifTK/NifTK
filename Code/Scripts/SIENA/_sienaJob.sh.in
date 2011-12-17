@@ -1,0 +1,88 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+####################################################################################
+# Note that this script should only be called by sienaBatch.sh, as all the 
+# argument checking is done there for every patient.
+####################################################################################
+
+image_dir=$1
+baseline_image=$2
+repeat_image=$3
+output_without_region_dir=$4
+output_with_region_dir=$5
+siena_options=$6
+bet_options=$7
+region_dir=$8
+baseline_region=$9
+repeat_region=${10}
+
+echo "image_dir=${image_dir}, baseline_image=${baseline_image}, repeat_image=${repeat_image}, region_dir=${region_dir}, baseline_region=${baseline_region}, repeat_region=${repeat_region}, output_without_region_dir=${output_without_region_dir}, output_with_region_dir=${output_with_region_dir}, siena_options=${siena_options}, bet_options=${bet_options}"
+
+# SIENA without regions. 
+command="siena ${image_dir}/${baseline_image}.hdr ${image_dir}/${repeat_image}.hdr -B \"$bet_options\" $siena_options -o ${output_without_region_dir}"
+echo "SIENA without regions command=$command"
+eval $command
+
+if [ "_$baseline_region" != "_" -a "_$repeat_region" != "_" ]; then
+
+  echo "Starting SIENA without BET"
+  
+  # Make a copy of the directory. 
+  mkdir -p ${output_with_region_dir}
+  cp -R ${output_without_region_dir}/* ${output_with_region_dir}/
+
+  chmod u+w ${output_with_region_dir}/*.img
+  chmod u+w ${output_with_region_dir}/*.hdr
+  
+  # Remove old results. 
+  rm -f ${output_with_region_dir}/A_brain.* ${output_with_region_dir}/B_brain.* ${output_with_region_dir}/A_brain_mask.* ${output_with_region_dir}/B_brain_mask.* ${output_with_region_dir}/siena.report ${output_with_region_dir}/siena.html ${output_with_region_dir}/*.png
+
+  # Make new stripped brain images. 
+  makemask ${output_with_region_dir}/A.img ${region_dir}/${baseline_region} ${output_with_region_dir}/A_brain -bpp 16 -k -d 2
+  makemask ${output_with_region_dir}/B.img ${region_dir}/${repeat_region} ${output_with_region_dir}/B_brain -bpp 16 -k -d 2
+
+  # As of FSL 4.1 ANALYZE isn't supported as an output type, so we have to use Nifti
+  fslchfiletype NIFTI_GZ ${output_with_region_dir}/A_brain.img
+  fslchfiletype NIFTI_GZ ${output_with_region_dir}/B_brain.img
+
+  # Make new binary brain mask. 
+  makemask ${output_with_region_dir}/A.img ${region_dir}/${baseline_region} ${output_with_region_dir}/A_brain_mask -bpp 16 -val 1 -d 2
+  makemask ${output_with_region_dir}/B.img ${region_dir}/${repeat_region} ${output_with_region_dir}/B_brain_mask -bpp 16 -val 1 -d 2
+
+  # As of FSL 4.1 ANALYZE isn't supported as an output type, so we have to use Nifti
+  fslchfiletype NIFTI_GZ ${output_with_region_dir}/A_brain_mask.img
+  fslchfiletype NIFTI_GZ ${output_with_region_dir}/B_brain_mask.img
+
+  echo "Masks completed"
+
+  # SIENA with our Midas regions. 
+  command="_sienaNoBet.sh ${image_dir}/${baseline_image}.hdr ${image_dir}/${repeat_image}.hdr -B \"$bet_options\" $siena_options -o ${output_with_region_dir}"
+  echo "SIENA without BET, using Midas regions command=$command"
+  eval $command
+
+fi
+  

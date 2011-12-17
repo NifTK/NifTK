@@ -1,0 +1,251 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+source _niftkCommon.sh
+
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+loop_iters=1
+reg_iters=1
+num_labels=72
+name_input=merged
+name_output=updated
+gamma=10
+smoothing_iterations=10
+step_size=10
+
+function Usage()
+{
+cat <<EOF
+This script will run a groupwise parcellation update.
+
+Usage: updateParcellation.sh [ options ] AAAAA BBBBB CCCCC DDDDD etc.
+
+  All arguments after the options are directories containing an input VTK file containing the 2 FreeSurfer sphere's + connections derived from tractography.
+  
+Options:
+
+  -tmproot <directory>     : Define a root directory for temporary files. Default /tmp
+                             The difference between this option and the next, is that this
+                             one takes the root directory (eg. /tmp) and creates a sub directory
+                             with a process ID in it. (eg. /tmp/seg.1234) whereas the next option
+                             just uses exactly what you give it.
+                            
+  -tmpdir <directory>      : Set temporary workspace directory.
+
+  -keeptmp                 : Keep temporary workspace directory.
+  
+  -loopIters               : Maximum number of loop iterations, where we register then update group wise mean.
+  
+  -regIters                : Maximum number of registration iterations.
+
+  -numLabels               : Number of labels. Default 72, i.e. FreeSurfers 36 for each hemisphere.
+  
+  -nameInput               : Name of input file (without file extension, as we only process .vtk files).
+  
+  -nameOutput              : Name of output file (without file extension, as we only process .vtk files).
+  
+  -smoothingIters          : Number of smoothing iterations
+  
+  -gamma                   : Gamma for smoothing
+  
+  -stepSize                : Step size
+  
+EOF
+
+exit 127
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+# Parse options.
+
+done_options="FALSE"
+while [ "_$1" != "_" -a "$done_options" = "FALSE" ] ; do
+    if [ "$1" = "-keeptmp" ] ; then
+        keeptmp=1
+        shift 1
+    elif [ "$1" = "-tmpdir" ] ; then
+        tmpdir=$2
+        shift 2
+    elif [ "$1" = "-tmproot" ] ; then
+        tmp_root=$2
+        shift 2
+    elif [ "$1" = "-loopIters" ] ; then
+        loop_iters=$2
+        shift 2
+    elif [ "$1" = "-regIters" ] ; then
+        reg_iters=$2
+        shift 2
+    elif [ "$1" = "-numLabels" ] ; then
+        num_labels=$2
+        shift 2
+    elif [ "$1" = "-nameInput" ] ; then
+        name_input=$2
+        shift 2                
+    elif [ "$1" = "-nameOutput" ] ; then
+        name_output=$2
+        shift 2
+    elif [ "$1" = "-smoothingIters" ] ; then
+        smoothing_iterations=$2
+        shift 2                  
+    elif [ "$1" = "-gamma" ] ; then
+        gamma=$2
+        shift 2                  
+    elif [ "$1" = "-stepSize" ] ; then
+        step_size=$2
+        shift 2                  
+    else
+        done_options="TRUE"
+    fi
+done
+
+echo "Starting $0 with:"
+echo "  keeptmp=$keeptmp"
+echo "  tmpdir=$tmpdir"
+echo "  tmp_root=$tmp_root"
+echo "  loop_iters=$loop_iters"
+echo "  reg_iters=$reg_iters"
+echo "  num_labels=$num_labels"
+echo "  name_input=$name_input"
+echo "  name_output=$name_output"
+echo "  smoothing_iterations=$smoothing_iterations"
+echo "  gamma=$gamma"
+echo "  step_size=$step_size"
+
+# If no directories, no point continuing
+if [ "_$1" = "_" ]; then
+  Usage
+fi
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+
+ptmpdir=$tmp_root/parc.$$
+if [ "_$tmpdir" = "_" ]; then
+  tmpdir=$ptmpdir
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+for name in $*
+do
+  check_directory_exists "$name"
+  
+  
+done
+
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+        exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+################################################################
+thedate=`$DATE`
+message "Start time is $thedate"
+################################################################
+
+
+for f in $*
+do
+  execute_command_or_else_stop "cp ${f}/${name_input}.vtk ${tmpdir}/${f}_merged.vtk"
+done
+
+i=1
+while [ "$i" -le "$loop_iters" ]
+do
+
+    average_args=""
+    for f in $*
+    do
+    
+        execute_command_or_else_stop "niftkLabelConnectivityToMatrix -s ${tmpdir}/${f}_merged.vtk -l ${tmpdir}/${f}_merged.nii -n ${num_labels} -normalise"
+        average_args=" ${average_args} -i ${tmpdir}/${f}_merged.nii "
+    done
+    
+    execute_command_or_else_stop "niftkAverage ${average_args} -o ${tmpdir}/averaged.nii"
+    
+    execute_command_or_else_stop "cp ${tmpdir}/averaged.nii ${tmpdir}/averaged.${i}.nii"
+    
+    for f in $*
+    do
+        execute_command_or_else_stop "niftkUpdateParcellation -s ${tmpdir}/${f}_merged.vtk -m ${tmpdir}/averaged.nii -o ${tmpdir}/${f}_merged.vtk -nl ${num_labels} -ni ${reg_iters} -ga ${gamma} -si ${smoothing_iterations} -ss ${step_size}"
+    done 
+    
+    i=$(($i+1))
+done
+
+for f in $*
+do
+  execute_command_or_else_stop "cp ${tmpdir}/${f}_merged.vtk ${f}/${name_output}.vtk "
+done
+
+################################################################
+message "Cleanup"
+################################################################
+
+thedate=`$DATE`
+message "Time is $thedate"
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+message "Finished"

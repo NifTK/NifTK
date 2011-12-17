@@ -1,0 +1,136 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+source _niftkCommon.sh
+
+ndefargs=3
+data_image=
+atlas=
+output_basename=
+use_regions=0
+regions=
+
+function Usage()
+{
+cat <<EOF
+
+This script takes a data image, for example contain thickness values, and a 
+registered atlas containing region labels, and calculates statistics over the image.
+
+Usage: cteExtractStatsUsingAtlas.sh data.nii atlas.nii name [options] 
+
+Mandatory Arguments:
+
+  data.nii                 : The data of interest, for example an image of cortical thickness values.
+  
+  atlas.nii                : A registered atlas containing region labels.
+  
+  name                     : Basename for the output. Output files are:
+              
+                             <name>_native_stats_mean.csv
+                             <name>_native_stats_min.csv 
+                             <name>_native_stats_max.csv
+                             <name>_native_stats_sd.csv
+                             <name>_native_stats_count.csv
+                             <name>_native_stats_median.csv
+                             <name>_native_stats_iqm.csv
+Options:
+
+  -regions 1,2,3,4,5       : Comma separated list of region numbers.
+  
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+data_image=$1
+atlas=$2
+output_basename=`basename $3`
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-regions)
+	    regions=$2
+	    use_regions=1
+	    shift 1
+	    ;;	     	           	    	         	    	     	           	    	         
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+# Check command line arguments
+if [ ! -f $data_image ]; then
+    exitprog "The data image you specified does not exist!" 1
+fi
+
+if [ ! -f $atlas ]; then
+    exitprog "The atlas region image does not exist!" 1
+fi
+
+if [ "_${output_basename}" = "_" ]; then
+    exitprog "You didn't specify an output basename" 1
+fi
+
+################################################################
+thedate=`$DATE`
+message "Start time is $thedate"
+################################################################
+
+echo "Starting $0 with:"
+echo "  data_image=$data_image"
+echo "  atlas=$atlas"
+echo "  output_basename=$output_basename"
+echo "  use_regions=$use_regions"
+echo "  regions=$regions"
+echo "  tmpdir=$tmpdir"
+
+if [ $use_regions -eq 1 ]; then
+  regions_arg=" -regions ${regions} "
+fi
+
+execute_command_or_else_stop "niftkAtlasStatistics -a ${atlas} $regions_arg -count $data_image > ${output_basename}_native_stats_count.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${atlas} $regions_arg -min $data_image > ${output_basename}_native_stats_min.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${atlas} $regions_arg -max $data_image > ${output_basename}_native_stats_max.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${atlas} $regions_arg -mean $data_image > ${output_basename}_native_stats_mean.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${atlas} $regions_arg -sd $data_image > ${output_basename}_native_stats_sd.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${atlas} $regions_arg -median $data_image > ${output_basename}_native_stats_median.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${atlas} $regions_arg -iqm $data_image > ${output_basename}_native_stats_iqm.csv "
+
+################################################################
+thedate=`$DATE`
+message "End time is $thedate"
+################################################################

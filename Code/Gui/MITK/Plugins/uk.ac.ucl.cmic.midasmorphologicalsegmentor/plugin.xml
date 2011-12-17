@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.midasmorphologicalsegmentor"
+          name="MIDAS Morphological Editor"
+          class="MIDASMorphologicalSegmentorView"
+          icon="resources/MIDASMorphologicalSegmentor.png" />
+  </extension>
+
+</plugin>

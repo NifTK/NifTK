@@ -1,0 +1,170 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run a NifTK specific region propogation.
+# We use niftkBlockMatching for affine registration, 
+# and niftkFFD for Free Form Deformation.
+# Optionally we use F3D for Free Form Deformation.
+# 
+source _niftkCommon.sh
+
+thisprog=`basename $0`
+progdir=`dirname $0`
+
+ndefargs=1
+areg_only=0
+xsubject=0
+coarse=0
+use_f3d=0
+morph=0
+command_file=propogateRegionBatch_$$_commands.txt   
+
+function Usage()
+{
+cat <<EOF
+
+This script is a convenient wrapper round our NifTK programs to run a batch of region propogations.
+
+Usage: $0 dataFile [options] 
+
+Mandatory Arguments:
+  dataFile       : A file consisting of lines of text containing space or tab separated values:
+
+                   baselineImage baselineRegion repeatImage repeatRegion
+                   
+Options:
+
+  -areg          : Perform affine registration only
+  -coarse        : Perform affine + coarse FFD registration only (32mm)
+  -xsubject      : Scans are cross subject, go down to 4mm control point spacings
+  -morph         : Perform morphological operations to tidy up region.
+                 : (Ops = 1 unconditional erosion, 2 60%-160% mean brain dils)
+  -F3D           : Use F3D recalage for Free Form Deformation             
+                     
+EOF
+exit 127
+}
+
+function IterateThroughFile()
+{
+  local filename=$1
+  local mode=$2
+  local areg_only=$3  
+  local coarse=$4
+  local xsubject=$5
+  local morph=$6
+  local use_f3d=$7
+  
+  n=`wc -l $filename | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+    baselineImage=`awk 'NR-1 == '$i' {print $1}' $filename`
+    baselineRegion=`awk 'NR-1 == '$i' {print $2}' $filename`
+    repeatImage=`awk 'NR-1 == '$i' {print $3}' $filename`
+    repeatRegion=`awk 'NR-1 == '$i' {print $4}' $filename`
+
+    if [ "$mode" = "GENERATE" ]; then
+
+      if [ $areg_only -eq 1 ]; then
+        aregArg=" -areg "
+      fi
+
+      if [ $coarse -eq 1 ]; then
+        coarseArg=" -coarse "
+      fi
+
+      if [ $xsubject -eq 1 ]; then
+        xsubjectArg=" -xsubject "
+      fi
+
+      if [ $morph -eq 1 ]; then
+        morphArg=" -morph "
+      fi
+
+      if [ $use_f3d -eq 1 ]; then
+        f3dArg=" -F3D "
+      fi
+      
+      # Generate a file of all commands
+      echo "propogateRegion.sh $baselineImage $baselineRegion $repeatImage $repeatRegion $aregArg $coarseArg $xsubjectArg $morphArg $f3dArg" >> $command_file 
+
+    else
+      check_file_exists $baselineImage
+      check_file_exists $baselineRegion
+      check_file_exists $repeatImage
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+    
+}
+
+if [ $# -lt $ndefargs ]; then
+    Usage
+    exitprog "$help\nError: Incorrect number of arguments...."
+fi
+
+data_file=$1
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+      -areg)
+	    areg_only=1
+	    ;;
+      -coarse)
+	    coarse=1
+	    ;;
+      -xsubject)
+        xsubject=1
+	    ;;
+      -morph)
+	    morph=1
+	    ;;
+      -F3D)
+        use_f3d=1
+	    ;;
+    esac
+    shift 1
+done
+
+if [ ! -f $data_file ]; then
+    exitprog "Datafile $data_file does not exist" 1
+fi
+
+echo "Running with file:$data_file, areg_only=$areg_only, coarse=$coarse, xsubject=$xsubject, morph=$morph, use_f3d=$use_f3d"
+
+IterateThroughFile $data_file "CHECK"
+
+IterateThroughFile $data_file "GENERATE" $areg_only $coarse $xsubject $morph $use_f3d
+
+run_batch_job $command_file

@@ -1,0 +1,44 @@
+/**
+
+\mainpage The @NIFTK_PLATFORM@ Documentation
+
+\image html NifTKLogo.png
+
+@NIFTK_COPYRIGHT@
+
+\subpage @NIFTK_PLATFORM@License The @NIFTK_PLATFORM@ License.
+
+\section MainPageIntroduction Introduction
+
+The @NIFTK_PLATFORM@ platform was developed as one part of a strategic initiative within
+<a href="@NIFTK_ORIGIN_URL@">@NIFTK_ORIGIN_SHORT_TEXT@</a> to enhance the translation 
+of medical imaging algorithms from the computer science lab to every-day clinical use.
+
+The term @NIFTK_PLATFORM@ refers to the whole collection of Nifty<Something> packages 
+developed by <a href="@NIFTK_ORIGIN_URL@">@NIFTK_ORIGIN_SHORT_TEXT@</a> and listed 
+<a href="http://cmic.cs.ucl.ac.uk/home/software/">here</a>.
+
+This specific documentation refers to the parent project @NIFTK_PLATFORM@ which directly provides
+the graphical user interface (GUI) NiftyView and additionally various command line programs. 
+Furthermore, this project can download, build and install all of the smaller Nifty<Something> packages
+thereby providing an integrated suite of applications.
+
+\section MainPageManuals Further Information
+
+There are two manuals
+
+\li \subpage UserManual "The User Manual"
+\li \subpage TechnicalManual "The Technical Manual"
+
+and two mailing lists for discussion
+
+\li @NIFTK_USER_CONTACT@ for end users
+\li @NIFTK_DEVELOPER_CONTACT@ for developers
+
+For code developers it is important to read:
+
+\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">The wiki.</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The dashboard.</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/query?group=status&milestone=NifTK-@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@">The current tasks.</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/RoadMap">The roadmap.</a>
+*/

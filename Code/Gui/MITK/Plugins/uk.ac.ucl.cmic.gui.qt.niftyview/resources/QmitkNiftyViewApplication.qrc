@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource prefix="/QmitkNiftyViewApplication">
+     <file>icon_cmic.xpm</file>
+     <file>icon_ion.xpm</file>
+     <file>icon_ucl.xpm</file>
+ </qresource>
+ </RCC>

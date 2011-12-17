@@ -1,0 +1,212 @@
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-12-15 16:48:32 +0000 (Thu, 15 Dec 2011) $ 
+#  Revision          : $Revision: 8033 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Set up the root installation directory.
+if (! $?NIFTK_DIR) then
+  setenv NIFTK_DIR @NIFTK_INSTALL_PREFIX@
+endif
+setenv NIFTK_INSTALL_PREFIX `dirname ${NIFTK_DIR}`
+
+# Parse command line
+set FSL_NAME=fsl
+set FREESURFER_NAME=freesurfer
+
+while ( "_$1" !=  "_" )
+
+    if ("$1" == "-fsl" ) then
+
+      set FSL_NAME=$2
+      shift
+      echo "Picked up FSL_NAME=$FSL_NAME"
+  
+    else if ("$1" == "-freesurfer") then
+
+      set FREESURFER_NAME=$2
+      shift
+      echo "Picked up FREESURFER_NAME=$FREESURFER_NAME"
+    
+    else
+      shift
+    endif
+
+    
+end
+
+# Set defaults
+if ( ! $?PATH ) then
+  echo "Defaulting PATH"
+  setenv PATH ""
+endif
+
+if ( ! $?LD_LIBRARY_PATH ) then
+  echo "Defaulting LD_LIBRARY_PATH"
+  setenv LD_LIBRARY_PATH ""
+endif
+
+if ( ! $?MATLABPATH ) then
+  echo "Defaulting MATLABPATH"
+  setenv MATLABPATH ""
+endif
+
+if ( ! $?MANPATH ) then
+  echo "Defaulting MANPATH"
+  setenv MANPATH ""
+endif
+
+if ( ! $?DYLD_LIBRARY_PATH ) then
+  setenv DYLD_LIBRARY_PATH ""
+endif
+
+# Setup Slicer, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/slicer ) then
+  echo "Setting up Slicer3"
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/slicer:${PATH}
+endif
+
+# Setup FSL, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/${FSL_NAME}/etc/fslconf/fsl.csh ) then
+  setenv FSLDIR ${NIFTK_INSTALL_PREFIX}/${FSL_NAME}
+  setenv FSL_DIR ${FSLDIR}
+  echo "Setting up FSL from $FSLDIR/etc/fslconf/fsl.csh"
+  source $FSLDIR/etc/fslconf/fsl.csh
+  setenv PATH $FSLDIR/bin:$PATH
+endif
+
+# Setup Freesurfer, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/${FREESURFER_NAME}/SetUpFreeSurfer.csh ) then
+  echo "Setting up FreeSurfer from ${NIFTK_INSTALL_PREFIX}/${FREESURFER_NAME}/SetUpFreeSurfer.csh"
+  source ${NIFTK_INSTALL_PREFIX}/${FREESURFER_NAME}/SetUpFreeSurfer.csh 
+endif
+
+# Set up grad warp directory, if it exists
+if ( -d ${NIFTK_INSTALL_PREFIX}/GradUnwarp ) then
+  setenv GRAD_UNWARP_DIR ${NIFTK_INSTALL_PREFIX}/GradUnwarp  
+endif
+
+# Setup Camino, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/camino ) then
+  echo "Setting up Camino"
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/camino/bin:${PATH}
+  setenv MANPATH ${NIFTK_INSTALL_PREFIX}/camino/man:${MANPATH}
+endif
+
+# Setup AIR, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/air ) then
+  echo "Setting up AIR"
+  setenv AIR_DIR ${NIFTK_INSTALL_PREFIX}/air
+  setenv AIR_BIN ${AIR_DIR}/bin  
+  setenv PATH ${AIR_DIR}/bin:$PATH
+  setenv LD_LIBRARY_PATH ${AIR_DIR}/lib:${LD_LIBRARY_PATH}
+  setenv MANPATH ${AIR_DIR}/man:${MANPATH}
+endif
+
+if ( -e ${NIFTK_INSTALL_PREFIX}/midasffd ) then
+  echo "Setting up midasffd"
+  setenv MIDASFFDIR ${NIFTK_INSTALL_PREFIX}/midasffd
+  setenv MIDASFFD_BIN ${NIFTK_INSTALL_PREFIX}/midasffd
+  setenv MNI152DIR ${NIFTK_INSTALL_PREFIX}/midasdata/mni152
+  setenv PATH ${MIDASFFD_BIN}:${PATH}
+endif
+
+if ( -e ${NIFTK_INSTALL_PREFIX}/ffitk ) then
+  echo "Setting up ffitk"
+  setenv FFITK_BIN ${NIFTK_INSTALL_PREFIX}/ffitk/bin
+  setenv PATH ${FFITK_BIN}:${PATH}
+endif
+ 
+# Setup Midas, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/midas && -f ${NIFTK_INSTALL_PREFIX}/midas/bin/midasenv) then
+  echo "Setting up Midas"
+  setenv MIDAS_BIN ${NIFTK_INSTALL_PREFIX}/midas/bin
+  setenv PATH ${MIDAS_BIN}:${PATH}
+  eval `${NIFTK_INSTALL_PREFIX}/midas/bin/midasenv csh`
+endif
+
+# Setup nifty_reg, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/nifty_reg ) then
+  echo "Setting up nifty_reg"
+  setenv LD_LIBRARY_PATH ${NIFTK_INSTALL_PREFIX}/nifty_reg/lib:$LD_LIBRARY_PATH
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/nifty_reg/bin:$PATH
+endif
+
+# Setup nifty_seg, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/nifty_seg ) then
+  echo "Setting up nifty_seg"
+  setenv LD_LIBRARY_PATH ${NIFTK_INSTALL_PREFIX}/nifty_seg/lib:$LD_LIBRARY_PATH
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/nifty_seg/bin:$PATH
+endif
+
+# Setup nifty_sim, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/nifty_sim ) then
+  echo "Setting up nifty_sim"
+  setenv LD_LIBRARY_PATH ${NIFTK_INSTALL_PREFIX}/nifty_sim/lib:$LD_LIBRARY_PATH
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/nifty_sim/bin:$PATH
+endif
+
+# Setup nifty_rec, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/nifty_rec ) then
+  echo "Setting up nifty_rec"
+  setenv LD_LIBRARY_PATH ${NIFTK_INSTALL_PREFIX}/nifty_rec/lib:$LD_LIBRARY_PATH
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/nifty_rec/bin:$PATH
+endif
+
+# Setup demons, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/demons ) then
+  echo "Setting ITK demons"
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/demons:$PATH
+endif
+
+# Setup ANTS, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/ANTS ) then
+  echo "Setting up ANTS"
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/ANTS:$PATH
+  setenv ANTSPATH ${NIFTK_INSTALL_PREFIX}/ANTS/
+endif
+
+# Setup xmedcon, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/xmedcon ) then
+  echo "Setting up xmedcon"
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/xmedcon/bin:$PATH
+  setenv LD_LIBRARY_PATH ${NIFTK_INSTALL_PREFIX}/xmedcon/lib:$LD_LIBRARY_PATH
+endif
+
+# Setup CRKIT, if it exists
+if ( -e ${NIFTK_INSTALL_PREFIX}/crkit-release ) then
+  echo "Setting up CRKIT (STAPLE)"
+  setenv PATH ${NIFTK_INSTALL_PREFIX}/crkit-release/bin:$PATH
+endif
+
+# Main PATH setup for NifTK stuff.
+setenv PATH ${NIFTK_DIR}/bin:${PATH}  
+setenv LD_LIBRARY_PATH ${NIFTK_DIR}/lib:${LD_LIBRARY_PATH}
+setenv MANPATH ${NIFTK_DIR}/man:${MANPATH} 
+setenv MATLABPATH ${NIFTK_DIR}/matlab:${NIFTK_DIR}/matlab/common:${NIFTK_DIR}/matlab/freesurfer:${NIFTK_DIR}/matlab/parcellation:${NIFTK_DIR}/matlab/glm:${NIFTK_DIR}/matlab/segmentation:${NIFTK_INSTALL_PREFIX}/surfstat:${MATLABPATH}
+setenv DYLD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${DYLD_LIBRARY_PATH}
+
+# Print out a big version message.
+echo " "
+echo "##########################################################################################"
+echo "# You are running NifTK version @NIFTK_VERSION_STRING@"
+echo "##########################################################################################"
+echo " "

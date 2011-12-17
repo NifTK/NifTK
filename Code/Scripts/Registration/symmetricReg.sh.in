@@ -1,0 +1,365 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run a NifTK specific symmetric registration.
+# 
+
+source _niftkCommon.sh
+
+ndefargs=5
+target_roi=
+target_roi_out=
+use_troi=0
+source_roi=
+source_roi_out=
+use_sroi=0
+number_dof=9
+number_dilations=8
+keeptmp=0
+just_reslice=0
+
+function Usage()
+{
+cat <<EOF
+
+This script is a convenient wrapper round our NifTK programs to run a symmetric affine registration.
+
+Usage: $0 target.img source.img rreg-out.dof targetOut.img sourceOut.img 
+
+Mandatory Arguments:
+ 
+  target.img             : target (or baseline) image
+  source.img             : source (or repeat) image
+  rreg-out.dof           : affine registration transformation file
+  targetOut.img          : target (or baseline) image resampled to midpoint
+  sourceOut.img          : source (or repeat) image resampled to midpoint
+      
+Options:
+
+  -troi    target.roi    : Target (or baseline) region of interest (MIDAS Format)
+  -troiOut targetOut.roi : Target (or baseline) region resampled to midpoint
+  
+  -sroi    source.roi    : Source (or repeat) region of interest (MIDAS Format)
+  -sroiOut sourceOut.roi : Source (or repeat) region resampled to midpoint
+  
+  -dof n                 : Degrees of freedom for rigid/affine registration [ default 9, use 6, 9 or 12 ]
+  -dil m                 : Number of dilations to apply to masks when optimising scaling [ default 8 ]
+  
+  -tmpdir dir            : Set temporary workspace directory (If not set, will
+                           use environment variable \$TMPDIR, and then allocate
+                           one in /tmp (e.g., $ptmpdir) if \$TMPDIR not set
+
+  -keeptmp               : Keep temporary workspace directory
+  
+  -justreslice           : If the dof file exists, don't do registration, just 
+                           do the reslicing.
+  
+EOF
+exit 127
+}
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+ptmpdir=/tmp/symmetricReg.$$
+tmpdir=${TMPDIR:-$ptmpdir}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+# Get required parameters
+target_img=$1
+source_img=$2
+rreg_dof=$3
+target_img_out=$4
+source_img_out=$5
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+    -troi)
+	    target_roi=$2
+	    use_troi=1
+	    shift 1
+	    ;;
+    -troiOut)
+	    target_roi_out=$2
+	    shift 1
+	    ;;	    
+    -sroi)
+	    source_roi=$2
+	    use_sroi=1
+	    shift 1
+	    ;;
+    -sroiOut)
+	    source_roi_out=$2
+	    shift 1
+	    ;;	    
+	-dof)
+	    number_dof=$2
+	    shift 1
+	    ;;
+	-dil)
+	    number_dilations=$2
+	    shift 1
+	    ;;
+	-tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+    -keeptmp)
+	    keeptmp=1
+	    ;;
+    -justreslice)
+	    just_reslice=1
+	    ;;	    
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+# Check command line arguments
+
+if [ ! -f $target_img ]; then
+    exitprog "Target image $target_img does not exist" 1
+fi
+
+if [ ! -f $source_img ]; then
+    exitprog "Source image $source_img does not exist" 1
+fi
+
+checkf_writeable $rreg_dof
+
+if [ $? -ne 0 ]; then
+    exitprog "Error: Output file $rreg_dof is not writeable" 1
+fi
+
+if [ $use_troi -eq 1 ]; then
+    if [ ! -f $target_roi ]; then
+	  exitprog "Target roi $target_roi does not exist" 1
+    fi
+    if [ "_$target_roi_out" = "_" ]; then
+      exitprog "If you specify -troi, you must also specify -troiOut" 1
+    fi
+fi
+if [ $use_sroi -eq 1 ]; then
+    if [ ! -f $source_roi ]; then
+	exitprog "Source roi $source_roi does not exist" 1
+    fi
+    if [ "_$source_roi_out" = "_" ]; then
+      exitprog "If you specify -sroi, you must also specify -sroiOut" 1
+    fi
+fi
+
+if [ $just_reslice -eq 1 ]; then
+    if [ ! -f $rreg_dof ]; then
+        exitprog "You asked for -justreslice, but dof file $rreg_dof doesn't exist" 1
+    fi
+fi
+
+transformation_model=3
+if [ $number_dof -eq 6 ]; then
+    transformation_model=2
+elif [ $number_dof -eq 9 ]; then
+    transformation_model=3
+elif [ $number_dof -eq 12 ]; then
+    transformation_model=4
+else
+    exitprog "The number of dof must be 6, 9 or 12" 1
+fi
+   
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+	exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+message "Temp directory is $tmpdir"
+
+thedate=`$DATE`
+message "Start time is $thedate"
+
+echo "Starting $0 with:"
+echo "  target_img=$target_img"
+echo "  target_img_out=$target_img_out"
+echo "  source_img=$source_img"
+echo "  source_img_out=$source_img_out"
+echo "  rreg_dof=$rreg_dof"
+echo "  use_troi=$use_troi"
+echo "  target_roi=$target_roi"
+echo "  target_roi_out=$target_roi_out"
+echo "  use_sroi=$use_sroi"
+echo "  source_roi=$source_roi"
+echo "  source_roi_out=$source_roi_out"
+echo "  number_dof=$number_dof"
+echo "  number_dilations=$number_dilations"
+echo "  just_reslice=$just_reslice"
+echo "  tmpdir=$tmpdir"
+
+################################################################
+message "Making masks"
+################################################################
+
+target_mask=
+if [ $use_troi -eq 1 ]; then
+
+  # If target_roi has a path, i.e. /blah/blah/blah/region.roi
+  # then we need just the basename.
+  
+  target_mask=$tmpdir/`basename ${target_roi}`_mask
+  make_midas_mask $target_img $target_roi $target_mask 0
+  echo "Target mask in $target_mask"
+fi
+
+source_mask=
+if [ $use_sroi -eq 1 ]; then
+
+  # If source_roi has a path, i.e. /blah/blah/blah/region.roi
+  # then we need just the basename.
+
+  source_mask=$tmpdir/`basename ${source_roi}`_mask
+  make_midas_mask $source_img $source_roi $source_mask 0
+  echo "Source mask in $source_mask"
+fi
+
+if [ $just_reslice -eq 0 ]; then
+  ################################################################
+  message "Initial block matching, 6 DOF"
+  ################################################################
+  blockMatchingExecutable=`which niftkBlockMatching`
+  blockMatchingArgs="-ti $target_img -si $source_img -ot $tmpdir/block.dof -om $tmpdir/block.mat  -tr 2 -st 3 -N 4 -O 4 -D1 4 -D2 1 -r 1.0 -ln 3 -stl 0 -spl 1"
+
+  if [ $use_troi -eq 1 ]; then
+    execute_command "$blockMatchingExecutable $blockMatchingArgs -tm ${target_mask}.img"
+  else
+    execute_command "$blockMatchingExecutable $blockMatchingArgs"
+  fi
+fi
+
+if [ $just_reslice -eq 0 ]; then
+  ################################################################
+  message "Now symmetric registration, $number_dof DOF"
+  ################################################################
+  # -o 5 = Powell
+  # -rmax = max step size
+  # -ln 1 -stl 0 -stl 0 = 1 level, not multi res.
+  niftkAffineExecutable=`which niftkAffine`
+  targetMaskArg=
+  sourceMaskArg=
+  niftkAffineArguments="-tr $transformation_model -d $number_dilations -o 5 -rmax 1 -rmin 0.05 -ln 1 -stl 0 -stl 0 -sym -it $tmpdir/block.dof"
+
+  if [ $use_troi -eq 1 ]; then
+      targetMaskArg="-tm ${target_mask}.img"
+  fi
+  if [ $use_sroi -eq 1 ]; then
+      sourceMaskArg="-sm ${source_mask}.img"
+  fi
+
+  execute_command "niftkAffine -ti $target_img -si $source_img -ot $tmpdir/affine_${number_dof}.dof $targetMaskArg $sourceMaskArg $niftkAffineArguments"
+
+  if [ ${number_dof} -gt 6 ]; then
+    ################################################################
+    message "Now symmetric registration, 6 DOF"
+    ################################################################
+    niftkAffineArguments="-tr 2 -d 1 -o 5 -rmax 0.5 -rmin 0.05 -ln 1 -stl 0 -stl 0 -sym -it $tmpdir/affine_${number_dof}.dof"
+    execute_command "niftkAffine -ti $target_img -si $source_img -ot $rreg_dof $targetMaskArg $sourceMaskArg $niftkAffineArguments"
+  else
+    execute_command "$COPY  $tmpdir/affine_${number_dof}.dof  $rreg_dof"
+  fi
+              
+fi
+
+################################################################
+message "Resampling images"
+################################################################
+execute_command "niftkTransformation -ti $target_img -si $source_img -o $source_img_out -g $rreg_dof -halfAffine -j 4 "
+execute_command "niftkAbsImageFilter -i $source_img_out -o $source_img_out"
+execute_command "niftkTransformation -ti $target_img -si $target_img -o $target_img_out -g $rreg_dof -halfAffine -invertAffine -j 4 "
+execute_command "niftkAbsImageFilter -i $target_img_out -o $target_img_out"
+
+################################################################
+message "Resampling regions"
+################################################################
+if [ $use_sroi -eq 1 ]; then
+  execute_command "niftkTransformation -ti $target_img -si ${source_mask}.img -o $tmpdir/${source_roi}_mask_out.hdr -g $rreg_dof -halfAffine -j 2"
+  execute_command "niftkAbsImageFilter -i $tmpdir/${source_roi}_mask_out.img -o $tmpdir/${source_roi}_mask_out.hdr"
+  execute_command "niftkThreshold -i $tmpdir/${source_roi}_mask_out.img -o $tmpdir/${source_roi}_mask_out_thresh.hdr -u 255 -l 128 -in 255 -out 0"
+  execute_command "makeroi -img $tmpdir/${source_roi}_mask_out_thresh.img -out $source_roi_out -alt 127 " 
+  
+fi
+
+if [ $use_troi -eq 1 ]; then
+  execute_command "niftkTransformation -ti $target_img -si ${target_mask}.img -o $tmpdir/${target_roi}_mask_out.hdr -g $rreg_dof -halfAffine -invertAffine -j 2"
+  execute_command "niftkAbsImageFilter -i $tmpdir/${target_roi}_mask_out.img -o $tmpdir/${target_roi}_mask_out.hdr"
+  execute_command "niftkThreshold -i $tmpdir/${target_roi}_mask_out.img -o $tmpdir/${target_roi}_mask_out_thresh.hdr -u 255 -l 128 -in 255 -out 0"
+  execute_command "makeroi -img  $tmpdir/${target_roi}_mask_out_thresh.img -out $target_roi_out -alt 127 "
+fi
+
+################################################################
+message "Cleanup"
+################################################################
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+
+message "Finished"

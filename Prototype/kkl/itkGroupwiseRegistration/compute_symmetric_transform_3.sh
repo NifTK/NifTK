@@ -1,0 +1,267 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-08-24 16:48:21 +0100 (Tue, 24 Aug 2010) $ 
+#  Revision          : $Revision: 3748 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : leung@drc.ion.ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run a groupwise DBC. 
+# 
+
+source _niftkCommon.sh
+
+set -ux
+
+function Usage()
+{
+cat <<EOF
+
+Script to compute symmetric transform and BSI.
+
+Usage: $0 target.img target.roi target.dof source.img source.roi source.dof output_dir [options]
+
+Mandatory Arguments:
+
+  target.img        : target (or baseline) image
+  target.roi        : target (or baseline) region
+  target.dof        : target (or baseline) dof
+  source.img        : source (or repeat) image
+  source.roi        : source (or repeat) region
+  source.dof        : source (or repeat) dof
+
+  output_dir        : Output directory
+                       
+EOF
+exit 127
+}
+
+# Get mandatory parameters
+image1=$1
+region1=$2
+dof_1_2=$3
+dof_1_3=$4
+image2=$5
+region2=$6
+dof_2_1=$7
+dof_2_3=$8
+image3=$9
+region3=${10}
+dof_3_1=${11}
+dof_3_2=${12}
+output_dir=${13}
+output_prefix=${14}
+
+# Default params
+ndefargs=14
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+
+asym_dof=""
+interpolation=4
+pairwise=no
+
+mkdir -p $output_dir
+execute_command "tmpdir=`mktemp -d -q ~/temp/compute_symmetric_transform.XXXXXX`"
+execute_command "mkdir -p ${tmpdir}/${output_dir}"
+function cleanup
+{
+  echo "Cleaning up..."
+  execute_command "rm -rf  ${tmpdir}"
+}
+trap "cleanup" EXIT SIGINT SIGTERM SIGKILL 
+
+identity_dof=${tmpdir}/identity.dof
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+    -asym)
+      asym_dof="${identity_dof} 1 ${identity_dof} 1"  
+      ;;
+    -interpolation)
+      interpolation=$2
+      shift 1
+      ;;
+    -pairwise)
+      pairwise=$2
+      shift 1
+      ;;
+    -*)
+        Usage
+      exitprog "Error: option $1 not recognised" 1
+      ;;
+    esac
+    shift 1
+done
+
+niftkCreateTransformation -type 3 -ot ${identity_dof}  0 0 0 0 0 0 1 1 1 0 0 0
+
+function compute_star()
+{
+  local _dof_1_2=$1
+  local _dof_2_1=$2
+  local _dof_1_2_star=$3
+  local _dof_1_2_star_inverse=$4
+
+  # Get the inverse of repeat transform.
+  local _dof_2_1_inverse=${tmpdir}/__dof_2_1_inverse
+  itkInvertTransformation ${_dof_2_1} ${_dof_2_1_inverse}
+
+  # Compute the mean transform for baseline image.
+  itkComputeMeanTransformation ${_dof_1_2_star} 1e-8 ${_dof_1_2} 1 ${_dof_2_1_inverse} 1 ${asym_dof}
+  itkInvertTransformation ${_dof_1_2_star} ${_dof_1_2_star_inverse}
+}
+
+function transform()
+{
+  local _image1=$1
+  local _region1=$2
+  local _image2=$3
+  local _image3=$4
+  local _dof_1_2=$5
+  local _dof_1_3=$6
+  local _output_prefix=$7
+  
+  # Compute the mean transform for baseline image.
+  local average_transform=${output_dir}/${_output_prefix}_average.dof
+  itkComputeMeanTransformation ${average_transform} 1e-8 ${_dof_1_2} 2 ${_dof_1_3} 2 ${identity_dof} 1
+  
+  # Do the transform.
+  local resliced_image=${output_dir}/${_output_prefix}.img
+  local resliced_mask=${output_dir}/${_output_prefix}_mask
+  local region1_img=${tmpdir}/baseline_mask.img
+  local resliced_region1_img=${output_dir}/${_output_prefix}_mask.img
+  
+  makemask ${_image1} ${_region1} ${region1_img}
+  niftkTransformation -ti ${_image1} -o ${resliced_image} -j ${interpolation} -g ${average_transform} -sym_midway 3 ${_image1} ${_image2} ${_image3} -invertAffine
+  niftkAbsImageFilter -i ${resliced_image} -o ${resliced_image}
+  niftkTransformation -ti ${region1_img} -o ${resliced_region1_img} -j 2 -g ${average_transform} -sym_midway 3 ${_image1} ${_image2} ${_image3} -invertAffine
+  makeroi -img ${resliced_region1_img} -out ${resliced_mask} -alt 128
+}
+
+function transform_pairwise()
+{
+  local _image1=$1
+  local _region1=$2
+  local _image2=$3
+  local _dof_1_2=$4
+  local _output_prefix=$5
+  
+  # Do the transform.
+  local resliced_image=${output_dir}/${_output_prefix}.img
+  local resliced_mask=${output_dir}/${_output_prefix}_mask
+  local region1_img=${tmpdir}/baseline_mask.img
+  local resliced_region1_img=${output_dir}/${_output_prefix}_mask.img
+  
+  makemask ${_image1} ${_region1} ${region1_img}
+  niftkTransformation -ti ${_image1} -o ${resliced_image} -j ${interpolation} -g ${_dof_1_2} -sym_midway 2 ${_image1} ${_image2}  -invertAffine
+  niftkAbsImageFilter -i ${resliced_image} -o ${resliced_image}
+  niftkTransformation -ti ${region1_img} -o ${resliced_region1_img} -j 2 -g ${_dof_1_2} -sym_midway 2 ${_image1} ${_image2} -invertAffine
+  makeroi -img ${resliced_region1_img} -out ${resliced_mask} -alt 128
+}
+
+
+dof_1_2_star=${tmpdir}/dof_1_2_star.dof
+dof_2_1_star=${tmpdir}/dof_2_1_star.dof
+dof_1_3_star=${tmpdir}/dof_1_3_star.dof
+dof_3_1_star=${tmpdir}/dof_3_1_star.dof
+dof_2_3_star=${tmpdir}/dof_2_3_star.dof
+dof_3_2_star=${tmpdir}/dof_3_2_star.dof
+
+compute_star ${dof_1_2} ${dof_2_1} ${dof_1_2_star} ${dof_2_1_star}
+compute_star ${dof_1_3} ${dof_3_1} ${dof_1_3_star} ${dof_3_1_star}
+compute_star ${dof_2_3} ${dof_3_2} ${dof_2_3_star} ${dof_3_2_star}
+  
+if [ "${pairwise}" == no ]
+then 
+  transform ${image1} ${region1} ${image2} ${image3} ${dof_1_2_star} ${dof_1_3_star} ${output_prefix}_0
+  transform ${image2} ${region2} ${image1} ${image3} ${dof_2_1_star} ${dof_2_3_star} ${output_prefix}_1
+  transform ${image3} ${region3} ${image1} ${image2} ${dof_3_1_star} ${dof_3_2_star} ${output_prefix}_2
+  
+  niftkMTPDbc -mode 1 \
+      ${output_dir}/${output_prefix}_0.hdr ${output_dir}/${output_prefix}_0_mask.img ${output_dir}/${output_prefix}_0_dbc.hdr \
+      ${output_dir}/${output_prefix}_1.hdr ${output_dir}/${output_prefix}_1_mask.img ${output_dir}/${output_prefix}_1_dbc.hdr \
+      ${output_dir}/${output_prefix}_2.hdr ${output_dir}/${output_prefix}_2_mask.img ${output_dir}/${output_prefix}_2_dbc.hdr
+      
+  compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_0_dbc ${output_dir}/${output_prefix}_0_mask \
+                        ${output_dir}/${output_prefix}_1_dbc ${output_dir}/${output_prefix}_1_mask \
+                        ${output_dir}
+      
+  compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_1_dbc ${output_dir}/${output_prefix}_1_mask \
+                        ${output_dir}/${output_prefix}_2_dbc ${output_dir}/${output_prefix}_2_mask \
+                        ${output_dir}
+  
+  compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_0_dbc ${output_dir}/${output_prefix}_0_mask \
+                        ${output_dir}/${output_prefix}_2_dbc ${output_dir}/${output_prefix}_2_mask \
+                        ${output_dir}
+                        
+  rm -f ${output_dir}/${output_prefix}_0_dbc.* ${output_dir}/${output_prefix}_1_dbc.*  ${output_dir}/${output_prefix}_2_dbc.*
+  rm -f ${output_dir}/${output_prefix}_0_mask.* ${output_dir}/${output_prefix}_1_mask.*  ${output_dir}/${output_prefix}_2_mask.* 
+else
+
+  echo "Performing pairwise calculation..."
+  transform_pairwise ${image1} ${region1} ${image2} ${dof_1_2_star} ${output_prefix}_01_0
+  transform_pairwise ${image2} ${region2} ${image1} ${dof_2_1_star} ${output_prefix}_01_1
+  niftkMTPDbc -mode 1 \
+      ${output_dir}/${output_prefix}_01_0.hdr ${output_dir}/${output_prefix}_01_0_mask.img ${output_dir}/${output_prefix}_01_0_dbc.hdr \
+      ${output_dir}/${output_prefix}_01_1.hdr ${output_dir}/${output_prefix}_01_1_mask.img ${output_dir}/${output_prefix}_01_1_dbc.hdr
+  compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_01_0_dbc ${output_dir}/${output_prefix}_01_0_mask \
+                        ${output_dir}/${output_prefix}_01_1_dbc ${output_dir}/${output_prefix}_01_1_mask \
+                        ${output_dir}
+  
+  transform_pairwise ${image1} ${region1} ${image3} ${dof_1_3_star} ${output_prefix}_02_0
+  transform_pairwise ${image3} ${region3} ${image1} ${dof_3_1_star} ${output_prefix}_02_1
+  niftkMTPDbc -mode 1 \
+      ${output_dir}/${output_prefix}_02_0.hdr ${output_dir}/${output_prefix}_02_0_mask.img ${output_dir}/${output_prefix}_02_0_dbc.hdr \
+      ${output_dir}/${output_prefix}_02_1.hdr ${output_dir}/${output_prefix}_02_1_mask.img ${output_dir}/${output_prefix}_02_1_dbc.hdr
+  compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_02_0_dbc ${output_dir}/${output_prefix}_02_0_mask \
+                        ${output_dir}/${output_prefix}_02_1_dbc ${output_dir}/${output_prefix}_02_1_mask \
+                        ${output_dir}
+  
+  transform_pairwise ${image2} ${region2} ${image3} ${dof_2_3_star} ${output_prefix}_12_0
+  transform_pairwise ${image3} ${region3} ${image2} ${dof_3_2_star} ${output_prefix}_12_1
+  niftkMTPDbc -mode 1 \
+      ${output_dir}/${output_prefix}_12_0.hdr ${output_dir}/${output_prefix}_12_0_mask.img ${output_dir}/${output_prefix}_12_0_dbc.hdr \
+      ${output_dir}/${output_prefix}_12_1.hdr ${output_dir}/${output_prefix}_12_1_mask.img ${output_dir}/${output_prefix}_12_1_dbc.hdr
+  compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_12_0_dbc ${output_dir}/${output_prefix}_12_0_mask \
+                        ${output_dir}/${output_prefix}_12_1_dbc ${output_dir}/${output_prefix}_12_1_mask \
+                        ${output_dir}
+
+fi   
+
+execute_command "rm ${tmpdir} -rf"
+
+
+
+
+
+
+
+
+
+

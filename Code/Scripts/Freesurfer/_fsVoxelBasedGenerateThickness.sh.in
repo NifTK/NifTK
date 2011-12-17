@@ -1,0 +1,101 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+####################################################################################
+# Note that this script should only be called by fsVoxelBasedGenerateThickness.sh, 
+# as all the argument checking and error checking is done there for every patient.
+####################################################################################
+
+source _fsInclude.sh
+
+patient=$1
+regbased=$2
+time=$3
+vmf=$4
+old=$5
+
+echo "Subjects dir is $SUBJECTS_DIR, patient is $patient, regbased=$regbased, time=$time, vmf=$vmf, old=$old"
+
+####################################################################################
+# Generate a segmented grey matter, white matter and CSF image 
+####################################################################################
+execute_command_or_else_stop "cd $SUBJECTS_DIR/$patient/mri"
+execute_command_or_else_stop "mri_convert ribbon.mgz ribbon.nii"
+execute_command_or_else_stop "niftkSwapIntensity -i ribbon.nii -o tmp1.nii -a 2 -b 1"
+execute_command_or_else_stop "niftkSwapIntensity -i tmp1.nii -o tmp2.nii -a 3 -b 2"
+execute_command_or_else_stop "niftkSwapIntensity -i tmp2.nii -o tmp3.nii -a 42 -b 2"
+execute_command_or_else_stop "niftkSwapIntensity -i tmp3.nii -o tmp4.nii -a 41 -b 1"
+execute_command_or_else_stop "mv tmp4.nii ribbon.label.nii"
+execute_command_or_else_stop "\rm tmp1* tmp2* tmp3* ribbon.nii"
+execute_command_or_else_stop "mri_convert ribbon.label.nii ribbon.label.nii"
+
+####################################################################################
+# Run voxel based CTE
+####################################################################################
+
+if [ $regbased -eq 1 ]; then
+
+  type="reg"
+  
+  # Generate separate WM and GM images from the label image
+  execute_command_or_else_stop "niftkSwapIntensity -i ribbon.label.nii -o ribbon.wm.nii -a 2 -b 0"
+  execute_command_or_else_stop "niftkSwapIntensity -i ribbon.label.nii -o tmp1.nii -a 1 -b 0"
+  execute_command_or_else_stop "niftkSwapIntensity -i tmp1.nii -o ribbon.gm.nii -a 2 -b 1"
+  execute_command_or_else_stop "\rm tmp1*"
+  
+  # Then register them
+  if [ $old -eq 1 ]; then
+    old_arg=" -old "
+  fi
+  
+  execute_command_or_else_stop "niftkCTEDas2009 -g ribbon.gm.nii -w ribbon.wm.nii -o ribbon.thickness.$type.nii -resampled ribbon.resampled.$type.nii $old_arg " 
+
+else
+
+  type="vox"
+  
+#  execute_command_or_else_stop "niftkCTEYezzi2003 -i ribbon.label.nii -o ribbon.thickness.$type.nii -c 0 -w 1 -g 2 -le 0.000001 -li 1000 -pe 0.000001 -pi 500"
+  execute_command_or_else_stop "niftkCTEHighRes -i ribbon.label.nii -o ribbon.thickness.$type.nii -c 0 -w 1 -g 2 -le 0.000001 -li 1000 -pe 0.000001 -pi 500 -vmf $vmf"
+   
+fi
+
+####################################################################################
+# Extract thickness
+####################################################################################
+execute_command_or_else_stop "cd $SUBJECTS_DIR/$patient/surf"
+
+for f in lh rh
+do
+  execute_command_or_else_stop "mris_convert $f.white $f.white.asc"
+  execute_command_or_else_stop "niftkVolToFreeSurfer -s $f.white.asc -v ../mri/ribbon.thickness.$type.nii -o $f.voxel.thickness.asc -radius 2"
+  execute_command_or_else_stop "mris_convert -c $f.voxel.thickness.asc $f.white.asc $f.thickness"
+  execute_command_or_else_stop "\rm $f.white.asc $f.voxel.thickness.asc"
+done
+
+####################################################################################
+# Finish
+####################################################################################
+execute_command_or_else_stop "cd $SUBJECTS_DIR"

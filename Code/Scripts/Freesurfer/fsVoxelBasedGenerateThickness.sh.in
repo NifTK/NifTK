@@ -1,0 +1,116 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+SUBJECTS_DIR=`pwd`
+
+source _fsInclude.sh
+
+function Usage()
+{
+cat <<EOF
+This script will take a FreeSurfer subject (that has already been run successfully)
+and then run a voxel based analysis, and generate a replacement thickness file.
+
+Usage: fsVoxelBasedGenerateThickness.sh [ options ] ALLFR ALLHA CCCCC DDDDD etc.
+
+  All arguments after the options are FreeSurfer directories under the current directory.
+  
+Options:
+  
+  -regbased   : Use registration based method: S. R. Das et. al., NeuroImage 45 (2009) 867-879
+                without which we default to  : IEEE TMI Vol. 22, No. 10, Oct 2003
+                
+  -old        : As of 29/01/2009, I have two versions of this cortical thickness.
+                old = itkRegistrationBasedCTEFilter.h
+                new = itkRegistrationBasedCorticalThicknessFilter.h
+                
+                new is default.
+                                
+  -time <int> : Number of time steps for Das method. Use 1 or 2 on a workstation, 
+                and more on a 64 bit machine, memory permitting. Default is 1.
+
+  -vmf        : Voxel multiplication factor for voxel based method.
+  
+************************************************************************************************
+* NOTE: In order to get the averaging to work, the thickness file must still be called         *
+* lh.thickness and rh.thickness. So, this script will overwrite the existing ones.             *
+* So you are advised to run FreeSurfer 'as per normal', then take a copy of all your patients, *
+* and run this script on the copy.                                                             *
+************************************************************************************************
+   
+EOF
+exit 127
+}
+
+regbased=0
+time=1
+vmf=1
+old=0
+
+DONE_OPTIONS=FALSE
+
+while [ "_$1" != "_" -a "$DONE_OPTIONS" = "FALSE" ] ; do
+    if [ "$1" = "-regbased"  ] ; then
+        regbased=1
+        shift 1
+    elif [ "$1" = "-time" ] ; then
+        time="\"$2\""
+        shift 2
+    elif [ "$1" = "-vmf" ] ; then
+        vmf="\"$2\""
+        shift 2
+    elif [ "$1" = "-old" ] ; then
+        old=1
+        shift 1                        
+    else
+        DONE_OPTIONS="TRUE"
+    fi
+done
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+# If no directories, no point continuing
+if [ "_$1" = "_" ]; then
+  Usage
+fi
+
+check_freesurfer_env
+
+check_all_freesurfer_programs_exist
+
+check_all_directories_in_string_exists "$*"
+
+# Generate commands file
+for f in $*
+do
+  echo "_fsVoxelBasedGenerateThickness.sh $f $regbased $time $vmf $old " >> fsVoxelBasedGenerateThickness_$$_commands.txt
+done
+
+# And Run it.
+run_batch_job fsVoxelBasedGenerateThickness_$$_commands.txt

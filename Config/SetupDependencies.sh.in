@@ -1,0 +1,180 @@
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-12-15 16:48:32 +0000 (Thu, 15 Dec 2011) $ 
+#  Revision          : $Revision: 8033 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Set up the root installation directory.
+if [ -z $NIFTK_DIR ]; then
+    export NIFTK_DIR=@NIFTK_INSTALL_PREFIX@
+fi
+export NIFTK_INSTALL_PREFIX=`dirname ${NIFTK_DIR}`
+
+# Parse command line
+FSL_NAME=fsl
+FREESURFER_NAME=freesurfer
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-fsl" ]; then
+        FSL_NAME=$2
+        echo "Picked up FSL_NAME=$FSL_NAME"
+        shift 2
+    elif [ "$1" = "-freesurfer" ]; then
+        FREESURFER_NAME=$2
+        echo "Picked up FREESURFER_NAME=$FREESURFER_NAME"
+        shift 2
+    fi
+done
+
+# Setup Slicer, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/slicer ]; then
+  echo "Setting up Slicer3"
+  export PATH=${NIFTK_INSTALL_PREFIX}/slicer:$PATH
+fi
+
+# Setup FSL, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/${FSL_NAME}/etc/fslconf/fsl.sh ]; then
+  export FSLDIR=${NIFTK_INSTALL_PREFIX}/${FSL_NAME}
+  export FSL_DIR=${FSLDIR}
+  echo "Setting up FSL from $FSLDIR/etc/fslconf/fsl.sh"
+  source $FSLDIR/etc/fslconf/fsl.sh
+  export PATH=$FSLDIR/bin:$PATH
+fi
+
+# Setup Freesurfer, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/${FREESURFER_NAME}/SetUpFreeSurfer.sh ]; then
+  echo "Setting up FreeSurfer from ${NIFTK_INSTALL_PREFIX}/${FREESURFER_NAME}/SetUpFreeSurfer.sh"
+  source ${NIFTK_INSTALL_PREFIX}/${FREESURFER_NAME}/SetUpFreeSurfer.sh 
+fi
+
+# Set up grad warp directory, if it exists
+if [ -d ${NIFTK_INSTALL_PREFIX}/GradUnwarp ]; then
+  export GRAD_UNWARP_DIR=${NIFTK_INSTALL_PREFIX}/GradUnwarp  
+fi
+
+# Setup Camino, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/camino ]; then
+  echo "Setting up Camino"
+  export PATH=${NIFTK_INSTALL_PREFIX}/camino/bin:${PATH}
+  export MANPATH=${NIFTK_INSTALL_PREFIX}/camino/man:${MANPATH}
+fi
+
+# Setup AIR, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/air ]; then
+  echo "Setting up AIR"
+  export AIR_DIR=${NIFTK_INSTALL_PREFIX}/air
+  export AIR_BIN=${AIR_DIR}/bin  
+  export PATH=${AIR_DIR}/bin:$PATH
+  export LD_LIBRARY_PATH=${AIR_DIR}/lib:${LD_LIBRARY_PATH}
+  export MANPATH=${AIR_DIR}/man:${MANPATH}
+fi
+
+# Setup midasffd, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/midasffd ]; then
+  echo "Setting up midasffd"
+  export MIDASFFDIR=${NIFTK_INSTALL_PREFIX}/midasffd
+  export MIDASFFD_BIN=${NIFTK_INSTALL_PREFIX}/midasffd
+  export MNI152DIR=${NIFTK_INSTALL_PREFIX}/midasdata/mni152
+  export PATH=${MIDASFFD_BIN}:${PATH}
+fi
+
+# Setup ffitk, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/ffitk ]; then
+  echo "Setting up ffitk"
+  export FFITK_BIN=${NIFTK_INSTALL_PREFIX}/ffitk/bin
+  export PATH=${FFITK_BIN}:${PATH}
+fi
+
+# Setup Midas, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/midas ] && [ -f ${NIFTK_INSTALL_PREFIX}/midas/bin/midasenv ]; then
+  echo "Setting up Midas"
+  export MIDAS_BIN=${NIFTK_INSTALL_PREFIX}/midas/bin
+  export PATH=${MIDAS_BIN}:${PATH}
+  eval `${NIFTK_INSTALL_PREFIX}/midas/bin/midasenv`
+fi
+
+# Setup nifty_reg, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/nifty_reg ]; then
+  echo "Setting up nifty_reg"
+  export LD_LIBRARY_PATH=${NIFTK_INSTALL_PREFIX}/nifty_reg/lib:$LD_LIBRARY_PATH
+  export PATH=${NIFTK_INSTALL_PREFIX}/nifty_reg/bin:$PATH
+fi
+
+# Setup nifty_seg, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/nifty_seg ]; then
+  echo "Setting up nifty_seg"
+  export LD_LIBRARY_PATH=${NIFTK_INSTALL_PREFIX}/nifty_seg/lib:$LD_LIBRARY_PATH
+  export PATH=${NIFTK_INSTALL_PREFIX}/nifty_seg/bin:$PATH
+fi
+
+# Setup nifty_sim, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/nifty_sim ]; then
+  echo "Setting up nifty_sim"
+  export LD_LIBRARY_PATH=${NIFTK_INSTALL_PREFIX}/nifty_sim/lib:$LD_LIBRARY_PATH
+  export PATH=${NIFTK_INSTALL_PREFIX}/nifty_sim/bin:$PATH
+fi
+
+# Setup nifty_rec, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/nifty_rec ]; then
+  echo "Setting up nifty_rec"
+  export LD_LIBRARY_PATH=${NIFTK_INSTALL_PREFIX}/nifty_rec/lib:$LD_LIBRARY_PATH
+  export PATH=${NIFTK_INSTALL_PREFIX}/nifty_rec/bin:$PATH
+fi
+
+# Setup demons, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/demons ]; then
+  echo "Setting up ITK demons"
+  export PATH=${NIFTK_INSTALL_PREFIX}/demons:$PATH
+fi
+
+# Setup ANTS, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/ANTS ]; then
+  echo "Setting up ANTS"
+  export PATH=${NIFTK_INSTALL_PREFIX}/ANTS:$PATH
+  export ANTSPATH=${NIFTK_INSTALL_PREFIX}/ANTS/
+fi
+
+# Setup xmedcon, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/xmedcon ]; then
+  echo "Setting up xmedcon"
+  export PATH=${NIFTK_INSTALL_PREFIX}/xmedcon/bin:$PATH
+  export LD_LIBRARY_PATH=${NIFTK_INSTALL_PREFIX}/xmedcon/lib:$LD_LIBRARY_PATH
+fi
+
+# Setup CRKIT, if it exists
+if [ -e ${NIFTK_INSTALL_PREFIX}/crkit-release ]; then
+  echo "Setting up CRKIT (STAPLE)"
+  export PATH=${NIFTK_INSTALL_PREFIX}/crkit-release/bin:$PATH
+fi
+
+# Main PATH setup for NifTK stuff.
+export PATH=${NIFTK_DIR}/bin:${PATH}  
+export LD_LIBRARY_PATH=${NIFTK_DIR}/lib:${LD_LIBRARY_PATH}
+export MANPATH=${NIFTK_DIR}/man:${MANPATH} 
+export MATLABPATH=${NIFTK_DIR}/matlab:${NIFTK_DIR}/matlab/common:${NIFTK_DIR}/matlab/freesurfer:${NIFTK_DIR}/matlab/parcellation:${NIFTK_DIR}/matlab/glm:${NIFTK_DIR}/matlab/segmentation:${NIFTK_INSTALL_PREFIX}/surfstat:${MATLABPATH}
+export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DYLD_LIBRARY_PATH}
+
+# Print out a big version message.
+echo " "
+echo "##########################################################################################"
+echo "# You are running NifTK version @NIFTK_VERSION_STRING@"
+echo "##########################################################################################"
+echo " "

@@ -1,0 +1,72 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script that was developed for the ADNI scaling project, to take an image,
+# and generate a load of images with different voxel sizes in the header.
+
+# Check args
+if [ $# -ne 4 ]; then
+  echo 1>&2 "Usage: $0 image numberOfImages minVoxelMultiplier maxVoxelMultiplier"
+  echo 1>&2 "" 
+  echo 1>&2 "  image              - in Analyze format, without specifying the .img part."
+  echo 1>&2 "  numberOfImages     - number of random images you want to generate"
+  echo 1>&2 "  minVoxelMultiplier - factor to scale voxel sizes by. eg. 0.99 is a 1% reduction."
+  echo 1>&2 "  maxVoxelMultiplier - factor to scale voxel sizes by. eg. 1.01 is a 1% increase."
+  echo 1>&2 ""
+  exit 127
+fi
+
+IMAGE=$1
+NUMBER_OF_IMAGES=$2
+MIN_VOX_MULTIPLIER=$3
+MAX_VOX_MULTIPLIER=$4
+
+# Seed the random number generator.
+RANDOM=$$
+
+i=0
+while [ "$i" -lt "$NUMBER_OF_IMAGES" ] 
+do
+
+  # Extract voxel sizes
+  DIMS=`imginfo $IMAGE.img -dims`
+  VX=`echo $DIMS | awk '{print $4}'`
+  VY=`echo $DIMS | awk '{print $5}'`
+  VZ=`echo $DIMS | awk '{print $6}'`
+  
+  # Generate 3 random numbers between minVoxelMultiplier & maxVoxelMultiplier times the voxel size
+  vx=`echo "scale=10; ((($RANDOM/32767.0)*($MAX_VOX_MULTIPLIER-$MIN_VOX_MULTIPLIER))+($MIN_VOX_MULTIPLIER))*$VX " | bc `
+  vy=`echo "scale=10; ((($RANDOM/32767.0)*($MAX_VOX_MULTIPLIER-$MIN_VOX_MULTIPLIER))+($MIN_VOX_MULTIPLIER))*$VY " | bc `
+  vz=`echo "scale=10; ((($RANDOM/32767.0)*($MAX_VOX_MULTIPLIER-$MIN_VOX_MULTIPLIER))+($MIN_VOX_MULTIPLIER))*$VZ " | bc `
+
+  #  Change header
+  anchange $IMAGE $IMAGE.$vx.$vy.$vz.img -sx $vx -sy $vy -sz $vz
+
+  echo $VX $VY $VZ $vx $vy $vz
+  
+  # Increment loop counter
+  i=$(($i+1))
+done

@@ -1,0 +1,17 @@
+/**
+  \defgroup uk_ac_ucl_cmic_niftyseg uk.ac.ucl.cmic.niftyseg Plugin
+  \ingroup CMICPlugins
+
+  \brief Implements a plugin to interface to the NiftySeg segmentation algorithm
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk), and Anind Duttaroy (a.duttaroy@cs.ucl.ac.uk).
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_niftyseg_internal Internal
+  \ingroup uk_ac_ucl_cmic_niftyseg
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.niftyseg plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

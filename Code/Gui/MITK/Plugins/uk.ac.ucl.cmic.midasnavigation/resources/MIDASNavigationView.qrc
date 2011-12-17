@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/MIDASNavigationView">
+        <file>MIDASNavigation.png</file>
+    </qresource>
+</RCC>

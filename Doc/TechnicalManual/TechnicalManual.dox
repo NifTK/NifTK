@@ -1,0 +1,9 @@
+/**
+
+\page TechnicalManual The Technical Manual
+
+\li \subpage Dependencies
+\li \subpage MITKPluginsIntro
+\li \subpage CTKWidgetsIntro
+
+*/

@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+SUBJECTS_DIR=`pwd`
+
+# Check args
+if [ $# -le 2 ]; then
+  echo 1>&2 "This script can be used to transfer subjects as a zipped tar file to a remote machine."
+  echo 1>&2 ""
+  echo 1>&2 "Usage: $0 remoteLocation AAAAA BBBBB CCCCC DDDDD etc."
+  echo 1>&2 ""
+  echo 1>&2 "  This script assumes:"
+  echo 1>&2 "    \$SUBJECTS_DIR environment variable exists, and the directory it points to exists."
+  echo 1>&2 "" 
+  echo 1>&2 "    All arguments after remoteLocation are FreeSurfer directories under the current directory."
+  echo 1>&2 ""
+  echo 1>&2 "    remoteLocation specifies the username, machine, and folder where you want the tar files placing."
+  echo 1>&2 "    eg."
+  echo 1>&2 "      clarkson@comic100.cs.ucl.ac.uk:subjects"
+  echo 1>&2 ""
+  echo 1>&2 "    ie."
+  echo 1>&2 "      <username>@<full machine name>:<subdirectory under your remote home directory>"
+  echo 1>&2 ""
+  exit 127
+fi
+
+source _fsInclude.sh
+
+remoteLocation=$1
+shift
+
+check_all_directories_in_string_exists "$*"
+
+filesToTransfer=
+for patient in $*
+do
+
+  # Probably need to strip trailing slash
+  actualPatient=${patient%/}
+  
+  tar -czvf $actualPatient.tgz $actualPatient
+  filesToTransfer="$filesToTransfer $actualPatient.tgz"
+  
+done
+  
+command="scp $filesToTransfer $remoteLocation"
+echo "Running command:$command"
+eval $command
+
+if [ $? -ne 0 ]; then
+  echo "Failed to copy tar files to remote location"
+  exit 1
+fi
+
+
+

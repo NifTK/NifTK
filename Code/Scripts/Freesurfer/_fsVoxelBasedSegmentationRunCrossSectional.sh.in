@@ -1,0 +1,72 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+echo "Subjects dir is $SUBJECTS_DIR, argv[1]=$1"
+
+source _niftkCommon.sh
+
+PD=$1
+do_talairach=$2
+
+# In this script, its a stripped down modified version of 
+# the free surfer function run_freesurfer_pipeline in _fsInclude.sh
+
+# If you want to modify it, you can quickly copy it, hack it,
+# and as long as its first on your PATH, you wont need to re-release NifTK.
+
+# We run recon-all first stage, with no skull stripping, then insert our own skull stripped mask.
+execute_command "recon-all -s ${SUBJECTS_DIR}/${PD} -autorecon1 -notal-check -noskullstrip" 
+execute_command "mri_mask -T 1 ${SUBJECTS_DIR}/${PD}/mri/T1.mgz ${SUBJECTS_DIR}/${PD}/mri/mask.mgz ${SUBJECTS_DIR}/${PD}/mri/brainmask.mgz"
+
+# Initially run autorecon2 
+execute_command "recon-all -s ${SUBJECTS_DIR}/${PD} -autorecon2 " 
+
+# Then we force in our WM mask
+if [ $do_talairach -eq 1 ];then
+	execute_command "mri_convert ${SUBJECTS_DIR}/${PD}/mri/wmmask.mgz ${SUBJECTS_DIR}/${PD}/mri/wm.mgz --conform"
+	execute_command "mri_add_xform_to_header -c ${SUBJECTS_DIR}/${PD}/mri/transforms/talairach.xfm ${SUBJECTS_DIR}/${PD}/mri/wm.mgz ${SUBJECTS_DIR}/${PD}/mri/wm.mgz" 
+else
+	execute_command "mri_convert ${SUBJECTS_DIR}/${PD}/mri/wmmask.mgz ${SUBJECTS_DIR}/${PD}/mri/wm.mgz --conform"
+fi
+
+# Then we insert our WM mask to override the freesurer one, and fill in the vents.
+
+execute_command "mri_binarize --i ${SUBJECTS_DIR}/${PD}/mri/aseg.mgz --match 4 --match 43 --match 5 --match 44 --o ${SUBJECTS_DIR}/${PD}/mri/vents.mgz --binval 255"
+execute_command "mri_convert $SUBJECTS_DIR/$PD/mri/vents.mgz $SUBJECTS_DIR/$PD/mri/vents.mnc"
+execute_command "mri_convert $SUBJECTS_DIR/$PD/mri/wm.mgz $SUBJECTS_DIR/$PD/mri/wm.mnc"
+execute_command "mincmath -max $SUBJECTS_DIR/$PD/mri/vents.mnc $SUBJECTS_DIR/$PD/mri/wm.mnc $SUBJECTS_DIR/$PD/mri/wm1.mnc"
+execute_command "mri_convert $SUBJECTS_DIR/$PD/mri/wm1.mnc $SUBJECTS_DIR/$PD/mri/wm1.img"
+execute_command "mri_convert $SUBJECTS_DIR/$PD/mri/wm1.img $SUBJECTS_DIR/$PD/mri/wm.mgz"
+execute_command "\rm $SUBJECTS_DIR/$PD/mri/*.mnc"
+
+# Then re-run autorecon2 from the WM bit, and then auto-recon3.
+execute_command "recon-all -s ${SUBJECTS_DIR}/${PD} -autorecon2-wm -autorecon3" 
+
+
+
+
+
+

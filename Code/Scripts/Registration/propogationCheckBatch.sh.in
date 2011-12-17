@@ -1,0 +1,112 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run propogationCheck.sh in a batch.
+# 
+
+ndefargs=1
+data_file=
+command_file=propogationCheckBatch_$$_commands.txt
+
+function Usage()
+{
+cat <<EOF
+
+This script is a wrapper to run propogationCheck.sh in a batch
+
+Usage: $0 dataFile [options] 
+
+Mandatory Arguments:
+  dataFile       : A file consisting of lines of text containing space or tab separated values:
+  
+                   targetImage.img groundTruthRegion.roi segmented.roi output.txt
+      
+                   Where you specify images, the images themselves should be .img and not .img.gz.
+                   The output.txt is where the stats get stored for each pair of regions.
+
+Options:
+
+  None at present
+  
+EOF
+exit 127
+}
+ 
+function IterateThroughFile()
+{
+  local filename=$1
+  local mode=$2
+  
+  n=`wc -l $filename | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+    targetImage=`awk 'NR-1 == '$i' {print $1}' $filename`
+    groundTruthRegion=`awk 'NR-1 == '$i' {print $2}' $filename`
+    segmentedRegion=`awk 'NR-1 == '$i' {print $3}' $filename`
+    outputFile=`awk 'NR-1 == '$i' {print $4}' $filename`
+
+    if [ "$mode" = "GENERATE" ]; then
+
+      # Generate a file of all commands
+      echo "propogationCheck.sh $targetImage $groundTruthRegion $segmentedRegion -output $outputFile " >> $command_file 
+
+    else
+      check_file_exists $targetImage
+      check_file_exists $groundTruthRegion
+      check_file_exists $segmentedRegion
+      checkf_writeable  $outputFile
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+    
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+data_file=$1
+
+source _niftkCommon.sh
+
+if [ ! -f $data_file ]; then
+    exitprog "The data file doesn't exist" 1
+fi
+
+echo "Running with file:$data_file"
+
+IterateThroughFile $data_file "CHECK"
+
+IterateThroughFile $data_file "GENERATE"
+
+run_batch_job $command_file

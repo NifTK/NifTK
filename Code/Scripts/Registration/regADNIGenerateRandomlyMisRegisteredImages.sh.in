@@ -1,0 +1,207 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to take an image and optionally a region, and mis register them by a known amount.
+# 
+
+function Usage()
+{
+cat <<EOF
+
+This script will generate randomly misregistered images and regions.
+
+Usage: $0 fileOfInputs fileOfOutput [options ]
+
+Mandatory Arguments:
+ 
+  fileOfInputs          : file containing a list of input images, input region.
+                          ie.
+                          01036-003-1 Man_01036_1200663431 
+                          01200-003-1 JoF_01200_1186398646 
+                          
+  fileOfOutput          : this program writes a file of details showing you what the misregistrations were.
+  
+  
+Options:
+
+  -n                    : number of random mis-registrations produced per input image [ default 10 ]
+  -rl                   : lower rotation range    [default 5  degrees ]
+  -ru                   : upper rotation range    [default 10 degrees ]
+  -tl                   : lower translation range [default 10 millimetres ]
+  -tu                   : upper translation range [default 20 millimetres ]
+  -sl                   : lower scale range       [default 0.25 percent] 
+  -su                   : upper scale range       [default 1.0 percent]
+  -linear               : Linear interpolation
+  -bspline              : bspline interpolation
+  -cspline              : spline interpolation
+  -sinc                 : sinc interpolation
+
+EOF
+exit 127
+}
+
+function generate_random()
+{
+    LOWER=$1
+    UPPER=$2
+    SCALE=$3
+    ADD=$4
+    
+    if [ `echo " $RANDOM % 2 " | bc ` = "0" ]; then
+      MULTIPLIER=-1
+    else
+      MULTIPLIER=1
+    fi
+    
+    MY_RANDOM=`echo "scale=10; ((((($RANDOM/32767.0)*($UPPER-$LOWER))+$LOWER)*$MULTIPLIER/$SCALE)+$ADD) " | bc `
+}
+
+# Check args
+if [ $# -lt 2 ]; then
+  Usage
+fi
+
+# Get mandatory args
+INPUT_FILE=$1
+shift
+OUTPUT_FILE=$1
+shift
+
+echo "Input File=$INPUT_FILE"
+echo "Output File=$OUTPUT_FILE"
+
+# Set defaults
+NUMBER_OF_TRIES=10
+RL=5
+RU=10
+TL=10
+TU=20
+SL=0.25
+SU=1.0
+INTERPOLATION=" -linear "
+
+# Parse command line
+while [ "_$1" != "_"  ] ; do
+    if [ "$1" = "-rl" ] ; then
+        RL=$2
+        shift 2
+    elif [ "$1" = "-n" ] ; then
+        NUMBER_OF_TRIES=$2
+        shift 2                
+    elif [ "$1" = "-ru" ] ; then
+        RU=$2
+        shift 2        
+    elif [ "$1" = "-tl" ] ; then
+        TL=$2
+        shift 2
+    elif [ "$1" = "-tu" ] ; then
+        TU=$2
+        shift 2
+    elif [ "$1" = "-sl" ] ; then
+        SL=$2
+        shift 2
+    elif [ "$1" = "-su" ] ; then
+        SU=$2
+        shift 2
+    elif [ "$1" = "-linear" ] ; then
+        INTERPOLATION=" -linear "
+        shift 1
+    elif [ "$1" = "-bspline" ] ; then
+        INTERPOLATION=" -bspline "
+        shift 1
+    elif [ "$1" = "-cspline" ] ; then
+        INTERPOLATION=" -cspline "
+        shift 1
+    elif [ "$1" = "-sinc" ] ; then
+        INTERPOLATION=" -sinc "
+        shift 1
+    else
+        Usage
+    fi
+done
+
+
+# Seed the random number generator.
+RANDOM=$$
+
+n=`wc -l $INPUT_FILE | sed -n 's/^\(.*\) .*/\1/p'`
+i=0
+
+# Loop through images in input file
+while [ "$i" -lt "$n" ] 
+do
+
+  IMG=`awk 'NR-1 == '$i' {print $1}' $INPUT_FILE`
+  MASK=`awk 'NR-1 == '$i' {print $2}' $INPUT_FILE`
+  
+  j=0
+  while [ "$j" -lt "$NUMBER_OF_TRIES" ] 
+  do
+  
+    # Generate random misregistration
+
+    generate_random $TL $TU 1 0
+    tx=$MY_RANDOM
+    
+    generate_random $TL $TU 1 0
+    ty=$MY_RANDOM
+    
+    generate_random $TL $TU 1 0
+    tz=$MY_RANDOM
+
+    generate_random $RL $RU 1 0
+    rx=$MY_RANDOM
+
+    generate_random $RL $RU 1 0
+    ry=$MY_RANDOM
+
+    generate_random $RL $RU 1 0
+    rz=$MY_RANDOM
+    
+    generate_random $SL $SU 100 1
+    sx=$MY_RANDOM
+
+    generate_random $SL $SU 100 1
+    sy=$MY_RANDOM
+
+    generate_random $SL $SU 100 1
+    sz=$MY_RANDOM
+    
+    echo "$IMG $MASK ${IMG}_${j} ${MASK}_${j} $tx $ty $tz $rx $ry $rz $sx $sy $sz " >> $OUTPUT_FILE
+   
+    command="regMisRegister.sh ${IMG} ${IMG}_${j} -rin ${MASK} -rout ${MASK}_${j} -tx $tx -ty $ty -tz $tz -rx $rx -ry $ry -rz $rz -sx $sx -sy $sy -sz $sz $INTERPOLATION"
+    echo "Running: $command"
+    eval $command
+    
+    # Increment loop counter
+    j=$(($j+1))
+  done
+  
+  
+  # Increment loop counter
+  i=$(($i+1))
+done
+  

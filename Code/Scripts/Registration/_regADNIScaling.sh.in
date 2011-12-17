@@ -1,0 +1,169 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+####################################################################################
+# Note that this script should only be called by regADNIScaling.sh, as all the 
+# argument checking is done there for every patient.
+####################################################################################
+
+IMAGE_DIR=$1
+BRAINREGION_DIR=$2
+OUTPUT_DIR=$3
+BASELINE_IMG=$4
+REPEAT_IMG=$5
+BASELINE_MASK=$6
+REPEAT_MASK=$7
+ITERATIONS=$8
+DILATIONS=$9
+BSI_LOWER=${10}
+BSI_UPPER=${11}
+PBRAIN=${12}
+PSKULL=${13}
+
+source _niftkCommon.sh
+
+function generate_dilated_brain_image()
+{
+  IMAGE=$1
+  MASK=$2
+  DILATION=$3
+  OUTPUT=$4
+  
+  makemask ${IMAGE}.img ${MASK} ${OUTPUT}.img -d $DILATION
+  makeroi -img ${OUTPUT}.img -out ${OUTPUT} -alt 0
+  makemask ${IMAGE}.img ${OUTPUT} ${OUTPUT}.img -k -bpp 16
+  rm  ${OUTPUT}
+}
+
+function generate_skull_image()
+{
+  FILE_INPUT=$1
+  FILE_OUTPUT=$2
+  DILATIONS=$3
+  
+  mri_convert -it nii -ot spm --out_data_type short $FSLDIR/data/standard/avg152T1.nii.gz avg152T1
+  mri_convert -it nii -ot spm --out_data_type short $FSLDIR/data/standard/MNI152_T1_2mm_skull.nii.gz MNI152_T1_2mm_skull
+  flirt -ref $FILE_INPUT.img -in avg152T1001.img -omat tmp.mat
+  fsl2air tmp.mat $FILE_INPUT.img MNI152_T1_2mm_skull001.img tmp2.air
+  reslice tmp2.air tmp3 -k -n 1 -o
+  niftkThreshold tmp3.img tmp4.hdr -l 1 -u 99999 -i 1 -o 0
+  niftkDilate tmp4.img tmp5.hdr  -r 1 -i $DILATIONS -d 1 -b 0
+  niftkMultiply $FILE_INPUT.img tmp5.img $FILE_OUTPUT.hdr
+
+  # Clean up
+  rm -f tmp.mat
+  rm -f tmp2.air
+  rm -f tmp3*
+  rm -f tmp4*
+  rm -f tmp5*
+  rm -f avg152T1*
+  rm -f MNI152_T1_2mm_skull*
+}
+
+# Generate the skull images.
+#generate_skull_image $IMAGE_DIR/$BASELINE_IMG $OUTPUT_DIR/${BASELINE_IMG}_skull $DILATIONS
+generate_skull_image $IMAGE_DIR/$REPEAT_IMG   $OUTPUT_DIR/${REPEAT_IMG}_skull $DILATIONS
+
+# Generate the brain images, set to 0 dilations.
+generate_dilated_brain_image $IMAGE_DIR/$BASELINE_IMG $BRAINREGION_DIR/$BASELINE_MASK 0 $OUTPUT_DIR/${BASELINE_IMG}_dilated
+generate_dilated_brain_image $IMAGE_DIR/$REPEAT_IMG   $BRAINREGION_DIR/$REPEAT_MASK   0 $OUTPUT_DIR/${REPEAT_IMG}_dilated
+  
+# Names of dof files
+rigid_dof=$OUTPUT_DIR/$BASELINE_IMG-$REPEAT_IMG.rigid.dof
+scale_dof=$OUTPUT_DIR/$BASELINE_IMG-$REPEAT_IMG.scale.dof
+
+echo "Starting registration loop"
+          
+# j simply counts through loop
+j=0
+
+while [ "$j" -lt "$ITERATIONS" ]
+do
+
+  if [ -e $rigid_dof ]; then
+    input_dof_arg=" -parameter $PBRAIN -dofin $rigid_dof "
+  else
+    input_dof_arg=" -parameter $PBRAIN "
+       
+  fi
+
+  if [ -e $OUTPUT_DIR/${REPEAT_IMG}_dilated_transformed.hdr ]; then
+    input_source_arg=$OUTPUT_DIR/${REPEAT_IMG}_dilated_transformed.hdr
+  else
+    input_source_arg=$OUTPUT_DIR/${REPEAT_IMG}_dilated.hdr
+  fi
+            
+  # First pass, new_rreg on brain images.
+
+  command="rreg $OUTPUT_DIR/${BASELINE_IMG}_dilated.hdr $input_source_arg -dofout $rigid_dof $input_dof_arg"  
+  echo $command
+  eval $command > ${rigid_dof}.output.txt
+    
+  # Then we must transform skull by rigid new_transformation
+            
+  command="transformation $OUTPUT_DIR/${REPEAT_IMG}_skull.hdr $OUTPUT_DIR/${REPEAT_IMG}_skull_transformed.hdr -dofin $rigid_dof -sinc " 
+  echo $command
+  eval $command
+    
+  if [ -e $scale_dof ]; then
+    input_dof_arg=" -dofin $scale_dof "
+  else
+    input_dof_arg=
+  fi
+
+  # Then do skull registration, scaling only.        
+    
+  command="areg $IMAGE_DIR/${BASELINE_IMG}.hdr $OUTPUT_DIR/${REPEAT_IMG}_skull_transformed.hdr -parameter $PSKULL -dofout $scale_dof $input_dof_arg -p9 -scale_only"
+  echo $command
+  eval $command > ${scale_dof}.output.txt
+    
+  # Then we must transform brain by scale new_transformation
+
+  command="transformation $OUTPUT_DIR/${REPEAT_IMG}_dilated.hdr $OUTPUT_DIR/${REPEAT_IMG}_dilated_transformed.hdr -dofin $scale_dof -sinc "
+  echo $command
+  eval $command
+            
+  # Increment loop counter
+  j=$(($j+1))
+
+done
+
+# Now we are done, lets measure the BBSI
+
+repeat_image_transformed=${OUTPUT_DIR}/${REPEAT_IMG}_transformed
+repeat_region_transformed=${OUTPUT_DIR}/${REPEAT_MASK}_transformed
+qnt=${OUTPUT_DIR}/${BASELINE_IMG}-${REPEAT_IMG}.qnt
+
+echo "===================================================="
+echo "Transforming ${REPEAT_IMG}..."
+echo "===================================================="
+execute_command "ffdtransformation.sh $IMAGE_DIR/${REPEAT_IMG}.img $IMAGE_DIR/${BASELINE_IMG}.img ${repeat_image_transformed}.tmp.img ${rigid_dof} -sinc"
+execute_command "ffdtransformation.sh ${repeat_image_transformed}.tmp.img $IMAGE_DIR/${BASELINE_IMG}.img ${repeat_image_transformed}.img ${scale_dof} -sinc"
+execute_command "ffdroitransformation.sh $BRAINREGION_DIR/$REPEAT_MASK ${repeat_region_transformed}.tmp $IMAGE_DIR/${REPEAT_IMG}.img $IMAGE_DIR/${BASELINE_IMG}.img ${rigid_dof}"
+execute_command "ffdroitransformation.sh ${repeat_region_transformed}.tmp ${repeat_region_transformed} $IMAGE_DIR/${REPEAT_IMG}.img $IMAGE_DIR/${BASELINE_IMG}.img ${scale_dof}"
+execute_command "bsi_calc dummy.air $BRAINREGION_DIR/${BASELINE_MASK} $IMAGE_DIR/${BASELINE_IMG}.img ${repeat_region_transformed} ${repeat_image_transformed}.img ${repeat_image_transformed}.img -3 -e 1 -d 1 -l ${BSI_LOWER} -u ${BSI_UPPER} -t 0.0 -c 0 -h ${repeat_region_transformed} > ${qnt}"
+
+\rm -f $OUTPUT_DIR/${REPEAT_IMG}_skull*  $OUTPUT_DIR/${BASELINE_IMG}_dilated*  $OUTPUT_DIR/${REPEAT_IMG}_dilated* $OUTPUT_DIR/${REPEAT_IMG}_skull_transformed* $OUTPUT_DIR/${REPEAT_IMG}_dilated_transformed* ${repeat_image_transformed}.tmp* ${repeat_region_transformed}.tmp*                     

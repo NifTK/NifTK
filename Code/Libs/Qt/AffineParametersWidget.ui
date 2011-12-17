@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DockWidget</class>
+ <widget class="QWidget" name="DockWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Affine Parameters Controller</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="rxLabel">
+         <property name="text">
+          <string>rx</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="rxDoubleSpinBox"/>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="ryLabel">
+         <property name="text">
+          <string>ry</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QDoubleSpinBox" name="ryDoubleSpinBox"/>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="rzLabel">
+         <property name="text">
+          <string>rz</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QDoubleSpinBox" name="rzDoubleSpinBox"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="txLabel">
+         <property name="text">
+          <string>tx</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="txDoubleSpinBox"/>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="tyLabel">
+         <property name="text">
+          <string>ty</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QDoubleSpinBox" name="tyDoubleSpinBox"/>
+       </item>
+       <item row="1" column="4">
+        <widget class="QLabel" name="tzLabel">
+         <property name="text">
+          <string>tz</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="5">
+        <widget class="QDoubleSpinBox" name="tzDoubleSpinBox"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="sxLabel">
+         <property name="text">
+          <string>sx</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDoubleSpinBox" name="sxDoubleSpinBox"/>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="syLabel">
+         <property name="text">
+          <string>sy</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QDoubleSpinBox" name="syDoubleSpinBox"/>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="szLabel">
+         <property name="text">
+          <string>sz</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QDoubleSpinBox" name="szDoubleSpinBox"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="k1Label">
+         <property name="text">
+          <string>k1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QDoubleSpinBox" name="k1DoubleSpinBox"/>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLabel" name="k2Label">
+         <property name="text">
+          <string>k2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QDoubleSpinBox" name="k2DoubleSpinBox"/>
+       </item>
+       <item row="3" column="4">
+        <widget class="QLabel" name="k3Label">
+         <property name="text">
+          <string>sz</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="5">
+        <widget class="QDoubleSpinBox" name="k3DoubleSpinBox"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+  <zorder>dockWidgetContents</zorder>
+  <zorder></zorder>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

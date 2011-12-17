@@ -1,0 +1,143 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run TBSS stats in a basic kind of way.
+# 
+function Usage()
+{
+  cat <<EOF
+
+This script runs TBSS stats on a batch of images.
+
+Usage: tbssBasicStats.sh directory [-g <int> <int> | -d <design.mat> <design.con> ] [ options ]
+
+Mandatory Arguments:
+    
+  directory                : A directory containing a TBSS study
+  
+                             EITHER
+                     
+  -g <int> <int>           : -g followed by exactly two numbers indicating the numbers
+                             in your control group and numbers in your patient group.
+                             This script then generates the most basic 2 group comparison
+                             by calling "design_ttest2 design <int> <int>" as mentioned
+                             on FSL webpage.
+                     
+                             OR
+                     
+  -d <filename> <filename> : -d followed by two filenames, corresponding to your
+                             design matrix and contast matrix.
+                                                  
+                             Note, the groups are processed alphabetically in tbssGroup.sh 
+                             (the last script you ran).
+                     
+Optional Arguments:
+                  
+  -n <int>                 : Number of permutations [default 500, set to 0 for exhaustive ]
+  -e email                 : Specify an email address, to be notified upon completion.                    
+  -z emailServer           : Specify a mail server, [default smtp.drc.ion.ucl.ac.uk]                    
+  -t ImageType             : Compute stats for a type other than FA, ImageType should match the column header use in the datafile for tbssGroup.sh                    
+  
+EOF
+exit 127                            
+}
+
+# Check args
+if [ $# -lt 3 ]; then
+  Usage
+fi
+
+source _niftkCommon.sh
+
+# Get the directory, and check it exists.
+directory=$1
+shift
+
+numberInGroup1=
+numberInGroup2=
+designMatrix=
+contrastMatrix=
+permutations=500
+email=
+server=smtp.drc.ion.ucl.ac.uk
+type=FA
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-g" ] ; then
+        numberInGroup1=$2
+        numberInGroup2=$3
+        shift 3
+    elif [ "$1" = "-d" ] ; then
+        designMatrix=$2
+        contrastMatrix=$3
+        shift 3
+    elif [ "$1" = "-n" ] ; then
+        permutations=$2
+        shift 2        
+    elif [ "$1" = "-e" ] ; then
+        email=$2
+        shift 2
+    elif [ "$1" = "-z" ] ; then
+        server=$2
+        shift 2                
+    elif [ "$1" = "-t" ] ; then
+        type=$2
+        shift 2                
+    else
+        Usage
+    fi
+done
+
+if [ "_$numberInGroup1" = "_" -a "_$designMatrix" = "_" ]; then
+  Usage
+fi
+
+if ! [ -d $directory ]; then
+  echo "Directory `$directory` doesn't exist"
+  exit 1
+fi
+
+if [ "_$numberInGroup1" = "_" -a "_$numberInGroup2" ]; then
+  echo "User specified design matrix=${designMatrix}, contrastMatrix=${contrastMatrix}"
+  cp ${designMatrix} $directory/stats
+  cp ${contrastMatrix} $directory/stats
+  cd $directory/stats
+  # NB, the skeleton mask is always the FA one
+  randomise -i all_${type}_skeletonised -o tbss_${type} -m mean_FA_skeleton_mask -d ${designMatrix} -t ${contrastMatrix} -n $permutations --T2 -V
+else
+  cd $directory/stats
+  design_ttest2 design_${type} $numberInGroup1 $numberInGroup2
+  echo "Generating design matrix=design.mat, contrastMatrix=design.con"
+  randomise -i all_${type}_skeletonised -o tbss_${type} -m mean_FA_skeleton_mask -d design_${type}.mat -t design_${type}.con -n $permutations --T2 -V  
+fi
+  
+finishTime=`date`
+if [ "_$email" = "_" ]; then
+  echo "Done at $finishTime"
+else
+  msg="tbssBasicStats.sh for $directory, finished at $finishTime"
+  echo "$msg"| smtp="$server" mailx -s "$msg" $email
+fi

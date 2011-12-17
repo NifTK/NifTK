@@ -1,0 +1,237 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+export SUBJECTS_DIR=`pwd`
+
+function Usage()
+{
+cat <<EOF
+
+Usage: fsRunStats.sh dataFile nameOfAverageSubject outputPrefix [options]
+  
+This script will run the FreeSurfer stats, as follows:
+
+  1. Parse the input file, checking directories exist, and checking which patient is in which group.
+  2. For each group, we extract thickness, volume, mean curvature and area for each hemisphere,
+     and then volume and mean for the whole brain.
+  3. Generates an average subject, using all your groups.
+  4. Resamples each surface to your average average subject.
+  5. Extracts cortical thickness at each vertex for each patient, storing in a .mgh file.
+  
+Mandatory Arguments:
+
+  dataFile               : is a file containing your patient names and groups.
+
+                           e.g.
+                           patient group
+                           BROLI   0
+                           CHARO   0
+                           CLAPA   1
+                           FARSA   1
+                           
+                           The CONTROL group should be group zero.
+                           Group numbers must be successive positive integers.
+                           If you specify a negative number, that patient will be ignored.
+  
+  nameOfAverageSubject   : The name of the average subject to output.
+  
+  outputPrefix           : A simple text identifier to group together all your results.  
+                           eg. "baseline" or "00" or "matt".
+                             
+Options:
+
+  -fwhm                  : fwhm                            [ default 20 ]
+  -start                 : Step to start at                [ default 1 ]
+  -stop                  : Step to stop at                 [ default 5 ]
+  -nv                    : No average volume               [ default is to do the volume ]
+  -email                 : Your email address.
+
+  -inputPrefix           : Used if you want to re-run step 5,
+                           with different FWHM. You can specify
+                           the prefix of the non-blurred file.
+  
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 3 ]; then
+  Usage
+fi
+
+# Pick up mandatory options
+DATA_FILE=$1
+shift
+NAME_OF_AVERAGE=$1
+shift
+OUTPUT_PREFIX=$1
+shift
+
+# Set defaults
+FWHM=20
+EMAIL=
+START=1
+STOP=5
+DO_AVERAGE_VOLUME=YES
+INPUT_PREFIX=$OUTPUT_PREFIX
+# Parse command line
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-fwhm" ] ; then
+        FWHM=$2
+        shift 2
+    elif [ "$1" = "-email" ] ; then
+        EMAIL=$2
+        shift 2
+    elif [ "$1" = "-start" ] ; then
+        START=$2
+        shift 2
+    elif [ "$1" = "-stop" ] ; then
+        STOP=$2
+        shift 2
+    elif [ "$1" = "-inputPrefix" ] ; then
+        INPUT_PREFIX=$2
+        shift 2
+    elif [ "$1" = "-nv" ] ; then
+        DO_AVERAGE_VOLUME=NO
+        shift 1
+    else
+        Usage
+    fi
+done
+
+echo "Using dataFile=$DATA_FILE, and nameOfAverage='$NAME_OF_AVERAGE', outputPrefix='$OUTPUT_PREFIX', fwhm=$FWHM, sending results to '$EMAIL', starting at step=$START, and finishing at step=$STOP"
+
+source _fsInclude.sh
+    
+check_freesurfer_env
+
+check_all_freesurfer_programs_exist
+
+# We need to iterate through the input file, reading patient names, and groups, ignoring negative numbers.
+PATIENTS[0]=
+PATIENTS[1]=
+PATIENTS[2]=
+PATIENTS[3]=
+PATIENTS[4]=
+min_group=100000
+max_group=-1
+
+n=`wc -l $DATA_FILE | sed -n 's/^\(.*\) .*/\1/p'`
+n=$(($n-1))
+i=1
+while [ "$i" -le "$n" ]
+do
+
+  patient=`awk 'NR-1 == '$i' {print $1}' $DATA_FILE`
+  group=`awk 'NR-1 == '$i' {print $2}' $DATA_FILE`
+
+  if [ "_$group" != "_" -a "$group" -ge "0" ]; then
+    
+    if [ "$group" -gt "$max_group" ]; then
+      max_group=$group
+    fi
+    
+    if [ "$group" -lt "$min_group" ]; then
+      min_group=$group      
+    fi
+    
+    # It IS important to keep the groups and subjects in order.
+    
+    tmp=${PATIENTS[$group]}
+    if [ "_$tmp" = "_" ]; then
+      PATIENTS[$group]="$patient"
+    else
+      PATIENTS[$group]="$tmp $patient"
+    fi
+    
+    # Increment counter for how many subjects we processed
+    j=$(($j+1))  
+      
+  fi 
+
+  # Increment loop counter
+  i=$(($i+1))  
+done
+
+j=$min_group
+all_groups=
+while [ "$j" -le "$max_group" ]
+do
+  echo "Group:$j:${PATIENTS[$j]}"
+
+  check_all_directories_in_string_exists "${PATIENTS[$j]}"
+  
+  # Again, it IS important to keep the groups and subjects in order.
+  all_groups="$all_groups ${PATIENTS[$j]} "
+  
+  j=$(($j+1))
+done
+
+echo "All groups=$all_groups"
+
+# Run stats for each Group.
+if [ "$START" -le "2" -a "2" -le "$STOP" ]; then
+
+  j=$min_group
+  while [ "$j" -le "$max_group" ]
+  do
+    create_stats_for_group $OUTPUT_PREFIX $j "${PATIENTS[$j]}"  
+    j=$(($j+1))
+  done
+
+fi
+
+# Create average subject
+if [ "$START" -le "3" -a "3" -le "$STOP"  ]; then
+
+  create_average_subject $NAME_OF_AVERAGE "${all_groups}" $DO_AVERAGE_VOLUME
+  
+fi
+
+# Resample to average
+if [ "$START" -le "4" -a "4" -le "$STOP" ]; then
+
+  resample_to_average $NAME_OF_AVERAGE $OUTPUT_PREFIX "${all_groups}" 
+  
+fi
+
+# Extract average stats
+if [ "$START" -le "5" -a "5" -le "$STOP" ]; then
+
+  create_average_stats $NAME_OF_AVERAGE $INPUT_PREFIX $OUTPUT_PREFIX $FWHM
+
+fi
+
+# And we are done, so email if we have one.
+if [ "_$EMAIL" != "_" ]; then
+
+  msg="$0 ${DATA_FILE} ${OUTPUT_PREFIX} -fwhm ${FWHM}: finished"
+  echo "$msg"| smtp="smtp.drc.ion.ucl.ac.uk" mailx -s "$msg" $EMAIL
+
+fi
+

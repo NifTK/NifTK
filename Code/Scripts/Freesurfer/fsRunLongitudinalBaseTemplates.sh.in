@@ -1,0 +1,110 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+export SUBJECTS_DIR=`pwd`
+
+function Usage()
+{
+cat <<EOF
+This script creates the unbiased template subject for FreeSurfer longitudinal analysis, for a batch of patients.
+
+Refer to: http://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing 
+This script is equivalent to running:
+  recon-all -base <templateid> -tp <tp1id> -tp <tp2id> ... -all
+  
+Usage: fsRunLongitudinalBaseTemplates.sh dataFile [options] 
+
+Mandatory Arguments:
+
+  dataFile               : is a file containing 1 line per patient, where each line contains a patient name, followed by
+                           the FreeSurfer directory name of each time point for that patient.
+                           
+                           eg.
+                           ALLHA ALLHA01 ALLHA02 ALLHA03
+                           ALLFA ALLFA01 ALLFA02 ALLFA03
+
+Options:
+
+  -echo                   : Just echo the commands, don't actually do it.  
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+# Pick up mandatory options
+DATA_FILE=$1
+shift
+
+# If no Data file, stop.
+if [ "_$DATA_FILE" = "_" ]; then
+  Usage
+fi
+
+# Parse options.
+ECHO=OFF
+DONE_OPTIONS=FALSE
+
+while [ "_$1" != "_" -a "$DONE_OPTIONS" = "FALSE" ] ; do
+    if [ "$1" = "-echo" ] ; then
+        ECHO="ON"
+        shift 1                               
+    else
+        DONE_OPTIONS="TRUE"
+    fi
+done
+
+source _fsInclude.sh
+    
+check_freesurfer_env
+
+check_all_freesurfer_programs_exist
+
+# Check each directory exists.
+cat ${DATA_FILE} | while read each_line 
+do
+  echo "Checking for directories in line: $each_line"
+  for name in $each_line
+  do
+    i=0
+    if [ $i -gt 0 ]; then
+      check_directory_exists "$SUBJECTS_DIR/$name"
+    fi
+    i=$(($i+1))
+  done
+done
+
+cat ${DATA_FILE} | while read each_line 
+do
+  echo "_fsRunLongitudinalBaseTemplate.sh $ECHO \"$each_line\" " >> fsRunLongitudinalBaseTemplate_$$_commands.txt
+done
+
+# And Run it.
+run_batch_job fsRunLongitudinalBaseTemplate_$$_commands.txt

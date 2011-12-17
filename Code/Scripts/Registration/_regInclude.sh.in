@@ -1,0 +1,210 @@
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-06-22 09:39:37 +0100 (Wed, 22 Jun 2011) $ 
+#  Revision          : $Revision: 6537 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+source _niftkCommon.sh
+
+function check_midas_env()
+{
+  check_directory_exists $MIDAS_BIN
+  check_directory_exists $AIR_BIN
+  check_directory_exists $FSLDIR
+}
+
+
+# Function    : Runs pre-align.
+#
+# Param       : $1 baseline.img (ie. with img extension)
+# Param       : $2 repeat.img   (ie. with img extension)
+# Param       : $3 mask for baseline image (no file extension)
+# Param       : $4 mask for repeat image (no file extension)
+# Param       : $5 output alignment file (including file extension, normally .pre)
+# Param       : $6 number of dof. (ie. 9)
+
+function reg_pre_align()
+{
+
+  command="$MIDAS_BIN/reg_prealign $1 $2 $3 $4 $5 -t1 0.2 -t2 0.2 -a -$6"
+  execute_command_or_else_stop "$command"
+
+  return 0  
+}
+
+# Function   : Runs AIR registration!
+#
+# Param      : $1 baseline image, (no file extension)
+# Param      : $2 repeat image, (no file extension)
+# Param      : $3 output .air filename (including .air file extension)
+# Param      : $4 DOF
+# Param      : $5 mask image for baseline image
+# Param      : $6 mask image for repeat image
+# Param      : $7 Pre-alignment result (including .pre file extension)
+# Param      : $8 output .ini filename (including .ini file extension)
+# Param      : $9 Initial sampling (81)
+# Param      : $10 Final sampling (1)
+# Param      : $11 Sampling reduction ratio
+# Param      : $12 convergence ratio
+# Param      : $13 output logfile.
+# Param      : $14 cost function arg 
+# Param      : $15 mayo stylee      
+# Param      : $16 baseline FWHM x   (optional)
+# Param      : $17 baseline FWHM y   (optional)
+# Param      : $18 baseline FWHM z   (optional)
+# Param      : $19 repeat FWHM x     (optional)
+# Param      : $20 repeat FWHM y     (optional)
+# Param      : $21 repeat FWHM z     (optional)
+
+function align_linear()
+{
+  TBASELINE_IMG=$1
+  TREPEAT_IMG=$2
+  TOUTPUT_AIR_FILE=$3
+  TDOF=$4
+  TBASELINE_MASK=$5
+  TREPEAT_MASK=$6
+  TPREALIGN=$7
+  TOUTPUT_INI_FILE=$8
+  TINITIAL_SAMPLING=$9
+  TFINAL_SAMPLING=${10}
+  TSAMPLING_REDUCTION=${11}
+  TCONVERGENCE_RATIO=${12}
+  TOUTPUT_LOG_FILE=${13}
+  TCOST_FUNCTION=${14}
+  MAYO_STYLE=${15}
+
+  TBX_FWHM=${16}
+  TBY_FWHM=${17}
+  TBZ_FWHM=${18}
+  TRX_FWHM=${19}
+  TRY_FWHM=${20}
+  TRZ_FWHM=${21}
+  
+  # These are optional, and you either specify all 3, or make do without
+  if [ "$TBX_FWHM" = "" -o "$TBY_FWHM" = "" -o "$TBZ_FWHM" = "" ]; then
+    B1=""
+  else
+    B1="-b1 $TBX_FWHM $TBY_FWHM $TBZ_FWHM"
+  fi
+  
+  # These are optional, and you either specify all 3, or make do without
+  if [ "$TRX_FWHM" = "" -o "$TRY_FWHM" = "" -o "$TRZ_FWHM" = "" ]; then
+    B2=""
+  else
+    B2="-b2 $TRX_FWHM $TRY_FWHM $TRZ_FWHM"
+  fi
+
+  # We only include initialization file if it exists.
+  if [ -f $TPREALIGN ]; then
+    PREALIGNMENT=" -f $TPREALIGN "
+  else
+    PREALIGNMENT=""
+  fi
+  
+  COST_FUNCTION_ARG=""
+  if [ "$TCOST_FUNCTION" != "" ]; then
+    COST_FUNCTION_ARG=" -x $TCOST_FUNCTION "
+  else
+    COST_FUNCTION_ARG=" -x 1 "
+  fi
+  
+  echo "In align_linear, \$MIDAS_BIN=$MIDAS_BIN, \$TBASELINE_IMG=$TBASELINE_IMG \$TREPEAT_IMG=$TREPEAT_IMG"
+  
+  T1=`$MIDAS_BIN/imginfo $TBASELINE_IMG.img -tanz 0.2 | cut -f 1 -d "." `
+  
+  if [ "$MAYO_STYLE" = "ON" ]; then
+    echo "Mayo Style reg"
+    T2=`$MIDAS_BIN/imginfo $TREPEAT_IMG.img  -max | sed 's/ *//' | cut -f 1 -d "." `
+    REPEAT_MASK_OPTION=""  
+    ITERATION_OPTIONS=" -r 100 -h 30 " 
+    MINUS_Q_OPTION=" "
+  else
+    echo "DRC Style reg"
+    T2=`$MIDAS_BIN/imginfo $TREPEAT_IMG.img -tanz 0.2 | cut -f 1 -d "." `
+    REPEAT_MASK_OPTION=" -e2 $TREPEAT_MASK "
+    ITERATION_OPTIONS=" -h 200 -r 200 "
+    MINUS_Q_OPTION=" -q "
+  fi
+  
+  echo "T1=$T1, T2=$T2"
+  
+  if [ -f $TOUTPUT_AIR_FILE ]; then
+    echo "Removing $TOUTPUT_AIR_FILE"
+    rm $TOUTPUT_AIR_FILE
+  fi
+
+  if [ -f $TOUTPUT_INI_FILE ]; then
+    echo "Removing $TOUTPUT_INI_FILE"
+    rm $TOUTPUT_INI_FILE
+  fi
+
+  command="$AIR_BIN/alignlinear $TBASELINE_IMG $TREPEAT_IMG $TOUTPUT_AIR_FILE -m $TDOF -e1 $TBASELINE_MASK $REPEAT_MASK_OPTION $PREALIGNMENT -g $TOUTPUT_INI_FILE y -p1 1 -p2 1 -s $TINITIAL_SAMPLING $TFINAL_SAMPLING $TSAMPLING_REDUCTION -c $TCONVERGENCE_RATIO $ITERATION_OPTIONS $MINUS_Q_OPTION -t1 $T1 -t2 $T2 -v $COST_FUNCTION_ARG $B1 $B2 > $TOUTPUT_LOG_FILE"
+  execute_command_or_else_stop "$command"
+
+  return 0
+}
+
+# Function  : Reslices an image after registration
+#
+# Param     : $1 transform
+# Param     : $2 image
+
+function reslice_image()
+{
+  command="$AIR_BIN/reslice $1 $2 -o -k -n 10"
+  execute_command_or_else_stop "$command"
+
+  return 0   
+}
+
+# Function  : Calls extend_header.
+#
+#           : Looks like its used to add a header from one image onto another,
+#           : like, from an original image, to a resliced, post reg image.
+# Param     : $1 registered image
+# Param     : $2 unregistered image
+# Param     : $3 output directory
+# Param     : $4 new series number
+
+function extend_image_header()
+{
+  command="$MIDAS_BIN/extend_header $1 $2 $3 $4"
+  execute_command_or_else_stop "$command"
+  
+  return 0
+  
+}
+
+# Function  : Reslices a region, such as a vent/brain
+#
+# Param     : $1 registration .air file
+# Param     : $2 region file
+# Param     : $3 output directory
+
+function reslice_region()
+{
+  command="$MIDAS_BIN/regslice $1 $2 $3 7 -3 -i 2"
+  execute_command_or_else_stop "$command"
+  
+  return 0  
+}
+

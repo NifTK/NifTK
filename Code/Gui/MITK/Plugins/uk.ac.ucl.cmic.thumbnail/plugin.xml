@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.thumbnail"
+          name="CMIC Thumbnail"
+          class="ThumbnailView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+</plugin>

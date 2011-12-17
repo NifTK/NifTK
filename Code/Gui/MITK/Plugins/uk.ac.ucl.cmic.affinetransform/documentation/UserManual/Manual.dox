@@ -1,0 +1,82 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.affinetransform} CMIC Affine Transform
+
+\image html icon.xpm "Icon of Affine Transform"
+
+\section Introduction
+This plugin can be used to apply any combination of the following transforms to an item selected in the data manager
+<ul>
+<li>Translation</li>
+<li>Rotation</li>
+<li>Scaling</li>
+<li>Shearing</li>
+</ul>
+The item can be an image, surface model or pointset. 
+
+An overview of imaging geometry can be found <a href="http://docs.mitk.org/nightly-qt4/GeometryOverviewPage.html">here</a>.
+
+In the case of an image: an image will have voxel coordinates that can be converted to millimetres by 
+using the images origin and voxel spacing. However, these millimetre coordinates are with respect to the 
+image axes. The image itself can be positioned at a certain location in 3D space. Thus, another set of 
+coordinates is necessary - the world coordinate system. This plugin modifies the images natural 
+coordinate system to world coordinate system transformation. Or more simply, this plugin will 
+rotate, translate, scale and shear this object within the world coordinate system.
+
+The additional consequence is that if we have two or more images, each with their own native 
+coordinate system defined by each of their axes, then we can position them all relative to each 
+other within the same world coordinate system.
+
+\section Selection Selection
+
+An item is selected by clicking on the item name in the Datamanager plugin. Only one item may be 
+selected at any one time. If zero, or more than one item is selected, the Affine Transform plugin
+controls will be greyed out. The single selected item, is considered the current item, whose transform
+will be modified by the plugin controls.
+
+\image html selection.png Items are listed by name in the Datamanager plugin.
+\image html selection2.png When selected, the names appear highlighted.
+
+\section Trans Specifiying a Transformation
+
+Once an item is selected the Affine Transform plugin controls can be used to apply an affine transform to the selected item.
+A transform is defined by either directly typing a numeric value in the rotation, translation, scaling or shearing
+spin boxes, or by clicking on the arrow buttons to the right hand side of each number.
+
+<ul>
+<li>Rotation specified in degrees, from -180 to 180 degrees inclusive. </li>
+<li>Scaling: specified in percent, from 10 to 1000 percent inclusive. </li>
+<li>Translations: specified in world units (mm), from -1000 to 1000 inclusive. </li>
+<li>Shear: specified as fractional value, from -1 to 1 inclusive. </li>
+</ul>
+
+\image html transform_specification.png "Specifying a transform."
+
+The rotations are normally performed with about the image origin. However it may be preferable
+to rotate about the centre of the bounding box of the selected item. This can be done by checking
+the "About centre" checkbox.
+
+\image html cor_checkbox.png "Centre of transform check box"
+
+Transformations are applied immediately to the selected item's geometry, giving immediate feedback.
+
+\section Loading Loading a Transformation
+
+A transformation can be loaded from file. Currently the file format is the ITK Affine Transform.
+The transform is described <a href="http://www.itk.org/Doxygen316/html/classitk_1_1AffineTransform.html">here</a>
+Click the "Load" button is clicked, and a standard File Open dialog box will be displayed, enabling the selection
+of a .txt or .tfm file. 
+
+\image html load_dialog.png "A standard File Open dialog box is used to load a transformation"
+
+When a transformation is loaded, it is applied before the parameters specified
+by the Affine Transformation plugin controls. Consequently, the controls are reset. Any further additional
+rotations, translations, scalings or skews will be applied after the currently loaded transformation.
+The loaded transformations cannot be composed meaning that if another transformation is loaded it will
+replace the previous.
+
+\section Saving Saving a Transformation
+
+Similarly, a transformation can be saved using a standard File Save dialog box by clicking the "Save" button.
+
+*/
+

@@ -1,0 +1,159 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run symmetricReg.sh in a batch.
+# 
+
+ndefargs=1
+data_file=
+command_file=symmetricRegBatch_$$_commands.txt     
+number_dof=9
+number_dilations=8
+just_reslice=0
+
+function Usage()
+{
+cat <<EOF
+
+This script is a convenient wrapper round our NifTK programs to run a batch of symmetric affine registrations.
+
+Usage: $0 dataFile [options] 
+
+Mandatory Arguments:
+  dataFile       : A file consisting of lines of text containing space or tab separated values:
+  
+                   baselineImage baselineRegion repeatImage repeatRegion outputDOFFile resampledBaselineImage resampledBaselineRegion resampledRepeatImage resampledRepeatRegion
+      
+                   Where you specify images, the images themselves should be .img and not .img.gz,
+                   and in the text file you specify the full file name (either absolute or relative to
+                   the current working directory).
+Options:
+
+  -dof n         : Degrees of freedom for rigid/affine registration [ default 9 ]
+  -dil m         : Number of dilations to apply to masks            [ default 8 ]
+  
+  -justreslice   : If the dof file exists, don't do registration, just 
+                   do the reslicing.
+  
+EOF
+exit 127
+}
+
+function IterateThroughFile()
+{
+  local filename=$1
+  local mode=$2
+  local dof=$3  
+  local dilations=$4
+  local just_reslice=$5
+  
+  n=`wc -l $filename | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+    baselineImage=`awk 'NR-1 == '$i' {print $1}' $filename`
+    baselineRegion=`awk 'NR-1 == '$i' {print $2}' $filename`
+    repeatImage=`awk 'NR-1 == '$i' {print $3}' $filename`
+    repeatRegion=`awk 'NR-1 == '$i' {print $4}' $filename`
+    outputDOFFile=`awk 'NR-1 == '$i' {print $5}' $filename`
+    resampledBaselineImage=`awk 'NR-1 == '$i' {print $6}' $filename`
+    resampledBaselineRegion=`awk 'NR-1 == '$i' {print $7}' $filename`
+    resampledRepeatImage=`awk 'NR-1 == '$i' {print $8}' $filename`
+    resampledRepeatRegion=`awk 'NR-1 == '$i' {print $9}' $filename`
+
+    if [ "$mode" = "GENERATE" ]; then
+
+      if [ $just_reslice -eq 1 ]; then
+        resliceArg=" -justreslice "
+      fi
+      
+      # Generate a file of all commands
+      echo "symmetricReg.sh $baselineImage $repeatImage $outputDOFFile $resampledBaselineImage $resampledRepeatImage -troi $baselineRegion -troiOut $resampledBaselineRegion -sroi $repeatRegion -sroiOut $resampledRepeatRegion -dof $dof -dil $dilations $resliceArg " >> $command_file 
+
+    else
+      check_file_exists $baselineImage
+      check_file_exists $baselineRegion
+      check_file_exists $repeatImage
+      check_file_exists $repeatRegion
+      checkf_writeable  $outputDOFFile
+      checkf_writeable  $resampledBaselineImage
+      checkf_writeable  $resampledBaselineRegion
+      checkf_writeable  $resampledRepeatImage
+      checkf_writeable  $resampledRepeatRegion
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+    
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+data_file=$1
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-dof)
+	    number_dof=$2
+	    shift 1
+	    ;;
+	-dil)
+	    number_dilations=$2
+	    shift 1
+	    ;;
+    -justreslice)
+	    just_reslice=1
+	    ;;	    
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+source _niftkCommon.sh
+
+if [ ! -f $data_file ]; then
+    exitprog "The data file doesn't exist" 1
+fi
+
+echo "Running with file:$data_file, dof=$number_dof, dilations=$number_dilations, just_reslice=$just_reslice"
+
+IterateThroughFile $data_file "CHECK"
+
+IterateThroughFile $data_file "GENERATE" $number_dof $number_dilations $just_reslice
+
+run_batch_job $command_file

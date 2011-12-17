@@ -1,0 +1,621 @@
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-07-08 15:42:17 +0100 (Fri, 08 Jul 2011) $ 
+#  Revision          : $Revision: 6700 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+IMGINFO=`which imginfo`
+MAKEMASK=`which makemask`
+ANCHANGE=`which anchange`
+MAKEROI=`which makeroi`
+REGCHANGE=`which regchange`
+FLIRT=`which flirt`
+FAST=`which fast`
+BC=`which bc`
+CUT=`which cut`
+DATE=`which date`
+COPY=`which cp`
+MOVE=`which mv`
+SED=`which sed`
+
+####################################################
+# Please try and keep exit codes in this file >= 950
+####################################################
+
+# Function  : Simply checks if a file exists, and exits if it doesn't.
+# Parameters: $1 file name
+
+function check_file_exists()
+{
+  local verbose="yes"
+  
+  if [ $# \> 1 ]
+  then 
+    verbose=$2
+  fi 
+
+  if [ "$1" = "" ]; then
+    echo "Empty filename supplied"
+    exit 950
+  fi
+  
+  if [ -f $1 ]; then
+    if [ "${verbose}" != "no" ]
+    then 
+      echo "File '$1' does exist"
+    fi 
+  else
+    echo "File '$1' does NOT exist!"
+    exit 951
+  fi
+
+}
+
+# Function  : Simply checks if a directory exists, and exits if it doesn't.
+# Parameters: $1 directory name
+
+function check_directory_exists()
+{
+  if [ -d $1 ]; then
+    echo "Directory '$1' does exist"
+  else
+    echo "Directory '$1' does NOT exist!"
+    exit 952
+  fi
+
+}
+
+# Function   : This is a bit drastic, can be used to execute any command
+#              and stops if the exit code of the command is non-zero.
+# Parameters : $1 a string containing a command. We simply 'eval' it.
+
+function execute_command_or_else_stop()
+{
+  evalstr=$1
+  echo=$2
+  
+  if [ "$echo" = "ON" ]; then
+  
+    echo "Echoing: execute_command_or_else_stop ($evalstr)"
+
+  else
+
+    echo "Evaluating: execute_command_or_else_stop ($evalstr)"
+
+    eval $evalstr
+   
+    if [ $? -ne 0 ]; then
+      echo "The command '$evalstr' failed, so emergency stop."
+      exit 999
+    fi
+  fi
+}
+
+# Function   : To Run a command, but print it out first.
+# Parameters : $1 a string containing a command. We simply 'eval' it.
+
+function execute_command()
+{
+  evalstr=$1
+  
+  echo "Evaluating: ($evalstr)"
+  
+  eval $evalstr
+
+}
+
+function execute_command_or_echo_it()
+{
+  evalstr=$1
+  echoit=$2
+  
+  if [ "$echoit" = "OFF" ]; then
+    eval $evalstr
+  else
+    echo $evalstr
+  fi
+}
+
+# Function  : Checks if a command exists by running 'which' on $1
+# Parameters: $1 command name like 'ls' or 'cat' or 'echo' or anything
+
+function check_program_exists()
+{
+  evalstr="which $1"
+  eval $evalstr 
+  if [ $? -ne 0 ]; then
+    echo "Didn't find '$1'!"
+    return 2
+  fi
+
+  return 0
+}
+
+# Function  : Checks if file $1 exists, and if so tries to run it.
+# Parameters: $1 filename
+
+function check_and_run_file()
+{
+  TMP=""
+  
+  if [ -f $1 ]; then
+    echo "File $1 exists"
+    TMP=$1
+  else
+    echo "File $1 doesn't exist"
+  fi
+  
+  if [ "$TMP" != "" ]; then
+    echo "Sourcing $TMP"
+    source $TMP  
+  fi 
+  
+}
+
+# Function  : Checks a whole load of files from command line to make sure they exist.
+# Parameters: $1 string containing file names.
+
+function check_all_files_in_string_exists()
+{
+  for name in $1
+  do
+    check_file_exists $name
+  done
+}
+
+# Function   : Runs a batch job. The difference is in the way programs are submitted to
+#              different clusters. CMIC runs Sungrid, and DRC runs Mosix.
+# Parameters : $1 File of commands. This is simply a text file of intended commands.
+#               Then this function sorts out how to run them.
+               
+function run_batch_job()
+{
+  command_file=$1
+  
+  sge_cluster="NO"
+  mosix_cluster="NO"
+  
+  check_program_exists "qsub"
+  
+  if [ $? -eq 0 ]; then
+    sge_cluster="YES"
+    
+    if [ "_${SGE_MEM}" != "_" ]; then
+      mem_arg=" -l vf=$SGE_MEM -l h_vmem=$SGE_MEM "
+    else
+      mem_arg=" "
+    fi
+    
+    if [ "_${SGE_TIME}" != "_" ]; then
+      time_arg=" -l h_rt=$SGE_TIME "
+    else
+      time_arg=" "
+    fi
+
+    if [ "_${SGE_STACK}" != "_" ]; then
+      stack_arg=" -l s_stack=$SGE_STACK "
+    else
+      stack_arg=" "
+    fi
+
+    if [ "_${SGE_ARGS}" != "_" ]; then
+      sge_args=" $SGE_ARGS "
+    else
+      sge_args=" "
+    fi
+
+  fi
+    
+  check_program_exists "mosenv"
+    
+  if [ $? -eq 0 ]; then
+    mosix_cluster="YES"
+  fi
+  
+  echo "SGE Cluster=$sge_cluster, Mosix Cluster=$mosix_cluster"
+
+  if [ "$sge_cluster" = "YES" -a "_$SKIP_SGE" != "_1" ]; then
+  
+    cat $command_file | while read each_line
+    do
+
+        # We need to take first argument, and work out the full path.
+        first=`echo $each_line | cut -f 1 -d " " `
+        command_name=`basename $first`
+        command_name_full_path=$first
+
+        # Also, need to separately get the arguments.
+        arguments=`echo $each_line | cut -f 2-999 -d " " `
+        if [ "$arguments" = "$first" ]; then
+          arguments=
+        fi
+
+        # Checking path
+        scriptOnPath=`which $command_name`
+        if [ $? -ne 0 ] && [ ! -f "${command_name_full_path}" ]; then
+          echo "Program $command_name isn't on your path, so I'm not submitting it."
+        else
+          if [ "${scriptOnPath}" != "" ]; then 
+            fullScriptPath=`ls $scriptOnPath`
+          elif [ -f "${command_name_full_path}" ]; then 
+            fullScriptPath=${command_name_full_path}
+          fi 
+          echo "Full path name that I'm submitting is: $fullScriptPath"
+
+          fileType=`file -L $fullScriptPath | grep ELF`
+          if [ "$fileType" = "" ]; then
+            type_arg=" -b n "
+          else
+            type_arg=" -b y "
+          fi
+          
+          if [ "${SGE_SHELL}" == "" ]
+          then
+            SGE_SHELL=/bin/sh
+          fi 
+
+          # SGE cluster seems to log things nicely, so just submit each line.
+          evalstr="qsub $mem_arg $time_arg $stack_arg $sge_args -j y -S ${SGE_SHELL} $type_arg -cwd -V $fullScriptPath $arguments"
+          echo "Submitting: SGE Cluster"
+          echo $evalstr
+          eval $evalstr
+
+          if [ "_${SGE_DELAY}" != "_" ]; then
+          	echo "Sleeping for ${SGE_DELAY} seconds. OK, this is a daft way to do it, but its better than nothing"
+          	sleep ${SGE_DELAY}
+          fi
+          
+        fi
+        
+    done
+    
+  elif [ "$mosix_cluster" = "YES" -a "_$SKIP_MOSIX" != "_1" ]; then
+  
+    # DRC runs Mosix, and you submit the whole file.
+    # But we need to make sure we handle logging well.
+    
+    # First generate a new command file, redirecting output to separate logs
+    
+    i=0
+    
+    cat $command_file | while read each_line
+    do
+      echo "$each_line > _log_$$_$i.txt" >> /tmp/commands.$$.txt
+
+      # Increment loop counter
+      i=$(($i+1))
+    done
+     
+    # Dump the commands
+    echo "Submitting: MOSIX Cluster"
+    cat /tmp/commands.$$.txt
+    
+    # Now run the whole lot in MOSIX
+    # -S8   : runs in batches of 8. We only have 8 nodes with 2 dual core processors.
+    # -J$$  : gives the whole lot the same job ID.
+    # -b -E : runs script in native mode, with MOSIX chosing the best node.
+    # -q    : adds jobs to MOSIX queue
+    # -w    : tries to continue in the presence of a non-permissable system call, displaying a warning if this occurs.
+
+    MOSIX_ARGS=""
+    if [ "_$MOSIX_NATIVE" = "_1" ]; then
+      MOSIX_ARGS=" -b -E -L "
+    fi
+     
+    mosenv -S8 -J$$ $MOSIX_ARGS -q -w /tmp/commands.$$.txt &
+      
+  else
+  
+    # Otherwise we run each command. None clustered mode.
+    cat $command_file | while read each_line
+    do
+      echo "Running:$each_line"
+      eval $each_line
+    done
+        
+  fi
+      
+}
+
+# Function  : Copies an analyze image to a given directory.
+#
+# Param     : $1 from directory
+# Param     : $2 to directory
+# Param     : $3 base file name, no .img or .hdr extension
+
+function copy_and_unzip_analyze_image()
+{
+  FROM=$1
+  TO=$2
+  IMAGE=$3
+
+  echo "Copying $FROM/$IMAGE to $TO/$IMAGE"
+  
+  command="cp $FROM/$IMAGE.hdr $TO/$IMAGE.hdr"
+  execute_command_or_else_stop "$command" "OFF"
+
+  if [ -f $FROM/$IMAGE.img.gz ];
+  then
+  
+    command="cp $FROM/$IMAGE.img.gz $TO/$IMAGE.img.gz"
+    execute_command_or_else_stop "$command" "OFF"
+        
+    command="gzip -df $TO/$IMAGE.img.gz"
+    execute_command_or_else_stop "$command" "OFF"
+    
+  else
+  
+   command="cp $FROM/$IMAGE.img $TO/$IMAGE.img"
+   execute_command_or_else_stop "$command" "OFF"
+   
+  fi
+
+}
+
+# Function   : Converts a segmented region into a masked image
+#
+# Param      : $1 image.img (ie. with img extension)
+# Param      : $2 region    (no file extension)
+# Param      : $3 output    (no file extension)
+# Param      : $4 number of dilations
+
+function make_mask()
+{
+  if [ "_$4" != "_" ]; then
+    DILATION_ARG=" -d $4 "
+  else
+    DILATION_ARG=""
+  fi
+  
+  command="$MIDAS_BIN/makemask $1 $2 $3 $DILATION_ARG "
+  execute_command_or_else_stop "$command"
+
+}
+
+# Function      : Check that all files in a string exist
+# Parameters $1 : String containing file names, such as might be available on a command line.
+
+function check_all_files_in_string_exists()
+{
+  echo "Checking arg '$1'"
+  for name in $1
+  do
+    check_file_exists "$name"
+  done
+}
+
+# Check that the input is an integer
+check_int(){
+    echo $1 | grep '^[0-9]*$' > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+	return 1
+    else
+	return 0
+    fi
+}
+
+# Check that we can create/write to a specified file
+checkf_writeable(){
+        
+    #If file does not exist, we have to
+    #create it and then test for writeability/existence
+    if [ ! -f $1 ]; then
+	  touch $1 > /dev/null 2>&1
+	  if [ $? -ne 0 ]; then
+	    return 2
+	  else
+	    if [ -w $1 ]; then
+	      rm -f $1
+	      return 0
+	    else
+	      rm -f $1
+	      return 2
+	    fi
+	  fi
+    else 
+	  touch $1 > /dev/null 2>&1
+	  if [ $? -ne 0 ]; then
+	    return 2
+	  else
+	    if [ -w $1 ]; then
+	      return 0
+	    else
+	      return 2
+	    fi
+	  fi
+    fi
+}
+
+# Exit with a message, status
+exitprog(){
+    echo -e "$1"
+    check_int $2
+    if [ $? -ne 0 ]; then
+	exit $2
+    else
+	exit 100
+    fi
+}
+
+# Write out a pretty message
+message(){
+    local dashes='==============' # 14
+    local spaces='                                      ' # 38
+    local msg=`echo "$1$spaces" | $CUT -c 1-38`
+    echo "$dashes $msg $dashes"
+}
+
+# Routine to run command and write a message
+runcommand(){
+    message "$2"
+    $1
+}
+
+stripimg() {
+    local inimg=$1
+    local roi=$2
+    local outimg=$3
+    local ndil=$4
+    local fill=$5
+    
+    # Get rid of any extension
+    outimg=`echo $outimg | sed -e 's/\.img.*//g'`
+    
+    if [ $ndil -gt 0 ]; then
+	if [ $fill -ne 0 ]; then
+	    $MAKEMASK $inimg $roi $outimg -k -bpp 16 -f -d $ndil > /dev/null
+	else
+	    $MAKEMASK $inimg $roi $outimg -k -bpp 16 -d $ndil > /dev/null
+	fi
+    else
+	if [ $fill -ne 0 ]; then
+	    $MAKEMASK $inimg $roi $outimg -k -bpp 16 -f > /dev/null
+	else
+	    $MAKEMASK $inimg $roi $outimg -k -bpp 16 > /dev/null
+	fi
+    fi
+}
+
+copyimg() {
+    local from=$1
+    local to=$2
+    execute_command "$ANCHANGE $from $to -sex m > /dev/null 2>&1"
+}
+
+make_midas_mask() {
+    local img=$1
+    local region=$2
+    local output=$3
+    local dilations=$4
+    
+    if [ $dilations -gt 0 ]; then
+      dilationArg="-d $dilations"
+    fi
+    
+    execute_command "makemask $img $region $output -bpp 16 -val 255 $dilationArg"
+}
+
+#Make the midas information (like patient name, etc)
+#in the roi like that of source_img
+extendroiheader() {
+    
+    local source_img=$1
+    local input_roi=$2
+    local output_roi=$3
+    local segmentor=$4
+    local quality=$5
+    local tmpdir=$6
+    
+    `$IMGINFO $source_img -info -datefmt > $tmpdir/imginfo.txt`
+    local study_number=`$CUT -f1 $tmpdir/imginfo.txt`
+    local series_number=`$CUT -f2 $tmpdir/imginfo.txt`
+    local patname=`$CUT -f5 $tmpdir/imginfo.txt`
+    local dims=`$IMGINFO $source_img -dims | cut -d' ' -f1,2,3`
+
+    # Scan date
+    local scandate=`$CUT -f4 $tmpdir/imginfo.txt`
+
+    # Put checks in on study and scan date
+    if [ $study_number -lt 1 ]; then
+	study_number=10001
+    fi
+    if [ $series_number -lt 1 ]; then
+	series_number=3
+    fi
+ 
+    # echo $scandate # debug
+
+    # Bad hack, bash was stuffing up the escapes of quote marks 
+    # so put command out to a script and then run that script. Bad...
+    anchange_cmd="$REGCHANGE $input_roi $output_roi $dims -study $study_number \
+	 -series $series_number -name \"$patname\" \
+	 -acq \"$scandate\" -segmentor \"$segmentor\" \
+	 -quality \"$quality\"" 
+    echo $anchange_cmd > $tmpdir/anchange.sh
+    /bin/sh $tmpdir/anchange.sh > /dev/null
+    rm -f $tmpdir/anchange.sh
+}
+
+roitomidas() {
+
+    local image=$1
+    local roi=$2
+    local output=$3
+    local fill=$4
+    local structure=$5
+    local method=$6
+    local quality=$7
+
+    local diroutput=0
+    local regtmpdir=`mktemp -d -q /usr/tmp/regtomidas.XXXXXX`
+    local fillflags=""
+
+    if [ -d $output ]; then
+	diroutput=1
+    fi
+    if [ $fill -eq 1 ]; then
+	fillflags=" -f "
+    fi
+
+    makemask $image $roi $regtmpdir/mask $fillflags
+
+    if [ $diroutput -eq 1 ]; then
+	regchange $regtmpdir/mask.img $output 100 100 100 -a $structure $method $quality
+    else
+	makeroi -img $regtmpdir/mask.img -out $regtmpdir/mask.roi -alt 0
+	extendroiheader $image $regtmpdir/mask.roi $output $method $quality $regtmpdir
+    fi
+   
+    rm -rf $regtmpdir
+}
+
+dilateroi() {
+    local inimg=$1
+    local roi=$2
+    local ndil=$3
+    local lower=$4
+    local upper=$5
+    local outroi=$6
+    drtmpdir=`mktemp -d -q /usr/tmp/dilateroi.XXXXXX`
+    $MAKEMASK $inimg $roi $drtmpdir/mask -cd $ndil $lower $upper
+    $MAKEROI -img $drtmpdir/mask.img -out $outroi -alt 0 -aut 1000 
+    rm -rf $drtmpdir
+}
+
+eroderoi() {
+    local inimg=$1
+    local roi=$2
+    local nero=$3
+    local outroi=$4
+    ertmpdir=`mktemp -d -q /usr/tmp/eroderoi.XXXXXX`
+    $MAKEMASK $inimg $roi $ertmpdir/mask -e $nero
+    $MAKEROI -img $ertmpdir/mask.img -out $outroi -alt 0 -aut 1000 
+    rm -rf $ertmpdir
+}
+
+dos_2_unix() {
+  checkf_writeable $1
+  if [ $? -ne 0 ]; then
+    echo "Can't run dos2unix on file=$1, but will continue anyway"
+  else
+    echo "Running dos2unix on file=$1"
+    dos2unix $1
+  fi
+}

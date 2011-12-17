@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.midasgeneralsegmentor"
+          name="MIDAS Irregular Volume Editor"
+          class="MIDASGeneralSegmentorView"
+          icon="resources/MIDASGeneralSegmentor.png" />
+  </extension>
+
+</plugin>

@@ -1,0 +1,98 @@
+/*=============================================================================
+
+ NifTK: An image processing toolkit jointly developed by the
+             Dementia Research Centre, and the Centre For Medical Image Computing
+             at University College London.
+ 
+ See:        http://dementia.ion.ucl.ac.uk/
+             http://cmic.cs.ucl.ac.uk/
+             http://www.ucl.ac.uk/
+
+ Last Changed      : $Date: 2011-09-14 11:37:54 +0100 (Wed, 14 Sep 2011) $
+ Revision          : $Revision: 7310 $
+ Last modified by  : $Author: ad $
+
+ Original author   : m.clarkson@ucl.ac.uk
+
+ Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+
+ This software is distributed WITHOUT ANY WARRANTY; without even
+ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the above copyright notices for more information.
+
+ ============================================================================*/
+#ifndef __itkVectorMagnitudeImageFilter_h
+#define __itkVectorMagnitudeImageFilter_h
+
+#include "itkVector.h"
+#include "itkImage.h"
+#include "itkImageToImageFilter.h"
+
+namespace itk {
+/**
+ * \class VectorMagnitudeImageFilter
+ * \brief This class takes a vector image as input, and outputs the Euclidean magnitude.
+ * 
+ */
+template < typename TScalarType, unsigned int NDimensions = 3>
+class ITK_EXPORT VectorMagnitudeImageFilter : 
+public ImageToImageFilter<
+                           Image< Vector<TScalarType, NDimensions>,  NDimensions>, // Input image
+                           Image< TScalarType,  NDimensions>                       // Output image
+                         >
+{
+  public:
+
+    /** Standard "Self" typedef. */
+    typedef VectorMagnitudeImageFilter                                                  Self;
+    typedef ImageToImageFilter<Image< Vector<TScalarType, NDimensions>,  NDimensions>,
+                               Image< TScalarType,  NDimensions>
+                              >                                                         Superclass;
+    typedef SmartPointer<Self>                                                          Pointer;
+    typedef SmartPointer<const Self>                                                    ConstPointer;
+
+    /** Standard typedefs. */
+    typedef Vector< TScalarType, NDimensions >                                          InputPixelType;
+    typedef Image< InputPixelType, NDimensions >                                        InputImageType;
+    typedef typename InputImageType::IndexType                                          InputImageIndexType;
+    typedef typename InputImageType::RegionType                                         InputImageRegionType;
+    typedef float                                                                       OutputPixelType;
+    typedef Image< OutputPixelType, NDimensions >                                       OutputImageType;
+
+    /** Method for creation through the object factory. */
+    itkNewMacro(Self);
+
+    /** Run-time type information (and related methods). */
+    itkTypeMacro(VectorMagnitudeImageFilter, ImageToImageFilter);
+
+    /** Get the number of dimensions we are working in. */
+    itkStaticConstMacro(Dimension, unsigned int, NDimensions);
+
+  protected:
+    VectorMagnitudeImageFilter();
+    ~VectorMagnitudeImageFilter() {};
+    void PrintSelf(std::ostream& os, Indent indent) const;
+    
+    // Check before we start.
+    virtual void BeforeThreadedGenerateData();
+    
+    // The main method to implement in derived classes, note, its threaded.
+    virtual void ThreadedGenerateData( const InputImageRegionType &outputRegionForThread, int);
+    
+  private:
+    
+    /**
+     * Prohibited copy and assignment. 
+     */
+    VectorMagnitudeImageFilter(const Self&); 
+    void operator=(const Self&); 
+    
+}; // end class
+
+} // end namespace
+
+#ifndef ITK_MANUAL_INSTANTIATION
+#include "itkVectorMagnitudeImageFilter.txx"
+#endif
+
+#endif

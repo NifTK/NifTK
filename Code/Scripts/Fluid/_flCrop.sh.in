@@ -1,0 +1,67 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-05-04 11:18:56 +0100 (Wed, 04 May 2011) $ 
+#  Revision          : $Revision: 6051 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+####################################################################################
+# Note that this script should only be called by regAIR.sh, as all the 
+# argument checking is done there for every patient.
+####################################################################################
+
+# Pick up command line parameters
+BASELINE_IMG=$1
+BASELINE_MASK=$2
+REPEAT_IMG=$3
+FIRSTDILATIONS=$4
+SECONDDILATIONS=$5
+FWHM=$6
+MASK_NAME=$7
+BASENAME_BASELINE=$8
+BASENAME_REPEAT=$9
+REPEAT_MASK=${10}
+
+# Include necessary functions
+source _niftkCommon.sh
+
+# Makemask works with gzipped and non-gzipped images
+            
+execute_command_or_else_stop "makemask $BASELINE_IMG $BASELINE_MASK $MASK_NAME -bpp 16"
+execute_command_or_else_stop "niftkDilateMaskAndCrop -i $BASELINE_IMG -m ${MASK_NAME}.img -t 127 -f $FIRSTDILATIONS -s $SECONDDILATIONS -g $FWHM -o ${BASENAME_BASELINE}_cropped.hdr"
+
+if [ "${REPEAT_MASK}" == "" ]
+then 
+  execute_command_or_else_stop "niftkDilateMaskAndCrop -i $REPEAT_IMG   -m ${MASK_NAME}.img -t 127 -f $FIRSTDILATIONS -s $SECONDDILATIONS -g $FWHM -o ${BASENAME_REPEAT}_cropped.hdr"
+else
+  tmp_dir=`mktemp -d -q ~/temp/__flCrop.XXXXXX`
+  makemask ${REPEAT_IMG} ${REPEAT_MASK} ${tmp_dir}/mask.img -bpp 16 
+  execute_command_or_else_stop "niftkDilateMaskAndCrop -i $REPEAT_IMG   -m ${tmp_dir}/mask.img -t 127 -f $FIRSTDILATIONS -s $SECONDDILATIONS -g $FWHM -o ${BASENAME_REPEAT}_cropped.hdr"
+  rm -rf ${tmp_dir}
+fi 
+
+
+
+
+
+
+

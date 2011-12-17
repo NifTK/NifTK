@@ -1,0 +1,196 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to take an image and optionally a region, and mis register them by a known amount.
+# 
+
+function Usage()
+{
+cat <<EOF
+
+This script will mis-register an image by a known amount, using the ITK++ package.
+
+Usage: $0 image output [options ]
+
+Mandatory Arguments:
+ 
+  image                 : input image, without an .img or .hdr extension.
+  output                : output image, without an .img or .hdr extension.
+  
+Options:
+
+  -rin                  : region input file
+  -rout                 : region output file
+  -tx                   : x translation in mm [default 0]
+  -ty                   : y translation in mm [default 0]
+  -tz                   : z translation in mm [default 0]
+  -rx                   : x rotation in degrees [ default 0 ]
+  -ry                   : y rotation in degrees [ default 0 ]
+  -rz                   : z rotation in degrees [ default 0 ]
+  -sx                   : x scale factor        [ default 1 ]
+  -sy                   : y scale factor        [ default 1 ]
+  -sz                   : z scale factor        [ default 1 ]
+  -linear               : Linear interpolation
+  -bspline              : bspline interpolation
+  -cspline              : spline interpolation
+  -sinc                 : sinc interpolation
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 2 ]; then
+  Usage
+fi
+
+INPUT_IMAGE=$1
+shift
+OUTPUT_IMAGE=$1
+shift
+
+echo "Input Image=$INPUT_IMAGE"
+echo "Output Image=$OUTPUT_IMAGE"
+
+# Set defaults
+REGION_INPUT_FILE=
+REGION_OUTPUT_FILE=
+TX=0
+TY=0
+TZ=0
+RX=0
+RY=0
+RZ=0
+SX=1
+SY=1
+SZ=1
+INTERPOLATION=" -linear "
+
+# Parse command line
+while [ "_$1" != "_"  ] ; do
+    if [ "$1" = "-rin" ] ; then
+        REGION_INPUT_FILE=$2
+        shift 2
+    elif [ "$1" = "-rout" ] ; then
+        REGION_OUTPUT_FILE=$2
+        shift 2        
+    elif [ "$1" = "-tx" ] ; then
+        TX=$2
+        shift 2
+    elif [ "$1" = "-ty" ] ; then
+        TY=$2
+        shift 2
+    elif [ "$1" = "-tz" ] ; then
+        TZ=$2
+        shift 2
+    elif [ "$1" = "-rx" ] ; then
+        RX=$2
+        shift 2
+    elif [ "$1" = "-ry" ] ; then
+        RY=$2
+        shift 2
+    elif [ "$1" = "-rz" ] ; then
+        RZ=$2
+        shift 2
+    elif [ "$1" = "-sx" ] ; then
+        SX=$2
+        shift 2
+    elif [ "$1" = "-sy" ] ; then
+        SY=$2
+        shift 2
+    elif [ "$1" = "-sz" ] ; then
+        SZ=$2
+        shift 2
+    elif [ "$1" = "-linear" ] ; then
+        INTERPOLATION=" -linear "
+        shift 1
+    elif [ "$1" = "-bspline" ] ; then
+        INTERPOLATION=" -bspline "
+        shift 1
+    elif [ "$1" = "-cspline" ] ; then
+        INTERPOLATION=" -cspline "
+        shift 1
+    elif [ "$1" = "-sinc" ] ; then
+        INTERPOLATION=" -sinc "
+        shift 1
+    else
+        Usage
+    fi
+done
+
+# Generate dof file.
+cat <<EOF > /tmp/$$.dof
+DOF: 15
+0.0     0.0     $TX
+0.0     0.0     $TY
+0.0     0.0     $TZ
+0.0     0.0     $RX
+0.0     0.0     $RY
+0.0     0.0     $RZ
+0.0     0.0     $SX
+0.0     0.0     $SY
+0.0     0.0     $SZ
+0.0     0.0     0
+0.0     0.0     0
+0.0     0.0     0
+0.0     0.0     0
+0.0     0.0     0
+0.0     0.0     0
+EOF
+
+# Transform image
+command="transformation $INPUT_IMAGE.hdr $OUTPUT_IMAGE.hdr -dofin /tmp/$$.dof $INTERPOLATION "
+echo "Running: $command"
+eval $command
+
+# Now do region, if we have one.
+if [ "_$REGION_INPUT_FILE" != "_" ]; then
+
+  if [ "_$REGION_OUTPUT_FILE" = "_" ]; then
+    REGION_OUTPUT_FILE="${REGION_INPUT_FILE}_t"
+  fi 
+
+  # Create a mask
+  command="makemask $INPUT_IMAGE.img ${REGION_INPUT_FILE} ${REGION_INPUT_FILE}_m -bpp 16"
+  echo "Running: $command"
+  eval $command
+  
+  # transform it
+  command="transformation ${REGION_INPUT_FILE}_m.hdr ${REGION_INPUT_FILE}_m_t.hdr -dofin /tmp/$$.dof $INTERPOLATION "
+  echo "Running: $command"
+  eval $command
+  
+  # Convert it back
+  command="makeroi -img ${REGION_INPUT_FILE}_m_t.img -out $REGION_OUTPUT_FILE -alt 127" 
+  echo "Running: $command"
+  eval $command
+  
+  # Clean up
+  rm /tmp/$$.dof
+  rm ${REGION_INPUT_FILE}_m.*
+  rm ${REGION_INPUT_FILE}_m_t.*
+  rm ${INPUT_IMAGE}.log
+fi

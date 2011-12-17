@@ -1,0 +1,199 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run a batch of SIENA processes. Can be used to submit jobs to cluster.
+# 
+
+ndefargs=1
+input_file=""
+image_directory="."
+region_directory="."
+output_directory="."
+siena_options=""
+bet_options=""
+use_regions=1
+
+function Usage()
+{
+  cat <<EOF
+  
+This script will run SIENA using Midas segmented regions, for a whole batch of subjects.
+
+Usage: $0 file.txt [ options ]
+ 
+Mandatory Arguments:
+
+  file.txt       : Text file containing filenames of images and regions you want to process
+                   You don't put the full path.
+                   
+                   The format is:
+                   
+                   baseline_image repeat_image baseline_region repeat_region
+                   
+                   If you don't specify regions, then this script will just run 
+                   a normal SIENA
+                   
+Options:
+
+  -id directory  : Directory containing images  [ default . ]
+  -rd directory  : Directory containing regions [ default . ]
+  -od directory  : Directory where output goes  [ default . ]
+  
+  -s             : SIENA options in quotes      [ default -s " -d " ]  
+  -b             : BET options in quotes        [ default -b " -B " ]
+
+  -noregions     : Ignore the regions if they are specified in file.txt
+  
+EOF
+exit 127                            
+}
+
+function iterate_through_input_file()
+{
+
+  local input_file=$1
+  local use_regions=$2
+  local action=$3
+  
+  # Iterate through file. Each line should contain
+  # baselineImg repeatImage 
+
+  n=`wc -l $input_file | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+    BASELINE_IMG=`awk 'NR-1 == '$i' {print $1}' $input_file`
+    REPEAT_IMG=`awk 'NR-1 == '$i' {print $2}' $input_file`
+    BASELINE_REGION=`awk 'NR-1 == '$i' {print $3}' $input_file`
+    REPEAT_REGION=`awk 'NR-1 == '$i' {print $4}' $input_file`
+    
+    if [ "$action" = "SIENA" ]; then
+
+        # Generate a file of all commands
+        if [ $use_regions -eq 1 ]; then
+          region_args=" $BASELINE_REGION $REPEAT_REGION "
+        fi
+        
+        echo "_sienaJob.sh $image_directory $BASELINE_IMG $REPEAT_IMG $output_directory/$BASELINE_IMG-to-$REPEAT_IMG-without-region $output_directory/$BASELINE_IMG-to-$REPEAT_IMG-with-region $siena_options $bet_options $region_directory $region_args " >> sienaBatch_$$_commands.txt  
+
+    else
+    
+      echo "Checking the right files exist"
+      check_file_exists ${image_directory}/${BASELINE_IMG}.img
+      check_file_exists ${image_directory}/${BASELINE_IMG}.hdr
+      check_file_exists "${image_directory}/${REPEAT_IMG}.img"
+      check_file_exists "${image_directory}/${REPEAT_IMG}.hdr"
+      
+      if [ "_$BASELINE_REGION" != "_" -a $use_regions -eq 1 ]; then
+        check_file_exists "${region_directory}/${BASELINE_REGION}"
+      fi
+      
+      if [ "_$REPEAT_REGION" != "_" -a $use_regions -eq 1 ]; then
+        check_file_exists "${region_directory}/${REPEAT_REGION}"
+      fi
+      
+    fi
+
+    # Increment loop counter
+    i=$(($i+1))    
+  done
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+ 
+# Get required parameters
+input_file=$1
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+    -id)
+	    image_directory=$2
+	    shift 1
+	    ;;
+    -rd)
+	    region_directory=$2
+	    shift 1
+	    ;;	    
+    -od)
+	    output_directory=$2
+	    shift 1
+	    ;;
+    -s)
+	    siena_options=\"$2\"
+	    shift 1
+	    ;;	    
+	-b)
+	    bet_options=\"$2\"
+	    shift 1
+	    ;;
+	-noregions)
+	    use_regions=0
+	    ;;
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+source _niftkCommon.sh
+
+check_directory_exists $image_directory
+check_directory_exists $region_directory
+check_directory_exists $output_directory
+check_file_exists $input_file
+
+dos_2_unix $input_file
+
+# Choose some sensible defaults for SIENA options, and BET options.
+if [ "$siena_options" = "" ]; then
+  siena_options="\" -d \""
+fi
+
+if [ "$bet_options" = "" ]; then
+  bet_options="\" -B \""
+fi
+
+echo "Running $0 with image_directory=$image_directory, region_directory=$region_directory, input_file=$input_file, output_directory=$output_directory and siena_options=$siena_options and bet_options=$bet_options"
+
+# We first simply scan through file, cos then we can stop early if there are missing images
+iterate_through_input_file $input_file $use_regions "CHECKONLY"
+
+# We then iterate through file, generating SIENA jobs to a file.
+iterate_through_input_file $input_file $use_regions "SIENA"
+
+# Now run the file of jobs.
+run_batch_job sienaBatch_$$_commands.txt
+
+

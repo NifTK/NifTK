@@ -1,0 +1,306 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run a NifTK specific region propogation.
+# We use niftkBlockMatching for affine registration, 
+# and niftkFFD for Free Form Deformation.
+# Optionally we use F3D for Free Form Deformation.
+# 
+source _niftkCommon.sh
+
+thisprog=`basename $0`
+progdir=`dirname $0`
+
+ptmpdir=/tmp/propReg.$$
+tmpdir=${TMPDIR:-$ptmpdir}
+
+ndefargs=4
+keeptmp=0
+areg_only=0
+xsubject=0
+coarse=0
+use_f3d=0
+morph=0
+
+function Usage()
+{
+cat <<EOF
+
+MIDAS FFD Region propogation script. Performs an affine + FFD registration
+of baseline.img to repeat.img, and uses the transformation to propogate
+baseline.roi onto the repeat.img, with repeat.roi the output. 
+The FFD proceeds in 32mm, 16mm and 8mm control point spacings.
+
+Usage: $0 baseline.img repeat.img baseline.roi repeat.roi [-options]
+
+Mandatory Arguments:
+
+  baseline.img      : Baseline image that has had a segmentation done
+  baseline.roi      : Baseline brain region  
+  repeat.img        : Repeat image, not segmented
+  repeat.roi        : Repeat brain region, to be computed
+
+Options:
+
+  -areg             : Perform affine registration only
+  -coarse           : Perform affine + coarse FFD registration only (32mm)
+  -xsubject         : Scans are cross subject, go down to 4mm control point spacings
+  -morph            : Perform morphological operations to tidy up region.
+                    : (Ops = 1 unconditional erosion, 2 60%-160% mean brain dils)
+  -F3D              : Use F3D recalage for Free Form Deformation             
+  -tmpdir dir       : Set temporary workspace directory (If not set, will
+                      use environment variable \$TMPDIR, and then allocate
+                      one in /tmp (e.g., $ptmpdir) if \$TMPDIR not set
+
+  -keeptmp          : Keep temporary workspace directory (default = remove)
+    
+EOF
+exit 127
+}
+
+if [ $# -lt $ndefargs ]; then
+    Usage
+    exitprog "$help\nError: Incorrect number of arguments...."
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+baseline_img=$1
+baseline_roi=$2
+repeat_img=$3
+repeat_roi=$4
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+      -tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+      -keeptmp)
+	    keeptmp=1
+	    ;;
+      -areg)
+	    areg_only=1
+	    ;;
+      -coarse)
+	    coarse=1
+	    ;;
+      -xsubject)
+        xsubject=1
+	    ;;
+      -morph)
+	    morph=1
+	    ;;
+      -F3D)
+        use_f3d=1
+	    ;;
+    esac
+    shift 1
+done
+
+if [ ! -f $baseline_img ]; then
+    exitprog "Baseline image $baseline_img does not exist" 1
+fi
+if [ ! -f $repeat_img ]
+then
+    exitprog "Repeat image $repeat_img does not exist" 1
+fi
+if [ ! -f $baseline_roi ]
+then
+    exitprog "Baseline roi $baseline_roi does not exist" 1
+fi
+if [ $xsubject -eq 1 -a $coarse -eq 1 ]; then
+    exitprog "You cannot have both -xsubject and -coarse" 1
+fi
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+	exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+message "Temp directory is $tmpdir"
+
+thedate=`$DATE`
+message "Start time is $thedate"
+
+################################################################
+message "Copying masks"
+################################################################
+
+# do the anchange just to copy them across
+execute_command "copyimg $baseline_img $tmpdir/baseline.img"
+execute_command "copyimg $repeat_img $tmpdir/repeat.img"
+execute_command "cp $baseline_roi $tmpdir/baseline.roi"
+
+################################################################
+message "Making baseline mask"
+################################################################
+
+baseline_mask=$tmpdir/baseline_mask
+execute_command "make_midas_mask $tmpdir/baseline.img $tmpdir/baseline.roi $baseline_mask 0"
+
+################################################################
+message "Guess ROI:Registration"
+################################################################
+
+# Final interpolator for resliced image it LINEAR,
+# as the resliced image is only needed for debugging purposes.
+
+blockMatchingExecutable=`which niftkBlockMatching`
+blockMatchingArgs="-ti $tmpdir/baseline.img -si $tmpdir/repeat.img -ot $tmpdir/areg.dof -oi $tmpdir/resliced_affine.hdr -om $tmpdir/areg.mat -tm $baseline_mask.img -d 2 -tr 2 -fi 2 -st 3 -N 4 -O 4 -D1 4 -D2 1 -r 1.0 -ln 3 -stl 0 -spl 2 "
+execute_command "$blockMatchingExecutable $blockMatchingArgs"
+
+################################################################
+message "Guess ROI:Propogate"
+################################################################
+
+execute_command "$MAKEMASK $tmpdir/baseline.img $tmpdir/baseline.roi $tmpdir/baseline_mask_large -bpp 16 -val 30000"
+
+transformationExecutable=`which niftkTransformation`
+transformationArgs="-ti $tmpdir/repeat.img -si $tmpdir/baseline_mask_large.img -o $tmpdir/baseline_mask_large_trans.hdr -g $tmpdir/areg.dof -invertAffine -j 2"
+execute_command "$transformationExecutable $transformationArgs"
+
+orientation=`$IMGINFO $tmpdir/repeat.img -orient`
+
+execute_command "$ANCHANGE $tmpdir/baseline_mask_large_trans.img $tmpdir/baseline_mask_large_trans -setorient $orientation"
+execute_command "$MAKEROI -img $tmpdir/baseline_mask_large_trans.img -out $tmpdir/guess.roi -alt 15000
+extendroiheader $tmpdir/repeat.img $tmpdir/guess.roi $tmpdir/guess.roi "propogateRegion" "Transformed" $tmpdir"
+
+################################################################
+message "FFD registration"
+################################################################
+regFFDScript=`which regFFD.sh`
+
+if [ $areg_only -ne 0 ]; then
+    execute_command "$COPY $tmpdir/areg.dof $tmpdir/global.dof"
+else
+
+    
+    if [ $coarse -eq 1 ]; then
+    
+      resolutionLevelArgs=" -inc 16 2 -lev 0 1 "
+
+    elif [ $xsubject -eq 1 ]; then
+    
+      resolutionLevelArgs=" -inc 4 3 -lev 0 2 "
+      
+    else
+    
+      resolutionLevelArgs=" -inc 8 3 -lev 0 2 "
+    fi
+
+    if [ $use_f3d -eq 1 ]; then
+    
+      f3dArg=" -F3D "
+      
+      if [ -f $tmpdir/areg.mat ]; then
+        affineDofArg=" -adof $tmpdir/areg.mat "
+      fi
+     
+      dofOutputArg="$tmpdir/ffd.mha"
+      
+    else
+
+      if [ -f $tmpdir/areg.dof ]; then
+        affineDofArg=" -adof $tmpdir/areg.dof "
+      fi
+    
+      dofOutputArg="$tmpdir/ffd.dof"
+    fi
+
+   # Final interpolator for resliced image it LINEAR,
+   # as the resliced image is only needed for debugging purposes.
+    
+    execute_command "$regFFDScript $tmpdir/repeat.img $tmpdir/baseline.img $dofOutputArg -res $tmpdir/resliced_ffd.hdr -dil 5 -troi $tmpdir/guess.roi -sroi $tmpdir/baseline.roi $resolutionLevelArgs $affineDofArg $f3dArg -invertAffine -interp 2  "
+       
+fi
+
+################################################################
+message "Propogating ROI"
+################################################################
+transformationExecutable=`which niftkTransformation`
+
+if [ $use_f3d -eq 1 ]; then
+  dofFileArg=" -di $dofOutputArg"
+else
+  dofFileArg=" -df $dofOutputArg"
+fi 
+
+execute_command "$MAKEMASK $tmpdir/repeat.img $tmpdir/baseline.roi $tmpdir/baseline_prop -bpp 16 -val 30000"
+execute_command "$transformationExecutable -ti $tmpdir/repeat.img -si $tmpdir/baseline_prop.img -o $tmpdir/output.hdr -g $tmpdir/areg.dof  $dofFileArg -j 2 -invertAffine "
+orientation=`$IMGINFO $tmpdir/repeat.img -orient`
+execute_command "$ANCHANGE $tmpdir/output.img $tmpdir/output -setorient $orientation"
+execute_command "$MAKEROI -img $tmpdir/output.img -out $tmpdir/output.roi -alt 15000"
+execute_command "extendroiheader $tmpdir/output.img $tmpdir/output.roi $tmpdir/repeat.roi "propogateRegion" "Transformed" $tmpdir"
+
+if [ $morph -eq 1 ]; then
+    execute_command "eroderoi $tmpdir/repeat.img $tmpdir/repeat.roi 1 $tmpdir/repeat.roi"
+    execute_command "dilateroi $tmpdir/repeat.img $tmpdir/repeat.roi 2 60 160 $tmpdir/repeat.roi"
+fi
+
+execute_command "roitomidas $tmpdir/repeat.img $tmpdir/repeat.roi $repeat_roi 0 Brain Propogator Propogated"
+
+################################################################
+message "Cleanup"
+################################################################
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+
+message "Finished"
+exit 0

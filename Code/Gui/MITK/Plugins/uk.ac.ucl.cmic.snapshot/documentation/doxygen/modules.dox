@@ -1,0 +1,18 @@
+/**
+  \defgroup uk_ac_ucl_cmic_snapshot uk.ac.ucl.cmic.snapshot Plugin
+  \ingroup CMICPlugins
+
+  \brief Plugin to provide the ability to take a screenshot of the main editor window.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk), and Anind Duttaroy (a.duttaroy@cs.ucl.ac.uk).
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_snapshot_internal Internal
+  \ingroup uk_ac_ucl_cmic_snapshot
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.snapshot plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

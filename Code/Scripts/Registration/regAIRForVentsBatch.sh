@@ -1,0 +1,193 @@
+#!/bin/bash
+
+if [ ${_NIFTK_DEBUG} == 1 ]
+then 
+  set -x
+fi 
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-08-11 08:28:23 +0100 (Wed, 11 Aug 2010) $ 
+#  Revision          : $Revision: 3647 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : leung@drc.ion.ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+source _niftkCommon.sh
+
+# Default params
+ndefargs=2
+input_file=
+output_dir=
+command_filename=regAIRForVents-`date +"%Y%m%d-%H%M%S"`.txt
+kn_dilation=3
+dof=12
+brain_dilation=0
+use_bbsi_reg_param="no"
+bbsi_h_param=200
+bbsi_r_param=200
+bbsi_threshold="yes"
+bbsi_hessian="yes"
+
+function Usage()
+{
+cat <<EOF
+
+Wrapper to perform AIR vents registration and compute VBSI using automatic window selection, running in a batch.
+
+Usage: $0 input_csv_file output_dir [options]
+
+Mandatory Arguments:
+
+  input_csv_file    : An input csv file containing the following format:
+                      baseline_image,baseline_brain_region,repeat_image,repeat_brain_region,baseline_vents_region,repeat_vents_region
+                    
+                      For example:
+                      02073-003-1_dbc,/var/lib/midas/data/adni-main/regions/brain/Liz_02073_1197552882,03913-003-1_dbc,/var/drc/scratch1/leung/testing/adni-3t-test/reg-tmp/Pro_93285003_1209670526,baseline_vents,repeat_vents
+                    
+                      Full paths should be specified. Images are assumed to be uncompressed.
+                    
+  output_dir        : Output directory
+  
+                      1. *.csv file containing the BSI values.
+                    
+Options:
+
+  -kn_dilation [int]    : Number of dilations for KN-BSI [3]. 
+  -dof [int]            : Degree of freedom for brain-to-brain registration [12]. 
+  -brain_dilation [int] : Brain mask dilation for brain-to-brain registration [0]. 
+  -use_bbsi_reg_param [yes/no] : Use BBSI AIR registration paramater [no]. 
+  -bbsi_h_param [int]   : -h parameter in AIR alignlinear [200]. 
+  -bbsi_r_param [int]   : -r parameter in AIR alignlinear [200]. 
+  -bbsi_threshold [yes/no] : Use thresholding in AIR [yes].
+  -bbsi_hessian [yes/no] : Use Hessian fix in AIR [yes]. 
+                       
+EOF
+exit 127
+}
+
+function IterateThroughFile()
+{
+  local mode=$1
+  
+  cat ${input_file} | while read each_line 
+  do
+    baseline_image=`echo ${each_line} | awk -F, '{printf $1}'`
+    baseline_region=`echo ${each_line} | awk -F, '{printf $2}'`
+    repeat_image=`echo ${each_line} | awk -F, '{printf $3}'`
+    repeat_region=`echo ${each_line} | awk -F, '{printf $4}'`
+    baseline_vents_region=`echo ${each_line} | awk -F, '{printf $5}'`
+    repeat_vents_region=`echo ${each_line} | awk -F, '{printf $6}'`
+
+    registered_dir_baseline=`dirname  $baseline_image`
+    
+    if [ "$mode" = "CHECK" ]; then
+      check_file_exists "${baseline_image}.img" "no"
+      check_file_exists "${baseline_region}" "no"
+      check_file_exists "${repeat_image}.img" "no"
+      check_file_exists "${repeat_region}" "no"
+    else
+      echo "regAIRForVents.sh ${baseline_image} ${baseline_region} ${baseline_vents_region} ${repeat_image} ${repeat_region} ${repeat_vents_region} ${dof} ${brain_dilation} ${kn_dilation} ${use_bbsi_reg_param} ${bbsi_h_param} ${bbsi_r_param} ${bbsi_threshold} ${bbsi_hessian} ${output_dir}" >>   ${command_filename} 
+    fi
+
+  done
+}
+
+
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get mandatory parameters
+
+input_file=$1
+output_dir=$2
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+    -kn_dilation)
+      kn_dilation=$2
+      shift 1 
+      ;;
+    -dof)
+      dof=$2
+      shift 1 
+      ;;
+    -brain_dilation)
+      brain_dilation=$2
+      shift 1 
+      ;;
+    -use_bbsi_reg_param)
+      use_bbsi_reg_param=$2
+      shift 1
+      ;;
+    -bbsi_h_param)
+      bbsi_h_param=$2
+      shift 1
+      ;;
+    -bbsi_r_param)
+      bbsi_r_param=$2
+      shift 1
+      ;;
+    -bbsi_threshold)
+      bbsi_threshold=$2
+      shift 1
+      ;;
+    -bbsi_hessian)
+      bbsi_hessian=$2
+      shift 1
+      ;;
+    -*)
+      Usage
+      exitprog "Error: option $1 not recognised" 1
+      ;;
+    esac
+    shift 1
+done
+
+
+# Check command line arguments
+
+if [ ! -f "$input_file" ]; then
+    exitprog "Input file $input_file does not exist" 1
+fi
+
+mkdir -p ${output_dir}
+if [ ! -d "$output_dir" ]; then
+    exitprog "Output directory $output_dir does not exist" 1
+fi
+
+dos_2_unix ${input_file}
+
+# Once to check all files exist
+IterateThroughFile "CHECK"
+
+# Once to actually do it.
+IterateThroughFile "CALCULATE" 
+
+run_batch_job ${command_filename}
+
+
+
+
+
+
+

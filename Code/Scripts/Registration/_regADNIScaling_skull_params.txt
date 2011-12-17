@@ -1,0 +1,13 @@
+Target blurring (in mm) = 0
+Target resolution (in mm) = 0
+Source blurring (in mm) = 0
+Source resolution (in mm)  = 0
+No. of resolution levels = 1
+No. of bins = 128
+No. of iterations = 25
+No. of steps = 6
+Length of steps = 1
+Similarity measure = CC
+Epsilon = 0.0000001
+Optimization method = SteepestGradientDescent
+Interpolation mode = Linear

@@ -1,0 +1,33 @@
+#! /usr/bin/env python 
+# -*- coding: utf-8 -*-
+
+import findExecutable
+import shlex, time, subprocess
+
+
+def runCommand( cmdIn, paramsIn, logFileName=None ) :
+    
+    # Is the executable available?
+    if findExecutable.findExecutable( cmdIn ) == None:
+        print('Cannot find %s in path. Sorry.' % cmdIn )
+        return
+    
+    print('Running:\n -> %s %s' % ( cmdIn, paramsIn ) )
+    cmd = shlex.split ( cmdIn + ' ' + paramsIn ) 
+
+    tic = time.clock()
+    
+    if logFileName == None :
+        ret=subprocess.Popen( cmd ).wait()
+        
+    else:
+        logFile = file( logFileName, 'a+' )
+        ret = subprocess.Popen( cmd, stdout = logFile, stderr = logFile ).wait()
+        logFile.close()
+
+    print('Return code: ' + str(ret) )
+        
+    toc = time.clock()
+    
+    print('Done. This took %.2fs' %( toc-tic ) )
+    pass

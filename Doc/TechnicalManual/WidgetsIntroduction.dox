@@ -1,0 +1,49 @@
+/**
+
+\page CTKWidgetsIntro Introduction To Widgets
+
+\ref CTKWidgetsIntroduction
+
+\ref CTKWidgetsConventions
+
+\section CTKWidgetsIntroduction Introduction
+
+Any Qt Graphical User Interface (GUI) will at some point need to design and implement additional Qt widgets. 
+It is imperative that these are designed and unit tested properly. However, this can be difficult to achieve in practice.
+
+\section CTKWidgetsCurrentStatus Current Status (delete when Future Status is valid).
+
+There is a set of widgets in NifTK/Code/Ext/Qt.  These are not unit tested, do not use
+Qt properties very well, but for the first version of NiftyView, they were relatively simple
+and so, they were simply used, as is.
+
+\section CTKWidgetsFutureStatus Future Status (delete this subheading when this paragraph is valid).
+
+The <a href="http://www.commontk.org">Common Toolkit</a> provides a widget library for medical image
+applications. These widgets were developed for the <a href="http://www.slicer.org">Slicer</a>
+project during the port from KW Widgets (based on Tcl/Tk) to Qt. In addition, the Slicer team
+developed a Qt widget testing framework to extensively unit test widgets. In order to collaborate
+with the medical imaging community, this project will design Qt widgets to the same quality,
+using identical code conventions, identical testing procedures, and submit new widgets directly
+to the Common Toolkit project. The use of an external project will encourage (read "force") our
+project to design widgets in a generic, loosly coupled fashion.
+
+\section CTKWidgetsConventions Coding Conventions
+
+Take a look in the <a href="link">CTK Source tree</a> at Libs/Widgets. New widgets should be developed according to:
+
+<ul>
+<li>File prefix is "ctk"</li>
+<li>File suffix is .h or .cpp</li>
+<li>Strictly adopt Qt <a href="link">coding conventions</a></li>
+<li>Make full use of Qt macros such as Q_OBJECT, Q_ENUMS, Q_PROPERTY for every property</li>
+<li>Use QT_SIGNALS: macro instead of declaring "public signals" to give compatibility with Boost signals</li>
+<li>Place Icons and UI files under the Resources folder</li>
+<li>Unit tests must be developed, and placed under the Libs/Widgets/Testing directory</li>
+<li>Designer plugins for each widget must be developed, and placed under the Libs/Widgets/Plugins</li> 
+</ul>
+
+All this is fairly obvious if you start with the assumption that you definitely will be contributing to the CTK library.
+Furthermore, each NifTK developer should register with the CTK mailing list, and ask questions, and contribute there.
+
+*/

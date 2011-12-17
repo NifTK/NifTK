@@ -1,0 +1,220 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Script to refine a label (GM/WM/CSF image), which at the moment implements
+# Chloe Hutton's method for growing the grey matter outwards, and detecting sulci voxels.
+
+source _niftkCommon.sh
+
+ndefargs=2
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+white_label=1
+grey_label=2
+csf_label=3
+
+function Usage()
+{
+cat <<EOF
+
+Takes a segmented GM/WM/CSF labelled image, and refines it by using Chloe Hutton's
+method of growing the GM outwards, calculating thickness, and detecting sulci voxels.
+See: Hutton et. al. NeuroImage 2008 paper: doi:10.1016/j.neuroimage.2008.01.027
+
+Usage: cteRefineLabelImage.sh label.nii output.nii [options] 
+
+Mandatory Arguments:
+
+    label.nii              : Label image, containing exactly 3 distinct values, corresponding
+                             to GM, WM, CSF. Default is assumed to be WM=1, GM=2, CSF=3
+                      
+    output.nii             : The output.
+    
+Options:
+
+    -white                 : The white value in label.nii. Default 1
+
+    -grey                  : The grey value in label.nii. Default 2
+        
+    -csf                   : The csf value in label.nii. Default 3
+
+    -tmproot <directory>   : Define a root directory for temporary files. Default /tmp
+                             The difference between this option and the next, is that this
+                             one takes the root directory (eg. /tmp) and creates a sub directory
+                             with a process ID in it. (eg. /tmp/seg.1234) whereas the next option
+                             just uses exactly what you give it.
+                            
+    -tmpdir <directory>    : Set temporary workspace directory.
+
+    -keeptmp               : Keep temporary workspace directory
+  
+    
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+input_image=$1
+output_image=$2
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+	-tmproot)
+	    tmp_root=$2
+	    shift 1
+	    ;;
+    -keeptmp)
+	    keeptmp=1
+	    ;;
+	-grey)
+	    grey_label=$2
+	    shift 1
+	    ;;
+	-white)
+	    white_label=$2
+	    shift 1
+	    ;;
+	-csf)
+	    csf_label=$2
+	    shift 1
+	    ;;
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+ptmpdir=$tmp_root/cte.$$
+if [ "_$tmpdir" = "_" ]; then
+  tmpdir=$ptmpdir
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+if [ ! -f $input_image ]; then
+    exitprog "The input image does not exist!" 1
+fi
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+		exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+################################################################
+# The Start.
+################################################################
+
+message "Temp directory is $tmpdir"
+thedate=`$DATE`
+message "Start time is $thedate"
+
+echo "Starting $0 with:"
+echo "  input_image=$input_image"
+echo "  output_image=$output_image"
+echo "  white_label=$white_label"
+echo "  grey_label=$grey_label"
+echo "  csf_label=$csf_label"
+
+execute_command_or_else_stop "cp $input_image ${tmpdir}/label.nii"
+execute_command_or_else_stop "niftkCTEHuttonLayering -i ${tmpdir}/label.nii -o ${tmpdir}/label.layered.nii -g $grey_label -w $white_label -c $csf_label"
+execute_command_or_else_stop "niftkThreshold -i ${tmpdir}/label.nii -o ${tmpdir}/label.thresholded.wm.nii -in 1 -out 0 -u $white_label -l $white_label"
+execute_command_or_else_stop "niftkThreshold -i ${tmpdir}/label.nii -o ${tmpdir}/label.thresholded.gm.nii -in 1 -out 0 -u $grey_label -l $grey_label"
+execute_command_or_else_stop "niftkThreshold -i ${tmpdir}/label.nii -o ${tmpdir}/label.thresholded.csf.nii -in 1 -out 0 -u $csf_label -l $csf_label"
+execute_command_or_else_stop "niftkThreshold -i ${tmpdir}/label.layered.nii -o ${tmpdir}/label.layered.csf.nii -in 1 -out 0 -u $csf_label -l $csf_label"
+execute_command_or_else_stop "niftkAdd -i ${tmpdir}/label.thresholded.wm.nii -j ${tmpdir}/label.thresholded.gm.nii -o ${tmpdir}/label.thresholded.wmgm.nii"
+execute_command_or_else_stop "niftkDilate -i ${tmpdir}/label.thresholded.wmgm.nii -o ${tmpdir}/label.thresholded.wmgm.dilated.nii -r 1 -it 2 -d 1 -b 0"
+execute_command_or_else_stop "niftkAnd -i ${tmpdir}/label.thresholded.wmgm.dilated.nii -j ${tmpdir}/label.layered.csf.nii -o ${tmpdir}/csf.mask.nii"
+execute_command_or_else_stop "niftkSkeletonize -i ${tmpdir}/csf.mask.nii -o ${tmpdir}/csf.mask.skeleton.nii -b 0 -f 1 -connectedOnInput -connectedOnOutput -doht"
+execute_command_or_else_stop "niftkAdd -i ${tmpdir}/label.thresholded.csf.nii -j ${tmpdir}/csf.mask.skeleton.nii -o ${tmpdir}/csf.mask.skeleton.added.nii"
+execute_command_or_else_stop "niftkThreshold -i ${tmpdir}/csf.mask.skeleton.added.nii -o ${tmpdir}/csf.mask.skeleton.thresholded.nii -in 1 -out 0 -u 2 -l 1"
+execute_command_or_else_stop "niftkSubtract -i ${tmpdir}/csf.mask.skeleton.thresholded.nii -j ${tmpdir}/label.thresholded.csf.nii -o ${tmpdir}/gm.mask.toremove.nii"
+execute_command_or_else_stop "niftkSubtract -i ${tmpdir}/label.thresholded.gm.nii -j ${tmpdir}/gm.mask.toremove.nii -o ${tmpdir}/gm.mask.removed.nii"
+execute_command_or_else_stop "niftkSwapIntensity -i ${tmpdir}/label.thresholded.wm.nii -o ${tmpdir}/final.wm.nii -a 1 -b $white_label"
+execute_command_or_else_stop "niftkSwapIntensity -i ${tmpdir}/gm.mask.removed.nii -o ${tmpdir}/final.gm.nii -a 1 -b $grey_label"
+execute_command_or_else_stop "niftkSwapIntensity -i ${tmpdir}/csf.mask.skeleton.thresholded.nii -o ${tmpdir}/final.csf.nii -a 1 -b $csf_label"
+execute_command_or_else_stop "niftkAdd -i ${tmpdir}/final.wm.nii -j ${tmpdir}/final.gm.nii -o ${tmpdir}/final.wmgm.nii"
+execute_command_or_else_stop "niftkAdd -i ${tmpdir}/final.wmgm.nii -j ${tmpdir}/final.csf.nii -o ${tmpdir}/final.all.nii"
+execute_command_or_else_stop "\mv ${tmpdir}/final.all.nii $output_image"
+
+################################################################
+# The Finish.
+################################################################
+
+message "Cleanup"
+thedate=`$DATE`
+message "Time is $thedate"
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+message "Finished"
+	    

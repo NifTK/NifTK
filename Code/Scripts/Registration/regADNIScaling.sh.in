@@ -1,0 +1,199 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+
+function Usage()
+{
+cat <<EOF
+
+This script runs a scaling algorithm based loosely on Freeborough Fox JCAT 20(6) 1996, 1012-1022,
+except this is all intensity based, and needs a special version of areg.
+
+Also requires FSL to be installed.
+
+Usage: $0 imageDir regionDir fileContainingImageNames outputDir [options ]
+
+Mandatory Arguments:
+
+  imageDir                 : is the directory containing your images
+  regionDir                : is the directory containing your regions
+  fileContainingImageNames : is a file containing:
+
+                             baselineImage baselineMask repeatImage repeatMask
+                             eg.
+                             01727-003-1_resc        Mat_01727_1196694584    03061-003-1_resc        Pro_03061_1197570313
+
+  outputDir                : is where the output is written to.
+
+Options:
+
+  -l 0.0<->1.0             : is the lower BSI threshold                   [default 0.45]
+  -u 0.0<->1.0             : is the upper BSI threshold                   [default 0.65]
+  -d                       : number of dilations to apply to skull mask   [default 5   ]
+  -i                       : number of iterations between m DOF and 3 DOF [default 2   ]
+  -pbrain                  : params file for brain reg                    
+  -pskull                  : params file for skull reg
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 4 ]; then
+  Usage
+fi
+
+function iterate_through_input_file()
+{
+
+  FILEOFDETAILS=$1
+  DO_THE_REG=$2
+  
+  # Iterate through file. Each line should contain
+  # baselineImg baselineMask repeatImage repeatMask
+
+  n=`wc -l $FILEOFDETAILS | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+    BASELINE_IMG=`awk 'NR-1 == '$i' {print $1}' $FILEOFDETAILS`
+    BASELINE_MASK=`awk 'NR-1 == '$i' {print $2}' $FILEOFDETAILS`
+    REPEAT_IMG=`awk 'NR-1 == '$i' {print $3}' $FILEOFDETAILS`
+    REPEAT_MASK=`awk 'NR-1 == '$i' {print $4}' $FILEOFDETAILS`
+
+    if [ "$DO_THE_REG" = "REGISTER" ]; then
+
+      # Generate a file of all commands
+      echo "_regADNIScaling.sh $IMAGE_DIR $BRAINREGION_DIR $OUTPUT_DIR $BASELINE_IMG $REPEAT_IMG $BASELINE_MASK $REPEAT_MASK $ITERATIONS $DILATIONS $BSI_LOWER $BSI_UPPER $PBRAIN $PSKULL " >> regADNIScaling_$$_commands.txt
+
+    else
+    
+      echo "Checking the right files exist"
+      
+      echo "Checking for images $BASELINE_IMG, $REPEAT_IMG in $IMAGE_DIR and $BASELINE_MASK, $REPEAT_MASK in $BRAINREGION_DIR"
+  
+      check_file_exists $IMAGE_DIR/$BASELINE_IMG.img
+      check_file_exists $IMAGE_DIR/$BASELINE_IMG.hdr
+  
+      check_file_exists $IMAGE_DIR/$REPEAT_IMG.img
+      check_file_exists $IMAGE_DIR/$REPEAT_IMG.hdr
+  
+      check_file_exists $BRAINREGION_DIR/$BASELINE_MASK
+      check_file_exists $BRAINREGION_DIR/$REPEAT_MASK
+
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+}
+
+# Pick up command line parameters
+IMAGE_DIR=$1
+shift
+BRAINREGION_DIR=$1
+shift
+FILEDETAILS=$1
+shift
+OUTPUT_DIR=$1
+shift
+
+# Set defaults
+DOF=6
+BSI_LOWER=0.45
+BSI_UPPER=0.65
+DILATIONS=5
+ITERATIONS=2
+PBRAIN=`dirname $0`/_regADNIScaling_brain_params.txt
+PSKULL=`dirname $0`/_regADNIScaling_skull_params.txt
+
+# Parse command line
+
+while [ "_$1" != "_"  ] ; do
+    if [ "$1" = "-m" ] ; then
+        DOF=$2
+        shift 2
+    elif [ "$1" = "-l" ] ; then
+        BSI_LOWER=$2
+        shift 2
+    elif [ "$1" = "-u" ] ; then
+        BSI_UPPER=$2
+        shift 2
+    elif [ "$1" = "-d" ] ; then
+        DILATIONS=$2
+        shift 2
+    elif [ "$1" = "-i" ] ; then
+        ITERATIONS=$2
+        shift 2
+    elif [ "$1" = "-pbrain" ] ; then
+        PBRAIN=$2
+        shift 2                        
+    elif [ "$1" = "-pskull" ] ; then
+        PSKULL=$2
+        shift 2                                                        
+    else
+        Usage
+    fi
+done
+
+source _regInclude.sh
+
+check_directory_exists $OUTPUT_DIR
+
+check_file_exists $FILEDETAILS
+
+# Check for important env variables.
+ 
+if [ "_${FSLDIR}" = "_" ]; then
+  echo "Is FSL setup correctly? I can't find: \$FSLDIR"
+  exit
+fi
+
+check_file_exists $FSLDIR/data/standard/avg152T1.nii.gz
+check_file_exists $FSLDIR/data/standard/MNI152_T1_2mm_skull.nii.gz
+
+# Now check for specific programs
+
+check_program_exists flirt
+check_program_exists mri_convert
+check_program_exists areg
+check_program_exists rreg
+check_program_exists transformation
+check_program_exists ffdtransformation.sh
+check_program_exists ffdroitransformation.sh
+
+echo "Running $0 with images from $IMAGE_DIR, brain regions from $BRAINREGION_DIR, image details from $FILEDETAILS, DOF=$DOF, output=$OUTPUT_DIR, lower BSI=$BSI_LOWER, upper BSI=$BSI_UPPER, dilations=$DILATIONS, iterations=$ITERATIONS, pbrain=$PBRAIN, pskull=$PSKULL "
+
+# We first simply scan through file, cos then we can stop early if there are missing files
+iterate_through_input_file $FILEDETAILS "CHECKONLY"
+
+# We then iterate through file, generating commands to a file.
+iterate_through_input_file $FILEDETAILS "REGISTER"
+
+# Now run the file of commands.
+run_batch_job regADNIScaling_$$_commands.txt

@@ -1,0 +1,233 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run our standard AIR linear and BSI pipeline on a batch of images,
+# as specified in an input filename.
+# 
+
+function Usage()
+{
+cat <<EOF
+
+This script is a convenient wrapper round our standard AIR and BSI process.
+
+Usage: $0 imageDir regionDir fileContainingImageNames outputDir [options ]
+
+Mandatory Arguments:
+ 
+  imageDir                 : is the directory containing your images
+  regionDir                : is the directory containing your regions
+  fileContainingImageNames : is a file containing:
+  
+                             baselineImage baselineMask repeatImage repeatMask
+                             eg.
+                             01727-003-1_resc        Mat_01727_1196694584    03061-003-1_resc        Pro_03061_1197570313
+
+  outputDir                : is where the output is writen to.
+  
+Options:
+
+  -m 6|9|12                : the registration model DOF           [default 9   ]
+  -l 0.0<->1.0             : is the lower BSI threshold           [default 0.45]
+  -u 0.0<->1.0             : is the upper BSI threshold           [default 0.65]
+  -d integer               : number of dilations to apply to mask [default 0   ]
+  -s 2|3                   : 2|3 the number of stages             [default 3   ]
+                             If you put a minus before the number, the registration ONLY does that stage.
+                             ie. -s -3 means, JUST do stage 3.
+  -x 1|2|3                 : cost function in alignlinear         [default 1   ]
+  -dbc                     : include differential bias correction [default off ]
+  -mayo                    : mayo style                           [default off ]
+                             This sets:
+                               -t2 = max image value
+                               -r 100, -h 30
+                               -e2 off, i.e. no repeat mask
+                               -q  off
+                               
+  -justdbc                 : for running just the dbc in case you forgot it!                               
+                             Assumes you already ran the registration via this script,
+                             as it looks for certain files that this script creates.
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 4 ]; then
+  Usage
+fi
+
+# Function   : Function will iterate through file fileContainingImageNames, 
+#              and if $2="REGISTER" it will execute the registration.
+# Param      : $1 filename, which should be fileContainingImageNames from command line
+# Param      : $2 REGISTER if you want it to start registration, otherwise we just check the 
+#              files exist.
+
+function iterate_through_input_file()
+{
+
+  FILEOFDETAILS=$1
+  DO_THE_REG=$2
+  
+  # Iterate through file. Each line should contain
+  # baselineImg baselineMask repeatImage repeatMask
+
+  n=`wc -l $FILEOFDETAILS | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+    BASELINE_IMG=`awk 'NR-1 == '$i' {print $1}' $FILEOFDETAILS`
+    BASELINE_MASK=`awk 'NR-1 == '$i' {print $2}' $FILEOFDETAILS`
+    REPEAT_IMG=`awk 'NR-1 == '$i' {print $3}' $FILEOFDETAILS`
+    REPEAT_MASK=`awk 'NR-1 == '$i' {print $4}' $FILEOFDETAILS`
+
+    if [ "$DO_THE_REG" = "REGISTER" ]; then
+
+      # Generate a file of all commands
+      echo "_regAIR.sh $REG_TMP_DIR $REG_RESULTS_DIR $IMAGE_DIR $BRAINREGION_DIR $BASELINE_IMG $BASELINE_MASK $REPEAT_IMG $REPEAT_MASK $DOF $BSI_LOWER $BSI_UPPER $REG_METHOD $DILATIONS $COST_FUNCTION $DBC $MAYO $JUST_DBC" >> regAIR_$$_commands.txt
+
+    else
+    
+      echo "Checking the right files exist"
+      
+      echo "Checking for images $BASELINE_IMG, $REPEAT_IMG in $IMAGE_DIR and $BASELINE_MASK, $REPEAT_MASK in $BRAINREGION_DIR"
+  
+      check_file_exists $IMAGE_DIR/$BASELINE_IMG.img
+      check_file_exists $IMAGE_DIR/$BASELINE_IMG.hdr
+  
+      check_file_exists $IMAGE_DIR/$REPEAT_IMG.img
+      check_file_exists $IMAGE_DIR/$REPEAT_IMG.hdr
+  
+      check_file_exists $BRAINREGION_DIR/$BASELINE_MASK
+      check_file_exists $BRAINREGION_DIR/$REPEAT_MASK
+
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+}
+
+# Pick up command line parameters
+IMAGE_DIR=$1
+shift
+BRAINREGION_DIR=$1
+shift
+FILEDETAILS=$1
+shift
+OUTPUT_DIR=$1
+shift
+
+# Set defaults
+DOF=9
+BSI_LOWER=0.45
+BSI_UPPER=0.65
+REG_METHOD=3
+DILATIONS=0
+COST_FUNCTION=1
+DBC=OFF
+MAYO=OFF
+JUST_DBC=FALSE
+
+# Parse command line
+
+while [ "_$1" != "_"  ] ; do
+    if [ "$1" = "-m" ] ; then
+        DOF=$2
+        shift 2
+    elif [ "$1" = "-l" ] ; then
+        BSI_LOWER=$2
+        shift 2
+    elif [ "$1" = "-u" ] ; then
+        BSI_UPPER=$2
+        shift 2
+    elif [ "$1" = "-s" ] ; then
+        REG_METHOD="$2"
+        shift 2
+    elif [ "$1" = "-d" ] ; then
+        DILATIONS="$2"
+        shift 2
+    elif [ "$1" = "-dbc" ] ; then
+        DBC="ON"
+        shift 1
+    elif [ "$1" = "-mayo" ] ; then
+        MAYO="ON"
+        shift 1
+    elif [ "$1" = "-justdbc" ] ; then
+        JUST_DBC="TRUE"
+        shift 1                        
+    elif [ "$1" = "-x" ] ; then
+        COST_FUNCTION="$2"
+        shift 2        
+    else
+        Usage
+    fi
+done
+
+if [ $REG_METHOD -ne 2 -a $REG_METHOD -ne 3 -a $REG_METHOD -ne -2 -a $REG_METHOD -ne -3 ]; then
+  Usage
+fi
+
+# Setup the output directories
+
+# This is just for temp images that can be deleted afterwards.
+REG_TMP_DIR=$OUTPUT_DIR/reg-tmp
+
+# And this is the main output dir, where all the results go.
+REG_RESULTS_DIR=$OUTPUT_DIR
+
+source _regInclude.sh
+
+check_midas_env
+
+check_directory_exists $OUTPUT_DIR
+
+check_file_exists $FILEDETAILS
+
+dos_2_unix $FILEDETAILS
+
+echo "Running $0 with images from $IMAGE_DIR, brain regions from $BRAINREGION_DIR, image details from $FILEDETAILS, DOF=$DOF, output=$OUTPUT_DIR, lower BSI=$BSI_LOWER, upper BSI=$BSI_UPPER, REG_METHOD=$REG_METHOD, DILATIONS=$DILATIONS, COST_FUNCTION=$COST_FUNCTION, DBC=$DBC, MAYO=$MAYO, JUST_DBC=$JUST_DBC"
+
+# We first simply scan through file, cos then we can stop early if there are missing files
+iterate_through_input_file $FILEDETAILS "CHECKONLY"
+
+# We then iterate through file, generating commands to a file.
+iterate_through_input_file $FILEDETAILS "REGISTER"
+
+# Make output dirs
+if [ ! -d $REG_TMP_DIR ]; then
+  echo "Creating directory: $REG_TMP_DIR"
+  mkdir $REG_TMP_DIR
+fi
+
+# Now run the file of commands.
+run_batch_job regAIR_$$_commands.txt
+
+
+
+
+

@@ -1,0 +1,207 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+####################################################################################
+# Note that this script should only be called by regAIR.sh, as all the 
+# argument checking is done there for every patient.
+####################################################################################
+
+# Pick up command line parameters
+
+REG_TMP_DIR=$1
+REG_RESULTS_DIR=$2
+IMAGE_DIR=$3
+BRAINREGION_DIR=$4
+BASELINE_IMG=$5
+BASELINE_MASK=$6
+REPEAT_IMG=$7
+REPEAT_MASK=$8
+DOF=$9
+BSI_LOWER=${10}
+BSI_UPPER=${11}
+REG_METHOD=${12}
+DILATIONS=${13}
+COST_FUNCTION=${14}
+DBC=${15}
+MAYO=${16}
+JUST_DBC=${17}
+
+# Include necessary functions
+source _regInclude.sh
+
+if [ "$JUST_DBC" = "FALSE" ]; then
+
+  # And start running
+
+  # Copy images to REG_TMP_DIR
+
+  copy_and_unzip_analyze_image $IMAGE_DIR $REG_TMP_DIR $BASELINE_IMG
+  copy_and_unzip_analyze_image $IMAGE_DIR $REG_TMP_DIR $REPEAT_IMG
+
+  # Write some logging
+  
+  BASE_OUTPUT_NAME=$BASELINE_IMG-$REPEAT_IMG
+  DATA_LOG_PPATH=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME
+  DATA_LOG_PATH=$DATA_LOG_PPATH.log
+  
+  echo "REGISTRATION DETAILS" > $DATA_LOG_PATH
+  echo "Datetime of registration run: " `date` >> $DATA_LOG_PATH
+  echo "Repeat scan study $REPEAT_IMG registered to baseline scan $BASELINE_IMG" >> $DATA_LOG_PATH
+  echo "Registered image created with $BASE_OUTPUT_NAME" >> $DATA_LOG_PATH
+
+  # Create masks from the images you created earlier
+  
+  make_mask $REG_TMP_DIR/$BASELINE_IMG.img $BRAINREGION_DIR/$BASELINE_MASK $REG_TMP_DIR/${BASELINE_IMG}_mask $DILATIONS
+  make_mask $REG_TMP_DIR/$REPEAT_IMG.img   $BRAINREGION_DIR/$REPEAT_MASK   $REG_TMP_DIR/${REPEAT_IMG}_mask $DILATIONS
+
+  # Initialise these values
+  PRE_ALIGN_OUTPUT="DUMMY.ini"
+  FIRST_REG_OUTPUT_INI="DUMMY.ini"
+
+  # The final transformation goes here:
+  FINAL_REG_RESULT_AIR=
+  FINAL_REG_RESULT_INI=
+
+  if [ $REG_METHOD -ge 1 -o $REG_METHOD -eq -1 ]; then
+  
+    # Do pre-alignment.
+  
+    PRE_ALIGN_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.pre 
+  
+    reg_pre_align $REG_TMP_DIR/$BASELINE_IMG.img $REG_TMP_DIR/$REPEAT_IMG.img $BRAINREGION_DIR/$BASELINE_MASK $BRAINREGION_DIR/$REPEAT_MASK $PRE_ALIGN_OUTPUT $DOF             
+
+    FINAL_REG_RESULT_INI=$PRE_ALIGN_OUTPUT
+  
+  fi
+
+  if [ $REG_METHOD -ge 2 -o $REG_METHOD -eq -2 ]; then
+
+    # Do low res registration.
+  
+    FIRST_REG_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.first
+    FIRST_REG_OUTPUT_INI=$FIRST_REG_OUTPUT.ini
+    FIRST_REG_OUTPUT_AIR=$FIRST_REG_OUTPUT.air
+
+    BDIMS=`imginfo $REG_TMP_DIR/$BASELINE_IMG.img -dims`
+    BVX=`echo $BDIMS | awk '{print $4}'`
+    BVY=`echo $BDIMS | awk '{print $5}'`
+    BVZ=`echo $BDIMS | awk '{print $6}'`
+
+    RDIMS=`imginfo $REG_TMP_DIR/$REPEAT_IMG.img -dims`
+    RVX=`echo $RDIMS | awk '{print $4}'`
+    RVY=`echo $RDIMS | awk '{print $5}'`
+    RVZ=`echo $RDIMS | awk '{print $6}'`
+    
+    BVX2=`echo "scale=10; $BVX*2.0 " | bc `
+    BVY2=`echo "scale=10; $BVY*2.0 " | bc `
+    BVZ2=`echo "scale=10; $BVZ*2.0 " | bc `
+
+    RVX2=`echo "scale=10; $RVX*2.0 " | bc `
+    RVY2=`echo "scale=10; $RVY*2.0 " | bc `
+    RVZ2=`echo "scale=10; $RVZ*2.0 " | bc `
+    
+    firstReg="$REG_TMP_DIR/$BASELINE_IMG $REG_TMP_DIR/$REPEAT_IMG $FIRST_REG_OUTPUT_AIR $DOF $REG_TMP_DIR/${BASELINE_IMG}_mask $REG_TMP_DIR/${REPEAT_IMG}_mask $PRE_ALIGN_OUTPUT $FIRST_REG_OUTPUT_INI 81 1 3 0.000001 $FIRST_REG_OUTPUT.out $COST_FUNCTION OFF $BVX2 $BVY2 $BVZ2 $RVX2 $RVY2 $RVZ2"
+    align_linear $firstReg
+  
+    echo "alignlinear executed with $firstReg" >> $DATA_LOG_PATH
+
+    FINAL_REG_RESULT_INI=$FIRST_REG_OUTPUT_INI
+    FINAL_REG_RESULT_AIR=$FIRST_REG_OUTPUT_AIR
+
+  fi
+
+  if [ $REG_METHOD -ge 3 -o $REG_METHOD -eq -3 ]; then
+
+    # Do high res registration.
+
+    SECOND_REG_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.second
+    SECOND_REG_OUTPUT_INI=$SECOND_REG_OUTPUT.ini
+    SECOND_REG_OUTPUT_AIR=$SECOND_REG_OUTPUT.air
+  
+    seconReg="$REG_TMP_DIR/$BASELINE_IMG $REG_TMP_DIR/$REPEAT_IMG $SECOND_REG_OUTPUT_AIR $DOF $REG_TMP_DIR/${BASELINE_IMG}_mask $REG_TMP_DIR/${REPEAT_IMG}_mask $FIRST_REG_OUTPUT_INI $SECOND_REG_OUTPUT_INI 2 1 2  0.0000001 $SECOND_REG_OUTPUT.out $COST_FUNCTION $MAYO "
+    align_linear $seconReg
+  
+    echo "alignlinear executed with $seconReg" >> $DATA_LOG_PATH
+
+    FINAL_REG_RESULT_INI=$SECOND_REG_OUTPUT_INI
+    FINAL_REG_RESULT_AIR=$SECOND_REG_OUTPUT_AIR
+
+  fi
+  
+  # Reslice image.
+  
+  RESLICED_IMAGE=$REG_RESULTS_DIR/${BASELINE_IMG:0:5}-${REPEAT_IMG:0:5}
+  reslice_image $FINAL_REG_RESULT_AIR $RESLICED_IMAGE
+  
+  # Extend the header, which must copy some data from initial repeat image header.
+  
+  NEWSERIES=007
+  extend_image_header  $RESLICED_IMAGE.img $REG_TMP_DIR/$REPEAT_IMG.img $REG_RESULTS_DIR $NEWSERIES
+  
+  # This is a hack, as the above bit forces us to generate a specific image number, and I can't choose the name
+  STUDY=`echo "$BASELINE_IMG.img" | cut -f 1 -d "-" | sed 's/^0//'`
+  SERIES=`echo "$BASELINE_IMG.img" | cut -f 2 -d "-" `
+  POST_REG_FILE_NUMBER=`echo ${BASELINE_IMG:0:5}*45000+${REPEAT_IMG:0:5}| bc`
+  POST_REG_FILE_NAME="$POST_REG_FILE_NUMBER-$NEWSERIES-1"
+
+  EXTENDED_IMAGE=${REG_RESULTS_DIR}/${POST_REG_FILE_NUMBER}-007-1
+
+  # Reslice region. The BSI uses the .air file to reslice the region.
+  
+  temp_air_name=/tmp/${BASELINE_IMG:0:5}-${REPEAT_IMG:0:5}.air
+  cp $FINAL_REG_RESULT_AIR ${temp_air_name}
+  reslice_region ${temp_air_name} $BRAINREGION_DIR/$REPEAT_MASK $REG_TMP_DIR >  ${DATA_LOG_PPATH}_reslice_region_output.txt
+  rm -f ${temp_air_name}
+ 
+  # Check the registered file exists
+  check_file_exists $EXTENDED_IMAGE.img
+  check_file_exists $EXTENDED_IMAGE.hdr
+  
+  # Calculate bsi.
+  execute_command_or_else_stop "bsi_calc $FINAL_REG_RESULT_AIR $BRAINREGION_DIR/$BASELINE_MASK $REG_TMP_DIR/$BASELINE_IMG.img $BRAINREGION_DIR/$REPEAT_MASK $REG_TMP_DIR/$REPEAT_IMG.img $EXTENDED_IMAGE.img -3 -e 1 -d 1 -l $BSI_LOWER -u $BSI_UPPER -t 0.0 -c 0 > $REG_RESULTS_DIR/$BASE_OUTPUT_NAME.qnt" 
+
+  # Stick this message in the log file, so we can match the images up.
+  finishedString="REGISTERED $REPEAT_IMG to $BASELINE_IMG, resliced image is $EXTENDED_IMAGE.img, bsi calcs in $REG_RESULTS_DIR/$BASE_OUTPUT_NAME.qnt"
+  echo $finishedString >> $DATA_LOG_PATH
+
+fi
+
+# Calculate DBC and BSI if necessary
+if [ "$DBC" = "ON" -o "$JUST_DBC" = "TRUE" ]; then
+  POST_REG_FILE_NUMBER=`echo ${BASELINE_IMG:0:5}*45000+${REPEAT_IMG:0:5}| bc`
+  POST_REG_FILE_NAME="$POST_REG_FILE_NUMBER-$NEWSERIES-1"
+
+  EXTENDED_IMAGE=${REG_RESULTS_DIR}/${POST_REG_FILE_NUMBER}-007-1
+
+  BASE_OUTPUT_NAME=$BASELINE_IMG-$REPEAT_IMG
+  POST_REG_FILE_NUMBER=`echo "45000*${BASELINE_IMG:0:5}+${REPEAT_IMG:0:5}"|bc`
+  RESLICED_REGION=`find $REG_TMP_DIR -name "${REPEAT_MASK:0:3}_${POST_REG_FILE_NUMBER}_*"`
+  execute_command_or_else_stop "differentialbiascorrect $REG_TMP_DIR/$BASELINE_IMG $EXTENDED_IMAGE $BRAINREGION_DIR/$BASELINE_MASK $RESLICED_REGION $REG_RESULTS_DIR 5 $REG_TMP_DIR ${BASELINE_IMG}_${REPEAT_IMG}_baseline_dbc ${BASELINE_IMG}_${REPEAT_IMG}_repeat_dbc 3 0 0 0 0"
+  
+  execute_command_or_else_stop "bsi_calc dummy.air $BRAINREGION_DIR/$BASELINE_MASK $REG_RESULTS_DIR/${BASELINE_IMG}_${REPEAT_IMG}_baseline_dbc.img $RESLICED_REGION $REG_RESULTS_DIR/${BASELINE_IMG}_${REPEAT_IMG}_repeat_dbc.img $REG_RESULTS_DIR/${BASELINE_IMG}_${REPEAT_IMG}_repeat_dbc.img -h $RESLICED_REGION -3 -e 1 -d 1 -l $BSI_LOWER -u $BSI_UPPER -t 0.0 -c 0 > $REG_RESULTS_DIR/$BASE_OUTPUT_NAME.dbc.qnt"  
+  
+fi
+

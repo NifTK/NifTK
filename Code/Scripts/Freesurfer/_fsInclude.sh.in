@@ -1,0 +1,691 @@
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-10-04 18:36:11 +0100 (Tue, 04 Oct 2011) $ 
+#  Revision          : $Revision: 7430 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+source _niftkCommon.sh
+
+# Function  : Main FreeSurfer pipeline method.
+# Parameters: $1 is the patient named directory, assumed to already exist. 
+#           : $2 TRUE to use our brain mask, FALSE to turn that off.
+#           : $3 TRUE to use our vents fix, FALSE to turn that off.
+#           : $4 recon-all args
+#           : $5 recon1 args 
+#           : $6 recon2 args 
+#           : $7 recon3 args
+#           : $8 name of an expert options file if any. 
+#           : $9 Step to start at
+#           : ${10} Step to stop at
+#           : ${11} Flag to just echo commands
+#           : ${12} TRUE if we have done control point edits
+#           : ${13} TRUE if we have done white matter edits
+#           : ${14} TRUE if we have done brain volume edits
+#           : ${15} previous patient directory if we are doing longitudinal
+function run_freesurfer_pipeline()
+{
+  PATIENT_DIRECTORY=$1
+  OUR_MASK=$2
+  VENTS_FIX=$3
+  RECONALL=$4
+  RECON1=$5
+  RECON2=$6
+  RECON3=$7
+  EXPERT_OPTS=$8
+  START=$9
+  STOP=${10}
+  ECHO=${11}
+  CONTROL_POINT_EDITS=${12}
+  WHITE_MATTER_EDITS=${13}
+  BRAIN_VOLUME_EDITS=${14}    
+  PREVIOUS_PATIENT_DIR=${15}
+  
+  echo "Running run_freesurfer_pipeline() with arguments:"
+  echo "Patient directory: $PATIENT_DIRECTORY"
+  echo "Our mask         : $OUR_MASK"
+  echo "Vents fix        : $VENTS_FIX"
+  echo "Recon all args   : $RECONALL"
+  echo "Recon1 args      : $RECON1"
+  echo "Recon2 args      : $RECON2"
+  echo "Recon3 args      : $RECON3"
+  echo "Expert opts file : $EXPERT_OPTS"
+  echo "Start stage      : $START"
+  echo "Stop stage       : $STOP"
+  echo "Echo             : $ECHO"
+  echo "CP edits         : $CONTROL_POINT_EDITS"
+  echo "WM edits         : $WHITE_MATTER_EDITS"
+  echo "BV edits         : $BRAIN_VOLUME_EDITS"    
+  echo "Previous scan    : $PREVIOUS_PATIENT_DIR"
+  
+  # Process Expert Options argument
+  if [ "$EXPERT_OPTS" = "_" ]; then
+    EXPERT_OPTS_ARG=
+  else
+    EXPERT_OPTS_ARG=" -expert $EXPERT_OPTS -xopts-overwrite "    
+  fi
+  echo "Expert opts arg:$EXPERT_OPTS_ARG:"
+
+  # Process -no-isrunning env variable
+  if [ "$FREESURFER_IGNORE_ISRUNNING" = "1" ]; then
+    IGNORE_ISRUNNING_FLAG=" -no-isrunning "
+  else
+    IGNORE_ISRUNNING_FLAG=
+  fi
+  
+  # Parse any additional args to recon-all
+  if [ "$RECONALL" = "_" ]; then
+    RECONALL_ARGS=
+  else
+    RECONALL_ARGS=$RECONALL
+  fi
+  echo "Recon all args:$RECONALL_ARGS:"
+  
+  # So, this is our basic command.
+  COMMAND="recon-all $EXPERT_OPTS_ARG $IGNORE_ISRUNNING_FLAG $RECONALL_ARGS -s $PATIENT_DIRECTORY "
+  echo "Command:$COMMAND:"
+  
+  # Are we processing after edits ?
+  SECOND_STAGE_EDITS=
+  
+  if [ "$BRAIN_VOLUME_EDITS" = "TRUE" ]; then
+    SECOND_STAGE_EDITS=" -autorecon2-pial "
+  fi
+
+  if [ "$WHITE_MATTER_EDITS" = "TRUE" ]; then
+    SECOND_STAGE_EDITS=" -autorecon2-wm "    
+  fi
+
+  if [ "$CONTROL_POINT_EDITS" = "TRUE" ]; then
+    SECOND_STAGE_EDITS=" -autorecon2-cp "    
+  fi
+  echo "Second stage edits:$SECOND_STAGE_EDITS"
+  
+  # Parse any additional args to recon1
+  if [ "$RECON1" = "_" ]; then
+    RECON1_ARGS=
+  else
+    RECON1_ARGS=$RECON1
+  fi
+  echo "Recon1 args:$RECON1_ARGS:"
+  
+  # Parse any additional args to recon2
+  if [ "$RECON2" = "_" ]; then
+    RECON2_ARGS=
+  else
+    RECON2_ARGS=$RECON2
+  fi
+  echo "Recon2 args:$RECON2_ARGS:"
+  
+  # Parse any additional args to recon3
+  if [ "$RECON3" = "_" ]; then
+    RECON3_ARGS=
+  else
+    RECON3_ARGS=$RECON3
+  fi
+  echo "Recon3 args:$RECON3_ARGS:"
+
+  # Parse stage 3 argument
+  if [ "$START" -le 3 -a "3" -le "$STOP" ]; then
+    STAGE3_ARG=" -autorecon3 $RECON3_ARGS "
+  else
+    STAGE3_ARG=
+  fi
+  echo "Stage 3 args:$STAGE3_ARG:"
+  
+  # Work out final stage 2 argument
+  if [ "_$SECOND_STAGE_EDITS" = "_" ]; then
+    STAGE2_ARG=" -autorecon2 $RECON2_ARGS "
+  else
+    STAGE2_ARG=" $SECOND_STAGE_EDITS $RECON2_ARGS "
+  fi
+  echo "Stage 2 args:$STAGE2_ARG:"
+       
+  # Do stage 1. If you ask for edits, we automatically skip stage 1.
+  if [ "_$SECOND_STAGE_EDITS" = "_" -a "$START" -le "1" -a "1" -le "$STOP" ]; then
+    
+    if [ "$OUR_MASK" = "TRUE" ]; then
+      
+      execute_command_or_echo_it "$COMMAND -autorecon1 -noskullstrip  $RECON1_ARGS" $ECHO
+      
+      execute_command_or_echo_it "run_mri_mask $PATIENT_DIRECTORY $RECONALL_ARGS " $ECHO
+      
+    else
+    
+      execute_command_or_echo_it "$COMMAND -autorecon1 $RECON1_ARGS" $ECHO
+    fi
+    
+  fi
+
+  # Do stage 2 
+  if [ "$START" -le "2" -a "2" -le "$STOP" ]; then
+
+	if [ "$VENTS_FIX" = "TRUE" ]; then
+	
+	  # We do want DRC vents fix.
+	  
+	  execute_command_or_echo_it "$COMMAND $STAGE2_ARG $STAGE3_ARG " $ECHO
+	  
+	  execute_command_or_echo_it "remove_wm $PATIENT_DIRECTORY " $ECHO
+	  
+	  execute_command_or_echo_it "$COMMAND -autorecon2-wm $RECON2_ARGS " $ECHO
+	
+	else
+	
+	  # We don't want DRC vents fix
+
+	  execute_command_or_echo_it "$COMMAND $STAGE2_ARG " $ECHO
+	  
+	fi
+  
+  fi
+  
+  # Do stage 3
+  if [ "$START" -le "3" -a "3" -le "$STOP" ]; then
+    execute_command_or_echo_it "$COMMAND $STAGE3_ARG" $ECHO
+  fi
+  
+}
+
+# This got refactored above.
+function run_baseline()
+{
+  run_freesurfer_pipeline $1 $2 $3 "$4" "$5" "$6" "$7" $8 $9 ${10} ${11}
+}
+
+# This got refactored above.
+function rerun_after_edits()
+{
+  run_freesurfer_pipeline $1 $2 $3 "$4" _ "$5" "$6" $7 $8 $9 ${10} ${11} ${12} ${13}
+}
+
+function run_longitudinal_base()
+{
+  local args=$*
+  echo=""
+  name=""
+  template_command="recon-all -base "
+
+  i=0
+  for f in $args
+  do
+    if [ $i -eq 0 ]; then
+      echo=$f
+    elif [ $i -eq 1 ]; then
+      name=$f
+      template_command="$template_command ${name}_template "
+    else
+      template_command="$template_command -tp $f "
+    fi
+    i=$(($i+1))
+  done
+  template_command="$template_command -all"
+
+  echo "In run_longitudinal_base, echo=$echo, name=$name, command='$template_command'"
+
+  execute_command_or_else_stop "$template_command" $echo
+}
+
+function run_longitudinal_timepoints()
+{
+  local args=$*
+  echo=""
+  name=""
+  longitudinal_base="recon-all -long "
+
+  i=0
+  for f in $args
+  do
+    if [ $i -eq 0 ]; then
+      echo=$f
+    elif [ $i -eq 1 ]; then
+      name=$f
+    else
+      longitudinal_command="$longitudinal_base $f ${name}_template -all ; $longitudinal_command "
+    fi
+    i=$(($i+1))
+  done
+
+  echo "In run_longitudinal_timepoints, echo=$echo, name=$name, longitudinal_command='$longitudinal_command'"
+
+  execute_command_or_else_stop "$longitudinal_command" $echo
+
+}
+
+function run_mri_mask()
+{
+  PD=$1
+  RECONALL_ARGS=$2
+  
+  echo "Running run_mri_mask() for patient ${PD}, and RECONALL_ARGS=${RECONALL_ARGS}"
+  
+  # Try and replace the string -cw256 in RECONALL_ARGS, if the string changes, it must contain it.
+  TEST1=`echo ${RECONALL_ARGS} | sed s/-cw256//`
+  
+  echo "RECONALL_ARGS='${RECONALL_ARGS}', and TEST1='${TEST1}'"
+  
+  if [ "${TEST1}" == "${RECONALL_ARGS}" ]; then
+  
+    echo "Running without -cw256"    
+    execute_command_or_else_stop "mri_mask -T 1 $SUBJECTS_DIR/$PD/mri/T1.mgz $SUBJECTS_DIR/$PD/mri/mask.mgz $SUBJECTS_DIR/$PD/mri/brainmask.mgz"
+    
+  else
+  
+    echo "Running with -cw256"
+    
+    # At this point, the problem is that the mask supplied by the import scrip will be the wrong size
+    execute_command_or_else_stop "mri_convert $SUBJECTS_DIR/$PD/mri/mask.mgz $SUBJECTS_DIR/$PD/mri/mask_conformed.mgz --conform --cw256"
+    execute_command_or_else_stop "mri_mask -T 1 $SUBJECTS_DIR/$PD/mri/T1.mgz $SUBJECTS_DIR/$PD/mri/mask_conformed.mgz $SUBJECTS_DIR/$PD/mri/brainmask.mgz"
+  fi
+}
+
+function remove_wm()
+{
+  PD=$1
+
+  echo "Running remove_wm() for patient $PD"
+
+  if [ -e $SUBJECTS_DIR/$PD/mri/vents.mgz ]; then
+    echo "Using manual vents"
+  else
+    echo "Making FreeSurfer vents"
+    mri_binarize --i $SUBJECTS_DIR/$PD/mri/aparc+aseg.mgz --match 4 --match 43 --match 5 --match 44 --match 31 --match 63 --o $SUBJECTS_DIR/$PD/mri/vents.mgz --binval 255
+  fi
+
+  mri_convert $SUBJECTS_DIR/$PD/mri/vents.mgz $SUBJECTS_DIR/$PD/mri/vents.mnc
+  mri_convert $SUBJECTS_DIR/$PD/mri/wm.mgz $SUBJECTS_DIR/$PD/mri/wm.mnc
+  mincmath -max $SUBJECTS_DIR/$PD/mri/vents.mnc $SUBJECTS_DIR/$PD/mri/wm.mnc $SUBJECTS_DIR/$PD/mri/wm1.mnc
+  mri_convert $SUBJECTS_DIR/$PD/mri/wm1.mnc $SUBJECTS_DIR/$PD/mri/wm1.img
+  mri_convert $SUBJECTS_DIR/$PD/mri/wm1.img $SUBJECTS_DIR/$PD/mri/wm.mgz
+  \rm $SUBJECTS_DIR/$PD/mri/wm1.*
+  \rm $SUBJECTS_DIR/$PD/mri/*.mnc
+
+}
+
+# Function  : Cleanup a standard FreeSurfer directory structure
+# Parameters: $1 is the patient named directory, assumed to already exist. 
+# Assumes   : Uses SUBJECTS_DIR which must exist.
+
+function run_cleanup()
+{
+
+  patient=$1
+  
+  echo "Running cleanup() for patient $SUBJECTS_DIR/$patient"
+  
+  # Cleaning part to remove everything coming from an old run of freesurfeur
+  mkdir $SUBJECTS_DIR/$patient/temporary
+  mv $SUBJECTS_DIR/$patient/mri/mask.mgz $SUBJECTS_DIR/$patient/mri/orig/001.mgz $SUBJECTS_DIR/$patient/temporary
+  if [ -e $SUBJECTS_DIR/$patient/mri/wmmask.mgz ]; then
+    mv $SUBJECTS_DIR/$patient/mri/wmmask.mgz $SUBJECTS_DIR/$patient/temporary
+  fi
+  rm -Rf $SUBJECTS_DIR/$patient/bem/*
+  rm -Rf $SUBJECTS_DIR/$patient/label/*
+  rm -Rf $SUBJECTS_DIR/$patient/mri/*
+  rm -Rf $SUBJECTS_DIR/$patient/scripts/*
+  rm -Rf $SUBJECTS_DIR/$patient/src/*
+  rm -Rf $SUBJECTS_DIR/$patient/stats/*
+  rm -Rf $SUBJECTS_DIR/$patient/surf/*
+  rm -Rf $SUBJECTS_DIR/$patient/tmp/*
+  rm -Rf $SUBJECTS_DIR/$patient/touch/*
+  rm -Rf $SUBJECTS_DIR/$patient/trash/*
+  mkdir $SUBJECTS_DIR/$patient/mri/flash $SUBJECTS_DIR/$patient/mri/orig $SUBJECTS_DIR/$patient/mri/transform
+  mv $SUBJECTS_DIR/$patient/temporary/mask.mgz $SUBJECTS_DIR/$patient/mri/mask.mgz
+  mv $SUBJECTS_DIR/$patient/temporary/001.mgz $SUBJECTS_DIR/$patient/mri/orig/001.mgz
+  if [ -e $SUBJECTS_DIR/$patient/temporary/wmmask.mgz ]; then
+    mv $SUBJECTS_DIR/$patient/temporary/wmmask.mgz $SUBJECTS_DIR/$patient/mri/wmmask.mgz
+  fi
+  rm -Rf $SUBJECTS_DIR/$patient/temporary
+  if [ -f $SUBJECTS_DIR/$patient/surf/.xdebug_mris_calc ]; then
+    rm $SUBJECTS_DIR/$patient/surf/.xdebug_mris_calc
+  fi
+  if [ -f $SUBJECTS_DIR/$patient/surf/.xdebug_mris_curvature_stats ]; then
+    rm $SUBJECTS_DIR/$patient/surf/.xdebug_mris_curvature_stats
+  fi
+  if [ -f $SUBJECTS_DIR/$patient/mri/.xdebug_tkmedit ]; then
+    rm $SUBJECTS_DIR/$patient/mri/.xdebug_tkmedit
+  fi  
+}
+
+# Function  : Checks a whole load of directories from command line to make sure they exist.
+# Parameters: $1 string containing directory names under $SUBJECTS_DIR
+
+function check_all_directories_in_string_exists()
+{
+  for name in $1
+  do
+    check_directory_exists "$SUBJECTS_DIR/$name"
+  done
+}
+
+# Function  : Create a standard FreeSurfer directory structure
+# Parameters: $1 is the patient named directory 
+# Assumes   : Uses SUBJECTS_DIR which must exist.
+
+function create_directories()
+{
+  patient=$1
+  echo "Creating directories for patient $SUBJECTS_DIR/$patient"
+
+  if [ -d $SUBJECTS_DIR/$patient ]; then
+    echo "Patient $SUBJECTS_DIR/$patient already exists, so I'm not touching it."
+    return 0
+  fi
+  
+  mksubjdirs $SUBJECTS_DIR/$patient
+   
+}
+
+# Function  : Tries to setup Freesurfer in a CMIC/DRC sensible way.
+# Parameters: None
+
+function check_freesurfer_env()
+{
+  ###################################################
+  # Check for Freesurfer environment file and run it
+  ###################################################
+  
+  if [ "$FREESURFER_HOME" = "" -o "$SUBJECTS_DIR" = "" ]; then
+  
+    echo "It looks like you haven't run SetUpFreeSurfer.sh, so I will try to."
+    check_and_run_file /share/apps/freesurfer/freesurfer-v4.0.3/SetUpFreeSurfer.sh
+    check_and_run_file /var/drc/software/freesurfer/SetUpFreeSurfer.sh
+  fi
+  
+  # If we still dont have these two variables, no point continuing.
+  
+  if [ "$FREESURFER_HOME" = "" -o "$SUBJECTS_DIR" = "" ]; then
+    echo "Freesurfer needs FREESURFER_HOME and SUBJECTS_DIR to be set. Please set them (most likely via SetUpFreeSurfer.sh)"
+    exit 1
+  fi
+  
+  return 0
+}
+
+# Function  : Add all the programs we need here. Best to check up front
+#             before setting a monster job running.
+# Parameters: None
+
+function check_all_freesurfer_programs_exist()
+{
+  echo "Checking I can find all required Freesurfer programs"
+  
+  check_program_exists recon-all
+  
+  if [ $? -ne 0 ]; then
+    exit 2
+  fi
+  
+  check_program_exists mri_mask
+  
+  if [ $? -ne 0 ]; then
+    exit 3
+  fi
+  
+  check_program_exists mri_binarize
+  
+  if [ $? -ne 0 ]; then
+    exit 4
+  fi
+  
+  check_program_exists mri_convert
+  
+  if [ $? -ne 0 ]; then
+    exit 5
+  fi
+  
+  check_program_exists mincmath
+  
+  if [ $? -ne 0 ]; then
+    exit 6
+  fi
+  
+  check_program_exists aparcstats2table
+
+  if [ $? -ne 0 ]; then
+    exit 7
+  fi
+  
+  check_program_exists asegstats2table
+
+  if [ $? -ne 0 ]; then
+    exit 8
+  fi
+  
+  check_program_exists make_average_subject
+
+  if [ $? -ne 0 ]; then
+    exit 9
+  fi
+  
+  check_program_exists mris_preproc
+  
+  if [ $? -ne 0 ]; then
+    exit 10
+  fi
+  
+  check_program_exists mri_surf2surf
+
+  if [ $? -ne 0 ]; then
+    exit 11
+  fi
+  
+  check_program_exists mksubjdirs
+
+  if [ $? -ne 0 ]; then
+    exit 12
+  fi
+  
+  echo "Found all Freesurfer programs I need"
+}
+
+# Function  : Add all the programs we need here. Best to check up front
+#             before setting a monster job running.
+# Parameters: None
+
+function check_all_midas_programs_exist()
+{
+  echo "Checking I can find all required midas programs"
+
+  check_program_exists anchange
+
+  if [ $? -ne 0 ]; then
+    exit 13
+  fi
+
+  check_program_exists medcon
+
+  if [ $? -ne 0 ]; then
+    exit 14
+  fi
+
+  check_program_exists makemask
+
+  if [ $? -ne 0 ]; then
+    exit 14
+  fi
+  
+  echo "Found all Midas programs I need"
+}
+
+# Function   : Creates FreeSurfer stats for a group of subjects
+# Parameters : $1 string representing output prefix
+#            : $2 group name
+#            : $3 array of strings representing all the subjects in this patient group.
+ 
+function create_stats_for_group()
+{
+  OUTPUT_PREFIX=$1
+  GROUPNAME=$2
+  GROUPMEMBERS=$3
+  
+  MAJOR_VERSION=`basename $FREESURFER_HOME | cut -f 2 -d "-" | cut -f 1 -d "."`
+  MINOR_VERSION=`basename $FREESURFER_HOME | cut -f 2 -d "-" | cut -f 2 -d "."`
+  
+  table_argument="--tablefile"
+  
+  if [ $MAJOR_VERSION -lt 4 ]; then
+    table_argument="--t"
+  fi
+  
+  if [ $MAJOR_VERSION -eq 4 -a $MINOR_VERSION -lt 3 ]; then
+    table_argument="--t"
+  fi
+  
+  echo "`date`: Creating stats for outputPrefix:$OUTPUT_PREFIX and group:$GROUPNAME and subjects:$GROUPMEMBERS, meanwhile majorVersion=$MAJOR_VERSION, minorVersion=$MINOR_VERSION, so table_argument='$table_argument'"
+  
+  execute_command_or_else_stop "aparcstats2table   --hemi lh --subjects  $GROUPMEMBERS  --meas thickness $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_thickness.lh.txt"
+  execute_command_or_else_stop "aparcstats2table   --hemi rh --subjects  $GROUPMEMBERS  --meas thickness $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_thickness.rh.txt"
+
+  # volume
+
+  execute_command_or_else_stop "aparcstats2table   --hemi lh --subjects  $GROUPMEMBERS  --meas volume $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_volume.lh.txt"
+  execute_command_or_else_stop "aparcstats2table   --hemi rh --subjects  $GROUPMEMBERS  --meas volume $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_volume.rh.txt"
+
+  # meancurv
+
+  execute_command_or_else_stop "aparcstats2table   --hemi lh --subjects  $GROUPMEMBERS  --meas meancurv $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_meancurv.lh.txt"
+  execute_command_or_else_stop "aparcstats2table   --hemi rh --subjects  $GROUPMEMBERS  --meas meancurv $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_meancurv.rh.txt"
+
+  # area
+
+  execute_command_or_else_stop "aparcstats2table   --hemi lh --subjects  $GROUPMEMBERS  --meas area $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_area.lh.txt"
+  execute_command_or_else_stop "aparcstats2table   --hemi rh --subjects  $GROUPMEMBERS  --meas area $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_area.rh.txt"
+
+  # volumes
+
+  execute_command_or_else_stop "asegstats2table    --subjects  $GROUPMEMBERS --meas volume $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_volume.txt"
+
+  # Means
+
+  execute_command_or_else_stop "asegstats2table    --subjects  $GROUPMEMBERS --meas mean $table_argument ${OUTPUT_PREFIX}_${GROUPNAME}_mean.txt"
+
+}
+
+# Function   : Creates FreeSurfer average subject
+# Parameters : $1 string representing output prefix
+#            : $2 subjects array
+
+function create_average_subject()
+{
+  NAME_OF_AVERAGE=$1
+  SUBJECTS=$2
+  DO_AVE_VOLUME=$3
+  
+  echo "`date`: Creating average subject with name=$NAME_OF_AVERAGE and subjects='$SUBJECTS', and DO_AVE_VOLUME=$DO_AVE_VOLUME"
+
+  if [ "_$DO_AVE_VOLUME" = "_YES" ]; then
+    VOL_ARG=""
+  else
+    VOL_ARG=" --no-vol "
+  fi
+  
+  make_average_subject --subjects $SUBJECTS --out ${NAME_OF_AVERAGE} $VOL_ARG
+}
+
+# Function   : Calls mris_preproc, which resmaples your subjects to a common subject (the average one).
+# Parameters : $1 name of average subject
+#            : $2 string representing output prefix
+#            : $3 subjects array
+
+function resample_to_average()
+{
+  NAME_OF_AVERAGE=$1
+  OUTPUT_PREFIX=$2
+  SUBJECTS=$3
+
+  echo "`date`: Resampling to average subject, using prefix=$OUTPUT_PREFIX and subjects=$SUBJECTS"
+  
+  # The --f argument is a list of subjects in a file. 
+  SUBJECTS_FILE="/tmp/$$_average.txt"
+  
+  echo $SUBJECTS > $SUBJECTS_FILE
+  echo "Subjects file is: $SUBJECTS_FILE"
+  cat $SUBJECTS_FILE
+  
+  mris_preproc --f $SUBJECTS_FILE --target ${NAME_OF_AVERAGE} --hemi lh --meas thickness --out ${OUTPUT_PREFIX}_lh.thickness.mgh
+  mris_preproc --f $SUBJECTS_FILE --target ${NAME_OF_AVERAGE} --hemi rh --meas thickness --out ${OUTPUT_PREFIX}_rh.thickness.mgh
+  
+  # Tidy up
+  rm $SUBJECTS_FILE
+}
+
+# Function   : Calls mri_surf2surf, which extracts group stats.
+# Parameters : $1 name of average subject
+#            : $2 string representing output prefix
+#            : $3 FWHM
+
+function create_average_stats()
+{
+  NAME_OF_AVERAGE=$1
+  INPUT_PREFIX=$2
+  OUTPUT_PREFIX=$3
+  FWHM=$4
+
+  echo "`date`: Generating group stats using nameOfAverage=$NAME_OF_AVERAGE, inputPrefix=$INPUT_PREFIX, outputPrefix=$OUTPUT_PREFIX and FWHM=$FWHM"
+  
+  mri_surf2surf --hemi lh --s ${NAME_OF_AVERAGE} --sval ${INPUT_PREFIX}_lh.thickness.mgh --fwhm $FWHM --tval ${OUTPUT_PREFIX}_lh.thickness.${FWHM}.mgh 
+  mri_surf2surf --hemi rh --s ${NAME_OF_AVERAGE} --sval ${INPUT_PREFIX}_rh.thickness.mgh --fwhm $FWHM --tval ${OUTPUT_PREFIX}_rh.thickness.${FWHM}.mgh
+}
+
+
+# Function   : Runs matlab process to generate stats
+
+function run_matlab_process()
+{
+  NAME_AVERAGE=$1
+  LEFT_FILE=$2
+  RIGHT_FILE=$3
+  OUTPUT_PREFIX=$4
+  PCRIT=$5
+  PSAT=$6
+  PCT=$7
+  FDR=$8
+  MPC=$9
+  FILES=${10}
+  
+  command="group_diffs $NAME_AVERAGE $LEFT_FILE $RIGHT_FILE $OUTPUT_PREFIX $PCRIT $PSAT $PCT $FDR $MPC $FILES"
+  echo "Matlab command=$command"
+  echo $command | matlab
+  
+}
+
+function freesurfer_hints()
+{
+cat <<EOF
+
+Hints:
+  1. You must set the environment variable \$SUBJECTS_DIR
+  
+     For example, go to the right directory and:
+     
+       In bash type:export SUBJECTS_DIR=\`pwd\`
+       In csh  type:setenv SUBJECTS_DIR \`pwd\`
+  
+  2. If you are re-running after a failed attempt, be sure to 
+     clear out the IsRunning* files.
+     
+     fsCheckJob.sh which will display the location of these files.
+     
+     or setup the following environment variable
+       FREESURFER_IGNORE_ISRUNNING=1
+     
+EOF
+}

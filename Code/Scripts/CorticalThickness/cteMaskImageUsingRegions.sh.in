@@ -1,0 +1,215 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+source _niftkCommon.sh
+
+ndefargs=3
+data_image=
+atlas_image=
+regions=
+use_regions=0
+mask_value=1
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+
+function Usage()
+{
+cat <<EOF
+
+This script takes an image, for example containing grey matter probability values, and a 
+registered atlas containing region labels, and extracts the specified regions and masks the image.
+
+Usage: cteMaskImageUsingRegions.sh data.nii atlas.nii output.nii [options] 
+
+Mandatory Arguments:
+
+  data.nii                 : The data of interest, for example, grey matter probability values.
+  
+  atlas.nii                : A registered atlas containing region labels.
+  
+  output.nii               : Output image
+  
+Options:
+
+  -regions 1,2,3,4,5       : Comma separated list of region numbers.
+  
+  -mask_value              : Value with which to mask. Default 1.
+                             If you specify 0, then background=1, foreground=0 and the mask is multiplied by the image.
+                             If you specify !0, then background=0, foreground is the value you specify, and the mask is injected into the image.
+                             
+  -tmproot <directory>     : Define a root directory for temporary files. Default /tmp
+                             The difference between this option and the next, is that this
+                             one takes the root directory (eg. /tmp) and creates a sub directory
+                             with a process ID in it. (eg. /tmp/seg.1234) whereas the next option
+                             just uses exactly what you give it.
+                            
+  -tmpdir <directory>      : Set temporary workspace directory.
+
+  -keeptmp                 : Keep temporary workspace directory.
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+data_image=$1
+atlas_image=$2
+output_image=$3
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-regions)
+	    regions=$2
+	    use_regions=1
+	    shift 1
+	    ;;	    
+	-mask_value)
+	    mask_value=$2
+	    shift 1
+	    ;; 	   
+	-tmproot)
+	    tmp_root=$2
+	    shift 1
+	    ;;        
+	-tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+    -keeptmp)
+	    keeptmp=1
+	    ;;	            	    	         	    	     	           	    	         
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+ptmpdir=$tmp_root/cte.$$
+if [ "_$tmpdir" = "_" ]; then
+  tmpdir=$ptmpdir
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+# Check command line arguments
+if [ ! -f $data_image ]; then
+    exitprog "The data image you specified does not exist!" 1
+fi
+
+if [ ! -f $atlas_image ]; then
+    exitprog "The atlas region image does not exist!" 1
+fi
+
+if [ "_$regions" = "_" ]; then
+    exitprog "You didn't specify any regions" 1
+fi
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+		exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+################################################################
+thedate=`$DATE`
+message "Start time is $thedate"
+################################################################
+
+echo "Starting $0 with:"
+echo "  data_image=$data_image"
+echo "  atlas_image=$atlas_image"
+echo "  output_image=$output_image"
+echo "  use_regions=$use_regions"
+echo "  regions=$regions"
+echo "  mask_value=$mask_value"
+echo "  keeptmp=$keeptmp"
+echo "  tmp_root=$tmp_root"
+echo "  use_tmp_dir=$use_tmp_dir"
+echo "  output_image=$output_image"
+echo "  tmpdir=$tmpdir"
+
+if [ $mask_value -eq 0 ]; then
+    execute_command_or_else_stop "niftkCreateMaskFromLabels -i ${atlas_image} -o ${tmpdir}/mask.nii -l ${regions} -bg 1 -fg 0"
+    execute_command_or_else_stop "niftkMultiply -i ${data_image} -j ${tmpdir}/mask.nii -o ${tmpdir}/masked.nii"
+else
+	execute_command_or_else_stop "niftkCreateMaskFromLabels -i ${atlas_image} -o ${tmpdir}/mask.nii -l ${regions} -bg 0 -fg ${mask_value}"
+	execute_command_or_else_stop "niftkInject -i ${data_image} -m ${tmpdir}/mask.nii -o ${tmpdir}/masked.nii"
+fi
+
+execute_command_or_else_stop "cp ${tmpdir}/masked.nii $output_image"
+
+################################################################
+message "Cleanup"
+################################################################
+
+thedate=`$DATE`
+message "Time is $thedate"
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+message "Finished"

@@ -1,0 +1,17 @@
+/**
+  \defgroup uk_ac_ucl_cmic_midasgeneralsegmentor uk.ac.ucl.cmic.midasgeneralsegmentor Plugin
+  \ingroup CMICPlugins
+
+  \brief Implements the MIDAS irregular volume segmentation, made popular at UCL for hippocampal segmentataion on T1 MRI images.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal Internal
+  \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.midasgeneralsegmentor plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

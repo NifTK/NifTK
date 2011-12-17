@@ -1,0 +1,145 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-05-04 11:18:56 +0100 (Wed, 04 May 2011) $ 
+#  Revision          : $Revision: 6051 $
+#  Last modified by  : $Author: kkl $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+function Usage()
+{
+  cat <<EOF
+  
+This script will run the brain cropping algorithm (ask Jo or Nicky) on a whole set of images.
+
+Usage: $0 fileContainingListOfFiles [ options ] 
+
+Mandatory Arguments:
+  fileContainingListOfFiles : is a text file containing 3 columns, containing the full path of your region, baseline image and repeat image.
+                            : optional 4th column to contain the repeat mask. 
+  
+Options:
+  -f firstRoundOfDilations     : is an integer number of dilations.             [Default 3   ]
+  -s secondRoundOfDilations    : is an integer number of dilations.             [Default 2   ]
+  -g gaussianFWHM              : is a decimal FWHM in mm for Gaussian blurring. [Default 2mm.]
+EOF
+exit 127
+}
+
+function iterate_through_input_file()
+{
+  FILEOFDETAILS=$1
+  DO_THE_CROPPING=$2
+  
+  # Iterate through file. Each line should contain
+  # baselineRegion baselineImage repeatImage
+
+  n=`wc -l $FILEOFDETAILS | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+  
+    BASELINE_MASK=`awk 'NR-1 == '$i' {print $1}' $FILEOFDETAILS`
+    BASELINE_IMG=`awk 'NR-1 == '$i' {print $2}' $FILEOFDETAILS`
+    REPEAT_IMG=`awk 'NR-1 == '$i' {print $3}' $FILEOFDETAILS`
+    REPEAT_MASK=`awk 'NR-1 == '$i' {print $4}' $FILEOFDETAILS`
+
+    BASENAME_BASELINE=`basename $BASELINE_IMG | sed s/.img.gz// | sed s/.img// `
+    BASENAME_REPEAT=`basename $REPEAT_IMG | sed s/.img.gz// | sed s/.img// `
+    MASK_NAME=${BASENAME_BASELINE}_mask
+    
+    if [ "$DO_THE_CROPPING" = "CROP" ]; then
+
+      # Generate a file of all commands
+      echo "_flCrop.sh $BASELINE_IMG $BASELINE_MASK $REPEAT_IMG $FIRSTDILATIONS $SECONDDILATIONS $FWHM  $MASK_NAME $BASENAME_BASELINE $BASENAME_REPEAT \"${REPEAT_MASK}\" " >> flCrop_$$_commands.txt             
+
+    else
+    
+      echo "Checking for images $BASELINE_MASK, $BASELINE_IMG and $REPEAT_IMG"
+  
+      # This will stop the script if one of the files doesn't exist
+      check_file_exists $BASELINE_MASK
+      check_file_exists $BASELINE_IMG
+      check_file_exists $REPEAT_IMG
+
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+  
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+FILENAME=$1
+shift
+FIRSTDILATIONS=3
+SECONDDILATIONS=2
+FWHM=2
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-f" ] ; then
+        FIRSTDILATIONS=$2
+        shift 2
+    elif [ "$1" = "-s" ] ; then
+        SECONDDILATIONS=$2
+        shift 2
+    elif [ "$1" = "-g" ] ; then
+        FWHM=$2
+        shift 2
+    else
+        Usage
+    fi
+done
+
+if [ "$FIRSTDILATIONS" = "" -o "$SECONDDILATIONS" = "" -o "$FWHM" = "" -o "$FILENAME" = "" ]; then
+  Usage
+fi
+
+echo "Running $0 using file=$FILENAME, d1=$FIRSTDILATIONS, d2=$SECONDDILATIONS, fwhm=$FWHM"
+
+source _niftkCommon.sh
+
+check_program_exists "niftkDilateMaskAndCrop"
+
+check_program_exists "makemask"
+
+check_file_exists $FILENAME
+
+dos_2_unix ${FILENAME}
+
+# We first simply scan through file, because then we can stop early if there are missing files
+iterate_through_input_file $FILENAME "CHECKONLY"
+
+# We then iterate through file, generating the commands
+iterate_through_input_file $FILENAME "CROP"
+
+# We then run it
+run_batch_job flCrop_$$_commands.txt      
+
+
+
+

@@ -1,0 +1,202 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+SUBJECTS_DIR=`pwd`
+
+function Usage()
+{
+cat <<EOF
+
+This script will import data into the standard FreeSurfer directory structure.
+In contrast to fsImport.sh, this does NO re-orientation. It just runs FreeSurfers
+own mri_convert program on both the image and the brain mask.
+
+This script would be most useful for people who have already been doing some SPM/VBM
+and have already got their nifti images in the correct orientation.
+
+Usage: fsImportUsingMRIConvert.sh dataFile [ options ]
+ 
+Mandatory Arguments:
+
+  dataFile      : A file containing your patient names and details, like this:
+
+                  Patient Mask                      Image            Image            Image             etc.
+                  ALLFR   Nic_02979_1140620563.nii  02979-002-1.nii  02979-002-2.nii  02979-002-3.nii   etc.
+                  ALLHA   Nic_03920_1351234123.nii  03929-002-1.nii  03929-003-1.nii  03929-004-1.nii   etc.
+
+                  The first line is just text, and hence skipped.
+                  
+                  After that, you can use absolute or relative pathnames, using full filenames (including extension like .nii).
+                  
+                  Also, if the -noMask option is specified, then all images are assumed to be T1 scans, not brain masks.
+                  The DRC default is to use a brain mask.
+Options:
+
+
+  -b beginRow   : is the start row in the dataFile.
+  -e endRow     : is the end row in the dataFile.
+  
+  -noMask       : the first image is to be treated as a T1 scan, not a brain mask
+
+  -M            : options to pass to mri_convert specified in double quotes
+    
+EOF
+exit 127
+}
+
+function import_files()
+{
+    local do_import=$1
+    local start_line=$2
+    local finish_line=$3
+    local use_masks=$4
+    
+    i=$start_line
+        
+	while [ "$i" -le "$finish_line" ]
+	do
+	  cd $SUBJECTS_DIR
+	  
+	  patient=`awk 'NR-1 == '$i' {print $1}' $fichier`
+	  image1=`awk 'NR-1 == '$i' {print $2}' $fichier`
+	  image2=`awk 'NR-1 == '$i' {print $3}' $fichier`
+	  image3=`awk 'NR-1 == '$i' {print $4}' $fichier`
+	  image4=`awk 'NR-1 == '$i' {print $5}' $fichier`
+      
+      if [ "_$patient" = "_" -a "_$image1" = "_" -a "_$image2" = "_" -a "_$image3" = "_" -a "_$image4" = "_" ]; then
+        echo "Skipping blank line"
+      else
+        #echo "Read: $patient, $image1, $image2, $image3, $image4, $image5, $image6"
+
+        if [ "$image1" != "" ] ; then
+          check_file_exists $image1
+        fi
+
+        if [ "$image2" != "" ] ; then
+          check_file_exists $image2
+        fi
+
+        if [ "$image3" != "" ] ; then
+          check_file_exists $image3
+        fi
+
+        if [ "$image4" != "" ] ; then
+          check_file_exists $image4
+        fi
+        
+        if [ "$do_import" = "IMPORT" ]; then
+        
+        
+          if ! [ -d $SUBJECTS_DIR/$patient ] ; then
+		    mksubjdirs $SUBJECTS_DIR/$patient
+	      fi
+          
+          counter=1
+          
+          if [ "$image1" != "" ] ; then
+            if [ $use_masks -eq 1 ]; then
+              mri_convert $mri_convert_options $image1 $SUBJECTS_DIR/$patient/mri/mask.mgz
+            else
+              mri_convert $mri_convert_options $image1 $SUBJECTS_DIR/$patient/mri/orig/00${counter}.mgz
+              counter=$(($counter+1))
+            fi
+          fi
+
+          if [ "$image2" != "" ] ; then
+            mri_convert $mri_convert_options $image2 $SUBJECTS_DIR/$patient/mri/orig/00${counter}.mgz
+            counter=$(($counter+1))
+          fi
+
+          if [ "$image3" != "" ] ; then
+            mri_convert $mri_convert_options $image3 $SUBJECTS_DIR/$patient/mri/orig/00${counter}.mgz
+            counter=$(($counter+1))
+          fi
+
+          if [ "$image4" != "" ] ; then
+            mri_convert $mri_convert_options $image4 $SUBJECTS_DIR/$patient/mri/orig/00${counter}.mgz
+            counter=$(($counter+1))
+          fi
+          
+        fi
+      fi
+      	    	
+	  # Increment loop counter
+	  i=$(($i+1))
+	done
+
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
+source _fsInclude.sh
+
+# Get the filename, and check it exists.
+filename=$1
+shift
+
+# Subjects_list holds info about subjects.  the n-1 calculates how many there are, -1 because of header line.
+fichier=$filename
+check_file_exists $fichier
+
+n=`wc -l $fichier | sed -n 's/^\(.*\) .*/\1/p'`
+n=$(($n-1))
+
+# Set defaults
+use_masks=1
+start_line=1
+finish_line=$n
+mri_convert_options="" 
+
+# Parse command line
+
+while [ "_$1" != "_" ] ; do
+    if [ "$1" = "-b" ] ; then
+        start_line=$2
+        shift 2
+    elif [ "$1" = "-e" ] ; then
+        finish_line=$2
+        shift 2
+    elif [ "$1" = "-noMask" ] ; then
+        use_masks=0
+        shift 1
+    elif [ "$1" = "-M" ] ; then
+        mri_convert_options=$2 
+        shift 2                       
+    else
+        Usage
+    fi
+done
+
+echo "Using file $fichier and starting at $start_line, and finishing at $finish_line, mri_convert_options:$mri_convert_options"
+
+# First check that files exist
+import_files "CHECK" $start_line $finish_line $use_masks
+
+# Now really do it.
+import_files "IMPORT" $start_line $finish_line $use_masks

@@ -1,0 +1,115 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+####################################################################################
+# Note that this script should only be called by regAREG.sh, as all the 
+# argument checking is done there for every patient.
+####################################################################################
+parameter_file=$1
+baseline_region=$2
+baseline_image=$3
+repeat_region=$4
+repeat_image=$5
+bsi_lower_window=$6
+bsi_upper_window=$7
+dof=$8
+output_dir=$9
+dbc=${10}
+dilation=${11}
+just_dbc=${12}
+
+# Include necessary functions
+source _regInclude.sh
+
+base_baseline_region=`basename $baseline_region`
+base_baseline_image=`basename $baseline_image`
+base_repeat_region=`basename $repeat_region`
+base_repeat_image=`basename $repeat_image`
+
+dofout=${output_dir}/${base_baseline_image}_${base_repeat_image}_${parameter_file}_dilation_${dilation}.dof
+repeat_image_transformed=${output_dir}/${base_repeat_image}_transformed
+repeat_region_transformed=${output_dir}/${base_repeat_region}_transformed
+dilated_baseline_region=${output_dir}/${base_baseline_region}_dilated
+dilated_repeat_region=${output_dir}/${base_repeat_region}_dilated
+qnt=${output_dir}/${base_baseline_image}-${base_repeat_image}.qnt
+base_dbc=${output_dir}/${base_baseline_image}_dbc
+repeat_dbc=${repeat_image_transformed}_dbc
+dbc_qnt=${output_dir}/${base_baseline_image}-${base_repeat_image}.dbc.qnt
+output_tmp=${output_dir}/tmp
+
+echo "===================================================="
+echo "Baseline region      :$baseline_region"
+echo "Baseline image       :$baseline_image"
+echo "Repeat region        :$repeat_region"
+echo "Repeat image         :$repeat_image"
+echo "BSI lower            :$bsi_lower_window"
+echo "BSI upper            :$bsi_upper_window"
+echo "Number DOF           :$dof"
+echo "Output dir           :$output_dir"
+echo "DOF out file         :$dofout"
+echo "Dilated base         :$dilated_baseline_region"
+echo "Dilated repeat       :$dilated_repeat_region"
+echo "Repeat img tx        :$repeat_image_transformed"
+echo "Repeat rgn tx        :$repeat_region_transformed"
+echo "Qnt                  :$qnt"
+echo "DBC                  :$dbc"
+echo "Base dbc             :$base_dbc"
+echo "Repeat dbc           :$repeat_dbc"
+echo "Qnt dbc              :$dbc_qnt"
+echo "Registering          :${baseline_image} and ${repeat_image}"
+echo "using dilation       :${dilation}"
+echo "using parameter file :$parameter_file"
+echo "===================================================="
+
+if [ "$just_dbc" = "FALSE" ]; then
+
+  execute_command "makemask ${baseline_image}.img ${baseline_region} ${dilated_baseline_region}.img -d ${dilation}"
+  execute_command "makeroi -img ${dilated_baseline_region}.img -out ${dilated_baseline_region} -alt 0"
+  execute_command "makemask ${repeat_image}.img ${repeat_region} ${dilated_repeat_region}.img -d ${dilation}"
+  execute_command "makeroi -img ${dilated_repeat_region}.img -out ${dilated_repeat_region} -alt 0"
+  execute_command "ffdareg.sh ${baseline_image}.img ${repeat_image}.img ${dofout} -params ${parameter_file} -dof ${dof} -comreg -troi ${dilated_baseline_region} -sroi ${dilated_repeat_region}"
+
+  execute_command "rm -f ${dilated_baseline_region}.img ${dilated_baseline_region}.hdr ${dilated_baseline_region} ${dilated_repeat_region}.img ${dilated_repeat_region}.hdr ${dilated_repeat_region}"
+
+  echo "===================================================="
+  echo "Transforming ${repeat_image}..."
+  echo "===================================================="
+  execute_command "ffdtransformation.sh ${repeat_image}.img ${baseline_image}.img ${repeat_image_transformed}.img ${dofout} -sinc"
+  execute_command "ffdroitransformation.sh ${repeat_region} ${repeat_region_transformed} ${repeat_image}.img ${baseline_image}.img ${dofout}"
+  execute_command "bsi_calc dummy.air ${baseline_region} ${baseline_image}.img ${repeat_region_transformed} ${repeat_image_transformed}.img ${repeat_image_transformed}.img -3 -e 1 -d 1 -l ${bsi_lower_window} -u ${bsi_upper_window} -t 0.0 -c 0 -h ${repeat_region_transformed} > ${qnt}"
+
+fi
+
+if [ "$dbc" = "ON" -o "$just_dbc" = "TRUE" ]; then
+ 
+  if [ ! -d ${output_tmp} ]; then
+    execute_command "mkdir ${output_tmp}"
+    execute_command "mkdir ${output_tmp}/${output_dir}"
+  fi
+  
+  execute_command "differentialbiascorrect ${baseline_image}.img ${repeat_image_transformed}.img ${baseline_region} ${repeat_region_transformed} . 5 ${output_tmp} ${base_dbc} ${repeat_dbc} 3 0 0 0 0"
+  execute_command "bsi_calc dummy.air ${baseline_region} ${base_dbc}.img ${repeat_region_transformed} ${repeat_dbc}.img  ${repeat_dbc}.img -3 -e 1 -d 1 -l ${bsi_lower_window} -u ${bsi_upper_window} -t 0.0 -c 0 -h ${repeat_region_transformed}  > ${dbc_qnt}"
+fi

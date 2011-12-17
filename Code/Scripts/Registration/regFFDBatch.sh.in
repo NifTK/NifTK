@@ -1,0 +1,156 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+#
+# Script to run regFFD.sh (which runs niftkFFD) in a batch.
+# 
+source _niftkCommon.sh
+
+ndefargs=1
+data_file=
+use_f3d=0
+command_file=regFFDBatch_$$_commands.txt     
+number_dilations=3
+
+function Usage()
+{
+cat <<EOF
+
+This script is a convenient wrapper round our NifTK programs to run a batch of Free Form registrations.
+
+Usage: $0 dataFile [options] 
+
+Mandatory Arguments:
+  dataFile       : A file consisting of lines of text containing, space or tab separated values:
+  
+                   baselineImage baselineRegion repeatImage repeatRegion outputDOFFile resampledRepeatImage deformationFile
+      
+                   Where you specify images, the images themselves should be .img and not .img.gz,
+                   and in the text file you specify the full file name (either absolute or relative to
+                   the current working directory).
+                   
+                   The "deformationFile" is the stretch file (.str) if you are running Midas stuff,
+                   or the image of the determinant of the Jacobian (.nii or .hdr) if you are running F3D.
+                   
+                   The "outputDOFFile" is the NifTK ITK format transformation file (.dof) if you are
+                   running Midas stuff, or the ITK raw MHA format image (.mha) if you are running F3D.
+                   
+Options:
+
+  -dil m         : Number of dilations to apply to masks            [ default 8 ]
+  -F3D           : Use F3D
+  
+EOF
+exit 127
+}
+
+function IterateThroughFile()
+{
+  local filename=$1
+  local mode=$2
+  local dilations=$3
+  local use_f3d=$4
+  
+  n=`wc -l $filename | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+
+    baselineImage=`awk 'NR-1 == '$i' {print $1}' $filename`
+    baselineRegion=`awk 'NR-1 == '$i' {print $2}' $filename`
+    repeatImage=`awk 'NR-1 == '$i' {print $3}' $filename`
+    repeatRegion=`awk 'NR-1 == '$i' {print $4}' $filename`
+    outputDOFFile=`awk 'NR-1 == '$i' {print $5}' $filename`
+    resampledRepeatImage=`awk 'NR-1 == '$i' {print $6}' $filename`
+    deformationFile=`awk 'NR-1 == '$i' {print $7}' $filename`
+
+    if [ "$mode" = "GENERATE" ]; then
+
+      # Generate a file of all commands
+      
+      if [ $use_f3d -eq 1 ]; then
+        deformationArg=" -jac $deformationFile -F3D "
+      else
+        deformationArg=" -str $deformationFile "
+      fi
+      
+      echo "regFFD.sh $baselineImage $repeatImage $outputDOFFile -troi $baselineRegion -sroi $repeatRegion -res $resampledRepeatImage -dil $dilations $deformationArg " >> $command_file 
+
+    else
+      check_file_exists $baselineImage
+      check_file_exists $baselineRegion
+      check_file_exists $repeatImage
+      check_file_exists $repeatRegion
+      checkf_writeable  $outputDOFFile
+      checkf_writeable  $resampledRepeatImage
+      checkf_writeable  $stretchFile
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+    
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+data_file=$1
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-dil)
+	    number_dilations=$2
+	    shift 1
+	    ;;
+	-F3D)
+	    use_f3d=1
+	    ;;	    
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+if [ ! -f $data_file ]; then
+    exitprog "The data file doesn't exist" 1
+fi
+
+echo "Running with file:$data_file, dilations=$number_dilations"
+
+IterateThroughFile $data_file "CHECK"
+
+IterateThroughFile $data_file "GENERATE" $number_dilations $use_f3d
+
+run_batch_job $command_file
+

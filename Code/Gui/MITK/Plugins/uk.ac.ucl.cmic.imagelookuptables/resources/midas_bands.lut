@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<lut order="6" class="LinearLookupTable" displayName="MIDAS Bands" premultiplied="0">
+ <colour r="0" g="0" b="0" />
+ <colour r="0" g="0" b="255" />
+ <colour r="188" g="143" b="143" />
+ <colour r="143" g="188" b="143" />
+ <colour r="255" g="0" b="0" />
+ <colour r="255" g="255" b="0" />
+ <colour r="79" g="47" b="79" />
+ <colour r="165" g="42" b="42" />
+ <colour r="0" g="255" b="0" />
+ <colour r="0" g="255" b="255" />
+</lut>

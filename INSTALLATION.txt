@@ -1,0 +1,99 @@
+Welcome
+-----------------------------
+
+This is the NifTK Translational Software 
+Platform version @NIFTK_VERSION_STRING@
+
+For all questions, please contact: 
+
+@NIFTK_CONTACT@
+
+IMPORTANT: Installation
+-----------------------------
+
+This package installs a suite of software, and 
+extra steps are needed to setup your system 
+after the installer runs. These are important, 
+and the software won't run properly without these 
+steps. Please see the instructions below.
+
+Installation: Mac OSX
+----------------------------------
+
+1. The package will install into 
+
+   /Applications/@NIFTK_DEPLOY_NAME@
+   
+2. In your shell startup script 
+   (normally bash shell, so in ~/.bash_profile), put:
+
+   export NIFTK_DIR=/Applications/@NIFTK_DEPLOY_NAME@
+   source ${NIFTK_DIR}/bin/SetupNifTK.sh
+   
+   or if you are running a csh
+   (so in ~/.cshrc), put:
+
+   setenv NIFTK_DIR /Applications/@NIFTK_DEPLOY_NAME@
+   source ${NIFTK_DIR}/bin/SetupNifTK.csh
+   
+Installation: Linux - Non Ubuntu
+--------------------------------
+
+1. Download the .tar.gz file, into the directory 
+   you want to install into. For these instructions
+   we will call this <INSTALL_DIR>, which should
+   be substituted below for your installation dir. 
+   
+   Extract the tar file using:
+   
+   tar -zxvf @NIFTK_DEPLOY_NAME@.tar.gz 
+   
+2. In your shell startup script 
+   (normally bash shell, so in ~/.bash_profile or ~/.bashrc), put:
+
+   export NIFTK_DIR=<INSTALL_DIR>/@NIFTK_DEPLOY_NAME@
+   source ${NIFTK_DIR}/bin/SetupNifTK.sh
+   
+   or if you are running a csh
+   (so in ~/.cshrc), put:
+
+   setenv NIFTK_DIR <INSTALL_DIR>/@NIFTK_DEPLOY_NAME@
+   source ${NIFTK_DIR}/bin/SetupNifTK.csh
+
+Note: Depending on your Linux system administrator, your
+shell startup scripts could be different ones, managed by your
+system administrator. If in doubt ask your local admin.
+
+Installation: Linux - Ubuntu
+----------------------------
+
+1. Download the .deb file
+
+2. sudo dpkg -i @NIFTK_DEPLOY_NAME@.deb
+
+3. This will install into /opt/@NIFTK_DEPLOY_NAME@
+
+4. In your shell startup script 
+   (normally bash shell, so in ~/.bash_profile or ~/.bashrc), put:
+
+   export NIFTK_DIR=/opt/@NIFTK_DEPLOY_NAME@
+   source ${NIFTK_DIR}/bin/SetupNifTK.sh
+   
+   or if you are running a csh
+   (so in ~/.cshrc), put:
+
+   setenv NIFTK_DIR /opt/@NIFTK_DEPLOY_NAME@
+   source ${NIFTK_DIR}/bin/SetupNifTK.csh
+
+Installation: Windows 7
+-----------------------
+
+1. Download the .exe file
+
+2. Run the .exe file following the on-screen prompts.
+
+3. The software will install into C:\Program Files\@NIFTK_DEPLOY_NAME@
+
+4. A short-cut will enable you to run NiftyView.
+
+5. Additionally, check that the environment variable NIFTK_DIR is set to C:\Program Files\@NIFTK_DEPLOY_NAME@

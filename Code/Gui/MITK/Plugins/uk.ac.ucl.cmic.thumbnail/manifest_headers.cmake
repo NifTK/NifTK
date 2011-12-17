@@ -1,0 +1,5 @@
+set(Plugin-Name "CMIC Thumbnail")
+set(Plugin-Version "0.1")
+set(Plugin-Vendor "CMIC, Centre For Medical Image Computing, UCL.")
+set(Plugin-ContactAddress "niftk-developers@ucl.ac.uk")
+set(Require-Plugin org.mitk.gui.qt.common)

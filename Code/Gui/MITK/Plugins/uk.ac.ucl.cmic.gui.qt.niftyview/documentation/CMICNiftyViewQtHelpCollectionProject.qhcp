@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<QHelpCollectionProject version="1.0">
+     <assistant>
+         <title>NiftyView Help</title>
+         <startPage>qthelp://cmic.cs.ucl.ac.uk/staff/matt_clarkson/</startPage>
+         <enableFilterFunctionality>false</enableFilterFunctionality>
+         <enableDocumentationManager>false</enableDocumentationManager>
+         <enableAddressBar visible="false">true</enableAddressBar>
+         <cacheDirectory>CMICNiftyView</cacheDirectory>
+         <aboutMenuText>
+             <text>About NiftyView Help</text>
+         </aboutMenuText>
+     </assistant>
+     <docFiles>
+         
+     </docFiles>
+</QHelpCollectionProject>

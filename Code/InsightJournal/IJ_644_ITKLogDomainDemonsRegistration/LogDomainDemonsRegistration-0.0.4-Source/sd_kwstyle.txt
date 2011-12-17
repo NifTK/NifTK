@@ -1,0 +1,3 @@
+Code/itk*.h [R]
+Code/itk*.[thc]xx [R]
+Code/itk*.[thc]pp [R]

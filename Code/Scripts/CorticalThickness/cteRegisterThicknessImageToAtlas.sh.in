@@ -1,0 +1,351 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Script to register a T1 and a thickness image to an atlas, and extract stats.
+
+source _niftkCommon.sh
+
+# You need to generate this. You cant do `dirname $0` as it wont work on the cluster.
+progdir=@NIFTK_INSTALL_BIN_DIR@
+
+ndefargs=3
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+use_gpu=0
+atlas=${progdir}/../matlab/segmentation/single_subj_T1.nii
+region_atlas=${progdir}/../matlab/segmentation/ROI_MNI_V4.nii
+use_atlas=0
+use_region_atlas=0
+levels_pyramid=3
+levels_perform=2
+image=
+thickness_image=
+output_basename=
+affine_trans=
+use_affine_trans=0
+cpp_trans=
+use_cpp_trans=0
+regions=
+use_regions=0
+
+function Usage()
+{
+cat <<EOF
+
+This script registers a T1 image to an atlas, and then calculates stats for each atlas region.
+
+Usage: cteRegisterThicknessImageToAtlas.sh t1.nii thickness.nii name [options] 
+
+Mandatory Arguments:
+
+  t1.nii                   : The T1 image to register to an atlas.
+  
+  thickness.nii            : The thickness image in the T1 image space, that the stats are calculated over.
+  
+  name                     : Basename for the output. Output files are:
+              
+                             <name>_native_to_atlas_affine.txt - The affine transformation.
+                             <name>_native_to_atlas_cpp.nii    - The non-rigid FFD control point transformation.
+                             <name>_image_in_atlas.nii         - Original T1 image in atlas space.
+                             <name>_data_in_atlas.nii          - Thickness image in Atlas space.
+                             <name>_atlas_stats_*.csv          - Statistics for each region.
+
+Options:
+
+  -atlas     image.nii     : An alternative atlas image.
+
+  -atlas_regions image.nii : An alternative set of regions, that should match the atlas.
+  
+  -affine    affine.txt    : If you have already done an affine registration, pass in the affine transformation.
+  
+  -cpp       cpp.nii       : If you have already done the non-rigid registration, pass in the control points transformation.
+  
+  -tmproot <directory>     : Define a root directory for temporary files. Default /tmp
+                             The difference between this option and the next, is that this
+                             one takes the root directory (eg. /tmp) and creates a sub directory
+                             with a process ID in it. (eg. /tmp/seg.1234) whereas the next option
+                             just uses exactly what you give it.
+                            
+  -tmpdir <directory>      : Set temporary workspace directory.
+
+  -keeptmp                 : Keep temporary workspace directory.
+  
+  -gpu                     : Use -gpu option for nifty_reg.
+
+  -levels <int>            : The number of Free-Form Deformation multi-resolution levels in pyramid. Default 3.
+  
+  -levels_to_perform <int> : The number of Free-Form Deformation multi-resolution levels to actually optimise. Default 2.
+  
+  -regions 1,2,3,4,5       : Comma separated list of region numbers.
+  
+                             NOTE: You are advised to specify which regions you want, or else the output may have too many columns.
+  
+  
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt $ndefargs ]; then
+  Usage
+fi
+
+# Get required parameters
+image=$1
+thickness_image=$2
+output_basename=`basename $3`
+
+# Parse remaining command line options
+shift $ndefargs
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+	-atlas)
+	    atlas=$2
+	    shift 1
+	    use_atlas=1
+	    ;;
+	-atlas_regions)
+	    region_atlas=$2
+	    shift 1
+	    use_region_atlas=1
+	    ;;
+    -affine)
+        affine_trans=$2
+        shift 1
+        use_affine_trans=1
+        ;;
+    -cpp)
+        cpp_trans=$2
+        shift 1
+        use_cpp_trans=1
+        ;;
+	-tmproot)
+	    tmp_root=$2
+	    shift 1
+	    ;;        
+	-tmpdir)
+	    tmpdir=$2
+	    shift 1
+	    ;;
+    -keeptmp)
+	    keeptmp=1
+	    ;;
+	-gpu)
+	    use_gpu=1
+	    ;;
+	-levels)
+	    levels_pyramid=$2
+	    shift 1
+	    ;;
+	-levels_to_perform)
+	    levels_perform=$2
+	    shift 1
+	    ;;
+	-regions)
+	    regions=$2
+	    shift 1
+	    ;;	     	           	    	         	    	     	           	    	         
+    -*)
+	    exitprog "Error: option $1 not recognised" 1
+	    ;;
+    esac
+    shift 1
+done
+
+# Use the environment variable TMPDIR
+# if defined, otherwise make one up
+# NB this gets overwritten if specified
+# on the command line
+ptmpdir=$tmp_root/cte.$$
+if [ "_$tmpdir" = "_" ]; then
+  tmpdir=$ptmpdir
+fi
+
+# Catch signals
+trap '
+    savestatus=$?
+    if [ $keeptmp -eq 0 ] 
+    then 
+        rm -rf "$tmpdir" 
+    fi && exit $savestatus
+' 0
+
+trap '
+    savestatus=$?
+    echo "Caught signal, cleaning up..."
+    if [ $keeptmp -eq 0 ] 
+    then
+        echo "Removing temporary directory $tmpdir..."
+        rm -rf "$tmpdir"
+    else
+        echo "Keeping temporary directory $tmpdir..."
+    fi
+    (exit $savestatus); exit
+' 1 2 13 15
+
+check_program_exists reg_aladin
+check_program_exists reg_f3d
+
+# Check command line arguments
+if [ ! -f $image ]; then
+    exitprog "The image to register to does not exist!" 1
+fi
+
+if [ ! -f $thickness_image ]; then
+    exitprog "The thickness image does not exist!" 1
+fi
+
+if [ "_${output_basename}" = "_" ]; then
+    exitprog "You didn't specify an output basename" 1
+fi
+
+if [ ! -f $atlas ]; then
+    exitprog "The atlas you specified does not exist!" 1
+fi
+
+if [ ! -f $region_atlas ]; then
+    exitprog "The atlas regions you specified does not exist!" 1
+fi
+
+if [ ! -f $cpp_trans ]; then
+    exitprog "The non rigid transformation (control point file) you specified does not exist!" 1
+fi
+
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir
+    if [ $? -ne 0 ]; then
+		exitprog "Error: unable to create temporary directory $tmpdir" 1
+    fi
+fi
+
+################################################################
+message "Temp directory is $tmpdir"
+thedate=`$DATE`
+message "Start time is $thedate"
+################################################################
+
+echo "Starting $0 with:"
+echo "  image=$image"
+echo "  thickness_image=$thickness_image"
+echo "  output_basename=$output_basename"
+echo "  keeptmp=$keeptmp"
+echo "  tmp_root=$tmp_root"
+echo "  use_tmp_dir=$use_tmp_dir"
+echo "  use_gpu=$use_gpu"
+echo "  atlas=$atlas"
+echo "  use_atlas=$use_atlas"
+echo "  levels_pyramid=$levels_pyramid"
+echo "  levels_perform=$levels_perform"
+echo "  affine_trans=$affine_trans"
+echo "  use_affine_trans=$use_affine_trans"
+echo "  cpp_trans=$cpp_trans"
+echo "  use_cpp_trans=$use_cpp_trans"
+echo "  region_atlas=$region_atlas"
+echo "  use_region_atlas=$use_region_atlas"
+echo "  use_regions=$use_regions"
+
+if [ $use_gpu -eq 1 ]; then
+  gpu_arg=" -gpu "
+fi
+
+# NOTE: For affine, Im always doing all the pyramid levels.
+# NOTE: The user will most likely want control for the non-rigid.
+
+if [ $use_affine_trans -eq 0 ]; then   
+
+    message "Starting reg_aladin"
+     
+	linearExecutable=`which reg_aladin`
+	linearArgs=" -ln $levels_pyramid -lp $levels_pyramid $gpu_arg -target $atlas -source $image -aff $tmpdir/affine.mat -result $tmpdir/atlas_registered_rigid.nii "  
+
+	execute_command_or_else_stop "$linearExecutable $linearArgs"
+	
+  	message "Finished reg_aladin"
+  	
+else
+	execute_command_or_else_stop "cp $affine_trans $tmpdir/affine.mat"
+fi
+
+if [ $use_cpp_trans -eq 0 ]; then
+
+  message "Starting reg_f3d"
+
+  nonLinearExecutable=`which reg_f3d`
+  nonLinearArgs=" -ln $levels_pyramid -lp $levels_perform $gpu_arg -be 0.1 -target $atlas -source $atlas -aff $tmpdir/affine.mat -result $tmpdir/atlas_registered_nrr.nii -cpp $tmpdir/cpp.nii "  
+  execute_command_or_else_stop "$nonLinearExecutable $nonLinearArgs"
+
+  message "Finished reg_f3d"
+
+else
+	execute_command_or_else_stop "cp ${cpp_trans} $tmpdir/cpp.nii"  
+fi
+
+execute_command_or_else_stop "cp $tmpdir/affine.mat ${output_basename}_native_to_atlas_affine.txt"
+execute_command_or_else_stop "cp $tmpdir/cpp.nii ${output_basename}_native_to_atlas_cpp.nii"
+
+################################################################
+# Transform atlas to image space
+################################################################
+  
+execute_command_or_else_stop "reg_resample -target $atlas -source $image -cpp $tmpdir/cpp.nii -result ${output_basename}_image_in_atlas.nii "
+execute_command_or_else_stop "reg_resample -target $atlas -source $thickness_image -cpp $tmpdir/cpp.nii -result ${output_basename}_data_in_atlas.nii -NN "
+  
+################################################################
+# Now run the stats
+################################################################
+
+if [ $use_regions -eq 1 ]; then
+  regions_arg=" -regions ${regions} "
+fi
+
+execute_command_or_else_stop "niftkAtlasStatistics -a ${region_atlas} $regions_arg -count ${output_basename}_data_in_atlas.nii > ${output_basename}_atlas_stats_count.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${region_atlas} $regions_arg -min ${output_basename}_data_in_atlas.nii > ${output_basename}_atlas_stats_min.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${region_atlas} $regions_arg -max ${output_basename}_data_in_atlas.nii > ${output_basename}_atlas_stats_max.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${region_atlas} $regions_arg -mean ${output_basename}_data_in_atlas.nii > ${output_basename}_atlas_stats_mean.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${region_atlas} $regions_arg -sd ${output_basename}_data_in_atlas.nii > ${output_basename}_atlas_stats_sd.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${region_atlas} $regions_arg -median ${output_basename}_data_in_atlas.nii > ${output_basename}_atlas_stats_median.csv "
+execute_command_or_else_stop "niftkAtlasStatistics -a ${region_atlas} $regions_arg -iqm ${output_basename}_data_in_atlas.nii > ${output_basename}_atlas_stats_iqm.csv "
+
+################################################################
+message "Cleanup"
+################################################################
+
+thedate=`$DATE`
+message "Time is $thedate"
+
+if [ $keeptmp -eq 0 ]; then
+    message "Removing temp dir $tmpdir"
+    execute_command "rm -rf $tmpdir"
+else
+    message "Keeping temp dir $tmpdir"
+fi
+
+thedate=`$DATE`
+message "End time is $thedate"
+message "Finished"
+

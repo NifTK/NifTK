@@ -1,0 +1,141 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+export SUBJECTS_DIR=`pwd`
+
+source _fsInclude.sh
+
+function Usage()
+{
+  cat <<EOF
+This script will re-run FreeSurfer after you have made various edits.
+
+Usage: fsRerunAfterEdits.sh [ options ] ALLFR ALLHA CCCCC DDDDD etc.
+
+  All arguments after fsRerunAfterEdits.sh are FreeSurfer directories under the current directory.
+  
+Mandatory Arguments:
+
+  -c              : If you edited control points
+  -w              : If you edited white matter
+  -b              : If you edited brain volume
+  
+Options are:
+
+  -no-vents-fix           : Don't use our vents fix.        [ default is to use it ] 
+  -start                  : Step to start at                [ default 2 ie. auto-recon2]
+  -stop                   : Step to stop at                 [ default 3 ie. auto-recon3]
+  -reconall " options "   : Any additiopnal options to pass to recon-all, in quotes.  
+  -r2 " options "         : Any additional options to pass to autorecon2, in quotes.
+  -r3 " options "         : Any additional options to pass to autorecon3, in quotes.
+  -expert                 : Name of an expert options file
+  -echo                   : Just echo the command, don't actually do it.
+  
+EOF
+
+# Prints a list of known hints.
+freesurfer_hints
+
+exit 127                            
+}
+
+# Parse options.
+CONTROL_POINTS=FALSE
+WHITE_MATTER=FALSE
+BRAIN_VOLUME=FALSE
+OUR_MASK=FALSE
+OUR_VENTS_FIX=TRUE
+RECONALL_ARGS=_
+RECON2_ARGS=_
+RECON3_ARGS=_
+EXPERT_OPTS=_
+START=2
+STOP=3
+ECHO=OFF
+DONE_OPTIONS=FALSE
+
+while [ "_$1" != "_" -a "$DONE_OPTIONS" = "FALSE" ] ; do
+    if [ "$1" = "-c" ] ; then
+        CONTROL_POINTS="TRUE"
+        shift 1
+    elif [ "$1" = "-w" ] ; then
+        WHITE_MATTER="TRUE"
+        shift 1
+    elif [ "$1" = "-b" ] ; then
+        BRAIN_VOLUME="TRUE"
+        shift 1
+    elif [ "$1" = "-reconall" ] ; then
+        RECONALL_ARGS="\"$2\""
+        shift 2        
+    elif [ "$1" = "-r2" ] ; then
+        RECON2_ARGS="\"$2\""
+        shift 2
+    elif [ "$1" = "-r3" ] ; then
+        RECON3_ARGS="\"$2\""
+        shift 2
+    elif [ "$1" = "-start" ] ; then
+        START="$2"
+        shift 2
+    elif [ "$1" = "-stop" ] ; then
+        STOP="$2"
+        shift 2  
+    elif [ "$1" = "-echo" ] ; then
+        ECHO="ON"
+        shift 1                                     
+    elif [ "$1" = "-expert" ] ; then
+        EXPERT_OPTS="$2"
+        shift 2
+    elif [ "$1" = "-no-vents-fix" ] ; then
+        OUR_VENTS_FIX="FALSE"
+        shift 1                                 
+    else
+        DONE_OPTIONS="TRUE"
+    fi
+done
+
+# If all are false, no point continuing.
+if [ "$CONTROL_POINTS" = "FALSE" -a "$WHITE_MATTER" = "FALSE" -a "$BRAIN_VOLUME" = "FALSE" ]; then
+  Usage
+fi
+
+# If no directories, no point continuing
+if [ "_$1" = "_" ]; then
+  Usage
+fi
+
+check_freesurfer_env
+
+check_all_directories_in_string_exists "$*"
+
+# Generate commands file
+for f in $*
+do
+  echo "_fsRerunAfterEdits.sh $f $OUR_MASK $OUR_VENTS_FIX $RECONALL_ARGS $RECON2_ARGS $RECON3_ARGS $EXPERT_OPTS $START $STOP $ECHO $CONTROL_POINTS $WHITE_MATTER $BRAIN_VOLUME " >> fsRerunAfterEdits_$$_commands.txt
+done
+
+# And Run it.
+run_batch_job fsRerunAfterEdits_$$_commands.txt
+

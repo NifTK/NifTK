@@ -1,0 +1,63 @@
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-07-08 16:29:16 +0100 (Fri, 08 Jul 2011) $ 
+#  Revision          : $Revision: 6703 $
+#  Last modified by  : $Author: ad $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# This file is configured at cmake time, and loaded at cpack time.
+# To pass variables to cpack from cmake, they must be configured
+# in this file. At the moment we aren't configuring much,
+# but for example, NSIS on Windows may require lots of variables.  
+
+# NOTE: Also, I noticed if you choose >1 option for Mac, i.e. PackageManager and DragNDrop, variables start going wrong.
+
+IF("${CPACK_GENERATOR}" STREQUAL "DragNDrop")
+  SET(CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON)
+  SET(CPACK_PACKAGE_DEFAULT_LOCATION "/Applications")
+ENDIF()
+
+IF("${CPACK_GENERATOR}" STREQUAL "PackageMaker")
+  SET(CPACK_PACKAGING_INSTALL_PREFIX "/Applications/@NIFTK_DEPLOY_NAME@")
+ENDIF()
+
+IF("${CPACK_GENERATOR}" STREQUAL "TGZ")
+  SET(CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON)
+ENDIF()
+
+IF("${CPACK_GENERATOR}" STREQUAL "DEB")
+  SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "@NIFTK_CONTACT@")
+  SET(CPACK_PACKAGE_DEFAULT_LOCATION "/opt/@NIFTK_DEPLOY_NAME@")
+ENDIF()
+
+# Nsis
+IF("${CPACK_GENERATOR}" STREQUAL "NSIS")
+  SET(CPACK_NSIS_DISPLAY_NAME "@CPACK_PACKAGE_NAME@-@CPACK_PACKAGE_VERSION@")
+  SET(CPACK_NSIS_PACKAGE_NAME "@CPACK_PACKAGE_FILE_NAME@")
+  SET(CPACK_NSIS_MUI_ICON "@CMAKE_SOURCE_DIR@/Code/Gui/Main/images/icon.ico")
+  SET(CPACK_NSIS_MUI_UNIICON "@CMAKE_SOURCE_DIR@/Code/Gui/Main/images/icon.ico")
+  SET(CPACK_NSIS_INSTALLED_ICON_NAME "images/icon.ico")
+  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\cmic.cs.ucl.ac.uk")
+  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\cmic.cs.ucl.ac.uk")
+  SET(CPACK_NSIS_CONTACT "@NIFTK_CONTACT@")
+  SET(CPACK_NSIS_CREATE_ICONS_EXTRA "CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\NiftyView.lnk\\\" \\\"$INSTDIR\\\\bin\\\\NiftyView.exe\\\" ") 
+  SET(CPACK_NSIS_MUI_FINISHPAGE_RUN "NiftyView.exe")
+  SET(CPACK_NSIS_MODIFY_PATH ON)
+ENDIF()

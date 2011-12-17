@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.blueberry.ui.editors">
+    <editor
+      id="org.mitk.editors.midasmultiview"
+      name="CMIC MIDAS Display"
+      class="QmitkMIDASMultiViewEditor">
+    </editor>
+  </extension>
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePage" name="CMIC MIDAS Display" class="QmitkMIDASMultiViewEditorPreferencePage">
+      <keywordreference id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePageKeywords"></keywordreference>
+    </page>     
+  </extension>
+</plugin>
