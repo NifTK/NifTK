@@ -671,11 +671,7 @@ SET(NIFTK_INSTALL_BIN_DIR "bin")
 SET(NIFTK_INSTALL_INCLUDE_DIR "include/NifTK")
 SET(NIFTK_INSTALL_MATLAB_DIR "matlab")
 SET(NIFTK_INSTALL_DOC_DIR "doc")
-IF(WIN32)
-  SET(NIFTK_INSTALL_LIB_DIR "bin")
-ELSE(WIN32)
-  SET(NIFTK_INSTALL_LIB_DIR "lib")
-ENDIF(WIN32)
+SET(NIFTK_INSTALL_LIB_DIR "bin")
 
 ######################################################################
 # Configure files that need variables substituting. Note that
