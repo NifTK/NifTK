@@ -173,16 +173,31 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
 {
   this->blockSignals(true);
 
+  double stepSize = (highestValue-lowestValue)/100.0;
+  double pageSize = (highestValue-lowestValue)/10.0;
+
   m_ThresholdingLowerThresholdSlider->setMinimum(lowestValue);
   m_ThresholdingLowerThresholdSlider->setMaximum(highestValue);
+  m_ThresholdingLowerThresholdSlider->setSingleStep(stepSize);
+  m_ThresholdingLowerThresholdSlider->setPageStep(pageSize);
   m_ThresholdingLowerThresholdSlider->setValue(lowestValue);
   m_ThresholdingUpperThresholdSlider->setMinimum(lowestValue);
   m_ThresholdingUpperThresholdSlider->setMaximum(highestValue);
   m_ThresholdingUpperThresholdSlider->setValue(lowestValue); // Intentionally set to lowest values, as this is what MIDAS does.
+  m_ThresholdingUpperThresholdSlider->setSingleStep(stepSize);
+  m_ThresholdingUpperThresholdSlider->setPageStep(pageSize);
   m_ThresholdingAxialCutoffSlider->setMinimum(1);
   m_ThresholdingAxialCutoffSlider->setMaximum(numberAxialSlices);
   m_ThresholdingAxialCutoffSpinBox->setMinimum(1);
   m_ThresholdingAxialCutoffSpinBox->setMaximum(numberAxialSlices);
+
+  m_ErosionsUpperThresholdSlider->setSingleStep(stepSize);
+  m_ErosionsUpperThresholdSlider->setPageStep(pageSize);
+
+  m_DilationsLowerThresholdSlider->setSingleStep(1);  // this is a percentage.
+  m_DilationsLowerThresholdSlider->setPageStep(10); // this is a percentage.
+  m_DilationsUpperThresholdSlider->setSingleStep(1);  // this is a percentage.
+  m_DilationsUpperThresholdSlider->setPageStep(10); // this is a percentage.
 
   this->blockSignals(false);
 }
