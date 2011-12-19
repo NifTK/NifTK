@@ -166,7 +166,7 @@ if [ -e ${NIFTK_INSTALL_PREFIX}/crkit-release ]; then
 fi
 
 # Main PATH setup for NifTK stuff.
-export PATH=${NIFTK_DIR}/bin:${PATH}  
+export PATH=${NIFTK_DIR}:${NIFTK_DIR}/bin:${PATH}
 export LD_LIBRARY_PATH=${NIFTK_DIR}/lib:${LD_LIBRARY_PATH}
 export MANPATH=${NIFTK_DIR}/man:${MANPATH} 
 export MATLABPATH=${NIFTK_DIR}/matlab:${NIFTK_DIR}/matlab/common:${NIFTK_DIR}/matlab/freesurfer:${NIFTK_DIR}/matlab/parcellation:${NIFTK_DIR}/matlab/glm:${NIFTK_DIR}/matlab/segmentation:${NIFTK_INSTALL_PREFIX}/surfstat:${MATLABPATH}

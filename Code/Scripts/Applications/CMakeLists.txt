@@ -21,4 +21,10 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
-INSTALL(PROGRAMS NiftyView DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+
+# We only need this on Apple. If we are on Linux, you run the 
+# NiftyView.sh that is provided in the CMAKE_INSTALL_PREFIX folder.
+
+IF(APPLE)
+  INSTALL(PROGRAMS NiftyView DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+ENDIF(APPLE)
