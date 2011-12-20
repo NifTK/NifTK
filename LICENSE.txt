@@ -1,5 +1,5 @@
 /**
-\page @NIFTK_PLATFORM@License License
+\page @NIFTK_PLATFORM@License The @NIFTK_PLATFORM@ License
 
 @NIFTK_COPYRIGHT@
 

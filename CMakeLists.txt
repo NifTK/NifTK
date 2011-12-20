@@ -213,6 +213,10 @@ IF(BUILD_TESTING)
                  COPYONLY IMMEDIATE)
   SET(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard")
   MARK_AS_ADVANCED(BUILDNAME)
+  
+  # Setup file for setting custom ctest vars
+  CONFIGURE_FILE(CMake/CTestCustom.cmake.in ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
+
 ENDIF(BUILD_TESTING)
 
 ######################################################################
