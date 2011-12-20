@@ -32,7 +32,7 @@ class QAbstractButton;
 
 /**
  * \class MIDASMorphologicalSegmentorViewControlsImpl
- * \brief Implements a few Qt specific things that are of no interest to the view class.
+ * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
 class MIDASMorphologicalSegmentorViewControlsImpl : public QWidget, public Ui_MIDASMorphologicalSegmentorViewControls
@@ -47,7 +47,7 @@ public:
   /** Destructor. */
   ~MIDASMorphologicalSegmentorViewControlsImpl();
 
-  /// \brief Creates the GUI.
+  /// \brief Creates the GUI, initialising everything to off.
   void setupUi(QWidget*);
 
   /// \brief Get the current tab number.
@@ -56,7 +56,7 @@ public:
   /// \brief Set the current tab number, which enables and disables widgets appropriately.
   void SetTabNumber(int i);
 
-  /// \brief Enables/disables controls. Disable between segmentations. Both will reset to tab one. You should step through each tab using SetTab(int).
+  /// \brief Enables/disables all controls.
   void EnableControls(bool b);
 
   /// \brief Set the dialog according to relevant image data.
@@ -104,13 +104,15 @@ protected:
 
 private:
 
-  // Enable/disable the setting of the widgets on each tab.
   void EnableTab1Thresholding(bool enable);
   void EnableTab2Erosions(bool enable);
   void EnableTab3Dilations(bool enable);
   void EnableTab4ReThresholding(bool enable);
-  void EnableOKCancelButtons(bool enable);
+  void EnableOKButton(bool enable);
+  void EnableCancelButton(bool enable);
+  void EnableResetButton(bool enable);
   void EnableByTabNumber(int i);
+
   void EmitThresholdingValues();
   void EmitErosionValues();
   void EmitDilationValues();

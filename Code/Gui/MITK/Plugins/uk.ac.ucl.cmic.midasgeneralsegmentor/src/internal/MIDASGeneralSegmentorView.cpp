@@ -317,7 +317,7 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
   mitk::DataNode::Pointer helperImageNode = drawTool->CreateEmptySegmentationNode( referenceImage, name, col->GetColor());
   helperImageNode->SetColor(col->GetColor());
   helperImageNode->SetProperty("binaryimage.selectedcolor", col);
-  helperImageNode->SetBoolProperty("helper object", false);
+  helperImageNode->SetBoolProperty("helper object", true);
 
   this->ApplyDisplayOptions(helperImageNode);
   this->GetDefaultDataStorage()->Add(helperImageNode, segmentationNode);
@@ -1170,10 +1170,12 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(0);
   assert(segmentationNode);
 
+  this->WipeTools();
   this->DestroyPipeline();
   this->RemoveWorkingData();
   this->UpdateVolumeProperty(segmentationNode);
   this->SetReferenceImageSelected();
+  this->EnableSegmentationWidgets(false);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
@@ -1182,10 +1184,12 @@ void MIDASGeneralSegmentorView::OnCancelButtonPressed()
   mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(0);
   assert(segmentationNode);
 
+  this->WipeTools();
   this->DestroyPipeline();
   this->RemoveWorkingData();
   this->GetDefaultDataStorage()->Remove(segmentationNode);
   this->SetReferenceImageSelected();
+  this->EnableSegmentationWidgets(false);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 

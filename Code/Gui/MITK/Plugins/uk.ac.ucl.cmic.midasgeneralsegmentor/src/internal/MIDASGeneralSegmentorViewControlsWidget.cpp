@@ -68,6 +68,8 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
   m_MagnificationFactorWidget->setVisible(false);
   m_MagnificationFactorWidget->SetOffset(0);
   m_SliceSelectionWidget->SetOffset(0);
+
+  this->SetEnableAllWidgets(false);
 }
 
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingCheckbox(bool enabled)
@@ -99,11 +101,20 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableOrientationWidgets(bool e
   m_CoronalRadioButton->setEnabled(enabled);
 }
 
+void MIDASGeneralSegmentorViewControlsWidget::SetEnableOKCancelResetWidgets(bool enabled)
+{
+  m_OKButton->setEnabled(enabled);
+  m_ResetButton->setEnabled(enabled);
+  m_CancelButton->setEnabled(enabled);
+}
+
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
 {
+  this->SetEnableThresholdingCheckbox(enabled);
   this->SetEnableThresholdingWidgets(enabled);
   this->SetEnableOrientationWidgets(enabled);
   this->SetEnableManualToolSelectionBox(enabled);
+  this->SetEnableOKCancelResetWidgets(enabled);
   m_MagnificationFactorWidget->setEnabled(enabled);
   m_SliceSelectionWidget->setEnabled(enabled);
   m_RetainMarksCheckBox->setEnabled(enabled);
@@ -113,9 +124,6 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
   m_WipeButton->setEnabled(enabled);
   m_WipePlusButton->setEnabled(enabled);
   m_WipeMinusButton->setEnabled(enabled);
-  m_OKButton->setEnabled(enabled);
-  m_ResetButton->setEnabled(enabled);
-  m_CancelButton->setEnabled(enabled);
   m_HelpButton->setEnabled(enabled);
 }
 

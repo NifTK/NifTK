@@ -51,6 +51,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_DilationsUpperThresholdSlider->setValue(160);
   m_DilationsUpperThresholdSlider->setTickInterval(1);
 
+  m_segmentationDialogButtonBox->button(QDialogButtonBox::Ok)->setObjectName(QString::fromUtf8("OkButton"));
+  m_segmentationDialogButtonBox->button(QDialogButtonBox::Cancel)->setObjectName(QString::fromUtf8("CancelButton"));
+
   // TODO: Decide how we will provide help.
   m_segmentationDialogHelpPushButton->setVisible(false);
 
@@ -113,9 +116,19 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab4ReThresholding(bool 
   m_RethresholdingLineEdit->setEnabled(enable);
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::EnableOKCancelButtons(bool enable)
+void MIDASMorphologicalSegmentorViewControlsImpl::EnableOKButton(bool enable)
 {
   m_segmentationDialogButtonBox->button(QDialogButtonBox::Ok)->setEnabled(enable);
+}
+
+void MIDASMorphologicalSegmentorViewControlsImpl::EnableCancelButton(bool enable)
+{
+  m_segmentationDialogButtonBox->button(QDialogButtonBox::Cancel)->setEnabled(enable);
+}
+
+void MIDASMorphologicalSegmentorViewControlsImpl::EnableResetButton(bool enable)
+{
+    m_segmentationDialogClearPushButton->setEnabled(enable);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
@@ -126,7 +139,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
-    this->EnableOKCancelButtons(false);
+    this->EnableOKButton(false);
+    this->EnableCancelButton(true);
+    this->EnableResetButton(false);
   }
   else if (i == 1)
   {
@@ -134,7 +149,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(true);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
-    this->EnableOKCancelButtons(false);
+    this->EnableOKButton(false);
+    this->EnableCancelButton(true);
+    this->EnableResetButton(true);
   }
   else if (i == 2)
   {
@@ -142,7 +159,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(true);
     this->EnableTab4ReThresholding(false);
-    this->EnableOKCancelButtons(false);
+    this->EnableOKButton(false);
+    this->EnableCancelButton(true);
+    this->EnableResetButton(true);
   }
   else if (i == 3)
   {
@@ -150,7 +169,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(true);
-    this->EnableOKCancelButtons(true);
+    this->EnableOKButton(true);
+    this->EnableCancelButton(true);
+    this->EnableResetButton(true);
   }
 }
 
@@ -166,6 +187,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableControls(bool b)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
+    this->EnableOKButton(false);
+    this->EnableCancelButton(false);
+    this->EnableResetButton(false);
   }
 }
 
@@ -411,11 +435,11 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnCursorWidthSpinBoxChanged(in
 
 void MIDASMorphologicalSegmentorViewControlsImpl::OnOKCancelClicked(QAbstractButton *button)
 {
-  if (button->text() == "OK")
+  if (button->objectName() == QString("OkButton"))
   {
     emit OKButtonClicked();
   }
-  else if (button->text() == "Cancel")
+  else if (button->objectName() == QString("CancelButton"))
   {
     emit CancelButtonClicked();
   }
