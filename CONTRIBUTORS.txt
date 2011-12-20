@@ -1,18 +1,7 @@
-Welcome
------------------------------
+Contributing Groups.
+--------------------
 
-This is the NifTK Translational Software 
-Platform version @NIFTK_VERSION_STRING@
-
-For all questions, please contact: 
-
-@NIFTK_CONTACT@
-
-Contributing Groups
------------------------------
-
-This project is a collaboration between the following
-groups:
+This project is a collaboration between the following groups:
 
 UCL Dementia Research Centre: 
 http://dementia.ion.ucl.ac.uk

@@ -1,0 +1,17 @@
+/**
+
+\page UserManual The User Manual
+
+\section UserManualIntroduction Introduction
+
+This is the user manual for the main @NIFTK_PLATFORM@ project, containing
+information on how to use the various components, such the graphical user
+interface (GUI) NiftyView, command line apps and batch scripts.
+
+\li \subpage UserManualNiftyView
+\li \subpage UserManualCommandLineApps
+\li \subpage UserManualScripts
+
+The batch scripts are only written for Unix/Linux/Mac operating systems.
+ 
+*/

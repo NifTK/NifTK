@@ -12,10 +12,9 @@ lightweight packages that do a very specific job very well.
 
 So, this project contains 
 <ul>
-<li>NiftyView - a graphical user interface GUI for visualisation, and integration of algorithms.</li>
-<li>Command line applications - described \subpage UserManualCommandLineApps here.</li> 
-<li>Matlab - not yet documented.</li>
-<li>Scripts - for Unix/Linux/Mac users only.</li>
+<li>\ref UserManualNiftyView - for all platforms.</li>
+<li>\ref UserManualCommandLineApps - for all platforms.</li> 
+<li>\ref UserManualScripts - for Unix/Linux/Mac users only.</li>
 </ul>
 as well as the means to download and install all the light-weight Nifty<Something> packages.
 

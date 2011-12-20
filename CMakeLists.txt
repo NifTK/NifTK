@@ -25,9 +25,9 @@
 ######################################################################
 # Our version number. Edit this to generate a new version.
 ######################################################################
-SET(NIFTK_VERSION_MAJOR 1 CACHE STRING "Major version number" )
-SET(NIFTK_VERSION_MINOR 0 CACHE STRING "Minor version number" )
-SET(NIFTK_VERSION_PATCH 0.rc1 CACHE STRING "Patch version number" )
+SET(NIFTK_VERSION_MAJOR 1 CACHE STRING "Major version number" FORCE )
+SET(NIFTK_VERSION_MINOR 0 CACHE STRING "Minor version number" FORCE )
+SET(NIFTK_VERSION_PATCH 0rc1 CACHE STRING "Patch version number" FORCE)
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_PATCH)
@@ -145,12 +145,13 @@ SET(NIFTK_WIKI_URL "https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform" CACHE 
 SET(NIFTK_WIKI_TEXT "wiki" CACHE STRING "Wiki text" FORCE )
 SET(NIFTK_DASHBOARD_URL "https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK" CACHE STRING "Dashboard URL" FORCE)
 SET(NIFTK_DASHBOARD_TEXT "dashboard" CACHE STRING "Dashboard text" FORCE)
-SET(NIFTK_USER_CONTACT "niftk-users@ucl.ac.uk" CACHE STRING "Contact address for users." FORCE )
-SET(NIFTK_DEVELOPER_CONTACT "niftk-developers@ucl.ac.uk" CACHE STRING "Contact address for developers." FORCE )
+SET(NIFTK_USER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users" CACHE STRING "Contact address for users." FORCE )
+SET(NIFTK_DEVELOPER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-developers" CACHE STRING "Contact address for developers." FORCE )
 SET(NIFTK_BASE_NAME "niftk" CACHE STRING "Base name for installation folder. Unix convention is lower case letters." FORCE )
 SET(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
 SET(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 SET(NIFTK_ITK_VERSION_IN_SUPERBUILD "3.20.1" CACHE STRING "Version of ITK to download when doing superbuild. Currently, valid choices are 3.20.1, and 3.16.0")
+SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -176,6 +177,7 @@ MARK_AS_ADVANCED(NIFTK_USE_GIT_PROTOCOL)
 MARK_AS_ADVANCED(NIFTK_CHECK_COVERAGE)
 MARK_AS_ADVANCED(NIFTK_VERBOSE_COMPILER_WARNINGS)
 MARK_AS_ADVANCED(NIFTK_GENERATE_DOXYGEN_HELP)
+MARK_AS_ADVANCED(NIFTK_NIGHTLY_DOCS)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
@@ -697,6 +699,10 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Utilities/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/MainPage.dox.in ${CMAKE_BINARY_DIR}/Doxygen/MainPage.dox)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Dependencies.dox.in ${CMAKE_BINARY_DIR}/Doxygen/Dependencies.dox)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/InstallationInstructions.dox.in ${CMAKE_BINARY_DIR}/Doxygen/InstallationInstructions.dox)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/BuildInstructions.dox.in ${CMAKE_BINARY_DIR}/Doxygen/BuildInstructions.dox)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/UserManual.dox.in ${CMAKE_BINARY_DIR}/Doxygen/UserManual.dox)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/TechnicalManual.dox.in ${CMAKE_BINARY_DIR}/Doxygen/TechnicalManual.dox)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Utilities/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
 IF(NOT APPLE)
   FILE(COPY ${CMAKE_SOURCE_DIR}/Doc/Images/Blank.png DESTINATION ${EXECUTABLE_OUTPUT_PATH} )

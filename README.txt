@@ -1,32 +1,21 @@
 Welcome
 -----------------------------
+(The variables in this file are defined in CMakeLists.txt and substituted during the build.)
 
-This is the NifTK Translational Software 
-Platform version @NIFTK_VERSION_STRING@
-
-For all questions, please contact: 
-
-@NIFTK_CONTACT@
+This is the @NIFTK_PLATFORM@ Translational Software Platform version @NIFTK_VERSION_STRING@.
+For all questions and queries, please join the users mailing list: @NIFTK_USER_CONTACT@,
+or the developers mailing list: @NIFTK_DEVELOPER_CONTACT@.
 
 
 Documentation
 -----------------------------
 
-The documentation is included in:
-  Doc/niftk_tech_manual.pdf
-  Doc/niftk_user_manual.pdf
+The documentation is provided via
 
-and the NiftyView2 GUI contains its own help files.
+  an online @NIFTK_WIKI_TEXT@: @NIFTK_WIKI_URL@
+  nightly generated documentation: @NIFTK_NIGHTLY_DOCS@
 
-
-Funding
----------------
-
-This platform was funded by the Comprehensive Biomedical 
-Research Centre at University College London (UCL) and 
-University College London Hospitals (UCLH), the
-Technology Strategy Board (TSB) and the Engineering And
-Physical Science Research Council (EPSRC).
+and the NiftyView GUI contains its own help files.
 
 
 Additional Libraries
@@ -36,6 +25,7 @@ This platform uses these libraries/projects listed below.
 Please check the Doc/licenses directory for licenses.
      
 Current Mandatory libraries:
+----------------------------
 
 Library : Boost
 Website : http://www.boost.org/
@@ -57,26 +47,28 @@ Website : http://www.itk.org
 Purpose : Image processing algorithms
 License : Doc/Licenses/ITK.txt (BSD license)
 
-Library : CTK
-Website : http://www.commontk.org
-Purpose : Common medical imaging specific classes.
-License : Doc/Licenses/CTK_LICENSE.txt (Apache license)
-
 Library : MITK
 Website : http://www.mitk.org
 Purpose : Application framework, common medical imaging specific classes.
 License : Doc/Licenses/MITK.txt (BSD license)
           
 
-Additional Optional Libraries for the GUI NiftyView
+Additional Optional Libraries for the GUI NiftyView:
+----------------------------------------------------
 
 Library : Qt
 Website : http://qt.nokia.com/products
 Purpose : Gui framework.
 License : Doc/Licenses/Qt.txt (LGPL license)
 
+Library : CTK
+Website : http://www.commontk.org
+Purpose : Common medical imaging specific classes.
+License : Doc/Licenses/CTK_LICENSE.txt (Apache license)
 
-Additional Optional Libraries (at varying stages of integration).
+
+Additional Optional Libraries:
+------------------------------
 
 Library : NiftyReg
 Website : http://sourceforge.net/projects/niftyreg/ 
