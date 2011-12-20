@@ -74,7 +74,7 @@ IF (WIN32)
     CGAL-vc90-mt-gd
     CGAL_ImageIO-vc90-mt-gd
     niftkITK
-    niftkITKVTK
+    niftkVTK
     niftkcommon
     )
 
@@ -99,7 +99,7 @@ ELSE (WIN32)
     CGAL_ImageIO
     vtkHybrid
     niftkITK
-    niftkITKVTK
+    niftkVTK
     niftkcommon    
     )
 ENDIF (WIN32)

@@ -24,7 +24,7 @@
 SET(NIFTK_MESHING_TEST_LINK_LIBRARIES 
   niftkMeshingLib
   niftkITK
-  niftkITKVTK
+  niftkVTK
   niftkcommon 
   )
 
