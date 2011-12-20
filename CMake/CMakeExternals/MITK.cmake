@@ -38,7 +38,7 @@ IF(NOT DEFINED MITK_DIR)
       set(BOOST_LIBRARYDIR ${BOOST_LIBRARYDIR} CACHE PATH \"Path to Boost library directory\")
     ")
 
-    SET(revision_tag 57a961a35a)
+    SET(revision_tag d31e02570c)
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
     ENDIF()
