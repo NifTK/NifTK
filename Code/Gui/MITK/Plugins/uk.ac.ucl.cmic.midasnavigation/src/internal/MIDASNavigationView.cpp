@@ -42,7 +42,6 @@
 #include "service/event/ctkEventConstants.h"
 
 const std::string MIDASNavigationView::VIEW_ID = "uk.ac.ucl.cmic.midasnavigationview";
-const QString MIDASNavigationView::TOPIC = "uk/ac/ucl/cmic/midasnavigationview";
 
 MIDASNavigationView::MIDASNavigationView()
 : QmitkMIDASBaseFunctionality()
@@ -86,9 +85,18 @@ void MIDASNavigationView::CreateQtPartControl( QWidget *parent )
     m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
     m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
 
-    ctkDictionary props;
-    props[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/niftkQmitkExt/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControls";
-    m_Context->registerService<ctkEventHandler>(this, props);
+    m_EventAdmin->publishSignal(this, SIGNAL(SliceNumberChanged(ctkDictionary)),
+                              "uk/ac/ucl/cmic/midasnavigationview/SLICE_CHANGED", Qt::QueuedConnection);
+
+    m_EventAdmin->publishSignal(this, SIGNAL(MagnificationChanged(ctkDictionary)),
+                              "uk/ac/ucl/cmic/midasnavigationview/MAGNIFICATION_CHANGED", Qt::QueuedConnection);
+
+    m_EventAdmin->publishSignal(this, SIGNAL(OrientationChanged(ctkDictionary)),
+                              "uk/ac/ucl/cmic/midasnavigationview/ORIENTATION_CHANGED", Qt::QueuedConnection);
+
+    ctkDictionary propsForSlot;
+    propsForSlot[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/*";
+    m_EventAdmin->subscribeSlot(this, SLOT(handleEvent(ctkEvent)), propsForSlot);
   }
 }
 
@@ -96,7 +104,9 @@ void MIDASNavigationView::OnAxialRadioButtonToggled(bool isToggled)
 {
   if (isToggled)
   {
-    this->PublishEvent("orientation", "axial");
+    ctkDictionary properties;
+    properties["orientation"] = "axial";
+    emit OrientationChanged(properties);
   }
 }
 
@@ -104,7 +114,9 @@ void MIDASNavigationView::OnCoronalRadioButtonToggled(bool isToggled)
 {
   if (isToggled)
   {
-    this->PublishEvent("orientation", "coronal");
+    ctkDictionary properties;
+    properties["orientation"] = "coronal";
+    emit OrientationChanged(properties);
   }
 }
 
@@ -112,39 +124,24 @@ void MIDASNavigationView::OnSagittalRadioButtonToggled(bool isToggled)
 {
   if (isToggled)
   {
-    this->PublishEvent("orientation", "sagittal");
+    ctkDictionary properties;
+    properties["orientation"] = "sagittal";
+    emit OrientationChanged(properties);
   }
 }
 
 void MIDASNavigationView::OnSliceNumberChanged(int oldSliceNumber, int newSliceNumber)
 {
-  this->PublishEvent("slice", QString::number(newSliceNumber));
+  ctkDictionary properties;
+  properties["slice_number"] = newSliceNumber;
+  emit SliceNumberChanged(properties);
 }
 
 void MIDASNavigationView::OnMagnificationFactorChanged(int oldMagnificationFactor, int newMagnificationFactor)
 {
-  this->PublishEvent("magnification", QString::number(newMagnificationFactor));
-}
-
-void MIDASNavigationView::PublishEvent(QString topic, QVariant value)
-{
-  try
-  {
-    ctkDictionary message;
-    message["topic"] = topic;
-    message["value"] = value;
-
-    ctkEvent event(TOPIC + "/" + topic, message);
-    m_EventAdmin->sendEvent(event);
-  }
-  catch (const ctkRuntimeException& e)
-  {
-    MITK_ERROR << "MIDASNavigationView::PublishEvent(topic=" << topic.toLocal8Bit().constData() \
-        << ", value=" << value.toString().toLocal8Bit().constData() \
-        << "), failed with:" << e.what() \
-        << ", caused by " << e.getCause().toLocal8Bit().constData() \
-        << std::endl;
-  }
+  ctkDictionary properties;
+  properties["magnification_factor"] = newMagnificationFactor;
+  emit MagnificationChanged(properties);
 }
 
 void MIDASNavigationView::SetBlockSignals(bool blockSignals)
@@ -163,9 +160,8 @@ void MIDASNavigationView::handleEvent(const ctkEvent& event)
     // Ultra-cautious... block all signals.
     this->SetBlockSignals(true);
 
-    QString type = event.getProperty("type").toString();
-
-    if (type == "UpdateMIDASViewingControlsInfo")
+    QString topic = event.getProperty(ctkEventConstants::EVENT_TOPIC).toString();
+    if (topic == "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsValues")
     {
       QString orientation = event.getProperty("orientation").toString();
       if (orientation == "axial")

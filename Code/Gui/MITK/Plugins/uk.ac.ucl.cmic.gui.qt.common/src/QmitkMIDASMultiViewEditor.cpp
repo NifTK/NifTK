@@ -134,10 +134,6 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
         defaultNumberOfColumns,
         parent);
 
-    // Connect slots
-    connect(m_MIDASMultiViewWidget, SIGNAL(UpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo)), this, SLOT(OnUpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo)));
-    connect(m_MIDASMultiViewWidget, SIGNAL(UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)), this, SLOT(OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)));
-
     QGridLayout *gridLayout = new QGridLayout(parent);
     gridLayout->addWidget(m_MIDASMultiViewWidget, 0, 0);
     gridLayout->setContentsMargins(0, 0, 0, 0);
@@ -146,13 +142,23 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     prefs->OnChanged.AddListener( berry::MessageDelegate1<QmitkMIDASMultiViewEditor, const berry::IBerryPreferences*>( this, &QmitkMIDASMultiViewEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
 
+    // Connect slots
+    connect(m_MIDASMultiViewWidget, SIGNAL(UpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo)), this, SLOT(OnUpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo)));
+    connect(m_MIDASMultiViewWidget, SIGNAL(UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)), this, SLOT(OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)));
+
     m_Context = mitk::CommonActivator::GetPluginContext();
     m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
     m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
 
-    ctkDictionary props;
-    props[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/midasnavigationview/*";
-    m_Context->registerService<ctkEventHandler>(this, props);
+    m_EventAdmin->publishSignal(this, SIGNAL(UpdateMIDASViewingControlsValues(ctkDictionary)),
+                              "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsValues", Qt::QueuedConnection);
+
+    m_EventAdmin->publishSignal(this, SIGNAL(UpdateMIDASViewingControlsRange(ctkDictionary)),
+                              "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsRange", Qt::QueuedConnection);
+
+    ctkDictionary propsForSlot;
+    propsForSlot[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/midasnavigationview/*";
+    m_EventAdmin->subscribeSlot(this, SLOT(handleEvent(ctkEvent)), propsForSlot);
   }
 }
 
@@ -238,28 +244,30 @@ void QmitkMIDASMultiViewEditor::handleEvent(const ctkEvent& event)
   {
     if (m_MIDASMultiViewWidget != NULL)
     {
-      QString topic = event.getProperty("topic").toString();
-      QVariant value = event.getProperty("value");
+      QString topic = event.getProperty(ctkEventConstants::EVENT_TOPIC).toString();
 
-      if (topic == "slice")
+      if (topic == "uk/ac/ucl/cmic/midasnavigationview/SLICE_CHANGED")
       {
-        m_MIDASMultiViewWidget->SetSelectedWindowSliceNumber(value.toInt());
+        QString slice = event.getProperty("slice_number").toString();
+        m_MIDASMultiViewWidget->SetSelectedWindowSliceNumber(slice.toInt());
       }
-      else if (topic == "magnification")
+      else if (topic == "uk/ac/ucl/cmic/midasnavigationview/MAGNIFICATION_CHANGED")
       {
-        m_MIDASMultiViewWidget->SetSelectedWindowMagnification(value.toInt());
+        QString magnification = event.getProperty("magnification_factor").toString();
+        m_MIDASMultiViewWidget->SetSelectedWindowMagnification(magnification.toInt());
       }
-      else if (topic == "orientation")
+      else if (topic == "uk/ac/ucl/cmic/midasnavigationview/ORIENTATION_CHANGED")
       {
-        if (value == "axial")
+        QString orientation = event.getProperty("orientation").toString();
+        if (orientation == "axial")
         {
           m_MIDASMultiViewWidget->SetSelectedWindowToAxial();
         }
-        else if (value == "sagittal")
+        else if (orientation == "sagittal")
         {
           m_MIDASMultiViewWidget->SetSelectedWindowToSagittal();
         }
-        else if (value == "coronal")
+        else if (orientation == "coronal")
         {
           m_MIDASMultiViewWidget->SetSelectedWindowToCoronal();
         }
@@ -278,19 +286,16 @@ void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsRange(UpdateMIDASVie
 {
   try
   {
-    ctkDictionary message;
-    message["type"] = "UpdateMIDASViewingControlsRangeInfo";
-    message["min_slice"] = rangeInfo.minSlice;
-    message["max_slice"] = rangeInfo.maxSlice;
-    message["min_magnification"] = rangeInfo.minMagnification;
-    message["max_magnification"] = rangeInfo.maxMagnification;
-
-    ctkEvent event("uk/ac/ucl/cmic/niftkQmitkExt/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControls", message);
-    m_EventAdmin->sendEvent(event);
+    ctkDictionary properties;
+    properties["min_slice"] = rangeInfo.minSlice;
+    properties["max_slice"] = rangeInfo.maxSlice;
+    properties["min_magnification"] = rangeInfo.minMagnification;
+    properties["max_magnification"] = rangeInfo.maxMagnification;
+    emit UpdateMIDASViewingControlsRange(properties);
   }
   catch (const ctkRuntimeException& e)
   {
-    MITK_ERROR << "QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControls, failed with:" << e.what() \
+    MITK_ERROR << "QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsRange, failed with:" << e.what() \
         << ", caused by " << e.getCause().toLocal8Bit().constData() \
         << std::endl;
   }
@@ -300,25 +305,22 @@ void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsValues(UpdateMIDASVi
 {
   try
   {
-    ctkDictionary message;
-    message["type"] = "UpdateMIDASViewingControlsInfo";
-    message["current_slice"] = info.currentSlice;
-    message["current_magnification"] = info.currentMagnification;
+    ctkDictionary properties;
+    properties["current_slice"] = info.currentSlice;
+    properties["current_magnification"] = info.currentMagnification;
     if (info.isAxial)
     {
-      message["orientation"] = "axial";
+      properties["orientation"] = "axial";
     }
     else if (info.isSagittal)
     {
-      message["orientation"] = "sagittal";
+      properties["orientation"] = "sagittal";
     }
     else if (info.isCoronal)
     {
-      message["orientation"] = "coronal";
+      properties["orientation"] = "coronal";
     }
-
-    ctkEvent event("uk/ac/ucl/cmic/niftkQmitkExt/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControls", message);
-    m_EventAdmin->sendEvent(event);
+    emit UpdateMIDASViewingControlsValues(properties);
   }
   catch (const ctkRuntimeException& e)
   {

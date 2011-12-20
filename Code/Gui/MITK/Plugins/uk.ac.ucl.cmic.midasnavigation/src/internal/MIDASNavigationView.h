@@ -49,6 +49,9 @@ struct ctkEventAdmin;
  * \brief MIDASNavigationView provides a MIDAS style navigation with orientation, slice
  * and magnification controllers that apply to the currently selected image in the view.
  * This class uses the ctkEventAdmin service to send and receive messages.
+ * Specifically, we use Qt signals/slots to public/receive events asynchronously
+ * and to cope with the fact that in general the received signal will be processed
+ * in a different thread.
  *
  * \ingroup uk_ac_ucl_cmic_midasnavigation_internal
  * \sa QmitkMIDASBaseFunctionality
@@ -70,16 +73,27 @@ public:
   /// \brief static view ID = uk.ac.ucl.cmic.midasnavigationview
   static const std::string VIEW_ID;
 
-  /// \brief Topic that we publish events under, for slice, magnification and orientation.
-  static const QString TOPIC;
-
   /// \brief Returns the view ID.
   virtual std::string GetViewID() const;
 
   /// \brief Called from framework to instantiate the Qt GUI components.
   virtual void CreateQtPartControl(QWidget *parent);
 
+signals:
+
+  /// \brief Signal emmitted when the slice number changed.
+  void SliceNumberChanged(const ctkDictionary&);
+
+  /// \brief Signal emmitted when the magnification factor changed.
+  void MagnificationChanged(const ctkDictionary&);
+
+  /// \brief Signal emmitted when the orientation changed.
+  void OrientationChanged(const ctkDictionary&);
+
 public Q_SLOTS:
+
+  /// \brief Handle events coming from the event admin service.
+  void handleEvent(const ctkEvent& event);
 
   /// \brief When the axial radio button is pressed we broadcast a MIDASOrientationChanged event.
   void OnAxialRadioButtonToggled(bool);
@@ -96,13 +110,7 @@ public Q_SLOTS:
   /// \brief When the magnification factor is changed we broadcast a MIDASSliceNumberChanged event.
   void OnMagnificationFactorChanged(int, int);
 
-  /// \brief Handle events coming from the event admin service.
-  void handleEvent(const ctkEvent& event);
-
 private:
-
-  // Publish the event using the CTK Event Admin
-  void PublishEvent(QString topic, QVariant value);
 
   // Enables us to block or unblock signals on all widgets.
   void SetBlockSignals(bool blockSignals);
