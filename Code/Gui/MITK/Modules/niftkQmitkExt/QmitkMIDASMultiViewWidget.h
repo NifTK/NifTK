@@ -154,6 +154,9 @@ private:
   // Callback method that gets called by the mitk::FocusManager and is responsible for signalling the slice number, magnification, orientation.
   void OnFocusChanged();
 
+  // Internal method that takes the currently selected window, and broadcasts the current slice, mangification and orientation information.
+  void PublishNavigationSettings();
+
   unsigned int GetRowFromIndex(unsigned int i);
   unsigned int GetColumnFromIndex(unsigned int i);
   unsigned int GetIndexFromRowAndColumn(unsigned int r, unsigned int c);

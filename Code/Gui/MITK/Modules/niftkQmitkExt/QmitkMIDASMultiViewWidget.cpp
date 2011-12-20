@@ -188,6 +188,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
     QmitkMIDASRenderWindow* widgetWindow = widget->GetRenderWindow();
     connect(widgetWindow, SIGNAL(NodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)));
+    connect(widgetWindow, SIGNAL(NodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)));
 
     m_VisibilityManager->RegisterWidget(widget);
     m_SingleViewWidgets.push_back(widget);
@@ -390,11 +391,13 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   m_ColumnsSpinBox->setValue(numberOfColumns);
   m_ColumnsSpinBox->blockSignals(false);
 
-  if (this->GetRowFromIndex(m_SelectedWindow) >= numberOfRows || this->GetColumnFromIndex(m_SelectedWindow) >= numberOfColumns)
+  // Test the current m_Selected window
+  int selectedWindow = m_SelectedWindow;
+  if (this->GetRowFromIndex(selectedWindow) >= numberOfRows || this->GetColumnFromIndex(selectedWindow) >= numberOfColumns)
   {
-    m_SelectedWindow = 0;
+    selectedWindow = 0;
   }
-  this->SetSelectedWindow(m_SelectedWindow);
+  this->SetSelectedWindow(selectedWindow);
 }
 
 void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
@@ -464,6 +467,43 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkMIDASRenderWindow *window, s
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
 }
 
+void QmitkMIDASMultiViewWidget::PublishNavigationSettings()
+{
+  UpdateMIDASViewingControlsRangeInfo rangeInfo;
+  rangeInfo.minSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinSlice();
+  rangeInfo.maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxSlice();
+  rangeInfo.minMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinMagnification();
+  rangeInfo.maxMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxMagnification();
+
+  emit UpdateMIDASViewingControlsRange(rangeInfo);
+
+  UpdateMIDASViewingControlsInfo currentInfo;
+  currentInfo.currentSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
+  currentInfo.currentMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
+
+  QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = this->m_SingleViewWidgets[m_SelectedWindow]->GetViewOrientation();
+  if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL)
+  {
+    currentInfo.isAxial = true;
+    currentInfo.isSagittal = false;
+    currentInfo.isCoronal = false;
+  }
+  else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL)
+  {
+    currentInfo.isAxial = false;
+    currentInfo.isSagittal = true;
+    currentInfo.isCoronal = false;
+  }
+  else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL)
+  {
+    currentInfo.isAxial = false;
+    currentInfo.isSagittal = false;
+    currentInfo.isCoronal = true;
+  }
+
+  emit UpdateMIDASViewingControlsValues(currentInfo);
+}
+
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
 {
   vtkRenderWindow* focusedRenderWindow = NULL;
@@ -487,42 +527,8 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
 
   if (selectedWindow != -1)
   {
-    m_SelectedWindow = selectedWindow;
-    this->SetSelectedWindow(m_SelectedWindow);
-
-    UpdateMIDASViewingControlsRangeInfo rangeInfo;
-    rangeInfo.minSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinSlice();
-    rangeInfo.maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxSlice();
-    rangeInfo.minMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinMagnification();
-    rangeInfo.maxMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxMagnification();
-
-    emit UpdateMIDASViewingControlsRange(rangeInfo);
-
-    UpdateMIDASViewingControlsInfo currentInfo;
-    currentInfo.currentSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
-    currentInfo.currentMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
-
-    QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = this->m_SingleViewWidgets[m_SelectedWindow]->GetViewOrientation();
-    if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL)
-    {
-      currentInfo.isAxial = true;
-      currentInfo.isSagittal = false;
-      currentInfo.isCoronal = false;
-    }
-    else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL)
-    {
-      currentInfo.isAxial = false;
-      currentInfo.isSagittal = true;
-      currentInfo.isCoronal = false;
-    }
-    else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL)
-    {
-      currentInfo.isAxial = false;
-      currentInfo.isSagittal = false;
-      currentInfo.isCoronal = true;
-    }
-
-    emit UpdateMIDASViewingControlsValues(currentInfo);
+    this->SetSelectedWindow(selectedWindow);
+    this->PublishNavigationSettings();
   }
 }
 
@@ -539,14 +545,17 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToAxial()
 {
   this->m_SingleViewWidgets[m_SelectedWindow]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL);
+  this->PublishNavigationSettings();
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToSagittal()
 {
   this->m_SingleViewWidgets[m_SelectedWindow]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
+  this->PublishNavigationSettings();
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 {
   this->m_SingleViewWidgets[m_SelectedWindow]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL);
+  this->PublishNavigationSettings();
 }

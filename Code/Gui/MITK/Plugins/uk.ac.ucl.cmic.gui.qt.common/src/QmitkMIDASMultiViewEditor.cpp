@@ -134,6 +134,8 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
         defaultNumberOfColumns,
         parent);
 
+    this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(this));
+
     QGridLayout *gridLayout = new QGridLayout(parent);
     gridLayout->addWidget(m_MIDASMultiViewWidget, 0, 0);
     gridLayout->setContentsMargins(0, 0, 0, 0);

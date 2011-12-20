@@ -202,6 +202,8 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
 void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
+  std::cerr << "Matt, QmitkMIDASMultiViewVisibilityManager::OnNodesDropped" << std::endl;
+
   // Works out the initial window index that the image is dropped into.
   // Remember:
   //   There are always 5x5 windows, arranged in row order.

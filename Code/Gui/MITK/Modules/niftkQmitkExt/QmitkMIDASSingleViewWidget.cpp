@@ -245,18 +245,6 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     mitk::BaseRenderer::Pointer baseRenderer = mitk::BaseRenderer::GetInstance(vtkWindow);
     mitk::SliceNavigationController::Pointer controller = baseRenderer->GetSliceNavigationController();
 
-    int slice = -1;
-    if (m_SliceNumbers[orientation] == -1)
-    {
-      // No previous slice, so default to central slice.
-      unsigned int steps = controller->GetSlice()->GetSteps();
-      slice = (int)((steps - 1)/2);
-    }
-    else
-    {
-      slice = m_SliceNumbers[this->m_ViewOrientation];
-    }
-
     // Set the view to the new orientation
     mitk::SliceNavigationController::ViewDirection direction = mitk::SliceNavigationController::Original;
     if (orientation == MIDAS_VIEW_AXIAL)
@@ -275,6 +263,17 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       controller->Update(direction, true, true, false);
     }
 
+    int slice = -1;
+    if (m_SliceNumbers[orientation] == -1)
+    {
+      // No previous slice, so default to central slice.
+      unsigned int steps = controller->GetSlice()->GetSteps();
+      slice = (int)((steps - 1)/2);
+    }
+    else
+    {
+      slice = m_SliceNumbers[this->m_ViewOrientation];
+    }
     this->SetSliceNumber(slice);
 
     baseRenderer->GetDisplayGeometry()->Fit();
