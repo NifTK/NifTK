@@ -1,12 +1,11 @@
 /**
+\image html NifTKLogo.png
 
 \mainpage The @NIFTK_PLATFORM@ Documentation
 
 @NIFTK_COPYRIGHT@
 
 \subpage @NIFTK_PLATFORM@License
-
-\image html NifTKLogo.png
 
 \section MainPageIntroduction Introduction
 
@@ -40,7 +39,7 @@ and two mailing lists for discussion
 \li <a href="@NIFTK_USER_CONTACT@">for end users</a>
 \li <a href="@NIFTK_DEVELOPER_CONTACT@">for developers</a>
 
-For code developers it is important to read:
+For developers it is important to read:
 
 \li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">The wiki.</a>
 \li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The dashboard.</a>

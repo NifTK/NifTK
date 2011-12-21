@@ -2,7 +2,21 @@
 
 \page TechnicalManual The Technical Manual
 
-\li \subpage Dependencies
+\section TechnicalManualIntro Introduction
+
+Welcome to the @NIFTK_PLATFORM@ technical manual. This manual provides the detailed technical information
+for the platform and any further information can be obtained be joining the mailing lists:
+
+\li <a href="@NIFTK_USER_CONTACT@">for end users</a>
+\li <a href="@NIFTK_DEVELOPER_CONTACT@">for developers</a>
+
+The aim of providing this manual is to enable developers to understand the architecture, the code design, 
+layout and conventions, and to start coding and contributing to the platform. Where necessary or informative 
+the design decisions will be explained in detail. It is however assumed that the reader is a C++ developer.
+
+\section TechnicalManualTable Table Of Contents
+
+\li \subpage ThirdPartySoftware
 \li \subpage MITKPluginsIntro
 \li \subpage CTKWidgetsIntro
 

@@ -696,14 +696,8 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.csh.in ${CMAKE_BINAR
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.sh.in ${CMAKE_BINARY_DIR}/SetupNifTK.sh @ONLY )
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/SetupNifTK.csh @ONLY )
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Utilities/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/MainPage.dox.in ${CMAKE_BINARY_DIR}/Doxygen/MainPage.dox)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Dependencies.dox.in ${CMAKE_BINARY_DIR}/Doxygen/Dependencies.dox)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/InstallationInstructions.dox.in ${CMAKE_BINARY_DIR}/Doxygen/InstallationInstructions.dox)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/BuildInstructions.dox.in ${CMAKE_BINARY_DIR}/Doxygen/BuildInstructions.dox)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/UserManual.dox.in ${CMAKE_BINARY_DIR}/Doxygen/UserManual.dox)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/TechnicalManual.dox.in ${CMAKE_BINARY_DIR}/Doxygen/TechnicalManual.dox)
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Utilities/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
 IF(NOT APPLE)
   FILE(COPY ${CMAKE_SOURCE_DIR}/Doc/Images/Blank.png DESTINATION ${EXECUTABLE_OUTPUT_PATH} )
 ENDIF(NOT APPLE)
@@ -953,6 +947,7 @@ ENDIF(BUILD_SHARED_LIBS)
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
+SUBDIRS(Doc)
 SUBDIRS(Code)
 
 IF(BUILD_TESTING) 
