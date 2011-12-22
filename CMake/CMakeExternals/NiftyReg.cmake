@@ -18,12 +18,13 @@ IF(BUILD_NIFTYREG)
 
     ExternalProject_Add(${proj}
       SVN_REPOSITORY https://niftyreg.svn.sourceforge.net/svnroot/niftyreg/trunk/nifty_reg/
+      SVN_REVISION -r 231
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DBUILD_SHARED_LIBS:BOOL=OFF
-	-DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
-	-DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+	      -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
+	      -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       DEPENDS ${proj_DEPENDENCIES}
       )
 

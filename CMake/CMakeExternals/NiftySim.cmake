@@ -24,11 +24,12 @@ IF(BUILD_NIFTYSIM)
     
     ExternalProject_Add(${proj}
       SVN_REPOSITORY https://niftysim.svn.sourceforge.net/svnroot/niftysim/trunk/nifty_sim/
+      SVN_REVISION -r 127
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DBUILD_SHARED_LIBS:BOOL=OFF
-	-DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
+	      -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
         -DVTK_DIR:PATH=${VTK_DIR}
         -DUSE_VIZ:BOOL=${USE_VTK}

@@ -17,7 +17,8 @@ IF(BUILD_NIFTYSEG)
   IF(NOT DEFINED NIFTYSEG_ROOT)
 
     ExternalProject_Add(${proj}
-      SVN_REPOSITORY https://cmicdev.cs.ucl.ac.uk/svn/cmic/users/jc/Source/nifty-seg
+      SVN_REPOSITORY https://niftyseg.svn.sourceforge.net/svnroot/niftyseg
+      SVN_REVISION -r 28
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
