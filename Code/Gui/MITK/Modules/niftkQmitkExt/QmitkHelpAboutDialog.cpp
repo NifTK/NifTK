@@ -36,6 +36,10 @@ QmitkHelpAboutDialog::QmitkHelpAboutDialog(QWidget *parent, QString applicationN
   {
 	  this->setupUi(this);
 	  this->GenerateHelpAboutText(m_ApplicationName);
+	  this->m_HelpAboutLabel->setWordWrap(true);
+	  this->m_HelpAboutLabel->setOpenExternalLinks(true);
+	  this->m_HelpAboutLabel->setTextFormat(Qt::RichText);
+
   }
 }
 
@@ -175,6 +179,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     this->setWindowIcon(helpAboutIcon);
   }
 
-  this->m_HelpAboutTextEdit->setHtml(totalText);
+  this->m_HelpAboutLabel->setText(totalText);
 
 }
