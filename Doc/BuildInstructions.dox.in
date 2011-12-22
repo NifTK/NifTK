@@ -2,4 +2,10 @@
 
 \page BuildInstructions The Build Instructions
 
+NifTK can be built easily using CMake. The whole process will download and install all the third party libraries
+necessary, and works identically in Windows, Linux and Mac. However, there are some caveats due to different
+machine configurations in different departments. Thus, it is better to include these instructions on a wiki
+so the information can be immediately updated.
+
+So, the build instructions are currently <a href="@NIFTK_BUILD_INSTRUCTIONS@">here</a>.
 */
