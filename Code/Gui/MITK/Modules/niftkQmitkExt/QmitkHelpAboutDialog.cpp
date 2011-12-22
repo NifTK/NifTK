@@ -98,7 +98,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "Our aim is to deliver software tools into clinical settings, and %1 is grateful to all our clinical collaborators:"
       "<ul>"
       "<li><a href=\"http://dementia.ion.ucl.ac.uk/\">UCL's Dementia Research Centre</a></li>"
-      "<li><a href=\"http://www.ucl.ac.uk/ion/departments/neuroinflammation/\">UCL's Department of Neuroinflammation</a></li>"
+      "<li><a href=\"http://www.nmrgroup.ion.ucl.ac.uk//\">UCL's NMR Research Unit</a></li>"
       "</ul>"
       "</p>"
       ).arg(originShortText);
