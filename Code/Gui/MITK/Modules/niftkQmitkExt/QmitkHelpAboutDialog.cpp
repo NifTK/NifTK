@@ -103,6 +103,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "In addition, the software development team would like to acknowledge the kind support of the open-source software community "
       "during development of NifTK and are especially grateful to the developers of "
       "<a href=\"http://www.mitk.org\">MITK</a> and <a href=\"http://www.commontk.org\">CTK</a>."
+      "In addition, various clip art comes from <a href=\"http://www.openclipart.org\">openclipart.org</a>"
       "</p>"
       ).arg(originShortText);
 
@@ -157,8 +158,8 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<p>"
       "Further information can be obtained by:"
       "<ul>"
-      "<li>Emailing the %1 users mailing list at <a href=\"mailto:%2\">%2</a>.</li>"
-      "<li>Emailing the %1 developers mailing list at <a href=\"mailto:%3\">%3</a>.</li>"
+      "<li>Emailing the %1 <a href=\"%2\">users mailing list</a>.</li>"
+      "<li>Emailing the %1 <a href=\"%3\">developers mailing list</a>.</li>"
       "<li>Visiting the %1 <a href=\"%4\">%5</a>.</li>"
       "</ul>"
       "</p>"
@@ -169,9 +170,9 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       titles
       .append(introduction)
       .append(collaborators)
+      .append(furtherInformation)
       .append(versions)
       .append(testingDetails)
-      .append(furtherInformation)
       ;
 
   this->setWindowTitle(tr("About %1").arg(applicationName));
