@@ -76,7 +76,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString titles = QObject::tr(
       "<h1>About %1</h1>"
       "<h3>%2</h3>"
-      "<p>%3</p>"
+      "<p>%3.</p>"
       ).arg(applicationName).arg(versionNumber).arg(copyrightText);
 
   // Short introduction.
@@ -85,7 +85,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "%1 is the user interface for the <a href=\"%2\">%3 (%4)</a> translational imaging platform called %5."
       "</p>"
       "<p>"
-      "%1 was developed with funding from the NIHR and the Comprehensive Biomedical Research Centre at UCL and UCLH grant 168 and TSB grant M1638A."
+      "%1 was developed with funding from the NIHR and the Comprehensive Biomedical Research Centre at UCL and UCLH grant 168 and TSB grant M1638A. "
       "The principal investigator is <a href=\"http://cmic.cs.ucl.ac.uk/staff/sebastien_ourselin/\">Sebastien Ourselin</a> "
       "and team leader is <a href=\"http://cmic.cs.ucl.ac.uk/staff/matt_clarkson/\">Matt Clarkson</a>."
       "</p>"
@@ -95,11 +95,14 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   // (mwah ha ha ha .. evil laughter).
   QString collaborators = QObject::tr(
       "<p>"
-      "Our aim is to deliver software tools into clinical settings, and %1 is grateful to all our clinical collaborators:"
+      "%1 is grateful to all our clinical research collaborators including:"
       "<ul>"
       "<li><a href=\"http://dementia.ion.ucl.ac.uk/\">UCL's Dementia Research Centre</a></li>"
       "<li><a href=\"http://www.nmrgroup.ion.ucl.ac.uk//\">UCL's NMR Research Unit</a></li>"
       "</ul>"
+      "In addition, the software development team would like to acknowledge the kind support of the open-source software community "
+      "during development of NifTK and are especially grateful to the developers of "
+      "<a href=\"http://www.mitk.org\">MITK</a> and <a href=\"http://www.commontk.org\">CTK</a>."
       "</p>"
       ).arg(originShortText);
 
@@ -118,7 +121,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<li><a href=\"http://www.commontk.org\">CTK</a>:%7</li>"
       "<li><a href=\"http://www.mitk.org\">MITK</a>:%8</li>"
       "</ul>"
-      "which themselves depend on further libraries. %9 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%10</a>"
+      "which themselves depend on further libraries. This version of %9 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%10</a>"
       "</p>"
       )
       .arg(applicationName)
@@ -127,8 +130,8 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .arg(itkVersion)
       .arg(vtkVersion)
       .arg(qtVersion)
-      .arg(ctkVersion)
-      .arg(mitkVersion)
+      .arg(ctkVersion.left(10))
+      .arg(mitkVersion.left(10))
       .arg(applicationName)
       .arg(svnVersion);
 
@@ -146,7 +149,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<li>Windows 7</li>"
       "<li>Windows XP</li>"
       "</ul>"
-      "and our software quality control statistics can be seen on this <a href=\"%2\">%3</a>"
+      "and our software quality control statistics can be seen on this <a href=\"%2\">%3</a>."
       "</p>"
       ).arg(applicationName).arg(dashboardURL).arg(dashboardText);
 

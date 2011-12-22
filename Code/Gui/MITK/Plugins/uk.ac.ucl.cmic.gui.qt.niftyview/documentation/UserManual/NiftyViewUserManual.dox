@@ -1,14 +1,61 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.gui.qt.niftyview} CMIC NiftyView Application
+\bundlemainpage{uk.ac.ucl.cmic.gui.qt.niftyview} NiftyView
 
 \section NiftyViewIntroduction Introduction
 
 Welcome to the NiftyView application. This page contains some general information
-to help you get started. For all other enquiries, you can email 
+to help you get started. For all other enquiries, please join 
+<a href="http://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users">the mailing list</a>.
 
-<ul>
-<li>The Users mailing list:niftk-users@ucl.ac.uk</li>
-<li>The Developers mailing list:niftk-developers@ucl.ac.uk</li>
-</ul>
+NiftyView was developed by the <a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a>
+to provide a general purpose graphical user interface (GUI) for medical image visualisation and analysis.
+The aim is to provide an imaging platform that can easily be extended over time to accomodate many different uses.
+For this reason, the GUI is based on the <a href="http://www.mitk.org">MITK</a> application framework, which 
+uses <a href="http://www.commontk.org">CTK</a> plugins. It is important to understand how the main application
+is made up of Plugins, Editors and Perspectives. These are explained below. 
+
+\section NiftyViewPluginsMainScreen The Main Screen - Plugins, Perspectives and Editors.
+
+Imagine you are using a popular word processing program.  The source of data is the document you are writing.
+The application provides a a main view of the document, and lets you edit the data. This main view is the editor.
+There can be more than one editor, for example to show two different documents, or show two different pages of the
+same document, but their purpose is the same: Editors show the main view of the data.
+
+In addition, a typical modern word processing program provides many controls to change settings and perform
+various operations. For example there is a toolbox for changing fonts, colours, layouts and so on. Let us call
+these controls Plugins.
+
+Finally, a word processor has an arrangement of the screen.  The main screen will show some combination of 
+Editors, and Plugins in some convenient and easy to use layout. Let us call this layout a Perspective.
+
+NiftyView has the same principal at heart. The application will load an assortment of data. The screen will
+contain one or more Editors to provide a view of the data, and many Plugins to control the functionality.
+In simple terms a Plugin is a piece of the application that provides a specific piece of functionality.
+For example, a Plugin might be a control for changing image intensity values, a thumbnail viewer, 
+a view of the data-store and so on. The term Plugin refers to the fact that a software developer can provide a small, 
+independent piece of functionality and plug it into the main application. 
+
+\image html MainScreen.png "Figure 1. The Main Screen contains a central Editor, surrounded by Plugins."
+
+A perspective is simply an arrangement of plugins, and NiftyView will remember the layout of each perspective 
+if you change it. Plugins can be moved by dragging the title bar of each plugin, and can also be detatched and placed
+outside of the main window.
+
+\image html MainScreenUndocked.png "Figure 2. Plugins can be re-arranged and even moved outside the main window."
+
+So, to best understand NiftyView, it is best to learn the application one plugin at a time. Each plugin can be developed
+separately, possibly even by different groups of developers at different locations. Each plugin will therefore have its
+own Help page, accessed via the Help menu on the main menu-bar. Further information on each plugin will be contained 
+on the plugin specific help page.
+
+\section NiftyViewPlugin Launching A Plugin
+
+Each plugin can be launched by clicking on "Window" on the top menu bar, and then "Show View". A list of available plugins
+will be displayed. The term "View" refers to the control panel of buttons/sliders/widgets for each Plugin, and is
+the user-visible part of the Plugin. So the term View and Plugin are synonymous to the user.
+
+\section NiftyViewPerspective Launching A Perspective
+
+The NiftyView GUI will come with several Perspectives. These can be accessed by clicking on "Window" and then "Open Perspective".
 
 */
