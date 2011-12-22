@@ -167,13 +167,13 @@ void ImageLookupTablesView::LevelWindowChanged()
     UpdateGuiFromLevelWindowManager();
     EnableControls(true);
   }
-  catch(...)
+  catch(itk::ExceptionObject&)
   {
     try
     {
       EnableControls(false);
     }
-    catch(...)
+    catch(std::exception&)
     {
     }
   }
@@ -209,7 +209,7 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
 
       MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from range, m_PercentageOfRange=" << m_PercentageOfRange << ", minDataLimit=" << minDataLimit << ", maxDataLimit=" << maxDataLimit << ", windowMin=" << windowMin << ", windowMax=" << windowMax << std::endl;
     }
-    else
+    else if (m_LevelWindowManager->GetLevelWindowProperty())
     {
       levelWindow = m_LevelWindowManager->GetLevelWindow();
       minDataLimit = levelWindow.GetRangeMin();
@@ -279,6 +279,10 @@ void ImageLookupTablesView::BlockMinMaxSignals(bool b)
 
 void ImageLookupTablesView::OnWindowBoundsChanged()
 {
+  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
+    return;
+  }
+
   mitk::LevelWindow levelWindow = m_LevelWindowManager->GetLevelWindow();
   levelWindow.SetWindowBounds(m_Controls->m_MinSlider->value(), m_Controls->m_MaxSlider->value());
   m_LevelWindowManager->SetLevelWindow(levelWindow);
@@ -288,6 +292,10 @@ void ImageLookupTablesView::OnWindowBoundsChanged()
 
 void ImageLookupTablesView::OnLevelWindowChanged()
 {
+  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
+    return;
+  }
+
   mitk::LevelWindow levelWindow = m_LevelWindowManager->GetLevelWindow();
   levelWindow.SetLevelWindow(m_Controls->m_LevelSlider->value(), m_Controls->m_WindowSlider->value());
   m_LevelWindowManager->SetLevelWindow(levelWindow);
@@ -297,6 +305,10 @@ void ImageLookupTablesView::OnLevelWindowChanged()
 
 void ImageLookupTablesView::OnRangeChanged()
 {
+  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
+    return;
+  }
+
   BlockMinMaxSignals(true);
 
   mitk::LevelWindow levelWindow = m_LevelWindowManager->GetLevelWindow();
@@ -305,7 +317,7 @@ void ImageLookupTablesView::OnRangeChanged()
   double rangeMin = levelWindow.GetRangeMin();
   double rangeMax = levelWindow.GetRangeMax();
   double range = levelWindow.GetRange();
-  double singleStep = std::pow(0.1, m_Precision);
+  double singleStep = range / 100.0;
 
   m_Controls->m_MinSlider->setMinimum(rangeMin);
   m_Controls->m_MinSlider->setMaximum(rangeMax);
@@ -331,6 +343,10 @@ void ImageLookupTablesView::OnRangeChanged()
 
 void ImageLookupTablesView::UpdateGuiFromLevelWindowManager()
 {
+  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
+    return;
+  }
+
   BlockMinMaxSignals(true);
 
   const mitk::LevelWindow& levelWindow = m_LevelWindowManager->GetLevelWindow();
@@ -451,6 +467,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 
   if (comboBoxIndex > 0)
   {
+    // Copy the vtkLookupTable, and give to the node property.
     const LookupTableContainer* lutContainer = m_LookupTableManager->GetLookupTableContainer(comboBoxIndex - 1);
 
     const vtkLookupTable *vtkLUT = lutContainer->GetLookupTable();
@@ -480,6 +497,10 @@ void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*
 
 void ImageLookupTablesView::OnResetButtonPressed()
 {
+  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
+    return;
+  }
+
   mitk::Image::Pointer image = m_LevelWindowManager->GetCurrentImage();
   if (image.IsNotNull())
   {
