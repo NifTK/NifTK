@@ -1,7 +1,7 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.midasnavigation} MIDAS Navigation
+\bundlemainpage{uk.ac.ucl.cmic.midasnavigation} CMIC MIDAS Navigation
 
-\image html icon.xpm "Icon of MIDAS Navigation Controller"
+\image html MidasNavigationIcon.png "Icon of MIDAS Navigation Controller"
 
 */
 

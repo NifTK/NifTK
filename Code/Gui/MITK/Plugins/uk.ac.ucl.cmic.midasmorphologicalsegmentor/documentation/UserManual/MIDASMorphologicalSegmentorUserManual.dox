@@ -1,12 +1,208 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.midasmorphologicalsegmentor} MIDAS Morphological Editor
+\bundlemainpage{uk.ac.ucl.cmic.midasmorphologicalsegmentor} CMIC MIDAS Morphological Editor
 
 \image html MIDASMorphologicalSegmentor.png "Icon of the Module"
- 
-\section Introduction
 
-\section Usage
+\li \ref MorphEditorIntro
+\li \ref MorphEditorThreshold
+\li \ref MorphEditorErosion
+\li \ref MorphEditorDilation
+\li \ref MorphEditorRethresholding
+\li \ref MorphEditorManual
+\li \ref MorphEditorSave
+
+\section MorphEditorIntro Introduction
+
+This plugin provides the MIDAS Brain Segmentation algorithm [1], developed at the 
+<a href="http://www.ucl.ac.uk">University College London (UCL)</a>,
+<a href="http://dementia.ion.ucl.ac.uk">Dementia Research Centre</a>.
+The algorithm has been used in many publications between 1996 and 2011,
+and several phase 1 and phase 2 clinical drugs trials. The algorithm will now be described in detail, 
+by stepping through each step, as it should be performed.
+
+\section MorphEditorControls The Morphological Editor Controls
+
+Initially an image must be loaded, normally a T1 weighted image of the head, and the image intensity
+settings adjusted using the CMIC Image Lookup Tables plugin to get good contrast between white and grey matter. 
+Note that while editing the brain segmentation, the intensity settings are for display purposes only. The settings
+that are established as part of the segmentation are independent of how the image is displayed. Furthermore, the
+editing works in 3D. So the thresholding, erosions, dilations and editing all impact the segmentation in 3D, not
+just the currently viewed slice. At each stage of the segmentation, the main settings are remembered to enable the user 
+to step backwards and repeat a given stage. In addition, the connection breaker has an undo facility so that voxels
+that are added/subtract by the mouse buttons can be reversed. 
+
+The aim of the segmentation is to label all voxels which are predominantly brain while excluding non-brain, for 
+example, CSF, dura and the superior sagittal sinus. To launch the plugin, go to "Window", then "Show View", then 
+"CMIC MIDAS Morphological Editor". The plugin dialog box (controls) are displayed (Figure 1). 
+
+\image html MorphInitialScreen.png "Figure 1. The main control panel for the Morphological Editor."
+
+At the bottom of the controls are 3 buttons:
+
+<ul>
+<li> Cancel - Abandon this segmentation altogether.</li>
+<li> OK - finish the segmentation. This is only enabled at the end of the process.</li>
+<li> Go to start - Go back to the beginning. This is only enabled after the first tab. </li>
+</ul>
+
+To start the segmentation, select a grey-scale image in the Data Manager.
+At this point, the New Segmentation button will be enabled. Click this New Segmentation button, and you can
+chose a name for the segmented volume, and also it's outline colour.
+
+In most cases, whole brain segmentation can be accomplished in four steps:
+
+<ul>
+<li>Intensity Thresholding to exclude voxels outside the intensity range for brain.</li>
+<li>Erosion to break connections between brain and non-brain.</li>
+<li>Dilation to restore eroded brain.</li>
+<li>Rethresholding to include missing voxels within brain.</li>
+</ul>
+
+These four steps are reflected in the design of the main plugin control panel, which has four tabs that are
+completed one at a time, in order. 
+
+\section MorphEditorThreshold Step 1. Intensity Thresholding
+
+Intensity thresholds are set to exclude voxels brighter than brain (e.g. scalp) and darker than brain (e.g. CSF).
+The upper threshold should be set first. Anything brighter than the upper threshold will be excluded. 
+Leaving the lower threshold on zero, increase the upper threshold until there is no green signal intensity 
+within brain (Figure 2).
+ 
+\image html MorphThresholding.png "Figure 2. Lower threshold = 0, upper threshold set to exclude most of scalp."
+
+Secondly, set the lower threshold initially to lower than half the value of the upper threshold and 
+then adjust to include as much of brain as possible while minimising the inclusion of non-brain. 
+The green intensity region should now include most of the brain (Figure 3).
+ 
+\image html MorphLowerThreshold.png "Figure 3. Upper and lower thresholds set to include brain and exclude scalp and CSF."
+
+Check the area around the cerebellum and temporal lobe. Check that most of the bridges - signal intensity connections 
+linking brain to dura or superior sagittal sinus - are broken. Ideally the lower threshold should be taken to a high 
+enough value so that in the next step only one erosion is needed to remove non-brain, however often connection breaker 
+(see later) is required to break these bridges.
+
+The final part of this step is to set the axial cut off slice (Figure 4). The aim is to remove any structures below the
+inferior edge of the cerebellum. Move the slider until the cut off reaches the bottom of the cerebellum. 
+Check other slices to ensure that all cerebellum is included. 
+
+\image html MorphAxial.png "Figure 4. The axial cut-off (orange dotted line) should coincide with the bottom of the cerebellum."
+
+Click Accept to proceed.
+
+After you press Accept the plugin searches for the largest connected three-dimensional object in the current segmented region 
+(i.e. brain) and removes any smaller unconnected objects. At this point it is worth having a rough look at how the 
+brain region based on your thresholds would look after the next 2 steps.
+
+\section MorphEditorErosion Step 2. Erosion - Break remaining connections between brain and non-brain. 
+
+The erosion removes a layer of edge-voxels from all surfaces of the region. The purpose is to break thin connections 
+between brain and scalp. The minimum erosions necessary to isolate brain from non-brain should be used. 
+The usual range of erosions is [0, 3]. High numbers of erosions remove significant quantities of brain from the region 
+that cannot be recovered in the Dilation stage. In this case, the thresholds may be at fault or the image may be artefactual 
+or noisy. Eroded voxels have a signal intensity below the upper threshold value set in step 1. Increase the number of 
+erosions one at a time. If one erosion is sufficient to remove all non-brain structures (Figure 5) click Accept and 
+proceed to the next stage.
+
+\image html MorphErosions.png "Figure 5. An eroded brain region disconnected from surrounding tissue.
+
+Under the following circumstances, more than one erosion may be necessary:
+
+If the edges of the brain region are still within grey matter, increase the erosions by one.
+
+If the edges of the brain region are within white matter, another erosion may remove too much. 
+
+There are two ways to proceed.
+
+Often the brain remains connected to scalp on only a few slices, often around the temporal lobes. If connections 
+can be identified visually, then they can be broken interactively at this stage by striking through them with the 
+mouse while holding down the middle button. Areas where connections have been interactively broken appear orange. 
+When all connections between brain and non-brain have been removed, all parts of the region external to brain are 
+removed automatically due to the connected component filtering.
+
+To use connection breaker click the middle button of the mouse whilst in erosion and / or dilation sections. 
+The width of the interactive connection breaker can be set by adjusting the cursor width slider bar from 1-6. 
+The right mouse button will remove the connection breaker and the left will add in additional region.
+
+Further erosions can be done, but the upper threshold can be lowered so that the white matter of brain is not 
+eroded. This can break lower intensity connections between brain and scalp or dura without eroding any more brain
+When the brain has been disconnected from other tissues (Figure 5) click Accept and proceed to the next stage.
+To restart the erosion process, click Reset. Otherwise, click Accept and move to step 3.
+
+\section MorphEditorDilation Step 3. Dilation - Restore Eroded Brain
+
+The purpose of this step is to recover the brain voxels that have been removed by erosion. Each dilation grows 
+out from the edges of the current brain region but only into voxels within the currently defined range of intensities 
+which represent brain (Figure 6). The intensity thresholds that appear at this point are automatically set by calculating 
+the mean signal intensity over the whole brain region after step 2 and taking 60% and 160% of this value. These percentages 
+have been determined to be suitable for T1-weighted volumes. These thresholds are re-calculated after each dilation as 
+more voxels are recovered.
+
+The number of dilations that are needed to recover all brain voxels depends on the number of erosions 
+(typically = number of erosions + 1 or 2). Keep the number low enough so that no dura or sagittal sinus are 
+included even if this results in a small proportion of brain not being included. Always check around the eyes 
+to ensure that the region has not extended into this area. Finally, check the image on both the sagittal and axial views.
+
+The connection breaker can also be used at this stage to remove any final areas of scalp / dura which are attached.
+
+Click Accept and proceed to step 4.
+
+\image html MorphDilations.png "Figure 6. Dilations recover previously eroded brain voxels.
+
+\section MorphEditorRethresholding Step 4. Rethresholding - Reclaim remaining excluded areas
+
+This step is generally not required. However if you have small areas missing from the brain region this may 
+remove the need for manual editing (see step 5). Be aware that it will also remove any tissue outside the thresholds 
+within the brain, so if you use this tool ensure you check the brain region. This step completes the segmentation. 
+The rethresholding box is a box of X3 voxels that moves across the outlined brain region and fills in any area within 
+that region that has been omitted by step 3 subject to the following constraints:
+
+\li the omitted area must be smaller than the box.
+\li only those voxels that have a signal intensity of between 60% and 160% of the mean brain intensity will be included.
+\li the missing area must already be internal to the region.
+
+Generally, a rethresholding box size of 6 will be large enough to recover any areas that have previously been excluded. 
+Check sagittal and axial views one final time. Click OK to exit Morph Volume and leave the new region on the image. 
+You can save the regions at this stage, but ensure it is deleted once the final edited region has been saved.
+Always check slices at the front and back of the brain on coronal, sagittal and axial views to check for wrap and 
+other segmentation defects. Most scans will be relatively simple to segment due to large areas of CSF separating 
+brain from dura and the sagittal sinus. However, there are some scans where there is very little CSF between brain 
+and dura making it very difficult when eroding and dilating. In these cases, it is better to accept that the segmentation 
+process alone will not produce a good brain region and that some manual editing will need to be done.
+
+\section MorphEditorManual Step 5. Manual editing
+
+In cases where either some non-brain tissue remains in the segmentation, or brain tissue has been omitted, 
+manual editing is usually required. It is important to remember that, unlike the automated whole brain segmentation, 
+editing is limited to the slice being viewed i.e. segmentation does not work on the 3D volume.
+
+Manual segmentation is done using the Irregular Volume Editor plugin. This can be launched by selecting "Window"
+then "Show View" then "CMIC MIDAS Irregular Volume Editor". The plugin can be initialized by clicking on the
+segmented volume.
+
+Select the slices where the segmentation needs editing, pay particular attention to the temporal 
+lobes and cerebellum, as these are areas where editing is most often required. If brain tissue has been excluded, 
+the border can be deleted by clicking on the Draw button in the irregular volume window and holding down the middle 
+mouse button. [Matt - dont understand this "A new border can be redrawn using the left mouse button. The position 
+bar can be used to show the equivelent slice in the other view, this is also shown by the region being red on the 
+voxels where the views align."] New regions can be included by placing a seed in the appropriate area. Select the 
+Seed button in the irregular volume window and press the right mouse button. Seeds can be deleted using the middle 
+mouse button. Either a border can be drawn manually around the structure, or alternatively upper and lower thresholds 
+can be selected to automatically delineate the structure.To automatically deliniate/rethreshold a structure set the 
+upper threshold to 100%. Then adjust the lower threshold until a blue outline can be seen. Keep lowering the threshold 
+until this blue outline just disappears. This ensures the new threshold matches the current thresholding. This can be 
+helpful when a stucture has been removed in error. Finally, the new region should be viewed in all planes to ensure 
+that the manual editing process has not introduced new errors into the segmentation. 
+
+\section MorphEditorSave Step 6. Save the segmented region
+
+Don't forget to save the segmented image. At this stage, there is no database associated with this plugin.
+This will be completed in the next phase of the project.
 
 \section References
+
+[1] Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the 
+segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
+(53), 15-25, 1997. 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
 
 */

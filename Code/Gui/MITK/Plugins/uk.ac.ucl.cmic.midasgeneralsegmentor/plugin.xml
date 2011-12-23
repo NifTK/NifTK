@@ -3,7 +3,7 @@
   
   <extension point="org.blueberry.ui.views">
     <view id="uk.ac.ucl.cmic.midasgeneralsegmentor"
-          name="MIDAS Irregular Volume Editor"
+          name="CMIC MIDAS Irregular Volume Editor"
           class="MIDASGeneralSegmentorView"
           icon="resources/MIDASGeneralSegmentor.png" />
   </extension>

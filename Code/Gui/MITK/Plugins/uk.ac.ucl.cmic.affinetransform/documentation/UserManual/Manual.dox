@@ -1,7 +1,7 @@
 /**
 \bundlemainpage{uk.ac.ucl.cmic.affinetransform} CMIC Affine Transform
 
-\image html icon.xpm "Icon of Affine Transform"
+\image html AffineTransformIcon.png "Icon of Affine Transform"
 
 \section Introduction
 This plugin can be used to apply any combination of the following transforms to an item selected in the data manager

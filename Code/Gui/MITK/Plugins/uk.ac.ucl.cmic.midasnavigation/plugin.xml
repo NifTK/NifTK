@@ -3,7 +3,7 @@
   
   <extension point="org.blueberry.ui.views">
     <view id="uk.ac.ucl.cmic.midasnavigation"
-          name="MIDAS Navigation"
+          name="CMIC MIDAS Navigation"
           class="MIDASNavigationView"
           icon="resources/MIDASNavigation.png" />
   </extension>
