@@ -26,7 +26,7 @@
 /* niftk */
 #include "ConversionUtils.h"
 #include "CommandLineParser.h"
-#include "DisplacementVectorCoordinateAdaptionPixelAccessor.h"
+#include "itkDisplacementVectorCoordinateAdaptionPixelAccessor.h"
 
 
 
@@ -155,10 +155,10 @@ int main(int argc, char ** argv)
 	/*
 	 * Adapt the vector field from voxel to real world spacing if required
 	 */
-	typedef DisplacementVectorCoordinateAdaptionPixelAccessor<Dimension, float> AccessorType;
-	typedef AccessorType::HomogenousMatrixType                                  HomogenousMatrixType;
-	typedef itk::ImageAdaptor< DeformationImageType, AccessorType >             AdaptorType;
-	typedef AdaptorType::Pointer                                                AdaptorPointerType;
+	typedef itkDisplacementVectorCoordinateAdaptionPixelAccessor<Dimension, float>  AccessorType;
+	typedef AccessorType::HomogenousMatrixType                                      HomogenousMatrixType;
+	typedef itk::ImageAdaptor< DeformationImageType, AccessorType >                 AdaptorType;
+	typedef AdaptorType::Pointer                                                    AdaptorPointerType;
 
 	DeformationImageType::SpacingType spacing = deformReader->GetOutput()->GetSpacing();
 

@@ -143,7 +143,9 @@ INSTALL( TARGETS niftkITKppRigidDofConversion RUNTIME DESTINATION bin COMPONENT 
 # deform an image according to a simulation run by niftySim
 # this bit requires niftySim and possibly cuda...
 #
-IF( NIFTK_USE_NIFTYSIM )
+FIND_PACKAGE(NiftySim)
+IF( NIFTYSIM_FOUND )
+#IF( NIFTK_USE_NIFTYSIM )
     IF( CUDA_FOUND ) 
         MESSAGE( BE-Prototype CUDA_NVCC_INCLUDE_ARGS_USER: ${CUDA_NVCC_INCLUDE_ARGS_USER} )
         MESSAGE( BE-Prototype CUDA_NVCC_INCLUDE_ARGS: ${CUDA_NVCC_INCLUDE_ARGS} ) 
@@ -167,7 +169,7 @@ IF( NIFTK_USE_NIFTYSIM )
             INSTALL( TARGETS niftkDeformImageFromNiftySimulation RUNTIME DESTINATION bin COMPONENT applications )
                              
     ENDIF( CUDA_FOUND )
-ENDIF( NIFTK_USE_NIFTYSIM )
-
+#ENDIF( NIFTK_USE_NIFTYSIM )
+ENDIF( NIFTYSIM_FOUND )
 
 
