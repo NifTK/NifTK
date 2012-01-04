@@ -17,19 +17,20 @@ class xmlModelGenrator :
         ''' @param nodes: Expected to be a 2D numpy array of type 'float'. 
             @param elements: Expected to be a 2D numpy array of type 'int'.
         '''
-        self.nodes              = nodes
-        self.elements           = elements
-        self.fixConstraintNodes = [None, None, None]
-        self.materialSets       = []
-        self.contactSurfaces    = []
-        self.contactCylinders   = []
-        self.dispConstraints    = []
-        self.elementType        = elementType
+        self.nodes                  = nodes
+        self.elements               = elements
+        self.fixConstraintNodes     = [None, None, None]
+        self.materialSets           = []
+        self.contactSurfaces        = []
+        self.contactCylinders       = []
+        self.uniformDispConstraints = []
+        self.difformDispConstraints = []
+        self.elementType            = elementType
         
         # Track which and how many elements were set.
-        self._systemParametersSet  = False
-        self._gravityConstraintSet = False
-        self._outputSet            = False
+        self._systemParametersSet   = False
+        self._gravityConstraintSet  = False
+        self._outputSet             = False
 
 
 
@@ -63,7 +64,8 @@ class xmlModelGenrator :
         
         
     def setFixConstraint( self, nodes, dofNum ):
-        ''' @summary: Define the nodes which are fixed in the final model
+        ''' @summary: Define the nodes which are fixed in the final model. Only node numbers which 
+                      are not already fixed will be added.
             @param dofNum: 0, 1 or 2 depending on the DOF which shall be fixed.
         '''
         if self.fixConstraintNodes[dofNum] == None :
@@ -74,11 +76,22 @@ class xmlModelGenrator :
         
     
     
-    def setDispConstraint( self, dofNum, loadShape, nodes, magnitude ):
-        ''' @summary: Define those nodes that should be displaced into the specified dof number
+    def setUniformDispConstraint( self, dofNum, loadShape, nodes, magnitude ):
+        ''' @summary: Define those nodes that should be displaced into direction of the specified dof number.
+                      The same displacement will be applied to all nodes
         '''
-        
-        self.dispConstraints.append( [ dofNum, loadShape, nodes, magnitude ] )
+        self.uniformDispConstraints.append( [ dofNum, loadShape, nodes, magnitude ] )
+    
+    
+    
+    
+    def setDifformDispConstraint( self, loadShape, nodes, magnitudeArray ):
+        ''' @summary: Define those nodes that should be displaced into direction of the specified dof number.
+                      The same displacement will be applied to all nodes
+                      @param magnitude: numpy array with three columns wich represent the displacemnt into the differnt 
+                                        dof-directions. This has to have the same length as the numver of nodes specified.
+        '''
+        self.difformDispConstraints.append( [ loadShape, nodes, magnitudeArray ] )
         
         
         
@@ -198,31 +211,62 @@ class xmlModelGenrator :
             model.appendChild( constr )
         
         
-        # Write displacement constraints
-        for i in range( len( self.dispConstraints ) ) :
+        # Write uniform displacement constraints
+        for i in range( len( self.uniformDispConstraints ) ) :
             # dof shape nodes
             dispConstr = doc.createElement( 'Constraint' )
             dispConstr.setAttribute( 'Type',      'Disp'                                     )
-            dispConstr.setAttribute( 'DOF',       '%i' % self.dispConstraints[i][0]          )
-            dispConstr.setAttribute( 'LoadShape', '%s' % self.dispConstraints[i][1]          )
-            dispConstr.setAttribute( 'NumNodes',  '%i' % self.dispConstraints[i][2].shape[0] )
+            dispConstr.setAttribute( 'DOF',       '%i' % self.uniformDispConstraints[i][0]          )
+            dispConstr.setAttribute( 'LoadShape', '%s' % self.uniformDispConstraints[i][1]          )
+            dispConstr.setAttribute( 'NumNodes',  '%i' % self.uniformDispConstraints[i][2].shape[0] )
             
             # handle the nodes (integer numbers)
             nds = doc.createElement( 'Nodes' )
-            ndsIndices = doc.createTextNode( writeArrayToStr( self.dispConstraints[i][2], False, '      '  ) )
+            ndsIndices = doc.createTextNode( writeArrayToStr( self.uniformDispConstraints[i][2], False, '      '  ) )
             nds.appendChild( ndsIndices )
             
             dispMag =doc.createElement( 'Magnitudes' )
             dispMag.setAttribute( 'Type', 'UNIFORM' )
-            dispMag.appendChild( doc.createTextNode('%f' % self.dispConstraints[i][3] ))
+            dispMag.appendChild( doc.createTextNode('%f' % self.uniformDispConstraints[i][3] ))
             
             
             dispConstr.appendChild( nds     )
             dispConstr.appendChild( dispMag )
             model.appendChild( dispConstr )
             
+        
+        # Write difform displacement constraints
+        for i in range( len( self.difformDispConstraints ) ) :
+            # the three dimensional array needs to be split up into its coplumns
+            # but it is unlikely, that displacements are always only into one direction
+            # dof shape nodes
             
+            # array order: [ loadShape, nodes, magnitudeArray ]
             
+            for dim in range(3): 
+                dispConstr = doc.createElement( 'Constraint' )
+                dispConstr.setAttribute( 'Type',      'Disp'                                     )
+                dispConstr.setAttribute( 'DOF',       '%i' % dim          )
+                dispConstr.setAttribute( 'LoadShape', '%s' % self.difformDispConstraints[i][0]          )
+                dispConstr.setAttribute( 'NumNodes',  '%i' % self.difformDispConstraints[i][1].shape[0] )
+                
+                # handle the nodes (integer numbers)
+                nds = doc.createElement( 'Nodes' )
+                ndsIndices = doc.createTextNode( writeArrayToStr( self.difformDispConstraints[i][1], False, '      '  ) )
+                nds.appendChild( ndsIndices )
+                
+                curDispMags = self.difformDispConstraints[i][2]
+                
+                dispMag =doc.createElement( 'Magnitudes' )
+                dispMag.setAttribute( 'Type', 'DIFFORM' )
+                dispMag.appendChild( doc.createTextNode( writeArrayToStr( curDispMags[:,dim], True, '      '  ) ) )
+                
+                
+                dispConstr.appendChild( nds     )
+                dispConstr.appendChild( dispMag )
+                model.appendChild( dispConstr )
+                
+
         # Write contact surface constraint
         for i in range( len( self.contactSurfaces ) ) :
             contactConstr = doc.createElement( 'ContactSurface' )
@@ -293,9 +337,6 @@ class xmlModelGenrator :
             contactCylinder.appendChild( cylSLVNodes )
             
             model.appendChild( contactCylinder )
-            
-            
-            
 
 
         # Now the gravity constraint
@@ -322,7 +363,6 @@ class xmlModelGenrator :
             constr.appendChild( accDir )
             
             model.appendChild( constr )
-
         
 
         # System parameters
@@ -413,18 +453,3 @@ def writeArrayToStr( array, floatingPoint=True, indent = '    ' ) :
     
 
     return string
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-    
-    

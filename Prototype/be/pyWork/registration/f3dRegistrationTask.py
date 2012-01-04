@@ -115,6 +115,56 @@ class f3dRegistrationTask( RegistrationTask ) :
             self.mask     = self.mask.replace    ( '\\', os.altsep )
     
     
+    def constructNiiDeformationFile( self ) :
+        
+        self.temporaryFiles =[]
+        
+        ###
+        # Generate the position field
+        ###
+        
+        # the position field name
+        posField = os.path.splitext( self.outDOF )[0].split( 'cpp' )[0] + 'pos.nii' 
+        
+        cppConversionCommand = 'reg_transform'
+        cppConversionParams  =  ' -target '  + self.target
+        cppConversionParams  += ' -cpp2def ' + self.outDOF + ' ' + posField
+        
+        self.temporaryFiles.append( posField )
+        self.runTask( cppConversionCommand, cppConversionParams )
+        
+        ###
+        # Generate the displacement field
+        ###
+        
+        # displacement field name
+        dispFieldNII = os.path.splitext( self.outDOF )[0].split( 'cpp' )[0] + 'dispN.nii'
+        
+        dispConversionParams =  ' -target '    + self.target
+        dispConversionParams += ' -def2disp '  + posField + ' ' + dispFieldNII
+        
+        self.temporaryFiles.append( dispFieldNII )
+        self.runTask( cppConversionCommand, dispConversionParams )
+        
+        
+        ###
+        # Convert the vectors of the field to simulate the registration in a 180degress rotated coo-system
+        ###
+        self.dispFieldITK = os.path.splitext( self.outDOF )[0].split( 'cpp' )[0] + 'dispI.nii'
+        
+        vectConvCommand = 'ucltkConvertNiftiVectorImage'
+        vectConvParams  = ' -i ' + dispFieldNII
+        vectConvParams += ' -o ' + self.dispFieldITK
+        
+        #self.temporaryFiles.append( dispFieldITK )
+        self.runTask( vectConvCommand, vectConvParams )
+        
+        ###
+        # Clean up after work is done...
+        ###
+        for item in self.temporaryFiles :
+            os.remove( item )
+    
 
     
 if __name__ == '__main__' :

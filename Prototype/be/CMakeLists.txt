@@ -1,6 +1,6 @@
 #/*================================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
+#  UCLToolkit: An image processing toolkit jointly developed by the
 #              Dementia Research Centre, and the Centre For Medical Image Computing
 #              at University College London.
 #
@@ -143,33 +143,108 @@ INSTALL( TARGETS niftkITKppRigidDofConversion RUNTIME DESTINATION bin COMPONENT 
 # deform an image according to a simulation run by niftySim
 # this bit requires niftySim and possibly cuda...
 #
-FIND_PACKAGE(NiftySim)
-IF( NIFTYSIM_FOUND )
-#IF( NIFTK_USE_NIFTYSIM )
-    IF( CUDA_FOUND ) 
-        MESSAGE( BE-Prototype CUDA_NVCC_INCLUDE_ARGS_USER: ${CUDA_NVCC_INCLUDE_ARGS_USER} )
-        MESSAGE( BE-Prototype CUDA_NVCC_INCLUDE_ARGS: ${CUDA_NVCC_INCLUDE_ARGS} ) 
-        MESSAGE( BE-Prototype CUDA_TOOLKIT_INCLUDE: ${CUDA_TOOLKIT_INCLUDE} )
-        CUDA_ADD_EXECUTABLE( niftkDeformImageFromNiftySimulation 
-                               niftkDeformImageFromNiftySimulation.cxx )
+# IF( NIFTK_USE_NIFTYSIM )
+    # IF( CUDA_FOUND ) 
+        # MESSAGE( BE-Prototype CUDA_NVCC_INCLUDE_ARGS_USER: ${CUDA_NVCC_INCLUDE_ARGS_USER} )
+        # MESSAGE( BE-Prototype CUDA_NVCC_INCLUDE_ARGS: ${CUDA_NVCC_INCLUDE_ARGS} ) 
+        # MESSAGE( BE-Prototype CUDA_TOOLKIT_INCLUDE: ${CUDA_TOOLKIT_INCLUDE} )
+        # CUDA_ADD_EXECUTABLE( niftkDeformImageFromNiftySimulation 
+                               # niftkDeformImageFromNiftySimulation.cxx )
 
-        TARGET_LINK_LIBRARIES( niftkDeformImageFromNiftySimulation 
-                                 bePrototypeUtils
-                                 ${NIFTK_APPLICATION_LINK_LIBRARIES}
-                                 ${NIFTYSIM_LIBRARIES} )
-        INSTALL( TARGETS niftkDeformImageFromNiftySimulation RUNTIME DESTINATION bin COMPONENT applications )
+        # TARGET_LINK_LIBRARIES( niftkDeformImageFromNiftySimulation 
+                                 # bePrototypeUtils
+                                 # ${NIFTK_APPLICATION_LINK_LIBRARIES}
+                                 # ${NIFTYSIM_LIBRARIES} )
+        # INSTALL( TARGETS niftkDeformImageFromNiftySimulation RUNTIME DESTINATION bin COMPONENT applications )
         
-    ELSE( CUDA_FOUND )
-            ADD_EXECUTABLE( niftkDeformImageFromNiftySimulation 
-                              niftkDeformImageFromNiftySimulation.cxx )
-            TARGET_LINK_LIBRARIES( niftkDeformImageFromNiftySimulation 
-                             bePrototypeUtils
-                             ${NIFTK_APPLICATION_LINK_LIBRARIES}
-                             ${NIFTYSIM_LIBRARIES} )
-            INSTALL( TARGETS niftkDeformImageFromNiftySimulation RUNTIME DESTINATION bin COMPONENT applications )
+    # ELSE( CUDA_FOUND )
+            # ADD_EXECUTABLE( niftkDeformImageFromNiftySimulation 
+                              # niftkDeformImageFromNiftySimulation.cxx )
+            # TARGET_LINK_LIBRARIES( niftkDeformImageFromNiftySimulation 
+                             # bePrototypeUtils
+                             # ${NIFTK_APPLICATION_LINK_LIBRARIES}
+                             # ${NIFTYSIM_LIBRARIES} )
+            # INSTALL( TARGETS niftkDeformImageFromNiftySimulation RUNTIME DESTINATION bin COMPONENT applications )
                              
-    ENDIF( CUDA_FOUND )
-#ENDIF( NIFTK_USE_NIFTYSIM )
-ENDIF( NIFTYSIM_FOUND )
+    # ENDIF( CUDA_FOUND )
+# ENDIF( NIFTK_USE_NIFTYSIM )
+
+IF(CUDA_FOUND)
+
+  INCLUDE(${CMAKE_SOURCE_DIR}/CMake/cuda/FindCUDA.cmake)
+
+  INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
+  INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR})
+  CUDA_INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR})
+
+  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/C/common/inc ${CUDA_SDK_ROOT_DIR}/shared/inc)
+  LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/C/common/lib ${CUDA_SDK_ROOT_DIR}/shared/lib)
+  
+  SET(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
+    niftkcommon
+    niftkITK
+    niftkcudautilsgpu 
+    ${Boost_LIBRARIES} 
+  )
+
+  #CUDA_ADD_EXECUTABLE( niftkCUDAGLVolumeRender niftkCUDAGLVolumeRender.cxx )
+  #TARGET_LINK_LIBRARIES( niftkCUDAGLVolumeRender ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES} )
+  #INSTALL(TARGETS niftkCUDAGLVolumeRender RUNTIME DESTINATION bin COMPONENT applications)
+
+
+  ###########################################################################
+  # Programs that link to NiftySim
+  ###########################################################################
+
+  IF(NIFTYSIM_FOUND)
+
+    INCLUDE(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake)
+
+    INCLUDE_DIRECTORIES(${NIFTYSIM_INCLUDE_DIR})
+    LINK_DIRECTORIES(${NIFTYSIM_DIR}/lib /opt/fontconfig/lib/)
+
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-D_GPU_")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GPU_")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+  
+    SET(NIFTK_APPLICATION_WITH_NIFTYSIM_LINK_LIBRARIES
+      ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES}
+      tled
+      viz
+      xmlParser
+      )
+  
+    IF(VTK_FOUND)
+      IF(QT_FOUND)
+
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_Visualisation_")
+          
+        SET(NIFTK_APPLICATION_WITH_NIFTYSIM_LINK_LIBRARIES 
+          ${NIFTK_APPLICATION_WITH_NIFTYSIM_LINK_LIBRARIES}
+          viz
+          niftkITKVTK
+          niftkVTK
+          vtkHybrid
+          vtkRendering
+          vtkGraphics
+          vtkImaging
+          vtkIO
+          vtkCommon
+          vtkVolumeRendering
+          QVTK
+          ${QT_LIBRARIES} 
+          )
+      
+      ENDIF(QT_FOUND)
+    ENDIF(VTK_FOUND)
+
+
+    ADD_EXECUTABLE(niftkDeformImageFromNiftySimulation niftkDeformImageFromNiftySimulation.cxx )
+    TARGET_LINK_LIBRARIES(niftkDeformImageFromNiftySimulation ${NIFTK_APPLICATION_WITH_NIFTYSIM_LINK_LIBRARIES} )
+    INSTALL(TARGETS niftkDeformImageFromNiftySimulation RUNTIME DESTINATION bin COMPONENT applications)
+
+  ENDIF( NIFTYSIM_FOUND )
+
+ENDIF(CUDA_FOUND)
 
 

@@ -22,11 +22,12 @@
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkImageAdaptor.h"
 #include "itkResampleImageFilter.h"
+#include "itkMaskImageFilter.h"
 
 
 /* niftk */
 #include "CommandLineParser.h"
-//#include "itkNiftySimTransformation.h"
+
 #include "itkNiftySimGravityTransformation.h"
 
 
@@ -38,12 +39,13 @@
  */
 struct niftk::CommandLineArgumentDescription clArgList[] =
 {
-	{ OPT_STRING | OPT_REQ, "i",           "filename",    "Input image (short pixel type assumed)."                 },
-	{ OPT_STRING | OPT_REQ, "o",           "filename",    "Output image (short)."                                   },
-	{ OPT_STRING | OPT_REQ, "x",           "filename",    "NifytSimxml file name."                                  },
-	{ OPT_STRING | OPT_REQ, "interpolate", "nn|lin|bspl", "Interpolation scheme used (nn, lin, or bspl)"            },
-	{ OPT_STRING,           "m",           "filename",    "Output mask image name"                                  },
-	{ OPT_DONE, NULL, NULL,                               "Warps the input image by niftySim simluation specified." },
+	{ OPT_STRING | OPT_REQ, "i",           "filename",       "Input image (short pixel type assumed)."                              },
+	{ OPT_STRING | OPT_REQ, "o",           "filename",       "Output image (short)."                                                },
+	{ OPT_STRING | OPT_REQ, "x",           "filename",       "NifytSimxml file name."                                               },
+	{ OPT_STRING | OPT_REQ, "interpolate", "nn|lin|bspl",    "Interpolation scheme used (nn, lin, or bspl)"                         },
+	{ OPT_STRING,           "m",           "filename",       "Output mask image name"                                               },
+	{ OPT_INT,              "mval",        "int mask value", "Defines the pixel value of the resampled image outside the model [0]" },
+	{ OPT_DONE, NULL, NULL,                                  "Warps the input image by niftySim simluation specified."              },
 };
 
 
@@ -55,6 +57,7 @@ enum
     O_XMLFILE,
 	O_INTERPOLATION,
 	O_MASKIMAGENAME,
+	O_MASKVALUE,
 };
 
 enum
@@ -73,8 +76,8 @@ int main(int argc, char ** argv)
 	const unsigned int Dimension = 3;
 
 	typedef double                                             VectorComponentType;
-	typedef float                                              InputPixelType;
-	typedef float                                              OutputPixelType;
+	typedef short                                              InputPixelType;
+	typedef short                                              OutputPixelType;
 	typedef itk::Vector<VectorComponentType, Dimension>        VectorType;
 	typedef itk::Image<InputPixelType, Dimension>              InputImageType;
 	typedef InputImageType::Pointer                            InputImagePointerType;
@@ -86,20 +89,22 @@ int main(int argc, char ** argv)
 										        VectorComponentType, 
 									            Dimension, 
 										        VectorComponentType >  NiftySimTransformationType;
+	
 	typedef NiftySimTransformationType::DeformationFieldMaskType       DeformationFieldMaskType;
+	typedef NiftySimTransformationType::Pointer                        NiftySimTransformationPointerType;
+	typedef NiftySimTransformationType::ParametersType                 TrafoParametersType;
 
-	typedef NiftySimTransformationType::Pointer                NiftySimTransformationPointerType;
-	typedef NiftySimTransformationType::ParametersType         TrafoParametersType;
-
-	///*
-	// * Get the user-input
-	// */
+	/*
+	 * Get the user-input
+	 */
 
 	char*       pcXMLFileName;
 	std::string strInputImageName;
 	std::string strOutputImageName;
 	std::string strGivenInterpolation;
 	std::string strMaskImageName;
+	int         iOutsideVal=0;
+
 
     niftk::CommandLineParser CommandLineOptions( argc, argv, clArgList, true  );
     CommandLineOptions.GetArgument( O_INPUT,         strInputImageName        );
@@ -107,7 +112,8 @@ int main(int argc, char ** argv)
 	CommandLineOptions.GetArgument( O_XMLFILE,       pcXMLFileName            );
 	CommandLineOptions.GetArgument( O_INTERPOLATION, strGivenInterpolation    );
 	CommandLineOptions.GetArgument( O_MASKIMAGENAME, strMaskImageName         );
-	
+	CommandLineOptions.GetArgument( O_MASKVALUE,     iOutsideVal              );
+
 	/*
 	 * Read the images
 	 */
@@ -205,13 +211,25 @@ int main(int argc, char ** argv)
 	}
 
 	/*
+	 * Mask the output of the deformed image as the "outside" does not make sense...
+	 */
+	typedef itk::MaskImageFilter< OutputImageType, 
+		                          DeformationFieldMaskType, 
+								  OutputImageType >           MaskFilterType;
+	
+	MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+	maskFilter->SetInput1( resampler->GetOutput() );
+	maskFilter->SetInput2( simTrafo->GetDeformationFieldMask() );
+	maskFilter->SetOutsideValue( iOutsideVal );
+
+	/*
 	 * Write the result
 	 */
     typedef itk::ImageFileWriter< OutputImageType >  ImageWriterType;
     typedef ImageWriterType::Pointer                 ImageWriterPointerType;
 
     ImageWriterPointerType imageWriter = ImageWriterType::New();
-    imageWriter->SetInput   ( resampler->GetOutput() );
+	imageWriter->SetInput   ( maskFilter->GetOutput() );
     imageWriter->SetFileName( strOutputImageName      );
 
     try
@@ -224,7 +242,10 @@ int main(int argc, char ** argv)
     	return EXIT_FAILURE;
 	}
 	
-	if ( !strMaskImageName.empty() )
+	/*
+	 * Write the mask image
+	 */
+	if ( ! strMaskImageName.empty() )
 	{
 		typedef itk::ImageFileWriter< DeformationFieldMaskType > MaskWriterType;
 		
