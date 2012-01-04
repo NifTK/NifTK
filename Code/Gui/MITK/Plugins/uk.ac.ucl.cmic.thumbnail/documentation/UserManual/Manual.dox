@@ -3,5 +3,32 @@
 
 \image html ThumbnailIcon.png "Icon of CMIC Thumbnail Viewer"
 
+\section ThumbnailIntro Introduction
+
+The CMIC Thumbnail viewer shows, for 2D windows only, a full view of the universe of loaded data
+and then tracks a selected window to display that window's size as an outlined box.
+This is most useful when the user has zoomed-in, and the selected window shows a very highly magnified section of 
+a much larger image, and it is difficult for the user to remember their location within the image.
+Thus the Thumbnail viewer provides this contextual information, aiding the user in their navigations.
+
+\section ThumbnailUsage Usage
+
+The Thumbnail is initially blank. Once some data has been loaded into the viewer, the user selects
+a window of interest, and left-clicks on that window. At this point that window has the "focus". We can
+say that that window is "selected" or "has focus". Figure 1 shows a typical view, showing three 
+orthogonal planes and a 3D plane, which is the standard MITK and CMIC layout. The user clicks on the
+axial slice, and the thumbnail viewer shows a copy of that slice.
+
+\image html ThumbnailFocussed.png "Figure 1. The thumbnail shows a copy of the selected viewer. Select by left-clicking."
+ 
+If the user zooms in, to view a small piece of anatomy, the Thumbnail viewer shows as a coloured box (by default red)
+the size of the selected window. (Figure 2.)
+
+\image html ThumbnailZoomed.png "Figure 2. The thumbnail shows a red box, describing the viewing area of the selected window."
+
+The Thumbnail viewer is just a visualisation tool, and provides no data manipulation functionality.
+
+
+
 */
 

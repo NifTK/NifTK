@@ -1,7 +1,27 @@
 /**
 \bundlemainpage{uk.ac.ucl.cmic.midasnavigation} CMIC MIDAS Navigation
 
-\image html MidasNavigationIcon.png "Icon of MIDAS Navigation Controller"
+\image html MidasNavigationIcon.png "Icon of CMIC MIDAS Navigation Controller"
+
+\section MidasNavigationIntro Introduction
+
+The CMIC MIDAS Navigation plugin provides a simple navigation tool for the CMIC Midas Display editor.
+The controls are simply the orientation, slice select and magnification (Figure 1).
+
+\image html MidasControls.png "Figure 1. The MIDAS Navigation controls include orientation, slice select and magnification select."
+
+\section MidasNavigationUsage Usage
+
+These controls apply to the currently selected view, which in the CMIC Midas Display screen is the one 
+with the red border. The navigation plugin and display screen are separate plugins and they simply 
+communicate by passing messages.
+
+\li When a new image is dropped onto the screen, messages are sent from the editor screen to the
+navigation plugin to tell it what orientation, slice and magnification to display.
+\li When the user changes a control in the navigation plugin, messages are sent to the
+display screen to tell the selected window to update.
+
+If bind slices is ticked, the main display will update the views accordingly.
 
 */
 

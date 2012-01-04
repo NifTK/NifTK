@@ -3,5 +3,24 @@
 
 \image html SnapshotIcon.png "Icon of Snapshot"
 
+\section SnapshotIntroduction Introduction
+
+The Snapshot plugin simply provides a quick way to take a screenshot of your current main window. The implementation is basic.
+Any windows covering the viewer will be included in the snapshot. So, make sure you have no windows overlapping the main viewer.
+
+\section SnapshotUsage Usage
+
+The Snapshot plugin is launched by clicking on "Window" on the top menu bar, then "Show View", then "CMIC Snapshot".
+The controls are a single button (Figure 1).
+
+\image html SnapshotControls.png "Figure 1. The Snapshot plugin controls are a single button."
+
+When the user clicks this button, the application takes a copy of the main window, and gives the option of saving it 
+to file with the standard system File Save As dialog box. Valid file extensions are .png.
+
+\image html SnapshotSaveAs.png "Figure 2. The Snapshot plugin takes the snapshot, then shows the File Save As dialog box."
+
+Future work will enable this screen to take snapshots when the viewer is obscured, or has windows overlapping it.
+
 */
 
