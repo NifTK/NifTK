@@ -196,7 +196,7 @@ IF(CUDA_FOUND)
   SET(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
     niftkcommon
     niftkITK
-    #niftkcudautilsgpu 
+    niftkcudautilsgpu 
     ${Boost_LIBRARIES} 
   )
 

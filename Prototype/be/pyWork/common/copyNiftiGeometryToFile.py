@@ -5,8 +5,8 @@
     Brutal but effective.
 '''
 
-import findExecutable as fe
-import sys, subprocess, shlex
+
+import sys 
 import nibabel as nib
 
 

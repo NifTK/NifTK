@@ -126,7 +126,7 @@ class evaluationTask :
             self.runFEIREvaluation()
         
         elif self.registrationTask.regCommand == 'niftkFluid' :
-            self.runUcltkFluidEvaluation()
+            self.runNiftkFluidEvaluation()
         
         elif self.registrationTask.regCommand == 'extern' :
             self.runAssumedRegEvaluation()    
@@ -421,7 +421,7 @@ class evaluationTask :
     
     
     
-    def runUcltkFluidEvaluation( self ) :
+    def runNiftkFluidEvaluation( self ) :
         #
         # The current implementation of the niftkFluid registration gives the DVF in 
         # voxel and NOT in real world spacing. Thus the dof must be modified by the

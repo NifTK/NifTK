@@ -21,7 +21,7 @@ import getNodesCloseToMask as ndProx
 import materialSetGenerator
 import commandExecution as cmdEx
 import f3dRegistrationTask as f3dTask
-
+import feirRegistrationTask as feirTask
 
 # starting from the images
 # 1) soft tissue (currently seen as homogeneous material... to be corrected later on)
@@ -32,8 +32,14 @@ import f3dRegistrationTask as f3dTask
 #    -> W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasksCropped-pad.nii
 #    -> intensity value 255
 #
+
+useFEIR                   = True
+updateFactor              = 0.5
+numIterations             = 10
+
 meshDir                   = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
 regDirF3D                 = meshDir + 'regF3D/'
+regDirFEIR                = meshDir + 'regFEIR/'
 breastVolMeshName         = meshDir + 'breastSurf_impro.1.vtk'    # volume mesh    
 xmlFileOut                = meshDir + 'model.xml'
 
@@ -138,10 +144,10 @@ genFix.setFixConstraint( idxCloseToChest, 2 )
 
 
 #genFix.setMaterialElementSet( 'NH', 'FAT',    [  400, 50000], allElemenstArray    )
-genFix.setMaterialElementSet( 'NH', 'FAT',    [  100, 50000], matGen.fatElemetns    )
-genFix.setMaterialElementSet( 'NH', 'SKIN',   [ 1000, 50000], matGen.skinElements   )
-genFix.setMaterialElementSet( 'NH', 'GLAND',  [  200, 50000], matGen.glandElements  )
-genFix.setMaterialElementSet( 'NH', 'MUSCLE', [  300, 50000], matGen.muscleElements )
+genFix.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen.fatElemetns    )
+genFix.setMaterialElementSet( 'NH', 'SKIN',   [ 2000, 50000], matGen.skinElements   )
+genFix.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen.glandElements  )
+genFix.setMaterialElementSet( 'NH', 'MUSCLE', [  800, 50000], matGen.muscleElements )
 
 genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
 genFix.setOutput( 5000, 'U' )
@@ -158,7 +164,7 @@ prevFixedNodes = np.unique( np.hstack( ( genFix.fixConstraintNodes[0],
                                          genFix.fixConstraintNodes[2] ) ) )
 dispVects      = np.zeros( (prevFixedNodes.shape[0], 3) )
 
-for i in range( 3 ) :
+for i in range( numIterations ) :
     
     #
     # run the simulation and the resampling
@@ -168,25 +174,52 @@ for i in range( 3 ) :
     strSimulatedSupine = meshDir + 'out'+ str('%03i' %i) +'.nii'
 
     # run the simulation and resampling at the same time
-    simCommand = 'ucltkDeformImageFromNiftySimulation'
+    simCommand = 'niftkDeformImageFromNiftySimulation'
     simParams   = ' -i '    + strProneImg
     simParams  += ' -x '    + xmlFileOut 
     simParams  += ' -o '    + strSimulatedSupine
-    simParams  += ' -mval 0 ' 
+    
+    # niftyReg and FEIR use different indicators for "mask"
+    if useFEIR :
+        simParams  += ' -mval -1 ' 
+    else :
+        simParams  += ' -mval 0 '
+         
     simParams  += ' -interpolate bspl '
     
     # run the simulation
-    print('Starting niftySim-Ulation')
+    print('Starting niftySimulation')
     cmdEx.runCommand( simCommand, simParams )
+
     
-    f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine, strSupineImg, strSimulatedSupine, regDirF3D, 'NA', 
-                                          bendingEnergy=0.007, logOfJacobian=0.0, finalGridSpacing=5, numberOfLevels=5, maxIterations=300, gpu=True)
+    #
+    # Check if the resampled image was created 
+    #
+    simSup = nib.load( strSimulatedSupine )
     
-    f3dReg.run()
-    f3dReg.constructNiiDeformationFile()
+    if np.min( simSup.get_data() ) == np.max( simSup.get_data() ):
+        print('No more simulation results after %i iterations' % i)
+        break  
+    
+    if useFEIR :
+        feirReg = feirTask.feirRegistrationTask( strSimulatedSupine, strSupineImg, regDirFEIR, 'NA', 
+                                                 mu=0.0025*(2**-8), lm=0.0, mode='fast', mask=True, displacementConvergence=0.01, planStr='n')
+    
+        feirReg.run()
+        feirReg.constructNiiDeformationFile()
+        feirReg.resampleSourceImage()
+        dispImg = nib.load( feirReg.dispFieldITK )
+        
+    else :
+        f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine, strSupineImg, strSimulatedSupine, regDirF3D, 'NA', 
+                                              bendingEnergy=0.007, logOfJacobian=0.0, finalGridSpacing=5, numberOfLevels=5, maxIterations=300, gpu=True)
+        
+        f3dReg.run()
+        f3dReg.constructNiiDeformationFile()
+        dispImg = nib.load( f3dReg.dispFieldITK )
+    
     
     # read the deformation field
-    dispImg = nib.load( f3dReg.dispFieldITK )
     dispData = dispImg.get_data()
     dispAffine = dispImg.get_affine()
     dispAffine[0,0] = - dispAffine[0,0]  # quick and dirty
@@ -210,16 +243,16 @@ for i in range( 3 ) :
                                             dispData[curIDX[0], curIDX[1], curIDX[2], 0, 2] ) ) )
     
     # compose the displacement as a simple addition
-    dispVects = 0.5 * np.array( dispVectsUpdate ) + dispVects
+    dispVects = updateFactor * np.array( dispVectsUpdate ) + dispVects
     
     gen2 = xGen.xmlModelGenrator( breastVolMeshPoints / 1000., breastVolMeshCells[ : , 1:5], 'T4' )
     
     gen2.setDifformDispConstraint( 'RAMP', prevFixedNodes, dispVects / 1000. )
     #gen2.setMaterialElementSet( 'NH', 'FAT',    [  400, 50000], allElemenstArray    ) # homogeneous material for debugging only
-    gen2.setMaterialElementSet( 'NH', 'FAT',    [  100, 50000], matGen.fatElemetns    )
-    gen2.setMaterialElementSet( 'NH', 'SKIN',   [ 1000, 50000], matGen.skinElements   )
-    gen2.setMaterialElementSet( 'NH', 'GLAND',  [  200, 50000], matGen.glandElements  )
-    gen2.setMaterialElementSet( 'NH', 'MUSCLE', [  300, 50000], matGen.muscleElements )
+    gen2.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen.fatElemetns    )
+    gen2.setMaterialElementSet( 'NH', 'SKIN',   [ 2000, 50000], matGen.skinElements   )
+    gen2.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen.glandElements  )
+    gen2.setMaterialElementSet( 'NH', 'MUSCLE', [  800, 50000], matGen.muscleElements )
     
     gen2.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
     gen2.setOutput( 5000, 'U' )

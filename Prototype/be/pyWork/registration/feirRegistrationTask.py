@@ -143,7 +143,7 @@ class feirRegistrationTask( RegistrationTask ) :
         '''
         
         print( 'Starting FEIR deformation field composition...' )
-        deformFiledComposerCmd = 'ucltkCompose3DVectorImageFromComponentImages'
+        deformFiledComposerCmd = 'niftkCompose3DVectorImageFromComponentImages'
         
         # Find out what the name of the deformation field components is...
         # and then generate the deformation vector field
@@ -168,6 +168,8 @@ class feirRegistrationTask( RegistrationTask ) :
 
         self.runTask( deformFiledComposerCmd, paramsFieldComp )
         
+        self.dispFieldITK = deformationVectorField
+        
         # Check if the deformation field was successfully created
         if os.path.isfile( deformationVectorField ) != True : 
             print( 'ERROR: The deformation vector field was not generated! ' )
@@ -178,7 +180,7 @@ class feirRegistrationTask( RegistrationTask ) :
         
     def resampleSourceImage( self ):
         
-        resampleCommand = 'ucltkValidateDeformationVectorField'
+        resampleCommand = 'niftkValidateDeformationVectorField'
         resampleParams  = ' -i ' + self.source
         resampleParams += ' -o ' + self.outImage + '.nii'
         resampleParams += ' -def ' +self.outDOF

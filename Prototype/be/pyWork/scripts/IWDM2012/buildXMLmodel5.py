@@ -59,12 +59,13 @@ surfaceExtractor.SetInput( breastVolMesh )
 surfaceExtractor.Update()
 breastSurfMeshPoints = VN.vtk_to_numpy( surfaceExtractor.GetOutput().GetPoints().GetData() )
 
-#matGen = materialSetGenerator.materialSetGenerator( breastVolMeshPoints, 
-#                                                    breastVolMeshCells, 
-#                                                    labelImage, 
-#                                                    skinMaskImage, 
-#                                                    breastVolMesh, 
-#                                                    95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
+if not 'matGen' in locals():
+    matGen = materialSetGenerator.materialSetGenerator( breastVolMeshPoints, 
+                                                        breastVolMeshCells, 
+                                                        labelImage, 
+                                                        skinMaskImage, 
+                                                        breastVolMesh, 
+                                                        95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
 
 
 # find those nodes of the model, which are close to the sternum... i.e. low x-values

@@ -152,7 +152,7 @@ class f3dRegistrationTask( RegistrationTask ) :
         ###
         self.dispFieldITK = os.path.splitext( self.outDOF )[0].split( 'cpp' )[0] + 'dispI.nii'
         
-        vectConvCommand = 'ucltkConvertNiftiVectorImage'
+        vectConvCommand = 'niftkConvertNiftiVectorImage'
         vectConvParams  = ' -i ' + dispFieldNII
         vectConvParams += ' -o ' + self.dispFieldITK
         

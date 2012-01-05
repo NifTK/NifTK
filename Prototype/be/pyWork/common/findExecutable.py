@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import re, os, sys
+import os, sys
 
 
 def findExecutable(executable, path=None):
