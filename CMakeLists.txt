@@ -24,6 +24,7 @@
 
 ######################################################################
 # Our version number. Edit this to generate a new version.
+# However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 1 CACHE STRING "Major version number" FORCE )
 SET(NIFTK_VERSION_MINOR 0 CACHE STRING "Minor version number" FORCE )
@@ -109,6 +110,7 @@ OPTION(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Cod
 OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts" ON)
 OPTION(BUILD_GUI "Build GUI in NifTK/Code/Gui" OFF)
 OPTION(BUILD_MESHING "Build meshing?" OFF)
+OPTION(BUILD_NIFTYLINK "Build NiftyLink. " OFF)
 OPTION(BUILD_NIFTYREG "Build NiftyReg. Experimental. " OFF)
 OPTION(BUILD_NIFTYREC "Build NiftyRec. Experimental. " OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim. Experimental. " OFF)
@@ -137,7 +139,7 @@ OPTION(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK d
 # Variables that get compiled into C++ code. 
 ######################################################################
 SET(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
-SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2011 University College London" CACHE STRING "Copyright string." FORCE )
+SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2012 University College London" CACHE STRING "Copyright string." FORCE )
 SET(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
 SET(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 SET(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
@@ -465,6 +467,15 @@ IF(BUILD_OPENIGTLINK)
     INCLUDE(${OpenIGTLink_USE_FILE})  
   ENDIF(OpenIGTLink_FOUND)
 ENDIF(BUILD_OPENIGTLINK)
+
+######################################################################
+# Find NiftyLink
+######################################################################
+FIND_PACKAGE(NiftyLink REQUIRED)
+IF(NiftyLink_FOUND)
+  MESSAGE("Found NiftyLink")    
+  INCLUDE(${NiftyLink_USE_FILE})  
+ENDIF(NiftyLink_FOUND)
 
 ######################################################################
 # Find FFTW.

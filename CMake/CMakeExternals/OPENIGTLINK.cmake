@@ -39,14 +39,21 @@ IF(BUILD_OPENIGTLINK)
    
   IF(NOT DEFINED OpenIGTLink_DIR)
   
+    SET(revision_tag d79e0d85b0)
+    IF(${proj}_REVISION_TAG)
+        SET(revision_tag ${${proj}_REVISION_TAG})
+    ENDIF()
+  
     ExternalProject_Add(${proj}
-      URL http://cmic.cs.ucl.ac.uk/platform/dependencies/OpenIGTLink-7802.tar.gz
+      GIT_REPOSITORY git://github.com/zomboir/OpenIGTLink.git
+      GIT_TAG ${revision_tag}
       BINARY_DIR ${proj}-build
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
           ${EP_COMMON_ARGS}
           -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
+          -DOpenIGTLink_PROTOCOL_VERSION_2:BOOL=ON
        DEPENDS ${proj_DEPENDENCIES}
       )
   
