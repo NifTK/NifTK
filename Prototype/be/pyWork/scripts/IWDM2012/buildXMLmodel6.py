@@ -34,8 +34,8 @@ import feirRegistrationTask as feirTask
 #
 
 useFEIR                   = True
-updateFactor              = 0.5
-numIterations             = 10
+updateFactor              = 0.75
+numIterations             = 5
 
 meshDir                   = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
 regDirF3D                 = meshDir + 'regF3D/'
@@ -45,7 +45,7 @@ xmlFileOut                = meshDir + 'model.xml'
 
 chestWallMaskImage        = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh.nii'
 chestWallMaskImageDilated = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh-dilateR2I4.nii'
-labelImage                = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad.nii'
+labelImage                = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM2_Crp2-pad.nii'
 skinMaskImage             = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-AirThresh-dilateR2I4.nii'
 
 # original images
@@ -144,9 +144,9 @@ genFix.setFixConstraint( idxCloseToChest, 2 )
 
 
 #genFix.setMaterialElementSet( 'NH', 'FAT',    [  400, 50000], allElemenstArray    )
-genFix.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen.fatElemetns    )
-genFix.setMaterialElementSet( 'NH', 'SKIN',   [ 2000, 50000], matGen.skinElements   )
-genFix.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen.glandElements  )
+genFix.setMaterialElementSet( 'NH', 'FAT',    [  150, 50000], matGen.fatElemetns    )
+genFix.setMaterialElementSet( 'NH', 'SKIN',   [ 1600, 50000], matGen.skinElements   )
+genFix.setMaterialElementSet( 'NH', 'GLAND',  [  300, 50000], matGen.glandElements  )
 genFix.setMaterialElementSet( 'NH', 'MUSCLE', [  800, 50000], matGen.muscleElements )
 
 genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
@@ -171,13 +171,20 @@ for i in range( numIterations ) :
     #
     
     # xml model and generated output image
-    strSimulatedSupine = meshDir + 'out'+ str('%03i' %i) +'.nii'
+    strSimulatedSupine         = meshDir + 'out'      + str('%03i' %i) + '.nii'
+    strSimulatedSupineLabelImg = meshDir + 'outLabel' + str('%03i' %i) + '.nii'
 
     # run the simulation and resampling at the same time
     simCommand = 'niftkDeformImageFromNiftySimulation'
-    simParams   = ' -i '    + strProneImg
-    simParams  += ' -x '    + xmlFileOut 
+    simParams   = ' -x '    + xmlFileOut 
+    simParams  += ' -i '    + strProneImg
     simParams  += ' -o '    + strSimulatedSupine
+
+    # also deform the label image!
+    simParams  += ' -iL '    + labelImage
+    simParams  += ' -oL '    + strSimulatedSupineLabelImg
+    
+    
     
     # niftyReg and FEIR use different indicators for "mask"
     if useFEIR :
@@ -203,7 +210,7 @@ for i in range( numIterations ) :
     
     if useFEIR :
         feirReg = feirTask.feirRegistrationTask( strSimulatedSupine, strSupineImg, regDirFEIR, 'NA', 
-                                                 mu=0.0025*(2**-8), lm=0.0, mode='fast', mask=True, displacementConvergence=0.01, planStr='n')
+                                                 mu=0.0025*(2**-8), lm=0.0, mode='fast', mask=True, displacementConvergence=0.01 )#, planStr='n')
     
         feirReg.run()
         feirReg.constructNiiDeformationFile()
@@ -249,9 +256,9 @@ for i in range( numIterations ) :
     
     gen2.setDifformDispConstraint( 'RAMP', prevFixedNodes, dispVects / 1000. )
     #gen2.setMaterialElementSet( 'NH', 'FAT',    [  400, 50000], allElemenstArray    ) # homogeneous material for debugging only
-    gen2.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen.fatElemetns    )
-    gen2.setMaterialElementSet( 'NH', 'SKIN',   [ 2000, 50000], matGen.skinElements   )
-    gen2.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen.glandElements  )
+    gen2.setMaterialElementSet( 'NH', 'FAT',    [  150, 50000], matGen.fatElemetns    )
+    gen2.setMaterialElementSet( 'NH', 'SKIN',   [ 1600, 50000], matGen.skinElements   )
+    gen2.setMaterialElementSet( 'NH', 'GLAND',  [  300, 50000], matGen.glandElements  )
     gen2.setMaterialElementSet( 'NH', 'MUSCLE', [  800, 50000], matGen.muscleElements )
     
     gen2.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
@@ -263,7 +270,14 @@ for i in range( numIterations ) :
     
     
     
-    
+#
+# Plan:
+#  1) Extract the contact surface between chest wall and breast tissue from label image
+#     - Original chest wall and deformed PM need to be combined
+#  2) Generate a mesh from this 
+#  3) Let the breast tissue slide on this (this model generation can be taken from previous tests) 
+#  4) 
+#
     
     
     

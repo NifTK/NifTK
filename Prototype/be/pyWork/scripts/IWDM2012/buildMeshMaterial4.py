@@ -9,7 +9,7 @@ import os
 import smeshFileReader as smr
 import commandExecution as cmdEx
 import vtk2stl
-
+import stlBinary2stlASCII
 
 chestWallMaskImage    = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh.nii'
 breastTissueMaskImage = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM2_Crp2-pad.nii'
@@ -68,9 +68,56 @@ vtk2stl.vtk2stl([chestWallSurfMeshVTK, breastSurfMeshVTK])
 # - Filters -> Remeshing -> Uniform Mesh Resampling -> 2mm Precision, offset 0.5mm
 # - Filters -> Smoothing -> Laplacian Smoothing -> 3 Steps
 # - Filters -> Iso Parametrisation -> 140 / 180 / Best Heuristic / 10 / true
-# - Filters -> Iso Parametrisation Remeshing -> 7  
+# - Filters -> Iso Parametrisation Remeshing -> 8  
+#
+# These actions are summarised in the script 
+# -> surfProcessing.mlx
+
+#
+# The above can now be done in an automated way by using meshlabserver and an appropriate script file 
+# Only the output of meshlabserer needs to be converted from binary format to ascii format 
+#
+
+#
+# Improve the mesh quality for the breast 
+#
+
+# some file names
+breastSurfBaseName     =  breastSurfMeshVTK.split('.')[0] 
+breastSurfMeshSTL      = breastSurfBaseName + '.stl' 
+improBreastSurfMeshSTL = breastSurfBaseName + '_impro.stl'
+
+if not os.path.exists(breastSurfMeshSTL) :
+    print('ERRROR: Breast surface stl file does not exist.')
+    exit()
+    
+# run meshlab improvements 
+
+meshLabCommand         = 'meshlabserver'
+meshlabScript          = meshDir + 'surfProcessing.mlx'
+meshLabParamrs         = ' -i ' + breastSurfMeshSTL 
+meshLabParamrs        += ' -o ' + improBreastSurfMeshSTL
+meshLabParamrs        += ' -s ' + meshlabScript
 
 
+cmdEx.runCommand( meshLabCommand, meshLabParamrs )
+
+# now convert the output to ASCII format
+stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL )
+
+# now run tetgen and build the volume mesh
+tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL
+cmdEx.runCommand( 'tetgen', tetVolParams )
 
 # go back to where you belong...
 os.chdir( origWorkDir )
+
+
+
+
+
+
+
+
+
+
