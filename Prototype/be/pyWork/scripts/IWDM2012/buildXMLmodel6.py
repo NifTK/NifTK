@@ -34,8 +34,8 @@ import feirRegistrationTask as feirTask
 #
 
 useFEIR                   = True
-updateFactor              = 0.75
-numIterations             = 5
+updateFactor              = 0.95
+numIterations             = 10
 
 meshDir                   = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
 regDirF3D                 = meshDir + 'regF3D/'
@@ -185,10 +185,10 @@ genFix.setFixConstraint( idxCloseToChest, 2 )
 
 
 #genFix.setMaterialElementSet( 'NH', 'FAT',    [  400, 50000], allElemenstArray    )
-genFix.setMaterialElementSet( 'NH', 'FAT',    [  150, 50000], matGen.fatElemetns    )
-genFix.setMaterialElementSet( 'NH', 'SKIN',   [ 1600, 50000], matGen.skinElements   )
-genFix.setMaterialElementSet( 'NH', 'GLAND',  [  300, 50000], matGen.glandElements  )
-genFix.setMaterialElementSet( 'NH', 'MUSCLE', [  800, 50000], matGen.muscleElements )
+genFix.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen.fatElemetns    )
+genFix.setMaterialElementSet( 'NH', 'SKIN',   [ 2400, 50000], matGen.skinElements   )
+genFix.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen.glandElements  )
+genFix.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen.muscleElements )
 
 genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
 genFix.setOutput( 5000, 'U' )
@@ -203,6 +203,7 @@ genFix.writeXML( xmlFileOut )
 prevFixedNodes = np.unique( np.hstack( ( genFix.fixConstraintNodes[0], 
                                          genFix.fixConstraintNodes[1], 
                                          genFix.fixConstraintNodes[2] ) ) )
+
 dispVects      = np.zeros( (prevFixedNodes.shape[0], 3) )
 
 for i in range( numIterations ) :
@@ -214,6 +215,7 @@ for i in range( numIterations ) :
     # xml model and generated output image
     strSimulatedSupine         = meshDir + 'out'      + str('%03i' %i) + '.nii'
     strSimulatedSupineLabelImg = meshDir + 'outLabel' + str('%03i' %i) + '.nii'
+    strOutDVFImg               = meshDir + 'outDVF'   + str('%03i' %i) + '.nii'
 
     # run the simulation and resampling at the same time
     simCommand = 'niftkDeformImageFromNiftySimulation'
@@ -224,7 +226,7 @@ for i in range( numIterations ) :
     # also deform the label image!
     simParams  += ' -iL '    + labelImage
     simParams  += ' -oL '    + strSimulatedSupineLabelImg
-    
+    simParams  += ' -oD '    + strOutDVFImg
     
     
     # niftyReg and FEIR use different indicators for "mask"
@@ -251,7 +253,7 @@ for i in range( numIterations ) :
     
     if useFEIR :
         feirReg = feirTask.feirRegistrationTask( strSimulatedSupine, strSupineImg, regDirFEIR, 'NA', 
-                                                 mu=0.0025*(2**-8), lm=0.0, mode='fast', mask=True, displacementConvergence=0.01 )#, planStr='n')
+                                                 mu=0.0025*(2**-8), lm=0.0, mode='standard', mask=True, displacementConvergence=0.01, planStr='n')
     
         feirReg.run()
         feirReg.constructNiiDeformationFile()
@@ -297,10 +299,10 @@ for i in range( numIterations ) :
     
     gen2.setDifformDispConstraint( 'RAMP', prevFixedNodes, dispVects / 1000. )
     #gen2.setMaterialElementSet( 'NH', 'FAT',    [  400, 50000], allElemenstArray    ) # homogeneous material for debugging only
-    gen2.setMaterialElementSet( 'NH', 'FAT',    [  150, 50000], matGen.fatElemetns    )
-    gen2.setMaterialElementSet( 'NH', 'SKIN',   [ 1600, 50000], matGen.skinElements   )
-    gen2.setMaterialElementSet( 'NH', 'GLAND',  [  300, 50000], matGen.glandElements  )
-    gen2.setMaterialElementSet( 'NH', 'MUSCLE', [  800, 50000], matGen.muscleElements )
+    gen2.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen.fatElemetns    )
+    gen2.setMaterialElementSet( 'NH', 'SKIN',   [ 2400, 50000], matGen.skinElements   )
+    gen2.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen.glandElements  )
+    gen2.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen.muscleElements )
     
     gen2.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
     gen2.setOutput( 5000, 'U' )
@@ -309,8 +311,8 @@ for i in range( numIterations ) :
     gen2.writeXML( xmlFileOut )
     
     
-    
-    
+
+fixedPoints =np.array( fixedPoints )
 #
 # Plan:
 #  1) Extract the contact surface between chest wall and breast tissue from label image

@@ -324,7 +324,21 @@ int main(int argc, char ** argv)
 	{
 		typedef NiftySimTransformationType::DeformationFieldType DeformationFieldType;
 			
-		simTrafo->GetDeformationField();
+		
+		typedef itk::ImageFileWriter< DeformationFieldType >  DVFWriterType;
+		
+		DVFWriterType::Pointer dvfWriter = DVFWriterType::New();
+		dvfWriter->SetInput( simTrafo->GetDeformationField() );
+		dvfWriter->SetFileName( strOutputDVF );
+
+		try
+		{
+			dvfWriter->Update();
+		}
+		catch( itk::ExceptionObject e )
+		{
+			std::cout << e << std::endl;
+		}
 	}
 
 	return EXIT_SUCCESS;
