@@ -234,7 +234,7 @@ IF(CUDA_FOUND)
         SET(NIFTK_APPLICATION_WITH_NIFTYSIM_LINK_LIBRARIES 
           ${NIFTK_APPLICATION_WITH_NIFTYSIM_LINK_LIBRARIES}
           viz
-          niftkITKVTK
+          #niftkITKVTK
           niftkVTK
           vtkHybrid
           vtkRendering

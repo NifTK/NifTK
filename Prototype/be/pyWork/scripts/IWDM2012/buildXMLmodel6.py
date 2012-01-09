@@ -52,6 +52,47 @@ skinMaskImage             = 'W:/philipsBreastProneSupine/ManualSegmentation/Comb
 strProneImg               = 'W:/philipsBreastProneSupine/proneCrop2Pad-zeroOrig.nii'
 strSupineImg              = 'W:/philipsBreastProneSupine/rigidAlignment/supine1kTransformCrop2Pad_zeroOrig.nii'
 
+
+
+
+#
+# compare the obtained deformation with some manually picked correspondences: TRE
+#
+# There needs to be an offset correction, as the images were cropped
+#
+strManuallyPickedPointsFileName = 'W:/philipsBreastProneSupine/visProneSupineDeformVectorField/Results.txt'
+
+# cropping and padding region properties
+offsetPix = np.array( [259,91,0] )
+
+# get the image spacing
+# as medSurfer only considers the pixel spacing we can ignore the origin for now 
+chestWallImg   = nib.load( chestWallMaskImage )
+affineTrafoMat = chestWallImg.get_affine()
+
+# scale the offset vector
+scaleX = np.abs( affineTrafoMat[0,0] )
+scaleY = np.abs( affineTrafoMat[1,1] )
+offsetMM = np.dot( np.abs( affineTrafoMat[0:3, 0:3] ), offsetPix )
+(table, header) = ijResReader.readFileAsArray( strManuallyPickedPointsFileName )
+
+pointsProne     = table[0:table.shape[0]:2,:]
+pointsSupine    = table[1:table.shape[0]:2,:]
+
+pointsProne     = pointsProne[:,5:8]
+pointsSupine    = pointsSupine[:,5:8]
+
+pointsPronePrime  = pointsProne  - np.tile( offsetMM, ( pointsProne.shape[0], 1 )  )
+pointsSupinePrime = pointsSupine - np.tile( offsetMM, ( pointsSupine.shape[0],1 ) )
+plotArrayAs3DPoints( pointsPronePrime,  (1,0,1) )
+plotArrayAs3DPoints( pointsSupinePrime, (1,1,1) )
+
+plotVectorsAtPoints( pointsSupinePrime - pointsPronePrime, pointsPronePrime )
+
+
+
+
+
 ugr = vtk.vtkUnstructuredGridReader()
 ugr.SetFileName( breastVolMeshName )
 ugr.Update()

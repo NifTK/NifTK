@@ -43,6 +43,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] =
 	{ OPT_STRING | OPT_REQ, "o",           "filename",       "Output image (short)."                                                },
 	{ OPT_STRING,           "iL",          "filename",       "Label image to be deformed (unsigned chartype assumed)."              },
 	{ OPT_STRING,           "oL",          "filename",       "Label output image (short, nearest neighbourgh will be used)."        },
+	{ OPT_STRING,           "oD",          "filename",       "Deformation vector filed output image."                               },
 	{ OPT_STRING | OPT_REQ, "x",           "filename",       "NifytSimxml file name."                                               },
 	{ OPT_STRING | OPT_REQ, "interpolate", "nn|lin|bspl",    "Interpolation scheme used (nn, lin, or bspl)"                         },
 	{ OPT_STRING,           "m",           "filename",       "Output mask image name"                                               },
@@ -58,6 +59,7 @@ enum
 	O_OUTPUT,
 	O_INPUT_L,
 	O_OUTPUT_L,
+	O_OUTPUT_D,
     O_XMLFILE,
 	O_INTERPOLATION,
 	O_MASKIMAGENAME,
@@ -109,6 +111,7 @@ int main(int argc, char ** argv)
 	std::string strOutputImageNameLabel;
 	std::string strGivenInterpolation;
 	std::string strMaskImageName;
+	std::string strOutputDVF;
 	int         iOutsideVal=0;
 
 
@@ -117,6 +120,7 @@ int main(int argc, char ** argv)
     CommandLineOptions.GetArgument( O_OUTPUT,        strOutputImageName      );
 	CommandLineOptions.GetArgument( O_INPUT_L,       strInputImageNameLabel  );
 	CommandLineOptions.GetArgument( O_OUTPUT_L,      strOutputImageNameLabel );
+	CommandLineOptions.GetArgument( O_OUTPUT_D,      strOutputDVF            );
 	CommandLineOptions.GetArgument( O_XMLFILE,       pcXMLFileName           );
 	CommandLineOptions.GetArgument( O_INTERPOLATION, strGivenInterpolation   );
 	CommandLineOptions.GetArgument( O_MASKIMAGENAME, strMaskImageName        );
@@ -159,7 +163,7 @@ int main(int argc, char ** argv)
 	ResampleImageFilterPointerType  resampler = ResampleImageFilterType::New();
 	resampler->SetTransform( simTrafo );
 	resampler->SetInput( inputReader->GetOutput() );
-	resampler->SetUseReferenceImage(false);
+	resampler->SetUseReferenceImage( false );
 
 	resampler->SetOutputParametersFromImage(inputReader->GetOutput());
 
@@ -310,6 +314,17 @@ int main(int argc, char ** argv)
 			std::cout << "Something went terribly wrong when writing label image..." << std::endl << e << std::endl;
     		return EXIT_FAILURE;
 		}
+	}
+
+
+	/*
+	 * Write the deformation vector output image 
+	 */
+	if ( ! strOutputDVF.empty() )
+	{
+		typedef NiftySimTransformationType::DeformationFieldType DeformationFieldType;
+			
+		simTrafo->GetDeformationField();
 	}
 
 	return EXIT_SUCCESS;
