@@ -471,11 +471,13 @@ ENDIF(BUILD_OPENIGTLINK)
 ######################################################################
 # Find NiftyLink
 ######################################################################
-FIND_PACKAGE(NiftyLink REQUIRED)
-IF(NiftyLink_FOUND)
-  MESSAGE("Found NiftyLink")    
-  INCLUDE(${NiftyLink_USE_FILE})  
-ENDIF(NiftyLink_FOUND)
+IF(BUILD_NIFTYLINK)
+  FIND_PACKAGE(NiftyLink)
+  IF(NiftyLink_FOUND)
+    MESSAGE("Found NiftyLink")    
+    INCLUDE(${NiftyLink_USE_FILE})  
+  ENDIF(NiftyLink_FOUND)
+ENDIF(BUILD_NIFTYLINK)
 
 ######################################################################
 # Find FFTW.

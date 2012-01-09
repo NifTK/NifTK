@@ -32,16 +32,26 @@ INCLUDE(mitkFunctionGetVersion)
 mitkFunctionGetVersion("${CMAKE_BINARY_DIR}/../CMakeExternals/Source/CTK" CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
 mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
 mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK_SVN)
-    
+
 # Print out the versions
 MESSAGE("BOOST version=${BOOST_VERSION}")                 
 MESSAGE("GDCM version=${GDCM_VERSION}")                   
 MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 MESSAGE("ITK version=${NIFTK_ITK_VERSION_IN_SUPERBUILD}") 
 MESSAGE("VTK version=${VTK_VERSION}")                     
-MESSAGE("CTK version=${CTK_REVISION_ID}")
 MESSAGE("MITK version=${MITK_REVISION_ID}")
+MESSAGE("CTK version=${CTK_REVISION_ID}")
 MESSAGE("NIFTK version=${NIFTK_SVN_REVISION_ID}")
+
+IF(BUILD_OPENIGTLINK)
+  mitkFunctionGetVersion(${OpenIGTLink_SOURCE_DIR} OPENIGTLINK)
+  MESSAGE("OpenIGTLink version=${OPENIGTLINK_REVISION_ID}")
+ENDIF(BUILD_OPENIGTLINK)
+
+IF(BUILD_NIFTYLINK)
+  mitkFunctionGetVersion(${NIFTYLINK_SOURCE_DIR} NIFTYLINK)
+  MESSAGE("NiftyLink version=${NIFTYLINK_SOURCE_DIR}")
+ENDIF(BUILD_NIFTYLINK)
 
 # MinGW does not export all symbols automatically, so no need to set flags
 IF(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
