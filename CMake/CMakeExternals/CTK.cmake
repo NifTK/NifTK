@@ -18,7 +18,7 @@ IF(QT_FOUND)
   
   IF(NOT DEFINED CTK_DIR)
   
-      SET(revision_tag c84cfa3c)
+      SET(revision_tag 6f26c34)
       IF(${proj}_REVISION_TAG)
         SET(revision_tag ${${proj}_REVISION_TAG})
       ENDIF()
