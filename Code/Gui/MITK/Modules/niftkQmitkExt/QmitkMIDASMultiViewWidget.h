@@ -113,6 +113,12 @@ public:
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches sagittal.
   void SetSelectedWindowToCoronal();
 
+  /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
+  void RequestUpdateAll();
+
+  /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
+  void ForceUpdateAll();
+
 public slots:
 
 signals:

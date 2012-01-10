@@ -107,15 +107,6 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 
 QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
 {
-  // Sounds stupid but:
-  // Unregister our window from our local rendering manager.
-  // Register it with the global rendering manager.
-  // The reason is that in the destructor of QmitkRenderWindow, MITK tries
-  // to destroy all rendering windows, and assumes they are all registered with
-  // the global rendering manager.
-
-  this->m_RenderingManager->RemoveRenderWindow(m_RenderWindow->GetVtkRenderWindow());
-  mitk::RenderingManager::GetInstance()->AddRenderWindow(m_RenderWindow->GetVtkRenderWindow());
 }
 
 void QmitkMIDASSingleViewWidget::SetContentsMargins(unsigned int margin)
@@ -297,6 +288,19 @@ void QmitkMIDASSingleViewWidget::AddToRenderingManager()
   this->m_RenderingManager->AddRenderWindow(this->m_RenderWindow->GetVtkRenderWindow());
   this->m_RenderWindow->setEnabled(true);
   this->m_RenderWindow->setVisible(true);
+  this->RequestUpdate();
+}
+
+void QmitkMIDASSingleViewWidget::RequestUpdate()
+{
+  vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
+  this->m_RenderingManager->RequestUpdate(vtkWindow);
+}
+
+void QmitkMIDASSingleViewWidget::ForceUpdate()
+{
+  vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
+  this->m_RenderingManager->ForceImmediateUpdate(vtkWindow);
 }
 
 QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASSingleViewWidget::GetViewOrientation() const
@@ -316,10 +320,96 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     }
 
     vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
+    assert(vtkWindow);
 
-    this->m_ViewOrientation = orientation;
+    mitk::BaseRenderer::Pointer baseRenderer = this->m_SliceNavigationController->GetRenderer();
+    assert(baseRenderer);
+
+    // We Construct a mitk::Geometry to represent the maximum view to render.
+    //
+    // This is important, because unlike the ortho view, which expands its world
+    // horizons when more data is added, in MIDAS we do not want this. It must be
+    // exactly the size of the specified image (so that slice controllers make sense).
+    //
+    // Secondly, it must be in world coordinates, aligned with the standard
+    // view where:
+    //   as x increases we go Left->Right
+    //   as y increases we go Posterior->Anterior
+    //   as z increases we go Inferior->Superior.
+    // In other words, it is determined by the transformed bounding box of the image geometry.
+    //
+    // Thirdly, it must be an image geometry.
+
+    mitk::Point3D transformedOrigin;
+    mitk::Point3D cornerPointsInImage[8];
+    cornerPointsInImage[0] = this->m_Geometry->GetCornerPoint(true, true, true);
+    cornerPointsInImage[1] = this->m_Geometry->GetCornerPoint(true, true, false);
+    cornerPointsInImage[2] = this->m_Geometry->GetCornerPoint(true, false, true);
+    cornerPointsInImage[3] = this->m_Geometry->GetCornerPoint(true, false, false);
+    cornerPointsInImage[4] = this->m_Geometry->GetCornerPoint(false, true, true);
+    cornerPointsInImage[5] = this->m_Geometry->GetCornerPoint(false, true, false);
+    cornerPointsInImage[6] = this->m_Geometry->GetCornerPoint(false, false, true);
+    cornerPointsInImage[7] = this->m_Geometry->GetCornerPoint(false, false, false);
+
+    transformedOrigin[0] = std::numeric_limits<float>::max();
+    transformedOrigin[1] = std::numeric_limits<float>::max();
+    transformedOrigin[2] = std::numeric_limits<float>::max();
+
+    for (unsigned int i = 0; i < 8; i++)
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        if (cornerPointsInImage[i][j] < transformedOrigin[j])
+        {
+          transformedOrigin[j] = cornerPointsInImage[i][j];
+        }
+      }
+    }
+
+    // Do the same procedure for each axis, as each axis might be permuted and/or flipped/inverted.
+    mitk::Vector3D originalSpacing = this->m_Geometry->GetSpacing();
+    mitk::Vector3D transformedSpacing;
+    mitk::Point3D transformedExtent;
+
+    for (unsigned int i = 0; i < 3; i++)
+    {
+
+      mitk::Vector3D axisVector = this->m_Geometry->GetAxisVector(i);
+      mitk::Vector3D transformedAxis;
+
+      this->m_Geometry->IndexToWorld(axisVector, transformedAxis);
+
+      int axisInWorldSpace = -1;
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        if (fabs(transformedAxis[j]) > 0.5)
+        {
+          axisInWorldSpace = j;
+        }
+      }
+      transformedSpacing[axisInWorldSpace] = originalSpacing[i];
+      transformedExtent[axisInWorldSpace] = fabs(transformedAxis[axisInWorldSpace]);
+    }
+
+    mitk::Geometry3D::BoundsArrayType originalBoundingBox = this->m_Geometry->GetBounds();
+    mitk::Geometry3D::BoundsArrayType transformedBoundingBox;
+    transformedBoundingBox[0] = 0;
+    transformedBoundingBox[1] = transformedExtent[0];
+    transformedBoundingBox[2] = 0;
+    transformedBoundingBox[3] = transformedExtent[1];
+    transformedBoundingBox[4] = 0;
+    transformedBoundingBox[5] = transformedExtent[2];
+
+    mitk::Geometry3D::Pointer transformedGeometry = mitk::Geometry3D::New();
+    transformedGeometry->SetImageGeometry(true);
+    transformedGeometry->SetSpacing(transformedSpacing);
+    transformedGeometry->SetOrigin(transformedOrigin);
+    transformedGeometry->SetBounds(transformedBoundingBox);
+    baseRenderer->SetWorldGeometry(transformedGeometry);
 
     // Set the view to the new orientation
+    this->m_ViewOrientation = orientation;
+
     mitk::SliceNavigationController::ViewDirection direction = mitk::SliceNavigationController::Original;
     if (orientation == MIDAS_VIEW_AXIAL)
     {
@@ -350,11 +440,8 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     }
     this->SetSliceNumber(slice);
 
-    mitk::BaseRenderer::Pointer baseRenderer = this->m_SliceNavigationController->GetRenderer();
-    assert(baseRenderer);
     baseRenderer->GetDisplayGeometry()->Fit();
-
-    this->m_RenderingManager->RequestUpdate(vtkWindow);
+    this->RequestUpdate();
   }
 }
 

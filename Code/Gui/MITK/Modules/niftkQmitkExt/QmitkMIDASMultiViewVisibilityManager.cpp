@@ -252,6 +252,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         mitk::TimeSlicedGeometry::Pointer geometry = image->GetTimeSlicedGeometry();
         m_ListOfWidgets[windowIndex]->InitializeGeometry(geometry.GetPointer());
         m_ListOfWidgets[windowIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
+        m_ListOfWidgets[windowIndex]->RequestUpdate();
       }
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
@@ -300,6 +301,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
           mitk::TimeSlicedGeometry::Pointer geometry = image->GetTimeSlicedGeometry();
           m_ListOfWidgets[dropIndex]->InitializeGeometry(geometry.GetPointer());
           m_ListOfWidgets[dropIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
+          m_ListOfWidgets[dropIndex]->RequestUpdate();
 
           // We need to always increment by at least one window, or else infinite loop-a-rama.
           dropIndex++;
@@ -307,6 +309,5 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       }
     }
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 

@@ -164,6 +164,12 @@ public:
   /// \brief Stores a pointer to the provided geometry, and resets the previous slice number, magnification factor and orientation fields.
   void InitializeGeometry(mitk::Geometry3D::Pointer geometry);
 
+  /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
+  void RequestUpdate();
+
+  /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
+  void ForceUpdate();
+
 private:
 
   QmitkMIDASRenderWindow*                        m_RenderWindow;

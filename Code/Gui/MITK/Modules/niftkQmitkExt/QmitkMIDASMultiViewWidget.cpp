@@ -259,7 +259,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_DropSingleRadioButton->setChecked(true);
   this->m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_SINGLE);
 
-  this->SetLayoutSize(m_DefaultNumberOfRows, m_DefaultNumberOfColumns);
+  this->SetLayoutSize(5, 5);
   this->SetSelectedWindow(0);
 }
 
@@ -408,6 +408,7 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
   {
     m_SingleViewWidgets[i]->SetBackgroundColor(background);
   }
+  this->RequestUpdateAll();
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
@@ -425,6 +426,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
       m_SingleViewWidgets[i]->SetSelected(false);
     }
   }
+  this->RequestUpdateAll();
 }
 
 void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(QmitkMIDASMultiViewVisibilityManager::MIDASDefaultInterpolationType interpolationType)
@@ -558,4 +560,26 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 {
   this->m_SingleViewWidgets[m_SelectedWindow]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL);
   this->PublishNavigationSettings();
+}
+
+void QmitkMIDASMultiViewWidget::RequestUpdateAll()
+{
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (m_SingleViewWidgets[i]->isEnabled() && m_SingleViewWidgets[i]->isVisible())
+    {
+      m_SingleViewWidgets[i]->RequestUpdate();
+    }
+  }
+}
+
+void QmitkMIDASMultiViewWidget::ForceUpdateAll()
+{
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (m_SingleViewWidgets[i]->isEnabled() && m_SingleViewWidgets[i]->isVisible())
+    {
+      m_SingleViewWidgets[i]->ForceUpdate();
+    }
+  }
 }
