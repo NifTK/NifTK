@@ -16,6 +16,8 @@ import xmlModelGenerator as xGen
 import imageJmeasurementReader as ijResReader
 import nibabel as nib
 import vtk
+import vtk2stl
+import stlBinary2stlASCII
 from vtk.util import numpy_support as VN
 import getNodesCloseToMask as ndProx
 import materialSetGenerator
@@ -34,8 +36,8 @@ import feirRegistrationTask as feirTask
 #
 
 useFEIR                   = True
-updateFactor              = 0.95
-numIterations             = 10
+updateFactor              = 1.0
+numIterations             = 1
 
 meshDir                   = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
 regDirF3D                 = meshDir + 'regF3D/'
@@ -206,6 +208,13 @@ prevFixedNodes = np.unique( np.hstack( ( genFix.fixConstraintNodes[0],
 
 dispVects      = np.zeros( (prevFixedNodes.shape[0], 3) )
 
+#
+# remember the output images
+#
+strSimulatedSupine         = []
+strSimulatedSupineLabelImg = []
+strOutDVFImg               = []
+
 for i in range( numIterations ) :
     
     #
@@ -213,20 +222,20 @@ for i in range( numIterations ) :
     #
     
     # xml model and generated output image
-    strSimulatedSupine         = meshDir + 'out'      + str('%03i' %i) + '.nii'
-    strSimulatedSupineLabelImg = meshDir + 'outLabel' + str('%03i' %i) + '.nii'
-    strOutDVFImg               = meshDir + 'outDVF'   + str('%03i' %i) + '.nii'
+    strSimulatedSupine.append(         meshDir + 'out'      + str('%03i' %i) + '.nii' )
+    strSimulatedSupineLabelImg.append( meshDir + 'outLabel' + str('%03i' %i) + '.nii' )
+    strOutDVFImg.append(               meshDir + 'outDVF'   + str('%03i' %i) + '.nii' )
 
     # run the simulation and resampling at the same time
     simCommand = 'niftkDeformImageFromNiftySimulation'
     simParams   = ' -x '    + xmlFileOut 
     simParams  += ' -i '    + strProneImg
-    simParams  += ' -o '    + strSimulatedSupine
+    simParams  += ' -o '    + strSimulatedSupine[-1]
 
     # also deform the label image!
     simParams  += ' -iL '    + labelImage
-    simParams  += ' -oL '    + strSimulatedSupineLabelImg
-    simParams  += ' -oD '    + strOutDVFImg
+    simParams  += ' -oL '    + strSimulatedSupineLabelImg[-1]
+    simParams  += ' -oD '    + strOutDVFImg[-1]
     
     
     # niftyReg and FEIR use different indicators for "mask"
@@ -243,16 +252,24 @@ for i in range( numIterations ) :
 
     
     #
-    # Check if the resampled image was created 
+    # Check if simulation diverged 
     #
-    simSup = nib.load( strSimulatedSupine )
+    simSup = nib.load( strSimulatedSupine[-1] )
     
     if np.min( simSup.get_data() ) == np.max( simSup.get_data() ):
+        
+        # remove those files which do not describe a valid 
         print('No more simulation results after %i iterations' % i)
+        
+        simSup = nib.load( strSimulatedSupine[-2] )
+        strSimulatedSupine.pop( -1 )
+        strSimulatedSupineLabelImg.pop( -1 )
+        strOutDVFImg.pop(-1)
         break  
     
+    
     if useFEIR :
-        feirReg = feirTask.feirRegistrationTask( strSimulatedSupine, strSupineImg, regDirFEIR, 'NA', 
+        feirReg = feirTask.feirRegistrationTask( strSimulatedSupine[-1], strSupineImg, regDirFEIR, 'NA', 
                                                  mu=0.0025*(2**-8), lm=0.0, mode='standard', mask=True, displacementConvergence=0.01, planStr='n')
     
         feirReg.run()
@@ -261,7 +278,7 @@ for i in range( numIterations ) :
         dispImg = nib.load( feirReg.dispFieldITK )
         
     else :
-        f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine, strSupineImg, strSimulatedSupine, regDirF3D, 'NA', 
+        f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strSupineImg, strSimulatedSupine[-1], regDirF3D, 'NA', 
                                               bendingEnergy=0.007, logOfJacobian=0.0, finalGridSpacing=5, numberOfLevels=5, maxIterations=300, gpu=True)
         
         f3dReg.run()
@@ -312,22 +329,97 @@ for i in range( numIterations ) :
     
     
 
-fixedPoints =np.array( fixedPoints )
+fixedPoints = np.array( fixedPoints )
 #
 # Plan:
-#  1) Extract the contact surface between chest wall and breast tissue from label image
+#  1) Extract the contact surface between pectoral muscle and breast tissue from label image
 #     - Original chest wall and deformed PM need to be combined
+#     - 
 #  2) Generate a mesh from this 
 #  3) Let the breast tissue slide on this (this model generation can be taken from previous tests) 
 #  4) 
+
+# Image that will be deformed and thresholded to extract the sliding surface...
+modLabelImage             = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM3_Crp2-pad.nii'
+defChestWallImg           = meshDir + 'deformedChest.nii' 
+defChestWallSurfMeshVTK   = meshDir + 'defChestWallSurf.vtk'
+defChestWallSurfMeshSmesh = meshDir + 'defChestWallSurf.smesh'
+
+deformParams  = ' -i '   + modLabelImage
+deformParams += ' -o '   + defChestWallImg
+deformParams += ' -interpolate lin '
+deformParams += ' -def ' + strOutDVFImg[-1] # use the second to last image
+
+cmdEx.runCommand( 'niftkValidateDeformationVectorField', deformParams )
+
+#
+# threshold the image
+#
+threshParams  = ' -i ' + defChestWallImg
+threshParams += ' -o ' + defChestWallImg
+threshParams += ' -u 255 ' 
+threshParams += ' -l 170 ' 
+threshParams += ' -in 255 ' 
+threshParams += ' -out 0 ' 
+
+cmdEx.runCommand( 'niftkThreshold', threshParams )
+
+
+
+#
+# give the deformed image to medsurfer
+# - parameters same as those used in buildMeshMaterial4
+#
+
+
+
+# Parameters used for directory meshMaterials4
+medSurferParms  = ' -iso 80 '      
+medSurferParms += ' -df 0.8 '       
+medSurferParms += ' -shrink 2 2 2 '
+medSurferParms += ' -presmooth'
+medSurferParms += ' -niter 40'
+
+# Build the chest wall mesh (contact constraint):
+medSurfCWParams  = ' -img '   + defChestWallImg 
+medSurfCWParams += ' -vtk '   + defChestWallSurfMeshVTK
+medSurfCWParams += ' -surf '  + defChestWallSurfMeshSmesh
+medSurfCWParams += medSurferParms
+
+cmdEx.runCommand( 'medSurfer', medSurfCWParams )
+    
+# 
+# convert the vtk mesh into stl format
 #
     
-    
-    
-    
-    
-    
-    
-    
-    
-        
+vtk2stl.vtk2stl( [defChestWallSurfMeshVTK] )
+defChestWallSurfMeshSTL      = defChestWallSurfMeshVTK.split('.')[0] + '.stl'
+improDefChestWallSurfMeshSTL = defChestWallSurfMeshVTK.split('.')[0] + '_impro.stl'
+# run meshlab improvements 
+
+meshLabCommand         = 'meshlabserver'
+meshlabScript          = meshDir + 'surfProcessing.mlx'
+meshLabParamrs         = ' -i ' + defChestWallSurfMeshSTL 
+meshLabParamrs        += ' -o ' + improDefChestWallSurfMeshSTL
+meshLabParamrs        += ' -s ' + meshlabScript
+
+
+cmdEx.runCommand( meshLabCommand, meshLabParamrs )
+
+# now convert the output to ASCII format
+stlBinary2stlASCII.stlBinary2stlASCII( improDefChestWallSurfMeshSTL )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
