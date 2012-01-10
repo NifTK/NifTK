@@ -106,7 +106,7 @@ class RegistrationTask :
             print('Nothing to do for this task')
             return
         elif findExecutable( cmdIn ) == None :
-            print( 'Could not find the executable. Return with no job done.' )
+            print( 'Could not find the executable: ' + cmdIn + '\nReturn with no job done.' )
             return
         
         logFile = file( self.outLog ,'a+' )
