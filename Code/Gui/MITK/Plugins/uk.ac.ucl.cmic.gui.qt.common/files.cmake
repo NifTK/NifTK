@@ -32,7 +32,7 @@ SET(CACHED_RESOURCE_FILES
 
 # todo: add some qt style sheet resources
 SET(QRC_FILES
-  resources/resources.qrc
+  resources/CommonResources.qrc
 )
 
 SET(CPP_FILES )
