@@ -249,7 +249,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         }
 
         // Initialise geometry according to first image
-        mitk::Geometry3D::Pointer geometry = image->GetGeometry();
+        mitk::TimeSlicedGeometry::Pointer geometry = image->GetTimeSlicedGeometry();
         m_ListOfWidgets[windowIndex]->InitializeGeometry(geometry.GetPointer());
         m_ListOfWidgets[windowIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
       }
@@ -297,7 +297,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
           this->AddNodeToWindow(dropIndex, nodes[i]);
 
           // Initialise geometry according to first image
-          mitk::SlicedGeometry3D::Pointer geometry = image->GetSlicedGeometry();
+          mitk::TimeSlicedGeometry::Pointer geometry = image->GetTimeSlicedGeometry();
           m_ListOfWidgets[dropIndex]->InitializeGeometry(geometry.GetPointer());
           m_ListOfWidgets[dropIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
 

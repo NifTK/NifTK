@@ -179,7 +179,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   for (unsigned int i = 0; i < m_MaxRows*m_MaxCols; i++)
   {
-    QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkMIDASRenderWindow %1").arg(i));
+    QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkMIDASRenderWindow %1").arg(i), -5, 20);
     widget->SetContentsMargins(0);
     widget->SetSpacing(0);
     widget->setVisible(false);
