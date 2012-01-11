@@ -50,6 +50,7 @@ class QmitkMIDASRenderWindow;
  */
 struct UpdateMIDASViewingControlsInfo
 {
+  int currentTime;
   int currentSlice;
   int currentMagnification;
   bool isAxial;
@@ -63,6 +64,8 @@ struct UpdateMIDASViewingControlsInfo
  */
 struct UpdateMIDASViewingControlsRangeInfo
 {
+  int minTime;
+  int maxTime;
   int minSlice;
   int maxSlice;
   int minMagnification;
@@ -97,6 +100,9 @@ public:
 
   /// \brief Sets the default orientation, which only takes effect when a node is next dropped into a given window.
   void SetDefaultOrientationType(QmitkMIDASMultiViewVisibilityManager::MIDASDefaultOrientationType interpolationType);
+
+  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes time step.
+  void SetSelectedTimeStep(int timeStep);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes slice number.
   void SetSelectedWindowSliceNumber(int sliceNumber);
@@ -170,8 +176,9 @@ private:
   unsigned int GetColumnFromIndex(unsigned int i);
   unsigned int GetIndexFromRowAndColumn(unsigned int r, unsigned int c);
 
-  void SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns);
+  void SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode);
   void SetSelectedWindow(unsigned int i);
+  void EnableWidgetsForThumbnailMode(bool isThumbnailMode);
 
   QGridLayout                                   *m_LayoutForRenderWindows;
   QGridLayout                                   *m_LayoutForLayoutButtons;
@@ -208,5 +215,7 @@ private:
   int                                            m_SelectedWindow;
   int                                            m_DefaultNumberOfRows;
   int                                            m_DefaultNumberOfColumns;
+  int                                            m_NumberOfRowsInNonThumbnailMode;
+  int                                            m_NumberOfColumnsInNonThumbnailMode;
 };
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

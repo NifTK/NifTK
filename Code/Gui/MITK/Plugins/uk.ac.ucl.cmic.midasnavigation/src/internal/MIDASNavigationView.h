@@ -90,25 +90,31 @@ signals:
   /// \brief Signal emmitted when the orientation changed.
   void OrientationChanged(const ctkDictionary&);
 
+  /// \brief Signal emmitted when the time step changed.
+  void TimeChanged(const ctkDictionary&);
+
 public Q_SLOTS:
 
   /// \brief Handle events coming from the event admin service.
   void handleEvent(const ctkEvent& event);
 
-  /// \brief When the axial radio button is pressed we broadcast a MIDASOrientationChanged event.
+  /// \brief When the axial radio button is pressed we broadcast a OrientationChanged event.
   void OnAxialRadioButtonToggled(bool);
 
-  /// \brief When the coronal radio button is pressed we broadcast a MIDASOrientationChanged event.
+  /// \brief When the coronal radio button is pressed we broadcast a OrientationChanged event.
   void OnCoronalRadioButtonToggled(bool);
 
-  /// \brief When the sagittal radio button is pressed we broadcast a MIDASOrientationChanged event.
+  /// \brief When the sagittal radio button is pressed we broadcast a OrientationChanged event.
   void OnSagittalRadioButtonToggled(bool);
 
-  /// \brief When the slice number is changed we broadcast a MIDASSliceNumberChanged event.
+  /// \brief When the slice number is changed we broadcast a SliceNumberChanged event.
   void OnSliceNumberChanged(int, int);
 
-  /// \brief When the magnification factor is changed we broadcast a MIDASSliceNumberChanged event.
+  /// \brief When the magnification factor is changed we broadcast a MagnificationChanged event.
   void OnMagnificationFactorChanged(int, int);
+
+  /// \brief When the time step is changed we broadcast a TimeChanged event.
+  void OnTimeStepChanged(int, int);
 
 private:
 

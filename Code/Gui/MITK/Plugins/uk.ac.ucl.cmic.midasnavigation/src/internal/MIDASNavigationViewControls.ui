@@ -118,6 +118,9 @@
       <widget class="MagnificationFactorWidget" name="m_MagnificationFactorWidget" native="true"/>
      </item>
      <item>
+      <widget class="IntegerSpinBoxAndSliderWidget" name="m_TimeSelectionWidget" native="true"/>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -146,6 +149,12 @@
    <class>MagnificationFactorWidget</class>
    <extends>QWidget</extends>
    <header>MagnificationFactorWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>IntegerSpinBoxAndSliderWidget</class>
+   <extends>QWidget</extends>
+   <header>IntegerSpinBoxAndSliderWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

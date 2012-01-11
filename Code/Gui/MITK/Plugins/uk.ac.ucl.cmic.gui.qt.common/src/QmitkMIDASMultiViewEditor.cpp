@@ -258,6 +258,11 @@ void QmitkMIDASMultiViewEditor::handleEvent(const ctkEvent& event)
         QString magnification = event.getProperty("magnification_factor").toString();
         m_MIDASMultiViewWidget->SetSelectedWindowMagnification(magnification.toInt());
       }
+      if (topic == "uk/ac/ucl/cmic/midasnavigationview/TIME_CHANGED")
+      {
+        QString time = event.getProperty("time_step").toString();
+        m_MIDASMultiViewWidget->SetSelectedTimeStep(time.toInt());
+      }
       else if (topic == "uk/ac/ucl/cmic/midasnavigationview/ORIENTATION_CHANGED")
       {
         QString orientation = event.getProperty("orientation").toString();
@@ -289,6 +294,8 @@ void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsRange(UpdateMIDASVie
   try
   {
     ctkDictionary properties;
+    properties["min_time"] = rangeInfo.minTime;
+    properties["max_time"] = rangeInfo.maxTime;
     properties["min_slice"] = rangeInfo.minSlice;
     properties["max_slice"] = rangeInfo.maxSlice;
     properties["min_magnification"] = rangeInfo.minMagnification;
@@ -308,6 +315,7 @@ void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsValues(UpdateMIDASVi
   try
   {
     ctkDictionary properties;
+    properties["current_time"] = info.currentTime;
     properties["current_slice"] = info.currentSlice;
     properties["current_magnification"] = info.currentMagnification;
     if (info.isAxial)

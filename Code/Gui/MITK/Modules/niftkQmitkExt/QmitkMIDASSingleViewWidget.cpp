@@ -182,7 +182,12 @@ unsigned int QmitkMIDASSingleViewWidget::GetMinSlice() const
 
 unsigned int QmitkMIDASSingleViewWidget::GetMaxSlice() const
 {
-  return this->m_SliceNavigationController->GetSlice()->GetSteps() -1;
+  unsigned int result = 0;
+  if (this->m_SliceNavigationController->GetSlice() != NULL)
+  {
+    result = this->m_SliceNavigationController->GetSlice()->GetSteps() -1;
+  }
+  return result;
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetMinTime() const
@@ -192,7 +197,12 @@ unsigned int QmitkMIDASSingleViewWidget::GetMinTime() const
 
 unsigned int QmitkMIDASSingleViewWidget::GetMaxTime() const
 {
-  return this->m_SliceNavigationController->GetTime()->GetSteps() -1;
+  unsigned int result = 0;
+  if (this->m_SliceNavigationController->GetTime() != NULL)
+  {
+    result = this->m_SliceNavigationController->GetTime()->GetSteps() -1;
+  }
+  return result;
 }
 
 int QmitkMIDASSingleViewWidget::GetMinMagnification() const
@@ -266,7 +276,7 @@ unsigned int QmitkMIDASSingleViewWidget::GetTime() const
 
 void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
 {
-
+  this->m_MagnificationFactor = magnificationFactor;
 }
 
 int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
@@ -394,6 +404,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     transformedGeometry->SetSpacing(transformedSpacing);
     transformedGeometry->SetOrigin(transformedOrigin);
     transformedGeometry->SetBounds(transformedBoundingBox);
+    transformedGeometry->SetTimeBounds(this->m_Geometry->GetTimeBounds());
 
     MITK_INFO << "QmitkMIDASSingleViewWidget::SetViewOrientation: spacing=" << transformedSpacing \
         << ", origin=" << transformedOrigin \
@@ -422,7 +433,10 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       m_SliceNavigationController->Update(direction, true, true, false);
     }
 
-    unsigned int slice = -1;
+    unsigned int slice = std::numeric_limits<unsigned int>::min();
+    unsigned int time = std::numeric_limits<unsigned int>::min();
+    int magnification = std::numeric_limits<int>::min();
+
     if (m_ViewOrientations[orientation] == MIDAS_VIEW_UNKNOWN)
     {
       // No previous slice, so default to central slice.
@@ -437,15 +451,26 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
           << ", max=" << max \
           << ", slice=" << slice \
           << std::endl;
+
+      // No previous timestep, so default to zero.
+      time = 0;
+
+      // No previous magnification, so default to zero.
+      magnification = 0;
     }
     else
     {
       slice = m_SliceNumbers[this->m_ViewOrientation];
+      time = m_TimeSliceNumbers[this->m_ViewOrientation];
+      magnification = m_MagnificationFactors[this->m_ViewOrientation];
     }
-    this->SetSliceNumber(slice);
 
+    this->SetSliceNumber(slice);
+    this->SetTime(time);
+    this->SetMagnificationFactor(magnification);
+
+    // Sort out display geometry (basically setting magnification, not camera position).
     baseRenderer->GetDisplayGeometry()->Fit();
-    this->RequestUpdate();
   }
 }
 

@@ -254,10 +254,13 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_DropThumbnailRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropThumbnailRadioButtonToggled(bool)));
   connect(m_BindWindowsCheckBox, SIGNAL(clicked(bool)), this, SLOT(OnBindWindowsCheckboxClicked(bool)));
 
+  m_DropSingleRadioButton->blockSignals(true);
   m_DropSingleRadioButton->setChecked(true);
+  m_DropSingleRadioButton->blockSignals(false);
+
   this->m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_SINGLE);
 
-  this->SetLayoutSize(m_DefaultNumberOfRows, m_DefaultNumberOfColumns);
+  this->SetLayoutSize(m_DefaultNumberOfRows, m_DefaultNumberOfColumns, false);
   this->SetSelectedWindow(0);
 }
 
@@ -293,57 +296,57 @@ unsigned int QmitkMIDASMultiViewWidget::GetColumnFromIndex(unsigned int i)
 
 void QmitkMIDASMultiViewWidget::On1x1ButtonPressed()
 {
-  this->SetLayoutSize(1,1);
+  this->SetLayoutSize(1,1, false);
 }
 
 void QmitkMIDASMultiViewWidget::On1x2ButtonPressed()
 {
-  this->SetLayoutSize(1,2);
+  this->SetLayoutSize(1,2, false);
 }
 
 void QmitkMIDASMultiViewWidget::On2x1ButtonPressed()
 {
-  this->SetLayoutSize(2,1);
+  this->SetLayoutSize(2,1, false);
 }
 
 void QmitkMIDASMultiViewWidget::On3x1ButtonPressed()
 {
-  this->SetLayoutSize(3,1);
+  this->SetLayoutSize(3,1, false);
 }
 
 void QmitkMIDASMultiViewWidget::On1x3ButtonPressed()
 {
-  this->SetLayoutSize(1,3);
+  this->SetLayoutSize(1,3, false);
 }
 
 void QmitkMIDASMultiViewWidget::On2x2ButtonPressed()
 {
-  this->SetLayoutSize(2,2);
+  this->SetLayoutSize(2,2, false);
 }
 
 void QmitkMIDASMultiViewWidget::On3x2ButtonPressed()
 {
-  this->SetLayoutSize(3,2);
+  this->SetLayoutSize(3,2, false);
 }
 
 void QmitkMIDASMultiViewWidget::On2x3ButtonPressed()
 {
-  this->SetLayoutSize(2,3);
+  this->SetLayoutSize(2,3, false);
 }
 
 void QmitkMIDASMultiViewWidget::On5x5ButtonPressed()
 {
-  this->SetLayoutSize(5,5);
+  this->SetLayoutSize(5,5, false);
 }
 
 void QmitkMIDASMultiViewWidget::OnRowsSliderValueChanged(int r)
 {
-  this->SetLayoutSize((unsigned int)r, (unsigned int)m_ColumnsSpinBox->value());
+  this->SetLayoutSize((unsigned int)r, (unsigned int)m_ColumnsSpinBox->value(), false);
 }
 
 void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 {
-  this->SetLayoutSize((unsigned int)m_RowsSpinBox->value(), (unsigned int)c);
+  this->SetLayoutSize((unsigned int)m_RowsSpinBox->value(), (unsigned int)c, false);
 }
 
 void QmitkMIDASMultiViewWidget::OnBindWindowsCheckboxClicked(bool)
@@ -358,8 +361,41 @@ unsigned int QmitkMIDASMultiViewWidget::GetIndexFromRowAndColumn(unsigned int r,
   return r*m_MaxCols + c;
 }
 
-void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns)
+void QmitkMIDASMultiViewWidget::EnableWidgetsForThumbnailMode(bool isThumbnailMode)
 {
+  bool isEnabledInThumbnailMode = !isThumbnailMode;
+  m_1x1LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_1x2LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_2x1LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_3x1LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_2x2LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_1x3LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_3x2LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_2x3LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_5x5LayoutButton->setEnabled(isEnabledInThumbnailMode);
+  m_RowsSpinBox->setEnabled(isEnabledInThumbnailMode);
+  m_RowsLabel->setEnabled(isEnabledInThumbnailMode);
+  m_ColumnsSpinBox->setEnabled(isEnabledInThumbnailMode);
+  m_ColumnsLabel->setEnabled(isEnabledInThumbnailMode);
+}
+
+void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode)
+{
+
+  // We need to remember the "previous" number of rows and columns, so when we switch out
+  // of thumbnail mode, we know how many rows and columns to revert to.
+  if (isThumbnailMode)
+  {
+    m_NumberOfRowsInNonThumbnailMode = m_RowsSpinBox->value();
+    m_NumberOfColumnsInNonThumbnailMode = m_ColumnsSpinBox->value();
+  }
+  else
+  {
+    // otherwise we remember the "next" number of rows and columns.
+    m_NumberOfRowsInNonThumbnailMode = numberOfRows;
+    m_NumberOfColumnsInNonThumbnailMode = numberOfColumns;
+  }
+
   // Remember, all widgets are created, we just make them visible/invisible.
   for(unsigned int r = 0; r < m_MaxRows; r++)
   {
@@ -419,6 +455,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
     }
   }
   this->RequestUpdateAll();
+  this->PublishNavigationSettings();
 }
 
 void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(QmitkMIDASMultiViewVisibilityManager::MIDASDefaultInterpolationType interpolationType)
@@ -436,6 +473,8 @@ void QmitkMIDASMultiViewWidget::OnDropSingleRadioButtonToggled(bool toggled)
   if (toggled)
   {
     m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_SINGLE);
+    this->SetLayoutSize(m_NumberOfRowsInNonThumbnailMode, m_NumberOfColumnsInNonThumbnailMode, false);
+    this->EnableWidgetsForThumbnailMode(false);
   }
 }
 
@@ -444,6 +483,8 @@ void QmitkMIDASMultiViewWidget::OnDropMultipleRadioButtonToggled(bool toggled)
   if (toggled)
   {
     m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_MULTIPLE);
+    this->SetLayoutSize(m_NumberOfRowsInNonThumbnailMode, m_NumberOfColumnsInNonThumbnailMode, false);
+    this->EnableWidgetsForThumbnailMode(false);
   }
 }
 
@@ -452,7 +493,8 @@ void QmitkMIDASMultiViewWidget::OnDropThumbnailRadioButtonToggled(bool toggled)
   if (toggled)
   {
     m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_ALL);
-    this->SetLayoutSize(m_MaxRows, m_MaxCols);
+    this->SetLayoutSize(m_MaxRows, m_MaxCols, true);
+    this->EnableWidgetsForThumbnailMode(true);
   }
 }
 
@@ -463,39 +505,45 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkMIDASRenderWindow *window, s
 
 void QmitkMIDASMultiViewWidget::PublishNavigationSettings()
 {
-  UpdateMIDASViewingControlsRangeInfo rangeInfo;
-  rangeInfo.minSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinSlice();
-  rangeInfo.maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxSlice();
-  rangeInfo.minMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinMagnification();
-  rangeInfo.maxMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxMagnification();
-
-  emit UpdateMIDASViewingControlsRange(rangeInfo);
-
-  UpdateMIDASViewingControlsInfo currentInfo;
-  currentInfo.currentSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
-  currentInfo.currentMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
-
-  QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = this->m_SingleViewWidgets[m_SelectedWindow]->GetViewOrientation();
-  if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL)
+  if (this->isVisible())
   {
-    currentInfo.isAxial = true;
-    currentInfo.isSagittal = false;
-    currentInfo.isCoronal = false;
-  }
-  else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL)
-  {
-    currentInfo.isAxial = false;
-    currentInfo.isSagittal = true;
-    currentInfo.isCoronal = false;
-  }
-  else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL)
-  {
-    currentInfo.isAxial = false;
-    currentInfo.isSagittal = false;
-    currentInfo.isCoronal = true;
-  }
+    UpdateMIDASViewingControlsRangeInfo rangeInfo;
+    rangeInfo.minTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinTime();
+    rangeInfo.maxTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxTime();
+    rangeInfo.minSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinSlice();
+    rangeInfo.maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxSlice();
+    rangeInfo.minMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinMagnification();
+    rangeInfo.maxMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxMagnification();
 
-  emit UpdateMIDASViewingControlsValues(currentInfo);
+    emit UpdateMIDASViewingControlsRange(rangeInfo);
+
+    UpdateMIDASViewingControlsInfo currentInfo;
+    currentInfo.currentTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetTime();
+    currentInfo.currentSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
+    currentInfo.currentMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
+
+    QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = this->m_SingleViewWidgets[m_SelectedWindow]->GetViewOrientation();
+    if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL)
+    {
+      currentInfo.isAxial = true;
+      currentInfo.isSagittal = false;
+      currentInfo.isCoronal = false;
+    }
+    else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL)
+    {
+      currentInfo.isAxial = false;
+      currentInfo.isSagittal = true;
+      currentInfo.isCoronal = false;
+    }
+    else if (orientation == QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL)
+    {
+      currentInfo.isAxial = false;
+      currentInfo.isSagittal = false;
+      currentInfo.isCoronal = true;
+    }
+
+    emit UpdateMIDASViewingControlsValues(currentInfo);
+  }
 }
 
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
@@ -522,7 +570,6 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
   if (selectedWindow != -1)
   {
     this->SetSelectedWindow(selectedWindow);
-    this->PublishNavigationSettings();
   }
 }
 
@@ -534,6 +581,11 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnification
 void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 {
   this->m_SingleViewWidgets[m_SelectedWindow]->SetSliceNumber(sliceNumber);
+}
+
+void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
+{
+  this->m_SingleViewWidgets[m_SelectedWindow]->SetTime(timeStep);
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToAxial()

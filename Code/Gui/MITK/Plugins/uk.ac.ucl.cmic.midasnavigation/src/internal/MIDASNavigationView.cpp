@@ -80,6 +80,7 @@ void MIDASNavigationView::CreateQtPartControl( QWidget *parent )
     connect(m_NavigationViewControls->m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonToggled(bool)));
     connect(m_NavigationViewControls->m_SliceSelectionWidget, SIGNAL(SliceNumberChanged(int, int)), this, SLOT(OnSliceNumberChanged(int, int)));
     connect(m_NavigationViewControls->m_MagnificationFactorWidget, SIGNAL(MagnificationFactorChanged(int, int)), this, SLOT(OnMagnificationFactorChanged(int, int)));
+    connect(m_NavigationViewControls->m_TimeSelectionWidget, SIGNAL(IntegerValueChanged(int, int)), this, SLOT(OnTimeStepChanged(int, int)));
 
     m_Context = mitk::MIDASNavigationViewActivator::GetPluginContext();
     m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
@@ -94,9 +95,13 @@ void MIDASNavigationView::CreateQtPartControl( QWidget *parent )
     m_EventAdmin->publishSignal(this, SIGNAL(OrientationChanged(ctkDictionary)),
                               "uk/ac/ucl/cmic/midasnavigationview/ORIENTATION_CHANGED", Qt::QueuedConnection);
 
+    m_EventAdmin->publishSignal(this, SIGNAL(TimeChanged(ctkDictionary)),
+                              "uk/ac/ucl/cmic/midasnavigationview/TIME_CHANGED", Qt::QueuedConnection);
+
     ctkDictionary propsForSlot;
     propsForSlot[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/*";
     m_EventAdmin->subscribeSlot(this, SLOT(handleEvent(ctkEvent)), propsForSlot);
+
   }
 }
 
@@ -144,6 +149,13 @@ void MIDASNavigationView::OnMagnificationFactorChanged(int oldMagnificationFacto
   emit MagnificationChanged(properties);
 }
 
+void MIDASNavigationView::OnTimeStepChanged(int oldTimeStep, int newTimeStep)
+{
+  ctkDictionary properties;
+  properties["time_step"] = newTimeStep;
+  emit TimeChanged(properties);
+}
+
 void MIDASNavigationView::SetBlockSignals(bool blockSignals)
 {
   m_NavigationViewControls->m_AxialRadioButton->blockSignals(blockSignals);
@@ -151,6 +163,7 @@ void MIDASNavigationView::SetBlockSignals(bool blockSignals)
   m_NavigationViewControls->m_CoronalRadioButton->blockSignals(blockSignals);
   m_NavigationViewControls->m_SliceSelectionWidget->blockSignals(blockSignals);
   m_NavigationViewControls->m_MagnificationFactorWidget->blockSignals(blockSignals);
+  m_NavigationViewControls->m_TimeSelectionWidget->blockSignals(blockSignals);
 }
 
 void MIDASNavigationView::handleEvent(const ctkEvent& event)
@@ -178,6 +191,7 @@ void MIDASNavigationView::handleEvent(const ctkEvent& event)
       }
       m_NavigationViewControls->m_MagnificationFactorWidget->SetMagnificationFactor(event.getProperty("current_magnification").toInt());
       m_NavigationViewControls->m_SliceSelectionWidget->SetSliceNumber(event.getProperty("current_slice").toInt());
+      m_NavigationViewControls->m_TimeSelectionWidget->SetValue(event.getProperty("current_time").toInt());
     }
     else
     {
@@ -185,6 +199,8 @@ void MIDASNavigationView::handleEvent(const ctkEvent& event)
       m_NavigationViewControls->m_SliceSelectionWidget->SetMaximum(event.getProperty("max_slice").toInt());
       m_NavigationViewControls->m_MagnificationFactorWidget->SetMinimum(event.getProperty("min_magnification").toInt());
       m_NavigationViewControls->m_MagnificationFactorWidget->SetMaximum(event.getProperty("max_magnification").toInt());
+      m_NavigationViewControls->m_TimeSelectionWidget->SetMinimum(event.getProperty("min_time").toInt());
+      m_NavigationViewControls->m_TimeSelectionWidget->SetMaximum(event.getProperty("max_time").toInt());
     }
 
     // Turn signals back on again.
