@@ -35,6 +35,10 @@ namespace mitk
 
   NIFTKMITKEXT_EXPORT bool IsNodeABinaryImage(const mitk::DataNode::Pointer node);
 
+  NIFTKMITKEXT_EXPORT mitk::DataNode::Pointer FindFirstParent(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node);
+
+  NIFTKMITKEXT_EXPORT mitk::DataNode::Pointer FindParentGreyScaleImage(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node);
+
   NIFTKMITKEXT_EXPORT mitk::DataNode::Pointer FindFirstParentImage(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node, bool lookForBinary );
 
   NIFTKMITKEXT_EXPORT mitk::DataNode::Pointer FindNthGreyScaleImage(const std::vector<mitk::DataNode*> &nodes, int n );

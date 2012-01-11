@@ -27,6 +27,7 @@
 #include "QmitkMIDASSingleViewWidget.h"
 #include "mitkBaseRenderer.h"
 #include "mitkVtkResliceInterpolationProperty.h"
+#include "mitkDataStorageUtils.h"
 #include "vtkRenderWindow.h"
 
 QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage)
@@ -199,10 +200,87 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
   (m_ListOfDataNodes[windowIndex]).push_back(node);
 }
 
+mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, unsigned int nodeIndex)
+{
+  mitk::TimeSlicedGeometry::Pointer geometry = NULL;
+  int indexThatWeActuallyUsed = -1;
+
+  // If nodeIndex < 0, we are choosing the best geometry from all available nodes.
+  if (nodeIndex < 0)
+  {
+
+    // First try to find an image geometry, and if so, use the first one.
+    mitk::Image::Pointer image = NULL;
+    for (unsigned int i = 0; i < nodes.size(); i++)
+    {
+      image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
+      if (image.IsNotNull())
+      {
+        geometry = image->GetTimeSlicedGeometry();
+        indexThatWeActuallyUsed = i;
+        break;
+      }
+    }
+
+    // Failing that, use the first geometry available.
+    if (geometry.IsNull())
+    {
+      for (unsigned int i = 0; i < nodes.size(); i++)
+      {
+        mitk::BaseData::Pointer data = nodes[i]->GetData();
+        if (data.IsNotNull())
+        {
+          geometry = data->GetTimeSlicedGeometry();
+          indexThatWeActuallyUsed = i;
+          break;
+        }
+      }
+    }
+  }
+  // So, the caller has nominated a specific node, lets just use that one.
+  else if (nodeIndex >= 0 && nodeIndex < nodes.size())
+  {
+    mitk::BaseData::Pointer data = nodes[nodeIndex]->GetData();
+    if (data.IsNotNull())
+    {
+      geometry = data->GetTimeSlicedGeometry();
+      indexThatWeActuallyUsed = nodeIndex;
+    }
+  }
+  // Essentially, the nodeIndex is garbage, so just pick the first one.
+  else
+  {
+    mitk::BaseData::Pointer data = nodes[0]->GetData();
+    if (data.IsNotNull())
+    {
+      geometry = data->GetTimeSlicedGeometry();
+      indexThatWeActuallyUsed = 0;
+    }
+  }
+
+  // In addition, (as MIDAS is an image based viewer), if the node is NOT a greyscale image,
+  // we try and search the parents of the node to find a greyscale image and use that one in preference.
+  // This assumes that derived datasets, such as point sets, surfaces, segmented volumes are correctly assigned to parents.
+  if (indexThatWeActuallyUsed != -1)
+  {
+    if (!mitk::IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
+    {
+      mitk::DataNode::Pointer node = FindParentGreyScaleImage(this->m_DataStorage, nodes[indexThatWeActuallyUsed]);
+      if (node.IsNotNull())
+      {
+        mitk::BaseData::Pointer data = nodes[0]->GetData();
+        if (data.IsNotNull())
+        {
+          geometry = data->GetTimeSlicedGeometry();
+        }
+      }
+    }
+  }
+  return geometry;
+}
+
 void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
-
-  std::cerr << "Matt, QmitkMIDASMultiViewVisibilityManager::OnNodesDropped" << std::endl;
 
   // Works out the initial window index that the image is dropped into.
   // Remember:
@@ -225,87 +303,120 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
 
     if (m_DropType == MIDAS_DROP_TYPE_SINGLE)
     {
-      // Need to find at least one sliced geometry from an image
-      mitk::Image::Pointer image = NULL;
+
+      MITK_INFO << "Dropped single" << std::endl;
+
+      mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
+      if (geometry.IsNull())
+      {
+        MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into window " << windowIndex << ", could not find geometry which must be a programming bug." << std::endl;
+        return;
+      }
+
+      // Clear all nodes from the single window denoted by windowIndex (the one that was dropped into).
+      this->RemoveNodesFromWindow(windowIndex);
+
+      // Then add all nodes into the same window denoted by windowIndex (the one that was dropped into).
       for (unsigned int i = 0; i < nodes.size(); i++)
       {
-        image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
-        if (image.IsNotNull())
-        {
-          break;
-        }
+        this->AddNodeToWindow(windowIndex, nodes[i]);
       }
 
-      // Only continue if at least one object was an image
-      if(image.IsNotNull())
-      {
-        // Clear all nodes from the single window denoted by windowIndex (the one that was dropped into).
-        this->RemoveNodesFromWindow(windowIndex);
+      // Then set up geometry of that single window.
+      m_ListOfWidgets[windowIndex]->InitializeGeometry(geometry.GetPointer());
+      m_ListOfWidgets[windowIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
 
-        // Then add all nodes into the same window denoted by windowIndex (the one that was dropped into).
-        for (unsigned int i = 0; i < nodes.size(); i++)
-        {
-          this->AddNodeToWindow(windowIndex, nodes[i]);
-        }
-
-        // Initialise geometry according to first image
-        mitk::TimeSlicedGeometry::Pointer geometry = image->GetTimeSlicedGeometry();
-        m_ListOfWidgets[windowIndex]->InitializeGeometry(geometry.GetPointer());
-        m_ListOfWidgets[windowIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
-        m_ListOfWidgets[windowIndex]->RequestUpdate();
-      }
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
     {
       MITK_INFO << "Dropped multiple" << std::endl;
 
       // Work out which window we are actually dropping into.
-      // We aim to put one image, in each of consecutive windows.
+      // We aim to put one object, in each of consecutive windows.
       // If we hit the end (of the 5x5=25 list), we go back to zero.
 
-      // Need to find at least one sliced geometry from an image
-      mitk::Image::Pointer image = NULL;
+      unsigned int dropIndex = windowIndex;
+
       for (unsigned int i = 0; i < nodes.size(); i++)
       {
-        image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
-        if (image.IsNotNull())
+        while (dropIndex < m_ListOfWidgets.size() && !m_ListOfWidgets[dropIndex]->isVisible())
         {
-          break;
+          // i.e. if the window we are in, is not visible, keep looking
+          dropIndex++;
+        }
+        if (dropIndex == m_ListOfWidgets.size())
+        {
+          // give up? Or we could go back to zero?
+          dropIndex = 0;
+        }
+
+        mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, i);
+        if (geometry.IsNull())
+        {
+          MITK_ERROR << "Error, dropping node " << i << ", from a list of " << nodes.size() << " nodes into window " << dropIndex << ", could not find geometry which must be a programming bug." << std::endl;
+          return;
+        }
+
+        // So we are removing all images that are present from the window denoted by dropIndex,
+        this->RemoveNodesFromWindow(dropIndex);
+
+        // ...and then adding a single image to that window, denoted by dropIndex.
+        this->AddNodeToWindow(dropIndex, nodes[i]);
+
+        // Initialise geometry according to first image
+        m_ListOfWidgets[dropIndex]->InitializeGeometry(geometry.GetPointer());
+        m_ListOfWidgets[dropIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
+
+        // We need to always increment by at least one window, or else infinite loop-a-rama.
+        dropIndex++;
+      }
+    }
+    else if (m_DropType == MIDAS_DROP_TYPE_ALL)
+    {
+      MITK_INFO << "Dropped thumbnail" << std::endl;
+
+      mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
+      if (geometry.IsNull())
+      {
+        MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into window " << windowIndex << ", could not find geometry which must be a programming bug." << std::endl;
+        return;
+      }
+
+      // Sort out visibility properties and the like for every window.
+      for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
+      {
+        // Clear all nodes from every window.
+        this->RemoveNodesFromWindow(i);
+
+        // Then add all nodes into every window.
+        for (unsigned int j = 0; j < nodes.size(); j++)
+        {
+          this->AddNodeToWindow(i, nodes[j]);
         }
       }
 
-      // Only continue if at least one object was an image
-      if (image.IsNotNull())
+      // Then sort out geometry for every window, with an increasing slice number evenly throughout the volume.
+      for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
       {
-        unsigned int dropIndex = windowIndex;
-        for (unsigned int i = 0; i < nodes.size(); i++)
-        {
-          while (dropIndex < m_ListOfWidgets.size() && !m_ListOfWidgets[dropIndex]->isVisible())
-          {
-            // i.e. if the window we are in, is not visible, keep looking
-            dropIndex++;
-          }
-          if (dropIndex == m_ListOfWidgets.size())
-          {
-            // give up? Or we could go back to zero?
-            dropIndex = 0;
-          }
+        m_ListOfWidgets[i]->InitializeGeometry(geometry.GetPointer());
+        m_ListOfWidgets[i]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
 
-          // So we are removing all images that are present from the window denoted by dropIndex,
-          this->RemoveNodesFromWindow(dropIndex);
+        unsigned int minSlice = m_ListOfWidgets[i]->GetMinSlice();
+        unsigned int maxSlice = m_ListOfWidgets[i]->GetMaxSlice();
+        unsigned int numberOfEdgeSlicesToIgnore = (maxSlice - minSlice + 1) * 0.05; // ignore first and last 5 percent, as usually junk.
+        unsigned int remainingNumberOfSlices = (maxSlice - minSlice + 1) - 2 * numberOfEdgeSlicesToIgnore;
+        float fraction = (float)i/(float)(m_ListOfWidgets.size());
+        unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + remainingNumberOfSlices*fraction;
 
-          // ...and then adding a single image to that window, denoted by dropIndex.
-          this->AddNodeToWindow(dropIndex, nodes[i]);
+        MITK_INFO << "Dropping thumbnail, i=" << i \
+            << ", minSlice=" << minSlice \
+            << ", maxSlice=" << maxSlice \
+            << ", numberOfEdgeSlicesToIgnore=" << numberOfEdgeSlicesToIgnore \
+            << ", remainingNumberOfSlices=" << remainingNumberOfSlices \
+            << ", fraction=" << fraction \
+            << ", chosenSlice=" << chosenSlice << std::endl;
+        m_ListOfWidgets[i]->SetSliceNumber(chosenSlice);
 
-          // Initialise geometry according to first image
-          mitk::TimeSlicedGeometry::Pointer geometry = image->GetTimeSlicedGeometry();
-          m_ListOfWidgets[dropIndex]->InitializeGeometry(geometry.GetPointer());
-          m_ListOfWidgets[dropIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
-          m_ListOfWidgets[dropIndex]->RequestUpdate();
-
-          // We need to always increment by at least one window, or else infinite loop-a-rama.
-          dropIndex++;
-        }
       }
     }
   }

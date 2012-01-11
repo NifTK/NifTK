@@ -131,6 +131,9 @@ signals:
 
 protected:
 
+    // overloaded paint handler
+    virtual void paintEvent(QPaintEvent* event);
+
 protected slots:
 
   void On1x1ButtonPressed();

@@ -149,12 +149,6 @@ public:
   /// \brief Get the current magnification factor.
   int GetMagnificationFactor() const;
 
-  /// \brief Disconnects the QmitkMIDASRenderWindow from the mitk::RenderingManager.
-  void RemoveFromRenderingManager();
-
-  /// \brief Connects the QmitkMIDASRenderWindow to the mitk::RenderingManager.
-  void AddToRenderingManager();
-
   /// \brief Sets the view orientation to either axial, sagittal or coronal.
   void SetViewOrientation(MIDASViewOrientation orientation);
 
@@ -169,6 +163,11 @@ public:
 
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void ForceUpdate();
+
+protected:
+
+    // overloaded paint handler
+    virtual void paintEvent(QPaintEvent* event);
 
 private:
 

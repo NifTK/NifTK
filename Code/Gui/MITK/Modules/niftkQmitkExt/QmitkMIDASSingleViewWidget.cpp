@@ -57,16 +57,19 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
   m_MinimumMagnification = minimumMagnification;
   m_MaximumMagnification = maximumMagnification;
 
-  // Create the main QmitkMIDASRenderWindow, which registers it with the Global RenderingManager.
-  m_RenderWindow = new QmitkMIDASRenderWindow(this, windowName);
+  // Create our own RenderingManager, so we are NOT using the Global one.
+  m_RenderingManager = mitk::RenderingManager::New();
+  m_RenderingManager->SetConstrainedPaddingZooming(false);
+
+  // Create the main QmitkMIDASRenderWindow, and pass in our OWN RenderingManager.
+  m_RenderWindow = new QmitkMIDASRenderWindow(this, windowName, m_RenderingManager);
   m_RenderWindow->setAcceptDrops(true);
-  m_RenderWindow->setEnabled(false);
-  m_RenderWindow->setVisible(false);
 
-  // Remove from the Global RenderingManager before we get asked (by any another method, anywhere in application)
-  // to render when this widget is not visible which causes InvalidDrawable on Mac, and invalid X windows and crash on Linux.
-  mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_RenderWindow->GetVtkRenderWindow());
+  // But then we need to register the slice navigation controller with our own rendering manager.
+  m_SliceNavigationController = m_RenderWindow->GetSliceNavigationController();
+  m_SliceNavigationController->SetRenderingManager(m_RenderingManager);
 
+  // Create frames/backgrounds.
   m_RenderWindowFrame = mitk::RenderWindowFrame::New();
   m_RenderWindowFrame->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_RenderWindowFrame->Enable(
@@ -85,11 +88,6 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
       m_BackgroundColor.greenF(),
       m_BackgroundColor.blueF());
   m_RenderWindowBackground->Enable();
-
-  // Sort out our Rendering controller stuff.
-  m_RenderingManager = mitk::RenderingManager::New();
-  m_SliceNavigationController = m_RenderWindow->GetSliceNavigationController();
-  m_SliceNavigationController->SetRenderingManager(m_RenderingManager);
 
   // But we have to remember the slice, magnification and orientation for 3 views, so initilise these to invalid.
   for (int i = 0; i < 3; i++)
@@ -179,22 +177,22 @@ QColor QmitkMIDASSingleViewWidget::GetBackgroundColor() const
 
 unsigned int QmitkMIDASSingleViewWidget::GetMinSlice() const
 {
-  return this->m_SliceNavigationController->GetSlice()->GetRangeMin();
+  return 0;
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetMaxSlice() const
 {
-  return this->m_SliceNavigationController->GetSlice()->GetRangeMax();
+  return this->m_SliceNavigationController->GetSlice()->GetSteps() -1;
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetMinTime() const
 {
-  return this->m_SliceNavigationController->GetTime()->GetRangeMin();
+  return 0;
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetMaxTime() const
 {
-  return this->m_SliceNavigationController->GetTime()->GetRangeMax();
+  return this->m_SliceNavigationController->GetTime()->GetSteps() -1;
 }
 
 int QmitkMIDASSingleViewWidget::GetMinMagnification() const
@@ -210,7 +208,7 @@ int QmitkMIDASSingleViewWidget::GetMaxMagnification() const
 void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   this->m_DataStorage = dataStorage;
-
+  m_RenderingManager->SetDataStorage(dataStorage);
   m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
 }
 
@@ -276,18 +274,8 @@ int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
   return this->m_MagnificationFactor;
 }
 
-void QmitkMIDASSingleViewWidget::RemoveFromRenderingManager()
+void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent* event)
 {
-  this->m_RenderWindow->setEnabled(false);
-  this->m_RenderWindow->setVisible(false);
-  this->m_RenderingManager->RemoveRenderWindow(this->m_RenderWindow->GetVtkRenderWindow());
-}
-
-void QmitkMIDASSingleViewWidget::AddToRenderingManager()
-{
-  this->m_RenderingManager->AddRenderWindow(this->m_RenderWindow->GetVtkRenderWindow());
-  this->m_RenderWindow->setEnabled(true);
-  this->m_RenderWindow->setVisible(true);
   this->RequestUpdate();
 }
 
@@ -310,18 +298,22 @@ QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASSingleViewWidget::Get
 
 void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orientation)
 {
-  if (   orientation != MIDAS_VIEW_UNKNOWN
-      && this->m_Geometry != NULL)
+  if (orientation != MIDAS_VIEW_UNKNOWN && this->m_Geometry != NULL)
   {
-    // Store current settings
-    if (m_RenderWindow->GetSliceNavigationController()->GetSlice()->GetPos() != 0)
+    // Store current settings if they were in fact for a valid orientation.
+    if (m_ViewOrientation != MIDAS_VIEW_UNKNOWN)
     {
-      m_SliceNumbers[this->m_ViewOrientation] = m_RenderWindow->GetSliceNavigationController()->GetSlice()->GetPos();
+      m_SliceNumbers[this->m_ViewOrientation] = m_SliceNumber;
+      m_TimeSliceNumbers[this->m_ViewOrientation] = m_TimeSliceNumber;
+      m_MagnificationFactors[this->m_ViewOrientation] = m_MagnificationFactor;
+      m_ViewOrientations[this->m_ViewOrientation] = m_ViewOrientation;
+
+      MITK_INFO << "QmitkMIDASSingleViewWidget::SetViewOrientation current orientation=" << m_ViewOrientation \
+          << ", so storing slice=" << m_SliceNumber << ", time=" << m_TimeSliceNumber << ", magnification=" << m_MagnificationFactor \
+          << ", switching to new orientation=" << orientation << std::endl;
     }
 
-    vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
-    assert(vtkWindow);
-
+    // We need to have a mitk::BaseRenderer to define world and view geometry.
     mitk::BaseRenderer::Pointer baseRenderer = this->m_SliceNavigationController->GetRenderer();
     assert(baseRenderer);
 
@@ -375,20 +367,17 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     {
 
       mitk::Vector3D axisVector = this->m_Geometry->GetAxisVector(i);
-      mitk::Vector3D transformedAxis;
 
-      this->m_Geometry->IndexToWorld(axisVector, transformedAxis);
-
-      int axisInWorldSpace = -1;
+      unsigned int axisInWorldSpace = 0;
       for (unsigned int j = 0; j < 3; j++)
       {
-        if (fabs(transformedAxis[j]) > 0.5)
+        if (fabs(axisVector[j]) > 0.5)
         {
           axisInWorldSpace = j;
         }
       }
       transformedSpacing[axisInWorldSpace] = originalSpacing[i];
-      transformedExtent[axisInWorldSpace] = fabs(transformedAxis[axisInWorldSpace]);
+      transformedExtent[axisInWorldSpace] = fabs(axisVector[axisInWorldSpace]);
     }
 
     mitk::Geometry3D::BoundsArrayType originalBoundingBox = this->m_Geometry->GetBounds();
@@ -405,7 +394,13 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     transformedGeometry->SetSpacing(transformedSpacing);
     transformedGeometry->SetOrigin(transformedOrigin);
     transformedGeometry->SetBounds(transformedBoundingBox);
+
+    MITK_INFO << "QmitkMIDASSingleViewWidget::SetViewOrientation: spacing=" << transformedSpacing \
+        << ", origin=" << transformedOrigin \
+        << ", bounding=" << transformedBoundingBox << std::endl;
+
     baseRenderer->SetWorldGeometry(transformedGeometry);
+    m_SliceNavigationController->SetInputWorldGeometry(transformedGeometry);
 
     // Set the view to the new orientation
     this->m_ViewOrientation = orientation;
@@ -427,12 +422,21 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       m_SliceNavigationController->Update(direction, true, true, false);
     }
 
-    int slice = -1;
+    unsigned int slice = -1;
     if (m_ViewOrientations[orientation] == MIDAS_VIEW_UNKNOWN)
     {
       // No previous slice, so default to central slice.
       unsigned int steps = m_SliceNavigationController->GetSlice()->GetSteps();
+      int min = m_SliceNavigationController->GetSlice()->GetRangeMin();
+      int max = m_SliceNavigationController->GetSlice()->GetRangeMax();
+
       slice = (int)((steps - 1)/2);
+
+      MITK_INFO << "QmitkMIDASSingleViewWidget::calculating slice, steps=" << steps \
+          << ", min=" << min \
+          << ", max=" << max \
+          << ", slice=" << slice \
+          << std::endl;
     }
     else
     {
@@ -447,7 +451,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
 
 void QmitkMIDASSingleViewWidget::InitializeGeometry(mitk::Geometry3D::Pointer geometry)
 {
-  // Store the geometry for later
+  // Store the geometry for later. This comes from the image, as so should be a TimeSlicedGeometry (subclass of Geometry3D).
   this->m_Geometry = geometry;
 
   // If we reset these variables, then code that works out orientation should re-initialize,

@@ -131,6 +131,16 @@ private:
   // For a node, will set the rendering window specific visibility property to match the global visibility property, so you can toggle the image in the data manager.
   void UpdateNodeProperties(mitk::DataNode* node);
 
+  // Will retrieve the correct geometry from a list of nodes.
+  // If nodeIndex < 0 (for single drop case).
+  //   Search for first available image
+  //   Failing that, first geometry.
+  // If node index >=0, and < nodes.size()
+  //   Picks out the geometry of the object for that index.
+  // Else
+  //   Picks out the first geometry.
+  mitk::TimeSlicedGeometry::Pointer GetGeometry(std::vector<mitk::DataNode*> nodes, unsigned int nodeIndex);
+
   // This object MUST be connected to a datastorage, hence it is passed in via the constructor.
   mitk::DataStorage::Pointer m_DataStorage;
 

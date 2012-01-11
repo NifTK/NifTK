@@ -30,6 +30,7 @@
 #include <QWidget>
 #include <QEvent>
 #include "QmitkRenderWindow.h"
+#include "mitkRenderingManager.h"
 
 class QDragEnterEvent;
 class QDropEvent;
@@ -48,7 +49,7 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASRenderWindow : public QmitkRenderWindow
 public:
 
   /// \brief We pass the parent widget, and the name in, which gets passed to the base class QmitkRenderWindow.
-  QmitkMIDASRenderWindow(QWidget *parent, QString name);
+  QmitkMIDASRenderWindow(QWidget *parent, QString name, mitk::RenderingManager* renderingManager);
 
 signals:
 

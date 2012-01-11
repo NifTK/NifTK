@@ -26,9 +26,10 @@
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QtGui>
+#include "mitkRenderingManager.h"
 
-QmitkMIDASRenderWindow::QmitkMIDASRenderWindow(QWidget *parent, QString name)
-  : QmitkRenderWindow(parent, name)
+QmitkMIDASRenderWindow::QmitkMIDASRenderWindow(QWidget *parent, QString name,  mitk::RenderingManager* renderingManager)
+  : QmitkRenderWindow(parent, name, NULL, renderingManager)
 {
    this->setAcceptDrops(true);
 }

@@ -182,8 +182,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkMIDASRenderWindow %1").arg(i), -5, 20);
     widget->SetContentsMargins(0);
     widget->SetSpacing(0);
-    widget->setVisible(false);
-    widget->setEnabled(false);
     widget->setObjectName(tr("QmitkMIDASSingleViewWidget %1").arg(i));
 
     QmitkMIDASRenderWindow* widgetWindow = widget->GetRenderWindow();
@@ -259,7 +257,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_DropSingleRadioButton->setChecked(true);
   this->m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_SINGLE);
 
-  this->SetLayoutSize(5, 5);
+  this->SetLayoutSize(m_DefaultNumberOfRows, m_DefaultNumberOfColumns);
   this->SetSelectedWindow(0);
 }
 
@@ -368,19 +366,13 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
     for (unsigned int c = 0; c < m_MaxCols; c++)
     {
       int viewerIndex = this->GetIndexFromRowAndColumn(r, c);
+      bool active = true;
 
       if (r >= numberOfRows || c >= numberOfColumns)
       {
-        m_SingleViewWidgets[viewerIndex]->RemoveFromRenderingManager();
-        m_SingleViewWidgets[viewerIndex]->setEnabled(false);
-        m_SingleViewWidgets[viewerIndex]->setVisible(false);
+        active = false;
       }
-      else
-      {
-        m_SingleViewWidgets[viewerIndex]->setEnabled(true);
-        m_SingleViewWidgets[viewerIndex]->setVisible(true);
-        m_SingleViewWidgets[viewerIndex]->AddToRenderingManager();
-      }
+      m_SingleViewWidgets[viewerIndex]->setVisible(active);
     }
   }
 
@@ -562,11 +554,16 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
   this->PublishNavigationSettings();
 }
 
+void QmitkMIDASMultiViewWidget::paintEvent(QPaintEvent* event)
+{
+  this->RequestUpdateAll();
+}
+
 void QmitkMIDASMultiViewWidget::RequestUpdateAll()
 {
   for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    if (m_SingleViewWidgets[i]->isEnabled() && m_SingleViewWidgets[i]->isVisible())
+    if (m_SingleViewWidgets[i]->isVisible())
     {
       m_SingleViewWidgets[i]->RequestUpdate();
     }
@@ -577,7 +574,7 @@ void QmitkMIDASMultiViewWidget::ForceUpdateAll()
 {
   for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    if (m_SingleViewWidgets[i]->isEnabled() && m_SingleViewWidgets[i]->isVisible())
+    if (m_SingleViewWidgets[i]->isVisible())
     {
       m_SingleViewWidgets[i]->ForceUpdate();
     }

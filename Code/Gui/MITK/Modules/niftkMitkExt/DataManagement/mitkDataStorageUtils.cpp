@@ -165,4 +165,43 @@ namespace mitk
     return FindNthBinaryImage(nodes, 1);
   }
 
+  mitk::DataNode::Pointer FindFirstParent(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node)
+  {
+    mitk::DataNode::Pointer result = NULL;
+
+    mitk::DataStorage::SetOfObjects::ConstPointer possibleParents = storage->GetSources(node);
+    if (possibleParents->size() > 0)
+    {
+      mitk::DataNode::Pointer result = (*possibleParents)[0];
+    }
+    return result;
+  }
+
+  mitk::DataNode::Pointer FindParentGreyScaleImage(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node)
+  {
+    mitk::DataNode::Pointer result = NULL;
+
+    if (node.IsNotNull())
+    {
+      mitk::DataNode::Pointer nodeToCheck = node;
+      mitk::DataNode::Pointer parent = NULL;
+      do
+      {
+        parent = FindFirstParent(storage, nodeToCheck);
+        if (parent.IsNotNull())
+        {
+          if (IsNodeAGreyScaleImage(parent))
+          {
+            result = parent;
+            break;
+          }
+          else
+          {
+            nodeToCheck = parent;
+          }
+        }
+      } while (parent.IsNotNull());
+    }
+    return result;
+  }
 }
