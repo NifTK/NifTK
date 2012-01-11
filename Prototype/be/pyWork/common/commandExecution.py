@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import findExecutable
-import shlex, time, subprocess
+import shlex, time, subprocess, os
 
 
-def runCommand( cmdIn, paramsIn, logFileName=None ) :
+def runCommand( cmdIn, paramsIn, logFileName=None, workDir=None ) :
     
+    if workDir != None :
+        curDir = os.getcwd()
+        os.chdir( workDir )
+        
     # Is the executable available?
     if findExecutable.findExecutable( cmdIn ) == None:
         print('Cannot find %s in path. Sorry.' % cmdIn )
@@ -27,6 +31,9 @@ def runCommand( cmdIn, paramsIn, logFileName=None ) :
 
     print('Return code: ' + str(ret) )
         
+    if workDir != None :
+        os.chdir( curDir )
+    
     toc = time.clock()
     
     print('Done. This took %.2fs' %( toc-tic ) )

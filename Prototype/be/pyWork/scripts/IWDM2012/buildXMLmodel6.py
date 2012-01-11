@@ -24,6 +24,8 @@ import materialSetGenerator
 import commandExecution as cmdEx
 import f3dRegistrationTask as f3dTask
 import feirRegistrationTask as feirTask
+import os
+
 
 # starting from the images
 # 1) soft tissue (currently seen as homogeneous material... to be corrected later on)
@@ -373,6 +375,13 @@ threshParams += ' -out 0 '
 
 cmdEx.runCommand( 'niftkThreshold', threshParams )
 
+#
+# Crop the outside to avoid filling holes in the mesh...
+#
+cropParams = defChestWallImg + ' ' + defChestWallImg + ' 220 270 190 0 '
+padParams  = defChestWallImg + ' ' + defChestWallImg + ' 230 280 200 0 '
+cmdEx.runCommand( 'niftkPadImage', cropParams )
+cmdEx.runCommand( 'niftkPadImage', padParams  )
 
 
 #
@@ -397,26 +406,28 @@ medSurfCWParams += medSurferParms
 
 cmdEx.runCommand( 'medSurfer', medSurfCWParams )
     
-# 
+
 # convert the vtk mesh into stl format
-#
-    
 vtk2stl.vtk2stl( [defChestWallSurfMeshVTK] )
 defChestWallSurfMeshSTL      = defChestWallSurfMeshVTK.split('.')[0] + '.stl'
 improDefChestWallSurfMeshSTL = defChestWallSurfMeshVTK.split('.')[0] + '_impro.stl'
-# run meshlab improvements 
 
+# run meshlab improvements 
 meshLabCommand         = 'meshlabserver'
-meshlabScript          = meshDir + 'surfProcessig_LSmooth_closeHoles_UMResampling_IsoResampling_test.mlx'
-meshLabParamrs         = ' -i ' + defChestWallSurfMeshSTL 
+meshlabScript          = meshDir + 'surfProcessig.mlx'
+meshLabParamrs         = ' -i ' + defChestWallSurfMeshSTL
 meshLabParamrs        += ' -o ' + improDefChestWallSurfMeshSTL
 meshLabParamrs        += ' -s ' + meshlabScript
-meshLabParamrs        += ' -om fn vn '
 
-cmdEx.runCommand( meshLabCommand, meshLabParamrs )
+
+# TODO: currently needs to be done manually. meshlabserver outputs corrupt files 
+cmdEx.runCommand( meshLabCommand, meshLabParamrs, workDir=meshDir )
 
 # now convert the output to ASCII format
 stlBinary2stlASCII.stlBinary2stlASCII( improDefChestWallSurfMeshSTL )
+
+
+
 
 #
 # Now build the breast tissue model: 
@@ -424,7 +435,7 @@ stlBinary2stlASCII.stlBinary2stlASCII( improDefChestWallSurfMeshSTL )
 #
 
 #
-# Threshold label image
+# build the mesh 
 #
 
 

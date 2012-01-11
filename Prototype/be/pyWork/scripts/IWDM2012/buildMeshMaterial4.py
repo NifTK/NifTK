@@ -11,10 +11,12 @@ import commandExecution as cmdEx
 import vtk2stl
 import stlBinary2stlASCII
 
-chestWallMaskImage    = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh.nii'
-breastTissueMaskImage = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM2_Crp2-pad.nii'
-meshDir               = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
-origWorkDir           = os.getcwd()
+chestWallMaskImage     = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh.nii'
+breastTissueMaskImage  = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM2_Crp2-pad.nii'
+breastTissueMaskImage2 = 'W:/philipsBreastProneSupine/ManualSegmentation/FatGlandTissueMask2_Crp2_pad.nii'  # fat gland skin only
+
+meshDir                = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
+origWorkDir            = os.getcwd()
 os.chdir( meshDir )
 
 
@@ -22,6 +24,8 @@ chestWallSurfMeshSmesh = meshDir + 'chestWallSurf.smesh'
 chestWallSurfMeshVTK   = meshDir + 'chestWallSurf.vtk'
 breastSurfMeshSmesh    = meshDir + 'breastSurf.smesh'
 breastSurfMeshVTK      = meshDir + 'breastSurf.vtk'
+breastSurfMeshSmesh2   = meshDir + 'breastSurf2.smesh'
+breastSurfMeshVTK2     = meshDir + 'breastSurf2.vtk'
 
 
 # Parameters used for directory meshMaterials4
@@ -39,6 +43,15 @@ medSurfBreastParams += ' -vtk '  + breastSurfMeshVTK
 medSurfBreastParams += medSurferParms
 
 cmdEx.runCommand( 'medSurfer', medSurfBreastParams )
+
+
+# Build the soft tissue mesh 2:
+medSurfBreastParams2  = ' -img '  + breastTissueMaskImage2 
+medSurfBreastParams2 += ' -surf ' + breastSurfMeshSmesh2
+medSurfBreastParams2 += ' -vtk '  + breastSurfMeshVTK2
+medSurfBreastParams2 += medSurferParms
+
+cmdEx.runCommand( 'medSurfer', medSurfBreastParams2 )
 
 # Build the chest wall mesh (contact constraint):
 medSurfCWParams  = ' -img '  + chestWallMaskImage 
@@ -60,7 +73,7 @@ plotArraysAsMesh( smrChest.nodes[:,1:4], smrChest.facets[:,1:4] )
 
 
 # convert the breast and chest wall mesh to stl files for modification
-vtk2stl.vtk2stl([chestWallSurfMeshVTK, breastSurfMeshVTK])
+vtk2stl.vtk2stl([chestWallSurfMeshVTK, breastSurfMeshVTK, breastSurfMeshVTK2])
 
 ####################################################################
 # folder: meshImprovement
@@ -87,7 +100,7 @@ breastSurfBaseName     =  breastSurfMeshVTK.split('.')[0]
 breastSurfMeshSTL      = breastSurfBaseName + '.stl' 
 improBreastSurfMeshSTL = breastSurfBaseName + '_impro.stl'
 
-if not os.path.exists(breastSurfMeshSTL) :
+if not os.path.exists( breastSurfMeshSTL ) :
     print('ERRROR: Breast surface stl file does not exist.')
     exit()
     
@@ -95,7 +108,7 @@ if not os.path.exists(breastSurfMeshSTL) :
 
 meshLabCommand         = 'meshlabserver'
 meshlabScript          = meshDir + 'surfProcessing.mlx'
-meshLabParamrs         = ' -i ' + breastSurfMeshSTL 
+meshLabParamrs         = ' -i ' + breastSurfMeshSTL
 meshLabParamrs        += ' -o ' + improBreastSurfMeshSTL
 meshLabParamrs        += ' -s ' + meshlabScript
 
