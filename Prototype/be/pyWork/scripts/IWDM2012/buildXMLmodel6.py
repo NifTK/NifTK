@@ -215,7 +215,10 @@ strSimulatedSupine         = []
 strSimulatedSupineLabelImg = []
 strOutDVFImg               = []
 
-for i in range( numIterations ) :
+i=0
+
+while True :
+#for i in range( numIterations ) :
     
     #
     # run the simulation and the resampling
@@ -250,7 +253,7 @@ for i in range( numIterations ) :
     print('Starting niftySimulation')
     cmdEx.runCommand( simCommand, simParams )
 
-    
+
     #
     # Check if simulation diverged 
     #
@@ -268,6 +271,12 @@ for i in range( numIterations ) :
         break  
     
     
+    if i >= numIterations :
+        break
+    
+    #
+    # Do the registration step
+    #
     if useFEIR :
         feirReg = feirTask.feirRegistrationTask( strSimulatedSupine[-1], strSupineImg, regDirFEIR, 'NA', 
                                                  mu=0.0025*(2**-8), lm=0.0, mode='standard', mask=True, displacementConvergence=0.01, planStr='n')
@@ -327,7 +336,7 @@ for i in range( numIterations ) :
     xmlFileOut = meshDir + 'modelD' + str( '%03i' %i ) + '.xml'
     gen2.writeXML( xmlFileOut )
     
-    
+    i = i + 1
 
 fixedPoints = np.array( fixedPoints )
 #
@@ -378,7 +387,7 @@ medSurferParms  = ' -iso 80 '
 medSurferParms += ' -df 0.8 '       
 medSurferParms += ' -shrink 2 2 2 '
 medSurferParms += ' -presmooth'
-medSurferParms += ' -niter 40'
+medSurferParms += ' -niter 60' # was 40
 
 # Build the chest wall mesh (contact constraint):
 medSurfCWParams  = ' -img '   + defChestWallImg 
@@ -398,19 +407,25 @@ improDefChestWallSurfMeshSTL = defChestWallSurfMeshVTK.split('.')[0] + '_impro.s
 # run meshlab improvements 
 
 meshLabCommand         = 'meshlabserver'
-meshlabScript          = meshDir + 'surfProcessing.mlx'
+meshlabScript          = meshDir + 'surfProcessig_LSmooth_closeHoles_UMResampling_IsoResampling_test.mlx'
 meshLabParamrs         = ' -i ' + defChestWallSurfMeshSTL 
 meshLabParamrs        += ' -o ' + improDefChestWallSurfMeshSTL
 meshLabParamrs        += ' -s ' + meshlabScript
-
+meshLabParamrs        += ' -om fn vn '
 
 cmdEx.runCommand( meshLabCommand, meshLabParamrs )
 
 # now convert the output to ASCII format
 stlBinary2stlASCII.stlBinary2stlASCII( improDefChestWallSurfMeshSTL )
 
+#
+# Now build the breast tissue model: 
+# - Fat and gland only 
+#
 
-
+#
+# Threshold label image
+#
 
 
 
