@@ -50,6 +50,18 @@ class QmitkMIDASRenderWindow;
  * have it's own geometry, and sometimes very different geometry, and when the "Bind Slices"
  * button is clicked, they must all align to a specific (the currently selected Window) geometry.
  *
+ * <pre>
+ * Note:
+ * magnification   : actual pixels per voxel.
+ * on MIDAS widget :
+ * 2               : 3
+ * 1               : 2
+ * 0               : 1 (i.e. no magnification).
+ * -1              : 0.5 (i.e. 1 pixel covers 2 voxels).
+ * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
+ * etc.
+ * </pre>
+ *
  * \sa QmitkMIDASRenderWindow
  * \sa QmitkRenderWindow
  */
@@ -166,8 +178,14 @@ public:
 
 protected:
 
-    // overloaded paint handler
-    virtual void paintEvent(QPaintEvent* event);
+  // overloaded paint handler
+  virtual void paintEvent(QPaintEvent* event);
+
+  // Separate method to zoom/magnify the display about the centre of the image. A value > 1 makes the image appear bigger.
+  virtual void ZoomDisplayAboutCentre(double scaleFactor);
+
+  // These are both related and use similar calculations, so we calculate them in one method.
+  virtual void GetScaleFactors(mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
 private:
 
@@ -194,10 +212,10 @@ private:
   int                                            m_MagnificationFactor;
   MIDASViewOrientation                           m_ViewOrientation;
 
-  std::vector<unsigned int>                      m_SliceNumbers;            // length 3, one each for axial, sagittal, coronal.
-  std::vector<unsigned int>                      m_TimeSliceNumbers;        // length 3, one each for axial, sagittal, coronal.
-  std::vector<int>                               m_MagnificationFactors;    // length 3, one each for axial, sagittal, coronal.
-  std::vector<MIDASViewOrientation>              m_ViewOrientations;        // length 3, one each for axial, sagittal, coronal.
+  std::vector<unsigned int>                      m_SliceNumbers;         // length 3, one each for axial, sagittal, coronal.
+  std::vector<unsigned int>                      m_TimeSliceNumbers;     // length 3, one each for axial, sagittal, coronal.
+  std::vector<int>                               m_MagnificationFactors; // length 3, one each for axial, sagittal, coronal.
+  std::vector<MIDASViewOrientation>              m_ViewOrientations;     // length 3, one each for axial, sagittal, coronal.
 };
 
 #endif // QMITKMIDASSINGLEVIEWWIDGET_H
