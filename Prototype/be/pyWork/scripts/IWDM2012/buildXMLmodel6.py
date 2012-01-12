@@ -25,7 +25,7 @@ import commandExecution as cmdEx
 import f3dRegistrationTask as f3dTask
 import feirRegistrationTask as feirTask
 import os, sys
-
+import vtkVolMeshHandler as vmh
 
 # starting from the images
 # 1) soft tissue (currently seen as homogeneous material... to be corrected later on)
@@ -42,9 +42,11 @@ updateFactor              = 1.0
 numIterations             = 1
 
 meshDir                   = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
+mlxDir                    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/'
 regDirF3D                 = meshDir + 'regF3D/'
 regDirFEIR                = meshDir + 'regFEIR/'
 breastVolMeshName         = meshDir + 'breastSurf_impro.1.vtk'    # volume mesh    
+breastVolMeshName2        = meshDir + 'breastSurf2_impro.1.vtk'    # volume mesh for sliding par    
 xmlFileOut                = meshDir + 'model.xml'
 
 chestWallMaskImage        = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh.nii'
@@ -55,6 +57,14 @@ skinMaskImage             = 'W:/philipsBreastProneSupine/ManualSegmentation/Comb
 # original images
 strProneImg               = 'W:/philipsBreastProneSupine/proneCrop2Pad-zeroOrig.nii'
 strSupineImg              = 'W:/philipsBreastProneSupine/rigidAlignment/supine1kTransformCrop2Pad_zeroOrig.nii'
+
+#
+# Make sure the registration dirs exists 
+#
+if not os.path.exists( regDirF3D ) :
+    os.mkdir( regDirF3D )
+if not os.path.exists( regDirFEIR ) :
+    os.mkdir( regDirFEIR )
 
 
 
@@ -94,44 +104,40 @@ plotArrayAs3DPoints( pointsSupinePrime, (1,1,1) )
 plotVectorsAtPoints( pointsSupinePrime - pointsPronePrime, pointsPronePrime )
 
 
+#
+# Handle the breast volume mesh
+#
+breastMesh  = vmh.vtkVolMeshHandler( breastVolMeshName )
+breastMesh2 = vmh.vtkVolMeshHandler( breastVolMeshName2 )
 
-
-
-ugr = vtk.vtkUnstructuredGridReader()
-ugr.SetFileName( breastVolMeshName )
-ugr.Update()
-
-# Get the volume mesh
-breastVolMesh = ugr.GetOutput()
-breastVolMeshPoints = VN.vtk_to_numpy( breastVolMesh.GetPoints().GetData() )
-breastVolMeshCells = VN.vtk_to_numpy( breastVolMesh.GetCells().GetData() )
-breastVolMeshCells = breastVolMeshCells.reshape( breastVolMesh.GetNumberOfCells(),breastVolMeshCells.shape[0]/breastVolMesh.GetNumberOfCells() )
-
-# Get the surface from the volume mesh (as tetgen added some nodes)
-surfaceExtractor = vtk.vtkDataSetSurfaceFilter()
-surfaceExtractor.SetInput( breastVolMesh )
-surfaceExtractor.Update()
-breastSurfMeshPoints = VN.vtk_to_numpy( surfaceExtractor.GetOutput().GetPoints().GetData() )
 
 # calculate the material parameters (still to be improved)
 # this only needs to run once...
 if not 'matGen' in locals():
-    matGen = materialSetGenerator.materialSetGenerator( breastVolMeshPoints, 
-                                                        breastVolMeshCells, 
+    matGen = materialSetGenerator.materialSetGenerator( breastMesh.volMeshPoints, 
+                                                        breastMesh.volMeshCells, 
                                                         labelImage, 
                                                         skinMaskImage, 
-                                                        breastVolMesh, 
+                                                        breastMesh.volMesh, 
                                                         95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
+
+if not 'matGen2' in locals():
+    matGen2 = materialSetGenerator.materialSetGenerator( breastMesh2.volMeshPoints, 
+                                                         breastMesh2.volMeshCells, 
+                                                         labelImage, 
+                                                         skinMaskImage, 
+                                                         breastMesh2.volMesh, 
+                                                         95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
 
 plotArrayAs3DPoints( matGen.skinElementMidPoints, (0., 1., 0.) )
 
 
 # find those nodes of the model, which are close to the sternum... i.e. low x-values
 # and those nodes of the model, which are close to mid-axillary line. i.e. high y-values
-minXCoordinate = np.min( breastVolMeshPoints[:,0] )
+minXCoordinate = np.min( breastMesh.volMeshPoints[:,0] )
 deltaX = 5
 
-maxYCoordinate = np.max( breastVolMeshPoints[:,1] )
+maxYCoordinate = np.max( breastMesh.volMeshPoints[:,1] )
 deltaY = deltaX
 
 lowXPoints  = []
@@ -139,14 +145,14 @@ lowXIdx     = []
 highYPoints = []
 highYIdx    = []
 
-for i in range( breastVolMeshPoints.shape[0] ):
-    if breastVolMeshPoints[i,0] < ( minXCoordinate + deltaX ) :
+for i in range( breastMesh.volMeshPoints.shape[0] ):
+    if breastMesh.volMeshPoints[i,0] < ( minXCoordinate + deltaX ) :
         lowXIdx.append( i )
-        lowXPoints.append( [breastVolMeshPoints[i,0], breastVolMeshPoints[i,1], breastVolMeshPoints[i,2] ] )
+        lowXPoints.append( [breastMesh.volMeshPoints[i,0], breastMesh.volMeshPoints[i,1], breastMesh.volMeshPoints[i,2] ] )
     
-    if breastVolMeshPoints[i,1] > ( maxYCoordinate - deltaY ) :
+    if breastMesh.volMeshPoints[i,1] > ( maxYCoordinate - deltaY ) :
         highYIdx.append( i )
-        highYPoints.append( [breastVolMeshPoints[i,0], breastVolMeshPoints[i,1], breastVolMeshPoints[i,2] ] )
+        highYPoints.append( [breastMesh.volMeshPoints[i,0], breastMesh.volMeshPoints[i,1], breastMesh.volMeshPoints[i,2] ] )
     
 lowXPoints  = np.array( lowXPoints )
 lowXIdx     = np.array( lowXIdx    )
@@ -162,18 +168,20 @@ plotArrayAs3DPoints( highYPoints, ( 0, 1.0, 1.0 ) )
 #
 # Find the points on the chest surface
 #
-( ptsCloseToChest, idxCloseToChest ) = ndProx.getNodesWithtinMask( chestWallMaskImageDilated, 200, breastVolMeshPoints, breastSurfMeshPoints)
+( ptsCloseToChest, idxCloseToChest ) = ndProx.getNodesWithtinMask( chestWallMaskImageDilated, 200, 
+                                                                   breastMesh.volMeshPoints, 
+                                                                   breastMesh.surfMeshPoints )
 plotArrayAs3DPoints( ptsCloseToChest, (1.0,1.0,1.0) )
 
 
 # This little helper array is used for gravity load and material definition
-allNodesArray    = np.array( range( breastVolMeshPoints.shape[0] ) )
-allElemenstArray = np.array( range( breastVolMeshCells.shape[0]  ) )
+allNodesArray    = np.array( range( breastMesh.volMeshPoints.shape[0] ) )
+allElemenstArray = np.array( range( breastMesh.volMeshCells.shape[0]  ) )
 
 #
 # Generate the xml-file
 #
-genFix = xGen.xmlModelGenrator(  breastVolMeshPoints / 1000., breastVolMeshCells[ : , 1:5], 'T4' )
+genFix = xGen.xmlModelGenrator(  breastMesh.volMeshPoints / 1000., breastMesh.volMeshCells[ : , 1:5], 'T4' )
 
 genFix.setFixConstraint( lowXIdx,  0 )
 genFix.setFixConstraint( lowXIdx,  1 )
@@ -314,8 +322,8 @@ while True :
     dispVectsUpdate = []
     
     for n in prevFixedNodes:
-        fixedPoints.append( breastVolMeshPoints[n,:] )
-        curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( breastVolMeshPoints[n,:], 1 ) ) ) ), dtype = np.int )
+        fixedPoints.append( breastMesh.volMeshPoints[n,:] )
+        curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( breastMesh.volMeshPoints[n,:], 1 ) ) ) ), dtype = np.int )
         dispVectsUpdate.append( np.array( ( dispData[curIDX[0], curIDX[1], curIDX[2], 0, 0], 
                                             dispData[curIDX[0], curIDX[1], curIDX[2], 0, 1], 
                                             dispData[curIDX[0], curIDX[1], curIDX[2], 0, 2] ) ) )
@@ -323,7 +331,7 @@ while True :
     # compose the displacement as a simple addition
     dispVects = updateFactor * np.array( dispVectsUpdate ) + dispVects
     
-    gen2 = xGen.xmlModelGenrator( breastVolMeshPoints / 1000., breastVolMeshCells[ : , 1:5], 'T4' )
+    gen2 = xGen.xmlModelGenrator( breastMesh.volMeshPoints / 1000., breastMesh.volMeshCells[ : , 1:5], 'T4' )
     
     gen2.setDifformDispConstraint( 'RAMP', prevFixedNodes, dispVects / 1000. )
     #gen2.setMaterialElementSet( 'NH', 'FAT',    [  400, 50000], allElemenstArray    ) # homogeneous material for debugging only
@@ -393,10 +401,12 @@ cmdEx.runCommand( 'niftkPadImage', padParams  )
 
 # Parameters used for directory meshMaterials4
 medSurferParms  = ' -iso 80 '      
-medSurferParms += ' -df 0.8 '       
-medSurferParms += ' -shrink 2 2 2 '
-medSurferParms += ' -presmooth'
-medSurferParms += ' -niter 60' # was 40
+medSurferParms += ' -df 0.85 '     #was 0.8  
+medSurferParms += ' -shrink 4 4 4 ' # was 2 2 2 
+medSurferParms += ' -presmooth '
+medSurferParms += ' -niter 80 ' 
+#medSurferParms += ' -postsmooth ' # added to avoid meshlab
+
 
 # Build the chest wall mesh (contact constraint):
 medSurfCWParams  = ' -img '   + defChestWallImg 
@@ -405,43 +415,69 @@ medSurfCWParams += ' -surf '  + defChestWallSurfMeshSmesh
 medSurfCWParams += medSurferParms
 
 cmdEx.runCommand( 'medSurfer', medSurfCWParams )
-    
-
-# convert the vtk mesh into stl format
-vtk2stl.vtk2stl( [defChestWallSurfMeshVTK] )
-defChestWallSurfMeshSTL      = defChestWallSurfMeshVTK.split('.')[0] + '.stl'
-improDefChestWallSurfMeshSTL = defChestWallSurfMeshVTK.split('.')[0] + '_impro.stl'
-
-# run meshlab improvements 
-meshLabCommand         = 'meshlabserver'
-meshlabScript          = meshDir + 'surfProcessingNoOffset.mlx'
-meshLabParamrs         = ' -i ' + defChestWallSurfMeshSTL
-meshLabParamrs        += ' -o ' + improDefChestWallSurfMeshSTL
-meshLabParamrs        += ' -s ' + meshlabScript
-
-
-if not os.path.exists( meshlabScript ) : 
-    print( 'Error: Cannot find meshlab script! ' )
-    sys.exit()
-
-# TODO: currently needs to be done manually. meshlabserver outputs corrupt files 
-cmdEx.runCommand( meshLabCommand, meshLabParamrs )
-
-# now convert the output to ASCII format
-stlBinary2stlASCII.stlBinary2stlASCII( improDefChestWallSurfMeshSTL )
 
 
 
 
-#
+
+
+
+############################################
 # Now build the breast tissue model: 
 # - Fat and gland only 
 #
 
-#
-# build the mesh 
-#
+# fix points with low x-coordinate
+# find those nodes of the model, which are close to the sternum... i.e. low x-values
+# and those nodes of the model, which are close to mid-axillary line. i.e. high y-values
+minXCoordinate = np.min( breastMesh2.volMeshPoints[:,0] )
+deltaX = 5
 
+maxYCoordinate = np.max( breastMesh2.volMeshPoints[:,1] )
+deltaY = deltaX
+
+lowXPoints2  = []
+lowXIdx2     = []
+
+for i in range( breastMesh2.volMeshPoints.shape[0] ):
+    if breastMesh2.volMeshPoints[i,0] < ( minXCoordinate + deltaX ) :
+        lowXIdx2.append( i )
+        lowXPoints2.append( [breastMesh2.volMeshPoints[i,0], breastMesh2.volMeshPoints[i,1], breastMesh2.volMeshPoints[i,2] ] )
+        
+lowXPoints2 = np.array( lowXPoints2 )
+lowXIdx2    = np.array( lowXIdx2    )
+
+# This little helper array is used for gravity load and material definition
+allNodesArray2    = np.array( range( breastMesh2.volMeshPoints.shape[0] ) )
+allElemenstArray2 = np.array( range( breastMesh2.volMeshCells.shape[0]  ) )
+
+#
+# Slight offset into the negative y-direction is required to prevent surfaces to overlap
+#
+offsetVal        = -5 # in mm
+offsetArray      = np.zeros_like( breastMesh2.volMeshPoints )
+offsetArray[:,1] = offsetVal
+
+
+# Sliding xmlFile generator
+genS = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4' )
+
+genS.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen2.fatElemetns    )
+genS.setMaterialElementSet( 'NH', 'SKIN',   [ 2400, 50000], matGen2.skinElements   )
+genS.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen2.glandElements  )
+genS.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen2.muscleElements )
+
+genS.setContactSurfaceVTKFile(defChestWallSurfMeshVTK, 'T3', allNodesArray2.shape[0] )
+
+genS.setFixConstraint( lowXIdx2, 0 )
+genS.setFixConstraint( lowXIdx2, 2 )
+
+genS.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
+genS.setOutput( 5000, 'U' )
+genS.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=50, hgKappa=0.05, density=1000 )    
+
+xmlFileOut = meshDir + 'modelS.xml'
+genS.writeXML( xmlFileOut )
 
 
 

@@ -9,7 +9,7 @@
 
 from xml.dom.minidom import Document
 import numpy as np
-
+import vtk
 
 class xmlModelGenrator :
 
@@ -22,6 +22,7 @@ class xmlModelGenrator :
         self.fixConstraintNodes     = [None, None, None]
         self.materialSets           = []
         self.contactSurfaces        = []
+        self.contactSurfaceVTKFiles = []
         self.contactCylinders       = []
         self.uniformDispConstraints = []
         self.difformDispConstraints = []
@@ -121,6 +122,12 @@ class xmlModelGenrator :
         
         self.contactSurfaces.append( [contactNodes, contactElements, slvNodes, contactMeshType] )
     
+    
+    
+    def setContactSurfaceVTKFile(self, vtkMeshFileName, strType, numNodes ):
+        
+        self.contactSurfaceVTKFiles.append( [vtkMeshFileName, strType, numNodes] )
+        
     
     
     
@@ -294,6 +301,29 @@ class xmlModelGenrator :
             
             contactConstr.appendChild( contactNodes )
             contactConstr.appendChild( cntEls )
+            
+            contactConstr.appendChild( contactSLVNodes )
+            
+            model.appendChild( contactConstr )
+        
+        
+        # Write contact VTK files    
+        for i in range( len( self.contactSurfaceVTKFiles ) ) :  
+            contactConstr = doc.createElement( 'ContactSurface' )
+            
+            vtkSurfNode = doc.createElement( 'VTKSurface' )
+            vtkSurfNode.setAttribute( 'Type', self.contactSurfaceVTKFiles[i][1] )
+            
+            fileNameNode = doc.createTextNode( self.contactSurfaceVTKFiles[i][0] )
+            vtkSurfNode.appendChild( fileNameNode )
+            
+            contactConstr.appendChild( vtkSurfNode )
+            
+            contactSLVNodes = doc.createElement( 'SlvNodes' )
+            contactSLVNodes.setAttribute( 'NumNodes', '%i' % self.contactSurfaceVTKFiles[i][2] )
+            slvNodeNums= doc.createTextNode( '0' ) 
+            
+            contactSLVNodes.appendChild( slvNodeNums )
             
             contactConstr.appendChild( contactSLVNodes )
             

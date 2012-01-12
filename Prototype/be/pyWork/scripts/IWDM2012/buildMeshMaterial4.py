@@ -15,7 +15,9 @@ chestWallMaskImage     = 'W:/philipsBreastProneSupine/ManualSegmentation/Combine
 breastTissueMaskImage  = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM2_Crp2-pad.nii'
 breastTissueMaskImage2 = 'W:/philipsBreastProneSupine/ManualSegmentation/FatGlandTissueMask2_Crp2_pad.nii'  # fat gland skin only
 
+mlxDir                 = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/'
 meshDir                = 'W:/philipsBreastProneSupine/Meshes/meshMaterials4/'
+
 origWorkDir            = os.getcwd()
 os.chdir( meshDir )
 
@@ -85,7 +87,6 @@ vtk2stl.vtk2stl([chestWallSurfMeshVTK, breastSurfMeshVTK, breastSurfMeshVTK2])
 #
 # These actions are summarised in the script 
 # -> surfProcessing.mlx
-
 #
 # The above can now be done in an automated way by using meshlabserver and an appropriate script file 
 # Only the output of meshlabserer needs to be converted from binary format to ascii format 
@@ -96,7 +97,7 @@ vtk2stl.vtk2stl([chestWallSurfMeshVTK, breastSurfMeshVTK, breastSurfMeshVTK2])
 #
 
 # some file names
-breastSurfBaseName     =  breastSurfMeshVTK.split('.')[0] 
+breastSurfBaseName     = breastSurfMeshVTK.split('.')[0] 
 breastSurfMeshSTL      = breastSurfBaseName + '.stl' 
 improBreastSurfMeshSTL = breastSurfBaseName + '_impro.stl'
 
@@ -107,19 +108,43 @@ if not os.path.exists( breastSurfMeshSTL ) :
 # run meshlab improvements 
 
 meshLabCommand         = 'meshlabserver'
-meshlabScript          = meshDir + 'surfProcessing.mlx'
+meshlabScript          = mlxDir + 'surfProcessing.mlx'
 meshLabParamrs         = ' -i ' + breastSurfMeshSTL
 meshLabParamrs        += ' -o ' + improBreastSurfMeshSTL
 meshLabParamrs        += ' -s ' + meshlabScript
 
+cmdEx.runCommand( meshLabCommand, meshLabParamrs )
+stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL )
+
+# run tetgen and build the volume mesh
+tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL
+cmdEx.runCommand( 'tetgen', tetVolParams )
+
+#
+# Build the 2nd mesh
+# some file names
+#
+breastSurfBaseName2     = breastSurfMeshVTK2.split('.')[0] 
+breastSurfMeshSTL2      = breastSurfBaseName2 + '.stl' 
+improBreastSurfMeshSTL2 = breastSurfBaseName2 + '_impro.stl'
+
+if not os.path.exists( breastSurfMeshSTL2 ) :
+    print('ERRROR: Breast surface stl file does not exist.')
+    exit()
+    
+# run meshlab improvements 
+#meshlabScript          = mlxDir + 'surfProcessing_new.mlx'
+meshLabParamrs         = ' -i ' + breastSurfMeshSTL2
+meshLabParamrs        += ' -o ' + improBreastSurfMeshSTL2
+meshLabParamrs        += ' -s ' + meshlabScript
 
 cmdEx.runCommand( meshLabCommand, meshLabParamrs )
 
-# now convert the output to ASCII format
-stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL )
+# convert the output file to ASCII format
+stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL2 )
 
-# now run tetgen and build the volume mesh
-tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL
+# build the volume mesh
+tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL2
 cmdEx.runCommand( 'tetgen', tetVolParams )
 
 # go back to where you belong...
