@@ -6,3 +6,7 @@ MITK_CREATE_MODULE(niftkQmitkExt
   QT_MODULE 
 )
 
+TARGET_LINK_LIBRARIES(niftkQmitkExt
+  niftkITK
+  )
+  
