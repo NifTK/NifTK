@@ -24,7 +24,7 @@ import materialSetGenerator
 import commandExecution as cmdEx
 import f3dRegistrationTask as f3dTask
 import feirRegistrationTask as feirTask
-import os
+import os, sys
 
 
 # starting from the images
@@ -414,14 +414,18 @@ improDefChestWallSurfMeshSTL = defChestWallSurfMeshVTK.split('.')[0] + '_impro.s
 
 # run meshlab improvements 
 meshLabCommand         = 'meshlabserver'
-meshlabScript          = meshDir + 'surfProcessig.mlx'
+meshlabScript          = meshDir + 'surfProcessingNoOffset.mlx'
 meshLabParamrs         = ' -i ' + defChestWallSurfMeshSTL
 meshLabParamrs        += ' -o ' + improDefChestWallSurfMeshSTL
 meshLabParamrs        += ' -s ' + meshlabScript
 
 
+if not os.path.exists( meshlabScript ) : 
+    print( 'Error: Cannot find meshlab script! ' )
+    sys.exit()
+
 # TODO: currently needs to be done manually. meshlabserver outputs corrupt files 
-cmdEx.runCommand( meshLabCommand, meshLabParamrs, workDir=meshDir )
+cmdEx.runCommand( meshLabCommand, meshLabParamrs )
 
 # now convert the output to ASCII format
 stlBinary2stlASCII.stlBinary2stlASCII( improDefChestWallSurfMeshSTL )
