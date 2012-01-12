@@ -28,7 +28,10 @@
 #include "mitkBaseRenderer.h"
 #include "mitkVtkResliceInterpolationProperty.h"
 #include "mitkDataStorageUtils.h"
+#include "mitkImageAccessByItk.h"
 #include "vtkRenderWindow.h"
+#include "itkConversionUtils.h"
+#include "itkSpatialOrientationAdapter.h"
 
 QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_InDataStorageChanged(false)
@@ -279,6 +282,99 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
   return geometry;
 }
 
+template<typename TPixel, unsigned int VImageDimension>
+void
+QmitkMIDASMultiViewVisibilityManager::GetAsAcquiredOrientation(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    QmitkMIDASSingleViewWidget::MIDASViewOrientation &outputOrientation
+    )
+{
+  typedef itk::Image<TPixel, VImageDimension> ImageType;
+
+  typename itk::SpatialOrientationAdapter adaptor;
+  typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
+  orientation = adaptor.FromDirectionCosines(itkImage->GetDirection());
+  std::string orientationString = itk::ConvertSpatialOrientationToString(orientation);
+
+  if (orientationString[0] == 'L' || orientationString[0] == 'R')
+  {
+    if (orientationString[1] == 'A' || orientationString[1] == 'P')
+    {
+      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL;
+    }
+    else
+    {
+      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL;
+    }
+  }
+  else if (orientationString[0] == 'A' || orientationString[0] == 'P')
+  {
+    if (orientationString[1] == 'L' || orientationString[1] == 'R')
+    {
+      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL;
+    }
+    else
+    {
+      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL;
+    }
+  }
+  else if (orientationString[0] == 'S' || orientationString[0] == 'I')
+  {
+    if (orientationString[1] == 'L' || orientationString[1] == 'R')
+    {
+      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL;
+    }
+    else
+    {
+      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL;
+    }
+  }
+}
+
+QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASMultiViewVisibilityManager::GetOrientation(std::vector<mitk::DataNode*> nodes)
+{
+  // "As Acquired" means you take the orientation of the XY plane in the original image data, so we switch to ITK to work it out.
+  QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL;
+
+  if(m_DefaultOrientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    orientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL;
+  }
+  else if (m_DefaultOrientation == MIDAS_ORIENTATION_SAGITTAL)
+  {
+    orientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL;
+  }
+  else if (m_DefaultOrientation == MIDAS_ORIENTATION_AS_ACQUIRED)
+  {
+    mitk::Image::Pointer image = NULL;
+    for (unsigned int i = 0; i < nodes.size(); i++)
+    {
+      image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
+      if (image.IsNotNull())
+      {
+        break;
+      }
+    }
+    if (image.IsNotNull())
+    {
+      try
+      {
+        AccessFixedDimensionByItk_n(image, GetAsAcquiredOrientation, 3, (orientation));
+      }
+      catch (const mitk::AccessByItkException &e)
+      {
+        MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation so defaulting to coronal" << e.what() << std::endl;
+      }
+    }
+    else
+    {
+      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation so defaulting to coronal" << std::endl;
+
+    }
+  }
+  return orientation;
+}
+
 void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
@@ -289,6 +385,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
   //   then this corresponds to indexes 0,1 then skip 2,3,4, then 5,6 are visible.
 
   int windowIndex = this->GetIndexFromWindow(window);
+  QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = this->GetOrientation(nodes);
 
   if (m_DataStorage.IsNotNull() && windowIndex != -1)
   {
@@ -324,7 +421,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
 
       // Then set up geometry of that single window.
       m_ListOfWidgets[windowIndex]->InitializeGeometry(geometry.GetPointer());
-      m_ListOfWidgets[windowIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
+      m_ListOfWidgets[windowIndex]->SetViewOrientation(orientation);
 
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
@@ -365,7 +462,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
 
         // Initialise geometry according to first image
         m_ListOfWidgets[dropIndex]->InitializeGeometry(geometry.GetPointer());
-        m_ListOfWidgets[dropIndex]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
+        m_ListOfWidgets[dropIndex]->SetViewOrientation(orientation);
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
         dropIndex++;
@@ -399,7 +496,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
       {
         m_ListOfWidgets[i]->InitializeGeometry(geometry.GetPointer());
-        m_ListOfWidgets[i]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
+        m_ListOfWidgets[i]->SetViewOrientation(orientation);
 
         unsigned int minSlice = m_ListOfWidgets[i]->GetMinSlice();
         unsigned int maxSlice = m_ListOfWidgets[i]->GetMaxSlice();

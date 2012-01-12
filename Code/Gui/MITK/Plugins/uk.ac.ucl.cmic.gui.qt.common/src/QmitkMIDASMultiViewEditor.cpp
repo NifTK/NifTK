@@ -117,9 +117,9 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     assert( prefs );
 
     QmitkMIDASMultiViewVisibilityManager::MIDASDefaultInterpolationType defaultInterpolation =
-        (QmitkMIDASMultiViewVisibilityManager::MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 0));
+        (QmitkMIDASMultiViewVisibilityManager::MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
     QmitkMIDASMultiViewVisibilityManager::MIDASDefaultOrientationType defaultOrientation =
-        (QmitkMIDASMultiViewVisibilityManager::MIDASDefaultOrientationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_ORIENTATION, 0));
+        (QmitkMIDASMultiViewVisibilityManager::MIDASDefaultOrientationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_ORIENTATION, 2));
     int defaultNumberOfRows = prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_NUMBER_ROWS, 1);
     int defaultNumberOfColumns = prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_NUMBER_COLUMNS, 1);
 

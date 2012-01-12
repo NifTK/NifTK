@@ -29,6 +29,8 @@
 
 #include <QWidget>
 #include "mitkDataStorage.h"
+#include "QmitkMIDASSingleViewWidget.h"
+#include "itkImage.h"
 
 class QmitkMIDASRenderWindow;
 class QmitkMIDASSingleViewWidget;
@@ -130,6 +132,16 @@ private:
 
   // For a node, will set the rendering window specific visibility property to match the global visibility property, so you can toggle the image in the data manager.
   void UpdateNodeProperties(mitk::DataNode* node);
+
+  // Works out the correct orientation from the data, and from the preferences.
+  QmitkMIDASSingleViewWidget::MIDASViewOrientation GetOrientation(std::vector<mitk::DataNode*> nodes);
+
+  // ITK templated method (accessed via MITK access macros) to work out the orientation in the XY plane.
+  template<typename TPixel, unsigned int VImageDimension>
+  void GetAsAcquiredOrientation(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      QmitkMIDASSingleViewWidget::MIDASViewOrientation &outputOrientation
+      );
 
   // Will retrieve the correct geometry from a list of nodes.
   // If nodeIndex < 0 (for single drop case).

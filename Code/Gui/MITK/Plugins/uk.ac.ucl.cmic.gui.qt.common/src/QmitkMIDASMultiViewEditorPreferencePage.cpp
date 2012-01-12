@@ -95,10 +95,10 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
 
   m_DefaultOrientationComboBox = new QComboBox(parent);
   formLayout->addRow("default orientation", m_DefaultOrientationComboBox);
-  m_DefaultOrientationComboBox->insertItem(0, "as acquired (XY plane)");
-  m_DefaultOrientationComboBox->insertItem(1, "axial");
-  m_DefaultOrientationComboBox->insertItem(2, "sagittal");
-  m_DefaultOrientationComboBox->insertItem(3, "coronal");
+  m_DefaultOrientationComboBox->insertItem(0, "axial");
+  m_DefaultOrientationComboBox->insertItem(1, "sagittal");
+  m_DefaultOrientationComboBox->insertItem(2, "coronal");
+  m_DefaultOrientationComboBox->insertItem(3, "as acquired (XY plane)");
 
   QPushButton* backgroundColourResetButton = new QPushButton;
   backgroundColourResetButton->setText("reset");
