@@ -31,7 +31,7 @@
 #include "mitkRenderWindowFrame.h"
 #include "mitkGradientBackground.h"
 #include "mitkDataStorage.h"
-#include "mitkGeometry3D.h"
+#include "mitkTimeSlicedGeometry.h"
 #include "mitkSliceNavigationController.h"
 #include "mitkRenderingManager.h"
 
@@ -168,7 +168,7 @@ public:
   MIDASViewOrientation GetViewOrientation() const;
 
   /// \brief Stores a pointer to the provided geometry, and resets the previous slice number, magnification factor and orientation fields.
-  void InitializeGeometry(mitk::Geometry3D::Pointer geometry);
+  void InitializeGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
 
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
@@ -195,9 +195,10 @@ private:
 
   mitk::RenderingManager::Pointer                m_RenderingManager;
   mitk::SliceNavigationController::Pointer       m_SliceNavigationController;
+  mitk::SliceNavigationController::Pointer       m_TimeNavigationController;
 
   mitk::DataStorage::Pointer                     m_DataStorage;
-  mitk::Geometry3D*                              m_Geometry;
+  mitk::TimeSlicedGeometry*                      m_Geometry;
 
   QGridLayout                                   *m_Layout;
   QColor                                         m_BackgroundColor;

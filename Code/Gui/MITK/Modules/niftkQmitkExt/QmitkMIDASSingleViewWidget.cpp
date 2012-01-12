@@ -67,7 +67,13 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
   m_RenderWindow = new QmitkMIDASRenderWindow(this, windowName, m_RenderingManager);
   m_RenderWindow->setAcceptDrops(true);
 
-  // But then we need to register the slice navigation controller with our own rendering manager.
+  // RenderingManager does not create a TimeNavigationController.
+  m_TimeNavigationController = mitk::SliceNavigationController::New("dummy");
+  m_TimeNavigationController->ConnectGeometryTimeEvent(m_RenderWindow->GetSliceNavigationController() , false);
+  m_RenderingManager->SetTimeNavigationController( m_TimeNavigationController );
+  m_RenderWindow->GetSliceNavigationController()->ConnectGeometryTimeEvent(m_TimeNavigationController.GetPointer(), false);
+
+  // Then we need to register the slice navigation controller with our own rendering manager.
   m_SliceNavigationController = m_RenderWindow->GetSliceNavigationController();
   m_SliceNavigationController->SetRenderingManager(m_RenderingManager);
 
@@ -266,6 +272,7 @@ void QmitkMIDASSingleViewWidget::SetSliceNumber(unsigned int sliceNumber)
 {
   this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
   this->m_SliceNumber = sliceNumber;
+  this->RequestUpdate();
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber() const
@@ -277,6 +284,7 @@ void QmitkMIDASSingleViewWidget::SetTime(unsigned int timeSliceNumber)
 {
   this->m_SliceNavigationController->GetTime()->SetPos(timeSliceNumber);
   this->m_TimeSliceNumber = timeSliceNumber;
+  this->RequestUpdate();
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetTime() const
@@ -335,8 +343,8 @@ void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
   MITK_DEBUG << "Matt, zoomScaleFactor=" << zoomScaleFactor << std::endl;
 
   this->ZoomDisplayAboutCentre(zoomScaleFactor);
-
   this->m_MagnificationFactor = magnificationFactor;
+  this->RequestUpdate();
 }
 
 int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
@@ -378,7 +386,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       m_MagnificationFactors[this->m_ViewOrientation] = m_MagnificationFactor;
       m_ViewOrientations[this->m_ViewOrientation] = m_ViewOrientation;
 
-      MITK_INFO << "QmitkMIDASSingleViewWidget::SetViewOrientation current orientation=" << m_ViewOrientation \
+      MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation current orientation=" << m_ViewOrientation \
           << ", so storing slice=" << m_SliceNumber << ", time=" << m_TimeSliceNumber << ", magnification=" << m_MagnificationFactor \
           << ", switching to new orientation=" << orientation << std::endl;
     }
@@ -413,6 +421,10 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     cornerPointsInImage[6] = this->m_Geometry->GetCornerPoint(false, false, true);
     cornerPointsInImage[7] = this->m_Geometry->GetCornerPoint(false, false, false);
 
+    for (unsigned int i = 0; i < 8; i++)
+    {
+      MITK_DEBUG << "Matt, corner points in image=" << cornerPointsInImage[i] << std::endl;
+    }
     transformedOrigin[0] = std::numeric_limits<float>::max();
     transformedOrigin[1] = std::numeric_limits<float>::max();
     transformedOrigin[2] = std::numeric_limits<float>::max();
@@ -437,6 +449,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     {
 
       mitk::Vector3D axisVector = this->m_Geometry->GetAxisVector(i);
+      MITK_DEBUG << "Matt, axisVector=" << axisVector << std::endl;
 
       unsigned int axisInWorldSpace = 0;
       for (unsigned int j = 0; j < 3; j++)
@@ -447,7 +460,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
         }
       }
       transformedSpacing[axisInWorldSpace] = originalSpacing[i];
-      transformedExtent[axisInWorldSpace] = fabs(axisVector[axisInWorldSpace]);
+      transformedExtent[axisInWorldSpace] = fabs(axisVector[axisInWorldSpace]/transformedSpacing[axisInWorldSpace]);
     }
 
     mitk::Geometry3D::BoundsArrayType originalBoundingBox = this->m_Geometry->GetBounds();
@@ -459,15 +472,36 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     transformedBoundingBox[4] = 0;
     transformedBoundingBox[5] = transformedExtent[2];
 
-    mitk::Geometry3D::Pointer transformedGeometry = mitk::Geometry3D::New();
-    transformedGeometry->SetImageGeometry(true);
-    transformedGeometry->SetSpacing(transformedSpacing);
-    transformedGeometry->SetOrigin(transformedOrigin);
-    transformedGeometry->SetBounds(transformedBoundingBox);
-    transformedGeometry->SetTimeBounds(this->m_Geometry->GetTimeBounds());
+    mitk::TimeSlicedGeometry::Pointer timeSlicedTransformedGeometry = mitk::TimeSlicedGeometry::New();
+    timeSlicedTransformedGeometry->InitializeEmpty(this->m_Geometry->GetTimeSteps());
+    timeSlicedTransformedGeometry->SetImageGeometry(this->m_Geometry->GetImageGeometry());
+    timeSlicedTransformedGeometry->SetTimeBounds(this->m_Geometry->GetTimeBounds());
+    timeSlicedTransformedGeometry->SetEvenlyTimed(this->m_Geometry->GetEvenlyTimed());
+    timeSlicedTransformedGeometry->SetSpacing(transformedSpacing);
+    timeSlicedTransformedGeometry->SetOrigin(transformedOrigin);
+    timeSlicedTransformedGeometry->SetBounds(transformedBoundingBox);
 
-    baseRenderer->SetWorldGeometry(transformedGeometry);
-    m_SliceNavigationController->SetInputWorldGeometry(transformedGeometry);
+    for (unsigned int i = 0; i < this->m_Geometry->GetTimeSteps(); i++)
+    {
+      mitk::Geometry3D::Pointer transformedGeometry = mitk::Geometry3D::New();
+      transformedGeometry->SetImageGeometry(this->m_Geometry->GetImageGeometry());
+      transformedGeometry->SetSpacing(transformedSpacing);
+      transformedGeometry->SetOrigin(transformedOrigin);
+      transformedGeometry->SetBounds(transformedBoundingBox);
+      transformedGeometry->SetTimeBounds(this->m_Geometry->GetGeometry3D(i)->GetTimeBounds());
+
+      timeSlicedTransformedGeometry->SetGeometry3D(transformedGeometry, i);
+    }
+    timeSlicedTransformedGeometry->UpdateInformation();
+
+    MITK_DEBUG << "Matt, transformedSpacing=" << transformedSpacing << std::endl;
+    MITK_DEBUG << "Matt, transformedOrigin=" << transformedOrigin << std::endl;
+    MITK_DEBUG << "Matt, transformedBoundingBox=" << transformedBoundingBox << std::endl;
+    MITK_DEBUG << "Matt, timeBounds=" << this->m_Geometry->GetTimeBounds() << std::endl;
+
+
+    baseRenderer->SetWorldGeometry(timeSlicedTransformedGeometry);
+    m_SliceNavigationController->SetInputWorldGeometry(timeSlicedTransformedGeometry);
 
     // Set the view to the new orientation
     this->m_ViewOrientation = orientation;
@@ -577,7 +611,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       this->SetTime(time);
       m_MagnificationFactor = magnification;
 
-      MITK_INFO << "QmitkMIDASSingleViewWidget::SetViewOrientation calculated slice=" << slice << ", time=" << time << ", magnification=" << magnification << std::endl;
+      MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation calculated slice=" << slice << ", time=" << time << ", magnification=" << magnification << std::endl;
     }
     else
     {
@@ -589,13 +623,13 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       this->SetTime(time);
       this->SetMagnificationFactor(magnification);
 
-      MITK_INFO << "QmitkMIDASSingleViewWidget::SetViewOrientation using previous settings, slice=" << slice << ", time=" << time << ", magnification=" << magnification << std::endl;
+      MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation using previous settings, slice=" << slice << ", time=" << time << ", magnification=" << magnification << std::endl;
     }
 
   }
 }
 
-void QmitkMIDASSingleViewWidget::InitializeGeometry(mitk::Geometry3D::Pointer geometry)
+void QmitkMIDASSingleViewWidget::InitializeGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
 {
   // Store the geometry for later. This comes from the image, as so should be a TimeSlicedGeometry (subclass of Geometry3D).
   this->m_Geometry = geometry;

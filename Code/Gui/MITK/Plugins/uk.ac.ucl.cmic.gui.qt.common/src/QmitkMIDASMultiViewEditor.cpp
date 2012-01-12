@@ -158,6 +158,9 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     m_EventAdmin->publishSignal(this, SIGNAL(UpdateMIDASViewingControlsRange(ctkDictionary)),
                               "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsRange", Qt::QueuedConnection);
 
+    // Dummy call, i think there is a threading / race condition, so Im trying to initialise this early.
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+
     ctkDictionary propsForSlot;
     propsForSlot[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/midasnavigationview/*";
     m_EventAdmin->subscribeSlot(this, SLOT(handleEvent(ctkEvent)), propsForSlot);
@@ -300,6 +303,7 @@ void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsRange(UpdateMIDASVie
     properties["max_slice"] = rangeInfo.maxSlice;
     properties["min_magnification"] = rangeInfo.minMagnification;
     properties["max_magnification"] = rangeInfo.maxMagnification;
+
     emit UpdateMIDASViewingControlsRange(properties);
   }
   catch (const ctkRuntimeException& e)
@@ -330,6 +334,7 @@ void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsValues(UpdateMIDASVi
     {
       properties["orientation"] = "coronal";
     }
+
     emit UpdateMIDASViewingControlsValues(properties);
   }
   catch (const ctkRuntimeException& e)
