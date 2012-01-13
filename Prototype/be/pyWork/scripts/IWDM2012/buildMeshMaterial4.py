@@ -133,10 +133,11 @@ if not os.path.exists( breastSurfMeshSTL2 ) :
     exit()
     
 # run meshlab improvements 
-#meshlabScript          = mlxDir + 'surfProcessing_new.mlx'
+meshlabScriptCoarse    = mlxDir + 'surfProcessing_coarse.mlx'
 meshLabParamrs         = ' -i ' + breastSurfMeshSTL2
 meshLabParamrs        += ' -o ' + improBreastSurfMeshSTL2
-meshLabParamrs        += ' -s ' + meshlabScript
+#meshLabParamrs        += ' -s ' + meshlabScript
+meshLabParamrs        += ' -s ' + meshlabScriptCoarse
 
 cmdEx.runCommand( meshLabCommand, meshLabParamrs )
 
@@ -145,6 +146,7 @@ stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL2 )
 
 # build the volume mesh
 tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL2
+tetVolParams = ' -pq1.42a1000K ' + improBreastSurfMeshSTL2
 cmdEx.runCommand( 'tetgen', tetVolParams )
 
 # go back to where you belong...

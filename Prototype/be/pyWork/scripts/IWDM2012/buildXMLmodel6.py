@@ -416,7 +416,14 @@ medSurfCWParams += medSurferParms
 
 cmdEx.runCommand( 'medSurfer', medSurfCWParams )
 
-
+# get access to the vtk file
+pdr = vtk.vtkPolyDataReader()
+pdr.SetFileName( defChestWallSurfMeshVTK )
+pdr.Update()
+chestSurfMesh = pdr.GetOutput()
+chestSurfMeshPoints = VN.vtk_to_numpy( chestSurfMesh.GetPoints().GetData() )
+chestSurfPolys = VN.vtk_to_numpy( chestSurfMesh.GetPolys().GetData() )
+chestSurfPolys = chestSurfPolys.reshape( chestSurfMesh.GetPolys().GetNumberOfCells(),chestSurfPolys.shape[0]/chestSurfMesh.GetPolys().GetNumberOfCells() )
 
 
 
@@ -465,14 +472,14 @@ genS = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000.,
 genS.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen2.fatElemetns    )
 genS.setMaterialElementSet( 'NH', 'SKIN',   [ 2400, 50000], matGen2.skinElements   )
 genS.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen2.glandElements  )
-genS.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen2.muscleElements )
+#genS.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen2.muscleElements )
 
-genS.setContactSurfaceVTKFile(defChestWallSurfMeshVTK, 'T3', allNodesArray2.shape[0] )
-
+#genS.setContactSurfaceVTKFile(defChestWallSurfMeshVTK, 'T3', allNodesArray2.shape[0] )
+genS.setContactSurface( chestSurfMeshPoints[:,0:3] / 1000., chestSurfPolys[ : , 1:4 ], allNodesArray2, 'T3' )
 genS.setFixConstraint( lowXIdx2, 0 )
 genS.setFixConstraint( lowXIdx2, 2 )
 
-genS.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
+genS.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray2, 'RAMP' )
 genS.setOutput( 5000, 'U' )
 genS.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=50, hgKappa=0.05, density=1000 )    
 

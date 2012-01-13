@@ -124,8 +124,9 @@ class xmlModelGenrator :
     
     
     
-    def setContactSurfaceVTKFile(self, vtkMeshFileName, strType, numNodes ):
-        
+    def setContactSurfaceVTKFile(self, vtkMeshFileName, strType, numNodes ) :
+        ''' Use with care, as the vtk file might not be scaled correctly...
+        '''
         self.contactSurfaceVTKFiles.append( [vtkMeshFileName, strType, numNodes] )
         
     
