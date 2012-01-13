@@ -65,7 +65,7 @@ else
   BUILD_COMMAND="make clean ; ctest -D Nightly"
 fi  
 
-run_command "svn co https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTK --non-interactive" # -r{${DATE} 22:00:00 +0000}"
+run_command "svn co https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTK --non-interactive -r{${DATE} 22:00:00 +0000}"
 run_command "mkdir ${FOLDER}"
 run_command "cd ${FOLDER}"
 run_command "cmake ../NifTK -DCMAKE_BUILD_TYPE=${TYPE} -DBUILD_GUI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DBUILD_NIFTYLINK=ON -DBUILD_OPENCV=ON -DBUILD_OPENIGTLINK=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON ${COVERAGE_ARG}"
