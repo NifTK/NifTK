@@ -349,11 +349,34 @@ void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
   this->SetLayoutSize((unsigned int)m_RowsSpinBox->value(), (unsigned int)c, false);
 }
 
-void QmitkMIDASMultiViewWidget::OnBindWindowsCheckboxClicked(bool)
+void QmitkMIDASMultiViewWidget::OnBindWindowsCheckboxClicked(bool isBound)
 {
-  QMessageBox::warning(this, tr("NiftyView"),
-                             tr("Not implemented yet.\n"),
-                             QMessageBox::Ok);
+  if (isBound)
+  {
+    mitk::TimeSlicedGeometry::Pointer selectedGeometry = m_SingleViewWidgets[m_SelectedWindow]->GetGeometry();
+    QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = m_SingleViewWidgets[m_SelectedWindow]->GetViewOrientation();
+    int sliceNumber = m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
+    int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
+    int timeStepNumber = m_SingleViewWidgets[m_SelectedWindow]->GetTime();
+
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      m_SingleViewWidgets[i]->SetBoundGeometry(selectedGeometry);
+      m_SingleViewWidgets[i]->SetBound(true);
+      m_SingleViewWidgets[i]->SetViewOrientation(orientation);
+      m_SingleViewWidgets[i]->SetSliceNumber(sliceNumber);
+      m_SingleViewWidgets[i]->SetTime(timeStepNumber);
+      m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
+    }
+  }
+  else
+  {
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      m_SingleViewWidgets[i]->SetBound(false);
+    }
+    this->PublishNavigationSettings();
+  }
 }
 
 unsigned int QmitkMIDASMultiViewWidget::GetIndexFromRowAndColumn(unsigned int r, unsigned int c)
@@ -573,37 +596,82 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
   }
 }
 
+void QmitkMIDASMultiViewWidget::GetStartStopIndexForIteration(unsigned int &start, unsigned int &stop)
+{
+  if (this->m_BindWindowsCheckBox->isChecked())
+  {
+    start = 0;
+    stop = this->m_SingleViewWidgets.size() -1;
+  }
+  else
+  {
+    start = m_SelectedWindow;
+    stop = m_SelectedWindow;
+  }
+}
+
 void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnificationFactor)
 {
-  this->m_SingleViewWidgets[m_SelectedWindow]->SetMagnificationFactor(magnificationFactor);
+  unsigned int start;
+  unsigned int stop;
+  this->GetStartStopIndexForIteration(start, stop);
+
+  for (unsigned int i = start; i <= stop; i++)
+  {
+    this->m_SingleViewWidgets[i]->SetMagnificationFactor(magnificationFactor);
+  }
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 {
-  this->m_SingleViewWidgets[m_SelectedWindow]->SetSliceNumber(sliceNumber);
+  unsigned int start;
+  unsigned int stop;
+  this->GetStartStopIndexForIteration(start, stop);
+
+  for (unsigned int i = start; i <= stop; i++)
+  {
+    this->m_SingleViewWidgets[i]->SetSliceNumber(sliceNumber);
+  }
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
-  this->m_SingleViewWidgets[m_SelectedWindow]->SetTime(timeStep);
+  unsigned int start;
+  unsigned int stop;
+  this->GetStartStopIndexForIteration(start, stop);
+
+  for (unsigned int i = start; i <= stop; i++)
+  {
+    this->m_SingleViewWidgets[i]->SetTime(timeStep);
+  }
+}
+
+void QmitkMIDASMultiViewWidget::SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation)
+{
+  unsigned int start;
+  unsigned int stop;
+  this->GetStartStopIndexForIteration(start, stop);
+
+  for (unsigned int i = start; i <= stop; i++)
+  {
+    this->m_SingleViewWidgets[i]->SetViewOrientation(orientation);
+  }
+  this->PublishNavigationSettings();
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToAxial()
 {
-  this->m_SingleViewWidgets[m_SelectedWindow]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL);
-  this->PublishNavigationSettings();
+  this->SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL);
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToSagittal()
 {
-  this->m_SingleViewWidgets[m_SelectedWindow]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
-  this->PublishNavigationSettings();
+  this->SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL);
 }
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 {
-  this->m_SingleViewWidgets[m_SelectedWindow]->SetViewOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL);
-  this->PublishNavigationSettings();
+  this->SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL);
 }
 
 void QmitkMIDASMultiViewWidget::paintEvent(QPaintEvent* event)

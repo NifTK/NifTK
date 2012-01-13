@@ -41,14 +41,13 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 , m_RenderWindowBackground(NULL)
 , m_RenderingManager(NULL)
 , m_SliceNavigationController(NULL)
+, m_TimeNavigationController(NULL)
 , m_DataStorage(NULL)
-, m_Geometry(NULL)
+, m_UnBoundTimeSlicedGeometry(NULL)
+, m_BoundTimeSlicedGeometry(NULL)
+, m_ActiveTimeSlicedGeometry(NULL)
 , m_Layout(NULL)
-, m_SliceNumber(0)
-, m_TimeSliceNumber(0)
-, m_MagnificationFactor(minimumMagnification)
-, m_ViewOrientation(MIDAS_VIEW_UNKNOWN)
-
+, m_IsBound(false)
 {
   this->setAcceptDrops(true);
 
@@ -97,13 +96,22 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
       m_BackgroundColor.blueF());
   m_RenderWindowBackground->Enable();
 
-  // But we have to remember the slice, magnification and orientation for 3 views, so initilise these to invalid.
-  for (int i = 0; i < 3; i++)
+  // We maintain "current slice, current magnification" for both bound and unbound views = 2 of each.
+  for (unsigned int i = 0; i < 2; i++)
   {
-    m_SliceNumbers.push_back(0);
-    m_TimeSliceNumbers.push_back(0);
-    m_MagnificationFactors.push_back(minimumMagnification);
-    m_ViewOrientations.push_back(MIDAS_VIEW_UNKNOWN);
+    m_CurrentSliceNumbers.push_back(0);
+    m_CurrentTimeSliceNumbers.push_back(0);
+    m_CurrentMagnificationFactors.push_back(minimumMagnification);
+    m_CurrentViewOrientations.push_back(MIDAS_VIEW_UNKNOWN);
+  }
+
+  // But we have to remember the slice, magnification and orientation for 3 views unbound, then 3 views bound = 6 of each.
+  for (int i = 0; i < 6; i++)
+  {
+    m_PreviousSliceNumbers.push_back(0);
+    m_PreviousTimeSliceNumbers.push_back(0);
+    m_PreviousMagnificationFactors.push_back(minimumMagnification);
+    m_PreviousViewOrientations.push_back(MIDAS_VIEW_UNKNOWN);
   }
 
   m_Layout = new QGridLayout(this);
@@ -231,6 +239,11 @@ int QmitkMIDASSingleViewWidget::GetMaxMagnification() const
   return this->m_MaximumMagnification;
 }
 
+mitk::DataStorage::Pointer QmitkMIDASSingleViewWidget::GetDataStorage(mitk::DataStorage* dataStorage)
+{
+  return this->m_DataStorage;
+}
+
 void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   this->m_DataStorage = dataStorage;
@@ -238,9 +251,9 @@ void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataS
   m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
 }
 
-mitk::DataStorage::Pointer QmitkMIDASSingleViewWidget::GetDataStorage(mitk::DataStorage* dataStorage)
+QmitkMIDASRenderWindow* QmitkMIDASSingleViewWidget::GetRenderWindow() const
 {
-  return this->m_DataStorage;
+  return this->m_RenderWindow;
 }
 
 bool QmitkMIDASSingleViewWidget::ContainsWindow(QmitkMIDASRenderWindow *window) const
@@ -263,95 +276,6 @@ bool QmitkMIDASSingleViewWidget::ContainsVtkRenderWindow(vtkRenderWindow *window
   return containsWindow;
 }
 
-QmitkMIDASRenderWindow* QmitkMIDASSingleViewWidget::GetRenderWindow() const
-{
-  return this->m_RenderWindow;
-}
-
-void QmitkMIDASSingleViewWidget::SetSliceNumber(unsigned int sliceNumber)
-{
-  this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
-  this->m_SliceNumber = sliceNumber;
-  this->RequestUpdate();
-}
-
-unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber() const
-{
-  return this->m_SliceNumber;
-}
-
-void QmitkMIDASSingleViewWidget::SetTime(unsigned int timeSliceNumber)
-{
-  this->m_SliceNavigationController->GetTime()->SetPos(timeSliceNumber);
-  this->m_TimeSliceNumber = timeSliceNumber;
-  this->RequestUpdate();
-}
-
-unsigned int QmitkMIDASSingleViewWidget::GetTime() const
-{
-  return this->m_TimeSliceNumber;
-}
-
-void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
-{
-  MITK_DEBUG << "Matt, requested magnificationFactor=" << magnificationFactor << std::endl;
-
-  mitk::Point2D scaleFactorPixPerVoxel;
-  mitk::Point2D scaleFactorPixPerMillimetres;
-  this->GetScaleFactors(scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
-
-  MITK_DEBUG << "Matt, currently scaleFactorPixPerVoxel=" << scaleFactorPixPerVoxel << ", scaleFactorPixPerMillimetres=" << scaleFactorPixPerMillimetres << std::endl;
-
-  double effectiveMagnificationFactor = 0;
-  if (magnificationFactor >= 0)
-  {
-    effectiveMagnificationFactor = magnificationFactor + 1;
-  }
-  else
-  {
-    effectiveMagnificationFactor = magnificationFactor - 1;
-    effectiveMagnificationFactor = fabs(1.0/effectiveMagnificationFactor);
-  }
-
-  MITK_DEBUG << "Matt, effectiveMagnificationFactor=" << effectiveMagnificationFactor << std::endl;
-
-  mitk::Point2D targetScaleFactorPixPerMillimetres;
-
-  // Need to scale both of the current scaleFactorPixPerVoxel[i]
-  for (int i = 0; i < 2; i++)
-  {
-    targetScaleFactorPixPerMillimetres[i] = (effectiveMagnificationFactor / scaleFactorPixPerVoxel[i]) * scaleFactorPixPerMillimetres[i];
-  }
-
-  MITK_DEBUG << "Matt, targetScaleFactorPixPerMillimetres=" << targetScaleFactorPixPerMillimetres << std::endl;
-
-  // Pick the one that has changed the least
-  int axisWithLeastDifference = -1;
-  double leastDifference = std::numeric_limits<double>::max();
-  for(int i = 0; i < 2; i++)
-  {
-    if (fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]) < leastDifference)
-    {
-      leastDifference = fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]);
-      axisWithLeastDifference = i;
-    }
-  }
-
-  double zoomScaleFactor = targetScaleFactorPixPerMillimetres[axisWithLeastDifference]/scaleFactorPixPerMillimetres[axisWithLeastDifference];
-
-  MITK_DEBUG << "Matt, axisWithLeastDifference=" << axisWithLeastDifference << std::endl;
-  MITK_DEBUG << "Matt, zoomScaleFactor=" << zoomScaleFactor << std::endl;
-
-  this->ZoomDisplayAboutCentre(zoomScaleFactor);
-  this->m_MagnificationFactor = magnificationFactor;
-  this->RequestUpdate();
-}
-
-int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
-{
-  return this->m_MagnificationFactor;
-}
-
 void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent* event)
 {
   this->RequestUpdate();
@@ -359,41 +283,196 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent* event)
 
 void QmitkMIDASSingleViewWidget::RequestUpdate()
 {
-  vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
-  this->m_RenderingManager->RequestUpdate(vtkWindow);
+  if (this->isVisible())
+  {
+    vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
+    this->m_RenderingManager->RequestUpdate(vtkWindow);
+  }
 }
 
 void QmitkMIDASSingleViewWidget::ForceUpdate()
 {
-  vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
-  this->m_RenderingManager->ForceImmediateUpdate(vtkWindow);
+  if (this->isVisible())
+  {
+    vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
+    this->m_RenderingManager->ForceImmediateUpdate(vtkWindow);
+  }
+}
+
+void QmitkMIDASSingleViewWidget::SetSliceNumber(unsigned int sliceNumber)
+{
+  this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
+  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
+  this->RequestUpdate();
+}
+
+unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundOffset() const
+{
+  // So we have arrays of length 2, index=0 corresponds to 'Un-bound', and index=1 corresponds to 'Bound'.
+  if (m_IsBound)
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundPreviousArrayOffset() const
+{
+  // So we have arrays of length 6, index=0-2 corresponds to 'Un-bound' for axial, sagittal, coronal,
+  // and index=3-5 corresponds to 'Bound' for axial, sagittal, coronal.
+  if (m_IsBound)
+  {
+    return 3;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber() const
+{
+  return this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()];
+}
+
+void QmitkMIDASSingleViewWidget::SetTime(unsigned int timeSliceNumber)
+{
+  this->m_SliceNavigationController->GetTime()->SetPos(timeSliceNumber);
+  this->m_CurrentTimeSliceNumbers[this->GetBoundUnboundOffset()] = timeSliceNumber;
+  this->RequestUpdate();
+}
+
+unsigned int QmitkMIDASSingleViewWidget::GetTime() const
+{
+  return this->m_CurrentTimeSliceNumbers[this->GetBoundUnboundOffset()];
+}
+
+void QmitkMIDASSingleViewWidget::ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex)
+{
+  // NOTE: The positions array is off length 6, corresponding to
+  // Unbound (axial, sagittal, coronal), bound (axial, sagittal, coronal).
+
+  assert(startIndex >= 0);
+  assert(stopIndex >= 0);
+  assert(startIndex <= 5);
+  assert(stopIndex <= 5);
+  assert(startIndex <= stopIndex);
+
+  for (unsigned int i = startIndex; i <= stopIndex; i++)
+  {
+    m_PreviousSliceNumbers[i] = 0;
+    m_PreviousTimeSliceNumbers[i] = 0;
+    m_PreviousMagnificationFactors[i] = this->m_MinimumMagnification;
+    m_PreviousViewOrientations[i] = MIDAS_VIEW_UNKNOWN;
+  }
+}
+
+void QmitkMIDASSingleViewWidget::StorePosition()
+{
+  unsigned int currentArrayOffset = this->GetBoundUnboundOffset();
+  unsigned int previousArrayOffset = this->GetBoundUnboundPreviousArrayOffset();
+
+  MIDASViewOrientation orientation = m_CurrentViewOrientations[currentArrayOffset];
+  int sliceNumber = m_CurrentSliceNumbers[currentArrayOffset];
+  int timeSliceNumber = m_CurrentTimeSliceNumbers[currentArrayOffset];
+  int magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
+
+  if (orientation != MIDAS_VIEW_UNKNOWN)
+  {
+    // Dodgy style: orientation is an enum, being used as an array index.
+
+    m_PreviousSliceNumbers[previousArrayOffset + orientation] = sliceNumber;
+    m_PreviousTimeSliceNumbers[previousArrayOffset + orientation] = timeSliceNumber;
+    m_PreviousMagnificationFactors[previousArrayOffset + orientation] = magnificationFactor;
+    m_PreviousViewOrientations[previousArrayOffset + orientation] = orientation;
+
+    MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation is bound=" << m_IsBound \
+        << ", current orientation=" << orientation \
+        << ", so storing slice=" << sliceNumber \
+        << ", time=" << timeSliceNumber \
+        << ", magnification=" << magnificationFactor << std::endl;
+  }
+}
+
+void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
+{
+  this->m_UnBoundTimeSlicedGeometry = geometry;
+  if (!this->m_IsBound)
+  {
+    this->ResetRememberedPositions(0, 2);
+  }
+}
+
+mitk::TimeSlicedGeometry::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
+{
+  assert(this->m_UnBoundTimeSlicedGeometry);
+  return this->m_UnBoundTimeSlicedGeometry;
+}
+
+void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
+{
+  this->m_BoundTimeSlicedGeometry = geometry;
+  if (this->m_IsBound)
+  {
+    this->ResetRememberedPositions(3, 5);
+  }
+}
+
+bool QmitkMIDASSingleViewWidget::GetBound()
+{
+  return this->m_IsBound;
+}
+
+void QmitkMIDASSingleViewWidget::SetBound(bool isBound)
+{
+  if (isBound == m_IsBound)
+  {
+    // No change, nothing to do.
+    return;
+  }
+
+  this->m_IsBound = isBound;
+  MIDASViewOrientation orientation = this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()]; // must come after this->m_IsBound = isBound so we pick up the orientation before views were bound
+  this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()] = MIDAS_VIEW_UNKNOWN; // to force a reset.
+
+  this->SetActiveGeometry();
+  this->SetViewOrientation(orientation);
+}
+
+void QmitkMIDASSingleViewWidget::SetActiveGeometry()
+{
+  if (m_IsBound)
+  {
+    m_ActiveTimeSlicedGeometry = m_BoundTimeSlicedGeometry;
+  }
+  else
+  {
+    m_ActiveTimeSlicedGeometry = m_UnBoundTimeSlicedGeometry;
+  }
 }
 
 QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASSingleViewWidget::GetViewOrientation() const
 {
-  return this->m_ViewOrientation;
+  return this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()];
 }
 
 void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orientation)
 {
-  if (orientation != MIDAS_VIEW_UNKNOWN && this->m_Geometry != NULL)
+  if (orientation != MIDAS_VIEW_UNKNOWN)
   {
-    // Store current settings if they were in fact for a valid orientation.
-    if (m_ViewOrientation != MIDAS_VIEW_UNKNOWN)
-    {
-      m_SliceNumbers[this->m_ViewOrientation] = m_SliceNumber;
-      m_TimeSliceNumbers[this->m_ViewOrientation] = m_TimeSliceNumber;
-      m_MagnificationFactors[this->m_ViewOrientation] = m_MagnificationFactor;
-      m_ViewOrientations[this->m_ViewOrientation] = m_ViewOrientation;
+    assert(this->m_SliceNavigationController);
 
-      MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation current orientation=" << m_ViewOrientation \
-          << ", so storing slice=" << m_SliceNumber << ", time=" << m_TimeSliceNumber << ", magnification=" << m_MagnificationFactor \
-          << ", switching to new orientation=" << orientation << std::endl;
-    }
-
-    // We need to have a mitk::BaseRenderer to define world and view geometry.
     mitk::BaseRenderer::Pointer baseRenderer = this->m_SliceNavigationController->GetRenderer();
     assert(baseRenderer);
+
+    // Makes sure that we do have an active active geometry.
+    this->SetActiveGeometry();
+
+    // Store current settings if they were in fact for a valid orientation.
+    this->StorePosition();
 
     // We Construct a mitk::Geometry to represent the maximum view to render.
     //
@@ -412,14 +491,14 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
 
     mitk::Point3D transformedOrigin;
     mitk::Point3D cornerPointsInImage[8];
-    cornerPointsInImage[0] = this->m_Geometry->GetCornerPoint(true, true, true);
-    cornerPointsInImage[1] = this->m_Geometry->GetCornerPoint(true, true, false);
-    cornerPointsInImage[2] = this->m_Geometry->GetCornerPoint(true, false, true);
-    cornerPointsInImage[3] = this->m_Geometry->GetCornerPoint(true, false, false);
-    cornerPointsInImage[4] = this->m_Geometry->GetCornerPoint(false, true, true);
-    cornerPointsInImage[5] = this->m_Geometry->GetCornerPoint(false, true, false);
-    cornerPointsInImage[6] = this->m_Geometry->GetCornerPoint(false, false, true);
-    cornerPointsInImage[7] = this->m_Geometry->GetCornerPoint(false, false, false);
+    cornerPointsInImage[0] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, true, true);
+    cornerPointsInImage[1] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, true, false);
+    cornerPointsInImage[2] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, false, true);
+    cornerPointsInImage[3] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, false, false);
+    cornerPointsInImage[4] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, true, true);
+    cornerPointsInImage[5] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, true, false);
+    cornerPointsInImage[6] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, false, true);
+    cornerPointsInImage[7] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, false, false);
 
     for (unsigned int i = 0; i < 8; i++)
     {
@@ -441,14 +520,14 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     }
 
     // Do the same procedure for each axis, as each axis might be permuted and/or flipped/inverted.
-    mitk::Vector3D originalSpacing = this->m_Geometry->GetSpacing();
+    mitk::Vector3D originalSpacing = this->m_ActiveTimeSlicedGeometry->GetSpacing();
     mitk::Vector3D transformedSpacing;
     mitk::Point3D transformedExtent;
 
     for (unsigned int i = 0; i < 3; i++)
     {
 
-      mitk::Vector3D axisVector = this->m_Geometry->GetAxisVector(i);
+      mitk::Vector3D axisVector = this->m_ActiveTimeSlicedGeometry->GetAxisVector(i);
       MITK_DEBUG << "Matt, axisVector=" << axisVector << std::endl;
 
       unsigned int axisInWorldSpace = 0;
@@ -463,7 +542,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       transformedExtent[axisInWorldSpace] = fabs(axisVector[axisInWorldSpace]/transformedSpacing[axisInWorldSpace]);
     }
 
-    mitk::Geometry3D::BoundsArrayType originalBoundingBox = this->m_Geometry->GetBounds();
+    mitk::Geometry3D::BoundsArrayType originalBoundingBox = this->m_ActiveTimeSlicedGeometry->GetBounds();
     mitk::Geometry3D::BoundsArrayType transformedBoundingBox;
     transformedBoundingBox[0] = 0;
     transformedBoundingBox[1] = transformedExtent[0];
@@ -473,22 +552,22 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     transformedBoundingBox[5] = transformedExtent[2];
 
     mitk::TimeSlicedGeometry::Pointer timeSlicedTransformedGeometry = mitk::TimeSlicedGeometry::New();
-    timeSlicedTransformedGeometry->InitializeEmpty(this->m_Geometry->GetTimeSteps());
-    timeSlicedTransformedGeometry->SetImageGeometry(this->m_Geometry->GetImageGeometry());
-    timeSlicedTransformedGeometry->SetTimeBounds(this->m_Geometry->GetTimeBounds());
-    timeSlicedTransformedGeometry->SetEvenlyTimed(this->m_Geometry->GetEvenlyTimed());
+    timeSlicedTransformedGeometry->InitializeEmpty(this->m_ActiveTimeSlicedGeometry->GetTimeSteps());
+    timeSlicedTransformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
+    timeSlicedTransformedGeometry->SetTimeBounds(this->m_ActiveTimeSlicedGeometry->GetTimeBounds());
+    timeSlicedTransformedGeometry->SetEvenlyTimed(this->m_ActiveTimeSlicedGeometry->GetEvenlyTimed());
     timeSlicedTransformedGeometry->SetSpacing(transformedSpacing);
     timeSlicedTransformedGeometry->SetOrigin(transformedOrigin);
     timeSlicedTransformedGeometry->SetBounds(transformedBoundingBox);
 
-    for (unsigned int i = 0; i < this->m_Geometry->GetTimeSteps(); i++)
+    for (unsigned int i = 0; i < this->m_ActiveTimeSlicedGeometry->GetTimeSteps(); i++)
     {
       mitk::Geometry3D::Pointer transformedGeometry = mitk::Geometry3D::New();
-      transformedGeometry->SetImageGeometry(this->m_Geometry->GetImageGeometry());
+      transformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
       transformedGeometry->SetSpacing(transformedSpacing);
       transformedGeometry->SetOrigin(transformedOrigin);
       transformedGeometry->SetBounds(transformedBoundingBox);
-      transformedGeometry->SetTimeBounds(this->m_Geometry->GetGeometry3D(i)->GetTimeBounds());
+      transformedGeometry->SetTimeBounds(this->m_ActiveTimeSlicedGeometry->GetGeometry3D(i)->GetTimeBounds());
 
       timeSlicedTransformedGeometry->SetGeometry3D(transformedGeometry, i);
     }
@@ -497,14 +576,13 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     MITK_DEBUG << "Matt, transformedSpacing=" << transformedSpacing << std::endl;
     MITK_DEBUG << "Matt, transformedOrigin=" << transformedOrigin << std::endl;
     MITK_DEBUG << "Matt, transformedBoundingBox=" << transformedBoundingBox << std::endl;
-    MITK_DEBUG << "Matt, timeBounds=" << this->m_Geometry->GetTimeBounds() << std::endl;
-
+    MITK_DEBUG << "Matt, timeBounds=" << this->m_ActiveTimeSlicedGeometry->GetTimeBounds() << std::endl;
 
     baseRenderer->SetWorldGeometry(timeSlicedTransformedGeometry);
     m_SliceNavigationController->SetInputWorldGeometry(timeSlicedTransformedGeometry);
 
     // Set the view to the new orientation
-    this->m_ViewOrientation = orientation;
+    this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()] = orientation;
 
     mitk::SliceNavigationController::ViewDirection direction = mitk::SliceNavigationController::Original;
     if (orientation == MIDAS_VIEW_AXIAL)
@@ -527,7 +605,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     unsigned int time = std::numeric_limits<unsigned int>::min();
     int magnification = std::numeric_limits<int>::min();
 
-    if (m_ViewOrientations[orientation] == MIDAS_VIEW_UNKNOWN)
+    if (m_PreviousViewOrientations[this->GetBoundUnboundPreviousArrayOffset() + orientation] == MIDAS_VIEW_UNKNOWN)
     {
       // No previous slice, so default to central slice.
       unsigned int steps = m_SliceNavigationController->GetSlice()->GetSteps();
@@ -609,15 +687,21 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
 
       this->SetSliceNumber(slice);
       this->SetTime(time);
-      m_MagnificationFactor = magnification;
+      m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()] = magnification;
 
       MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation calculated slice=" << slice << ", time=" << time << ", magnification=" << magnification << std::endl;
     }
     else
     {
-      slice = m_SliceNumbers[this->m_ViewOrientation];
-      time = m_TimeSliceNumbers[this->m_ViewOrientation];
-      magnification = m_MagnificationFactors[this->m_ViewOrientation];
+
+      unsigned int currentArrayOffset = this->GetBoundUnboundOffset();
+      unsigned int previousArrayOffset = this->GetBoundUnboundPreviousArrayOffset();
+
+      MIDASViewOrientation orientation = m_CurrentViewOrientations[currentArrayOffset];
+
+      slice = m_PreviousSliceNumbers[previousArrayOffset + orientation];
+      time = m_PreviousTimeSliceNumbers[orientation];
+      magnification = m_PreviousMagnificationFactors[orientation];
 
       this->SetSliceNumber(slice);
       this->SetTime(time);
@@ -625,25 +709,67 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
 
       MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation using previous settings, slice=" << slice << ", time=" << time << ", magnification=" << magnification << std::endl;
     }
-
   }
 }
 
-void QmitkMIDASSingleViewWidget::InitializeGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
+void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
 {
-  // Store the geometry for later. This comes from the image, as so should be a TimeSlicedGeometry (subclass of Geometry3D).
-  this->m_Geometry = geometry;
+  MITK_DEBUG << "Matt, requested magnificationFactor=" << magnificationFactor << std::endl;
 
-  // If we reset these variables, then code that works out orientation should re-initialize,
-  // as it is like we have had no previous geometry information before.
-  for (unsigned int i = 0; i < 3; i++)
+  mitk::Point2D scaleFactorPixPerVoxel;
+  mitk::Point2D scaleFactorPixPerMillimetres;
+  this->GetScaleFactors(scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+
+  MITK_DEBUG << "Matt, currently scaleFactorPixPerVoxel=" << scaleFactorPixPerVoxel << ", scaleFactorPixPerMillimetres=" << scaleFactorPixPerMillimetres << std::endl;
+
+  double effectiveMagnificationFactor = 0;
+  if (magnificationFactor >= 0)
   {
-    m_SliceNumbers[i] = 0;
-    m_TimeSliceNumbers[i] = 0;
-    m_MagnificationFactors[i] = this->m_MinimumMagnification;
-    m_ViewOrientations[i] = MIDAS_VIEW_UNKNOWN;
+    effectiveMagnificationFactor = magnificationFactor + 1;
   }
-  this->m_ViewOrientation = MIDAS_VIEW_UNKNOWN;
+  else
+  {
+    effectiveMagnificationFactor = magnificationFactor - 1;
+    effectiveMagnificationFactor = fabs(1.0/effectiveMagnificationFactor);
+  }
+
+  MITK_DEBUG << "Matt, effectiveMagnificationFactor=" << effectiveMagnificationFactor << std::endl;
+
+  mitk::Point2D targetScaleFactorPixPerMillimetres;
+
+  // Need to scale both of the current scaleFactorPixPerVoxel[i]
+  for (int i = 0; i < 2; i++)
+  {
+    targetScaleFactorPixPerMillimetres[i] = (effectiveMagnificationFactor / scaleFactorPixPerVoxel[i]) * scaleFactorPixPerMillimetres[i];
+  }
+
+  MITK_DEBUG << "Matt, targetScaleFactorPixPerMillimetres=" << targetScaleFactorPixPerMillimetres << std::endl;
+
+  // Pick the one that has changed the least
+  int axisWithLeastDifference = -1;
+  double leastDifference = std::numeric_limits<double>::max();
+  for(int i = 0; i < 2; i++)
+  {
+    if (fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]) < leastDifference)
+    {
+      leastDifference = fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]);
+      axisWithLeastDifference = i;
+    }
+  }
+
+  double zoomScaleFactor = targetScaleFactorPixPerMillimetres[axisWithLeastDifference]/scaleFactorPixPerMillimetres[axisWithLeastDifference];
+
+  MITK_DEBUG << "Matt, axisWithLeastDifference=" << axisWithLeastDifference << std::endl;
+  MITK_DEBUG << "Matt, zoomScaleFactor=" << zoomScaleFactor << std::endl;
+
+  this->ZoomDisplayAboutCentre(zoomScaleFactor);
+  this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()] = magnificationFactor;
+  this->RequestUpdate();
+}
+
+int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
+{
+  return this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()];
 }
 
 void QmitkMIDASSingleViewWidget::ZoomDisplayAboutCentre(double scaleFactor)
@@ -668,8 +794,9 @@ void QmitkMIDASSingleViewWidget::ZoomDisplayAboutCentre(double scaleFactor)
 
 void QmitkMIDASSingleViewWidget::GetScaleFactors(mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres)
 {
+  this->SetActiveGeometry();
+
   assert(this->m_SliceNavigationController);
-  assert(this->m_Geometry);
 
   mitk::BaseRenderer::Pointer baseRenderer = this->m_SliceNavigationController->GetRenderer();
   assert(baseRenderer);
@@ -678,14 +805,14 @@ void QmitkMIDASSingleViewWidget::GetScaleFactors(mitk::Point2D &scaleFactorPixPe
   assert(displayGeometry);
 
   mitk::Point3D cornerPointsInImage[8];
-  cornerPointsInImage[0] = this->m_Geometry->GetCornerPoint(true, true, true);
-  cornerPointsInImage[1] = this->m_Geometry->GetCornerPoint(true, true, false);
-  cornerPointsInImage[2] = this->m_Geometry->GetCornerPoint(true, false, true);
-  cornerPointsInImage[3] = this->m_Geometry->GetCornerPoint(true, false, false);
-  cornerPointsInImage[4] = this->m_Geometry->GetCornerPoint(false, true, true);
-  cornerPointsInImage[5] = this->m_Geometry->GetCornerPoint(false, true, false);
-  cornerPointsInImage[6] = this->m_Geometry->GetCornerPoint(false, false, true);
-  cornerPointsInImage[7] = this->m_Geometry->GetCornerPoint(false, false, false);
+  cornerPointsInImage[0] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, true, true);
+  cornerPointsInImage[1] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, true, false);
+  cornerPointsInImage[2] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, false, true);
+  cornerPointsInImage[3] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, false, false);
+  cornerPointsInImage[4] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, true, true);
+  cornerPointsInImage[5] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, true, false);
+  cornerPointsInImage[6] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, false, true);
+  cornerPointsInImage[7] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, false, false);
 
   scaleFactorPixPerVoxel[0] = std::numeric_limits<float>::max();
   scaleFactorPixPerVoxel[1] = std::numeric_limits<float>::max();
@@ -697,8 +824,8 @@ void QmitkMIDASSingleViewWidget::GetScaleFactors(mitk::Point2D &scaleFactorPixPe
 
     for (unsigned int j = 1; j < 8; j++)
     {
-      this->m_Geometry->WorldToIndex(cornerPointsInImage[i], pointsInVoxels[0]);
-      this->m_Geometry->WorldToIndex(cornerPointsInImage[j], pointsInVoxels[1]);
+      this->m_ActiveTimeSlicedGeometry->WorldToIndex(cornerPointsInImage[i], pointsInVoxels[0]);
+      this->m_ActiveTimeSlicedGeometry->WorldToIndex(cornerPointsInImage[j], pointsInVoxels[1]);
 
       // We only want to pick pairs of points where the points differ in 3D
       // space along exactly one axis (i.e. no diagonals), and no duplicates.
@@ -765,3 +892,4 @@ void QmitkMIDASSingleViewWidget::GetScaleFactors(mitk::Point2D &scaleFactorPixPe
   }
   MITK_DEBUG << "Matt, output = scaleFactorPixPerVoxel=" << scaleFactorPixPerVoxel << ", scaleFactorPixPerMillimetres=" << scaleFactorPixPerMillimetres << std::endl;
 }
+

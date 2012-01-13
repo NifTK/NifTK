@@ -49,9 +49,11 @@ class QmitkMIDASRenderWindow;
  * and care must be taken to manage this. The reason is that each of these windows could
  * have it's own geometry, and sometimes very different geometry, and when the "Bind Slices"
  * button is clicked, they must all align to a specific (the currently selected Window) geometry.
+ * So it became necessary to manage this independent from the rest of the MITK application.
  *
  * <pre>
- * Note:
+ * Note: The requirements specification for MIDAS style zoom basically says.
+ *
  * magnification   : actual pixels per voxel.
  * on MIDAS widget :
  * 2               : 3
@@ -167,8 +169,20 @@ public:
   /// \brief Get the view orientation.
   MIDASViewOrientation GetViewOrientation() const;
 
-  /// \brief Stores a pointer to the provided geometry, and resets the previous slice number, magnification factor and orientation fields.
-  void InitializeGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
+  /// \brief Sets the world geometry that we are sampling.
+  void SetGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
+
+  /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
+  mitk::TimeSlicedGeometry::Pointer GetGeometry();
+
+  /// \brief Sets the world geometry that we are sampling when we are in bound mode.
+  void SetBoundGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
+
+  /// \brief If we tell the widget to be in bound mode, it uses the bound geometries.
+  void SetBound(bool isBound);
+
+  /// \brief Returns the bound flag.
+  bool GetBound();
 
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
@@ -189,6 +203,12 @@ protected:
 
 private:
 
+  void ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex);
+  void StorePosition();
+  void SetActiveGeometry();
+  unsigned int GetBoundUnboundOffset() const;
+  unsigned int GetBoundUnboundPreviousArrayOffset() const;
+
   QmitkMIDASRenderWindow*                        m_RenderWindow;
   mitk::RenderWindowFrame::Pointer               m_RenderWindowFrame;
   mitk::GradientBackground::Pointer              m_RenderWindowBackground;
@@ -198,25 +218,29 @@ private:
   mitk::SliceNavigationController::Pointer       m_TimeNavigationController;
 
   mitk::DataStorage::Pointer                     m_DataStorage;
-  mitk::TimeSlicedGeometry*                      m_Geometry;
+  mitk::TimeSlicedGeometry::Pointer              m_UnBoundTimeSlicedGeometry;  // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::TimeSlicedGeometry::Pointer              m_BoundTimeSlicedGeometry;    // Passed in, when we do "bind", so shared amongst windows.
+  mitk::TimeSlicedGeometry::Pointer              m_ActiveTimeSlicedGeometry;   // The one we use.
 
   QGridLayout                                   *m_Layout;
   QColor                                         m_BackgroundColor;
   QColor                                         m_SelectedColor;
   QColor                                         m_UnselectedColor;
 
-  int                                            m_MinimumMagnification; // passed in as constructor arguments, so this class unaware.
-  int                                            m_MaximumMagnification; // passed in as constructor arguments, so this class unaware.
+  int                                            m_MinimumMagnification; // passed in as constructor arguments, so this class unaware of where it came from.
+  int                                            m_MaximumMagnification; // passed in as constructor arguments, so this class unaware of where it came from.
 
-  unsigned int                                   m_SliceNumber;
-  unsigned int                                   m_TimeSliceNumber;
-  int                                            m_MagnificationFactor;
-  MIDASViewOrientation                           m_ViewOrientation;
+  bool                                           m_IsBound;
 
-  std::vector<unsigned int>                      m_SliceNumbers;         // length 3, one each for axial, sagittal, coronal.
-  std::vector<unsigned int>                      m_TimeSliceNumbers;     // length 3, one each for axial, sagittal, coronal.
-  std::vector<int>                               m_MagnificationFactors; // length 3, one each for axial, sagittal, coronal.
-  std::vector<MIDASViewOrientation>              m_ViewOrientations;     // length 3, one each for axial, sagittal, coronal.
+  std::vector<unsigned int>                      m_CurrentSliceNumbers;          // length 2, one for unbound, then for bound.
+  std::vector<unsigned int>                      m_CurrentTimeSliceNumbers;      // length 2, one for unbound, then for bound.
+  std::vector<int>                               m_CurrentMagnificationFactors;  // length 2, one for unbound, then for bound.
+  std::vector<MIDASViewOrientation>              m_CurrentViewOrientations;      // length 2, one for unbound, then for bound.
+
+  std::vector<unsigned int>                      m_PreviousSliceNumbers;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  std::vector<unsigned int>                      m_PreviousTimeSliceNumbers;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  std::vector<int>                               m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  std::vector<MIDASViewOrientation>              m_PreviousViewOrientations;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
 };
 
 #endif // QMITKMIDASSINGLEVIEWWIDGET_H

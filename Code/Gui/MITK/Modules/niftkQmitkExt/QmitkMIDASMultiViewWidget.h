@@ -179,6 +179,8 @@ private:
   void SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode);
   void SetSelectedWindow(unsigned int i);
   void EnableWidgetsForThumbnailMode(bool isThumbnailMode);
+  void GetStartStopIndexForIteration(unsigned int &start, unsigned int &stop);
+  void SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation);
 
   QGridLayout                                   *m_LayoutForRenderWindows;
   QGridLayout                                   *m_LayoutForLayoutButtons;

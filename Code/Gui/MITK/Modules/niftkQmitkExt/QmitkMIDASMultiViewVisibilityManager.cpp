@@ -420,7 +420,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       }
 
       // Then set up geometry of that single window.
-      m_ListOfWidgets[windowIndex]->InitializeGeometry(geometry.GetPointer());
+      m_ListOfWidgets[windowIndex]->SetGeometry(geometry.GetPointer());
       m_ListOfWidgets[windowIndex]->SetViewOrientation(orientation);
 
     }
@@ -461,7 +461,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         this->AddNodeToWindow(dropIndex, nodes[i]);
 
         // Initialise geometry according to first image
-        m_ListOfWidgets[dropIndex]->InitializeGeometry(geometry.GetPointer());
+        m_ListOfWidgets[dropIndex]->SetGeometry(geometry.GetPointer());
         m_ListOfWidgets[dropIndex]->SetViewOrientation(orientation);
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
@@ -495,7 +495,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       // Then sort out geometry for every window, with an increasing slice number evenly throughout the volume.
       for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
       {
-        m_ListOfWidgets[i]->InitializeGeometry(geometry.GetPointer());
+        m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
         m_ListOfWidgets[i]->SetViewOrientation(orientation);
 
         unsigned int minSlice = m_ListOfWidgets[i]->GetMinSlice();
