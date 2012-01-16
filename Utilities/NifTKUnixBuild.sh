@@ -71,7 +71,7 @@ if [ "${COVERAGE}" = "ON" ]; then
   COVERAGE_ARG="-DNIFTK_CHECK_COVERAGE=ON"
 fi
 
-if [ "${OPENCV} = "ON" ]; then
+if [ "${OPENCV}" = "ON" ]; then
   OPENCV_ARG="-DBUILD_OPENCV=ON"
 fi
 
