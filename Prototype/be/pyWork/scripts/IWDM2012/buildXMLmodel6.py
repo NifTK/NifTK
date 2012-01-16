@@ -427,6 +427,14 @@ chestSurfPolys = chestSurfPolys.reshape( chestSurfMesh.GetPolys().GetNumberOfCel
 
 
 
+pdr = vtk.vtkPolyDataReader()
+pdr.SetFileName( defChestWallSurfMeshVTK )
+pdr.Update()
+
+chestSurfMesh = pdr.GetOutput()
+chestSurfMeshPoints = VN.vtk_to_numpy( chestSurfMesh.GetPoints().GetData() )
+chestSurfPolys = VN.vtk_to_numpy( chestSurfMesh.GetPolys().GetData() )
+chestSurfPolys = chestSurfPolys.reshape( chestSurfMesh.GetPolys().GetNumberOfCells(),chestSurfPolys.shape[0]/chestSurfMesh.GetPolys().GetNumberOfCells() )
 
 
 ############################################
@@ -476,6 +484,7 @@ genS.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen2.glandElement
 
 #genS.setContactSurfaceVTKFile(defChestWallSurfMeshVTK, 'T3', allNodesArray2.shape[0] )
 genS.setContactSurface( chestSurfMeshPoints[:,0:3] / 1000., chestSurfPolys[ : , 1:4 ], allNodesArray2, 'T3' )
+
 genS.setFixConstraint( lowXIdx2, 0 )
 genS.setFixConstraint( lowXIdx2, 2 )
 
@@ -490,6 +499,33 @@ genS.writeXML( xmlFileOut )
 
 
 
+strSimulatedSupine.append(         meshDir + 'outS.nii'      )
+strSimulatedSupineLabelImg.append( meshDir + 'outLabelS.nii' )
+strOutDVFImg.append(               meshDir + 'outDVFS.nii'   )
+
+# run the simulation and resampling at the same time
+simCommand = 'niftkDeformImageFromNiftySimulation'
+simParams   = ' -x '    + xmlFileOut 
+simParams  += ' -i '    + strProneImg
+simParams  += ' -o '    + strSimulatedSupine[-1]
+
+# also deform the label image!
+simParams  += ' -iL '    + labelImage
+simParams  += ' -oL '    + strSimulatedSupineLabelImg[-1]
+simParams  += ' -oD '    + strOutDVFImg[-1]
+
+
+# niftyReg and FEIR use different indicators for "mask"
+if useFEIR :
+    simParams  += ' -mval -1 ' 
+else :
+    simParams  += ' -mval 0 '
+     
+simParams  += ' -interpolate bspl '
+
+# run the simulation
+print('Starting niftySimulation')
+cmdEx.runCommand( simCommand, simParams )
 
 
 

@@ -121,7 +121,7 @@ tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL
 cmdEx.runCommand( 'tetgen', tetVolParams )
 
 #
-# Build the 2nd mesh
+# Build the 2nd mesh needs to be coarser as niftySim crashes otherwise
 # some file names
 #
 breastSurfBaseName2     = breastSurfMeshVTK2.split('.')[0] 
@@ -145,7 +145,7 @@ cmdEx.runCommand( meshLabCommand, meshLabParamrs )
 stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL2 )
 
 # build the volume mesh
-tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL2
+tetVolParams = ' -pq1.42a50K ' + improBreastSurfMeshSTL2 # changed this to coarser setting 50 instead of 10
 tetVolParams = ' -pq1.42a1000K ' + improBreastSurfMeshSTL2
 cmdEx.runCommand( 'tetgen', tetVolParams )
 
