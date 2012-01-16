@@ -24,7 +24,7 @@ IF(QT_FOUND)
       ENDIF()
       
       ExternalProject_Add(${proj}
-      GIT_REPOSITORY http://github.com/commontk/CTK.git
+      GIT_REPOSITORY ${GIT_PROTOCOL}://github.com/commontk/CTK.git
       GIT_TAG ${revision_tag}
       BINARY_DIR ${proj}-build
       UPDATE_COMMAND ""
