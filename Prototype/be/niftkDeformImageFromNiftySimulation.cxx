@@ -48,6 +48,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] =
 	{ OPT_STRING | OPT_REQ, "interpolate", "nn|lin|bspl",    "Interpolation scheme used (nn, lin, or bspl)"                         },
 	{ OPT_STRING,           "m",           "filename",       "Output mask image name"                                               },
 	{ OPT_INT,              "mval",        "int mask value", "Defines the pixel value of the resampled image outside the model [0]" },
+	{ OPT_FLOATx3,          "offset",      "oX oY oZ",       "Use if mesh has an offset to the image coordinate system."            },
 	{ OPT_DONE, NULL, NULL,                                  "Warps the input image by niftySim simluation specified."              },
 };
 
@@ -64,6 +65,7 @@ enum
 	O_INTERPOLATION,
 	O_MASKIMAGENAME,
 	O_MASKVALUE,
+	O_OFFSET,
 };
 
 enum
@@ -113,7 +115,8 @@ int main(int argc, char ** argv)
 	std::string strMaskImageName;
 	std::string strOutputDVF;
 	int         iOutsideVal=0;
-
+	float       sa[3] = {0,0,0};
+	float*      faOffset = a;
 
     niftk::CommandLineParser CommandLineOptions( argc, argv, clArgList, true );
     CommandLineOptions.GetArgument( O_INPUT,         strInputImageName       );
@@ -125,6 +128,12 @@ int main(int argc, char ** argv)
 	CommandLineOptions.GetArgument( O_INTERPOLATION, strGivenInterpolation   );
 	CommandLineOptions.GetArgument( O_MASKIMAGENAME, strMaskImageName        );
 	CommandLineOptions.GetArgument( O_MASKVALUE,     iOutsideVal             );
+	CommandLineOptions.GetArgument( O_OFFSET,        faOffset                );
+  
+	for (int i= 0;  i < 3;  ++i)
+	{
+		std::cout << i << ": " << faOffset[i]	 << std::endl;
+ 	}
 
 	/*
 	 * Read the images
@@ -146,6 +155,17 @@ int main(int argc, char ** argv)
 		std::cerr << "Could not read input image: " << strInputImageName << std::endl;
 	}
 
+	//NiftySimTransformationPointerType::FixedImageType inputImage = inputReader->GetOutput();
+	InputImageType::PointType originalOffset = inputReader->GetOutput()->GetOrigin();
+	InputImageType::PointType modifiedOffset = inputReader->GetOutput()->GetOrigin();
+	//std::cout << originalOffset << std::endl;
+
+	modifiedOffset[0] = originalOffset[0] + faOffset[0];
+	modifiedOffset[1] = originalOffset[1] + faOffset[1];
+	modifiedOffset[2] = originalOffset[2] + faOffset[2];
+	
+	inputReader->GetOutput()->SetOrigin( modifiedOffset );
+
 	NiftySimTransformationPointerType simTrafo = NiftySimTransformationType::New();
 
 	TrafoParametersType params = simTrafo->GetParameters();
@@ -164,8 +184,10 @@ int main(int argc, char ** argv)
 	resampler->SetTransform( simTrafo );
 	resampler->SetInput( inputReader->GetOutput() );
 	resampler->SetUseReferenceImage( false );
-
-	resampler->SetOutputParametersFromImage(inputReader->GetOutput());
+	
+	// Before resampling, reset the origin 
+	inputReader->GetOutput()->SetOrigin( originalOffset );
+	resampler->SetOutputParametersFromImage( inputReader->GetOutput() );
 
 	/*
 	 * Which Interpolation to use...

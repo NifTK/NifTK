@@ -52,6 +52,7 @@ class materialSetGenerator:
         # the nodes are assigned here
         self.muscleElements = []
         self.skinElements   = []
+        self.skinNodes      = []
         self.fatElemetns    = []
         self.glandElements  = []
         
@@ -116,32 +117,48 @@ class materialSetGenerator:
             cdsCR = np.tile(cdsC,(self.surfNodes.shape[0],1))
             cdsDR = np.tile(cdsD,(self.surfNodes.shape[0],1))
             
+            skinCDS = []
+            
             # All three coordinates must be 
             found = []
             if np.max( np.min(cdsAR==self.surfNodes,1) ):
                 found.append( 0 ) 
+                skinCDS.append(cdsA)
 
             if np.max( np.min(cdsBR==self.surfNodes,1) ):
                 found.append( 1 )
+                skinCDS.append(cdsB)
                 
             if np.max( np.min(cdsCR==self.surfNodes,1) ):
                 found.append( 2 )
+                skinCDS.append(cdsC)
             
             if np.max( np.min(cdsDR==self.surfNodes,1) ):
                 found.append( 3 )
+                skinCDS.append(cdsD)
             
             if len( found ) >= self.numTetNodesForSurf:
                 
-                # Check if the coordinate is labeled in the skin image
-                c = [cdsA, cdsB, cdsC, cdsD ]
-                c = c[ min( found ) ]
-                
-                idxS = np.array( (np.around( np.dot( self.skinMaskXToIMat, np.hstack( ( c, 1 ) ) ) ) ), dtype=np.int ) 
+                # Check if the coordinate is labelled in the skin image
+                #c = [cdsA, cdsB, cdsC, cdsD ]
+                #c = c[ min( found ) ]
+                # average over those coordinates which were found to be on the surfce 
+                skinCDS = np.array( skinCDS )
+                skinCDS = np.mean( skinCDS, 0 )
+                                
+                #idxS = np.array( (np.around( np.dot( self.skinMaskXToIMat, np.hstack( ( c, 1 ) ) ) ) ), dtype=np.int ) 
+                idxS = np.array( (np.around( np.dot( self.skinMaskXToIMat, np.hstack( ( skinCDS, 1 ) ) ) ) ), dtype=np.int )
                 
                 if skinImgData[ idxS[0], idxS[1], idxS[2] ] != 0 :
                     nNdsSkinFound = nNdsSkinFound + 1 
                     self.skinElements.append( i )
                     self.skinElementMidPoints.append( (cdsA + cdsB + cdsC + cdsD) / 4. )
+                    
+                    if found.count( 0 ) == 1 : self.skinNodes.append ( A )
+                    if found.count( 1 ) == 1 : self.skinNodes.append ( B )
+                    if found.count( 2 ) == 1 : self.skinNodes.append ( C )
+                    if found.count( 3 ) == 1 : self.skinNodes.append ( D )
+                    
                     continue
             
             # First attempt: Take a single sample in the label image
@@ -182,6 +199,9 @@ class materialSetGenerator:
         self.fatElementMidPoints    = np.array( self.fatElementMidPoints )
         self.glandElementMidPoints  = np.array( self.glandElementMidPoints )
         self.muscleElementMidPoints = np.array( self.muscleElementMidPoints )
+        
+        self.skinNodes = np.array( self.skinNodes )
+        self.skinNodes = np.unique( self.skinNodes )
         
         print( 'Found the following number of elements: ')
         print( ' - Skin:    %8i' % nNdsSkinFound )       

@@ -145,8 +145,8 @@ cmdEx.runCommand( meshLabCommand, meshLabParamrs )
 stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL2 )
 
 # build the volume mesh
-tetVolParams = ' -pq1.42a50K ' + improBreastSurfMeshSTL2 # changed this to coarser setting 50 instead of 10
-tetVolParams = ' -pq1.42a1000K ' + improBreastSurfMeshSTL2
+#tetVolParams = ' -pq1.42a50K ' + improBreastSurfMeshSTL2 # changed this to coarser setting 50 instead of 10
+tetVolParams = ' -pq1.42a100K ' + improBreastSurfMeshSTL2
 cmdEx.runCommand( 'tetgen', tetVolParams )
 
 # go back to where you belong...

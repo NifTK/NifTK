@@ -26,6 +26,10 @@ import f3dRegistrationTask as f3dTask
 import feirRegistrationTask as feirTask
 import os, sys
 import vtkVolMeshHandler as vmh
+import modelDeformationHandler as mDefH
+
+
+
 
 # starting from the images
 # 1) soft tissue (currently seen as homogeneous material... to be corrected later on)
@@ -38,6 +42,12 @@ import vtkVolMeshHandler as vmh
 #
 
 useFEIR                   = True
+FEIRmode                  = 'fast'
+FEIRmu                    = 0.0025 * 2 ** -8
+FEIRlambda                = 0.0
+FEIRconvergence           = 0.01
+FEIRplanStr               = 'n'
+
 updateFactor              = 1.0
 numIterations             = 1
 
@@ -113,6 +123,13 @@ breastMesh2 = vmh.vtkVolMeshHandler( breastVolMeshName2 )
 
 # calculate the material parameters (still to be improved)
 # this only needs to run once...
+if not 'matGen2' in locals():
+    matGen2 = materialSetGenerator.materialSetGenerator( breastMesh2.volMeshPoints, 
+                                                         breastMesh2.volMeshCells, 
+                                                         labelImage, 
+                                                         skinMaskImage, 
+                                                         breastMesh2.volMesh, 
+                                                         95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
 if not 'matGen' in locals():
     matGen = materialSetGenerator.materialSetGenerator( breastMesh.volMeshPoints, 
                                                         breastMesh.volMeshCells, 
@@ -121,13 +138,6 @@ if not 'matGen' in locals():
                                                         breastMesh.volMesh, 
                                                         95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
 
-if not 'matGen2' in locals():
-    matGen2 = materialSetGenerator.materialSetGenerator( breastMesh2.volMeshPoints, 
-                                                         breastMesh2.volMeshCells, 
-                                                         labelImage, 
-                                                         skinMaskImage, 
-                                                         breastMesh2.volMesh, 
-                                                         95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
 
 plotArrayAs3DPoints( matGen.skinElementMidPoints, (0., 1., 0.) )
 
@@ -289,7 +299,8 @@ while True :
     #
     if useFEIR :
         feirReg = feirTask.feirRegistrationTask( strSimulatedSupine[-1], strSupineImg, regDirFEIR, 'NA', 
-                                                 mu=0.0025*(2**-8), lm=0.0, mode='standard', mask=True, displacementConvergence=0.01, planStr='n')
+                                                 mu=FEIRmu, lm=FEIRlambda, mode=FEIRmode, mask=True, 
+                                                 displacementConvergence=FEIRconvergence, planStr=FEIRplanStr)
     
         feirReg.run()
         feirReg.constructNiiDeformationFile()
@@ -480,7 +491,9 @@ genS = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000.,
 genS.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen2.fatElemetns    )
 genS.setMaterialElementSet( 'NH', 'SKIN',   [ 2400, 50000], matGen2.skinElements   )
 genS.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen2.glandElements  )
-#genS.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen2.muscleElements )
+
+if matGen2.muscleElements.shape != 0 :
+    genS.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen2.muscleElements )
 
 #genS.setContactSurfaceVTKFile(defChestWallSurfMeshVTK, 'T3', allNodesArray2.shape[0] )
 genS.setContactSurface( chestSurfMeshPoints[:,0:3] / 1000., chestSurfPolys[ : , 1:4 ], allNodesArray2, 'T3' )
@@ -508,6 +521,8 @@ simCommand = 'niftkDeformImageFromNiftySimulation'
 simParams   = ' -x '    + xmlFileOut 
 simParams  += ' -i '    + strProneImg
 simParams  += ' -o '    + strSimulatedSupine[-1]
+simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, -offsetVal, 0 ))
+
 
 # also deform the label image!
 simParams  += ' -iL '    + labelImage
@@ -529,6 +544,153 @@ cmdEx.runCommand( simCommand, simParams )
 
 
 
+####################################################
+####################################################
+####################################################
+
+
+#
+# Check if simulation diverged 
+#
+simSup = nib.load( strSimulatedSupine[-1] )
+
+if np.min( simSup.get_data() ) == np.max( simSup.get_data() ):
+
+    # remove those files which do not describe a valid 
+    print('No more simulation results after %i iterations' % i)
+    
+
+    #simSup = nib.load( strSimulatedSupine[-2] )
+    strSimulatedSupine.pop( -1 )
+    strSimulatedSupineLabelImg.pop( -1 )
+    strOutDVFImg.pop(-1)
+    sys.exit()  
 
 
 
+#
+# Do the registration step
+#
+if useFEIR :
+    feirReg = feirTask.feirRegistrationTask( strSimulatedSupine[-1], strSupineImg, regDirFEIR, 'NA', 
+                                             mu=FEIRmu, lm=FEIRlambda, mode=FEIRmode, mask=True, 
+                                             displacementConvergence=FEIRconvergence, planStr=FEIRplanStr)
+    
+    feirReg.run()
+    feirReg.constructNiiDeformationFile()
+    feirReg.resampleSourceImage()
+    dispImg = nib.load( feirReg.dispFieldITK )
+
+else :
+    f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strSupineImg, strSimulatedSupine[-1], regDirF3D, 'NA', 
+                          bendingEnergy=0.007, logOfJacobian=0.0, finalGridSpacing=5, numberOfLevels=5, maxIterations=300, gpu=True)
+    
+    f3dReg.run()
+    f3dReg.constructNiiDeformationFile()
+    dispImg = nib.load( f3dReg.dispFieldITK )
+
+
+# read the deformation field
+dispData = dispImg.get_data()
+dispAffine = dispImg.get_affine()
+dispAffine[0,0] = - dispAffine[0,0]  # quick and dirty
+dispAffine[1,1] = - dispAffine[1,1]
+
+#
+# generate the new model with the updated boundary conditions...
+#
+# idea: all nodes that were fixed in the previous model are now replaced by the displacements from the 
+#       registration
+#
+#
+# remember which nodes (numbers and coordinates) were fixed, so these can be used later on.
+# and initialise these with zero (=fixed) displacement
+#
+# TODO: This is not the zero vector but a combination 
+
+prevDeform = mDefH.modelDeformationHandler( genS )
+prevDeform.deformationVectors()
+
+dispVects = prevDeform.deformationVectors( matGen2.skinNodes ) * 1000. # given in m thus multiply by 1000
+# but need to be limited to the nodes given only
+
+skinPoints      = []
+dispVectsUpdate = []
+
+for n in matGen2.skinNodes:
+    skinPoints.append( breastMesh2.volMeshPoints[n,:] )
+    curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( breastMesh2.volMeshPoints[n,:], 1 ) ) ) ), dtype = np.int )
+    dispVectsUpdate.append( np.array( ( dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 0 ], 
+                                        dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 1 ], 
+                                        dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 2 ] ) ) )
+
+## compose the displacement as a simple addition
+dispVects = updateFactor * np.array( dispVectsUpdate ) + dispVects
+
+
+#
+# Same generator as previous one (sliding and gravity) but now with skin displacement
+#
+
+# Sliding xmlFile generator
+genSD = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4' )
+
+genSD.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen2.fatElemetns    )
+genSD.setMaterialElementSet( 'NH', 'SKIN',   [ 2400, 50000], matGen2.skinElements   )
+genSD.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen2.glandElements  )
+
+if matGen2.muscleElementMidPoints.shape[0] != 0 :
+    genSD.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen2.muscleElements )
+
+genSD.setContactSurface( chestSurfMeshPoints[:,0:3] / 1000., chestSurfPolys[ : , 1:4 ], allNodesArray2, 'T3' )
+
+#genSD.setFixConstraint( lowXIdx2, 0 )
+#genSD.setFixConstraint( lowXIdx2, 2 )
+genSD.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray2, 'RAMP' )
+genSD.setDifformDispConstraint('RAMP', matGen2.skinNodes, dispVects / 1000. )
+genSD.setOutput( 5000, 'U' )
+genSD.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=50, hgKappa=0.05, density=1000 )    
+
+xmlFileOut = meshDir + 'modelSD.xml'
+genSD.writeXML( xmlFileOut )
+
+
+
+strSimulatedSupine.append(         meshDir + 'outSD.nii'      )
+strSimulatedSupineLabelImg.append( meshDir + 'outLabelSD.nii' )
+strOutDVFImg.append(               meshDir + 'outDVFSD.nii'   )
+
+# run the simulation and resampling at the same time
+simParams   = ' -x '    + xmlFileOut 
+simParams  += ' -i '    + strProneImg
+simParams  += ' -o '    + strSimulatedSupine[-1]
+simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, -offsetVal, 0 ))
+
+
+# also deform the label image!
+simParams  += ' -iL '    + labelImage
+simParams  += ' -oL '    + strSimulatedSupineLabelImg[-1]
+simParams  += ' -oD '    + strOutDVFImg[-1]
+
+
+# niftyReg and FEIR use different indicators for "mask"
+if useFEIR :
+    simParams  += ' -mval -1 ' 
+else :
+    simParams  += ' -mval 0 '
+     
+simParams  += ' -interpolate bspl '
+
+# run the simulation
+print('Starting niftySimulation')
+cmdEx.runCommand( simCommand, simParams )
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
