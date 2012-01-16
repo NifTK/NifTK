@@ -227,7 +227,7 @@ IF(CUDA_FOUND)
       )
   
     IF(VTK_FOUND)
-      IF(QT_FOUND)
+      #IF(QT_FOUND)
 
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_Visualisation_")
           
@@ -243,11 +243,11 @@ IF(CUDA_FOUND)
           vtkIO
           vtkCommon
           vtkVolumeRendering
-          QVTK
-          ${QT_LIBRARIES} 
+          #QVTK
+          #${QT_LIBRARIES} 
           )
       
-      ENDIF(QT_FOUND)
+      #ENDIF(QT_FOUND)
     ENDIF(VTK_FOUND)
 
 
