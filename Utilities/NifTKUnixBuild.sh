@@ -26,11 +26,13 @@
 
 function run_command()
 {
-  echo "Running $1"
+  echo "Running $1, with cautious flag=$2"
   eval $1
   if [ $? -ne 0 ]; then
-    echo "Emergency exit due to exit code:$?"
-    exit $?
+    if [ "$2" = "OFF" ]; then
+      echo "Emergency exit due to exit code:$?"
+      exit $?
+    fi
   fi
 }
 
@@ -80,7 +82,7 @@ run_command "cd ${FOLDER}"
 run_command "cmake ../NifTK -DCMAKE_BUILD_TYPE=${TYPE} -DBUILD_GUI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DBUILD_NIFTYLINK=ON -DBUILD_OPENCV=ON -DBUILD_OPENIGTLINK=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON ${COVERAGE_ARG}"
 run_command "make -j ${THREADS}"
 run_command "cd NifTK-build"
-run_command "${BUILD_COMMAND}"
+run_command "${BUILD_COMMAND} OFF"  # The submit task fails due to http timeout, so we want to carry on regardles.
 
 if [ "${TYPE}" = "Release" ]; then
   run_command "make package"
