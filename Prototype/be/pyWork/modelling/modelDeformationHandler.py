@@ -30,6 +30,7 @@ class modelDeformationHandler :
             self.deformationFileName = 'U.txt'
         
         self._readDeformationFile()
+        self._generateDeformedModel()
         self._generateDeformationVectors()
         
         
@@ -63,6 +64,13 @@ class modelDeformationHandler :
         print('Reading done.')
         
         
+
+        
+    def _generateDeformedModel( self ) :
+        
+        # try an array of deformed numpyArrays. One element for each time point captured...
+        self.deformedNodes = self.u[:,-1].reshape( (-1, self.dim) ) + self.mdlNodes
+        print( 'Deformed nodes were generated' )
         
 
         
@@ -90,4 +98,5 @@ class modelDeformationHandler :
         return np.array( defVectsSelection )
         
         
-         
+    def deformedModelNodes(self):
+        return self.deformedNodes

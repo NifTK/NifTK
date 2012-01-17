@@ -608,10 +608,12 @@ dispAffine[1,1] = - dispAffine[1,1]
 #
 # TODO: This is not the zero vector but a combination 
 
-prevDeform = mDefH.modelDeformationHandler( genS )
-prevDeform.deformationVectors()
+prevDeform  = mDefH.modelDeformationHandler( genS )
+dispVects   = prevDeform.deformationVectors( matGen2.skinNodes ) * 1000. # given in m thus multiply by 1000
+dispVects   = dispVects + np.tile( -offsetArray[0,:],(dispVects.shape[0],1) ) # consider offset in previous model
 
-dispVects = prevDeform.deformationVectors( matGen2.skinNodes ) * 1000. # given in m thus multiply by 1000
+deformedNds = prevDeform.deformedModelNodes()
+
 # but need to be limited to the nodes given only
 
 skinPoints      = []
@@ -619,7 +621,9 @@ dispVectsUpdate = []
 
 for n in matGen2.skinNodes:
     skinPoints.append( breastMesh2.volMeshPoints[n,:] )
-    curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( breastMesh2.volMeshPoints[n,:], 1 ) ) ) ), dtype = np.int )
+    #curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( breastMesh2.volMeshPoints[n,:], 1 ) ) ) ), dtype = np.int )
+    curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( deformedNds[n,:], 1 ) ) ) ), dtype = np.int )
+    
     dispVectsUpdate.append( np.array( ( dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 0 ], 
                                         dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 1 ], 
                                         dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 2 ] ) ) )
