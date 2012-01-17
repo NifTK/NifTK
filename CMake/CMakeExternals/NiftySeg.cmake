@@ -18,11 +18,11 @@ IF(BUILD_NIFTYSEG)
 
     ExternalProject_Add(${proj}
       SVN_REPOSITORY https://niftyseg.svn.sourceforge.net/svnroot/niftyseg
-      SVN_REVISION -r 28
+      SVN_REVISION -r 31
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED}
+        -DBUILD_SHARED_LIBS:BOOL=OFF
 	      -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
 	      -DINSTALL_PRIORS:BOOL=ON
 	      -DINSTALL_PRIORS_DIRECTORY:PATH=${EP_BASE}/Install/${proj}/priors
