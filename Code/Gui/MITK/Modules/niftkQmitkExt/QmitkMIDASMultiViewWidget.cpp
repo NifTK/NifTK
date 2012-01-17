@@ -167,11 +167,11 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   m_DropSingleRadioButton = new QRadioButton(this);
   m_DropSingleRadioButton->setText("single");
-  m_DropSingleRadioButton->setToolTip("drop multiple images into a single window, so they are drawn on top of each other");
+  m_DropSingleRadioButton->setToolTip("drop images into a single window");
 
   m_DropMultipleRadioButton = new QRadioButton(this);
   m_DropMultipleRadioButton->setText("multiple");
-  m_DropMultipleRadioButton->setToolTip("drop multiple images into a single window, and the application will spread them across multiple sequential windows");
+  m_DropMultipleRadioButton->setToolTip("drop images across multiple windows");
 
   m_DropThumbnailRadioButton = new QRadioButton(this);
   m_DropThumbnailRadioButton->setText("all");
