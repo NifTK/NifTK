@@ -23,6 +23,8 @@
  ============================================================================*/
 
 #include "mitkMIDASKeyPressStateMachine.h"
+#include "mitkWheelEvent.h"
+#include "mitkStateEvent.h"
 
 namespace mitk
 {
@@ -38,6 +40,7 @@ MIDASKeyPressStateMachine::MIDASKeyPressStateMachine(const char * stateMachinePa
   CONNECT_ACTION( 350003, SwitchToAxial );
   CONNECT_ACTION( 350004, SwitchToSagittal );
   CONNECT_ACTION( 350005, SwitchToCoronal );
+  CONNECT_ACTION( 350006, ScrollMouse );
 }
 
 bool MIDASKeyPressStateMachine::MoveAnterior(Action*, const StateEvent*)
@@ -63,6 +66,24 @@ bool MIDASKeyPressStateMachine::SwitchToSagittal(Action*, const StateEvent*)
 bool MIDASKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToCoronal();
+}
+
+bool MIDASKeyPressStateMachine::ScrollMouse(Action*, const StateEvent* stateEvent)
+{
+  const WheelEvent* wheelEvent=dynamic_cast<const WheelEvent*>(stateEvent->GetEvent());
+  if (wheelEvent != NULL)
+  {
+    int delta = wheelEvent->GetDelta();
+    if ( delta < 0 )
+    {
+      return m_Responder->MovePosterior();
+    }
+    else
+    {
+      return m_Responder->MoveAnterior();
+    }
+  }
+  return false;
 }
 
 } // end namespace

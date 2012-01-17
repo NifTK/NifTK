@@ -56,6 +56,9 @@ const std::string QmitkNiftyViewApplicationPlugin::MIDAS_KEYPRESS_STATE_MACHINE_
     "           <transition NAME=\"keyPressPressTMappedToCoronal\" NEXT_STATE_ID=\"1\" EVENT_ID=\"17\">"
     "             <action ID=\"350005\" />"
     "           </transition>"
+    "           <transition NAME=\"mouseWheel\" NEXT_STATE_ID=\"1\" EVENT_ID=\"9\">"
+    "             <action ID=\"350006\" />"
+    "           </transition>"
     "         </state>"
     "      </stateMachine>"
   );
