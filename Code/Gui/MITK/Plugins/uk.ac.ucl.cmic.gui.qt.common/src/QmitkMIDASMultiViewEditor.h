@@ -40,6 +40,7 @@
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include "mitkDataStorage.h"
+#include "mitkMIDASKeyPressStateMachine.h"
 
 // CTK for event handling
 #include "service/event/ctkEventHandler.h"
@@ -123,6 +124,9 @@ private:
 
   // Looks up the data storage service.
   mitk::DataStorage::Pointer GetDataStorage() const;
+
+  // This class hooks into the Global Interaction system to respond to Key press events.
+  mitk::MIDASKeyPressStateMachine::Pointer m_KeyPressStateMachine;
 
   // This class is the main central widget, containing multiple widgets such as rendering windows and control buttons.
   QmitkMIDASMultiViewWidget* m_MIDASMultiViewWidget;

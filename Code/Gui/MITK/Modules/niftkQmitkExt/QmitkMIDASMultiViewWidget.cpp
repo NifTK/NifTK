@@ -596,6 +596,33 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
   }
 }
 
+void QmitkMIDASMultiViewWidget::paintEvent(QPaintEvent* event)
+{
+  this->RequestUpdateAll();
+}
+
+void QmitkMIDASMultiViewWidget::RequestUpdateAll()
+{
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (m_SingleViewWidgets[i]->isVisible())
+    {
+      m_SingleViewWidgets[i]->RequestUpdate();
+    }
+  }
+}
+
+void QmitkMIDASMultiViewWidget::ForceUpdateAll()
+{
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (m_SingleViewWidgets[i]->isVisible())
+    {
+      m_SingleViewWidgets[i]->ForceUpdate();
+    }
+  }
+}
+
 void QmitkMIDASMultiViewWidget::GetStartStopIndexForIteration(unsigned int &start, unsigned int &stop)
 {
   if (this->m_BindWindowsCheckBox->isChecked())
@@ -674,29 +701,57 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
   this->SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL);
 }
 
-void QmitkMIDASMultiViewWidget::paintEvent(QPaintEvent* event)
+bool QmitkMIDASMultiViewWidget::MoveAnterior()
 {
-  this->RequestUpdateAll();
+  bool actuallyDidSomething = false;
+
+  unsigned int currentSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
+  unsigned int maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxSlice();
+  unsigned int nextSlice = currentSlice+1;
+  if (nextSlice <= maxSlice)
+  {
+    this->SetSelectedWindowSliceNumber(nextSlice);
+    actuallyDidSomething = true;
+  }
+
+  this->PublishNavigationSettings();
+  return actuallyDidSomething;
 }
 
-void QmitkMIDASMultiViewWidget::RequestUpdateAll()
+bool QmitkMIDASMultiViewWidget::MovePosterior()
 {
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  bool actuallyDidSomething = false;
+
+  unsigned int currentSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
+  unsigned int maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinSlice();
+  if (currentSlice > 0)
   {
-    if (m_SingleViewWidgets[i]->isVisible())
+    unsigned int nextSlice = currentSlice-1;
+    if (nextSlice >= maxSlice)
     {
-      m_SingleViewWidgets[i]->RequestUpdate();
+      this->SetSelectedWindowSliceNumber(nextSlice);
+      actuallyDidSomething = true;
     }
   }
+
+  this->PublishNavigationSettings();
+  return actuallyDidSomething;
 }
 
-void QmitkMIDASMultiViewWidget::ForceUpdateAll()
+bool QmitkMIDASMultiViewWidget::SwitchToAxial()
 {
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-  {
-    if (m_SingleViewWidgets[i]->isVisible())
-    {
-      m_SingleViewWidgets[i]->ForceUpdate();
-    }
-  }
+  this->SetSelectedWindowToAxial();
+  return true;
+}
+
+bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
+{
+  this->SetSelectedWindowToSagittal();
+  return true;
+}
+
+bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
+{
+  this->SetSelectedWindowToCoronal();
+  return true;
 }

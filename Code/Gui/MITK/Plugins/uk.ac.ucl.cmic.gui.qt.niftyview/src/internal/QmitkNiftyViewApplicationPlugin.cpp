@@ -38,6 +38,28 @@
 #include "mitkGlobalInteraction.h"
 #include "NifTKConfigure.h"
 
+const std::string QmitkNiftyViewApplicationPlugin::MIDAS_KEYPRESS_STATE_MACHINE_XML = std::string(
+    "      <stateMachine NAME=\"MIDASKeyPressStateMachine\">"
+    "         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
+    "           <transition NAME=\"keyPressPlusMappedToAnterior\" NEXT_STATE_ID=\"1\" EVENT_ID=\"26\">"
+    "             <action ID=\"350001\" />"
+    "           </transition>"
+    "           <transition NAME=\"keyPressMinusMappedToPosterior\" NEXT_STATE_ID=\"1\" EVENT_ID=\"27\">"
+    "             <action ID=\"350002\" />"
+    "           </transition>"
+    "           <transition NAME=\"keyPressPressEMappedToAxial\" NEXT_STATE_ID=\"1\" EVENT_ID=\"19\">"
+    "             <action ID=\"350003\" />"
+    "           </transition>"
+    "           <transition NAME=\"keyPressPressRMappedToSagittal\" NEXT_STATE_ID=\"1\" EVENT_ID=\"16\">"
+    "             <action ID=\"350004\" />"
+    "           </transition>"
+    "           <transition NAME=\"keyPressPressTMappedToCoronal\" NEXT_STATE_ID=\"1\" EVENT_ID=\"17\">"
+    "             <action ID=\"350005\" />"
+    "           </transition>"
+    "         </state>"
+    "      </stateMachine>"
+  );
+
 #ifdef NIFTK_OS_IS_MAC
   const std::string QmitkNiftyViewApplicationPlugin::MIDAS_SEED_DROPPER_STATE_MACHINE_XML = std::string(
   "      <stateMachine NAME=\"MIDASSeedDropper\">"
@@ -389,6 +411,7 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(MIDAS_DRAW_TOOL_STATE_MACHINE_XML);
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(MIDAS_POLY_TOOL_STATE_MACHINE_XML);
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML);
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(MIDAS_KEYPRESS_STATE_MACHINE_XML);
 
   berry::IPreferencesService::Pointer prefService =
   berry::Platform::GetServiceRegistry()

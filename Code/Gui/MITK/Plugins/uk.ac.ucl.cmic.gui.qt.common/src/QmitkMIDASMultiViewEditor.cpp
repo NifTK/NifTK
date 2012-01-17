@@ -50,7 +50,9 @@
 const std::string QmitkMIDASMultiViewEditor::EDITOR_ID = "org.mitk.editors.midasmultiview";
 
 QmitkMIDASMultiViewEditor::QmitkMIDASMultiViewEditor()
- : m_MIDASMultiViewWidget(NULL)
+ :
+  m_KeyPressStateMachine(NULL)
+, m_MIDASMultiViewWidget(NULL)
 , m_MidasMultiViewVisibilityManager(NULL)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
@@ -160,6 +162,10 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
 
     // Dummy call, i think there is a threading / race condition, so Im trying to initialise this early.
     mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+
+    // Create/Connect the state machine
+    m_KeyPressStateMachine = mitk::MIDASKeyPressStateMachine::New("MIDASKeyPressStateMachine", m_MIDASMultiViewWidget);
+    mitk::GlobalInteraction::GetInstance()->AddListener( m_KeyPressStateMachine );
 
     ctkDictionary propsForSlot;
     propsForSlot[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/midasnavigationview/*";

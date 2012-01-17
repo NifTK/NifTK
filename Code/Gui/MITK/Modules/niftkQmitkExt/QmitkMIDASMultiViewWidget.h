@@ -29,7 +29,7 @@
 
 #include <QWidget>
 #include <QEvent>
-
+#include "mitkMIDASKeyPressStateMachine.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 
 class QSpinBox;
@@ -76,7 +76,7 @@ struct UpdateMIDASViewingControlsRangeInfo
  * \class QmitkMIDASMultiViewWidget
  * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image viewing panes, arranged as rows and columns.
  */
-class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget
+class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASKeyPressResponder
 {
   Q_OBJECT
 
@@ -124,6 +124,21 @@ public:
 
   /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
   void ForceUpdateAll();
+
+  /// \brief Move anterior a slice.
+  virtual bool MoveAnterior();
+
+  /// \brief Move posterior a slice.
+  virtual bool MovePosterior();
+
+  /// \brief Switch to Axial.
+  virtual bool SwitchToAxial();
+
+  /// \brief Switch to Sagittal.
+  virtual bool SwitchToSagittal();
+
+  /// \brief Switch to Coronal.
+  virtual bool SwitchToCoronal();
 
 public slots:
 

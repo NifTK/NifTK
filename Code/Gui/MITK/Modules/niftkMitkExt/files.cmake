@@ -7,6 +7,7 @@ set(CPP_FILES
   Interactions/mitkMIDASSeedTool.cpp
   Interactions/mitkMIDASPosnTool.cpp
   Interactions/mitkMIDASPaintbrushTool.cpp
+  Interactions/mitkMIDASKeyPressStateMachine.cpp
   DataManagement/mitkDataStorageUtils.cpp
   DataManagement/mitkAffineTransformParametersDataNodeProperty.cpp
   DataManagement/mitkAffineTransformDataNodeProperty.cpp

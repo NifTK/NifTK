@@ -70,6 +70,9 @@ public:
   // Currently, creating state machine using hard coded string, as I don't know where to load them from.
   static const std::string MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML;
 
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string MIDAS_KEYPRESS_STATE_MACHINE_XML;
+
 private:
 
   static QmitkNiftyViewApplicationPlugin* inst;
