@@ -5,7 +5,7 @@ import findExecutable
 import shlex, time, subprocess, os
 
 
-def runCommand( cmdIn, paramsIn, logFileName=None, workDir=None ) :
+def runCommand( cmdIn, paramsIn, logFileName=None, workDir=None, onlyPrintCommand=False ) :
     
     if workDir != None :
         curDir = os.getcwd()
@@ -21,15 +21,16 @@ def runCommand( cmdIn, paramsIn, logFileName=None, workDir=None ) :
 
     tic = time.clock()
     
-    if logFileName == None :
-        ret=subprocess.Popen( cmd ).wait()
-        
-    else:
-        logFile = file( logFileName, 'a+' )
-        ret = subprocess.Popen( cmd, stdout = logFile, stderr = logFile ).wait()
-        logFile.close()
-
-    print('Return code: ' + str(ret) )
+    if not onlyPrintCommand :
+        if logFileName == None :
+            ret=subprocess.Popen( cmd ).wait()
+            
+        else:
+            logFile = file( logFileName, 'a+' )
+            ret = subprocess.Popen( cmd, stdout = logFile, stderr = logFile ).wait()
+            logFile.close()
+    
+        print('Return code: ' + str(ret) )
         
     if workDir != None :
         os.chdir( curDir )

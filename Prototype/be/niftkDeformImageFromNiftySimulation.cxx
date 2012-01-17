@@ -115,8 +115,8 @@ int main(int argc, char ** argv)
 	std::string strMaskImageName;
 	std::string strOutputDVF;
 	int         iOutsideVal=0;
-	float       sa[3] = {0,0,0};
-	float*      faOffset = a;
+	float       fa[3] = {0,0,0};
+	float*      faOffset = fa;
 
     niftk::CommandLineParser CommandLineOptions( argc, argv, clArgList, true );
     CommandLineOptions.GetArgument( O_INPUT,         strInputImageName       );

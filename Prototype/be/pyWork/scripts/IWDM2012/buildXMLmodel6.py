@@ -29,7 +29,7 @@ import vtkVolMeshHandler as vmh
 import modelDeformationHandler as mDefH
 
 
-
+fastDebug = False
 
 # starting from the images
 # 1) soft tissue (currently seen as homogeneous material... to be corrected later on)
@@ -42,11 +42,18 @@ import modelDeformationHandler as mDefH
 #
 
 useFEIR                   = True
-FEIRmode                  = 'fast'
-FEIRmu                    = 0.0025 * 2 ** -8
+FEIRmode                  = 'standard'
+FEIRmu                    = 0.0025 * 2 ** -7
 FEIRlambda                = 0.0
 FEIRconvergence           = 0.01
 FEIRplanStr               = 'n'
+
+F3DbendingEnergy          = 0.01
+F3DlogOfJacobian          = 0.0
+F3DfinalGridSpacing       = 5
+F3DnumberOfLevels         = 5
+F3DmaxIterations          = 300
+F3Dgpu                    = True
 
 updateFactor              = 1.0
 numIterations             = 1
@@ -271,7 +278,7 @@ while True :
     
     # run the simulation
     print('Starting niftySimulation')
-    cmdEx.runCommand( simCommand, simParams )
+    cmdEx.runCommand( simCommand, simParams, onlyPrintCommand=fastDebug )
 
 
     #
@@ -309,7 +316,9 @@ while True :
         
     else :
         f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strSupineImg, strSimulatedSupine[-1], regDirF3D, 'NA', 
-                                              bendingEnergy=0.007, logOfJacobian=0.0, finalGridSpacing=5, numberOfLevels=5, maxIterations=300, gpu=True)
+                                              bendingEnergy=F3DbendingEnergy, logOfJacobian=F3DlogOfJacobian, 
+                                              finalGridSpacing=F3DfinalGridSpacing, numberOfLevels=F3DnumberOfLevels, 
+                                              maxIterations=F3DmaxIterations, gpu=F3Dgpu )
         
         f3dReg.run()
         f3dReg.constructNiiDeformationFile()
@@ -321,7 +330,7 @@ while True :
     dispAffine = dispImg.get_affine()
     dispAffine[0,0] = - dispAffine[0,0]  # quick and dirty
     dispAffine[1,1] = - dispAffine[1,1]
-     
+    dispAffine = np.linalg.inv( dispAffine )
     #
     # generate the new model with the updated boundary conditions...
     #
@@ -380,7 +389,7 @@ deformParams += ' -o '   + defChestWallImg
 deformParams += ' -interpolate lin '
 deformParams += ' -def ' + strOutDVFImg[-1] # use the second to last image
 
-cmdEx.runCommand( 'niftkValidateDeformationVectorField', deformParams )
+cmdEx.runCommand( 'niftkValidateDeformationVectorField', deformParams, onlyPrintCommand=fastDebug )
 
 #
 # threshold the image
@@ -392,15 +401,15 @@ threshParams += ' -l 170 '
 threshParams += ' -in 255 ' 
 threshParams += ' -out 0 ' 
 
-cmdEx.runCommand( 'niftkThreshold', threshParams )
+cmdEx.runCommand( 'niftkThreshold', threshParams, onlyPrintCommand=fastDebug )
 
 #
 # Crop the outside to avoid filling holes in the mesh...
 #
 cropParams = defChestWallImg + ' ' + defChestWallImg + ' 220 270 190 0 '
 padParams  = defChestWallImg + ' ' + defChestWallImg + ' 230 280 200 0 '
-cmdEx.runCommand( 'niftkPadImage', cropParams )
-cmdEx.runCommand( 'niftkPadImage', padParams  )
+cmdEx.runCommand( 'niftkPadImage', cropParams, onlyPrintCommand=fastDebug )
+cmdEx.runCommand( 'niftkPadImage', padParams, onlyPrintCommand=fastDebug  )
 
 
 #
@@ -425,7 +434,7 @@ medSurfCWParams += ' -vtk '   + defChestWallSurfMeshVTK
 medSurfCWParams += ' -surf '  + defChestWallSurfMeshSmesh
 medSurfCWParams += medSurferParms
 
-cmdEx.runCommand( 'medSurfer', medSurfCWParams )
+cmdEx.runCommand( 'medSurfer', medSurfCWParams, onlyPrintCommand=fastDebug )
 
 # get access to the vtk file
 pdr = vtk.vtkPolyDataReader()
@@ -495,7 +504,7 @@ genS.setMaterialElementSet( 'NH', 'GLAND',  [  400, 50000], matGen2.glandElement
 if matGen2.muscleElements.shape != 0 :
     genS.setMaterialElementSet( 'NH', 'MUSCLE', [  600, 50000], matGen2.muscleElements )
 
-#genS.setContactSurfaceVTKFile(defChestWallSurfMeshVTK, 'T3', allNodesArray2.shape[0] )
+
 genS.setContactSurface( chestSurfMeshPoints[:,0:3] / 1000., chestSurfPolys[ : , 1:4 ], allNodesArray2, 'T3' )
 
 genS.setFixConstraint( lowXIdx2, 0 )
@@ -518,9 +527,9 @@ strOutDVFImg.append(               meshDir + 'outDVFS.nii'   )
 
 # run the simulation and resampling at the same time
 simCommand = 'niftkDeformImageFromNiftySimulation'
-simParams   = ' -x '    + xmlFileOut 
-simParams  += ' -i '    + strProneImg
-simParams  += ' -o '    + strSimulatedSupine[-1]
+simParams   = ' -x '      + xmlFileOut 
+simParams  += ' -i '      + strProneImg
+simParams  += ' -o '      + strSimulatedSupine[-1]
 simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, -offsetVal, 0 ))
 
 
@@ -540,7 +549,7 @@ simParams  += ' -interpolate bspl '
 
 # run the simulation
 print('Starting niftySimulation')
-cmdEx.runCommand( simCommand, simParams )
+cmdEx.runCommand( simCommand, simParams, onlyPrintCommand=fastDebug )
 
 
 
@@ -574,8 +583,8 @@ if np.min( simSup.get_data() ) == np.max( simSup.get_data() ):
 if useFEIR :
     feirReg = feirTask.feirRegistrationTask( strSimulatedSupine[-1], strSupineImg, regDirFEIR, 'NA', 
                                              mu=FEIRmu, lm=FEIRlambda, mode=FEIRmode, mask=True, 
-                                             displacementConvergence=FEIRconvergence, planStr=FEIRplanStr)
-    
+                                             displacementConvergence=FEIRconvergence, planStr=FEIRplanStr )
+
     feirReg.run()
     feirReg.constructNiiDeformationFile()
     feirReg.resampleSourceImage()
@@ -583,7 +592,9 @@ if useFEIR :
 
 else :
     f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strSupineImg, strSimulatedSupine[-1], regDirF3D, 'NA', 
-                          bendingEnergy=0.007, logOfJacobian=0.0, finalGridSpacing=5, numberOfLevels=5, maxIterations=300, gpu=True)
+                                          bendingEnergy=F3DbendingEnergy, logOfJacobian=F3DlogOfJacobian, 
+                                          finalGridSpacing=F3DfinalGridSpacing, numberOfLevels=F3DnumberOfLevels, 
+                                          maxIterations=F3DmaxIterations, gpu=F3Dgpu )
     
     f3dReg.run()
     f3dReg.constructNiiDeformationFile()
@@ -592,7 +603,7 @@ else :
 
 # read the deformation field
 dispData = dispImg.get_data()
-dispAffine = dispImg.get_affine()
+dispAffine = np.linalg.inv( dispImg.get_affine() )
 dispAffine[0,0] = - dispAffine[0,0]  # quick and dirty
 dispAffine[1,1] = - dispAffine[1,1]
 
@@ -609,20 +620,26 @@ dispAffine[1,1] = - dispAffine[1,1]
 # TODO: This is not the zero vector but a combination 
 
 prevDeform  = mDefH.modelDeformationHandler( genS )
-dispVects   = prevDeform.deformationVectors( matGen2.skinNodes ) * 1000. # given in m thus multiply by 1000
-dispVects   = dispVects + np.tile( -offsetArray[0,:],(dispVects.shape[0],1) ) # consider offset in previous model
-
-deformedNds = prevDeform.deformedModelNodes()
-
-# but need to be limited to the nodes given only
+dispVects   = prevDeform.deformationVectors( matGen2.skinNodes ) * 1000.       # given in m thus multiply by 1000
+deformedNds = prevDeform.deformedModelNodes() * 1000                           # given in mm
 
 skinPoints      = []
+defSkinPoints   = []
 dispVectsUpdate = []
+dispImgRange    = dispData.shape
 
 for n in matGen2.skinNodes:
     skinPoints.append( breastMesh2.volMeshPoints[n,:] )
-    #curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( breastMesh2.volMeshPoints[n,:], 1 ) ) ) ), dtype = np.int )
+    defSkinPoints.append( prevDeform.deformedNodes[n,:] )
     curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( deformedNds[n,:], 1 ) ) ) ), dtype = np.int )
+    
+    # Clip! 
+    curIDX[0] = np.max( (curIDX[0], 0                 ) )
+    curIDX[0] = np.min( (curIDX[0], dispImgRange[0]-1 ) )
+    curIDX[1] = np.max( (curIDX[1], 0                 ) )
+    curIDX[1] = np.min( (curIDX[1], dispImgRange[1]-1 ) )
+    curIDX[2] = np.max( (curIDX[2], 0                 ) )
+    curIDX[2] = np.min( (curIDX[2], dispImgRange[2]-1 ) )
     
     dispVectsUpdate.append( np.array( ( dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 0 ], 
                                         dispData[ curIDX[0], curIDX[1], curIDX[2], 0, 1 ], 
@@ -634,9 +651,10 @@ dispVects = updateFactor * np.array( dispVectsUpdate ) + dispVects
 
 #
 # Same generator as previous one (sliding and gravity) but now with skin displacement
+# TODO: Take care not to fix displacement nodes. Skipped for now!
 #
 
-# Sliding xmlFile generator
+# Sliding + displacement xmlFile generator
 genSD = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4' )
 
 genSD.setMaterialElementSet( 'NH', 'FAT',    [  200, 50000], matGen2.fatElemetns    )
@@ -665,16 +683,16 @@ strSimulatedSupineLabelImg.append( meshDir + 'outLabelSD.nii' )
 strOutDVFImg.append(               meshDir + 'outDVFSD.nii'   )
 
 # run the simulation and resampling at the same time
-simParams   = ' -x '    + xmlFileOut 
-simParams  += ' -i '    + strProneImg
-simParams  += ' -o '    + strSimulatedSupine[-1]
+simParams   = ' -x '      + xmlFileOut 
+simParams  += ' -i '      + strProneImg
+simParams  += ' -o '      + strSimulatedSupine[-1]
 simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, -offsetVal, 0 ))
 
 
 # also deform the label image!
-simParams  += ' -iL '    + labelImage
-simParams  += ' -oL '    + strSimulatedSupineLabelImg[-1]
-simParams  += ' -oD '    + strOutDVFImg[-1]
+simParams  += ' -iL ' + labelImage
+simParams  += ' -oL ' + strSimulatedSupineLabelImg[-1]
+simParams  += ' -oD ' + strOutDVFImg[-1]
 
 
 # niftyReg and FEIR use different indicators for "mask"
@@ -688,7 +706,8 @@ simParams  += ' -interpolate bspl '
 # run the simulation
 print('Starting niftySimulation')
 cmdEx.runCommand( simCommand, simParams )
-    
+
+
     
     
     
