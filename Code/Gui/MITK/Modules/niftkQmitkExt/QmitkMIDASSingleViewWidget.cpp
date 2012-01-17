@@ -51,7 +51,8 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 {
   this->setAcceptDrops(true);
 
-  m_BackgroundColor = QColor(255, 250, 240);  // that strange MIDAS background color.
+  //m_BackgroundColor = QColor(255, 250, 240);  // that strange MIDAS background color.
+  m_BackgroundColor = QColor(0, 0, 0);  // that strange MIDAS background color.
   m_SelectedColor   = QColor(255, 0, 0);
   m_UnselectedColor = QColor(255, 255, 255);
 
