@@ -44,6 +44,7 @@ class QmitkWheelEventEater;
  *
  * The client must provide an mitk::DataStorage before using this widget.
  * So the correct usage is to construct the object and immediately set the DataStorage.
+ * When the DataStorage is set, the widget also responds to any ChangedNodeEvent events.
  *
  * This class provides methods to set the bounding box colour, opacity, line thickness,
  * and rendering layer. It also has methods as to whether we respond to mouse or wheel events.

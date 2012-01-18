@@ -50,20 +50,15 @@ class QmitkMIDASRenderWindow;
  */
 struct UpdateMIDASViewingControlsInfo
 {
+  // current values
   int currentTime;
   int currentSlice;
   int currentMagnification;
   bool isAxial;
   bool isSagittal;
   bool isCoronal;
-};
 
-/**
- * \class UpdateMIDASViewingControlsRangeInfo
- * \brief Simply to pass slice and magnification range information to QmitkMIDASMultiViewEditor.
- */
-struct UpdateMIDASViewingControlsRangeInfo
-{
+  // the ranges (so sliders have the correct range).
   int minTime;
   int maxTime;
   int minSlice;
@@ -144,10 +139,7 @@ public slots:
 
 signals:
 
-  /// \brief Emmitted when an image is dropped and the window selection is change, so the controls must update.
-  void UpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo info);
-
-  /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update.
+  /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
   void UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info);
 
 protected:
@@ -175,6 +167,9 @@ protected slots:
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkMIDASRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
   void OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+
+  /// \brief We connect QmitkMIDASSingleViewWidgets to this so that this class can publish the slice number change to the Event Bus.
+  void OnSliceChanged(QmitkMIDASRenderWindow *window, unsigned int sliceNumber);
 
 private:
 

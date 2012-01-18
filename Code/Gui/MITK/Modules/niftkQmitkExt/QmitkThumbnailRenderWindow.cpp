@@ -224,7 +224,7 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
   this->setBoundingBoxVisible(true);
 
   // Request a single update at the end of the method.
-  mitk::RenderingManager::GetInstance()->ForceImmediateUpdate(this->GetVtkRenderWindow());
+  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
 void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
@@ -242,6 +242,9 @@ void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
   {
     thumbnailWindowRenderer->GetDisplayGeometry()->Fit();
   }
+
+  // Request a single update at the end of the method.
+  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
 void QmitkThumbnailRenderWindow::UpdateVisibility()
@@ -350,7 +353,7 @@ void QmitkThumbnailRenderWindow::OnSliceChanged(const itk::EventObject & geometr
     assert(mitkRendererForTrackedWidget);
 
     mitkRendererForThumbnail->SetSlice(mitkRendererForTrackedWidget->GetSlice());
-    this->UpdateWorldGeometry(false);
+    this->UpdateWorldGeometry(true);
   }
 }
 

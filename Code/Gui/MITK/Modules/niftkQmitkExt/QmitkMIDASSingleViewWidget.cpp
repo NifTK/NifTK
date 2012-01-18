@@ -25,6 +25,8 @@
 #include <QStackedLayout>
 #include <QDebug>
 
+#include "mitkFocusManager.h"
+#include "mitkGlobalInteraction.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "QmitkMIDASRenderWindow.h"
 #include "vtkRenderer.h"
@@ -48,6 +50,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 , m_ActiveTimeSlicedGeometry(NULL)
 , m_Layout(NULL)
 , m_IsBound(false)
+, m_IsSelected(false)
 {
   this->setAcceptDrops(true);
 
@@ -76,6 +79,12 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
   // Then we need to register the slice navigation controller with our own rendering manager.
   m_SliceNavigationController = m_RenderWindow->GetSliceNavigationController();
   m_SliceNavigationController->SetRenderingManager(m_RenderingManager);
+
+  // Register to listen to slice changed commands that come via GlobalInteraction (i.e. mouse scroll).
+  itk::ReceptorMemberCommand<QmitkMIDASSingleViewWidget>::Pointer onSliceChangedCommand =
+    itk::ReceptorMemberCommand<QmitkMIDASSingleViewWidget>::New();
+  onSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASSingleViewWidget::OnSliceChanged );
+  m_SliceSelectorTag = m_SliceNavigationController->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
 
   // Create frames/backgrounds.
   m_RenderWindowFrame = mitk::RenderWindowFrame::New();
@@ -122,6 +131,10 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 
 QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
 {
+  if (m_SliceSelectorTag != 0)
+  {
+    m_SliceNavigationController->RemoveObserver(m_SliceSelectorTag);
+  }
 }
 
 void QmitkMIDASSingleViewWidget::SetContentsMargins(unsigned int margin)
@@ -143,6 +156,7 @@ void QmitkMIDASSingleViewWidget::SetSelected(bool selected)
         m_SelectedColor.greenF(),
         m_SelectedColor.blueF()
         );
+    m_IsSelected = true;
   }
   else
   {
@@ -152,6 +166,7 @@ void QmitkMIDASSingleViewWidget::SetSelected(bool selected)
         m_UnselectedColor.blueF()
         );
   }
+  m_IsSelected = false;
 }
 
 void QmitkMIDASSingleViewWidget::SetSelectedColor(QColor color)
@@ -300,13 +315,6 @@ void QmitkMIDASSingleViewWidget::ForceUpdate()
   }
 }
 
-void QmitkMIDASSingleViewWidget::SetSliceNumber(unsigned int sliceNumber)
-{
-  this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
-  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
-  this->RequestUpdate();
-}
-
 unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundOffset() const
 {
   // So we have arrays of length 2, index=0 corresponds to 'Un-bound', and index=1 corresponds to 'Bound'.
@@ -332,6 +340,25 @@ unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundPreviousArrayOffset() co
   {
     return 0;
   }
+}
+
+void QmitkMIDASSingleViewWidget::OnSliceChanged(const itk::EventObject & geometrySliceEvent)
+{
+  if (!m_IsSelected || !hasFocus())
+  {
+    mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+    focusManager->SetFocused(this->m_SliceNavigationController->GetRenderer());
+  }
+  unsigned int sliceNumber = this->m_SliceNavigationController->GetSlice()->GetPos();
+  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
+  emit SliceChanged(m_RenderWindow, sliceNumber);
+}
+
+void QmitkMIDASSingleViewWidget::SetSliceNumber(unsigned int sliceNumber)
+{
+  this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
+  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
+  this->RequestUpdate();
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber() const

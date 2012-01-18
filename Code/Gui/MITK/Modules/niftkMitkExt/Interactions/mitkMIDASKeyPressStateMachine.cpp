@@ -40,7 +40,6 @@ MIDASKeyPressStateMachine::MIDASKeyPressStateMachine(const char * stateMachinePa
   CONNECT_ACTION( 350003, SwitchToAxial );
   CONNECT_ACTION( 350004, SwitchToSagittal );
   CONNECT_ACTION( 350005, SwitchToCoronal );
-  CONNECT_ACTION( 350006, ScrollMouse );
 }
 
 bool MIDASKeyPressStateMachine::MoveAnterior(Action*, const StateEvent*)

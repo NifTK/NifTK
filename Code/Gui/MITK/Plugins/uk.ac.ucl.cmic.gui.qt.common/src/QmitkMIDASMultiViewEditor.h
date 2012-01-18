@@ -95,16 +95,10 @@ signals:
   /// \brief Signal that the value of the MIDAS controls (orientation, slice, magnification) should change.
   void UpdateMIDASViewingControlsValues(const ctkDictionary&);
 
-  /// \brief Signal that the range of the values of the MIDAS controls (orientation, slice, magnification) should change.
-  void UpdateMIDASViewingControlsRange(const ctkDictionary&);
-
 public Q_SLOTS:
 
   /// \brief Handle events coming from the event admin service.
   void handleEvent(const ctkEvent& event);
-
-  /// \brief This is received from QmitkMIDASMultiWidget when the window or image changes requiring to update the range of the controls on MIDASNavigationView.
-  void OnUpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo rangeInfo);
 
   /// \brief This is received from QmitkMIDASMultiWidget when the window or image changes requiring to update the value of the controls on MIDASNavigationView.
   void OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info);

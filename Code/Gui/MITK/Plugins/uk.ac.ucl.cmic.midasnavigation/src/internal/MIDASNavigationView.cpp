@@ -192,9 +192,6 @@ void MIDASNavigationView::handleEvent(const ctkEvent& event)
       m_NavigationViewControls->m_MagnificationFactorWidget->SetMagnificationFactor(event.getProperty("current_magnification").toInt());
       m_NavigationViewControls->m_SliceSelectionWidget->SetSliceNumber(event.getProperty("current_slice").toInt());
       m_NavigationViewControls->m_TimeSelectionWidget->SetValue(event.getProperty("current_time").toInt());
-    }
-    else
-    {
       m_NavigationViewControls->m_SliceSelectionWidget->SetMinimum(event.getProperty("min_slice").toInt());
       m_NavigationViewControls->m_SliceSelectionWidget->SetMaximum(event.getProperty("max_slice").toInt());
       m_NavigationViewControls->m_MagnificationFactorWidget->SetMinimum(event.getProperty("min_magnification").toInt());

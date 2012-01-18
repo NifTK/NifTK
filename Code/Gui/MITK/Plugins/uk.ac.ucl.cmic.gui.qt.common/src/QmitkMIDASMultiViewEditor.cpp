@@ -147,7 +147,6 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     this->OnPreferencesChanged(prefs.GetPointer());
 
     // Connect slots
-    connect(m_MIDASMultiViewWidget, SIGNAL(UpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo)), this, SLOT(OnUpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo)));
     connect(m_MIDASMultiViewWidget, SIGNAL(UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)), this, SLOT(OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)));
 
     m_Context = mitk::CommonActivator::GetPluginContext();
@@ -156,9 +155,6 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
 
     m_EventAdmin->publishSignal(this, SIGNAL(UpdateMIDASViewingControlsValues(ctkDictionary)),
                               "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsValues", Qt::QueuedConnection);
-
-    m_EventAdmin->publishSignal(this, SIGNAL(UpdateMIDASViewingControlsRange(ctkDictionary)),
-                              "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsRange", Qt::QueuedConnection);
 
     // Dummy call, i think there is a threading / race condition, so Im trying to initialise this early.
     mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -301,33 +297,17 @@ void QmitkMIDASMultiViewEditor::handleEvent(const ctkEvent& event)
   }
 }
 
-void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsRange(UpdateMIDASViewingControlsRangeInfo rangeInfo)
-{
-  try
-  {
-    ctkDictionary properties;
-    properties["min_time"] = rangeInfo.minTime;
-    properties["max_time"] = rangeInfo.maxTime;
-    properties["min_slice"] = rangeInfo.minSlice;
-    properties["max_slice"] = rangeInfo.maxSlice;
-    properties["min_magnification"] = rangeInfo.minMagnification;
-    properties["max_magnification"] = rangeInfo.maxMagnification;
-
-    emit UpdateMIDASViewingControlsRange(properties);
-  }
-  catch (const ctkRuntimeException& e)
-  {
-    MITK_ERROR << "QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsRange, failed with:" << e.what() \
-        << ", caused by " << e.getCause().toLocal8Bit().constData() \
-        << std::endl;
-  }
-}
-
 void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info)
 {
   try
   {
     ctkDictionary properties;
+    properties["min_time"] = info.minTime;
+    properties["max_time"] = info.maxTime;
+    properties["min_slice"] = info.minSlice;
+    properties["max_slice"] = info.maxSlice;
+    properties["min_magnification"] = info.minMagnification;
+    properties["max_magnification"] = info.maxMagnification;
     properties["current_time"] = info.currentTime;
     properties["current_slice"] = info.currentSlice;
     properties["current_magnification"] = info.currentMagnification;

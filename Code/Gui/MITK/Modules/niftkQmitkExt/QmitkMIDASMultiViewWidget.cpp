@@ -187,6 +187,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     QmitkMIDASRenderWindow* widgetWindow = widget->GetRenderWindow();
     connect(widgetWindow, SIGNAL(NodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)));
     connect(widgetWindow, SIGNAL(NodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASRenderWindow*,std::vector<mitk::DataNode*>)));
+    connect(widget, SIGNAL(SliceChanged(QmitkMIDASRenderWindow*, unsigned int)), this, SLOT(OnSliceChanged(QmitkMIDASRenderWindow*, unsigned int)));
 
     m_VisibilityManager->RegisterWidget(widget);
     m_SingleViewWidgets.push_back(widget);
@@ -361,8 +362,8 @@ void QmitkMIDASMultiViewWidget::OnBindWindowsCheckboxClicked(bool isBound)
 
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      m_SingleViewWidgets[i]->SetBoundGeometry(selectedGeometry);
       m_SingleViewWidgets[i]->SetBound(true);
+      m_SingleViewWidgets[i]->SetBoundGeometry(selectedGeometry);
       m_SingleViewWidgets[i]->SetViewOrientation(orientation);
       m_SingleViewWidgets[i]->SetSliceNumber(sliceNumber);
       m_SingleViewWidgets[i]->SetTime(timeStepNumber);
@@ -414,7 +415,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   }
   else
   {
-    // otherwise we remember the "next" number of rows and columns.
+    // otherwise we remember the "next" (the number we are being asked for in this method call) number of rows and columns.
     m_NumberOfRowsInNonThumbnailMode = numberOfRows;
     m_NumberOfColumnsInNonThumbnailMode = numberOfColumns;
   }
@@ -442,7 +443,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   m_ColumnsSpinBox->setValue(numberOfColumns);
   m_ColumnsSpinBox->blockSignals(false);
 
-  // Test the current m_Selected window
+  // Test the current m_Selected window, and reset to 0 if it now points to an invisible window.
   int selectedWindow = m_SelectedWindow;
   if (this->GetRowFromIndex(selectedWindow) >= numberOfRows || this->GetColumnFromIndex(selectedWindow) >= numberOfColumns)
   {
@@ -464,21 +465,24 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
 {
-  m_SelectedWindow = selectedIndex;
-
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  if (selectedIndex >= 0 && selectedIndex < m_SingleViewWidgets.size())
   {
-    if (i == selectedIndex)
+    m_SelectedWindow = selectedIndex;
+
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      m_SingleViewWidgets[i]->SetSelected(true);
+      if (i == selectedIndex)
+      {
+        m_SingleViewWidgets[i]->SetSelected(true);
+      }
+      else
+      {
+        m_SingleViewWidgets[i]->SetSelected(false);
+      }
     }
-    else
-    {
-      m_SingleViewWidgets[i]->SetSelected(false);
-    }
+    this->RequestUpdateAll();
+    this->PublishNavigationSettings();
   }
-  this->RequestUpdateAll();
-  this->PublishNavigationSettings();
 }
 
 void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(QmitkMIDASMultiViewVisibilityManager::MIDASDefaultInterpolationType interpolationType)
@@ -521,6 +525,18 @@ void QmitkMIDASMultiViewWidget::OnDropThumbnailRadioButtonToggled(bool toggled)
   }
 }
 
+void QmitkMIDASMultiViewWidget::OnSliceChanged(QmitkMIDASRenderWindow *window, unsigned int sliceNumber)
+{
+  // The following series of events should occur.
+  // 1. A user scrolls the mouse wheel in a window, picked up by GlobalInteraction, sent to the right QmitkMIDASRenderWindow.
+  // 2. The SliceNavigationController in that window updates.
+  // 3. In QmitkMIDASSingleViewWidget, we listen for the slice changed event, and set the focus to that QmitkMIDASRenderWindow
+  // 4. In QmitkMIDASMultiViewWidget, the focus changed triggers an update of the selected window, meaning that the
+  //    QmitkMIDASMultiViewWidget works out which window has focus, and tells it it is "selected" and hence the border changes.
+  // 5. In addition however, for each slice change event (step 2 in this list), we need to make sure the midasnavigation plugin is up to date.
+  this->PublishNavigationSettings();
+}
+
 void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
@@ -528,19 +544,17 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkMIDASRenderWindow *window, s
 
 void QmitkMIDASMultiViewWidget::PublishNavigationSettings()
 {
-  if (this->isVisible())
+  if (this->isVisible()) // this is to stop any initial updates before this widget is fully rendered on screen.
   {
-    UpdateMIDASViewingControlsRangeInfo rangeInfo;
-    rangeInfo.minTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinTime();
-    rangeInfo.maxTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxTime();
-    rangeInfo.minSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinSlice();
-    rangeInfo.maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxSlice();
-    rangeInfo.minMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinMagnification();
-    rangeInfo.maxMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxMagnification();
-
-    emit UpdateMIDASViewingControlsRange(rangeInfo);
-
     UpdateMIDASViewingControlsInfo currentInfo;
+
+    currentInfo.minTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinTime();
+    currentInfo.maxTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxTime();
+    currentInfo.minSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinSlice();
+    currentInfo.maxSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxSlice();
+    currentInfo.minMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMinMagnification();
+    currentInfo.maxMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMaxMagnification();
+
     currentInfo.currentTime = this->m_SingleViewWidgets[m_SelectedWindow]->GetTime();
     currentInfo.currentSlice = this->m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber();
     currentInfo.currentMagnification = this->m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();

@@ -190,6 +190,10 @@ public:
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void ForceUpdate();
 
+signals:
+
+  void SliceChanged(QmitkMIDASRenderWindow *window, unsigned int sliceNumber);
+
 protected:
 
   // overloaded paint handler
@@ -202,6 +206,9 @@ protected:
   virtual void GetScaleFactors(mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
 private:
+
+  // Callback for when the slice selector changes slice
+  void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
 
   void ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex);
   void StorePosition();
@@ -231,6 +238,7 @@ private:
   int                                            m_MaximumMagnification; // passed in as constructor arguments, so this class unaware of where it came from.
 
   bool                                           m_IsBound;
+  bool                                           m_IsSelected;
 
   std::vector<unsigned int>                      m_CurrentSliceNumbers;          // length 2, one for unbound, then for bound.
   std::vector<unsigned int>                      m_CurrentTimeSliceNumbers;      // length 2, one for unbound, then for bound.
@@ -241,6 +249,10 @@ private:
   std::vector<unsigned int>                      m_PreviousTimeSliceNumbers;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<int>                               m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<MIDASViewOrientation>              m_PreviousViewOrientations;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+
+  // Used for when the slice navigation controller changes slice.
+  unsigned long m_SliceSelectorTag;
+
 };
 
 #endif // QMITKMIDASSINGLEVIEWWIDGET_H
