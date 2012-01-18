@@ -291,6 +291,7 @@ then
   repeat_image_seg=${temp_dir}/rseg.hdr
   xor_img=${temp_dir}/xor.hdr
   output_dw_qnt_file=${output_dir}/${output_study_id}-${dbc}DBC-${use_kn}kn-mw${min_window}-bsi-dw.qnt
+  output_dw_global_intensity_qnt_file=${output_dir}/${output_study_id}-${dbc}DBC-${use_kn}kn-mw${min_window}-bsi-dw-global-mean.qnt
 
   execute_command "niftkKNDoubleWindowBSI \
       ${output_dir}/${baseline_image_dbc}.hdr ${registered_baseline_mask} \
@@ -415,6 +416,16 @@ then
         1 1 3   \
         ${baseline_image_seg} ${repeat_image_seg} \
         ${sub_roi_img} ${xor_img} ${baseline_local_region_img} ${repeat_local_normalisation_region} ${window_width_sd_factors} ${weight_image} ${min_window} > ${output_dw_qnt_file}"
+        
+    execute_command "niftkKNDoubleWindowBSI \
+        ${bsi_baseline_image%.img}.hdr ${baseline_brain_region_img%.img}.hdr \
+        ${bsi_repeat_image%.img}.hdr ${registered_repeat_region_img%.img}.hdr \
+        ${bsi_baseline_image%.img}.hdr ${baseline_local_region_img%.img}.hdr \
+        ${bsi_repeat_image%.img}.hdr ${registered_repeat_local_region_img%.img}.hdr \
+        1 1 3   \
+        ${baseline_image_seg} ${repeat_image_seg} \
+        ${sub_roi_img} ${xor_img} dummy dummy ${window_width_sd_factors} ${weight_image} ${min_window} > ${output_dw_global_intensity_qnt_file}"
+        
   else
     execute_command "niftkBSI \
         ${bsi_baseline_image%.img}.hdr ${baseline_brain_region_img%.img}.hdr \
