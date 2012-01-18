@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.surgicalguidance} CMIC Surgical Guidance
+
+\image html icon.png "Icon of CMIC Surgical Guidance"
+
+\section SurgicalGuidanceIntro Introduction
+
+Do an introduction here.
+
+\section SurgicalGuidanceUserManual User Manual
+
+Put all usage information here.
+
+\section SurgicalGuidanceTecnhnicalManual Technical Manual
+
+Put all technical information here.
+
+\section SurgicalGuidanceReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+

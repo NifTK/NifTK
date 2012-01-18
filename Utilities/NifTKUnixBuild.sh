@@ -40,7 +40,7 @@ if [ $# -ne 6 ]; then
   echo "Simple bash script to run a full automated build. "
   echo "Does a two pass checkout. It checks out NifTK at the time you run it, then does a svn update with proper revision ID etc. to run unit tests"
   echo "Assumes svn, git, qt, cmake, svn credentials, valgrind, in fact everything are already present and valid in the current shell."
-  echo "Usage: UnixBuild.sh [Debug|Release] <number_of_threads> [ON|OFF to control coverage] [ON|OFF to control valgrind] [ON|OFF to build OpenCV] [ON|OFF to use gcc4]"
+  echo "Usage: NifTKUnixBuild.sh [Debug|Release] <number_of_threads> [ON|OFF to control coverage] [ON|OFF to control valgrind] [ON|OFF to build OpenCV] [ON|OFF to use gcc4]"
   exit -1
 fi
 
@@ -52,7 +52,7 @@ OPENCV=$5
 GCC4=$6
 
 if [ "${TYPE}" != "Debug" -a "${TYPE}" != "Release" ]; then
-  echo "First argument after UnixBuild.sh must be either Debug or Release."
+  echo "First argument after NifTKUnixBuild.sh must be either Debug or Release."
   exit -2
 fi
 

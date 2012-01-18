@@ -10,4 +10,5 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.midasnavigation:ON
   Plugins/uk.ac.ucl.cmic.snapshot:ON
+  Plugins/uk.ac.ucl.cmic.surgicalguidance:ON
 )
