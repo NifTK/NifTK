@@ -23,12 +23,8 @@ origWorkDir            = os.getcwd()
 os.chdir( meshDir )
 
 
-#chestWallSurfMeshSmesh = meshDir + 'chestWallSurf.smesh'
-#chestWallSurfMeshVTK   = meshDir + 'chestWallSurf.vtk'
 pectWallSurfMeshSmesh  = meshDir + 'pectWallSurf.smesh'
 pectWallSurfMeshVTK    = meshDir + 'pectWallSurf.vtk'
-#breastSurfMeshSmesh    = meshDir + 'breastSurf.smesh'
-#breastSurfMeshVTK      = meshDir + 'breastSurf.vtk'
 breastSurfMeshSmesh2   = meshDir + 'breastSurf2.smesh'
 breastSurfMeshVTK2     = meshDir + 'breastSurf2.vtk'
 
@@ -40,14 +36,6 @@ medSurferParms += ' -shrink 2 2 2 '
 medSurferParms += ' -presmooth'
 medSurferParms += ' -niter 40'
 
-
-# Build the soft tissue mesh:
-#medSurfBreastParams  = ' -img '  + breastTissueMaskImage 
-#medSurfBreastParams += ' -surf ' + breastSurfMeshSmesh
-#medSurfBreastParams += ' -vtk '  + breastSurfMeshVTK
-#medSurfBreastParams += medSurferParms
-
-#cmdEx.runCommand( 'medSurfer', medSurfBreastParams )
 
 
 # Build the soft tissue mesh 2:
@@ -80,56 +68,11 @@ plotArraysAsMesh( smrPect.nodes[:,1:4], smrPect.facets[:,1:4] )
 # convert the breast and chest wall mesh to stl files for modification
 vtk2stl.vtk2stl( [pectWallSurfMeshVTK, breastSurfMeshVTK2] )
 
-####################################################################
-# folder: meshImprovement
-# The resulting files were improved using MeshLab 
-# - Filters -> Remeshing -> Uniform Mesh Resampling -> 2mm Precision, offset 0.5mm
-# - Filters -> Smoothing -> Laplacian Smoothing -> 3 Steps
-# - Filters -> Iso Parametrisation -> 140 / 180 / Best Heuristic / 10 / true
-# - Filters -> Iso Parametrisation Remeshing -> 8  
-#
-# These actions are summarised in the script 
-# -> surfProcessing.mlx
-#
-# The above can now be done in an automated way by using meshlabserver and an appropriate script file 
-# Only the output of meshlabserer needs to be converted from binary format to ascii format 
-#
-
-
-# some file names
-#breastSurfBaseName     = breastSurfMeshVTK.split('.')[0] 
-#breastSurfMeshSTL      = breastSurfBaseName + '.stl' 
-#improBreastSurfMeshSTL = breastSurfBaseName + '_impro.stl'
-#
-#if not os.path.exists( breastSurfMeshSTL ) :
-#    print('ERRROR: Breast surface stl file does not exist.')
-#    exit()
-#    
-## run meshlab improvements 
-#
-#meshLabParamrs         = ' -i ' + breastSurfMeshSTL
-#meshLabParamrs        += ' -o ' + improBreastSurfMeshSTL
-#meshLabParamrs        += ' -s ' + meshlabScript
-#
-#cmdEx.runCommand( meshLabCommand, meshLabParamrs )
-#stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL )
-#
-## run tetgen and build the volume mesh
-#tetVolParams = ' -pq1.42a10K ' + improBreastSurfMeshSTL
-#cmdEx.runCommand( 'tetgen', tetVolParams )
-
-#
-# Build the 2nd mesh needs to be coarser as niftySim crashes otherwise
-# some file names
-#
-
-
-
 
 #
 # Improve the mesh quality for the breast 
 #
-meshLabCommand          = 'meshlabserver'
+meshLabCommand         = 'meshlabserver'
 meshlabScript          = mlxDir + 'surfProcessing.mlx'
 meshlabScriptCoarse    = mlxDir + 'surfProcessing_coarse.mlx'
 
@@ -157,7 +100,8 @@ stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL2 )
 tetVolParams = ' -pq1.42a75K ' + improBreastSurfMeshSTL2 # changed this to coarser setting 50 instead of 10
 cmdEx.runCommand( 'tetgen', tetVolParams )
 
-
+import sys
+sys.exit()
 
 #
 # Improve the mesh quality for the pectoral muscle interface 
