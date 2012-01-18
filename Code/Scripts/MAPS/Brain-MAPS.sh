@@ -387,7 +387,7 @@ function brain_delineation()
       ${abs_filter} -i ${output_nreg_vents_mask} -o ${output_nreg_vents_mask}
       ${convert} -i ${output_nreg_vents_mask} -o ${output_nreg_vents_mask} -ot short
       makeroi -img ${output_nreg_vents_mask} -out ${output_nreg_vents_region} -alt 126
-      addRegions.sh ${subject_image} ${output_left_hippo_local_region_threshold} ${output_nreg_vents_region} ${temp_brain_with_vents_region}
+      addRegions.sh ${subject_image} ${output_left_hippo_local_region_threshold} ${output_nreg_vents_region} ${temp_brain_with_vents_region} ""
       rm -rf ${tmp_vents_dir}
       
       # Only take the largest connected component. 
