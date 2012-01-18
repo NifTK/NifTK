@@ -4,12 +4,12 @@
   <extension point="org.blueberry.ui.editors">
     <editor
       id="org.mitk.editors.midasmultiview"
-      name="CMIC MIDAS Display"
+      name="MIDAS Display"
       class="QmitkMIDASMultiViewEditor">
     </editor>
   </extension>
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePage" name="CMIC MIDAS Display" class="QmitkMIDASMultiViewEditorPreferencePage">
+    <page id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePage" name="MIDAS Display" class="QmitkMIDASMultiViewEditorPreferencePage">
       <keywordreference id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePageKeywords"></keywordreference>
     </page>     
   </extension>

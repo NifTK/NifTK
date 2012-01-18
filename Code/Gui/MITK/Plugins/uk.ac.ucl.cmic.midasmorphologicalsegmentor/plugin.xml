@@ -3,7 +3,7 @@
   
   <extension point="org.blueberry.ui.views">
     <view id="uk.ac.ucl.cmic.midasmorphologicalsegmentor"
-          name="CMIC MIDAS Morphological Editor"
+          name="MIDAS Morphological Editor"
           class="MIDASMorphologicalSegmentorView"
           icon="resources/MIDASMorphologicalSegmentor.png" />
   </extension>

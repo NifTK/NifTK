@@ -1,4 +1,4 @@
-set(Plugin-Name "CMIC MIDAS Morphological Editor")
+set(Plugin-Name "MIDAS Morphological Editor")
 set(Plugin-Version "0.1")
 set(Plugin-Vendor "CMIC, Centre For Medical Image Computing, UCL.")
 set(Plugin-ContactAddress "http://cmic.cs.ucl.ac.uk/")

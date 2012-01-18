@@ -1,5 +1,5 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.midasmorphologicalsegmentor} CMIC MIDAS Morphological Editor
+\bundlemainpage{uk.ac.ucl.cmic.midasmorphologicalsegmentor} MIDAS Morphological Editor
 
 \image html MIDASMorphologicalSegmentor.png "Icon of the Module"
 
@@ -103,7 +103,7 @@ or noisy. Eroded voxels have a signal intensity below the upper threshold value 
 erosions one at a time. If one erosion is sufficient to remove all non-brain structures (Figure 5) click Accept and 
 proceed to the next stage.
 
-\image html MorphErosions.png "Figure 5. An eroded brain region disconnected from surrounding tissue.
+\image html MorphErosions.png "Figure 5. An eroded brain region disconnected from surrounding tissue."
 
 Under the following circumstances, more than one erosion may be necessary:
 
@@ -146,7 +146,7 @@ The connection breaker can also be used at this stage to remove any final areas 
 
 Click Accept and proceed to step 4.
 
-\image html MorphDilations.png "Figure 6. Dilations recover previously eroded brain voxels.
+\image html MorphDilations.png "Figure 6. Dilations recover previously eroded brain voxels."
 
 \section MorphEditorRethresholding Step 4. Rethresholding - Reclaim remaining excluded areas
 
