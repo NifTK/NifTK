@@ -149,6 +149,8 @@ void QmitkMIDASSingleViewWidget::SetSpacing(unsigned int spacing)
 
 void QmitkMIDASSingleViewWidget::SetSelected(bool selected)
 {
+  m_IsSelected = selected;
+
   if (selected)
   {
     this->m_RenderWindowFrame->Enable(
@@ -156,7 +158,7 @@ void QmitkMIDASSingleViewWidget::SetSelected(bool selected)
         m_SelectedColor.greenF(),
         m_SelectedColor.blueF()
         );
-    m_IsSelected = true;
+
   }
   else
   {
@@ -166,7 +168,6 @@ void QmitkMIDASSingleViewWidget::SetSelected(bool selected)
         m_UnselectedColor.blueF()
         );
   }
-  m_IsSelected = false;
 }
 
 void QmitkMIDASSingleViewWidget::SetSelectedColor(QColor color)
@@ -344,20 +345,28 @@ unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundPreviousArrayOffset() co
 
 void QmitkMIDASSingleViewWidget::OnSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
-  if (!m_IsSelected || !hasFocus())
+  unsigned int currentNavigatorSliceNumber = this->m_SliceNavigationController->GetSlice()->GetPos();
+  unsigned int currentWidgetSliceNumber = this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()];
+
+  if (currentNavigatorSliceNumber != currentWidgetSliceNumber)
   {
-    mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-    focusManager->SetFocused(this->m_SliceNavigationController->GetRenderer());
+    if (!m_IsSelected)
+    {
+      // Revert back to what this widget thinks is the correct slice number.
+      this->m_SliceNavigationController->GetSlice()->SetPos(currentWidgetSliceNumber);
+    }
+    else
+    {
+      this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = currentNavigatorSliceNumber;
+      emit SliceChanged(m_RenderWindow, currentNavigatorSliceNumber);
+    }
   }
-  unsigned int sliceNumber = this->m_SliceNavigationController->GetSlice()->GetPos();
-  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
-  emit SliceChanged(m_RenderWindow, sliceNumber);
 }
 
 void QmitkMIDASSingleViewWidget::SetSliceNumber(unsigned int sliceNumber)
 {
-  this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
   this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
+  this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
   this->RequestUpdate();
 }
 

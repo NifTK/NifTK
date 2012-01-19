@@ -38,13 +38,16 @@
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
 , m_FocusManagerObserverTag(0)
+, m_FocusedWindowWorldGeometryTag(0)
 , m_FocusedWindowDisplayGeometryTag(0)
 , m_FocusedWindowSliceSelectorTag(0)
+, m_FocusedWindowTimeStepSelectorTag(0)
 , m_DataStorage(NULL)
 , m_BoundingBoxNode(NULL)
 , m_BoundingBox(NULL)
 , m_BaseRenderer(NULL)
 , m_TrackedRenderWindow(NULL)
+, m_TrackedWorldGeometry(NULL)
 , m_TrackedDisplayGeometry(NULL)
 , m_TrackedSliceNavigator(NULL)
 , m_MouseEventEater(NULL)
@@ -89,6 +92,11 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
 
+  if (m_FocusedWindowWorldGeometryTag != 0 && m_TrackedWorldGeometry.IsNotNull())
+  {
+    m_TrackedWorldGeometry->RemoveObserver(m_FocusedWindowWorldGeometryTag);
+  }
+
   if (m_FocusedWindowDisplayGeometryTag != 0 && m_TrackedDisplayGeometry.IsNotNull())
   {
     m_TrackedDisplayGeometry->RemoveObserver(m_FocusedWindowDisplayGeometryTag);
@@ -97,6 +105,11 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
   if (m_FocusedWindowSliceSelectorTag != 0 && m_TrackedSliceNavigator.IsNotNull())
   {
     m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowSliceSelectorTag);
+  }
+
+  if (m_FocusedWindowTimeStepSelectorTag != 0 && m_TrackedSliceNavigator.IsNotNull())
+  {
+    m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowTimeStepSelectorTag);
   }
 
   if (m_MouseEventEater != NULL)
@@ -135,7 +148,7 @@ void QmitkThumbnailRenderWindow::SetDataStorage(mitk::DataStorage::Pointer dataS
 
 mitk::DataStorage::Pointer QmitkThumbnailRenderWindow::GetDataStorage()
 {
-  assert(m_DataStorage);
+  assert(m_DataStorage); // This MUST be set before you actually use this widget.
   return m_DataStorage;
 }
 
@@ -154,6 +167,11 @@ mitk::Point3D QmitkThumbnailRenderWindow::Get3DPoint(int x, int y)
   m_TrackedDisplayGeometry->Map(pointInMillimetres2D, pointInMillimetres3D);
 
   return pointInMillimetres3D;
+}
+
+void QmitkThumbnailRenderWindow::OnDisplayGeometryChanged()
+{
+  this->UpdateBoundingBox();
 }
 
 void QmitkThumbnailRenderWindow::UpdateBoundingBox()
@@ -220,28 +238,8 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
   // Tidy up
   cube->Delete();
 
-  // we shouldn't need this every time, but without it you don't get all the updates.
+  // We shouldn't need this every time, but without it you don't seem to get all the updates.
   this->setBoundingBoxVisible(true);
-
-  // Request a single update at the end of the method.
-  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
-}
-
-void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
-{
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer::ConstPointer focusedWindowRenderer = focusManager->GetFocused();
-  mitk::Geometry2D::ConstPointer focusedWindowWorldGeometry = focusedWindowRenderer->GetCurrentWorldGeometry2D();
-  mitk::BaseRenderer::Pointer thumbnailWindowRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
-
-  // World geometry of thumbnail must be same (or larger) as world geometry of the focused window.
-  thumbnailWindowRenderer->SetWorldGeometry(const_cast<mitk::Geometry2D*>(focusedWindowWorldGeometry.GetPointer()));
-
-  // Display geometry of widget must encompass whole of world geometry
-  if (fitToDisplay)
-  {
-    thumbnailWindowRenderer->GetDisplayGeometry()->Fit();
-  }
 
   // Request a single update at the end of the method.
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
@@ -255,8 +253,7 @@ void QmitkThumbnailRenderWindow::UpdateVisibility()
   {
     // Intention : This object should display all the data nodes visible in the focused window, and none others.
     // Assumption: Renderer specific properties override the global ones.
-    // so......    Objects will be visible, unless the the node has a render window specific property that says otherwise,
-    //             where the render window specific property should belong to the m_TrackedRenderWindow.
+    // so......    Objects will be visible, unless the the node has a render window specific property that says otherwise.
 
     mitk::BaseRenderer::Pointer mitkRendererForThumbnail = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
     assert(mitkRendererForThumbnail);
@@ -305,15 +302,12 @@ void QmitkThumbnailRenderWindow::UpdateVisibility()
 
       counter++;
     }
-
-    // Request a single update at the end of the method.
-    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
   }
 }
 
 void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 {
-  // Guarantee no recursions when a new node event is thrown in NodeAdded()
+  // Guarantee no recursions when a new node event is created in NodeAdded()
   if(!m_InDataStorageChanged && node != m_BoundingBoxNode)
   {
     m_InDataStorageChanged = true;
@@ -325,11 +319,12 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
 {
   this->UpdateVisibility();
+  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
 void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
 {
-  // Guarantee no recursions when a new node event is thrown in NodeAdded()
+  // Guarantee no recursions when a new node event is created in NodeAdded()
   if(!m_InDataStorageChanged && node != m_BoundingBoxNode)
   {
     m_InDataStorageChanged = true;
@@ -340,26 +335,72 @@ void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
 
 void QmitkThumbnailRenderWindow::NodeChanged( const mitk::DataNode* node)
 {
-  this->UpdateVisibility();
+  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
 void QmitkThumbnailRenderWindow::OnSliceChanged(const itk::EventObject & geometrySliceEvent)
+{
+  this->UpdateSliceAndTimeStep();
+}
+
+void QmitkThumbnailRenderWindow::OnTimeStepChanged(const itk::EventObject & geometrySliceEvent)
+{
+  this->UpdateSliceAndTimeStep();
+}
+
+void QmitkThumbnailRenderWindow::UpdateSliceAndTimeStep()
 {
   if (m_TrackedRenderWindow != NULL)
   {
     mitk::BaseRenderer::Pointer mitkRendererForThumbnail = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
     assert(mitkRendererForThumbnail);
+
     mitk::BaseRenderer::Pointer mitkRendererForTrackedWidget = mitk::BaseRenderer::GetInstance(m_TrackedRenderWindow);
     assert(mitkRendererForTrackedWidget);
 
-    mitkRendererForThumbnail->SetSlice(mitkRendererForTrackedWidget->GetSlice());
+    if (mitkRendererForTrackedWidget->GetTimeStep() != mitkRendererForThumbnail->GetTimeStep())
+    {
+      mitkRendererForThumbnail->SetTimeStep(mitkRendererForTrackedWidget->GetTimeStep());
+    }
+
+    if (mitkRendererForTrackedWidget->GetSlice() != mitkRendererForThumbnail->GetSlice())
+    {
+      mitkRendererForThumbnail->SetSlice(mitkRendererForTrackedWidget->GetSlice());
+    }
+
     this->UpdateWorldGeometry(true);
   }
 }
 
-void QmitkThumbnailRenderWindow::OnDisplayGeometryChanged()
+void QmitkThumbnailRenderWindow::OnWorldGeometryChanged()
 {
-  this->UpdateBoundingBox();
+  this->UpdateWorldGeometry(true);
+}
+
+void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
+{
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  mitk::BaseRenderer::ConstPointer focusedWindowRenderer = focusManager->GetFocused();
+  assert(focusedWindowRenderer);
+
+  mitk::BaseRenderer::Pointer thumbnailWindowRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
+  assert(thumbnailWindowRenderer);
+
+  // Retrieve the correct slice of world geometry to display.
+  mitk::Geometry2D::ConstPointer focusedWindowWorldGeometry = focusedWindowRenderer->GetCurrentWorldGeometry2D();
+
+  // World geometry of thumbnail must be same (or larger) as world geometry of the focused window.
+  //thumbnailWindowRenderer->SetWorldGeometry(const_cast<mitk::Geometry2D*>(focusedWindowWorldGeometry.GetPointer()));
+  thumbnailWindowRenderer->SetWorldGeometry(const_cast<mitk::Geometry3D*>(focusedWindowRenderer->GetWorldGeometry()));
+
+  // Display geometry of widget must encompass whole of world geometry
+  if (fitToDisplay)
+  {
+    thumbnailWindowRenderer->GetDisplayGeometry()->Fit();
+  }
+
+  // Request a single update at the end of the method.
+  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
 void QmitkThumbnailRenderWindow::OnFocusChanged()
@@ -372,13 +413,18 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
     mitk::BaseRenderer::ConstPointer focusedWindowRenderer = focusManager->GetFocused();
     vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
 
-    if (!(focusedWindowRenderWindow == this->GetVtkRenderWindow()) && focusedWindowRenderer->GetMapperID() != mitk::BaseRenderer::Standard3D)
+    if (!(focusedWindowRenderWindow == this->GetVtkRenderWindow())
+        && focusedWindowRenderer->GetMapperID() != mitk::BaseRenderer::Standard3D)
     {
       // Make sure this thumbnail is connected to the data storage.
       mitk::BaseRenderer::Pointer thumbnailWindowRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
       thumbnailWindowRenderer->SetDataStorage(dataStorage);
 
       // Remove any existing geometry observers
+      if (m_TrackedWorldGeometry.IsNotNull())
+      {
+        m_TrackedWorldGeometry->RemoveObserver(m_FocusedWindowWorldGeometryTag);
+      }
       if (m_TrackedDisplayGeometry.IsNotNull())
       {
         m_TrackedDisplayGeometry->RemoveObserver(m_FocusedWindowDisplayGeometryTag);
@@ -386,14 +432,21 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
       if (m_TrackedSliceNavigator.IsNotNull())
       {
         m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowSliceSelectorTag);
+        m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowTimeStepSelectorTag);
       }
 
       // Store pointers to the display and world geometry, and render window
+      m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(focusedWindowRenderer->GetWorldGeometry());
       m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(focusedWindowRenderer->GetDisplayGeometry());
       m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(focusedWindowRenderer.GetPointer()))->GetSliceNavigationController();
       m_TrackedRenderWindow = focusedWindowRenderWindow;
 
       // Add Observers to track when these geometries change
+      itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onWorldGeometryChangedCommand =
+        itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
+      onWorldGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnWorldGeometryChanged );
+      m_FocusedWindowWorldGeometryTag = m_TrackedWorldGeometry->AddObserver(itk::ModifiedEvent(), onWorldGeometryChangedCommand);
+
       itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
         itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
       onDisplayGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnDisplayGeometryChanged );
@@ -404,25 +457,28 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
       onSliceChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnSliceChanged );
       m_FocusedWindowSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
 
+      itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onTimeChangedCommand =
+        itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
+      onTimeChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnTimeStepChanged );
+      m_FocusedWindowTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
+
       // Check we added bounding box to data storage.
       // I'm doing this in this method so that when the initial first
-      // window starts, the bounding box will not be included.
+      // window starts (i.e. before any data is loaded),
+      // the bounding box will not be included, and not visible.
       if (!dataStorage->Exists(m_BoundingBoxNode))
       {
-        m_DataStorage->Add(m_BoundingBoxNode);
+        this->GetDataStorage()->Add(m_BoundingBoxNode);
       }
+
+      // This sets the tracked render window to the same slice and time step and re-computes the world geometry.
+      this->UpdateSliceAndTimeStep();
 
       // This computes the bounding box.
       this->OnDisplayGeometryChanged();
 
-      // This initialises the geometry.
-      this->UpdateWorldGeometry(true);
-
       // Make sure visibility flags are updated
       this->UpdateVisibility();
-
-      // Bounding box must match the window size of the focused window.
-      this->UpdateBoundingBox();
 
     } // end if focused window is not thumbnail window.
   } // end if we have a data storage

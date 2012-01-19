@@ -95,6 +95,9 @@ signals:
   /// \brief Signal that the value of the MIDAS controls (orientation, slice, magnification) should change.
   void UpdateMIDASViewingControlsValues(const ctkDictionary&);
 
+  /// \brief Signal that the part has changed, used when the PartVisible, PartHidden and PartClosed are called.
+  void PartStatusChanged(const ctkDictionary&);
+
 public Q_SLOTS:
 
   /// \brief Handle events coming from the event admin service.
@@ -107,6 +110,9 @@ protected:
 
   // Creates the main Qt GUI element parts.
   void CreateQtPartControl(QWidget* parent);
+
+  // Used to emit a message of type part_status=status.
+  void OnPartChanged(QString status);
 
   // IPartListener
   Events::Types GetPartEventTypes() const;

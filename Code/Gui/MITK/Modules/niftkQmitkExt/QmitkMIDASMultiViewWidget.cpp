@@ -527,13 +527,6 @@ void QmitkMIDASMultiViewWidget::OnDropThumbnailRadioButtonToggled(bool toggled)
 
 void QmitkMIDASMultiViewWidget::OnSliceChanged(QmitkMIDASRenderWindow *window, unsigned int sliceNumber)
 {
-  // The following series of events should occur.
-  // 1. A user scrolls the mouse wheel in a window, picked up by GlobalInteraction, sent to the right QmitkMIDASRenderWindow.
-  // 2. The SliceNavigationController in that window updates.
-  // 3. In QmitkMIDASSingleViewWidget, we listen for the slice changed event, and set the focus to that QmitkMIDASRenderWindow
-  // 4. In QmitkMIDASMultiViewWidget, the focus changed triggers an update of the selected window, meaning that the
-  //    QmitkMIDASMultiViewWidget works out which window has focus, and tells it it is "selected" and hence the border changes.
-  // 5. In addition however, for each slice change event (step 2 in this list), we need to make sure the midasnavigation plugin is up to date.
   this->PublishNavigationSettings();
 }
 

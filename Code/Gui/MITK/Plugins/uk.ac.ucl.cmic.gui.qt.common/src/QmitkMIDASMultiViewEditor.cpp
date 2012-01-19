@@ -156,6 +156,9 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     m_EventAdmin->publishSignal(this, SIGNAL(UpdateMIDASViewingControlsValues(ctkDictionary)),
                               "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsValues", Qt::QueuedConnection);
 
+    m_EventAdmin->publishSignal(this, SIGNAL(PartStatusChanged(ctkDictionary)),
+                              "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/PartStatusChanged", Qt::QueuedConnection);
+
     // Dummy call, i think there is a threading / race condition, so Im trying to initialise this early.
     mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
@@ -179,6 +182,7 @@ void QmitkMIDASMultiViewEditor::PartClosed( berry::IWorkbenchPartReference::Poin
   if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
+    this->OnPartChanged("closed");
 
     if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
     {
@@ -192,6 +196,7 @@ void QmitkMIDASMultiViewEditor::PartVisible( berry::IWorkbenchPartReference::Poi
   if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
+    this->OnPartChanged("visible");
 
     if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
     {
@@ -205,6 +210,8 @@ void QmitkMIDASMultiViewEditor::PartHidden( berry::IWorkbenchPartReference::Poin
   if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
+    this->OnPartChanged("hidden");
+
     if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
     {
       // Do stuff
@@ -329,6 +336,22 @@ void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsValues(UpdateMIDASVi
   catch (const ctkRuntimeException& e)
   {
     MITK_ERROR << "QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControls, failed with:" << e.what() \
+        << ", caused by " << e.getCause().toLocal8Bit().constData() \
+        << std::endl;
+  }
+}
+
+void QmitkMIDASMultiViewEditor::OnPartChanged(QString status)
+{
+  try
+  {
+    ctkDictionary properties;
+    properties["part_status"] = status;
+    emit PartStatusChanged(properties);
+  }
+  catch (const ctkRuntimeException& e)
+  {
+    MITK_ERROR << "QmitkMIDASMultiViewEditor::OnPartChanged, failed with:" << e.what() \
         << ", caused by " << e.getCause().toLocal8Bit().constData() \
         << std::endl;
   }

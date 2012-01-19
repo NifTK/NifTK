@@ -31,7 +31,7 @@
 #include "mitkDataStorage.h"
 #include "mitkDataNode.h"
 #include "mitkCuboid.h"
-#include "mitkAffineInteractor.h"
+#include "mitkTimeSlicedGeometry.h"
 
 class QmitkMouseEventEater;
 class QmitkWheelEventEater;
@@ -134,8 +134,11 @@ protected:
 
 private:
 
-  // Callback for when the focus changes, where we update the thumbnail view to the right window, then call UpdateWorldGeometry(), UpdateBoundingBox() and OnVisibilityChanged().
+  // Callback for when the focus changes, where we update the thumbnail view to the right window, then call OnWorldGeometryChanged(), UpdateBoundingBox() and OnVisibilityChanged().
   void OnFocusChanged();
+
+  // Callback for when the world geometry changes.
+  void OnWorldGeometryChanged();
 
   // Callback for when the display geometry of a window changes, where we only update the thumbnail bounding box.
   void OnDisplayGeometryChanged();
@@ -143,14 +146,20 @@ private:
   // Callback for when the slice selector changes slice, where we change the world geometry to get the right slice.
   void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
 
+  // Callback for when the slice selector changes time step.
+  void OnTimeStepChanged(const itk::EventObject & geometrySliceEvent);
+
   // When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void UpdateWorldGeometry(bool fitToDisplay);
 
   // When any visibility flag changes we recompute which objects are visible in this render window.
   void UpdateVisibility();
 
-  // Updates the bounding box by taking the 4 corners of the focussed render window, calling Get3DPoint(), and updating the bounding box.
+  // Updates the bounding box by taking the 4 corners of the focussed render window, by Get3DPoint().
   void UpdateBoundingBox();
+
+  // Updates the slice and time step on the SliceNavigationController.
+  void UpdateSliceAndTimeStep();
 
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
@@ -161,11 +170,17 @@ private:
   // Used for the mitkFocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
 
+  // Used for when the focussed window world geometry changes
+  unsigned long m_FocusedWindowWorldGeometryTag;
+
   // Used for when the focused window display geometry changes.
   unsigned long m_FocusedWindowDisplayGeometryTag;
 
   // Used for when the focused window changes slice.
   unsigned long m_FocusedWindowSliceSelectorTag;
+
+  // Used for when the focused window changes time step.
+  unsigned long m_FocusedWindowTimeStepSelectorTag;
 
   // We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;
@@ -181,6 +196,9 @@ private:
 
   // This is set to the currently tracked window. We don't construct or own it, so don't delete it.
   vtkRenderWindow *m_TrackedRenderWindow;
+
+  // This is set to the current world geometry.
+  mitk::Geometry3D::Pointer m_TrackedWorldGeometry;
 
   // Keep track of this to register and unregister event listeners.
   mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;
