@@ -35,8 +35,8 @@ MIDASKeyPressStateMachine::MIDASKeyPressStateMachine(const char * stateMachinePa
   assert(responder);
   m_Responder = responder;
 
-  CONNECT_ACTION( 350001, MoveAnterior );
-  CONNECT_ACTION( 350002, MovePosterior );
+  CONNECT_ACTION( 350001, MovePosterior );  // These are currently mapped the wrong way round.
+  CONNECT_ACTION( 350002, MoveAnterior );   // i.e. A, maps to Posterior, when spec says Anterior, but it looks correct in GUI???
   CONNECT_ACTION( 350003, SwitchToAxial );
   CONNECT_ACTION( 350004, SwitchToSagittal );
   CONNECT_ACTION( 350005, SwitchToCoronal );
@@ -65,24 +65,6 @@ bool MIDASKeyPressStateMachine::SwitchToSagittal(Action*, const StateEvent*)
 bool MIDASKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToCoronal();
-}
-
-bool MIDASKeyPressStateMachine::ScrollMouse(Action*, const StateEvent* stateEvent)
-{
-  const WheelEvent* wheelEvent=dynamic_cast<const WheelEvent*>(stateEvent->GetEvent());
-  if (wheelEvent != NULL)
-  {
-    int delta = wheelEvent->GetDelta();
-    if ( delta < 0 )
-    {
-      return m_Responder->MovePosterior();
-    }
-    else
-    {
-      return m_Responder->MoveAnterior();
-    }
-  }
-  return false;
 }
 
 } // end namespace

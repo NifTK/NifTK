@@ -93,9 +93,6 @@ protected:
   /// \brief Switch the current view to Coronal, simply passing method onto the MIDASKeyPressResponder
   bool SwitchToCoronal(Action*, const StateEvent*);
 
-  /// \brief Respond to mouse wheel scroll events.
-  bool ScrollMouse(Action*, const StateEvent*);
-
 private:
 
   /// \brief the object that gets called, specified in constructor.
