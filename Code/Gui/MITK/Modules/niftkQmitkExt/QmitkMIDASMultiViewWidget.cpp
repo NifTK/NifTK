@@ -499,7 +499,9 @@ void QmitkMIDASMultiViewWidget::OnDropSingleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_VisibilityManager->ClearAllWindows();
     m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_SINGLE);
+
     this->SetLayoutSize(m_NumberOfRowsInNonThumbnailMode, m_NumberOfColumnsInNonThumbnailMode, false);
     this->EnableWidgetsForThumbnailMode(false);
   }
@@ -509,7 +511,9 @@ void QmitkMIDASMultiViewWidget::OnDropMultipleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_VisibilityManager->ClearAllWindows();
     m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_MULTIPLE);
+
     this->SetLayoutSize(m_NumberOfRowsInNonThumbnailMode, m_NumberOfColumnsInNonThumbnailMode, false);
     this->EnableWidgetsForThumbnailMode(false);
   }
@@ -519,7 +523,9 @@ void QmitkMIDASMultiViewWidget::OnDropThumbnailRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_VisibilityManager->ClearAllWindows();
     m_VisibilityManager->SetDropType(QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_ALL);
+
     this->SetLayoutSize(m_MaxRows, m_MaxCols, true);
     this->EnableWidgetsForThumbnailMode(true);
   }
@@ -672,7 +678,15 @@ void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
   unsigned int start;
   unsigned int stop;
-  this->GetStartStopIndexForIteration(start, stop);
+  if (m_DropThumbnailRadioButton->isChecked())
+  {
+    start = 0;
+    stop = this->m_SingleViewWidgets.size() -1;
+  }
+  else
+  {
+    this->GetStartStopIndexForIteration(start, stop);
+  }
 
   for (unsigned int i = start; i <= stop; i++)
   {

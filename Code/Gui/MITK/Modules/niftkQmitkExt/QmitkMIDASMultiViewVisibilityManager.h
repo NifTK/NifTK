@@ -102,6 +102,9 @@ public:
   /// \brief Returns the default orientation type.
   MIDASDefaultOrientationType GetDefaultOrientationType() const { return m_DefaultOrientation; }
 
+  /// \brief When we switch layouts, or drop in thumbnail mode, we clear all windows.
+  void ClearAllWindows();
+
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags.

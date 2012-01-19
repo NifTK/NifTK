@@ -375,6 +375,14 @@ QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASMultiViewVisibilityMa
   return orientation;
 }
 
+void QmitkMIDASMultiViewVisibilityManager::ClearAllWindows()
+{
+  for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
+  {
+    this->RemoveNodesFromWindow(i);
+  }
+}
+
 void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
@@ -394,14 +402,14 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       std::string name;
       if (nodes[i] != 0 && nodes[i]->GetStringProperty("name", name))
       {
-        MITK_INFO << "Dropped " << nodes.size() << " into window[" << windowIndex <<"], name[" << i << "]=" << name << std::endl;
+        MITK_DEBUG << "Dropped " << nodes.size() << " into window[" << windowIndex <<"], name[" << i << "]=" << name << std::endl;
       }
     }
 
     if (m_DropType == MIDAS_DROP_TYPE_SINGLE)
     {
 
-      MITK_INFO << "Dropped single" << std::endl;
+      MITK_DEBUG << "Dropped single" << std::endl;
 
       mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
       if (geometry.IsNull())
@@ -426,7 +434,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
     {
-      MITK_INFO << "Dropped multiple" << std::endl;
+      MITK_DEBUG << "Dropped multiple" << std::endl;
 
       // Work out which window we are actually dropping into.
       // We aim to put one object, in each of consecutive windows.
@@ -470,7 +478,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
     }
     else if (m_DropType == MIDAS_DROP_TYPE_ALL)
     {
-      MITK_INFO << "Dropped thumbnail" << std::endl;
+      MITK_DEBUG << "Dropped thumbnail" << std::endl;
 
       mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
       if (geometry.IsNull())
@@ -479,43 +487,69 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         return;
       }
 
-      // Sort out visibility properties and the like for every window.
-      for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
-      {
-        // Clear all nodes from every window.
-        this->RemoveNodesFromWindow(i);
+      // Clear all nodes from every window.
+      this->ClearAllWindows();
 
-        // Then add all nodes into every window.
+      // Then we need to check if the number of slices < the number of windows, if so, we just
+      // spread the slices, one per window, until we run out of windows.
+      // If we have more slices than windows, we need to interpolate the number of slices.
+      m_ListOfWidgets[0]->SetGeometry(geometry.GetPointer());
+      m_ListOfWidgets[0]->SetViewOrientation(orientation);
+      unsigned int minSlice = m_ListOfWidgets[0]->GetMinSlice();
+      unsigned int maxSlice = m_ListOfWidgets[0]->GetMaxSlice();
+      unsigned int numberOfSlices = maxSlice - minSlice + 1;
+      unsigned int windowsToUse = std::min((unsigned int)numberOfSlices, (unsigned int)m_ListOfWidgets.size());
+
+      MITK_DEBUG << "Dropping thumbnail, minSlice=" << minSlice << ", maxSlice=" << maxSlice << ", numberOfSlices=" << numberOfSlices << ", windowsToUse=" << windowsToUse << std::endl;
+
+      // Now add the nodes to the right number of Windows.
+      for (unsigned int i = 0; i < windowsToUse; i++)
+      {
         for (unsigned int j = 0; j < nodes.size(); j++)
         {
           this->AddNodeToWindow(i, nodes[j]);
         }
       }
 
-      // Then sort out geometry for every window, with an increasing slice number evenly throughout the volume.
-      for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
+      // Now decide how we calculate which window is showing which slice.
+      if (numberOfSlices <= m_ListOfWidgets.size())
       {
-        m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
-        m_ListOfWidgets[i]->SetViewOrientation(orientation);
+        // In this method, we have less slices than windows, so we just spread them in increasing order.
+        for (unsigned int i = 0; i < windowsToUse; i++)
+        {
+          m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
+          m_ListOfWidgets[i]->SetViewOrientation(orientation);
+          m_ListOfWidgets[i]->SetSliceNumber(minSlice + i);
 
-        unsigned int minSlice = m_ListOfWidgets[i]->GetMinSlice();
-        unsigned int maxSlice = m_ListOfWidgets[i]->GetMaxSlice();
-        unsigned int numberOfEdgeSlicesToIgnore = (maxSlice - minSlice + 1) * 0.05; // ignore first and last 5 percent, as usually junk.
-        unsigned int remainingNumberOfSlices = (maxSlice - minSlice + 1) - 2 * numberOfEdgeSlicesToIgnore;
-        float fraction = (float)i/(float)(m_ListOfWidgets.size());
-        unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + remainingNumberOfSlices*fraction;
-
-        MITK_INFO << "Dropping thumbnail, i=" << i \
-            << ", minSlice=" << minSlice \
-            << ", maxSlice=" << maxSlice \
-            << ", numberOfEdgeSlicesToIgnore=" << numberOfEdgeSlicesToIgnore \
-            << ", remainingNumberOfSlices=" << remainingNumberOfSlices \
-            << ", fraction=" << fraction \
-            << ", chosenSlice=" << chosenSlice << std::endl;
-        m_ListOfWidgets[i]->SetSliceNumber(chosenSlice);
-
+          MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
+        }
       }
-    }
-  }
+      else
+      {
+        // In this method, we have more slices than windows, so we spread them evenly over the max number of windows.
+        for (unsigned int i = 0; i < windowsToUse; i++)
+        {
+          m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
+          m_ListOfWidgets[i]->SetViewOrientation(orientation);
+
+          unsigned int minSlice = m_ListOfWidgets[i]->GetMinSlice();
+          unsigned int maxSlice = m_ListOfWidgets[i]->GetMaxSlice();
+          unsigned int numberOfEdgeSlicesToIgnore = numberOfSlices * 0.05; // ignore first and last 5 percent, as usually junk/blank.
+          unsigned int remainingNumberOfSlices = numberOfSlices - (2 * numberOfEdgeSlicesToIgnore);
+          float fraction = (float)i/(float)(m_ListOfWidgets.size());
+          unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + remainingNumberOfSlices*fraction;
+
+          MITK_DEBUG << "Dropping thumbnail, i=" << i \
+              << ", minSlice=" << minSlice \
+              << ", maxSlice=" << maxSlice \
+              << ", numberOfEdgeSlicesToIgnore=" << numberOfEdgeSlicesToIgnore \
+              << ", remainingNumberOfSlices=" << remainingNumberOfSlices \
+              << ", fraction=" << fraction \
+              << ", chosenSlice=" << chosenSlice << std::endl;
+          m_ListOfWidgets[i]->SetSliceNumber(chosenSlice);
+        }
+      } // end if (which method of spreading thumbnails)
+    } // end if (which method of dropping)
+  } // end if (we have valid input)
 }
 
