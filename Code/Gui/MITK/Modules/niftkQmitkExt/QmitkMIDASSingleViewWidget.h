@@ -210,6 +210,7 @@ private:
   // Callback for when the slice selector changes slice
   void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
 
+  void ResetCurrentPosition(unsigned int currentIndex);
   void ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex);
   void StorePosition();
   void SetActiveGeometry();

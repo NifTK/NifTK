@@ -54,8 +54,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 {
   this->setAcceptDrops(true);
 
-  //m_BackgroundColor = QColor(255, 250, 240);  // that strange MIDAS background color.
-  m_BackgroundColor = QColor(0, 0, 0);  // that strange MIDAS background color.
+  m_BackgroundColor = QColor(255, 250, 240);  // that strange MIDAS background color.
   m_SelectedColor   = QColor(255, 0, 0);
   m_UnselectedColor = QColor(255, 255, 255);
 
@@ -387,6 +386,17 @@ unsigned int QmitkMIDASSingleViewWidget::GetTime() const
   return this->m_CurrentTimeSliceNumbers[this->GetBoundUnboundOffset()];
 }
 
+void QmitkMIDASSingleViewWidget::ResetCurrentPosition(unsigned int currentIndex)
+{
+  assert(currentIndex >=0);
+  assert(currentIndex <=1);
+
+  m_CurrentSliceNumbers[currentIndex] = 0;
+  m_CurrentTimeSliceNumbers[currentIndex] = 0;
+  m_CurrentMagnificationFactors[currentIndex] = this->m_MinimumMagnification;
+  m_CurrentViewOrientations[currentIndex] = MIDAS_VIEW_UNKNOWN;
+}
+
 void QmitkMIDASSingleViewWidget::ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex)
 {
   // NOTE: The positions array is off length 6, corresponding to
@@ -440,6 +450,7 @@ void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeSlicedGeometry::Pointer g
   if (!this->m_IsBound)
   {
     this->ResetRememberedPositions(0, 2);
+    this->ResetCurrentPosition(0);
   }
 }
 
@@ -455,6 +466,7 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeSlicedGeometry::Poin
   if (this->m_IsBound)
   {
     this->ResetRememberedPositions(3, 5);
+    this->ResetCurrentPosition(1);
   }
 }
 
