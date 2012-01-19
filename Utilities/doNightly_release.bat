@@ -23,7 +23,7 @@ cd d:\NIFTK\NIFTK_build_release
 c:\cmake_build\bin\Release\cmake.exe  d:\NIFTK\NIFTK
 
 REM *****  Run devenv --> Clean + Rebuild for debug|x64  *****
-"C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\devenv.exe" /build release /project ALL_BUILD /projectconfig "Release|x64" /out "d:\NIFTK\buildlog_release.txt" NIFTK-SUPERBUILD.sln
+"C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\devenv.exe" /build release /project ALL_BUILD /projectconfig "Release|x64" /out "d:\NIFTK\log_build-release.txt" NIFTK-SUPERBUILD.sln
 
 REM  *****  Set PATH and Environment for UCLTK  *****
 cd "d:\NIFTK\NIFTK_build_release\NIFTK-build\"
@@ -34,10 +34,13 @@ PATH=D:\NIFTK\NIFTK_build_release\VTK-build\bin\release;D:\NIFTK\NIFTK_build_rel
 REM *****  Run CTEST  *****
 REM ctest -T Test -T Submit -E CTE-Stream  -VV --track Nightly
 REM c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -E MIDAS-Seg-RegGrowProc -E MIDAS-Seg-PropUp -E MIDAS-Seg-PropDown -D Nightly
-c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyStart >d:\NIFTK\ctest_log.txt
-c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyConfigure >>d:\NIFTK\ctest_log.txt
-c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyBuild >>d:\NIFTK\ctest_log.txt
-c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyTest >>d:\NIFTK\ctest_log.txt
-c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlySubmit >>d:\NIFTK\ctest_log.txt
+c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyStart >d:\NIFTK\log_ctest.txt
+c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyConfigure >>d:\NIFTK\log_ctest.txt
+c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyBuild >>d:\NIFTK\log_ctest.txt
+c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlyTest >>d:\NIFTK\log_ctest.txt
+c:\cmake_build\bin\Release\ctest.exe -C Release -E CTE-Stream -D NightlySubmit >>d:\NIFTK\log_ctest.txt
 
-"C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\devenv.exe" /build release /project PACKAGE /projectconfig "Release|x64" /out "D:\NIFTK\buildlog_package.txt" NIFTK.sln
+"C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\devenv.exe" /build release /project PACKAGE /projectconfig "Release|x64" /out "D:\NIFTK\log_build-package.txt" NIFTK.sln
+
+ping 1.1.1.1 -n 1 -w 60000
+pscp -v -batch -pw PASSWORD -scp d:\NifTK\NIFTK_build_release\NifTK-build\niftk-1.0.0rc1.exe USER@logno.cs.ucl.ac.uk:/tmp/niftk/niftk-nightly-win7-64.exe >D:\NIFTK\log_pscp_nightly.txt
