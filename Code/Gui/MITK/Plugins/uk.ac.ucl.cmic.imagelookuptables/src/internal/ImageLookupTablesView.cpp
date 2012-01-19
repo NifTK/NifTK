@@ -422,15 +422,15 @@ void ImageLookupTablesView::OnNodeChanged(const mitk::DataNode* nodeFromDataStor
 
   MITK_DEBUG << "ImageLookupTablesView::OnNodeChanged, name=" << name << ", node=" << nodeFromDataStore << std::endl;
 
-  if (!m_LevelWindowManager->isAutoTopMost())
-  {
-    m_LevelWindowManager->SetAutoTopMostImage(true);
-  }
-
   mitk::Image::Pointer imageFromDataStore = dynamic_cast<mitk::Image*>(nodeFromDataStore->GetData());
   if (imageFromDataStore.IsNotNull() && !m_InUpdate)
   {
     m_InUpdate = true;
+
+    if (!m_LevelWindowManager->isAutoTopMost())
+    {
+      m_LevelWindowManager->SetAutoTopMostImage(true);
+    }
 
     mitk::Image::Pointer currentImageFromLevelWindowManager = m_LevelWindowManager->GetCurrentImage();
     if (currentImageFromLevelWindowManager.IsNotNull())
