@@ -108,11 +108,14 @@ void mitk::DRCCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 
 void mitk::DRCCoreObjectFactory::CreateFileExtensionsMap()
 {
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze Image"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre Analyze Image"));
+  // Nothing to do. We don't need the following, if the file extensions are already in mitkCoreObjectFactory.cpp.
+  /*
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze image"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre Analyze image"));
 
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze Image"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre Analyze Image"));
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze image"));
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre compressed Analyze image"));
+  */
 }
 
 mitk::DRCCoreObjectFactory::MultimapType mitk::DRCCoreObjectFactory::GetFileExtensionsMap()
