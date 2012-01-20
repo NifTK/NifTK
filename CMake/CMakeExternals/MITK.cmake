@@ -38,13 +38,21 @@ IF(NOT DEFINED MITK_DIR)
       set(BOOST_LIBRARYDIR ${BOOST_LIBRARYDIR} CACHE PATH \"Path to Boost library directory\")
     ")
 
-    SET(revision_tag f1953dbbb0)
+    #########################################################
+    # As of Trac 1257, we are building off of a fork of MITK.
+    # The fork is branch niftk.
+    # mitk revision f1953dbbb0
+    # + merging trac 853, trac 1255, trac 1256.
+    #########################################################
+    
+    SET(revision_tag 82efd288c7)
+    
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
     ENDIF()
     
     ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${GIT_PROTOCOL}://git.mitk.org/MITK.git/
+    GIT_REPOSITORY ${GIT_PROTOCOL}://github.com/MattClarkson/MITK.git
     GIT_TAG ${revision_tag}
     BINARY_DIR ${proj}-build
     UPDATE_COMMAND ""
