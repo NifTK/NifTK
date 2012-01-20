@@ -148,13 +148,11 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
   m_BackgroundColor = m_MIDASMultiViewEditorPreferencesNode->GetByteArray(MIDAS_BACKGROUND_COLOUR, "");
   if (m_BackgroundColorStyleSheet=="")
   {
-    //m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS salmon colour.
-    m_BackgroundColorStyleSheet = "background-color: rgb(0,0,0)";
+    m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS salmon colour.
   }
   if (m_BackgroundColor=="")
   {
-    //m_BackgroundColor = "#fffaf0";
-    m_BackgroundColor = "#000000"; // That strange MIDAS salmon colour.
+    m_BackgroundColor = "#fffaf0"; // That strange MIDAS salmon colour.
   }
   m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 
@@ -191,9 +189,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::OnBackgroundColourChanged()
 
 void QmitkMIDASMultiViewEditorPreferencePage::OnResetBackgroundColour()
 {
-//  m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS salmon colour.
-//  m_BackgroundColor = "#fffaf0";                                      // That strange MIDAS salmon colour.
-  m_BackgroundColorStyleSheet = "background-color: rgb(0,0,0)";
-  m_BackgroundColor = "#000000";
+  m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS salmon colour.
+  m_BackgroundColor = "#fffaf0";                                      // That strange MIDAS salmon colour.
   m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 }

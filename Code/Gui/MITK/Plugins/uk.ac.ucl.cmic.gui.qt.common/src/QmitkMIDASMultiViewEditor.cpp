@@ -236,12 +236,9 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     mitk::Color bgColour;
     if (backgroundColourName=="") // default values
     {
-      //bgColour[0] = 1;
-      //bgColour[1] = 0.980392;
-      //bgColour[2] = 0.941176;
-      bgColour[0] = 0;
-      bgColour[1] = 0;
-      bgColour[2] = 0;
+      bgColour[0] = 1;
+      bgColour[1] = 0.980392;
+      bgColour[2] = 0.941176;
     }
     else
     {
