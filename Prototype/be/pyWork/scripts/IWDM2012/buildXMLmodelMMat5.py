@@ -43,19 +43,19 @@ F3DnumberOfLevels1         = 4
 F3DmaxIterations1          = 300
 F3Dgpu1                    = True
 
-F3DbendingEnergy2          = 0.01
-F3DlogOfJacobian2          = 0.0
-F3DfinalGridSpacing2       = 2
-F3DnumberOfLevels2         = 3
-F3DmaxIterations2          = 300
+F3DbendingEnergy2          = 0.002
+F3DlogOfJacobian2          = 0.02
+F3DfinalGridSpacing2       = 5
+F3DnumberOfLevels2         = 6
+F3DmaxIterations2          = 400
 F3Dgpu2                    = True
 
-matParamsFat              = [ 200, 50000]
-matParamsGland            = [ 600, 50000]
-matParamsMuscle           = [1000, 50000]
-matParamsSkin             = [2000, 50000]
+matParamsFat              = [  500, 50000 ]
+matParamsGland            = [  750, 50000 ]
+matParamsMuscle           = [ 1000, 50000 ]
+matParamsSkin             = [ 2500, 50000 ]
 
-updateFactor              = 0.75
+updateFactor              = 1.0
 numIterations             = 5
 
 meshDir                   = 'W:/philipsBreastProneSupine/Meshes/meshMaterials5/'
@@ -350,6 +350,7 @@ simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, -offsetVal, 0 ))
 simParams  += ' -iL '    + labelImage
 simParams  += ' -oL '    + strSimulatedSupineLabelImg[-1]
 simParams  += ' -oD '    + strOutDVFImg[-1]
+simParams  += ' -interpolate bspl '
 
 
 # niftyReg and FEIR use different indicators for "mask"
@@ -358,7 +359,6 @@ if useFEIR :
 else :
     simParams  += ' -mval 0 '
      
-simParams  += ' -interpolate bspl '
 
 # run the simulation
 print('Starting niftySimulation')
@@ -528,6 +528,7 @@ for it in range( numIterations ) :
     simParams  += ' -iL ' + labelImage
     simParams  += ' -oL ' + strSimulatedSupineLabelImg[-1]
     simParams  += ' -oD ' + strOutDVFImg[-1]
+    simParams  += ' -interpolate bspl '
     
     
     # niftyReg and FEIR use different indicators for "mask"
@@ -536,7 +537,6 @@ for it in range( numIterations ) :
     else :
         simParams  += ' -mval 0 '
          
-    simParams  += ' -interpolate bspl '
     
     # run the simulation
     print('Starting niftySimulation')

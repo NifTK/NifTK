@@ -174,7 +174,9 @@ dVect = []
 
 for i in range( ptsCloseToChest.shape[0] ) :
     curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( ptsCloseToChest[i,:], 1 ) ) ) ), dtype = np.int )
-    dVect.append( np.array( (dispData[curIDX[0], curIDX[1], curIDX[2], 0, 0], dispData[curIDX[0], curIDX[1], curIDX[2], 0, 1], dispData[curIDX[0], curIDX[1], curIDX[2], 0, 2] ) ) )
+    dVect.append( np.array( ( dispData[curIDX[0], curIDX[1], curIDX[2], 0, 0], 
+                              dispData[curIDX[0], curIDX[1], curIDX[2], 0, 1], 
+                              dispData[curIDX[0], curIDX[1], curIDX[2], 0, 2] ) ) )
     
 dVect = np.array( dVect )
 
