@@ -35,6 +35,7 @@
 
 QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_InDataStorageChanged(false)
+, m_AutomaticallyAddChildren(true)
 {
   assert(dataStorage);
   m_DataStorage = dataStorage;
@@ -112,6 +113,22 @@ void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNo
   else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
   {
     node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_CUBIC"));
+  }
+
+  // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same windows.
+  mitk::DataNode::Pointer parent = mitk::FindParentGreyScaleImage(m_DataStorage, node);
+  if (parent.IsNotNull())
+  {
+    for (unsigned int i = 0; i < m_ListOfDataNodes.size(); i++)
+    {
+      for (unsigned int j = 0; j < m_ListOfDataNodes[i].size(); j++)
+      {
+        if ((m_ListOfDataNodes[i])[j] == parent)
+        {
+          this->AddNodeToWindow(i, node);
+        }
+      }
+    }
   }
 }
 
@@ -199,8 +216,20 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
   assert(renderer);
 
   node->SetProperty("visible", mitk::BoolProperty::New(true), renderer);
-
   (m_ListOfDataNodes[windowIndex]).push_back(node);
+
+  if (this->m_AutomaticallyAddChildren)
+  {
+    assert(m_DataStorage);
+
+    mitk::DataStorage::SetOfObjects::Pointer possibleChildren = mitk::FindDerivedVisibleNonHelperChildren(m_DataStorage, node);
+    for (unsigned int i = 0; i < possibleChildren->size(); i++)
+    {
+      mitk::DataNode* possibleNode = (*possibleChildren)[i];
+      possibleNode->SetProperty("visible", mitk::BoolProperty::New(true), renderer);
+      (m_ListOfDataNodes[windowIndex]).push_back(possibleNode);
+    }
+  }
 }
 
 mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, unsigned int nodeIndex)

@@ -105,6 +105,12 @@ public:
   /// \brief When we switch layouts, or drop in thumbnail mode, we clear all windows.
   void ClearAllWindows();
 
+  /// \brief When we drop nodes onto a window, if true, we add all the children.
+  void SetAutomaticallyAddChildren(bool autoAdd) { m_AutomaticallyAddChildren = autoAdd; }
+
+  /// \brief When we drop nodes onto a window, if true, we add all the children.
+  bool GetAutomaticallyAddChildren() const { return m_AutomaticallyAddChildren; }
+
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags.
@@ -177,6 +183,9 @@ private:
 
   // Keeps track of the default interpolation, as it affects the response when images are dropped, as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
   MIDASDefaultInterpolationType m_DefaultInterpolation;
+
+  // Boolean to decide whether to automatically add children, default to true.
+  bool m_AutomaticallyAddChildren;
 
 };
 

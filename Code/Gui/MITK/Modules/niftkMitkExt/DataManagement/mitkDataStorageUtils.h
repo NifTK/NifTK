@@ -53,6 +53,7 @@ namespace mitk
 
   NIFTKMITKEXT_EXPORT mitk::DataStorage::SetOfObjects::Pointer FindDerivedImages(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node, bool lookForBinary );
 
+  NIFTKMITKEXT_EXPORT mitk::DataStorage::SetOfObjects::Pointer FindDerivedVisibleNonHelperChildren(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node);
 }
 
 #endif // MITKDATASTORAGEUTILS_H

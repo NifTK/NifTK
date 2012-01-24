@@ -51,6 +51,31 @@ namespace mitk
     return result;
   }
 
+  mitk::DataStorage::SetOfObjects::Pointer FindDerivedVisibleNonHelperChildren(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node)
+  {
+    mitk::DataStorage::SetOfObjects::Pointer results = mitk::DataStorage::SetOfObjects::New();
+
+    unsigned int counter = 0;
+    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = storage->GetDerivations( node, NULL, false);
+    for (unsigned int i = 0; i < possibleChildren->size(); i++)
+    {
+      mitk::DataNode* possibleNode = (*possibleChildren)[i];
+
+      bool isVisible = false;
+      possibleNode->GetBoolProperty("visible", isVisible);
+
+      bool isHelper = false;
+      possibleNode->GetBoolProperty("helper object", isHelper);
+
+      if (isVisible && !isHelper)
+      {
+        results->InsertElement(counter, possibleNode);
+        counter++;
+      }
+    }
+    return results;
+  }
+
   mitk::DataStorage::SetOfObjects::Pointer FindDerivedImages(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node, bool lookForBinary )
   {
     mitk::DataStorage::SetOfObjects::Pointer results = mitk::DataStorage::SetOfObjects::New();
@@ -172,7 +197,7 @@ namespace mitk
     mitk::DataStorage::SetOfObjects::ConstPointer possibleParents = storage->GetSources(node);
     if (possibleParents->size() > 0)
     {
-      mitk::DataNode::Pointer result = (*possibleParents)[0];
+      result = (*possibleParents)[0];
     }
     return result;
   }
