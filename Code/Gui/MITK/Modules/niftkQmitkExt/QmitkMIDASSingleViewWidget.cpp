@@ -488,7 +488,7 @@ void QmitkMIDASSingleViewWidget::SetBound(bool isBound)
   this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()] = MIDAS_VIEW_UNKNOWN; // to force a reset.
 
   this->SetActiveGeometry();
-  this->SetViewOrientation(orientation);
+  this->SetViewOrientation(orientation, false);
 }
 
 void QmitkMIDASSingleViewWidget::SetActiveGeometry()
@@ -508,7 +508,7 @@ QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASSingleViewWidget::Get
   return this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()];
 }
 
-void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orientation)
+void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orientation, bool fitToDisplay)
 {
   if (orientation != MIDAS_VIEW_UNKNOWN)
   {
@@ -683,30 +683,38 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       // Need to round the scale factors.
       for (int i = 0; i < 2; i++)
       {
-        // If they are >= than 1, we round down towards 1
-        // so you have less pixels per voxel, so image will appear smaller.
-        if (scaleFactorPixPerVoxel[i] >= 1)
+        if (fitToDisplay)
         {
-          targetScaleFactorPixPerVoxel[i] = (int)(scaleFactorPixPerVoxel[i]);
+          targetScaleFactorPixPerVoxel[i] = scaleFactorPixPerVoxel[i];
+          targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i];
         }
         else
         {
-          // Otherwise, we still have to make image smaller to fit it on screen.
-          //
-          // For example, if the scale factor is 0.5, we invert it to get 2, which is an integer, so OK.
-          // If however the scale factor is 0.4, we invert it to get 2.5 voxels per pixel, so we have
-          // to round it up to 3, which means the image gets smaller (3 voxels fit into 1 pixel), and then
-          // invert it to get the scale factor again.
-          double tmp = 1.0 / scaleFactorPixPerVoxel[i];
-          int roundedTmp = (int)(tmp + 0.5);
-          tmp = 1.0 / (double) roundedTmp;
-          targetScaleFactorPixPerVoxel[i] = tmp;
+          // If they are >= than 1, we round down towards 1
+          // so you have less pixels per voxel, so image will appear smaller.
+          if (scaleFactorPixPerVoxel[i] >= 1)
+          {
+            targetScaleFactorPixPerVoxel[i] = (int)(scaleFactorPixPerVoxel[i]);
+          }
+          else
+          {
+            // Otherwise, we still have to make image smaller to fit it on screen.
+            //
+            // For example, if the scale factor is 0.5, we invert it to get 2, which is an integer, so OK.
+            // If however the scale factor is 0.4, we invert it to get 2.5 voxels per pixel, so we have
+            // to round it up to 3, which means the image gets smaller (3 voxels fit into 1 pixel), and then
+            // invert it to get the scale factor again.
+            double tmp = 1.0 / scaleFactorPixPerVoxel[i];
+            int roundedTmp = (int)(tmp + 0.5);
+            tmp = 1.0 / (double) roundedTmp;
+            targetScaleFactorPixPerVoxel[i] = tmp;
+          }
+          targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i] * (targetScaleFactorPixPerVoxel[i]/scaleFactorPixPerVoxel[i]);
         }
-        targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i] * (targetScaleFactorPixPerVoxel[i]/scaleFactorPixPerVoxel[i]);
       }
 
       // We may have anisotropic voxels, so find the axis that requires most scale factor change.
-      int axisWithLargestDifference = -1;
+      int axisWithLargestDifference = 0;
       double largestDifference = std::numeric_limits<double>::min();
       for(int i = 0; i < 2; i++)
       {

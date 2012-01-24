@@ -364,7 +364,7 @@ void QmitkMIDASMultiViewWidget::OnBindWindowsCheckboxClicked(bool isBound)
     {
       m_SingleViewWidgets[i]->SetBound(true);
       m_SingleViewWidgets[i]->SetBoundGeometry(selectedGeometry);
-      m_SingleViewWidgets[i]->SetViewOrientation(orientation);
+      m_SingleViewWidgets[i]->SetViewOrientation(orientation, false);
       m_SingleViewWidgets[i]->SetSliceNumber(sliceNumber);
       m_SingleViewWidgets[i]->SetTime(timeStepNumber);
       m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
@@ -702,7 +702,7 @@ void QmitkMIDASMultiViewWidget::SetWindowsToOrientation(QmitkMIDASSingleViewWidg
 
   for (unsigned int i = start; i <= stop; i++)
   {
-    this->m_SingleViewWidgets[i]->SetViewOrientation(orientation);
+    this->m_SingleViewWidgets[i]->SetViewOrientation(orientation, false);
   }
   this->PublishNavigationSettings();
 }

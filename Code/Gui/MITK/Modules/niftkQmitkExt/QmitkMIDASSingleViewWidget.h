@@ -164,7 +164,7 @@ public:
   int GetMagnificationFactor() const;
 
   /// \brief Sets the view orientation to either axial, sagittal or coronal.
-  void SetViewOrientation(MIDASViewOrientation orientation);
+  void SetViewOrientation(MIDASViewOrientation orientation, bool fitToDisplay);
 
   /// \brief Get the view orientation.
   MIDASViewOrientation GetViewOrientation() const;

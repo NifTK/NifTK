@@ -429,7 +429,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
 
       // Then set up geometry of that single window.
       m_ListOfWidgets[windowIndex]->SetGeometry(geometry.GetPointer());
-      m_ListOfWidgets[windowIndex]->SetViewOrientation(orientation);
+      m_ListOfWidgets[windowIndex]->SetViewOrientation(orientation, false);
 
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
@@ -470,7 +470,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
 
         // Initialise geometry according to first image
         m_ListOfWidgets[dropIndex]->SetGeometry(geometry.GetPointer());
-        m_ListOfWidgets[dropIndex]->SetViewOrientation(orientation);
+        m_ListOfWidgets[dropIndex]->SetViewOrientation(orientation, false);
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
         dropIndex++;
@@ -494,7 +494,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       // spread the slices, one per window, until we run out of windows.
       // If we have more slices than windows, we need to interpolate the number of slices.
       m_ListOfWidgets[0]->SetGeometry(geometry.GetPointer());
-      m_ListOfWidgets[0]->SetViewOrientation(orientation);
+      m_ListOfWidgets[0]->SetViewOrientation(orientation, true);
       unsigned int minSlice = m_ListOfWidgets[0]->GetMinSlice();
       unsigned int maxSlice = m_ListOfWidgets[0]->GetMaxSlice();
       unsigned int numberOfSlices = maxSlice - minSlice + 1;
@@ -518,7 +518,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
           m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
-          m_ListOfWidgets[i]->SetViewOrientation(orientation);
+          m_ListOfWidgets[i]->SetViewOrientation(orientation, true);
           m_ListOfWidgets[i]->SetSliceNumber(minSlice + i);
 
           MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
@@ -530,7 +530,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
           m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
-          m_ListOfWidgets[i]->SetViewOrientation(orientation);
+          m_ListOfWidgets[i]->SetViewOrientation(orientation, true);
 
           unsigned int minSlice = m_ListOfWidgets[i]->GetMinSlice();
           unsigned int maxSlice = m_ListOfWidgets[i]->GetMaxSlice();
