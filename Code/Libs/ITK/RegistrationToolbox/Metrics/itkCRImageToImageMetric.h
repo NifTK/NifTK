@@ -101,7 +101,6 @@ protected:
     {
       MeasureType measure = 0;
 
-      double totalSum = 0;
       double totalMean = 0;
       double totalSigmaSquared = 0;
       
@@ -116,7 +115,6 @@ protected:
       MapIterator mapIterator;
       
       totalMean = this->m_MovingSum / (double)this->m_NumberCounted;
-      totalSum  = this->m_MovingSum;
       
       mapIterator   = this->m_Map.begin();
       while(mapIterator != this->m_Map.end())

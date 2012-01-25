@@ -134,9 +134,9 @@ int DoMain(arguments args)
   unsigned int count = 0;
   double distance = 0;
   double smallestDistance = 0;
-  typename InputMaskImageType::IndexType dataIndex;
-  typename InputMaskImageType::IndexType regionIndex;
-  typename InputMaskImageType::IndexType closestAtlasIndex;
+  typename InputMaskImageType::IndexType dataIndex;         dataIndex.SetIndex(0);
+  typename InputMaskImageType::IndexType regionIndex;       regionIndex.SetIndex(0);
+  typename InputMaskImageType::IndexType closestAtlasIndex; closestAtlasIndex.SetIndex(0);
 
   for (dataImageIterator.GoToBegin(),
        outputImageIterator.GoToBegin();

@@ -143,10 +143,14 @@ int main(int argc, char** argv)
   typedef itk::ProjectionGeometry< IntensityType > ProjectionGeometryType;
 
   ProjectionGeometryType::ProjectionSizeType pProjectionSize;
-  ProjectionGeometryType::ProjectionSpacingType pProjectionSpacing;
+  pProjectionSize.Fill(0);
+
+  ProjectionGeometryType::ProjectionSpacingType pProjectionSpacing(0.0);
 
   ProjectionGeometryType::VolumeSizeType pVolumeSize;
-  ProjectionGeometryType::VolumeSpacingType pVolumeSpacing;
+  pVolumeSize.Fill(0);
+
+  ProjectionGeometryType::VolumeSpacingType pVolumeSpacing(0.0);
   
   // Create the command line parser, passing the
   // 'CommandLineArgumentDescription' structure. The final boolean

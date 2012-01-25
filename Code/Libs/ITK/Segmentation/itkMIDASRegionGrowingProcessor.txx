@@ -200,7 +200,6 @@ MIDASRegionGrowingProcessor<TInputImage, TOutputImage, TPointSet>
     {
       RegionType currentRegion = listOfSlicesToProcess[i];
       IndexType  currentRegionIndex = currentRegion.GetIndex();
-      SizeType   currentRegionSize = currentRegion.GetSize();
 
       m_ExtractGreySliceFromReferenceImageFilter->SetInput(m_GreyScaleImage);
       m_ExtractGreySliceFromReferenceImageFilter->SetExtractionRegion(currentRegion);

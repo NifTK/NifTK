@@ -46,10 +46,13 @@ class QmitkMIDASRenderWindow;
 
 /**
  * \class UpdateMIDASViewingControlsInfo
- * \brief Simply to pass the current slice, magnification and orientation to QmitkMIDASMultiViewEditor.
+ * \brief Basically a struct with a constructor simply to pass the current slice,
+ * magnification and orientation information to QmitkMIDASMultiViewEditor.
  */
-struct UpdateMIDASViewingControlsInfo
+class UpdateMIDASViewingControlsInfo
 {
+public:
+
   // current values
   int currentTime;
   int currentSlice;
@@ -65,6 +68,22 @@ struct UpdateMIDASViewingControlsInfo
   int maxSlice;
   int minMagnification;
   int maxMagnification;
+
+  UpdateMIDASViewingControlsInfo()
+  : currentTime(0)
+  , currentSlice(0)
+  , currentMagnification(0)
+  , isAxial(false)
+  , isSagittal(false)
+  , isCoronal(false)
+  , minTime(0)
+  , maxTime(0)
+  , minSlice(0)
+  , maxSlice(0)
+  , minMagnification(0)
+  , maxMagnification(0)
+  {
+  }
 };
 
 /**

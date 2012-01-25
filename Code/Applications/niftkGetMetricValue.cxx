@@ -164,7 +164,7 @@ int main(int argc, char **argv)
 	}
 	
 	if(metric==3){
-		double ssd;
+		double ssd(0);
 		for(first.GoToBegin(),second.GoToBegin(); !first.IsAtEnd(); ++first,++second){
 			ssd += fabs(first.Get()-second.Get());
 		}

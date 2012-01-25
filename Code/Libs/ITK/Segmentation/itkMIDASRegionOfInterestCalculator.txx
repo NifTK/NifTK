@@ -326,17 +326,14 @@ MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
   
   int numberOfExpectedSlices = regionSize[axis];
   int startSlice = 0;
-  int endSlice = 0;
   
   if (direction == 1)
   {
     startSlice = regionIndex[axis];
-    endSlice = regionIndex[axis] + regionSize[axis] -1;
   }
   else
   {
     startSlice = regionIndex[axis] + regionSize[axis] -1;
-    endSlice = regionIndex[axis];
   }
   
   int currentSlice = startSlice;

@@ -269,7 +269,7 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
   // Find closest point in reference points
   float distance = std::numeric_limits<float>::max();
   float closestDistance = std::numeric_limits<float>::max();
-  unsigned long closestPointIndex;
+  unsigned long closestPointIndex = 0;
   mitk::Point3D closestPoint;
   mitk::Point3D p1;
   mitk::Point3D p2;

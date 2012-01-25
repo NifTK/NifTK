@@ -200,7 +200,6 @@ UCLHistogram<TMeasurement, VMeasurementVectorSize, TFrequencyContainer>
   FrequencyType freq = NumericTraits<MeasureType>::Zero;
   MeasureType jointEntropy = NumericTraits<MeasureType>::Zero;
   FrequencyType totalFreq = this->GetTotalFrequency();
-  SizeType size = this->GetSize();
   
   IteratorType it = this->Begin();
   IteratorType end = this->End();

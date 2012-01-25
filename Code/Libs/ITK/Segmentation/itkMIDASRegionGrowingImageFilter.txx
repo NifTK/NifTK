@@ -45,7 +45,6 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	typedef typename OutputImageType::RegionType __RegionType;
 	typedef typename InputImageType::RegionType::SizeType __ImageSizeType;
 
-	const __ImageSizeType imgSize = this->GetInput()->GetLargestPossibleRegion().GetSize();
 	std::stack<__IndexType> nextPixelsStack;
 	OutputImagePointerType sp_output;
 

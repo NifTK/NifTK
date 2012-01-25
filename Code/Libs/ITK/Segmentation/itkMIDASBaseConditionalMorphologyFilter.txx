@@ -180,8 +180,8 @@ namespace itk
       m_TempImage->Update();
     }
     
-    OutputImageType *readImagePtr;
-    OutputImageType *writeImagePtr;
+    OutputImageType *readImagePtr(NULL);
+    OutputImageType *writeImagePtr(NULL);
     
     for(unsigned int iterationIndex = 0; iterationIndex < m_NumberOfIterations; iterationIndex++)
     {

@@ -591,7 +591,6 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
       transformedExtent[axisInWorldSpace] = fabs(axisVector[axisInWorldSpace]/transformedSpacing[axisInWorldSpace]);
     }
 
-    mitk::Geometry3D::BoundsArrayType originalBoundingBox = this->m_ActiveTimeSlicedGeometry->GetBounds();
     mitk::Geometry3D::BoundsArrayType transformedBoundingBox;
     transformedBoundingBox[0] = 0;
     transformedBoundingBox[1] = transformedExtent[0];

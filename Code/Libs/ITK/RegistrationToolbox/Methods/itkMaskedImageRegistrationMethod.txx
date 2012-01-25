@@ -139,8 +139,6 @@ MaskedImageRegistrationMethod<TInputImageType>
   if (target->GetLargestPossibleRegion().GetSize() != source->GetLargestPossibleRegion().GetSize())
     {
       InputImageRegionType    region    = source->GetLargestPossibleRegion();
-      InputImageSizeType      size      = region.GetSize();
-      InputImageIndexType     index     = region.GetIndex();
       InputImageOriginType    origin    = source->GetOrigin();
       InputImageSpacingType   spacing   = source->GetSpacing();
       InputImageDirectionType direction = source->GetDirection();
