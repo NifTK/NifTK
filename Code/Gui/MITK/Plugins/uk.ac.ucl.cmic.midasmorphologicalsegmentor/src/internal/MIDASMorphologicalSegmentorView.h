@@ -46,8 +46,6 @@
 #include "MorphologicalSegmentorPipelineParams.h"
 #include "itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter.h"
 
-class QmitkStdMultiWidget;
-
 /**
  * \class MorphologicalSegmentorPipelineInterface
  * \brief Abstract interface to plug ITK pipeline into MITK framework.

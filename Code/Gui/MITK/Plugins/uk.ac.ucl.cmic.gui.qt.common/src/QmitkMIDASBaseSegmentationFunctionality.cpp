@@ -50,7 +50,6 @@
 #include "mitkMIDASSeedTool.h"
 #include "QmitkMIDASNewSegmentationDialog.h"
 #include "QmitkRenderWindow.h"
-#include "QmitkStdMultiWidget.h"
 
 #include "NifTKConfigure.h"
 #include "itkConversionUtils.h"
@@ -59,12 +58,6 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 : m_ImageAndSegmentationSelector(NULL)
 {
   m_SelectedNode = NULL;
-  m_LastSliceNumbers[0] = 0;
-  m_LastSliceNumbers[1] = 0;
-  m_LastSliceNumbers[2] = 0;
-  m_LastCrossPositionClickedByUser[0] = 0;
-  m_LastCrossPositionClickedByUser[1] = 0;
-  m_LastCrossPositionClickedByUser[2] = 0;
 }
 
 QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionality()
@@ -82,67 +75,120 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
   throw std::runtime_error("Copy constructor not implemented");
 }
 
-
-void QmitkMIDASBaseSegmentationFunctionality::Activated()
-{
-  QmitkCMICBaseFunctionality::Activated();
-
-/*
- * This seems to cause the combo box to think things are selected when they arent.
- * So, Im removing it, but this may need revisiting.
- *
-  mitk::DataStorage::Pointer dataStorage = this->GetDefaultDataStorage();
-  mitk::DataStorage::SetOfObjects::ConstPointer objects = dataStorage->GetAll();
-  mitk::DataNode::Pointer selectedNode = NULL;
-  mitk::DataNode::Pointer currentNode = NULL;
-
-  for (int i = 0; i < objects->size(); i++)
-  {
-    currentNode = (*objects)[i];
-    if (IsNodeAGreyScaleImage(currentNode))
-    {
-      bool isSelected;
-      currentNode->GetBoolProperty("selected", isSelected);
-
-      bool isVisible;
-      currentNode->GetBoolProperty("visible", isVisible);
-
-      if (isSelected && isVisible)
-      {
-        selectedNode = currentNode;
-        break;
-      }
-    }
-  }
-  if (selectedNode.IsNotNull())
-  {
-    this->SelectNode(selectedNode);
-  }
-*/
-}
-
-
-void QmitkMIDASBaseSegmentationFunctionality::Deactivated()
-{
-  QmitkCMICBaseFunctionality::Deactivated();
-}
-
-
 void QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated()
 {
-  //this->ForceDisplayPreferencesUponAllImages();
+  std::cerr << "Matt, not finished yet, QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated" << std::endl;
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated(mitk::ToolManager::DataVectorType* nodes)
 {
-  if (!nodes) return;
-
-  for (mitk::ToolManager::DataVectorType::iterator iter = nodes->begin(); iter != nodes->end(); ++iter)
-  {
-    this->FireNodeSelected( *iter );
-  }
+  std::cerr << "Matt, not finished yet, QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated" << std::endl;
 }
 
+void QmitkMIDASBaseSegmentationFunctionality::FireNodeSelected( mitk::DataNode* node )
+{
+  std::vector<mitk::DataNode*> nodes;
+  nodes.push_back(node);
+  this->FireNodesSelected(nodes);
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::FireNodesSelected( std::vector<mitk::DataNode*> nodes )
+{
+  std::cerr << "Matt, not finished yet, QmitkMIDASBaseSegmentationFunctionality::FireNodesSelected " << std::endl;
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::Pointer node)
+{
+  assert(node);
+  this->FireNodeSelected(node);
+  this->OnSelectionChanged(node);
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(mitk::DataNode* node)
+{
+  std::cerr << "Matt, QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged" << std::endl;
+
+  std::vector<mitk::DataNode*> nodes;
+  nodes.push_back( node );
+  this->OnSelectionChanged( nodes );
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(std::vector<mitk::DataNode*> nodes)
+{
+  std::cerr << "Matt, QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged (nodes)" << std::endl;
+
+  // If the plugin is not visible, then we have nothing to do.
+  if (!m_Parent || !m_Parent->isVisible()) return;
+
+  // By default, assume we are not going to enable the controls.
+  bool valid = false;
+
+  // This plugin only works if you single select, anything else is invalid (for now).
+  if (nodes.size() == 1)
+  {
+
+    m_SelectedNode = nodes[0];
+    m_SelectedImage = dynamic_cast<mitk::Image*>(m_SelectedNode->GetData());
+
+    // MAJOR ASSUMPTION: To get a segmentation plugin (i.e. all derived classes) to work, you select the segmentation node.
+    // From this segmentation node, you can work out the reference data (always the parent).
+    // In addition, you can work out any intermediate working images (either that image, or children).
+    // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
+
+    mitk::DataNode::Pointer node = nodes[0];
+    mitk::DataNode::Pointer referenceData = 0;
+    mitk::DataNode::Pointer segmentedData = 0;
+    mitk::ToolManager::DataVectorType workingDataNodes;
+
+    // Rely on subclasses deciding if the node is something we are interested in.
+    if (this->IsNodeAReferenceImage(node))
+    {
+      referenceData = node;
+    }
+
+    // A segmentation image, is the final output, the one being segmented.
+    if (this->IsNodeASegmentationImage(node))
+    {
+      segmentedData = node;
+    }
+
+    bool test1 = mitk::IsNodeABinaryImage(node);
+    bool test2 = this->CanStartSegmentationForBinaryNode(node);
+    bool test3 = !this->IsNodeASegmentationImage(node);
+
+    if (test1 && test2 && test3)
+    {
+      segmentedData = node;
+    }
+
+    if (segmentedData.IsNotNull())
+    {
+
+      referenceData = this->GetReferenceNodeFromSegmentationNode(segmentedData);
+
+      if (this->IsNodeASegmentationImage(node))
+      {
+        workingDataNodes = this->GetWorkingNodesFromSegmentationNode(segmentedData);
+        valid = true;
+      }
+    }
+
+    // If we have worked out the reference data, then set the combo box.
+    if (referenceData.IsNotNull())
+    {
+      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->blockSignals(true);
+      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->setCurrentIndex(m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->Find(referenceData));
+      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->blockSignals(false);
+    }
+
+    // Tell the tool manager the images for reference and working purposes.
+    this->SetToolManagerSelection(referenceData, workingDataNodes);
+
+  }
+
+  // Adjust widgets according to whether we have a valid selection.
+  this->EnableSegmentationWidgets(valid);
+}
 
 mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingNodesFromToolManager()
 {
@@ -248,106 +294,6 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFrom
 
   mitk::DataNode::Pointer result = node;
   return result;
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::Pointer node)
-{
-  assert(node);
-  this->FireNodeSelected(node);
-  this->OnSelectionChanged(node);
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(mitk::DataNode* node)
-{
-  std::vector<mitk::DataNode*> nodes;
-  nodes.push_back( node );
-  this->OnSelectionChanged( nodes );
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(std::vector<mitk::DataNode*> nodes)
-{
-  // If the plugin is not visible, then we have nothing to do.
-  if (!m_Parent || !m_Parent->isVisible()) return;
-
-  // By default, assume we are not going to enable the controls.
-  bool valid = false;
-
-  // This plugin only works if you single select, anything else is invalid (for now).
-  if (nodes.size() == 1)
-  {
-
-    m_SelectedNode = nodes[0];
-    m_SelectedImage = dynamic_cast<mitk::Image*>(m_SelectedNode->GetData());
-
-    // MAJOR ASSUMPTION: To get a segmentation plugin (i.e. all derived classes) to work, you select the segmentation node.
-    // From this segmentation node, you can work out the reference data (always the parent).
-    // In addition, you can work out any intermediate working images (either that image, or children).
-    // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
-
-    mitk::DataNode::Pointer node = nodes[0];
-    mitk::DataNode::Pointer referenceData = 0;
-    mitk::DataNode::Pointer segmentedData = 0;
-    mitk::ToolManager::DataVectorType workingDataNodes;
-
-    // Rely on subclasses deciding if the node is something we are interested in.
-    if (this->IsNodeAReferenceImage(node))
-    {
-      referenceData = node;
-    }
-
-    // A segmentation image, is the final output, the one being segmented.
-    if (this->IsNodeASegmentationImage(node))
-    {
-      segmentedData = node;
-    }
-
-    bool test1 = mitk::IsNodeABinaryImage(node);
-    bool test2 = this->CanStartSegmentationForBinaryNode(node);
-    bool test3 = !this->IsNodeASegmentationImage(node);
-
-    if (test1 && test2 && test3)
-    {
-      segmentedData = node;
-    }
-
-    if (segmentedData.IsNotNull())
-    {
-
-      referenceData = this->GetReferenceNodeFromSegmentationNode(segmentedData);
-
-      if (this->IsNodeASegmentationImage(node))
-      {
-        workingDataNodes = this->GetWorkingNodesFromSegmentationNode(segmentedData);
-        valid = true;
-      }
-    }
-
-    // If we have worked out the reference data, then set the combo box.
-    if (referenceData.IsNotNull())
-    {
-      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->blockSignals(true);
-      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->setCurrentIndex(m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->Find(referenceData));
-      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->blockSignals(false);
-    }
-
-    // Tell the tool manager the images for reference and working purposes.
-    this->SetToolManagerSelection(referenceData, workingDataNodes);
-
-  }
-
-  // Adjust widgets according to whether we have a valid selection.
-  this->EnableSegmentationWidgets(valid);
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::RenderingManagerReinitialized(const itk::EventObject&)
-{
-  this->CheckImageAlignment();
-}
-
-
-void QmitkMIDASBaseSegmentationFunctionality::SliceRotation(const itk::EventObject&)
-{
-  this->CheckImageAlignment();
 }
 
 mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed()
@@ -469,49 +415,6 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
   }
 }
 
-bool QmitkMIDASBaseSegmentationFunctionality::GetCurrentCrossPosition(mitk::Point3D &output)
-{
-  bool valid = false;
-
-  if (m_MultiWidget != NULL)
-  {
-    output = m_MultiWidget->GetCrossPosition();
-    valid = true;
-  }
-
-  return valid;
-}
-
-
-void QmitkMIDASBaseSegmentationFunctionality::CheckImageAlignment()
-{
-  bool wrongAlignment(false);
-
-  mitk::DataNode::Pointer node = this->GetReferenceNodeFromToolManager();
-  if (node.IsNotNull())
-  {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>( node->GetData() );
-
-    if (image.IsNotNull() && m_MultiWidget)
-    {
-
-      wrongAlignment = !(    IsRenderWindowAligned(m_MultiWidget->GetRenderWindow1(), image )
-                          && IsRenderWindowAligned(m_MultiWidget->GetRenderWindow2(), image )
-                          && IsRenderWindowAligned(m_MultiWidget->GetRenderWindow3(), image )
-                        );
-    }
-
-    if (wrongAlignment)
-    {
-      m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->show();
-    }
-    else
-    {
-      m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
-    }
-  }
-}
-
 
 void QmitkMIDASBaseSegmentationFunctionality::ApplyDisplayOptions(mitk::DataNode* node)
 {
@@ -520,7 +423,6 @@ void QmitkMIDASBaseSegmentationFunctionality::ApplyDisplayOptions(mitk::DataNode
   bool isBinary(false);
   if (node->GetBoolProperty("binary", isBinary) && isBinary)
   {
-    // ToDo: Create a preference page
     node->ReplaceProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST), const_cast<const mitk::BaseRenderer*>((mitk::BaseRenderer*)NULL));
     node->SetBoolProperty("outline binary", true);
     node->SetFloatProperty ("outline width", 1.0);
@@ -554,19 +456,6 @@ void QmitkMIDASBaseSegmentationFunctionality::ForceDisplayPreferencesUponAllImag
   }
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-}
-
-
-bool QmitkMIDASBaseSegmentationFunctionality::IsRenderWindowAligned(QmitkRenderWindow* renderWindow, mitk::Image* image)
-{
-  if (!renderWindow) return false;
-
-  mitk::PlaneGeometry::ConstPointer displayPlane = dynamic_cast<const mitk::PlaneGeometry*>( renderWindow->GetRenderer()->GetCurrentWorldGeometry2D() );
-  if (displayPlane.IsNull()) return false;
-
-  int affectedDimension(-1);
-  int affectedSlice(-1);
-  return mitk::SegTool2D::DetermineAffectedImageSlice( image, displayPlane, affectedDimension, affectedSlice );
 }
 
 
@@ -607,10 +496,6 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
     m_ImageAndSegmentationSelector->m_WorkingImageSelectionWarningLabel->hide();
     m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
   }
-
-  // check, whether reference image is aligned like render windows.
-  // Otherwise display a visible warning (because 2D tools will probably not work)
-  CheckImageAlignment();
 }
 
 template<typename TPixel, unsigned int VImageDimension>

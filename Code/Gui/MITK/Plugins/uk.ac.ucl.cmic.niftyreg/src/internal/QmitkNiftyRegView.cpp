@@ -28,7 +28,6 @@
 
 // Qmitk
 #include "QmitkNiftyRegView.h"
-#include "QmitkStdMultiWidget.h"
 
 // Qt
 #include <QMessageBox>
@@ -36,7 +35,6 @@
 const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregview";
 
 QmitkNiftyRegView::QmitkNiftyRegView()
-: QmitkFunctionality()
 {
 }
 

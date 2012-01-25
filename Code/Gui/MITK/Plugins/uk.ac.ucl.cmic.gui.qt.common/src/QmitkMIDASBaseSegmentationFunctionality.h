@@ -26,22 +26,23 @@
 #define QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
-#include "QmitkCMICBaseFunctionality.h"
+#include "QmitkMIDASBaseFunctionality.h"
 #include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
 #include "mitkToolManager.h"
 #include "itkSpatialOrientationAdapter.h"
 #include "itkImage.h"
 
-class QmitkStdMultiWidget;
 class QmitkRenderWindow;
 
 /**
  * \class QmitkMIDASBaseSegmentationFunctionality
  * \brief Base view component for both MIDASMorphologicalSegmentorView and MIDASGeneralSegmentorView.
+ *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
- * \sa QmitkCMICBaseFunctionality
+ * \sa MIDASMorphologicalSegmentorView
+ * \sa MIDASGeneralSegmentorView
  */
-class CMIC_QT_COMMON QmitkMIDASBaseSegmentationFunctionality : public QmitkCMICBaseFunctionality
+class CMIC_QT_COMMON QmitkMIDASBaseSegmentationFunctionality : public QmitkMIDASBaseFunctionality
 {
 
   Q_OBJECT
@@ -59,28 +60,23 @@ public:
   QmitkMIDASBaseSegmentationFunctionality(const QmitkMIDASBaseSegmentationFunctionality& other);
   virtual ~QmitkMIDASBaseSegmentationFunctionality();
 
-  /// \brief QmitkFunctionality's activate.
-  virtual void Activated();
-
-  /// \brief QmitkFunctionality's deactivate.
-  virtual void Deactivated();
-
-  /// \brief Retrieves the current cross position from the QmitkStdMultiWidet. Returns false if QmitkStdMultiWidget not available.
-  virtual bool GetCurrentCrossPosition(mitk::Point3D &output);
-
-  /// \brief Reaction to new segmentations being created by segmentation tools.
+  /// \brief Reaction to new segmentations being created by segmentation tools, currently does nothing.
   virtual void NewNodesGenerated();
+
+  /// \brief Reaction to new segmentations being created by segmentation tools, currently does nothing.
   virtual void NewNodeObjectsGenerated(mitk::ToolManager::DataVectorType*);
+
+  /// \brief Informs other parts of the workbench that node is selected via the blueberry selection service.
+  void FireNodeSelected(mitk::DataNode* node);
+
+  /// \brief Informs other parts of the workbench that node is selected via the blueberry selection service.
+  void FireNodesSelected(std::vector<mitk::DataNode*> nodes);
 
   /// \brief Invoked when the DataManager selection changed.
   virtual void OnSelectionChanged(mitk::DataNode* node);
+
+  /// \brief Invoked when the DataManager selection changed.
   virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
-
-  /// \brief Observer to mitk::RenderingManager's RenderingManagerViewsInitializedEvent event.
-  virtual void RenderingManagerReinitialized(const itk::EventObject&);
-
-  /// \brief Observer to mitk::SliceController's SliceRotation event.
-  virtual void SliceRotation(const itk::EventObject&);
 
   /// \brief Called when the user hits the button "New segmentation".
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
@@ -143,12 +139,6 @@ protected:
   /// \brief Creates the QT connections.
   virtual void CreateConnections();
 
-  /// \brief Checks if selected reference image is aligned with the slices stack orientation of the StdMultiWidget.
-  virtual void CheckImageAlignment();
-
-  /// \brief Checks if given render window aligns with the slices of given image.
-  virtual bool IsRenderWindowAligned(QmitkRenderWindow* renderWindow, mitk::Image* image);
-
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   virtual void ApplyDisplayOptions(mitk::DataNode* node);
 
@@ -199,12 +189,6 @@ protected:
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
   QmitkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;
-
-  /// \brief The last cross position in the QmitkStdMultiWidget.
-  mitk::Point3D m_LastCrossPositionClickedByUser;
-
-  // \brief The last slice numbers when the user last clicked.
-  int m_LastSliceNumbers[3];
 
   // Keeps track of the last selected node, whever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;

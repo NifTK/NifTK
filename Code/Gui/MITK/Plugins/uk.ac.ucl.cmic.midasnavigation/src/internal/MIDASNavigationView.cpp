@@ -33,9 +33,6 @@
 #include <berryIWorkbenchWindow.h>
 #include <berryQtAssistantUtil.h>
 
-// Qmitk
-#include "QmitkStdMultiWidget.h"
-
 // CTK
 #include "ctkPluginContext.h"
 #include "service/event/ctkEvent.h"

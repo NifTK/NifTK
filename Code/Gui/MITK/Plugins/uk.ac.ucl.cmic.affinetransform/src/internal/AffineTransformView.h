@@ -25,14 +25,16 @@
 #ifndef AffineTransformView_h
 #define AffineTransformView_h
 
-#include <berryISelectionListener.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
-#include <QmitkFunctionality.h>
-#include <itkImage.h>
+#include "berryQtViewPart.h"
+#include "berryISelectionListener.h"
+#include "vtkMatrix4x4.h"
+#include "vtkSmartPointer.h"
+#include "itkImage.h"
 
 #include "ui_AffineTransformViewControls.h"
 #include "mitkAffineTransformParametersDataNodeProperty.h"
+#include "mitkDataNode.h"
+#include "mitkDataStorage.h"
 
 /**
  * \class AffineTransformView
@@ -40,7 +42,7 @@
  * an mitk::DataNode's image to world geometry.
  * \ingroup uk_ac_ucl_cmic_affinetransform_internal
  */
-class AffineTransformView : public QmitkFunctionality
+class AffineTransformView : public berry::QtViewPart
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -55,7 +57,7 @@ class AffineTransformView : public QmitkFunctionality
 
     AffineTransformView();
     virtual ~AffineTransformView();
-
+    virtual void SetFocus() {};
     virtual void CreateQtPartControl(QWidget *parent);
 
   protected slots:
@@ -85,6 +87,9 @@ class AffineTransformView : public QmitkFunctionality
 
     /** \brief Computes a new linear transform (as 4x4 transform matrix) from the parameters set through the UI. */
     virtual vtkSmartPointer<vtkMatrix4x4> ComputeTransformFromParameters(void) const;
+
+    /** \brief Gets the data storage. */
+    virtual mitk::DataStorage::Pointer GetDataStorage() const;
 
   private:
 

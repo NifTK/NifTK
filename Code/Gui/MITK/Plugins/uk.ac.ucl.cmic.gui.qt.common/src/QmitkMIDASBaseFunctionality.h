@@ -27,8 +27,9 @@
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 
+#include "QmitkFunctionalityWithoutStdMultiWidget.h"
 #include "berryIPartListener.h"
-#include "berryQtViewPart.h"
+#include <berryISelectionListener.h>
 #include <QWidget>
 #include "mitkDataStorage.h"
 
@@ -38,10 +39,10 @@ class QmitkMIDASMultiViewWidget;
  * \class QmitkMIDASBaseFunctionality
  * \brief Base view component for MIDAS plugins handling creating, connecting to
  * and disconnecting from the QmitkMIDASMultiViewWidget, to give the MIDAS style layouts.
+ *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
- * \sa QmitkCMICBaseFunctionality
  */
-class CMIC_QT_COMMON QmitkMIDASBaseFunctionality : public berry::QtViewPart
+class CMIC_QT_COMMON QmitkMIDASBaseFunctionality : public QmitkFunctionalityWithoutStdMultiWidget
 {
 
   Q_OBJECT
@@ -52,32 +53,42 @@ public:
   QmitkMIDASBaseFunctionality(const QmitkMIDASBaseFunctionality& other);
   virtual ~QmitkMIDASBaseFunctionality();
 
-  virtual void CreateQtPartControl(QWidget *parent);
-  virtual void SetMIDASMultiViewWidget(QmitkMIDASMultiViewWidget *widget);
+  /// \brief Derived classes must provide a method to return the view ID.
   virtual std::string GetViewID() const = 0;
+
+  /// \brief Called by framework to create the plugins controls.
+  virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief Required implementation, inherited from base classes, currently does nothing.
   virtual void SetFocus();
 
   /// \brief When this plugin is activated we setup the datastore.
   virtual void Activated();
 
-protected slots:
+  /// \brief Called when this plugin is deactivated, currently does nothing.
+  virtual void Deactivated();
+
+  /// \brief Inject the widget pointer into this class, this gets called by m_MIDASMultiViewWidgetListener when the widget part is opened/closed.
+  virtual void SetMIDASMultiViewWidget(QmitkMIDASMultiViewWidget *widget);
+
+  /// \brief Returns the default data storage.
+  virtual mitk::DataStorage::Pointer GetDefaultDataStorage() const;
 
 protected:
 
-  /// \brief Saves the parent of this view (this is the scrollarea created in CreatePartControl(void*)
+  /// \brief Saves the parent of this view.
   QWidget* m_Parent;
 
-  /// \Returns a pointer to the MIDASMultiViewWidget from the editor.
+  /// \brief Does a lookup and returns a pointer to the QmitkMIDASMultiViewWidget from the editor.
   QmitkMIDASMultiViewWidget* GetActiveMIDASMultiViewWidget();
-
-  /// \brief We store a reference to the single data storage, and populate it when this plugin is Activated.
-  mitk::DataStorage::Pointer m_DataStorage;
 
 private:
 
+  // Each derived class will have access to this pointer, which will be populated when the part opens.
   QmitkMIDASMultiViewWidget *m_MIDASMultiViewWidget;
-  berry::IPartListener::Pointer m_MIDASMultiViewWidgetListener;
 
+  // This listener is reponsible for looking up the editor, and getting hold of the QmitkMIDASMultiViewWidget.
+  berry::IPartListener::Pointer m_MIDASMultiViewWidgetListener;
 };
 
 #endif // QMITKMIDASBASEFUNCTIONALITY_H

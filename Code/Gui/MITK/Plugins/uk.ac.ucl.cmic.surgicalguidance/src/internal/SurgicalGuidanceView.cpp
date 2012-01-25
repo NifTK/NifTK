@@ -28,7 +28,6 @@
 
 // Qmitk
 #include "SurgicalGuidanceView.h"
-#include "QmitkStdMultiWidget.h"
 
 // Qt
 #include <QMessageBox>

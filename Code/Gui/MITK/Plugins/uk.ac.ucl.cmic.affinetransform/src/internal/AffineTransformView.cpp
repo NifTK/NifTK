@@ -27,10 +27,6 @@
 #include <berryISelectionService.h>
 #include <berryIWorkbenchWindow.h>
 
-// Qmitk
-#include "AffineTransformView.h"
-#include "QmitkStdMultiWidget.h"
-
 // Qt
 #include <QMessageBox>
 #include <QFileDialog>
@@ -68,8 +64,11 @@
 #include <mitkITKImageImport.h>
 #include <mitkInstantiateAccessFunctions.h>
 #include <mitkVector.h> // for PointType;
+#include <mitkIDataStorageService.h>
+#include <mitkRenderingManager.h>
 
 // NIFTK
+#include "AffineTransformView.h"
 #include "mitkAffineTransformDataNodeProperty.h"
 #include "mitkAffineTransformParametersDataNodeProperty.h"
 #include "ConversionUtils.h"
@@ -82,8 +81,8 @@ const std::string AffineTransformView::PRELOADED_TRANSFORM_KEY = "niftk.preloade
 const std::string AffineTransformView::COMBINED_TRANSFORM_KEY = "niftk.combinedtransform";
 
 AffineTransformView::AffineTransformView()
-: QmitkFunctionality()
-, m_Controls(NULL)
+:
+  m_Controls(NULL)
 , msp_DataOwnerNode(NULL)
 {
 }
@@ -98,9 +97,6 @@ AffineTransformView::~AffineTransformView()
 
 void AffineTransformView::CreateQtPartControl( QWidget *parent )
 {
-  // setup the basic GUI of this view
-  m_Parent = parent;
-
   if (!m_Controls)
   {
     // create GUI widgets from the Qt Designer's .ui file
@@ -136,6 +132,21 @@ void AffineTransformView::CreateQtPartControl( QWidget *parent )
     connect(m_Controls->scalingSpinBoxY, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
     connect(m_Controls->scalingSpinBoxZ, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
     connect(m_Controls->centreRotationRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnParameterChanged(bool)));
+  }
+}
+
+mitk::DataStorage::Pointer AffineTransformView::GetDataStorage() const
+{
+  mitk::IDataStorageService::Pointer service =
+    berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
+
+  if (service.IsNotNull())
+  {
+    return service->GetDefaultDataStorage()->GetDataStorage();
+  }
+  else
+  {
+    return NULL;
   }
 }
 

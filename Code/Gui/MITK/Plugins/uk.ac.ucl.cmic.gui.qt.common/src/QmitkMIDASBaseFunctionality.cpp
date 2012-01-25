@@ -105,6 +105,18 @@ void QmitkMIDASBaseFunctionality::SetFocus ()
 
 }
 
+mitk::DataStorage::Pointer QmitkMIDASBaseFunctionality::GetDefaultDataStorage() const
+{
+  mitk::IDataStorageService::Pointer service =
+    berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
+  assert(service);
+
+  mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
+  assert(dataStorage);
+
+  return dataStorage;
+}
+
 void QmitkMIDASBaseFunctionality::SetMIDASMultiViewWidget(QmitkMIDASMultiViewWidget *widget)
 {
   m_MIDASMultiViewWidget = widget;
@@ -132,11 +144,8 @@ QmitkMIDASMultiViewWidget* QmitkMIDASBaseFunctionality::GetActiveMIDASMultiViewW
 
 void QmitkMIDASBaseFunctionality::Activated()
 {
-  mitk::IDataStorageService::Pointer service =
-    berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
+}
 
-  if (service.IsNotNull())
-  {
-    this->m_DataStorage = service->GetDefaultDataStorage()->GetDataStorage();
-  }
+void QmitkMIDASBaseFunctionality::Deactivated()
+{
 }

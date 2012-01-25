@@ -658,7 +658,10 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnification
 
   for (unsigned int i = start; i <= stop; i++)
   {
-    this->m_SingleViewWidgets[i]->SetMagnificationFactor(magnificationFactor);
+    if (this->m_SingleViewWidgets[i]->isVisible())
+    {
+      this->m_SingleViewWidgets[i]->SetMagnificationFactor(magnificationFactor);
+    }
   }
 }
 
@@ -670,7 +673,10 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 
   for (unsigned int i = start; i <= stop; i++)
   {
-    this->m_SingleViewWidgets[i]->SetSliceNumber(sliceNumber);
+    if (this->m_SingleViewWidgets[i]->isVisible())
+    {
+      this->m_SingleViewWidgets[i]->SetSliceNumber(sliceNumber);
+    }
   }
 }
 
@@ -690,7 +696,10 @@ void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 
   for (unsigned int i = start; i <= stop; i++)
   {
-    this->m_SingleViewWidgets[i]->SetTime(timeStep);
+    if (this->m_SingleViewWidgets[i]->isVisible())
+    {
+      this->m_SingleViewWidgets[i]->SetTime(timeStep);
+    }
   }
 }
 
@@ -702,7 +711,10 @@ void QmitkMIDASMultiViewWidget::SetWindowsToOrientation(QmitkMIDASSingleViewWidg
 
   for (unsigned int i = start; i <= stop; i++)
   {
-    this->m_SingleViewWidgets[i]->SetViewOrientation(orientation, false);
+    if (this->m_SingleViewWidgets[i]->isVisible())
+    {
+      this->m_SingleViewWidgets[i]->SetViewOrientation(orientation, false);
+    }
   }
   this->PublishNavigationSettings();
 }

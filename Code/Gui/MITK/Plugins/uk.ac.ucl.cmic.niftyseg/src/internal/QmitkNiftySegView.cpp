@@ -28,7 +28,6 @@
 
 // Qmitk
 #include "QmitkNiftySegView.h"
-#include "QmitkStdMultiWidget.h"
 
 // Qt
 #include <QMessageBox>
@@ -36,7 +35,6 @@
 const std::string QmitkNiftySegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftysegview";
 
 QmitkNiftySegView::QmitkNiftySegView()
-: QmitkFunctionality()
 {
 }
 

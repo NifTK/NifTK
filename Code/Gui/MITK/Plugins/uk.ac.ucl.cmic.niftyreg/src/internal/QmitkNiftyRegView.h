@@ -26,14 +26,14 @@
 
 #include "ui_QmitkNiftyRegViewControls.h"
 #include "berryISelectionListener.h"
-#include "QmitkFunctionality.h"
+#include "berryQtViewPart.h"
 
 /**
  * \class QmitkNiftyRegView
  * \brief GUI interface to enable the user to run the NiftyReg registration algorithm.
  * \ingroup uk.ac.ucl.cmic.niftyreg
 */
-class QmitkNiftyRegView : public QmitkFunctionality
+class QmitkNiftyRegView : public berry::QtViewPart
 {  
   Q_OBJECT
   
@@ -43,6 +43,7 @@ class QmitkNiftyRegView : public QmitkFunctionality
 
     QmitkNiftyRegView();
     virtual ~QmitkNiftyRegView();
+    virtual void SetFocus() {};
 
     virtual void CreateQtPartControl(QWidget *parent);
 

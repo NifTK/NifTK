@@ -82,6 +82,12 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 {
   m_Interface = new MIDASGeneralSegmentorViewEventInterface();
   m_Interface->SetMIDASGeneralSegmentorView(this);
+  m_LastSliceNumbers[0] = 0;
+  m_LastSliceNumbers[1] = 0;
+  m_LastSliceNumbers[2] = 0;
+  m_LastCrossPositionClickedByUser[0] = 0;
+  m_LastCrossPositionClickedByUser[1] = 0;
+  m_LastCrossPositionClickedByUser[2] = 0;
 }
 
 MIDASGeneralSegmentorView::MIDASGeneralSegmentorView(
@@ -190,7 +196,9 @@ void MIDASGeneralSegmentorView::Deactivated()
 void MIDASGeneralSegmentorView::OnManualToolSelected(int id)
 {
   // disable crosshair movement when a manual drawing tool is active (otherwise too much visual noise)
-  if (m_MultiWidget)
+  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnManualToolSelected" << std::endl;
+
+//  if (m_MultiWidget)
   {
     /* If we do want a Posn button, put this code back in, and insert Posn into list of tools.
     mitk::ToolManager* toolManager = this->GetToolManager();
@@ -209,6 +217,7 @@ void MIDASGeneralSegmentorView::OnManualToolSelected(int id)
     */
 
     // here, if we selected a tool, we stop navigation controls.
+    /*
     if (id != -1)
     {
       m_MultiWidget->DisableNavigationControllerEventListening();
@@ -227,6 +236,7 @@ void MIDASGeneralSegmentorView::OnManualToolSelected(int id)
     {
       m_MultiWidget->EnableNavigationControllerEventListening();
     }
+    */
   }
   this->UpdatePriorAndNext();
   this->UpdateRegionGrowing();
@@ -487,13 +497,15 @@ itk::ORIENTATION_ENUM MIDASGeneralSegmentorView::GetOrientationAsEnum()
 void MIDASGeneralSegmentorView::OnOrientationSelected(itk::ORIENTATION_ENUM orientation)
 {
   mitk::Image* image = this->GetReferenceImageFromToolManager();
-  if (image != NULL && m_MultiWidget != NULL)
+  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationSelected" << std::endl;
+
+  if (image != NULL)// && m_MultiWidget != NULL)
   {
 
     // If we switch orientation, we need to recalculate the number of slices in that direction,
     // so we can setup the slice select widget, and we should switch to the correct slice
     // as determined by the intersection point of the ortho viewer.
-
+/*
     int axis = this->GetAxis();
     vtkImageData* vtkImage = image->GetVtkImageData(0);
     int *extents = vtkImage->GetWholeExtent();
@@ -534,34 +546,44 @@ void MIDASGeneralSegmentorView::OnOrientationSelected(itk::ORIENTATION_ENUM orie
     this->OnSliceNumberChanged(sliceNumber, sliceNumber);
     this->UpdatePriorAndNext();
     this->UpdateRegionGrowing();
+    */
   }
 }
 
 void MIDASGeneralSegmentorView::OnOrientationAxialToggled(bool b)
 {
+  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationAxialToggled" << std::endl;
+/*
   if (this->m_MultiWidget != NULL)
   {
     this->m_MultiWidget->changeLayoutToWidget1();
   }
   this->OnOrientationSelected(itk::ORIENTATION_AXIAL);
+  */
 }
 
 void MIDASGeneralSegmentorView::OnOrientationSagittalToggled(bool b)
 {
+  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationSagittalToggled" << std::endl;
+  /*
   if (this->m_MultiWidget != NULL)
   {
     this->m_MultiWidget->changeLayoutToWidget2();
   }
   this->OnOrientationSelected(itk::ORIENTATION_SAGITTAL);
+  */
 }
 
 void MIDASGeneralSegmentorView::OnOrientationCoronalToggled(bool b)
 {
+  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationCoronalToggled" << std::endl;
+  /*
   if (this->m_MultiWidget != NULL)
   {
     this->m_MultiWidget->changeLayoutToWidget3();
   }
   this->OnOrientationSelected(itk::ORIENTATION_CORONAL);
+  */
 }
 
 void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfImage()
@@ -1686,6 +1708,8 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int before, int after)
   this->UpdatePriorAndNext();
 
   // Synch m_MultiWidget with this view.
+  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnSliceNumberChanged" << std::endl;
+  /*
   if (this->m_MultiWidget)
   {
     mitk::Image::Pointer referenceImage = this->GetReferenceImage();
@@ -1706,6 +1730,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int before, int after)
       this->m_MultiWidget->MoveCrossToPosition(crossPositionInMillimetres);
     }
   }
+  */
 }
 
 void MIDASGeneralSegmentorView::OnCleanButtonPressed()
@@ -1717,3 +1742,18 @@ void MIDASGeneralSegmentorView::OnRetainMarksCheckBoxToggled(bool b)
 {
   // Actually nothing to do until you move slice, then the current slice gets propagated.
 }
+
+bool MIDASGeneralSegmentorView::GetCurrentCrossPosition(mitk::Point3D &output)
+{
+  bool valid = false;
+/*
+  if (m_MultiWidget != NULL)
+  {
+    output = m_MultiWidget->GetCrossPosition();
+    valid = true;
+  }
+*/
+  return valid;
+}
+
+

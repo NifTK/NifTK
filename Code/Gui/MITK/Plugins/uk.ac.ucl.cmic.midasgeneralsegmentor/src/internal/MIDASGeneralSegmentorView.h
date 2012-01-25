@@ -104,6 +104,9 @@ public:
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
   virtual void ExecuteOperation(mitk::Operation* operation);
 
+  /// \brief Retrieves the current cross position from the QmitkStdMultiWidet. Returns false if QmitkStdMultiWidget not available.
+  virtual bool GetCurrentCrossPosition(mitk::Point3D &output);
+
 protected slots:
  
   /// \brief Called when the user hits the button "New segmentation".
@@ -314,5 +317,11 @@ private:
 
   /// \brief Used to enforce the axial, coronal, sagittal buttons into a group.
   QButtonGroup *m_OrientationButtons;
+
+  /// \brief The last cross position in the QmitkStdMultiWidget.
+  mitk::Point3D m_LastCrossPositionClickedByUser;
+
+  // \brief The last slice numbers when the user last clicked.
+  int m_LastSliceNumbers[3];
 };
 #endif // _MIDASGENERALSEGMENTORVIEW_H_INCLUDED
