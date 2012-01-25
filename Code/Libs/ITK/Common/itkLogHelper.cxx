@@ -26,17 +26,12 @@ using namespace std;
 
 #include "itkLogHelper.h"
 #include "itkUCLMacro.h"
-
-#include "Object.h"
 #include "ConversionUtils.h"
-
-
 
 namespace niftk
 {
   itkLogHelper::itkLogHelper()
   {
-	std::cout << niftk::Object::CONSTRUCTED << this->ToString();
   }
 
   void itkLogHelper::PrintSelf(std::ostream &os, itk::Indent indent) const
@@ -44,10 +39,8 @@ namespace niftk
     Superclass::PrintSelf(os, indent);
   }
 
-
   itkLogHelper::~itkLogHelper()
   {
-	  std::cout << niftk::Object::DESTROYED;
   }
 
   std::string itkLogHelper::ToString()

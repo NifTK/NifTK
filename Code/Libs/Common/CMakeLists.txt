@@ -32,8 +32,6 @@ SET(niftkcommon_SRCS
 FileHelper.cxx
 ConversionUtils.cxx 
 EnvironmentHelper.cxx
-NonCopyableObject.cxx
-Object.cxx
 CommandLineParser.cxx
 )
 
