@@ -57,7 +57,7 @@ ExtendedBrainMaskWithSmoothDropOffCompositeFilter<TImageType>
 
   this->m_ThresholdFilter->SetInput(this->GetInput());
   this->m_ThresholdFilter->SetLowerThreshold(m_InitialThreshold);
-  this->m_ThresholdFilter->SetUpperThreshold(std::numeric_limits<double>::max());
+  this->m_ThresholdFilter->SetUpperThreshold(std::numeric_limits<float>::max());
   this->m_ThresholdFilter->SetInsideValue(1);
   this->m_ThresholdFilter->SetOutsideValue(0);
   this->m_ThresholdFilter->Update();

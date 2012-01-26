@@ -69,7 +69,15 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*[Qq][Gg]lobal.h.*warning.*This version of Mac OS X is unsupported.*"
   
   # Trac #1277 Suppress itk::hash warning (windows).
-  "*itk::hash* type name first seen using*now using struct*" 
+  ".*itk::hash.*type name first seen using.*now using struct.*" 
+  
+  # Trac #1277 suppress gdcmWin32.h warnings
+  ".*gdcmWin32.h.*" 
+  
+  # Trac #1277, suppress ITK warnings on basic primatives such as points and vectors.
+  ".*itk::Point.*may be used uninitialized in this function.*" 
+  ".*itk::Index.*may be used uninitialized in this function.*"
+  ".*itk::Vector.*may be used uninitialized in this function.*"
   
   # PythonQt suppressions
   "PythonQt.*src.*PythonQt.*(cpp|h)"
