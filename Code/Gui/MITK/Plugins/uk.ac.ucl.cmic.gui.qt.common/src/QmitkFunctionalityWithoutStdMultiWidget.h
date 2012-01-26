@@ -33,7 +33,7 @@
 #include <berryIPreferences.h>
 
 //# mitk stuff
-#include <org_mitk_gui_qt_common_Export.h>
+#include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 #include "mitkDataNodeSelection.h"
 #include <mitkDataStorage.h>
 
@@ -67,7 +67,7 @@ class QmitkFunctionalitySelectionProvider;
 /// Please use the Activated/Deactivated method to add/remove interactors, disabling multiwidget crosshair or anything which may
 /// "affect" other functionalities. For further reading please have a look at QmitkFunctionalityWithoutStdMultiWidget::IsExclusiveFunctionality().
 ///
-class MITK_QT_COMMON QmitkFunctionalityWithoutStdMultiWidget : public berry::QtViewPart
+class CMIC_QT_COMMON QmitkFunctionalityWithoutStdMultiWidget : public berry::QtViewPart
 {
 
 //# public virtual methods which can be overwritten
