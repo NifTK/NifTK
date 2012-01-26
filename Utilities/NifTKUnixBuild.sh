@@ -26,13 +26,10 @@
 
 function run_command()
 {
-  echo "Running $1, with cautious flag=$2"
+  echo "Running \"$1\""
   eval $1
   if [ $? -ne 0 ]; then
-    if [ "$2" = "OFF" ]; then
-      echo "Emergency exit due to exit code:$?"
-      exit $?
-    fi
+    echo "ERROR: command \"$1\" returned with error code $?"
   fi
 }
 
@@ -89,10 +86,10 @@ fi
 run_command "svn co https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTK --non-interactive"
 run_command "mkdir ${FOLDER}"
 run_command "cd ${FOLDER}"
-run_command "cmake ../NifTK ${GCC4_ARG}  ${COVERAGE_ARG} ${OPENCV_ARG} -DCMAKE_BUILD_TYPE=${TYPE} -DBUILD_GUI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DBUILD_NIFTYLINK=ON -DBUILD_OPENIGTLINK=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON"
+run_command "cmake ../NifTK ${GCC4_ARG}  ${COVERAGE_ARG} ${OPENCV_ARG} -DCMAKE_BUILD_TYPE=${TYPE} -DBUILD_GUI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DBUILD_NIFTYLINK=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON"
 run_command "make -j ${THREADS}"
 run_command "cd NifTK-build"
-run_command "${BUILD_COMMAND} OFF"  # The submit task fails due to http timeout, so we want to carry on regardles.
+run_command "${BUILD_COMMAND}" # Note that the submit task fails with http timeout, but we want to carry on regardless to get to the package bit.
 
 if [ "${TYPE}" = "Release" ]; then
   run_command "make package"
