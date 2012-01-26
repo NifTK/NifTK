@@ -32,12 +32,19 @@
 // Qt
 #include <QMessageBox>
 
+// IGI stuff, OpenIGTLink and NiftyLink
+#include "igtlStringMessage.h"
+#include "OIGTLSocketObject.h"
 
 const std::string SurgicalGuidanceView::VIEW_ID = "uk.ac.ucl.cmic.surgicalguidance";
 
 SurgicalGuidanceView::SurgicalGuidanceView()
 : m_Parent(NULL)
 {
+  // Matt: I'm just creating a NiftyLink / OpenIGTLink function to check that include paths, and library linkage works.
+  igtl::StringMessage::Pointer myFirstMessage = igtl::StringMessage::New();
+  OIGTLSocketObject socket;
+
 }
 
 SurgicalGuidanceView::~SurgicalGuidanceView()

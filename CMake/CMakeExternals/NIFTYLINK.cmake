@@ -32,14 +32,13 @@ ENDIF()
 IF(BUILD_NIFTYLINK)
 
   SET(proj NIFTYLINK)
-  SET(proj_DEPENDENCIES OPENIGTLINK)
+  SET(proj_DEPENDENCIES)
   SET(NIFTYLINK_DEPENDS ${proj})
   
   IF(NOT DEFINED NIFTYLINK_DIR)
   
     ExternalProject_Add(${proj}
        SVN_REPOSITORY https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyLink
-       SVN_REVISION -r 8148
        BINARY_DIR ${proj}-build
        INSTALL_COMMAND ""
        CMAKE_GENERATOR ${GEN}
@@ -47,14 +46,16 @@ IF(BUILD_NIFTYLINK)
          ${EP_COMMON_ARGS}
          -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
          -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
        DEPENDS ${proj_DEPENDENCIES}
     )
    
     SET(NIFTYLINK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/NiftyLink-build)
     SET(NIFTYLINK_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/NIFTYLINK)
+    SET(OpenIGTLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
+    
     MESSAGE("SuperBuild loading NiftyLink from ${NIFTYLINK_DIR}")
-  
+    MESSAGE("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")
+    
   ELSE(NOT DEFINED NIFTYLINK_DIR)
   
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")

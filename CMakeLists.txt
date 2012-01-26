@@ -116,7 +116,6 @@ OPTION(BUILD_NIFTYREC "Build NiftyRec. Experimental. " OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim. Experimental. " OFF)
 OPTION(BUILD_NIFTYSEG "Build NiftySeg. Experimental. " OFF)
 OPTION(BUILD_OPENCV "Build OpenCV (via MITK)" OFF)
-OPTION(BUILD_OPENIGTLINK "Build OpenIGTLink" OFF)
 OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype" OFF)
 OPTION(BUILD_PROTOTYPE_BE "Build prototype code in NifTK/Prototype/be" OFF)
 OPTION(BUILD_PROTOTYPE_GY "Build prototype code in NifTK/Prototype/gy" OFF)
@@ -272,7 +271,11 @@ ENDIF(BUILD_GUI)
 ######################################################################
 
 IF(BUILD_GUI)
-  FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
+  IF(BUILD_NIFTYLINK)
+    FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
+  ELSE(BUILD_NIFTYLINK)
+    FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
+  ENDIF(BUILD_NIFTYLINK)
   
   IF(QT_FOUND)
   
@@ -458,26 +461,20 @@ IF (BUILD_MESHING)
 ENDIF (BUILD_MESHING)
 
 ######################################################################
-# Find OpenIGTLink
-######################################################################
-IF(BUILD_OPENIGTLINK)
-  FIND_PACKAGE(OpenIGTLink)
-  IF(OpenIGTLink_FOUND)
-    MESSAGE("Found OpenIGTLink")    
-    INCLUDE(${OpenIGTLink_USE_FILE})  
-  ENDIF(OpenIGTLink_FOUND)
-ENDIF(BUILD_OPENIGTLINK)
-
-######################################################################
 # Find NiftyLink
 ######################################################################
 IF(BUILD_NIFTYLINK)
   FIND_PACKAGE(NiftyLink)
   IF(NiftyLink_FOUND)
     MESSAGE("Found NiftyLink")    
-    INCLUDE(${NiftyLink_USE_FILE})  
+    INCLUDE(${NiftyLink_USE_FILE})
   ENDIF(NiftyLink_FOUND)
 ENDIF(BUILD_NIFTYLINK)
+
+IF(NOT NiftyLink_FOUND)
+  MESSAGE("No NiftyLink found, so turning off Surgical Guidance Plugin")
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
+ENDIF()
 
 ######################################################################
 # Find FFTW.
