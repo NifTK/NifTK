@@ -33,6 +33,8 @@ class xmlModelGenrator :
         self._gravityConstraintSet  = False
         self._outputSet             = False
 
+        self.allNodesArray    = np.array( range( self.nodes.shape[0] ) )
+        self.allElemenstArray = np.array( range( self.elements.shape[0]  ) )
 
 
     

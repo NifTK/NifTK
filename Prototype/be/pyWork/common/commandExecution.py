@@ -38,4 +38,4 @@ def runCommand( cmdIn, paramsIn, logFileName=None, workDir=None, onlyPrintComman
     toc = time.clock()
     
     print('Done. This took %.2fs' %( toc-tic ) )
-    pass
+    return ret
