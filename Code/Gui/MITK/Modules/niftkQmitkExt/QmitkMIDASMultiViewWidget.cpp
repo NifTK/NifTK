@@ -39,6 +39,7 @@
 #include <QLabel>
 #include <QDebug>
 #include <QMessageBox>
+#include <QStackedLayout>
 #include "mitkFocusManager.h"
 #include "mitkGlobalInteraction.h"
 #include "mitkTimeSlicedGeometry.h"
@@ -53,6 +54,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     int defaultNumberOfColumns,
     QWidget* parent, Qt::WindowFlags f)
 : QWidget(parent, f)
+, m_LayoutForStackingRenderWindows(NULL)
 , m_LayoutForRenderWindows(NULL)
 , m_LayoutForLayoutButtons(NULL)
 , m_LayoutForDropRadioButtons(NULL)
@@ -87,6 +89,9 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForLayoutButtons->setContentsMargins(gridMargins, gridMargins, gridMargins, gridMargins);
   m_LayoutForLayoutButtons->setVerticalSpacing(gridSpacing);
   m_LayoutForLayoutButtons->setHorizontalSpacing(gridSpacing);
+
+  m_LayoutForStackingRenderWindows = new QStackedLayout();
+  m_LayoutForStackingRenderWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForStackingRenderWindows"));
 
   m_LayoutForRenderWindows = new QGridLayout();
   m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForRenderWindows"));
@@ -197,7 +202,10 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
    * Now arrange stuff.
    ************************************/
 
-  for (unsigned int i = 0; i <  m_MaxRows*m_MaxCols; i++)
+  m_LayoutForStackingRenderWindows->insertWidget(0, m_SingleViewWidgets[0]);
+  m_LayoutForRenderWindows->addLayout(m_LayoutForStackingRenderWindows, 0, 0);
+
+  for (unsigned int i = 1; i <  m_MaxRows*m_MaxCols; i++)
   {
     m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[i], this->GetRowFromIndex(i), this->GetColumnFromIndex(i));
   }
@@ -426,15 +434,36 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
     for (unsigned int c = 0; c < m_MaxCols; c++)
     {
       int viewerIndex = this->GetIndexFromRowAndColumn(r, c);
-      bool active = true;
 
-      if (r >= numberOfRows || c >= numberOfColumns)
+      if (viewerIndex > 0) // viewer 0 is always present and never changes.
       {
-        active = false;
+        if (r >= numberOfRows || c >= numberOfColumns)
+        {
+          int currentIndex = m_LayoutForRenderWindows->indexOf(m_SingleViewWidgets[viewerIndex]);
+
+          if (currentIndex != -1)
+          {
+            m_LayoutForRenderWindows->removeWidget(m_SingleViewWidgets[viewerIndex]);
+            m_LayoutForStackingRenderWindows->addWidget(m_SingleViewWidgets[viewerIndex]);
+          }
+        }
+        else
+        {
+          int currentIndex = m_LayoutForRenderWindows->indexOf(m_SingleViewWidgets[viewerIndex]);
+
+          if (currentIndex == -1)
+          {
+            m_LayoutForStackingRenderWindows->removeWidget(m_SingleViewWidgets[viewerIndex]);
+            m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[viewerIndex], r, c);
+            m_SingleViewWidgets[viewerIndex]->setVisible(true); // need to force this or else grid doesn't update... as widget gets set to invisible.
+          }
+        }
       }
-      m_SingleViewWidgets[viewerIndex]->setVisible(active);
-    }
-  }
+    } // end for c
+  } // end for r
+
+  // viewer 0 is always present and never changes.
+  m_LayoutForStackingRenderWindows->setCurrentIndex(0);
 
   m_RowsSpinBox->blockSignals(true);
   m_RowsSpinBox->setValue(numberOfRows);

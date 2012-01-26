@@ -43,6 +43,7 @@ class QRadioButton;
 class QCheckBox;
 class QmitkMIDASSingleViewWidget;
 class QmitkMIDASRenderWindow;
+class QStackedLayout;
 
 /**
  * \class UpdateMIDASViewingControlsInfo
@@ -211,6 +212,7 @@ private:
   void GetStartStopIndexForIteration(unsigned int &start, unsigned int &stop);
   void SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation);
 
+  QStackedLayout                                *m_LayoutForStackingRenderWindows;
   QGridLayout                                   *m_LayoutForRenderWindows;
   QGridLayout                                   *m_LayoutForLayoutButtons;
   QGridLayout                                   *m_LayoutForDropRadioButtons;
