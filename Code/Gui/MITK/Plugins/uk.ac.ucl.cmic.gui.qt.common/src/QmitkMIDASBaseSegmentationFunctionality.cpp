@@ -106,8 +106,6 @@ void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::P
 
 void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(mitk::DataNode* node)
 {
-  std::cerr << "Matt, QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged" << std::endl;
-
   std::vector<mitk::DataNode*> nodes;
   nodes.push_back( node );
   this->OnSelectionChanged( nodes );
@@ -115,8 +113,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(mitk::DataNode*
 
 void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(std::vector<mitk::DataNode*> nodes)
 {
-  std::cerr << "Matt, QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged (nodes)" << std::endl;
-
   // If the plugin is not visible, then we have nothing to do.
   if (!m_Parent || !m_Parent->isVisible()) return;
 
