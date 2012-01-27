@@ -999,15 +999,13 @@ INCLUDE(CPack)
   
 # 6. Trac #1264, fixing installer to include Qt Assistant for help files.
 
-IF(WIN32 OR APPLE)
-  SET(MY_PROJECT_NAME NifTK)
-  SET(MY_APP_NAME NiftyView)
-  SET(MACOSX_BUNDLE_NAMES)
-  IF(APPLE)
-    LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
-  ENDIF(APPLE)
-  INCLUDE(mitkInstallRules)
-ENDIF(WIN32 OR APPLE)
+SET(MY_PROJECT_NAME NifTK)
+SET(MY_APP_NAME NiftyView)
+SET(MACOSX_BUNDLE_NAMES)
+IF(APPLE)
+  LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
+ENDIF(APPLE)
+INCLUDE(mitkInstallRules)
 
 ######################################################################
 # If we are under Windows, create two batch files which correctly

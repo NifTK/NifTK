@@ -42,10 +42,10 @@ IF(NOT DEFINED MITK_DIR)
     # As of Trac 1257, we are building off of a fork of MITK.
     # The fork is branch niftk.
     # mitk revision f1953dbbb0
-    # + merging trac 853, trac 1255, trac 1256.
+    # + merging trac 853, trac 1255, trac 1256, 1264.
     #########################################################
     
-    SET(revision_tag 82efd288c7)
+    SET(revision_tag cee3591db3))
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
