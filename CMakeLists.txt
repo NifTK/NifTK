@@ -971,48 +971,8 @@ IF(BUILD_PROTOTYPE)
 ENDIF(BUILD_PROTOTYPE)   
 
 ######################################################################
-# If we are under Windows, create two batch files which correctly
-# set up the environment for the application and for Visual Studio
-######################################################################
-IF(WIN32)
-  IF(MITK_FOUND)
-  
-    include(mitkFunctionCreateWindowsBatchScript)
-
-    set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
-    foreach(VS_BUILD_TYPE debug release)
-      mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartVS.bat.in"
-        ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat
-        ${VS_BUILD_TYPE})
-    endforeach()
-    
-  ENDIF(MITK_FOUND)
-ENDIF(WIN32)
-
-######################################################################
 # Packaging code.
 ######################################################################
-
-# Note: Here we install the blueberry osgi implementation.
-# This piece of code is here due to the following reason:
-# In a project where MITK is used as an external dependency you would ordinarily use
-# the MITK-Project-Template https://github.com/MITK/MITK-ProjectTemplate.
-# Our project was written before this template was available, but broadly speaking
-# the CMake stuff is similar, just in different places.  So, in the standard MITK project
-# template there is a line 'include(mitkInstallRules)' after the top-level 'include(CPack)'
-# line in the top level CMakeLists.txt. This line 'include(mitkInstallRules)' contains
-# the following lines to install liborg_blueberry_osgi.dll. So, it is part of the 
-# installation or packing routines. This appears to be the only bit we need. So
-# we are not calling 'include(mitkInstallRules)'. Also we do not need this on 
-# Linux and Mac because the fixup_bundle procedure already puts the library in the right 
-# place that can be found at runtime.
-
-IF(MITK_USE_BLUEBERRY)
-  IF(WIN32)
-    MITK_INSTALL(FILES ${MITK_BINARY_DIR}/bin/plugins/debug/liborg_blueberry_osgi.dll CONFIGURATIONS Debug)
-    MITK_INSTALL(FILES ${MITK_BINARY_DIR}/bin/plugins/release/liborg_blueberry_osgi.dll CONFIGURATIONS Release)
-  ENDIF(WIN32)
-ENDIF(MITK_USE_BLUEBERRY)
 
 # 1. Setup defaults, common for all generators.
 INCLUDE(CPackSetup)
@@ -1037,4 +997,35 @@ INCLUDE(NIFTKCPackOptions)
 # 5. Include CPack module once all variables are set. i.e. this must be last.
 INCLUDE(CPack)
   
+# 6. Trac #1264, fixing installer to include Qt Assistant for help files.
+
+IF(WIN32 OR APPLE)
+  SET(MY_PROJECT_NAME NifTK)
+  SET(MY_APP_NAME NiftyView)
+  SET(MACOSX_BUNDLE_NAMES)
+  IF(APPLE)
+    LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
+  ENDIF(APPLE)
+  INCLUDE(mitkInstallRules)
+ENDIF(WIN32 OR APPLE)
+
+######################################################################
+# If we are under Windows, create two batch files which correctly
+# set up the environment for the application and for Visual Studio
+######################################################################
+IF(WIN32)
+  IF(MITK_FOUND)
+  
+    include(mitkFunctionCreateWindowsBatchScript)
+
+    set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
+    foreach(VS_BUILD_TYPE debug release)
+      mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartVS.bat.in"
+        ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat
+        ${VS_BUILD_TYPE})
+    endforeach()
+    
+  ENDIF(MITK_FOUND)
+ENDIF(WIN32)
+
 
