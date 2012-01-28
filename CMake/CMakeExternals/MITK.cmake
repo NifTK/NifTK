@@ -45,7 +45,7 @@ IF(NOT DEFINED MITK_DIR)
     # + merging trac 853, trac 1255, trac 1256, 1264.
     #########################################################
     
-    SET(revision_tag f896635c9f)
+    SET(revision_tag 7f6bc67a5fe)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
