@@ -75,7 +75,7 @@ if [ "${OPENCV}" = "ON" ]; then
 fi
 
 if [ "${GCC4}" = "ON" ]; then
-  GCC4_ARG="-DCMAKE_C_COMPILER=/usr/bin/gcc4 -DCMAKE_CXX_COMPILER=/usr/bin/g++44"
+  GCC4_ARG="-DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44"
 fi
 
 if [ "${IGI}" = "ON" ]; then
