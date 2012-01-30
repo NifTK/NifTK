@@ -11,6 +11,9 @@ from rigidHelpers import rotMatZ
 import scipy.linalg as la
 import aladinRegistrationTask as aladinTask
 import rregRegistrationTask as rregTask
+import sys
+from buildXMLmodel import minDist
+
 
 def readFileAsArray( strFileNameIn ):
     f       = file(strFileNameIn, 'r')
@@ -26,11 +29,11 @@ def readFileAsArray( strFileNameIn ):
     return results
 
 
-fileNameSupinePoints = 'Z:/documents/Project/philipsBreastProneSupine/Results_supinePointsOnCostalCartilage.txt'
-fileNamePronePoints  = 'Z:/documents/Project/philipsBreastProneSupine/Results_pronePointsOnCostalCartilage.txt'
+fileNameSupinePoints = 'W:/philipsBreastProneSupine/Results_supinePointsOnCostalCartilage.txt'
+fileNamePronePoints  = 'W:/philipsBreastProneSupine/Results_pronePointsOnCostalCartilage.txt'
 
-imgFileNameProne  = 'Z:/documents/Project/philipsBreastProneSupine/prone1000.nii'
-imgFileNameSupine = 'Z:/documents/Project/philipsBreastProneSupine/supine1000.nii'
+imgFileNameProne  = 'W:/philipsBreastProneSupine/prone1k.nii'
+imgFileNameSupine = 'W:/philipsBreastProneSupine/supine1k.nii'
 
 
 # Get the image spacing
@@ -60,6 +63,29 @@ homNiiMat = np.dot( corMat, np.dot( la.inv(reg.homRigTransfromMat), corMat ) )
 plotWrap.plotArrayAs3DPoints( mProne, (1,0,0) )
 plotWrap.plotArrayAs3DPoints( mSupine, (0,1,0) )
 plotWrap.plotArrayAs3DPoints( supineReg.T, (0,0,1) )
+
+#
+# Check the point distance
+#
+
+displacement = mProne - supineReg.T[:,0:3]
+distance = []
+for d in displacement : 
+    distance.append( np.linalg.norm(d) )
+distance = np.array( distance )
+
+
+meanDist = np.mean( distance )
+maxDist  = np.max ( distance )
+minDist  = np.min ( distance )
+stdDist  = np.std ( distance )
+print( 'Accuracy achieved: ' )
+print( '  - mean distance: %.4f '  %meanDist ) 
+print( '  - min  distance: %.4f '  %minDist  ) 
+print( '  - max  distance: %.4f '  %maxDist  ) 
+print( '  - std  distance: %.4f '  %stdDist  ) 
+
+sys.exit()
 
 # Write the result into a file
 strDOFFileOut    = 'Z:/documents/Project/philipsBreastProneSupine/rigidAlignment/rotMat.txt'
