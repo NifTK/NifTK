@@ -26,5 +26,5 @@ FILE(GLOB DOXIN_FILES *.dox.in)
 
 FOREACH(doxin ${DOXIN_FILES})
   GET_FILENAME_COMPONENT(basename ${doxin} NAME_WE)
-  CONFIGURE_FILE(${doxin} ${CMAKE_BINARY_DIR}/Doxygen/${basename}.dox)
+  CONFIGURE_FILE(${doxin} ${CMAKE_BINARY_DIR}/Doxygen/${basename}.dox @ONLY)
 ENDFOREACH()

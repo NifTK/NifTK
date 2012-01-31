@@ -4,7 +4,7 @@
 
 \section InstallationInstructionsIntroduction Introduction
 
-This package installs a suite of software, and extra steps are needed to setup your system 
+This @NIFTK_PLATFORM@ package installs a suite of software, and extra steps are needed to setup your system 
 after the installer runs. These steps are important. Without these steps you will have 
 either fewer programs available, or programs that do not run correctly.
 Please see the instructions below.
@@ -12,7 +12,7 @@ Please see the instructions below.
 \section InstallationInstructionsMac Mac OSX
 
 <ol>
-<li> Drag and drop the @NIFTK_PLATFORM@ folder onto the Applications folder. 
+<li> Drag and drop the @NIFTK_DEPLOY_NAME@ folder onto the Applications folder. 
 <li> The software will install into /Applications/@NIFTK_DEPLOY_NAME@
 <li> In your shell startup script ~/.bash_profile put
 \verbatim
@@ -21,7 +21,7 @@ source ${NIFTK_DIR}/bin/SetupNifTK.sh
 \endverbatim
 </ol>
 
-\section InstallationInstructionsLinux Linux - Non-Ubuntu
+\section InstallationInstructionsLinux Linux
 
 <ol>
 <li> Download the .tar.gz file, into the directory you want to install into. For these instructions 
@@ -50,34 +50,15 @@ system administrator. If in doubt ask your local admin.
 For example at UCL Computer Science most managed machines use
 a csh and the file to edit is ~/.uclcs-csh-options.
 
-\section InstallationInstructionsUbuntu Linux - Ubunutu
-
-<ol>
-<li> Download the .deb file
-<li> sudo dpkg -i @NIFTK_DEPLOY_NAME@.deb
-<li> This will install into /opt/@NIFTK_DEPLOY_NAME@
-<li> If you are running a bash shell put:
-\verbatim
-export NIFTK_DIR=/opt/@NIFTK_DEPLOY_NAME@
-source ${NIFTK_DIR}/bin/SetupNifTK.sh
-\endverbatim
-in your ~/.bashrc or ~/.bash_profile 
-<li> Or if you are running a csh put:
-\verbatim
-setenv NIFTK_DIR /opt/@NIFTK_DEPLOY_NAME@
-source ${NIFTK_DIR}/bin/SetupNifTK.csh
-\endverbatim
-in your ~/.cshrc
-</ol>
-
 \section InstallationInstructionsWindows Windows
 
 <ol>
 <li> Download the .exe file
 <li> Run the .exe file following the on-screen prompts.
-<li> The software will install into "C:\Program Files\@NIFTK_DEPLOY_NAME@"
+<li> The software will install into "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@"
 <li> A short-cut will enable you to run NiftyView.
-<li> Command line programs will be in "C:\Program Files\@NIFTK_DEPLOY_NAME@\bin"
+<li> Command line programs will be in "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@\bin"
 <li> Scripts will not be available.
+<li> Note: When the installer finishes there is a checkbox to launch NiftyView. This currently does not work, and NiftyView should be run from the Start menu.
 </ol>
 */
