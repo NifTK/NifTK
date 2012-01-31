@@ -12,11 +12,24 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from mayaviPlottingWrap import plotArrayAs3DPoints, plotVectorsAtPoints
 
+## Parameter set tested first
+#experimentDir   = 'W:/philipsBreastProneSupine/referenceState/'
+#meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
+#plotDir         = experimentDir + 'plots/fatGravityRot/' 
+#imageEdgeLength = 400
+#tetgenVol       = 75
 
-experimentDir   = 'W:/philipsBreastProneSupine/referenceState/'
-meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
+
+experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01/'
+meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
 plotDir         = experimentDir + 'plots/fatGravityRot/' 
 imageEdgeLength = 400
+tetgenVol       = 30
+tetgenQ         = 1.5
+timeStep        = 2e-5
+totalTime       = 1.0
+damping         = 50
+
 
 if not os.path.exists(plotDir):
     print( 'Error: Cannot find specified plotting directory' )
@@ -34,7 +47,7 @@ if not os.path.exists(experimentDir):
 # 3) inverse gravity and double it
 #
 print( 'Generating phantom' )
-phantom = numPhantom.numericalBreastPhantom( experimentDir, imageEdgeLength, meshlabSript )
+phantom = numPhantom.numericalBreastPhantom( experimentDir, imageEdgeLength, meshlabSript, tetgenVol, tetgenQ, timeStep, totalTime, damping )
 
 # track over iterations
 errorMeasures      = []
@@ -88,6 +101,9 @@ for phi in range(0,91,5) :
     
     
     # rename the deformation file 
+    if os.path.exists( deformFileNameP1G ) :
+        os.remove(deformFileNameP1G)
+    
     os.rename( deformFileName, deformFileNameP1G )
     deformP1G = mdh.modelDeformationHandler( xmlGenP1G, deformFileNameP1G.split('/')[-1] )
     aDeformP1G.append( deformP1G )
@@ -105,6 +121,8 @@ for phi in range(0,91,5) :
         break
     
     # rename...
+    if os.path.exists( deformFileNameP1S2G ) : 
+        os.remove( deformFileNameP1S2G )
     os.rename( deformFileName, deformFileNameP1S2G )
     deformP1S2G = mdh.modelDeformationHandler( xmlGenP1S2G, deformFileNameP1S2G.split('/')[-1] )
     aDeformP1S2G.append( deformP1S2G )
@@ -122,6 +140,9 @@ for phi in range(0,91,5) :
         break
     
     # rename...
+    if os.path.exists( deformFileNameS1G ):
+        os.remove( deformFileNameS1G ) 
+        
     os.rename( deformFileName, deformFileNameS1G )
     deformS1G = mdh.modelDeformationHandler( xmlGenS1G, deformFileNameS1G.split('/')[-1] )
     aDeformS1G.append( deformS1G )
@@ -137,7 +158,7 @@ for phi in range(0,91,5) :
     
     # Plot as a nice latex-syle pdf/png
     mpl.rc( 'text', usetex=True )
-    plt.hist( errorDists, 150, range=(0.0, 30.0) )
+    plt.hist( errorDists, 150) #, range=(0.0, 30.0) )
     
     pl.ylabel( '$N( \| e \| )$' )
     pl.xlabel( '$\| e \|$' )
@@ -160,12 +181,12 @@ for phi in range(0,91,5) :
     allNodeNums   = aXmlGenP1G[-1].allNodesArray
     looseNodeNums = allNodeNums[-np.in1d(allNodeNums, fixedNodeNums)]
     
-    plt.hist( errorDists[looseNodeNums], 200, range=(0.0, 30.0) )
+    plt.hist( errorDists[looseNodeNums], 200)#, range=(0.0, 30.0) )
     
     pl.ylabel( '$N( \| e \| )$' )
     pl.xlabel( '$\| e \|$' )
     pl.title( '$\phi=%i$' %phi )
-    pl.ylim( (0,500) )
+    #pl.ylim( (0,500) )
     pl.grid()
     
     f = plt.gcf()

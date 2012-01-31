@@ -10,11 +10,12 @@ import stlBinary2stlASCII
 import vtkVolMeshHandler as vmh
 from getNodesCloseToMask import getNodesWithtinMask
 import xmlModelGenerator as xmlGen
+import materialSetGenerator as matGen
 
 
 class numericalBreastPhantom:
 
-    def __init__( self, outDir, edgeLength, meshlabSript = None ):
+    def __init__( self, outDir, edgeLength, meshlabSript=None, tetgenVol=75, tetgenQ=1.42, timeStep=1e-4, totalTime=1, damping=50 ):
         
         self.outDir               = outDir
         
@@ -40,6 +41,12 @@ class numericalBreastPhantom:
         self.edgeLength           = edgeLength
         self.bottomPlateDiameter  = 170.0     # shape of the plate given in mm    
         self.meshlabScript        = meshlabSript
+        self.tetgenVolume         = tetgenVol
+        
+        self.totalTime            = totalTime
+        self.timeStep             = timeStep
+        self.damping              = damping
+        
         
         self._breastVolIntensity  = 255.
         self._chestWallIntensity  = 64.
@@ -188,9 +195,9 @@ class numericalBreastPhantom:
         volMeshCommand = 'tetgen'
         
         if self.meshlabScript == None : 
-            volMeshParams  = ' -pq1.42a75K ' + self.outSurfMeshSTL 
+            volMeshParams  = ' -pq1.42a' + str( self.tetgenVolume ) + 'K ' + self.outSurfMeshSTL 
         else :
-            volMeshParams  = ' -pq1.42a75K ' + self.outSurfMeshImproSTL
+            volMeshParams  = ' -pq1.42a' + str( self.tetgenVolume ) + 'K ' + self.outSurfMeshImproSTL
             
         cmdEx.runCommand(volMeshCommand, volMeshParams )
         os.chdir( curDir )
@@ -201,13 +208,20 @@ class numericalBreastPhantom:
     def _prepareXMLFile( self ):
         ''' Execute those parts, which need to be executed once only.
         '''
+        
+        #
+        # find the fixed nodes
+        #
         self.mesh = vmh.vtkVolMeshHandler( self.outVolMesh )
         
         ( self.ptsFixChest, self.idxFixChest ) = getNodesWithtinMask( self.outNiiChestImageName, 128., 
                                                                       self.mesh.volMeshPoints, 
                                                                       self.mesh.surfMeshPoints )
         
-        
+        #
+        # find the skin element nodes
+        #
+        matGen.materialSetGenerator(self.mesh.volMeshCells, self.mesh.volMeshCells, self.outNiiImageName, self.outNiiAirImageName, self.outVolMesh, 255, 13, 14, 3, chestWallMaskImage)
         
     
     def generateXMLmodelFatOnly( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
@@ -246,7 +260,10 @@ class numericalBreastPhantom:
         
         fatGen.setGravityConstraint( gravityVector, gravityMagnitude, fatGen.allNodesArray, 'RAMP' )
         fatGen.setOutput( 5000, 'U' )
-        fatGen.setSystemParameters( timeStep=1e-4, totalTime=1, dampingCoefficient=50, hgKappa=0.05, density=1000 )    
+        fatGen.setSystemParameters( timeStep           = self.timeStep, 
+                                    totalTime          = self.totalTime, 
+                                    dampingCoefficient = self.damping, 
+                                    hgKappa = 0.05, density = 1000 )    
         fatGen.writeXML( self.outXmlModelFat )
         
         return fatGen
