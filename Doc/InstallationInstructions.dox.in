@@ -59,6 +59,14 @@ a csh and the file to edit is ~/.uclcs-csh-options.
 <li> A short-cut will enable you to run NiftyView.
 <li> Command line programs will be in "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@\bin"
 <li> Scripts will not be available.
-<li> Note: When the installer finishes there is a checkbox to launch NiftyView. This currently does not work, and NiftyView should be run from the Start menu.
+</ol>
+
+\section Running the NiftyView application
+
+Once correctly installed, NiftyView can be run as follows:
+<ol>
+<li> On a Mac, you can find the NiftyView icon in the /Applications/@NIFTK_DEPLOY_NAME@ and drag it to the dock, or create an alias on your Desktop and run that. On the command line, the program is available as NiftyView.
+<li> On Linux, you should run NiftyView.sh
+<li> On Windows, you can launch NiftyView from the Start menu then @NIFTK_DEPLOY_NAME@ then NiftyView, or from the Desktop icon if you selected that option, and also from the command line if you chose to add it to the system or user PATH. 
 </ol>
 */
