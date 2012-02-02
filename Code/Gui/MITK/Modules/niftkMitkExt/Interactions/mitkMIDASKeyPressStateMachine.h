@@ -42,6 +42,9 @@ class NIFTKMITKEXT_EXPORT MIDASKeyPressResponder
 {
 public:
 
+  MIDASKeyPressResponder() {}
+  virtual ~MIDASKeyPressResponder() {}
+
   /// \brief Move anterior a slice.
   virtual bool MoveAnterior() = 0;
 
