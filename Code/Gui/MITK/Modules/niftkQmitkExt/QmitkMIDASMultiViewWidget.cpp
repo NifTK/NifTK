@@ -54,6 +54,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     int defaultNumberOfColumns,
     QWidget* parent, Qt::WindowFlags f)
 : QWidget(parent, f)
+, mitk::MIDASKeyPressResponder()
 , m_LayoutForStackingRenderWindows(NULL)
 , m_LayoutForRenderWindows(NULL)
 , m_LayoutForLayoutButtons(NULL)
@@ -223,6 +224,13 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForLayoutButtons->addWidget(m_RowsSpinBox, 0, 10);
   m_LayoutForLayoutButtons->addWidget(m_ColumnsLabel, 0, 11);
   m_LayoutForLayoutButtons->addWidget(m_ColumnsSpinBox, 0, 12);
+
+  // Trac #1294, these deemed to be 'not so useful', so making UI simpler for now.
+  m_2x1LayoutButton->setVisible(false);
+  m_3x1LayoutButton->setVisible(false);
+  m_2x3LayoutButton->setVisible(false);
+  m_3x2LayoutButton->setVisible(false);
+  m_5x5LayoutButton->setVisible(false);
 
   m_LayoutForDropRadioButtons->addWidget(m_DropLabel, 0, 0);
   m_LayoutForDropRadioButtons->addWidget(m_DropSingleRadioButton, 0, 1);
