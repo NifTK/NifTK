@@ -29,7 +29,7 @@
 #include <QmitkNiftyViewWorkbenchWindowAdvisor.h>
 
 const std::string QmitkNiftyViewAppWorkbenchAdvisor::DEFAULT_PERSPECTIVE_ID =
-    "uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective";
+    "uk.ac.ucl.cmic.gui.qt.niftyview.cmicperspective";
 
 void
 QmitkNiftyViewAppWorkbenchAdvisor::Initialize(berry::IWorkbenchConfigurer::Pointer configurer)
