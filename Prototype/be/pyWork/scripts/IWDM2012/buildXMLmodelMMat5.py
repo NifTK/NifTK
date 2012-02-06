@@ -50,10 +50,20 @@ F3DnumberOfLevels2         = 6
 F3DmaxIterations2          = 400
 F3Dgpu2                    = True
 
-matParamsFat              = [  500, 50000 ]
-matParamsGland            = [  750, 50000 ]
-matParamsMuscle           = [ 1000, 50000 ]
-matParamsSkin             = [ 2500, 50000 ]
+#matModel                  = 'NH'
+#matParamsFat              = [  500, 50000 ]
+#matParamsGland            = [  750, 50000 ]
+#matParamsMuscle           = [ 1000, 50000 ]
+#matParamsSkin             = [ 2500, 50000 ]
+
+matModel                  = 'AB'
+matParamsFat              = [  500, 10, 50000 ]
+matParamsGland            = [  750, 10, 50000 ]
+matParamsMuscle           = [ 1000, 10, 50000 ]
+matParamsSkin             = [ 2500, 10, 50000 ]
+
+
+
 
 updateFactor              = 1.0
 numIterations             = 5
@@ -242,7 +252,7 @@ for i in range( pectSurfMeshPoints.shape[0] ) :
 dispVects = np.array( dispVects ) 
 pectSurfMeshPointsDef = pectSurfMeshPoints + dispVects
 
-# write the deformed surface to stl-file for further 
+# write the deformed surface to stl-file for further use
 defPts = vtk.vtkPoints()
 defPts.SetData( VN.numpy_to_vtk(pectSurfMeshPointsDef) )
 
@@ -313,12 +323,12 @@ offsetArray[:,1] = offsetVal
 print('Generate FEM model: sliding.')
 genS = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4' )
 
-genS.setMaterialElementSet( 'NH', 'FAT',   matParamsFat, matGen2.fatElemetns    )
-genS.setMaterialElementSet( 'NH', 'SKIN',  matParamsSkin, matGen2.skinElements   )
-genS.setMaterialElementSet( 'NH', 'GLAND', matParamsGland, matGen2.glandElements  )
+genS.setMaterialElementSet( matModel, 'FAT',   matParamsFat, matGen2.fatElemetns    )
+genS.setMaterialElementSet( matModel, 'SKIN',  matParamsSkin, matGen2.skinElements   )
+genS.setMaterialElementSet( matModel, 'GLAND', matParamsGland, matGen2.glandElements  )
 
 if matGen2.muscleElements.shape != 0 :
-    genS.setMaterialElementSet( 'NH', 'MUSCLE', matParamsMuscle, matGen2.muscleElements )
+    genS.setMaterialElementSet( matModel, 'MUSCLE', matParamsMuscle, matGen2.muscleElements )
 
 genS.setContactSurface( pectSurfMeshPointsDef[:,0:3] / 1000., pectSurfMeshPolys[ : , 1:4 ], allNodesArray2, 'T3' )
 
@@ -492,12 +502,12 @@ for it in range( numIterations ) :
     print('Generate FEM model: sliding and displacement.')
     genSD = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4' )
     
-    genSD.setMaterialElementSet( 'NH', 'FAT',    matParamsFat, matGen2.fatElemetns    )
-    genSD.setMaterialElementSet( 'NH', 'SKIN',   matParamsSkin, matGen2.skinElements   )
-    genSD.setMaterialElementSet( 'NH', 'GLAND',  matParamsGland, matGen2.glandElements  )
+    genSD.setMaterialElementSet( matModel, 'FAT',    matParamsFat, matGen2.fatElemetns    )
+    genSD.setMaterialElementSet( matModel, 'SKIN',   matParamsSkin, matGen2.skinElements   )
+    genSD.setMaterialElementSet( matModel, 'GLAND',  matParamsGland, matGen2.glandElements  )
     
     if matGen2.muscleElementMidPoints.shape[0] != 0 :
-        genSD.setMaterialElementSet( 'NH', 'MUSCLE', matParamsMuscle, matGen2.muscleElements )
+        genSD.setMaterialElementSet( matModel, 'MUSCLE', matParamsMuscle, matGen2.muscleElements )
     
     genSD.setContactSurface( pectSurfMeshPointsDef[:,0:3] / 1000., pectSurfMeshPolys[ : , 1:4 ], allNodesArray2, 'T3' )
     

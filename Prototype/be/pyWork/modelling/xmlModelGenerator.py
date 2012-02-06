@@ -187,7 +187,7 @@ class xmlModelGenrator :
             mat.setAttribute( 'Name', self.materialSets[i][1] )
             
             elaParams = doc.createElement( 'ElasticParams' )
-            elaParams.setAttribute( 'NumParams', '%i' % len(self.materialSets[i][2] ) )
+            elaParams.setAttribute( 'NumParams', '%i' % len( self.materialSets[i][2] ) )
             elaParamEntries = doc.createTextNode('%i %i' % ( self.materialSets[i][2][0],self.materialSets[i][2][1] ) )
             elaParams.appendChild( elaParamEntries )
             

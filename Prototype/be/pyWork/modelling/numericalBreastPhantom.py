@@ -221,7 +221,12 @@ class numericalBreastPhantom:
         #
         # find the skin element nodes
         #
-        matGen.materialSetGenerator(self.mesh.volMeshCells, self.mesh.volMeshCells, self.outNiiImageName, self.outNiiAirImageName, self.outVolMesh, 255, 13, 14, 3, chestWallMaskImage)
+        matGen.materialSetGenerator( self.mesh.volMeshCells, 
+                                     self.mesh.volMeshCells, 
+                                     self.outNiiImageName, 
+                                     self.outNiiAirImageName, 
+                                     self.outVolMesh, 255, 13, 14, 3, 
+                                     chestWallMaskImage=None )
         
     
     def generateXMLmodelFatOnly( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
