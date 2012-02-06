@@ -126,11 +126,13 @@ int main(int argc, char** argv)
   inputImage->FillBuffer(0.0); 
   
   // Threhsold for p-values. 
-  double threshold = atof(argv[5]); 
-  std::cout << "p-value threshold=" << threshold << std::endl;
+  double lower_threshold = atof(argv[5]); 
+  std::cout << "p-value lower_threshold=" << lower_threshold << std::endl;
+  double upper_threshold = atof(argv[6]); 
+  std::cout << "p-value upper_threshold=" << upper_threshold << std::endl;
   
   // Which array? 
-  const char* arrayName = argv[6]; 
+  const char* arrayName = argv[7]; 
   std::cout << "array name=" << arrayName << std::endl;
   
   // Weight file. 
@@ -139,15 +141,15 @@ int main(int argc, char** argv)
   std::string blurOption; 
   std::string blurFlag; 
   
-  if (argc >= 8) 
+  if (argc >= 9) 
   {
-    weightFilename = argv[7]; 
+    weightFilename = argv[8]; 
     weightFile.open(weightFilename.c_str()); 
   }
-  if (argc >= 10)
+  if (argc >= 11)
   {
-    blurOption = argv[8]; 
-    blurFlag = argv[9];
+    blurOption = argv[9]; 
+    blurFlag = argv[10];
   }
   
   for (vtkIdType i = 0; i < numberOfPoints; i++)
@@ -168,16 +170,22 @@ int main(int argc, char** argv)
     
     if (numberOfArrays > 0)
     {
-      if (polyData->GetPointData()->GetArray(arrayName)->GetComponent(i, 0) <= threshold)
+      if (polyData->GetPointData()->GetArray(arrayName)->GetComponent(i, 0) >= lower_threshold 
+          && polyData->GetPointData()->GetArray(arrayName)->GetComponent(i, 0) <= upper_threshold) 
+      {
         inputImage->SetPixel(index, 9999.0); 
+      }
     }
     else
     {
       // std::cout << "scalar=" << polyData->GetPointData()->GetScalars()->GetComponent(i, 0) << std::endl; 
       if (weightFilename.length() <= 0)
       {
-        if (polyData->GetPointData()->GetScalars()->GetComponent(i, 0) <= threshold)
+        if (polyData->GetPointData()->GetScalars()->GetComponent(i, 0) >= lower_threshold 
+            && polyData->GetPointData()->GetScalars()->GetComponent(i, 0) <= upper_threshold)
+        {
           inputImage->SetPixel(index, 9999.0); 
+        }
       }
       else
       {
