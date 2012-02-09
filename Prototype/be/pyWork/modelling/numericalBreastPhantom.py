@@ -43,6 +43,11 @@ class numericalBreastPhantom:
         self.meshlabScript        = meshlabSript
         self.tetgenVolume         = tetgenVol
         
+        self.fatMaterialType      = 'NH'
+        self.fatMaterialParams    = [ 100, 50000]
+        self.skinMaterialType     = 'NH'
+        self.skinMaterialParams   = [1000, 50000]
+        
         self.totalTime            = totalTime
         self.timeStep             = timeStep
         self.damping              = damping
@@ -221,19 +226,21 @@ class numericalBreastPhantom:
         #
         # find the skin element nodes
         #
-        matGen.materialSetGenerator( self.mesh.volMeshCells, 
-                                     self.mesh.volMeshCells, 
-                                     self.outNiiImageName, 
-                                     self.outNiiAirImageName, 
-                                     self.outVolMesh, 255, 13, 14, 3, 
-                                     chestWallMaskImage=None )
+        self.materialGen = matGen.materialSetGenerator( self.mesh.volMeshPoints, 
+                                                        self.mesh.volMeshCells, 
+                                                        self.outNiiImageName, 
+                                                        self.outNiiAirImageName, 
+                                                        self.outVolMesh, 255, 13, 14, 3, 
+                                                        chestWallMaskImage=None )
         
+    
+    
     
     def generateXMLmodelFatOnly( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
                                  fileIdentifier=None, extMeshNodes=None ):
         ''' @summary: Generates the xml model
-            @param gravityMagnitude: Assumed gravitational acceleration
             @param gravityVector: Direction of gravity
+            @param gravityMagnitude: Assumed gravitational acceleration
             @param extMeshNodes: np-Array with the mesh nodes. Must be valid for the mesh generated 
                                  within this class. Assumed to be given in mm (millimetre).
             @param fileIdentifier: Extension which is used to specify the model file. 
@@ -272,6 +279,61 @@ class numericalBreastPhantom:
         fatGen.writeXML( self.outXmlModelFat )
         
         return fatGen
+
+
+
+
+    def generateXMLmodel( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
+                          fileIdentifier=None, extMeshNodes=None, skin=True ):
+        ''' @summary: Generates the xml model
+            @param gravityVector: Direction of gravity
+            @param gravityMagnitude: Assumed gravitational acceleration
+            @param extMeshNodes: np-Array with the mesh nodes. Must be valid for the mesh generated 
+                                 within this class. Assumed to be given in mm (millimetre).
+            @param fileIdentifier: Extension which is used to specify the model file. 
+            @return: the xmlModelGenerator Instance
+        '''
+        
+        if not os.path.exists(self.outVolMesh) :
+            print('Error: Surface mesh does not exists')
+            return
+        
+        
+        if fileIdentifier != None :
+            self.outXmlModelFat = self._outXmlModelFat.split('.xm')[0] + str( fileIdentifier ) + '.xml'
+        else :
+            self.outXmlModelFat = self._outXmlModelFat
+        
+        self.mesh = vmh.vtkVolMeshHandler( self.outVolMesh )
+               
+        if (extMeshNodes == None) :
+            gen = xmlGen.xmlModelGenrator( self.mesh.volMeshPoints/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
+        else :
+            gen = xmlGen.xmlModelGenrator( extMeshNodes/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
+        
+        gen.setFixConstraint( self.idxFixChest, 0 )
+        gen.setFixConstraint( self.idxFixChest, 1 )
+        gen.setFixConstraint( self.idxFixChest, 2 )
+        
+        
+        if skin:
+            # Case skin and fat 
+            gen.setMaterialElementSet( self.skinMaterialType, 'SKIN', self.skinMaterialParams, self.materialGen.skinElements )
+            gen.setMaterialElementSet( self.fatMaterialType,  'FAT',  self.fatMaterialParams,  self.materialGen.fatElemetns  )
+
+        else :
+            # Case: fat only 
+            gen.setMaterialElementSet( self.fatMaterialType, 'FAT', self.fatMaterialParams, gen.allElemenstArray )
+        
+        gen.setGravityConstraint( gravityVector, gravityMagnitude, gen.allNodesArray, 'RAMP' )
+        gen.setOutput( 5000, 'U' )
+        gen.setSystemParameters( timeStep           = self.timeStep, 
+                                    totalTime          = self.totalTime, 
+                                    dampingCoefficient = self.damping, 
+                                    hgKappa = 0.05, density = 1000 )    
+        gen.writeXML( self.outXmlModelFat )
+        
+        return gen
 
         
 
