@@ -19,14 +19,33 @@ from mayaviPlottingWrap import plotArrayAs3DPoints, plotVectorsAtPoints
 #imageEdgeLength = 400
 #tetgenVol       = 75
 
+#experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01/'
+#meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
+#plotDir         = experimentDir + 'plots/fatGravityRot/' 
+#imageEdgeLength = 400
+#tetgenVol       = 30
+#tetgenQ         = 1.5
+#timeStep        = 2e-5
+#totalTime       = 1.0
+#damping         = 50
 
-experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01/'
-meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
+#experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02/'
+#meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
+#plotDir         = experimentDir + 'plots/fatGravityRot/' 
+#imageEdgeLength = 400
+#tetgenVol       = 20
+#tetgenQ         = 1.5
+#timeStep        = 2e-5
+#totalTime       = 1.0
+#damping         = 50
+
+experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03/'
+meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
 plotDir         = experimentDir + 'plots/fatGravityRot/' 
 imageEdgeLength = 400
-tetgenVol       = 30
+tetgenVol       = 10
 tetgenQ         = 1.5
-timeStep        = 2e-5
+timeStep        = 1e-6
 totalTime       = 1.0
 damping         = 50
 

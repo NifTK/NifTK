@@ -26,7 +26,6 @@ import pointWithinTetrahedron as pInTet
 
 
 
-
 fastDebug = False
 
 useFEIR                   = False
@@ -61,7 +60,6 @@ matParamsFat              = [  500, 10, 50000 ]
 matParamsGland            = [  750, 10, 50000 ]
 matParamsMuscle           = [ 1000, 10, 50000 ]
 matParamsSkin             = [ 2500, 10, 50000 ]
-
 
 
 
@@ -125,7 +123,7 @@ offsetPix = np.array( [259,91,0] )
 
 # get the image spacing
 # as medSurfer only considers the pixel spacing we can ignore the origin for now 
-labelImg   = nib.load( labelImage )
+labelImg       = nib.load( labelImage )
 affineTrafoMat = labelImg.get_affine()
 
 # scale the offset vector
