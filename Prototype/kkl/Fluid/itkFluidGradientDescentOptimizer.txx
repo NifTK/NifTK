@@ -218,7 +218,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   if (this->m_IsSymmetric)
   {
     m_FluidVelocityToFixedImageDeformationFilter->SetIsNegativeVelocity(true); 
-    m_FluidVelocityToFixedImageDeformationFilter->SetInputMask(this->m_AsgdMask); 
+    // m_FluidVelocityToFixedImageDeformationFilter->SetInputMask(this->m_AsgdMask); 
     m_FluidVelocityToFixedImageDeformationFilter->SetCurrentDeformationField(m_FixedImageTransform->GetDeformationField()); 
     m_FluidVelocityToFixedImageDeformationFilter->SetVelocityField(this->m_CurrentVelocityField); 
     m_FluidVelocityToFixedImageDeformationFilter->UpdateLargestPossibleRegion();
