@@ -224,17 +224,12 @@ class numericalBreastPhantom:
                                                                       self.mesh.surfMeshPoints )
         
         #
-        # find the skin element nodes
+        # find the skin element nodes - will be done when needed...
         #
-        self.materialGen = matGen.materialSetGenerator( self.mesh.volMeshPoints, 
-                                                        self.mesh.volMeshCells, 
-                                                        self.outNiiImageName, 
-                                                        self.outNiiAirImageName, 
-                                                        self.outVolMesh, 255, 13, 14, 3, 
-                                                        chestWallMaskImage=None )
-        
+        self.materialGen = None
     
     
+
     
     def generateXMLmodelFatOnly( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
                                  fileIdentifier=None, extMeshNodes=None ):
@@ -245,6 +240,7 @@ class numericalBreastPhantom:
                                  within this class. Assumed to be given in mm (millimetre).
             @param fileIdentifier: Extension which is used to specify the model file. 
             @return: the xmlModelGenerator Instance
+            @deprecated: Use the more general method generateXMLmodel instead.
         '''
         
         if not os.path.exists(self.outVolMesh) :
@@ -298,7 +294,14 @@ class numericalBreastPhantom:
             print('Error: Surface mesh does not exists')
             return
         
-        
+        if self.materialGen == None:
+            self.materialGen = matGen.materialSetGenerator( self.mesh.volMeshPoints, 
+                                                            self.mesh.volMeshCells, 
+                                                            self.outNiiImageName, 
+                                                            self.outNiiAirImageName, 
+                                                            self.outVolMesh, 255, 13, 14, 3, 
+                                                            chestWallMaskImage=None )
+            
         if fileIdentifier != None :
             self.outXmlModelFat = self._outXmlModelFat.split('.xm')[0] + str( fileIdentifier ) + '.xml'
         else :

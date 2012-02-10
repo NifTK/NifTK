@@ -48,7 +48,7 @@ tetgenQ         = 1.5
 timeStep        = 1e-6
 totalTime       = 1.0
 damping         = 50
-
+simSkin         = False
 
 if not os.path.exists(plotDir):
     print( 'Error: Cannot find specified plotting directory' )
@@ -107,7 +107,7 @@ for phi in range(0,91,5) :
     #
     # 1) prone simulation
     #
-    xmlGenP1G = phantom.generateXMLmodelFatOnly( gravProne, 10, p1G )
+    xmlGenP1G = phantom.generateXMLmodel( gravProne, 10, p1G, skin=simSkin)
     aXmlGenP1G.append(xmlGenP1G)
     
     niftySimCmd    = 'niftySim'
@@ -130,7 +130,7 @@ for phi in range(0,91,5) :
     # 2) build model from loaded states with
     # 3) inversed and doubled gravity
     #
-    xmlGenP1S2G = phantom.generateXMLmodelFatOnly( gravSupine, 20, p1s2G, deformP1G.deformedNodes * 1000. )
+    xmlGenP1S2G = phantom.generateXMLmodel( gravSupine, 20, p1s2G, deformP1G.deformedNodes * 1000., skin=simSkin )
     aXmlGenP1S2G.append( xmlGenP1S2G )
      
     niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport '
@@ -149,7 +149,7 @@ for phi in range(0,91,5) :
     #
     # Now run the supine simulation from the reference state
     #
-    xmlGenS1G = phantom.generateXMLmodelFatOnly( gravSupine, 10, s1G )
+    xmlGenS1G = phantom.generateXMLmodel( gravSupine, 10, s1G, skin=simSkin )
     aXmlGenS1G.append( xmlGenS1G )
     
     niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport '
