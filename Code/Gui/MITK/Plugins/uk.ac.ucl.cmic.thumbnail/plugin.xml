@@ -8,4 +8,10 @@
           icon="resources/icon.xpm" />
   </extension>
 
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.ThumbnailViewPreferencePage" name="CMIC Thumbnail" class="QmitkThumbnailViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.ThumbnailViewPreferencePageKeywords"></keywordreference>
+    </page>
+  </extension>
+  
 </plugin>

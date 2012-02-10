@@ -22,6 +22,7 @@
 
  ============================================================================*/
 
+#include "QmitkThumbnailViewPreferencePage.h"
 #include "ThumbnailViewActivator.h"
 #include "ThumbnailView.h"
 #include <QtPlugin>
@@ -31,6 +32,7 @@ namespace mitk {
 void ThumbnailViewActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(ThumbnailView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkThumbnailViewPreferencePage, context);
 }
 
 void ThumbnailViewActivator::stop(ctkPluginContext* context)

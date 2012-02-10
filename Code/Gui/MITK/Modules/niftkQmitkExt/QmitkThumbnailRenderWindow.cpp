@@ -62,8 +62,8 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_BoundingBoxNode->SetBoolProperty("visible", false); // globally turn it off, then we only turn it on in thumbnail (this) window.
   this->setBoundingBoxVisible(false);
   this->setBoundingBoxColor(1, 0, 0);
-  this->setBoundingBoxOpacity(0.5);
-  this->setBoundingBoxLineThickness(2);
+  this->setBoundingBoxOpacity(1);
+  this->setBoundingBoxLineThickness(1);
   this->setBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
 
   m_MouseEventEater = new QmitkMouseEventEater();

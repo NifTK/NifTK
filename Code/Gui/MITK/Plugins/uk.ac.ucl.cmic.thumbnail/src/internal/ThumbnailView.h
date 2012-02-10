@@ -25,7 +25,8 @@
 #ifndef ThumbnailView_h
 #define ThumbnailView_h
 
-#include "berryQtViewPart.h"
+#include "QmitkFunctionalityWithoutStdMultiWidget.h"
+#include "berryIPreferencesService.h"
 #include "ui_ThumbnailViewControls.h"
 
 /**
@@ -37,7 +38,7 @@
  * widget QmitkThumnailRenderWindow, and does almost nothing else.
  * Do not try and add loads more functionality here.
 */
-class ThumbnailView : public berry::QtViewPart
+class ThumbnailView : public QmitkFunctionalityWithoutStdMultiWidget
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -54,14 +55,16 @@ public:
   /// \brief Called from framework to instantiate the Qt GUI components.
   virtual void CreateQtPartControl(QWidget *parent);
 
-  /// \brief Required implementation from berry::QtViewPart
-  virtual void SetFocus() {}
+  /// \brief Called when preferences are updated.
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
 private:
 
+  /// \brief Retrieve's the pref values from preference service, and store locally.
+  void RetrievePreferenceValues();
+
   // All the controls for the main view part.
   Ui::ThumbnailViewControls *m_Controls;
-
 };
 
 #endif // ThumbnailView_h

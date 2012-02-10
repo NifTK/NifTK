@@ -141,7 +141,7 @@ void QmitkImageLookupTablesPreferencePage::Update()
   {
     m_UseLevelWindowRadioButton->setChecked( true );
   }
-  m_PercentageOfDataRangeDoubleSpinBox->setValue(m_ImageLookupTablesPreferencesNode->GetDouble(PERCENTAGE_NAME, 100));
+  m_PercentageOfDataRangeDoubleSpinBox->setValue(m_ImageLookupTablesPreferencesNode->GetDouble(PERCENTAGE_NAME, 50));
   m_Precision->setValue(m_ImageLookupTablesPreferencesNode->GetInt(PRECISION_NAME, 2));
 }
 
