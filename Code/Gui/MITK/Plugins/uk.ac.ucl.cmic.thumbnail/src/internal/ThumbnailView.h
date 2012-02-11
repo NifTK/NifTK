@@ -25,20 +25,27 @@
 #ifndef ThumbnailView_h
 #define ThumbnailView_h
 
-#include "QmitkFunctionalityWithoutStdMultiWidget.h"
+#include "QmitkFunctionality.h"
+#include "berryIPartListener.h"
+#include "berryIPreferences.h"
 #include "berryIPreferencesService.h"
+#include "berryIBerryPreferences.h"
+#include "berryISelection.h"
+#include "berryISelectionProvider.h"
+#include "berryISelectionListener.h"
 #include "ui_ThumbnailViewControls.h"
-
 /**
  * \class ThumbnailView
  * \brief Provides a thumbnail view of the currently focused QmitkRenderWindow.
  * \ingroup uk.ac.ucl.cmic.thumbnail_internal
  *
- * Note: This class should just be a wrapper that instantiates the
+ * Note: This class should basically just be a wrapper that instantiates the
  * widget QmitkThumnailRenderWindow, and does almost nothing else.
- * Do not try and add loads more functionality here.
+ * Do not try and add loads more functionality here, just the necessary plumbing.
+ *
+ * \sa QmitkThumbnailRenderWindow
 */
-class ThumbnailView : public QmitkFunctionalityWithoutStdMultiWidget
+class ThumbnailView : public QmitkFunctionality
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -46,6 +53,7 @@ class ThumbnailView : public QmitkFunctionalityWithoutStdMultiWidget
   
 public:
 
+  berryObjectMacro(ThumbnailView)
   ThumbnailView();
   virtual ~ThumbnailView();
 
@@ -57,6 +65,9 @@ public:
 
   /// \brief Called when preferences are updated.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+
+  /// \brief This is not an exclusive functionality, as it just listens to input and updates itself, and can happily live alongside other functionalities.
+  virtual bool IsExclusiveFunctionality() const { return false; }
 
 private:
 

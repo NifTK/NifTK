@@ -38,22 +38,31 @@ class QmitkWheelEventEater;
 
 /**
  * \class QmitkThumbnailRenderWindow
- * \brief Subclass of QmitkRenderWindow to listen to the currently focussed QmitkRenderWindow
+ * \brief Subclass of QmitkRenderWindow to listen to the currently focused QmitkRenderWindow
  * and provide a zoomed-out view with an overlay of a bounding box to provide the
- * current size of the currently focussed QmitkRenderWindow's viewport size.
+ * current size of the currently focused QmitkRenderWindow's view-port size.
  *
- * The client must provide an mitk::DataStorage before using this widget.
- * So the correct usage is to construct the object and immediately set the DataStorage.
- * When the DataStorage is set, the widget also responds to any ChangedNodeEvent events.
+ * The client must
+ * <pre>
+ * 1. Create widget
+ * 2. Provide a DataStorage
+ * 3. Call "Activated" to register with the FocusManager when the widget is considered active (eg. on screen).
+ * 4. Call "Deactivated" to de-register with the FocusManager when the widget is considered not-active (eg. off screen).
+ * </pre>
  *
  * This class provides methods to set the bounding box colour, opacity, line thickness,
- * and rendering layer. It also has methods as to whether we respond to mouse or wheel events.
+ * and rendering layer. These values would normally be set via preferences pages in the GUI.
+ * The preferences part is done in the ThumbnailView, but this widget could potentially be placed
+ * in any layout, as a small preview window of sorts.
+ *
+ * This widget also has methods to decide whether we respond to mouse or wheel events.
  * By default the design was to not allow wheel events, as this would cause the slice to change,
  * which should then be propagated back to all other windows, and we don't know which windows
  * are listening, or need updating. However, with regards to left mouse, click and move events,
  * where the user is selecting the focus, then this is automatically passed to the global
  * mitk::FocusManager which propagates to all registered views. So mouse events default to on.
  *
+ * \sa ThumbnailView
  * \sa QmitkRenderWindow
  * \sa mitk::DataStorage
  * \sa mitk::FocusManager
@@ -72,6 +81,12 @@ public:
 
   /// \brief A valid dataStorage must be passed in so this method does assert(dataStorage).
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
+
+  /// \brief Connects the widget to the FocusManager.
+  void Activated();
+
+  /// \brief Disconnects the widget from the FocusManager.
+  void Deactivated();
 
   /// \brief Gets the bounding box color, default is red.
   QColor boundingBoxColor() const;
@@ -161,6 +176,9 @@ private:
   // Updates the slice and time step on the SliceNavigationController.
   void UpdateSliceAndTimeStep();
 
+  // Called to remove all observers from tracked objects.
+  void RemoveObserversFromTrackedObjects();
+
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
 
@@ -191,20 +209,20 @@ private:
   // The actual bounding box, which this class owns and manages.
   mitk::Cuboid::Pointer m_BoundingBox;
 
-  // We do a lot with renderer specific properties, so Im storing the one from the widget, as it is fixed.
+  // We do a lot with renderer specific properties, so Im storing the one from this widget, as it is fixed.
   mitk::BaseRenderer::Pointer m_BaseRenderer;
 
   // This is set to the currently tracked window. We don't construct or own it, so don't delete it.
   vtkRenderWindow *m_TrackedRenderWindow;
 
   // This is set to the current world geometry.
-  mitk::Geometry3D::Pointer m_TrackedWorldGeometry;
+  mitk::Geometry3D* m_TrackedWorldGeometry;
 
   // Keep track of this to register and unregister event listeners.
-  mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;
+  mitk::DisplayGeometry* m_TrackedDisplayGeometry;
 
   // Keep track of this to register and unregister event listeners.
-  mitk::SliceNavigationController::Pointer m_TrackedSliceNavigator;
+  mitk::SliceNavigationController* m_TrackedSliceNavigator;
 
   // Squash all mouse events.
   QmitkMouseEventEater* m_MouseEventEater;

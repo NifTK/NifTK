@@ -25,6 +25,7 @@
 #include "ThumbnailView.h"
 #include "berryIPreferencesService.h"
 #include "berryIBerryPreferences.h"
+#include "berryIWorkbenchPage.h"
 #include "mitkIDataStorageService.h"
 #include "mitkDataStorage.h"
 #include "QmitkThumbnailViewPreferencePage.h"
@@ -38,6 +39,8 @@ ThumbnailView::ThumbnailView()
 
 ThumbnailView::~ThumbnailView()
 {
+  m_Controls->m_RenderWindow->Deactivated();
+
   if (m_Controls != NULL)
   {
     delete m_Controls;
@@ -51,17 +54,17 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::ThumbnailViewControls();
     m_Controls->setupUi(parent);
 
-    // Retrieve and store preference values.
     RetrievePreferenceValues();
 
-    // Connect thumbnail render window to data storage.
     mitk::IDataStorageService::Pointer service =
       berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
-    if (service.IsNotNull())
-    {
-      mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
-      m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
-    }
+    assert(service);
+
+    mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
+    assert(dataStorage);
+
+    m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
+    m_Controls->m_RenderWindow->Activated();
   }
 }
 
@@ -75,6 +78,8 @@ void ThumbnailView::RetrievePreferenceValues()
   berry::IPreferencesService::Pointer prefService
     = berry::Platform::GetServiceRegistry()
     .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+
+  assert( prefService );
 
   berry::IBerryPreferences::Pointer prefs
       = (prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.thumbnail"))
