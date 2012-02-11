@@ -27,7 +27,7 @@
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 
-#include "QmitkFunctionalityWithoutStdMultiWidget.h"
+#include "QmitkFunctionality.h"
 #include "berryIPartListener.h"
 #include <berryISelectionListener.h>
 #include <QWidget>
@@ -42,7 +42,7 @@ class QmitkMIDASMultiViewWidget;
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class CMIC_QT_COMMON QmitkMIDASBaseFunctionality : public QmitkFunctionalityWithoutStdMultiWidget
+class CMIC_QT_COMMON QmitkMIDASBaseFunctionality : public QmitkFunctionality
 {
 
   Q_OBJECT

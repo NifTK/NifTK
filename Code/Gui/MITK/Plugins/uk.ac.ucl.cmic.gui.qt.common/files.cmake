@@ -1,7 +1,6 @@
 SET(SRC_CPP_FILES
-  mitkMIDASDataStorageEditorInput.cpp
-  QmitkFunctionalityWithoutStdMultiWidget.cpp
   QmitkCMICBaseFunctionality.cpp
+  mitkMIDASDataStorageEditorInput.cpp
   QmitkMIDASBaseFunctionality.cpp
   QmitkMIDASBaseSegmentationFunctionality.cpp
   QmitkMIDASImageAndSegmentationSelectorWidget.cpp
@@ -11,7 +10,6 @@ SET(SRC_CPP_FILES
 
 SET(INTERNAL_CPP_FILES
   CommonActivator.cpp
-  QmitkFunctionalityUtil.cpp
 )
 
 SET(UI_FILES
