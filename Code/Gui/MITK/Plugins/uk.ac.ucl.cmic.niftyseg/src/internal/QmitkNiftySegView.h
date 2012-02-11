@@ -26,13 +26,13 @@
 
 #include "ui_QmitkNiftySegViewControls.h"
 #include "berryISelectionListener.h"
-#include "berryQtViewPart.h"
+#include "QmitkFunctionality.h"
 
 /**
  * \class QmitkNiftySegView
  * \brief GUI interface to enable the user to run the NiftySeg segmentation algorithm.
 */
-class QmitkNiftySegView : public berry::QtViewPart
+class QmitkNiftySegView : public QmitkFunctionality
 {  
   Q_OBJECT
   
@@ -42,8 +42,6 @@ class QmitkNiftySegView : public berry::QtViewPart
 
     QmitkNiftySegView();
     virtual ~QmitkNiftySegView();
-    virtual void SetFocus() {};
-
     virtual void CreateQtPartControl(QWidget *parent);
 
   protected slots:

@@ -25,7 +25,7 @@
 #ifndef SurgicalGuidanceView_h
 #define SurgicalGuidanceView_h
 
-#include "berryQtViewPart.h"
+#include "QmitkFunctionality.h"
 #include "ui_SurgicalGuidanceViewControls.h"
 
 
@@ -34,7 +34,7 @@
  * \brief User interface to provide Image Guided Surgery functionality.
  * \ingroup uk_ac_ucl_cmic_surgicalguidance_internal
 */
-class SurgicalGuidanceView : public berry::QtViewPart
+class SurgicalGuidanceView : public QmitkFunctionality
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -50,9 +50,6 @@ public:
 
   /// \brief Called from framework to instantiate the Qt GUI components.
   virtual void CreateQtPartControl(QWidget *parent);
-
-  /// \brief Required implementation from berry::QtViewPart
-  virtual void SetFocus() {}
 
 protected slots:
 

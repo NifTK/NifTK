@@ -25,7 +25,7 @@
 #ifndef SnapshotView_h
 #define SnapshotView_h
 
-#include "berryQtViewPart.h"
+#include "QmitkFunctionality.h"
 #include "ui_SnapshotViewControls.h"
 
 
@@ -34,7 +34,7 @@
  * \brief Simple user interface to provide screenshots of the current editor window.
  * \ingroup uk_ac_ucl_cmic_snapshot_internal
 */
-class SnapshotView : public berry::QtViewPart
+class SnapshotView : public QmitkFunctionality
 {
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -50,9 +50,6 @@ public:
 
   /// \brief Called from framework to instantiate the Qt GUI components.
   virtual void CreateQtPartControl(QWidget *parent);
-
-  /// \brief Required implementation from berry::QtViewPart
-  virtual void SetFocus() {}
 
 protected slots:
   
