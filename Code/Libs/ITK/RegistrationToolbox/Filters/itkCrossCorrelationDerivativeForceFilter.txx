@@ -26,7 +26,7 @@
 
 #include "itkCrossCorrelationDerivativeForceFilter.h"
 #include "itkConstNeighborhoodIterator.h"
-
+#include <iomanip>
 
 namespace itk {
   
@@ -133,21 +133,22 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
     numberOfVoxels++; 
   }
   
-  double factorA = crossTotal - (movingTotal*fixedTotal)/numberOfVoxels; 
-  double factorBSquare = fixedSquareTotal - (fixedTotal*fixedTotal)/numberOfVoxels; 
-  double factorCSquare = movingSqaureTotal - (movingTotal*movingTotal)/numberOfVoxels; 
-  double movingMean = movingTotal/numberOfVoxels; 
-  double fixedMean = fixedTotal/numberOfVoxels; 
-  niftkitkDebugMacro(<<"GenerateData(): numberOfVoxels=" << numberOfVoxels << ",factorA=" << factorA << ",factorBSquare=" << factorBSquare << ",factorCSquare=" << factorCSquare);
+  volatile double factorA = crossTotal - (movingTotal*fixedTotal)/numberOfVoxels; 
+  volatile double factorBSquare = fixedSquareTotal - (fixedTotal*fixedTotal)/numberOfVoxels; 
+  volatile double factorCSquare = movingSqaureTotal - (movingTotal*movingTotal)/numberOfVoxels; 
+  volatile double movingMean = movingTotal/numberOfVoxels; 
+  volatile double fixedMean = fixedTotal/numberOfVoxels; 
+  niftkitkInfoMacro(<<"GenerateData(): numberOfVoxels=" << numberOfVoxels << ",factorA=" << factorA << ",factorBSquare=" << factorBSquare << ",factorCSquare=" << factorCSquare);
   
   // factor1 = A/(BC)^2. 
-  double factor1 = factorA/(factorBSquare*factorCSquare); 
+  volatile double factor1 = factorA/(factorBSquare*factorCSquare); 
   // factor2 = A^2/(B^2*C^4)
-  double factor2 = (factorA*factorA)/(factorBSquare*factorCSquare*factorCSquare); 
+  volatile double factor2 = (factorA*factorA)/(factorBSquare*factorCSquare*factorCSquare); 
   niftkitkDebugMacro(<<"GenerateData(): R^2=" << (factorA*factorA)/(factorBSquare*factorCSquare));
   
-  double factor1Backward = factor1; 
-  double factor2Backward = (factorA*factorA)/(factorCSquare*factorBSquare*factorBSquare); 
+  volatile double factor1Backward = factor1; 
+  volatile double factor2Backward = (factorA*factorA)/(factorCSquare*factorBSquare*factorBSquare); 
+  std::cout << std::setprecision(15) << "factor1=" << factor1 << ",factor2=" << factor2 << ",factor1Backward=" << factor1Backward << ",factor2Backward=" << factor2Backward << std::endl;
   
   typedef itk::ConstNeighborhoodIterator<InputImageType> NeighborhoodIteratorType;
   typename NeighborhoodIteratorType::RadiusType radius;
@@ -191,13 +192,12 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
     //  forceImageIterator.Set(forceImageVoxel);
     //  continue; 
     //}
+    volatile double fixedImageCenter = fixedImageIterator.GetCenterPixel(); 
+    volatile double movingImageCenter = transformedImageIterator.GetCenterPixel(); 
     
     // d(R^2)/du = (factor1*(F-mF) - factor2*(M-mF)) (M(x+1) - M(x-1)). 
-    double theBigFactor = factor1*(static_cast<double>(fixedImageIterator.GetCenterPixel())-fixedMean) 
-                          - factor2*(static_cast<double>(transformedImageIterator.GetCenterPixel())-movingMean); 
-    
-    double theBigFactorBackward = factor1Backward*(static_cast<double>(transformedImageIterator.GetCenterPixel())-movingMean) 
-                                  - factor2Backward*(static_cast<double>(fixedImageIterator.GetCenterPixel())-fixedMean); 
+    volatile double theBigFactor = factor1*(fixedImageCenter-fixedMean) - factor2*(movingImageCenter-movingMean); 
+    volatile double theBigFactorBackward = factor1Backward*(movingImageCenter-movingMean) - factor2Backward*(fixedImageCenter-fixedMean); 
     
     for (int dimensinIndex = 0; dimensinIndex < TFixedImage::ImageDimension; dimensinIndex++)
     {
@@ -208,11 +208,11 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
       plusOffset.Fill(0);
       minusOffset[dimensinIndex] += -1;
       plusOffset[dimensinIndex] += 1;
-      double movingImageForce = -theBigFactor*
+      volatile double movingImageForce = -theBigFactor*
                                  (static_cast<double>(transformedImageIterator.GetPixel(plusOffset))
                                   -static_cast<double>(transformedImageIterator.GetPixel(minusOffset))); 
       
-      double fixedImageForce = -theBigFactorBackward*
+      volatile double fixedImageForce = -theBigFactorBackward*
                                 (static_cast<double>(fixedImageIterator.GetPixel(plusOffset))
                                  -static_cast<double>(fixedImageIterator.GetPixel(minusOffset)));       
       
@@ -229,8 +229,17 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
       
       if (this->m_IsSymmetric)
       {
-        forceImageVoxel[dimensinIndex] -= fixedImageForce; 
-        forceImageVoxel[dimensinIndex] /= 2.; 
+        volatile float value = (movingImageForce-fixedImageForce)/2.; 
+        forceImageVoxel[dimensinIndex] = value; 
+        
+        // Debug. 
+        //if ((forceImageVoxel[dimensinIndex] > 1e-15 && forceImageVoxel[dimensinIndex] < 1e-10) || (forceImageVoxel[dimensinIndex] < -1e-15 && forceImageVoxel[dimensinIndex] >- 1e-10))
+        {
+          //std::cout << std::setprecision(15) << transformedImageIterator.GetPixel(plusOffset) << "," << transformedImageIterator.GetPixel(minusOffset) << "," << fixedImageIterator.GetPixel(plusOffset) << "," << fixedImageIterator.GetPixel(minusOffset) << std::endl; 
+          //std::cout << std::setprecision(15) << "theBigFactor=" << theBigFactor << ",theBigFactorBackward=" << theBigFactorBackward << ",movingImageForce=" << movingImageForce << ",fixedImageForce=" << fixedImageForce << "," << forceImageVoxel << std::endl; 
+          //std::cout << "fixedMean=" << fixedMean << ",movingMean=" << movingMean << ",fixedImageIterator.GetCenterPixel()=" << fixedImageIterator.GetCenterPixel() << ",transformedImageIterator.GetCenterPixel()=" << transformedImageIterator.GetCenterPixel() << std::endl; 
+          //std::cout << fixedImageCenter-fixedMean << "," << movingImageCenter-movingMean << "," << factor1*(fixedImageCenter-fixedMean) << "," << factor2*(movingImageCenter-movingMean) << "," << factor1Backward*(movingImageCenter-movingMean) << "," << factor2Backward*(fixedImageCenter-fixedMean) << std::endl; 
+        }
       }
       
     }
