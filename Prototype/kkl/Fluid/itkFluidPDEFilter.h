@@ -89,6 +89,8 @@ public:
    */
   itkSetMacro(IsComputeVelcoity, bool); 
   itkGetMacro(IsComputeVelcoity, bool); 
+  itkSetMacro(IsSymmetric, bool); 
+  itkGetMacro(IsSymmetric, bool); 
   
 protected:
   FluidPDEFilter();
@@ -114,7 +116,7 @@ protected:
    * Calculate the instanteous velocity at each voxel given the registration force
    * and puts the output in the output image - 3D version.
    */
-   void CalculationVelocity3D(double lamda, double mu); 
+   void CalculationVelocity3D(double lamda, double mu, bool isDoingBackward); 
   
   /**
    * Normalised sine transform using 2 1D sine transform. 
@@ -216,7 +218,11 @@ protected:
    * The 3D adjoint Navier-Lame matrix operator.
    */
   NondirectionalDerivativeOperatorType m_NavierLameOperator[3][3]; 
-
+  
+  /**
+   * Solve it symmetrically?
+   */
+  bool m_IsSymmetric; 
   
 private:
   

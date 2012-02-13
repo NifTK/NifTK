@@ -119,7 +119,15 @@ FluidPDEFilter<TScalarType, NDimensions>
     }
     else if (NDimensions == 3)
     {
-      CalculationVelocity3D(this->m_Lambda, this->m_Mu);
+      niftkitkInfoMacro(<<"GenerateData(): solving forward");
+      CalculationVelocity3D(this->m_Lambda, this->m_Mu, false);
+      
+      // No actually needed. 
+      //if (this->m_IsSymmetric)
+      //{
+      //  niftkitkInfoMacro(<<"GenerateData(): solving backward");
+      //  CalculationVelocity3D(this->m_Lambda, this->m_Mu, true);
+      //}
     }
   }
   else
@@ -667,7 +675,7 @@ FluidPDEFilter<TScalarType, NDimensions>
 template<class TScalarType, unsigned int NDimensions>
 void
 FluidPDEFilter<TScalarType, NDimensions>
-::CalculationVelocity3D(double lambda, double mu)
+::CalculationVelocity3D(double lambda, double mu, bool isDoingBackward)
 {
   niftkitkDebugMacro(<<"CalculationVelocity3D():Started");
   
@@ -676,6 +684,17 @@ FluidPDEFilter<TScalarType, NDimensions>
   
   // Input image is the "force image" 
   typename InputImageType::Pointer forceImage = static_cast< InputImageType * >(this->ProcessObject::GetInput(0));
+  
+  // Reverse the force image to solve it the other way, because the fluid solve is not entirely symmetric. 
+  if (isDoingBackward)
+  {
+    typedef ImageRegionIterator<InputImageType> ForceImageRegionIteratorType; 
+    ForceImageRegionIteratorType forceImageRegionIterator(forceImage, forceImage->GetLargestPossibleRegion()); 
+    for (forceImageRegionIterator.GoToBegin(); !forceImageRegionIterator.IsAtEnd(); ++forceImageRegionIterator)
+    {
+      forceImageRegionIterator.Set(-forceImageRegionIterator.Get()); 
+    }
+  }
   
   // Output image is the "velocity image"
   typename OutputImageType::Pointer velocityImage = static_cast< OutputImageType * >(this->ProcessObject::GetOutput(0));
@@ -827,7 +846,15 @@ FluidPDEFilter<TScalarType, NDimensions>
       velocityValue[2] = velocityFactor*velocityZ[(index[2]-1)*(regionSize[1]-2)*(regionSize[0]-2)+(index[1]-1)*(regionSize[0]-2)+index[0]-1]/inverseSineTransformFactor;
       
     }
-    velocityIterator.Set(velocityValue);
+    if (!isDoingBackward)
+    {
+      velocityIterator.Set(velocityValue);
+    }
+    else
+    {
+      // Average of the forward and backward. 
+      velocityIterator.Set((velocityIterator.Get()-velocityValue)/2.); 
+    }
   }
   
   fftwf_free(velocityX);
