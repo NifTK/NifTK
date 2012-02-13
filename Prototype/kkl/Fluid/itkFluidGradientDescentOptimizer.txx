@@ -198,11 +198,26 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     niftkitkInfoMacro(<< "CalculateNextStep():Updating force");
     m_ForceFilter->UpdateLargestPossibleRegion();
     
+    // Output force image. 
+    //typedef ImageFileWriter<typename ForceFilterType::OutputImageType> ForceWriterType; 
+    //typename ForceWriterType::Pointer forceWriter = ForceWriterType::New(); 
+    //forceWriter->SetInput(m_ForceFilter->GetOutput()); 
+    //forceWriter->SetFileName("force.nii"); 
+    //forceWriter->Update(); 
+    
+    m_FluidPDESolver->SetIsSymmetric(this->m_IsSymmetric); 
     m_FluidPDESolver->SetInput(this->m_ForceFilter->GetOutput());
     niftkitkInfoMacro(<< "CalculateNextStep():Updating solver");
     m_FluidPDESolver->UpdateLargestPossibleRegion();
     this->m_CurrentVelocityField = m_FluidPDESolver->GetOutput(); 
     this->m_CurrentVelocityField->DisconnectPipeline(); 
+    
+    // Output velocity image. 
+    //typedef ImageFileWriter<typename FluidPDEType::OutputImageType> FluidWriterType; 
+    //typename FluidWriterType::Pointer fluidWriter = FluidWriterType::New(); 
+    //fluidWriter->SetInput(this->m_CurrentVelocityField); 
+    //fluidWriter->SetFileName("velocity.nii"); 
+    //fluidWriter->Update(); 
   }
   else
   {
