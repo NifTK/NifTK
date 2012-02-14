@@ -456,6 +456,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   ParametersType dummyParameters; 
   double stepSize = this->m_StepSize;
   double minJacobian = 0;
+  double minFixedJacobian = 0.; 
   
   this->m_CurrentIteration = 0;
 
@@ -549,6 +550,9 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
       }
     
     minJacobian = this->m_DeformableTransform->ComputeMinJacobian();
+    minFixedJacobian = this->m_FixedImageTransform->ComputeMinJacobian(); 
+    niftkitkInfoMacro(<< "ResumeOptimization():minJacobian=" << minJacobian << ",minFixedJacobian=" << minFixedJacobian); 
+    minJacobian = std::min<double>(minJacobian, minFixedJacobian); 
 
     if (this->m_CheckJacobianBelowZero && minJacobian < 0.0)
       {
