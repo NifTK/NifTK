@@ -102,10 +102,11 @@ int main(int argc, char ** argv)
 	typedef NiftySimTransformationType::Pointer                        NiftySimTransformationPointerType;
 	typedef NiftySimTransformationType::ParametersType                 TrafoParametersType;
 
+	typedef NiftySimTransformationType::EulerAffineTransformParametersType EulerAffineParametersType;
+
 	/*
 	 * Get the user-input
 	 */
-
 	char*       pcXMLFileName;
 	std::string strInputImageName;
 	std::string strOutputImageName;
@@ -155,21 +156,18 @@ int main(int argc, char ** argv)
 		std::cerr << "Could not read input image: " << strInputImageName << std::endl;
 	}
 
-	//NiftySimTransformationPointerType::FixedImageType inputImage = inputReader->GetOutput();
 	InputImageType::PointType originalOffset = inputReader->GetOutput()->GetOrigin();
 	InputImageType::PointType modifiedOffset = inputReader->GetOutput()->GetOrigin();
-	//std::cout << originalOffset << std::endl;
 
 	modifiedOffset[0] = originalOffset[0] + faOffset[0];
 	modifiedOffset[1] = originalOffset[1] + faOffset[1];
 	modifiedOffset[2] = originalOffset[2] + faOffset[2];
-	
-	inputReader->GetOutput()->SetOrigin( modifiedOffset );
 
 	NiftySimTransformationPointerType simTrafo = NiftySimTransformationType::New();
 
 	TrafoParametersType params = simTrafo->GetParameters();
 	params.fill( 0. );
+	
 	simTrafo->SetxmlFName( pcXMLFileName );
 	simTrafo->SetsportMode( true );
 	simTrafo->SetVerbose( true );
@@ -185,9 +183,12 @@ int main(int argc, char ** argv)
 	resampler->SetInput( inputReader->GetOutput() );
 	resampler->SetUseReferenceImage( false );
 	
-	// Before resampling, reset the origin 
-	inputReader->GetOutput()->SetOrigin( originalOffset );
+	/* 
+	 * Get the image properties from the input image, 
+	 * then take care of the offset between model and image. 
+	 */
 	resampler->SetOutputParametersFromImage( inputReader->GetOutput() );
+	inputReader->GetOutput()->SetOrigin( modifiedOffset );
 
 	/*
 	 * Which Interpolation to use...
@@ -213,7 +214,9 @@ int main(int argc, char ** argv)
 		std::cout << "Using default b-spline interpolation." << std::endl;
 	}
 
-    /* create the interpolators */
+    /* 
+	 * create the interpolators 
+	 */
     typedef itk::BSplineInterpolateImageFunction< InputImageType, double >  BSplineInterpolatorType;
 	typedef BSplineInterpolatorType::Pointer                                BSplineInterpolatorPointerType;
     BSplineInterpolatorPointerType bSplineInterpolator = BSplineInterpolatorType::New();
@@ -296,20 +299,23 @@ int main(int argc, char ** argv)
 
 
 	/*
-	 * Deform the second image if required
+	 * Deform the second (label) image if required
 	 */
 	if ( (! strInputImageNameLabel.empty() ) && (! strOutputImageNameLabel.empty() ) )
 	{
-		// To avoid running the simulation again, the label image is read as 
-		// short and thereafter casted into unsigned char
-
+		/* 
+		 * To avoid running the simulation again, the label image is read as 
+		 * short and thereafter casted into unsigned char
+		 */
 		std::cout << "Resampling second image" << std::endl;
 
 		typedef unsigned char							 LabelPixelType;
 		typedef itk::Image<LabelPixelType, Dimension >   LabelImageType;
 		
 		inputReader->SetFileName( strInputImageNameLabel );
-		
+		inputReader->Update();
+		inputReader->GetOutput()->SetOrigin( modifiedOffset );
+
 		resampler->SetInput       ( inputReader->GetOutput() );
 		resampler->SetInterpolator( nnInterpolator           );
 		resampler->SetTransform   ( simTrafo                 );
