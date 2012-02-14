@@ -281,7 +281,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   this->m_StepSizeHistoryForMovingImage[this->m_CurrentIteration] = bestStepSize; 
   this->m_StepSizeHistoryForFixedImage[this->m_CurrentIteration] = bestFixedImageStepSize; 
   
-  niftkitkInfoMacro(<< "CalculateNextStep():bestStepSize=" << bestStepSize << ", bestFixedImageStepSize=" << bestFixedImageStepSize);
   // Now marshall vectors into derivative array.
   OutputImagePointer output = m_FluidVelocityToDeformationFilter->GetOutput();
   OutputImageIteratorType iterator(output, output->GetLargestPossibleRegion());
@@ -1142,7 +1141,6 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
   *bestStepSize = (this->m_StartingStepSize/this->m_FluidVelocityToDeformationFilter->GetMaxDeformation())/(m_AdjustedTimeStep+this->m_AsgdA); 
   double bestDeformationChange = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation()*(*bestStepSize); 
-  niftkitkInfoMacro(<< "CalculateNextStep():max deformation change=" << bestDeformationChange); 
   
   if (this->m_IsSymmetric)
   {
@@ -1151,11 +1149,16 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     m_AdjustedFixedImageTimeStep = std::max<double>(0., m_AdjustedFixedImageTimeStep); 
     *bestFixedImageStepSize = (this->m_StartingStepSize/this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation())/(m_AdjustedFixedImageTimeStep+this->m_AsgdA); 
     
-    bestDeformationChange = (bestDeformationChange+this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation()*(*bestFixedImageStepSize))/2.; 
-    niftkitkInfoMacro(<< "CalculateNextStep():max deformation change=" << this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation()*(*bestFixedImageStepSize)); 
+    // Symmetric step size - should move by the same amount in each direction. 
+    double bestFixedDeformationChange = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation()*(*bestFixedImageStepSize); 
+    double bestSymmetricDeformationChange = std::min<double>(bestDeformationChange, bestFixedDeformationChange); 
+    niftkitkInfoMacro(<< "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange); 
+    *bestStepSize = bestSymmetricDeformationChange/this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
+    *bestFixedImageStepSize = bestSymmetricDeformationChange/this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
+    
+    bestDeformationChange = bestSymmetricDeformationChange; 
   }
   
-  niftkitkInfoMacro(<< "CalculateNextStep():bestDeformationChange=" << bestDeformationChange); 
   if (bestDeformationChange < this->m_MinimumDeformationMagnitudeThreshold)
   {
     this->m_StepSize = 0.; 
