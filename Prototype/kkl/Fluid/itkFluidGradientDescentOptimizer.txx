@@ -159,7 +159,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
 ::CalculateNextStep(int iterationNumber, double currentSimilarity, typename DeformableTransformType::DeformableParameterPointerType current, typename DeformableTransformType::DeformableParameterPointerType & next, typename DeformableTransformType::DeformableParameterPointerType currentFixed, typename DeformableTransformType::DeformableParameterPointerType & nextFixed)
 {
   niftkitkInfoMacro(<< "CalculateNextStep():Started");
-  double bestFixedImageStepSize = 0.; 
+  volatile double bestFixedImageStepSize = 0.; 
   
   if (m_ForceFilter.IsNull())
     {
@@ -257,7 +257,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     niftkitkInfoMacro(<<"Estimated this->m_AsgdFMin=" << this->m_AsgdFMin); 
   }
                    
-  double bestStepSize = 0.0; 
+  volatile double bestStepSize = 0.0; 
   double bestSimilarity = std::numeric_limits<double>::max(); 
                         
   // Optimise the step size to give the best similarity. 
@@ -1058,7 +1058,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
 template < typename TFixedImage, typename TMovingImage, typename TScalarType, class TDeformationScalar>
 void
 FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformationScalar>
-::EstimateSimpleAdapativeStepSize(double* bestStepSize, double* bestFixedImageStepSize)
+::EstimateSimpleAdapativeStepSize(volatile double* bestStepSize, volatile double* bestFixedImageStepSize)
 {
   double fieldDotProduct = 0.; 
   OutputImageIteratorType currentGradientIterator(this->m_FluidVelocityToDeformationFilter->GetOutput(), this->m_FluidVelocityToDeformationFilter->GetOutput()->GetLargestPossibleRegion());
@@ -1122,9 +1122,9 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     niftkitkInfoMacro(<< "CalculateNextStep():fixedImageFieldDotProduct=" << fixedImageFieldDotProduct << ", m_StartingStepSize=" << this->m_StartingStepSize << ",numberOfAsgdMaskVoxels=" << numberOfAsgdMaskVoxels);
   }
   
-  const double f_max = this->m_AsgdFMax; 
-  const double f_min = this->m_AsgdFMin; 
-  const double w = this->m_AsgdW; 
+  const volatile double f_max = this->m_AsgdFMax; 
+  const volatile double f_min = this->m_AsgdFMin; 
+  const volatile double w = this->m_AsgdW; 
   m_AdjustedTimeStep = m_AdjustedTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fieldDotProduct)/w)); 
   niftkitkInfoMacro(<< "new gradient descent: m_AdjustedTimeStep=" << m_AdjustedTimeStep << ",f_max=" << f_max << ",f_min=" << f_min << ",w=" << w); 
   m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
@@ -1143,10 +1143,12 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     volatile double bestSymmetricDeformationChange = std::min<volatile double>(bestDeformationChange, bestFixedDeformationChange); 
     std::cout << std::setprecision(15) << "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange << std::endl; 
     
-    volatile double tempSize = bestSymmetricDeformationChange/this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
-    *bestStepSize = tempSize; 
-    tempSize = bestSymmetricDeformationChange/this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
-    *bestFixedImageStepSize = tempSize; 
+    volatile double maxMovingDeformation = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
+    volatile double bestMovingStepSize = bestSymmetricDeformationChange/maxMovingDeformation; 
+    *bestStepSize = bestMovingStepSize; 
+    volatile double maxFixedDeformation = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
+    volatile double bestFixedStepSize = bestSymmetricDeformationChange/maxFixedDeformation; 
+    *bestFixedImageStepSize = bestFixedStepSize; 
     
     // std::cout << std::setprecision(15) << "CalculateNextStep():bestStepSize=" << *bestStepSize << ",bestFixedImageStepSize=" << *bestFixedImageStepSize << std::endl; 
     

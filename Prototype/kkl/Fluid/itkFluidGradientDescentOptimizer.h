@@ -261,7 +261,7 @@ protected:
   /**
    * Estimate step sizes using adaptive size gradient descent
    */
-  void EstimateSimpleAdapativeStepSize(double* bestStepSize, double* bestFixedImageStepSize); 
+  void EstimateSimpleAdapativeStepSize(volatile double* bestStepSize, volatile double* bestFixedImageStepSize); 
   
   /**
   * Estimate step sizes using adaptive size gradient descent, 
