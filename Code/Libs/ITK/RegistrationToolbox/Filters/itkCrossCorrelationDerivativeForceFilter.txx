@@ -98,17 +98,17 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
   //   C = sqrt(sum((M-mM)^2)) = sqrt(sum(M^2) - N*mM*mM)
   ImageRegionConstIterator<InputImageType> simpleFixedImageIterator(fixedImage, fixedImage->GetLargestPossibleRegion());
   ImageRegionConstIterator<InputImageType> simpleMovingImageIterator(transformedMovingImage, transformedMovingImage->GetLargestPossibleRegion());
-  double numberOfVoxels = 0.0; 
+  volatile double numberOfVoxels = 0.0; 
   // To store sum(F*M). 
-  double crossTotal = 0; 
+  volatile double crossTotal = 0; 
   // To store sum(M). 
-  double movingTotal = 0; 
+  volatile double movingTotal = 0; 
   // To store sum(F).
-  double fixedTotal = 0;  
+  volatile double fixedTotal = 0;  
   // To store sum(M^2). 
-  double movingSqaureTotal = 0; 
+  volatile double movingSqaureTotal = 0; 
   // To store sum(F^2). 
-  double fixedSquareTotal = 0;  
+  volatile double fixedSquareTotal = 0;  
   
   for (simpleFixedImageIterator.GoToBegin(), simpleMovingImageIterator.GoToBegin(); 
        !simpleFixedImageIterator.IsAtEnd(); 
@@ -122,8 +122,8 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
       continue; 
     }
     
-    double fixedValue = static_cast<double>(simpleFixedImageIterator.Get()); 
-    double movingValue = static_cast<double>(simpleMovingImageIterator.Get()); 
+    volatile double fixedValue = static_cast<double>(simpleFixedImageIterator.Get()); 
+    volatile double movingValue = static_cast<double>(simpleMovingImageIterator.Get()); 
     
     crossTotal += fixedValue*movingValue; 
     movingTotal += movingValue; 
@@ -229,8 +229,7 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
       
       if (this->m_IsSymmetric)
       {
-        volatile float value = (movingImageForce-fixedImageForce)/2.; 
-        forceImageVoxel[dimensinIndex] = value; 
+        forceImageVoxel[dimensinIndex] = (movingImageForce-fixedImageForce)/2.; 
         
         // Debug. 
         //if ((forceImageVoxel[dimensinIndex] > 1e-15 && forceImageVoxel[dimensinIndex] < 1e-10) || (forceImageVoxel[dimensinIndex] < -1e-15 && forceImageVoxel[dimensinIndex] >- 1e-10))

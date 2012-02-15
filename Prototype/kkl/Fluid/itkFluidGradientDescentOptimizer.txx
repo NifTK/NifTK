@@ -29,6 +29,7 @@
 #include "itkGradientMagnitudeRecursiveGaussianImageFilter.h"
 #include "itkImageRandomNonRepeatingIteratorWithIndex.h"
 #include "itkLogHelper.h"
+#include <iomanip>
 
 namespace itk
 {
@@ -314,7 +315,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     }
   }
     
-  niftkitkInfoMacro(<< "CalculateNextStep():Best similarity=" << bestSimilarity);
   // Forcing the step size to 0 if we cannot find any better step size. 
   if (bestStepSize == 0.0)
   {
@@ -532,6 +532,10 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     {
       // Need this for checking Jacobian. 
       GetFluidDeformableTransform()->SetDeformableParameters(this->m_NextDeformableParameters);
+      if (this->m_IsSymmetric)
+      {
+        this->m_FixedImageTransform->SetDeformableParameters(this->m_NextFixedDeformableParameters); 
+      }
     }
 
     // Write the parameters to file.
@@ -737,6 +741,9 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     }
   }
   
+  // Compose the Jacobians before concatenating the current deformation field with the regridded deformation field.  
+  this->ComposeJacobian(); 
+  
   if (isResetCurrentPosition)
   {
     niftkitkInfoMacro(<< "ReGrid():Adding current array to regrid array");
@@ -750,8 +757,8 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     }
   }
 
-  // Set transform.
-  if (this->m_CurrentIteration == 0)
+  // Set the correct regridded transform for regridding (reslicing the fixed and moving images).
+  if (this->m_CurrentIteration == 0 || !this->m_IsPropagateRegriddedMovingImage)
   {
     GetFluidDeformableTransform()->SetDeformableParameters(this->m_RegriddedDeformableParameters);
     if (this->m_IsSymmetric)
@@ -761,24 +768,15 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   }
   else
   {
-    if (!this->m_IsPropagateRegriddedMovingImage)
+    niftkitkInfoMacro(<< "ReGrid():setting current position for propagating moving image.");
+    GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters);
+    if (this->m_IsSymmetric)
     {
-      GetFluidDeformableTransform()->SetDeformableParameters(this->m_RegriddedDeformableParameters);
-    }
-    else
-    {
-      niftkitkInfoMacro(<< "ReGrid():setting current position for propagating moving image.");
-      GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters);
-      if (this->m_IsSymmetric)
-      {
-        this->m_FixedImageTransform->SetDeformableParameters(this->m_CurrentFixedDeformableParameters);
-      }
+      this->m_FixedImageTransform->SetDeformableParameters(this->m_CurrentFixedDeformableParameters);
     }
   }
-  // Compose the Jacobians. 
-  this->ComposeJacobian(); 
 
-//  #ifdef(DEBUG)
+#ifdef DEBUG
   {
     niftkitkInfoMacro(<< "ReGrid():Check before resample, minJacobian=" \
     <<  this->m_DeformableTransform->ComputeMinJacobian() \
@@ -786,6 +784,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     << ", minDeformation=" << this->m_DeformableTransform->ComputeMinDeformation() \
     << ", maxDeformation=" << this->m_DeformableTransform->ComputeMaxDeformation() );
   }
+#endif  
   
   // Transform the original moving image. So, if isResetCurrentPosition we assume
   // that this->m_DeformableTransform has an up to date transformation.
@@ -817,7 +816,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     }
   }
 
-  if (this->m_CurrentIteration == 0)
+  if (this->m_CurrentIteration == 0 || !this->m_IsPropagateRegriddedMovingImage)
   {
     this->m_RegriddingResampler->SetInput(this->m_MovingImage);
     if (this->m_IsSymmetric)
@@ -827,22 +826,11 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   }
   else
   {
-    if (!this->m_IsPropagateRegriddedMovingImage)
+    this->m_RegriddingResampler->SetInput(this->m_RegriddedMovingImage);
+    if (this->m_IsSymmetric)
     {
-      this->m_RegriddingResampler->SetInput(this->m_MovingImage);
-      if (this->m_IsSymmetric)
-      {
-        this->m_RegriddingFixedImageResampler->SetInput(this->m_FixedImage); 
-      }
-    }
-    else
-    {
-      this->m_RegriddingResampler->SetInput(this->m_RegriddedMovingImage);
-      if (this->m_IsSymmetric)
-      {
-        this->m_RegriddingFixedImageResampler->SetInput(this->m_RegriddedFixedImage);
-      } 
-    }
+      this->m_RegriddingFixedImageResampler->SetInput(this->m_RegriddedFixedImage);
+    } 
   }
   this->m_RegriddingResampler->SetOutputParametersFromImage(this->m_FixedImage);
   this->m_RegriddingResampler->SetDefaultPixelValue(this->m_RegriddedMovingImagePadValue);
@@ -917,7 +905,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   
   niftkitkInfoMacro(<< "ReGrid():Setting current value to:" << this->m_Value);
 
- // #ifdef(DEBUG)
+#ifdef DEBUG
   {
     niftkitkInfoMacro(<< "ReGrid():Check after resetting to current position, minJacobian=" \
       <<  this->m_DeformableTransform->ComputeMinJacobian() \
@@ -925,6 +913,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
       << ", minDeformation=" << this->m_DeformableTransform->ComputeMinDeformation() \
       << ", maxDeformation=" << this->m_DeformableTransform->ComputeMaxDeformation() );
   }
+#endif  
 
   this->m_NormaliseStepSize = true; 
   
@@ -1140,7 +1129,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   niftkitkInfoMacro(<< "new gradient descent: m_AdjustedTimeStep=" << m_AdjustedTimeStep << ",f_max=" << f_max << ",f_min=" << f_min << ",w=" << w); 
   m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
   *bestStepSize = (this->m_StartingStepSize/this->m_FluidVelocityToDeformationFilter->GetMaxDeformation())/(m_AdjustedTimeStep+this->m_AsgdA); 
-  double bestDeformationChange = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation()*(*bestStepSize); 
+  volatile double bestDeformationChange = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation()*(*bestStepSize); 
   
   if (this->m_IsSymmetric)
   {
@@ -1150,11 +1139,16 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     *bestFixedImageStepSize = (this->m_StartingStepSize/this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation())/(m_AdjustedFixedImageTimeStep+this->m_AsgdA); 
     
     // Symmetric step size - should move by the same amount in each direction. 
-    double bestFixedDeformationChange = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation()*(*bestFixedImageStepSize); 
-    double bestSymmetricDeformationChange = std::min<double>(bestDeformationChange, bestFixedDeformationChange); 
-    niftkitkInfoMacro(<< "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange); 
-    *bestStepSize = bestSymmetricDeformationChange/this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
-    *bestFixedImageStepSize = bestSymmetricDeformationChange/this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
+    volatile double bestFixedDeformationChange = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation()*(*bestFixedImageStepSize); 
+    volatile double bestSymmetricDeformationChange = std::min<volatile double>(bestDeformationChange, bestFixedDeformationChange); 
+    std::cout << std::setprecision(15) << "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange << std::endl; 
+    
+    volatile double tempSize = bestSymmetricDeformationChange/this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
+    *bestStepSize = tempSize; 
+    tempSize = bestSymmetricDeformationChange/this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
+    *bestFixedImageStepSize = tempSize; 
+    
+    // std::cout << std::setprecision(15) << "CalculateNextStep():bestStepSize=" << *bestStepSize << ",bestFixedImageStepSize=" << *bestFixedImageStepSize << std::endl; 
     
     bestDeformationChange = bestSymmetricDeformationChange; 
   }
