@@ -28,9 +28,10 @@
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 #include "QmitkMIDASBaseFunctionality.h"
 #include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
+#include "QmitkMIDASToolSelectorWidget.h"
 #include "mitkToolManager.h"
-#include "itkSpatialOrientationAdapter.h"
 #include "itkImage.h"
+#include "itkSpatialOrientationAdapter.h"
 
 class QmitkRenderWindow;
 
@@ -39,6 +40,7 @@ class QmitkRenderWindow;
  * \brief Base view component for both MIDASMorphologicalSegmentorView and MIDASGeneralSegmentorView.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
+ *
  * \sa MIDASMorphologicalSegmentorView
  * \sa MIDASGeneralSegmentorView
  */
@@ -66,12 +68,6 @@ public:
   /// \brief Reaction to new segmentations being created by segmentation tools, currently does nothing.
   virtual void NewNodeObjectsGenerated(mitk::ToolManager::DataVectorType*);
 
-  /// \brief Informs other parts of the workbench that node is selected via the blueberry selection service.
-  void FireNodeSelected(mitk::DataNode* node);
-
-  /// \brief Informs other parts of the workbench that node is selected via the blueberry selection service.
-  void FireNodesSelected(std::vector<mitk::DataNode*> nodes);
-
   /// \brief Invoked when the DataManager selection changed.
   virtual void OnSelectionChanged(mitk::DataNode* node);
 
@@ -88,8 +84,8 @@ protected slots:
 
 protected:
 
-  /// \brief Returns the tool manager associated with this object (derived classes provide ones in different ways). Subclasses MUST provide one.
-  virtual mitk::ToolManager* GetToolManager() = 0;
+  /// \brief Returns the tool manager associated with this object (derived classes provide ones in different ways).
+  virtual mitk::ToolManager* GetToolManager();
 
   /// \brief Gets a vector of the binary images registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
   mitk::ToolManager::DataVectorType GetWorkingNodesFromToolManager();
@@ -133,8 +129,11 @@ protected:
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
   virtual void EnableSegmentationWidgets(bool b) {};
 
+  /// \brief Turns the tool selection box on/off
+  void SetEnableManualToolSelectionBox(bool enabled);
+
   /// \brief Creates the GUI parts.
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parentForSelectorWidget, QWidget *parentForToolWidget);
 
   /// \brief Creates the QT connections.
   virtual void CreateConnections();
@@ -187,12 +186,15 @@ protected:
   /// \brief Makes sure the reference image is the selected one
   void SetReferenceImageSelected();
 
-  /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
-  QmitkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;
-
   // Keeps track of the last selected node, whever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;
   mitk::Image::Pointer m_SelectedImage;
+
+  /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
+  QmitkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;
+
+  /// \brief Common widget, enabling selection of a segmentation tool.
+  QmitkMIDASToolSelectorWidget *m_ToolSelector;
 
 private:
 

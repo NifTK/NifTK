@@ -46,7 +46,6 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
   m_GridLayoutButtomButtons->setContentsMargins(margin,margin,margin,margin);
   m_GridLayoutThresholdSliders->setContentsMargins(margin,margin,margin,margin);
   m_GridLayoutSeedValues->setContentsMargins(margin,margin,margin,margin);
-  m_GridLayoutManualToolSelectionBox->setContentsMargins(margin,margin,margin,margin);
   m_GridLayoutToggleButtons->setContentsMargins(margin,margin,margin,margin);
   m_GridLayoutPropagateButtons->setContentsMargins(margin,margin,margin,margin);
   m_GridLayoutOrientation->setContentsMargins(margin,margin,margin,margin);
@@ -55,7 +54,6 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
   m_GridLayoutButtomButtons->setSpacing(spacing);
   m_GridLayoutThresholdSliders->setSpacing(spacing);
   m_GridLayoutSeedValues->setSpacing(spacing);
-  m_GridLayoutManualToolSelectionBox->setSpacing(spacing);
   m_GridLayoutToggleButtons->setSpacing(spacing);
   m_GridLayoutPropagateButtons->setSpacing(spacing);
   m_GridLayoutOrientation->setSpacing(spacing);
@@ -113,7 +111,6 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
   this->SetEnableThresholdingCheckbox(enabled);
   this->SetEnableThresholdingWidgets(enabled);
   this->SetEnableOrientationWidgets(enabled);
-  this->SetEnableManualToolSelectionBox(enabled);
   this->SetEnableOKCancelResetWidgets(enabled);
   m_MagnificationFactorWidget->setEnabled(enabled);
   m_SliceSelectionWidget->setEnabled(enabled);
@@ -125,12 +122,6 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
   m_WipePlusButton->setEnabled(enabled);
   m_WipeMinusButton->setEnabled(enabled);
   m_HelpButton->setEnabled(enabled);
-}
-
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableManualToolSelectionBox(bool enabled)
-{
-  this->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
-  this->m_ManualToolGUIContainer->setEnabled(enabled);
 }
 
 void MIDASGeneralSegmentorViewControlsWidget::SetLowerAndUpperIntensityRanges(double lower, double upper)

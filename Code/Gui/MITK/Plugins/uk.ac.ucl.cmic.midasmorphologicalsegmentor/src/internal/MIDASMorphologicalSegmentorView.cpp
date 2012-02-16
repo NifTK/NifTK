@@ -35,24 +35,25 @@
 #include "mitkMIDASPaintbrushTool.h"
 #include "mitkColorProperty.h"
 #include "mitkDataStorageUtils.h"
+#include "mitkITKRegionParametersDataNodeProperty.h"
 #include "itkImageFileWriter.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkConversionUtils.h"
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 const std::string MIDASMorphologicalSegmentorView::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED = "midas.morph.finished";
+const std::string MIDASMorphologicalSegmentorView::SUBTRACTIONS_IMAGE_NAME = std::string("MIDAS_EDITS_SUBTRACTIONS");
+const std::string MIDASMorphologicalSegmentorView::ADDITIONS_IMAGE_NAME = std::string("MIDAS_EDITS_ADDITIONS");
 
 MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 : QmitkMIDASBaseSegmentationFunctionality()
 , m_MorphologicalControls(NULL)
 , m_Layout(NULL)
 , m_ContainerForSelectorWidget(NULL)
+, m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_PaintbrushToolId(-1)
 {
-  m_ToolManager = mitk::ToolManager::New(this->GetDefaultDataStorage());
-  m_ToolManager->RegisterClient();
-  m_PaintbrushToolId = m_ToolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
 }
 
 MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView(
@@ -75,19 +76,54 @@ std::string MIDASMorphologicalSegmentorView::GetViewID() const
   return VIEW_ID;
 }
 
-void MIDASMorphologicalSegmentorView::Activated()
+void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
 {
-  QmitkMIDASBaseSegmentationFunctionality::Activated();
+  m_Parent = parent;
+
+  if (!m_MorphologicalControls)
+  {
+    m_Layout = new QGridLayout(parent);
+
+    m_ContainerForSelectorWidget = new QWidget(parent);
+    m_ContainerForToolWidget = new QWidget(parent);
+    m_ContainerForControlsWidget = new QWidget(parent);
+
+    m_MorphologicalControls = new MIDASMorphologicalSegmentorViewControlsImpl();
+    m_MorphologicalControls->setupUi(m_ContainerForControlsWidget);
+    m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
+
+    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(m_ContainerForSelectorWidget, m_ContainerForToolWidget);
+
+    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget,     1, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
+
+    m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
+
+    mitk::ToolManager* toolManager = this->GetToolManager();
+    m_PaintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
+
+    this->CreateConnections();
+  }
 }
 
-void MIDASMorphologicalSegmentorView::Deactivated()
+void MIDASMorphologicalSegmentorView::CreateConnections()
 {
-  QmitkMIDASBaseSegmentationFunctionality::Deactivated();
-}
+  QmitkMIDASBaseSegmentationFunctionality::CreateConnections();
 
-mitk::ToolManager* MIDASMorphologicalSegmentorView::GetToolManager()
-{
-  return m_ToolManager;
+  if (m_MorphologicalControls)
+  {
+    connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(released()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
+    connect(m_ToolSelector, SIGNAL(ToolSelected(int)), this, SLOT(OnToolSelected(int)));
+    connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), this, SLOT(OnThresholdingValuesChanged(double, double, int)));
+    connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), this, SLOT(OnErosionsValuesChanged(double, int)));
+    connect(m_MorphologicalControls, SIGNAL(DilationValuesChanged(double, double, int)), this, SLOT(OnDilationValuesChanged(double, double, int)));
+    connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), this, SLOT(OnRethresholdingValuesChanged(int)));
+    connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), this, SLOT(OnTabChanged(int)));
+    connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), this, SLOT(OnOKButtonClicked()));
+    connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
+    connect(m_MorphologicalControls, SIGNAL(ClearButtonClicked()), this, SLOT(OnClearButtonClicked()));
+  }
 }
 
 bool MIDASMorphologicalSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
@@ -115,7 +151,7 @@ bool MIDASMorphologicalSegmentorView::IsNodeASegmentationImage(const mitk::DataN
 
     if (parent.IsNotNull())
     {
-      // Should also have two children called mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME and mitk::MIDASTool::ADDITIONS_IMAGE_NAME
+      // Should also have two children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME
       mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDefaultDataStorage(), node, true);
       if (children->size() == 2)
       {
@@ -124,8 +160,8 @@ bool MIDASMorphologicalSegmentorView::IsNodeASegmentationImage(const mitk::DataN
         std::string name2;
         (*children)[1]->GetStringProperty("name", name2);
 
-        if ((name1 == mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME || name1 == mitk::MIDASTool::ADDITIONS_IMAGE_NAME)
-            && (name2 == mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME || name2 == mitk::MIDASTool::ADDITIONS_IMAGE_NAME)
+        if ((name1 == SUBTRACTIONS_IMAGE_NAME || name1 == ADDITIONS_IMAGE_NAME)
+            && (name2 == SUBTRACTIONS_IMAGE_NAME || name2 == ADDITIONS_IMAGE_NAME)
             )
         {
           result = true;
@@ -150,7 +186,7 @@ bool MIDASMorphologicalSegmentorView::IsNodeAWorkingImage(const mitk::DataNode::
       std::string name;
       if (node->GetStringProperty("name", name))
       {
-        if (name == mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME || name == mitk::MIDASTool::ADDITIONS_IMAGE_NAME)
+        if (name == SUBTRACTIONS_IMAGE_NAME || name == ADDITIONS_IMAGE_NAME)
         {
           result = true;
         }
@@ -173,7 +209,7 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingNod
     std::string name;
     if ((*children)[i]->GetStringProperty("name", name))
     {
-      if (name == mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME)
+      if (name == ADDITIONS_IMAGE_NAME)
       {
         result.push_back((*children)[i]);
       }
@@ -185,7 +221,7 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingNod
     std::string name;
     if ((*children)[i]->GetStringProperty("name", name))
     {
-      if (name == mitk::MIDASTool::ADDITIONS_IMAGE_NAME)
+      if (name == SUBTRACTIONS_IMAGE_NAME)
       {
         result.push_back((*children)[i]);
       }
@@ -267,47 +303,6 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(std::vector<mitk::DataN
   this->EnableSegmentationWidgets(enableWidgets);
 }
 
-void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
-{
-  m_Parent = parent;
-
-  if (!m_MorphologicalControls)
-  {
-    m_Layout = new QGridLayout(parent);
-
-    m_ContainerForSelectorWidget = new QWidget(parent);
-    m_ContainerForControlsWidget = new QWidget(parent);
-
-    m_MorphologicalControls = new MIDASMorphologicalSegmentorViewControlsImpl();
-    m_MorphologicalControls->setupUi(m_ContainerForControlsWidget);
-    m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
-
-    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(m_ContainerForSelectorWidget);
-
-    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 1, 0);
-  }
-  this->CreateConnections();
-}
-
-void MIDASMorphologicalSegmentorView::CreateConnections()
-{
-  QmitkMIDASBaseSegmentationFunctionality::CreateConnections();
-
-  if (m_MorphologicalControls)
-  {
-    connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(released()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
-    connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), this, SLOT(OnThresholdingValuesChanged(double, double, int)));
-    connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), this, SLOT(OnErosionsValuesChanged(double, int)));
-    connect(m_MorphologicalControls, SIGNAL(DilationValuesChanged(double, double, int)), this, SLOT(OnDilationValuesChanged(double, double, int)));
-    connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), this, SLOT(OnRethresholdingValuesChanged(int)));
-    connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), this, SLOT(OnTabChanged(int)));
-    connect(m_MorphologicalControls, SIGNAL(CursorWidthChanged(int)), this, SLOT(OnCursorWidthChanged(int)));
-    connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), this, SLOT(OnOKButtonClicked()));
-    connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
-    connect(m_MorphologicalControls, SIGNAL(ClearButtonClicked()), this, SLOT(OnClearButtonClicked()));
-  }
-}
 
 void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImage()
 {
@@ -327,7 +322,6 @@ void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImag
   segmentationNode->SetFloatProperty("midas.morph.dilation.upper", 160);
   segmentationNode->SetIntProperty("midas.morph.dilation.iterations", 0);
   segmentationNode->SetIntProperty("midas.morph.rethresholding.box", 0);
-  segmentationNode->SetIntProperty("midas.morph.cursor.width", 1);
 }
 
 mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
@@ -357,37 +351,21 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
 
         // Create subtractions data node, and store reference to image
-        mitk::DataNode::Pointer segmentationSubtractionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME, col->GetColor());
-        segmentationSubtractionsImageDataNode->SetBoolProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_NAME.c_str(), false);
+        mitk::DataNode::Pointer segmentationSubtractionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, SUBTRACTIONS_IMAGE_NAME, col->GetColor());
         segmentationSubtractionsImageDataNode->SetBoolProperty("helper object", true);
         segmentationSubtractionsImageDataNode->SetColor(col->GetColor());
         segmentationSubtractionsImageDataNode->SetProperty("binaryimage.selectedcolor", col);
-        segmentationSubtractionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_X.c_str(), 0);
-        segmentationSubtractionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Y.c_str(), 0);
-        segmentationSubtractionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Z.c_str(), 0);
-        segmentationSubtractionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_X.c_str(), 0);
-        segmentationSubtractionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Y.c_str(), 0);
-        segmentationSubtractionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Z.c_str(), 0);
-        segmentationSubtractionsImageDataNode->SetBoolProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_REGION_SET.c_str(), false);
 
         // Create additions data node, and store reference to image
         float segCol[3];
         emptySegmentation->GetColor(segCol);
         mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
 
-        mitk::DataNode::Pointer segmentationAdditionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::ADDITIONS_IMAGE_NAME, col->GetColor());
-        segmentationAdditionsImageDataNode->SetBoolProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_NAME.c_str(), false);
+        mitk::DataNode::Pointer segmentationAdditionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, ADDITIONS_IMAGE_NAME, col->GetColor());
         segmentationAdditionsImageDataNode->SetBoolProperty("helper object", true);
         segmentationAdditionsImageDataNode->SetBoolProperty("visible", false);
         segmentationAdditionsImageDataNode->SetColor(segCol);
         segmentationAdditionsImageDataNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
-        segmentationAdditionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_X.c_str(), 0);
-        segmentationAdditionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Y.c_str(), 0);
-        segmentationAdditionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Z.c_str(), 0);
-        segmentationAdditionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_X.c_str(), 0);
-        segmentationAdditionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Y.c_str(), 0);
-        segmentationAdditionsImageDataNode->SetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Z.c_str(), 0);
-        segmentationAdditionsImageDataNode->SetBoolProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_REGION_SET.c_str(), false);
 
         // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
         this->ApplyDisplayOptions(segmentationSubtractionsImageDataNode);
@@ -396,9 +374,16 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         this->GetDefaultDataStorage()->Add(segmentationAdditionsImageDataNode, emptySegmentation); // add as a child, because the segmentation "derives" from the original
 
         // Set working data. Compare with MIDASGeneralSegmentorView.
+        // Note the order:
+        // 1. The First image is the "Additions" image, that we can manually add data/voxels to.
+        // 2. The Second image is the "Subtractions" image, that is used for connection breaker.
+        // This must match the order in:
+        // 1. UpdateSegmentation
+        // 2. mitkMIDASPaintbrushTool.
+
         mitk::ToolManager::DataVectorType workingData;
-        workingData.push_back(segmentationSubtractionsImageDataNode);
         workingData.push_back(segmentationAdditionsImageDataNode);
+        workingData.push_back(segmentationSubtractionsImageDataNode);
         toolManager->SetWorkingData(workingData);
 
         // Set properties, and then the control values to match.
@@ -448,9 +433,6 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
           m_SelectedNode->GetIntProperty("midas.morph.rethresholding.box", tmpInt);
           emptySegmentation->SetIntProperty("midas.morph.rethresholding.box", tmpInt);
 
-          m_SelectedNode->GetIntProperty("midas.morph.cursor.width", tmpInt);
-          emptySegmentation->SetIntProperty("midas.morph.cursor.width", tmpInt);
-
           emptySegmentation->SetBoolProperty("midas.morph.restarting", true);
         }
 
@@ -482,9 +464,8 @@ void MIDASMorphologicalSegmentorView::NodeChanged(const mitk::DataNode* node)
     {
       if (workingDataNode.GetPointer() == node)
       {
-        bool isRegionSet(false);
-        workingDataNode->GetBoolProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_REGION_SET.c_str(), isRegionSet);
-        if (isRegionSet)
+        mitk::ITKRegionParametersDataNodeProperty::Pointer prop = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(workingDataNode->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+        if (prop.IsNotNull() && prop->IsValid())
         {
           this->UpdateSegmentation();
         }
@@ -544,20 +525,16 @@ void MIDASMorphologicalSegmentorView::OnRethresholdingValuesChanged(int boxSize)
 
 void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
 {
-
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
   mitk::DataNode* segmentationNode = this->GetSegmentationNodeUsingToolManager();
   if (segmentationNode != NULL)
   {
-    if (i == 1 || i == 2) // Erosions and Dilations only
+    if (i == 1 || i == 2)
     {
-      toolManager->ActivateTool(m_PaintbrushToolId);
+      this->m_ToolSelector->SetEnabled(true);
     }
     else
     {
-      toolManager->ActivateTool(-1);
+      this->m_ToolSelector->SetEnabled(false);
     }
 
     segmentationNode->SetIntProperty("midas.morph.stage", i);
@@ -566,79 +543,60 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
   }
 }
 
-void MIDASMorphologicalSegmentorView::OnCursorWidthChanged(int i)
+void MIDASMorphologicalSegmentorView::OnToolSelected(int toolID)
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  mitk::DataNode* segmentationNode = this->GetSegmentationNodeUsingToolManager();
-
-  if (segmentationNode != NULL)
-  {
-    mitk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(m_PaintbrushToolId));
-    if (paintbrushTool != NULL)
-    {
-      paintbrushTool->SetCursorSize(i);
-
-      segmentationNode->SetIntProperty("midas.morph.cursor.width", i);
-    }
-  }
+  std::cerr << "Matt MIDASMorphologicalSegmentorView::OnToolSelected(" << toolID << ")" << std::endl;
 }
 
 void MIDASMorphologicalSegmentorView::UpdateSegmentation()
 {
-  mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(0);
-  if (editsNode.IsNotNull())
+  mitk::DataNode::Pointer additionsNode = this->GetToolManager()->GetWorkingData(0);
+  if (additionsNode.IsNotNull())
   {
-    mitk::DataNode::Pointer additionsNode = this->GetToolManager()->GetWorkingData(1);
-    if (additionsNode.IsNotNull())
+    mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(1);
+    if (editsNode.IsNotNull())
     {
       mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDefaultDataStorage().GetPointer(), editsNode, true);
       if (parent.IsNotNull())
       {
         mitk::Image::Pointer outputImage    = dynamic_cast<mitk::Image*>( parent->GetData() );
         mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();  // The grey scale image
-        mitk::Image::Pointer editedImage    = this->GetWorkingImageFromToolManager(0);   // Comes from tool manager, so is image of manual edits
-        mitk::Image::Pointer additionsImage = this->GetWorkingImageFromToolManager(1);   // Comes from tool manager, so is image of manual additions
+        mitk::Image::Pointer additionsImage = this->GetWorkingImageFromToolManager(0);   // Comes from tool manager, so is image of manual additions
+        mitk::Image::Pointer editedImage    = this->GetWorkingImageFromToolManager(1);   // Comes from tool manager, so is image of manual edits
 
         if (referenceImage.IsNotNull() && editedImage.IsNotNull() && additionsImage.IsNotNull() && outputImage.IsNotNull())
         {
-          bool isEditingEditingImage = false;
-          editsNode->GetBoolProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_NAME.c_str(), isEditingEditingImage);
-
-          bool isEditingAdditionsImage = false;
-          additionsNode->GetBoolProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_NAME.c_str(), isEditingAdditionsImage);
-
-          int region[6];
-          for (int i = 0; i < 6; i++)
-          {
-            region[i] = 0;
-          }
-
-          if (isEditingEditingImage)
-          {
-            editsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_X.c_str(), region[0]);
-            editsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Y.c_str(), region[1]);
-            editsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Z.c_str(), region[2]);
-            editsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_X.c_str(), region[3]);
-            editsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Y.c_str(), region[4]);
-            editsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Z.c_str(), region[5]);
-          }
-          else if (isEditingAdditionsImage)
-          {
-            additionsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_X.c_str(), region[0]);
-            additionsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Y.c_str(), region[1]);
-            additionsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_INDEX_Z.c_str(), region[2]);
-            additionsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_X.c_str(), region[3]);
-            additionsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Y.c_str(), region[4]);
-            additionsNode->GetIntProperty(mitk::MIDASPaintbrushTool::EDITING_PROPERTY_SIZE_Z.c_str(), region[5]);
-          }
 
           MorphologicalSegmentorPipelineParams params;
           this->GetParameterValues(params);
 
+          std::vector<int> region;
+          region.resize(6);
+
           bool isRestarting(false);
           bool foundRestartingFlag = parent->GetBoolProperty("midas.morph.restarting", isRestarting);
+
+          bool isEditingEditingImage = false;
+          mitk::ITKRegionParametersDataNodeProperty::Pointer editingImageRegionProp = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(editsNode->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+          if (editingImageRegionProp.IsNotNull())
+          {
+            isEditingEditingImage = editingImageRegionProp->IsValid();
+            if (isEditingEditingImage)
+            {
+              region = editingImageRegionProp->GetITKRegionParameters();
+            }
+          }
+
+          bool isEditingAdditionsImage = false;
+          mitk::ITKRegionParametersDataNodeProperty::Pointer additionsImageRegionProp = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(additionsNode->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+          if (additionsImageRegionProp.IsNotNull())
+          {
+            isEditingAdditionsImage = additionsImageRegionProp->IsValid();
+            if (isEditingAdditionsImage)
+            {
+              region = additionsImageRegionProp->GetITKRegionParameters();
+            }
+          }
 
           try
           {
@@ -698,221 +656,6 @@ void MIDASMorphologicalSegmentorView::FinalizeSegmentation()
 }
 
 template<typename TPixel, unsigned int VImageDimension>
-MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::MorphologicalSegmentorPipeline()
-{
-  // This is the main pipeline that will form the whole of the final output.
-  m_ThresholdingFilter = ThresholdingFilterType::New();
-  m_EarlyMaskFilter = MaskByRegionFilterType::New();
-  m_EarlyConnectedComponentFilter = LargestConnectedComponentFilterType::New();
-  m_ErosionFilter = ErosionFilterType::New();
-  m_DilationFilter = DilationFilterType::New();
-  m_RethresholdingFilter = RethresholdingFilterType::New();
-  m_LateMaskFilter = MaskByRegionFilterType::New();
-  m_LateConnectedComponentFilter = LargestConnectedComponentFilterType::New();
-  m_ExcludeImageFilter = ExcludeImageFilterType::New();
-  m_OrImageFilter = OrImageFilterType::New();
-
-  // Making sure that these are only called once in constructor, to avoid unnecessary pipeline updates.
-  m_ForegroundValue = 255;
-  m_BackgroundValue = 0;
-  m_ThresholdingFilter->SetInsideValue(m_ForegroundValue);
-  m_ThresholdingFilter->SetOutsideValue(m_BackgroundValue);
-  m_EarlyMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
-  m_EarlyConnectedComponentFilter->SetInputBackgroundValue(m_BackgroundValue);
-  m_EarlyConnectedComponentFilter->SetOutputBackgroundValue(m_BackgroundValue);
-  m_EarlyConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
-  m_ErosionFilter->SetInValue(m_ForegroundValue);
-  m_ErosionFilter->SetOutValue(m_BackgroundValue);
-  m_DilationFilter->SetInValue(m_ForegroundValue);
-  m_DilationFilter->SetOutValue(m_BackgroundValue);
-  m_RethresholdingFilter->SetInValue(m_ForegroundValue);
-  m_RethresholdingFilter->SetOutValue(m_BackgroundValue);
-  m_LateMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
-  m_LateConnectedComponentFilter->SetInputBackgroundValue(m_BackgroundValue);
-  m_LateConnectedComponentFilter->SetOutputBackgroundValue(m_BackgroundValue);
-  m_LateConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
-}
-
-template<typename TPixel, unsigned int VImageDimension>
-void
-MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(MorphologicalSegmentorPipelineParams& p)
-{
-  m_Stage = p.m_Stage;
-
-  // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
-
-  if (m_Stage == 0)
-  {
-    m_ThresholdingFilter->SetLowerThreshold((TPixel)p.m_LowerIntensityThreshold);
-    m_ThresholdingFilter->SetUpperThreshold((TPixel)p.m_UpperIntensityThreshold);
-
-    m_EarlyMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
-  }
-  else if (m_Stage == 1)
-  {
-    m_EarlyMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
-    m_EarlyConnectedComponentFilter->SetInput(m_EarlyMaskFilter->GetOutput());
-    m_ErosionFilter->SetBinaryImageInput(m_EarlyConnectedComponentFilter->GetOutput());
-    m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(m_ErosionFilter->GetOutput());
-    m_OrImageFilter->SetInput(0, m_LateMaskFilter->GetOutput());
-    m_ExcludeImageFilter->SetInput(0, m_OrImageFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_ExcludeImageFilter->GetOutput());
-
-    m_ErosionFilter->SetUpperThreshold((TPixel)p.m_UpperErosionsThreshold);
-    m_ErosionFilter->SetNumberOfIterations(p.m_NumberOfErosions);
-  }
-  else if (m_Stage == 2)
-  {
-    m_EarlyMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
-    m_EarlyConnectedComponentFilter->SetInput(m_EarlyMaskFilter->GetOutput());
-    m_ErosionFilter->SetBinaryImageInput(m_EarlyConnectedComponentFilter->GetOutput());
-    m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_DilationFilter->SetBinaryImageInput(m_ErosionFilter->GetOutput());
-    m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(m_DilationFilter->GetOutput());
-    m_OrImageFilter->SetInput(0, m_LateMaskFilter->GetOutput());
-    m_ExcludeImageFilter->SetInput(0, m_OrImageFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_ExcludeImageFilter->GetOutput());
-
-    m_DilationFilter->SetLowerThreshold((int)(p.m_LowerPercentageThresholdForDilations));
-    m_DilationFilter->SetUpperThreshold((int)(p.m_UpperPercentageThresholdForDilations));
-    m_DilationFilter->SetNumberOfIterations((int)(p.m_NumberOfDilations));
-  }
-  else if (m_Stage == 3)
-  {
-    m_EarlyMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
-    m_EarlyConnectedComponentFilter->SetInput(m_EarlyMaskFilter->GetOutput());
-    m_ErosionFilter->SetBinaryImageInput(m_EarlyConnectedComponentFilter->GetOutput());
-    m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_DilationFilter->SetBinaryImageInput(m_ErosionFilter->GetOutput());
-    m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(m_RethresholdingFilter->GetOutput());
-    m_RethresholdingFilter->SetBinaryImageInput(m_DilationFilter->GetOutput());
-    m_RethresholdingFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_OrImageFilter->SetInput(0, m_LateMaskFilter->GetOutput());
-    m_ExcludeImageFilter->SetInput(0, m_OrImageFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_ExcludeImageFilter->GetOutput());
-
-    m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
-    m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
-    m_RethresholdingFilter->SetHighPercentageThreshold((int)(p.m_UpperPercentageThresholdForDilations));
-  }
-}
-
-template<typename TPixel, unsigned int VImageDimension>
-void
-MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::Update(bool editingImageBeingEdited, bool additionsImageBeingEdited, int *editingRegion)
-{
-  // Note: We try and update as small a section of the pipeline as possible.
-
-  typedef itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::IndexType IndexType;
-  typedef typename ImageType::SizeType SizeType;
-  typedef typename ImageType::RegionType RegionType;
-
-  IndexType editingRegionStartIndex;
-  SizeType editingRegionSize;
-  RegionType editingRegionOfInterest;
-
-  for (int i = 0; i < 3; i++)
-  {
-    editingRegionStartIndex[i] = editingRegion[i];
-    editingRegionSize[i] = editingRegion[i + 3];
-  }
-  editingRegionOfInterest.SetIndex(editingRegionStartIndex);
-  editingRegionOfInterest.SetSize(editingRegionSize);
-
-  if (m_Stage == 0)
-  {
-    m_EarlyMaskFilter->UpdateLargestPossibleRegion();
-  }
-  else
-  {
-    if (additionsImageBeingEdited)
-    {
-      // Note: This little... Hacklet.. or shall we say "optimisation", basically replicates
-      // the filter logic, over a tiny region of interest. I did try using filters to extract
-      // a region of interest, perform the logic in another filter, and then insert the region
-      // back, but it didn't work, even after sacrificing virgins to several well known deities.
-
-      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_OrImageFilter->GetOutput(), editingRegionOfInterest);
-      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_OrImageFilter->GetInput(1), editingRegionOfInterest);
-      for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
-          !outputIterator.IsAtEnd();
-          ++outputIterator, ++editedRegionIterator)
-      {
-        if (outputIterator.Get() > 0 || editedRegionIterator.Get() > 0)
-        {
-          outputIterator.Set(m_ForegroundValue);
-        }
-        else
-        {
-          outputIterator.Set(m_BackgroundValue);
-        }
-      }
-    }
-    else if (editingImageBeingEdited)
-    {
-      // Note: This little... Hacklet.. or shall we say "optimisation", basically replicates
-      // the filter logic, over a tiny region of interest. I did try using filters to extract
-      // a region of interest, perform the logic in another filter, and then insert the region
-      // back, but it didn't work, even after sacrificing virgins to several well known deities.
-
-      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_ExcludeImageFilter->GetOutput(), editingRegionOfInterest);
-      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_ExcludeImageFilter->GetInput(1), editingRegionOfInterest);
-      for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
-          !outputIterator.IsAtEnd();
-          ++outputIterator, ++editedRegionIterator)
-      {
-        if (editedRegionIterator.Get() > 0)
-        {
-          outputIterator.Set(m_BackgroundValue);
-        }
-      }
-    }
-    else
-    {
-      // Executing the pipeline for the whole image - slow, but unavoidable.
-      m_LateConnectedComponentFilter->Modified();
-      m_LateConnectedComponentFilter->UpdateLargestPossibleRegion();
-    }
-  }
-}
-
-template<typename TPixel, unsigned int VImageDimension>
-typename MorphologicalSegmentorPipeline<TPixel, VImageDimension>::SegmentationImageType::Pointer
-MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::GetOutput(bool editingImageBeingEdited, bool additionsImageBeingEdited)
-{
-  typename SegmentationImageType::Pointer result;
-
-  if (m_Stage == 0)
-  {
-    result = m_EarlyMaskFilter->GetOutput();
-  }
-  else
-  {
-    if (additionsImageBeingEdited)
-    {
-      result = m_OrImageFilter->GetOutput();
-    }
-    else if (editingImageBeingEdited)
-    {
-      result = m_ExcludeImageFilter->GetOutput();
-    }
-    else
-    {
-      result = m_LateConnectedComponentFilter->GetOutput();
-    }
-  }
-  return result;
-}
-
-template<typename TPixel, unsigned int VImageDimension>
 void
 MIDASMorphologicalSegmentorView
 ::InvokeITKPipeline(
@@ -923,7 +666,7 @@ MIDASMorphologicalSegmentorView
     bool editingImageBeingUpdated,
     bool additionsImageBeingUpdated,
     bool isRestarting,
-    int *editingRegion,
+    std::vector<int>& editingRegion,
     mitk::Image::Pointer& output
     )
 {
@@ -1074,20 +817,21 @@ MIDASMorphologicalSegmentorView
 
 void MIDASMorphologicalSegmentorView::ClearWorkingData()
 {
-  mitk::Image::Pointer editsImage = this->GetWorkingImageFromToolManager(0);
-  mitk::Image::Pointer additionsImage = this->GetWorkingImageFromToolManager(1);
-  mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(0);
-  mitk::DataNode::Pointer additionsNode = this->GetToolManager()->GetWorkingData(1);
+  mitk::Image::Pointer additionsImage = this->GetWorkingImageFromToolManager(0);
+  mitk::Image::Pointer editsImage = this->GetWorkingImageFromToolManager(1);
+  mitk::DataNode::Pointer additionsNode = this->GetToolManager()->GetWorkingData(0);
+  mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(1);
 
   if (editsImage.IsNotNull() && additionsImage.IsNotNull() && editsNode.IsNotNull() && additionsNode.IsNotNull())
   {
     try
     {
-      AccessFixedDimensionByItk(editsImage, ClearITKImage, 3);
       AccessFixedDimensionByItk(additionsImage, ClearITKImage, 3);
+      AccessFixedDimensionByItk(editsImage, ClearITKImage, 3);
 
       editsImage->Modified();
       additionsImage->Modified();
+
       editsNode->Modified();
       additionsNode->Modified();
     }
@@ -1140,7 +884,6 @@ void MIDASMorphologicalSegmentorView::GetParameterValues(MorphologicalSegmentorP
       segmentationDataNode->GetFloatProperty("midas.morph.dilation.upper", params.m_UpperPercentageThresholdForDilations);
       segmentationDataNode->GetIntProperty("midas.morph.dilation.iterations", params.m_NumberOfDilations);
       segmentationDataNode->GetIntProperty("midas.morph.rethresholding.box", params.m_BoxSize);
-      segmentationDataNode->GetIntProperty("midas.morph.cursor.width", params.m_CursorWidth);
     }
   }
 }
@@ -1156,14 +899,14 @@ void MIDASMorphologicalSegmentorView::SetControlsByParameterValues()
 
 void MIDASMorphologicalSegmentorView::RemoveWorkingData()
 {
-  mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(0);
-  assert(editsNode);
-
-  mitk::DataNode::Pointer additionsNode = this->GetToolManager()->GetWorkingData(1);
+  mitk::DataNode::Pointer additionsNode = this->GetToolManager()->GetWorkingData(0);
   assert(additionsNode);
 
-  this->GetDefaultDataStorage()->Remove(editsNode);
+  mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(1);
+  assert(editsNode);
+
   this->GetDefaultDataStorage()->Remove(additionsNode);
+  this->GetDefaultDataStorage()->Remove(editsNode);
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType emptyWorkingDataArray;

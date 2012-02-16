@@ -58,82 +58,81 @@ public:
   static const std::string PropertyKey;
 
 public:
-    /**
-     * \brief Reads an affine transform from an MITK data node.
-     *
-     *
-     * If there is no affine transform set for the given node, the identity transform is returned.
-     */
-    static vtkSmartPointer<vtkMatrix4x4> LoadTransformFromNode(const std::string propertyName, const mitk::DataNode &node);
+  /**
+   * \brief Reads an affine transform from an MITK data node.
+   *
+   *
+   * If there is no affine transform set for the given node, the identity transform is returned.
+   */
+  static vtkSmartPointer<vtkMatrix4x4> LoadTransformFromNode(const std::string propertyName, const mitk::DataNode &node);
 
-    /**
-     * \brief Writes an affine transform to a node (as a 4x4 VTK Matrix)
-     */
-    static void StoreTransformInNode(const std::string propertyName, const vtkMatrix4x4 &transform, mitk::DataNode &r_node);
-    /** @} */
+  /**
+   * \brief Writes an affine transform to a node (as a 4x4 VTK Matrix)
+   */
+  static void StoreTransformInNode(const std::string propertyName, const vtkMatrix4x4 &transform, mitk::DataNode &r_node);
+  /** @} */
 
-    /**
-     * \name Data
-     * @{
-     */
+  /**
+   * \name Data
+   * @{
+   */
 private:
-    vtkSmartPointer<vtkMatrix4x4> msp_Transform;
+  vtkSmartPointer<vtkMatrix4x4> msp_Transform;
 
 public:
-    /**
-     * \return R/W access to transform.
-     */
-    vtkMatrix4x4& GetTransform(void) {
-      return *msp_Transform;
-    }
+  /**
+   * \return R/W access to transform.
+   */
+  vtkMatrix4x4& GetTransform(void) {
+    return *msp_Transform;
+  }
 
-    /**
-     * \return R/O access to transform.
-     */
-    const vtkMatrix4x4& GetTransform(void) const {
-      return *msp_Transform;
-    }
+  /**
+   * \return R/O access to transform.
+   */
+  const vtkMatrix4x4& GetTransform(void) const {
+    return *msp_Transform;
+  }
 
-    /**
-     * \brief Sets transform
-     *
-     *
-     * The transform is copied to memory managed by the property object.
-     */
-    void SetTransform(const vtkMatrix4x4 &transform) {
-      if (msp_Transform.GetPointer() == NULL)
-        msp_Transform = vtkSmartPointer<vtkMatrix4x4>::New();
+  /**
+   * \brief Sets transform
+   *
+   *
+   * The transform is copied to memory managed by the property object.
+   */
+  void SetTransform(const vtkMatrix4x4 &transform) {
+    if (msp_Transform.GetPointer() == NULL)
+      msp_Transform = vtkSmartPointer<vtkMatrix4x4>::New();
+    msp_Transform->DeepCopy(&transform.Element[0][0]);
+  }
 
-      msp_Transform->DeepCopy(&transform.Element[0][0]);
-    }
+  void Identity() {
+    msp_Transform->Identity();
+  }
 
-    void Identity() {
-      msp_Transform->Identity();
-    }
+  /** @} */
 
-    /** @} */
-
-    /**
-     * \name mitk::BaseProperty Interface
-     * @{
-     */
+  /**
+   * \name mitk::BaseProperty Interface
+   * @{
+   */
 public:
 
-    virtual std::string GetValueAsString() const;
+  virtual std::string GetValueAsString() const;
 
-    /** @} */
+  /** @} */
 
-    /**
-     * \name Instantiation, Construction, Destruction
-     * @{
-     */
+  /**
+   * \name Instantiation, Construction, Destruction
+   * @{
+   */
 protected:
-    AffineTransformDataNodeProperty(void) { msp_Transform = vtkMatrix4x4::New(); }
-    virtual ~AffineTransformDataNodeProperty(void) {}
+  AffineTransformDataNodeProperty(void) { msp_Transform = vtkMatrix4x4::New(); }
+  virtual ~AffineTransformDataNodeProperty(void) {}
 
 public:
-    itkNewMacro(Self);
-    /** @} */
+  itkNewMacro(Self);
+  /** @} */
 
 private:
 

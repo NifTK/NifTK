@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-07-27 16:21:05 +0100 (Wed, 27 Jul 2011) $
- Revision          : $Revision: 6861 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,19 +22,23 @@
 
  ============================================================================*/
 
-#ifndef QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_CPP
-#define QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_CPP
+#include "mitkMIDASPaintbrushToolOpEditImage.h"
 
-#include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
-
-QmitkMIDASImageAndSegmentationSelectorWidget::QmitkMIDASImageAndSegmentationSelectorWidget(QWidget *parent)
+mitk::MIDASPaintbrushToolOpEditImage::MIDASPaintbrushToolOpEditImage(
+    mitk::OperationType type,
+    bool redo,
+    int imageNumber,
+    unsigned char valueToWrite,
+    mitk::Image* imageToEdit,
+    mitk::DataNode* nodeToEdit,
+    ProcessorType* processor
+    )
+: mitk::Operation(type)
+, m_Redo(redo)
+, m_ImageNumber(imageNumber)
+, m_ValueToWrite(valueToWrite)
+, m_ImageToEdit(imageToEdit)
+, m_NodeToEdit(nodeToEdit)
+, m_Processor(processor)
 {
-  setupUi(parent);
 }
-
-QmitkMIDASImageAndSegmentationSelectorWidget::~QmitkMIDASImageAndSegmentationSelectorWidget()
-{
-
-}
-
-#endif

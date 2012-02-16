@@ -49,12 +49,6 @@ namespace mitk {
     // We store a seed point set name, so all classes have access to it.
     static const std::string SEED_POINT_SET_NAME;
 
-    // We store a name for subtractions image used in the morphological editor.
-    static const std::string SUBTRACTIONS_IMAGE_NAME;
-
-    // We store a name for additions image used in the morphological editor.
-    static const std::string ADDITIONS_IMAGE_NAME;
-
     // We store a name for region growing image used in the general editor.
     static const std::string REGION_GROWING_IMAGE_NAME;
 

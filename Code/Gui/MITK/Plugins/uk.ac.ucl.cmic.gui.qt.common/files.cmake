@@ -3,6 +3,7 @@ SET(SRC_CPP_FILES
   mitkMIDASDataStorageEditorInput.cpp
   QmitkMIDASBaseFunctionality.cpp
   QmitkMIDASBaseSegmentationFunctionality.cpp
+  QmitkMIDASToolSelectorWidget.cpp
   QmitkMIDASImageAndSegmentationSelectorWidget.cpp
   QmitkMIDASMultiViewEditor.cpp
   QmitkMIDASMultiViewEditorPreferencePage.cpp
@@ -14,6 +15,7 @@ SET(INTERNAL_CPP_FILES
 
 SET(UI_FILES
   src/QmitkMIDASImageAndSegmentationSelector.ui
+  src/QmitkMIDASToolSelector.ui
 )
 
 SET(MOC_H_FILES
@@ -21,6 +23,7 @@ SET(MOC_H_FILES
   src/QmitkCMICBaseFunctionality.h
   src/QmitkMIDASBaseFunctionality.h
   src/QmitkMIDASBaseSegmentationFunctionality.h
+  src/QmitkMIDASToolSelectorWidget.h
   src/QmitkMIDASImageAndSegmentationSelectorWidget.h
   src/QmitkMIDASMultiViewEditor.h
   src/QmitkMIDASMultiViewEditorPreferencePage.h

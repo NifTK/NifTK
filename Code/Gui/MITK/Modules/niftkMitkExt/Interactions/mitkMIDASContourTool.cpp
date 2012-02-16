@@ -279,46 +279,6 @@ void mitk::MIDASContourTool::CopyContour(mitk::Contour &a, mitk::Contour &b)
   }
 }
 
-bool mitk::MIDASContourTool::AreDifferent(const mitk::Point3D& a, const mitk::Point3D& b)
-{
-  bool areDifferent = false;
-
-  for (int i = 0; i < 3; i++)
-  {
-    if (fabs(a[i] - b[i]) > m_Tolerance)
-    {
-      areDifferent = true;
-    }
-  }
-
-  return areDifferent;
-}
-
-float mitk::MIDASContourTool::GetSquaredDistanceBetweenPoints(
-    const mitk::Point3D& a,
-    const mitk::Point3D& b)
-{
-    double distance = 0;
-
-    for (int i = 0; i < 3; i++)
-    {
-      distance += (a[i] - b[i])*(a[i] - b[i]);
-    }
-
-    return distance;
-}
-
-void mitk::MIDASContourTool::GetDifference(
-    const mitk::Point3D& a,
-    const mitk::Point3D& b,
-    mitk::Point3D& output)
-{
-  for (int i = 0; i < 3; i++)
-  {
-    output[i] = a[i] - b[i];
-  }
-}
-
 void mitk::MIDASContourTool::ConvertPointToVoxelCoordinate(
     const mitk::Point3D& input,
     mitk::Point3D& output)
@@ -382,7 +342,7 @@ void mitk::MIDASContourTool::GetClosestCornerPoint2D(
 
       m_WorkingImageGeometry->IndexToWorld(testCornerPointInVoxels, testCornerPointInMillimetres);
 
-      testSquaredDistance = this->GetSquaredDistanceBetweenPoints(testCornerPointInMillimetres, trueMillimetreCoordinate);
+      testSquaredDistance = mitk::GetSquaredDistanceBetweenPoints(testCornerPointInMillimetres, trueMillimetreCoordinate);
 
       if (testSquaredDistance < bestSquaredDistanceSoFar)
       {
@@ -436,7 +396,7 @@ void mitk::MIDASContourTool::GetAdditionalCornerPoint(
   this->ConvertPointToVoxelCoordinate(c2, c2InVoxelSpace);
   this->ConvertPointToVoxelCoordinate(p2, p2InVoxelSpace);
 
-  this->GetDifference(c2InVoxelSpace, c1InVoxelSpace, difference);
+  mitk::GetDifference(c2InVoxelSpace, c1InVoxelSpace, difference);
 
   c3InVoxelSpace = c1InVoxelSpace;
   c3InVoxelSpace[whichTwoAxesInVoxelSpace[0]] += difference[whichTwoAxesInVoxelSpace[0]];
@@ -444,8 +404,8 @@ void mitk::MIDASContourTool::GetAdditionalCornerPoint(
   c4InVoxelSpace = c1InVoxelSpace;
   c4InVoxelSpace[whichTwoAxesInVoxelSpace[1]] += difference[whichTwoAxesInVoxelSpace[1]];
 
-  if (this->GetSquaredDistanceBetweenPoints(c3InVoxelSpace, p2InVoxelSpace)
-      < this->GetSquaredDistanceBetweenPoints(c4InVoxelSpace, p2InVoxelSpace))
+  if (mitk::GetSquaredDistanceBetweenPoints(c3InVoxelSpace, p2InVoxelSpace)
+      < mitk::GetSquaredDistanceBetweenPoints(c4InVoxelSpace, p2InVoxelSpace))
   {
     m_WorkingImageGeometry->IndexToWorld(c3InVoxelSpace, output);
   }
@@ -453,22 +413,6 @@ void mitk::MIDASContourTool::GetAdditionalCornerPoint(
   {
     m_WorkingImageGeometry->IndexToWorld(c4InVoxelSpace, output);
   }
-}
-
-double mitk::MIDASContourTool::CalculateStepSize(double *spacing)
-{
-  double stepSize = 0;
-  double smallestDimension = std::numeric_limits<double>::max();
-
-  for (int i = 0; i< 3; i++)
-  {
-    if (spacing[i] < smallestDimension)
-    {
-      smallestDimension = spacing[i];
-    }
-  }
-  stepSize = smallestDimension / 3.0;
-  return stepSize;
 }
 
 unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
@@ -522,7 +466,7 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
   this->ConvertPointToVoxelCoordinate(currentPoint, currentPointInVoxelCoords);
 
   // Work out the smallest dimension and hence the step size along the line
-  double stepSize = this->CalculateStepSize(spacing);
+  double stepSize = mitk::CalculateStepSize(spacing);
 
   // In this method, we are working entirely in millimetres.
   // However, we have "true" millimetres, and also, if we convert
@@ -532,11 +476,11 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
 
   // Work out the vector we are stepping along in true millimetre coordinates.
   mitk::Point3D vectorDifference;
-  this->GetDifference(currentPoint, mostRecentPointInMillimetres, vectorDifference);
+  mitk::GetDifference(currentPoint, mostRecentPointInMillimetres, vectorDifference);
 
   // Calculate length^2, because if length^2 is zero, we haven't moved the mouse, so we
   // can abandon this method to avoid division by zero errors.
-  double length = this->GetSquaredDistanceBetweenPoints(currentPoint, mostRecentPointInMillimetres);
+  double length = mitk::GetSquaredDistanceBetweenPoints(currentPoint, mostRecentPointInMillimetres);
 
   // So, all remaining work is only done if we had a vector with some length to it.
   if (length > 0)
@@ -591,7 +535,7 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
           pointToCheckForDifference = mostRecentPointInContourInMillimetres;
         }
 
-        if (this->AreDifferent(pointToCheckForDifference, closestCornerPointToIncrementedPoint))
+        if (mitk::AreDifferent(pointToCheckForDifference, closestCornerPointToIncrementedPoint))
         {
 
           if (currentNumberOfPoints == 0)
@@ -615,7 +559,7 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
           else
           {
 
-            if (this->AreDifferent(mostRecentPointInContourInMillimetres, closestCornerPointToIncrementedPoint))
+            if (mitk::AreDifferent(mostRecentPointInContourInMillimetres, closestCornerPointToIncrementedPoint))
             {
 
               // Caveat, if the two corner points are diagonally opposite, we need to additionally insert

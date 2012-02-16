@@ -2,9 +2,9 @@ SET(SRC_CPP_FILES
 )
 
 SET(INTERNAL_CPP_FILES
+  MIDASMorphologicalSegmentorViewActivator.cpp
   MIDASMorphologicalSegmentorViewControlsImpl.cpp
   MIDASMorphologicalSegmentorView.cpp
-  MIDASMorphologicalSegmentorViewActivator.cpp
 )
 
 SET(UI_FILES
@@ -12,9 +12,9 @@ SET(UI_FILES
 )
 
 SET(MOC_H_FILES
+  src/internal/MIDASMorphologicalSegmentorViewActivator.h
   src/internal/MIDASMorphologicalSegmentorViewControlsImpl.h
   src/internal/MIDASMorphologicalSegmentorView.h
-  src/internal/MIDASMorphologicalSegmentorViewActivator.h
 )
 
 SET(CACHED_RESOURCE_FILES

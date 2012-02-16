@@ -24,6 +24,7 @@
 
 #include "mitkMIDASPolyTool.h"
 #include "mitkMIDASPolyTool.xpm"
+#include "mitkPointUtils.h"
 #include "mitkToolManager.h"
 #include "mitkBaseRenderer.h"
 #include "mitkContour.h"
@@ -278,7 +279,7 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
   for (unsigned long i = 0; i < contourReferencePointsInput.GetNumberOfPoints(); i++)
   {
     p1 = points->ElementAt(i);
-    distance = this->GetSquaredDistanceBetweenPoints(p1, closestCornerPoint);
+    distance = mitk::GetSquaredDistanceBetweenPoints(p1, closestCornerPoint);
     if (distance < closestDistance)
     {
       closestDistance = distance;

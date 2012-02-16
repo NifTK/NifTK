@@ -4,3 +4,7 @@ MITK_CREATE_MODULE(niftkMitkExt
   DEPENDS Mitk MitkExt ipSegmentation PlanarFigure ImageStatistics
   PACKAGE_DEPENDS ITK
 )
+
+IF(BUILD_TESTING)
+  ADD_SUBDIRECTORY(Testing)
+ENDIF(BUILD_TESTING)

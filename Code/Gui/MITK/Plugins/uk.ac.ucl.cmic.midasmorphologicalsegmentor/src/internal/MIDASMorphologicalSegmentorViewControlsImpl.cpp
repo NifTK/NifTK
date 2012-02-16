@@ -29,6 +29,7 @@
 
 MIDASMorphologicalSegmentorViewControlsImpl::MIDASMorphologicalSegmentorViewControlsImpl()
 {
+  this->setupUi(this);
 }
 
 MIDASMorphologicalSegmentorViewControlsImpl::~MIDASMorphologicalSegmentorViewControlsImpl()
@@ -73,8 +74,6 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   connect(m_RethresholdingHorizontalSlider, SIGNAL(sliderMoved(int)), this, SLOT(OnRethresholdingSliderMoved(int)));
   connect(m_RethresholdingHorizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(OnRethresholdingSliderChanged(int)));
   connect(m_RethresholdingResetButton, SIGNAL(pressed()), this, SLOT(OnRethresholdingResetButtonClicked()));
-  connect(m_CursorWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnCursorWidthSpinBoxChanged(int)));
-  connect(m_CursorWidthSlider, SIGNAL(valueChanged(int)), this, SLOT(OnCursorWidthSliderChanged(int)));
   connect(m_segmentationDialogButtonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(OnOKCancelClicked(QAbstractButton*)));
   connect(m_segmentationDialogClearPushButton, SIGNAL(clicked()), this, SLOT(OnClearButtonClicked()));
 
@@ -243,8 +242,6 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(M
   m_DilationsNumberOfDilationsSlider->setValue(params.m_NumberOfDilations);
   m_RethresholdingHorizontalSlider->setValue(params.m_BoxSize);
   m_RethresholdingLineEdit->setText(QString::number(params.m_BoxSize));
-  m_CursorWidthSlider->setValue(params.m_CursorWidth);
-  m_CursorWidthSpinBox->setValue(params.m_CursorWidth);
 
   this->blockSignals(false);
 
@@ -415,22 +412,6 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingSliderChanged(
 void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingResetButtonClicked()
 {
   this->SetTabNumber(2);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnCursorWidthSliderChanged(int i)
-{
-  this->m_CursorWidthSpinBox->blockSignals(true);
-  this->m_CursorWidthSpinBox->setValue(i);
-  this->m_CursorWidthSpinBox->blockSignals(false);
-  emit CursorWidthChanged(i);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnCursorWidthSpinBoxChanged(int i)
-{
-  this->m_CursorWidthSlider->blockSignals(true);
-  this->m_CursorWidthSlider->setValue(i);
-  this->m_CursorWidthSlider->blockSignals(false);
-  emit CursorWidthChanged(i);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::OnOKCancelClicked(QAbstractButton *button)

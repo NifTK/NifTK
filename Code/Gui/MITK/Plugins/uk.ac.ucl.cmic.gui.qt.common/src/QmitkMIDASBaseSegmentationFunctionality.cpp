@@ -56,6 +56,7 @@
 
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality()
 : m_ImageAndSegmentationSelector(NULL)
+, m_ToolSelector(NULL)
 {
   m_SelectedNode = NULL;
 }
@@ -66,6 +67,11 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
   {
     delete m_ImageAndSegmentationSelector;
   }
+
+  if (m_ToolSelector != NULL)
+  {
+    delete m_ToolSelector;
+  }
 }
 
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality(
@@ -73,6 +79,56 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *parentForSelectorWidget, QWidget *parentForToolWidget)
+{
+  if (!m_ImageAndSegmentationSelector)
+  {
+    // Set up the Image and Segmentation Selector.
+    // Subclasses add it to their layouts, at the appropriate point.
+    m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(parentForSelectorWidget);
+    m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
+    m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->setText("<font color='red'>please load an image!</font>");
+    m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
+    m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
+    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetDataStorage(this->GetDefaultDataStorage());
+    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetPredicate(mitk::NodePredicateDataType::New("Image"));
+    if( m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->GetSelectedNode().IsNotNull() )
+    {
+      m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->hide();
+    }
+    else
+    {
+      m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->show();
+    }
+
+    // Set up the Tool Selector.
+    // Subclasses add it to their layouts, at the appropriate point.
+    m_ToolSelector = new QmitkMIDASToolSelectorWidget(parentForToolWidget);
+    m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
+    m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
+    m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea( m_ToolSelector->m_ManualToolGUIContainer );
+    m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode( QmitkToolSelectionBox::EnabledWithReferenceAndWorkingData );
+
+    // Connect the ToolManager to DataStorage straight away.
+    mitk::ToolManager* toolManager = this->GetToolManager();
+    assert ( toolManager );
+    toolManager->SetDataStorage( *(this->GetDefaultDataStorage()) );
+
+    // We listen to NewNodesGenerated messages as the ToolManager is responsible for instantiating them.
+    toolManager->NewNodesGenerated +=
+      mitk::MessageDelegate<QmitkMIDASBaseSegmentationFunctionality>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated );
+
+    // We listen to NewNodObjectGenerated as the ToolManager is responsible for instantiating them.
+    toolManager->NewNodeObjectsGenerated +=
+      mitk::MessageDelegate1<QmitkMIDASBaseSegmentationFunctionality, mitk::ToolManager::DataVectorType*>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated );
+  }
+}
+
+mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
+{
+  return m_ToolSelector->m_ManualToolSelectionBox->GetToolManager();
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated()
@@ -83,18 +139,6 @@ void QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated()
 void QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated(mitk::ToolManager::DataVectorType* nodes)
 {
   std::cerr << "Matt, not finished yet, QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated" << std::endl;
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::FireNodeSelected( mitk::DataNode* node )
-{
-  std::vector<mitk::DataNode*> nodes;
-  nodes.push_back(node);
-  this->FireNodesSelected(nodes);
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::FireNodesSelected( std::vector<mitk::DataNode*> nodes )
-{
-  std::cerr << "Matt, not finished yet, QmitkMIDASBaseSegmentationFunctionality::FireNodesSelected " << std::endl;
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::Pointer node)
@@ -366,42 +410,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnComboBoxSelectionChanged( const 
 }
 
 
-void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *parent)
-{
-  if (!m_ImageAndSegmentationSelector)
-  {
-    m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget();
-    m_ImageAndSegmentationSelector->setupUi(parent);
-
-    m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
-    m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->setText("<font color='red'>please load an image!</font>");
-    m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
-    m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-
-    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetDataStorage(this->GetDefaultDataStorage());
-    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetPredicate(mitk::NodePredicateDataType::New("Image"));
-
-    if( m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->GetSelectedNode().IsNotNull() )
-    {
-      m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->hide();
-    }
-    else
-    {
-      m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->show();
-    }
-
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    assert ( toolManager );
-
-    toolManager->SetDataStorage( *(this->GetDefaultDataStorage()) );
-
-    toolManager->NewNodesGenerated +=
-      mitk::MessageDelegate<QmitkMIDASBaseSegmentationFunctionality>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated );          // update the list of segmentations
-    toolManager->NewNodeObjectsGenerated +=
-      mitk::MessageDelegate1<QmitkMIDASBaseSegmentationFunctionality, mitk::ToolManager::DataVectorType*>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated );          // update the list of segmentations
-  }
-}
-
 
 void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
 {
@@ -409,6 +417,12 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
   {
     connect( m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox, SIGNAL( OnSelectionChanged( const mitk::DataNode* ) ), this, SLOT( OnComboBoxSelectionChanged( const mitk::DataNode* ) ) );
   }
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::SetEnableManualToolSelectionBox(bool enabled)
+{
+  this->m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
+  this->m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
 }
 
 

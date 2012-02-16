@@ -25,6 +25,7 @@
 #define MITKMIDASCONTOURTOOL_H
 
 #include "niftkMitkExtExports.h"
+#include "mitkPointUtils.h"
 #include "mitkMIDASTool.h"
 #include "mitkExtractImageFilter.h"
 
@@ -63,14 +64,6 @@ namespace mitk {
 
     // I wrote a copy method because the assignment operator didn't appear to copy anything,
     void CopyContour(mitk::Contour& a, mitk::Contour& b);
-
-    // Calculates the step size along a ray.
-    double CalculateStepSize(double *spacing);
-
-    // Standalone utility methods for helping draw lines.
-    bool  AreDifferent(const mitk::Point3D& a, const mitk::Point3D& b);
-    float GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3D& b);
-    void  GetDifference(const mitk::Point3D& a, const mitk::Point3D& b, mitk::Point3D& output);
 
     // Utility methods for helping draw lines that require m_Geometry to be set.
     void ConvertPointToVoxelCoordinate(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInVoxelCoordinates);

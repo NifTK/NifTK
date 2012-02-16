@@ -27,8 +27,6 @@
 #include "mitkGlobalInteraction.h"
 
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
-const std::string mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME = std::string("MIDAS_EDITS_SUBTRACTIONS");
-const std::string mitk::MIDASTool::ADDITIONS_IMAGE_NAME = std::string("MIDAS_EDITS_ADDITIONS");
 const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = std::string("MIDAS_REGION_GROWING");
 const std::string mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME = std::string("MIDAS_SEE_PRIOR");
 const std::string mitk::MIDASTool::SEE_NEXT_IMAGE_NAME = std::string("MIDAS_SEE_NEXT");

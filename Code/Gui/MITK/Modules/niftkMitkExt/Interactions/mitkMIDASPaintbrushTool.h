@@ -26,161 +26,129 @@
 #define MITKMIDASPAINTBRUSHTOOL_H
 
 #include "niftkMitkExtExports.h"
-#include "mitkMIDASContourTool.h"
-#include "mitkOperationActor.h"
 #include "mitkOperation.h"
+#include "mitkOperationActor.h"
+#include "mitkSegTool2D.h"
+#include "mitkImage.h"
+#include "mitkGeometry3D.h"
+#include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "itkImage.h"
 #include "itkImageUpdatePixelWiseSingleValueProcessor.h"
 
 namespace mitk
 {
 
-/**
- * \class OpEditImage
- * \brief Nested class to hold data to pass back to this MIDASPaintbrushTool,
- * so that this MIDASPaintbrushTool can execute the Undo/Redo command.
- */
-class OpEditImage: public mitk::Operation
-{
-public:
-  typedef itk::ImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
-
-  OpEditImage(
-      mitk::OperationType type,
-      bool redo,
-      int imageNumber,
-      unsigned char valueToWrite,
-      mitk::Image* imageToEdit,
-      mitk::DataNode* nodeToEdit,
-      ProcessorType* processor
-      );
-  ~OpEditImage() {};
-  bool IsRedo() const { return m_Redo; }
-  int GetImageNumber() const { return m_ImageNumber; }
-  unsigned char GetValueToWrite() const { return m_ValueToWrite; }
-  mitk::Image* GetImageToEdit() const { return m_ImageToEdit; }
-  mitk::DataNode* GetNodeToEdit() const { return m_NodeToEdit; }
-  ProcessorType::Pointer GetProcessor() const { return m_Processor; }
-
-private:
-  bool m_Redo;
-  int m_ImageNumber;
-  unsigned char m_ValueToWrite;
-  mitk::Image* m_ImageToEdit;
-  mitk::DataNode* m_NodeToEdit;
-  ProcessorType::Pointer m_Processor;
-};
+class MIDASPaintbrushToolEventInterface;
 
  /**
   * \class MIDASPaintbrushTool
-  * \brief MIDAS paint brush tool used during editing of the morphological editor.
+  * \brief MIDAS paint brush tool used during editing on the morphological editor screen (a.k.a connection breaker).
   *
   * Note the following:
   * <pre>
-  * 1.) Writes into 2 images, so ToolManager must have 2 volume to edit into.
-  * 2.) We derive from MIDASContourTool mainly for consistency as we use the
-  * methods that setup geometry, so we know which slice we are affecting.
-  * 3.) Derives from mitk::OperationActor, so this tool supports undo/redo.
+  * 1.) Writes into 2 images, so ToolManager must have 2 working volume to edit into.
+  *     We define Working Image[0] = "additions image", which is added to the main segmentation to add stuff back into the volume.
+  *     We define Working Image[1] = "subtractions image", which is subtracted from the main segmentation to do connection breaking.
+  * 2.) Then, given 1, we have:
+  *     Left mouse = paint into the "additions image".
+  *     Middle mouse = paint into the "subtractions image".
+  *     Right mouse = subtract from the "subtractions image".
+  * 3.) We derive from SegTool2D to keep things simple, as we just need to
+  *     convert from mm world points to voxel points, and paint.
+  * 4.) Derives from mitk::OperationActor, so this tool supports undo/redo.
   * </pre>
+  *
+  * This class is a MITK tool with a GUI defined in QmitkMIDASPaintbrushToolGUI, and instantiated
+  * using the object factory described in Maleike et. al. doi:10.1016/j.cmpb.2009.04.004.
+  *
+  * To effectively use this tool, you need a 3 button mouse.
   */
-class NIFTKMITKEXT_EXPORT MIDASPaintbrushTool : public MIDASContourTool
+class NIFTKMITKEXT_EXPORT MIDASPaintbrushTool : public SegTool2D
 {
+
+public:
+  mitkClassMacro(MIDASPaintbrushTool, SegTool2D);
+  itkNewMacro(MIDASPaintbrushTool);
+
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> ImageType;
   typedef itk::ImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
-
-  /**
-   * \class MIDASPaintbrushToolEventInterface
-   * \brief Interface class, simply to callback onto this class.
-   */
-  class MIDASPaintbrushToolEventInterface: public itk::Object, public mitk::OperationActor
-  {
-  public:
-    MIDASPaintbrushToolEventInterface() {};
-    ~MIDASPaintbrushToolEventInterface() {};
-    void SetMIDASPaintbrushTool( MIDASPaintbrushTool* paintbrushTool )
-    {
-      m_MIDASPaintBrushTool = paintbrushTool;
-    }
-    virtual void  ExecuteOperation(mitk::Operation* op)
-    {
-      m_MIDASPaintBrushTool->ExecuteOperation(op);
-    }
-  private:
-    MIDASPaintbrushTool* m_MIDASPaintBrushTool;
-  };
-
-  public:
-  mitkClassMacro(MIDASPaintbrushTool, MIDASPaintbrushTool);
-  itkNewMacro(MIDASPaintbrushTool);
 
   /** Strings to help the tool identify itself in GUI. */
   virtual const char* GetName() const;
   virtual const char** GetXPM() const;
 
-  // We store a string of a property to say we are editing.
-  static const std::string EDITING_PROPERTY_NAME;
+  /** We store the name of a property that stores the image region. */
+  static const std::string REGION_PROPERTY_NAME;
 
-  // Properties to hold the edited region
-  static const std::string EDITING_PROPERTY_INDEX_X;
-  static const std::string EDITING_PROPERTY_INDEX_Y;
-  static const std::string EDITING_PROPERTY_INDEX_Z;
-  static const std::string EDITING_PROPERTY_SIZE_X;
-  static const std::string EDITING_PROPERTY_SIZE_Y;
-  static const std::string EDITING_PROPERTY_SIZE_Z;
-  static const std::string EDITING_PROPERTY_REGION_SET;
+  /** Get the Cursor size, default 1. */
+  itkGetConstMacro(CursorSize, int);
+
+  /** Set the cursor size, default 1. */
+  void SetCursorSize(int current);
+
+  /** Used to send messages when the cursor size is changed or should be updated in a GUI. */
+  Message1<int> CursorSizeChanged;
 
   /** Method to enable this class to interact with the Undo/Redo framework. */
   virtual void ExecuteOperation(Operation* operation);
 
-  // We essentially need 3 mouse buttons
-  // Left = add to additional volume that gets added to segmented volume.
-  // Middle = add to subtracting volume, which affects connection breaker.
-  // Right = subtract from subtraction volume, which affects connection breaker.
-  // But, the actual mouse config may be different on different Operating Systems.
-  virtual bool OnLeftMousePressed (Action* action, const StateEvent* stateEvent);
-  virtual bool OnLeftMouseMoved   (Action* action, const StateEvent* stateEvent);
-  virtual bool OnLeftMouseReleased(Action* action, const StateEvent* stateEvent);
+  /** Process all mouse events. */
+  virtual bool OnLeftMousePressed   (Action* action, const StateEvent* stateEvent);
+  virtual bool OnLeftMouseMoved     (Action* action, const StateEvent* stateEvent);
+  virtual bool OnLeftMouseReleased  (Action* action, const StateEvent* stateEvent);
   virtual bool OnMiddleMousePressed (Action* action, const StateEvent* stateEvent);
   virtual bool OnMiddleMouseMoved   (Action* action, const StateEvent* stateEvent);
   virtual bool OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent);
-  virtual bool OnRightMousePressed (Action* action, const StateEvent* stateEvent);
-  virtual bool OnRightMouseMoved   (Action* action, const StateEvent* stateEvent);
-  virtual bool OnRightMouseReleased(Action* action, const StateEvent* stateEvent);
-
-  /** Set/Get methods to set the Cursor width. Default 1. */
-  itkSetMacro(CursorSize, int);
-  itkGetConstMacro(CursorSize, int);
+  virtual bool OnRightMousePressed  (Action* action, const StateEvent* stateEvent);
+  virtual bool OnRightMouseMoved    (Action* action, const StateEvent* stateEvent);
+  virtual bool OnRightMouseReleased (Action* action, const StateEvent* stateEvent);
 
 protected:
 
-  MIDASPaintbrushTool(); // purposely hidden
+  MIDASPaintbrushTool();          // purposely hidden
   virtual ~MIDASPaintbrushTool(); // purposely hidden
+
+  /**
+  \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).
+
+  Derived tools should call their parents implementation.
+  */
+  virtual void Activated();
+
+  /**
+  \brief Called when the tool gets deactivated (unregistered from mitk::GlobalInteraction).
+
+  Derived tools should call their parents implementation.
+  */
+  virtual void Deactivated();
 
 private:
 
-  // Operation constant, used in Undo/Redo framework
-  static const mitk::OperationType OP_EDIT_IMAGE;
+  // Operation constant, used in Undo/Redo framework.
+  static const mitk::OperationType MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE;
 
-  // Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASPaintbrushToolEventInterface *m_Interface;
-
-  // Used between MouseDown and MouseMoved events to track movement.
-  mitk::Point3D m_MostRecentPointInMillimetres;
-
-  // Cursor size for editing
-  int m_CursorSize;
-
-  // Used for working out which voxels to edit.
+  ///
+  /// \brief Used for working out which voxels to edit.
+  ///
+  /// Essentially, we take two points, currentPoint and previousPoint in millimetre space
+  /// and step along a line between them. At each step we convert from millimetres to voxels,
+  /// and that list of voxels is the affected region.
   void GetListOfAffectedVoxels(
       const PlaneGeometry& planeGeometry,
       Point3D& currentPoint,
       Point3D& previousPoint,
       ProcessorType &processor);
 
-  // Marks the initial mouse position when any of the mouse buttons are pressed.
-  bool MarkInitialPosition(Action* action, const StateEvent* stateEvent);
+  /// \brief Marks the initial mouse position when any of the left/middle/right mouse buttons are pressed.
+  bool MarkInitialPosition(unsigned int imageNumber, Action* action, const StateEvent* stateEvent);
 
-  // Does the main functionality when the mouse moves, calls DoInitialCheck, then calls EditVoxels to write the specified valueToWrite into the specified imageNumber
+  /// \brief Sets an invalid region (indicating that we are not editing) on the chosen image number data node.
+  void SetInvalidRegion(unsigned int imageNumber);
+
+  /// \brief Sets a valid region property, taken from the bounding box of edited voxels, indicating that we are editing the given image number.
+  void SetValidRegion(unsigned int imageNumber, std::vector<int>& boundingBox);
+
+  /// \brief Does the main functionality when the mouse moves.
   bool DoMouseMoved(Action* action,
       const StateEvent* stateEvent,
       int imageNumber,
@@ -188,16 +156,7 @@ private:
       unsigned char valueForUndo
       );
 
-  // To perform any logic before any of the MouseMoved methods.
-  bool DoInitialCheck(Action* action, const StateEvent* stateEvent);
-
-  // Tags a specified image with a boolean indicating whether the region is up to date.
-  void UpdateRegionSetProperty(int imageNumber, bool isRegionSet);
-
-  // Tags a specified image with a boolean to indicate if we are currently editing it.
-  void UpdateEditingProperty(int imageNumber, bool editingPropertyValue);
-
-  // Using the MITK to ITK access functions to run my ITK processor object.
+  /// \brief Using the MITK to ITK access functions to run the ITK processor object.
   template<typename TPixel, unsigned int VImageDimension>
   void RunITKProcessor(
       itk::Image<TPixel, VImageDimension>* itkImage,
@@ -205,6 +164,21 @@ private:
       bool redo,
       unsigned char valueToWrite
       );
+
+  // Pointer to interface object, used as callback in Undo/Redo framework
+  MIDASPaintbrushToolEventInterface *m_Interface;
+
+  // Used between MouseDown and MouseMoved events to track movement.
+  mitk::Point3D m_MostRecentPointInMillimetres;
+
+  // Cursor size for editing, and cursor type is currently always a cross.
+  int m_CursorSize;
+
+  // This is the 3D geometry associated with the m_WorkingImage, where we assume both working images have same size and geometry.
+  mitk::Geometry3D* m_WorkingImageGeometry;
+
+  // This points to the current working image, assuming that we are only ever processing, left, middle or right mouse button at any one time.
+  mitk::Image* m_WorkingImage;
 
 };//class
 

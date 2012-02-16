@@ -1,5 +1,6 @@
 SET(CPP_FILES
   QmitkHelpAboutDialog.cpp
+  QmitkMIDASPaintbrushToolGUI.cpp
   QmitkMIDASRenderWindow.cpp
   QmitkMIDASSingleViewWidget.cpp
   QmitkMIDASMultiViewWidget.cpp
@@ -13,6 +14,7 @@ SET(MOC_H_FILES
   QmitkPaintEventEater.h
   QmitkWheelEventEater.h
   QmitkHelpAboutDialog.h
+  QmitkMIDASPaintbrushToolGUI.h
   QmitkMIDASRenderWindow.h
   QmitkMIDASSingleViewWidget.h
   QmitkMIDASMultiViewWidget.h

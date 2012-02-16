@@ -69,9 +69,6 @@ public:
   /// \brief Turns the OK, Cancel and reset buttons on/off.
   void SetEnableOKCancelResetWidgets(bool enabled);
 
-  /// \brief Turns the tool selection box on/off
-  void SetEnableManualToolSelectionBox(bool enabled);
-
 protected:
 
 private:

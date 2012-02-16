@@ -26,95 +26,29 @@
 #define _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED
 
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
-#include "MIDASMorphologicalSegmentorViewControlsImpl.h"
-#include "mitkTool.h"
-#include "mitkToolManager.h"
 #include "mitkImage.h"
-#include "itkImage.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkMIDASMaskByRegionImageFilter.h"
-#include "itkMIDASConditionalErosionFilter.h"
-#include "itkMIDASConditionalDilationFilter.h"
-#include "itkMIDASRethresholdingFilter.h"
-#include "itkMIDASLargestConnectedComponentFilter.h"
-#include "itkExcludeImageFilter.h"
-#include "itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter.h"
-#include "itkExtractImageFilter.h"
-#include "itkPasteImageFilter.h"
-#include "itkCastImageFilter.h"
 #include "itkTimeStamp.h"
 #include "MorphologicalSegmentorPipelineParams.h"
-#include "itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter.h"
-
-/**
- * \class MorphologicalSegmentorPipelineInterface
- * \brief Abstract interface to plug ITK pipeline into MITK framework.
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
- */
-class MorphologicalSegmentorPipelineInterface
-{
-public:
-  virtual void SetParam(MorphologicalSegmentorPipelineParams& p) = 0;
-  virtual void Update(bool editingImageBeingEdited, bool additionsImageBeingEdited, int *editingRegion) = 0;
-};
-
-/**
- * \class MorphologicalSegmentorPipeline
- * \brief Implementation of MorphologicalSegmentorPipelineInterface to hook into ITK pipeline.
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
- */
-template<typename TPixel, unsigned int VImageDimension>
-class MorphologicalSegmentorPipeline : public MorphologicalSegmentorPipelineInterface
-{
-public:
-
-  typedef itk::Image<TPixel, VImageDimension> GreyScaleImageType;
-  typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, VImageDimension> SegmentationImageType;
-
-  typedef itk::BinaryThresholdImageFilter<GreyScaleImageType, SegmentationImageType> ThresholdingFilterType;
-  typedef itk::MIDASMaskByRegionImageFilter<SegmentationImageType, SegmentationImageType> MaskByRegionFilterType;
-  typedef itk::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<SegmentationImageType, SegmentationImageType> LargestConnectedComponentFilterType;
-  typedef itk::MIDASConditionalErosionFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> ErosionFilterType;
-  typedef itk::MIDASConditionalDilationFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> DilationFilterType;
-  typedef itk::MIDASRethresholdingFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> RethresholdingFilterType;
-  typedef itk::InjectSourceImageGreaterThanZeroIntoTargetImageFilter<SegmentationImageType, SegmentationImageType, SegmentationImageType> OrImageFilterType;
-  typedef itk::ExcludeImageFilter<SegmentationImageType, SegmentationImageType, SegmentationImageType> ExcludeImageFilterType;
-  typedef itk::ExtractImageFilter<SegmentationImageType, SegmentationImageType> RegionOfInterestImageFilterType;
-  typedef itk::PasteImageFilter<SegmentationImageType, SegmentationImageType> PasteImageFilterType;
-
-  MorphologicalSegmentorPipeline();
-  void SetParam(MorphologicalSegmentorPipelineParams& p);
-  void Update(bool editingImageBeingEdited, bool additionsImageBeingEdited, int *editingRegion);
-  typename SegmentationImageType::Pointer GetOutput(bool editingImageBeingEdited, bool additionsImageBeingEdited);
-
-  mitk::Tool::DefaultSegmentationDataType m_ForegroundValue;
-  mitk::Tool::DefaultSegmentationDataType m_BackgroundValue;
-
-  int m_Stage;
-
-  typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
-  typename MaskByRegionFilterType::Pointer                     m_EarlyMaskFilter;
-  typename LargestConnectedComponentFilterType::Pointer        m_EarlyConnectedComponentFilter;
-  typename ErosionFilterType::Pointer                          m_ErosionFilter;
-  typename DilationFilterType::Pointer                         m_DilationFilter;
-  typename RethresholdingFilterType::Pointer                   m_RethresholdingFilter;
-  typename MaskByRegionFilterType::Pointer                     m_LateMaskFilter;
-  typename OrImageFilterType::Pointer                          m_OrImageFilter;
-  typename ExcludeImageFilterType::Pointer                     m_ExcludeImageFilter;
-  typename LargestConnectedComponentFilterType::Pointer        m_LateConnectedComponentFilter;
-};
+#include "MorphologicalSegmentorPipelineInterface.h"
+#include "MorphologicalSegmentorPipeline.h"
+#include "MIDASMorphologicalSegmentorViewControlsImpl.h"
 
 /**
  * \class MIDASMorphologicalSegmentorView
  * \brief Provides the MIDAS brain segmentation functionality developed at Dementia Research Centre.
+ *
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  *
  * This plugin implements the paper:
+ *
  * "Interactive algorithms for the segmentation and quantification of 3-D MRI brain scans"
  * by P. A. Freeborough, N. C. Fox and R. I. Kitney, published in
  * Computer Methods and Programs in Biomedicine 53 (1997) 15-25.
  *
  * \sa QmitkMIDASBaseSegmentationFunctionality
+ * \sa MorphologicalSegmentorPipeline
+ * \sa MorphologicalSegmentorPipelineInterface
+ * \sa MorphologicalSegmentorPipelineParams
  */
 class MIDASMorphologicalSegmentorView : public QmitkMIDASBaseSegmentationFunctionality
 {
@@ -122,21 +56,22 @@ class MIDASMorphologicalSegmentorView : public QmitkMIDASBaseSegmentationFunctio
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
-  public:
+public:
 
+  /// \brief Constructor, which does almost nothing, as most construction of the view is done in CreateQtPartControl().
   MIDASMorphologicalSegmentorView();
+
+  /// \brief Copy constructor which will throw a runtime exception, as no-one should call it.
   MIDASMorphologicalSegmentorView(const MIDASMorphologicalSegmentorView& other);
+
+  /// \brief Destructor, which cleans up the controls created in this view.
   virtual ~MIDASMorphologicalSegmentorView();
 
-  // Each View for a plugin has its own globally unique ID.
+  /// \brief Each View for a plugin has its own globally unique ID, this one is "uk.ac.ucl.cmic.midasmorphologicalsegmentor".
   static const std::string VIEW_ID;
+
+  /// \brief Returns VIEW_ID="uk.ac.ucl.cmic.midasmorphologicalsegmentor".
   virtual std::string GetViewID() const;
-
-  /// \brief QmitkFunctionality's activate.
-  virtual void Activated();
-
-  /// \brief QmitkFunctionality's deactivate.
-  virtual void Deactivated();
 
   /// \brief Invoked when the DataManager selection changed.
   virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
@@ -145,37 +80,52 @@ protected slots:
  
   /// \brief Called when the user hits the button "New segmentation".
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when thresholding widgets changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when erosion widgets changed.
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when dilation widgets changed.
   void OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when rethresholding widgets changed.
   void OnRethresholdingValuesChanged(int boxSize);
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when a tab changes.
   void OnTabChanged(int i);
-  void OnCursorWidthChanged(int i);
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when OK button is clicked, which should finalise / finish and accept the segmentation.
   void OnOKButtonClicked();
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when Clear button is clicked, which means "back to start", like a "reset" button.
   void OnClearButtonClicked();
+
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
   void OnCancelButtonClicked();
 
-protected:
+  /// \brief Called from QmitkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
+  void OnToolSelected(int);
 
-  /// \brief Returns the tool manager associated with this object, which is created within this class.
-  virtual mitk::ToolManager* GetToolManager();
+protected:
 
   /// \brief For Morphological Editing, if the tool manager has the correct WorkingData registered, then the Segmentation node is the immediate binary parent image of either working node.
   virtual mitk::DataNode* GetSegmentationNodeUsingToolManager();
 
-  /// \brief For Morphological Editing, if the tool manager has the correct WorkingData registered, then the Segmentation node is the immediate binary parent image of either working node.
+  /// \brief For Morphological Editing, if the tool manager has the correct WorkingData registered, then the Segmentation image is the immediate binary parent image of either working node.
   virtual mitk::Image* GetSegmentationImageUsingToolManager();
 
-  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME and mitk::MIDASTool::ADDITIONS_IMAGE_NAME.
+  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node);
 
-  /// \brief For Morphological Editing, a Working image should be called either mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME and mitk::MIDASTool::ADDITIONS_IMAGE_NAME, and have a binary image parent.
+  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.
   virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief For any binary image, we return true if the property midas.morph.stage is present, and false otherwise.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
-  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called mitk::MIDASTool::SUBTRACTIONS_IMAGE_NAME and mitk::MIDASTool::ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
+  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
   virtual mitk::ToolManager::DataVectorType GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
@@ -198,6 +148,12 @@ private:
   /// Some static strings, to avoid repetition.
   static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
 
+  // We store a name for subtractions image.
+  static const std::string SUBTRACTIONS_IMAGE_NAME;
+
+  // We store a name for additions image.
+  static const std::string ADDITIONS_IMAGE_NAME;
+
   /// \brief Calls update on the ITK pipeline using the MITK AccessByItk macros.
   void UpdateSegmentation();
 
@@ -211,7 +167,7 @@ private:
       bool editingImageBeingEdited,
       bool additionsImageBeingEdited,
       bool isRestarting,
-      int *editingRegion,
+      std::vector<int>& editingRegion,
       mitk::Image::Pointer& outputImage
       );
 
@@ -266,16 +222,22 @@ private:
   typedef std::pair<std::string, MorphologicalSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
   std::map<std::string, MorphologicalSegmentorPipelineInterface*> m_TypeToPipelineMap;
 
-  // All the controls for the main view part.
+  // All the controls for the main Morphological Editor view part.
   MIDASMorphologicalSegmentorViewControlsImpl* m_MorphologicalControls;
 
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
+
+  /// \brief Container for Selector Widget (see base class).
   QWidget *m_ContainerForSelectorWidget;
+
+  /// \brief Container for Tool Widget (see base class).
+  QWidget *m_ContainerForToolWidget;
+
+  /// \brief Container for the Morphological Controls Widgets (see this class).
   QWidget *m_ContainerForControlsWidget;
 
-  /// \brief we use a tool manager to store references to working/reference data, and a single draw tool.
-  mitk::ToolManager::Pointer m_ToolManager;
+  /// \brief The mitk::ToolManager is created in base class, but we request and store locally the Tools ID.
   int m_PaintbrushToolId;
 
 };

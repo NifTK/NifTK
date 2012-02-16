@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-10-31 09:27:55 +0000 (Mon, 31 Oct 2011) $
- Revision          : $Revision: 7636 $
- Last modified by  : $Author: sj $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef MITKAFFINETRANSFORMPARAMETERSDATANODEPROPERTY_H
-#define MITKAFFINETRANSFORMPARAMETERSDATANODEPROPERTY_H
+#ifndef MITKITKREGIONPARAMETERSDATANODEPROPERTY_H
+#define MITKITKREGIONPARAMETERSDATANODEPROPERTY_H
 
 #include <algorithm>
 #include "niftkMitkExtExports.h"
@@ -32,49 +32,44 @@
 namespace mitk {
 
 /**
- * \class AffineTransformParametersProperty
- * \brief MITK data-node property suitable for holding affine transform parameters.
- *
- * The parameters are defined to be an array of doubles in this order:
- * rx, ry, rz, tx, ty, tz, sx, sy, sz, k1, k2, k3 and cc (0 or 1)
- * to describe if we are rotating about centre or not.
- *
- * So, exactly 13 doubles long.
+ * \class ITKRegionParametersDataNodeProperty
+ * \brief MITK data-node property suitable for holding an ITK Region, consisting of a "valid" flag,
+ * plus 6 parameters containing Size and Index, as a simple vector of integers.
  */
-class NIFTKMITKEXT_EXPORT AffineTransformParametersDataNodeProperty : public BaseProperty
+class NIFTKMITKEXT_EXPORT ITKRegionParametersDataNodeProperty : public BaseProperty
 {
 
 public:
 
-  mitkClassMacro(AffineTransformParametersDataNodeProperty, BaseProperty);
-  itkNewMacro(AffineTransformParametersDataNodeProperty);
-  mitkNewMacro1Param(AffineTransformParametersDataNodeProperty, const std::vector<double>&);
-  virtual ~AffineTransformParametersDataNodeProperty();
+  mitkClassMacro(ITKRegionParametersDataNodeProperty, BaseProperty);
+  itkNewMacro(ITKRegionParametersDataNodeProperty);
+  virtual ~ITKRegionParametersDataNodeProperty();
 
-  /// \brief The ParametersType is defined to be an array of double, it should be exactly 13 doubles long.
-  typedef std::vector<double> ParametersType;
+  /// \brief Parameters are 6 integers, corresponding to size[X,Y,Z], index[X,Y,Z].
+  typedef std::vector<int> ParametersType;
 
-  /// \brief Property name under which affine transforms are stored.
-  static const std::string PropertyKey;
+  /// \brief Get the region parameters from this property object where size[X,Y,Z] = [0-2], and index[X,Y,Z] = [3-5].
+  const ParametersType& GetITKRegionParameters() const;
 
-  /// \brief Get the parameters from this property object.
-  const ParametersType& GetAffineTransformParameters() const;
+  /// \brief Set the region parameters on this property object where size[X,Y,Z] = [0-2], and index[X,Y,Z] = [3-5].
+  void SetITKRegionParameters(const ParametersType& parameters);
 
-  /// \brief Set the parameters on this property object.
-  void SetAffineTransformParameters(const ParametersType& parameters);
+  /// \brief Get the m_IsValid status flag.
+  bool IsValid() const;
+
+  /// \brief Set the isValid status flag.
+  void SetValid(bool valid);
 
   /// \brief Defined in base class, returns the current value as a string for display in property view.
   virtual std::string GetValueAsString() const;
 
-  /// \brief Method to set these parameters back to identity.
+  /// \brief Method to set these parameters back to identity, which is [false, 0,0,0,0,0,0].
   virtual void Identity();
 
 protected:
 
-  AffineTransformParametersDataNodeProperty();                                  // Purposefully hidden.
-  AffineTransformParametersDataNodeProperty(const ParametersType& parameters);  // Purposefully hidden.
-
-private:
+  ITKRegionParametersDataNodeProperty();                                 // Purposefully hidden.
+  ITKRegionParametersDataNodeProperty(const ParametersType& parameters); // Purposefully hidden.
 
   /*!
     Override this method in subclasses to implement a meaningful comparison. The property
@@ -93,7 +88,11 @@ private:
    */
   virtual bool Assign(const BaseProperty& );
 
+private:
+
   ParametersType m_Parameters;
+  bool           m_IsValid;
+
 };
 
 } // namespace mitk

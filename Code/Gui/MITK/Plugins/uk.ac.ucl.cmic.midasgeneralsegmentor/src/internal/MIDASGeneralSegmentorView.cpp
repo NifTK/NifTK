@@ -77,11 +77,13 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_GeneralControls(NULL)
 , m_Layout(NULL)
 , m_ContainerForSelectorWidget(NULL)
+, m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_OrientationButtons(NULL)
 {
   m_Interface = new MIDASGeneralSegmentorViewEventInterface();
   m_Interface->SetMIDASGeneralSegmentorView(this);
+
   m_LastSliceNumbers[0] = 0;
   m_LastSliceNumbers[1] = 0;
   m_LastSliceNumbers[2] = 0;
@@ -121,19 +123,20 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 
   if (!m_GeneralControls)
   {
-
     m_Layout = new QGridLayout(parent);
 
     m_ContainerForSelectorWidget = new QWidget(parent);
+    m_ContainerForToolWidget = new QWidget(parent);
     m_ContainerForControlsWidget = new QWidget(parent);
 
     m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget();
     m_GeneralControls->setupUi(m_ContainerForControlsWidget);
 
-    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(m_ContainerForSelectorWidget);
+    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(m_ContainerForSelectorWidget, m_ContainerForToolWidget);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 1, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget,     1, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
 
     m_OrientationButtons = new QButtonGroup();
     m_OrientationButtons->setExclusive(true);
@@ -141,20 +144,19 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_OrientationButtons->addButton(m_GeneralControls->m_SagittalRadioButton);
     m_OrientationButtons->addButton(m_GeneralControls->m_CoronalRadioButton);
 
-    m_GeneralControls->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
-    m_GeneralControls->m_ManualToolSelectionBox->SetLayoutColumns(3);
-    m_GeneralControls->m_ManualToolSelectionBox->SetToolGUIArea( m_GeneralControls->m_ManualToolGUIContainer );
-    m_GeneralControls->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
-    m_GeneralControls->m_ManualToolSelectionBox->SetEnabledMode( QmitkToolSelectionBox::EnabledWithReferenceAndWorkingData );
     m_GeneralControls->SetEnableThresholdingWidgets(false);
     m_GeneralControls->SetEnableThresholdingCheckbox(false);
-  }
 
-  this->CreateConnections();
+    m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
+
+    this->CreateConnections();
+  }
 }
 
 void MIDASGeneralSegmentorView::CreateConnections()
 {
+  QmitkMIDASBaseSegmentationFunctionality::CreateConnections();
+
   if ( m_GeneralControls )
   {
     connect(m_GeneralControls->m_CleanButton, SIGNAL(pressed()), this, SLOT(OnCleanButtonPressed()) );
@@ -172,7 +174,6 @@ void MIDASGeneralSegmentorView::CreateConnections()
     connect(m_GeneralControls->m_ThresholdCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnThresholdCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeePriorCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeNextCheckBoxToggled(bool)));
-    connect(m_GeneralControls->m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualToolSelected(int)) );
     connect(m_GeneralControls->m_ThresholdLowerSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnLowerThresholdValueChanged(double)));
     connect(m_GeneralControls->m_ThresholdUpperSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnUpperThresholdValueChanged(double)));
     connect(m_GeneralControls->m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationAxialToggled(bool)));
@@ -309,11 +310,6 @@ void MIDASGeneralSegmentorView::EnableSegmentationWidgets(bool b)
   }
 }
 
-mitk::ToolManager* MIDASGeneralSegmentorView::GetToolManager()
-{
-  return m_GeneralControls->m_ManualToolSelectionBox->GetToolManager();
-}
-
 mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name)
 {
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
@@ -443,7 +439,6 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->SetEnableThresholdingWidgets(false);
     this->m_GeneralControls->SetEnableThresholdingCheckbox(true);
     this->m_GeneralControls->m_ThresholdCheckBox->setChecked(false);
-    this->m_GeneralControls->SetEnableManualToolSelectionBox(true);
     this->SelectNode(emptySegmentation);
   }
   return emptySegmentation.GetPointer();

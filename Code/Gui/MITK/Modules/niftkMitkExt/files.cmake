@@ -1,4 +1,5 @@
 set(CPP_FILES
+  Interactions/mitkPointUtils.cpp
   Interactions/mitkMIDASTool.cpp
   Interactions/mitkMIDASContourTool.cpp
   Interactions/mitkMIDASDrawTool.cpp
@@ -6,11 +7,14 @@ set(CPP_FILES
   Interactions/mitkMIDASPolyTool.cpp
   Interactions/mitkMIDASSeedTool.cpp
   Interactions/mitkMIDASPosnTool.cpp
+  Interactions/mitkMIDASPaintbrushToolEventInterface.cpp
+  Interactions/mitkMIDASPaintbrushToolOpEditImage.cpp
   Interactions/mitkMIDASPaintbrushTool.cpp
   Interactions/mitkMIDASKeyPressStateMachine.cpp
   DataManagement/mitkDataStorageUtils.cpp
   DataManagement/mitkAffineTransformParametersDataNodeProperty.cpp
   DataManagement/mitkAffineTransformDataNodeProperty.cpp
+  DataManagement/mitkITKRegionParametersDataNodeProperty.cpp
   IO/itkAnalyzeImageIO3160.cpp
   IO/itkDRCAnalyzeImageIO3160.cpp
   IO/mitkDRCItkImageFileReader.cpp

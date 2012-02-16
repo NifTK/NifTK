@@ -1,5 +1,5 @@
 set(PROJECT_PLUGINS
-  Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:OFF
+  Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
   Plugins/uk.ac.ucl.cmic.niftyreg:OFF
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON

@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-07-27 16:21:05 +0100 (Wed, 27 Jul 2011) $
- Revision          : $Revision: 6861 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,19 +22,33 @@
 
  ============================================================================*/
 
-#ifndef QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_CPP
-#define QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_CPP
+#ifndef MITKMIDASPAINTBRUSHTOOLEVENTINTERFACE_H
+#define MITKMIDASPAINTBRUSHTOOLEVENTINTERFACE_H
 
-#include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
+#include "itkObject.h"
+#include "mitkOperationActor.h"
 
-QmitkMIDASImageAndSegmentationSelectorWidget::QmitkMIDASImageAndSegmentationSelectorWidget(QWidget *parent)
-{
-  setupUi(parent);
-}
-
-QmitkMIDASImageAndSegmentationSelectorWidget::~QmitkMIDASImageAndSegmentationSelectorWidget()
+namespace mitk
 {
 
-}
+class MIDASPaintbrushTool;
+
+/**
+ * \class MIDASPaintbrushToolEventInterface
+ * \brief Interface class, simply to callback operations onto the MIDASPaintbrushTool.
+ */
+class MIDASPaintbrushToolEventInterface: public itk::Object, public mitk::OperationActor
+{
+public:
+  MIDASPaintbrushToolEventInterface();
+  ~MIDASPaintbrushToolEventInterface();
+  void SetMIDASPaintbrushTool( MIDASPaintbrushTool* paintbrushTool );
+  virtual void  ExecuteOperation(mitk::Operation* op);
+private:
+  MIDASPaintbrushTool* m_MIDASPaintBrushTool;
+};
+
+} // end namespace
 
 #endif
+

@@ -139,9 +139,6 @@ protected slots:
 
 protected:
 
-  /// \brief Returns the tool manager associated with this object.
-  virtual mitk::ToolManager* GetToolManager();
-
   ///  \brief method to enable derived classes to turn widgets off/on
   virtual void EnableSegmentationWidgets(bool b);
 
@@ -312,7 +309,14 @@ private:
 
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
+
+  /// \brief Container for Selector Widget (see base class).
   QWidget *m_ContainerForSelectorWidget;
+
+  /// \brief Container for Tool Widget (see base class).
+  QWidget *m_ContainerForToolWidget;
+
+  /// \brief Container for the Morphological Controls Widgets (see this class).
   QWidget *m_ContainerForControlsWidget;
 
   /// \brief Used to enforce the axial, coronal, sagittal buttons into a group.

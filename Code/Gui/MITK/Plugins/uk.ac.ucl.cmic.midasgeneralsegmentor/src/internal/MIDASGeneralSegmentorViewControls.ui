@@ -68,37 +68,6 @@
       </layout>
      </item>
      <item>
-      <widget class="Line" name="m_Line4">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QGridLayout" name="m_GridLayoutManualToolSelectionBox">
-       <item row="0" column="0">
-        <widget class="QmitkToolSelectionBox" name="m_ManualToolSelectionBox" native="true">
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QmitkToolGUIArea" name="m_ManualToolGUIContainer" native="true">
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
       <widget class="Line" name="m_Line1">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -441,16 +410,6 @@
  </widget>
  <layoutdefault spacing="0" margin="0"/>
  <customwidgets>
-  <customwidget>
-   <class>QmitkToolSelectionBox</class>
-   <extends>QWidget</extends>
-   <header location="global">QmitkToolSelectionBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QmitkToolGUIArea</class>
-   <extends>QWidget</extends>
-   <header location="global">QmitkToolGUIArea.h</header>
-  </customwidget>
   <customwidget>
    <class>ctkSliderWidget</class>
    <extends>QWidget</extends>

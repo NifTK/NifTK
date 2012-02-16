@@ -33,6 +33,7 @@ class QAbstractButton;
 /**
  * \class MIDASMorphologicalSegmentorViewControlsImpl
  * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
+ *
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
 class MIDASMorphologicalSegmentorViewControlsImpl : public QWidget, public Ui_MIDASMorphologicalSegmentorViewControls
@@ -42,9 +43,10 @@ class MIDASMorphologicalSegmentorViewControlsImpl : public QWidget, public Ui_MI
 
 public:
 
+  /// \brief Constructor.
   MIDASMorphologicalSegmentorViewControlsImpl();
 
-  /** Destructor. */
+  /// \brief Destructor.
   ~MIDASMorphologicalSegmentorViewControlsImpl();
 
   /// \brief Creates the GUI, initialising everything to off.
@@ -72,7 +74,6 @@ signals:
   void DilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
   void RethresholdingValuesChanged(int boxSize);
   void TabChanged(int tabNumber);
-  void CursorWidthChanged(int width);
   void OKButtonClicked();
   void CancelButtonClicked();
   void ClearButtonClicked();
@@ -95,8 +96,6 @@ protected slots:
   void OnRethresholdingSliderChanged(int);
   void OnRethresholdingSliderMoved(int);
   void OnRethresholdingResetButtonClicked();
-  void OnCursorWidthSliderChanged(int);
-  void OnCursorWidthSpinBoxChanged(int);
   void OnOKCancelClicked(QAbstractButton*);
   void OnClearButtonClicked();
 

@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-07-27 16:21:05 +0100 (Wed, 27 Jul 2011) $
- Revision          : $Revision: 6861 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,19 +22,29 @@
 
  ============================================================================*/
 
-#ifndef QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_CPP
-#define QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_CPP
+#include "mitkMIDASPaintbrushToolEventInterface.h"
+#include "mitkMIDASPaintbrushTool.h"
 
-#include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
-
-QmitkMIDASImageAndSegmentationSelectorWidget::QmitkMIDASImageAndSegmentationSelectorWidget(QWidget *parent)
-{
-  setupUi(parent);
-}
-
-QmitkMIDASImageAndSegmentationSelectorWidget::~QmitkMIDASImageAndSegmentationSelectorWidget()
+namespace mitk
 {
 
+MIDASPaintbrushToolEventInterface::MIDASPaintbrushToolEventInterface()
+: m_MIDASPaintBrushTool(NULL)
+{
 }
 
-#endif
+MIDASPaintbrushToolEventInterface::~MIDASPaintbrushToolEventInterface()
+{
+}
+
+void MIDASPaintbrushToolEventInterface::SetMIDASPaintbrushTool( MIDASPaintbrushTool* paintbrushTool )
+{
+  m_MIDASPaintBrushTool = paintbrushTool;
+}
+
+void MIDASPaintbrushToolEventInterface::ExecuteOperation(mitk::Operation* op)
+{
+  m_MIDASPaintBrushTool->ExecuteOperation(op);
+}
+
+} // end namespace
