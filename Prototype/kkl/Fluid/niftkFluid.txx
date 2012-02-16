@@ -1309,6 +1309,43 @@ int fluid_main(int argc, char** argv)
       fixedImageTransform->InvertUsingIterativeFixedPoint(fixedImageInverseTransform.GetPointer(), 30, 5, 0.005); 
       transform->InvertUsingIterativeFixedPoint(movingImageInverseTransform.GetPointer(), 30, 5, 0.005); 
       
+      // Output the composed Jacobian. 
+      typedef itk::ResampleImageFilter<typename OptimizerType::JacobianImageType, typename OptimizerType::JacobianImageType> JacobianResampleFilterType; 
+      typename JacobianResampleFilterType::Pointer jacobianResampleFilter = JacobianResampleFilterType::New(); 
+      typedef itk::LinearInterpolateImageFunction<typename OptimizerType::JacobianImageType, double > InterpolatorType; 
+      typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
+      typedef itk::MultiplyImageFilter<typename OptimizerType::JacobianImageType> MultiplyImageFilterType; 
+      typename MultiplyImageFilterType::Pointer multiplyFilter = MultiplyImageFilterType::New(); 
+      int origin[Dimension]; 
+  
+      for (unsigned int i = 0; i < Dimension; i++)
+      {
+        if (crop)
+          origin[i] = lowerCorner[i] + 1 - crop; 
+        else
+          origin[i] = 0; 
+      }
+      jacobianResampleFilter->SetInput(optimizer->GetMovingImageTransformComposedJacobianForward());
+      jacobianResampleFilter->SetTransform(fixedImageInverseTransform);
+      jacobianResampleFilter->SetOutputParametersFromImage(optimizer->GetMovingImageTransformComposedJacobianForward());
+      jacobianResampleFilter->SetDefaultPixelValue(0);
+      jacobianResampleFilter->SetInterpolator(interpolator);      
+      jacobianResampleFilter->Update();
+      multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
+      multiplyFilter->SetInput2(optimizer->GetFixedImageTransformComposedJacobianBackward()); 
+      multiplyFilter->Update(); 
+      transform->WriteMidasStrImage(movingFullJacobianName, origin, paddedDesiredRegion, multiplyFilter->GetOutput()); 
+      jacobianResampleFilter->SetInput(optimizer->GetFixedImageTransformComposedJacobianForward());
+      jacobianResampleFilter->SetTransform(movingImageInverseTransform);
+      jacobianResampleFilter->SetOutputParametersFromImage(optimizer->GetFixedImageTransformComposedJacobianForward());
+      jacobianResampleFilter->SetDefaultPixelValue(0);
+      jacobianResampleFilter->SetInterpolator(interpolator);      
+      jacobianResampleFilter->Update();
+      multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
+      multiplyFilter->SetInput2(optimizer->GetMovingImageTransformComposedJacobianBackward()); 
+      multiplyFilter->Update(); 
+      transform->WriteMidasStrImage(fixedFullJacobianName, origin, paddedDesiredRegion, multiplyFilter->GetOutput()); 
+      
       // Compose the full transformation in each direction. 
       typename TransformType::DeformableParameterType::Pointer composedTransform = transform->GetDeformationField(); 
       transform->UpdateRegriddedDeformationParameters(composedTransform, fixedImageInverseTransform->GetDeformationField(), 1.); 
@@ -1351,27 +1388,6 @@ int fluid_main(int argc, char** argv)
       absImageFilter->SetInput(resampleFilter->GetOutput()); 
       imageWriter->SetInput(absImageFilter->GetOutput());
       imageWriter->Update(); 
-      
-      // Output the composed Jacobian. 
-      typedef itk::MultiplyImageFilter<typename OptimizerType::JacobianImageType> MultiplyImageFilterType; 
-      typename MultiplyImageFilterType::Pointer multiplyFilter = MultiplyImageFilterType::New(); 
-      int origin[Dimension]; 
-  
-      for (unsigned int i = 0; i < Dimension; i++)
-      {
-        if (crop)
-          origin[i] = lowerCorner[i] + 1 - crop; 
-        else
-          origin[i] = 0; 
-      }
-      multiplyFilter->SetInput1(optimizer->GetMovingImageTransformComposedJacobianForward()); 
-      multiplyFilter->SetInput2(optimizer->GetFixedImageTransformComposedJacobianBackward()); 
-      multiplyFilter->Update(); 
-      transform->WriteMidasStrImage(movingFullJacobianName, origin, paddedDesiredRegion, multiplyFilter->GetOutput()); 
-      multiplyFilter->SetInput1(optimizer->GetFixedImageTransformComposedJacobianForward()); 
-      multiplyFilter->SetInput2(optimizer->GetMovingImageTransformComposedJacobianBackward()); 
-      multiplyFilter->Update(); 
-      transform->WriteMidasStrImage(fixedFullJacobianName, origin, paddedDesiredRegion, multiplyFilter->GetOutput()); 
     }
   }
   

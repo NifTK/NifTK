@@ -289,7 +289,7 @@ protected:
   /**
    * Remember the starting step size after regridding. 
    */
-  double m_StartingStepSize; 
+  volatile double m_StartingStepSize; 
   /**
    * Current iterations with step size less than the minimum deformation. 
    */
@@ -345,11 +345,11 @@ protected:
   /**
    * Time step for the adaptive gradient descent. 
    */
-  double m_AdjustedTimeStep; 
+  volatile double m_AdjustedTimeStep; 
   /**
    * Time step for the adaptive gradient descent. 
    */
-  double m_AdjustedFixedImageTimeStep; 
+  volatile double m_AdjustedFixedImageTimeStep; 
   /**
    * Previous gradient. 
    */

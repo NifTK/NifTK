@@ -417,9 +417,10 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     const double f_max = this->m_AsgdFMax; 
     const double f_min = this->m_AsgdFMin; 
     const double w = this->m_AsgdW; 
+    const volatile double zero = 0.; 
     m_AdjustedTimeStep = m_AdjustedTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fieldDotProduct)/w)); 
     niftkitkInfoMacro(<< "Check similarity: m_AdjustedTimeStep=" << m_AdjustedTimeStep << ",f_max=" << f_max << ",f_min=" << f_min << ",w=" << w); 
-    m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
+    m_AdjustedTimeStep = std::max<volatile double>(zero, m_AdjustedTimeStep); 
     this->m_StepSize = this->m_StartingStepSize/(m_AdjustedTimeStep+1.); 
     niftkitkInfoMacro(<< "Check similarity: this->m_StepSize=" << this->m_StepSize); 
     
@@ -479,38 +480,33 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     double maxDeformationChange = 0.0;
   
     if (this->m_CurrentIteration > this->m_MaximumNumberOfIterations)
-      {
-        niftkitkInfoMacro(<< "ResumeOptimization():Hit max iterations:" << this->m_MaximumNumberOfIterations);
-        this->StopOptimization();
-        break;
-      }
+    {
+      niftkitkInfoMacro(<< "ResumeOptimization():Hit max iterations:" << this->m_MaximumNumberOfIterations);
+      this->StopOptimization();
+      break;
+    }
     
     if (this->m_StepSize < this->m_MinimumStepSize)
-      {
-        niftkitkInfoMacro(<< "ResumeOptimization():Gone below min step size:" << this->m_MinimumStepSize);
-        this->StopOptimization();
-        break;
-      }
+    {
+      niftkitkInfoMacro(<< "ResumeOptimization():Gone below min step size:" << this->m_MinimumStepSize);
+      this->StopOptimization();
+      break;
+    }
 
-    // Reset the next position array.
-    // this->m_NextDeformableParameters->FillBuffer(static_cast<TDeformationScalar>(0)); 
-  
     // Calculate the next set of parameters, which may or may not be 'accepted'.
     nextValue = CalculateNextStep(this->m_CurrentIteration, this->m_Value, this->m_CurrentDeformableParameters, this->m_NextDeformableParameters, this->m_CurrentFixedDeformableParameters, this->m_NextFixedDeformableParameters);
     
-    // Set them onto the transform. We dont need this, as computing the similarity measure sets the transform.
-    // this->m_DeformableTransform->SetParameters(this->m_NextParameters);
-
+    // Set the next deformable parameters to the deformation fields for checking Jacobian. 
+    GetFluidDeformableTransform()->SetDeformableParameters(this->m_NextDeformableParameters);
+    if (this->m_IsSymmetric)
+    {
+      this->m_FixedImageTransform->SetDeformableParameters(this->m_NextFixedDeformableParameters); 
+    }
+    
     // So far so good, so compute new similarity measure.                                                                               
     if (nextValue == std::numeric_limits<double>::max())
     {
-      GetFluidDeformableTransform()->SetDeformableParameters(this->m_NextDeformableParameters);
-      if (this->m_IsSymmetric)
-      {
-        this->m_FixedImageTransform->SetDeformableParameters(this->m_NextFixedDeformableParameters); 
-      }
       nextValue = this->GetCostFunction()->GetValue(dummyParameters);
-      
 #if 0      
       if (this->m_IsSymmetric)
       {
@@ -528,134 +524,99 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
       }
 #endif          
     }
-    else
-    {
-      // Need this for checking Jacobian. 
-      GetFluidDeformableTransform()->SetDeformableParameters(this->m_NextDeformableParameters);
-      if (this->m_IsSymmetric)
-      {
-        this->m_FixedImageTransform->SetDeformableParameters(this->m_NextFixedDeformableParameters); 
-      }
-    }
 
     // Write the parameters to file.
     if (this->m_WriteNextParameters)
-      {
-        this->m_DeformableTransform->WriteParameters(this->m_NextParametersFileName + "." + niftk::ConvertToString((int)this->m_CurrentIteration) + "." + this->m_NextParametersFileExt);
-      }
+    {
+      this->m_DeformableTransform->WriteParameters(this->m_NextParametersFileName + "." + niftk::ConvertToString((int)this->m_CurrentIteration) + "." + this->m_NextParametersFileExt);
+    }
 
     // Write this deformation field to file. 
     // For Fluid, this is the same as the dump of the parameters above.
     // For FFD, the one above will be the control point grid, so this is the actual deformation field.
     if (this->m_WriteDeformationField)
-      {
-        this->m_DeformableTransform->WriteTransform(this->m_DeformationFieldFileName + "." + niftk::ConvertToString((int)this->m_CurrentIteration) + "." + this->m_DeformationFieldFileExt);    
-      }
+    {
+      this->m_DeformableTransform->WriteTransform(this->m_DeformationFieldFileName + "." + niftk::ConvertToString((int)this->m_CurrentIteration) + "." + this->m_DeformationFieldFileExt);    
+    }
     
     minJacobian = this->m_DeformableTransform->ComputeMinJacobian();
     minFixedJacobian = this->m_FixedImageTransform->ComputeMinJacobian(); 
     niftkitkInfoMacro(<< "ResumeOptimization():minJacobian=" << minJacobian << ",minFixedJacobian=" << minFixedJacobian); 
     minJacobian = std::min<double>(minJacobian, minFixedJacobian); 
 
-    if (this->m_CheckJacobianBelowZero && minJacobian < 0.0)
+    niftkitkInfoMacro(<< "ResumeOptimization():Iteration=" << this->m_CurrentIteration \
+      << ", currentValue=" << niftk::ConvertToString(this->m_Value) \
+      << ", nextValue=" << niftk::ConvertToString(nextValue) \
+      << ", minJacobian=" <<  niftk::ConvertToString(minJacobian) \
+      << ", maxDeformationChange=" <<  niftk::ConvertToString(maxDeformationChange));
+  
+    if (this->m_Maximize && nextValue > this->m_Value || !this->m_Maximize && nextValue < this->m_Value || !this->m_CheckSimilarityMeasure)
+    {
+      niftkitkInfoMacro(<< "ResumeOptimization():Maximize:" << this->m_Maximize \
+        << ", currentValue:" << niftk::ConvertToString(this->m_Value) \
+        << ", nextValue:" << niftk::ConvertToString(nextValue) \
+        << ", so its better!");
+    
+      // Do we care about the similarity value? 
+      if (fabs(nextValue - this->m_Value) < this->m_MinimumSimilarityChangeThreshold && this->m_CheckSimilarityMeasure)
       {
-        this->m_StepSize *= this->m_JacobianBelowZeroStepSizeReductionFactor;
-        
         niftkitkInfoMacro(<< "ResumeOptimization():Iteration=" << this->m_CurrentIteration \
-          << ", Negative Jacobian " << minJacobian << ", so rejecting this change, reducing step size by:" \
-          << this->m_JacobianBelowZeroStepSizeReductionFactor \
-          << ", to:" << this->m_StepSize \
-          << ", and continuing");
+          << ", similarity change was:" << fabs(nextValue - this->m_Value) \
+          << ", threshold was:" << this->m_MinimumSimilarityChangeThreshold \
+          << ", so I'm accepting this change, but then stopping.");
+        this->m_CurrentDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextDeformableParameters); 
+        if (this->m_IsSymmetric)
+        {
+          this->m_CurrentFixedDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextFixedDeformableParameters); 
+        }
+        this->m_Value = nextValue;
+        this->StopOptimization();
+        break;
       }
-    else
-      {
-        niftkitkInfoMacro(<< "ResumeOptimization():Iteration=" << this->m_CurrentIteration \
-          << ", currentValue=" << niftk::ConvertToString(this->m_Value) \
-          << ", nextValue=" << niftk::ConvertToString(nextValue) \
-          << ", minJacobian=" <<  niftk::ConvertToString(minJacobian) \
-          << ", maxDeformationChange=" <<  niftk::ConvertToString(maxDeformationChange));
       
-        if (true)
-          /*(this->m_Maximize && nextValue > this->m_Value)
-           || (!this->m_Maximize && nextValue < this->m_Value) 
-           || !this->m_CheckSimilarityMeasure)*/
-          {
+      // Check if we need to regrid only after we got a better similarity value. 
+      if (minJacobian < this->m_MinimumJacobianThreshold)
+      {
+        niftkitkInfoMacro(<< "ResumeOptimization():Jacobian is lower than threshold:" <<  this->m_MinimumJacobianThreshold \
+          << ", so accepting this change, reducing step size by:" \
+          << this->m_RegriddingStepSizeReductionFactor \
+          << ", to:" << this->m_StepSize \
+          << ", regridding and continuing");
 
-            niftkitkInfoMacro(<< "ResumeOptimization():Maximize:" << this->m_Maximize \
-              << ", currentValue:" << niftk::ConvertToString(this->m_Value) \
-              << ", nextValue:" << niftk::ConvertToString(nextValue) \
-              << ", so its better!");
-          
-            if (fabs(nextValue - this->m_Value) <  this->m_MinimumSimilarityChangeThreshold
-                && this->m_CheckSimilarityMeasure)
-              {
-                niftkitkInfoMacro(<< "ResumeOptimization():Iteration=" << this->m_CurrentIteration \
-                  << ", similarity change was:" << fabs(nextValue - this->m_Value) \
-                  << ", threshold was:" << this->m_MinimumSimilarityChangeThreshold \
-                  << ", so I'm accepting this change, but then stopping.");
-                this->m_CurrentDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextDeformableParameters); 
-                if (this->m_IsSymmetric)
-                {
-                  this->m_CurrentFixedDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextFixedDeformableParameters); 
-                }
-                this->m_Value = nextValue;
-                this->StopOptimization();
-                break;
-              }
-            
-            bool isAcceptNextParameterAccordingJacobian = true; 
-            // Check if we need to regrid only after we got a better similarity value. 
-            if (minJacobian < this->m_MinimumJacobianThreshold)
-              {
-                if (this->m_DeformableTransform->IsRegridable())
-                  {
-                    niftkitkInfoMacro(<< "ResumeOptimization():Jacobian is lower than threshold:" <<  this->m_MinimumJacobianThreshold \
-                      << ", so accepting this change, reducing step size by:" \
-                      << this->m_RegriddingStepSizeReductionFactor \
-                      << ", to:" << this->m_StepSize \
-                      << ", regridding and continuing");
-
-                    this->m_StepSize *= this->m_RegriddingStepSizeReductionFactor;
-
-                    this->ReGrid(true);
-                    isAcceptNextParameterAccordingJacobian = false; 
-                  }
-                else
-                  {
-                    niftkitkInfoMacro(<< "ResumeOptimization():Jacobian is lower than threshold:" <<  this->m_MinimumJacobianThreshold \
-                      << ", but this->m_DeformableTransform->IsRegridable() is false, so I'm not going to regrid.");
-                  }
-              } 
-            
-            if (isAcceptNextParameterAccordingJacobian)
-            {
-              this->m_CurrentDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextDeformableParameters); 
-              if (this->m_IsSymmetric)
-              {
-                this->m_CurrentFixedDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextFixedDeformableParameters); 
-              }
-              this->m_Value = nextValue;
-            }
-            
-          }
-        else
-          {
-            // Revert the transformed moving image to the current parameter. 
-            // We already have the current value, no need to re-evaluate it.
-            // this->GetCostFunction()->GetValue(this->GetCurrentPosition());
-            
-            this->m_StepSize *= this->m_IteratingStepSizeReductionFactor;
-
-            niftkitkInfoMacro(<< "ResumeOptimization():Maximize:" << this->m_Maximize \
-              << ", currentValue:" << niftk::ConvertToString(this->m_Value) \
-              << ", nextValue:" << niftk::ConvertToString(nextValue) \
-              << ", so its no better, so rejecting this change, reducing step size by:" \
-              << this->m_IteratingStepSizeReductionFactor \
-              << ", to:" << this->m_StepSize \
-              << " and continuing");
-          }
+        this->m_StepSize *= this->m_RegriddingStepSizeReductionFactor;
+        // Revert back to the current deformation if jacobian is too small. 
+        GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters);
+        if (this->m_IsSymmetric)
+        {
+          this->m_FixedImageTransform->SetDeformableParameters(this->m_CurrentFixedDeformableParameters); 
+        }
+        // Regrid. 
+        this->ReGrid(true);
       } 
-
+      else
+      {
+        // Jacobian ok - take the next deformation fields and similarity value. 
+        this->m_CurrentDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextDeformableParameters); 
+        if (this->m_IsSymmetric)
+        {
+          this->m_CurrentFixedDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextFixedDeformableParameters); 
+        }
+        this->m_Value = nextValue;
+      }
+    }
+    else
+    {
+      // Revert the transformed moving image to the current parameter. 
+      // We already have the current value, no need to re-evaluate it.
+      this->m_StepSize *= this->m_IteratingStepSizeReductionFactor;
+      niftkitkInfoMacro(<< "ResumeOptimization():Maximize:" << this->m_Maximize \
+        << ", currentValue:" << niftk::ConvertToString(this->m_Value) \
+        << ", nextValue:" << niftk::ConvertToString(nextValue) \
+        << ", so its no better, so rejecting this change, reducing step size by:" \
+        << this->m_IteratingStepSizeReductionFactor \
+        << ", to:" << this->m_StepSize \
+        << " and continuing");
+    }
   } // End main while loop.
 
   // Subclasses can cleanup at this point
@@ -664,49 +625,43 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   niftkitkInfoMacro(<< "ResumeOptimization():Aggregating transformation");
   
   // Add deformation field to existing regridding one.  
-  if (this->m_DeformableTransform->IsRegridable())
+  this->ComposeJacobian(); 
+    
+  if (this->m_IsPropagateRegriddedMovingImage)
+  {
+    niftkitkInfoMacro(<< "ResumeOptimization(): propagate regridded moving image.");
+    this->m_RegriddingResampler->SetTransform(this->m_DeformableTransform);
+    this->m_RegriddingResampler->SetInterpolator(this->m_RegriddingInterpolator);      
+    this->m_RegriddingResampler->SetInput(this->m_RegriddedMovingImage);
+    this->m_RegriddingResampler->SetOutputParametersFromImage(this->m_FixedImage);
+    this->m_RegriddingResampler->SetDefaultPixelValue(this->m_RegriddedMovingImagePadValue);
+    this->m_RegriddingResampler->Modified();  
+    this->m_RegriddingResampler->UpdateLargestPossibleRegion();
+    this->m_RegriddedMovingImage = this->m_RegriddingResampler->GetOutput();
+    this->m_RegriddedMovingImage->DisconnectPipeline();
+    
+    if (this->m_IsSymmetric)
     {
-      this->ComposeJacobian(); 
-      
-      if (this->m_IsPropagateRegriddedMovingImage)
-      {
-        niftkitkInfoMacro(<< "ResumeOptimization(): propagate regridded moving image.");
-        this->m_RegriddingResampler->SetTransform(this->m_DeformableTransform);
-        this->m_RegriddingResampler->SetInterpolator(this->m_RegriddingInterpolator);      
-        this->m_RegriddingResampler->SetInput(this->m_RegriddedMovingImage);
-        this->m_RegriddingResampler->SetOutputParametersFromImage(this->m_FixedImage);
-        this->m_RegriddingResampler->SetDefaultPixelValue(this->m_RegriddedMovingImagePadValue);
-        this->m_RegriddingResampler->Modified();  
-        this->m_RegriddingResampler->UpdateLargestPossibleRegion();
-        this->m_RegriddedMovingImage = this->m_RegriddingResampler->GetOutput();
-        this->m_RegriddedMovingImage->DisconnectPipeline();
-        
-        if (this->m_IsSymmetric)
-        {
-          niftkitkInfoMacro(<< "ResumeOptimization(): propagate regridded fixed image.");
-          this->m_RegriddingFixedImageResampler->SetTransform(this->m_FixedImageTransform);
-          this->m_RegriddingFixedImageResampler->SetInterpolator(this->m_RegriddingInterpolator);      
-          this->m_RegriddingFixedImageResampler->SetInput(this->m_RegriddedFixedImage);
-          this->m_RegriddingFixedImageResampler->SetOutputParametersFromImage(this->m_FixedImage);
-          this->m_RegriddingFixedImageResampler->SetDefaultPixelValue(this->m_RegriddedMovingImagePadValue);
-          this->m_RegriddingFixedImageResampler->Modified();  
-          this->m_RegriddingFixedImageResampler->UpdateLargestPossibleRegion();
-          this->m_RegriddedFixedImage = this->m_RegriddingFixedImageResampler->GetOutput();
-          this->m_RegriddedFixedImage->DisconnectPipeline();
-        }
-      }
-      
-      GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(this->m_RegriddedDeformableParameters, this->m_CurrentDeformableParameters, 1); 
-      GetFluidDeformableTransform()->SetDeformableParameters(this->m_RegriddedDeformableParameters); 
-      
-      if (this->m_IsSymmetric)
-      {
-        this->m_FixedImageTransform->UpdateRegriddedDeformationParameters(this->m_RegriddedFixedDeformableParameters, this->m_CurrentFixedDeformableParameters, 1); 
-        this->m_FixedImageTransform->SetDeformableParameters(this->m_RegriddedFixedDeformableParameters); 
-      }
-      
+      niftkitkInfoMacro(<< "ResumeOptimization(): propagate regridded fixed image.");
+      this->m_RegriddingFixedImageResampler->SetTransform(this->m_FixedImageTransform);
+      this->m_RegriddingFixedImageResampler->SetInterpolator(this->m_RegriddingInterpolator);      
+      this->m_RegriddingFixedImageResampler->SetInput(this->m_RegriddedFixedImage);
+      this->m_RegriddingFixedImageResampler->SetOutputParametersFromImage(this->m_FixedImage);
+      this->m_RegriddingFixedImageResampler->SetDefaultPixelValue(this->m_RegriddedMovingImagePadValue);
+      this->m_RegriddingFixedImageResampler->Modified();  
+      this->m_RegriddingFixedImageResampler->UpdateLargestPossibleRegion();
+      this->m_RegriddedFixedImage = this->m_RegriddingFixedImageResampler->GetOutput();
+      this->m_RegriddedFixedImage->DisconnectPipeline();
     }
-
+  }
+  GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(this->m_RegriddedDeformableParameters, this->m_CurrentDeformableParameters, 1); 
+  GetFluidDeformableTransform()->SetDeformableParameters(this->m_RegriddedDeformableParameters); 
+  if (this->m_IsSymmetric)
+  {
+    this->m_FixedImageTransform->UpdateRegriddedDeformationParameters(this->m_RegriddedFixedDeformableParameters, this->m_CurrentFixedDeformableParameters, 1); 
+    this->m_FixedImageTransform->SetDeformableParameters(this->m_RegriddedFixedDeformableParameters); 
+  }
+  
   // Im resetting the m_Step size, so that if you repeatedly call 
   // the optimizer, it does actually do some optimizing.
   this->m_StepSize = stepSize;
@@ -1060,7 +1015,9 @@ void
 FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformationScalar>
 ::EstimateSimpleAdapativeStepSize(volatile double* bestStepSize, volatile double* bestFixedImageStepSize)
 {
-  double fieldDotProduct = 0.; 
+  volatile double fieldDotProduct = 0.; 
+  volatile double maxMovingDeformation = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
+  volatile double maxFixedDeformation = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
   OutputImageIteratorType currentGradientIterator(this->m_FluidVelocityToDeformationFilter->GetOutput(), this->m_FluidVelocityToDeformationFilter->GetOutput()->GetLargestPossibleRegion());
   AsgdMaskIteratorType* asgdMaskIterator = NULL;
   if (!this->m_AsgdMask.IsNull())
@@ -1092,7 +1049,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   }
   niftkitkInfoMacro(<< "CalculateNextStep():fieldDotProduct=" << fieldDotProduct << ", m_StartingStepSize=" << this->m_StartingStepSize << ",numberOfAsgdMaskVoxels=" << numberOfAsgdMaskVoxels);
   
-  double fixedImageFieldDotProduct = 0.; 
+  volatile double fixedImageFieldDotProduct = 0.; 
   if (this->m_IsSymmetric)
   {
     OutputImageIteratorType currentFixedGradientIterator(this->m_FluidVelocityToFixedImageDeformationFilter->GetOutput(), this->m_FluidVelocityToFixedImageDeformationFilter->GetOutput()->GetLargestPossibleRegion());
@@ -1125,28 +1082,27 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   const volatile double f_max = this->m_AsgdFMax; 
   const volatile double f_min = this->m_AsgdFMin; 
   const volatile double w = this->m_AsgdW; 
+  const volatile double zero = 0.; 
   m_AdjustedTimeStep = m_AdjustedTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fieldDotProduct)/w)); 
   niftkitkInfoMacro(<< "new gradient descent: m_AdjustedTimeStep=" << m_AdjustedTimeStep << ",f_max=" << f_max << ",f_min=" << f_min << ",w=" << w); 
-  m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
-  *bestStepSize = (this->m_StartingStepSize/this->m_FluidVelocityToDeformationFilter->GetMaxDeformation())/(m_AdjustedTimeStep+this->m_AsgdA); 
-  volatile double bestDeformationChange = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation()*(*bestStepSize); 
+  m_AdjustedTimeStep = std::max<volatile double>(zero, m_AdjustedTimeStep); 
+  *bestStepSize = (this->m_StartingStepSize/maxMovingDeformation)/(m_AdjustedTimeStep+this->m_AsgdA); 
+  volatile double bestDeformationChange = maxMovingDeformation*(*bestStepSize); 
   
   if (this->m_IsSymmetric)
   {
     m_AdjustedFixedImageTimeStep = m_AdjustedFixedImageTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fixedImageFieldDotProduct)/w)); 
     niftkitkInfoMacro(<< "new gradient descent: m_AdjustedFixedImageTimeStep=" << m_AdjustedFixedImageTimeStep); 
-    m_AdjustedFixedImageTimeStep = std::max<double>(0., m_AdjustedFixedImageTimeStep); 
-    *bestFixedImageStepSize = (this->m_StartingStepSize/this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation())/(m_AdjustedFixedImageTimeStep+this->m_AsgdA); 
+    m_AdjustedFixedImageTimeStep = std::max<volatile double>(zero, m_AdjustedFixedImageTimeStep); 
+    *bestFixedImageStepSize = (this->m_StartingStepSize/maxFixedDeformation)/(m_AdjustedFixedImageTimeStep+this->m_AsgdA); 
     
     // Symmetric step size - should move by the same amount in each direction. 
-    volatile double bestFixedDeformationChange = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation()*(*bestFixedImageStepSize); 
+    volatile double bestFixedDeformationChange = maxFixedDeformation*(*bestFixedImageStepSize); 
     volatile double bestSymmetricDeformationChange = std::min<volatile double>(bestDeformationChange, bestFixedDeformationChange); 
     std::cout << std::setprecision(15) << "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange << std::endl; 
     
-    volatile double maxMovingDeformation = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
     volatile double bestMovingStepSize = bestSymmetricDeformationChange/maxMovingDeformation; 
     *bestStepSize = bestMovingStepSize; 
-    volatile double maxFixedDeformation = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
     volatile double bestFixedStepSize = bestSymmetricDeformationChange/maxFixedDeformation; 
     *bestFixedImageStepSize = bestFixedStepSize; 
     
@@ -1283,12 +1239,22 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   typename MultiplyImageFilterType::Pointer multiplyFilter = MultiplyImageFilterType::New(); 
   typedef ImageDuplicator<JacobianImageType> JacobianDuplicatorType; 
   typename JacobianDuplicatorType::Pointer duplicator = JacobianDuplicatorType::New(); 
+  typedef ResampleImageFilter<JacobianImageType, JacobianImageType> JacobianResampleFilterType; 
+  typename JacobianResampleFilterType::Pointer jacobianResampleFilter = JacobianResampleFilterType::New(); 
+  typedef LinearInterpolateImageFunction<JacobianImageType, double > InterpolatorType; 
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
   
   // Compose the jacobian of the forward moving image transform. 
   this->m_DeformableTransform->ComputeMinJacobian(); 
   if (this->m_MovingImageTransformComposedJacobianForward.IsNotNull())
   {
-    multiplyFilter->SetInput1(this->m_MovingImageTransformComposedJacobianForward); 
+    jacobianResampleFilter->SetInput(this->m_MovingImageTransformComposedJacobianForward);
+    jacobianResampleFilter->SetTransform(this->m_DeformableTransform);
+    jacobianResampleFilter->SetOutputParametersFromImage(this->m_MovingImageTransformComposedJacobianForward);
+    jacobianResampleFilter->SetDefaultPixelValue(0);
+    jacobianResampleFilter->SetInterpolator(interpolator);      
+    jacobianResampleFilter->Update();
+    multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
     multiplyFilter->SetInput2(this->m_DeformableTransform->GetJacobianImage()); 
     multiplyFilter->Update(); 
     this->m_MovingImageTransformComposedJacobianForward = multiplyFilter->GetOutput(); 
@@ -1310,8 +1276,21 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     this->m_MovingImageInverseTransform->ComputeMinJacobian();
     if (this->m_MovingImageTransformComposedJacobianBackward.IsNotNull())
     {
+      // Need to get the inverse of the regrdded transform to compose the deformation field. 
+      if (this->m_CurrentIteration > 0)
+      {
+        GetFluidDeformableTransform()->SetDeformableParameters(this->m_RegriddedDeformableParameters); 
+        GetFluidDeformableTransform()->InvertUsingIterativeFixedPoint(this->m_MovingImageInverseTransform.GetPointer(), 30, 5, 0.005); 
+        GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters); 
+      }
+      jacobianResampleFilter->SetInput(this->m_MovingImageInverseTransform->GetJacobianImage());
+      jacobianResampleFilter->SetTransform(this->m_MovingImageInverseTransform);
+      jacobianResampleFilter->SetOutputParametersFromImage(this->m_MovingImageInverseTransform->GetJacobianImage());
+      jacobianResampleFilter->SetDefaultPixelValue(0);
+      jacobianResampleFilter->SetInterpolator(interpolator);      
+      jacobianResampleFilter->Update();
       multiplyFilter->SetInput1(this->m_MovingImageTransformComposedJacobianBackward); 
-      multiplyFilter->SetInput2(this->m_MovingImageInverseTransform->GetJacobianImage()); 
+      multiplyFilter->SetInput2(jacobianResampleFilter->GetOutput()); 
       multiplyFilter->Update(); 
       this->m_MovingImageTransformComposedJacobianBackward = multiplyFilter->GetOutput(); 
     }
@@ -1327,7 +1306,13 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     this->m_FixedImageTransform->ComputeMinJacobian(); 
     if (this->m_FixedImageTransformComposedJacobianForward.IsNotNull())
     {
-      multiplyFilter->SetInput1(this->m_FixedImageTransformComposedJacobianForward); 
+      jacobianResampleFilter->SetInput(this->m_FixedImageTransformComposedJacobianForward);
+      jacobianResampleFilter->SetTransform(this->m_FixedImageTransform);
+      jacobianResampleFilter->SetOutputParametersFromImage(this->m_FixedImageTransformComposedJacobianForward);
+      jacobianResampleFilter->SetDefaultPixelValue(0);
+      jacobianResampleFilter->SetInterpolator(interpolator);      
+      jacobianResampleFilter->Update();
+      multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
       multiplyFilter->SetInput2(this->m_FixedImageTransform->GetJacobianImage()); 
       multiplyFilter->Update(); 
       this->m_FixedImageTransformComposedJacobianForward = multiplyFilter->GetOutput(); 
@@ -1347,8 +1332,21 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     this->m_FixedImageInverseTransform->ComputeMinJacobian(); 
     if (this->m_FixedImageTransformComposedJacobianBackward.IsNotNull())
     {
-      multiplyFilter->SetInput1(this->m_FixedImageTransformComposedJacobianBackward); 
-      multiplyFilter->SetInput2(this->m_FixedImageInverseTransform->GetJacobianImage()); 
+      // Need to get the inverse of the regrdded transform to compose the deformation field. 
+      if (this->m_CurrentIteration > 0)
+      {
+        this->m_FixedImageTransform->SetDeformableParameters(this->m_RegriddedFixedDeformableParameters); 
+        this->m_FixedImageTransform->InvertUsingIterativeFixedPoint(this->m_FixedImageInverseTransform.GetPointer(), 30, 5, 0.005); 
+        this->m_FixedImageTransform->SetDeformableParameters(this->m_CurrentFixedDeformableParameters); 
+      }
+      jacobianResampleFilter->SetInput(this->m_FixedImageInverseTransform->GetJacobianImage());
+      jacobianResampleFilter->SetTransform(this->m_FixedImageInverseTransform);
+      jacobianResampleFilter->SetOutputParametersFromImage(this->m_FixedImageInverseTransform->GetJacobianImage());
+      jacobianResampleFilter->SetDefaultPixelValue(0);
+      jacobianResampleFilter->SetInterpolator(interpolator);      
+      jacobianResampleFilter->Update();
+      multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
+      multiplyFilter->SetInput2(this->m_FixedImageTransformComposedJacobianBackward); 
       multiplyFilter->Update(); 
       this->m_FixedImageTransformComposedJacobianBackward = multiplyFilter->GetOutput(); 
     }

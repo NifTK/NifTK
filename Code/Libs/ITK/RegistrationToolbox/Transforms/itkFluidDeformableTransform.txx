@@ -180,8 +180,8 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
   SetDeformableParameters(currentPosition); 
   
   // 2. Compose the new regridded paramters using the linearly interpolated the regridded deformation. 
-  typedef BSplineInterpolateImageFunction< typename Superclass::DeformationFieldComponentImageType, double > InterpolatorType; 
-  // typedef LinearInterpolateImageFunction< typename Superclass::DeformationFieldComponentImageType, double > InterpolatorType; 
+  // typedef BSplineInterpolateImageFunction< typename Superclass::DeformationFieldComponentImageType, double > InterpolatorType; 
+  typedef LinearInterpolateImageFunction< typename Superclass::DeformationFieldComponentImageType, double > InterpolatorType; 
   typename InterpolatorType::Pointer interpolator[NDimensions]; 
   for (unsigned int i = 0; i < NDimensions; i++)
   {
