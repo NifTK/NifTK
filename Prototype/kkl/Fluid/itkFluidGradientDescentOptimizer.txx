@@ -1248,6 +1248,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   this->m_DeformableTransform->ComputeMinJacobian(); 
   if (this->m_MovingImageTransformComposedJacobianForward.IsNotNull())
   {
+    // Need to transform the regridded jacobian in the regridded image to the fixed image space. 
     jacobianResampleFilter->SetInput(this->m_MovingImageTransformComposedJacobianForward);
     jacobianResampleFilter->SetTransform(this->m_DeformableTransform);
     jacobianResampleFilter->SetOutputParametersFromImage(this->m_MovingImageTransformComposedJacobianForward);
@@ -1283,6 +1284,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
         GetFluidDeformableTransform()->InvertUsingIterativeFixedPoint(this->m_MovingImageInverseTransform.GetPointer(), 30, 5, 0.005); 
         GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters); 
       }
+      // Need to transform the inverse of the current jacobian in the regridded image space back to the moving image space. 
       jacobianResampleFilter->SetInput(this->m_MovingImageInverseTransform->GetJacobianImage());
       jacobianResampleFilter->SetTransform(this->m_MovingImageInverseTransform);
       jacobianResampleFilter->SetOutputParametersFromImage(this->m_MovingImageInverseTransform->GetJacobianImage());
