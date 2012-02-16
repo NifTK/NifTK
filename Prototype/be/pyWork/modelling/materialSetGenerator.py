@@ -21,7 +21,7 @@ class materialSetGenerator:
                                   surface contact only. 
         '''
         
-        if isinstance(vtkVolMesh,str) :
+        if isinstance( vtkVolMesh, str ) :
             #
             # Well, if a string is given, then it is helpful to read this file. 
             #

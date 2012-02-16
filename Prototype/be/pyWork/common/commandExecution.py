@@ -26,7 +26,7 @@ def runCommand( cmdIn, paramsIn, logFileName=None, workDir=None, onlyPrintComman
             ret=subprocess.Popen( cmd ).wait()
             
         else:
-            logFile = file( logFileName, 'a+' )
+            logFile = file( logFileName, 'a' )
             ret = subprocess.Popen( cmd, stdout = logFile, stderr = logFile ).wait()
             logFile.close()
     

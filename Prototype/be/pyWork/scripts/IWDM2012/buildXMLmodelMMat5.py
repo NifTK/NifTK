@@ -23,11 +23,12 @@ import os, sys
 import vtkVolMeshHandler as vmh
 import modelDeformationHandler as mDefH
 import pointWithinTetrahedron as pInTet
+from glob import glob
+from maskFromSurface import maskFromSurface
 
 
 
 fastDebug = False
-
 useFEIR                   = False
 FEIRmode                  = 'standard'
 FEIRmu                    = 0.0025 * 2 ** -7.5
@@ -56,10 +57,10 @@ F3Dgpu2                    = True
 #matParamsSkin             = [ 2500, 50000 ]
 
 matModel                  = 'AB'
-matParamsFat              = [  500, 10, 50000 ]
-matParamsGland            = [  750, 10, 50000 ]
-matParamsMuscle           = [ 1000, 10, 50000 ]
-matParamsSkin             = [ 2500, 10, 50000 ]
+matParamsFat              = [   80, 1.25, 50000 ]
+matParamsGland            = [  160, 1.25, 50000 ]
+matParamsMuscle           = [  800, 1.25, 50000 ]
+matParamsSkin             = [ 1600, 1.25, 50000 ]
 
 
 
@@ -74,7 +75,9 @@ breastVolMeshName         = meshDir + 'breastSurf_impro.1.vtk'     # volume mesh
 breastVolMeshName2        = meshDir + 'breastSurf2_impro.1.vtk'    # volume mesh for sliding par    
 pectSurfMeshName          = meshDir + 'pectWallSurf_impro.stl'  
 defPectSurfMeshName       = pectSurfMeshName.split('.')[0] + '_def.stl' 
+defPectSurfMaskName       = pectSurfMeshName.split('.')[0] + '_def.nii' 
 xmlFileOut                = meshDir + 'model.xml'
+logFileOut                = meshDir + 'log.txt'
 
 TREtrack                  = []
 
@@ -104,7 +107,8 @@ print( ' - Gland parameters:  ' + str( matParamsGland  ) )
 print( ' - Muscle parameters: ' + str( matParamsMuscle ) )
 print( ' - Skin parameters:   ' + str( matParamsSkin   ) )
 
-
+if useFEIR == False : 
+    print( 'Warning: All files in the reigstration directory will be deleted by running this script!\n -> ' + regDirF3D )
 
 ####################################
 #
@@ -148,6 +152,7 @@ plotVectorsAtPoints( pointsSupinePrime - pointsPronePrime, pointsPronePrime )
 
 # the startTRE is 
 startTRE = []
+
 for i in range( pointsPronePrime.shape[0] ):
     startTRE.append( np.linalg.norm( pointsSupinePrime[i] - pointsPronePrime[i] ) )
 
@@ -197,6 +202,13 @@ if useFEIR :
     regDeformField = feirReg.dispFieldITK
     
 else :
+    print('Cleaning registration directory')
+    
+    fileList = glob( regDirF3D + '/*' )
+    
+    for f in fileList : 
+        os.remove( f )
+
     print('Starting f3d registration')
     strProneChestWallMuscleImage = 'W:\philipsBreastProneSupine\ManualSegmentation\prone_CwM_0.nii'
     f3dReg = f3dTask.f3dRegistrationTask( strProneChestWallMuscleImage, strSupineImg, strProneChestWallMuscleImage, regDirF3D, 'NA', 
@@ -262,6 +274,10 @@ stlWriter.SetFileName( defPectSurfMeshName )
 stlWriter.Update()
 
 
+surf2mask = maskFromSurface( pectSurfMesh, strSupineImg )
+surf2mask.saveMaskToNii( defPectSurfMaskName )
+
+
 
 ########################################################
 #
@@ -319,7 +335,7 @@ offsetArray[:,1] = offsetVal
 
 # Sliding xmlFile generator
 print('Generate FEM model: sliding.')
-genS = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4' )
+genS = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4ANP' )
 
 genS.setMaterialElementSet( matModel, 'FAT',   matParamsFat, matGen2.fatElemetns    )
 genS.setMaterialElementSet( matModel, 'SKIN',  matParamsSkin, matGen2.skinElements   )
@@ -351,7 +367,7 @@ simCommand  = 'niftkDeformImageFromNiftySimulation'
 simParams   = ' -x '      + xmlFileOut 
 simParams  += ' -i '      + strProneImg
 simParams  += ' -o '      + strSimulatedSupine[-1]
-simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, -offsetVal, 0 ))
+simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, offsetVal, 0 ))
 
 
 # also deform the label image!
@@ -370,7 +386,7 @@ else :
 
 # run the simulation
 print('Starting niftySimulation')
-cmdEx.runCommand( simCommand, simParams, onlyPrintCommand=fastDebug )
+cmdEx.runCommand( simCommand, simParams, onlyPrintCommand=fastDebug, logFileName=logFileOut )
 
 
 
@@ -498,7 +514,7 @@ for it in range( numIterations ) :
     
     # Sliding + displacement xmlFile generator
     print('Generate FEM model: sliding and displacement.')
-    genSD = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4' )
+    genSD = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4ANP' )
     
     genSD.setMaterialElementSet( matModel, 'FAT',    matParamsFat, matGen2.fatElemetns    )
     genSD.setMaterialElementSet( matModel, 'SKIN',   matParamsSkin, matGen2.skinElements   )
@@ -529,7 +545,7 @@ for it in range( numIterations ) :
     simParams   = ' -x '      + xmlFileOut 
     simParams  += ' -i '      + strProneImg
     simParams  += ' -o '      + strSimulatedSupine[-1]
-    simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, -offsetVal, 0 ))
+    simParams  += ' -offset ' + str('%.3f,%.3f,%.3f' % (0, offsetVal, 0 ))
     
     
     # also deform the label image!
@@ -548,7 +564,7 @@ for it in range( numIterations ) :
     
     # run the simulation
     print('Starting niftySimulation')
-    cmdEx.runCommand( simCommand, simParams )
+    cmdEx.runCommand( simCommand, simParams, logFileName=logFileOut )
     
     
     

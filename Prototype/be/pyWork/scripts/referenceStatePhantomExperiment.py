@@ -39,16 +39,71 @@ from mayaviPlottingWrap import plotArrayAs3DPoints, plotVectorsAtPoints
 #totalTime       = 1.0
 #damping         = 50
 
-experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03/'
+##
+## This setting did not work for ANY step size
+##
+#experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03/'
+#meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
+#plotDir         = experimentDir + 'plots/fatGravityRot/' 
+#imageEdgeLength = 400
+#tetgenVol       = 10
+#tetgenQ         = 1.5
+#timeStep        = 1e-6
+#totalTime       = 1.0
+#damping         = 50
+#simSkin         = False
+
+####################
+# Skin experiments
+#
+
+#experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00s/'
+#meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
+#plotDir         = experimentDir + 'plots/' 
+#imageEdgeLength = 400
+#tetgenVol       = 75
+#tetgenQ         = 1.5
+#timeStep        = 2e-5
+#totalTime       = 1.0
+#damping         = 50
+#simSkin         = True
+
+
+#experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01s/'
+#meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
+#plotDir         = experimentDir + 'plots/' 
+#imageEdgeLength = 400
+#tetgenVol       = 30
+#tetgenQ         = 1.5
+#timeStep        = 2e-5
+#totalTime       = 1.0
+#damping         = 50
+#simSkin         = True
+
+
+#experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02s/'
+#meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
+#plotDir         = experimentDir + 'plots/' 
+#imageEdgeLength = 400
+#tetgenVol       = 20
+#tetgenQ         = 1.5
+#timeStep        = 2e-5
+#totalTime       = 1.0
+#damping         = 50
+#simSkin         = True
+
+
+experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03s/'
 meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-plotDir         = experimentDir + 'plots/fatGravityRot/' 
+plotDir         = experimentDir + 'plots/' 
 imageEdgeLength = 400
 tetgenVol       = 10
 tetgenQ         = 1.5
 timeStep        = 1e-6
 totalTime       = 1.0
 damping         = 50
-simSkin         = False
+simSkin         = True
+
 
 if not os.path.exists(plotDir):
     print( 'Error: Cannot find specified plotting directory' )
