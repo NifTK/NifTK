@@ -159,7 +159,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
 ::CalculateNextStep(int iterationNumber, double currentSimilarity, typename DeformableTransformType::DeformableParameterPointerType current, typename DeformableTransformType::DeformableParameterPointerType & next, typename DeformableTransformType::DeformableParameterPointerType currentFixed, typename DeformableTransformType::DeformableParameterPointerType & nextFixed)
 {
   niftkitkInfoMacro(<< "CalculateNextStep():Started");
-  volatile double bestFixedImageStepSize = 0.; 
+  double bestFixedImageStepSize = 0.; 
   
   if (m_ForceFilter.IsNull())
     {
@@ -257,7 +257,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     niftkitkInfoMacro(<<"Estimated this->m_AsgdFMin=" << this->m_AsgdFMin); 
   }
                    
-  volatile double bestStepSize = 0.0; 
+  double bestStepSize = 0.0; 
   double bestSimilarity = std::numeric_limits<double>::max(); 
                         
   // Optimise the step size to give the best similarity. 
@@ -417,10 +417,9 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     const double f_max = this->m_AsgdFMax; 
     const double f_min = this->m_AsgdFMin; 
     const double w = this->m_AsgdW; 
-    const volatile double zero = 0.; 
     m_AdjustedTimeStep = m_AdjustedTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fieldDotProduct)/w)); 
     niftkitkInfoMacro(<< "Check similarity: m_AdjustedTimeStep=" << m_AdjustedTimeStep << ",f_max=" << f_max << ",f_min=" << f_min << ",w=" << w); 
-    m_AdjustedTimeStep = std::max<volatile double>(zero, m_AdjustedTimeStep); 
+    m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
     this->m_StepSize = this->m_StartingStepSize/(m_AdjustedTimeStep+1.); 
     niftkitkInfoMacro(<< "Check similarity: this->m_StepSize=" << this->m_StepSize); 
     
@@ -1013,11 +1012,11 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
 template < typename TFixedImage, typename TMovingImage, typename TScalarType, class TDeformationScalar>
 void
 FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformationScalar>
-::EstimateSimpleAdapativeStepSize(volatile double* bestStepSize, volatile double* bestFixedImageStepSize)
+::EstimateSimpleAdapativeStepSize(double* bestStepSize, double* bestFixedImageStepSize)
 {
-  volatile double fieldDotProduct = 0.; 
-  volatile double maxMovingDeformation = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
-  volatile double maxFixedDeformation = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
+  double fieldDotProduct = 0.; 
+  double maxMovingDeformation = this->m_FluidVelocityToDeformationFilter->GetMaxDeformation(); 
+  double maxFixedDeformation = this->m_FluidVelocityToFixedImageDeformationFilter->GetMaxDeformation(); 
   OutputImageIteratorType currentGradientIterator(this->m_FluidVelocityToDeformationFilter->GetOutput(), this->m_FluidVelocityToDeformationFilter->GetOutput()->GetLargestPossibleRegion());
   AsgdMaskIteratorType* asgdMaskIterator = NULL;
   if (!this->m_AsgdMask.IsNull())
@@ -1049,7 +1048,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   }
   niftkitkInfoMacro(<< "CalculateNextStep():fieldDotProduct=" << fieldDotProduct << ", m_StartingStepSize=" << this->m_StartingStepSize << ",numberOfAsgdMaskVoxels=" << numberOfAsgdMaskVoxels);
   
-  volatile double fixedImageFieldDotProduct = 0.; 
+  double fixedImageFieldDotProduct = 0.; 
   if (this->m_IsSymmetric)
   {
     OutputImageIteratorType currentFixedGradientIterator(this->m_FluidVelocityToFixedImageDeformationFilter->GetOutput(), this->m_FluidVelocityToFixedImageDeformationFilter->GetOutput()->GetLargestPossibleRegion());
@@ -1079,31 +1078,31 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     niftkitkInfoMacro(<< "CalculateNextStep():fixedImageFieldDotProduct=" << fixedImageFieldDotProduct << ", m_StartingStepSize=" << this->m_StartingStepSize << ",numberOfAsgdMaskVoxels=" << numberOfAsgdMaskVoxels);
   }
   
-  const volatile double f_max = this->m_AsgdFMax; 
-  const volatile double f_min = this->m_AsgdFMin; 
-  const volatile double w = this->m_AsgdW; 
-  const volatile double zero = 0.; 
-  m_AdjustedTimeStep = m_AdjustedTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fieldDotProduct)/w)); 
+  const double f_max = this->m_AsgdFMax; 
+  const double f_min = this->m_AsgdFMin; 
+  const double w = this->m_AsgdW; 
+  const double zero = 0.; 
+  m_AdjustedTimeStep = m_AdjustedTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*vcl_exp(-(-fieldDotProduct)/w)); 
   niftkitkInfoMacro(<< "new gradient descent: m_AdjustedTimeStep=" << m_AdjustedTimeStep << ",f_max=" << f_max << ",f_min=" << f_min << ",w=" << w); 
-  m_AdjustedTimeStep = std::max<volatile double>(zero, m_AdjustedTimeStep); 
+  m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
   *bestStepSize = (this->m_StartingStepSize/maxMovingDeformation)/(m_AdjustedTimeStep+this->m_AsgdA); 
-  volatile double bestDeformationChange = maxMovingDeformation*(*bestStepSize); 
+  double bestDeformationChange = maxMovingDeformation*(*bestStepSize); 
   
   if (this->m_IsSymmetric)
   {
-    m_AdjustedFixedImageTimeStep = m_AdjustedFixedImageTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fixedImageFieldDotProduct)/w)); 
+    m_AdjustedFixedImageTimeStep = m_AdjustedFixedImageTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*vcl_exp(-(-fixedImageFieldDotProduct)/w)); 
     niftkitkInfoMacro(<< "new gradient descent: m_AdjustedFixedImageTimeStep=" << m_AdjustedFixedImageTimeStep); 
-    m_AdjustedFixedImageTimeStep = std::max<volatile double>(zero, m_AdjustedFixedImageTimeStep); 
+    m_AdjustedFixedImageTimeStep = std::max<double>(zero, m_AdjustedFixedImageTimeStep); 
     *bestFixedImageStepSize = (this->m_StartingStepSize/maxFixedDeformation)/(m_AdjustedFixedImageTimeStep+this->m_AsgdA); 
     
     // Symmetric step size - should move by the same amount in each direction. 
-    volatile double bestFixedDeformationChange = maxFixedDeformation*(*bestFixedImageStepSize); 
-    volatile double bestSymmetricDeformationChange = std::min<volatile double>(bestDeformationChange, bestFixedDeformationChange); 
+    double bestFixedDeformationChange = maxFixedDeformation*(*bestFixedImageStepSize); 
+    double bestSymmetricDeformationChange = std::min<double>(bestDeformationChange, bestFixedDeformationChange); 
     std::cout << std::setprecision(15) << "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange << std::endl; 
     
-    volatile double bestMovingStepSize = bestSymmetricDeformationChange/maxMovingDeformation; 
+    double bestMovingStepSize = bestSymmetricDeformationChange/maxMovingDeformation; 
     *bestStepSize = bestMovingStepSize; 
-    volatile double bestFixedStepSize = bestSymmetricDeformationChange/maxFixedDeformation; 
+    double bestFixedStepSize = bestSymmetricDeformationChange/maxFixedDeformation; 
     *bestFixedImageStepSize = bestFixedStepSize; 
     
     // std::cout << std::setprecision(15) << "CalculateNextStep():bestStepSize=" << *bestStepSize << ",bestFixedImageStepSize=" << *bestFixedImageStepSize << std::endl; 

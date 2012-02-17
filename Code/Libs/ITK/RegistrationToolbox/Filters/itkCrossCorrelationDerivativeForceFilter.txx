@@ -98,17 +98,17 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
   //   C = sqrt(sum((M-mM)^2)) = sqrt(sum(M^2) - N*mM*mM)
   ImageRegionConstIterator<InputImageType> simpleFixedImageIterator(fixedImage, fixedImage->GetLargestPossibleRegion());
   ImageRegionConstIterator<InputImageType> simpleMovingImageIterator(transformedMovingImage, transformedMovingImage->GetLargestPossibleRegion());
-  volatile double numberOfVoxels = 0.0; 
+  double numberOfVoxels = 0.0; 
   // To store sum(F*M). 
-  volatile double crossTotal = 0; 
+  double crossTotal = 0; 
   // To store sum(M). 
-  volatile double movingTotal = 0; 
+  double movingTotal = 0; 
   // To store sum(F).
-  volatile double fixedTotal = 0;  
+  double fixedTotal = 0;  
   // To store sum(M^2). 
-  volatile double movingSqaureTotal = 0; 
+  double movingSqaureTotal = 0; 
   // To store sum(F^2). 
-  volatile double fixedSquareTotal = 0;  
+  double fixedSquareTotal = 0;  
   
   for (simpleFixedImageIterator.GoToBegin(), simpleMovingImageIterator.GoToBegin(); 
        !simpleFixedImageIterator.IsAtEnd(); 
@@ -122,8 +122,8 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
       continue; 
     }
     
-    volatile double fixedValue = static_cast<double>(simpleFixedImageIterator.Get()); 
-    volatile double movingValue = static_cast<double>(simpleMovingImageIterator.Get()); 
+    double fixedValue = static_cast<double>(simpleFixedImageIterator.Get()); 
+    double movingValue = static_cast<double>(simpleMovingImageIterator.Get()); 
     
     crossTotal += fixedValue*movingValue; 
     movingTotal += movingValue; 
@@ -133,21 +133,21 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
     numberOfVoxels++; 
   }
   
-  volatile double factorA = crossTotal - (movingTotal*fixedTotal)/numberOfVoxels; 
-  volatile double factorBSquare = fixedSquareTotal - (fixedTotal*fixedTotal)/numberOfVoxels; 
-  volatile double factorCSquare = movingSqaureTotal - (movingTotal*movingTotal)/numberOfVoxels; 
-  volatile double movingMean = movingTotal/numberOfVoxels; 
-  volatile double fixedMean = fixedTotal/numberOfVoxels; 
+  double factorA = crossTotal - (movingTotal*fixedTotal)/numberOfVoxels; 
+  double factorBSquare = fixedSquareTotal - (fixedTotal*fixedTotal)/numberOfVoxels; 
+  double factorCSquare = movingSqaureTotal - (movingTotal*movingTotal)/numberOfVoxels; 
+  double movingMean = movingTotal/numberOfVoxels; 
+  double fixedMean = fixedTotal/numberOfVoxels; 
   niftkitkInfoMacro(<<"GenerateData(): numberOfVoxels=" << numberOfVoxels << ",factorA=" << factorA << ",factorBSquare=" << factorBSquare << ",factorCSquare=" << factorCSquare);
   
   // factor1 = A/(BC)^2. 
-  volatile double factor1 = factorA/(factorBSquare*factorCSquare); 
+  double factor1 = factorA/(factorBSquare*factorCSquare); 
   // factor2 = A^2/(B^2*C^4)
-  volatile double factor2 = (factorA*factorA)/(factorBSquare*factorCSquare*factorCSquare); 
+  double factor2 = (factorA*factorA)/(factorBSquare*factorCSquare*factorCSquare); 
   niftkitkDebugMacro(<<"GenerateData(): R^2=" << (factorA*factorA)/(factorBSquare*factorCSquare));
   
-  volatile double factor1Backward = factor1; 
-  volatile double factor2Backward = (factorA*factorA)/(factorCSquare*factorBSquare*factorBSquare); 
+  double factor1Backward = factor1; 
+  double factor2Backward = (factorA*factorA)/(factorCSquare*factorBSquare*factorBSquare); 
   std::cout << std::setprecision(15) << "factor1=" << factor1 << ",factor2=" << factor2 << ",factor1Backward=" << factor1Backward << ",factor2Backward=" << factor2Backward << std::endl;
   
   typedef itk::ConstNeighborhoodIterator<InputImageType> NeighborhoodIteratorType;
@@ -192,12 +192,14 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
     //  forceImageIterator.Set(forceImageVoxel);
     //  continue; 
     //}
-    volatile double fixedImageCenter = fixedImageIterator.GetCenterPixel(); 
-    volatile double movingImageCenter = transformedImageIterator.GetCenterPixel(); 
+    double fixedImageCenter = fixedImageIterator.GetCenterPixel(); 
+    double movingImageCenter = transformedImageIterator.GetCenterPixel(); 
     
     // d(R^2)/du = (factor1*(F-mF) - factor2*(M-mF)) (M(x+1) - M(x-1)). 
-    volatile double theBigFactor = factor1*(fixedImageCenter-fixedMean) - factor2*(movingImageCenter-movingMean); 
-    volatile double theBigFactorBackward = factor1Backward*(movingImageCenter-movingMean) - factor2Backward*(fixedImageCenter-fixedMean); 
+    double fixedImageDiff = fixedImageCenter-fixedMean; 
+    double movingImageDiff = movingImageCenter-movingMean; 
+    double theBigFactor = factor1*fixedImageDiff - factor2*movingImageDiff; 
+    double theBigFactorBackward = factor1Backward*movingImageDiff - factor2Backward*fixedImageDiff; 
     
     for (int dimensinIndex = 0; dimensinIndex < TFixedImage::ImageDimension; dimensinIndex++)
     {
@@ -208,11 +210,11 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
       plusOffset.Fill(0);
       minusOffset[dimensinIndex] += -1;
       plusOffset[dimensinIndex] += 1;
-      volatile double movingImageForce = -theBigFactor*
+      double movingImageForce = -theBigFactor*
                                  (static_cast<double>(transformedImageIterator.GetPixel(plusOffset))
                                   -static_cast<double>(transformedImageIterator.GetPixel(minusOffset))); 
       
-      volatile double fixedImageForce = -theBigFactorBackward*
+      double fixedImageForce = -theBigFactorBackward*
                                 (static_cast<double>(fixedImageIterator.GetPixel(plusOffset))
                                  -static_cast<double>(fixedImageIterator.GetPixel(minusOffset)));       
       

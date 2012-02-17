@@ -261,7 +261,7 @@ protected:
   /**
    * Estimate step sizes using adaptive size gradient descent
    */
-  void EstimateSimpleAdapativeStepSize(volatile double* bestStepSize, volatile double* bestFixedImageStepSize); 
+  void EstimateSimpleAdapativeStepSize(double* bestStepSize, double* bestFixedImageStepSize); 
   
   /**
   * Estimate step sizes using adaptive size gradient descent, 
@@ -289,7 +289,7 @@ protected:
   /**
    * Remember the starting step size after regridding. 
    */
-  volatile double m_StartingStepSize; 
+  double m_StartingStepSize; 
   /**
    * Current iterations with step size less than the minimum deformation. 
    */
@@ -345,11 +345,11 @@ protected:
   /**
    * Time step for the adaptive gradient descent. 
    */
-  volatile double m_AdjustedTimeStep; 
+  double m_AdjustedTimeStep; 
   /**
    * Time step for the adaptive gradient descent. 
    */
-  volatile double m_AdjustedFixedImageTimeStep; 
+  double m_AdjustedFixedImageTimeStep; 
   /**
    * Previous gradient. 
    */
