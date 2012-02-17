@@ -27,6 +27,7 @@
 
 #include <QWidget>
 #include "ui_QmitkMIDASToolSelector.h"
+#include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 
 /**
  * \class QmitkMIDASToolSelectorWidget
@@ -37,7 +38,7 @@
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class QmitkMIDASToolSelectorWidget : public QWidget, public Ui::QmitkMIDASToolSelector {
+class CMIC_QT_COMMON QmitkMIDASToolSelectorWidget : public QWidget, public Ui::QmitkMIDASToolSelector {
 
   Q_OBJECT
 
