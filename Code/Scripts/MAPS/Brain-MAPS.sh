@@ -105,9 +105,10 @@ source MAPS-brain-to-brain-registration-without-repeat-mask.sh
 function brain-match()
 {
   echo "number of arguments=$#"
-  if [ $# != 9 ]
+  minarg=10
+  if [ $# != $minarg ]
   then
-    echo "brain match requires 9 arguments"
+    echo "brain match requires $minarg arguments"
     exit
   fi
 
@@ -120,7 +121,8 @@ function brain-match()
   local left_hippo_template_library=${7}
   local output_left_corr=${8}
   local areg=${9}
-  
+  local leaveoneout=${10}
+
   local subject_image_basename=`basename ${subject_image}`
   local subject_image_id=`echo ${subject_image_basename} | awk -F- '{printf $1}'`
   local subject_patient_id=`imginfo ${subject_image} -info | awk '{printf $5}'`
@@ -144,7 +146,7 @@ function brain-match()
     local template_left_image_id=`echo ${template_left_image_basename} | awk -F- '{printf $1}'`
     local template_patient_id=`echo ${each_line}|awk -F, '{print $4}'`
     
-    if [ "${subject_image_id}" != "${template_left_image_id}" ] && [ "${subject_patient_id:0:10}" != "${template_patient_id:0:10}" ]
+    if [ "${leaveoneout}" = no ] || ( [ "${subject_image_id}" != "${template_left_image_id}" ] && [ "${subject_patient_id:0:10}" != "${template_patient_id:0:10}" ] )
     then 
       local left_corr=`${ffdevaluate} ${template_left_image} ${output_brain_image} -troi ${template_left_region} | grep Crosscorrelation| awk '{print $2}'`
       echo "left_corr=${left_corr}"
@@ -686,6 +688,7 @@ staple_confidence=${19}
 vents_or_not=${20}
 remove_dir=${21}
 use_orientation=${22}
+leaveoneout=${23}
 
 output_areg_template_brain_series_number=400
 output_left_series_number=665
@@ -719,7 +722,7 @@ if [ ! -f ${output_left_corr} ]
 then 
 brain-match ${watjo_image} ${watjo_brain_region} ${subject_image} \
             ${output_brain_image} ${output_areg_template_brain_series_number} ${output_brain_air}  \
-            ${left_hippo_template_library} ${output_left_corr} ${areg}
+            ${left_hippo_template_library} ${output_left_corr} ${areg} ${leaveoneout}
             
 fi             
 

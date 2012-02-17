@@ -84,6 +84,7 @@ Optional arguements:
   -vents_or_not     : include vents in the brain segmentation [no]. 
   -remove_dir       : remove results directories to save space [no]. 
   -use_orientation  : use the orientation flag in Midas [no]. 
+  -leaveoneout      : apply the leave-one-out test [yes].
 
 EOF
 exit 127
@@ -105,6 +106,7 @@ confidence=0.5
 vents_or_not=no
 remove_dir=no
 use_orientation=no
+leaveoneout=yes
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -176,6 +178,10 @@ do
         use_orientation=$2
         shift 1
       ;;
+     -leaveoneout)
+        leaveoneout=$2
+        shift 1
+      ;;
      -*)
         Usage
         exitprog "Error: option $1 not recognised" 1
@@ -221,7 +227,8 @@ function iterate_through_input_file
           ${watjo_image} \
           ${watjo_brain_region} ${dilation_for_f3d} ${nreg} ${f3d_brain_prereg} \
           ${areg} ${cpp} ${f3d_energy} ${f3d_iterations} \
-          ${confidence} ${vents_or_not} ${remove_dir} ${use_orientation} >> ${command_filename}
+          ${confidence} ${vents_or_not} ${remove_dir} ${use_orientation} \
+          ${leaveoneout} >> ${command_filename}
     else
       check_file_exists ${image} "no"
       check_file_exists ${image%.img}.hdr "no"
