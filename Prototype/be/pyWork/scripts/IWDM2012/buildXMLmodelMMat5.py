@@ -28,7 +28,7 @@ from maskFromSurface import maskFromSurface
 
 
 
-fastDebug = False
+fastDebug                 = False
 useFEIR                   = False
 FEIRmode                  = 'standard'
 FEIRmu                    = 0.0025 * 2 ** -7.5
@@ -75,7 +75,7 @@ breastVolMeshName         = meshDir + 'breastSurf_impro.1.vtk'     # volume mesh
 breastVolMeshName2        = meshDir + 'breastSurf2_impro.1.vtk'    # volume mesh for sliding par    
 pectSurfMeshName          = meshDir + 'pectWallSurf_impro.stl'  
 defPectSurfMeshName       = pectSurfMeshName.split('.')[0] + '_def.stl' 
-defPectSurfMaskName       = pectSurfMeshName.split('.')[0] + '_def.nii' 
+defPectSurfMaskImgName    = pectSurfMeshName.split('.')[0] + '_def.nii' 
 xmlFileOut                = meshDir + 'model.xml'
 logFileOut                = meshDir + 'log.txt'
 
@@ -93,6 +93,9 @@ pectoralMuscleMaskImage   = 'W:/philipsBreastProneSupine/ManualSegmentation/Comb
 # original images
 strProneImg               = 'W:/philipsBreastProneSupine/proneCrop2Pad-zeroOrig.nii'
 strSupineImg              = 'W:/philipsBreastProneSupine/rigidAlignment/supine1kTransformCrop2Pad_zeroOrig.nii'
+
+# msaked images
+strMaskedSupineImg       = meshDir + 'supineMasked.nii' 
 
 
 # Make sure the registration directories exists 
@@ -183,6 +186,7 @@ for p in pointsPronePrime :
             baryCoords.append( np.array( (aBarCds, bBarCds, cBarCds, dBarCds) ) )
             euklideanCoords.append( np.array( (aCds, bCds, cCds, dCds) ) )
             pointNums.append( np.array( (aNum, bNum, cNum, dNum) ) )
+            break
 
 
 #
@@ -273,9 +277,21 @@ stlWriter.SetInput( pectSurfMesh )
 stlWriter.SetFileName( defPectSurfMeshName )
 stlWriter.Update()
 
+print('Generating Mask image from surface')
+surf2mask = maskFromSurface( pectSurfMesh, strSupineImg, 0, 1 )
+surf2mask.saveMaskToNii( defPectSurfMaskImgName )
 
-surf2mask = maskFromSurface( pectSurfMesh, strSupineImg )
-surf2mask.saveMaskToNii( defPectSurfMaskName )
+
+#
+# Mask the supine image --> Will be the source/template image for the next registrations...
+#
+maskingCmd     = 'niftkMultiply'
+maskingParams  = ' -i ' + strSupineImg  
+maskingParams += ' -j ' + defPectSurfMaskImgName  
+maskingParams += ' -o ' + strMaskedSupineImg
+
+cmdEx.runCommand(maskingCmd, maskingParams )
+
 
 
 
@@ -447,7 +463,7 @@ for it in range( numIterations ) :
     #
     if useFEIR :
         print( 'Starting FEIR registration' )
-        feirReg = feirTask.feirRegistrationTask( strSimulatedSupine[-1], strSupineImg, regDirFEIR, 'NA', 
+        feirReg = feirTask.feirRegistrationTask( strSimulatedSupine[-1], strMaskedSupineImg, regDirFEIR, 'NA', 
                                                  mu=FEIRmu, lm=FEIRlambda, mode=FEIRmode, mask=True, 
                                                  displacementConvergence=FEIRconvergence, planStr=FEIRplanStr )
     
@@ -458,7 +474,7 @@ for it in range( numIterations ) :
     
     else :
         print( 'Starting f3d registration' )
-        f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strSupineImg, strSimulatedSupine[-1], regDirF3D, 'NA', 
+        f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strMaskedSupineImg, None, regDirF3D, 'NA', 
                                               bendingEnergy=F3DbendingEnergy2, logOfJacobian=F3DlogOfJacobian2, 
                                               finalGridSpacing=F3DfinalGridSpacing2, numberOfLevels=F3DnumberOfLevels2, 
                                               maxIterations=F3DmaxIterations2, gpu=F3Dgpu2 )

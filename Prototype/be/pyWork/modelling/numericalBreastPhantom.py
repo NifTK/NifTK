@@ -15,7 +15,10 @@ import materialSetGenerator as matGen
 
 class numericalBreastPhantom:
 
-    def __init__( self, outDir, edgeLength, meshlabSript=None, tetgenVol=75, tetgenQ=1.42, timeStep=1e-4, totalTime=1, damping=50 ):
+    def __init__( self, outDir, edgeLength, meshlabSript=None, tetgenVol=75, tetgenQ=1.42, 
+                  timeStep=1e-4, totalTime=1, damping=50, 
+                  fatMaterialType='NH', fatMaterialParams=[100,50000], 
+                  skinMaterialType='NH', skinMaterialParams=[1000,50000] ):
         
         self.outDir               = outDir
         
@@ -43,10 +46,10 @@ class numericalBreastPhantom:
         self.meshlabScript        = meshlabSript
         self.tetgenVolume         = tetgenVol
         
-        self.fatMaterialType      = 'NH'
-        self.fatMaterialParams    = [ 100, 50000]
-        self.skinMaterialType     = 'NH'
-        self.skinMaterialParams   = [1000, 50000]
+        self.fatMaterialType      = fatMaterialType
+        self.fatMaterialParams    = fatMaterialParams
+        self.skinMaterialType     = skinMaterialType
+        self.skinMaterialParams   = skinMaterialParams
         
         self.totalTime            = totalTime
         self.timeStep             = timeStep
