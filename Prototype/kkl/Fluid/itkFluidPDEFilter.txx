@@ -201,7 +201,7 @@ FluidPDEFilter<TScalarType, NDimensions>
   {
     niftkitkDebugMacro(<<"CalculateUnnormalised3DSineTransform(): creating plan");
     
-    m_fftwPlan = fftwf_plan_r2r_3d(sliceSize, colSize, rowSize, output, output, FFTW_RODFT00, FFTW_RODFT00, FFTW_RODFT00, FFTW_MEASURE);
+    m_fftwPlan = fftwf_plan_r2r_3d(sliceSize, colSize, rowSize, output, output, FFTW_RODFT00, FFTW_RODFT00, FFTW_RODFT00, FFTW_ESTIMATE);
     m_IsFFTWInitialised = true; 
     m_fftwPlanSliceSize = sliceSize; 
     m_fftwPlanColSize = colSize; 
