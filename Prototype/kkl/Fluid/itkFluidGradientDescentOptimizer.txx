@@ -196,7 +196,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     m_ForceFilter->SetUnTransformedMovingImage(this->m_ImageToImageMetric->GetTransformedMovingImage());
     m_ForceFilter->SetFixedImageMask(this->m_ImageToImageMetric->GetFixedImageMask()); 
     m_ForceFilter->Modified();
-    niftkitkInfoMacro(<< "CalculateNextStep():Updating force");
     m_ForceFilter->UpdateLargestPossibleRegion();
     
     // Output force image. 
@@ -208,7 +207,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     
     m_FluidPDESolver->SetIsSymmetric(this->m_IsSymmetric); 
     m_FluidPDESolver->SetInput(this->m_ForceFilter->GetOutput());
-    niftkitkInfoMacro(<< "CalculateNextStep():Updating solver");
     m_FluidPDESolver->UpdateLargestPossibleRegion();
     this->m_CurrentVelocityField = m_FluidPDESolver->GetOutput(); 
     this->m_CurrentVelocityField->DisconnectPipeline(); 
@@ -226,7 +224,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     this->m_CalculateVelocityFeild = true; 
   }
     
-  niftkitkInfoMacro(<< "CalculateNextStep():solver done");
   // Delta must be set before injecting m_FluidVelocityToDeformationFilter into this class.
   // m_FluidVelocityToDeformationFilter->SetInputMask(this->m_AsgdMask); 
   m_FluidVelocityToDeformationFilter->SetCurrentDeformationField(transform->GetDeformationField());
@@ -240,7 +237,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     m_FluidVelocityToFixedImageDeformationFilter->UpdateLargestPossibleRegion();
   }
   // Make it happen.
-  niftkitkInfoMacro(<< "CalculateNextStep():Updating deformation");
   m_FluidVelocityToDeformationFilter->UpdateLargestPossibleRegion();
   niftkitkInfoMacro(<< "CalculateNextStep():max perturbation=" << this->m_FluidVelocityToDeformationFilter->GetMaxDeformation());
   
@@ -321,14 +317,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     this->m_StepSize = 0.0; 
     bestSimilarity = std::numeric_limits<double>::max(); 
   }
-  this->m_PreviousGradient = this->m_FluidVelocityToDeformationFilter->GetOutput(); 
-  this->m_PreviousGradient->DisconnectPipeline(); 
-  if (this->m_IsSymmetric)
-  {
-    this->m_PreviousFixedImageGradient = this->m_FluidVelocityToFixedImageDeformationFilter->GetOutput(); 
-    this->m_PreviousFixedImageGradient->DisconnectPipeline(); 
-  }
-    
   niftkitkInfoMacro(<< "CalculateNextStep():Finished");
   
   return bestSimilarity; 
@@ -397,49 +385,44 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   if (currentSimilarity == std::numeric_limits<double>::max())
   {
     currentSimilarity = ComputeSimilarityMeasure(current, next, currentFixed, nextFixed, bestStep); 
-    niftkitkInfoMacro(<< "Check similarity: currentSimilarity1=" << currentSimilarity); 
   }
   else
   {
     currentSimilarity = (this->m_Maximize?-1.0:1.0)*currentSimilarity; 
-    niftkitkInfoMacro(<< "Check similarity: currentSimilarity2=" << currentSimilarity); 
   }
-  niftkitkInfoMacro(<< "Check similarity: currentSimilarity3=" << currentSimilarity); 
   
   bool isBetterSimilarity = false; 
-  // while (this->m_StepSize >= this->m_MinimumDeformationAllowedForIterations && !isBetterSimilarity)
+  bestStep = this->m_StepSize; 
+  while (bestStep >= this->m_MinimumDeformationAllowedForIterations && !isBetterSimilarity)
   {
-    double nextSimilarity = ComputeSimilarityMeasure(current, next, currentFixed, nextFixed, this->m_StepSize); 
-    niftkitkInfoMacro(<< "Check similarity: nextSimilarity=" << nextSimilarity); 
-    *bestSimilarity = (this->m_Maximize?-1.0:1.0)*nextSimilarity; 
+    double nextSimilarity = ComputeSimilarityMeasure(current, next, currentFixed, nextFixed, bestStep); 
+    niftkitkInfoMacro(<< "Check similarity: currentSimilarity=" << currentSimilarity << ",nextSimilarity=" << nextSimilarity << ",bestStep=" << bestStep); 
     
-    double fieldDotProduct = -(nextSimilarity-currentSimilarity); 
-    const double f_max = this->m_AsgdFMax; 
-    const double f_min = this->m_AsgdFMin; 
-    const double w = this->m_AsgdW; 
-    m_AdjustedTimeStep = m_AdjustedTimeStep + f_min + (f_max-f_min)/(1.-(f_max/f_min)*exp(-(-fieldDotProduct)/w)); 
-    niftkitkInfoMacro(<< "Check similarity: m_AdjustedTimeStep=" << m_AdjustedTimeStep << ",f_max=" << f_max << ",f_min=" << f_min << ",w=" << w); 
-    m_AdjustedTimeStep = std::max<double>(0., m_AdjustedTimeStep); 
-    this->m_StepSize = this->m_StartingStepSize/(m_AdjustedTimeStep+1.); 
-    niftkitkInfoMacro(<< "Check similarity: this->m_StepSize=" << this->m_StepSize); 
-    
-    if (fieldDotProduct > 0.)  
+    if (nextSimilarity < currentSimilarity)
+    {
+      *bestSimilarity = (this->m_Maximize?-1.0:1.0)*nextSimilarity; 
       isBetterSimilarity = true; 
+      bestStep *= 1.2; 
+      bestStep = std::min<double>(bestStep, this->m_StartingStepSize); 
+    }
     else
-      isBetterSimilarity = false; 
+    {
+      bestStep *= 0.5; 
+    }
   }
+  this->m_StepSize = bestStep; 
   
   if (this->m_StepSize < this->m_MinimumDeformationAllowedForIterations)
   {
     this->m_CurrentMinimumDeformationIterations++; 
-    niftkitkDebugMacro(<< "m_CurrentMinimumDeformationIterations=" << this->m_CurrentMinimumDeformationIterations);
+    niftkitkInfoMacro(<< "m_CurrentMinimumDeformationIterations=" << this->m_CurrentMinimumDeformationIterations);
   }
   if (this->m_MinimumDeformationMaximumIterations > -1 && this->m_CurrentMinimumDeformationIterations > this->m_MinimumDeformationMaximumIterations)
   {
     this->m_StepSize = 0.0; 
-    niftkitkDebugMacro(<< "m_CurrentMinimumDeformationIterations=" << this->m_CurrentMinimumDeformationIterations);
-    niftkitkDebugMacro(<< "m_MinimumDeformationMaximumIterations=" << this->m_MinimumDeformationMaximumIterations);
-    niftkitkDebugMacro(<< "Setting best step size to 0");
+    niftkitkInfoMacro(<< "m_CurrentMinimumDeformationIterations=" << this->m_CurrentMinimumDeformationIterations);
+    niftkitkInfoMacro(<< "m_MinimumDeformationMaximumIterations=" << this->m_MinimumDeformationMaximumIterations);
+    niftkitkInfoMacro(<< "Setting best step size to 0");
   }
   
   return this->m_StepSize;   
@@ -547,6 +530,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
       << ", currentValue=" << niftk::ConvertToString(this->m_Value) \
       << ", nextValue=" << niftk::ConvertToString(nextValue) \
       << ", minJacobian=" <<  niftk::ConvertToString(minJacobian) \
+      << ", this->m_StepSize=" << this->m_StepSize 
       << ", maxDeformationChange=" <<  niftk::ConvertToString(maxDeformationChange));
   
     if (this->m_Maximize && nextValue > this->m_Value || !this->m_Maximize && nextValue < this->m_Value || !this->m_CheckSimilarityMeasure)
@@ -601,6 +585,17 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
           this->m_CurrentFixedDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextFixedDeformableParameters); 
         }
         this->m_Value = nextValue;
+        // Also set the previous gradient to the current gradient. 
+        if (!this->m_CheckSimilarityMeasure)
+        {
+          this->m_PreviousGradient = this->m_FluidVelocityToDeformationFilter->GetOutput(); 
+          this->m_PreviousGradient->DisconnectPipeline(); 
+          if (this->m_IsSymmetric)
+          {
+            this->m_PreviousFixedImageGradient = this->m_FluidVelocityToFixedImageDeformationFilter->GetOutput(); 
+            this->m_PreviousFixedImageGradient->DisconnectPipeline(); 
+          }
+        }
       }
     }
     else
