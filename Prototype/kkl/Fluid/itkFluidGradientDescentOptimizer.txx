@@ -1045,6 +1045,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
       }
       fieldDotProduct += currentGradientIterator.Get()*previousGradientIterator.Get(); 
     }
+    fieldDotProduct /= numberOfAsgdMaskVoxels; 
   }
   niftkitkInfoMacro(<< "CalculateNextStep():fieldDotProduct=" << fieldDotProduct << ", m_StartingStepSize=" << this->m_StartingStepSize << ",numberOfAsgdMaskVoxels=" << numberOfAsgdMaskVoxels);
   
@@ -1074,6 +1075,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
         }
         fixedImageFieldDotProduct += currentFixedGradientIterator.Get()*previousFixedImageGradientIterator.Get(); 
       }
+      fixedImageFieldDotProduct /= numberOfAsgdMaskVoxels; 
     }
     niftkitkInfoMacro(<< "CalculateNextStep():fixedImageFieldDotProduct=" << fixedImageFieldDotProduct << ", m_StartingStepSize=" << this->m_StartingStepSize << ",numberOfAsgdMaskVoxels=" << numberOfAsgdMaskVoxels);
   }
