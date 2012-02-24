@@ -741,13 +741,16 @@ FluidPDEFilter<TScalarType, NDimensions>
       convolvedRegistrationForceY[currentArrayIndex] = 0.0;
       convolvedRegistrationForceZ[currentArrayIndex] = 0.0;
       
-      for (int row = 0; row < 3; row++)
-      {
-        for (int col = 0; col < 3; col++)
-        {
-          adjointNavierLameOperatorIterator[row][col] = m_AdjointNavierLameOperator[row][col].Begin(); 
-        }
-      }
+      adjointNavierLameOperatorIterator[0][0] = m_AdjointNavierLameOperator[0][0].Begin(); 
+      adjointNavierLameOperatorIterator[0][1] = m_AdjointNavierLameOperator[0][1].Begin(); 
+      adjointNavierLameOperatorIterator[0][2] = m_AdjointNavierLameOperator[0][2].Begin(); 
+      adjointNavierLameOperatorIterator[1][0] = m_AdjointNavierLameOperator[1][0].Begin(); 
+      adjointNavierLameOperatorIterator[1][1] = m_AdjointNavierLameOperator[1][1].Begin(); 
+      adjointNavierLameOperatorIterator[1][2] = m_AdjointNavierLameOperator[1][2].Begin(); 
+      adjointNavierLameOperatorIterator[2][0] = m_AdjointNavierLameOperator[2][0].Begin(); 
+      adjointNavierLameOperatorIterator[2][1] = m_AdjointNavierLameOperator[2][1].Begin(); 
+      adjointNavierLameOperatorIterator[2][2] = m_AdjointNavierLameOperator[2][2].Begin(); 
+      
       for (neighbourhoodIterator = registrationForceIterator.Begin();
            neighbourhoodIterator != registrationForceIterator.End(); 
            ++neighbourhoodIterator)
@@ -766,13 +769,15 @@ FluidPDEFilter<TScalarType, NDimensions>
         convolvedRegistrationForceZ[currentArrayIndex] += forcePixel[1]*(*adjointNavierLameOperatorIterator[2][1]);
         convolvedRegistrationForceZ[currentArrayIndex] += forcePixel[2]*(*adjointNavierLameOperatorIterator[2][2]);
         
-        for (int row = 0; row < 3; row++)
-        {
-          for (int col = 0; col < 3; col++)
-          {
-            ++adjointNavierLameOperatorIterator[row][col]; 
-          }
-        }
+        ++adjointNavierLameOperatorIterator[0][0]; 
+        ++adjointNavierLameOperatorIterator[0][1]; 
+        ++adjointNavierLameOperatorIterator[0][2]; 
+        ++adjointNavierLameOperatorIterator[1][0]; 
+        ++adjointNavierLameOperatorIterator[1][1]; 
+        ++adjointNavierLameOperatorIterator[1][2]; 
+        ++adjointNavierLameOperatorIterator[2][0]; 
+        ++adjointNavierLameOperatorIterator[2][1]; 
+        ++adjointNavierLameOperatorIterator[2][2]; 
       }
     }
   }
