@@ -317,7 +317,6 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     this->m_StepSize = 0.0; 
     bestSimilarity = std::numeric_limits<double>::max(); 
   }
-  niftkitkInfoMacro(<< "CalculateNextStep():Finished");
   
   return bestSimilarity; 
 }
@@ -392,6 +391,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   }
   
   bool isBetterSimilarity = false; 
+  bool isJustReduced = false; 
   bestStep = this->m_StepSize; 
   while (bestStep >= this->m_MinimumDeformationAllowedForIterations && !isBetterSimilarity)
   {
@@ -402,12 +402,16 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     {
       *bestSimilarity = (this->m_Maximize?-1.0:1.0)*nextSimilarity; 
       isBetterSimilarity = true; 
-      bestStep *= 1.2; 
-      bestStep = std::min<double>(bestStep, this->m_StartingStepSize); 
+      if (!isJustReduced)
+      {
+        bestStep *= pow(1./this->m_IteratingStepSizeReductionFactor, 1./3.); 
+        bestStep = std::min<double>(bestStep, this->m_StartingStepSize); 
+      }
     }
     else
     {
-      bestStep *= 0.5; 
+      bestStep *= this->m_IteratingStepSizeReductionFactor; 
+      isJustReduced = true; 
     }
   }
   this->m_StepSize = bestStep; 
@@ -560,13 +564,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
       // Check if we need to regrid only after we got a better similarity value. 
       if (minJacobian < this->m_MinimumJacobianThreshold)
       {
-        niftkitkInfoMacro(<< "ResumeOptimization():Jacobian is lower than threshold:" <<  this->m_MinimumJacobianThreshold \
-          << ", so accepting this change, reducing step size by:" \
-          << this->m_RegriddingStepSizeReductionFactor \
-          << ", to:" << this->m_StepSize \
-          << ", regridding and continuing");
-
-        this->m_StepSize *= this->m_RegriddingStepSizeReductionFactor;
+        niftkitkInfoMacro(<< "ResumeOptimization():Jacobian is lower than threshold:" <<  this->m_MinimumJacobianThreshold); 
         // Revert back to the current deformation if jacobian is too small. 
         GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters);
         if (this->m_IsSymmetric)
