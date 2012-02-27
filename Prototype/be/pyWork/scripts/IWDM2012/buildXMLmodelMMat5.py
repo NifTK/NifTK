@@ -43,12 +43,12 @@ F3DnumberOfLevels1         = 4
 F3DmaxIterations1          = 300
 F3Dgpu1                    = True
 
-F3DbendingEnergy2          = 0.002
+F3DbendingEnergy2          = 0.005
 F3DlogOfJacobian2          = 0.02
-F3DfinalGridSpacing2       = 5
-F3DnumberOfLevels2         = 6
-F3DmaxIterations2          = 400
-F3Dgpu2                    = True
+F3DfinalGridSpacing2       = 10
+F3DnumberOfLevels2         = 5
+F3DmaxIterations2          = 500
+F3Dgpu2                    = False
 
 #matModel                  = 'NH'
 #matParamsFat              = [  500, 50000 ]
@@ -474,7 +474,7 @@ for it in range( numIterations ) :
     
     else :
         print( 'Starting f3d registration' )
-        f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strMaskedSupineImg, None, regDirF3D, 'NA', 
+        f3dReg = f3dTask.f3dRegistrationTask( strSimulatedSupine[-1], strMaskedSupineImg, '', regDirF3D, 'NA', 
                                               bendingEnergy=F3DbendingEnergy2, logOfJacobian=F3DlogOfJacobian2, 
                                               finalGridSpacing=F3DfinalGridSpacing2, numberOfLevels=F3DnumberOfLevels2, 
                                               maxIterations=F3DmaxIterations2, gpu=F3Dgpu2 )
