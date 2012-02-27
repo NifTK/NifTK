@@ -18,7 +18,8 @@ class numericalBreastPhantom:
     def __init__( self, outDir, edgeLength, meshlabSript=None, tetgenVol=75, tetgenQ=1.42, 
                   timeStep=1e-4, totalTime=1, damping=50, 
                   fatMaterialType='NH', fatMaterialParams=[100,50000], 
-                  skinMaterialType='NH', skinMaterialParams=[1000,50000] ):
+                  fatViscoNumIsoTerms=0, fatViscoNumVolTerms=0, fatViscoParams=[], 
+                  skinMaterialType='NH', skinMaterialParams=[1000,50000], cylindricalBase=False ):
         
         self.outDir               = outDir
         
@@ -46,8 +47,14 @@ class numericalBreastPhantom:
         self.meshlabScript        = meshlabSript
         self.tetgenVolume         = tetgenVol
         
+        # fat material
         self.fatMaterialType      = fatMaterialType
         self.fatMaterialParams    = fatMaterialParams
+        self.fatViscoNumIsoTerms  = fatViscoNumIsoTerms
+        self.fatViscoNumVolTerms  = fatViscoNumVolTerms
+        self.fatViscoParmas       = fatViscoParams
+        
+        # skin material
         self.skinMaterialType     = skinMaterialType
         self.skinMaterialParams   = skinMaterialParams
         
@@ -59,8 +66,12 @@ class numericalBreastPhantom:
         self._breastVolIntensity  = 255.
         self._chestWallIntensity  = 64.
         
+        # Cylindrical chest?
+        if cylindricalBase :
+            self._createBellShapePhantomImageDataOnCylinder()
+        else:
+            self._createBellShapePhantomImageData()
         
-        self._createBellShapePhantomImageData()
         self._generateSurfaceMesh()
         
         if self.meshlabScript != None :
@@ -158,6 +169,120 @@ class numericalBreastPhantom:
         dilateParams += ' -b 0 '
         cmdEx.runCommand( dilateCmd, dilateParams )
           
+
+
+
+    def _createBellShapePhantomImageDataOnCylinder( self ):
+        
+        padSize = 5
+        
+        data     = np.zeros( (self.edgeLength, self.edgeLength, self.edgeLength) )
+        originXY = (self.edgeLength - 1.) / 2.
+        x, y     = np.meshgrid( range(self.edgeLength), range(self.edgeLength) )
+        
+        x = x - originXY
+        y = y - originXY  
+        
+        # The Gaussian curve
+        z = np.e**( -(x**2 + y**2) / (2.*(self.edgeLength / 4.)**2. ) ) * (self.edgeLength - 2.)/2. + padSize
+        
+        # Correct for simulated chest wall
+        rad = 1.2 * self.edgeLength
+        dZ  = np.sqrt( rad**2. - (x + originXY)**2 ) - rad / np.sqrt(2.)  
+        
+        dZ = dZ - np.min(dZ) + 2. * padSize
+        z   = z + dZ 
+        
+        mRect = np.zeros_like( z )
+        
+        cond = (  ( x < (   self.edgeLength / 2. - padSize ) ) 
+                & ( y < (   self.edgeLength / 2. - padSize ) )
+                & ( x > ( - self.edgeLength / 2. + padSize ) ) 
+                & ( y > ( - self.edgeLength / 2. + padSize ) ) ) 
+        
+        mRect[cond] = 1.0
+        
+        # now prepare the mask for the chest...
+        #mChest = np.zeros_like( z )
+        #mChest[ np.nonzero( np.sqrt( ( (x+originXY)**2. + (y + rad / np.sqrt(2))**2.)  )  > rad ) ] = 1.0
+        
+        
+        
+        #for iZ in range( padSize ):
+        #    d = np.zeros_like( z )
+        #    d = self._chestWallIntensity * mRect
+        #    data[:,:,iZ] = d
+            
+        for iZ in range( padSize, self.edgeLength-1 ) :
+            d = np.zeros_like( z )
+            d[ np.nonzero( z  >= iZ ) ] = self._breastVolIntensity
+            d[ np.nonzero( dZ >  iZ ) ] = self._chestWallIntensity
+            d = d * mRect
+            data[:,:,iZ] = d
+            
+        # mask the simulated chest
+        #for iY in range( self.edgeLength ):
+        #    data[:,iY,:] = data[:,iY,:] * mChest
+            
+        #
+        # Assumption of the size of the numerical model
+        #   the edgeLength (diameter of the retromammary surface) is about 15cm
+        #
+        scale       = self.bottomPlateDiameter / self.edgeLength
+        affine      = np.eye(4)
+        affine[0,0] = -scale
+        affine[1,1] = -scale
+        affine[2,2] =  scale
+        niiImageOut = nib.Nifti1Image( np.array(data, np.uint8 ), affine )
+        nib.save( niiImageOut, self.outNiiImageName )
+        
+        #
+        # Create mask image for "pectoral muscle" -> will be fixed
+        #   -> niftkThreshold -i vol.nii -l 60 -u 70 -in 255 -out 0 -o pectVolMask.nii
+        #
+        threshCmd     = 'niftkThreshold'
+        threshParams  = ' -i ' + self.outNiiImageName 
+        threshParams += ' -o ' + self.outNiiChestImageName 
+        threshParams += ' -l ' + str( '%i' % (self._chestWallIntensity-5) ) 
+        threshParams += ' -u ' + str( '%i' % (self._chestWallIntensity+5) ) 
+        threshParams += ' -in 255 ' 
+        threshParams += ' -out 0 '  
+        
+        cmdEx.runCommand( threshCmd, threshParams )
+        
+        #
+        # Dilate the mask image
+        #
+        dilateCmd     = 'niftkDilate'
+        dilateParams  = ' -i ' + self.outNiiChestImageName 
+        dilateParams += ' -o ' + self.outNiiChestImageName
+        dilateParams += ' -r 2' 
+        dilateParams += ' -it 4' 
+        dilateParams += ' -d 255 ' 
+        dilateParams += ' -b 0 '
+        cmdEx.runCommand( dilateCmd, dilateParams )
+         
+          
+        # Create mask image for "air" -> will be fixed
+        threshCmd     = 'niftkThreshold'
+        threshParams  = ' -i ' + self.outNiiImageName 
+        threshParams += ' -o ' + self.outNiiAirImageName 
+        threshParams += ' -l ' + str( '%i' % ( 0) ) 
+        threshParams += ' -u ' + str( '%i' % ( 5) ) 
+        threshParams += ' -in 255 ' 
+        threshParams += ' -out 0 '  
+        cmdEx.runCommand( threshCmd, threshParams )
+        
+        # Dilate the mask image
+        dilateCmd     = 'niftkDilate'
+        dilateParams  = ' -i ' + self.outNiiAirImageName
+        dilateParams += ' -o ' + self.outNiiAirImageName
+        dilateParams += ' -r 2' 
+        dilateParams += ' -it 4' 
+        dilateParams += ' -d 255 ' 
+        dilateParams += ' -b 0 '
+        cmdEx.runCommand( dilateCmd, dilateParams )
+
         
         
         
@@ -325,18 +450,20 @@ class numericalBreastPhantom:
         if skin:
             # Case skin and fat 
             gen.setMaterialElementSet( self.skinMaterialType, 'SKIN', self.skinMaterialParams, self.materialGen.skinElements )
-            gen.setMaterialElementSet( self.fatMaterialType,  'FAT',  self.fatMaterialParams,  self.materialGen.fatElemetns  )
+            gen.setMaterialElementSet( self.fatMaterialType,  'FAT',  self.fatMaterialParams,  self.materialGen.fatElemetns, 
+                                       self.fatViscoNumIsoTerms, self.fatViscoNumVolTerms, self.fatViscoParmas ) 
 
         else :
             # Case: fat only 
-            gen.setMaterialElementSet( self.fatMaterialType, 'FAT', self.fatMaterialParams, gen.allElemenstArray )
+            gen.setMaterialElementSet( self.fatMaterialType, 'FAT', self.fatMaterialParams, gen.allElemenstArray,
+                                       self.fatViscoNumIsoTerms, self.fatViscoNumVolTerms, self.fatViscoParmas )
         
         gen.setGravityConstraint( gravityVector, gravityMagnitude, gen.allNodesArray, 'RAMP' )
         gen.setOutput( 5000, 'U' )
         gen.setSystemParameters( timeStep           = self.timeStep, 
-                                    totalTime          = self.totalTime, 
-                                    dampingCoefficient = self.damping, 
-                                    hgKappa = 0.05, density = 1000 )    
+                                 totalTime          = self.totalTime, 
+                                 dampingCoefficient = self.damping, 
+                                 hgKappa = 0.05, density = 1000 )    
         gen.writeXML( self.outXmlModelFat )
         
         return gen
@@ -349,6 +476,7 @@ if __name__ == '__main__':
     outPath    = 'C:/data/test/'
     edgeLength = 400
     mlxFile    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx'
-    phantom    = numericalBreastPhantom( outPath, edgeLength, mlxFile )
-    phantom.generateXMLmodelFatOnly()
+    phantom    = numericalBreastPhantom( outPath, edgeLength, mlxFile, 
+                                         fatMaterialType='NHV', fatViscoNumIsoTerms=1, fatViscoNumVolTerms=1, fatViscoParams=[1.0, 0.2, 1.0, 1e9] )
+    phantom.generateXMLmodel( skin=False )
     

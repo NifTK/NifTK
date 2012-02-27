@@ -19,22 +19,29 @@ def referenceStatePhantomExperiment( configID ) :
 
     if ( (configID != '00'   ) and (configID != '01'   ) and (configID != '02'   ) and (configID != '03'   ) and
          (configID != '00s'  ) and (configID != '01s'  ) and (configID != '02s'  ) and (configID != '03s'  ) and
-         (configID != '00sAB') and (configID != '01sAB') and (configID != '02sAB') and (configID != '03sAB')  ) :
+         (configID != '00sAB') and (configID != '01sAB') and (configID != '02sAB') and (configID != '03sAB') and
+         (configID != '00VE' ) and (configID != '01VE' ) and (configID != '02VE' ) and (configID != '03VE' ) and
+         (configID != '00cyl') and (configID != '01cyl') and (configID != '02cyl') and (configID != '03cyl')  ) :
         print('Unknown configuration ID!') 
         return
     
     #
     # Default material parameters
     #
-    matModel        = 'NH'
-    matParamsFat    = [  100, 50000 ]
-    matParamsSkin   = [ 1000, 50000 ]
+    matModel          = 'NH'
+    matParamsFat      = [  100, 50000 ]
+    matParamsSkin     = [ 1000, 50000 ]
+    
+    viscoParams       = []
+    viscoNumIsoParams = 0
+    viscoNumVolParams = 0
+    cylindricalBase   = False
+
 
     if configID == '00' :
         # Parameter set tested first
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        plotDir         = experimentDir + 'plots/fatGravityRot/' 
         imageEdgeLength = 400
         tetgenVol       = 75
         tetgenQ         = 1.5
@@ -47,7 +54,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '01' : 
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
-        plotDir         = experimentDir + 'plots/fatGravityRot/' 
         imageEdgeLength = 400
         tetgenVol       = 30
         tetgenQ         = 1.5
@@ -59,14 +65,13 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '02' :
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
-        plotDir         = experimentDir + 'plots/fatGravityRot/' 
         imageEdgeLength = 400
         tetgenVol       = 20
         tetgenQ         = 1.5
         timeStep        = 2e-5
         totalTime       = 1.0
         damping         = 50
-        simSkin         = False
+        simSkin         =False
     
     
     if configID == '03' :
@@ -75,7 +80,6 @@ def referenceStatePhantomExperiment( configID ) :
         #
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-        plotDir         = experimentDir + 'plots/fatGravityRot/' 
         imageEdgeLength = 400
         tetgenVol       = 10
         tetgenQ         = 1.5
@@ -90,7 +94,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '00s' :
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00s/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 75
         tetgenQ         = 1.5
@@ -103,7 +106,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '01s' :
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01s/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 30
         tetgenQ         = 1.5
@@ -116,7 +118,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '02s' :
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02s/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 20
         tetgenQ         = 1.5
@@ -129,7 +130,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '03s' :
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03s/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 10
         tetgenQ         = 1.5
@@ -138,7 +138,7 @@ def referenceStatePhantomExperiment( configID ) :
         damping         = 50
         simSkin         = True
     
-    ####################
+    ###############################
     # Skin experiments
     # AB, 1.25, skin 100, fat 1000
     if configID.count( 'AB' ) == 1:
@@ -150,7 +150,6 @@ def referenceStatePhantomExperiment( configID ) :
         
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00sAB/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 75
         tetgenQ         = 1.5
@@ -163,7 +162,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '01sAB' :    
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01sAB/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 30
         tetgenQ         = 1.5
@@ -175,7 +173,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '02sAB' :
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02sAB/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 20
         tetgenQ         = 1.5
@@ -187,7 +184,6 @@ def referenceStatePhantomExperiment( configID ) :
     if configID == '03sAB' :
         experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03sAB/'
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-        plotDir         = experimentDir + 'plots/' 
         imageEdgeLength = 400
         tetgenVol       = 10
         tetgenQ         = 1.5
@@ -196,7 +192,83 @@ def referenceStatePhantomExperiment( configID ) :
         damping         = 50
         simSkin         = True
         
+    ##############################
+    # Visco elastic experiments
+    #
+    if configID.count('VE') == 1 :
+        viscoParams       = [ 1.0, 0.2, 1.0, 1e10 ]
+        viscoNumIsoParams = 1
+        viscoNumVolParams = 1
 
+    
+    if configID == '00VE' :
+        # Parameter set tested first
+        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00/'
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
+        imageEdgeLength = 400
+        tetgenVol       = 75
+        tetgenQ         = 1.5
+        timeStep        = 2e-5
+        totalTime       = 1.0
+        damping         = 50
+        simSkin         = False
+    
+    #################################
+    # Cylindrical base experiments
+    #
+    if configID.count('cyl') == 1 :
+        cylindricalBase = True
+    
+    if configID == '00cyl' :
+        # Parameter set tested first
+        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00cyl/'
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
+        imageEdgeLength = 400
+        tetgenVol       = 75
+        tetgenQ         = 1.5
+        timeStep        = 2e-5
+        totalTime       = 1.0
+        damping         = 50
+        simSkin         = False    
+        
+    if configID == '01cyl' : 
+        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01cyl/'
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
+        imageEdgeLength = 400
+        tetgenVol       = 30
+        tetgenQ         = 1.5
+        timeStep        = 2e-5
+        totalTime       = 1.0
+        damping         = 50
+        simSkin         = False
+        
+    if configID == '02cyl' :
+        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02cyl/'
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
+        imageEdgeLength = 400
+        tetgenVol       = 20
+        tetgenQ         = 1.5
+        timeStep        = 2e-5
+        totalTime       = 1.0
+        damping         = 50
+        simSkin         =False
+    
+    
+    if configID == '03cyl' :
+        #
+        # This setting did not work for ANY step size
+        #
+        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03cyl/'
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
+        imageEdgeLength = 400
+        tetgenVol       = 10
+        tetgenQ         = 1.5
+        timeStep        = 1e-6
+        totalTime       = 1.0
+        damping         = 50
+        simSkin         = False
+
+    plotDir = experimentDir + 'plots/'
 
     ######################################
     # 
@@ -222,7 +294,8 @@ def referenceStatePhantomExperiment( configID ) :
                                                  meshlabSript, tetgenVol, tetgenQ, 
                                                  timeStep, totalTime, damping, 
                                                  fatMaterialType  = matModel, fatMaterialParams  = matParamsFat, 
-                                                 skinMaterialType = matModel, skinMaterialParams = matParamsSkin )
+                                                 skinMaterialType = matModel, skinMaterialParams = matParamsSkin, 
+                                                 cylindricalBase = cylindricalBase )
     
     # track over iterations
     errorMeasures      = []
@@ -433,14 +506,19 @@ if __name__ == '__main__' :
         print(' - 00     -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000] ' )
         print(' - 01     -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000]' )
         print(' - 02     -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000]' )
-        print(' - 02     -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000]' )
+        print(' - 03     -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000]' )
         print(' - 00s    -> coarse mesh        (approx.  22k elements), fat+skin, NH [100/1000, 50000]' )
         print(' - 01s    -> medium coarse mesh (approx.  63k elements), fat+skin, NH [100/1000, 50000]' )
         print(' - 02s    -> fine mesh          (approx.  86k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 02s    -> very fine mesh     (approx. 166k elements), fat+skin, NH [100/1000, 50000]' )
+        print(' - 03s    -> very fine mesh     (approx. 166k elements), fat+skin, NH [100/1000, 50000]' )
         print(' - 00sAB  -> coarse mesh        (approx.  22k elements), fat+skin, AB [100/1000, 1.25 50000]' )
         print(' - 01sAB  -> medium coarse mesh (approx.  63k elements), fat+skin, AB [100/1000, 1.25 50000]' )
         print(' - 02sAB  -> fine mesh          (approx.  86k elements), fat+skin, AB [100/1000, 1.25 50000]' )
+        print(' - 00VE   -> coarse mesh        (approx.  22k elements), fat only, NHV [100, 50000] [1.0 0.2 1.0 1e10]' )
+        print(' - 00cyl  -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000], cylindrical base' )
+        print(' - 01cyl  -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000], cylindrical base' )
+        print(' - 02cyl  -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000], cylindrical base' )
+        print(' - 03cyl  -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000], cylindrical base' )
         sys.exit()
     
     configID = sys.argv[1] 

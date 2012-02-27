@@ -99,12 +99,34 @@ class xmlModelGenrator :
         
         
         
-    def setMaterialElementSet( self, materialType, materialName, materialElasticParams, materialElements ):
-        ''' @summary: Specify a material set and the nodes accordingly. 
+    def setMaterialElementSet( self, materialType, materialName, elasticParams, materialElements, 
+                               numIsoTerms=0, numVolTerms=0, viscoParams=[] ):
+        ''' @summary: Specify a material set and the nodes accordingly. You can omit the visco
+                      elastic material properties if you do not use such a model.
+            @param materialType: String holding the material type e.g. NH for neo-hookean material
+            @param materialName: Sting with name of the material which can be chosen freely. 
+            @param elasticParams: Array with elastic material parameters according to the model
+            @param materialElements: numpy array holding the element indices. 
+            @param numIsoTerms: (Viscoelastic) number of isochoric parameters -- scaling and time 
+            @param numIsoTerms: (Viscoelastic) number of volumetric parameters -- scaling and time
+            @param viscoParams: (Viscoelastic) array with viscoelastic parameters according to Prony series.    
         '''
-        self.materialSets.append([materialType, materialName, materialElasticParams, materialElements ])
-        pass
+        self.materialSets.append( { 'materialType'          : materialType, 
+                                    'materialName'          : materialName, 
+                                    'elasticParams'         : elasticParams, 
+                                    'materialElements'      : materialElements,
+                                    'numIsoTerms'           : numIsoTerms , 
+                                    'numVolTerms'           : numVolTerms, 
+                                    'viscoParams'           : viscoParams  } )
         
+        #
+        # Check the visco-elastic parameters
+        #
+        if ( ( self.materialSets[-1]['numIsoTerms'] + self.materialSets[-1]['numVolTerms'] ) * 2 
+               != len( self.materialSets[-1]['viscoParams'] ) ) : 
+            
+            print( 'Error: Given number of visco-elastic parameters is not correct!' )
+            
         
     
     
@@ -176,30 +198,49 @@ class xmlModelGenrator :
 
 
         # Write material sets
-        for i in range( len( self.materialSets ) ) :
+        for matSet in self.materialSets:
             
             # Write the element set
             elSet = doc.createElement('ElementSet')
-            elSet.setAttribute('Size', '%i' % self.materialSets[i][3].shape[0] )
+            elSet.setAttribute('Size', '%i' % matSet['materialElements'].shape[0] )
             
             mat = doc.createElement( 'Material' )
-            mat.setAttribute( 'Type', self.materialSets[i][0] )
-            mat.setAttribute( 'Name', self.materialSets[i][1] )
+            mat.setAttribute( 'Type', matSet['materialType'] )
+            mat.setAttribute( 'Name', matSet['materialName'] )
             
             elaParams = doc.createElement( 'ElasticParams' )
-            elaParams.setAttribute( 'NumParams', '%i' % len( self.materialSets[i][2] ) )
+            elaParams.setAttribute( 'NumParams', '%i' % len( matSet['elasticParams'] ) )
             
             strElaParams  = ''
-            for p in  self.materialSets[i][2]:
+            
+            for p in  matSet['elasticParams']:
                 strElaParams = strElaParams + str('%.2f ' % p )
             
             elaParamEntries = doc.createTextNode( strElaParams )
             
             elaParams.appendChild( elaParamEntries )
             
-            mat.appendChild(elaParams)
+            mat.appendChild( elaParams )
             
-            elSetEntries = doc.createTextNode( writeArrayToStr(self.materialSets[i][3], False ) )
+            # visco elastic parameters
+            if ( matSet['numIsoTerms'] != 0 ) or ( matSet['numVolTerms'] != 0 ) :
+                viscoParams = doc.createElement( 'ViscoParams' )
+                viscoParams.setAttribute( 'NumIsoTerms', '%i' % matSet['numIsoTerms'] )
+                viscoParams.setAttribute( 'NumVolTerms', '%i' % matSet['numVolTerms'] )
+
+                strViscoParams  = ''
+                
+                for p in  matSet['viscoParams']:
+                    strViscoParams = strViscoParams + str('%.4f ' % p )
+                
+                viscoParamEntries = doc.createTextNode( strViscoParams )
+                
+                viscoParams.appendChild( viscoParamEntries  )
+                    
+                mat.appendChild( viscoParams )
+                
+            
+            elSetEntries = doc.createTextNode( writeArrayToStr(matSet['materialElements'], False ) )
             elSet.appendChild( mat )
             elSet.appendChild( elSetEntries )
             model.appendChild( elSet )
