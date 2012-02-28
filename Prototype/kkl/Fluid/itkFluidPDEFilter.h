@@ -130,6 +130,10 @@ protected:
 	
   void CalculateUnnormalised3DSineTransform(int sizeX, int sizeY, int sizeZ, float* input, float* output);
   
+#ifdef CUDA_FFT
+  void CalculateUnnormalised3DSineTransformCUDA(int sizeX, int sizeY, int sizeZ, float* input, float* output);
+#endif  
+  
   /**
    * Compute the adjoint Navier Lame operator. 
    */

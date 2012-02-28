@@ -37,6 +37,16 @@
 
 #include "itkLogHelper.h"
 
+#ifdef CUDA_FFT
+#include <cuda.h>
+#include <cutil.h>
+#include <cuda_runtime_api.h>
+#include <cutil_inline_bankchecker.h>
+#include <cutil_inline_runtime.h>
+#include <cutil_inline_drvapi.h>
+#include <cufft.h>
+#endif
+
 namespace itk {
 
 template <class TScalarType, unsigned int NDimensions>
@@ -119,8 +129,15 @@ FluidPDEFilter<TScalarType, NDimensions>
     }
     else if (NDimensions == 3)
     {
-      niftkitkInfoMacro(<<"GenerateData(): solving forward");
+      std::cerr << "GenerateData(): solving forward...";
+#ifdef CUDA_FFT
+      std::cerr << "using CUDA..."; 
+#else
+      std::cerr << "using FFTW..."; 
+#endif            
+      time_t start = clock(); 
       CalculationVelocity3D(this->m_Lambda, this->m_Mu, false);
+      std::cerr << "done. Time elapsed=" << (clock()-start)/CLOCKS_PER_SEC << std::endl;
       
       // No actually needed. 
       //if (this->m_IsSymmetric)
@@ -219,6 +236,103 @@ FluidPDEFilter<TScalarType, NDimensions>
   //niftkitkDebugMacro(<<"CalculateUnnormalised3DSineTransform(): time used=" << (clock()-time)/CLOCKS_PER_SEC);
   
 }
+
+#ifdef CUDA_FFT
+template <class TScalarType, unsigned int NDimensions>
+void
+FluidPDEFilter<TScalarType, NDimensions>
+::CalculateUnnormalised3DSineTransformCUDA(int rowSize, int colSize, int sliceSize, float* input, float* output)
+{
+  typedef float2 Complex; 
+  
+  cudaSetDevice(cutGetMaxGflopsDeviceId());
+  // 1D example: Input rowSize = 3 from (a,b,c). 
+  //             Expand to 8 - (0,a,b,c,0,-c,-b,-a). 
+  unsigned int fftSize = 2*2*2*(rowSize+1)*(colSize+1)*(sliceSize+1); 
+  unsigned int memorySize = sizeof(Complex)*fftSize; 
+
+  Complex* complexInput = (Complex*)malloc(memorySize);
+  
+  for (int z = 0; z < 2*(sliceSize+1); z++)
+  {
+    for (int y = 0; y < 2*(colSize+1); y++)
+    {
+      for (int x = 0; x < 2*(rowSize+1); x++)
+      {
+        int currentIndex = z*2*(rowSize+1)*2*(colSize+1)+y*2*(rowSize+1)+x; 
+        
+        if (x == 0 || y == 0 || z == 0 || x == rowSize+1 || y == colSize+1 || z == sliceSize+1)
+        {
+          complexInput[currentIndex].x = 0.f; 
+          complexInput[currentIndex].y = 0.f; 
+          continue; 
+        }
+        
+        int inputXIndex = x-1; 
+        float rowSign = 1.f; 
+        if (x > rowSize+1)
+        {
+          rowSign = -1.f; 
+          inputXIndex = 2*(rowSize+1)-1-x; 
+        }
+        int inputYIndex = y-1; 
+        float colSign = 1.f; 
+        if (y > colSize+1)
+        {
+          colSign = -1.f; 
+          inputYIndex = 2*(colSize+1)-1-y; 
+        }
+        int inputZIndex = z-1; 
+        float sliceSign = 1.f; 
+        if (z > sliceSize+1)
+        {
+          sliceSign = -1.f; 
+          inputZIndex = 2*(sliceSize+1)-1-z; 
+        }
+        
+        // int inputIndex = inputZIndex*rowSize*colSize+inputYIndex*rowSize+inputXIndex; 
+        int inputIndex = inputXIndex*sliceSize*colSize+inputYIndex*sliceSize+inputZIndex; 
+        complexInput[currentIndex].x = rowSign*colSign*sliceSign*input[inputIndex];
+        complexInput[currentIndex].y = 0.f; 
+      }
+    }
+  }
+  
+  Complex* cudaComplexInput = NULL; 
+  // Allocate device memory. 
+  cutilSafeCall(cudaMalloc((void**)&cudaComplexInput, memorySize));
+  // Copy host memory to device. 
+  cutilSafeCall(cudaMemcpy(cudaComplexInput, complexInput, memorySize, cudaMemcpyHostToDevice));
+  // CUFFT plan
+  cufftHandle plan;
+  cufftSafeCall(cufftPlan3d(&plan, 2*(rowSize+1), 2*(colSize+1), 2*(sliceSize+1), CUFFT_C2C));
+  // Transform signal and kernel
+  std::cout << "Transforming signal cufftExecC2C" << std::endl; 
+  cufftSafeCall(cufftExecC2C(plan, (cufftComplex*)cudaComplexInput, (cufftComplex*)cudaComplexInput, CUFFT_FORWARD));
+  // Copy device memory to host
+  cutilSafeCall(cudaMemcpy(complexInput, cudaComplexInput, memorySize, cudaMemcpyDeviceToHost));
+  
+  for (int z = 0; z < sliceSize; z++)
+  {
+    for (int y = 0; y < colSize; y++)
+    {
+      for (int x = 0; x < rowSize; x++)
+      {
+        int currentIndex = (z+1)*2*(rowSize+1)*2*(colSize+1)+(y+1)*2*(rowSize+1)+(x+1); 
+        // int outputIndex = z*rowSize*colSize+y*rowSize+x; 
+        int outputIndex = x*sliceSize*colSize+y*sliceSize+z; 
+        output[outputIndex] = complexInput[currentIndex].y;
+      }
+    }
+  }
+  
+  // Destroy CUFFT context
+  cufftSafeCall(cufftDestroy(plan));
+  cutilSafeCall(cudaFree(cudaComplexInput));
+  cutilDeviceReset();
+  free(complexInput); 
+}
+#endif
 
 
 template <class TScalarType, unsigned int NDimensions>
@@ -784,10 +898,16 @@ FluidPDEFilter<TScalarType, NDimensions>
   niftkitkDebugMacro(<<"CalculationVelocity3D(): convolution done");
   
   // Step 2. Sine transform of the result of step 1. 
+#ifdef CUDA_FFT  
+  CalculateUnnormalised3DSineTransformCUDA(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, convolvedRegistrationForceX, sineConvolvedRegistrationForceX);
+  CalculateUnnormalised3DSineTransformCUDA(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, convolvedRegistrationForceY, sineConvolvedRegistrationForceY);
+  CalculateUnnormalised3DSineTransformCUDA(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, convolvedRegistrationForceZ, sineConvolvedRegistrationForceZ);
+#else  
   CalculateUnnormalised3DSineTransform(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, convolvedRegistrationForceX, sineConvolvedRegistrationForceX);
   CalculateUnnormalised3DSineTransform(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, convolvedRegistrationForceY, sineConvolvedRegistrationForceY);
   CalculateUnnormalised3DSineTransform(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, convolvedRegistrationForceZ, sineConvolvedRegistrationForceZ);
-	
+#endif   
+  
   fftwf_free(convolvedRegistrationForceX);
   fftwf_free(convolvedRegistrationForceY);
   fftwf_free(convolvedRegistrationForceZ);
@@ -819,9 +939,15 @@ FluidPDEFilter<TScalarType, NDimensions>
   }
   
   // Step 4. Compute the sine transform again. 
+#ifdef CUDA_FFT  
+  CalculateUnnormalised3DSineTransformCUDA(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, sineConvolvedRegistrationForceX, velocityX);
+  CalculateUnnormalised3DSineTransformCUDA(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, sineConvolvedRegistrationForceY, velocityY);
+  CalculateUnnormalised3DSineTransformCUDA(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, sineConvolvedRegistrationForceZ, velocityZ);
+#else  
   CalculateUnnormalised3DSineTransform(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, sineConvolvedRegistrationForceX, velocityX);
   CalculateUnnormalised3DSineTransform(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, sineConvolvedRegistrationForceY, velocityY);
   CalculateUnnormalised3DSineTransform(regionSize[0]-2, regionSize[1]-2, regionSize[2]-2, sineConvolvedRegistrationForceZ, velocityZ);
+#endif 
 	
   fftwf_free(sineConvolvedRegistrationForceX);
   fftwf_free(sineConvolvedRegistrationForceY);
