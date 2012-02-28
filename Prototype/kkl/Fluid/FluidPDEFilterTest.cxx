@@ -21,6 +21,8 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
+// #define CUDA_FFT 1
+ 
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
@@ -40,10 +42,22 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "fftw3.h"
 
+#ifdef CUDA_FFT
+#include <cuda.h>
+#include <cutil.h>
+#include <cuda_runtime_api.h>
+#include <cutil_inline_bankchecker.h>
+#include <cutil_inline_runtime.h>
+#include <cutil_inline_drvapi.h>
+#include <cufft.h>
+#endif
+
 #define pi (3.14159265359)
 #define tolerance (0.001) 
 #define Dimension (2)
 #define Dimension3D (3)
+
+typedef float2 Complex; 
 
 /**
  * 
@@ -111,6 +125,94 @@ public:
     
     return EXIT_SUCCESS;
   }
+#ifdef CUDA_FFT  
+  /**
+   * 1D CUDA FFT transform tests.
+   */
+  int Test1DCUFFTTransform()
+  {
+    VnlVectorType data1D(16);
+    VnlVectorType results1D(16);
+  
+    data1D.fill(0);
+    results1D.fill(0);
+    for (unsigned int i = 1; i <= data1D.size()-2; i++)  
+    {
+      data1D[i] = rand()%100;
+    }
+    
+    for (unsigned int m = 1; m <= data1D.size()-2; m++)
+    {
+      for (unsigned int x = 1; x <= data1D.size()-2; x++)
+      {
+        results1D[m] += data1D[x]*sin(pi*x*m/(double)(data1D.size()-1));
+      }
+    }
+    std::cout << "1D expected results:" << std::endl;
+    std::cout << results1D << std::endl;  
+    
+    int N=data1D.size()-1;
+    int mem_size = sizeof(Complex)*(N*2); 
+    
+    cudaSetDevice(cutGetMaxGflopsDeviceId());
+    Complex* in = (Complex*)malloc(mem_size);
+    Complex* out = (Complex*)malloc(mem_size); 
+    
+    for (int i = 0; i < N ; i++)  
+    {
+      in[i].x = data1D[i]; 
+      in[i].y = 0; 
+    }
+    in[N].x = 0; 
+    in[N].y = 0; 
+    for (int i = N+1; i < 2*N ; i++)  
+    {
+      in[i].x = -data1D[2*N-i];
+      in[i].y = 0; 
+    }
+    std::cout << "in="; 
+    for (int i = 0; i < 2*N; i++)
+    {
+      std::cout << in[i].x << " "; 
+    }
+    std::cout << std::endl; 
+    std::cout << "in="; 
+    for (int i = 0; i < 2*N; i++)
+    {
+      std::cout << in[i].y << " "; 
+    }
+    std::cout << std::endl; 
+    Complex* d_in = NULL; 
+    // Allocate device memory. 
+    cutilSafeCall(cudaMalloc((void**)&d_in, mem_size));
+    // Copy host memory to device. 
+    cutilSafeCall(cudaMemcpy(d_in, in, mem_size, cudaMemcpyHostToDevice));
+    // CUFFT plan
+    cufftHandle plan;
+    cufftSafeCall(cufftPlan1d(&plan, 2*N, CUFFT_C2C, 1));
+    // Transform signal and kernel
+    printf("Transforming signal cufftExecC2C\n");
+    cufftSafeCall(cufftExecC2C(plan, (cufftComplex *)d_in, (cufftComplex *)d_in, CUFFT_FORWARD));
+    // Copy device memory to host
+    cutilSafeCall(cudaMemcpy(out, d_in, mem_size, cudaMemcpyDeviceToHost));
+    
+    std::cout << "out:" << std::endl;
+    for (int i = 0; i < 2*N ; i++)  
+    {
+      std::cout << out[i].y/2.0 << " ";
+    }
+    std::cout << std::endl;     
+    
+    //Destroy CUFFT context
+    cufftSafeCall(cufftDestroy(plan));
+    cutilSafeCall(cudaFree(d_in));
+    cutilDeviceReset();
+    free(in); 
+    free(out); 
+  
+    return EXIT_SUCCESS;
+  }
+#endif  
   /**
    * 2D sine transform tests.
    */
@@ -231,15 +333,20 @@ public:
     return EXIT_SUCCESS;
   }
 	
+  
+#ifdef CUDA_FFT
   /**
 	 * 3D sine transform tests.
    */
-  int Test3DSineTransform()
+  int Test3DCUFFTTransform()
   {
     FluidPDEFilterType::Pointer fluidTransform = FluidPDEFilterType::New();
-    const int rowSize = 15;
-    const int colSize = 6;
-		const int sliceSize = 10;
+    //const int rowSize = 15;
+    //const int colSize = 6;
+		//const int sliceSize = 10;
+    const int rowSize = 6;
+    const int colSize = 5;
+    const int sliceSize = 5;
     double data[sliceSize][rowSize][colSize];
     double results[sliceSize][rowSize][colSize];
     
@@ -322,7 +429,8 @@ public:
 		}
     std::cout << std::endl;
     
-    fluidTransform->CalculateUnnormalised3DSineTransform(NX, NY, NZ, in, out);
+    // fluidTransform->CalculateUnnormalised3DSineTransform(NX, NY, NZ, in, out);
+    fluidTransform->CalculateUnnormalised3DSineTransformCUDA(NX, NY, NZ, in, out);
     std::cout << "out3d:" << std::endl;
     for (int z = 0; z < NZ; z++)
     {
@@ -342,7 +450,8 @@ public:
       std::cout << std::endl;
     }
     std::cout << std::endl;
-    fluidTransform->CalculateUnnormalised3DSineTransform(NX, NY, NZ, in, out);
+    // fluidTransform->CalculateUnnormalised3DSineTransform(NX, NY, NZ, in, out);
+    fluidTransform->CalculateUnnormalised3DSineTransformCUDA(NX, NY, NZ, in, out);
     std::cout << "inverse out:" << std::endl;
     for (int z = 0; z < NZ; z++)
     {
@@ -366,6 +475,146 @@ public:
     delete[] inCopy;
 		return EXIT_SUCCESS;
 	}		
+#endif  
+  
+  /**
+   * 3D sine transform tests.
+   */
+  int Test3DSineTransform()
+  {
+    FluidPDEFilterType::Pointer fluidTransform = FluidPDEFilterType::New();
+    const int rowSize = 15;
+    const int colSize = 6;
+    const int sliceSize = 10;
+    double data[sliceSize][rowSize][colSize];
+    double results[sliceSize][rowSize][colSize];
+    
+    std::cout << "3D data:" << std::endl;
+    for (int slice = 0; slice < sliceSize; slice++)
+    {
+      for (int row = 0; row < rowSize; row++)
+      {
+        for (int col = 0; col < colSize; col++)
+        {
+          if (row == 0 || row == rowSize-1 ||
+              col == 0 || col == colSize-1 ||
+              slice == 0 || slice == sliceSize-1)
+          {
+            data[slice][row][col] = 0.0;
+          }
+          else
+          {
+            data[slice][row][col] = rand()%30;
+          }
+          std::cout << data[slice][row][col] << " "; 
+        }
+        std::cout << std::endl;
+      }
+      std::cout << std::endl;
+    }
+    std::cout << "3D results:" << std::endl;
+    for (int p = 0; p < sliceSize; p++)
+    {
+      for (int m = 0; m < rowSize; m++)
+      {
+        for (int n = 0; n < colSize; n++)
+        {
+          results[p][m][n] = 0.0;
+          if (m != 0 && m != rowSize-1 &&
+              n != 0 && n != colSize-1 &&
+              p != 0 && p != sliceSize-1)
+          {
+            for (int row = 1; row <= rowSize-2; row++)
+            {
+              for (int col = 1; col <= colSize-2; col++)
+              {
+                for (int slice = 1; slice <= sliceSize-2; slice++)
+                {
+                  results[p][m][n] += data[slice][row][col]*sin(pi*row*m/(double)(rowSize-1))*sin(pi*col*n/(double)(colSize-1))*sin(pi*slice*p/(double)(sliceSize-1));
+                }
+              }
+            }
+          }
+          std::cout << results[p][m][n] << " ";     
+        }
+        std::cout << std::endl;
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    
+    int NX = colSize-2;
+    int NY = rowSize-2;
+    int NZ = sliceSize-2;
+    float* in = new float[NX*NY*NZ];
+    float* inCopy = new float[NX*NY*NZ];
+    float* out = new float[NX*NY*NZ];
+    
+    std::cout << "3D inputs:" << std::endl;
+    for (int z = 0; z < NZ; z++)
+    {
+      for (int y = 0; y < NY; y++)
+      {
+        for (int x = 0; x < NX; x++)
+        {
+          // row->y, col->x.
+          in[z*NX*NY+y*NX+x] = data[z+1][y+1][x+1];
+          inCopy[z*NX*NY+y*NX+x] = in[z*NX*NY+y*NX+x];
+          std::cout << in[z*NX*NY+y*NX+x] << " ";
+        }
+        std::cout << std::endl;
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    
+    fluidTransform->CalculateUnnormalised3DSineTransform(NX, NY, NZ, in, out);
+    std::cout << "out3d:" << std::endl;
+    for (int z = 0; z < NZ; z++)
+    {
+      for (int y = 0; y < NY; y++)
+      {
+        for (int x = 0; x < NX; x++)
+        {
+          std::cout << out[z*NX*NY+y*NX+x]/8.0 << " "; 
+          in[z*NX*NY+y*NX+x] = out[z*NX*NY+y*NX+x]/8.0;
+          if (fabs(results[z+1][y+1][x+1]-out[z*NX*NY+y*NX+x]/8.0) > tolerance)
+          {
+            std::cout << std::endl << out[z*NX*NY+y*NX+x]/8.0 << "," << results[z+1][y+1][x+1] << std::endl; 
+            return EXIT_FAILURE;
+          }
+        }
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    fluidTransform->CalculateUnnormalised3DSineTransform(NX, NY, NZ, in, out);
+    std::cout << "inverse out:" << std::endl;
+    for (int z = 0; z < NZ; z++)
+    {
+      for (int y = 0; y < NY; y++)
+      {
+        for (int x = 0; x < NX; x++)
+        {
+          out[z*NX*NY+y*NX+x] = out[z*NX*NY+y*NX+x]/8.0/((NX+1)*(NY+1)*(NZ+1)/8.0);
+          std::cout << out[z*NX*NY+y*NX+x] << " ";
+          if (fabs(data[z+1][y+1][x+1]-out[z*NX*NY+y*NX+x]) > tolerance)
+            return EXIT_FAILURE;
+        }
+        std::cout << std::endl;
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+  
+    delete[] in; 
+    delete[] out;
+    delete[] inCopy;
+    return EXIT_SUCCESS;
+  }   
+  
+  
+  
   /**
    * Fluid PDE solver tests.
    * Set velocity v = sin(pi*x/M)*sin(pi*y/N) and calculated the force b.
@@ -804,11 +1053,18 @@ public:
 };
 
 
-int FluidPDEFilterTest(int argc, char * argv[])
+int main(int argc, char * argv[])
 {
   srand(time(NULL));
   
   FluidPDEFilterUnitTest test;
+  
+#ifdef CUDA_FFT  
+  if (test.Test3DCUFFTTransform() != EXIT_SUCCESS)
+    return EXIT_FAILURE;
+  if (test.Test1DCUFFTTransform() != EXIT_SUCCESS)
+    return EXIT_FAILURE; 
+#endif    
   
   if (test.Test1DSineTransform() != EXIT_SUCCESS)
     return EXIT_FAILURE;
@@ -816,8 +1072,6 @@ int FluidPDEFilterTest(int argc, char * argv[])
   if (test.Test2DSineTransform() != EXIT_SUCCESS)
     return EXIT_FAILURE;
 
-  if (test.Test3DSineTransform() != EXIT_SUCCESS)
-    return EXIT_FAILURE;
 
   for (double lambda = 0; lambda <= 3.1; lambda++)
   {
