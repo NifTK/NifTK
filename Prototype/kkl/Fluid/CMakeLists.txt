@@ -9,16 +9,38 @@ SET(NIFTK_FFTW_LINK_LIBRARIES
     ${NIFTK_APPLICATION_LINK_LIBRARIES}
     ${FFTW_LIBRARIES}
 )
-    
+
+FIND_PACKAGE(CUDA)
+IF(CUDA_FOUND)
+  SET(CUDA_CUT_INCLUDE_DIR /usr/local/cuda/include)
+  INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR})
+  CUDA_INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR})
+  ADD_DEFINITIONS(-D_USE_CUDA)
+  SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-D_USE_CUDA")
+  MESSAGE("Found CUDA")
+  MESSAGE("CUDA include=${CUDA_CUT_INCLUDE_DIR}")   
+  INCLUDE_DIRECTORIES(/home/samba/user/leung/work/NVIDIA_GPU_Computing_SDK/C/common/inc)
+  LINK_DIRECTORIES(/usr/local/cuda/lib)
+  SET(CUDA_FFT_LIB cudart cufft)
+  MESSAGE("CUDA_FFT_LIB=${CUDA_FFT_LIB}")   
+ELSE(CUDA_FOUND)
+  MESSAGE("Didn't find CUDA")
+ENDIF(CUDA_FOUND)
+
 ADD_EXECUTABLE(niftkFluid niftkFluid.cxx )
-TARGET_LINK_LIBRARIES(niftkFluid ${NIFTK_FFTW_LINK_LIBRARIES} )
+TARGET_LINK_LIBRARIES(niftkFluid ${NIFTK_FFTW_LINK_LIBRARIES} ${CUDA_FFT_LIB})
 INSTALL(TARGETS niftkFluid RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
     
 #ADD_EXECUTABLE(niftkFluid2D niftkFluid2D.cxx )
 #TARGET_LINK_LIBRARIES(niftkFluid2D ${NIFTK_FFTW_LINK_LIBRARIES} )
 #INSTALL(TARGETS niftkFluid2D RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-    
-  
+
+#ADD_EXECUTABLE(itkFluidRegistrationTest itkFluidRegistrationTest.cxx itkVelocityFieldDeformableTransformFilename.cxx)
+#TARGET_LINK_LIBRARIES(itkFluidRegistrationTest ${NIFTK_FFTW_LINK_LIBRARIES} )
+     
+#ADD_EXECUTABLE(FluidPDEFilterTest FluidPDEFilterTest.cxx)
+#TARGET_LINK_LIBRARIES(FluidPDEFilterTest ${NIFTK_FFTW_LINK_LIBRARIES} ${CUDA_FFT_LIB} )
+
 #################################################################################
 # Fluid Tests
 #################################################################################
