@@ -33,6 +33,7 @@
 #include "itkFluidVelocityToDeformationFilter.h"
 #include "itkIterationUpdateCommand.h"
 #include "itkRecursiveGaussianImageFilter.h"
+#include "itkDBCImageFilter.h"
 
 namespace itk
 {
@@ -99,6 +100,12 @@ public:
   typedef Image<float, Dimension>                                           MaskType; 
   typedef ImageRegionIteratorWithIndex<MaskType> AsgdMaskIteratorType; 
   typedef typename Superclass::JacobianImageType JacobianImageType; 
+ 
+  /** DBC */
+  typedef Image<short, itkGetStaticConstMacro(Dimension)>  DBCMaskType; 
+  typedef DBCImageFilter<TFixedImage, DBCMaskType>         DBCFilterType; 
+  typedef ResampleImageFilter<DBCMaskType, DBCMaskType>    DBCMaskResampleFilterType; 
+  typedef NearestNeighborInterpolateImageFunction<DBCMaskType, double> DBCNearestInterpolatorType;   // opt for speed. 
 
   /** Set the force filter to use. */ 
   itkSetObjectMacro( ForceFilter, ForceFilterType );
@@ -123,7 +130,10 @@ public:
   itkGetObjectMacro(FixedImageInverseTransform, FluidTransformType); 
   itkSetObjectMacro(FluidVelocityToFixedImageDeformationFilter, FluidAddVelocityFilterType); 
   itkGetObjectMacro(FluidVelocityToFixedImageDeformationFilter, FluidAddVelocityFilterType); 
-  
+  itkSetObjectMacro(DBCFilter, DBCFilterType); 
+  itkSetObjectMacro(FixedImageDBCMask, DBCMaskType); 
+  itkSetObjectMacro(MovingImageDBCMask, DBCMaskType); 
+
   /**
    * Set/Get macro. 
    */
@@ -268,6 +278,11 @@ protected:
   * see Frassoldati et al (2008) Journal of industrial and management optimization. 
   */
   void EstimateAdapativeBarzilaiBorweinStepSize(double* bestStepSize, double* bestFixedImageStepSize); 
+  
+  /**
+   * Perform DBC. 
+   */
+  void PerformDBC(bool isCalculateBiasField); 
 
   /** We inject a force filter. */
   ForceFilterPointer m_ForceFilter;
@@ -430,6 +445,19 @@ protected:
    * Fixed image inverse transform. 
    */
   typename DeformableTransformType::Pointer m_FixedImageInverseTransform; 
+  /**
+   * DBC filter. 
+   */
+  typename DBCFilterType::Pointer m_DBCFilter; 
+  /**
+   * Fixed image DBC mask. 
+   */
+  typename DBCMaskType::Pointer m_FixedImageDBCMask; 
+  /**
+   * Moving image DBC mask. 
+   */
+  typename DBCMaskType::Pointer m_MovingImageDBCMask; 
+  
   
 private:
 

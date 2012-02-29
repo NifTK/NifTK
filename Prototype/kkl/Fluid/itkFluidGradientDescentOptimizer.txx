@@ -162,38 +162,55 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   double bestFixedImageStepSize = 0.; 
   
   if (m_ForceFilter.IsNull())
-    {
-      itkExceptionMacro(<< "Force filter is not set");
-    } 
+  {
+    itkExceptionMacro(<< "Force filter is not set");
+  } 
   if (m_FluidPDESolver.IsNull())
-    {
-      itkExceptionMacro(<< "PDE filter is not set");
-    } 
+  {
+    itkExceptionMacro(<< "PDE filter is not set");
+  } 
   if (m_FluidVelocityToDeformationFilter.IsNull())
-    {
-      itkExceptionMacro(<< "FluidVelocityToDeformationFilter filter is not set");
-    } 
+  {
+    itkExceptionMacro(<< "FluidVelocityToDeformationFilter filter is not set");
+  } 
 
   FluidTransformPointer transform = GetFluidDeformableTransform(); 
 
   // Set the current parameter/deformation. 
-  transform->SetDeformableParameters(current);
+  //transform->SetDeformableParameters(current);
+  //if (this->m_IsSymmetric)
+  //{
+  //  m_FixedImageTransform->SetDeformableParameters(currentFixed); 
+  //}
   
   if (this->m_CalculateVelocityFeild)
   {
-    // Force is calculated between fixed, and regridded moving image.
-    if (!this->m_IsSymmetric)
+    // Perform DBC. 
+    if (!this->m_DBCFilter.IsNull())
     {
-      m_ForceFilter->SetFixedImage(this->m_FixedImage);
+      PerformDBC(true); 
+      
+      // Force is calculated between fixed, and regridded moving image.
+      m_ForceFilter->SetFixedImage(this->m_DBCFilter->GetOutputImage(1));
+      m_ForceFilter->SetTransformedMovingImage(this->m_DBCFilter->GetOutputImage(0));
+      m_ForceFilter->SetUnTransformedMovingImage(this->m_DBCFilter->GetOutputImage(0));
     }
     else
     {
-      m_ForceFilter->SetFixedImage(this->m_ImageToImageMetric->GetTransformedFixedImage());
+      // Force is calculated between fixed, and regridded moving image.
+      if (!this->m_IsSymmetric)
+      {
+        m_ForceFilter->SetFixedImage(this->m_FixedImage);
+      }
+      else
+      {
+        m_ForceFilter->SetFixedImage(this->m_ImageToImageMetric->GetTransformedFixedImage());
+      }
+      m_ForceFilter->SetTransformedMovingImage(this->m_ImageToImageMetric->GetTransformedMovingImage());
+      //m_ForceFilter->SetUnTransformedMovingImage(this->m_MovingImage);
+      m_ForceFilter->SetUnTransformedMovingImage(this->m_ImageToImageMetric->GetTransformedMovingImage());
     }
     m_ForceFilter->SetIsSymmetric(this->m_IsSymmetric); 
-    m_ForceFilter->SetTransformedMovingImage(this->m_ImageToImageMetric->GetTransformedMovingImage());
-    //m_ForceFilter->SetUnTransformedMovingImage(this->m_MovingImage);
-    m_ForceFilter->SetUnTransformedMovingImage(this->m_ImageToImageMetric->GetTransformedMovingImage());
     m_ForceFilter->SetFixedImageMask(this->m_ImageToImageMetric->GetFixedImageMask()); 
     m_ForceFilter->Modified();
     m_ForceFilter->UpdateLargestPossibleRegion();
@@ -1357,6 +1374,65 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
 }
 
     
+/**
+ * Perform DBC on the input images of the force filter.  
+ */
+template < typename TFixedImage, typename TMovingImage, typename TScalarType, class TDeformationScalar>
+void 
+FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformationScalar>
+::PerformDBC(bool isCalculateBiasField)
+{
+  typename DBCMaskResampleFilterType::Pointer movingMaskResampleFilter = DBCMaskResampleFilterType::New(); 
+  typename DBCMaskResampleFilterType::Pointer fixedMaskResampleFilter = DBCMaskResampleFilterType::New(); 
+  typename DBCNearestInterpolatorType::Pointer nearestInterpolator = DBCNearestInterpolatorType::New();
+  
+  // We need to have the correct mask if we want to calculate the bias fields. 
+  if (isCalculateBiasField)
+  {
+    // Apply the deformable transforms to the masks. 
+    movingMaskResampleFilter->SetTransform(this->m_DeformableTransform);
+    movingMaskResampleFilter->SetInterpolator(nearestInterpolator);      
+    movingMaskResampleFilter->SetInput(this->m_MovingImageDBCMask);
+    movingMaskResampleFilter->SetOutputParametersFromImage(this->m_MovingImageDBCMask);
+    movingMaskResampleFilter->SetDefaultPixelValue(0);
+    movingMaskResampleFilter->UpdateLargestPossibleRegion();
+    this->m_DBCFilter->AddImage(this->m_ImageToImageMetric->GetTransformedMovingImage(), movingMaskResampleFilter->GetOutput());
+    
+    if (this->m_IsSymmetric)
+    {
+      fixedMaskResampleFilter->SetTransform(this->m_DeformableTransform);
+      fixedMaskResampleFilter->SetInterpolator(nearestInterpolator);      
+      fixedMaskResampleFilter->SetInput(this->m_MovingImageDBCMask);
+      fixedMaskResampleFilter->SetOutputParametersFromImage(this->m_MovingImageDBCMask);
+      fixedMaskResampleFilter->SetDefaultPixelValue(0);
+      fixedMaskResampleFilter->UpdateLargestPossibleRegion();
+      this->m_DBCFilter->AddImage(this->m_ImageToImageMetric->GetTransformedFixedImage(), fixedMaskResampleFilter->GetOutput()); 
+    }
+    else
+    {
+      this->m_DBCFilter->AddImage(this->m_FixedImage, this->m_FixedImageDBCMask.GetPointer());
+    }
+    this->m_DBCFilter->CalculateBiasFields(); 
+  }
+  else
+  {
+    // Just put in the dummy masks - not used when not calcualting bias fields. 
+    this->m_DBCFilter->AddImage(this->m_ImageToImageMetric->GetTransformedMovingImage(), this->m_MovingImageDBCMask.GetPointer());
+    if (this->m_IsSymmetric)
+    {
+      this->m_DBCFilter->AddImage(this->m_ImageToImageMetric->GetTransformedFixedImage(), this->m_FixedImageDBCMask.GetPointer()); 
+    }
+    else
+    {
+      this->m_DBCFilter->AddImage(this->m_FixedImage, this->m_FixedImageDBCMask.GetPointer());
+    }
+  }
+  
+  // Correct the images. 
+  this->m_DBCFilter->ApplyBiasFields();
+  
+  this->m_DBCFilter->ClearImage(); 
+}
 
 
 

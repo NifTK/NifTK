@@ -136,6 +136,7 @@ void EndUsage()
   std::cout << "    -asgd A f_max f_min w f_min_factor w_factor    Adaptive step gradient descent parameters." << std::endl; 
   std::cout << "          [1 1 -0.6 1e-10 1 1]"         << std::endl; 
   std::cout << "    -asgd_mask <filename>              Adaptive step gradient descent mask." << std::endl; 
+  std::cout << "    -dbc fixed_mask moving_mask        Perform DBC during registration. " << std::endl;
   std::cout << std::endl; 
   std::cout << "    ///////////////////////////////////////////////////////////////////////////////////" << std::endl; 
   std::cout << "    // The following options are not really used.                                      " << std::endl; 
@@ -386,6 +387,8 @@ int fluid_main(int argc, char** argv)
   std::string asgdMaskName;  
   std::string movingFullJacobianName; 
   std::string fixedFullJacobianName; 
+  std::string fixedDBCMaskName; 
+  std::string movingDBCMaskName; 
 
   for(int i=1; i < argc; i++){
     if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
@@ -705,6 +708,11 @@ int fluid_main(int argc, char** argv)
        asgdMaskName = argv[++i]; 
        std::cout << "Set -asgd_mask " << asgdMaskName << std::endl; 
     }
+    else if (strcmp(argv[i], "-dbc") == 0) {
+       fixedDBCMaskName = argv[++i]; 
+       movingDBCMaskName = argv[++i]; 
+       std::cout << "Set -dbc " << fixedDBCMaskName << "," << movingDBCMaskName << std::endl;
+    }
     else{
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
       return -1;
@@ -1002,6 +1010,24 @@ int fluid_main(int argc, char** argv)
   }
   metric->ComputeGradientOff();
   forceFilter->SetMetric(histogramMetric);
+  
+  // dbc. 
+  typename OptimizerType::DBCFilterType::Pointer dbcImageFilter;
+  if (fixedDBCMaskName.length() > 0 && movingDBCMaskName.length() > 0)
+  {
+    typedef itk::ImageFileReader<typename OptimizerType::DBCMaskType> DBCMaskReaderType; 
+    typename DBCMaskReaderType::Pointer fixedDBCMaskReader = DBCMaskReaderType::New(); 
+    typename DBCMaskReaderType::Pointer movingDBCMaskReader = DBCMaskReaderType::New(); 
+    
+    dbcImageFilter = OptimizerType::DBCFilterType::New();
+    fixedDBCMaskReader->SetFileName(fixedDBCMaskName); 
+    fixedDBCMaskReader->Update(); 
+    movingDBCMaskReader->SetFileName(movingDBCMaskName); 
+    movingDBCMaskReader->Update(); 
+    optimizer->SetDBCFilter(dbcImageFilter); 
+    optimizer->SetFixedImageDBCMask(fixedDBCMaskReader->GetOutput()); 
+    optimizer->SetMovingImageDBCMask(movingDBCMaskReader->GetOutput()); 
+  }
 
   // for itkLocalSimilarityMeasureGradientDescentOptimizer
   optimizer->SetDeformableTransform(transform);
