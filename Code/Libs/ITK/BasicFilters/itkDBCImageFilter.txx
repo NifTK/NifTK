@@ -37,7 +37,8 @@ template <class TImageType, class TMaskType>
 DBCImageFilter<TImageType, TMaskType>
 ::DBCImageFilter()
 {
-  this->m_InputRegionExpansion = 5; 
+  // need to work on the whole image for fluid registraion. 
+  this->m_InputRegionExpansion = 100; 
   this->m_InputRadius = 5; 
   this->m_InputMode = 1; 
 }
@@ -147,7 +148,9 @@ DBCImageFilter<TImageType, TMaskType>
     ImageIterator image1It(normalisedInputImages[i]->GetOutput(), normalisedInputImages[i]->GetOutput()->GetLargestPossibleRegion());
     for (image1It.GoToBegin(); !image1It.IsAtEnd(); ++image1It)
     {
-      double normalisedValue = normalisedMean*image1It.Get()/mean[i]; 
+      // Actually there is no need to normalise. 
+      // double normalisedValue = normalisedMean*image1It.Get()/mean[i];
+      double normalisedValue = image1It.Get();  
       if (normalisedValue < 1.0)
         normalisedValue = 1.0; 
       image1It.Set(normalisedValue); 

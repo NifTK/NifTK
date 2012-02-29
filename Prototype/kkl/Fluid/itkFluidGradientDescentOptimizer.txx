@@ -188,7 +188,11 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     // Perform DBC. 
     if (!this->m_DBCFilter.IsNull())
     {
-      PerformDBC(true); 
+      int remainder = (this->m_CurrentIteration-1) % this->m_DBCPerIteration; 
+      if (remainder == 0)
+        PerformDBC(true); 
+      else
+        PerformDBC(false); 
       
       // Force is calculated between fixed, and regridded moving image.
       m_ForceFilter->SetFixedImage(this->m_DBCFilter->GetOutputImage(1));

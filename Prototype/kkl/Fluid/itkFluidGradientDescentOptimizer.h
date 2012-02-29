@@ -143,6 +143,7 @@ public:
   itkGetMacro(MinimumDeformationAllowedForIterations, double); 
   itkSetMacro(IsSymmetric, bool); 
   itkGetMacro(IsSymmetric, bool); 
+  itkSetMacro(DBCPerIteration, int); 
   
   /** Start optimization. */
   virtual void StartOptimization( void );
@@ -457,6 +458,10 @@ protected:
    * Moving image DBC mask. 
    */
   typename DBCMaskType::Pointer m_MovingImageDBCMask; 
+  /**
+   * Perform DBC per number of iterations. 
+   */
+  int m_DBCPerIteration; 
   
   
 private:

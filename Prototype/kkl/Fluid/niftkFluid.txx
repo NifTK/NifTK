@@ -136,7 +136,7 @@ void EndUsage()
   std::cout << "    -asgd A f_max f_min w f_min_factor w_factor    Adaptive step gradient descent parameters." << std::endl; 
   std::cout << "          [1 1 -0.6 1e-10 1 1]"         << std::endl; 
   std::cout << "    -asgd_mask <filename>              Adaptive step gradient descent mask." << std::endl; 
-  std::cout << "    -dbc fixed_mask moving_mask        Perform DBC during registration. " << std::endl;
+  std::cout << "    -dbc fixed_mask moving_mask its    Perform DBC during registration. " << std::endl;
   std::cout << std::endl; 
   std::cout << "    ///////////////////////////////////////////////////////////////////////////////////" << std::endl; 
   std::cout << "    // The following options are not really used.                                      " << std::endl; 
@@ -389,6 +389,7 @@ int fluid_main(int argc, char** argv)
   std::string fixedFullJacobianName; 
   std::string fixedDBCMaskName; 
   std::string movingDBCMaskName; 
+  int dbcPerIterations = 10; 
 
   for(int i=1; i < argc; i++){
     if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
@@ -711,7 +712,8 @@ int fluid_main(int argc, char** argv)
     else if (strcmp(argv[i], "-dbc") == 0) {
        fixedDBCMaskName = argv[++i]; 
        movingDBCMaskName = argv[++i]; 
-       std::cout << "Set -dbc " << fixedDBCMaskName << "," << movingDBCMaskName << std::endl;
+       dbcPerIterations = atoi(argv[++i]); 
+       std::cout << "Set -dbc " << fixedDBCMaskName << "," << movingDBCMaskName << "," << dbcPerIterations << std::endl;
     }
     else{
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
@@ -1027,6 +1029,7 @@ int fluid_main(int argc, char** argv)
     optimizer->SetDBCFilter(dbcImageFilter); 
     optimizer->SetFixedImageDBCMask(fixedDBCMaskReader->GetOutput()); 
     optimizer->SetMovingImageDBCMask(movingDBCMaskReader->GetOutput()); 
+    optimizer->SetDBCPerIteration(dbcPerIterations); 
   }
 
   // for itkLocalSimilarityMeasureGradientDescentOptimizer
