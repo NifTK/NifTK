@@ -39,7 +39,7 @@ DBCImageFilter<TImageType, TMaskType>
 ::DBCImageFilter()
 {
   // need to work on the whole image for fluid registraion. 
-  this->m_InputRegionExpansion = 100; 
+  this->m_InputRegionExpansion = 6; 
   this->m_InputRadius = 5; 
   this->m_InputMode = 1; 
 }
