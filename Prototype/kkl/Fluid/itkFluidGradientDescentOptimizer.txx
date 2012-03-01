@@ -1390,6 +1390,8 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   typename DBCMaskResampleFilterType::Pointer fixedMaskResampleFilter = DBCMaskResampleFilterType::New(); 
   typename DBCNearestInterpolatorType::Pointer nearestInterpolator = DBCNearestInterpolatorType::New();
   
+  this->m_DBCFilter->ClearImage();   
+  
   // We need to have the correct mask if we want to calculate the bias fields. 
   if (isCalculateBiasField)
   {
@@ -1436,6 +1438,18 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   this->m_DBCFilter->ApplyBiasFields();
   
   this->m_DBCFilter->ClearImage(); 
+  
+  // Debug. 
+  //std::cerr << "Writing DBC images..."; 
+  //typedef ImageFileWriter<TFixedImage> WriterType; 
+  //typename WriterType::Pointer writer = WriterType::New(); 
+  //writer->SetInput(this->m_DBCFilter->GetOutputImage(0)); 
+  //writer->SetFileName("moving_dbc.img.gz"); 
+  //writer->Update(); 
+  //writer->SetInput(this->m_DBCFilter->GetOutputImage(1)); 
+  //writer->SetFileName("fixed_dbc.img.gz"); 
+  //writer->Update(); 
+  //std::cerr << "done" << std::endl; 
 }
 
 

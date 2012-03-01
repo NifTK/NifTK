@@ -29,6 +29,7 @@
 #include "itkDivideByConstantImageFilter.h"
 #include "itkMultiplyImageFilter.h"
 #include "itkDivideImageFilter.h"
+#include "itkImageFileWriter.h"
 
 namespace itk 
 {
@@ -71,9 +72,11 @@ DBCImageFilter<TImageType, TMaskType>
   typedef DivideByConstantImageFilter<TImageType, typename TImageType::PixelType, TImageType> DivideByConstantImageFilterType; 
   typedef MultiplyImageFilter<TImageType, TImageType> MultiplyImageFilterType; 
   typedef ImageDuplicator<TImageType> DuplicatorType; 
+  typedef ImageFileWriter<TImageType> WriterType; 
   
   // Quick check before moving on. 
   InputSanityCheck(); 
+  typename WriterType::Pointer writer = WriterType::New(); 
   int numberOfImages = this->m_InputImages.size(); 
   
   // Rectangular region covering the union of all the masks. Initialise it to max
@@ -206,6 +209,10 @@ DBCImageFilter<TImageType, TMaskType>
       // Just need consecutive pairwise differential bias fields for mode 2. 
       if (this->m_InputMode == 2)
         break; 
+      // Debug. 
+      //writer->SetInput(medianImageFilter[index]->GetOutput()); 
+      //writer->SetFileName("median.img.gz"); 
+      //writer->Update(); 
     }
   }
   
@@ -284,6 +291,10 @@ DBCImageFilter<TImageType, TMaskType>
     this->m_BiasFields.push_back(expImageFilter[i]->GetOutput()); 
     this->m_BiasFields[i]->DisconnectPipeline(); 
   }
+  // Debug. 
+  //writer->SetInput(this->m_BiasFields[0]); 
+  //writer->SetFileName("bias.img.gz"); 
+  //writer->Update(); 
   
   delete [] mean;
   delete [] logImageFilter; 
@@ -292,6 +303,8 @@ DBCImageFilter<TImageType, TMaskType>
   delete [] expImageFilter; 
   delete [] pairwiseBiasRatioImage; 
   delete [] duplicator; 
+  delete [] subtractImageFilter; 
+  delete [] normalisedInputImages; 
 }
 
 template <class TImageType, class TMaskType>
@@ -304,6 +317,7 @@ DBCImageFilter<TImageType, TMaskType>
   typedef DivideImageFilter<TImageType, TImageType, TImageType> DivideImageFilterType; 
   typename DivideImageFilterType::Pointer* divideImageFilter = new typename DivideImageFilterType::Pointer[this->m_InputImages.size()]; 
   
+  this->m_OutputImages.clear(); 
   // Apply the bias to the images by dividing by the bias ratio. 
   for (unsigned int i = 0; i < this->m_InputImages.size(); i++)
   {
