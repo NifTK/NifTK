@@ -1122,19 +1122,18 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     // Symmetric step size - should move by the same amount in each direction. 
     double bestFixedDeformationChange = maxFixedDeformation*(*bestFixedImageStepSize); 
     double bestSymmetricDeformationChange = std::min<double>(bestDeformationChange, bestFixedDeformationChange); 
-    std::cout << std::setprecision(15) << "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange << std::endl; 
+    std::cerr << std::setprecision(15) << "CalculateNextStep():bestDeformationChange=" << bestDeformationChange << ",bestFixedDeformationChange=" << bestFixedDeformationChange << ",bestSymmetricDeformationChange=" << bestSymmetricDeformationChange << std::endl; 
     
     double bestMovingStepSize = bestSymmetricDeformationChange/maxMovingDeformation; 
     *bestStepSize = bestMovingStepSize; 
     double bestFixedStepSize = bestSymmetricDeformationChange/maxFixedDeformation; 
     *bestFixedImageStepSize = bestFixedStepSize; 
     
-    // std::cout << std::setprecision(15) << "CalculateNextStep():bestStepSize=" << *bestStepSize << ",bestFixedImageStepSize=" << *bestFixedImageStepSize << std::endl; 
-    
     bestDeformationChange = bestSymmetricDeformationChange; 
   }
   
   this->m_DBCStepSize += bestDeformationChange; 
+  std::cerr << "this->m_DBCStepSize=" << this->m_DBCStepSize << std::endl; 
   
   if (bestDeformationChange < this->m_MinimumDeformationMagnitudeThreshold)
   {
