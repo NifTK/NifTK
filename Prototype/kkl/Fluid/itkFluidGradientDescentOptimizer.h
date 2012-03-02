@@ -143,7 +143,7 @@ public:
   itkGetMacro(MinimumDeformationAllowedForIterations, double); 
   itkSetMacro(IsSymmetric, bool); 
   itkGetMacro(IsSymmetric, bool); 
-  itkSetMacro(DBCPerIteration, int); 
+  itkSetMacro(DBCStepSizeTrigger, double); 
   
   /** Start optimization. */
   virtual void StartOptimization( void );
@@ -459,9 +459,13 @@ protected:
    */
   typename DBCMaskType::Pointer m_MovingImageDBCMask; 
   /**
-   * Perform DBC per number of iterations. 
+   * Currently accumulated step size. 
    */
-  int m_DBCPerIteration; 
+  double m_DBCStepSize; 
+  /**
+   * Step size trigger for re-calculating bias fields. . 
+   */
+  double m_DBCStepSizeTrigger; 
   
   
 private:

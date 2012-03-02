@@ -51,6 +51,8 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   this->m_AsgdFMinFudgeFactor = 1.; 
   this->m_AsgdA = 2.; 
   
+  this->m_DBCStepSizeTrigger = 0.5; 
+  
   niftkitkDebugMacro(<< "FluidGradientDescentOptimizer():Constructed");
 }
 
@@ -73,6 +75,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   this->m_StepSizeHistoryForMovingImage.reserve(this->m_MaximumNumberOfIterations+1); 
   this->m_StepSizeHistoryForFixedImage.clear(); 
   this->m_StepSizeHistoryForFixedImage.reserve(this->m_MaximumNumberOfIterations+1); 
+  this->m_DBCStepSize = m_DBCStepSizeTrigger; 
   
   if (this->m_DeformableTransform.IsNull())
     {
@@ -158,7 +161,7 @@ double
 FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationScalar>
 ::CalculateNextStep(int iterationNumber, double currentSimilarity, typename DeformableTransformType::DeformableParameterPointerType current, typename DeformableTransformType::DeformableParameterPointerType & next, typename DeformableTransformType::DeformableParameterPointerType currentFixed, typename DeformableTransformType::DeformableParameterPointerType & nextFixed)
 {
-  niftkitkInfoMacro(<< "CalculateNextStep():Started");
+  // niftkitkInfoMacro(<< "CalculateNextStep():Started");
   double bestFixedImageStepSize = 0.; 
   
   if (m_ForceFilter.IsNull())
@@ -188,11 +191,16 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     // Perform DBC. 
     if (!this->m_DBCFilter.IsNull())
     {
-      int remainder = (this->m_CurrentIteration-1) % this->m_DBCPerIteration; 
-      if (remainder == 0)
+      if (this->m_DBCStepSize >= this->m_DBCStepSizeTrigger)
+      {
+        niftkitkInfoMacro(<< "CalculateNextStep(): calculating bias field: m_DBCStepSize=" << this->m_DBCStepSize);
+        this->m_DBCStepSize -= this->m_DBCStepSizeTrigger; 
         PerformDBC(true); 
+      }
       else
+      {
         PerformDBC(false); 
+      }
       
       // Force is calculated between fixed, and regridded moving image.
       m_ForceFilter->SetFixedImage(this->m_DBCFilter->GetOutputImage(1));
@@ -1125,6 +1133,8 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     
     bestDeformationChange = bestSymmetricDeformationChange; 
   }
+  
+  this->m_DBCStepSize += bestDeformationChange; 
   
   if (bestDeformationChange < this->m_MinimumDeformationMagnitudeThreshold)
   {
