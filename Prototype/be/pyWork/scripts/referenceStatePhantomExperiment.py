@@ -22,265 +22,145 @@ def referenceStatePhantomExperiment( configID ) :
          (configID != '00sAB') and (configID != '01sAB') and (configID != '02sAB') and (configID != '03sAB') and
          (configID != '00VE' ) and (configID != '01VE' ) and (configID != '02VE' ) and (configID != '03VE' ) and
          (configID != '00cyl') and (configID != '01cyl') and (configID != '02cyl') and (configID != '03cyl')  ) :
-        print('Unknown configuration ID!') 
-        return
+        print('WARNING!!! Configuration might be unknown...') 
+        
     
     #
     # Default material parameters
     #
-    matModel          = 'NH'
+    
+    # directory
+    baseExperimentDir = 'W:/philipsBreastProneSupine/referenceState/'
+    experimentDir     = baseExperimentDir + configID + '/'
+    plotDir           = experimentDir + 'plots/'
+    
+    
+    # phantom properties
+    imageEdgeLength = 400
+    
+    # general volume mesh properties
+    tetgenQ         = 1.5
+    
+    # system parameters
+    timeStep        = 2e-5
+    totalTime       = 1.0
+    damping         = 50
+
+
+    ##############################
+    # Model resolutions 00 ... 03
+    #
+    if configID.count('00') == 1 :
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
+        tetgenVol       = 75
+        
+        
+    elif configID.count('01') == 1 : 
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
+        tetgenVol       = 30
+        
+    elif configID.count('02') == 1 :
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
+        tetgenVol       = 20
+    
+    elif configID.count('03') == 1 :
+        #
+        # This setting did not work for ANY step size
+        #
+        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
+        tetgenVol       = 10
+        timeStep        = 1e-6
+    else :
+        print( 'Unknown configuration!' )
+        sys.exit()
+  
+    ########
+    # skin
+    simSkin           = False
+
+    if configID.count('s') == 1 :
+        simSkin = True
+
+    ############
+    # material 
+    matModelFat       = 'NH'
+    matModelSkin      = 'NH'
     matParamsFat      = [  100, 50000 ]
     matParamsSkin     = [ 1000, 50000 ]
     
+    if configID.count( 'AB' ) == 1:
+        matModelFat       = 'AB'
+        matModelSkin      = 'AB'
+        matParamsFat    = [  100, 1.25, 50000 ]
+        matParamsSkin   = [ 1000, 1.25, 50000 ]
+
+
+
+    ################
+    # Visco elastic 
+    # for fat only, change material to NHV!
     viscoParams       = []
     viscoNumIsoParams = 0
     viscoNumVolParams = 0
-    cylindricalBase   = False
-
-
-    if configID == '00' :
-        # Parameter set tested first
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 75
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = False
-        
-        
-    if configID == '01' : 
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 30
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = False
-        
-    if configID == '02' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 20
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         =False
     
-    
-    if configID == '03' :
-        #
-        # This setting did not work for ANY step size
-        #
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 10
-        tetgenQ         = 1.5
-        timeStep        = 1e-6
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = False
-        
-    ####################
-    # Skin experiments
-    # NH, skin 100, fat 1000
-    if configID == '00s' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00s/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 75
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-        
-    
-    if configID == '01s' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01s/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        imageEdgeLength = 400
-        tetgenVol       = 30
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-    
-    
-    if configID == '02s' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02s/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        imageEdgeLength = 400
-        tetgenVol       = 20
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-        
-    
-    if configID == '03s' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03s/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 10
-        tetgenQ         = 1.5
-        timeStep        = 1e-6
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-    
-    ###############################
-    # Skin experiments
-    # AB, 1.25, skin 100, fat 1000
-    if configID.count( 'AB' ) == 1:
-        matModel        = 'AB'
-        matParamsFat    = [  100, 1.25, 50000 ]
-        matParamsSkin   = [ 1000, 1.25, 50000 ]
-    
-    if configID == '00sAB' :
-        
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00sAB/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 75
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-    
-    
-    if configID == '01sAB' :    
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01sAB/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        imageEdgeLength = 400
-        tetgenVol       = 30
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-    
-    if configID == '02sAB' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02sAB/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx'  
-        imageEdgeLength = 400
-        tetgenVol       = 20
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-    
-    if configID == '03sAB' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03sAB/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 10
-        tetgenQ         = 1.5
-        timeStep        = 1e-6
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = True
-        
-    ##############################
-    # Visco elastic experiments
-    #
     if configID.count('VE') == 1 :
-        viscoParams       = [ 1.0, 0.2, 1.0, 1e10 ]
+        matModelFat       = 'NHV'
+        matParamsFat      = [ 100, 50000 ]
+        viscoParams       = [ 1.0, 0.2   ]
         viscoNumIsoParams = 1
-        viscoNumVolParams = 1
+        viscoNumVolParams = 0
 
-    
-    if configID == '00VE' :
-        # Parameter set tested first
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 75
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = False
     
     #################################
     # Cylindrical base experiments
-    #
+    cylindricalBase   = False
+    
     if configID.count('cyl') == 1 :
         cylindricalBase = True
     
-    if configID == '00cyl' :
-        # Parameter set tested first
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/00cyl/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 75
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = False    
-        
-    if configID == '01cyl' : 
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/01cyl/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 30
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = False
-        
-    if configID == '02cyl' :
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/02cyl/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 20
-        tetgenQ         = 1.5
-        timeStep        = 2e-5
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         =False
-    
-    
-    if configID == '03cyl' :
-        #
-        # This setting did not work for ANY step size
-        #
-        experimentDir   = 'W:/philipsBreastProneSupine/referenceState/03cyl/'
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_mid7.mlx' 
-        imageEdgeLength = 400
-        tetgenVol       = 10
-        tetgenQ         = 1.5
-        timeStep        = 1e-6
-        totalTime       = 1.0
-        damping         = 50
-        simSkin         = False
 
-    plotDir = experimentDir + 'plots/'
+    #######################################
+    # print a summary of the configuration
+    print( 'Summary of the simulation:' )
+    print( ' Directories...' )
+    print( '  -> experimentDir: ' + experimentDir ) 
+    print( '  -> plotDir: '       + plotDir       )
+    
+    print( ' Phantom properties...' )
+    print( '  -> imageEdgeLength: ' + str( imageEdgeLength ) )
+    print( '  -> meshlabSript: '    + meshlabSript           )
+    print( '  -> tetgenQ: '         + str( tetgenQ )         )
+    print( '  -> tetgenVol: '       + str( tetgenVol )       )
+    
+    print( ' Material parameters...' )
+    print( '  -> simSkin: '           + str( simSkin )           )
+    print( '  -> matModelFat: '       + str( matModelFat )       )
+    print( '  -> matModelSkin: '      + str( matModelSkin )      )
+    print( '  -> matParamsFat: '      + str( matParamsFat )      )
+    print( '  -> matParamsSkin: '     + str( matParamsSkin )     )
+    print( '  -> viscoParams: '       + str( viscoParams )       )
+    print( '  -> viscoNumIsoParams: ' + str( viscoNumIsoParams ) )
+    print( '  -> viscoNumVolParams: ' + str( viscoNumVolParams ) )
+    
+    print( ' Simulation system properties...' )
+    print( '  -> timeStep: '      + str( timeStep )  )
+    print( '  -> totalTime: '     + str( totalTime ) )
+    print( '  -> damping: '       + str( damping )   )
+    
 
     ######################################
     # 
     # Start with the work
     #    
-    if not os.path.exists(plotDir):
-        print( 'Error: Cannot find specified plotting directory' )
-        sys.exit()
-    
     if not os.path.exists(experimentDir):
-        print( 'Error: Cannot find specified experiment directory' )
-        sys.exit()
+        os.mkdir( experimentDir ) 
+        print( 'directory created...' )
+
+    
+    if not os.path.exists(plotDir):
+        os.mkdir( plotDir )
+        print( 'directory created...' )
+    
     
     
     #
@@ -293,8 +173,9 @@ def referenceStatePhantomExperiment( configID ) :
     phantom = numPhantom.numericalBreastPhantom( experimentDir, imageEdgeLength, 
                                                  meshlabSript, tetgenVol, tetgenQ, 
                                                  timeStep, totalTime, damping, 
-                                                 fatMaterialType  = matModel, fatMaterialParams  = matParamsFat, 
-                                                 skinMaterialType = matModel, skinMaterialParams = matParamsSkin, 
+                                                 fatMaterialType  = matModelFat, fatMaterialParams  = matParamsFat, 
+                                                 fatViscoNumIsoTerms = viscoNumIsoParams, fatViscoNumVolTerms=viscoNumVolParams,fatViscoParams=viscoParams,  
+                                                 skinMaterialType = matModelSkin, skinMaterialParams = matParamsSkin, 
                                                  cylindricalBase = cylindricalBase )
     
     # track over iterations
@@ -312,9 +193,12 @@ def referenceStatePhantomExperiment( configID ) :
     aErrorVects  = []
     aErrorDists  = [] 
     
+    angles = range(0, 46, 5)
     
+    if configID.count('cyl') == 1:
+        angles = range(30, -31, -5) 
     
-    for phi in range(0,91,5) :
+    for phi in angles :
         
         print( 'Starting simulations angle: %i' % phi )
     

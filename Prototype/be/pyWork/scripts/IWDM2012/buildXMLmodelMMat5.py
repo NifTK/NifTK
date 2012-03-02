@@ -41,30 +41,49 @@ F3DlogOfJacobian1          = 0.0
 F3DfinalGridSpacing1       = 3
 F3DnumberOfLevels1         = 4
 F3DmaxIterations1          = 300
-F3Dgpu1                    = True
+F3Dgpu1                    = False
 
-F3DbendingEnergy2          = 0.005
-F3DlogOfJacobian2          = 0.02
+F3DbendingEnergy2          = 0.01
+F3DlogOfJacobian2          = 0.01
 F3DfinalGridSpacing2       = 10
-F3DnumberOfLevels2         = 5
-F3DmaxIterations2          = 500
+F3DnumberOfLevels2         = 3
+F3DmaxIterations2          = 300
 F3Dgpu2                    = False
 
 #matModel                  = 'NH'
-#matParamsFat              = [  500, 50000 ]
-#matParamsGland            = [  750, 50000 ]
-#matParamsMuscle           = [ 1000, 50000 ]
-#matParamsSkin             = [ 2500, 50000 ]
+#matFatParams              = [  500, 50000 ]
+#matGlandParams            = [  750, 50000 ]
+#matMuscleParams           = [ 1000, 50000 ]
+#matSkinParams             = [ 2500, 50000 ]
 
-matModel                  = 'AB'
-matParamsFat              = [   80, 1.25, 50000 ]
-matParamsGland            = [  160, 1.25, 50000 ]
-matParamsMuscle           = [  800, 1.25, 50000 ]
-matParamsSkin             = [ 1600, 1.25, 50000 ]
+# Specify the material
+matSkinModel              = 'NH'
+matSkinParams             = [ 1000, 50000 ]
+matSkinViscoNumIsoTerms   = 0
+matSkinViscoNumVolTerms   = 0
+matSkinViscoParams        = []
+
+matFatModel               = 'NHV'
+matFatParams              = [ 150, 50000 ]
+matFatViscoNumIsoTerms    = 1
+matFatViscoNumVolTerms    = 0
+matFatViscoParams         = [1.0, 0.25]
+
+matGlandModel             = 'NHV'
+matGlandParams            = [ 300, 50000 ]
+matGlandViscoNumIsoTerms  = 1
+matGlandViscoNumVolTerms  = 0
+matGlandViscoParams       = [1.0, 0.25]
+
+matMuscleModel            = 'NH'
+matMuscleParams           = [  800, 50000 ]
+matMuscleViscoNumIsoTerms = 0
+matMuscleViscoNumVolTerms = 0
+matMuscleViscoParams      = []
 
 
 
-updateFactor              = 1.0
+updateFactor              = 0.5
 numIterations             = 5
 
 meshDir                   = 'W:/philipsBreastProneSupine/Meshes/meshMaterials5/'
@@ -105,10 +124,10 @@ if not os.path.exists( regDirFEIR ) :
     os.mkdir( regDirFEIR )
 
 print( 'Parameters selected: ' )
-print( ' - Fat parameters:    ' + str( matParamsFat    ) )
-print( ' - Gland parameters:  ' + str( matParamsGland  ) )
-print( ' - Muscle parameters: ' + str( matParamsMuscle ) )
-print( ' - Skin parameters:   ' + str( matParamsSkin   ) )
+print( ' - Fat parameters:    ' + matFatModel + ', ' + str( matFatParams    ) )
+print( ' - Gland parameters:  ' + str( matGlandParams  ) )
+print( ' - Muscle parameters: ' + str( matMuscleParams ) )
+print( ' - Skin parameters:   ' + str( matSkinParams   ) )
 
 if useFEIR == False : 
     print( 'Warning: All files in the reigstration directory will be deleted by running this script!\n -> ' + regDirF3D )
@@ -160,6 +179,9 @@ for i in range( pointsPronePrime.shape[0] ):
     startTRE.append( np.linalg.norm( pointsSupinePrime[i] - pointsPronePrime[i] ) )
 
 TREtrack.append( startTRE )
+print( 'TRE: '         )
+print( str( TREtrack ) )
+
 
 #
 # Find the elements in which the selected points lie, needs to be done only once!
@@ -253,6 +275,7 @@ dispVects = [] # these will be in mm as sampled from registration deformation
 for i in range( pectSurfMeshPoints.shape[0] ) :
     curP = pectSurfMeshPoints[ i, : ]
     curIDX = np.array( np.round( np.dot( dispAffine, np.hstack( ( pectSurfMeshPoints[ i, : ], 1 ) ) ) ), dtype = np.int )
+    
     if useFEIR:
         dispVects.append( np.array( ( dispData[curIDX[0], curIDX[1], curIDX[2], 0, 0], 
                                       dispData[curIDX[0], curIDX[1], curIDX[2], 0, 1], 
@@ -353,12 +376,16 @@ offsetArray[:,1] = offsetVal
 print('Generate FEM model: sliding.')
 genS = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4ANP' )
 
-genS.setMaterialElementSet( matModel, 'FAT',   matParamsFat, matGen2.fatElemetns    )
-genS.setMaterialElementSet( matModel, 'SKIN',  matParamsSkin, matGen2.skinElements   )
-genS.setMaterialElementSet( matModel, 'GLAND', matParamsGland, matGen2.glandElements  )
+genS.setMaterialElementSet( matFatModel,   'FAT',   matFatParams, matGen2.fatElemetns, 
+                            matFatViscoNumIsoTerms, matFatViscoNumVolTerms, matFatViscoParams )
+genS.setMaterialElementSet( matSkinModel,  'SKIN',  matSkinParams, matGen2.skinElements, 
+                            matSkinViscoNumIsoTerms, matSkinViscoNumVolTerms, matSkinViscoParams )
+genS.setMaterialElementSet( matGlandModel, 'GLAND', matGlandParams, matGen2.glandElements,
+                            matGlandViscoNumIsoTerms, matGlandViscoNumVolTerms, matGlandViscoParams  )
 
 if matGen2.muscleElements.shape != 0 :
-    genS.setMaterialElementSet( matModel, 'MUSCLE', matParamsMuscle, matGen2.muscleElements )
+    genS.setMaterialElementSet( matMuscleModel, 'MUSCLE', matMuscleParams, matGen2.muscleElements,
+                                matMuscleViscoNumIsoTerms, matMuscleViscoNumVolTerms, matMuscleViscoParams )
 
 genS.setContactSurface( pectSurfMeshPointsDef[:,0:3] / 1000., pectSurfMeshPolys[ : , 1:4 ], allNodesArray2, 'T3' )
 
@@ -367,7 +394,7 @@ genS.setFixConstraint( lowXIdx2, 2 )
 
 genS.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray2, 'RAMP' )
 genS.setOutput( 5000, 'U' )
-genS.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=50, hgKappa=0.05, density=1000 )    
+genS.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=75, hgKappa=0.05, density=1000 )    
 
 xmlFileOut = meshDir + 'modelS.xml'
 genS.writeXML( xmlFileOut )
@@ -449,7 +476,8 @@ for i in range( pointsSupinePrime.shape[0] ) :
     treS.append( np.linalg.norm( pRef - pSim ) )
 
 TREtrack.append( treS )
-
+print( 'TRE: '         )
+print( str( TREtrack ) )
 
 
 
@@ -532,12 +560,16 @@ for it in range( numIterations ) :
     print('Generate FEM model: sliding and displacement.')
     genSD = xGen.xmlModelGenrator( (breastMesh2.volMeshPoints + offsetArray )/ 1000., breastMesh2.volMeshCells[ : , 1:5], 'T4ANP' )
     
-    genSD.setMaterialElementSet( matModel, 'FAT',    matParamsFat, matGen2.fatElemetns    )
-    genSD.setMaterialElementSet( matModel, 'SKIN',   matParamsSkin, matGen2.skinElements   )
-    genSD.setMaterialElementSet( matModel, 'GLAND',  matParamsGland, matGen2.glandElements  )
+    genSD.setMaterialElementSet( matFatModel,   'FAT',   matFatParams, matGen2.fatElemetns, 
+                                 matFatViscoNumIsoTerms, matFatViscoNumVolTerms, matFatViscoParams )
+    genSD.setMaterialElementSet( matSkinModel,  'SKIN',  matSkinParams, matGen2.skinElements, 
+                                 matSkinViscoNumIsoTerms, matSkinViscoNumVolTerms, matSkinViscoParams )
+    genSD.setMaterialElementSet( matGlandModel, 'GLAND', matGlandParams, matGen2.glandElements,
+                                 matGlandViscoNumIsoTerms, matGlandViscoNumVolTerms, matGlandViscoParams  )
     
-    if matGen2.muscleElementMidPoints.shape[0] != 0 :
-        genSD.setMaterialElementSet( matModel, 'MUSCLE', matParamsMuscle, matGen2.muscleElements )
+    if matGen2.muscleElements.shape != 0 :
+        genSD.setMaterialElementSet( matMuscleModel, 'MUSCLE', matMuscleParams, matGen2.muscleElements,
+                                     matMuscleViscoNumIsoTerms, matMuscleViscoNumVolTerms, matMuscleViscoParams )
     
     genSD.setContactSurface( pectSurfMeshPointsDef[:,0:3] / 1000., pectSurfMeshPolys[ : , 1:4 ], allNodesArray2, 'T3' )
     
@@ -546,7 +578,7 @@ for it in range( numIterations ) :
     genSD.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray2, 'RAMP' )
     genSD.setDifformDispConstraint('RAMP', matGen2.skinNodes, dispVects / 1000. )
     genSD.setOutput( 5000, 'U' )
-    genSD.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=50, hgKappa=0.05, density=1000 )    
+    genSD.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=75, hgKappa=0.05, density=1000 )    
     
     xmlFileOut = meshDir + 'modelSD' + str('%02i' % it) + '.xml'
     genSD.writeXML( xmlFileOut )
@@ -614,7 +646,9 @@ for it in range( numIterations ) :
         treSD.append( np.linalg.norm( pRef - pSim ) )
     
     TREtrack.append( treSD )
-    
+    print( 'TRE: '         )
+    print( str( TREtrack ) )
+
     print( 'Done iteration %i.' %i )
 
 

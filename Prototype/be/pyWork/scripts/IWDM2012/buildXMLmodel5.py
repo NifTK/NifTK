@@ -110,10 +110,10 @@ genFix.setFixConstraint( idxCloseToChest, 2 )
 
 #genFix.setMaterialElementSet( 'NH', 'FAT', [500, 50000], allElemenstArray )
 
-genFix.setMaterialElementSet( 'NH', 'FAT',    [  250, 50000], matGen.fatElemetns    )
-genFix.setMaterialElementSet( 'NH', 'SKIN',   [ 2000, 50000], matGen.skinElements   )
-genFix.setMaterialElementSet( 'NH', 'GLAND',  [  500, 50000], matGen.glandElements  )
-genFix.setMaterialElementSet( 'NH', 'MUSCLE', [ 1000, 50000], matGen.muscleElements )
+genFix.setMaterialElementSet( 'NHV', 'FAT',    [  250, 50000], matGen.fatElemetns, 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NH', 'SKIN',    [ 2000, 50000], matGen.skinElements   )
+genFix.setMaterialElementSet( 'NH', 'GLAND',   [  500, 50000], matGen.glandElements  )
+genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [ 1000, 50000], matGen.muscleElements )
 
 genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
 genFix.setOutput( 5000, 'U' )
