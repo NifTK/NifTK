@@ -144,6 +144,7 @@ public:
   itkSetMacro(IsSymmetric, bool); 
   itkGetMacro(IsSymmetric, bool); 
   itkSetMacro(DBCStepSizeTrigger, double); 
+  itkSetMacro(UseJacobianInForce, bool); 
   
   /** Start optimization. */
   virtual void StartOptimization( void );
@@ -466,6 +467,10 @@ protected:
    * Step size trigger for re-calculating bias fields. . 
    */
   double m_DBCStepSizeTrigger; 
+  /**
+   * Use Jacobian in calculating force. 
+   */
+  bool m_UseJacobianInForce; 
   
   
 private:

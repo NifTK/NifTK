@@ -50,6 +50,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   this->m_AsgdWFudgeFactor = 1.; 
   this->m_AsgdFMinFudgeFactor = 1.; 
   this->m_AsgdA = 2.; 
+  this->m_UseJacobianInForce = false;   
   
   this->m_DBCStepSizeTrigger = 0.5; 
   
@@ -224,6 +225,14 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     }
     m_ForceFilter->SetIsSymmetric(this->m_IsSymmetric); 
     m_ForceFilter->SetFixedImageMask(this->m_ImageToImageMetric->GetFixedImageMask()); 
+    
+    if (m_UseJacobianInForce)
+    {
+      niftkitkInfoMacro(<< "Using Jacobian in force");
+      m_ForceFilter->SetFixedImageTransformJacobian(this->m_FixedImageTransform->GetJacobianImage()); 
+      m_ForceFilter->SetMovingImageTransformJacobian(GetFluidDeformableTransform()->GetJacobianImage()); 
+    }
+        
     m_ForceFilter->Modified();
     m_ForceFilter->UpdateLargestPossibleRegion();
     
@@ -881,6 +890,8 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   
   niftkitkInfoMacro(<< "ReGrid():Setting current value to:" << this->m_Value);
 
+  this->m_DeformableTransform->ComputeMinJacobian(); 
+  this->m_FixedImageTransform->ComputeMinJacobian(); 
 #ifdef DEBUG
   {
     niftkitkInfoMacro(<< "ReGrid():Check after resetting to current position, minJacobian=" \

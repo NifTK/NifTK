@@ -220,11 +220,11 @@ CrossCorrelationDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
       
       if (movingImageTransformJacobianIterator != NULL)
       {
-        movingImageForce *= movingImageTransformJacobianIterator->Get(); 
+        fixedImageForce *= movingImageTransformJacobianIterator->Get(); 
       }
       if (fixedImageTransformJacobianIterator != NULL)
       {
-        fixedImageForce *= fixedImageTransformJacobianIterator->Get(); 
+        movingImageForce *= fixedImageTransformJacobianIterator->Get(); 
       }
       
       forceImageVoxel[dimensinIndex] = movingImageForce; 
