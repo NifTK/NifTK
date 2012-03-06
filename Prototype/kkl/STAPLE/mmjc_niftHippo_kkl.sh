@@ -23,7 +23,10 @@ NIFTI_tool=${ROOTY}/nificlib_install/bin/nifti_tool
 SEG_labfusion=${ROOTY}/niftyseg_install/bin/seg_LabFusion
 SEG_CalcTopNCC=${ROOTY}/niftyseg_install/bin/seg_CalcTopNCC
 
-LNCC_GAUS=1.5 # stddev of the Gaussian used to compute the local NCC
+# stddev of the Gaussian used to compute the local NCC
+LNCC_GAUS=1.5 
+# template folder. 
+TEMPLATE_FOLDER=${ROOTY}/template_images 
 
 ##########################################################################
 ##########################################################################
@@ -68,6 +71,11 @@ while [ "$#" -gt 1 ]
       echo "setting LNCC_GAUS=$2"
       LNCC_GAUS=$2
       shift
+  elif [ "$2" == "-template" ]; then 
+      shift 
+      echo "setting TEMPLATE_FOLDER=$2"
+      TEMPLATE_FOLDER=$2
+      shift
   else
       echo "Unknown argument, options are -mask <name> <low thresh> <high thresh> and -jo"
       exit
@@ -94,7 +102,6 @@ GW_nifT1=${ROOTY}/groupwise/gw_it7_T1wBrain.nii.gz
 GW_leftHippo=${ROOTY}/groupwise/gw_it7_hippo_left.nii.gz
 GW_rightHippo=${ROOTY}/groupwise/gw_it7_hippo_right.nii.gz
 TEMPLATE_TO_GW_TRANS_FOLDER=${ROOTY}/groupwise/nrrResult/it_7
-TEMPLATE_FOLDER=${ROOTY}/template_images
 
 #num_preselect=100
 num_preselect=110 # dc 20/09/2011 - changed per Casper's request
