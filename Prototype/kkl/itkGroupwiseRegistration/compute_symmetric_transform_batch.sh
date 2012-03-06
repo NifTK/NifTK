@@ -60,6 +60,12 @@ Mandatory Arguments:
                     
   output_dir        : Output directory
                     
+Optional Arguments:                     
+  -tp3                  : for 3 time points (old format). 
+  -tpn                  : for n time points. 
+  -interpolation i      : NN: 1, linear: 2, cubic: 3, sinc: 4. 
+  -double_window yes/no : double window or not. 
+  -ss_atlas dummy       : atlas used to generate img from midas region. 
                         
 EOF
 exit 127 

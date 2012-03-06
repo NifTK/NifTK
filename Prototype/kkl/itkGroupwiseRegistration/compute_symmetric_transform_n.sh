@@ -237,7 +237,12 @@ do
       local_region_img=${local_region[${i}]}
     else
       local_region_img=${tmpdir}/${output_prefix}_${i}_local.img
-      makemask ${ss_atlas} ${local_region[${i}]} ${local_region_img}
+      if [ "${ss_atlas}" != "dummy" ] 
+      then 
+        makemask ${ss_atlas} ${local_region[${i}]} ${local_region_img}
+      else
+        makemask ${image[${i}]} ${local_region[${i}]} ${local_region_img}
+      fi 
     fi 
     resliced_local_region1_img=${output_dir}/${output_prefix}_${i}_mask_local.img
     resliced_local_region1_dof=${output_dir}/${output_prefix}_${i}_mask_local.dof
