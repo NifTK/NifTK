@@ -216,13 +216,13 @@ private:
   vtkRenderWindow *m_TrackedRenderWindow;
 
   // This is set to the current world geometry.
-  mitk::Geometry3D* m_TrackedWorldGeometry;
+  mitk::Geometry3D::Pointer m_TrackedWorldGeometry;
 
   // Keep track of this to register and unregister event listeners.
-  mitk::DisplayGeometry* m_TrackedDisplayGeometry;
+  mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;
 
   // Keep track of this to register and unregister event listeners.
-  mitk::SliceNavigationController* m_TrackedSliceNavigator;
+  mitk::SliceNavigationController::Pointer m_TrackedSliceNavigator;
 
   // Squash all mouse events.
   QmitkMouseEventEater* m_MouseEventEater;

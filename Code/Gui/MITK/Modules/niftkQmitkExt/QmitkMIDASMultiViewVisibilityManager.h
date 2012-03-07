@@ -29,16 +29,20 @@
 
 #include <QWidget>
 #include "mitkDataStorage.h"
+#include "mitkBaseProperty.h"
+#include "mitkProperties.h"
+#include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "itkImage.h"
 
-class QmitkMIDASRenderWindow;
+class QmitkRenderWindow;
 class QmitkMIDASSingleViewWidget;
 
 /**
  * \class QmitkMultiViewVisibilityManager
  * \brief Maintains a list of QmitkMIDASSingleViewWidget and coordinates visibility
- * properties by listening to NodeAdded and NodeChanged events.
+ * properties by listening to AddNodeEvent, RemoveNodeEvent and listens directly
+ * to Modified events from the nodes "visibility" property.
  */
 class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
 {
@@ -46,64 +50,47 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
 
 public:
 
-  enum MIDASDropType
-  {
-    MIDAS_DROP_TYPE_SINGLE = 0,
-    MIDAS_DROP_TYPE_MULTIPLE = 1,
-    MIDAS_DROP_TYPE_ALL = 2,
-  };
-
-  enum MIDASDefaultOrientationType
-  {
-    MIDAS_ORIENTATION_AXIAL,
-    MIDAS_ORIENTATION_SAGITTAL,
-    MIDAS_ORIENTATION_CORONAL,
-    MIDAS_ORIENTATION_AS_ACQUIRED
-  };
-
-  enum MIDASDefaultInterpolationType
-  {
-    MIDAS_INTERPOLATION_NONE,
-    MIDAS_INTERPOLATION_LINEAR,
-    MIDAS_INTERPOLATION_CUBIC
-  };
-
-  /// \brief This class must have a mitk::DataStorage so it is injected in the constructor.
+  /// \brief This class must have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
   QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage);
+
+  /// \brief Destructor, which unregisters all the listeners.
   virtual ~QmitkMIDASMultiViewVisibilityManager();
 
-  /// \brief Each new QmitkMIDASSingleViewWidget should be registered with this class, so this class can manage visibility properties.
+  /// \brief Clients call this to clear all windows, meaning to set renderer specific visibility properties to false.
+  void ClearAllWindows();
+
+  /// \brief Each new QmitkMIDASSingleViewWidget should first be registered with this class, so this class can manage renderer specific visibility properties.
   void RegisterWidget(QmitkMIDASSingleViewWidget *widget);
 
-  /// \brief Given a window, will return the corresponding list index, or -1 if not found.
-  unsigned int GetIndexFromWindow(QmitkMIDASRenderWindow* window);
-
-  /// \brief Called when a DataStorage Add Event was emmitted and sets m_InDataStorageChanged to true and calls NodeAdded afterwards.
+  /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards.
   void NodeAddedProxy(const mitk::DataNode* node);
 
-  /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
-  void NodeChangedProxy(const mitk::DataNode* node);
+  /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and calls NodeRemoved afterwards.
+  void NodeRemovedProxy(const mitk::DataNode* node);
 
-  /// \brief Set the drop type, which controls the behaviour when an image or images are dropped into a single widget.
+  /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single widget.
   void SetDropType(MIDASDropType dropType) { m_DropType = dropType; }
 
-  /// \brief Get the drop type, which controls the behaviour when an image or images are dropped into a single widget.
+  /// \brief Get the drop type, which controls the behaviour when multiple images are dropped into a single widget.
   MIDASDropType GetDropType() const { return m_DropType; }
 
-  /// \brief Sets the default interpolation type.
+  /// \brief Sets the default interpolation type, which takes effect when a new image is dropped.
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolation) { m_DefaultInterpolation = interpolation; }
 
-  /// \brief Returns the default interpolation type.
+  /// \brief Returns the default interpolation type, which takes effect when a new image is dropped.
   MIDASDefaultInterpolationType GetDefaultInterpolationType() const { return m_DefaultInterpolation; }
 
-  /// \brief Sets the default orientation.
-  void SetDefaultOrientationType(MIDASDefaultOrientationType orientation) { m_DefaultOrientation = orientation; }
+  /// \brief Sets the default view for when images are dropped into a render window.
+  void SetDefaultViewType(MIDASView view) { m_DefaultView = view; }
 
-  /// \brief Returns the default orientation type.
-  MIDASDefaultOrientationType GetDefaultOrientationType() const { return m_DefaultOrientation; }
+  /// \brief Returns the default view for when images are dropped into a render window.
+  MIDASView GetDefaultViewType() const { return m_DefaultView; }
 
-  /// \brief When we switch layouts, or drop in thumbnail mode, we clear all windows.
-  void ClearAllWindows();
+  /// \brief Set a flag to control if we show 3D view when in orthoviewer mode.
+  void SetShow3DInOrthoView(bool b) { m_Show3DInOrthoView = b; }
+
+  /// \brief Get the flag that controls if we show 3D view when in orthoviewer mode.
+  bool GetShow3DInOrthoView() const { return m_Show3DInOrthoView; }
 
   /// \brief When we drop nodes onto a window, if true, we add all the children.
   void SetAutomaticallyAddChildren(bool autoAdd) { m_AutomaticallyAddChildren = autoAdd; }
@@ -113,43 +100,52 @@ public:
 
 public slots:
 
-  /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags.
-  void OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
+  void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
 signals:
 
 protected:
 
-  /// \brief Called when a DataStorage Add event was emmitted and may be reimplemented by deriving classes.
+  /// \brief Called when a DataStorage AddNodeEvent was emmitted and may be reimplemented by deriving classes.
   virtual void NodeAdded(const mitk::DataNode* node);
 
-  /// \brief Called when a DataStorage Change event was emmitted and may be reimplemented by deriving classes.
-  virtual void NodeChanged(const mitk::DataNode* node);
+  /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and may be reimplemented by deriving classes.
+  virtual void NodeRemoved(const mitk::DataNode* node);
 
-  /// \brief For a given window, effectively sets the rendering window specific visibility to false.
+  /// \brief For a given window (denoted by its windowIndex, or index number in m_Widgets), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromWindow(int windowIndex);
 
-  /// \brief For a given window, effectively sets the rendering window specific visibility to true.
-  virtual void AddNodeToWindow(int windowIndex, mitk::DataNode* node);
+  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
+  virtual void AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility=true);
 
 protected slots:
 
 private:
 
-  // For a node, will set rendering window specific visibility to false for all registered windows.
+  /// \brief Given a window, will return the corresponding list index, or -1 if not found.
+  int GetIndexFromWindow(QmitkRenderWindow* window);
+
+  /// \brief Will remove all observers from the ObserverToVisibilityMap, called from UpdateObserverToVisibilityMap and the destructor.
+  void RemoveAllFromObserverToVisibilityMap();
+
+  /// \brief Will refresh the observers of all the visibility properties... called when NodeAdded or NodeRemoved.
+  void UpdateObserverToVisibilityMap();
+
+  /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
+  void UpdateVisibilityProperty(const itk::EventObject&);
+
+  /// \brief Called when a node is added, and we set rendering window specific visibility to false for all registered windows, plus other default properties such as interpolation type.
   void SetInitialNodeProperties(mitk::DataNode* node);
 
-  // For a node, will set the rendering window specific visibility property to match the global visibility property, so you can toggle the image in the data manager.
-  void UpdateNodeProperties(mitk::DataNode* node);
+  /// \brief Works out the correct view from the data, and from the preferences.
+  MIDASView GetView(std::vector<mitk::DataNode*> nodes);
 
-  // Works out the correct orientation from the data, and from the preferences.
-  QmitkMIDASSingleViewWidget::MIDASViewOrientation GetOrientation(std::vector<mitk::DataNode*> nodes);
-
-  // ITK templated method (accessed via MITK access macros) to work out the orientation in the XY plane.
+  /// \brief ITK templated method (accessed via MITK access macros) to work out the orientation in the XY plane.
   template<typename TPixel, unsigned int VImageDimension>
   void GetAsAcquiredOrientation(
       itk::Image<TPixel, VImageDimension>* itkImage,
-      QmitkMIDASSingleViewWidget::MIDASViewOrientation &outputOrientation
+      MIDASOrientation &outputOrientation
       );
 
   // Will retrieve the correct geometry from a list of nodes.
@@ -160,17 +156,21 @@ private:
   //   Picks out the geometry of the object for that index.
   // Else
   //   Picks out the first geometry.
-  mitk::TimeSlicedGeometry::Pointer GetGeometry(std::vector<mitk::DataNode*> nodes, unsigned int nodeIndex);
+  mitk::TimeSlicedGeometry::Pointer GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
 
   // This object MUST be connected to a datastorage, hence it is passed in via the constructor.
   mitk::DataStorage::Pointer m_DataStorage;
 
-  // We maintain a list of data nodes present in each window.
-  // When a node is removed from the window, the list is cleared.
-  std::vector< std::vector<mitk::DataNode*> > m_ListOfDataNodes;
+  // We maintain a set of data nodes present in each window.
+  // So, it's a vector, as we have one set for each of the registered windows.
+  std::vector< std::set<mitk::DataNode*> > m_DataNodes;
 
-  // Additionally, we manage a list of widgets, where m_ListOfDataNodes.size() == m_ListOfWidgets.size() should always be true.
-  std::vector< QmitkMIDASSingleViewWidget* > m_ListOfWidgets;
+  // Additionally, we manage a list of widgets, where m_DataNodes.size() == m_Widgets.size() should always be true.
+  std::vector< QmitkMIDASSingleViewWidget* > m_Widgets;
+
+  // We also observe all the global visibility properties for each registered node.
+  typedef std::map<unsigned long, mitk::BaseProperty::Pointer> ObserverToPropertyMap;
+  ObserverToPropertyMap m_ObserverToVisibilityMap;
 
   // Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
   bool m_InDataStorageChanged;
@@ -178,11 +178,14 @@ private:
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
   MIDASDropType m_DropType;
 
-  // Keeps track of the default orientation, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
-  MIDASDefaultOrientationType m_DefaultOrientation;
+  // Keeps track of the default view, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
+  MIDASView m_DefaultView;
 
   // Keeps track of the default interpolation, as it affects the response when images are dropped, as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
   MIDASDefaultInterpolationType m_DefaultInterpolation;
+
+  // Flag to decide if we are showing 3D in orthoview.
+  bool m_Show3DInOrthoView;
 
   // Boolean to decide whether to automatically add children, default to true.
   bool m_AutomaticallyAddChildren;

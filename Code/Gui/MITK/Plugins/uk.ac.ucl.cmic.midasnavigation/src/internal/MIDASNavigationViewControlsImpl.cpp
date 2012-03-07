@@ -29,27 +29,18 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 
-MIDASNavigationViewControlsImpl::MIDASNavigationViewControlsImpl()
+MIDASNavigationViewControlsImpl::MIDASNavigationViewControlsImpl(QWidget *parent)
 {
+  this->setupUi(this);
 }
 
 MIDASNavigationViewControlsImpl::~MIDASNavigationViewControlsImpl()
 {
-
 }
 
 void MIDASNavigationViewControlsImpl::setupUi(QWidget* parent)
 {
   Ui_MIDASNavigationViewControls::setupUi(parent);
-
-  m_AxialRadioButton->setChecked(true);
-  m_SagittalRadioButton->setChecked(false);
-  m_CoronalRadioButton->setChecked(false);
-  m_MagnificationFactorWidget->setToolTip("changes the magnification of the currently selected view (red outline).");
-  m_SliceSelectionWidget->setToolTip("changes the slice number of the currently selected view (red outline), where slice numbering starts at one.");
-  m_SliceSelectionWidget->SetOffset(1);
-  m_TimeSelectionWidget->SetText("time");
-  m_TimeSelectionWidget->setToolTip("changes the time step number of the currently selected view (red outline), where time number starts at zero.");
 }
 
 #endif

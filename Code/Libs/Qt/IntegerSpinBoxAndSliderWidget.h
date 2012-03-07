@@ -82,6 +82,15 @@ public:
   /** Sets the spacing on the grid layout. */
   virtual void SetSpacing(int spacing);
 
+  /** Calls setBlockSignals(bool) on all contained widgets. */
+  virtual void SetBlockSignals(bool b);
+
+  /** Sets the Enabled flag on all contained widgets. */
+  virtual void SetEnabled(bool b);
+
+  /** Gets the Enabled flag. */
+  virtual bool GetEnabled() const;
+
   signals:
 
   /** Emitted to indicate that the value of the slider and spin box has changed. */

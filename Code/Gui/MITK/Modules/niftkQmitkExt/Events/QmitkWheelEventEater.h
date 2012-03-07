@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef QMITKMOUSEEVENTEATER_H_
-#define QMITKMOUSEEVENTEATER_H_
+#ifndef QMITKWHEELEVENTEATER_H_
+#define QMITKWHEELEVENTEATER_H_
 
 #include "niftkQmitkExtExports.h"
 
@@ -31,27 +31,22 @@
 #include <QEvent>
 
 /**
- *
+ * \class QmitkWheelEventEater
+ * \brief Qt event filter to eat wheel events.
  */
-class NIFTKQMITKEXT_EXPORT QmitkMouseEventEater : public QObject
+class NIFTKQMITKEXT_EXPORT QmitkWheelEventEater : public QObject
 {
   Q_OBJECT
 
 public:
-  QmitkMouseEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
-  ~QmitkMouseEventEater() {};
+  QmitkWheelEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
+  ~QmitkWheelEventEater() {};
   void SetIsEating(bool b) { m_IsEating = b; }
   bool GetIsEating() const { return m_IsEating; }
  protected:
   virtual bool eventFilter(QObject *obj, QEvent *event)
   {
-    if (m_IsEating &&
-        (   event->type() == QEvent::MouseButtonDblClick
-         || event->type() == QEvent::MouseButtonPress
-         || event->type() == QEvent::MouseButtonRelease
-         || event->type() == QEvent::MouseMove
-         || event->type() == QEvent::MouseTrackingChange
-        )) {
+    if (m_IsEating && event->type() == QEvent::Wheel) {
       return true;
     } else {
       // standard event processing

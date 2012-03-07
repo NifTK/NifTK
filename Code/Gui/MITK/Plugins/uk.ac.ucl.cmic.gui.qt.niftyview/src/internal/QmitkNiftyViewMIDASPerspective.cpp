@@ -40,15 +40,18 @@ void QmitkNiftyViewMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Poi
   std::string editorArea = layout->GetEditorArea();
 
   layout->AddView("org.mitk.views.datamanager", 
-    berry::IPageLayout::LEFT, 0.20f, editorArea);
+    berry::IPageLayout::LEFT, 0.25f, editorArea);
+
+  berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
+  lo->SetCloseable(false);
 
   layout->AddView("uk.ac.ucl.cmic.thumbnail",
     berry::IPageLayout::BOTTOM, 0.25f, "org.mitk.views.datamanager");
 
-  layout->AddView("uk.ac.ucl.cmic.midasnavigation",
-    berry::IPageLayout::BOTTOM, 0.33f, "uk.ac.ucl.cmic.thumbnail");
-
   layout->AddView("uk.ac.ucl.cmic.imagelookuptables",
-    berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.midasnavigation");
-
+    berry::IPageLayout::BOTTOM, 0.33f, "uk.ac.ucl.cmic.thumbnail");
+/*
+  layout->AddView("org.mitk.views.propertylistview",
+    berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.imagelookuptables");
+    */
 }

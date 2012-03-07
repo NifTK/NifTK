@@ -33,11 +33,12 @@ class QWidget;
 class QPushButton;
 class QComboBox;
 class QSpinBox;
+class QCheckBox;
 
 /**
  * \class QmitkMIDASMultiViewEditorPreferencePage
  * \brief Provides a preferences page for the CMIC MIDAS Display, including default number of rows,
- * default number of columns, image interpolation, default orientation and background colour.
+ * default number of columns, image interpolation, default view and background colour.
  */
 struct CMIC_QT_COMMON QmitkMIDASMultiViewEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
@@ -69,11 +70,26 @@ public:
   /// \brief Stores the preference name for the default number of columns in the CMIC MIDAS Display.
   static const std::string MIDAS_DEFAULT_NUMBER_COLUMNS;
 
-  /// \brief Stores the preference name for the default orientation in the CMIC MIDAS Display.
-  static const std::string MIDAS_DEFAULT_ORIENTATION;
+  /// \brief Stores the preference name for the default view in the CMIC MIDAS Display.
+  static const std::string MIDAS_DEFAULT_VIEW;
 
   /// \brief Stores the preference name for the default image interpolation in the CMIC MIDAS Display.
   static const std::string MIDAS_DEFAULT_IMAGE_INTERPOLATION;
+
+  /// \brief Stores the preference name for the default drop type (single, multiple, all).
+  static const std::string MIDAS_DEFAULT_DROP_TYPE;
+
+  /// \brief Stores the preference name for a simple on/off preference for whether we show the single, multiple, all checkbox.
+  static const std::string MIDAS_SHOW_DROP_TYPE_WIDGETS;
+
+  /// \brief Stores the preference name for whether we show the 3D view in orthoview, as screen can get a bit cluttered.
+  static const std::string MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW;
+
+  /// \brief Stores the preference name for whether we show the 2D cursors as people may prefer them to always be off.
+  static const std::string MIDAS_SHOW_2D_CURSORS;
+
+  /// \brief Stores the preference name for whether we show the magnification slider, as most people wont need it.
+  static const std::string MIDAS_SHOW_MAGNIFICATION_SLIDER;
 
   /// \brief Stores the preference name for the default background colour in the CMIC MIDAS Display.
   static const std::string MIDAS_BACKGROUND_COLOUR;
@@ -81,10 +97,14 @@ public:
   /// \brief Stores the preference name for the default background colour stylesheet in the CMIC MIDAS Display.
   static const std::string MIDAS_BACKGROUND_COLOUR_STYLESHEET;
 
+  /// \brief Stores the preference name for whether we show the layout buttons.
+  static const std::string MIDAS_SHOW_LAYOUT_BUTTONS;
+
 public slots:
 
   void OnBackgroundColourChanged();
   void OnResetBackgroundColour();
+  void OnResetMIDASBackgroundColour();
 
 private:
 
@@ -95,8 +115,14 @@ private:
 
   QSpinBox    *m_DefaultNumberOfRowsSpinBox;
   QSpinBox    *m_DefaultNumberOfColumnsSpinBox;
-  QComboBox   *m_DefaultOrientationComboBox;
+  QComboBox   *m_DefaultViewComboBox;
   QComboBox   *m_ImageInterpolationComboBox;
+  QComboBox   *m_DefaultDropType;
+  QCheckBox   *m_ShowDropTypeWidgetsCheckBox;
+  QCheckBox   *m_ShowLayoutButtonsCheckBox;
+  QCheckBox   *m_ShowMagnificationSliderCheckBox;
+  QCheckBox   *m_Show3DInOrthoCheckBox;
+  QCheckBox   *m_Show2DCursorsCheckBox;
   QPushButton *m_BackgroundColourButton;
 
   berry::IPreferences::Pointer m_MIDASMultiViewEditorPreferencesNode;

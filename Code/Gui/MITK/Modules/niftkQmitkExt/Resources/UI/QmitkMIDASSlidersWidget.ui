@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QmitkMIDASSlidersWidget</class>
+ <widget class="QWidget" name="QmitkMIDASSlidersWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>443</width>
+    <height>296</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1000,0,0">
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <property name="sizeConstraint">
+    <enum>QLayout::SetDefaultConstraint</enum>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="SliceSelectWidget" name="m_SliceSelectionWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="MagnificationFactorWidget" name="m_MagnificationFactorWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="IntegerSpinBoxAndSliderWidget" name="m_TimeSelectionWidget" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SliceSelectWidget</class>
+   <extends>QWidget</extends>
+   <header>SliceSelectWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MagnificationFactorWidget</class>
+   <extends>QWidget</extends>
+   <header>MagnificationFactorWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>IntegerSpinBoxAndSliderWidget</class>
+   <extends>QWidget</extends>
+   <header>IntegerSpinBoxAndSliderWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

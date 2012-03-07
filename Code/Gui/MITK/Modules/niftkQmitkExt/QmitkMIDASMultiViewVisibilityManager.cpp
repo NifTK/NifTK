@@ -23,7 +23,7 @@
  ============================================================================*/
 
 #include "QmitkMIDASMultiViewVisibilityManager.h"
-#include "QmitkMIDASRenderWindow.h"
+#include "QmitkRenderWindow.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "mitkBaseRenderer.h"
 #include "mitkVtkResliceInterpolationProperty.h"
@@ -35,30 +35,129 @@
 
 QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_InDataStorageChanged(false)
+, m_Show3DInOrthoView(false)
 , m_AutomaticallyAddChildren(true)
 {
   assert(dataStorage);
   m_DataStorage = dataStorage;
 
-  m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
+  m_DataNodes.clear();
+  m_Widgets.clear();
+  m_ObserverToVisibilityMap.clear();
+
+  m_DataStorage->AddNodeEvent.AddListener(
+      mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
     ( this, &QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy ) );
 
-  m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
-    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeChangedProxy ) );
-
+  m_DataStorage->RemoveNodeEvent.AddListener(
+      mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
+    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeRemovedProxy ) );
 }
 
 QmitkMIDASMultiViewVisibilityManager::~QmitkMIDASMultiViewVisibilityManager()
 {
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->AddNodeEvent.RemoveListener(
+        mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
+    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy ));
+
+    m_DataStorage->RemoveNodeEvent.RemoveListener(
+        mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
+    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeRemovedProxy ));
+
+    m_DataStorage = NULL;
+  }
+  this->RemoveAllFromObserverToVisibilityMap();
+}
+
+void QmitkMIDASMultiViewVisibilityManager::RemoveAllFromObserverToVisibilityMap()
+{
+  for( std::map<unsigned long, mitk::BaseProperty::Pointer>::iterator iter = m_ObserverToVisibilityMap.begin(); iter != m_ObserverToVisibilityMap.end(); ++iter )
+  {
+    (*iter).second->RemoveObserver((*iter).first);
+  }
+  m_ObserverToVisibilityMap.clear();
+}
+
+void QmitkMIDASMultiViewVisibilityManager::UpdateObserverToVisibilityMap()
+{
+  this->RemoveAllFromObserverToVisibilityMap();
+
+  assert(m_DataStorage);
+
+  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  {
+    if (it->Value().IsNull() || it->Value()->GetProperty("visible") == NULL)
+    {
+      continue;
+    }
+
+    /* register listener for changes in visible property */
+    itk::ReceptorMemberCommand<QmitkMIDASMultiViewVisibilityManager>::Pointer command = itk::ReceptorMemberCommand<QmitkMIDASMultiViewVisibilityManager>::New();
+    command->SetCallbackFunction(this, &QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty);
+    m_ObserverToVisibilityMap[it->Value()->GetProperty("visible")->AddObserver( itk::ModifiedEvent(), command )] = it->Value()->GetProperty("visible");
+  }
 }
 
 void QmitkMIDASMultiViewVisibilityManager::RegisterWidget(QmitkMIDASSingleViewWidget *widget)
 {
   widget->SetDataStorage(m_DataStorage);
 
-  std::vector<mitk::DataNode*> newNodes;
-  m_ListOfDataNodes.push_back(newNodes);
-  m_ListOfWidgets.push_back(widget);
+  std::set<mitk::DataNode*> newNodes;
+  m_DataNodes.push_back(newNodes);
+  m_Widgets.push_back(widget);
+}
+
+void QmitkMIDASMultiViewVisibilityManager::ClearAllWindows()
+{
+  for (unsigned int i = 0; i < m_Widgets.size(); i++)
+  {
+    this->RemoveNodesFromWindow(i);
+  }
+}
+
+int QmitkMIDASMultiViewVisibilityManager::GetIndexFromWindow(QmitkRenderWindow* window)
+{
+  int result = -1;
+
+  for (unsigned int i = 0; i < m_Widgets.size(); i++)
+  {
+    bool contains = m_Widgets[i]->ContainsWindow(window);
+    if (contains)
+    {
+      result = i;
+      break;
+    }
+  }
+  return result;
+}
+
+void QmitkMIDASMultiViewVisibilityManager::NodeRemovedProxy( const mitk::DataNode* node )
+{
+  // Guarantee no recursions when a new node event is thrown in NodeRemoved()
+  if(!m_InDataStorageChanged)
+  {
+    m_InDataStorageChanged = true;
+    this->NodeRemoved(node);
+    m_InDataStorageChanged = false;
+  }
+}
+
+void QmitkMIDASMultiViewVisibilityManager::NodeRemoved( const mitk::DataNode* node)
+{
+  this->UpdateObserverToVisibilityMap();
+
+  for (unsigned int i = 0; i < m_DataNodes.size(); i++)
+  {
+    std::set<mitk::DataNode*>::iterator iter;
+    iter = m_DataNodes[i].find(const_cast<mitk::DataNode*>(node));
+    if (iter != m_DataNodes[i].end())
+    {
+      m_DataNodes[i].erase(iter);
+    }
+  }
 }
 
 void QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy( const mitk::DataNode* node )
@@ -75,148 +174,149 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy( const mitk::DataNode*
 void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node)
 {
   this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
+  this->UpdateObserverToVisibilityMap();
 }
 
 void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
 {
+  bool isHelperNode = false;
+  node->GetBoolProperty("helper object", isHelperNode);
+
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
-  for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
+  for (unsigned int i = 0; i < m_Widgets.size(); i++)
   {
-    QmitkMIDASRenderWindow* window = m_ListOfWidgets[i]->GetRenderWindow();
-    mitk::BaseRenderer::Pointer renderer = mitk::BaseRenderer::GetInstance(window->GetVtkRenderWindow());
-    node->SetBoolProperty("visible", false, renderer);
+    std::vector<mitk::DataNode*> nodes;
+    nodes.push_back(node);
+
+    m_Widgets[i]->SetRendererSpecificVisibility(nodes, false);
   }
 
-  // For MIDAS, which might have a light background in the render window, we need to make sure black is not transparent.
-  if (dynamic_cast<mitk::Image*>(node->GetData()))
+  // For non-helper nodes, we set up some initial properties.
+  if (!isHelperNode)
   {
-    node->SetProperty("black opacity", mitk::FloatProperty::New(1));
+    // For MIDAS, which might have a light background in the render window,
+    // we need to make sure black is not transparent.
+    if (dynamic_cast<mitk::Image*>(node->GetData()))
+    {
+      node->SetProperty("black opacity", mitk::FloatProperty::New(1));
+    }
+
+    if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
+    {
+      node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
+    }
+    else
+    {
+      node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
+    }
+
+    if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
+    {
+      node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_NEAREST"));
+    }
+    else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_LINEAR)
+    {
+      node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_LINEAR"));
+    }
+    else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
+    {
+      node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_CUBIC"));
+    }
   }
 
-  if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-  {
-    node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
-  }
-  else
-  {
-    node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
-  }
-
-  if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-  {
-    node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_NEAREST"));
-  }
-  else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_LINEAR)
-  {
-    node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_LINEAR"));
-  }
-  else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
-  {
-    node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_CUBIC"));
-  }
-
-  // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same windows.
+  // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
+  // windows as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
+  // registered as a child of a grey scale image. If the parent grey scale image is already
+  // registered as visible in a window, then the child image is made visible, which has the effect of
+  // immediately showing the segmented volume.
   mitk::DataNode::Pointer parent = mitk::FindParentGreyScaleImage(m_DataStorage, node);
   if (parent.IsNotNull())
   {
-    for (unsigned int i = 0; i < m_ListOfDataNodes.size(); i++)
+    for (unsigned int i = 0; i < m_DataNodes.size(); i++)
     {
-      for (unsigned int j = 0; j < m_ListOfDataNodes[i].size(); j++)
+      std::set<mitk::DataNode*>::iterator iter;
+      for (iter = m_DataNodes[i].begin(); iter != m_DataNodes[i].end(); iter++)
       {
-        if ((m_ListOfDataNodes[i])[j] == parent)
+        if (*iter == parent)
         {
-          this->AddNodeToWindow(i, node);
+          // Widget i contains the parent.
+          // However, we want to set the renderer specific visibility according to the global value for this child node, not the parent.
+          bool globalVisibility = false;
+          node->GetBoolProperty("visible", globalVisibility);
+
+          this->AddNodeToWindow(i, node, globalVisibility);
         }
       }
     }
   }
 }
 
-void QmitkMIDASMultiViewVisibilityManager::NodeChangedProxy( const mitk::DataNode* node )
+void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::EventObject&)
 {
-  // Guarantee no recursions when a new node event is thrown in NodeAdded()
-  if(!m_InDataStorageChanged)
-  {
-    m_InDataStorageChanged = true;
-    this->NodeChanged(node);
-    m_InDataStorageChanged = false;
-  }
-}
+  // We have to iterate through all nodes registered with DataStorage,
+  // and see if the global visibility property should override the renderer specific one for any
+  // node that is registered as having been dropped into and of our registered render windows.
 
-void QmitkMIDASMultiViewVisibilityManager::NodeChanged( const mitk::DataNode* node)
-{
-  this->UpdateNodeProperties(const_cast<mitk::DataNode*>(node));
-}
-
-void QmitkMIDASMultiViewVisibilityManager::UpdateNodeProperties(mitk::DataNode* node)
-{
-  for (unsigned int i = 0; i < m_ListOfDataNodes.size(); i++)
+  // Outer loop, iterates through all nodes in DataStorage.
+  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
-    for (unsigned int j = 0; j < m_ListOfDataNodes[i].size(); j++)
+    // Make sure each node is non-NULL and has a non-NULL "visible" property
+    if (it->Value().IsNull() || it->Value()->GetProperty("visible") == NULL)
     {
-      if ((m_ListOfDataNodes[i])[j] == node)
-      {
-        bool visibility(false);
-        node->GetBoolProperty("visible", visibility);
+      continue;
+    }
 
-        QmitkMIDASRenderWindow* window = m_ListOfWidgets[i]->GetRenderWindow();
-        mitk::BaseRenderer::Pointer renderer = mitk::BaseRenderer::GetInstance(window->GetVtkRenderWindow());
-        node->SetBoolProperty("visible", visibility, renderer);
+    // Then we iterate through our list of windows.
+    for (unsigned int i = 0; i < m_DataNodes.size(); i++)
+    {
+
+      // And for each window, we have a set of registered nodes.
+      std::set<mitk::DataNode*>::iterator iter;
+      for (iter = m_DataNodes[i].begin(); iter != m_DataNodes[i].end(); iter++)
+      {
+        if (it->Value() == (*iter))
+        {
+          bool globalVisibility(false);
+          it->Value()->GetBoolProperty("visible", globalVisibility);
+
+          std::vector<mitk::DataNode*> nodes;
+          nodes.push_back(it->Value());
+
+          m_Widgets[i]->SetRendererSpecificVisibility(nodes, globalVisibility);
+        }
       }
     }
   }
 }
 
-unsigned int QmitkMIDASMultiViewVisibilityManager::GetIndexFromWindow(QmitkMIDASRenderWindow* window)
-{
-  int result = -1;
-
-  for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
-  {
-    bool contains = m_ListOfWidgets[i]->ContainsWindow(window);
-    if (contains)
-    {
-      result = i;
-      break;
-    }
-  }
-  return result;
-}
-
 void QmitkMIDASMultiViewVisibilityManager::RemoveNodesFromWindow(int windowIndex)
 {
-  QmitkMIDASSingleViewWidget *widget = m_ListOfWidgets[windowIndex];
+  QmitkMIDASSingleViewWidget *widget = m_Widgets[windowIndex];
   assert(widget);
 
-  QmitkMIDASRenderWindow* window = widget->GetRenderWindow();
-  vtkRenderWindow *vtkRenderWindow = window->GetVtkRenderWindow();
-  assert(vtkRenderWindow);
+  std::vector<mitk::DataNode*> nodes;
+  std::set<mitk::DataNode*>::iterator iter;
 
-  mitk::BaseRenderer::Pointer renderer = mitk::BaseRenderer::GetInstance(vtkRenderWindow);
-  assert(renderer);
-
-  for (unsigned int j = 0; j < (m_ListOfDataNodes[windowIndex]).size(); j++)
+  for (iter = m_DataNodes[windowIndex].begin(); iter != m_DataNodes[windowIndex].end(); iter++)
   {
-    m_ListOfDataNodes[windowIndex][j]->SetProperty("visible", mitk::BoolProperty::New(false), renderer);
+    nodes.push_back(*iter);
   }
 
-  (m_ListOfDataNodes[windowIndex]).clear();
+  widget->SetRendererSpecificVisibility(nodes, false);
+  m_DataNodes[windowIndex].clear();
 }
 
-void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk::DataNode* node)
+void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility)
 {
-  QmitkMIDASSingleViewWidget *widget = m_ListOfWidgets[windowIndex];
+  QmitkMIDASSingleViewWidget *widget = m_Widgets[windowIndex];
   assert(widget);
 
-  QmitkMIDASRenderWindow* window = widget->GetRenderWindow();
-  vtkRenderWindow *vtkRenderWindow = window->GetVtkRenderWindow();
-  assert(vtkRenderWindow);
+  m_DataNodes[windowIndex].insert(node);
 
-  mitk::BaseRenderer::Pointer renderer = mitk::BaseRenderer::GetInstance(vtkRenderWindow);
-  assert(renderer);
-
-  node->SetProperty("visible", mitk::BoolProperty::New(true), renderer);
-  (m_ListOfDataNodes[windowIndex]).push_back(node);
+  std::set<mitk::DataNode*>::iterator iter;
+  std::vector<mitk::DataNode*> nodes;
+  nodes.push_back(node);
 
   if (this->m_AutomaticallyAddChildren)
   {
@@ -226,13 +326,15 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
     for (unsigned int i = 0; i < possibleChildren->size(); i++)
     {
       mitk::DataNode* possibleNode = (*possibleChildren)[i];
-      possibleNode->SetProperty("visible", mitk::BoolProperty::New(true), renderer);
-      (m_ListOfDataNodes[windowIndex]).push_back(possibleNode);
+      m_DataNodes[windowIndex].insert(possibleNode);
+      nodes.push_back(possibleNode);
     }
   }
+
+  widget->SetRendererSpecificVisibility(nodes, initialVisibility);
 }
 
-mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, unsigned int nodeIndex)
+mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
 {
   mitk::TimeSlicedGeometry::Pointer geometry = NULL;
   int indexThatWeActuallyUsed = -1;
@@ -270,7 +372,7 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
     }
   }
   // So, the caller has nominated a specific node, lets just use that one.
-  else if (nodeIndex >= 0 && nodeIndex < nodes.size())
+  else if (nodeIndex >= 0 && nodeIndex < (int)nodes.size())
   {
     mitk::BaseData::Pointer data = nodes[nodeIndex]->GetData();
     if (data.IsNotNull())
@@ -315,7 +417,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 QmitkMIDASMultiViewVisibilityManager::GetAsAcquiredOrientation(
     itk::Image<TPixel, VImageDimension>* itkImage,
-    QmitkMIDASSingleViewWidget::MIDASViewOrientation &outputOrientation
+    MIDASOrientation &outputOrientation
     )
 {
   typedef itk::Image<TPixel, VImageDimension> ImageType;
@@ -329,52 +431,47 @@ QmitkMIDASMultiViewVisibilityManager::GetAsAcquiredOrientation(
   {
     if (orientationString[1] == 'A' || orientationString[1] == 'P')
     {
-      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL;
+      outputOrientation = MIDAS_ORIENTATION_AXIAL;
     }
     else
     {
-      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL;
+      outputOrientation = MIDAS_ORIENTATION_CORONAL;
     }
   }
   else if (orientationString[0] == 'A' || orientationString[0] == 'P')
   {
     if (orientationString[1] == 'L' || orientationString[1] == 'R')
     {
-      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL;
+      outputOrientation = MIDAS_ORIENTATION_AXIAL;
     }
     else
     {
-      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL;
+      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
     }
   }
   else if (orientationString[0] == 'S' || orientationString[0] == 'I')
   {
     if (orientationString[1] == 'L' || orientationString[1] == 'R')
     {
-      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL;
+      outputOrientation = MIDAS_ORIENTATION_CORONAL;
     }
     else
     {
-      outputOrientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL;
+      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
     }
   }
 }
 
-QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASMultiViewVisibilityManager::GetOrientation(std::vector<mitk::DataNode*> nodes)
+MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNode*> nodes)
 {
-  // "As Acquired" means you take the orientation of the XY plane in the original image data, so we switch to ITK to work it out.
-  QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_CORONAL;
 
-  if(m_DefaultOrientation == MIDAS_ORIENTATION_AXIAL)
+  MIDASView view = m_DefaultView;
+  if (view == MIDAS_VIEW_AS_ACQUIRED)
   {
-    orientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_AXIAL;
-  }
-  else if (m_DefaultOrientation == MIDAS_ORIENTATION_SAGITTAL)
-  {
-    orientation = QmitkMIDASSingleViewWidget::MIDAS_VIEW_SAGITTAL;
-  }
-  else if (m_DefaultOrientation == MIDAS_ORIENTATION_AS_ACQUIRED)
-  {
+    // "As Acquired" means you take the orientation of the XY plane
+    // in the original image data, so we switch to ITK to work it out.
+    MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+
     mitk::Image::Pointer image = NULL;
     for (unsigned int i = 0; i < nodes.size(); i++)
     {
@@ -392,27 +489,35 @@ QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASMultiViewVisibilityMa
       }
       catch (const mitk::AccessByItkException &e)
       {
-        MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation so defaulting to coronal" << e.what() << std::endl;
+        MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation." << e.what() << std::endl;
       }
     }
     else
     {
-      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation so defaulting to coronal" << std::endl;
+      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation." << std::endl;
+    }
 
+    if (orientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      view = MIDAS_VIEW_AXIAL;
+    }
+    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      view = MIDAS_VIEW_SAGITTAL;
+    }
+    else if (orientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      view = MIDAS_VIEW_CORONAL;
+    }
+    else
+    {
+      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped defaulting to view=" << view << std::endl;
     }
   }
-  return orientation;
+  return view;
 }
 
-void QmitkMIDASMultiViewVisibilityManager::ClearAllWindows()
-{
-  for (unsigned int i = 0; i < m_ListOfWidgets.size(); i++)
-  {
-    this->RemoveNodesFromWindow(i);
-  }
-}
-
-void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
   // Works out the initial window index that the image is dropped into.
@@ -422,7 +527,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
   //   then this corresponds to indexes 0,1 then skip 2,3,4, then 5,6 are visible.
 
   int windowIndex = this->GetIndexFromWindow(window);
-  QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation = this->GetOrientation(nodes);
+  MIDASView view = this->GetView(nodes);
 
   if (m_DataStorage.IsNotNull() && windowIndex != -1)
   {
@@ -457,9 +562,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       }
 
       // Then set up geometry of that single window.
-      m_ListOfWidgets[windowIndex]->SetGeometry(geometry.GetPointer());
-      m_ListOfWidgets[windowIndex]->SetViewOrientation(orientation, false);
-
+      m_Widgets[windowIndex]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+      m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
+      m_Widgets[windowIndex]->SetView(view, false);
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
     {
@@ -473,12 +578,12 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
 
       for (unsigned int i = 0; i < nodes.size(); i++)
       {
-        while (dropIndex < m_ListOfWidgets.size() && !m_ListOfWidgets[dropIndex]->isVisible())
+        while (dropIndex < m_Widgets.size() && !m_Widgets[dropIndex]->isVisible())
         {
           // i.e. if the window we are in, is not visible, keep looking
           dropIndex++;
         }
-        if (dropIndex == m_ListOfWidgets.size())
+        if (dropIndex == m_Widgets.size())
         {
           // give up? Or we could go back to zero?
           dropIndex = 0;
@@ -498,8 +603,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         this->AddNodeToWindow(dropIndex, nodes[i]);
 
         // Initialise geometry according to first image
-        m_ListOfWidgets[dropIndex]->SetGeometry(geometry.GetPointer());
-        m_ListOfWidgets[dropIndex]->SetViewOrientation(orientation, false);
+        m_Widgets[dropIndex]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+        m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
+        m_Widgets[dropIndex]->SetView(view, false);
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
         dropIndex++;
@@ -519,15 +625,38 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       // Clear all nodes from every window.
       this->ClearAllWindows();
 
+      // Note: Remember that we have view = axial, coronal, sagittal, 3D and ortho (+ others maybe)
+      // So this thumbnail drop, has to switch to a single orientation. If the current default
+      // view is not a single slice mode, we need to switch to one.
+      MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+      switch(view)
+      {
+      case MIDAS_VIEW_AXIAL:
+        orientation = MIDAS_ORIENTATION_AXIAL;
+        break;
+      case MIDAS_VIEW_SAGITTAL:
+        orientation = MIDAS_ORIENTATION_SAGITTAL;
+        break;
+      case MIDAS_VIEW_CORONAL:
+        orientation = MIDAS_ORIENTATION_CORONAL;
+        break;
+      default:
+        orientation = MIDAS_ORIENTATION_AXIAL;
+        view = MIDAS_VIEW_AXIAL;
+        break;
+      }
+
       // Then we need to check if the number of slices < the number of windows, if so, we just
       // spread the slices, one per window, until we run out of windows.
       // If we have more slices than windows, we need to interpolate the number of slices.
-      m_ListOfWidgets[0]->SetGeometry(geometry.GetPointer());
-      m_ListOfWidgets[0]->SetViewOrientation(orientation, true);
-      unsigned int minSlice = m_ListOfWidgets[0]->GetMinSlice();
-      unsigned int maxSlice = m_ListOfWidgets[0]->GetMaxSlice();
+      m_Widgets[0]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+      m_Widgets[0]->SetGeometry(geometry.GetPointer());
+      m_Widgets[0]->SetView(view, true);
+
+      unsigned int minSlice = m_Widgets[0]->GetMinSlice(orientation);
+      unsigned int maxSlice = m_Widgets[0]->GetMaxSlice(orientation);
       unsigned int numberOfSlices = maxSlice - minSlice + 1;
-      unsigned int windowsToUse = std::min((unsigned int)numberOfSlices, (unsigned int)m_ListOfWidgets.size());
+      unsigned int windowsToUse = std::min((unsigned int)numberOfSlices, (unsigned int)m_Widgets.size());
 
       MITK_DEBUG << "Dropping thumbnail, minSlice=" << minSlice << ", maxSlice=" << maxSlice << ", numberOfSlices=" << numberOfSlices << ", windowsToUse=" << windowsToUse << std::endl;
 
@@ -541,14 +670,15 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
       }
 
       // Now decide how we calculate which window is showing which slice.
-      if (numberOfSlices <= m_ListOfWidgets.size())
+      if (numberOfSlices <= m_Widgets.size())
       {
         // In this method, we have less slices than windows, so we just spread them in increasing order.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
-          m_ListOfWidgets[i]->SetViewOrientation(orientation, true);
-          m_ListOfWidgets[i]->SetSliceNumber(minSlice + i);
+          m_Widgets[i]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+          m_Widgets[i]->SetGeometry(geometry.GetPointer());
+          m_Widgets[i]->SetView(view, true);
+          m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
 
           MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
         }
@@ -558,14 +688,15 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
         // In this method, we have more slices than windows, so we spread them evenly over the max number of windows.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          m_ListOfWidgets[i]->SetGeometry(geometry.GetPointer());
-          m_ListOfWidgets[i]->SetViewOrientation(orientation, true);
+          m_Widgets[i]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+          m_Widgets[i]->SetGeometry(geometry.GetPointer());
+          m_Widgets[i]->SetView(view, true);
 
-          unsigned int minSlice = m_ListOfWidgets[i]->GetMinSlice();
-          unsigned int maxSlice = m_ListOfWidgets[i]->GetMaxSlice();
+          unsigned int minSlice = m_Widgets[i]->GetMinSlice(orientation);
+          unsigned int maxSlice = m_Widgets[i]->GetMaxSlice(orientation);
           unsigned int numberOfEdgeSlicesToIgnore = numberOfSlices * 0.05; // ignore first and last 5 percent, as usually junk/blank.
           unsigned int remainingNumberOfSlices = numberOfSlices - (2 * numberOfEdgeSlicesToIgnore);
-          float fraction = (float)i/(float)(m_ListOfWidgets.size());
+          float fraction = (float)i/(float)(m_Widgets.size());
           unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + remainingNumberOfSlices*fraction;
 
           MITK_DEBUG << "Dropping thumbnail, i=" << i \
@@ -575,10 +706,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkMIDASRenderWindow
               << ", remainingNumberOfSlices=" << remainingNumberOfSlices \
               << ", fraction=" << fraction \
               << ", chosenSlice=" << chosenSlice << std::endl;
-          m_ListOfWidgets[i]->SetSliceNumber(chosenSlice);
+          m_Widgets[i]->SetSliceNumber(orientation, chosenSlice);
         }
       } // end if (which method of spreading thumbnails)
     } // end if (which method of dropping)
   } // end if (we have valid input)
 }
-

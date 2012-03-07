@@ -51,6 +51,7 @@ mitk::MIDASPaintbrushTool::MIDASPaintbrushTool() : SegTool2D("MIDASPaintbrushToo
 , m_CursorSize(1)
 , m_WorkingImageGeometry(NULL)
 , m_WorkingImage(NULL)
+, m_NumberOfVoxelsPainted(0)
 {
   CONNECT_ACTION( 320401, OnLeftMousePressed );
   CONNECT_ACTION( 320402, OnLeftMouseReleased );
@@ -240,7 +241,7 @@ bool mitk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int imageNumber, Ac
 
   // Set reference data, but we don't draw anything at this stage
   m_MostRecentPointInMillimetres = positionEvent->GetWorldPosition();
-
+  m_NumberOfVoxelsPainted = 0;
   return true;
 }
 
@@ -299,6 +300,7 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
       ExecuteOperation(doOp);
 
       this->SetValidRegion(imageNumber, boundingBox);
+      m_NumberOfVoxelsPainted += processor->GetNumberOfVoxels();
     }
     catch( itk::ExceptionObject & err )
     {
@@ -368,6 +370,12 @@ void mitk::MIDASPaintbrushTool::SetInvalidRegion(unsigned int imageNumber)
   assert(workingNode);
 
   mitk::ITKRegionParametersDataNodeProperty::Pointer prop = mitk::ITKRegionParametersDataNodeProperty::New();
+
+  if (m_NumberOfVoxelsPainted > 0)
+  {
+    // Put some fake volume in there. Doesn't matter what the volume is, as it is marked as Invalid anyway.
+    prop->SetSize(1,1,1);
+  }
   prop->SetValid(false);
 
   workingNode->ReplaceProperty(REGION_PROPERTY_NAME.c_str(), prop);

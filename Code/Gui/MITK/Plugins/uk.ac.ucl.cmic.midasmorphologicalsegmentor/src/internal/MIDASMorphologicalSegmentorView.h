@@ -76,6 +76,15 @@ public:
   /// \brief Invoked when the DataManager selection changed.
   virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
 
+  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Activated.
+  virtual void Activated();
+
+  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Deactivated.
+  virtual void Deactivated();
+
+  /// \brief If the user hits the close icon, it is equivalent to a Cancel.
+  virtual void ClosePart();
+
 protected slots:
  
   /// \brief Called when the user hits the button "New segmentation".
@@ -240,6 +249,10 @@ private:
   /// \brief The mitk::ToolManager is created in base class, but we request and store locally the Tools ID.
   int m_PaintbrushToolId;
 
+  /// \brief Store pointer to widget, so we don't have to repeatedly look for it.
+  QmitkStdMultiWidget *m_MITKWidget;
+  QmitkMIDASMultiViewWidget *m_MIDASWidget;
+  bool m_Show2DCursors;
 };
 
 #endif // _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED

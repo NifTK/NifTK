@@ -72,12 +72,15 @@ void MIDASNavigationView::CreateQtPartControl( QWidget *parent )
 
     QmitkMIDASBaseFunctionality::CreateQtPartControl(parent);
 
-    connect(m_NavigationViewControls->m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialRadioButtonToggled(bool)));
-    connect(m_NavigationViewControls->m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalRadioButtonToggled(bool)));
-    connect(m_NavigationViewControls->m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonToggled(bool)));
-    connect(m_NavigationViewControls->m_SliceSelectionWidget, SIGNAL(SliceNumberChanged(int, int)), this, SLOT(OnSliceNumberChanged(int, int)));
-    connect(m_NavigationViewControls->m_MagnificationFactorWidget, SIGNAL(MagnificationFactorChanged(int, int)), this, SLOT(OnMagnificationFactorChanged(int, int)));
-    connect(m_NavigationViewControls->m_TimeSelectionWidget, SIGNAL(IntegerValueChanged(int, int)), this, SLOT(OnTimeStepChanged(int, int)));
+    connect(m_NavigationViewControls->m_MIDASOrientationWidget->m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialRadioButtonToggled(bool)));
+    connect(m_NavigationViewControls->m_MIDASOrientationWidget->m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalRadioButtonToggled(bool)));
+    connect(m_NavigationViewControls->m_MIDASOrientationWidget->m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonToggled(bool)));
+    connect(m_NavigationViewControls->m_MIDASOrientationWidget->m_OrthogonalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonToggled(bool)));
+    connect(m_NavigationViewControls->m_MIDASOrientationWidget->m_ThreeDRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonToggled(bool)));
+
+    connect(m_NavigationViewControls->m_MIDASSlidersWidget->m_SliceSelectionWidget, SIGNAL(SliceNumberChanged(int, int)), this, SLOT(OnSliceNumberChanged(int, int)));
+    connect(m_NavigationViewControls->m_MIDASSlidersWidget->m_MagnificationFactorWidget, SIGNAL(MagnificationFactorChanged(int, int)), this, SLOT(OnMagnificationFactorChanged(int, int)));
+    connect(m_NavigationViewControls->m_MIDASSlidersWidget->m_TimeSelectionWidget, SIGNAL(IntegerValueChanged(int, int)), this, SLOT(OnTimeStepChanged(int, int)));
 
     m_Context = mitk::MIDASNavigationViewActivator::GetPluginContext();
     m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
@@ -132,6 +135,26 @@ void MIDASNavigationView::OnSagittalRadioButtonToggled(bool isToggled)
   }
 }
 
+void MIDASNavigationView::OnOrthoRadioButtonToggled(bool isToggled)
+{
+  if (isToggled)
+  {
+    ctkDictionary properties;
+    properties["orientation"] = "ortho";
+    emit OrientationChanged(properties);
+  }
+}
+
+void MIDASNavigationView::On3DRadioButtonToggled(bool isToggled)
+{
+  if (isToggled)
+  {
+    ctkDictionary properties;
+    properties["orientation"] = "3D";
+    emit OrientationChanged(properties);
+  }
+}
+
 void MIDASNavigationView::OnSliceNumberChanged(int oldSliceNumber, int newSliceNumber)
 {
   ctkDictionary properties;
@@ -155,12 +178,14 @@ void MIDASNavigationView::OnTimeStepChanged(int oldTimeStep, int newTimeStep)
 
 void MIDASNavigationView::SetBlockSignals(bool blockSignals)
 {
-  m_NavigationViewControls->m_AxialRadioButton->blockSignals(blockSignals);
-  m_NavigationViewControls->m_SagittalRadioButton->blockSignals(blockSignals);
-  m_NavigationViewControls->m_CoronalRadioButton->blockSignals(blockSignals);
-  m_NavigationViewControls->m_SliceSelectionWidget->blockSignals(blockSignals);
-  m_NavigationViewControls->m_MagnificationFactorWidget->blockSignals(blockSignals);
-  m_NavigationViewControls->m_TimeSelectionWidget->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASOrientationWidget->m_AxialRadioButton->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASOrientationWidget->m_SagittalRadioButton->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASOrientationWidget->m_CoronalRadioButton->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASOrientationWidget->m_OrthogonalRadioButton->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASOrientationWidget->m_ThreeDRadioButton->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(blockSignals);
+  m_NavigationViewControls->m_MIDASSlidersWidget->m_TimeSelectionWidget->blockSignals(blockSignals);
 }
 
 void MIDASNavigationView::handleEvent(const ctkEvent& event)
@@ -176,25 +201,34 @@ void MIDASNavigationView::handleEvent(const ctkEvent& event)
       QString orientation = event.getProperty("orientation").toString();
       if (orientation == "axial")
       {
-        m_NavigationViewControls->m_AxialRadioButton->setChecked(true);
+        m_NavigationViewControls->m_MIDASOrientationWidget->m_AxialRadioButton->setChecked(true);
       }
       if (orientation == "sagittal")
       {
-        m_NavigationViewControls->m_SagittalRadioButton->setChecked(true);
+        m_NavigationViewControls->m_MIDASOrientationWidget->m_SagittalRadioButton->setChecked(true);
       }
       if (orientation == "coronal")
       {
-        m_NavigationViewControls->m_CoronalRadioButton->setChecked(true);
+        m_NavigationViewControls->m_MIDASOrientationWidget->m_CoronalRadioButton->setChecked(true);
       }
-      m_NavigationViewControls->m_MagnificationFactorWidget->SetMagnificationFactor(event.getProperty("current_magnification").toInt());
-      m_NavigationViewControls->m_SliceSelectionWidget->SetSliceNumber(event.getProperty("current_slice").toInt());
-      m_NavigationViewControls->m_TimeSelectionWidget->SetValue(event.getProperty("current_time").toInt());
-      m_NavigationViewControls->m_SliceSelectionWidget->SetMinimum(event.getProperty("min_slice").toInt());
-      m_NavigationViewControls->m_SliceSelectionWidget->SetMaximum(event.getProperty("max_slice").toInt());
-      m_NavigationViewControls->m_MagnificationFactorWidget->SetMinimum(event.getProperty("min_magnification").toInt());
-      m_NavigationViewControls->m_MagnificationFactorWidget->SetMaximum(event.getProperty("max_magnification").toInt());
-      m_NavigationViewControls->m_TimeSelectionWidget->SetMinimum(event.getProperty("min_time").toInt());
-      m_NavigationViewControls->m_TimeSelectionWidget->SetMaximum(event.getProperty("max_time").toInt());
+      if (orientation == "ortho")
+      {
+        m_NavigationViewControls->m_MIDASOrientationWidget->m_OrthogonalRadioButton->setChecked(true);
+      }
+      if (orientation == "3D")
+      {
+        m_NavigationViewControls->m_MIDASOrientationWidget->m_ThreeDRadioButton->setChecked(true);
+      }
+
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(event.getProperty("current_magnification").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(event.getProperty("current_slice").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_TimeSelectionWidget->SetValue(event.getProperty("current_time").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMinimum(event.getProperty("min_slice").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMaximum(event.getProperty("max_slice").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMinimum(event.getProperty("min_magnification").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMaximum(event.getProperty("max_magnification").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMinimum(event.getProperty("min_time").toInt());
+      m_NavigationViewControls->m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMaximum(event.getProperty("max_time").toInt());
     }
 
     // Turn signals back on again.

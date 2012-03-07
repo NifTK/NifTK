@@ -25,7 +25,7 @@
 #ifndef ThumbnailView_h
 #define ThumbnailView_h
 
-#include "QmitkFunctionality.h"
+#include "QmitkMIDASBaseFunctionality.h"
 #include "berryIPartListener.h"
 #include "berryIPreferences.h"
 #include "berryIPreferencesService.h"
@@ -45,7 +45,7 @@
  *
  * \sa QmitkThumbnailRenderWindow
 */
-class ThumbnailView : public QmitkFunctionality
+class ThumbnailView : public QmitkMIDASBaseFunctionality
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -53,12 +53,15 @@ class ThumbnailView : public QmitkFunctionality
   
 public:
 
-  berryObjectMacro(ThumbnailView)
+  berryObjectMacro(ThumbnailView);
   ThumbnailView();
   virtual ~ThumbnailView();
 
   /// \brief Static view ID = uk.ac.ucl.cmic.thumbnailview
   static const std::string VIEW_ID;
+
+  /// \brief Returns the view ID.
+  virtual std::string GetViewID() const;
 
   /// \brief Called from framework to instantiate the Qt GUI components.
   virtual void CreateQtPartControl(QWidget *parent);

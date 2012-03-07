@@ -48,6 +48,25 @@ void ITKRegionParametersDataNodeProperty::Identity()
   m_Parameters[5] = 0;
 }
 
+void ITKRegionParametersDataNodeProperty::SetSize(int x, int y, int z)
+{
+  m_Parameters[0] = x;
+  m_Parameters[1] = y;
+  m_Parameters[2] = z;
+}
+
+bool ITKRegionParametersDataNodeProperty::HasVolume() const
+{
+  if (m_Parameters[0] > 0 && m_Parameters[1] > 0 && m_Parameters[2] > 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 bool ITKRegionParametersDataNodeProperty::IsValid() const
 {
   return m_IsValid;
@@ -85,7 +104,8 @@ std::string ITKRegionParametersDataNodeProperty::GetValueAsString() const
         << ", " << m_Parameters[2] \
         << "], Index=[" << m_Parameters[3] \
         << ", " << m_Parameters[4] \
-        << "]" << m_Parameters[5] ;
+        << ", " << m_Parameters[5] \
+        << "]" ;
   return myStr.str();
 }
 

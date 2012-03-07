@@ -410,7 +410,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnComboBoxSelectionChanged( const 
 }
 
 
-
 void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
 {
   if (m_ImageAndSegmentationSelector != NULL)

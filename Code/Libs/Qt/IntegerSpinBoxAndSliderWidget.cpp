@@ -35,6 +35,10 @@ IntegerSpinBoxAndSliderWidget::IntegerSpinBoxAndSliderWidget(QWidget *parent)
   this->SetValue(0);
   this->SetText("Value");
 
+  this->gridLayout->setColumnStretch(0, 0);
+  this->gridLayout->setColumnStretch(1, 1000);
+  this->gridLayout->setColumnStretch(0, 0);
+
   connect(this->spinBox, SIGNAL(valueChanged(int)), this, SLOT(SetValueOnSlider(int)));
   connect(this->horizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(SetValueOnSpinBox(int)));
 }
@@ -144,6 +148,25 @@ void IntegerSpinBoxAndSliderWidget::SetContentsMargins(int margin)
 void IntegerSpinBoxAndSliderWidget::SetSpacing(int spacing)
 {
   gridLayout->setSpacing(spacing);
+}
+
+void IntegerSpinBoxAndSliderWidget::SetBlockSignals(bool b)
+{
+  this->spinBox->blockSignals(b);
+  this->horizontalSlider->blockSignals(b);
+  this->label->blockSignals(b);
+}
+
+void IntegerSpinBoxAndSliderWidget::SetEnabled(bool b)
+{
+  this->spinBox->setEnabled(b);
+  this->horizontalSlider->setEnabled(b);
+  this->label->setEnabled(b);
+}
+
+bool IntegerSpinBoxAndSliderWidget::GetEnabled() const
+{
+  return this->horizontalSlider->isEnabled();
 }
 
 #endif

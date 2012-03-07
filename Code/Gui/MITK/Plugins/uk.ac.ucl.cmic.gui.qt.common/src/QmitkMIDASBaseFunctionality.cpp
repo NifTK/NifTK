@@ -59,7 +59,7 @@ public:
 
   void PartOpened(berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == m_View->GetViewID())
+    if ((partRef->GetId() == m_View->GetViewID()) || (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID))
     {
       if (QmitkMIDASMultiViewEditor::Pointer multiWidgetPart =
           partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>())
@@ -105,6 +105,14 @@ void QmitkMIDASBaseFunctionality::SetFocus ()
 
 }
 
+void QmitkMIDASBaseFunctionality::Activated()
+{
+}
+
+void QmitkMIDASBaseFunctionality::Deactivated()
+{
+}
+
 mitk::DataStorage::Pointer QmitkMIDASBaseFunctionality::GetDefaultDataStorage() const
 {
   mitk::IDataStorageService::Pointer service =
@@ -140,12 +148,4 @@ QmitkMIDASMultiViewWidget* QmitkMIDASBaseFunctionality::GetActiveMIDASMultiViewW
     activeMIDASMultiViewWidget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
   }
   return activeMIDASMultiViewWidget;
-}
-
-void QmitkMIDASBaseFunctionality::Activated()
-{
-}
-
-void QmitkMIDASBaseFunctionality::Deactivated()
-{
 }

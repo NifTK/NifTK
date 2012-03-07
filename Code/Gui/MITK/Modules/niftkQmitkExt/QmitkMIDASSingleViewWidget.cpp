@@ -28,7 +28,8 @@
 #include "mitkFocusManager.h"
 #include "mitkGlobalInteraction.h"
 #include "QmitkMIDASSingleViewWidget.h"
-#include "QmitkMIDASRenderWindow.h"
+#include "QmitkRenderWindow.h"
+#include "QmitkMIDASStdMultiWidget.h"
 #include "vtkRenderer.h"
 #include "vtkCamera.h"
 
@@ -36,74 +37,27 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
     QWidget *parent,
     QString windowName,
     int minimumMagnification,
-    int maximumMagnification)
+    int maximumMagnification,
+    mitk::DataStorage* dataStorage
+    )
   : QWidget(parent)
-, m_RenderWindow(NULL)
-, m_RenderWindowFrame(NULL)
-, m_RenderWindowBackground(NULL)
-, m_RenderingManager(NULL)
-, m_SliceNavigationController(NULL)
-, m_TimeNavigationController(NULL)
 , m_DataStorage(NULL)
+, m_RenderingManager(NULL)
+, m_Layout(NULL)
+, m_MultiWidget(NULL)
+, m_IsBound(false)
 , m_UnBoundTimeSlicedGeometry(NULL)
 , m_BoundTimeSlicedGeometry(NULL)
 , m_ActiveTimeSlicedGeometry(NULL)
-, m_Layout(NULL)
-, m_IsBound(false)
-, m_IsSelected(false)
+, m_NavigationControllerEventListening(false)
 {
-  this->setAcceptDrops(true);
+  assert(dataStorage);
+  m_DataStorage = dataStorage;
 
-  m_BackgroundColor = QColor(255, 250, 240);  // that strange MIDAS background color.
-  m_SelectedColor   = QColor(255, 0, 0);
-  m_UnselectedColor = QColor(255, 255, 255);
+  this->setAcceptDrops(true);
 
   m_MinimumMagnification = minimumMagnification;
   m_MaximumMagnification = maximumMagnification;
-
-  // Create our own RenderingManager, so we are NOT using the Global one.
-  m_RenderingManager = mitk::RenderingManager::New();
-  m_RenderingManager->SetConstrainedPaddingZooming(false);
-
-  // Create the main QmitkMIDASRenderWindow, and pass in our OWN RenderingManager.
-  m_RenderWindow = new QmitkMIDASRenderWindow(this, windowName, m_RenderingManager);
-  m_RenderWindow->setAcceptDrops(true);
-
-  // RenderingManager does not create a TimeNavigationController.
-  m_TimeNavigationController = mitk::SliceNavigationController::New("dummy");
-  m_TimeNavigationController->ConnectGeometryTimeEvent(m_RenderWindow->GetSliceNavigationController() , false);
-  m_RenderingManager->SetTimeNavigationController( m_TimeNavigationController );
-  m_RenderWindow->GetSliceNavigationController()->ConnectGeometryTimeEvent(m_TimeNavigationController.GetPointer(), false);
-
-  // Then we need to register the slice navigation controller with our own rendering manager.
-  m_SliceNavigationController = m_RenderWindow->GetSliceNavigationController();
-  m_SliceNavigationController->SetRenderingManager(m_RenderingManager);
-
-  // Register to listen to slice changed commands that come via GlobalInteraction (i.e. mouse scroll).
-  itk::ReceptorMemberCommand<QmitkMIDASSingleViewWidget>::Pointer onSliceChangedCommand =
-    itk::ReceptorMemberCommand<QmitkMIDASSingleViewWidget>::New();
-  onSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASSingleViewWidget::OnSliceChanged );
-  m_SliceSelectorTag = m_SliceNavigationController->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
-
-  // Create frames/backgrounds.
-  m_RenderWindowFrame = mitk::RenderWindowFrame::New();
-  m_RenderWindowFrame->SetRenderWindow(m_RenderWindow->GetRenderWindow());
-  m_RenderWindowFrame->Enable(
-      m_UnselectedColor.redF(),
-      m_UnselectedColor.greenF(),
-      m_UnselectedColor.blueF()
-      );
-
-  m_RenderWindowBackground = mitk::GradientBackground::New();
-  m_RenderWindowBackground->SetRenderWindow(m_RenderWindow->GetRenderWindow());
-  m_RenderWindowBackground->SetGradientColors(
-      m_BackgroundColor.redF(),
-      m_BackgroundColor.greenF(),
-      m_BackgroundColor.blueF(),
-      m_BackgroundColor.redF(),
-      m_BackgroundColor.greenF(),
-      m_BackgroundColor.blueF());
-  m_RenderWindowBackground->Enable();
 
   // We maintain "current slice, current magnification" for both bound and unbound views = 2 of each.
   for (unsigned int i = 0; i < 2; i++)
@@ -111,7 +65,8 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
     m_CurrentSliceNumbers.push_back(0);
     m_CurrentTimeSliceNumbers.push_back(0);
     m_CurrentMagnificationFactors.push_back(minimumMagnification);
-    m_CurrentViewOrientations.push_back(MIDAS_VIEW_UNKNOWN);
+    m_CurrentOrientations.push_back(MIDAS_ORIENTATION_UNKNOWN);
+    m_CurrentViews.push_back(MIDAS_VIEW_UNKNOWN);
   }
 
   // But we have to remember the slice, magnification and orientation for 3 views unbound, then 3 views bound = 6 of each.
@@ -120,129 +75,183 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
     m_PreviousSliceNumbers.push_back(0);
     m_PreviousTimeSliceNumbers.push_back(0);
     m_PreviousMagnificationFactors.push_back(minimumMagnification);
-    m_PreviousViewOrientations.push_back(MIDAS_VIEW_UNKNOWN);
+    m_PreviousOrientations.push_back(MIDAS_ORIENTATION_UNKNOWN);
+    m_PreviousViews.push_back(MIDAS_VIEW_UNKNOWN);
   }
+
+  // Create our own RenderingManager, so we are NOT using the Global one.
+  m_RenderingManager = mitk::RenderingManager::New();
+  m_RenderingManager->SetConstrainedPaddingZooming(false);
+
+  // Create the main QmitkMIDASStdMultiWidget, and pass in our OWN RenderingManager.
+  m_MultiWidget = new QmitkMIDASStdMultiWidget(m_RenderingManager, m_DataStorage, this, NULL);
+  this->SetNavigationControllerEventListening(false);
 
   m_Layout = new QGridLayout(this);
   m_Layout->setObjectName(QString::fromUtf8("QmitkMIDASSingleViewWidget::m_Layout"));
-  m_Layout->addWidget(m_RenderWindow, 0, 0);
+  m_Layout->setContentsMargins(1, 1, 1, 1);
+  m_Layout->setVerticalSpacing(0);
+  m_Layout->setHorizontalSpacing(0);
+  m_Layout->addWidget(m_MultiWidget);
+
+  // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
+  connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  connect(m_MultiWidget, SIGNAL(PositionChanged(mitk::Point3D,mitk::Point3D)), this, SLOT(OnPositionChanged(mitk::Point3D,mitk::Point3D)));
 }
 
 QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
 {
-  if (m_SliceSelectorTag != 0)
-  {
-    m_SliceNavigationController->RemoveObserver(m_SliceSelectorTag);
-  }
 }
 
-void QmitkMIDASSingleViewWidget::SetContentsMargins(unsigned int margin)
+void QmitkMIDASSingleViewWidget::OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
-  m_Layout->setContentsMargins(margin, margin, margin, margin);
+  // Try not to emit the QmitkMIDASStdMultiWidget pointer.
+  emit NodesDropped(window, nodes);
 }
 
-void QmitkMIDASSingleViewWidget::SetSpacing(unsigned int spacing)
+void QmitkMIDASSingleViewWidget::OnPositionChanged(mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation)
 {
-  m_Layout->setSpacing(spacing);
+  emit PositionChanged(this, voxelLocation, millimetreLocation);
+}
+
+bool QmitkMIDASSingleViewWidget::IsSingle2DView() const
+{
+  return m_MultiWidget->IsSingle2DView();
 }
 
 void QmitkMIDASSingleViewWidget::SetSelected(bool selected)
 {
-  m_IsSelected = selected;
-
-  if (selected)
-  {
-    this->m_RenderWindowFrame->Enable(
-        m_SelectedColor.redF(),
-        m_SelectedColor.greenF(),
-        m_SelectedColor.blueF()
-        );
-
-  }
-  else
-  {
-    this->m_RenderWindowFrame->Enable(
-        m_UnselectedColor.redF(),
-        m_UnselectedColor.greenF(),
-        m_UnselectedColor.blueF()
-        );
-  }
+  m_MultiWidget->SetSelected(selected);
 }
 
-void QmitkMIDASSingleViewWidget::SetSelectedColor(QColor color)
+bool QmitkMIDASSingleViewWidget::IsSelected() const
 {
-  this->m_SelectedColor = color;
+  return m_MultiWidget->IsSelected();
 }
 
-QColor QmitkMIDASSingleViewWidget::GetSelectedColor() const
+void QmitkMIDASSingleViewWidget::SetSelectedWindow(vtkRenderWindow* window)
 {
-  return this->m_SelectedColor;
+  m_MultiWidget->SetSelectedWindow(window);
 }
 
-void QmitkMIDASSingleViewWidget::SetUnselectedColor(QColor color)
+std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetSelectedWindows() const
 {
-  this->m_UnselectedColor = color;
+  return m_MultiWidget->GetSelectedWindows();
 }
 
-QColor QmitkMIDASSingleViewWidget::GetUnselectedColor() const
+std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetAllWindows() const
 {
-  return this->m_UnselectedColor;
+  return m_MultiWidget->GetAllWindows();
+}
+
+QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetAxialWindow() const
+{
+  return m_MultiWidget->GetRenderWindow1();
+}
+
+QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetSagittalWindow() const
+{
+  return m_MultiWidget->GetRenderWindow2();
+}
+
+QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetCoronalWindow() const
+{
+  return m_MultiWidget->GetRenderWindow3();
+}
+
+std::vector<vtkRenderWindow*> QmitkMIDASSingleViewWidget::GetAllVtkWindows() const
+{
+  return m_MultiWidget->GetAllVtkWindows();
+}
+
+void QmitkMIDASSingleViewWidget::SetEnabled(bool enabled)
+{
+  m_MultiWidget->SetEnabled(enabled);
+}
+
+bool QmitkMIDASSingleViewWidget::IsEnabled() const
+{
+  return m_MultiWidget->IsEnabled();
+}
+
+void QmitkMIDASSingleViewWidget::SetDisplay3DViewInOrthoView(bool visible)
+{
+  m_MultiWidget->SetDisplay3DViewInOrthoView(visible);
+}
+
+bool QmitkMIDASSingleViewWidget::GetDisplay3DViewInOrthoView() const
+{
+  return m_MultiWidget->GetDisplay3DViewInOrthoView();
+}
+
+void QmitkMIDASSingleViewWidget::SetDisplay2DCursorsLocally(bool visible)
+{
+  m_MultiWidget->SetDisplay2DCursorsLocally(visible);
+}
+
+bool QmitkMIDASSingleViewWidget::GetDisplay2DCursorsLocally() const
+{
+  return m_MultiWidget->GetDisplay2DCursorsLocally();
+}
+
+void QmitkMIDASSingleViewWidget::SetDisplay2DCursorsGlobally(bool visible)
+{
+  m_MultiWidget->SetDisplay2DCursorsGlobally(visible);
+}
+
+bool QmitkMIDASSingleViewWidget::GetDisplay2DCursorsGlobally() const
+{
+  return m_MultiWidget->GetDisplay2DCursorsGlobally();
 }
 
 void QmitkMIDASSingleViewWidget::SetBackgroundColor(QColor color)
 {
-  this->m_BackgroundColor = color;
-
-  m_RenderWindowBackground->SetGradientColors(
-      m_BackgroundColor.redF(),
-      m_BackgroundColor.greenF(),
-      m_BackgroundColor.blueF(),
-      m_BackgroundColor.redF(),
-      m_BackgroundColor.greenF(),
-      m_BackgroundColor.blueF());
+  m_MultiWidget->SetBackgroundColor(color);
 }
 
 QColor QmitkMIDASSingleViewWidget::GetBackgroundColor() const
 {
-  return this->m_BackgroundColor;
+  return m_MultiWidget->GetBackgroundColor();
 }
 
-unsigned int QmitkMIDASSingleViewWidget::GetMinSlice() const
+unsigned int QmitkMIDASSingleViewWidget::GetMinSlice(MIDASOrientation orientation) const
 {
-  return 0;
+  return m_MultiWidget->GetMinSlice(orientation);
 }
 
-unsigned int QmitkMIDASSingleViewWidget::GetMaxSlice() const
+unsigned int QmitkMIDASSingleViewWidget::GetMaxSlice(MIDASOrientation orientation) const
 {
-  unsigned int result = 0;
-  if (this->m_SliceNavigationController->GetSlice() != NULL)
-  {
-    // It's an unsigned int, so take care not to underflow it.
-    if (this->m_SliceNavigationController->GetSlice()->GetSteps() >= 1)
-    {
-      result = this->m_SliceNavigationController->GetSlice()->GetSteps() -1;
-    }
-  }
-  return result;
+  return m_MultiWidget->GetMaxSlice(orientation);
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetMinTime() const
 {
-  return 0;
+  return m_MultiWidget->GetMinTime();
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetMaxTime() const
 {
-  unsigned int result = 0;
-  if (this->m_SliceNavigationController->GetTime() != NULL)
-  {
-    // It's an unsigned int, so take care not to underflow it.
-    if (this->m_SliceNavigationController->GetTime()->GetSteps() >= 1)
-    {
-      result = this->m_SliceNavigationController->GetTime()->GetSteps() -1;
-    }
-  }
-  return result;
+  return m_MultiWidget->GetMaxTime();
+}
+
+bool QmitkMIDASSingleViewWidget::ContainsWindow(QmitkRenderWindow *window) const
+{
+  return m_MultiWidget->ContainsWindow(window);
+}
+
+bool QmitkMIDASSingleViewWidget::ContainsVtkRenderWindow(vtkRenderWindow *window) const
+{
+  return m_MultiWidget->ContainsVtkRenderWindow(window);
+}
+
+MIDASOrientation QmitkMIDASSingleViewWidget::GetOrientation()
+{
+  return m_MultiWidget->GetOrientation();
+}
+
+void QmitkMIDASSingleViewWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+{
+  m_MultiWidget->SetRendererSpecificVisibility(nodes, visible);
 }
 
 int QmitkMIDASSingleViewWidget::GetMinMagnification() const
@@ -255,7 +264,7 @@ int QmitkMIDASSingleViewWidget::GetMaxMagnification() const
   return this->m_MaximumMagnification;
 }
 
-mitk::DataStorage::Pointer QmitkMIDASSingleViewWidget::GetDataStorage(mitk::DataStorage* dataStorage)
+mitk::DataStorage::Pointer QmitkMIDASSingleViewWidget::GetDataStorage() const
 {
   return this->m_DataStorage;
 }
@@ -263,56 +272,32 @@ mitk::DataStorage::Pointer QmitkMIDASSingleViewWidget::GetDataStorage(mitk::Data
 void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   this->m_DataStorage = dataStorage;
-  m_RenderingManager->SetDataStorage(dataStorage);
-  m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
+  this->m_RenderingManager->SetDataStorage(dataStorage);
+  this->m_MultiWidget->SetDataStorage(dataStorage);
 }
 
-QmitkMIDASRenderWindow* QmitkMIDASSingleViewWidget::GetRenderWindow() const
+void QmitkMIDASSingleViewWidget::SetNavigationControllerEventListening(bool enabled)
 {
-  return this->m_RenderWindow;
-}
+  this->m_NavigationControllerEventListening = enabled;
 
-bool QmitkMIDASSingleViewWidget::ContainsWindow(QmitkMIDASRenderWindow *window) const
-{
-  bool containsWindow = false;
-  if (m_RenderWindow == window)
+  if (enabled)
   {
-    containsWindow = true;
+    this->m_MultiWidget->EnableNavigationControllerEventListening();
   }
-  return containsWindow;
-}
-
-bool QmitkMIDASSingleViewWidget::ContainsVtkRenderWindow(vtkRenderWindow *window) const
-{
-  bool containsWindow = false;
-  if (m_RenderWindow->GetVtkRenderWindow() == window)
+  else
   {
-    containsWindow = true;
+    this->m_MultiWidget->DisableNavigationControllerEventListening();
   }
-  return containsWindow;
 }
 
-void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent* event)
+bool QmitkMIDASSingleViewWidget::GetNavigationControllerEventListening() const
 {
-  this->RequestUpdate();
+  return m_NavigationControllerEventListening;
 }
 
 void QmitkMIDASSingleViewWidget::RequestUpdate()
 {
-  if (this->isVisible())
-  {
-    vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
-    this->m_RenderingManager->RequestUpdate(vtkWindow);
-  }
-}
-
-void QmitkMIDASSingleViewWidget::ForceUpdate()
-{
-  if (this->isVisible())
-  {
-    vtkRenderWindow* vtkWindow = m_RenderWindow->GetVtkRenderWindow();
-    this->m_RenderingManager->ForceImmediateUpdate(vtkWindow);
-  }
+  m_MultiWidget->RequestUpdate();
 }
 
 unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundOffset() const
@@ -342,48 +327,35 @@ unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundPreviousArrayOffset() co
   }
 }
 
-void QmitkMIDASSingleViewWidget::OnSliceChanged(const itk::EventObject & geometrySliceEvent)
+void QmitkMIDASSingleViewWidget::StorePosition()
 {
-  unsigned int currentNavigatorSliceNumber = this->m_SliceNavigationController->GetSlice()->GetPos();
-  unsigned int currentWidgetSliceNumber = this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()];
+  unsigned int currentArrayOffset = this->GetBoundUnboundOffset();
+  unsigned int previousArrayOffset = this->GetBoundUnboundPreviousArrayOffset();
 
-  if (currentNavigatorSliceNumber != currentWidgetSliceNumber)
+  MIDASView view = m_CurrentViews[currentArrayOffset];
+  MIDASOrientation orientation = m_CurrentOrientations[currentArrayOffset];
+
+  int sliceNumber = m_CurrentSliceNumbers[currentArrayOffset];
+  int timeSliceNumber = m_CurrentTimeSliceNumbers[currentArrayOffset];
+  int magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
+
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    if (!m_IsSelected)
-    {
-      // Revert back to what this widget thinks is the correct slice number.
-      this->m_SliceNavigationController->GetSlice()->SetPos(currentWidgetSliceNumber);
-    }
-    else
-    {
-      this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = currentNavigatorSliceNumber;
-      emit SliceChanged(m_RenderWindow, currentNavigatorSliceNumber);
-    }
+    // Dodgy style: orientation is an enum, being used as an array index.
+
+    m_PreviousSliceNumbers[previousArrayOffset + orientation] = sliceNumber;
+    m_PreviousTimeSliceNumbers[previousArrayOffset + orientation] = timeSliceNumber;
+    m_PreviousMagnificationFactors[previousArrayOffset + orientation] = magnificationFactor;
+    m_PreviousOrientations[previousArrayOffset + orientation] = orientation;
+    m_PreviousViews[previousArrayOffset + orientation] = view;
+
+    MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
+        << ", current orientation=" << orientation \
+        << ", view=" << view \
+        << ", so storing slice=" << sliceNumber \
+        << ", time=" << timeSliceNumber \
+        << ", magnification=" << magnificationFactor << std::endl;
   }
-}
-
-void QmitkMIDASSingleViewWidget::SetSliceNumber(unsigned int sliceNumber)
-{
-  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
-  this->m_SliceNavigationController->GetSlice()->SetPos(sliceNumber);
-  this->RequestUpdate();
-}
-
-unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber() const
-{
-  return this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()];
-}
-
-void QmitkMIDASSingleViewWidget::SetTime(unsigned int timeSliceNumber)
-{
-  this->m_SliceNavigationController->GetTime()->SetPos(timeSliceNumber);
-  this->m_CurrentTimeSliceNumbers[this->GetBoundUnboundOffset()] = timeSliceNumber;
-  this->RequestUpdate();
-}
-
-unsigned int QmitkMIDASSingleViewWidget::GetTime() const
-{
-  return this->m_CurrentTimeSliceNumbers[this->GetBoundUnboundOffset()];
 }
 
 void QmitkMIDASSingleViewWidget::ResetCurrentPosition(unsigned int currentIndex)
@@ -394,13 +366,14 @@ void QmitkMIDASSingleViewWidget::ResetCurrentPosition(unsigned int currentIndex)
   m_CurrentSliceNumbers[currentIndex] = 0;
   m_CurrentTimeSliceNumbers[currentIndex] = 0;
   m_CurrentMagnificationFactors[currentIndex] = this->m_MinimumMagnification;
-  m_CurrentViewOrientations[currentIndex] = MIDAS_VIEW_UNKNOWN;
+  m_CurrentOrientations[currentIndex] = MIDAS_ORIENTATION_UNKNOWN;
+  m_CurrentViews[currentIndex] = MIDAS_VIEW_UNKNOWN;
 }
 
 void QmitkMIDASSingleViewWidget::ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex)
 {
   // NOTE: The positions array is off length 6, corresponding to
-  // Unbound (axial, sagittal, coronal), bound (axial, sagittal, coronal).
+  // Unbound (axial, sagittal, coronal), Bound (axial, sagittal, coronal).
 
   assert(startIndex >= 0);
   assert(stopIndex >= 0);
@@ -413,40 +386,16 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions(unsigned int startInde
     m_PreviousSliceNumbers[i] = 0;
     m_PreviousTimeSliceNumbers[i] = 0;
     m_PreviousMagnificationFactors[i] = this->m_MinimumMagnification;
-    m_PreviousViewOrientations[i] = MIDAS_VIEW_UNKNOWN;
-  }
-}
-
-void QmitkMIDASSingleViewWidget::StorePosition()
-{
-  unsigned int currentArrayOffset = this->GetBoundUnboundOffset();
-  unsigned int previousArrayOffset = this->GetBoundUnboundPreviousArrayOffset();
-
-  MIDASViewOrientation orientation = m_CurrentViewOrientations[currentArrayOffset];
-  int sliceNumber = m_CurrentSliceNumbers[currentArrayOffset];
-  int timeSliceNumber = m_CurrentTimeSliceNumbers[currentArrayOffset];
-  int magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
-
-  if (orientation != MIDAS_VIEW_UNKNOWN)
-  {
-    // Dodgy style: orientation is an enum, being used as an array index.
-
-    m_PreviousSliceNumbers[previousArrayOffset + orientation] = sliceNumber;
-    m_PreviousTimeSliceNumbers[previousArrayOffset + orientation] = timeSliceNumber;
-    m_PreviousMagnificationFactors[previousArrayOffset + orientation] = magnificationFactor;
-    m_PreviousViewOrientations[previousArrayOffset + orientation] = orientation;
-
-    MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation is bound=" << m_IsBound \
-        << ", current orientation=" << orientation \
-        << ", so storing slice=" << sliceNumber \
-        << ", time=" << timeSliceNumber \
-        << ", magnification=" << magnificationFactor << std::endl;
+    m_PreviousOrientations[i] = MIDAS_ORIENTATION_UNKNOWN;
+    m_PreviousViews[i] = MIDAS_VIEW_UNKNOWN;
   }
 }
 
 void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
 {
+  assert(geometry);
   this->m_UnBoundTimeSlicedGeometry = geometry;
+
   if (!this->m_IsBound)
   {
     this->ResetRememberedPositions(0, 2);
@@ -462,7 +411,9 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
 
 void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
 {
+  assert(geometry);
   this->m_BoundTimeSlicedGeometry = geometry;
+
   if (this->m_IsBound)
   {
     this->ResetRememberedPositions(3, 5);
@@ -484,11 +435,12 @@ void QmitkMIDASSingleViewWidget::SetBound(bool isBound)
   }
 
   this->m_IsBound = isBound;
-  MIDASViewOrientation orientation = this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()]; // must come after this->m_IsBound = isBound so we pick up the orientation before views were bound
-  this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()] = MIDAS_VIEW_UNKNOWN; // to force a reset.
+
+  MIDASView view = this->m_CurrentViews[this->GetBoundUnboundOffset()]; // must come after this->m_IsBound = isBound so we pick up the orientation before views were bound
+  this->m_CurrentViews[this->GetBoundUnboundOffset()] = MIDAS_VIEW_UNKNOWN; // to force a reset.
 
   this->SetActiveGeometry();
-  this->SetViewOrientation(orientation, false);
+  this->SetView(view, false);
 }
 
 void QmitkMIDASSingleViewWidget::SetActiveGeometry()
@@ -503,19 +455,37 @@ void QmitkMIDASSingleViewWidget::SetActiveGeometry()
   }
 }
 
-QmitkMIDASSingleViewWidget::MIDASViewOrientation QmitkMIDASSingleViewWidget::GetViewOrientation() const
+unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber(MIDASOrientation orientation) const
 {
-  return this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()];
+  return this->m_MultiWidget->GetSliceNumber(orientation);
 }
 
-void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orientation, bool fitToDisplay)
+void QmitkMIDASSingleViewWidget::SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber)
 {
-  if (orientation != MIDAS_VIEW_UNKNOWN)
-  {
-    assert(this->m_SliceNavigationController);
+  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
+  this->m_MultiWidget->SetSliceNumber(orientation, sliceNumber);
+}
 
-    mitk::BaseRenderer::Pointer baseRenderer = this->m_SliceNavigationController->GetRenderer();
-    assert(baseRenderer);
+unsigned int QmitkMIDASSingleViewWidget::GetTime() const
+{
+  return this->m_MultiWidget->GetTime();
+}
+
+void QmitkMIDASSingleViewWidget::SetTime(unsigned int timeSliceNumber)
+{
+  this->m_CurrentTimeSliceNumbers[this->GetBoundUnboundOffset()] = timeSliceNumber;
+  this->m_MultiWidget->SetTime(timeSliceNumber);
+}
+
+MIDASView QmitkMIDASSingleViewWidget::GetView() const
+{
+  return this->m_CurrentViews[this->GetBoundUnboundOffset()];
+}
+
+void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
+{
+  if (view != MIDAS_VIEW_UNKNOWN)
+  {
 
     // Makes sure that we do have an active active geometry.
     this->SetActiveGeometry();
@@ -537,6 +507,8 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     // In other words, it is determined by the transformed bounding box of the image geometry.
     //
     // Thirdly, it must be an image geometry.
+    //
+    // Fourthly, this is all a workaround due to the fact that MITK doesn't properly support rotated views.
 
     mitk::Point3D transformedOrigin;
     mitk::Point3D cornerPointsInImage[8];
@@ -601,7 +573,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
 
     mitk::TimeSlicedGeometry::Pointer timeSlicedTransformedGeometry = mitk::TimeSlicedGeometry::New();
     timeSlicedTransformedGeometry->InitializeEmpty(this->m_ActiveTimeSlicedGeometry->GetTimeSteps());
-    timeSlicedTransformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
+    //timeSlicedTransformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
     timeSlicedTransformedGeometry->SetTimeBounds(this->m_ActiveTimeSlicedGeometry->GetTimeBounds());
     timeSlicedTransformedGeometry->SetEvenlyTimed(this->m_ActiveTimeSlicedGeometry->GetEvenlyTimed());
     timeSlicedTransformedGeometry->SetSpacing(transformedSpacing);
@@ -611,7 +583,7 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     for (unsigned int i = 0; i < this->m_ActiveTimeSlicedGeometry->GetTimeSteps(); i++)
     {
       mitk::Geometry3D::Pointer transformedGeometry = mitk::Geometry3D::New();
-      transformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
+      //transformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
       transformedGeometry->SetSpacing(transformedSpacing);
       transformedGeometry->SetOrigin(transformedOrigin);
       transformedGeometry->SetBounds(transformedBoundingBox);
@@ -626,12 +598,10 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
     MITK_DEBUG << "Matt, transformedBoundingBox=" << transformedBoundingBox << std::endl;
     MITK_DEBUG << "Matt, timeBounds=" << this->m_ActiveTimeSlicedGeometry->GetTimeBounds() << std::endl;
 
-    baseRenderer->SetWorldGeometry(timeSlicedTransformedGeometry);
-    m_SliceNavigationController->SetInputWorldGeometry(timeSlicedTransformedGeometry);
-
-    // Set the view to the new orientation
-    this->m_CurrentViewOrientations[this->GetBoundUnboundOffset()] = orientation;
-
+    this->m_CurrentViews[this->GetBoundUnboundOffset()] = view;
+    this->m_MultiWidget->SetMIDASView(view, timeSlicedTransformedGeometry);
+    this->m_MultiWidget->Fit();
+/*
     mitk::SliceNavigationController::ViewDirection direction = mitk::SliceNavigationController::Original;
     if (orientation == MIDAS_VIEW_AXIAL)
     {
@@ -765,11 +735,18 @@ void QmitkMIDASSingleViewWidget::SetViewOrientation(MIDASViewOrientation orienta
 
       MITK_DEBUG << "QmitkMIDASSingleViewWidget::SetViewOrientation using previous settings, slice=" << slice << ", time=" << time << ", magnification=" << magnification << std::endl;
     }
+    */
   }
 }
 
-void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
+int QmitkMIDASSingleViewWidget::GetMagnificationFactor(MIDASOrientation orientation) const
 {
+  return this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()];
+}
+
+void QmitkMIDASSingleViewWidget::SetMagnificationFactor(MIDASOrientation orientation, int magnificationFactor)
+{
+  /*
   MITK_DEBUG << "Matt, requested magnificationFactor=" << magnificationFactor << std::endl;
 
   mitk::Point2D scaleFactorPixPerVoxel;
@@ -821,15 +798,12 @@ void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
   this->ZoomDisplayAboutCentre(zoomScaleFactor);
   this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()] = magnificationFactor;
   this->RequestUpdate();
-}
-
-int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
-{
-  return this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()];
+  */
 }
 
 void QmitkMIDASSingleViewWidget::ZoomDisplayAboutCentre(double scaleFactor)
 {
+  /*
   assert(this->m_SliceNavigationController);
 
   mitk::BaseRenderer::Pointer baseRenderer = this->m_SliceNavigationController->GetRenderer();
@@ -846,10 +820,12 @@ void QmitkMIDASSingleViewWidget::ZoomDisplayAboutCentre(double scaleFactor)
 
   displayGeometry->Zoom(scaleFactor, centreOfDisplayInDisplayUnits);
   this->RequestUpdate();
+  */
 }
 
 void QmitkMIDASSingleViewWidget::GetScaleFactors(mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres)
 {
+  /*
   this->SetActiveGeometry();
 
   assert(this->m_SliceNavigationController);
@@ -947,5 +923,6 @@ void QmitkMIDASSingleViewWidget::GetScaleFactors(mitk::Point2D &scaleFactorPixPe
     }
   }
   MITK_DEBUG << "Matt, output = scaleFactorPixPerVoxel=" << scaleFactorPixPerVoxel << ", scaleFactorPixPerMillimetres=" << scaleFactorPixPerMillimetres << std::endl;
+  */
 }
 

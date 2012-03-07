@@ -26,6 +26,7 @@
 
 #include <QMessageBox>
 
+#include "berryIWorkbenchPage.h"
 #include "mitkImageAccessByItk.h"
 #include "mitkITKImageImport.h"
 #include "mitkRenderingManager.h"
@@ -39,6 +40,7 @@
 #include "itkImageFileWriter.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkConversionUtils.h"
+#include "QmitkMIDASMultiViewWidget.h"
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 const std::string MIDASMorphologicalSegmentorView::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED = "midas.morph.finished";
@@ -53,6 +55,8 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 , m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_PaintbrushToolId(-1)
+, m_MITKWidget(NULL)
+, m_MIDASWidget(NULL)
 {
 }
 
@@ -103,7 +107,18 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
     mitk::ToolManager* toolManager = this->GetToolManager();
     m_PaintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
 
+    // Needs re-working, we have to lookup the QmitkStdMultiWidget, as we are
+    // relying on the interactors in that class, as all the interactors in the QmitkMIDASMultiViewWidget are off.
+
+    m_MITKWidget = this->GetActiveStdMultiWidget();
+    assert(m_MITKWidget);
+
+    m_MIDASWidget = this->GetActiveMIDASMultiViewWidget();
+    assert(m_MIDASWidget);
+
+    // Finally create connections.
     this->CreateConnections();
+
   }
 }
 
@@ -123,6 +138,28 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
     connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), this, SLOT(OnOKButtonClicked()));
     connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
     connect(m_MorphologicalControls, SIGNAL(ClearButtonClicked()), this, SLOT(OnClearButtonClicked()));
+  }
+}
+
+void MIDASMorphologicalSegmentorView::Activated()
+{
+  m_MIDASWidget->SetMIDASSegmentationMode(true);
+
+  m_Show2DCursors = m_MIDASWidget->GetShow2DCursors();
+  m_MIDASWidget->SetShow2DCursors(false);
+}
+
+void MIDASMorphologicalSegmentorView::Deactivated()
+{
+  m_MIDASWidget->SetShow2DCursors(m_Show2DCursors);
+}
+
+void MIDASMorphologicalSegmentorView::ClosePart()
+{
+  mitk::DataNode* segmentationNode = this->GetSegmentationNodeUsingToolManager();
+  if (segmentationNode != NULL)
+  {
+    this->OnCancelButtonClicked();
   }
 }
 
@@ -465,7 +502,7 @@ void MIDASMorphologicalSegmentorView::NodeChanged(const mitk::DataNode* node)
       if (workingDataNode.GetPointer() == node)
       {
         mitk::ITKRegionParametersDataNodeProperty::Pointer prop = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(workingDataNode->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
-        if (prop.IsNotNull() && prop->IsValid())
+        if (prop.IsNotNull() && prop->HasVolume())
         {
           this->UpdateSegmentation();
         }
@@ -545,7 +582,19 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
 
 void MIDASMorphologicalSegmentorView::OnToolSelected(int toolID)
 {
-  std::cerr << "Matt MIDASMorphologicalSegmentorView::OnToolSelected(" << toolID << ")" << std::endl;
+
+  if (this->m_MorphologicalControls->GetTabNumber() > 0
+      && this->m_MorphologicalControls->GetTabNumber() < 3)
+  {
+    if (toolID >= 0)
+    {
+      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
+    }
+    else
+    {
+      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+    }
+  }
 }
 
 void MIDASMorphologicalSegmentorView::UpdateSegmentation()
@@ -618,10 +667,11 @@ void MIDASMorphologicalSegmentorView::UpdateSegmentation()
 
           outputImage->Modified();
           parent->Modified();
+
           mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+          m_MIDASWidget->RequestUpdateAll();
         }
       }
-
     }
   }
 }
@@ -962,6 +1012,7 @@ void MIDASMorphologicalSegmentorView::OnClearButtonClicked()
   this->SetControlsByParameterValues();
   this->UpdateSegmentation();
   this->FireNodeSelected(this->GetSegmentationNodeUsingToolManager());
+  this->OnToolSelected(-1);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
@@ -969,6 +1020,7 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
 {
   this->FinalizeSegmentation();
   this->SetReferenceImageSelected();
+  this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
@@ -986,6 +1038,7 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
   this->RemoveWorkingData();
   this->GetDefaultDataStorage()->Remove(segmentationNode);
   this->SetReferenceImageSelected();
+  this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);

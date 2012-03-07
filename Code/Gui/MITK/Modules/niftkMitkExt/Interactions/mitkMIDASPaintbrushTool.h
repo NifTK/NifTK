@@ -168,9 +168,6 @@ private:
   // Pointer to interface object, used as callback in Undo/Redo framework
   MIDASPaintbrushToolEventInterface *m_Interface;
 
-  // Used between MouseDown and MouseMoved events to track movement.
-  mitk::Point3D m_MostRecentPointInMillimetres;
-
   // Cursor size for editing, and cursor type is currently always a cross.
   int m_CursorSize;
 
@@ -179,6 +176,10 @@ private:
 
   // This points to the current working image, assuming that we are only ever processing, left, middle or right mouse button at any one time.
   mitk::Image* m_WorkingImage;
+
+  // Used between MouseDown and MouseMoved events to track movement.
+  mitk::Point3D m_MostRecentPointInMillimetres;
+  unsigned long int m_NumberOfVoxelsPainted;
 
 };//class
 

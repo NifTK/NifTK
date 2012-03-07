@@ -4,8 +4,8 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   MIDASNavigationViewActivator.cpp
-  MIDASNavigationView.cpp
   MIDASNavigationViewControlsImpl.cpp
+  MIDASNavigationView.cpp
 )
 
 set(UI_FILES
@@ -14,8 +14,8 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/MIDASNavigationViewActivator.h
-  src/internal/MIDASNavigationView.h
   src/internal/MIDASNavigationViewControlsImpl.h
+  src/internal/MIDASNavigationView.h
 )
 
 # list of resource files which can be used by the plug-in

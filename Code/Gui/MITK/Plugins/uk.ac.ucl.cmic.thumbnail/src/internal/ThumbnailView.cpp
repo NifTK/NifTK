@@ -30,7 +30,7 @@
 #include "mitkDataStorage.h"
 #include "QmitkThumbnailViewPreferencePage.h"
 
-const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnailview";
+const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
 ThumbnailView::ThumbnailView()
 : m_Controls(NULL)
@@ -47,12 +47,19 @@ ThumbnailView::~ThumbnailView()
   }
 }
 
+std::string ThumbnailView::GetViewID() const
+{
+  return VIEW_ID;
+}
+
 void ThumbnailView::CreateQtPartControl( QWidget *parent )
 {
   if (!m_Controls)
   {
     m_Controls = new Ui::ThumbnailViewControls();
     m_Controls->setupUi(parent);
+
+    QmitkMIDASBaseFunctionality::CreateQtPartControl(parent);
 
     RetrievePreferenceValues();
 
@@ -94,16 +101,30 @@ void ThumbnailView::RetrievePreferenceValues()
   QString boxColorName = QString::fromStdString (prefs->GetByteArray(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR, ""));
   QColor boxColor(boxColorName);
 
+  mitk::Color colour;
+  if (boxColorName=="") // default values
+  {
+    colour[0] = 1;
+    colour[1] = 0;
+    colour[2] = 0;
+  }
+  else
+  {
+    colour[0] = boxColor.red() / 255.0;
+    colour[1] = boxColor.green() / 255.0;
+    colour[2] = boxColor.blue() / 255.0;
+  }
+
   MITK_DEBUG << "ThumbnailView::RetrievePreferenceValues" \
       " , thickness=" << thickness \
       << ", layer=" << layer \
       << ", opacity=" << opacity \
       << ", colourName=" << boxColorName.toLocal8Bit().constData() \
-      << ", colour=" << boxColor.red() << ", " << boxColor.green() << ", " << boxColor.blue() \
+      << ", colour=" << colour \
       << std::endl;
 
-  m_Controls->m_RenderWindow->setBoundingBoxColor(boxColor);
+  m_Controls->m_RenderWindow->setBoundingBoxColor(colour[0], colour[1], colour[2]);
   m_Controls->m_RenderWindow->setBoundingBoxLineThickness(thickness);
   m_Controls->m_RenderWindow->setBoundingBoxOpacity(opacity);
-  m_Controls->m_RenderWindow->setBoundingBoxLayer(opacity);
+  m_Controls->m_RenderWindow->setBoundingBoxLayer(layer);
 }

@@ -29,8 +29,14 @@
 
 #include <QWidget>
 #include <QEvent>
+#include "mitkBaseProperty.h"
 #include "mitkMIDASKeyPressStateMachine.h"
+#include "QmitkMIDASViewEnums.h"
+#include "QmitkMIDASSingleViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
+#include "QmitkMIDASOrientationWidget.h"
+#include "QmitkMIDASSlidersWidget.h"
+#include "UpdateMIDASViewingControlsInfo.h"
 
 class QSpinBox;
 class QGridLayout;
@@ -41,55 +47,25 @@ class QSpacerItem;
 class QLabel;
 class QRadioButton;
 class QCheckBox;
-class QmitkMIDASSingleViewWidget;
-class QmitkMIDASRenderWindow;
 class QStackedLayout;
-
-/**
- * \class UpdateMIDASViewingControlsInfo
- * \brief Basically a struct with a constructor simply to pass the current slice,
- * magnification and orientation information to QmitkMIDASMultiViewEditor.
- */
-class UpdateMIDASViewingControlsInfo
-{
-public:
-
-  // current values
-  int currentTime;
-  int currentSlice;
-  int currentMagnification;
-  bool isAxial;
-  bool isSagittal;
-  bool isCoronal;
-
-  // the ranges (so sliders have the correct range).
-  int minTime;
-  int maxTime;
-  int minSlice;
-  int maxSlice;
-  int minMagnification;
-  int maxMagnification;
-
-  UpdateMIDASViewingControlsInfo()
-  : currentTime(0)
-  , currentSlice(0)
-  , currentMagnification(0)
-  , isAxial(false)
-  , isSagittal(false)
-  , isCoronal(false)
-  , minTime(0)
-  , maxTime(0)
-  , minSlice(0)
-  , maxSlice(0)
-  , minMagnification(0)
-  , maxMagnification(0)
-  {
-  }
-};
+class QmitkRenderWindow;
 
 /**
  * \class QmitkMIDASMultiViewWidget
  * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image viewing panes, arranged as rows and columns.
+ *
+ * This is a large, composite widget, containing a central area that can be used to view images, controls around it,
+ * and the necessary management logic to manage this view.  This widget is used as the main editor widget of the
+ * QmitkMIDASMultiViewEditor.
+ *
+ * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2) image panes, each showing a single
+ * 2D image slice.  This class contains m_MaxRows x m_MaxCols QmitkMIDASSingleViewWidget which itself wraps
+ * a QmitkMIDASStdMultiViewWidget, meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
+ * including the option for 3D views, which current MIDAS does not have.
+ *
+ *
+ *
+ *
  */
 class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASKeyPressResponder
 {
@@ -97,9 +73,10 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mi
 
 public:
 
-  /// \brief Constructor which builds up the controls and layout, and sets the selected window to zero, the default drop type to QmitkMIDASMultiViewVisibilityManager::MIDAS_DROP_TYPE_SINGLE, and sets the number of rows and columns to those specified in the parameter list.
+  /// \brief Constructor which builds up the controls and layout, and sets the selected window to zero, the default drop type to MIDAS_DROP_TYPE_SINGLE, and sets the number of rows and columns to those specified in the parameter list.
   QmitkMIDASMultiViewWidget(
       QmitkMIDASMultiViewVisibilityManager* visibilityManager,
+      mitk::DataStorage::Pointer dataStorage,
       int defaultNumberOfRows,
       int defaultNumberOfColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
@@ -107,14 +84,38 @@ public:
   /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically, and we don't create or own the QmitkMIDASMultiViewVisibilityManager, so the remaining thing to do is to disconnect from the mitk::FocusManager.
   virtual ~QmitkMIDASMultiViewWidget();
 
+  /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
+  void RequestUpdateAll();
+
   /// \brief Set the background colour on all contained widgets.
   void SetBackgroundColour(mitk::Color colour);
 
   /// \brief Sets the default interpolation type, which only takes effect when a node is next dropped into a given window.
-  void SetDefaultInterpolationType(QmitkMIDASMultiViewVisibilityManager::MIDASDefaultInterpolationType interpolationType);
+  void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
 
-  /// \brief Sets the default orientation, which only takes effect when a node is next dropped into a given window.
-  void SetDefaultOrientationType(QmitkMIDASMultiViewVisibilityManager::MIDASDefaultOrientationType interpolationType);
+  /// \brief Sets the default view, which only takes effect when a node is next dropped into a given window.
+  void SetDefaultViewType(MIDASView view);
+
+  /// \brief Sets the default drop type checkbox.
+  void SetDropTypeWidget(MIDASDropType dropType);
+
+  /// \brief Sets the visibility flag on the drop type checkboxes.
+  void SetShowDropTypeWidgets(bool visible);
+
+  /// \brief Sets the visibility flag on the layout buttons.
+  void SetShowLayoutButtons(bool visible);
+
+  /// \brief Sets the flag controlling the visibility of 2D cursors.
+  void SetShow2DCursors(bool visibile);
+
+  /// \brief Returns the flag indicating whether we show 2D cursors.
+  bool GetShow2DCursors() const;
+
+  /// \brief Sets the visibility flag controlling whether we see 3D view in ortho view.
+  void SetShow3DViewInOrthoView(bool visible);
+
+  /// \brief Sets the visibility flag controlling the Magnification Slider.
+  void SetShowMagnificationSlider(bool visible);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes time step.
   void SetSelectedTimeStep(int timeStep);
@@ -134,41 +135,48 @@ public:
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches sagittal.
   void SetSelectedWindowToCoronal();
 
-  /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
-  void RequestUpdateAll();
-
-  /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
-  void ForceUpdateAll();
-
   /// \brief Move anterior a slice.
-  virtual bool MoveAnterior();
+  bool MoveAnterior();
 
   /// \brief Move posterior a slice.
-  virtual bool MovePosterior();
+  bool MovePosterior();
 
   /// \brief Switch to Axial.
-  virtual bool SwitchToAxial();
+  bool SwitchToAxial();
 
   /// \brief Switch to Sagittal.
-  virtual bool SwitchToSagittal();
+  bool SwitchToSagittal();
 
   /// \brief Switch to Coronal.
-  virtual bool SwitchToCoronal();
+  bool SwitchToCoronal();
 
-public slots:
+  /// \brief Sets whether the interaction is enabled. When false, the slice, camera position, magnification cannot be changed (e.g. for when editing).
+  /// \brief Sets this widget to MIDAS Segmentation Mode, which means a single viewer.
+  void SetMIDASSegmentationMode(bool enabled);
+
+  /// \brief Gets the flag indicating whether this widget is currently in MIDAS Segmentation Mode, which means a single viewer.
+  bool GetMIDASSegmentationMode() const;
+
+  /// \brief Sets this widget to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
+  void SetThumbnailMode(bool enabled);
+
+  /// \brief Gets the flag indicating whether this widget is currently in thumnail mode.
+  bool GetThumbnailMode() const;
 
 signals:
 
   /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
   void UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info);
 
-protected:
-
-    // overloaded paint handler
-    virtual void paintEvent(QPaintEvent* event);
+public slots:
 
 protected slots:
 
+  // Qt slots, connected to Qt GUI elements.
+  void OnSliceNumberChanged(int previousSlice, int currentSlice);
+  void OnMagnificationFactorChanged(int previousMagnification, int currentMagnification);
+  void OnTimeChanged(int previousTime, int currentTime);
+  void OnOrientationSelected(bool toggled);
   void On1x1ButtonPressed();
   void On1x2ButtonPressed();
   void On2x1ButtonPressed();
@@ -184,44 +192,93 @@ protected slots:
   void OnDropMultipleRadioButtonToggled(bool);
   void OnDropThumbnailRadioButtonToggled(bool);
   void OnBindWindowsCheckboxClicked(bool);
+  void OnLinkWindowsCheckboxClicked(bool);
 
-  /// \brief When nodes are dropped on one of the contained 25 QmitkMIDASRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(QmitkMIDASRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
+  void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief We connect QmitkMIDASSingleViewWidgets to this so that this class can publish the slice number change to the Event Bus.
-  void OnSliceChanged(QmitkMIDASRenderWindow *window, unsigned int sliceNumber);
+  /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
+  void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
 
 private:
 
   static const unsigned int m_MaxRows = 5;
   static const unsigned int m_MaxCols = 5;
 
-  // Callback method that gets called by the mitk::FocusManager and is responsible for signalling the slice number, magnification, orientation.
+  // Called from the QRadioButtons to set the view.
+  void SwitchView(MIDASView view);
+
+  // Callback method that gets called by the mitk::FocusManager to indicate the currently focussed window.
   void OnFocusChanged();
 
-  // Internal method that takes the currently selected window, and broadcasts the current slice, mangification and orientation information.
-  void PublishNavigationSettings();
-
+  /// \brief Gets the row number, given a viewer index [0, m_MaxRows*m_MaxCols-1]
   unsigned int GetRowFromIndex(unsigned int i);
+
+  /// \brief Gets the column number, given a viewer index [0, m_MaxRows*m_MaxCols-1]
   unsigned int GetColumnFromIndex(unsigned int i);
+
+  /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
   unsigned int GetIndexFromRowAndColumn(unsigned int r, unsigned int c);
 
-  void SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode);
-  void SetSelectedWindow(unsigned int i);
-  void EnableWidgetsForThumbnailMode(bool isThumbnailMode);
-  void GetStartStopIndexForIteration(unsigned int &start, unsigned int &stop);
-  void SetWindowsToOrientation(QmitkMIDASSingleViewWidget::MIDASViewOrientation orientation);
+  /// \brief Will look at the default view type, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
+  MIDASView GetDefaultOrientationForSegmentation();
 
+  /// \brief Utility method to get a list of viewers to update.
+  ///
+  /// Normally, if we are in unbound mode, this will be just the currently selected viewer,
+  /// but if we are in bind mode, it will be all the visible viewers.
+  std::vector<unsigned int> GetViewerIndexesToUpdate(bool doAllVisible, bool isTimeStep);
+
+  /// \brief Main method to change the number of views.
+  void SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode);
+
+  /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
+  void SetSelectedWindow(unsigned int i);
+
+  /// \brief Method to enable, or disable all widgets, for use when GUI is first started, or the whole screen enabled, disabled.
+  void EnableWidgets(bool enabled);
+
+  /// \brief Enables/Disables drop type widgets.
+  void EnableDropTypeWidgets(bool enabled);
+
+  /// \brief Enables/Disables slider widgets.
+  void EnableSliderWidgets(bool enabled);
+
+  /// \brief Enables/Disables widgets to control layout.
+  void EnableLayoutWidgets(bool enabled);
+
+  /// \brief Enables/Disables widgets to control binding / linking.
+  void EnableBindWidgets(bool enabled);
+
+  /// \brief Enables/Disables widgets to control orientation.
+  void EnableOrientationWidgets(bool enabled);
+
+  /// \brief Creates a viewer widget.
+  QmitkMIDASSingleViewWidget* CreateSingleViewWidget();
+
+  /// \brief Utility method to try and get focus manager to auto-focus on the 'current' or 'selected' viewer
+  void UpdateFocusManagerToSelectedViewer();
+
+  /// \brief Utility method to force all visible viewers to match the 'currently selected' viewer.
+  void UpdateBoundGeometry();
+
+  /// \brief Utility method to force all 2D cursor visibility flags.
+  void Update2DCursorVisibility();
+
+  // Layouts
+  QHBoxLayout                                   *m_TopLevelLayout;
+  QVBoxLayout                                   *m_LayoutToPutControlsOnTopOfWindows;
   QStackedLayout                                *m_LayoutForStackingRenderWindows;
   QGridLayout                                   *m_LayoutForRenderWindows;
-  QGridLayout                                   *m_LayoutForLayoutButtons;
-  QGridLayout                                   *m_LayoutForDropRadioButtons;
-  QHBoxLayout                                   *m_LayoutForTopControls;
-  QVBoxLayout                                   *m_LayoutToPutButtonsOnTopOfWindows;
-  QHBoxLayout                                   *m_TopLevelLayout;
+  QGridLayout                                   *m_LayoutForTopControls;
+  QHBoxLayout                                   *m_LayoutForLayoutButtons;
+  QHBoxLayout                                   *m_LayoutForRowsAndColumns;
+  QHBoxLayout                                   *m_LayoutForOrientation;
+  QVBoxLayout                                   *m_LayoutForRightControls;
 
-  QSpacerItem                                   *m_HorizontalSpacerBetweenRadioButtonsAndBindButton;
-  QSpacerItem                                   *m_HorizontalSpacerBetweenBindButtonAndLayoutButtons;
+  // Widgets
+  QmitkMIDASOrientationWidget                   *m_MIDASOrientationWidget;
+  QmitkMIDASSlidersWidget                       *m_MIDASSlidersWidget;
   QPushButton                                   *m_1x1LayoutButton;
   QPushButton                                   *m_1x2LayoutButton;
   QPushButton                                   *m_2x1LayoutButton;
@@ -240,15 +297,29 @@ private:
   QRadioButton                                  *m_DropMultipleRadioButton;
   QRadioButton                                  *m_DropThumbnailRadioButton;
   QCheckBox                                     *m_BindWindowsCheckBox;
+  QCheckBox                                     *m_LinkWindowsCheckBox;
 
-  QmitkMIDASMultiViewVisibilityManager          *m_VisibilityManager; // We don't own this, so don't delete it.
-  std::vector<QmitkMIDASSingleViewWidget*>       m_SingleViewWidgets; // Should be automatically destroyed by Qt.
+  // All the viewer widgets
+  std::vector<QmitkMIDASSingleViewWidget*>       m_SingleViewWidgets;
 
+  // Dependencies.
+  QmitkMIDASMultiViewVisibilityManager          *m_VisibilityManager; // Injected via constructor, we don't own this, so don't delete it.
+  mitk::DataStorage::Pointer                     m_DataStorage;       // Injected via constructor, we don't own this, so don't delete it.
+
+  // Member variables for control purposes.
   unsigned long                                  m_FocusManagerObserverTag;
   int                                            m_SelectedWindow;
   int                                            m_DefaultNumberOfRows;
   int                                            m_DefaultNumberOfColumns;
   int                                            m_NumberOfRowsInNonThumbnailMode;
   int                                            m_NumberOfColumnsInNonThumbnailMode;
+  int                                            m_NumberOfRowsBeforeSegmentationMode;
+  int                                            m_NumberOfColumnsBeforeSegmentationMode;
+  bool                                           m_InteractionEnabled;
+  bool                                           m_Show3DViewInOrthoMode;
+  bool                                           m_Show2DCursors;
+  bool                                           m_IsThumbnailMode;
+  bool                                           m_IsMIDASSegmentationMode;
 };
+
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

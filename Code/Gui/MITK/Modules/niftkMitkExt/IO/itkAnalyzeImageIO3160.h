@@ -24,7 +24,8 @@
  * itkDRCAnalyzeImageIO3160.h were are used, even though it is older.
  **************************************************************************/
 /**
- * \file   Much of the code for this file reader/writer was taken from
+ * \file   itkAnalyzeImageIO3160.h
+ *         Much of the code for this file reader/writer was taken from
  *         the University of Iowa Imaging Group library with the
  *         permission of the authors, Milan Sonka, Joseph Reinhardt,
  *         Ryan Long, Hans Johnson, Gary Christensen, and others.

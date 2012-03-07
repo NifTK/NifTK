@@ -1,30 +1,36 @@
 SET(CPP_FILES
-  QmitkHelpAboutDialog.cpp
+  Dialogs/QmitkHelpAboutDialog.cpp
+  Dialogs/QmitkMIDASNewSegmentationDialog.cpp
+  QmitkThumbnailRenderWindow.cpp
   QmitkMIDASPaintbrushToolGUI.cpp
-  QmitkMIDASRenderWindow.cpp
+  QmitkMIDASSlidersWidget.cpp
+  QmitkMIDASOrientationWidget.cpp
+  QmitkMIDASStdMultiWidget.cpp
   QmitkMIDASSingleViewWidget.cpp
   QmitkMIDASMultiViewWidget.cpp
   QmitkMIDASMultiViewVisibilityManager.cpp
-  QmitkMIDASNewSegmentationDialog.cpp
-  QmitkThumbnailRenderWindow.cpp
 )
 
 SET(MOC_H_FILES
-  QmitkMouseEventEater.h 
-  QmitkPaintEventEater.h
-  QmitkWheelEventEater.h
-  QmitkHelpAboutDialog.h
+  Events/QmitkMouseEventEater.h 
+  Events/QmitkPaintEventEater.h
+  Events/QmitkWheelEventEater.h
+  Dialogs/QmitkHelpAboutDialog.h
+  Dialogs/QmitkMIDASNewSegmentationDialog.h
+  QmitkThumbnailRenderWindow.h
   QmitkMIDASPaintbrushToolGUI.h
-  QmitkMIDASRenderWindow.h
+  QmitkMIDASSlidersWidget.h
+  QmitkMIDASOrientationWidget.h
+  QmitkMIDASStdMultiWidget.h
   QmitkMIDASSingleViewWidget.h
   QmitkMIDASMultiViewWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
-  QmitkMIDASNewSegmentationDialog.h
-  QmitkThumbnailRenderWindow.h
 )
 
 SET(UI_FILES
   Resources/UI/QmitkHelpAboutDialog.ui
+  Resources/UI/QmitkMIDASOrientationWidget.ui
+  Resources/UI/QmitkMIDASSlidersWidget.ui
 )
 
 SET(QRC_FILES

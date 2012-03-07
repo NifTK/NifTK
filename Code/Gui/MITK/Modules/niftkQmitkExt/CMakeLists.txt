@@ -1,6 +1,7 @@
 
 MITK_CREATE_MODULE(niftkQmitkExt
   EXPORT_DEFINE NIFTKQMITKEXT_EXPORT
+  INCLUDE_DIRS Events Dialogs
   DEPENDS Mitk MitkExt Qmitk QmitkExt niftkMitkExt
   PACKAGE_DEPENDS QT QVTK 
   QT_MODULE 
@@ -8,5 +9,6 @@ MITK_CREATE_MODULE(niftkQmitkExt
 
 TARGET_LINK_LIBRARIES(niftkQmitkExt
   niftkITK
+  niftkQt
   )
   

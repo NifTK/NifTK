@@ -54,6 +54,12 @@ public:
   /// \brief Set the region parameters on this property object where size[X,Y,Z] = [0-2], and index[X,Y,Z] = [3-5].
   void SetITKRegionParameters(const ParametersType& parameters);
 
+  /// \brief Returns true of the size of the volume is at least 1 voxel (eg. 1x1x1).
+  bool HasVolume() const;
+
+  /// \brief Method to set the size
+  void SetSize(int x, int y, int z);
+
   /// \brief Get the m_IsValid status flag.
   bool IsValid() const;
 
@@ -92,7 +98,6 @@ private:
 
   ParametersType m_Parameters;
   bool           m_IsValid;
-
 };
 
 } // namespace mitk

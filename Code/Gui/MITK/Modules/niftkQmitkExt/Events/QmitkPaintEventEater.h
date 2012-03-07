@@ -31,7 +31,8 @@
 #include <QEvent>
 
 /**
- *
+ * \class QmitkPaintEventEater
+ * \brief Qt Event Filter to eat paint events.
  */
 class NIFTKQMITKEXT_EXPORT QmitkPaintEventEater : public QObject
 {

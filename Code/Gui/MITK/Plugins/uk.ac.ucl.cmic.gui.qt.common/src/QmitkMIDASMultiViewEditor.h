@@ -37,6 +37,7 @@
 
 #include <QmitkDnDFrameWidget.h>
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
+#include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include "mitkDataStorage.h"

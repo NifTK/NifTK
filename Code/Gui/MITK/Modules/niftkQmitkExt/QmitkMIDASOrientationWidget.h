@@ -8,11 +8,11 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-12-05 18:07:46 +0000 (Mon, 05 Dec 2011) $
- Revision          : $Revision: 7922 $
+ Last Changed      : $LastChangedDate: 2011-12-16 09:12:58 +0000 (Fri, 16 Dec 2011) $
+ Revision          : $Revision: 8039 $
  Last modified by  : $Author: mjc $
 
- Original author   : a.duttaroy@cs.ucl.ac.uk
+ Original author   : $Author: mjc $
 
  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
@@ -21,36 +21,36 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-#ifndef MIDASNAVIGATIONVIEWCONTROLSIMPL_H
-#define MIDASNAVIGATIONVIEWCONTROLSIMPL_H
 
-#include "ui_MIDASNavigationViewControls.h"
-#include "MagnificationFactorWidget.h"
-#include "IntegerSpinBoxAndSliderWidget.h"
+#ifndef QMITKMIDASORIENTATIONWIDGET_H
+#define QMITKMIDASORIENTATIONWIDGET_H
 
-class QAbstractButton;
-class QGridLayout;
-class QVBoxLayout;
+#include "ui_QmitkMIDASOrientationWidget.h"
 
 /**
- * \class MIDASNavigationViewControlsImpl
- * \brief Widget class, derived from Ui_MIDASNavigationViewControls and QWidget
- * \ingroup uk_ac_ucl_cmic_midasnavigation_internal
+ * \class QmitkMIDASOrientationWidget
+ * \brief Qt Widget class to contain radio buttons for axial, coronal, sagittal.
  */
-class MIDASNavigationViewControlsImpl : public QWidget, public Ui_MIDASNavigationViewControls
+class QmitkMIDASOrientationWidget : public QWidget, public Ui_QmitkMIDASOrientationWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
 
-  MIDASNavigationViewControlsImpl(QWidget *parent = 0);
+  QmitkMIDASOrientationWidget(QWidget *parent = 0);
 
   /** Destructor. */
-  ~MIDASNavigationViewControlsImpl();
+  ~QmitkMIDASOrientationWidget();
 
   /// \brief Creates the GUI.
   void setupUi(QWidget*);
+
+  /// \brief Calls setBlockSignals(block) on all contained widgets.
+  void SetBlockSignals(bool block);
+
+  /// \brief Calls setEnabled(enabled) on all contained widgets.
+  void SetEnabled(bool enabled);
 
 signals:
 
@@ -59,8 +59,6 @@ protected slots:
 protected:
 
 private:
-
-  QVBoxLayout *m_Layout;
 
 };
 

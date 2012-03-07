@@ -107,6 +107,12 @@ public Q_SLOTS:
   /// \brief When the sagittal radio button is pressed we broadcast a OrientationChanged event.
   void OnSagittalRadioButtonToggled(bool);
 
+  /// \brief When the ortho radio button is pressed we broadcast a OrientationChanged event.
+  void OnOrthoRadioButtonToggled(bool);
+
+  /// \brief When the 3D radio button is pressed we broadcast a OrientationChanged event.
+  void On3DRadioButtonToggled(bool);
+
   /// \brief When the slice number is changed we broadcast a SliceNumberChanged event.
   void OnSliceNumberChanged(int, int);
 
