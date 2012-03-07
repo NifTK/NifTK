@@ -292,6 +292,16 @@ do
           ${tmpdir}/bs.img ${tmpdir}/rs.img \
           dummy ${tmpdir}/xor.img ${output_dir}/${output_prefix}_${i}_local_mask.img ${output_dir}/${output_prefix}_${j}_local_mask.img \
           1.0 0.5 dummy 0.05 > ${output_dir}/${output_prefix}_${i}_dbc-${output_prefix}_${j}_dbc_local.qnt
+          
+        ucltkKNDoubleWindowBSI \
+          ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_mask.img \
+          ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_mask.img \
+          ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_local_mask.img \
+          ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_local_mask.img \
+          1 1 3   \
+          ${tmpdir}/bs.img ${tmpdir}/rs.img \
+          dummy ${tmpdir}/xor.img dummy dummy \
+          1.0 0.5 dummy 0.05 > ${output_dir}/${output_prefix}_${i}_dbc-${output_prefix}_${j}_dbc_local_global_intensity_window.qnt          
       else
           niftkKMeansWindowWithLinearRegressionNormalisationBSI \
             ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_mask.img \
