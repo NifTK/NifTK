@@ -42,10 +42,19 @@ IF(NOT DEFINED MITK_DIR)
     # As of Trac 1257, we are building off of a fork of MITK.
     # The fork is branch niftk.
     # mitk revision f1953dbbb0
-    # + merging trac 853, trac 1255, trac 1256, 1264.
+    # + https://cmicdev.cs.ucl.ac.uk/trac/ticket/853  (opacity for black) 
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1255 (StateMachine.xml)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1256 (improve file extension gz)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1264 (Qt Assistant in installer)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1300 (Enable drop in QmitkRenderWindow)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1301 (Pass RenderingManager in QmitkStdMultiWidget constructor)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1341 (Uniquely name QmitkStdMultiWidget planes)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1342 (Stop RenderingManager eroneously adding to m_RenderWindowList)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1343 (Fix AutoTopMost in mitkLevelWindowManager)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1344 (Turn off interactors in mitkMouseModeSwitcher)
     #########################################################
     
-    SET(revision_tag b2a3f67c89)
+    SET(revision_tag f3728fd7af)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
