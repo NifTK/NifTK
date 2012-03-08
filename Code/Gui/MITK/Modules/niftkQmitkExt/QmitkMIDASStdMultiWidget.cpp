@@ -578,6 +578,12 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
     delete QmitkStdMultiWidgetLayout;
   }
 
+  // These in base class are not needed.
+  m_MainSplit->setVisible(false);
+  m_LayoutSplit->setVisible(false);
+  m_SubSplit1->setVisible(false);
+  m_SubSplit2->setVisible(false);
+
   // Rebuild layout, explicitly setting all the borders to zero.
   m_StackedLayout = new QStackedLayout();
   m_StackedLayout->setContentsMargins(0, 0, 0, 0);
