@@ -50,8 +50,7 @@ void QmitkNiftyViewMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Poi
 
   layout->AddView("uk.ac.ucl.cmic.imagelookuptables",
     berry::IPageLayout::BOTTOM, 0.33f, "uk.ac.ucl.cmic.thumbnail");
-/*
+
   layout->AddView("org.mitk.views.propertylistview",
     berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.imagelookuptables");
-    */
 }

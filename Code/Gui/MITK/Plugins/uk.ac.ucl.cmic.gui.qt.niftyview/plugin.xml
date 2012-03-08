@@ -7,19 +7,21 @@
     </application>
   </extension>
   
+<!-- Temporarily disable this until we get the next MITK version
+     where we can better control which editor is visible and top most
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftyview.cmicperspective"
-      name="CMIC"
+      name="Global"
       class="QmitkNiftyViewCMICPerspective"
 	  icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
-
+-->
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective"
-      name="MIDAS"
+      name="Research"
       class="QmitkNiftyViewMIDASPerspective"
     icon="resources/icon_ion.xpm">
     </perspective>
