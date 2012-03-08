@@ -1222,7 +1222,7 @@ void QmitkMIDASMultiViewWidget::OnLinkWindowsCheckboxClicked(bool isLinked)
   {
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      if (i == m_SelectedWindow)
+      if ((int)i == m_SelectedWindow)
       {
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
       }
