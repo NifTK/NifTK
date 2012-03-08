@@ -34,6 +34,7 @@
 #include "QmitkMIDASViewEnums.h"
 
 class QGridLayout;
+class QStackedLayout;
 
 /**
  * \class QmitkMIDASStdMultiWidget
@@ -99,6 +100,7 @@ public:
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D.
   ///
   /// We must specify the geometry to re-initialise the QmitkStdMultiWidget base class properly.
+  /// This has been a difficult method to get to work properly. Developers should look at the code comments.
   void SetMIDASView(MIDASView view, mitk::Geometry3D* geometry);
 
   /// \brief Get the view (layout), where the MIDAS functionality is only interested in
@@ -205,6 +207,7 @@ private:
 
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
+  QStackedLayout       *m_StackedLayout;
   unsigned int          m_AxialSliceTag;
   unsigned int          m_SagittalSliceTag;
   unsigned int          m_CoronalSliceTag;

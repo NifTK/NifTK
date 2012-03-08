@@ -25,6 +25,9 @@
 #include "QmitkMIDASStdMultiWidget.h"
 #include "QmitkRenderWindow.h"
 #include "vtkRenderWindow.h"
+#include <QStackedLayout>
+#include <QGridLayout>
+#include <QFrame>
 
 QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     mitk::RenderingManager* renderingManager,
@@ -34,6 +37,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     )
 : QmitkStdMultiWidget(parent, f, renderingManager)
 , m_GridLayout(NULL)
+, m_StackedLayout(NULL)
 , m_AxialSliceTag(0)
 , m_SagittalSliceTag(0)
 , m_CoronalSliceTag(0)
@@ -42,7 +46,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Display3DViewInOrthoView(false)
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
-, m_View(MIDAS_VIEW_AXIAL)
+, m_View(MIDAS_VIEW_ORTHO)
 {
   // The spec in the header file says these must be non-null.
   assert(renderingManager);
@@ -85,9 +89,8 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->m_CornerAnnotaions[1].cornerText->SetText(0, "");
   this->m_CornerAnnotaions[2].cornerText->SetText(0, "");
 
-  // Default to a single view. As there are no labels (see above,
-  // removing corner annotations), it doesn't matter which one.
-  this->SetMIDASView(MIDAS_VIEW_AXIAL, NULL);
+  // Default to a single view. Due to Mac OpenGL bug, this MUST be ortho to get 3D window up and running.
+  this->SetMIDASView(MIDAS_VIEW_ORTHO, NULL);
 
   // Default to unselected, so borders are off.
   this->SetSelected(false);
@@ -178,27 +181,10 @@ void QmitkMIDASStdMultiWidget::SetBackgroundColor(QColor colour)
   m_GradientBackground4->SetGradientColors(colour.redF(),colour.greenF(),colour.blueF(),colour.redF(),colour.greenF(),colour.blueF());
   m_GradientBackground4->Enable();
 
-  // Additionally, set the colour on the container widgets, so that if we
-  // set the contained render window to be invisible, the background colour
-  // of the container widget matches the colour supplied here.
-
-  QString styleSheet = "background-color: rgb(";
-  styleSheet.append(QString::number(colour.red()));
-  styleSheet.append(",");
-  styleSheet.append(QString::number(colour.green()));
-  styleSheet.append(",");
-  styleSheet.append(QString::number(colour.blue()));
-  styleSheet.append(")");
-
-  mitkWidget1Container->setAutoFillBackground(true);
-  mitkWidget2Container->setAutoFillBackground(true);
-  mitkWidget3Container->setAutoFillBackground(true);
-  mitkWidget4Container->setAutoFillBackground(true);
-
-  mitkWidget1Container->setStyleSheet(styleSheet);
-  mitkWidget2Container->setStyleSheet(styleSheet);
-  mitkWidget3Container->setStyleSheet(styleSheet);
-  mitkWidget4Container->setStyleSheet(styleSheet);
+  QPalette palette = this->palette();
+  palette.setColor( backgroundRole(), colour );
+  this->setAutoFillBackground( true );
+  this->setPalette( palette );
 }
 
 QColor QmitkMIDASStdMultiWidget::GetBackgroundColor() const
@@ -364,17 +350,13 @@ bool QmitkMIDASStdMultiWidget::IsEnabled() const
 void QmitkMIDASStdMultiWidget::SetDisplay3DViewInOrthoView(bool visible)
 {
   m_Display3DViewInOrthoView = visible;
-
   if (this->m_View == MIDAS_VIEW_ORTHO)
   {
-    if (visible)
-    {
-      this->mitkWidget4->show();
-    }
-    else
-    {
-      this->mitkWidget4->hide();
-    }
+    this->SetMIDASView(MIDAS_VIEW_ORTHO, const_cast<mitk::Geometry3D*>(mitkWidget1->GetSliceNavigationController()->GetInputWorldGeometry()));
+  }
+  else
+  {
+    // If we are not in ortho view, then view will get recalculated when user selectes ortho view.
   }
 }
 
@@ -545,19 +527,11 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
     this->m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
   }
 
-  // The point of the remaining part of this method is:
-  // 1. The RenderingManager only has the currently visible render windows, so we add / remove them as necessary.
-  // 2. However, when you call InitializeViews the QmitkStdMultiWidget needs to have all the planes registered.
-  // 3. So, we basically unregister the current ones from the RenderingManager.
-  //    Then we add all 4 back to the RenderingManager
-  //    Set up the view calling RenderingManager::InitializeViews
-  //    Remove the ones we don't need.
-
-  // If this is not the first time we registered, we need to remove RenderWIndows from RenderingManagers.
+  // If this is not the first time we are in SetMIDASView, we need to remove vtkRenderWindows from RenderingManagers.
   std::vector< vtkRenderWindow* > tmpWindows;
   std::vector< vtkRenderWindow* > registeredWindows = m_RenderingManager->GetAllRegisteredRenderWindows();
 
-  if (registeredWindows.size() > 0)
+  if (registeredWindows.size() > 0 && this->m_GridLayout != NULL && this->m_StackedLayout != NULL)
   {
     switch(this->m_View)
     {
@@ -590,13 +564,13 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
     }
   }
 
-  // Now destroy layout.
+  // Now destroy layouts (in reverse order obviously).
+  if (m_StackedLayout != NULL)
+  {
+    delete m_StackedLayout;
+  }
   if (m_GridLayout != NULL)
   {
-    m_GridLayout->removeWidget(mitkWidget1Container);
-    m_GridLayout->removeWidget(mitkWidget2Container);
-    m_GridLayout->removeWidget(mitkWidget3Container);
-    m_GridLayout->removeWidget(mitkWidget4Container);
     delete m_GridLayout;
   }
   if (QmitkStdMultiWidgetLayout != NULL)
@@ -604,23 +578,87 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
     delete QmitkStdMultiWidgetLayout;
   }
 
-  // Rebuilding layout to explicitly set all the borders to zero.
-  QmitkStdMultiWidgetLayout =  new QHBoxLayout( this );
-  QmitkStdMultiWidgetLayout->setContentsMargins(0, 0, 0, 0);
-  QmitkStdMultiWidgetLayout->setSpacing(0);
+  // Rebuild layout, explicitly setting all the borders to zero.
+  m_StackedLayout = new QStackedLayout();
+  m_StackedLayout->setContentsMargins(0, 0, 0, 0);
+  m_StackedLayout->setSpacing(0);
+  m_StackedLayout->setStackingMode(QStackedLayout::StackAll);
 
   m_GridLayout = new QGridLayout();
   m_GridLayout->setContentsMargins(0, 0, 0, 0);
   m_GridLayout->setSpacing(0);
 
+  QmitkStdMultiWidgetLayout =  new QHBoxLayout( this );
+  QmitkStdMultiWidgetLayout->setContentsMargins(0, 0, 0, 0);
+  QmitkStdMultiWidgetLayout->setSpacing(0);
+
+  m_GridLayout->addLayout(m_StackedLayout, 0, 0);
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
 
-  m_GridLayout->addWidget(mitkWidget1Container, 0, 0);
-  m_GridLayout->addWidget(mitkWidget2Container, 0, 1);
-  m_GridLayout->addWidget(mitkWidget3Container, 1, 0);
-  m_GridLayout->addWidget(mitkWidget4Container, 1, 1);
+  this->mitkWidget1Container->show();
+  this->mitkWidget2Container->show();
+  this->mitkWidget3Container->show();
+  this->mitkWidget4Container->show();
 
-  // Now add all 4 windows, so we can initialize geometry.
+  switch (view)
+  {
+  case MIDAS_VIEW_AXIAL:
+
+    m_StackedLayout->addWidget(this->mitkWidget4Container);
+    m_StackedLayout->addWidget(this->mitkWidget1Container);
+    m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);
+    m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);
+    break;
+
+  case MIDAS_VIEW_SAGITTAL:
+
+    m_StackedLayout->addWidget(this->mitkWidget4Container);
+    m_StackedLayout->addWidget(this->mitkWidget2Container);
+    m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);
+    m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);
+    break;
+
+  case MIDAS_VIEW_CORONAL:
+
+    m_StackedLayout->addWidget(this->mitkWidget4Container);
+    m_StackedLayout->addWidget(this->mitkWidget3Container);
+    m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);
+    m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
+    break;
+
+  case MIDAS_VIEW_ORTHO:
+
+    if (m_Display3DViewInOrthoView)
+    {
+      m_GridLayout->addWidget(mitkWidget4Container, 1, 1);
+    }
+    else
+    {
+      m_StackedLayout->addWidget(this->mitkWidget4Container);
+    }
+    m_StackedLayout->addWidget(this->mitkWidget1Container);
+    m_GridLayout->addWidget(mitkWidget2Container, 0, 1);
+    m_GridLayout->addWidget(mitkWidget3Container, 1, 0);
+    break;
+
+  case MIDAS_VIEW_3D:
+
+    m_StackedLayout->addWidget(this->mitkWidget4Container);
+    m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);
+    m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
+    m_GridLayout->addWidget(this->mitkWidget3Container, 1, 1);
+    break;
+
+  default:
+    // die, this should never happen
+    assert(view >= 0 && view <= 4);
+    break;
+  }
+
+  // Now add all 4 windows to the RenderingManager, so we can initialize geometry.
+  // In addition, we need the size of each window to be "correct" so that the geometry calculations work.
+  // This means the bit where we add the 4 windows to the RenderingManager, must come after we have all 4 windows added to a Layout.
+
   if (geometry != NULL)
   {
     m_RenderingManager->AddRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
@@ -638,19 +676,14 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+      this->mitkWidget2Container->hide();
+      this->mitkWidget3Container->hide();
+      this->mitkWidget4Container->hide();
     }
     else
     {
       m_RenderingManager->AddRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
     }
-    mitkWidget1Container->show();
-    mitkWidget2Container->hide();
-    mitkWidget3Container->hide();
-    mitkWidget4Container->hide();
-    mitkWidget1->show();
-    mitkWidget2->hide();
-    mitkWidget3->hide();
-    mitkWidget4->hide();
     break;
   case MIDAS_VIEW_SAGITTAL:
     if (geometry != NULL)
@@ -658,19 +691,14 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+      this->mitkWidget1Container->hide();
+      this->mitkWidget3Container->hide();
+      this->mitkWidget4Container->hide();
     }
     else
     {
       m_RenderingManager->AddRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
     }
-    mitkWidget1Container->hide();
-    mitkWidget2Container->show();
-    mitkWidget3Container->hide();
-    mitkWidget4Container->hide();
-    mitkWidget1->hide();
-    mitkWidget2->show();
-    mitkWidget3->hide();
-    mitkWidget4->hide();
     break;
   case MIDAS_VIEW_CORONAL:
     if (geometry != NULL)
@@ -678,32 +706,18 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+      this->mitkWidget1Container->hide();
+      this->mitkWidget2Container->hide();
+      this->mitkWidget4Container->hide();
     }
     else
     {
       m_RenderingManager->AddRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
     }
-    mitkWidget1Container->hide();
-    mitkWidget2Container->hide();
-    mitkWidget3Container->show();
-    mitkWidget4Container->hide();
-    mitkWidget1->hide();
-    mitkWidget2->hide();
-    mitkWidget3->show();
-    mitkWidget4->hide();
     break;
   case MIDAS_VIEW_ORTHO:
-    mitkWidget1Container->show();
-    mitkWidget2Container->show();
-    mitkWidget3Container->show();
-    mitkWidget4Container->show();
-    mitkWidget1->show();
-    mitkWidget2->show();
-    mitkWidget3->show();
     if (m_Display3DViewInOrthoView)
     {
-      mitkWidget4->show();
-
       if (geometry == NULL)
       {
         m_RenderingManager->AddRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
@@ -714,11 +728,10 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
     }
     else
     {
-      mitkWidget4->hide();
-
       if (geometry != NULL)
       {
         m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+        this->mitkWidget4Container->hide();
       }
       else
       {
@@ -734,28 +747,21 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
       m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
+      this->mitkWidget1Container->hide();
+      this->mitkWidget2Container->hide();
+      this->mitkWidget3Container->hide();
     }
     else
     {
       m_RenderingManager->AddRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
     }
-    mitkWidget1Container->hide();
-    mitkWidget2Container->hide();
-    mitkWidget3Container->hide();
-    mitkWidget4Container->show();
-    mitkWidget1->hide();
-    mitkWidget2->hide();
-    mitkWidget3->hide();
-    mitkWidget4->show();
     break;
   default:
     // die, this should never happen
     assert(view >= 0 && view <= 4);
     break;
   }
-
   m_View = view;
-  this->RequestUpdate();
 }
 
 MIDASView QmitkMIDASStdMultiWidget::GetMIDASView() const
