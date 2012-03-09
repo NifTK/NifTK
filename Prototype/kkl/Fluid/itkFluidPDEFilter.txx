@@ -56,11 +56,14 @@ FluidPDEFilter<TScalarType, NDimensions>
   this->m_AdjointNavierLameOperatorInitialised = false; 
   this->m_NavierLameOperatorInitialised = false; 
   this->m_IsFFTWInitialised = false; 
-  niftkitkDebugMacro(<<"FluidPDEFilter(): no multi-threading for now (not useful in the cluster anyway.....).");
-  MultiThreader::SetGlobalMaximumNumberOfThreads(1); 
+  //niftkitkDebugMacro(<<"FluidPDEFilter(): no multi-threading for now (not useful in the cluster anyway.....).");
+  //MultiThreader::SetGlobalMaximumNumberOfThreads(1); 
   m_fftwPlanSliceSize = -1;
   m_fftwPlanColSize = -1; 
   m_fftwPlanRowSize = -1; 
+  
+  // Init multi-threshold fftw. 
+  // fftwf_init_threads(); 
   
   m_IsComputeVelcoity = true; 
 }
@@ -172,6 +175,7 @@ FluidPDEFilter<TScalarType, NDimensions>
   // The first two arguments to fftw_plan_r2r_2d is in the order in the array declaration, i.e. sizeA, sizeB.   
   if (!m_IsFFTWInitialised)
   {
+    // fftwf_plan_with_nthreads(4); 
     m_fftwPlan = fftwf_plan_r2r_2d(colSize, rowSize, output, output, FFTW_RODFT00, FFTW_RODFT00, FFTW_ESTIMATE);
     m_IsFFTWInitialised = true; 
     m_fftwPlanColSize = colSize; 
@@ -218,6 +222,7 @@ FluidPDEFilter<TScalarType, NDimensions>
   {
     niftkitkDebugMacro(<<"CalculateUnnormalised3DSineTransform(): creating plan");
     
+    // fftwf_plan_with_nthreads(4); 
     m_fftwPlan = fftwf_plan_r2r_3d(sliceSize, colSize, rowSize, output, output, FFTW_RODFT00, FFTW_RODFT00, FFTW_RODFT00, FFTW_ESTIMATE);
     m_IsFFTWInitialised = true; 
     m_fftwPlanSliceSize = sliceSize; 
