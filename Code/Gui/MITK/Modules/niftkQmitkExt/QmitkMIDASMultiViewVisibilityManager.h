@@ -158,6 +158,9 @@ private:
   //   Picks out the first geometry.
   mitk::TimeSlicedGeometry::Pointer GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
 
+  // Utility method to decide the visibility in 3D window.
+  void SetVisibilityIn3DView(MIDASView view, int windowIndex, std::vector<mitk::DataNode*> nodes);
+
   // This object MUST be connected to a datastorage, hence it is passed in via the constructor.
   mitk::DataStorage::Pointer m_DataStorage;
 

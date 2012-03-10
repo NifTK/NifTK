@@ -284,6 +284,14 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::E
           nodes.push_back(it->Value());
 
           m_Widgets[i]->SetRendererSpecificVisibility(nodes, globalVisibility);
+
+          bool visibilityIn3D = globalVisibility;
+          if (!m_Show3DInOrthoView)
+          {
+            visibilityIn3D = false;
+          }
+
+          m_Widgets[i]->SetRendererSpecificVisibilityFor3DWindow(nodes, visibilityIn3D);
         }
       }
     }
@@ -517,6 +525,18 @@ MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNo
   return view;
 }
 
+void QmitkMIDASMultiViewVisibilityManager::SetVisibilityIn3DView(MIDASView view, int windowIndex, std::vector<mitk::DataNode*> nodes)
+{
+  if (view == MIDAS_VIEW_ORTHO)
+  {
+    m_Widgets[windowIndex]->SetRendererSpecificVisibilityFor3DWindow(nodes, this->m_Show3DInOrthoView);
+  }
+  else
+  {
+    m_Widgets[windowIndex]->SetRendererSpecificVisibilityFor3DWindow(nodes, true);
+  }
+}
+
 void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
@@ -562,7 +582,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       }
 
       // Then set up geometry of that single window.
-      m_Widgets[windowIndex]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+      this->SetVisibilityIn3DView(view, windowIndex, nodes);
       m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
       m_Widgets[windowIndex]->SetView(view, false);
     }
@@ -603,7 +623,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         this->AddNodeToWindow(dropIndex, nodes[i]);
 
         // Initialise geometry according to first image
-        m_Widgets[dropIndex]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+        this->SetVisibilityIn3DView(view, dropIndex, nodes);
         m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
         m_Widgets[dropIndex]->SetView(view, false);
 
@@ -649,7 +669,6 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       // Then we need to check if the number of slices < the number of windows, if so, we just
       // spread the slices, one per window, until we run out of windows.
       // If we have more slices than windows, we need to interpolate the number of slices.
-      m_Widgets[0]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
       m_Widgets[0]->SetGeometry(geometry.GetPointer());
       m_Widgets[0]->SetView(view, true);
 
@@ -675,7 +694,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have less slices than windows, so we just spread them in increasing order.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          m_Widgets[i]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+          this->SetVisibilityIn3DView(view, i, nodes);
           m_Widgets[i]->SetGeometry(geometry.GetPointer());
           m_Widgets[i]->SetView(view, true);
           m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
@@ -688,7 +707,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have more slices than windows, so we spread them evenly over the max number of windows.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          m_Widgets[i]->SetDisplay3DViewInOrthoView(m_Show3DInOrthoView);
+          this->SetVisibilityIn3DView(view, i, nodes);
           m_Widgets[i]->SetGeometry(geometry.GetPointer());
           m_Widgets[i]->SetView(view, true);
 

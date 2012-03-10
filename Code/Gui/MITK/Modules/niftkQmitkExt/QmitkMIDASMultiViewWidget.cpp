@@ -67,7 +67,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DefaultNumberOfRows(defaultNumberOfRows)
 , m_DefaultNumberOfColumns(defaultNumberOfColumns)
 , m_InteractionEnabled(false)
-, m_Show3DViewInOrthoMode(false)
 , m_Show2DCursors(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
@@ -228,6 +227,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     if (i > 0)
     {
       widget->SetEnabled(false);
+      widget->hide();
     }
   }
 
@@ -292,13 +292,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows);
   m_TopLevelLayout->addLayout(m_LayoutToPutControlsOnTopOfWindows);
 
-  itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::Pointer onFocusChangedCommand =
-    itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::New();
-  onFocusChangedCommand->SetCallbackFunction( this, &QmitkMIDASMultiViewWidget::OnFocusChanged );
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-
   connect(m_1x1LayoutButton, SIGNAL(pressed()), this, SLOT(On1x1ButtonPressed()));
   connect(m_1x2LayoutButton, SIGNAL(pressed()), this, SLOT(On1x2ButtonPressed()));
   connect(m_2x1LayoutButton, SIGNAL(pressed()), this, SLOT(On2x1ButtonPressed()));
@@ -331,12 +324,32 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   this->m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
   this->SetLayoutSize(m_DefaultNumberOfRows, m_DefaultNumberOfColumns, false);
   this->EnableWidgets(false);
+
+  itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::Pointer onFocusChangedCommand =
+    itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::New();
+  onFocusChangedCommand->SetCallbackFunction( this, &QmitkMIDASMultiViewWidget::OnFocusChanged );
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 QmitkMIDASMultiViewWidget::~QmitkMIDASMultiViewWidget()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  focusManager->RemoveObserver(m_FocusManagerObserverTag);
+  if (focusManager != NULL)
+  {
+    focusManager->RemoveObserver(m_FocusManagerObserverTag);
+  }
+
+  this->Deactivated();
+}
+
+void QmitkMIDASMultiViewWidget::Activated()
+{
+}
+
+void QmitkMIDASMultiViewWidget::Deactivated()
+{
 }
 
 QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
@@ -353,9 +366,10 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 
 void QmitkMIDASMultiViewWidget::RequestUpdateAll()
 {
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  std::vector<unsigned int> listToUpdate = GetViewerIndexesToUpdate(false, false);
+  for (unsigned int i = 0; i < listToUpdate.size(); i++)
   {
-    m_SingleViewWidgets[i]->RequestUpdate();
+    m_SingleViewWidgets[listToUpdate[i]]->RequestUpdate();
   }
 }
 
@@ -414,14 +428,6 @@ void QmitkMIDASMultiViewWidget::SetShow2DCursors(bool visible)
 bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
 {
   return m_Show2DCursors;
-}
-
-void QmitkMIDASMultiViewWidget::SetShow3DViewInOrthoView(bool visible)
-{
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-  {
-    m_SingleViewWidgets[i]->SetDisplay3DViewInOrthoView(visible);
-  }
 }
 
 void QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled)
@@ -591,7 +597,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
           m_LayoutForRenderWindows->removeWidget(m_SingleViewWidgets[viewerIndex]);
           m_LayoutForStackingRenderWindows->addWidget(m_SingleViewWidgets[viewerIndex]);
           m_SingleViewWidgets[viewerIndex]->SetEnabled(false);
-          m_SingleViewWidgets[viewerIndex]->setVisible(false);
+          m_SingleViewWidgets[viewerIndex]->hide();
         }
       }
       else
@@ -603,7 +609,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
           m_LayoutForStackingRenderWindows->removeWidget(m_SingleViewWidgets[viewerIndex]);
           m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[viewerIndex], r, c);
           m_SingleViewWidgets[viewerIndex]->SetEnabled(true);
-          m_SingleViewWidgets[viewerIndex]->setVisible(true);
+          m_SingleViewWidgets[viewerIndex]->show();
         }
       }
     } // end for c
@@ -882,8 +888,9 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
 
     m_MIDASSlidersWidget->SetBlockSignals(false);
     m_MIDASOrientationWidget->SetBlockSignals(false);
+
+    this->Update2DCursorVisibility();
   }
-  this->Update2DCursorVisibility();
 }
 
 void QmitkMIDASMultiViewWidget::OnDropSingleRadioButtonToggled(bool toggled)

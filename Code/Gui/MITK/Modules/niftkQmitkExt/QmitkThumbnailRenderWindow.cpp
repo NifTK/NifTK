@@ -56,6 +56,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_BoundingBoxNode = mitk::DataNode::New();
   m_BoundingBoxNode->SetData( m_BoundingBox );
   m_BoundingBoxNode->SetProperty( "name", mitk::StringProperty::New( "ThumbnailBoundingBox" ) );
+  m_BoundingBoxNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
   m_BoundingBoxNode->SetProperty( "helper object", mitk::BoolProperty::New(true) );
   m_BoundingBoxNode->SetBoolProperty("visible", false); // globally turn it off, then we only turn it on in thumbnail (this) window.
 
@@ -460,14 +461,13 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
           // Store pointers to the display and world geometry, and render window
           m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(focusedWindowRenderer->GetWorldGeometry());
           m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(focusedWindowRenderer->GetDisplayGeometry());
-          m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(focusedWindowRenderer.GetPointer()))->GetSliceNavigationController();
-          m_TrackedRenderWindow = focusedWindowRenderWindow;
 
           if (m_TrackedWorldGeometry.IsNotNull()
-              && m_TrackedDisplayGeometry.IsNotNull()
-              && m_TrackedSliceNavigator.IsNotNull()
-              && m_TrackedRenderWindow != NULL)
+              && m_TrackedDisplayGeometry.IsNotNull())
           {
+
+            m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(focusedWindowRenderer.GetPointer()))->GetSliceNavigationController();
+            m_TrackedRenderWindow = focusedWindowRenderWindow;
 
             // Add Observers to track when these geometries change
             itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onWorldGeometryChangedCommand =

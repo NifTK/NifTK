@@ -78,12 +78,6 @@ public:
   /// \brief Return whether this widget is considered 'enabled'.
   bool IsEnabled() const;
 
-  /// \brief Turn the 3D view on/off when in ortho mode, which is controlled by a user preference.
-  void SetDisplay3DViewInOrthoView(bool visible);
-
-  /// \brief Get the flag controlling 3D view on/off when in ortho mode, which is controlled via a user preference.
-  bool GetDisplay3DViewInOrthoView() const;
-
   /// \brief Turn the 2D cursors created within this class on/off for this viewer (renderer specific properties), controlled by a user preference.
   void SetDisplay2DCursorsLocally(bool visible);
 
@@ -102,6 +96,9 @@ public:
   /// We must specify the geometry to re-initialise the QmitkStdMultiWidget base class properly.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
   void SetMIDASView(MIDASView view, mitk::Geometry3D* geometry);
+
+  void SetMIDASView(MIDASView view, bool rebuildGeometry);
+  void SetGeometry(mitk::Geometry3D* geometry);
 
   /// \brief Get the view (layout), where the MIDAS functionality is only interested in
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D.
@@ -171,6 +168,9 @@ public:
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
+  /// \brief Sets the visible flag for all the nodes, and the 3D renderer in the QmitkStdMultiWidget base class.
+  void SetRendererSpecificVisibilityFor3DWindow(std::vector<mitk::DataNode*> nodes, bool visible);
+
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
 
@@ -207,13 +207,11 @@ private:
 
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
-  QStackedLayout       *m_StackedLayout;
   unsigned int          m_AxialSliceTag;
   unsigned int          m_SagittalSliceTag;
   unsigned int          m_CoronalSliceTag;
   bool                  m_IsSelected;
   bool                  m_IsEnabled;
-  bool                  m_Display3DViewInOrthoView;
   bool                  m_Display2DCursorsLocally;
   bool                  m_Display2DCursorsGlobally;
   MIDASView             m_View;

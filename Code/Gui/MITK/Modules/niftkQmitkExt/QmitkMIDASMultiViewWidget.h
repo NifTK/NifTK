@@ -87,6 +87,12 @@ public:
   /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdateAll();
 
+  /// \brief Connects the widget to the FocusManager.
+  void Activated();
+
+  /// \brief Disconnects the widget from the FocusManager.
+  void Deactivated();
+
   /// \brief Set the background colour on all contained widgets.
   void SetBackgroundColour(mitk::Color colour);
 
@@ -110,9 +116,6 @@ public:
 
   /// \brief Returns the flag indicating whether we show 2D cursors.
   bool GetShow2DCursors() const;
-
-  /// \brief Sets the visibility flag controlling whether we see 3D view in ortho view.
-  void SetShow3DViewInOrthoView(bool visible);
 
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
@@ -201,9 +204,6 @@ protected slots:
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
 
 private:
-
-  static const unsigned int m_MaxRows = 5;
-  static const unsigned int m_MaxCols = 5;
 
   // Called from the QRadioButtons to set the view.
   void SwitchView(MIDASView view);
@@ -299,12 +299,17 @@ private:
   QCheckBox                                     *m_BindWindowsCheckBox;
   QCheckBox                                     *m_LinkWindowsCheckBox;
 
-  // All the viewer widgets
+  // This determines the total number of QmitkMIDASSingleViewWidget windows.
+  static const unsigned int m_MaxRows = 5;
+  static const unsigned int m_MaxCols = 5;
+
+  // All the viewer windows.
   std::vector<QmitkMIDASSingleViewWidget*>       m_SingleViewWidgets;
 
-  // Dependencies.
-  QmitkMIDASMultiViewVisibilityManager          *m_VisibilityManager; // Injected via constructor, we don't own this, so don't delete it.
-  mitk::DataStorage::Pointer                     m_DataStorage;       // Injected via constructor, we don't own this, so don't delete it.
+  // Dependencies, injected via constructor.
+  // We don't own them, so don't delete them.
+  QmitkMIDASMultiViewVisibilityManager          *m_VisibilityManager;
+  mitk::DataStorage::Pointer                     m_DataStorage;
 
   // Member variables for control purposes.
   unsigned long                                  m_FocusManagerObserverTag;
@@ -316,7 +321,6 @@ private:
   int                                            m_NumberOfRowsBeforeSegmentationMode;
   int                                            m_NumberOfColumnsBeforeSegmentationMode;
   bool                                           m_InteractionEnabled;
-  bool                                           m_Show3DViewInOrthoMode;
   bool                                           m_Show2DCursors;
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;

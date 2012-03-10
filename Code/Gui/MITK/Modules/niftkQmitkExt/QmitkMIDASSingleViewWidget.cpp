@@ -174,16 +174,6 @@ bool QmitkMIDASSingleViewWidget::IsEnabled() const
   return m_MultiWidget->IsEnabled();
 }
 
-void QmitkMIDASSingleViewWidget::SetDisplay3DViewInOrthoView(bool visible)
-{
-  m_MultiWidget->SetDisplay3DViewInOrthoView(visible);
-}
-
-bool QmitkMIDASSingleViewWidget::GetDisplay3DViewInOrthoView() const
-{
-  return m_MultiWidget->GetDisplay3DViewInOrthoView();
-}
-
 void QmitkMIDASSingleViewWidget::SetDisplay2DCursorsLocally(bool visible)
 {
   m_MultiWidget->SetDisplay2DCursorsLocally(visible);
@@ -252,6 +242,11 @@ MIDASOrientation QmitkMIDASSingleViewWidget::GetOrientation()
 void QmitkMIDASSingleViewWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
   m_MultiWidget->SetRendererSpecificVisibility(nodes, visible);
+}
+
+void QmitkMIDASSingleViewWidget::SetRendererSpecificVisibilityFor3DWindow(std::vector<mitk::DataNode*> nodes, bool visible)
+{
+  m_MultiWidget->SetRendererSpecificVisibilityFor3DWindow(nodes, visible);
 }
 
 int QmitkMIDASSingleViewWidget::GetMinMagnification() const

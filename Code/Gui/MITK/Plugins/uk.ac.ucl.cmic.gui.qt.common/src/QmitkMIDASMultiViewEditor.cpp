@@ -177,9 +177,6 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     m_EventAdmin->publishSignal(this, SIGNAL(PartStatusChanged(ctkDictionary)),
                               "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/PartStatusChanged", Qt::QueuedConnection);
 
-    // Dummy call, i think there is a threading / race condition, so Im trying to initialise this early.
-    mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-
     // Create/Connect the state machine
     m_KeyPressStateMachine = mitk::MIDASKeyPressStateMachine::New("MIDASKeyPressStateMachine", m_MIDASMultiViewWidget);
     mitk::GlobalInteraction::GetInstance()->AddListener( m_KeyPressStateMachine );
@@ -200,10 +197,10 @@ void QmitkMIDASMultiViewEditor::PartClosed( berry::IWorkbenchPartReference::Poin
   if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
-    this->OnPartChanged("closed");
 
     if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
     {
+      m_MIDASMultiViewWidget->Deactivated();
       m_MIDASMultiViewWidget->setEnabled(false);
     }
   }
@@ -214,11 +211,11 @@ void QmitkMIDASMultiViewEditor::PartVisible( berry::IWorkbenchPartReference::Poi
   if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
-    this->OnPartChanged("visible");
 
     if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
     {
       m_MIDASMultiViewWidget->setEnabled(true);
+      m_MIDASMultiViewWidget->Activated();
     }
   }
 }
@@ -228,11 +225,11 @@ void QmitkMIDASMultiViewEditor::PartHidden( berry::IWorkbenchPartReference::Poin
   if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
-    this->OnPartChanged("hidden");
 
     if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
     {
-      // Do stuff
+      m_MIDASMultiViewWidget->Deactivated();
+      m_MIDASMultiViewWidget->setEnabled(false);
     }
   }
 }
@@ -271,7 +268,6 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     m_MIDASMultiViewWidget->SetShowDropTypeWidgets(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
     m_MIDASMultiViewWidget->SetShowLayoutButtons(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS, false));
     m_MIDASMultiViewWidget->SetShowMagnificationSlider(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER, false));
-    m_MIDASMultiViewWidget->SetShow3DViewInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
     m_MIDASMultiViewWidget->SetShow2DCursors(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true));
     m_MidasMultiViewVisibilityManager->SetShow3DInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
   }

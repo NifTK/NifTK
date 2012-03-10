@@ -122,12 +122,6 @@ public:
   /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
   MIDASOrientation GetOrientation();
 
-  /// \brief Turn the 3D view on/off in the ortho view.
-  void SetDisplay3DViewInOrthoView(bool visible);
-
-  /// \brief Get the flag controlling 3D view on/off in ortho view.
-  bool GetDisplay3DViewInOrthoView() const;
-
   /// \brief Turn the 2D cursors on/off locally.
   void SetDisplay2DCursorsLocally(bool visible);
 
@@ -166,6 +160,9 @@ public:
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+
+  /// \brief Sets the visible flag for all the nodes, and the 3D renderer in the QmitkStdMultiWidget base class.
+  void SetRendererSpecificVisibilityFor3DWindow(std::vector<mitk::DataNode*> nodes, bool visible);
 
   /// \brief Returns the minimum allowed magnification, which is passed in as constructor arg, and held constant.
   int GetMinMagnification() const;
