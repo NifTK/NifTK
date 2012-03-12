@@ -327,6 +327,10 @@ int DoMain(arguments args)
           for (unsigned int j = 0; j < InputImageType::ImageDimension; j++)
           {
             minImageSpacing[j] = std::min<double>(minImageSpacing[j], spacing[j]); 
+            if (args.doIsotropicVoxels)
+            {
+              minImageSpacing[j] = args.isoVoxelSize; 
+            }
             preciseMaxSize[j] = std::max<double>(preciseMaxSize[j], spacing[j]*size[j]); 
           }
         }
