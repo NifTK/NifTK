@@ -295,106 +295,107 @@ int DoMain(arguments args)
   typedef typename itk::ResampleImageFilter<InputImageType, OutputImageType >   ResampleFilterType;
   typename ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
   
-  if (!args.doIsotropicVoxels)
+  if (args.isSymMidway)
     {
-      if (!args.isSymMidway)
+      // We need to resample using the average spacing of the fixed and moving images. 
+      // Probably need to use average center, direction, size ... later. 
+      typename FixedImageReaderType::Pointer* symImageReader = new typename FixedImageReaderType::Pointer[args.numberOfSymImages]; 
+      typename InputImageType::SpacingType minImageSpacing; 
+      typename InputImageType::RegionType::SizeType maxSize; 
+      double* preciseMaxSize = new double[Dimension]; 
+      for (unsigned int j = 0; j < InputImageType::ImageDimension; j++)
       {
-        std::cout << "Using fixed image as reference frame" << std::endl;
-        resampleFilter->SetUseReferenceImage(true); 
-        resampleFilter->SetReferenceImage(fixedImageReader->GetOutput()); 
+        preciseMaxSize[j] = 0.0; 
       }
-      else
+      minImageSpacing.Fill(std::numeric_limits<double>::max()); 
+      maxSize.Fill(0); 
+      for (int i=0; i<args.numberOfSymImages; i++)
       {
-        // We need to resample using the average spacing of the fixed and moving images. 
-        // Probably need to use average center, direction, size ... later. 
-        typename FixedImageReaderType::Pointer* symImageReader = new typename FixedImageReaderType::Pointer[args.numberOfSymImages]; 
-        typename InputImageType::SpacingType minImageSpacing; 
-        typename InputImageType::RegionType::SizeType maxSize; 
-        double* preciseMaxSize = new double[Dimension]; 
+        symImageReader[i] = FixedImageReaderType::New(); 
+        symImageReader[i]->SetFileName(args.symImages[i]); 
+        symImageReader[i]->Update(); 
+        typename InputImageType::SpacingType spacing = symImageReader[i]->GetOutput()->GetSpacing();
+        typename InputImageType::RegionType::SizeType size = symImageReader[i]->GetOutput()->GetLargestPossibleRegion().GetSize();
         for (unsigned int j = 0; j < InputImageType::ImageDimension; j++)
         {
-          preciseMaxSize[j] = 0.0; 
-        }
-        minImageSpacing.Fill(std::numeric_limits<double>::max()); 
-        maxSize.Fill(0); 
-        for (int i=0; i<args.numberOfSymImages; i++)
-        {
-          symImageReader[i] = FixedImageReaderType::New(); 
-          symImageReader[i]->SetFileName(args.symImages[i]); 
-          symImageReader[i]->Update(); 
-          typename InputImageType::SpacingType spacing = symImageReader[i]->GetOutput()->GetSpacing();
-          typename InputImageType::RegionType::SizeType size = symImageReader[i]->GetOutput()->GetLargestPossibleRegion().GetSize();
-          for (unsigned int j = 0; j < InputImageType::ImageDimension; j++)
+          minImageSpacing[j] = std::min<double>(minImageSpacing[j], spacing[j]); 
+          if (args.doIsotropicVoxels)
           {
-            minImageSpacing[j] = std::min<double>(minImageSpacing[j], spacing[j]); 
-            if (args.doIsotropicVoxels)
-            {
-              minImageSpacing[j] = args.isoVoxelSize; 
-            }
-            preciseMaxSize[j] = std::max<double>(preciseMaxSize[j], spacing[j]*size[j]); 
+            minImageSpacing[j] = args.isoVoxelSize; 
           }
+          preciseMaxSize[j] = std::max<double>(preciseMaxSize[j], spacing[j]*size[j]); 
         }
-        for (unsigned int j = 0; j < InputImageType::ImageDimension; j++)
-        {
-          maxSize[j] = static_cast<unsigned int>(preciseMaxSize[j]/minImageSpacing[j]+0.5); 
-        }
-        resampleFilter->SetSize(maxSize); 
-        resampleFilter->SetOutputSpacing(minImageSpacing); 
-        resampleFilter->SetInput(fixedImageReader->GetOutput());
-        resampleFilter->SetDefaultPixelValue(static_cast<typename InputImageType::PixelType>(0)); 
-        resampleFilter->SetOutputDirection(symImageReader[0]->GetOutput()->GetDirection()); 
-        resampleFilter->SetOutputOrigin(symImageReader[0]->GetOutput()->GetOrigin()); 
-        delete [] symImageReader; 
-        delete [] preciseMaxSize; 
       }
+      for (unsigned int j = 0; j < InputImageType::ImageDimension; j++)
+      {
+        maxSize[j] = static_cast<unsigned int>(preciseMaxSize[j]/minImageSpacing[j]+0.5); 
+      }
+      resampleFilter->SetSize(maxSize); 
+      resampleFilter->SetOutputSpacing(minImageSpacing); 
+      std::cerr << "maxSize=" << maxSize << ", minImageSpacing=" << minImageSpacing << std::endl; 
+      resampleFilter->SetInput(fixedImageReader->GetOutput());
+      resampleFilter->SetDefaultPixelValue(static_cast<typename InputImageType::PixelType>(0)); 
+      resampleFilter->SetOutputDirection(symImageReader[0]->GetOutput()->GetDirection()); 
+      resampleFilter->SetOutputOrigin(symImageReader[0]->GetOutput()->GetOrigin()); 
+      delete [] symImageReader; 
+      delete [] preciseMaxSize; 
     }
-  else
-    {
-      std::cout << "Resampling to isotropic voxels of size=" << niftk::ConvertToString(args.isoVoxelSize) << std::endl;
-      resampleFilter->SetUseReferenceImage(false);
-      
-      typename InputImageType::SizeType fixedSize;
-      typename InputImageType::SpacingType fixedSpacing;
-      typename InputImageType::PointType fixedOrigin;
-      typename InputImageType::DirectionType fixedDirection;
-      typename InputImageType::IndexType fixedIndex;
-      typename InputImageType::RegionType fixedRegion;
-
-      typename InputImageType::SizeType newSize;
-      typename InputImageType::SpacingType newSpacing;
-      typename InputImageType::PointType newOrigin;
-      typename InputImageType::DirectionType newDirection;
-      typename InputImageType::IndexType newIndex;
-      typename InputImageType::RegionType newRegion;
-
-      fixedRegion = fixedImageReader->GetOutput()->GetLargestPossibleRegion();
-      fixedSize = fixedRegion.GetSize();
-      fixedIndex = fixedRegion.GetIndex();
-      fixedSpacing = fixedImageReader->GetOutput()->GetSpacing();
-      fixedOrigin = fixedImageReader->GetOutput()->GetOrigin();
-      fixedDirection = fixedImageReader->GetOutput()->GetDirection();
-      
-      newIndex.Fill(0);
-      newSpacing.Fill(args.isoVoxelSize);
-      newDirection = fixedDirection;
-      for (unsigned int i = 0; i < Dimension; i++)
+  else 
+    {  
+      if (!args.doIsotropicVoxels)
         {
-          newSize[i] = (int)((fixedSize[i] * fixedSpacing[i]) / newSpacing[i]);
-          newOrigin[i] = fixedOrigin[i] + (fixedIndex[i] * fixedSpacing[i]) // this second term will almost always be zero.
-                         + ((fixedSize[i]-1)*fixedSpacing[i]/2.0)
-                         - ((newSize[i]-1)*newSpacing[i]/2.0);
+          std::cout << "Using fixed image as reference frame" << std::endl;
+          resampleFilter->SetUseReferenceImage(true); 
+          resampleFilter->SetReferenceImage(fixedImageReader->GetOutput()); 
         }
-      newRegion.SetSize(newSize);
-      newRegion.SetIndex(newIndex);
-      
-      std::cerr << "Fixed image size=" << fixedSize << ", index=" << fixedIndex << ", spacing=" << fixedSpacing << ", origin=" << fixedOrigin << ", direction=\n" << fixedDirection << std::endl; 
-      std::cerr << "New image size=" << newSize << ", index=" << newIndex << ", spacing=" << newSpacing << ", origin=" << newOrigin << ", direction=\n" << newDirection << std::endl;
-
-      resampleFilter->SetSize(newSize);
-      resampleFilter->SetOutputDirection(newDirection); 
-      resampleFilter->SetOutputOrigin(newOrigin); 
-      resampleFilter->SetOutputSpacing(newSpacing); 
-      resampleFilter->SetOutputStartIndex(newIndex);
+      else
+        {
+          std::cout << "Resampling to isotropic voxels of size=" << niftk::ConvertToString(args.isoVoxelSize) << std::endl;
+          resampleFilter->SetUseReferenceImage(false);
+          
+          typename InputImageType::SizeType fixedSize;
+          typename InputImageType::SpacingType fixedSpacing;
+          typename InputImageType::PointType fixedOrigin;
+          typename InputImageType::DirectionType fixedDirection;
+          typename InputImageType::IndexType fixedIndex;
+          typename InputImageType::RegionType fixedRegion;
+    
+          typename InputImageType::SizeType newSize;
+          typename InputImageType::SpacingType newSpacing;
+          typename InputImageType::PointType newOrigin;
+          typename InputImageType::DirectionType newDirection;
+          typename InputImageType::IndexType newIndex;
+          typename InputImageType::RegionType newRegion;
+    
+          fixedRegion = fixedImageReader->GetOutput()->GetLargestPossibleRegion();
+          fixedSize = fixedRegion.GetSize();
+          fixedIndex = fixedRegion.GetIndex();
+          fixedSpacing = fixedImageReader->GetOutput()->GetSpacing();
+          fixedOrigin = fixedImageReader->GetOutput()->GetOrigin();
+          fixedDirection = fixedImageReader->GetOutput()->GetDirection();
+          
+          newIndex.Fill(0);
+          newSpacing.Fill(args.isoVoxelSize);
+          newDirection = fixedDirection;
+          for (unsigned int i = 0; i < Dimension; i++)
+            {
+              newSize[i] = (int)((fixedSize[i] * fixedSpacing[i]) / newSpacing[i]);
+              newOrigin[i] = fixedOrigin[i] + (fixedIndex[i] * fixedSpacing[i]) // this second term will almost always be zero.
+                            + ((fixedSize[i]-1)*fixedSpacing[i]/2.0)
+                            - ((newSize[i]-1)*newSpacing[i]/2.0);
+            }
+          newRegion.SetSize(newSize);
+          newRegion.SetIndex(newIndex);
+          
+          std::cerr << "Fixed image size=" << fixedSize << ", index=" << fixedIndex << ", spacing=" << fixedSpacing << ", origin=" << fixedOrigin << ", direction=\n" << fixedDirection << std::endl; 
+          std::cerr << "New image size=" << newSize << ", index=" << newIndex << ", spacing=" << newSpacing << ", origin=" << newOrigin << ", direction=\n" << newDirection << std::endl;
+    
+          resampleFilter->SetSize(newSize);
+          resampleFilter->SetOutputDirection(newDirection); 
+          resampleFilter->SetOutputOrigin(newOrigin); 
+          resampleFilter->SetOutputSpacing(newSpacing); 
+          resampleFilter->SetOutputStartIndex(newIndex);
+        }
     }
   resampleFilter->SetInput(movingImageReader->GetOutput());
   resampleFilter->SetDefaultPixelValue(static_cast<typename OutputImageType::PixelType>(args.defaultPixelValue)); 
