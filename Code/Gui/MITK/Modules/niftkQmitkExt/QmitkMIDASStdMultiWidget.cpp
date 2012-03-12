@@ -369,6 +369,66 @@ bool QmitkMIDASStdMultiWidget::GetDisplay2DCursorsGlobally() const
   return m_Display2DCursorsGlobally;
 }
 
+void QmitkMIDASStdMultiWidget::SetDisplay3DViewInOrthoView(bool visible)
+{
+  m_Display3DViewInOrthoView = visible;
+  this->Update3DWindowVisibility();
+}
+
+bool QmitkMIDASStdMultiWidget::GetDisplay3DViewInOrthoView() const
+{
+  return m_Display3DViewInOrthoView;
+}
+
+void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
+{
+  assert(m_DataStorage);
+
+  vtkRenderWindow *axialVtkRenderWindow = this->mitkWidget1->GetVtkRenderWindow();
+  mitk::BaseRenderer* axialRenderer = mitk::BaseRenderer::GetInstance(axialVtkRenderWindow);
+
+  bool visibleIn3DWindow = false;
+  if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Display3DViewInOrthoView)
+     || this->m_View == MIDAS_VIEW_3D)
+  {
+    visibleIn3DWindow = true;
+  }
+
+  bool show3DPlanes = false;
+  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  {
+    if (it->Value().IsNull())
+    {
+      continue;
+    }
+
+    bool isHelperNode = false;
+    it->Value()->GetBoolProperty("helper object", isHelperNode);
+    if (isHelperNode)
+    {
+      continue;
+    }
+
+    bool visibleInAxialView = false;
+    if (it->Value()->GetBoolProperty("visible", visibleInAxialView, axialRenderer))
+    {
+      if (!visibleInAxialView)
+      {
+        visibleIn3DWindow = false;
+      }
+    }
+    this->SetVisibility(this->mitkWidget4, it->Value(), visibleIn3DWindow);
+    if (visibleIn3DWindow)
+    {
+      show3DPlanes = true;
+    }
+  }
+  this->SetVisibility(this->mitkWidget4, m_PlaneNode1, show3DPlanes);
+  this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
+  this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
+}
+
 void QmitkMIDASStdMultiWidget::SetVisibility(QmitkRenderWindow *window, mitk::DataNode *node, bool visible)
 {
   if (window != NULL && node != NULL)
@@ -399,19 +459,9 @@ void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibility(std::vector<mitk::D
     this->SetVisibility(mitkWidget2, nodes[i], visible);
     this->SetVisibility(mitkWidget3, nodes[i], visible);
   }
+  this->Update3DWindowVisibility();
 }
 
-void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibilityFor3DWindow(std::vector<mitk::DataNode*> nodes, bool visible)
-{
-  for (unsigned int i = 0; i < nodes.size(); i++)
-  {
-    this->SetVisibility(mitkWidget4, nodes[i], visible);
-  }
-
-  this->SetVisibility(this->mitkWidget4, m_PlaneNode1, visible);
-  this->SetVisibility(this->mitkWidget4, m_PlaneNode2, visible);
-  this->SetVisibility(this->mitkWidget4, m_PlaneNode3, visible);
-}
 
 bool QmitkMIDASStdMultiWidget::ContainsWindow(QmitkRenderWindow *window) const
 {
@@ -645,6 +695,7 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildGeometry
     assert(m_View >= 0 && m_View <= 4);
     break;
   }
+  this->Update3DWindowVisibility();
   m_View = view;
 }
 

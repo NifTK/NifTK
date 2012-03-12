@@ -134,6 +134,12 @@ public:
   /// \brief Get the flag controlling 2D cursors on/off.
   bool GetDisplay2DCursorsGlobally() const;
 
+  /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
+  void SetDisplay3DViewInOrthoView(bool visible);
+
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
+  bool GetDisplay3DViewInOrthoView() const;
+
   /// \brief Sets the background colour.
   void SetBackgroundColor(QColor color);
 
@@ -160,9 +166,6 @@ public:
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
-
-  /// \brief Sets the visible flag for all the nodes, and the 3D renderer in the QmitkStdMultiWidget base class.
-  void SetRendererSpecificVisibilityFor3DWindow(std::vector<mitk::DataNode*> nodes, bool visible);
 
   /// \brief Returns the minimum allowed magnification, which is passed in as constructor arg, and held constant.
   int GetMinMagnification() const;

@@ -117,6 +117,12 @@ public:
   /// \brief Returns the flag indicating whether we show 2D cursors.
   bool GetShow2DCursors() const;
 
+  /// \brief Sets the flag controlling whether we see studd in the 3D window when in ortho view.
+  void SetShow3DViewInOrthoView(bool visible);
+
+  /// \brief Gets the flag controlling whether we see studd in the 3D window when in ortho view.
+  bool GetShow3DViewInOrthoView() const;
+
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
 
@@ -321,6 +327,7 @@ private:
   int                                            m_NumberOfColumnsBeforeSegmentationMode;
   bool                                           m_InteractionEnabled;
   bool                                           m_Show2DCursors;
+  bool                                           m_Show3DViewInOrthoview;
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
 };

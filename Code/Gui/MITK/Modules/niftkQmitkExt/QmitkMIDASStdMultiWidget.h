@@ -90,6 +90,12 @@ public:
   /// \brief Get the flag controlling 2D cursors created within this class on/off globally, which is controlled via a user preference.
   bool GetDisplay2DCursorsGlobally() const;
 
+  /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
+  void SetDisplay3DViewInOrthoView(bool visible);
+
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
+  bool GetDisplay3DViewInOrthoView() const;
+
   /// \brief Set the view (layout), as the MIDAS functionality is only interested in
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D.
   ///
@@ -168,9 +174,6 @@ public:
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
-  /// \brief Sets the visible flag for all the nodes, and the 3D renderer in the QmitkStdMultiWidget base class.
-  void SetRendererSpecificVisibilityFor3DWindow(std::vector<mitk::DataNode*> nodes, bool visible);
-
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
 
@@ -205,6 +208,9 @@ private:
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow *window, mitk::DataNode *node, bool visible);
 
+  /// \brief Method to update the visibility property of all nodes in 3D window.
+  void Update3DWindowVisibility();
+
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
   unsigned int          m_AxialSliceTag;
@@ -214,6 +220,7 @@ private:
   bool                  m_IsEnabled;
   bool                  m_Display2DCursorsLocally;
   bool                  m_Display2DCursorsGlobally;
+  bool                  m_Display3DViewInOrthoView;
   MIDASView             m_View;
 };
 

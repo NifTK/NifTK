@@ -35,7 +35,6 @@
 
 QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_InDataStorageChanged(false)
-, m_Show3DInOrthoView(false)
 , m_AutomaticallyAddChildren(true)
 {
   assert(dataStorage);
@@ -239,8 +238,8 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy( const mitk::DataNode*
 
 void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node)
 {
-  this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
   this->UpdateObserverToVisibilityMap();
+  this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
 }
 
 void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
@@ -344,14 +343,6 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::E
           nodes.push_back(it->Value());
 
           m_Widgets[i]->SetRendererSpecificVisibility(nodes, globalVisibility);
-
-          bool visibilityIn3D = globalVisibility;
-          if (!m_Show3DInOrthoView)
-          {
-            visibilityIn3D = false;
-          }
-
-          m_Widgets[i]->SetRendererSpecificVisibilityFor3DWindow(nodes, visibilityIn3D);
         }
       }
     }
@@ -381,8 +372,8 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
   assert(widget);
 
   m_DataNodes[windowIndex].insert(node);
+  node->Modified();
 
-  std::set<mitk::DataNode*>::iterator iter;
   std::vector<mitk::DataNode*> nodes;
   nodes.push_back(node);
 
@@ -394,12 +385,16 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
     for (unsigned int i = 0; i < possibleChildren->size(); i++)
     {
       mitk::DataNode* possibleNode = (*possibleChildren)[i];
+
       m_DataNodes[windowIndex].insert(possibleNode);
+      possibleNode->Modified();
+
       nodes.push_back(possibleNode);
     }
   }
 
   widget->SetRendererSpecificVisibility(nodes, initialVisibility);
+
 }
 
 mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
@@ -585,18 +580,6 @@ MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNo
   return view;
 }
 
-void QmitkMIDASMultiViewVisibilityManager::SetVisibilityIn3DView(MIDASView view, int windowIndex, std::vector<mitk::DataNode*> nodes)
-{
-  if (view == MIDAS_VIEW_ORTHO)
-  {
-    m_Widgets[windowIndex]->SetRendererSpecificVisibilityFor3DWindow(nodes, this->m_Show3DInOrthoView);
-  }
-  else
-  {
-    m_Widgets[windowIndex]->SetRendererSpecificVisibilityFor3DWindow(nodes, true);
-  }
-}
-
 void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
@@ -643,7 +626,6 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
 
       // Then set up geometry of that single window.
       this->m_Widgets[windowIndex]->SetEnabled(true);
-      this->SetVisibilityIn3DView(view, windowIndex, nodes);
       this->m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
       this->m_Widgets[windowIndex]->SetView(view, false);
     }
@@ -685,7 +667,6 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
 
         // Initialise geometry according to first image
         this->m_Widgets[dropIndex]->SetEnabled(true);
-        this->SetVisibilityIn3DView(view, dropIndex, nodes);
         this->m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
         this->m_Widgets[dropIndex]->SetView(view, false);
 
@@ -757,7 +738,6 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
           this->m_Widgets[i]->SetEnabled(true);
-          this->SetVisibilityIn3DView(view, i, nodes);
           this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
           this->m_Widgets[i]->SetView(view, true);
           this->m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
@@ -771,7 +751,6 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
           this->m_Widgets[i]->SetEnabled(true);
-          this->SetVisibilityIn3DView(view, i, nodes);
           this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
           this->m_Widgets[i]->SetView(view, true);
 

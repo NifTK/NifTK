@@ -137,7 +137,6 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     m_MidasMultiViewVisibilityManager->SetDefaultInterpolationType(defaultInterpolation);
     m_MidasMultiViewVisibilityManager->SetDefaultViewType(defaultView);
     m_MidasMultiViewVisibilityManager->SetDropType(defaultDropType);
-    m_MidasMultiViewVisibilityManager->SetShow3DInOrthoView(show3DViewInOrthoView);
 
     // Create the QmitkMIDASMultiViewWidget
     m_MIDASMultiViewWidget = new QmitkMIDASMultiViewWidget(
@@ -152,6 +151,7 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     m_MIDASMultiViewWidget->SetShowDropTypeWidgets(showDropTypeWidgets);
     m_MIDASMultiViewWidget->SetShowLayoutButtons(showLayoutButtons);
     m_MIDASMultiViewWidget->SetShow2DCursors(show2DCursors);
+    m_MIDASMultiViewWidget->SetShow3DViewInOrthoView(show3DViewInOrthoView);
     m_MIDASMultiViewWidget->SetShowMagnificationSlider(showMagnificationSlider);
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(this));
@@ -269,7 +269,7 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     m_MIDASMultiViewWidget->SetShowLayoutButtons(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS, false));
     m_MIDASMultiViewWidget->SetShowMagnificationSlider(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER, false));
     m_MIDASMultiViewWidget->SetShow2DCursors(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true));
-    m_MidasMultiViewVisibilityManager->SetShow3DInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
+    m_MIDASMultiViewWidget->SetShow3DViewInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
   }
 }
 

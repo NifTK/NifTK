@@ -67,6 +67,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DefaultNumberOfColumns(defaultNumberOfColumns)
 , m_InteractionEnabled(false)
 , m_Show2DCursors(false)
+, m_Show3DViewInOrthoview(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 {
@@ -405,6 +406,21 @@ bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
   return m_Show2DCursors;
 }
 
+void QmitkMIDASMultiViewWidget::SetShow3DViewInOrthoView(bool visible)
+{
+  m_Show3DViewInOrthoview = visible;
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    m_SingleViewWidgets[i]->SetDisplay3DViewInOrthoView(visible);
+  }
+  this->RequestUpdateAll();
+}
+
+bool QmitkMIDASMultiViewWidget::GetShow3DViewInOrthoView() const
+{
+  return m_Show3DViewInOrthoview;
+}
+
 void QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled)
 {
   m_DropLabel->setEnabled(enabled);
@@ -652,6 +668,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
+  this->SetShow3DViewInOrthoView(this->m_Show3DViewInOrthoview);
   if (this->m_BindWindowsCheckBox->isChecked())
   {
     this->UpdateBoundGeometry();

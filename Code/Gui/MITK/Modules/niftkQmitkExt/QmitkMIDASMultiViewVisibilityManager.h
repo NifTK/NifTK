@@ -107,12 +107,6 @@ public:
   /// \brief Returns the default view for when images are dropped into a render window.
   MIDASView GetDefaultViewType() const { return m_DefaultView; }
 
-  /// \brief Set a flag to control if we show 3D view when in orthoviewer mode.
-  void SetShow3DInOrthoView(bool b) { m_Show3DInOrthoView = b; }
-
-  /// \brief Get the flag that controls if we show 3D view when in orthoviewer mode.
-  bool GetShow3DInOrthoView() const { return m_Show3DInOrthoView; }
-
   /// \brief When we drop nodes onto a window, if true, we add all the children.
   void SetAutomaticallyAddChildren(bool autoAdd) { m_AutomaticallyAddChildren = autoAdd; }
 
@@ -179,9 +173,6 @@ private:
   //   Picks out the first geometry.
   mitk::TimeSlicedGeometry::Pointer GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
 
-  // Utility method to decide the visibility in 3D window.
-  void SetVisibilityIn3DView(MIDASView view, int windowIndex, std::vector<mitk::DataNode*> nodes);
-
   // This object MUST be connected to a datastorage, hence it is passed in via the constructor.
   mitk::DataStorage::Pointer m_DataStorage;
 
@@ -207,9 +198,6 @@ private:
 
   // Keeps track of the default interpolation, as it affects the response when images are dropped, as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
   MIDASDefaultInterpolationType m_DefaultInterpolation;
-
-  // Flag to decide if we are showing 3D in orthoview.
-  bool m_Show3DInOrthoView;
 
   // Boolean to decide whether to automatically add children, default to true.
   bool m_AutomaticallyAddChildren;

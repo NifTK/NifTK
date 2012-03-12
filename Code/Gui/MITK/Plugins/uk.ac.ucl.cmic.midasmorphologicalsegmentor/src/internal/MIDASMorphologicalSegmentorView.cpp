@@ -1037,7 +1037,6 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
   this->DestroyPipeline();
   this->RemoveWorkingData();
   this->GetDefaultDataStorage()->Remove(segmentationNode);
-  this->SetReferenceImageSelected();
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
