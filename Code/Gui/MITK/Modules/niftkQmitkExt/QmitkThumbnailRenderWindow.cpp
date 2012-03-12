@@ -92,41 +92,42 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
 
 void QmitkThumbnailRenderWindow::Activated()
 {
-  assert(m_DataStorage);
-
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  assert(focusManager);
+  if (focusManager != NULL)
+  {
+    itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onFocusChangedCommand =
+      itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
+    onFocusChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnFocusChanged );
 
-  itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onFocusChangedCommand =
-    itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
-  onFocusChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnFocusChanged );
+    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+  }
 
-  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
+      ( this, &QmitkThumbnailRenderWindow::NodeAddedProxy ) );
 
-  m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
-    ( this, &QmitkThumbnailRenderWindow::NodeAddedProxy ) );
-
-  m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
-    ( this, &QmitkThumbnailRenderWindow::NodeChangedProxy ) );
+    m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
+      ( this, &QmitkThumbnailRenderWindow::NodeChangedProxy ) );
+  }
 }
 
 void QmitkThumbnailRenderWindow::Deactivated()
 {
-  assert(m_DataStorage);
-
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  assert(focusManager);
-
   if (focusManager != NULL && m_FocusManagerObserverTag != 0)
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
 
-  m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
-    ( this, &QmitkThumbnailRenderWindow::NodeAddedProxy ) );
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
+      ( this, &QmitkThumbnailRenderWindow::NodeAddedProxy ) );
 
-  m_DataStorage->ChangedNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
-    ( this, &QmitkThumbnailRenderWindow::NodeChangedProxy ) );
+    m_DataStorage->ChangedNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
+      ( this, &QmitkThumbnailRenderWindow::NodeChangedProxy ) );
+  }
 
   this->RemoveObserversFromTrackedObjects();
 }

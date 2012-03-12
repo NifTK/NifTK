@@ -85,7 +85,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 
   // Create the main QmitkMIDASStdMultiWidget, and pass in our OWN RenderingManager.
   m_MultiWidget = new QmitkMIDASStdMultiWidget(m_RenderingManager, m_DataStorage, this, NULL);
-  this->SetNavigationControllerEventListening(false);
+  this->SetNavigationControllerEventListening(true);
 
   m_Layout = new QGridLayout(this);
   m_Layout->setObjectName(QString::fromUtf8("QmitkMIDASSingleViewWidget::m_Layout"));

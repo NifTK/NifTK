@@ -58,7 +58,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , mitk::MIDASKeyPressResponder()
 , m_TopLevelLayout(NULL)
 , m_LayoutToPutControlsOnTopOfWindows(NULL)
-, m_LayoutForStackingRenderWindows(NULL)
 , m_LayoutForRenderWindows(NULL)
 , m_LayoutForTopControls(NULL)
 , m_VisibilityManager(visibilityManager)
@@ -85,11 +84,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutToPutControlsOnTopOfWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutToPutControlsOnTopOfWindows"));
   m_LayoutToPutControlsOnTopOfWindows->setContentsMargins(0, 0, 0, 0);
   m_LayoutToPutControlsOnTopOfWindows->setSpacing(0);
-
-  m_LayoutForStackingRenderWindows = new QStackedLayout();
-  m_LayoutForStackingRenderWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForStackingRenderWindows"));
-  m_LayoutForStackingRenderWindows->setContentsMargins(0, 0, 0, 0);
-  m_LayoutForStackingRenderWindows->setSpacing(0);
 
   m_LayoutForRenderWindows = new QGridLayout();
   m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForRenderWindows"));
@@ -214,28 +208,9 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_DropThumbnailRadioButton->setText("all");
   m_DropThumbnailRadioButton->setToolTip("drop multiple images into any window, and the application will spread them across all windows and provide evenly spaced slices through the image");
 
-  for (unsigned int i = 0; i < m_MaxRows*m_MaxCols; i++)
-  {
-    QmitkMIDASSingleViewWidget *widget = NULL;
-    widget = this->CreateSingleViewWidget();
-
-    m_VisibilityManager->RegisterWidget(widget);
-    m_SingleViewWidgets.push_back(widget);
-
-    m_LayoutForStackingRenderWindows->insertWidget(i, widget);
-
-    if (i > 0)
-    {
-      widget->SetEnabled(false);
-      widget->hide();
-    }
-  }
-
   /************************************
    * Now arrange stuff.
    ************************************/
-
-  m_LayoutForRenderWindows->addLayout(m_LayoutForStackingRenderWindows, 0, 0);
 
   m_LayoutForLayoutButtons->addWidget(m_1x1LayoutButton);
   m_LayoutForLayoutButtons->addWidget(m_1x2LayoutButton);
@@ -292,6 +267,14 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows);
   m_TopLevelLayout->addLayout(m_LayoutToPutControlsOnTopOfWindows);
 
+  // Now initialise
+  m_DropSingleRadioButton->setChecked(true);
+  this->m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
+  m_RowsSpinBox->setValue(m_DefaultNumberOfRows);
+  m_ColumnsSpinBox->setValue(m_DefaultNumberOfColumns);
+  this->SetLayoutSize(m_DefaultNumberOfRows, m_DefaultNumberOfColumns, false);
+  this->EnableWidgets(false);
+
   connect(m_1x1LayoutButton, SIGNAL(pressed()), this, SLOT(On1x1ButtonPressed()));
   connect(m_1x2LayoutButton, SIGNAL(pressed()), this, SLOT(On1x2ButtonPressed()));
   connect(m_2x1LayoutButton, SIGNAL(pressed()), this, SLOT(On2x1ButtonPressed()));
@@ -316,14 +299,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_MIDASOrientationWidget->m_OrthogonalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
   connect(m_MIDASOrientationWidget->m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
   connect(m_MIDASOrientationWidget->m_ThreeDRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
-
-  m_DropSingleRadioButton->blockSignals(true);
-  m_DropSingleRadioButton->setChecked(true);
-  m_DropSingleRadioButton->blockSignals(false);
-
-  this->m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
-  this->SetLayoutSize(m_DefaultNumberOfRows, m_DefaultNumberOfColumns, false);
-  this->EnableWidgets(false);
 
   itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::Pointer onFocusChangedCommand =
     itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::New();
@@ -562,6 +537,53 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode)
 {
 
+  // Work out required number of widgets, and hence if we need to create any new ones.
+  unsigned int requiredNumberOfWidgets = numberOfRows * numberOfColumns;
+  unsigned int currentNumberOfWidgets = m_SingleViewWidgets.size();
+
+  // If we have the right number of widgets, there is nothing to do, so early exit.
+  if (requiredNumberOfWidgets == currentNumberOfWidgets)
+  {
+    return;
+  }
+
+  /////////////////////////////////////////
+  // Start: Rebuild the number of widgets.
+  // NOTE:  The order of widgets in
+  //        m_SingleViewWidgets and
+  //        m_VisibilityManager must match.
+  /////////////////////////////////////////
+
+  if (requiredNumberOfWidgets > currentNumberOfWidgets)
+  {
+    // create some more widgets
+    unsigned int additionalWidgets = requiredNumberOfWidgets - m_SingleViewWidgets.size();
+    for (unsigned int i = 0; i < additionalWidgets; i++)
+    {
+      QmitkMIDASSingleViewWidget *widget = this->CreateSingleViewWidget();
+      widget->SetEnabled(false);
+      widget->hide();
+
+      this->m_SingleViewWidgets.push_back(widget);
+      this->m_VisibilityManager->RegisterWidget(widget);
+      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfWidgets+i, false);
+    }
+  }
+  else if (requiredNumberOfWidgets < currentNumberOfWidgets)
+  {
+    // destroy surplus widgets
+    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfWidgets, m_SingleViewWidgets.size()-1);
+
+    for (unsigned int i = requiredNumberOfWidgets; i < m_SingleViewWidgets.size(); i++)
+    {
+      delete m_SingleViewWidgets[i];
+    }
+
+    m_SingleViewWidgets.erase(m_SingleViewWidgets.begin() + requiredNumberOfWidgets,
+                              m_SingleViewWidgets.end()
+                             );
+  }
+
   // We need to remember the "previous" number of rows and columns, so when we switch out
   // of thumbnail mode, we know how many rows and columns to revert to.
   if (isThumbnailMode)
@@ -576,48 +598,41 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
     m_NumberOfColumnsInNonThumbnailMode = numberOfColumns;
   }
 
-  // Remember, all widgets are created, we just make them visible/invisible.
-  for(unsigned int r = 0; r < m_MaxRows; r++)
+  // Make all current widgets inVisible, as we are going to destroy layout.
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    for (unsigned int c = 0; c < m_MaxCols; c++)
+    m_SingleViewWidgets[i]->hide();
+  }
+
+  // Put all widgets in the grid.
+  // Prior experience suggests we always need a new grid,
+  // because otherwise widgets don't appear to remove properly.
+
+  m_LayoutToPutControlsOnTopOfWindows->removeItem(m_LayoutForRenderWindows);
+  delete m_LayoutForRenderWindows;
+
+  m_LayoutForRenderWindows = new QGridLayout();
+  m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForRenderWindows"));
+  m_LayoutForRenderWindows->setContentsMargins(0, 0, 0, 0);
+  m_LayoutForRenderWindows->setVerticalSpacing(0);
+  m_LayoutForRenderWindows->setHorizontalSpacing(0);
+
+  m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows);
+
+  unsigned int widgetCounter = 0;
+  for (unsigned int r = 0; r < numberOfRows; r++)
+  {
+    for (unsigned int c = 0; c < numberOfColumns; c++)
     {
-      int viewerIndex = this->GetIndexFromRowAndColumn(r, c);
+      m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[widgetCounter], r, c);
+      m_SingleViewWidgets[widgetCounter]->show();
+      widgetCounter++;
+    }
+  }
 
-      if (viewerIndex == 0)
-      {
-        // Viewer 0 always stays where it is, and should always be enabled.
-        continue;
-      }
-      else if (r >= numberOfRows || c >= numberOfColumns)
-      {
-        int currentIndex = m_LayoutForRenderWindows->indexOf(m_SingleViewWidgets[viewerIndex]);
-
-        if (currentIndex != -1)
-        {
-          m_LayoutForRenderWindows->removeWidget(m_SingleViewWidgets[viewerIndex]);
-          m_LayoutForStackingRenderWindows->addWidget(m_SingleViewWidgets[viewerIndex]);
-          m_SingleViewWidgets[viewerIndex]->SetEnabled(false);
-          m_SingleViewWidgets[viewerIndex]->hide();
-        }
-      }
-      else
-      {
-        int currentIndex = m_LayoutForRenderWindows->indexOf(m_SingleViewWidgets[viewerIndex]);
-
-        if (currentIndex == -1)
-        {
-          m_LayoutForStackingRenderWindows->removeWidget(m_SingleViewWidgets[viewerIndex]);
-          m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[viewerIndex], r, c);
-          m_SingleViewWidgets[viewerIndex]->SetEnabled(true);
-          m_SingleViewWidgets[viewerIndex]->show();
-        }
-      }
-    } // end for c
-  } // end for r
-
-  // viewer 0 is always present and never changes.
-  m_LayoutForStackingRenderWindows->setCurrentIndex(0);
-  m_LayoutForStackingRenderWindows->activate();
+  ////////////////////////////////////////
+  // End: Rebuild the number of widgets.
+  ////////////////////////////////////////
 
   // Update row/column widget without triggering another layout size change.
   m_RowsSpinBox->blockSignals(true);
@@ -635,11 +650,8 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   }
   this->SetSelectedWindow(selectedWindow);
 
-  // Need to make sure the cursors correspond to the currently selected window.
+  // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
-
-  // Finally, if we are actually in bound mode, we need to make sure that any new windows that were invisible,
-  // but now are visible as a result of changing size are reflecting the geometry of the "currently selected" window.
   if (this->m_BindWindowsCheckBox->isChecked())
   {
     this->UpdateBoundGeometry();
@@ -779,14 +791,6 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
 
 void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
-  // Make sure that the window that was dropped into is enabled.
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-  {
-    if (m_SingleViewWidgets[i]->ContainsWindow(window) && !m_SingleViewWidgets[i]->IsEnabled())
-    {
-      m_SingleViewWidgets[i]->SetEnabled(true);
-    }
-  }
   if (!this->m_DropThumbnailRadioButton->isChecked())
   {
     this->EnableWidgets(true);

@@ -110,12 +110,78 @@ void QmitkMIDASMultiViewVisibilityManager::RegisterWidget(QmitkMIDASSingleViewWi
   m_Widgets.push_back(widget);
 }
 
-void QmitkMIDASMultiViewVisibilityManager::ClearAllWindows()
+void QmitkMIDASMultiViewVisibilityManager::DeRegisterAllWidgets()
 {
-  for (unsigned int i = 0; i < m_Widgets.size(); i++)
+  this->DeRegisterWidgets(0, m_Widgets.size()-1);
+}
+
+void QmitkMIDASMultiViewVisibilityManager::DeRegisterWidgets(unsigned int startWindowIndex, unsigned int endWindowIndex)
+{
+  for (unsigned int i = startWindowIndex; i <= endWindowIndex; i++)
   {
     this->RemoveNodesFromWindow(i);
   }
+  m_DataNodes.erase(m_DataNodes.begin() + startWindowIndex, m_DataNodes.begin() + endWindowIndex+1);
+  m_Widgets.erase(m_Widgets.begin() + startWindowIndex, m_Widgets.begin() + endWindowIndex+1);
+}
+
+void QmitkMIDASMultiViewVisibilityManager::ClearAllWindows()
+{
+  this->ClearWindows(0, m_Widgets.size()-1);
+}
+
+void QmitkMIDASMultiViewVisibilityManager::ClearWindows(unsigned int startWindowIndex, unsigned int endWindowIndex)
+{
+  for (unsigned int i = startWindowIndex; i <= endWindowIndex; i++)
+  {
+    this->RemoveNodesFromWindow(i);
+  }
+}
+
+void QmitkMIDASMultiViewVisibilityManager::SetAllNodeVisibilityForAllWindows(bool visibility)
+{
+  assert(m_DataStorage);
+
+  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  {
+    if (it->Value().IsNull() || it->Value()->GetProperty("visible") == NULL)
+    {
+      continue;
+    }
+    this->SetNodeVisibilityForAllWindows(it->Value(), visibility);
+  }
+}
+
+void QmitkMIDASMultiViewVisibilityManager::SetNodeVisibilityForAllWindows(mitk::DataNode* node, bool visibility)
+{
+  for (unsigned int i = 0; i < m_Widgets.size(); i++)
+  {
+    this->SetNodeVisibilityForWindow(node, i, visibility);
+  }
+}
+
+
+void QmitkMIDASMultiViewVisibilityManager::SetAllNodeVisibilityForWindow(unsigned int widgetIndex, bool visibility)
+{
+  assert(m_DataStorage);
+
+  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  {
+    if (it->Value().IsNull() || it->Value()->GetProperty("visible") == NULL)
+    {
+      continue;
+    }
+    this->SetNodeVisibilityForWindow(it->Value(), widgetIndex, visibility);
+  }
+}
+
+void QmitkMIDASMultiViewVisibilityManager::SetNodeVisibilityForWindow(mitk::DataNode* node, unsigned int widgetIndex, bool visibility)
+{
+  std::vector<mitk::DataNode*> nodes;
+  nodes.push_back(node);
+  m_Widgets[widgetIndex]->SetRendererSpecificVisibility(nodes, visibility);
 }
 
 int QmitkMIDASMultiViewVisibilityManager::GetIndexFromWindow(QmitkRenderWindow* window)
@@ -179,17 +245,11 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
 
 void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
 {
+  // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
+  this->SetNodeVisibilityForAllWindows(node, false);
+
   bool isHelperNode = false;
   node->GetBoolProperty("helper object", isHelperNode);
-
-  // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
-  for (unsigned int i = 0; i < m_Widgets.size(); i++)
-  {
-    std::vector<mitk::DataNode*> nodes;
-    nodes.push_back(node);
-
-    m_Widgets[i]->SetRendererSpecificVisibility(nodes, false);
-  }
 
   // For non-helper nodes, we set up some initial properties.
   if (!isHelperNode)
@@ -582,9 +642,10 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       }
 
       // Then set up geometry of that single window.
+      this->m_Widgets[windowIndex]->SetEnabled(true);
       this->SetVisibilityIn3DView(view, windowIndex, nodes);
-      m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
-      m_Widgets[windowIndex]->SetView(view, false);
+      this->m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
+      this->m_Widgets[windowIndex]->SetView(view, false);
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
     {
@@ -623,9 +684,10 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         this->AddNodeToWindow(dropIndex, nodes[i]);
 
         // Initialise geometry according to first image
+        this->m_Widgets[dropIndex]->SetEnabled(true);
         this->SetVisibilityIn3DView(view, dropIndex, nodes);
-        m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
-        m_Widgets[dropIndex]->SetView(view, false);
+        this->m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
+        this->m_Widgets[dropIndex]->SetView(view, false);
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
         dropIndex++;
@@ -694,10 +756,11 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have less slices than windows, so we just spread them in increasing order.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
+          this->m_Widgets[i]->SetEnabled(true);
           this->SetVisibilityIn3DView(view, i, nodes);
-          m_Widgets[i]->SetGeometry(geometry.GetPointer());
-          m_Widgets[i]->SetView(view, true);
-          m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
+          this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
+          this->m_Widgets[i]->SetView(view, true);
+          this->m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
 
           MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
         }
@@ -707,9 +770,10 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have more slices than windows, so we spread them evenly over the max number of windows.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
+          this->m_Widgets[i]->SetEnabled(true);
           this->SetVisibilityIn3DView(view, i, nodes);
-          m_Widgets[i]->SetGeometry(geometry.GetPointer());
-          m_Widgets[i]->SetView(view, true);
+          this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
+          this->m_Widgets[i]->SetView(view, true);
 
           unsigned int minSlice = m_Widgets[i]->GetMinSlice(orientation);
           unsigned int maxSlice = m_Widgets[i]->GetMaxSlice(orientation);

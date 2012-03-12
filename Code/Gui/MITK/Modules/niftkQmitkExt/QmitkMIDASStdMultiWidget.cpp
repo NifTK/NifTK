@@ -73,6 +73,8 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->AddDisplayPlaneSubTree();
   this->SetDisplay2DCursorsGlobally(false);
   this->SetDisplay2DCursorsLocally(false);
+  this->SetWidgetPlanesLocked(false);
+  this->SetWidgetPlanesRotationLocked(true);
 
   // Need each widget to react to Qt drag/drop events.
   this->mitkWidget1->setAcceptDrops(true);
@@ -314,21 +316,15 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
 void QmitkMIDASStdMultiWidget::SetEnabled(bool b)
 {
   // See also constructor for things that are ALWAYS on/off.
-
-  m_IsEnabled = b;
-
-  bool locked = !m_IsEnabled;
-  this->SetWidgetPlanesLocked(locked);
-  this->SetWidgetPlanesRotationLocked(locked);
-
-  if (b)
+  if (b && !m_IsEnabled)
   {
     this->AddPlanesToDataStorage();
   }
-  else
+  else if (!b and m_IsEnabled)
   {
     this->RemovePlanesFromDataStorage();
   }
+  m_IsEnabled = b;
 }
 
 bool QmitkMIDASStdMultiWidget::IsEnabled() const
@@ -403,7 +399,6 @@ void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibility(std::vector<mitk::D
     this->SetVisibility(mitkWidget2, nodes[i], visible);
     this->SetVisibility(mitkWidget3, nodes[i], visible);
   }
-  this->SetRendererSpecificVisibilityFor3DWindow(nodes, visible);
 }
 
 void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibilityFor3DWindow(std::vector<mitk::DataNode*> nodes, bool visible)

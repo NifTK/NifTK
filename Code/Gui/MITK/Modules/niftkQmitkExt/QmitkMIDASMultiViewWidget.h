@@ -256,19 +256,18 @@ private:
   /// \brief Creates a viewer widget.
   QmitkMIDASSingleViewWidget* CreateSingleViewWidget();
 
-  /// \brief Utility method to try and get focus manager to auto-focus on the 'current' or 'selected' viewer
+  /// \brief Updates focus manager to auto-focus on the 'current' or 'selected' viewer
   void UpdateFocusManagerToSelectedViewer();
 
-  /// \brief Utility method to force all visible viewers to match the 'currently selected' viewer.
+  /// \brief Force all visible viewers to match the 'currently selected' viewers geometry.
   void UpdateBoundGeometry();
 
-  /// \brief Utility method to force all 2D cursor visibility flags.
+  /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();
 
   // Layouts
   QHBoxLayout                                   *m_TopLevelLayout;
   QVBoxLayout                                   *m_LayoutToPutControlsOnTopOfWindows;
-  QStackedLayout                                *m_LayoutForStackingRenderWindows;
   QGridLayout                                   *m_LayoutForRenderWindows;
   QGridLayout                                   *m_LayoutForTopControls;
   QHBoxLayout                                   *m_LayoutForLayoutButtons;

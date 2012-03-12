@@ -56,11 +56,32 @@ public:
   /// \brief Destructor, which unregisters all the listeners.
   virtual ~QmitkMIDASMultiViewVisibilityManager();
 
-  /// \brief Clients call this to clear all windows, meaning to set renderer specific visibility properties to false.
-  void ClearAllWindows();
-
   /// \brief Each new QmitkMIDASSingleViewWidget should first be registered with this class, so this class can manage renderer specific visibility properties.
   void RegisterWidget(QmitkMIDASSingleViewWidget *widget);
+
+  /// \brief Used to de-register all the widgets, which means actually removing them from m_DataNodes and m_Widgets.
+  void DeRegisterAllWidgets();
+
+  /// \brief De-registers a range of widgets, which means actually removing them from m_DataNodes and m_Widgets.
+  void DeRegisterWidgets(unsigned int startWidgetIndex, unsigned int endWidgetIndex);
+
+  /// \brief Clears all windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
+  void ClearAllWindows();
+
+  /// \brief Used to clear a range of windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
+  void ClearWindows(unsigned int startWindowIndex, unsigned int endWindowIndex);
+
+  /// \brief Will query the DataStorage for all valid nodes, and for all currently registered windows, will set a renderer specific property equal to visibility.
+  void SetAllNodeVisibilityForAllWindows(bool visibility);
+
+  /// \brief For all currently registered windows, will make sure the node has a renderer specific visibility property equal to visibility.
+  void SetNodeVisibilityForAllWindows(mitk::DataNode* node, bool visibility);
+
+  /// \brief Will query the DataStorage for all valid nodes, and for the given window, will set a renderer specific property equal to visibility.
+  void SetAllNodeVisibilityForWindow(unsigned int widgetIndex, bool visibility);
+
+  /// \brief Sets the node to have a renderer specific visibility.
+  void SetNodeVisibilityForWindow(mitk::DataNode* node, unsigned int widgetIndex, bool visibility);
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards.
   void NodeAddedProxy(const mitk::DataNode* node);
