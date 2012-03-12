@@ -37,6 +37,21 @@ FIND_LIBRARY(FFTW_LIBRARIES
   /usr/local/lib
   /usr/lib
   )
+  
+FIND_LIBRARY(FFTW_THREAD_LIBRARIES
+  fftw3f_threads       
+  @NIFTK_FFTWINSTALL@/lib
+  /usr/local/lib
+  /usr/lib
+  )
+  
+FIND_LIBRARY(FFTW_OMP_LIBRARIES
+  fftw3f_omp  
+  @NIFTK_FFTWINSTALL@/lib
+  /usr/local/lib
+  /usr/lib
+  )
+
 
 IF(FFTW_LIBRARIES AND FFTW_INCLUDE_DIR)
   SET(FFTW_FOUND 1)
