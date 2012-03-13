@@ -244,15 +244,15 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
 
 void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
 {
-  // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
-  this->SetNodeVisibilityForAllWindows(node, false);
-
   bool isHelperNode = false;
   node->GetBoolProperty("helper object", isHelperNode);
 
   // For non-helper nodes, we set up some initial properties.
   if (!isHelperNode)
   {
+    // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
+    this->SetNodeVisibilityForAllWindows(node, false);
+
     // For MIDAS, which might have a light background in the render window,
     // we need to make sure black is not transparent.
     if (dynamic_cast<mitk::Image*>(node->GetData()))
