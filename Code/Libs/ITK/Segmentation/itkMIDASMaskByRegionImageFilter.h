@@ -57,6 +57,7 @@ namespace itk
       typedef typename TInputImage::IndexType                       IndexType;
       typedef typename TInputImage::SizeType                        SizeType;
       typedef typename TInputImage::RegionType                      RegionType;
+      typedef typename TInputImage::PixelType                       InputPixelType;
       typedef typename TOutputImage::PixelType                      OutputPixelType;
 
       /** Set/Get methods to set the region to keep. */

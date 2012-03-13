@@ -751,8 +751,8 @@ MIDASMorphologicalSegmentorView
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
     pipeline->m_ThresholdingFilter->SetInput(itkImage);
-    pipeline->m_ExcludeImageFilter->SetInput(1, editsToItk->GetOutput());
-    pipeline->m_OrImageFilter->SetInput(1, additionsToItk->GetOutput());
+    pipeline->m_LateMaskFilter->SetInput(2, editsToItk->GetOutput());
+    pipeline->m_LateMaskFilter->SetInput(1, additionsToItk->GetOutput());
   }
   else
   {

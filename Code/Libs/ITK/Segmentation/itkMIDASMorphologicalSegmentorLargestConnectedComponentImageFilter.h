@@ -31,20 +31,17 @@
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIterator.h>
 #include <itkImageToImageFilter.h>
+#include <sys/time.h>
 
 namespace itk {
 	/**
-	 * \brief Largest component extractor
-	 *
+	 * \brief Largest connected component filter.
 	 *
 	 * Returns an image only containing the largest of the foreground components of the input image.
 	 */
 	template <class TInputImageType, class TOutputImageType>
 	class MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter : public ImageToImageFilter<TInputImageType, TOutputImageType> {
-		/**
-		 * \name Types
-		 * @{
-		 */
+
 	public:
 		typedef TInputImageType InputImageType;
 		typedef TOutputImageType OutputImageType;
@@ -52,73 +49,52 @@ namespace itk {
 		typedef typename OutputImageType::PixelType OutputImagePixelType;
 		typedef typename InputImageType::PixelType InputImagePixelType;
 		typedef typename InputImageType::RegionType InputImageRegionType;
-		/** @} */
+    typedef MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter Self;
+    typedef ImageToImageFilter<InputImageType, OutputImageType> SuperClass;
+    typedef SmartPointer<Self> Pointer;
+    typedef SmartPointer<const Self> ConstPointer;
+    itkNewMacro(Self);
 
-		/**
-		 * \name Output Values
-		 * @{
-		 */
-	private:
-		OutputImagePixelType m_OutputBackgroundValue, m_OutputForegroundValue;
-		InputImagePixelType m_InputBackgroundValue;
-		std::vector<IndexType> m_ComponentIndicies[2];
+		/** Set/Get methods to set the value on the input image that is considered background. Default 0. */
+	  itkSetMacro(InputBackgroundValue, InputImagePixelType);
+	  itkGetConstMacro(InputBackgroundValue, InputImagePixelType);
 
-	public:
-	    /** Set/Get methods to set the value on the input image that is considered background. Default 0. */
-	    itkSetMacro(InputBackgroundValue, InputImagePixelType);
-	    itkGetConstMacro(InputBackgroundValue, InputImagePixelType);
+	  /** Set/Get methods to set the output value for outside the largest region. Default 0. */
+	  itkSetMacro(OutputBackgroundValue, OutputImagePixelType);
+	  itkGetConstMacro(OutputBackgroundValue, OutputImagePixelType);
 
-	    /** Set/Get methods to set the output value for outside the largest region. Default 0. */
-	    itkSetMacro(OutputBackgroundValue, OutputImagePixelType);
-	    itkGetConstMacro(OutputBackgroundValue, OutputImagePixelType);
+	  /** Set/Get methods to set the output value for inside the largest region. Default 1. */
+	  itkSetMacro(OutputForegroundValue, OutputImagePixelType);
+	  itkGetConstMacro(OutputForegroundValue, OutputImagePixelType);
 
-	    /** Set/Get methods to set the output value for inside the largest region. Default 1. */
-	    itkSetMacro(OutputForegroundValue, OutputImagePixelType);
-	    itkGetConstMacro(OutputForegroundValue, OutputImagePixelType);
+	  /** Set/Get the suggested size of the largest region, to enable vectors to be allocated in one go. Default 1. */
+	  void SetCapacity(unsigned long int n);
+	  unsigned long int GetCapacity() const;
 
-	    /** Set/Get the suggested size of the largest region, to enable vectors to be allocated in one go. Default 1. */
-	    void SetCapacity(unsigned long int n);
-	    unsigned long int GetCapacity() const;
-
-	    /** @} */
-
-	    /**
-	     * \name Processing
-	     * @{
-	     */
 	protected:
-	    /** Creates a list of pixel indices belonging to the component starting at "startIndex". Removes the corresponding labels from the output image. */
-	    void _ProcessRegion(std::vector<IndexType> &r_regionIndices, const IndexType &startIndex);
+    MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter(void);
+	  virtual ~MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter(void) {}
 
-	    /** Labels the pixels whose indices are passed in regionIndices */
-	    void _SetComponentPixels(const std::vector<IndexType> &regionIndices);
+	  /** Creates a list of pixel indices belonging to the component starting at "startIndex". Removes the corresponding labels from the output image. */
+	  void _ProcessRegion(std::vector<unsigned int> &r_regionIndices, const unsigned int &startIndex);
 
-	    /** The main method to implement the connected component labeling in this single-threaded class */
-	    virtual void GenerateData();
-	    /** @} */
+	  /** Labels the pixels whose indices are passed in regionIndices */
+	  void _SetComponentPixels(const std::vector<unsigned int> &regionIndices);
 
-	    /**
-	     * \name Standard ITK Filter API
-	     * @{
-	     */
-	public:
-	    typedef MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter Self;
-	    typedef ImageToImageFilter<InputImageType, OutputImageType> SuperClass;
-	    typedef SmartPointer<Self> Pointer;
-	    typedef SmartPointer<const Self> ConstPointer;
+	  /** Initialises stuff before multithreaded section, eg. clearing m_MapOfLabelledPixels. */
+	  virtual void BeforeThreadedGenerateData();
 
-	public:
-	    itkNewMacro(Self);
-	    /** @} */
+	  /** Multi-threaded section, that actually just does some basic initialisation. */
+	  virtual void ThreadedGenerateData(const InputImageRegionType &outputRegionForThread, int ThreadID);
 
-	    /**
-	     * \name Construction, Destruction
-	     * @{
-	     */
-	protected:
-	    MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter(void);
-	    virtual ~MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter(void) {}
-	    /** @} */
+	  /** In contrast to conventional ITK style, most of the algorithm is here. */
+	  virtual void AfterThreadedGenerateData();
+
+  private:
+    OutputImagePixelType m_OutputBackgroundValue, m_OutputForegroundValue;
+    InputImagePixelType m_InputBackgroundValue;
+    std::vector<unsigned int> m_ComponentIndicies[2];
+    std::map<int, int> m_MapOfLabelledPixels;
 	};
 
 #ifndef ITK_MANUAL_INSTANTIATION

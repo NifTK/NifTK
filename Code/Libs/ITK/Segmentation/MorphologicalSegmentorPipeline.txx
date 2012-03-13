@@ -29,17 +29,19 @@ template<typename TPixel, unsigned int VImageDimension>
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::MorphologicalSegmentorPipeline()
 {
+  unsigned long int capacity = 2000000;
+  
   // This is the main pipeline that will form the whole of the final output.
   m_ThresholdingFilter = ThresholdingFilterType::New();
   m_EarlyMaskFilter = MaskByRegionFilterType::New();
   m_EarlyConnectedComponentFilter = LargestConnectedComponentFilterType::New();
+  m_EarlyConnectedComponentFilter->SetCapacity(capacity);
   m_ErosionFilter = ErosionFilterType::New();
   m_DilationFilter = DilationFilterType::New();
   m_RethresholdingFilter = RethresholdingFilterType::New();
   m_LateMaskFilter = MaskByRegionFilterType::New();
   m_LateConnectedComponentFilter = LargestConnectedComponentFilterType::New();
-  m_ExcludeImageFilter = ExcludeImageFilterType::New();
-  m_OrImageFilter = OrImageFilterType::New();
+  m_LateConnectedComponentFilter->SetCapacity(capacity);
 
   // Making sure that these are only called once in constructor, to avoid unnecessary pipeline updates.
   m_ForegroundValue = 255;
@@ -84,10 +86,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_EarlyConnectedComponentFilter->SetInput(m_EarlyMaskFilter->GetOutput());
     m_ErosionFilter->SetBinaryImageInput(m_EarlyConnectedComponentFilter->GetOutput());
     m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(m_ErosionFilter->GetOutput());
-    m_OrImageFilter->SetInput(0, m_LateMaskFilter->GetOutput());
-    m_ExcludeImageFilter->SetInput(0, m_OrImageFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_ExcludeImageFilter->GetOutput());
+    m_LateMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
+    m_LateConnectedComponentFilter->SetInput(m_LateMaskFilter->GetOutput());
 
     m_ErosionFilter->SetUpperThreshold((TPixel)p.m_UpperErosionsThreshold);
     m_ErosionFilter->SetNumberOfIterations(p.m_NumberOfErosions);
@@ -100,10 +100,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
     m_DilationFilter->SetBinaryImageInput(m_ErosionFilter->GetOutput());
     m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(m_DilationFilter->GetOutput());
-    m_OrImageFilter->SetInput(0, m_LateMaskFilter->GetOutput());
-    m_ExcludeImageFilter->SetInput(0, m_OrImageFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_ExcludeImageFilter->GetOutput());
+    m_LateMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
+    m_LateConnectedComponentFilter->SetInput(m_LateMaskFilter->GetOutput());
 
     m_DilationFilter->SetLowerThreshold((int)(p.m_LowerPercentageThresholdForDilations));
     m_DilationFilter->SetUpperThreshold((int)(p.m_UpperPercentageThresholdForDilations));
@@ -117,12 +115,10 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
     m_DilationFilter->SetBinaryImageInput(m_ErosionFilter->GetOutput());
     m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(m_RethresholdingFilter->GetOutput());
     m_RethresholdingFilter->SetBinaryImageInput(m_DilationFilter->GetOutput());
     m_RethresholdingFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_OrImageFilter->SetInput(0, m_LateMaskFilter->GetOutput());
-    m_ExcludeImageFilter->SetInput(0, m_OrImageFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_ExcludeImageFilter->GetOutput());
+    m_LateMaskFilter->SetInput(0, m_RethresholdingFilter->GetOutput());
+    m_LateConnectedComponentFilter->SetInput(m_LateMaskFilter->GetOutput());
 
     m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
     m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
@@ -167,8 +163,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
       // a region of interest, perform the logic in another filter, and then insert the region
       // back, but it didn't work, even after sacrificing virgins to several well known deities.
 
-      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_OrImageFilter->GetOutput(), editingRegionOfInterest);
-      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_OrImageFilter->GetInput(1), editingRegionOfInterest);
+      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_LateMaskFilter->GetOutput(), editingRegionOfInterest);
+      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_LateMaskFilter->GetInput(1), editingRegionOfInterest);
       for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
           !outputIterator.IsAtEnd();
           ++outputIterator, ++editedRegionIterator)
@@ -190,8 +186,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
       // a region of interest, perform the logic in another filter, and then insert the region
       // back, but it didn't work, even after sacrificing virgins to several well known deities.
 
-      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_ExcludeImageFilter->GetOutput(), editingRegionOfInterest);
-      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_ExcludeImageFilter->GetInput(1), editingRegionOfInterest);
+      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_LateMaskFilter->GetOutput(), editingRegionOfInterest);
+      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_LateMaskFilter->GetInput(2), editingRegionOfInterest);
       for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
           !outputIterator.IsAtEnd();
           ++outputIterator, ++editedRegionIterator)
@@ -224,13 +220,9 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else
   {
-    if (additionsImageBeingEdited)
+    if (additionsImageBeingEdited || editingImageBeingEdited)
     {
-      result = m_OrImageFilter->GetOutput();
-    }
-    else if (editingImageBeingEdited)
-    {
-      result = m_ExcludeImageFilter->GetOutput();
+      result = m_LateMaskFilter->GetOutput();
     }
     else
     {

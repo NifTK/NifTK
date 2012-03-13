@@ -21,6 +21,7 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
+ #include <sys/time.h>
  
 template <class TInputImageType, class TOutputImageType> 
 MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
@@ -47,112 +48,156 @@ MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType,
 }
 
 template <class TInputImageType, class TOutputImageType>
-void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>::_ProcessRegion(std::vector<IndexType> &r_componentIndices, const IndexType &startIndex) {
-	const typename OutputImageType::SizeType imgSize = this->GetOutput()->GetLargestPossibleRegion().GetSize();
+void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
+::BeforeThreadedGenerateData()
+{
+  m_MapOfLabelledPixels.clear();
+  m_ComponentIndicies[0].clear();
+  m_ComponentIndicies[1].clear();
+}
 
-  typename OutputImageType::Pointer sp_outputImage = this->GetOutput();
+template <class TInputImageType, class TOutputImageType>
+void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
+::ThreadedGenerateData(const InputImageRegionType &outputRegionForThread, int ThreadID) 
+{
+  ImageRegionConstIterator<InputImageType> ic_input(this->GetInput(), outputRegionForThread);
+  ImageRegionIterator<OutputImageType> i_componentPx(this->GetOutput(), outputRegionForThread);
+
+  int numLabelPxs = 0;
+  InputImagePixelType  inputBackground = GetInputBackgroundValue();
   OutputImagePixelType outputForeground = GetOutputForegroundValue();
   OutputImagePixelType outputBackground = GetOutputBackgroundValue();
 
-	std::stack<IndexType> componentIndexStack;
-
-	assert(sp_outputImage->GetPixel(startIndex) == outputForeground);
-	componentIndexStack.push(startIndex);
-	sp_outputImage->SetPixel(startIndex, outputBackground);
-	do {
-		const IndexType currIndex = componentIndexStack.top();
-
-		unsigned int dim;
-		IndexType nextIndex;
-
-		assert(sp_outputImage->GetPixel(currIndex) == outputBackground);
-		componentIndexStack.pop();
-		r_componentIndices.push_back(currIndex);
-
-		for (dim = 0; dim < OutputImageType::ImageDimension; dim++) {
-			nextIndex = currIndex;
-			nextIndex[dim] -= 1;
-			if (nextIndex[dim] >= 0 && sp_outputImage->GetPixel(nextIndex) == outputForeground) {
-				sp_outputImage->SetPixel(nextIndex, outputBackground);
-				componentIndexStack.push(nextIndex);
-			}
-
-			nextIndex[dim] += 2;
-			if (nextIndex[dim] < (int)imgSize[dim] && sp_outputImage->GetPixel(nextIndex) == outputForeground) {
-				sp_outputImage->SetPixel(nextIndex, outputBackground);
-				componentIndexStack.push(nextIndex);
-			}
-		}
-	} while (componentIndexStack.size() > 0);	
+  /*
+   * Mark unvisited foreground regions with a value < 0. Visited foreground components have values > 0
+   */   
+  for (ic_input.GoToBegin(), i_componentPx.GoToBegin(); !ic_input.IsAtEnd(); ++ic_input, ++i_componentPx) {
+    if (ic_input.Get() != inputBackground) {
+      i_componentPx.Set(outputForeground);
+      numLabelPxs += 1;
+    } else {
+      i_componentPx.Set(outputBackground);
+    }
+  }
+  m_MapOfLabelledPixels[ThreadID] = numLabelPxs;
 }
 
 template <class TInputImageType, class TOutputImageType>
-void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>::_SetComponentPixels(const std::vector<IndexType> &regionIndices) {
-	typename std::vector<IndexType>::const_iterator ic_componentInd;
- 
-  typename OutputImageType::Pointer sp_outputImage = this->GetOutput();
-  OutputImagePixelType outputForeground = GetOutputForegroundValue();
+void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
+::AfterThreadedGenerateData()
+{
+  int numLabelPxs, activeComponentIndexBuffer;
+  std::vector<unsigned int> *currComponentIndices, *largestComponentIndices;
+  IndexType    voxelIndex;
+  unsigned int voxelNumber;
   
-	for (ic_componentInd = regionIndices.begin(); ic_componentInd < regionIndices.end(); ic_componentInd++) {
-		sp_outputImage->SetPixel(*ic_componentInd, outputForeground);
-	}
+  /** Get a total of the number of labelled pixels from the multi-threaded section. */
+  numLabelPxs = 0;
+  std::map<int, int>::iterator mapIter;
+  for (mapIter = m_MapOfLabelledPixels.begin(); mapIter != m_MapOfLabelledPixels.end(); mapIter++)
+  {
+    numLabelPxs += (*mapIter).second;
+  }
+  
+  ImageRegionConstIterator<InputImageType> inputIter(this->GetInput(), this->GetInput()->GetLargestPossibleRegion());
+  ImageRegionIterator<OutputImageType>     outputIter(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion());
+  OutputImagePixelType outputForeground =  this->GetOutputForegroundValue();
+  OutputImagePixelType outputBackground =  this->GetOutputBackgroundValue();
+  
+  const typename OutputImageType::SizeType imgSize = this->GetOutput()->GetLargestPossibleRegion().GetSize();
+    
+  activeComponentIndexBuffer = 0;
+  currComponentIndices = &m_ComponentIndicies[0];
+  largestComponentIndices = &m_ComponentIndicies[1];
+
+  for (outputIter.GoToBegin(); !outputIter.IsAtEnd(); ++outputIter) {
+    if (outputIter.Get() == outputForeground) {
+      currComponentIndices->clear();
+      voxelIndex = outputIter.GetIndex();
+      voxelNumber = voxelIndex[2]*imgSize[0]*imgSize[1] + voxelIndex[1]*imgSize[0] + voxelIndex[0];
+      _ProcessRegion(*currComponentIndices, voxelNumber);
+      numLabelPxs -= currComponentIndices->size();
+      assert(numLabelPxs >= 0);
+      if (currComponentIndices->size() > largestComponentIndices->size()) {
+        largestComponentIndices = currComponentIndices;
+        activeComponentIndexBuffer = (activeComponentIndexBuffer + 1) % 2;
+        currComponentIndices = &m_ComponentIndicies[activeComponentIndexBuffer];
+      }
+
+      if (numLabelPxs < (int)largestComponentIndices->size()) {
+        /* There are less set pixels left than there are in the original picture */
+        break;
+      }
+    }
+  }
+
+  if (numLabelPxs > 0) {
+    this->GetOutput()->FillBuffer(outputBackground);
+  }
+
+  _SetComponentPixels(*largestComponentIndices);
 }
 
 template <class TInputImageType, class TOutputImageType>
-void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>::GenerateData() {
-	int numLabelPxs, activeComponentIndexBuffer;
-	std::vector<IndexType> componentIndices[2], *p_currComponentIndices, *p_largestComponentIndices;
+void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
+::_ProcessRegion(std::vector<unsigned int> &componentIndices, const unsigned int &startIndex) {
 
-	this->AllocateOutputs();
+  // Get a pointer directly to the image buffer.
+  OutputImagePixelType* imageBuffer      = this->GetOutput()->GetBufferPointer();
+  OutputImagePixelType  outputForeground = this->GetOutputForegroundValue();
+  OutputImagePixelType  outputBackground = this->GetOutputBackgroundValue();
 
-	{
-		ImageRegionConstIterator<InputImageType> ic_input(this->GetInput(), this->GetInput()->GetLargestPossibleRegion());
-		ImageRegionIterator<OutputImageType> i_componentPx(this->GetOutput(), this->GetInput()->GetLargestPossibleRegion());
+  std::stack<unsigned int> componentIndexStack;
 
-    numLabelPxs = 0;
-    InputImagePixelType  inputBackground = GetInputBackgroundValue();
-    OutputImagePixelType outputForeground = GetOutputForegroundValue();
-    OutputImagePixelType outputBackground = GetOutputBackgroundValue();
+  int directionCounter;
+  unsigned int dimCounter;
+  unsigned int nextIndex;
+  unsigned int currIndex;
+  unsigned int offsets[3];
 
-		/*
-		 * Mark unvisited foreground regions with a value < 0. Visited foreground components have values > 0
-		 */		
-		for (ic_input.GoToBegin(), i_componentPx.GoToBegin(); !ic_input.IsAtEnd(); ++ic_input, ++i_componentPx) {
-			if (ic_input.Get() != inputBackground) {
-				i_componentPx.Set(outputForeground);
-				numLabelPxs += 1;
-			} else {
-				i_componentPx.Set(outputBackground);
-			}
-		}
+  const typename OutputImageType::SizeType imgSize = this->GetOutput()->GetLargestPossibleRegion().GetSize();
+  unsigned long int numberOfVoxels = imgSize[0] * imgSize[1] * imgSize[2];
 
-		activeComponentIndexBuffer = 0;
-		p_currComponentIndices = &m_ComponentIndicies[0];
-		p_largestComponentIndices = &m_ComponentIndicies[1];
+  // Create an array of offsets.
+  offsets[0] = 1;
+  offsets[1] = imgSize[0];
+  offsets[2] = imgSize[0] * imgSize[1];
+  
+  // Setup initial values.
+  currIndex = startIndex;
+  componentIndexStack.push(currIndex);
+  imageBuffer[currIndex] = outputBackground;
+  
+  do {
+    currIndex = componentIndexStack.top();
+    componentIndices.push_back(currIndex);
+    componentIndexStack.pop();
+    
+    for (dimCounter = 0; dimCounter < 3; dimCounter++) 
+    {
+      for (directionCounter = -1; directionCounter <= 1; directionCounter += 2)
+      {
+        nextIndex = currIndex + directionCounter*offsets[dimCounter];
+        if (nextIndex >= 0 && nextIndex < numberOfVoxels && imageBuffer[nextIndex] == outputForeground)
+        {
+          imageBuffer[nextIndex] = outputBackground;
+          componentIndexStack.push(nextIndex);
+        }
+      }
+    }
+  } while (componentIndexStack.size() > 0);
+}
 
-		for (i_componentPx.GoToBegin(); !i_componentPx.IsAtEnd(); ++i_componentPx) {
-			if (i_componentPx.Get() == GetOutputForegroundValue()) {
-				p_currComponentIndices->clear();				
-				_ProcessRegion(*p_currComponentIndices, i_componentPx.GetIndex());
-				numLabelPxs -= p_currComponentIndices->size();
-				assert(numLabelPxs >= 0);
-				if (p_currComponentIndices->size() > p_largestComponentIndices->size()) {
-					p_largestComponentIndices = p_currComponentIndices;
-					activeComponentIndexBuffer = (activeComponentIndexBuffer + 1) % 2;
-					p_currComponentIndices = &componentIndices[activeComponentIndexBuffer];
-				}
+template <class TInputImageType, class TOutputImageType>
+void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
+::_SetComponentPixels(const std::vector<unsigned int> &regionIndices) {
 
-				if (numLabelPxs < (int)p_largestComponentIndices->size()) {
-					/* There are less set pixels left than there are in the original picture */
-					break;
-				}
-			}
-		}
-
-		if (numLabelPxs > 0) {
-			this->GetOutput()->FillBuffer(GetOutputBackgroundValue());
-		}
+  typename std::vector<unsigned int>::const_iterator iter;
  
-		_SetComponentPixels(*p_largestComponentIndices);
-	}	
+  OutputImagePixelType outputForeground = this->GetOutputForegroundValue();
+  OutputImagePixelType* imageBuffer = this->GetOutput()->GetBufferPointer();
+  
+  for (iter = regionIndices.begin(); iter < regionIndices.end(); iter++) {
+    imageBuffer[*iter] = outputForeground;
+  }
 }

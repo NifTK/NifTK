@@ -61,25 +61,35 @@ namespace itk
   MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>
   ::BeforeThreadedGenerateData()
   {
-    // Check only 1 input
-    const unsigned int numberOfInputImages = this->GetNumberOfInputs();
-    if(numberOfInputImages != 1)
-    {
-      niftkitkDebugMacro(<< "There should only be one input image for MIDASBinaryThresholdImageFilter.");
-    }
-
     // Get the input and output pointers, check same size image
     typename TInputImage::Pointer inputPtr = static_cast<TInputImage*>(this->ProcessObject::GetInput(0));
     typename TOutputImage::Pointer outputPtr = static_cast<TOutputImage*>(this->ProcessObject::GetOutput(0));
 
     if (inputPtr->GetLargestPossibleRegion().GetSize() != outputPtr->GetLargestPossibleRegion().GetSize())
     {
-      niftkitkDebugMacro(<< "Input and output are not the same size??? They should be.");
+      niftkitkDebugMacro(<< "Input 0 and output are not the same size??? They should be.");
+    }
+    
+    typename TInputImage::Pointer inputPtr1 = static_cast<TInputImage*>(this->ProcessObject::GetInput(1));
+    if (inputPtr1.IsNotNull())
+    {
+      if (inputPtr1->GetLargestPossibleRegion().GetSize() != outputPtr->GetLargestPossibleRegion().GetSize())
+      {
+        niftkitkDebugMacro(<< "Input 1 and output are not the same size??? They should be.");
+      }
+    }
+
+    typename TInputImage::Pointer inputPtr2 = static_cast<TInputImage*>(this->ProcessObject::GetInput(2));
+    if (inputPtr2.IsNotNull())
+    {
+      if (inputPtr2->GetLargestPossibleRegion().GetSize() != outputPtr->GetLargestPossibleRegion().GetSize())
+      {
+        niftkitkDebugMacro(<< "Input 2 and output are not the same size??? They should be.");
+      }
     }
     
     // Fill output buffer with background value.
     this->GetOutput()->FillBuffer(m_OutputBackgroundValue);
-    
   }
 
   template <class TInputImage, class TOutputImage>
@@ -120,12 +130,64 @@ namespace itk
     
     ImageRegionConstIteratorWithIndex<TInputImage> inputIt(inputPtr, actualRegion);
     ImageRegionIterator<TOutputImage> outputIt(outputPtr, actualRegion);
+     
 
-    niftkitkDebugMacro(<<", thread=" << threadNumber << ", requestedRegion=" <<  outputRegionForThread << ", userRegion=" << m_Region << ", outputRegion=" << actualRegion);
+    // If input 1 and input 2 are specified, we are additionally using 2 input images to mask.    
+    typename TInputImage::Pointer additionsImage = static_cast<TInputImage*>(this->ProcessObject::GetInput(1));
+    typename TInputImage::Pointer connectionBreakerImage = static_cast<TInputImage*>(this->ProcessObject::GetInput(2));
     
-    for (inputIt.GoToBegin(), outputIt.GoToBegin(); !inputIt.IsAtEnd(); ++inputIt, ++outputIt)
+    if (additionsImage.IsNotNull() && connectionBreakerImage.IsNotNull())
     {
-      outputIt.Set(inputIt.Get());
+      InputPixelType  inputPixelValue;
+      OutputPixelType outputPixelValue;
+      ImageRegionConstIteratorWithIndex<TInputImage> additionsImageIterator(additionsImage, actualRegion);
+      ImageRegionConstIteratorWithIndex<TInputImage> connectionBreakerImageIterator(connectionBreakerImage, actualRegion);
+      
+      for (inputIt.GoToBegin(),
+           additionsImageIterator.GoToBegin(),
+           connectionBreakerImageIterator.GoToBegin(),
+           outputIt.GoToBegin(); 
+           !inputIt.IsAtEnd(); 
+           ++inputIt,
+           ++additionsImageIterator,
+           ++connectionBreakerImageIterator, 
+           ++outputIt)
+      {
+        inputPixelValue = inputIt.Get();
+        
+        // See itk::InjectSourceImageGreaterThanZeroIntoTargetImageFilter
+        // Effectively we are adding manual edits to the output volume (left mouse click, drag in MIDAS).
+        
+        if (inputPixelValue != 0)
+        {
+          outputPixelValue = inputPixelValue;
+        }
+        else
+        {
+          outputPixelValue = additionsImageIterator.Get();
+        }
+        
+        // See itk::ExcludeImageFilter
+        // Effectively we are using the 3rd input to do connection breaker.
+        
+        if (outputPixelValue != 0 && connectionBreakerImageIterator.Get() == 0)
+        {
+          outputPixelValue = 1;
+        }
+        else
+        {
+          outputPixelValue = 0;
+        }
+         
+        outputIt.Set(outputPixelValue);
+      }
+    } 
+    else
+    {
+      for (inputIt.GoToBegin(), outputIt.GoToBegin(); !inputIt.IsAtEnd(); ++inputIt, ++outputIt)
+      {
+        outputIt.Set(inputIt.Get());
+      }
     }
   }
 } // end namespace

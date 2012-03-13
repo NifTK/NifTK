@@ -30,10 +30,6 @@
 
 #include "itkImage.h"
 #include "itkBinaryThresholdImageFilter.h"
-#include "itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter.h"
-#include "itkExcludeImageFilter.h"
-#include "itkExtractImageFilter.h"
-#include "itkPasteImageFilter.h"
 #include "itkMIDASMaskByRegionImageFilter.h"
 #include "itkMIDASConditionalErosionFilter.h"
 #include "itkMIDASConditionalDilationFilter.h"
@@ -59,10 +55,6 @@ public:
   typedef itk::MIDASConditionalErosionFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> ErosionFilterType;
   typedef itk::MIDASConditionalDilationFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> DilationFilterType;
   typedef itk::MIDASRethresholdingFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> RethresholdingFilterType;
-  typedef itk::InjectSourceImageGreaterThanZeroIntoTargetImageFilter<SegmentationImageType, SegmentationImageType, SegmentationImageType> OrImageFilterType;
-  typedef itk::ExcludeImageFilter<SegmentationImageType, SegmentationImageType, SegmentationImageType> ExcludeImageFilterType;
-  typedef itk::ExtractImageFilter<SegmentationImageType, SegmentationImageType> RegionOfInterestImageFilterType;
-  typedef itk::PasteImageFilter<SegmentationImageType, SegmentationImageType> PasteImageFilterType;
 
   /// \brief Default constructor, creating all pipeline elements, where filters are held with smart pointers for automatic destruction.
   MorphologicalSegmentorPipeline();
@@ -103,8 +95,6 @@ public:
   typename DilationFilterType::Pointer                         m_DilationFilter;
   typename RethresholdingFilterType::Pointer                   m_RethresholdingFilter;
   typename MaskByRegionFilterType::Pointer                     m_LateMaskFilter;
-  typename OrImageFilterType::Pointer                          m_OrImageFilter;
-  typename ExcludeImageFilterType::Pointer                     m_ExcludeImageFilter;
   typename LargestConnectedComponentFilterType::Pointer        m_LateConnectedComponentFilter;
 };
 
