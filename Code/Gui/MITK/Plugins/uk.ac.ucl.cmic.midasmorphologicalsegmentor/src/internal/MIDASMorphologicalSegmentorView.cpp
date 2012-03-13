@@ -565,6 +565,11 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
   mitk::DataNode* segmentationNode = this->GetSegmentationNodeUsingToolManager();
   if (segmentationNode != NULL)
   {
+    if (i == 0)
+    {
+      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+    }
+
     if (i == 1 || i == 2)
     {
       this->m_ToolSelector->SetEnabled(true);
