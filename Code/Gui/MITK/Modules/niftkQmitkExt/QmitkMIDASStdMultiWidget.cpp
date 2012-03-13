@@ -695,8 +695,8 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildGeometry
     assert(m_View >= 0 && m_View <= 4);
     break;
   }
-  this->Update3DWindowVisibility();
   m_View = view;
+  this->Update3DWindowVisibility();
 }
 
 MIDASView QmitkMIDASStdMultiWidget::GetMIDASView() const
