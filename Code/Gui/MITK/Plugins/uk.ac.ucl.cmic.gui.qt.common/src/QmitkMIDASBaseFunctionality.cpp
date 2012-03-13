@@ -31,6 +31,7 @@
 #include "mitkIDataStorageReference.h"
 #include "mitkIDataStorageService.h"
 
+#include "QmitkStdMultiWidget.h"
 #include "QmitkMIDASBaseFunctionality.h"
 #include "QmitkMIDASMultiViewEditor.h"
 #include "QmitkMIDASMultiViewWidget.h"
@@ -96,6 +97,10 @@ QmitkMIDASBaseFunctionality::~QmitkMIDASBaseFunctionality()
 
 void QmitkMIDASBaseFunctionality::CreateQtPartControl(QWidget *parent)
 {
+  // Work around.
+  QmitkStdMultiWidget* mitkWidget = this->GetActiveStdMultiWidget();
+  mitkWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+
   m_MIDASMultiViewWidget = this->GetActiveMIDASMultiViewWidget();
   this->GetSite()->GetPage()->AddPartListener(m_MIDASMultiViewWidgetListener);
 }

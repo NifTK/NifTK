@@ -278,16 +278,15 @@ void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataS
 
 void QmitkMIDASSingleViewWidget::SetNavigationControllerEventListening(bool enabled)
 {
-  this->m_NavigationControllerEventListening = enabled;
-
-  if (enabled)
+  if (enabled && !this->m_NavigationControllerEventListening)
   {
     this->m_MultiWidget->EnableNavigationControllerEventListening();
   }
-  else
+  else if (!enabled && this->m_NavigationControllerEventListening)
   {
     this->m_MultiWidget->DisableNavigationControllerEventListening();
   }
+  this->m_NavigationControllerEventListening = enabled;
 }
 
 bool QmitkMIDASSingleViewWidget::GetNavigationControllerEventListening() const

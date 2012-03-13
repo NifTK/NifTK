@@ -476,8 +476,6 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         // Make sure the controls match the parameters and the new segmentation is selected
         this->SetControlsByParameterValues();
         this->SelectNode(emptySegmentation);
-
-        m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
       }
       catch (std::bad_alloc)
       {
