@@ -172,6 +172,12 @@ public:
   /// \brief Gets the flag indicating whether this widget is currently in thumnail mode.
   bool GetThumbnailMode() const;
 
+  /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
+  void SetNavigationControllerEventListening(bool enabled);
+
+  /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
+  bool GetNavigationControllerEventListening() const;
+
 signals:
 
   /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
@@ -330,6 +336,7 @@ private:
   bool                                           m_Show3DViewInOrthoview;
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
+  bool                                           m_NavigationControllerEventListening;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

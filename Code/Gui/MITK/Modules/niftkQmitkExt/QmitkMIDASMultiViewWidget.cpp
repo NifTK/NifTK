@@ -70,6 +70,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_Show3DViewInOrthoview(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
+, m_NavigationControllerEventListening(false)
 {
   assert(visibilityManager);
   assert(dataStorage);
@@ -1261,4 +1262,25 @@ void QmitkMIDASMultiViewWidget::OnLinkWindowsCheckboxClicked(bool isLinked)
     }
   }
   this->Update2DCursorVisibility();
+}
+
+void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled)
+{
+  if (m_SelectedWindow >= 0)
+  {
+    if (enabled && !this->m_NavigationControllerEventListening)
+    {
+      m_SingleViewWidgets[m_SelectedWindow]->SetNavigationControllerEventListening(true);
+    }
+    else if (!enabled && this->m_NavigationControllerEventListening)
+    {
+      m_SingleViewWidgets[m_SelectedWindow]->SetNavigationControllerEventListening(false);
+    }
+    this->m_NavigationControllerEventListening = enabled;
+  }
+}
+
+bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
+{
+  return m_NavigationControllerEventListening;
 }

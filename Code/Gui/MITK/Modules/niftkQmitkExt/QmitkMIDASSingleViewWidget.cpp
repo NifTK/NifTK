@@ -281,10 +281,12 @@ void QmitkMIDASSingleViewWidget::SetNavigationControllerEventListening(bool enab
   if (enabled && !this->m_NavigationControllerEventListening)
   {
     this->m_MultiWidget->EnableNavigationControllerEventListening();
+    this->m_MultiWidget->SetWidgetPlanesLocked(false);
   }
   else if (!enabled && this->m_NavigationControllerEventListening)
   {
     this->m_MultiWidget->DisableNavigationControllerEventListening();
+    this->m_MultiWidget->SetWidgetPlanesLocked(true);
   }
   this->m_NavigationControllerEventListening = enabled;
 }
@@ -338,7 +340,7 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   int timeSliceNumber = m_CurrentTimeSliceNumbers[currentArrayOffset];
   int magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
 
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (view != MIDAS_VIEW_UNKNOWN)
   {
     // Dodgy style: orientation is an enum, being used as an array index.
 

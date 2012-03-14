@@ -589,10 +589,14 @@ void MIDASMorphologicalSegmentorView::OnToolSelected(int toolID)
     if (toolID >= 0)
     {
       m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
+      m_MITKWidget->DisableNavigationControllerEventListening();
+      m_MIDASWidget->SetNavigationControllerEventListening(false);
     }
     else
     {
       m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+      m_MITKWidget->EnableNavigationControllerEventListening();
+      m_MIDASWidget->SetNavigationControllerEventListening(true);
     }
   }
 }
