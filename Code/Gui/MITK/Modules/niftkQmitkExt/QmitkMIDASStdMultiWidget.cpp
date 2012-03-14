@@ -514,27 +514,15 @@ std::vector<vtkRenderWindow*> QmitkMIDASStdMultiWidget::GetAllVtkWindows() const
 MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
 {
   MIDASOrientation result = MIDAS_ORIENTATION_UNKNOWN;
-  if (m_RectangleRendering1->IsEnabled()
-      && !m_RectangleRendering2->IsEnabled()
-      && !m_RectangleRendering3->IsEnabled()
-      && !m_RectangleRendering4->IsEnabled()
-      )
+  if (m_View == MIDAS_VIEW_AXIAL)
   {
     result = MIDAS_ORIENTATION_AXIAL;
   }
-  else if (!m_RectangleRendering1->IsEnabled()
-      && m_RectangleRendering2->IsEnabled()
-      && !m_RectangleRendering3->IsEnabled()
-      && !m_RectangleRendering4->IsEnabled()
-      )
+  else if (m_View == MIDAS_VIEW_SAGITTAL)
   {
     result = MIDAS_ORIENTATION_SAGITTAL;
   }
-  else if (!m_RectangleRendering1->IsEnabled()
-      && !m_RectangleRendering2->IsEnabled()
-      && m_RectangleRendering3->IsEnabled()
-      && !m_RectangleRendering4->IsEnabled()
-      )
+  else if (m_View == MIDAS_VIEW_CORONAL)
   {
     result = MIDAS_ORIENTATION_CORONAL;
   }

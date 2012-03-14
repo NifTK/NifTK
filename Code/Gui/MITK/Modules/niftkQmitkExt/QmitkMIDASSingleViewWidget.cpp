@@ -340,7 +340,7 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   int timeSliceNumber = m_CurrentTimeSliceNumbers[currentArrayOffset];
   int magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
 
-  if (view != MIDAS_VIEW_UNKNOWN)
+  if (view != MIDAS_VIEW_UNKNOWN && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     // Dodgy style: orientation is an enum, being used as an array index.
 
@@ -599,9 +599,19 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     MITK_DEBUG << "Matt, transformedBoundingBox=" << transformedBoundingBox << std::endl;
     MITK_DEBUG << "Matt, timeBounds=" << this->m_ActiveTimeSlicedGeometry->GetTimeBounds() << std::endl;
 
-    this->m_CurrentViews[this->GetBoundUnboundOffset()] = view;
     this->m_MultiWidget->SetMIDASView(view, timeSlicedTransformedGeometry);
     this->m_MultiWidget->Fit();
+
+    MIDASOrientation orientation = this->GetOrientation();
+    this->m_CurrentViews[this->GetBoundUnboundOffset()] = view;
+    this->m_CurrentOrientations[this->GetBoundUnboundOffset()] = orientation;
+
+    if (this->m_MultiWidget->IsSingle2DView() && m_PreviousOrientations[this->GetBoundUnboundPreviousArrayOffset() + orientation] != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      this->SetSliceNumber(orientation, m_PreviousSliceNumbers[this->GetBoundUnboundPreviousArrayOffset() + orientation]);
+      this->SetTime(m_PreviousTimeSliceNumbers[this->GetBoundUnboundPreviousArrayOffset() + orientation]);
+      this->SetMagnificationFactor(m_PreviousMagnificationFactors[this->GetBoundUnboundPreviousArrayOffset() + orientation]);
+    }
 /*
     mitk::SliceNavigationController::ViewDirection direction = mitk::SliceNavigationController::Original;
     if (orientation == MIDAS_VIEW_AXIAL)
@@ -740,13 +750,15 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
   }
 }
 
-int QmitkMIDASSingleViewWidget::GetMagnificationFactor(MIDASOrientation orientation) const
+int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
 {
   return this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()];
 }
 
-void QmitkMIDASSingleViewWidget::SetMagnificationFactor(MIDASOrientation orientation, int magnificationFactor)
+void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
 {
+  this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()] = magnificationFactor;
+
   /*
   MITK_DEBUG << "Matt, requested magnificationFactor=" << magnificationFactor << std::endl;
 

@@ -887,26 +887,27 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
       m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMaximum(maxSlice);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(currentSlice);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(true);
-
-      unsigned int minMag = this->m_SingleViewWidgets[selectedWindow]->GetMinMagnification();
-      unsigned int maxMag = this->m_SingleViewWidgets[selectedWindow]->GetMaxMagnification();
-      unsigned int currentMag = this->m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor(orientation);
-      m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMinimum(minMag);
-      m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMaximum(maxMag);
-      m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(currentMag);
-      m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
     }
     else
     {
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(false);
       m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(false);
     }
+    unsigned int minMag = this->m_SingleViewWidgets[selectedWindow]->GetMinMagnification();
+    unsigned int maxMag = this->m_SingleViewWidgets[selectedWindow]->GetMaxMagnification();
+    unsigned int currentMag = this->m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMinimum(minMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMaximum(maxMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(currentMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
+
     unsigned int minTime = this->m_SingleViewWidgets[selectedWindow]->GetMinTime();
     unsigned int maxTime = this->m_SingleViewWidgets[selectedWindow]->GetMaxTime();
     unsigned int currentTime = this->m_SingleViewWidgets[selectedWindow]->GetTime();
     m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMinimum(minTime);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMaximum(maxTime);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->SetValue(currentTime);
+    m_MIDASSlidersWidget->m_TimeSelectionWidget->setEnabled(true);
 
     m_MIDASSlidersWidget->SetBlockSignals(false);
     m_MIDASOrientationWidget->SetBlockSignals(false);
@@ -1030,15 +1031,10 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(int previousMagnifi
 
 void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnificationFactor)
 {
-  MIDASOrientation orientation = this->m_SingleViewWidgets[m_SelectedWindow]->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(false, false);
+  for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
   {
-    std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(false, false);
-
-    for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
-    {
-      this->m_SingleViewWidgets[viewersToUpdate[i]]->SetMagnificationFactor(orientation, magnificationFactor);
-    }
+    this->m_SingleViewWidgets[viewersToUpdate[i]]->SetMagnificationFactor(magnificationFactor);
   }
 }
 
@@ -1185,7 +1181,7 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry()
   MIDASOrientation orientation = m_SingleViewWidgets[m_SelectedWindow]->GetOrientation();
   MIDASView view = m_SingleViewWidgets[m_SelectedWindow]->GetView();
   int sliceNumber = m_SingleViewWidgets[m_SelectedWindow]->GetSliceNumber(orientation);
-  int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor(orientation);
+  int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
   int timeStepNumber = m_SingleViewWidgets[m_SelectedWindow]->GetTime();
 
   std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(false, false);
@@ -1196,7 +1192,7 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry()
     m_SingleViewWidgets[viewerIndex]->SetBoundGeometry(selectedGeometry);
     m_SingleViewWidgets[viewerIndex]->SetView(view, false);
     m_SingleViewWidgets[viewerIndex]->SetSliceNumber(orientation, sliceNumber);
-    m_SingleViewWidgets[viewerIndex]->SetMagnificationFactor(orientation, magnification);
+    m_SingleViewWidgets[viewerIndex]->SetMagnificationFactor(magnification);
     m_SingleViewWidgets[viewerIndex]->SetTime(timeStepNumber);
   }
 }

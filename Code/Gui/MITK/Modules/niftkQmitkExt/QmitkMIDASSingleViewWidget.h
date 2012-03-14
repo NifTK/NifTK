@@ -216,10 +216,10 @@ public:
   void SetView(MIDASView view, bool fitToDisplay);
 
   /// \brief Set the current magnification factor.
-  void SetMagnificationFactor(MIDASOrientation orientation, int magnificationFactor);
+  void SetMagnificationFactor(int magnificationFactor);
 
   /// \brief Get the current magnification factor.
-  int GetMagnificationFactor(MIDASOrientation orientation) const;
+  int GetMagnificationFactor() const;
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
