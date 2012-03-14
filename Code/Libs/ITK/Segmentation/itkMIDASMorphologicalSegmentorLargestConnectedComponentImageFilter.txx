@@ -21,7 +21,6 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
- #include <sys/time.h>
  
 template <class TInputImageType, class TOutputImageType> 
 MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>

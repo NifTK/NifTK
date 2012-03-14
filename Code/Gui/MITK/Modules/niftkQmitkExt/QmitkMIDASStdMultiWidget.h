@@ -40,17 +40,30 @@ class QStackedLayout;
  * \class QmitkMIDASStdMultiWidget
  * \brief Subclass of QmitkStdMultiWidget to provide convenient methods
  * to control geometry, background, cursors on/off in the base class QmitkStdMultiWidget,
- * and thereby providie MIDAS specific functionality.
+ * and thereby provide MIDAS specific functionality.
  *
  * In MIDAS terms, the widget will always be in Axial, Coronal or Sagittal mode, but we
  * subclass QmitkStdMultiWidget so that we can optionally have all the available views,
  * useful for providing FSLView-like multiple orthogonal windows, 3D windows and several
  * other nice layouts.
  *
- * Please do NOT expose this class to the rest of the NiftyView framework, or else
+ * Please do NOT expose this class to the rest of the NiftyView codebase, or else
  * dependency management becomes a bit of an issue.  The class QmitkMIDASSingleViewWidget
  * wraps this one, and the rest of our application should only deal with
  * QmitkMIDASSingleViewWidget.
+ *
+ * <pre>
+ * Note: The requirements specification for MIDAS style zoom basically says.
+ *
+ * magnification   : actual pixels per voxel.
+ * on MIDAS widget :
+ * 2               : 3
+ * 1               : 2
+ * 0               : 1 (i.e. no magnification).
+ * -1              : 0.5 (i.e. 1 pixel covers 2 voxels).
+ * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
+ * etc.
+ * </pre>
  *
  * \sa QmitkStdMultiWidget
  * \sa QmitkMIDASSingleViewWidget
@@ -71,7 +84,7 @@ public:
   /// \brief Returns true if the current view is axial, coronal or sagittal and false otherwise.
   bool IsSingle2DView() const;
 
-  /// \brief There are a lot of things we turn off/on depending on whether the widget is
+  /// \brief There are several things we turn off/on depending on whether the widget is
   /// visible or considered active, so we group them all under this Enabled(true/false) flag.
   void SetEnabled(bool b);
 
@@ -103,7 +116,10 @@ public:
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
   void SetMIDASView(MIDASView view, mitk::Geometry3D* geometry);
 
-  void SetMIDASView(MIDASView view, bool rebuildGeometry);
+  /// \brief Called by the other SetMIDASView method to actually switch QmitkRenderWindows, and in a Qt sense, rebuild the Qt layouts.
+  void SetMIDASView(MIDASView view, bool rebuildLayout);
+
+  /// \brief Called by SetMIDASView(MIDASView view, mitk::Geometry3D* geometry) to actually initialise the Geometry in the QmitkStdMultiWidget base class.
   void SetGeometry(mitk::Geometry3D* geometry);
 
   /// \brief Get the view (layout), where the MIDAS functionality is only interested in
@@ -171,6 +187,15 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
+  /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
+  int GetMagnificationFactor() const;
+
+  /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
+  void SetMagnificationFactor(int magnificationFactor);
+
+  /// \brief Works out a suitable magnification factor given the current geometry.
+  void FitMagnificationFactor();
+
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
@@ -202,14 +227,21 @@ private:
   /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit PositionChanged
   void OnPositionChanged();
 
+  /// \brief Method to update the visibility property of all nodes in 3D window.
+  void Update3DWindowVisibility();
+
   /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one view (i.e. either axial, coronal, sagittal).
   mitk::SliceNavigationController::Pointer GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow *window, mitk::DataNode *node, bool visible);
 
-  /// \brief Method to update the visibility property of all nodes in 3D window.
-  void Update3DWindowVisibility();
+  /// \brief Scales a specific window about it's centre.
+  void ZoomDisplayAboutCentre(QmitkRenderWindow *window, double scaleFactor);
+
+  /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
+  void GetScaleFactors(QmitkRenderWindow *window, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
+
 
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
@@ -222,6 +254,7 @@ private:
   bool                  m_Display2DCursorsGlobally;
   bool                  m_Display3DViewInOrthoView;
   MIDASView             m_View;
+  int                   m_MagnificationFactor;
 };
 
 #endif

@@ -140,6 +140,12 @@ public:
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
   bool GetDisplay3DViewInOrthoView() const;
 
+  /// \brief Sets a flag to determin if we remember the view settings such as slice, magnification, time step when we switch between views axial, coronal, sagittal.
+  void SetRememberViewSettingsPerOrientation(bool remember);
+
+  /// \brief Get the flag to determin if we remember the view settings such as slice, magnification, time step when we switch between views axial, coronal, sagittal.
+  bool GetRememberViewSettingsPerOrientation() const;
+
   /// \brief Sets the background colour.
   void SetBackgroundColor(QColor color);
 
@@ -233,14 +239,6 @@ signals:
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
 
-protected:
-
-  // Separate method to zoom/magnify the display about the centre of the image. A value > 1 makes the image appear bigger.
-  virtual void ZoomDisplayAboutCentre(double scaleFactor);
-
-  // These are both related and use similar calculations, so we calculate them in one method.
-  virtual void GetScaleFactors(mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
-
 protected slots:
 
   // Called when nodes are dropped on the contained render windows.
@@ -283,6 +281,7 @@ private:
   std::vector<MIDASView>                            m_PreviousViews;                // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
 
   bool                                              m_NavigationControllerEventListening;
+  bool                                              m_RememberViewSettingsPerOrientation;
 };
 
 #endif // QMITKMIDASSINGLEVIEWWIDGET_H

@@ -25,12 +25,14 @@
 #include "MIDASMorphologicalSegmentorViewActivator.h"
 #include "MIDASMorphologicalSegmentorView.h"
 #include <QtPlugin>
+#include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 
 namespace mitk {
 
 void MIDASMorphologicalSegmentorViewActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(MIDASMorphologicalSegmentorView, context)
+  BERRY_REGISTER_EXTENSION_CLASS(MIDASMorphologicalSegmentorView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(MIDASMorphologicalSegmentorViewPreferencePage, context);
 }
 
 void MIDASMorphologicalSegmentorViewActivator::stop(ctkPluginContext* context)

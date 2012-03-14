@@ -126,6 +126,9 @@ public:
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
 
+  /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch orientation between axial, coronal, sagittal.
+  void SetRememberViewSettingsPerOrientation(bool remember);
+
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes time step.
   void SetSelectedTimeStep(int timeStep);
 

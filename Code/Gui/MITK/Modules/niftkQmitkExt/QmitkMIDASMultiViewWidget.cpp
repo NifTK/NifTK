@@ -422,6 +422,14 @@ bool QmitkMIDASMultiViewWidget::GetShow3DViewInOrthoView() const
   return m_Show3DViewInOrthoview;
 }
 
+void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remember)
+{
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    m_SingleViewWidgets[i]->SetRememberViewSettingsPerOrientation(remember);
+  }
+}
+
 void QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled)
 {
   m_DropLabel->setEnabled(enabled);
@@ -814,6 +822,19 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
     this->EnableWidgets(true);
   }
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
+
+  if (this->m_SelectedWindow >= 0)
+  {
+    std::vector<QmitkRenderWindow*> windows = m_SingleViewWidgets[m_SelectedWindow]->GetSelectedWindows();
+    if (windows.size() == 1)
+    {
+      int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
+      int timeStep =m_SingleViewWidgets[m_SelectedWindow]->GetTime();
+
+      m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnification);
+      m_MIDASSlidersWidget->m_TimeSelectionWidget->SetValue(timeStep);
+    }
+  }
 }
 
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
@@ -886,20 +907,14 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
       m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMinimum(minSlice);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMaximum(maxSlice);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(currentSlice);
-      m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(true);
     }
-    else
-    {
-      m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(false);
-      m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(false);
-    }
+
     unsigned int minMag = this->m_SingleViewWidgets[selectedWindow]->GetMinMagnification();
     unsigned int maxMag = this->m_SingleViewWidgets[selectedWindow]->GetMaxMagnification();
     unsigned int currentMag = this->m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMinimum(minMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMaximum(maxMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(currentMag);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
 
     unsigned int minTime = this->m_SingleViewWidgets[selectedWindow]->GetMinTime();
     unsigned int maxTime = this->m_SingleViewWidgets[selectedWindow]->GetMaxTime();
@@ -907,7 +922,10 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
     m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMinimum(minTime);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMaximum(maxTime);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->SetValue(currentTime);
+
+    m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(true);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setEnabled(true);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
 
     m_MIDASSlidersWidget->SetBlockSignals(false);
     m_MIDASOrientationWidget->SetBlockSignals(false);

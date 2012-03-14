@@ -100,6 +100,9 @@ public:
   /// \brief Stores the preference name for whether we show the layout buttons.
   static const std::string MIDAS_SHOW_LAYOUT_BUTTONS;
 
+  /// \brief Stores the preference name for whether we adopt MIDAS behaviour when switching orientation to revert to last remembered slice, timestep, magnification.
+  static const std::string MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION;
+
 public slots:
 
   void OnBackgroundColourChanged();
@@ -123,6 +126,7 @@ private:
   QCheckBox   *m_ShowMagnificationSliderCheckBox;
   QCheckBox   *m_Show3DInOrthoCheckBox;
   QCheckBox   *m_Show2DCursorsCheckBox;
+  QCheckBox   *m_RememberEachOrientationsViewSettings;
   QPushButton *m_BackgroundColourButton;
 
   berry::IPreferences::Pointer m_MIDASMultiViewEditorPreferencesNode;

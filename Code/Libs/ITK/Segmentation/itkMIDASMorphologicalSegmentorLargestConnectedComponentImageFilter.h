@@ -31,7 +31,6 @@
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIterator.h>
 #include <itkImageToImageFilter.h>
-#include <sys/time.h>
 
 namespace itk {
 	/**

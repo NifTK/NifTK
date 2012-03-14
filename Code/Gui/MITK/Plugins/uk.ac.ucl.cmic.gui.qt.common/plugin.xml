@@ -9,6 +9,7 @@
       class="QmitkMIDASMultiViewEditor">
     </editor>
   </extension>
+  
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePage" name="CMIC Drag And Drop Display" class="QmitkMIDASMultiViewEditorPreferencePage">
       <keywordreference id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePageKeywords"></keywordreference>

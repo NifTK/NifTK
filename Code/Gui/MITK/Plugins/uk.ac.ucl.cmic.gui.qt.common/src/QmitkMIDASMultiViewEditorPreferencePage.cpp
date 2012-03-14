@@ -47,6 +47,7 @@ const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUT
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW("midas show 3D view in ortho view");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS("midas show 2D cursors");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER("midas show magnification slider");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION("midas remember each orientations view settings");
 
 QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage()
 : m_MainControl(0)
@@ -60,6 +61,7 @@ QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage
 , m_ShowMagnificationSliderCheckBox(NULL)
 , m_Show3DInOrthoCheckBox(NULL)
 , m_Show2DCursorsCheckBox(NULL)
+, m_RememberEachOrientationsViewSettings(NULL)
 , m_BackgroundColourButton(NULL)
 {
 
@@ -138,6 +140,9 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_Show2DCursorsCheckBox = new QCheckBox(parent);
   formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
 
+  m_RememberEachOrientationsViewSettings = new QCheckBox(parent);
+  formLayout->addRow("remember each orientations view settings", m_RememberEachOrientationsViewSettings);
+
   QPushButton* backgroundColourResetButton = new QPushButton(parent);
   backgroundColourResetButton->setText("reset");
 
@@ -183,6 +188,7 @@ bool QmitkMIDASMultiViewEditorPreferencePage::PerformOk()
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, m_Show3DInOrthoCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, m_RememberEachOrientationsViewSettings->isChecked());
   return true;
 }
 
@@ -207,7 +213,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
 
   m_DefaultNumberOfRowsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_ROWS, 1));
   m_DefaultNumberOfColumnsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_COLUMNS, 1));
-  m_DefaultViewComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW, 0));
+  m_DefaultViewComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW, 3));
   m_ImageInterpolationComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
   m_DefaultDropType->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_DROP_TYPE, 0));
   m_ShowDropTypeWidgetsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
@@ -215,6 +221,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
   m_Show3DInOrthoCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
   m_Show2DCursorsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_2D_CURSORS, true));
   m_ShowMagnificationSliderCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, false));
+  m_RememberEachOrientationsViewSettings->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, false));
 }
 
 void QmitkMIDASMultiViewEditorPreferencePage::OnBackgroundColourChanged()

@@ -45,6 +45,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
 , m_View(MIDAS_VIEW_ORTHO)
+, m_MagnificationFactor(0)
 {
   // The spec in the header file says these must be non-null.
   assert(renderingManager);
@@ -320,7 +321,7 @@ void QmitkMIDASStdMultiWidget::SetEnabled(bool b)
   {
     this->AddPlanesToDataStorage();
   }
-  else if (!b and m_IsEnabled)
+  else if (!b && m_IsEnabled)
   {
     this->RemovePlanesFromDataStorage();
   }
@@ -526,6 +527,21 @@ MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
   {
     result = MIDAS_ORIENTATION_CORONAL;
   }
+  else if (m_View == MIDAS_VIEW_ORTHO)
+  {
+    if (m_RectangleRendering1->IsEnabled())
+    {
+      result = MIDAS_ORIENTATION_AXIAL;
+    }
+    else if (m_RectangleRendering2->IsEnabled())
+    {
+      result = MIDAS_ORIENTATION_SAGITTAL;
+    }
+    else if (m_RectangleRendering3->IsEnabled())
+    {
+      result = MIDAS_ORIENTATION_CORONAL;
+    }
+  }
   return result;
 }
 
@@ -557,9 +573,9 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
   }
 }
 
-void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildGeometry)
+void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
 {
-  if (rebuildGeometry)
+  if (rebuildLayout)
   {
     if (m_GridLayout != NULL)
     {
@@ -795,4 +811,301 @@ unsigned int QmitkMIDASStdMultiWidget::GetTime() const
   assert(snc);
 
   return snc->GetTime()->GetPos();
+}
+
+int QmitkMIDASStdMultiWidget::GetMagnificationFactor() const
+{
+  return m_MagnificationFactor;
+}
+
+void QmitkMIDASStdMultiWidget::SetMagnificationFactor(int magnificationFactor)
+{
+  // The aim of this method, is that when a magnificationFactor is passed in,
+  // all 2D views update to an equivalent zoom, even if they were different beforehand.
+
+  std::vector<QmitkRenderWindow*> windows = this->GetAllWindows();
+  for (unsigned int i = 0; i < 3; i++)
+  {
+    QmitkRenderWindow *window = windows[i];
+
+    MITK_DEBUG << "Matt, requested magnificationFactor=" << magnificationFactor << std::endl;
+
+    mitk::Point2D scaleFactorPixPerVoxel;
+    mitk::Point2D scaleFactorPixPerMillimetres;
+    this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+
+    MITK_DEBUG << "Matt, currently scaleFactorPixPerVoxel=" << scaleFactorPixPerVoxel << ", scaleFactorPixPerMillimetres=" << scaleFactorPixPerMillimetres << std::endl;
+
+    double effectiveMagnificationFactor = 0;
+    if (magnificationFactor >= 0)
+    {
+      effectiveMagnificationFactor = magnificationFactor + 1;
+    }
+    else
+    {
+      effectiveMagnificationFactor = magnificationFactor - 1;
+      effectiveMagnificationFactor = fabs(1.0/effectiveMagnificationFactor);
+    }
+
+    MITK_DEBUG << "Matt, effectiveMagnificationFactor=" << effectiveMagnificationFactor << std::endl;
+
+    mitk::Point2D targetScaleFactorPixPerMillimetres;
+
+    // Need to scale both of the current scaleFactorPixPerVoxel[i]
+    for (int i = 0; i < 2; i++)
+    {
+      targetScaleFactorPixPerMillimetres[i] = (effectiveMagnificationFactor / scaleFactorPixPerVoxel[i]) * scaleFactorPixPerMillimetres[i];
+    }
+
+    MITK_DEBUG << "Matt, targetScaleFactorPixPerMillimetres=" << targetScaleFactorPixPerMillimetres << std::endl;
+
+    // Pick the one that has changed the least
+    int axisWithLeastDifference = -1;
+    double leastDifference = std::numeric_limits<double>::max();
+    for(int i = 0; i < 2; i++)
+    {
+      if (fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]) < leastDifference)
+      {
+        leastDifference = fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]);
+        axisWithLeastDifference = i;
+      }
+    }
+
+    double zoomScaleFactor = targetScaleFactorPixPerMillimetres[axisWithLeastDifference]/scaleFactorPixPerMillimetres[axisWithLeastDifference];
+
+    MITK_DEBUG << "Matt, axisWithLeastDifference=" << axisWithLeastDifference << std::endl;
+    MITK_DEBUG << "Matt, zoomScaleFactor=" << zoomScaleFactor << std::endl;
+
+    this->ZoomDisplayAboutCentre(window, zoomScaleFactor);
+
+  } // end for
+
+  m_MagnificationFactor = magnificationFactor;
+  this->RequestUpdate();
+}
+
+void QmitkMIDASStdMultiWidget::FitMagnificationFactor()
+{
+  // Note, that this method should only be called for MIDAS purposes, when the view is a 2D
+  // view, so it will either be Axial, Coronal, Sagittal, and not 3D or OthoView.
+  MIDASOrientation orientation = this->GetOrientation();
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    QmitkRenderWindow *window = NULL;
+    if (orientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      window = this->GetRenderWindow1();
+    }
+    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      window = this->GetRenderWindow2();
+    } else if (orientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      window = this->GetRenderWindow3();
+    }
+    assert(window);
+
+    ////////////////////////////////////////////////////////////////////////
+    // Use the current window to work out a reasonable magnification factor.
+    ////////////////////////////////////////////////////////////////////////
+
+    // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
+    mitk::Point2D scaleFactorPixPerVoxel;
+    mitk::Point2D scaleFactorPixPerMillimetres;
+    this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+
+    // Now we scale these values so we get an integer number of pixels per voxel.
+    mitk::Point2D targetScaleFactorPixPerVoxel;
+    mitk::Point2D targetScaleFactorPixPerMillimetres;
+
+    // Need to round the scale factors.
+    for (int i = 0; i < 2; i++)
+    {
+      if (true)
+      {
+        targetScaleFactorPixPerVoxel[i] = scaleFactorPixPerVoxel[i];
+        targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i];
+      }
+      else
+      {
+        // If they are >= than 1, we round down towards 1
+        // so you have less pixels per voxel, so image will appear smaller.
+        if (scaleFactorPixPerVoxel[i] >= 1)
+        {
+          targetScaleFactorPixPerVoxel[i] = (int)(scaleFactorPixPerVoxel[i]);
+        }
+        else
+        {
+          // Otherwise, we still have to make image smaller to fit it on screen.
+          //
+          // For example, if the scale factor is 0.5, we invert it to get 2, which is an integer, so OK.
+          // If however the scale factor is 0.4, we invert it to get 2.5 voxels per pixel, so we have
+          // to round it up to 3, which means the image gets smaller (3 voxels fit into 1 pixel), and then
+          // invert it to get the scale factor again.
+          double tmp = 1.0 / scaleFactorPixPerVoxel[i];
+          int roundedTmp = (int)(tmp + 0.5);
+          tmp = 1.0 / (double) roundedTmp;
+          targetScaleFactorPixPerVoxel[i] = tmp;
+        }
+        targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i] * (targetScaleFactorPixPerVoxel[i]/scaleFactorPixPerVoxel[i]);
+      }
+    }
+
+    // We may have anisotropic voxels, so find the axis that requires most scale factor change.
+    int axisWithLargestDifference = 0;
+    double largestDifference = -1.0 * (std::numeric_limits<double>::max());
+    for(int i = 0; i < 2; i++)
+    {
+      if (fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]) > largestDifference)
+      {
+        largestDifference = fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]);
+        axisWithLargestDifference = i;
+      }
+    }
+
+    // See comments at top of header file
+    if (targetScaleFactorPixPerVoxel[axisWithLargestDifference] > 0)
+    {
+      // So, if pixels per voxel = 2, midas magnification = 1.
+      // So, if pixels per voxel = 1, midas magnification = 0. etc.
+      m_MagnificationFactor = targetScaleFactorPixPerVoxel[axisWithLargestDifference] - 1;
+    }
+    else
+    {
+      m_MagnificationFactor = (int)(1.0 / targetScaleFactorPixPerVoxel[axisWithLargestDifference]) + 1;
+    }
+  }
+}
+
+void QmitkMIDASStdMultiWidget::GetScaleFactors(
+    QmitkRenderWindow *window,
+    mitk::Point2D &scaleFactorPixPerVoxel,
+    mitk::Point2D &scaleFactorPixPerMillimetres)
+{
+  if (window != NULL)
+  {
+    const mitk::Geometry3D *geometry = window->GetSliceNavigationController()->GetInputWorldGeometry();
+
+    mitk::SliceNavigationController* sliceNavigationController = window->GetSliceNavigationController();
+    assert(sliceNavigationController);
+
+    mitk::BaseRenderer::Pointer baseRenderer = sliceNavigationController->GetRenderer();
+    assert(baseRenderer);
+
+    mitk::DisplayGeometry::Pointer displayGeometry = baseRenderer->GetDisplayGeometry();
+    assert(displayGeometry);
+
+    mitk::Point3D cornerPointsInImage[8];
+    cornerPointsInImage[0] = geometry->GetCornerPoint(true, true, true);
+    cornerPointsInImage[1] = geometry->GetCornerPoint(true, true, false);
+    cornerPointsInImage[2] = geometry->GetCornerPoint(true, false, true);
+    cornerPointsInImage[3] = geometry->GetCornerPoint(true, false, false);
+    cornerPointsInImage[4] = geometry->GetCornerPoint(false, true, true);
+    cornerPointsInImage[5] = geometry->GetCornerPoint(false, true, false);
+    cornerPointsInImage[6] = geometry->GetCornerPoint(false, false, true);
+    cornerPointsInImage[7] = geometry->GetCornerPoint(false, false, false);
+
+    scaleFactorPixPerVoxel[0] = std::numeric_limits<float>::max();
+    scaleFactorPixPerVoxel[1] = std::numeric_limits<float>::max();
+
+    // Take every combination of pairs of 3D corner points taken from the 8 corners of the geometry.
+    for (unsigned int i = 0; i < 8; i++)
+    {
+      mitk::Point3D pointsInVoxels[2];
+
+      for (unsigned int j = 1; j < 8; j++)
+      {
+        geometry->WorldToIndex(cornerPointsInImage[i], pointsInVoxels[0]);
+        geometry->WorldToIndex(cornerPointsInImage[j], pointsInVoxels[1]);
+
+        // We only want to pick pairs of points where the points differ in 3D
+        // space along exactly one axis (i.e. no diagonals), and no duplicates.
+        unsigned int differentVoxelIndexesCounter=0;
+        int differentVoxelAxis = -1;
+
+        for (unsigned int k = 0; k < 3; k++)
+        {
+          if (fabs(pointsInVoxels[1][k] - pointsInVoxels[0][k]) > 0.1)
+          {
+            differentVoxelIndexesCounter++;
+            differentVoxelAxis = k;
+          }
+        }
+        if (differentVoxelIndexesCounter == 1)
+        {
+          // So, for this pair of points, project to 2D
+          mitk::Point2D displayPointInMillimetreCoordinates[2];
+          mitk::Point2D displayPointInPixelCoordinates[2];
+
+          displayGeometry->Map(cornerPointsInImage[i], displayPointInMillimetreCoordinates[0]);
+          displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[0], displayPointInPixelCoordinates[0]);
+
+          displayGeometry->Map(cornerPointsInImage[j], displayPointInMillimetreCoordinates[1]);
+          displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[1], displayPointInPixelCoordinates[1]);
+
+          // Similarly, we only want to pick pairs of points where the projected 2D points
+          // differ in 2D display coordinates along exactly one axis.
+          unsigned int differentDisplayIndexesCounter=0;
+          int differentDisplayAxis = -1;
+
+          for (unsigned int k = 0; k < 2; k++)
+          {
+            if (fabs(displayPointInPixelCoordinates[1][k] - displayPointInPixelCoordinates[0][k]) > 0.1)
+            {
+              differentDisplayIndexesCounter++;
+              differentDisplayAxis = k;
+            }
+          }
+          if (differentDisplayIndexesCounter == 1)
+          {
+            // We now have i,j corresponding to a pair of points that are different in
+            // 1 axis in voxel space, and different in one axis in diplay space, we can
+            // use them to calculate scale factors.
+            double distanceInMillimetres = cornerPointsInImage[i].EuclideanDistanceTo(cornerPointsInImage[j]);
+            double distanceInVoxels = pointsInVoxels[0].EuclideanDistanceTo(pointsInVoxels[1]);
+            double distanceInPixels = displayPointInPixelCoordinates[0].EuclideanDistanceTo(displayPointInPixelCoordinates[1]);
+            double scaleFactorInDisplayPixelsPerImageVoxel = distanceInPixels / distanceInVoxels;
+            double scaleFactorInDisplayPixelsPerMillimetres = distanceInPixels / distanceInMillimetres;
+
+            if (scaleFactorInDisplayPixelsPerImageVoxel < scaleFactorPixPerVoxel[differentDisplayAxis])
+            {
+              scaleFactorPixPerVoxel[differentDisplayAxis] = scaleFactorInDisplayPixelsPerImageVoxel;
+              scaleFactorPixPerMillimetres[differentDisplayAxis] = scaleFactorInDisplayPixelsPerMillimetres;
+              MITK_DEBUG << "Matt, i=" << i << ", world=" << cornerPointsInImage[i] << ", voxel=" << pointsInVoxels[0] << ", display=" << displayPointInPixelCoordinates[0] << std::endl;
+              MITK_DEBUG << "Matt, j=" << j << ", world=" << cornerPointsInImage[j] << ", voxel=" << pointsInVoxels[1] << ", display=" << displayPointInPixelCoordinates[1] << std::endl;
+              MITK_DEBUG << "Matt, 3D axis of interest=" << differentVoxelAxis << ", 2D axis of interest=" << differentDisplayAxis << std::endl;
+              MITK_DEBUG << "Matt, updated axis=" << differentDisplayAxis << ", pix=" << distanceInPixels << ", vox=" << distanceInVoxels << ", mm=" << distanceInMillimetres << std::endl;
+              MITK_DEBUG << "Matt, scaleVox=" << scaleFactorPixPerVoxel << ", mm=" << scaleFactorPixPerMillimetres << std::endl;
+            }
+          }
+        }
+      }
+    }
+    MITK_DEBUG << "Matt, output = scaleFactorPixPerVoxel=" << scaleFactorPixPerVoxel << ", scaleFactorPixPerMillimetres=" << scaleFactorPixPerMillimetres << std::endl;
+  }
+}
+
+void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *window, double scaleFactor)
+{
+  if (window != NULL)
+  {
+    // I'm using assert statements, because fundamentally, if the window exists, so should all the other objects.
+    mitk::SliceNavigationController* sliceNavigationController = window->GetSliceNavigationController();
+    assert(sliceNavigationController);
+
+    mitk::BaseRenderer* baseRenderer = sliceNavigationController->GetRenderer();
+    assert(baseRenderer);
+
+    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+    assert(displayGeometry);
+
+    mitk::Vector2D sizeInDisplayUnits = displayGeometry->GetSizeInDisplayUnits();
+    mitk::Point2D centreOfDisplayInDisplayUnits;
+
+    centreOfDisplayInDisplayUnits[0] = (sizeInDisplayUnits[0]-1.0)/2.0;
+    centreOfDisplayInDisplayUnits[1] = (sizeInDisplayUnits[1]-1.0)/2.0;
+
+    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
+    displayGeometry->Zoom(scaleFactor, centreOfDisplayInDisplayUnits);
+  }
 }
