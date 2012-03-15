@@ -825,15 +825,8 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
 
   if (this->m_SelectedWindow >= 0)
   {
-    std::vector<QmitkRenderWindow*> windows = m_SingleViewWidgets[m_SelectedWindow]->GetSelectedWindows();
-    if (windows.size() == 1)
-    {
-      int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
-      int timeStep =m_SingleViewWidgets[m_SelectedWindow]->GetTime();
-
-      m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnification);
-      m_MIDASSlidersWidget->m_TimeSelectionWidget->SetValue(timeStep);
-    }
+    int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnification);
   }
 }
 

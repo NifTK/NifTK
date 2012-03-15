@@ -634,10 +634,10 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
         orientation = MIDAS_ORIENTATION_AXIAL; // somewhat arbitrary.
       }
 
-      this->m_MultiWidget->FitMagnificationFactor();
-      int initialMagnificationFactor = this->m_MultiWidget->GetMagnificationFactor();
       unsigned int sliceNumber = this->GetSliceNumber(orientation);
       unsigned int timeStep = this->GetTime();
+      this->m_MultiWidget->FitMagnificationFactor();
+      int initialMagnificationFactor = this->m_MultiWidget->GetMagnificationFactor();
 
       this->SetSliceNumber(orientation, sliceNumber);
       this->SetTime(timeStep);
