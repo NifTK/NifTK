@@ -194,7 +194,7 @@ public:
   void SetMagnificationFactor(int magnificationFactor);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
-  void FitMagnificationFactor();
+  int FitMagnificationFactor();
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);

@@ -609,8 +609,10 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     MITK_DEBUG << "Matt, timeBounds=" << this->m_ActiveTimeSlicedGeometry->GetTimeBounds() << std::endl;
 
     // This will initialise the whole QmitkStdMultiWidget according to the geometry.
-    this->m_MultiWidget->SetMIDASView(view, timeSlicedTransformedGeometry);
-    this->m_MultiWidget->Fit();
+    this->m_MultiWidget->SetGeometry(timeSlicedTransformedGeometry); // Sets geometry on all 4 MITK views.
+    this->m_MultiWidget->SetMIDASView(view, true);                   // true to always rebuild layout.
+    this->m_MultiWidget->update();                                   // Call Qt update to try and make sure we are painted at the right size.
+    this->m_MultiWidget->Fit();                                      // Fits the MITK DisplayGeometry to the current widget size.
 
     // Store the current view/orientation.
     this->m_CurrentViews[this->GetBoundUnboundOffset()] = view;
@@ -636,12 +638,11 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 
       unsigned int sliceNumber = this->GetSliceNumber(orientation);
       unsigned int timeStep = this->GetTime();
-      this->m_MultiWidget->FitMagnificationFactor();
-      int initialMagnificationFactor = this->m_MultiWidget->GetMagnificationFactor();
+      int magnificationFactor = this->m_MultiWidget->FitMagnificationFactor();
 
       this->SetSliceNumber(orientation, sliceNumber);
       this->SetTime(timeStep);
-      this->SetMagnificationFactor(initialMagnificationFactor);
+      this->SetMagnificationFactor(magnificationFactor);
     }
   } // end view != MIDAS_VIEW_UNKNOWN
 }

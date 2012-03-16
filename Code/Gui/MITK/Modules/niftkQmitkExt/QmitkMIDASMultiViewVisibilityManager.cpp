@@ -625,9 +625,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       }
 
       // Then set up geometry of that single window.
-      this->m_Widgets[windowIndex]->SetEnabled(true);
       this->m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
-      this->m_Widgets[windowIndex]->SetView(view, false);
+      this->m_Widgets[windowIndex]->SetView(view, true);
+      this->m_Widgets[windowIndex]->SetEnabled(true);
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
     {
@@ -666,9 +666,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         this->AddNodeToWindow(dropIndex, nodes[i]);
 
         // Initialise geometry according to first image
-        this->m_Widgets[dropIndex]->SetEnabled(true);
         this->m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
-        this->m_Widgets[dropIndex]->SetView(view, false);
+        this->m_Widgets[dropIndex]->SetView(view, true);
+        this->m_Widgets[dropIndex]->SetEnabled(true);
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
         dropIndex++;
@@ -737,9 +737,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have less slices than windows, so we just spread them in increasing order.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          this->m_Widgets[i]->SetEnabled(true);
           this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
           this->m_Widgets[i]->SetView(view, true);
+          this->m_Widgets[i]->SetEnabled(true);
           this->m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
 
           MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
@@ -750,9 +750,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have more slices than windows, so we spread them evenly over the max number of windows.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          this->m_Widgets[i]->SetEnabled(true);
           this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
           this->m_Widgets[i]->SetView(view, true);
+          this->m_Widgets[i]->SetEnabled(true);
 
           unsigned int minSlice = m_Widgets[i]->GetMinSlice(orientation);
           unsigned int maxSlice = m_Widgets[i]->GetMaxSlice(orientation);
