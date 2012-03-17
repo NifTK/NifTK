@@ -605,17 +605,6 @@ IF (BUILD_MESHING)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing)
 ENDIF (BUILD_MESHING) 
 
-# Note that for these Insight Journal extensions, we dont compile the subpackage,
-# but by adding them to the include path, you can use any templated classes easily.
-# You may however have to recompile your ITK using ITK_USE_REVIEW=ON and ITK_USE_OPTIMIZED_REGISTRATION_METHODS=ON
-# depending on which classes you use.
-
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/InsightJournal/IJ_181_ITKbinaryThinningImageFilter3D/Source)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/InsightJournal/IJ_120_ITKSkeleton)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/InsightJournal/IJ_644_ITKLogDomainDemonsRegistration/LogDomainDemonsRegistration-0.0.4-Source/Code)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshFieldSmoothingFilters/Source)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshRigidRegistration/Source)
-
 ######################################################################
 # Output directories, for when compiling, not installing.
 ######################################################################
@@ -967,6 +956,19 @@ ENDIF(BUILD_TESTING)
 
 IF(EXISTS "${CMAKE_SOURCE_DIR}/Prototype" AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/Prototype" AND BUILD_PROTOTYPE) 
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/CUDA)
+  
+  # Note that for these Insight Journal extensions, we dont compile the subpackage,
+  # but by adding them to the include path, you can use any templated classes easily.
+  # You may however have to recompile your ITK using ITK_USE_REVIEW=ON and ITK_USE_OPTIMIZED_REGISTRATION_METHODS=ON
+  # depending on which classes you use.
+
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/Filters)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_181_ITKbinaryThinningImageFilter3D/Source)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_120_ITKSkeleton)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_644_ITKLogDomainDemonsRegistration/LogDomainDemonsRegistration-0.0.4-Source/Code)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshFieldSmoothingFilters/Source)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshRigidRegistration/Source)
+
   SUBDIRS(Prototype)
 ENDIF()   
 
