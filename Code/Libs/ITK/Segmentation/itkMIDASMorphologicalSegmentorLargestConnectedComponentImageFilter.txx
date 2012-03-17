@@ -25,34 +25,16 @@
 template <class TInputImageType, class TOutputImageType> 
 MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
 ::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter()
+: m_Capacity(1)
 {
-}
-
-template <class TInputImageType, class TOutputImageType>
-void 
-MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
-::SetCapacity(unsigned long int n)
-{
-  m_ComponentIndicies[0].reserve(n);
-  m_ComponentIndicies[1].reserve(n);
-  this->Modified();
-}
-
-template <class TInputImageType, class TOutputImageType>
-unsigned long int
-MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
-::GetCapacity() const
-{
-  return m_ComponentIndicies[0].capacity();
+  m_NumberOfLabelledPixelsPerThread.clear();
 }
 
 template <class TInputImageType, class TOutputImageType>
 void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
 ::BeforeThreadedGenerateData()
 {
-  m_MapOfLabelledPixels.clear();
-  m_ComponentIndicies[0].clear();
-  m_ComponentIndicies[1].clear();
+  m_NumberOfLabelledPixelsPerThread.resize(this->GetNumberOfThreads());
 }
 
 template <class TInputImageType, class TOutputImageType>
@@ -63,7 +45,7 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
   ImageRegionIterator<OutputImageType> i_componentPx(this->GetOutput(), outputRegionForThread);
 
   int numLabelPxs = 0;
-  InputImagePixelType  inputBackground = GetInputBackgroundValue();
+  InputImagePixelType  inputBackground  = GetInputBackgroundValue();
   OutputImagePixelType outputForeground = GetOutputForegroundValue();
   OutputImagePixelType outputBackground = GetOutputBackgroundValue();
 
@@ -78,36 +60,40 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
       i_componentPx.Set(outputBackground);
     }
   }
-  m_MapOfLabelledPixels[ThreadID] = numLabelPxs;
+  m_NumberOfLabelledPixelsPerThread[ThreadID] = numLabelPxs;
 }
 
 template <class TInputImageType, class TOutputImageType>
 void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
 ::AfterThreadedGenerateData()
 {
-  int numLabelPxs, activeComponentIndexBuffer;
+  int activeComponentIndexBuffer;
   std::vector<unsigned int> *currComponentIndices, *largestComponentIndices;
+  std::vector<unsigned int> componentIndicies[2];
+  componentIndicies[0].reserve(this->m_Capacity);
+  componentIndicies[1].reserve(this->m_Capacity);
+  
   IndexType    voxelIndex;
   unsigned int voxelNumber;
   
   /** Get a total of the number of labelled pixels from the multi-threaded section. */
-  numLabelPxs = 0;
-  std::map<int, int>::iterator mapIter;
-  for (mapIter = m_MapOfLabelledPixels.begin(); mapIter != m_MapOfLabelledPixels.end(); mapIter++)
+  int numLabelPxs = 0;
+  std::vector<unsigned long int>::iterator iter;
+  for (iter = m_NumberOfLabelledPixelsPerThread.begin(); iter != m_NumberOfLabelledPixelsPerThread.end(); iter++)
   {
-    numLabelPxs += (*mapIter).second;
+    numLabelPxs += (*iter);
   }
   
   ImageRegionConstIterator<InputImageType> inputIter(this->GetInput(), this->GetInput()->GetLargestPossibleRegion());
   ImageRegionIterator<OutputImageType>     outputIter(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion());
-  OutputImagePixelType outputForeground =  this->GetOutputForegroundValue();
   OutputImagePixelType outputBackground =  this->GetOutputBackgroundValue();
-  
+  OutputImagePixelType outputForeground =  this->GetOutputForegroundValue();
+
   const typename OutputImageType::SizeType imgSize = this->GetOutput()->GetLargestPossibleRegion().GetSize();
     
   activeComponentIndexBuffer = 0;
-  currComponentIndices = &m_ComponentIndicies[0];
-  largestComponentIndices = &m_ComponentIndicies[1];
+  currComponentIndices = &componentIndicies[0];
+  largestComponentIndices = &componentIndicies[1];
 
   for (outputIter.GoToBegin(); !outputIter.IsAtEnd(); ++outputIter) {
     if (outputIter.Get() == outputForeground) {
@@ -120,7 +106,7 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
       if (currComponentIndices->size() > largestComponentIndices->size()) {
         largestComponentIndices = currComponentIndices;
         activeComponentIndexBuffer = (activeComponentIndexBuffer + 1) % 2;
-        currComponentIndices = &m_ComponentIndicies[activeComponentIndexBuffer];
+        currComponentIndices = &componentIndicies[activeComponentIndexBuffer];
       }
 
       if (numLabelPxs < (int)largestComponentIndices->size()) {

@@ -66,9 +66,9 @@ namespace itk {
 	  itkSetMacro(OutputForegroundValue, OutputImagePixelType);
 	  itkGetConstMacro(OutputForegroundValue, OutputImagePixelType);
 
-	  /** Set/Get the suggested size of the largest region, to enable vectors to be allocated in one go. Default 1. */
-	  void SetCapacity(unsigned long int n);
-	  unsigned long int GetCapacity() const;
+	  /** Set/Get the capcity. */
+    itkSetMacro(Capacity, unsigned int);
+    itkGetConstMacro(Capacity, unsigned int);
 
 	protected:
     MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter(void);
@@ -90,10 +90,11 @@ namespace itk {
 	  virtual void AfterThreadedGenerateData();
 
   private:
-    OutputImagePixelType m_OutputBackgroundValue, m_OutputForegroundValue;
-    InputImagePixelType m_InputBackgroundValue;
-    std::vector<unsigned int> m_ComponentIndicies[2];
-    std::map<int, int> m_MapOfLabelledPixels;
+    OutputImagePixelType           m_OutputBackgroundValue;
+    OutputImagePixelType           m_OutputForegroundValue;
+    InputImagePixelType            m_InputBackgroundValue;
+    unsigned int                   m_Capacity;
+    std::vector<unsigned long int> m_NumberOfLabelledPixelsPerThread;
 	};
 
 #ifndef ITK_MANUAL_INSTANTIATION
