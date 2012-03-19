@@ -52,9 +52,10 @@ IF(NOT DEFINED MITK_DIR)
     #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1342 (Stop RenderingManager eroneously adding to m_RenderWindowList)
     #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1343 (Fix AutoTopMost in mitkLevelWindowManager)
     #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1344 (Turn off interactors in mitkMouseModeSwitcher)
+    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1366 (Don't create PACS interactors in mitkMouseModeSwitcher)
     #########################################################
     
-    SET(revision_tag f3728fd7af)
+    SET(revision_tag 7608d7f952)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
