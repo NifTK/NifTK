@@ -86,7 +86,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 
   // Create the main QmitkMIDASStdMultiWidget, and pass in our OWN RenderingManager.
   m_MultiWidget = new QmitkMIDASStdMultiWidget(m_RenderingManager, m_DataStorage, this, NULL);
-  this->SetNavigationControllerEventListening(true);
+  this->SetNavigationControllerEventListening(false);
 
   m_Layout = new QGridLayout(this);
   m_Layout->setObjectName(QString::fromUtf8("QmitkMIDASSingleViewWidget::m_Layout"));
@@ -289,12 +289,12 @@ void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataS
 
 void QmitkMIDASSingleViewWidget::SetNavigationControllerEventListening(bool enabled)
 {
-  if (enabled && !this->m_NavigationControllerEventListening)
+  if (enabled)
   {
     this->m_MultiWidget->EnableNavigationControllerEventListening();
     this->m_MultiWidget->SetWidgetPlanesLocked(false);
   }
-  else if (!enabled && this->m_NavigationControllerEventListening)
+  else
   {
     this->m_MultiWidget->DisableNavigationControllerEventListening();
     this->m_MultiWidget->SetWidgetPlanesLocked(true);
