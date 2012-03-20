@@ -43,7 +43,7 @@ For developers it is important to read:
 
 \li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">The wiki.</a>
 \li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The dashboard.</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/query?group=status&milestone=NifTK-@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@">The current tasks.</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/query?group=status&milestone=NifTK-@NIFTK_VERSION_STRING@">The current tasks.</a>
 \li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/RoadMap">The roadmap.</a>
 
 \section MainPageAcknowledgements Acknowledgements

@@ -26,12 +26,10 @@
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
 ######################################################################
-SET(NIFTK_VERSION_MAJOR 1 CACHE STRING "Major version number" FORCE )
-SET(NIFTK_VERSION_MINOR 0 CACHE STRING "Minor version number" FORCE )
-SET(NIFTK_VERSION_PATCH 0rc1 CACHE STRING "Patch version number" FORCE)
+SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
+SET(NIFTK_VERSION_MINOR 03 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
-MARK_AS_ADVANCED(NIFTK_VERSION_PATCH)
 
 ######################################################################
 # Set the minimum CMake version.
@@ -148,8 +146,12 @@ SET(NIFTK_DASHBOARD_URL "https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=Ni
 SET(NIFTK_DASHBOARD_TEXT "dashboard" CACHE STRING "Dashboard text" FORCE)
 SET(NIFTK_USER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users" CACHE STRING "Contact address for users." FORCE )
 SET(NIFTK_DEVELOPER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-developers" CACHE STRING "Contact address for developers." FORCE )
-SET(NIFTK_BASE_NAME "niftk" CACHE STRING "Base name for installation folder. Unix convention is lower case letters." FORCE )
-SET(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
+IF(WIN32)
+  SET(NIFTK_BASE_NAME "NifTK" CACHE STRING "Base name for installation folder. Windows convention is upper case letters" FORCE )
+ELSE(WIN32)
+  SET(NIFTK_BASE_NAME "niftk" CACHE STRING "Base name for installation folder. Unix convention is lower case letters." FORCE )
+ENDIF(WIN32)
+SET(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}" CACHE STRING "String to describe fully named version" FORCE)
 SET(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 SET(NIFTK_ITK_VERSION_IN_SUPERBUILD "3.20.1" CACHE STRING "Version of ITK to download when doing superbuild. Currently, valid choices are 3.20.1, and 3.16.0")
 SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
