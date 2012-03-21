@@ -117,10 +117,10 @@ do
   
     if [ "${region}" == "yes" ] 
     then 
-      fixed_image_mask_img=${tmp_dir}/`basename ${fixed_image_mask}.img`
+      fixed_image_mask_img=${tmp_dir}/`basename ${fixed_image_mask}_fixed.img`
       makemask ${fixed_image} ${fixed_image_mask} ${fixed_image_mask_img}
     
-      moving_image_mask_img=${tmp_dir}/`basename ${moving_image_mask}.img`
+      moving_image_mask_img=${tmp_dir}/`basename ${moving_image_mask}_moving.img`
       makemask ${moving_image} ${moving_image_mask} ${moving_image_mask_img}
   
       if [ ! -f "${output}_affine_init.dof" ]
