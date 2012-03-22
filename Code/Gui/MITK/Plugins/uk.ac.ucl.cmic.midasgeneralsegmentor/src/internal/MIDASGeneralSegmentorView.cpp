@@ -43,7 +43,7 @@
 #include "mitkTool.h"
 #include "mitkAddContourTool.h"
 #include "mitkSubtractContourTool.h"
-#include "mitkPaintbrushTool.h"
+#include "mitkDrawPaintbrushTool.h"
 #include "mitkErasePaintbrushTool.h"
 #include "mitkCorrectorTool2D.h"
 #include "mitkFillRegionTool.h"
@@ -153,9 +153,9 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     mitk::SubtractContourTool* subtractContourTool = static_cast<mitk::SubtractContourTool*>(toolManager->GetToolById(toolId));
     subtractContourTool->Enable3DInterpolation(false);
 
-    toolId = toolManager->GetToolIdByToolType<mitk::PaintbrushTool>();
-    mitk::PaintbrushTool* paintbrushTool = static_cast<mitk::PaintbrushTool*>(toolManager->GetToolById(toolId));
-    paintbrushTool->Enable3DInterpolation(false);
+    toolId = toolManager->GetToolIdByToolType<mitk::DrawPaintbrushTool>();
+    mitk::DrawPaintbrushTool* drawPaintbrushTool = static_cast<mitk::DrawPaintbrushTool*>(toolManager->GetToolById(toolId));
+    drawPaintbrushTool->Enable3DInterpolation(false);
 
     toolId = toolManager->GetToolIdByToolType<mitk::ErasePaintbrushTool>();
     mitk::ErasePaintbrushTool* erasePaintbrushTool = static_cast<mitk::ErasePaintbrushTool*>(toolManager->GetToolById(toolId));
