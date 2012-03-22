@@ -328,7 +328,8 @@ void mitk::MIDASContourTool::GetClosestCornerPoint2D(
 
   // Variables for storing the "best one so far".
   float bestSquaredDistanceSoFar = std::numeric_limits<float>::max();
-  mitk::Point3D bestCornerPointSoFar(0);
+  mitk::Point3D bestCornerPointSoFar;
+  bestCornerPointSoFar.Fill(0);
 
   // We iterate over i,j, not x,y,z, as the i,j pertain to the
   // two axes of interest, which may be any 2 of the 3 available axes.

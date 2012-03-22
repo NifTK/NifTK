@@ -52,9 +52,14 @@ class QGridLayout;
 
 /**
  * \class MIDASGeneralSegmentorView
- * \brief View component for the CMIC MIDAS General Segmentor, providing functionality for hippocampus/ventricle segmentation.
+ * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia Research Centre UCL.
+ * 
+ * In addition, we have merged the Add, Subtract, Paint, Wipe, Correct, Fill and Erase tools from the MITK
+ * segmentation tool, so we no longer need the MITK segmentation plugin.  We deliberately run all these tools in 2D.
+ *
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  * \sa QmitkMIDASBaseSegmentationFunctionality
+ * \sa MIDASMorphologicalSegmentorView
  */
 class MIDASGeneralSegmentorView : public QmitkMIDASBaseSegmentationFunctionality, public mitk::OperationActor
 {
@@ -87,25 +92,26 @@ public:
     MIDASGeneralSegmentorView* m_View;
   };
 
+  /// \brief Constructor.
   MIDASGeneralSegmentorView();
+
+  /// \brief Copy constructor which deliberately throws a runtime exception, as no-one should call it.
   MIDASGeneralSegmentorView(const MIDASGeneralSegmentorView& other);
+
+  /// \brief Destructor.
   virtual ~MIDASGeneralSegmentorView();
 
-  // Each View for a plugin has its own globally unique ID.
+  /// \brief Each View for a plugin has its own globally unique ID.
   static const std::string VIEW_ID;
+
+  /// \brief Returns the VIEW_ID = uk.ac.ucl.cmic.midasgeneralsegmentor.
   virtual std::string GetViewID() const;
 
-  /// \brief QmitkFunctionality's activate.
-  virtual void Activated();
-
-  /// \brief QmitkFunctionality's deactivate.
-  virtual void Deactivated();
+  /// \brief If the user hits the close icon, it is equivalent to a Cancel.
+  virtual void ClosePart();
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
   virtual void ExecuteOperation(mitk::Operation* operation);
-
-  /// \brief Retrieves the current cross position from the QmitkStdMultiWidet. Returns false if QmitkStdMultiWidget not available.
-  virtual bool GetCurrentCrossPosition(mitk::Point3D &output);
 
 protected slots:
  
@@ -113,8 +119,9 @@ protected slots:
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
 
   /// \brief Called when a segmentation tool is activated.
-  void OnManualToolSelected(int id);
+  virtual void OnToolSelected(int id);
 
+  // Callbacks from all the extra buttons not associated with mitk::Tool subclasses.
   void OnCleanButtonPressed();
   void OnWipeButtonPressed();
   void OnWipePlusButtonPressed();
@@ -132,29 +139,28 @@ protected slots:
   void OnPropagate3DButtonPressed();
   void OnLowerThresholdValueChanged(double d);
   void OnUpperThresholdValueChanged(double d);
-  void OnOrientationAxialToggled(bool b);
-  void OnOrientationSagittalToggled(bool b);
-  void OnOrientationCoronalToggled(bool b);
   void OnSliceNumberChanged(int before, int after);
 
 protected:
 
-  ///  \brief method to enable derived classes to turn widgets off/on
+  ///  \brief Method to enable derived classes to turn all widgets off/on.
   virtual void EnableSegmentationWidgets(bool b);
 
-  /// \brief This method creates all the controls for this view.
+  /// \brief This method creates all the controls for this view, and if subclasses override this, they must call MIDASGeneralSegmentorView::CreateQtPartControl.
   virtual void CreateQtPartControl(QWidget *parent);
 
-  /// \brief Creation of the connections of widgets and this class.
+  /// \brief Creation of the connections of widgets in this class and the slots in this class.
   virtual void CreateConnections();
 
   /// \brief Called when a node changed.
   virtual void NodeChanged(const mitk::DataNode* node);
 
-  /// \brief For Irregular Volume Editing, a Segmentation image should have a grey scale parent, and 3 binary children called mitk::MIDASTool::REGION_GROWING_IMAGE_NAME and mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME, and mitk::MIDASTool::SEE_NEXT_IMAGE_NAME,
+  /// \brief For Irregular Volume Editing, a Segmentation image should have a grey scale parent, and 3 binary children specifically called mitk::MIDASTool::REGION_GROWING_IMAGE_NAME and mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME, and mitk::MIDASTool::SEE_NEXT_IMAGE_NAME,
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node);
 
-  /// \brief We return false in all cases.
+  /// \brief We return true if the segmentation can be "re-started", i.e. you switch between binary images
+  /// in the DataManager, and if the binary image has the correct child images (actually hidden nodes), then
+  /// this returns true, indicating that it's a valid in-progress segmentation.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
 private:
@@ -174,13 +180,10 @@ private:
   /// \brief Gets the orientation enum.
   itk::ORIENTATION_ENUM GetOrientationAsEnum();
 
-  /// \brief Orientation selected, enable widgets etc.
-  void OnOrientationSelected(itk::ORIENTATION_ENUM orientation);
-
   /// \brief Works out the current slice number that we are segmenting.
   int GetSliceNumber();
 
-  /// \brief Works out the axis index number for the orientation we are segmenting.
+  /// \brief Works out the axis index number from the orientation we are segmenting.
   int GetAxis();
 
   /// \brief Looks for the Seeds stored in the data storage.
@@ -192,10 +195,10 @@ private:
   /// \brief Retrieves the min and max of the image (stored in mitk::Image), and sets the sliders accordingly
   void RecalculateMinAndMaxOfImage();
 
-  /// \brief For each seed in the list of seeds, converts to millimetre position, and looks up the pixel value at that location, and updates the min and max
+  /// \brief For each seed in the list of seeds, converts to millimetre position, and looks up the pixel value at that location, and updates the min and max.
   void RecalculateMinAndMaxOfSeedValues();
 
-  /// \brief Recalculate the min and max of seed values using ITK
+  /// \brief Called from RecalculateMinAndMaxOfSeedValues(), the actual method in ITK that recalculates the min and max of seed values.
   template<typename TPixel, unsigned int VImageDimension>
   void RecalculateMinAndMaxOfSeedValuesUsingITK(
       itk::Image<TPixel, VImageDimension>* itkImage,
@@ -207,7 +210,7 @@ private:
   /// \brief Given the current threshold values on the upper and lower slider, and all the seeds and contours, will recalculate the thresholded region in this slice. If updateVolume, result is applied to output segmentation.
   void UpdateRegionGrowing();
 
-  /// \brief Templated function that updates the ITK region growing pipeline.
+  /// \brief Called from UpdateRegionGrowing(), templated function that updates the ITK region growing pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void InvokeITKRegionGrowingPipeline(
       itk::Image<TPixel, VImageDimension> *itkImage,
@@ -227,7 +230,7 @@ private:
   /// \brief Whenever called, will take the current slice, and work out prior and next, and update those volumes.
   void UpdatePriorAndNext();
 
-  /// \brief Templated function that copies the next/prior slice into the see next/prior image, so it shows up in rendered view.
+  /// \brief Called from UpdatePriorAndNext, templated function that copies the next/prior slice into the see next/prior image, so it shows up in rendered view.
   template<typename TPixel, unsigned int VImageDimension>
   void CopySlice(
         itk::Image<TPixel, VImageDimension>* sourceImage,
@@ -247,10 +250,10 @@ private:
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
-  /// \brief Completely removes the current pipeline
+  /// \brief Completely removes the current pipeline.
   void DestroyPipeline();
 
-  /// \brief Completely removes the current pipeline
+  /// \brief Completely removes the current pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void DestroyITKPipeline(
       itk::Image<TPixel, VImageDimension>* itkImage
@@ -296,11 +299,11 @@ private:
       int sliceNumber,
       itk::ORIENTATION_ENUM orientation);
 
-  // Pointer to interface object, used as callback in Undo/Redo framework
+  /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   MIDASGeneralSegmentorViewEventInterface *m_Interface;
 
   /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
-  // as a key, and the object containing the whole pipeline.
+  /// as a key, and the object containing the whole pipeline.
   typedef std::pair<std::string, GeneralSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
   std::map<std::string, GeneralSegmentorPipelineInterface*> m_TypeToPipelineMap;
 
@@ -318,12 +321,6 @@ private:
 
   /// \brief Container for the Morphological Controls Widgets (see this class).
   QWidget *m_ContainerForControlsWidget;
-
-  /// \brief Used to enforce the axial, coronal, sagittal buttons into a group.
-  QButtonGroup *m_OrientationButtons;
-
-  /// \brief The last cross position in the QmitkStdMultiWidget.
-  mitk::Point3D m_LastCrossPositionClickedByUser;
 
   // \brief The last slice numbers when the user last clicked.
   int m_LastSliceNumbers[3];

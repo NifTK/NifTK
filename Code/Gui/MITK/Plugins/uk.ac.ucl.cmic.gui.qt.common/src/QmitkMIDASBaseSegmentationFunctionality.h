@@ -34,6 +34,8 @@
 #include "itkSpatialOrientationAdapter.h"
 
 class QmitkRenderWindow;
+class QmitkStdMultiWidget;
+class QmitkMIDASMultiViewWidget;
 
 /**
  * \class QmitkMIDASBaseSegmentationFunctionality
@@ -77,10 +79,19 @@ public:
   /// \brief Called when the user hits the button "New segmentation".
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
 
+  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Activated.
+  virtual void Activated();
+
+  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Deactivated.
+  virtual void Deactivated();
+
 protected slots:
 
   /// \brief Called when the user changes the choice of reference image.
-  void OnComboBoxSelectionChanged(const mitk::DataNode* node);
+  virtual void OnComboBoxSelectionChanged(const mitk::DataNode* node);
+
+  /// \brief Called from QmitkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
+  virtual void OnToolSelected(int);
 
 protected:
 
@@ -195,6 +206,10 @@ protected:
 
   /// \brief Common widget, enabling selection of a segmentation tool.
   QmitkMIDASToolSelectorWidget *m_ToolSelector;
+
+  /// \brief Store pointer to widget, so we don't have to repeatedly look for it.
+  QmitkStdMultiWidget *m_MITKWidget;
+  QmitkMIDASMultiViewWidget *m_MIDASWidget;
 
 private:
 

@@ -35,9 +35,8 @@
 
 /**
  * \class MIDASMorphologicalSegmentorView
- * \brief Provides the MIDAS brain segmentation functionality developed at Dementia Research Centre.
+ * \brief Provides the MIDAS brain segmentation functionality developed at the Dementia Research Centre UCL.
  *
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  *
  * This plugin implements the paper:
  *
@@ -45,7 +44,9 @@
  * by P. A. Freeborough, N. C. Fox and R. I. Kitney, published in
  * Computer Methods and Programs in Biomedicine 53 (1997) 15-25.
  *
+ * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  * \sa QmitkMIDASBaseSegmentationFunctionality
+ * \sa MIDASGeneralSegmentorView
  * \sa MorphologicalSegmentorPipeline
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
@@ -61,26 +62,20 @@ public:
   /// \brief Constructor, which does almost nothing, as most construction of the view is done in CreateQtPartControl().
   MIDASMorphologicalSegmentorView();
 
-  /// \brief Copy constructor which will throw a runtime exception, as no-one should call it.
+  /// \brief Copy constructor which deliberately throws a runtime exception, as no-one should call it.
   MIDASMorphologicalSegmentorView(const MIDASMorphologicalSegmentorView& other);
 
-  /// \brief Destructor, which cleans up the controls created in this view.
+  /// \brief Destructor.
   virtual ~MIDASMorphologicalSegmentorView();
 
-  /// \brief Each View for a plugin has its own globally unique ID, this one is "uk.ac.ucl.cmic.midasmorphologicalsegmentor".
+  /// \brief Each View for a plugin has its own globally unique ID.
   static const std::string VIEW_ID;
 
-  /// \brief Returns VIEW_ID="uk.ac.ucl.cmic.midasmorphologicalsegmentor".
+  /// \brief Returns VIEW_ID = uk.ac.ucl.cmic.midasmorphologicalsegmentor.
   virtual std::string GetViewID() const;
 
   /// \brief Invoked when the DataManager selection changed.
   virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
-
-  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Activated.
-  virtual void Activated();
-
-  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Deactivated.
-  virtual void Deactivated();
 
   /// \brief If the user hits the close icon, it is equivalent to a Cancel.
   virtual void ClosePart();
@@ -113,9 +108,6 @@ protected slots:
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
   void OnCancelButtonClicked();
-
-  /// \brief Called from QmitkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
-  void OnToolSelected(int);
 
 protected:
 
@@ -248,11 +240,6 @@ private:
 
   /// \brief The mitk::ToolManager is created in base class, but we request and store locally the Tools ID.
   int m_PaintbrushToolId;
-
-  /// \brief Store pointer to widget, so we don't have to repeatedly look for it.
-  QmitkStdMultiWidget *m_MITKWidget;
-  QmitkMIDASMultiViewWidget *m_MIDASWidget;
-  bool m_Show2DCursors;
 };
 
 #endif // _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED

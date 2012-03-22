@@ -181,6 +181,12 @@ public:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
+  /// \brief Returns the slice number from the Slice slider.
+  int GetSliceNumber() const;
+
+  /// \brief Returns the orientation from the orientation widgets, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. 3D view selected).
+  MIDASOrientation GetOrientation() const;
+
 signals:
 
   /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
@@ -275,7 +281,7 @@ private:
   void UpdateFocusManagerToSelectedViewer();
 
   /// \brief Force all visible viewers to match the 'currently selected' viewers geometry.
-  void UpdateBoundGeometry();
+  void UpdateBoundGeometry(bool isBound);
 
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();

@@ -519,14 +519,18 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
     this->m_NumberOfColumnsBeforeSegmentationMode = m_ColumnsSpinBox->value();
     this->EnableLayoutWidgets(false);
     this->EnableBindWidgets(false);
+    this->m_MIDASOrientationWidget->m_OrthogonalRadioButton->setEnabled(false);
+    this->m_MIDASOrientationWidget->m_ThreeDRadioButton->setEnabled(false);
     this->SetLayoutSize(1, 1, false);
     this->SetSelectedWindow(0);
     this->UpdateFocusManagerToSelectedViewer();
   }
   else
   {
-    this->EnableLayoutWidgets(false);
-    this->EnableBindWidgets(false);
+    this->EnableLayoutWidgets(true);
+    this->EnableBindWidgets(true);
+    this->m_MIDASOrientationWidget->m_OrthogonalRadioButton->setEnabled(true);
+    this->m_MIDASOrientationWidget->m_ThreeDRadioButton->setEnabled(true);
     this->SetLayoutSize(m_NumberOfRowsBeforeSegmentationMode, m_NumberOfColumnsBeforeSegmentationMode, false);
   }
 }
@@ -680,7 +684,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   this->SetShow3DViewInOrthoView(this->m_Show3DViewInOrthoview);
   if (this->m_BindWindowsCheckBox->isChecked())
   {
-    this->UpdateBoundGeometry();
+    this->UpdateBoundGeometry(this->m_BindWindowsCheckBox->isChecked());
   }
 }
 
@@ -1186,8 +1190,9 @@ void QmitkMIDASMultiViewWidget::SwitchView(MIDASView view)
   }
 }
 
-void QmitkMIDASMultiViewWidget::UpdateBoundGeometry()
+void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBound)
 {
+
   mitk::TimeSlicedGeometry::Pointer selectedGeometry = m_SingleViewWidgets[m_SelectedWindow]->GetGeometry();
   MIDASOrientation orientation = m_SingleViewWidgets[m_SelectedWindow]->GetOrientation();
   MIDASView view = m_SingleViewWidgets[m_SelectedWindow]->GetView();
@@ -1200,30 +1205,30 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry()
   {
     unsigned int viewerIndex = viewersToUpdate[i];
 
-    m_SingleViewWidgets[viewerIndex]->SetBoundGeometry(selectedGeometry);
-    m_SingleViewWidgets[viewerIndex]->SetView(view, false);
-    m_SingleViewWidgets[viewerIndex]->SetSliceNumber(orientation, sliceNumber);
-    m_SingleViewWidgets[viewerIndex]->SetMagnificationFactor(magnification);
-    m_SingleViewWidgets[viewerIndex]->SetTime(timeStepNumber);
-  }
-}
+    if (isBound)
+    {
+      m_SingleViewWidgets[viewerIndex]->SetBoundGeometry(selectedGeometry);
+      m_SingleViewWidgets[viewerIndex]->SetBound(isBound);
+      m_SingleViewWidgets[viewerIndex]->SetView(view, false);
+      m_SingleViewWidgets[viewerIndex]->SetSliceNumber(orientation, sliceNumber);
+      m_SingleViewWidgets[viewerIndex]->SetMagnificationFactor(magnification);
+      m_SingleViewWidgets[viewerIndex]->SetTime(timeStepNumber);
 
-void QmitkMIDASMultiViewWidget::OnBindWindowsCheckboxClicked(bool isBound)
-{
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-  {
-    m_SingleViewWidgets[i]->SetBound(isBound);
-  }
+    } // end if bound
+  } // end for each viewer
 
   if (isBound)
   {
     m_LinkWindowsCheckBox->blockSignals(true);
     m_LinkWindowsCheckBox->setChecked(false);
     m_LinkWindowsCheckBox->blockSignals(false);
-
-    this->UpdateBoundGeometry();
-    this->Update2DCursorVisibility();
   }
+}
+
+void QmitkMIDASMultiViewWidget::OnBindWindowsCheckboxClicked(bool isBound)
+{
+  this->UpdateBoundGeometry(isBound);
+  this->Update2DCursorVisibility();
 }
 
 void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
@@ -1290,4 +1295,29 @@ void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabl
 bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
 {
   return m_NavigationControllerEventListening;
+}
+
+int QmitkMIDASMultiViewWidget::GetSliceNumber() const
+{
+  return this->m_MIDASSlidersWidget->m_SliceSelectionWidget->GetValue();
+}
+
+MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
+{
+  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+
+  if (this->m_MIDASOrientationWidget->m_AxialRadioButton->isChecked())
+  {
+    orientation = MIDAS_ORIENTATION_AXIAL;
+  }
+  else if (this->m_MIDASOrientationWidget->m_SagittalRadioButton->isChecked())
+  {
+    orientation = MIDAS_ORIENTATION_SAGITTAL;
+  }
+  else if (this->m_MIDASOrientationWidget->m_CoronalRadioButton->isChecked())
+  {
+    orientation = MIDAS_ORIENTATION_CORONAL;
+  }
+
+  return orientation;
 }

@@ -50,13 +50,16 @@
 #include "mitkMIDASSeedTool.h"
 #include "QmitkMIDASNewSegmentationDialog.h"
 #include "QmitkRenderWindow.h"
-
+#include "QmitkStdMultiWidget.h"
+#include "QmitkMIDASMultiViewWidget.h"
 #include "NifTKConfigure.h"
 #include "itkConversionUtils.h"
 
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality()
 : m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
+, m_MITKWidget(NULL)
+, m_MIDASWidget(NULL)
 {
   m_SelectedNode = NULL;
 }
@@ -123,12 +126,45 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // We listen to NewNodObjectGenerated as the ToolManager is responsible for instantiating them.
     toolManager->NewNodeObjectsGenerated +=
       mitk::MessageDelegate1<QmitkMIDASBaseSegmentationFunctionality, mitk::ToolManager::DataVectorType*>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated );
+
+    // Needs re-working, we have to lookup the QmitkStdMultiWidget, as we are
+    // relying on the interactors in that class, as all the interactors in the QmitkMIDASMultiViewWidget are off.
+
+    m_MITKWidget = this->GetActiveStdMultiWidget();
+    assert(m_MITKWidget);
+
+    m_MIDASWidget = this->GetActiveMIDASMultiViewWidget();
+    assert(m_MIDASWidget);
   }
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::Activated()
+{
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::Deactivated()
+{
 }
 
 mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 {
   return m_ToolSelector->m_ManualToolSelectionBox->GetToolManager();
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
+{
+  if (toolID >= 0)
+  {
+    this->m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
+    this->m_MITKWidget->DisableNavigationControllerEventListening();
+    this->m_MIDASWidget->SetNavigationControllerEventListening(false);
+  }
+  else
+  {
+    this->m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+    this->m_MITKWidget->EnableNavigationControllerEventListening();
+    this->m_MIDASWidget->SetNavigationControllerEventListening(true);
+  }
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated()

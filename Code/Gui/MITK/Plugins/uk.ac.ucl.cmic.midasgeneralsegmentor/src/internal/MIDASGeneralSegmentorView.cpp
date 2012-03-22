@@ -41,6 +41,13 @@
 #include "mitkPointSet.h"
 #include "mitkGlobalInteraction.h"
 #include "mitkTool.h"
+#include "mitkAddContourTool.h"
+#include "mitkSubtractContourTool.h"
+#include "mitkPaintbrushTool.h"
+#include "mitkErasePaintbrushTool.h"
+#include "mitkCorrectorTool2D.h"
+#include "mitkFillRegionTool.h"
+#include "mitkEraseRegionTool.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPosnTool.h"
 #include "mitkNodePredicateDataType.h"
@@ -54,7 +61,8 @@
 #include "mitkDataStorageUtils.h"
 #include "QmitkStdMultiWidget.h"
 #include "QmitkRenderWindow.h"
-
+#include "QmitkStdMultiWidget.h"
+#include "QmitkMIDASMultiViewWidget.h"
 #include "vtkImageData.h"
 
 #include "MIDASGeneralSegmentorCommands.h"
@@ -79,17 +87,9 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_ContainerForSelectorWidget(NULL)
 , m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
-, m_OrientationButtons(NULL)
 {
   m_Interface = new MIDASGeneralSegmentorViewEventInterface();
   m_Interface->SetMIDASGeneralSegmentorView(this);
-
-  m_LastSliceNumbers[0] = 0;
-  m_LastSliceNumbers[1] = 0;
-  m_LastSliceNumbers[2] = 0;
-  m_LastCrossPositionClickedByUser[0] = 0;
-  m_LastCrossPositionClickedByUser[1] = 0;
-  m_LastCrossPositionClickedByUser[2] = 0;
 }
 
 MIDASGeneralSegmentorView::MIDASGeneralSegmentorView(
@@ -104,11 +104,6 @@ MIDASGeneralSegmentorView::~MIDASGeneralSegmentorView()
   if (m_GeneralControls != NULL)
   {
     delete m_GeneralControls;
-  }
-
-  if (m_OrientationButtons != NULL)
-  {
-    delete m_OrientationButtons;
   }
 }
 
@@ -138,16 +133,45 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_Layout->addWidget(m_ContainerForToolWidget,     1, 0);
     m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
 
-    m_OrientationButtons = new QButtonGroup();
-    m_OrientationButtons->setExclusive(true);
-    m_OrientationButtons->addButton(m_GeneralControls->m_AxialRadioButton);
-    m_OrientationButtons->addButton(m_GeneralControls->m_SagittalRadioButton);
-    m_OrientationButtons->addButton(m_GeneralControls->m_CoronalRadioButton);
-
     m_GeneralControls->SetEnableThresholdingWidgets(false);
     m_GeneralControls->SetEnableThresholdingCheckbox(false);
 
-    m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
+    m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly Add Subtract Paint Wipe Correction Fill Erase");
+    m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(2);
+    m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
+    m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
+
+    // Turn 3D interpolation off for all MITK tools.
+    mitk::ToolManager* toolManager = this->GetToolManager();
+    int toolId;
+
+    toolId = toolManager->GetToolIdByToolType<mitk::AddContourTool>();
+    mitk::AddContourTool* addContourTool = static_cast<mitk::AddContourTool*>(toolManager->GetToolById(toolId));
+    addContourTool->Enable3DInterpolation(false);
+
+    toolId = toolManager->GetToolIdByToolType<mitk::SubtractContourTool>();
+    mitk::SubtractContourTool* subtractContourTool = static_cast<mitk::SubtractContourTool*>(toolManager->GetToolById(toolId));
+    subtractContourTool->Enable3DInterpolation(false);
+
+    toolId = toolManager->GetToolIdByToolType<mitk::PaintbrushTool>();
+    mitk::PaintbrushTool* paintbrushTool = static_cast<mitk::PaintbrushTool*>(toolManager->GetToolById(toolId));
+    paintbrushTool->Enable3DInterpolation(false);
+
+    toolId = toolManager->GetToolIdByToolType<mitk::ErasePaintbrushTool>();
+    mitk::ErasePaintbrushTool* erasePaintbrushTool = static_cast<mitk::ErasePaintbrushTool*>(toolManager->GetToolById(toolId));
+    erasePaintbrushTool->Enable3DInterpolation(false);
+
+    toolId = toolManager->GetToolIdByToolType<mitk::CorrectorTool2D>();
+    mitk::CorrectorTool2D* correctorTool = static_cast<mitk::CorrectorTool2D*>(toolManager->GetToolById(toolId));
+    correctorTool->Enable3DInterpolation(false);
+
+    toolId = toolManager->GetToolIdByToolType<mitk::FillRegionTool>();
+    mitk::FillRegionTool* fillTool = static_cast<mitk::FillRegionTool*>(toolManager->GetToolById(toolId));
+    fillTool->Enable3DInterpolation(false);
+
+    toolId = toolManager->GetToolIdByToolType<mitk::EraseRegionTool>();
+    mitk::EraseRegionTool* eraseTool = static_cast<mitk::EraseRegionTool*>(toolManager->GetToolById(toolId));
+    eraseTool->Enable3DInterpolation(false);
 
     this->CreateConnections();
   }
@@ -159,6 +183,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
 
   if ( m_GeneralControls )
   {
+    connect(m_ToolSelector, SIGNAL(ToolSelected(int)), this, SLOT(OnToolSelected(int)));
     connect(m_GeneralControls->m_CleanButton, SIGNAL(pressed()), this, SLOT(OnCleanButtonPressed()) );
     connect(m_GeneralControls->m_WipeButton, SIGNAL(pressed()), this, SLOT(OnWipeButtonPressed()) );
     connect(m_GeneralControls->m_WipePlusButton, SIGNAL(pressed()), this, SLOT(OnWipePlusButtonPressed()) );
@@ -176,71 +201,17 @@ void MIDASGeneralSegmentorView::CreateConnections()
     connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeNextCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_ThresholdLowerSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnLowerThresholdValueChanged(double)));
     connect(m_GeneralControls->m_ThresholdUpperSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnUpperThresholdValueChanged(double)));
-    connect(m_GeneralControls->m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationAxialToggled(bool)));
-    connect(m_GeneralControls->m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationCoronalToggled(bool)));
-    connect(m_GeneralControls->m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSagittalToggled(bool)));
-    connect(m_GeneralControls->m_SliceSelectionWidget, SIGNAL(SliceNumberChanged(int, int)), this, SLOT(OnSliceNumberChanged(int, int)));
     connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
   }
 }
 
-void MIDASGeneralSegmentorView::Activated()
+void MIDASGeneralSegmentorView::ClosePart()
 {
-  QmitkMIDASBaseSegmentationFunctionality::Activated();
-}
-
-void MIDASGeneralSegmentorView::Deactivated()
-{
-  QmitkMIDASBaseSegmentationFunctionality::Deactivated();
-}
-
-void MIDASGeneralSegmentorView::OnManualToolSelected(int id)
-{
-  // disable crosshair movement when a manual drawing tool is active (otherwise too much visual noise)
-  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnManualToolSelected" << std::endl;
-
-//  if (m_MultiWidget)
+  mitk::Image* workingImage = this->GetWorkingImageFromToolManager(0);
+  if (workingImage != NULL)
   {
-    /* If we do want a Posn button, put this code back in, and insert Posn into list of tools.
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    assert(toolManager);
-
-    mitk::Tool* tool = toolManager->GetToolById(id);
-    if (tool != NULL && strcmp(tool->GetName(),"Posn") != 0)
-    {
-      m_MultiWidget->DisableNavigationControllerEventListening();
-      m_MultiWidget->SetWidgetPlaneMode(0);
-    }
-    else
-    {
-      m_MultiWidget->EnableNavigationControllerEventListening();
-    }
-    */
-
-    // here, if we selected a tool, we stop navigation controls.
-    /*
-    if (id != -1)
-    {
-      m_MultiWidget->DisableNavigationControllerEventListening();
-      m_MultiWidget->SetWidgetPlaneMode(0);
-
-      // ToDo: Create a user preference
-      if (!this->m_GeneralControls->m_AxialRadioButton->isChecked()
-          && !this->m_GeneralControls->m_SagittalRadioButton->isChecked()
-          && !this->m_GeneralControls->m_CoronalRadioButton->isChecked())
-      {
-        this->m_GeneralControls->m_CoronalRadioButton->setChecked(true);
-        this->OnOrientationCoronalToggled(true);
-      }
-    }
-    else
-    {
-      m_MultiWidget->EnableNavigationControllerEventListening();
-    }
-    */
+    this->OnCancelButtonPressed();
   }
-  this->UpdatePriorAndNext();
-  this->UpdateRegionGrowing();
 }
 
 bool MIDASGeneralSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
@@ -354,7 +325,12 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
 {
   // This creates the "final output image"... i.e. the segmentation result.
   mitk::DataNode::Pointer emptySegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed();
-  assert(emptySegmentation);
+
+  // The above method returns NULL if the use exited the colour selection dialog box.
+  if (emptySegmentation.IsNull())
+  {
+    return NULL;
+  }
 
   // Set some initial properties, to make sure they are initialised properly.
   emptySegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
@@ -435,6 +411,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     }
 
     // Setup widgets.
+    this->m_MIDASWidget->SetMIDASSegmentationMode(true);
     this->m_GeneralControls->SetEnableAllWidgets(true);
     this->m_GeneralControls->SetEnableThresholdingWidgets(false);
     this->m_GeneralControls->SetEnableThresholdingCheckbox(true);
@@ -442,143 +419,6 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->SelectNode(emptySegmentation);
   }
   return emptySegmentation.GetPointer();
-}
-
-int MIDASGeneralSegmentorView::GetSliceNumber()
-{
-  return this->m_GeneralControls->m_SliceSelectionWidget->GetValue();
-}
-
-int MIDASGeneralSegmentorView::GetAxis()
-{
-  int axisNumber = -1;
-
-  if (this->m_GeneralControls->m_AxialRadioButton->isChecked())
-  {
-    axisNumber = QmitkMIDASBaseSegmentationFunctionality::GetAxis(QmitkMIDASBaseSegmentationFunctionality::AXIAL);
-  }
-  else if (this->m_GeneralControls->m_SagittalRadioButton->isChecked())
-  {
-    axisNumber = QmitkMIDASBaseSegmentationFunctionality::GetAxis(QmitkMIDASBaseSegmentationFunctionality::SAGITTAL);
-  }
-  else if (this->m_GeneralControls->m_CoronalRadioButton->isChecked())
-  {
-    axisNumber = QmitkMIDASBaseSegmentationFunctionality::GetAxis(QmitkMIDASBaseSegmentationFunctionality::CORONAL);
-  }
-
-  return axisNumber;
-}
-
-itk::ORIENTATION_ENUM MIDASGeneralSegmentorView::GetOrientationAsEnum()
-{
-  itk::ORIENTATION_ENUM orientation = itk::ORIENTATION_UNKNOWN;
-
-  if (this->m_GeneralControls->m_AxialRadioButton->isChecked())
-  {
-    orientation = itk::ORIENTATION_AXIAL;
-  }
-  else if (this->m_GeneralControls->m_SagittalRadioButton->isChecked())
-  {
-    orientation = itk::ORIENTATION_SAGITTAL;
-  }
-  else if (this->m_GeneralControls->m_CoronalRadioButton->isChecked())
-  {
-    orientation = itk::ORIENTATION_CORONAL;
-  }
-
-  return orientation;
-}
-
-void MIDASGeneralSegmentorView::OnOrientationSelected(itk::ORIENTATION_ENUM orientation)
-{
-  mitk::Image* image = this->GetReferenceImageFromToolManager();
-  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationSelected" << std::endl;
-
-  if (image != NULL)// && m_MultiWidget != NULL)
-  {
-
-    // If we switch orientation, we need to recalculate the number of slices in that direction,
-    // so we can setup the slice select widget, and we should switch to the correct slice
-    // as determined by the intersection point of the ortho viewer.
-/*
-    int axis = this->GetAxis();
-    vtkImageData* vtkImage = image->GetVtkImageData(0);
-    int *extents = vtkImage->GetWholeExtent();
-    int size = extents[2*axis + 1] + 1;
-    mitk::Index3D crossPositionInVoxels;
-    mitk::Point3D crossPositionInMillimetres = m_MultiWidget->GetCrossPosition();
-    image->GetGeometry()->WorldToIndex(crossPositionInMillimetres, crossPositionInVoxels);
-    int sliceNumber = -1;
-    int numberFromSlider = -1;
-
-    if (this->m_GeneralControls->m_AxialRadioButton->isChecked())
-    {
-      numberFromSlider = m_MultiWidget->mitkWidget1->GetSliceNavigationController()->GetSlice()->GetPos();
-    }
-    else if (this->m_GeneralControls->m_SagittalRadioButton->isChecked())
-    {
-      numberFromSlider = m_MultiWidget->mitkWidget2->GetSliceNavigationController()->GetSlice()->GetPos();
-    }
-    else if (this->m_GeneralControls->m_CoronalRadioButton->isChecked())
-    {
-      numberFromSlider = m_MultiWidget->mitkWidget3->GetSliceNavigationController()->GetSlice()->GetPos();
-    }
-
-    // Hack:
-    // It appears that sometimes the slider in the SliceNavigationController returns the value at the opposite end of the range.
-    // Additionally, there is rounding going on, so converting mm to vox can differ by 1 slice from the SliceNavigationController.
-    if (abs(numberFromSlider - crossPositionInVoxels[axis]) > 1)
-    {
-      sliceNumber = crossPositionInVoxels[axis];
-    }
-    else
-    {
-      sliceNumber = numberFromSlider;
-    }
-    this->m_GeneralControls->m_SliceSelectionWidget->SetMinimum(0);
-    this->m_GeneralControls->m_SliceSelectionWidget->SetMaximum(size - 1);
-    this->m_GeneralControls->m_SliceSelectionWidget->SetValue(sliceNumber);
-    this->OnSliceNumberChanged(sliceNumber, sliceNumber);
-    this->UpdatePriorAndNext();
-    this->UpdateRegionGrowing();
-    */
-  }
-}
-
-void MIDASGeneralSegmentorView::OnOrientationAxialToggled(bool b)
-{
-  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationAxialToggled" << std::endl;
-/*
-  if (this->m_MultiWidget != NULL)
-  {
-    this->m_MultiWidget->changeLayoutToWidget1();
-  }
-  this->OnOrientationSelected(itk::ORIENTATION_AXIAL);
-  */
-}
-
-void MIDASGeneralSegmentorView::OnOrientationSagittalToggled(bool b)
-{
-  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationSagittalToggled" << std::endl;
-  /*
-  if (this->m_MultiWidget != NULL)
-  {
-    this->m_MultiWidget->changeLayoutToWidget2();
-  }
-  this->OnOrientationSelected(itk::ORIENTATION_SAGITTAL);
-  */
-}
-
-void MIDASGeneralSegmentorView::OnOrientationCoronalToggled(bool b)
-{
-  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnOrientationCoronalToggled" << std::endl;
-  /*
-  if (this->m_MultiWidget != NULL)
-  {
-    this->m_MultiWidget->changeLayoutToWidget3();
-  }
-  this->OnOrientationSelected(itk::ORIENTATION_CORONAL);
-  */
 }
 
 void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfImage()
@@ -1193,6 +1033,7 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   this->UpdateVolumeProperty(segmentationNode);
   this->SetReferenceImageSelected();
   this->EnableSegmentationWidgets(false);
+  this->m_MIDASWidget->SetMIDASSegmentationMode(true);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
@@ -1205,8 +1046,8 @@ void MIDASGeneralSegmentorView::OnCancelButtonPressed()
   this->DestroyPipeline();
   this->RemoveWorkingData();
   this->GetDefaultDataStorage()->Remove(segmentationNode);
-  this->SetReferenceImageSelected();
   this->EnableSegmentationWidgets(false);
+  this->m_MIDASWidget->SetMIDASSegmentationMode(true);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
@@ -1678,6 +1519,61 @@ MIDASGeneralSegmentorView
   regionGrowingNode->Modified();
 }
 
+void MIDASGeneralSegmentorView::OnToolSelected(int id)
+{
+  QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
+  this->UpdatePriorAndNext();
+  this->UpdateRegionGrowing();
+}
+
+int MIDASGeneralSegmentorView::GetSliceNumber()
+{
+  return this->m_MIDASWidget->GetSliceNumber();
+}
+
+int MIDASGeneralSegmentorView::GetAxis()
+{
+  int axisNumber = -1;
+
+  MIDASOrientation orientation = this->m_MIDASWidget->GetOrientation();
+
+  if (orientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    axisNumber = QmitkMIDASBaseSegmentationFunctionality::GetAxis(QmitkMIDASBaseSegmentationFunctionality::AXIAL);
+  }
+  else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+  {
+    axisNumber = QmitkMIDASBaseSegmentationFunctionality::GetAxis(QmitkMIDASBaseSegmentationFunctionality::SAGITTAL);
+  }
+  else if (orientation == MIDAS_ORIENTATION_CORONAL)
+  {
+    axisNumber = QmitkMIDASBaseSegmentationFunctionality::GetAxis(QmitkMIDASBaseSegmentationFunctionality::CORONAL);
+  }
+
+  return axisNumber;
+}
+
+itk::ORIENTATION_ENUM MIDASGeneralSegmentorView::GetOrientationAsEnum()
+{
+  itk::ORIENTATION_ENUM itkOrientation = itk::ORIENTATION_UNKNOWN;
+  MIDASOrientation orientation = this->m_MIDASWidget->GetOrientation();
+
+  if (orientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    itkOrientation = itk::ORIENTATION_AXIAL;
+  }
+  else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+  {
+    itkOrientation = itk::ORIENTATION_SAGITTAL;
+  }
+  else if (orientation == MIDAS_ORIENTATION_CORONAL)
+  {
+    itkOrientation = itk::ORIENTATION_CORONAL;
+  }
+
+  return itkOrientation;
+}
+
 void MIDASGeneralSegmentorView::OnSliceNumberChanged(int before, int after)
 {
   if (this->m_GeneralControls->m_RetainMarksCheckBox->isChecked() && !this->m_GeneralControls->m_ThresholdCheckBox->isChecked() && before != after)
@@ -1701,31 +1597,6 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int before, int after)
 
   this->UpdateRegionGrowing();
   this->UpdatePriorAndNext();
-
-  // Synch m_MultiWidget with this view.
-  std::cerr << "Matt, TODO MIDASGeneralSegmentorView::OnSliceNumberChanged" << std::endl;
-  /*
-  if (this->m_MultiWidget)
-  {
-    mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-    if (referenceImage.IsNotNull())
-    {
-      mitk::Index3D crossPositionInVoxels;
-      mitk::Point3D crossPositionInMillimetres = m_MultiWidget->GetCrossPosition();
-      referenceImage->GetGeometry()->WorldToIndex(crossPositionInMillimetres, crossPositionInVoxels);
-      int axis = this->GetAxis();
-      crossPositionInVoxels[axis] = this->m_GeneralControls->m_SliceSelectionWidget->GetValue();
-
-      mitk::Point3D newVoxelPosition;
-      for (int i = 0; i < 3; i++)
-      {
-        newVoxelPosition[i] = crossPositionInVoxels[i];
-      }
-      referenceImage->GetGeometry()->IndexToWorld(newVoxelPosition, crossPositionInMillimetres);
-      this->m_MultiWidget->MoveCrossToPosition(crossPositionInMillimetres);
-    }
-  }
-  */
 }
 
 void MIDASGeneralSegmentorView::OnCleanButtonPressed()
@@ -1737,18 +1608,3 @@ void MIDASGeneralSegmentorView::OnRetainMarksCheckBoxToggled(bool b)
 {
   // Actually nothing to do until you move slice, then the current slice gets propagated.
 }
-
-bool MIDASGeneralSegmentorView::GetCurrentCrossPosition(mitk::Point3D &output)
-{
-  bool valid = false;
-/*
-  if (m_MultiWidget != NULL)
-  {
-    output = m_MultiWidget->GetCrossPosition();
-    valid = true;
-  }
-*/
-  return valid;
-}
-
-

@@ -48,24 +48,15 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
   m_GridLayoutSeedValues->setContentsMargins(margin,margin,margin,margin);
   m_GridLayoutToggleButtons->setContentsMargins(margin,margin,margin,margin);
   m_GridLayoutPropagateButtons->setContentsMargins(margin,margin,margin,margin);
-  m_GridLayoutOrientation->setContentsMargins(margin,margin,margin,margin);
-  m_GridLayoutSliceMagnification->setContentsMargins(margin,margin,margin,margin);
 
   m_GridLayoutButtomButtons->setSpacing(spacing);
   m_GridLayoutThresholdSliders->setSpacing(spacing);
   m_GridLayoutSeedValues->setSpacing(spacing);
   m_GridLayoutToggleButtons->setSpacing(spacing);
   m_GridLayoutPropagateButtons->setSpacing(spacing);
-  m_GridLayoutOrientation->setSpacing(spacing);
-  m_GridLayoutSliceMagnification->setSpacing(spacing);
 
   // TODO: Decide how we will provide help.
   m_HelpButton->setVisible(false);
-
-  // TODO: Magnification handled by MITK interactor at the moment.
-  m_MagnificationFactorWidget->setVisible(false);
-  m_MagnificationFactorWidget->SetOffset(0);
-  m_SliceSelectionWidget->SetOffset(0);
 
   this->SetEnableAllWidgets(false);
 }
@@ -91,14 +82,6 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingWidgets(bool 
   this->m_ThresholdSeedMinValue->setEnabled(enabled);
 }
 
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableOrientationWidgets(bool enabled)
-{
-  m_OrientationLabel->setEnabled(enabled);
-  m_AxialRadioButton->setEnabled(enabled);
-  m_SagittalRadioButton->setEnabled(enabled);
-  m_CoronalRadioButton->setEnabled(enabled);
-}
-
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableOKCancelResetWidgets(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
@@ -110,10 +93,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
 {
   this->SetEnableThresholdingCheckbox(enabled);
   this->SetEnableThresholdingWidgets(enabled);
-  this->SetEnableOrientationWidgets(enabled);
   this->SetEnableOKCancelResetWidgets(enabled);
-  m_MagnificationFactorWidget->setEnabled(enabled);
-  m_SliceSelectionWidget->setEnabled(enabled);
   m_RetainMarksCheckBox->setEnabled(enabled);
   m_SeePriorCheckBox->setEnabled(enabled);
   m_SeeNextCheckBox->setEnabled(enabled);

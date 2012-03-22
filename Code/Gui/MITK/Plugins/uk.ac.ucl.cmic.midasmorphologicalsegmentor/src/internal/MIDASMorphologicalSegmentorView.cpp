@@ -55,8 +55,6 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 , m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_PaintbrushToolId(-1)
-, m_MITKWidget(NULL)
-, m_MIDASWidget(NULL)
 {
 }
 
@@ -107,15 +105,6 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
     mitk::ToolManager* toolManager = this->GetToolManager();
     m_PaintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
 
-    // Needs re-working, we have to lookup the QmitkStdMultiWidget, as we are
-    // relying on the interactors in that class, as all the interactors in the QmitkMIDASMultiViewWidget are off.
-
-    m_MITKWidget = this->GetActiveStdMultiWidget();
-    assert(m_MITKWidget);
-
-    m_MIDASWidget = this->GetActiveMIDASMultiViewWidget();
-    assert(m_MIDASWidget);
-
     // Finally create connections.
     this->CreateConnections();
 
@@ -139,19 +128,6 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
     connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
     connect(m_MorphologicalControls, SIGNAL(ClearButtonClicked()), this, SLOT(OnClearButtonClicked()));
   }
-}
-
-void MIDASMorphologicalSegmentorView::Activated()
-{
-  m_MIDASWidget->SetMIDASSegmentationMode(true);
-
-  m_Show2DCursors = m_MIDASWidget->GetShow2DCursors();
-  m_MIDASWidget->SetShow2DCursors(false);
-}
-
-void MIDASMorphologicalSegmentorView::Deactivated()
-{
-  m_MIDASWidget->SetShow2DCursors(m_Show2DCursors);
 }
 
 void MIDASMorphologicalSegmentorView::ClosePart()
@@ -365,7 +341,12 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
 {
   // This creates the "final output image"... i.e. the segmentation result.
   mitk::DataNode::Pointer emptySegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed();
-  assert(emptySegmentation);
+
+  // The above method returns NULL if the use exited the colour selection dialog box.
+  if (emptySegmentation.IsNull())
+  {
+    return NULL;
+  }
 
   emptySegmentation->SetProperty(MIDASMorphologicalSegmentorView::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(false));
 
@@ -474,6 +455,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         }
 
         // Make sure the controls match the parameters and the new segmentation is selected
+        this->m_MIDASWidget->SetMIDASSegmentationMode(true);
         this->SetControlsByParameterValues();
         this->SelectNode(emptySegmentation);
       }
@@ -572,32 +554,12 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
     else
     {
       this->m_ToolSelector->SetEnabled(false);
+      this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
     segmentationNode->SetIntProperty("midas.morph.stage", i);
 
     this->UpdateSegmentation();
-  }
-}
-
-void MIDASMorphologicalSegmentorView::OnToolSelected(int toolID)
-{
-
-  if (this->m_MorphologicalControls->GetTabNumber() > 0
-      && this->m_MorphologicalControls->GetTabNumber() < 3)
-  {
-    if (toolID >= 0)
-    {
-      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
-      m_MITKWidget->DisableNavigationControllerEventListening();
-      m_MIDASWidget->SetNavigationControllerEventListening(false);
-    }
-    else
-    {
-      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
-      m_MITKWidget->EnableNavigationControllerEventListening();
-      m_MIDASWidget->SetNavigationControllerEventListening(true);
-    }
   }
 }
 
@@ -1026,6 +988,7 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
   this->SetReferenceImageSelected();
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
+  this->m_MIDASWidget->SetMIDASSegmentationMode(false);
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
   m_MorphologicalControls->m_TabWidget->blockSignals(false);
@@ -1043,6 +1006,7 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
   this->GetDefaultDataStorage()->Remove(segmentationNode);
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
+  this->m_MIDASWidget->SetMIDASSegmentationMode(false);
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
   m_MorphologicalControls->m_TabWidget->blockSignals(false);

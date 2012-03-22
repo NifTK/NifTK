@@ -447,12 +447,7 @@ void QmitkMIDASSingleViewWidget::SetBound(bool isBound)
   }
 
   this->m_IsBound = isBound;
-
-  MIDASView view = this->m_CurrentViews[this->GetBoundUnboundOffset()]; // must come after this->m_IsBound = isBound so we pick up the orientation before views were bound
   this->m_CurrentViews[this->GetBoundUnboundOffset()] = MIDAS_VIEW_UNKNOWN; // to force a reset.
-
-  this->SetActiveGeometry();
-  this->SetView(view, false);
 }
 
 void QmitkMIDASSingleViewWidget::SetActiveGeometry()

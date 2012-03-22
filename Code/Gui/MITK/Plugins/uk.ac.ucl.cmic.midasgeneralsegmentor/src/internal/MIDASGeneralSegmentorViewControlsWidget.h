@@ -63,9 +63,6 @@ public:
   /// \brief Turns thresholding widgets on/off
   void SetEnableThresholdingWidgets(bool enabled);
 
-  /// \brief Turns the orientation widgets on/off
-  void SetEnableOrientationWidgets(bool enabled);
-
   /// \brief Turns the OK, Cancel and reset buttons on/off.
   void SetEnableOKCancelResetWidgets(bool enabled);
 
