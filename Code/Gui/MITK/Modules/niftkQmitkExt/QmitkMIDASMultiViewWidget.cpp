@@ -519,8 +519,6 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
     this->m_NumberOfColumnsBeforeSegmentationMode = m_ColumnsSpinBox->value();
     this->EnableLayoutWidgets(false);
     this->EnableBindWidgets(false);
-    this->m_MIDASOrientationWidget->m_OrthogonalRadioButton->setEnabled(false);
-    this->m_MIDASOrientationWidget->m_ThreeDRadioButton->setEnabled(false);
     this->SetLayoutSize(1, 1, false);
     this->SetSelectedWindow(0);
     this->UpdateFocusManagerToSelectedViewer();
@@ -529,8 +527,6 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
   {
     this->EnableLayoutWidgets(true);
     this->EnableBindWidgets(true);
-    this->m_MIDASOrientationWidget->m_OrthogonalRadioButton->setEnabled(true);
-    this->m_MIDASOrientationWidget->m_ThreeDRadioButton->setEnabled(true);
     this->SetLayoutSize(m_NumberOfRowsBeforeSegmentationMode, m_NumberOfColumnsBeforeSegmentationMode, false);
   }
 }

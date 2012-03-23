@@ -515,21 +515,46 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     //
     // Thirdly, it must be an image geometry.
 
-    mitk::Point3D transformedOrigin;
-    mitk::Point3D cornerPointsInImage[8];
-    cornerPointsInImage[0] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, true, true);
-    cornerPointsInImage[1] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, true, false);
-    cornerPointsInImage[2] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, false, true);
-    cornerPointsInImage[3] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(true, false, false);
-    cornerPointsInImage[4] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, true, true);
-    cornerPointsInImage[5] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, true, false);
-    cornerPointsInImage[6] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, false, true);
-    cornerPointsInImage[7] = this->m_ActiveTimeSlicedGeometry->GetCornerPoint(false, false, false);
+    mitk::Point3D  size;
+    size[0] = this->m_ActiveTimeSlicedGeometry->GetExtent(0);
+    size[1] = this->m_ActiveTimeSlicedGeometry->GetExtent(1);
+    size[2] = this->m_ActiveTimeSlicedGeometry->GetExtent(2);
+    mitk::Point3D  origin = this->m_ActiveTimeSlicedGeometry->GetOrigin();
+    mitk::Vector3D spacing = this->m_ActiveTimeSlicedGeometry->GetSpacing();
 
-    for (unsigned int i = 0; i < 8; i++)
+    MITK_DEBUG << "Matt, input isImage geometry=" << this->m_ActiveTimeSlicedGeometry->GetImageGeometry() << std::endl;
+    MITK_DEBUG << "Matt, input spacing=" << spacing << std::endl;
+    MITK_DEBUG << "Matt, input origin=" << origin << std::endl;
+    MITK_DEBUG << "Matt, input centre=" << this->m_ActiveTimeSlicedGeometry->GetCenter() << std::endl;
+
+    mitk::Point3D transformedOrigin;
+    mitk::Point3D cornerPointsInImageInVoxels[8];
+    mitk::Point3D cornerPointsInImageInMillimetres[8];
+
+    unsigned int counter = 0;
+    for (unsigned int k = 0; k < 2; k++)
     {
-      MITK_DEBUG << "Matt, corner points in image=" << cornerPointsInImage[i] << std::endl;
+      for (unsigned int j = 0; j < 2; j++)
+      {
+        for (unsigned int i = 0; i < 2; i++)
+        {
+          cornerPointsInImageInVoxels[counter][0] = i * (size[0]-1);
+          cornerPointsInImageInVoxels[counter][1] = j * (size[1]-1);
+          cornerPointsInImageInVoxels[counter][2] = k * (size[2]-1);
+          counter++;
+        }
+      }
     }
+    for (counter = 0; counter < 8; counter++)
+    {
+      this->m_ActiveTimeSlicedGeometry->IndexToWorld(cornerPointsInImageInVoxels[counter], cornerPointsInImageInMillimetres[counter]);
+    }
+
+    for (counter = 0; counter < 8; counter++)
+    {
+      MITK_DEBUG << "Matt, corner points in image=" << cornerPointsInImageInMillimetres[counter] << std::endl;
+    }
+
     transformedOrigin[0] = std::numeric_limits<float>::max();
     transformedOrigin[1] = std::numeric_limits<float>::max();
     transformedOrigin[2] = std::numeric_limits<float>::max();
@@ -538,15 +563,15 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     {
       for (unsigned int j = 0; j < 3; j++)
       {
-        if (cornerPointsInImage[i][j] < transformedOrigin[j])
+        if (cornerPointsInImageInMillimetres[i][j] < transformedOrigin[j])
         {
-          transformedOrigin[j] = cornerPointsInImage[i][j];
+          transformedOrigin[j] = cornerPointsInImageInMillimetres[i][j];
         }
       }
     }
 
     // Do the same procedure for each axis, as each axis might be permuted and/or flipped/inverted.
-    mitk::Vector3D originalSpacing = this->m_ActiveTimeSlicedGeometry->GetSpacing();
+
     mitk::Vector3D transformedSpacing;
     mitk::Point3D transformedExtent;
 
@@ -564,7 +589,7 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
           axisInWorldSpace = j;
         }
       }
-      transformedSpacing[axisInWorldSpace] = originalSpacing[i];
+      transformedSpacing[axisInWorldSpace] = spacing[i];
       transformedExtent[axisInWorldSpace] = fabs(axisVector[axisInWorldSpace]/transformedSpacing[axisInWorldSpace]);
     }
 
@@ -578,19 +603,19 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 
     mitk::TimeSlicedGeometry::Pointer timeSlicedTransformedGeometry = mitk::TimeSlicedGeometry::New();
     timeSlicedTransformedGeometry->InitializeEmpty(this->m_ActiveTimeSlicedGeometry->GetTimeSteps());
-    //timeSlicedTransformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
+    timeSlicedTransformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
     timeSlicedTransformedGeometry->SetTimeBounds(this->m_ActiveTimeSlicedGeometry->GetTimeBounds());
     timeSlicedTransformedGeometry->SetEvenlyTimed(this->m_ActiveTimeSlicedGeometry->GetEvenlyTimed());
-    timeSlicedTransformedGeometry->SetSpacing(transformedSpacing);
     timeSlicedTransformedGeometry->SetOrigin(transformedOrigin);
+    timeSlicedTransformedGeometry->SetSpacing(transformedSpacing);
     timeSlicedTransformedGeometry->SetBounds(transformedBoundingBox);
 
     for (unsigned int i = 0; i < this->m_ActiveTimeSlicedGeometry->GetTimeSteps(); i++)
     {
       mitk::Geometry3D::Pointer transformedGeometry = mitk::Geometry3D::New();
-      //transformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
-      transformedGeometry->SetSpacing(transformedSpacing);
+      transformedGeometry->SetImageGeometry(this->m_ActiveTimeSlicedGeometry->GetImageGeometry());
       transformedGeometry->SetOrigin(transformedOrigin);
+      transformedGeometry->SetSpacing(transformedSpacing);
       transformedGeometry->SetBounds(transformedBoundingBox);
       transformedGeometry->SetTimeBounds(this->m_ActiveTimeSlicedGeometry->GetGeometry3D(i)->GetTimeBounds());
 
@@ -598,10 +623,10 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     }
     timeSlicedTransformedGeometry->UpdateInformation();
 
-    MITK_DEBUG << "Matt, transformedSpacing=" << transformedSpacing << std::endl;
-    MITK_DEBUG << "Matt, transformedOrigin=" << transformedOrigin << std::endl;
-    MITK_DEBUG << "Matt, transformedBoundingBox=" << transformedBoundingBox << std::endl;
-    MITK_DEBUG << "Matt, timeBounds=" << this->m_ActiveTimeSlicedGeometry->GetTimeBounds() << std::endl;
+    MITK_DEBUG << "Matt, output spacing=" << transformedSpacing << std::endl;
+    MITK_DEBUG << "Matt, output origin=" << transformedOrigin << std::endl;
+    MITK_DEBUG << "Matt, output box=" << transformedBoundingBox << std::endl;
+    MITK_DEBUG << "Matt, output timeBounds=" << this->m_ActiveTimeSlicedGeometry->GetTimeBounds() << std::endl;
 
     // This will initialise the whole QmitkStdMultiWidget according to the geometry.
     this->m_MultiWidget->SetGeometry(timeSlicedTransformedGeometry); // Sets geometry on all 4 MITK views.

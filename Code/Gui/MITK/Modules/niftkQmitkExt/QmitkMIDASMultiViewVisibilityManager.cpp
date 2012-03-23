@@ -244,44 +244,45 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
 
 void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
 {
-  bool isHelperNode = false;
-  node->GetBoolProperty("helper object", isHelperNode);
 
-  // For non-helper nodes, we set up some initial properties.
-  if (!isHelperNode)
+  bool isBinary = false;
+  node->GetBoolProperty("binary", isBinary);
+
+  // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
+  this->SetNodeVisibilityForAllWindows(node, false);
+
+  // For MIDAS, which might have a light background in the render window,
+  // we need to make sure black is not transparent.
+  mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+  if (image != NULL)
   {
-    // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
-    this->SetNodeVisibilityForAllWindows(node, false);
+    node->SetProperty("black opacity", mitk::FloatProperty::New(1));
 
-    // For MIDAS, which might have a light background in the render window,
-    // we need to make sure black is not transparent.
-    if (dynamic_cast<mitk::Image*>(node->GetData()))
+    if (!isBinary)
     {
-      node->SetProperty("black opacity", mitk::FloatProperty::New(1));
-    }
+      if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
+      {
+        node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
+      }
+      else
+      {
+        node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
+      }
 
-    if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-    {
-      node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
-    }
-    else
-    {
-      node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
-    }
-
-    if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-    {
-      node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_NEAREST"));
-    }
-    else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_LINEAR)
-    {
-      node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_LINEAR"));
-    }
-    else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
-    {
-      node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_CUBIC"));
-    }
-  }
+      if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
+      {
+        node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_NEAREST"));
+      }
+      else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_LINEAR)
+      {
+        node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_LINEAR"));
+      }
+      else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
+      {
+        node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_CUBIC"));
+      }
+    } // end if not binary
+  } // end if is an image
 
   // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
   // windows as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
@@ -298,11 +299,8 @@ void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNo
       {
         if (*iter == parent)
         {
-          // Widget i contains the parent.
-          // However, we want to set the renderer specific visibility according to the global value for this child node, not the parent.
           bool globalVisibility = false;
           node->GetBoolProperty("visible", globalVisibility);
-
           this->AddNodeToWindow(i, node, globalVisibility);
         }
       }
