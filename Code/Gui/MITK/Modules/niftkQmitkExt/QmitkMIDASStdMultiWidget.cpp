@@ -83,6 +83,12 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->mitkWidget3->setAcceptDrops(true);
   this->mitkWidget4->setAcceptDrops(true);
 
+  // Create 4 cameras for temporary storage.
+  for (unsigned int i = 0; i < 4; i++)
+  {
+    m_Cameras[i] = vtkCamera::New();
+  }
+
   // Turn off all interactors in base class, until we want them to be enabled.
   this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
 
@@ -139,6 +145,14 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
   if (mitkWidget3 != NULL && m_CoronalSliceTag != 0)
   {
     mitkWidget3->GetSliceNavigationController()->RemoveObserver(m_CoronalSliceTag);
+  }
+
+  for (unsigned int i = 0; i < 4; i++)
+  {
+    if (m_Cameras[i] != NULL)
+    {
+      m_Cameras[i]->Delete();
+    }
   }
 }
 
@@ -1117,5 +1131,31 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *window,
 
     // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
     displayGeometry->Zoom(scaleFactor, centreOfDisplayInDisplayUnits);
+  }
+}
+
+void QmitkMIDASStdMultiWidget::StoreCameras()
+{
+  std::vector<QmitkRenderWindow*> windows = this->GetAllWindows();
+  for (unsigned int i = 0; i < windows.size(); i++)
+  {
+    vtkCamera* camera = windows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
+    this->m_Cameras[i]->SetPosition(camera->GetPosition());
+    this->m_Cameras[i]->SetFocalPoint(camera->GetFocalPoint());
+    this->m_Cameras[i]->SetViewUp(camera->GetViewUp());
+    this->m_Cameras[i]->SetClippingRange(camera->GetClippingRange());
+  }
+}
+
+void QmitkMIDASStdMultiWidget::RestoreCameras()
+{
+  std::vector<QmitkRenderWindow*> windows = this->GetAllWindows();
+  for (unsigned int i = 0; i < windows.size(); i++)
+  {
+    vtkCamera* camera = windows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
+    camera->SetPosition(this->m_Cameras[i]->GetPosition());
+    camera->SetFocalPoint(this->m_Cameras[i]->GetFocalPoint());
+    camera->SetViewUp(this->m_Cameras[i]->GetViewUp());
+    camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
   }
 }

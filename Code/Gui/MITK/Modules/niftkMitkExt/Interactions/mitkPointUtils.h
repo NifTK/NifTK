@@ -45,6 +45,12 @@ float GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3
 /// \brief Returns as output the vector difference of a-b.
 void GetDifference(const mitk::Point3D& a, const mitk::Point3D& b, mitk::Point3D& output);
 
+/// \brief Given a vector, will calculate the length.
+double Length(mitk::Point3D& vector);
+
+/// \brief Given a vector, will normalise it to unit length.
+void Normalise(mitk::Point3D& vector);
+
 } // end namespace mitk
 
 

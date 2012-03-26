@@ -75,3 +75,29 @@ void mitk::GetDifference(const mitk::Point3D& a, const mitk::Point3D& b, mitk::P
     output[i] = a[i] - b[i];
   }
 }
+
+double mitk::Length(mitk::Point3D& vector)
+{
+  double length = 0;
+  for (int i = 0; i < 3; i++)
+  {
+    length += vector[i]*vector[i];
+  }
+  if (length > 0)
+  {
+    length = sqrt(length);
+  }
+  return length;
+}
+
+void mitk::Normalise(mitk::Point3D& vector)
+{
+  double length = Length(vector);
+  if (length > 0)
+  {
+    for (int i = 0; i < 3; i++)
+    {
+      vector[i] /= length;
+    }
+  }
+}

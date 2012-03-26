@@ -32,6 +32,7 @@
 #include "mitkGeometry3D.h"
 #include "QmitkStdMultiWidget.h"
 #include "QmitkMIDASViewEnums.h"
+#include "vtkCamera.h"
 
 class QGridLayout;
 class QStackedLayout;
@@ -202,6 +203,12 @@ public:
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
 
+  /// \brief Temporarily stores the camera position.
+  void StoreCameras();
+
+  /// \brief Reverts the camera position back to the stored camera position.
+  void RestoreCameras();
+
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
@@ -255,6 +262,7 @@ private:
   bool                  m_Display3DViewInOrthoView;
   MIDASView             m_View;
   int                   m_MagnificationFactor;
+  vtkCamera*            m_Cameras[4];
 };
 
 #endif
