@@ -85,6 +85,7 @@ Optional arguements:
                         8. Mutual Information
                         9. Normalized Mutual Information
   -region [yes/no]    : brain region is used or not [yes].
+  -pptol [float]      : stopping criteria for the powell optimization. [0.0001]
                           
   
 
@@ -100,6 +101,7 @@ dof=4
 similarity=4
 ajc="no"
 region="yes"
+pptol=0.0001
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -142,6 +144,10 @@ do
       region=$2
       shift 1
       ;;
+    -pptol)
+      pptol=$2
+      shift 1
+      ;;
     -*)
         Usage
       exitprog "Error: option $1 not recognised" 1
@@ -178,8 +184,8 @@ function iterate_through_input_file
       echo ${script_dir}/ComputePairwiseRegistration.sh \
            ${output_dir}/${output_format} \
             ${dilation} ${symmetric}  \
-           ${dof} ${scaling_using_skull} ${similarity} ${ajc} ${region} \
-           ${fixed_image} ${fixed_image_mask} ${moving_images_and_masks} >> ${command_filename}
+           ${dof} ${scaling_using_skull} ${similarity} ${ajc} ${pptol} ${region} \
+           ${fixed_image} ${fixed_image_mask} ${moving_images_and_masks}  >> ${command_filename}
     else
       check_file_exists ${image} "no"
       check_file_exists ${image%.img}.hdr "no"

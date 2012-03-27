@@ -36,8 +36,9 @@ dof=$4
 scaling_using_skull=$5
 similarity=$6
 ajc=$7
-region=${8}
-starting_arg=9
+pptol=$8
+region=${9}
+starting_arg=10
 
 if [ "${MY_TEMP}" == "" ]
 then
@@ -142,7 +143,7 @@ do
           -sm ${moving_image_mask_img} \
           -ot ${output}_affine_first.dof \
           -it ${output}_affine_init.dof \
-          -ri 2 -fi 3 -s ${similarity} -tr ${dof} -o 7 -ln 1 -rmin 0.001 -rmax 1 ${symmetric_flag} ${dilation_flag} -wsim 2 -pptol 0.0001
+          -ri 2 -fi 3 -s ${similarity} -tr ${dof} -o 7 -ln 1 -rmin 0.001 -rmax 1 ${symmetric_flag} ${dilation_flag} -wsim 2 -pptol ${pptol}
       fi 
     
     else # if [ "${region}" == "no" ] 
@@ -165,7 +166,7 @@ do
         -sm ${moving_image_mask_img} \
         -ot ${output}_affine_second.dof \
         -it ${output}_affine_first.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 2 -wsim 2 -pptol 0.0001
+        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 2 -wsim 2 -pptol ${pptol}
     fi 
     
     # ROI 1 local registration. 
@@ -191,7 +192,7 @@ do
         -sm ${moving_roi1_img} \
         -ot ${output}_affine_second_roi1.dof \
         -it ${output}_affine_second.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 5 -wsim 2 -pptol 0.0001
+        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 5 -wsim 2 -pptol ${pptol}
     fi 
     
     # ROI 2 local registration. 
@@ -217,7 +218,7 @@ do
         -sm ${moving_roi2_img} \
         -ot ${output}_affine_second_roi2.dof \
         -it ${output}_affine_second.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 5 -wsim 2 -pptol 0.0001
+        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 5 -wsim 2 -pptol ${pptol}
     fi 
     
     fi 
