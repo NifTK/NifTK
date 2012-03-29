@@ -83,9 +83,6 @@ public:
   /// \brief Destructor.
   virtual ~QmitkMIDASStdMultiWidget();
 
-  /// \brief Enum to describe which plane to slice an image in.
-  enum ImageSliceOrientation { XY, XZ, YZ };
-
   /// \brief Returns true if the current view is axial, coronal or sagittal and false otherwise.
   bool IsSingle2DView() const;
 
@@ -252,15 +249,6 @@ private:
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *window, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
-
-  /// \brief Given the direction cosines in the Geometry3D, will return ITK's orientation enum.
-  virtual itk::SpatialOrientation::ValidCoordinateOrientationFlags GetSpatialOrientation(const mitk::Geometry3D* geometry) const;
-
-  /// \brief Given the direction cosines in the Geometry3D, will return enum ImageSliceOrientation describing which image plane to sample from.
-  virtual ImageSliceOrientation GetImageSliceOrientation(const mitk::Geometry3D* geometry, const mitk::SliceNavigationController::ViewDirection viewDirection) const;
-
-  /// \brief If orientation=XY, result=2, else if orientation=XZ, result=1, else result-0;
-  virtual int GetImageSliceAxis(ImageSliceOrientation orientation);
 
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;

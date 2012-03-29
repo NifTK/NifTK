@@ -86,7 +86,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
   }
 
   // Create our own RenderingManager, so we are NOT using the Global one.
-  m_RenderingManager = mitk::RenderingManager::GetInstance();
+  m_RenderingManager = mitk::RenderingManager::New();
   m_RenderingManager->SetConstrainedPaddingZooming(false);
 
   // Create the main QmitkMIDASStdMultiWidget, and pass in our OWN RenderingManager.

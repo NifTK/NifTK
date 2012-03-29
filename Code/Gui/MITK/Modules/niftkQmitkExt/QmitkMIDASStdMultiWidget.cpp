@@ -57,14 +57,18 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   assert(dataStorage);
 
   // Store renderingManager and dataStorage.
+  
   m_RenderingManager = renderingManager;
 
-  // Strictly speaking don't need this if we pass in a local RenderingManager.
-  // If we are using a global on then we should use them to try and avoid Invalid Drawable errors on Mac.
-//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
-//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
-//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
-//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+  // We don't need these 4 lines if we pass in a widget specific RenderingManager.
+  // If we are using a global one then we should use them to try and avoid Invalid Drawable errors on Mac.
+  if (m_RenderingManager == mitk::RenderingManager::GetInstance())
+  {
+    m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
+    m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
+    m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
+    m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+  }
 
   this->SetDataStorage(dataStorage);
 
@@ -579,9 +583,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
 
     // Strictly speaking, if m_RenderingManager is a local rendering manager
     // not the global singleton instance, then we never have to worry about this.
-
-    std::vector< vtkRenderWindow* > registeredWindows = m_RenderingManager->GetAllRegisteredRenderWindows();
-    if (registeredWindows.size() == 0)
+    if (m_RenderingManager == mitk::RenderingManager::GetInstance())
     {
       m_RenderingManager->AddRenderWindow(this->GetRenderWindow1()->GetVtkRenderWindow());
       m_RenderingManager->AddRenderWindow(this->GetRenderWindow2()->GetVtkRenderWindow());
@@ -604,10 +606,6 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       {
         // Get the view/orientation flags.
         mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
-        itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationFlag = this->GetSpatialOrientation(geometry);
-        std::string orientationString = itk::ConvertSpatialOrientationToString(orientationFlag);
-
-        MITK_DEBUG << "Matt, this viewDirection=" << viewDirection << ", orientation =" << orientationString << std::endl;
 
         // Inspired by:
         // http://www.na-mic.org/Wiki/index.php/Coordinate_System_Conversion_Between_ITK_and_Slicer3
@@ -1448,238 +1446,3 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
   }
 }
 
-itk::SpatialOrientation::ValidCoordinateOrientationFlags QmitkMIDASStdMultiWidget::GetSpatialOrientation(const mitk::Geometry3D* geometry) const
-{
-  itk::SpatialOrientationAdapter adaptor;
-  itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
-
-  itk::Matrix<float, 3, 3> matrix = geometry->GetIndexToWorldTransform()->GetMatrix();
-  itk::Matrix<double, 3, 3> direction;
-
-  for (unsigned int i = 0; i < 3; i++)
-  {
-    for (unsigned int j = 0; j < 3; j++)
-    {
-      direction[i][j] = matrix[i][j];
-    }
-  }
-  orientation = adaptor.FromDirectionCosines(direction);
-  return orientation;
-}
-
-QmitkMIDASStdMultiWidget::ImageSliceOrientation QmitkMIDASStdMultiWidget::GetImageSliceOrientation(const mitk::Geometry3D* geometry, const mitk::SliceNavigationController::ViewDirection viewDirection) const
-{
-  ImageSliceOrientation result = XY;
-
-  itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationFlag = this->GetSpatialOrientation(geometry);
-  if (viewDirection == mitk::SliceNavigationController::Transversal)
-  {
-    switch(orientationFlag)
-    {
-      // Searching for L/R, A/P.
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS):
-        result = XY;
-        break;
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL):
-        result = XZ;
-        break;
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL):
-        result = YZ;
-        break;
-      default:
-        MITK_ERROR << "Invalid orientationFlag=" << orientationFlag << std::endl;
-        break;
-    }
-  }
-  else if (viewDirection == mitk::SliceNavigationController::Sagittal)
-  {
-    switch(orientationFlag)
-    {
-      // Searching for A/P, S/I.
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL):
-        result = XY;
-        break;
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS):
-        result = XZ;
-        break;
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS):
-        result = YZ;
-        break;
-      default:
-        MITK_ERROR << "Invalid orientationFlag=" << orientationFlag << std::endl;
-        break;
-    }
-  }
-  else if (viewDirection == mitk::SliceNavigationController::Frontal)
-  {
-    switch(orientationFlag)
-    {
-      // Searching for L/R, S/I.
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA):
-        result = XY;
-        break;
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS):
-      result = XZ;
-        break;
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS):
-      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS):
-      result = YZ;
-        break;
-      default:
-        MITK_ERROR << "Invalid orientationFlag=" << orientationFlag << std::endl;
-        break;
-    }
-  }
-  return result;
-}
-
-int QmitkMIDASStdMultiWidget::GetImageSliceAxis(ImageSliceOrientation orientation)
-{
-
-  if (orientation == XY)
-  {
-    return 2;
-  }
-  else if (orientation == XZ)
-  {
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
-}
