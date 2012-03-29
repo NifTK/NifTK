@@ -416,20 +416,21 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
   vtkRenderWindow *axialVtkRenderWindow = this->mitkWidget1->GetVtkRenderWindow();
   mitk::BaseRenderer* axialRenderer = mitk::BaseRenderer::GetInstance(axialVtkRenderWindow);
 
-  bool visibleIn3DWindow = false;
-  if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Display3DViewInOrthoView)
-     || this->m_View == MIDAS_VIEW_3D)
-  {
-    visibleIn3DWindow = true;
-  }
-
   bool show3DPlanes = false;
+
   mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
   for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
     if (it->Value().IsNull())
     {
       continue;
+    }
+
+    bool visibleIn3DWindow = false;
+    if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Display3DViewInOrthoView)
+        || this->m_View == MIDAS_VIEW_3D)
+    {
+      visibleIn3DWindow = true;
     }
 
     bool visibleInAxialView = false;
