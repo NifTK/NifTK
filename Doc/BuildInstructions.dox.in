@@ -2,10 +2,158 @@
 
 \page BuildInstructions The Build Instructions
 
-NifTK can be built easily using CMake. The whole process will download and install all the third party libraries
-necessary, and works identically in Windows, Linux and Mac. However, there are some caveats due to different
-machine configurations in different departments. Thus, it is better to include these instructions on a wiki
-so the information can be immediately updated.
+\section BuildInstructionsDeveloper Are you Really a NifTK developer?
 
-So, the build instructions are currently <a href="@NIFTK_BUILD_INSTRUCTIONS@">here</a>.
+The build process is relatively simple for a software engineer. If you just want 
+to use NifTK, and don't plan on extending it, and don't need up to the minute code changes, 
+then please enquire on the <a href="@NIFTK_USER_CONTACT@">users mailing list</a> for the
+whereabouts of binary packages. 
+
+\section BuildInstructionsSuperBuild Building Using The SuperBuild Process
+
+As of Trac #908, there is a single ''Super Build'' option to build NifTK and all 
+dependencies using CMake. This should work identically on Linux, Windows and Mac, 
+and considerably simplifies the build process. The steps are summarised below, with
+screenshots from a Mac.  On Windows and Linux, the process is almost identical. 
+Most of the dependencies (Boost, VTK, ITK etc.) are automatically downloaded 
+from 
+\verbatim
+http://cmic.cs.ucl.ac.uk/platform/dependencies
+\endverbatim
+ 
+which can be accessed on the CMIC Unix filesystem here:
+
+\verbatim
+/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/platform/dependencies
+\endverbatim
+
+\section BuildInstructionsBeforeStarted 1. Before You Get Started - Known Caveats
+
+People should add any preconditions or caveats here as they find them.
+
+<ul>
+<li> On Ubuntu you will need to install libncurses-dev, libxt-dev, libtiff4-dev and libwrap0-dev. (This has been done on hellica and denguefever).</li>
+<li> On CMIC Centos machines, you will need to use CMAKE_C++_COMPILER=/usr/lib/g++44 and CMAKE_C_COMPILER=/usr/lib/gcc44 in the build below. </li>
+<li> On CMIC Scientific Linux machines, the compiler version is more up to date, as is Qt. 
+So if you are currently running a CMIC Centos machine, you are strongly advised to upgrade your 
+machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for the new Scientific Linux build. </li>
+</ul>
+
+\section BuildInstructionsDownloadCMake 2. Install CMake 2.8.4 or greater
+
+<ul>
+<li> On Window, download and install the latest binary. </li>
+<li> On Mac machines, download and install the latest binary. The ccmake binary must be visible on your PATH. </li>
+<li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. The ccmake binary must be visible on your PATH. </li>
+<li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. The ccmake binary must be visible on your PATH. </li>
+<li> On Ubuntu: Natty comes with 2.8.3. Install libncurses-dev, then download cmake and compile your own. Make sure the compiled ccmake is on your PATH. </li>
+</ul>
+
+\section BuildInstructionsDownloadQt 3. Install Qt 4.6.2 or greater
+
+<ul>
+<li> If you intend to simply build and develop you can install a pre-compiled Qt version. 
+Go to <a href="http://qt.nokia.com/downloads">here</a>, selecting the full SDK and the 
+LGPL open-source version.  It is essential, that once installed the program qmake is available 
+on the command line, and the correct version. i.e. run qmake --version on the command line. </li>
+<li> If you want to make standalone binary packages for distribution you must download 
+the source code and compile your own, and install it in a non standard place (i.e. not /usr/bin, /usr/lib), 
+then make sure it really is the version you are using. i.e. run qmake --version on the command line. 
+On Linux/Mac try
+\verbatim
+./configure -prefix=/somewhere/to/install/qt-4.7.4 -release -shared -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+\endverbatim
+</li>
+<li> For Windows, a description of building a 64bit version of QT can be found here: <a href="http://blog.shadowgears.com/2008/10/making-qt4-dance-with-msvc-2008.html">Windows QT 64 bit build</a>. </li>
+</ul>
+
+\section BuildInstructionsVersioning 4. Version Control
+
+You must also have an up to date svn client, and git client.
+
+<ul>
+<li> On Windows, use <a href="http://tortoisesvn.tigris.org">TortoiseSVN</a> and <a href="http://code.google.com/p/tortoisegit">TortoiseGIT</a>.</li>
+<li> On Linux these are widely available, and probably up to date enough, EXCEPT git at the DRC. At the DRC use 
+\verbatim
+/var/drc/software/32bit/git
+\endverbatim
+<li> On Mac, available if you installed the XCode tools.</li>
+</ul>
+
+\section BuildInstructionsDownload 5. Download the code
+
+\verbatim
+svn co https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTK
+\endverbatim
+
+\section BuildInstructionsCMake 6. CMake
+
+<ol>
+<li> Using CMake, select the source and a different build directory
+
+\image html niftk-build-snapshot1.png "Figure 1. Select the source folder, and a different build folder."
+
+</li>
+<li> Press configure. </li>
+<li> Select the right type of generated files. On Linux/Mac, you chose Makefiles, 
+on Windows you choose the version of Visual Studio
+
+\image html niftk-build-snapshot2.png "Figure 2. Select the correct generator."
+</li>
+<li> Set the CMAKE_BUILD_TYPE. Type either Debug or Release. </li>
+<li> Set the CMAKE_INSTALL_PREFIX.  You must specify the full directory, including the 
+package name such as @NIFTK_DEPLOY_NAME@. For development environments, it doesn't really 
+matter what you call it, so it could be /Users/mattclarkson/install/foo-version-bar and 
+subdirectories will be created below foo-version-bar. For release builds, the version number 
+to use can be found in the top of the CMakeLists.txt file, but the core development team will 
+know this anyway.
+</li>
+<li> Select which options you want building. These variables start with BUILD_
+
+\image html niftk-build-snapshot3.png "Figure 3. Select the build options."
+
+</li>
+<li> Press configure repeatedly, setting variables as appropriate until the generate option is available. 
+The most important variable is whether you want BUILD_GUI (for NiftyView) to be ON or OFF.
+</li>
+<li> Press the generate button to generate the make files. </li>
+
+\section BuildInstructionsUnix 7. Building (Unix)
+
+At the command prompt, in the build directory
+\verbatim
+make
+\endverbatim
+will perform an initial build of all the external dependencies, and also NifTK. 
+Then the repeated cycle of code, compile, test should be done within the subdirectory called NifTK-build.
+\verbatim
+cd NifTK-build
+make
+ctest -R <whatever>
+etc.
+\endverbatim
+
+\section BuildInstructionsWindows 8. Building (Windows)
+
+Open the Visual Studio .sln file in the build directory (NifTK-SuperBuildRelease in this example), 
+and execute the BUILD task. Once successfully completed, exit Visual Studio.
+
+The repeated cycle of code, compile, test should be done within the subdirectory 
+called NifTK-build, where you should use the batch file startNiftyView_Debug.bat or startNiftyView_Release.bat
+to launch Visual Studio, and the BUILD task. NiftyView can be run directly within Visual Studio by 
+setting it as the startup project.
+
+\section BuildInstructionsTroubleShooting 9. Trouble shooting
+
+<ul>
+<li> On Windows, If you get errors when running CMake related to 'git', ensure that the CMake variable GIT_EXECUTABLE is correctly set. </li>
+<li> On Windows, we only recommend and regularly test Windows 64 bit. While the build is known to work on 32bit Windows 7 and XP, it is less frequently tested. </li>
+<li> On Windows, sometimes building the dependencies can be tricky. Open the Visual Studio project file at the Superbuild level, and build the CLEAN, BOOST, GDCM, VTK, ITK, CTK, MITK one at a time, in that order. </li>
+</ul>
+
+\section 10. Final Installation 
+
+In addition, to make use of the NifTK scripts, and NifTK command line programs, 
+the following <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> should be followed.
+ 
 */

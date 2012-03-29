@@ -41,20 +41,25 @@ and two mailing lists for discussion
 
 For developers it is important to read:
 
-\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">The wiki.</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The dashboard.</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/query?group=status&milestone=NifTK-@NIFTK_VERSION_STRING@">The current tasks.</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/RoadMap">The roadmap.</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">The wiki</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The dashboard</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/query?group=status&milestone=NifTK-@NIFTK_VERSION_STRING@">The current tasks</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/RoadMap">The roadmap</a>
 
 \section MainPageAcknowledgements Acknowledgements
 
-We are grateful for the continued support of our clinical collaborators,
-the <a href="http://dementia.ion.ucl.ac.uk/">Dementia Research Centre</a>
-and the <a href="http://www.ucl.ac.uk/ion/departments/neuroinflammation/">Department of Neuroinflammation</a>
-at University College London (UCL).
+We are grateful for the continued support of our clinical and research collaborators:
+<ul>
+<li> the <a href="http://dementia.ion.ucl.ac.uk/">UCL Dementia Research Centre</a></li>
+<li> the <a href="http://www.ucl.ac.uk/ion/departments/neuroinflammation/">UCL Department of Neuroinflammation</a></li>
+<li> the <a href="http://www.ucl.ac.uk/cabi/">UCL Cantre For Advanced Biomedical Imaging</a></li>
+</ul>
 
 The software development team would like to acknowledge the support and hours of assistance
-of the open-source community, especially that of <a href="http://www.mitk.org">MITK</a>
-and <a href="https://www.commontk.org">CTK</a>.
+of the open-source community, especially that of:
+<ul>
+<li> <a href="http://www.mitk.org">MITK</a></li>
+<li> <a href="https://www.commontk.org">CTK</a></li>
+</ul>
 
 */

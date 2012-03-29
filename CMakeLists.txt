@@ -155,8 +155,8 @@ SET(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}" CACHE S
 SET(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 SET(NIFTK_ITK_VERSION_IN_SUPERBUILD "3.20.1" CACHE STRING "Version of ITK to download when doing superbuild. Currently, valid choices are 3.20.1, and 3.16.0")
 SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
-SET(NIFTK_BUILD_INSTRUCTIONS "https://cmicdev.cs.ucl.ac.uk/trac/wiki/BuildingTheDevelopmentEnvironmentUsingTheSuperBuild" CACHE STRING "Build instructions")
-SET(NIFTK_INSTALL_INSTRUCTIONS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
+SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/html/BuildInstructions.html" CACHE STRING "Build instructions")
+SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/html/BuildInstructions.html" CACHE STRING "Installation instructions")
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
