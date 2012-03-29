@@ -329,6 +329,11 @@ void QmitkMIDASMultiViewWidget::Deactivated()
 {
 }
 
+void QmitkMIDASMultiViewWidget::paintEvent(QPaintEvent* event)
+{
+  this->RequestUpdateAll();
+}
+
 QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 {
   QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkRenderWindow"), -5, 20, m_DataStorage);
@@ -586,7 +591,6 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
     for (unsigned int i = 0; i < additionalWidgets; i++)
     {
       QmitkMIDASSingleViewWidget *widget = this->CreateSingleViewWidget();
-      widget->SetEnabled(false);
       widget->hide();
 
       this->m_SingleViewWidgets.push_back(widget);

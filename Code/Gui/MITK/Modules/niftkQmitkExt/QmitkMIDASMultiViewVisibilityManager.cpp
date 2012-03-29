@@ -29,6 +29,7 @@
 #include "mitkVtkResliceInterpolationProperty.h"
 #include "mitkDataStorageUtils.h"
 #include "mitkImageAccessByItk.h"
+#include "mitkMIDASTool.h"
 #include "vtkRenderWindow.h"
 #include "itkConversionUtils.h"
 #include "itkSpatialOrientationAdapter.h"
@@ -89,6 +90,14 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateObserverToVisibilityMap()
   for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
     if (it->Value().IsNull() || it->Value()->GetProperty("visible") == NULL)
+    {
+      continue;
+    }
+
+    bool isHelper = false;
+    it->Value()->GetBoolProperty("helper object", isHelper);
+
+    if (isHelper)
     {
       continue;
     }
@@ -238,6 +247,23 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy( const mitk::DataNode*
 
 void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node)
 {
+  // TODO: Is there a way round this, because its ugly.
+  // Basically, when drawing on an image, you interactively add/remove contours or seeds.
+  // So, these objects are not "dropped" into a window, they are like overlays.
+  // So, as soon as a drawing tool creates them, they must be visible.
+  // Then they are removed from data storage when no longer needed.
+  // So, for now, we just make sure they are not processed by this class.
+  std::string name = node->GetName();
+  if (   name.find("FeedbackContourTool") != std::string::npos
+      || name.find("MIDASContourTool") != std::string::npos
+      || name.find(mitk::MIDASTool::SEED_POINT_SET_NAME) != std::string::npos
+      || name.find(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME) != std::string::npos
+      || name.find("Paintbrush_Node") != std::string::npos
+      )
+  {
+    return;
+  }
+
   this->UpdateObserverToVisibilityMap();
   this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
 }
@@ -269,18 +295,23 @@ void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNo
         node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
       }
 
+      mitk::VtkResliceInterpolationProperty::Pointer interpolationProperty = mitk::VtkResliceInterpolationProperty::New();
+
       if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
       {
-        node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_NEAREST"));
+        interpolationProperty->SetInterpolationToNearest();
       }
       else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_LINEAR)
       {
-        node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_LINEAR"));
+        interpolationProperty->SetInterpolationToLinear();
       }
       else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
       {
-        node->SetProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New("VTK_RESLICE_CUBIC"));
+        interpolationProperty->SetInterpolationToCubic();
       }
+
+      node->SetProperty("reslice interpolation", interpolationProperty);
+
     } // end if not binary
   } // end if is an image
 
@@ -316,10 +347,18 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::E
 
   // Outer loop, iterates through all nodes in DataStorage.
   mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  for (mitk::DataStorage::SetOfObjects::ConstIterator dataStorageIterator = all->Begin(); dataStorageIterator != all->End(); ++dataStorageIterator)
   {
-    // Make sure each node is non-NULL and has a non-NULL "visible" property
-    if (it->Value().IsNull() || it->Value()->GetProperty("visible") == NULL)
+    // Make sure each node is non-NULL and has a non-NULL "visible" property and is not a helper object
+    if (dataStorageIterator->Value().IsNull() || dataStorageIterator->Value()->GetProperty("visible") == NULL)
+    {
+      continue;
+    }
+
+    bool isHelper = false;
+    dataStorageIterator->Value()->GetBoolProperty("helper object", isHelper);
+
+    if (isHelper)
     {
       continue;
     }
@@ -329,16 +368,16 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::E
     {
 
       // And for each window, we have a set of registered nodes.
-      std::set<mitk::DataNode*>::iterator iter;
-      for (iter = m_DataNodes[i].begin(); iter != m_DataNodes[i].end(); iter++)
+      std::set<mitk::DataNode*>::iterator nodesPerWindowIter;
+      for (nodesPerWindowIter = m_DataNodes[i].begin(); nodesPerWindowIter != m_DataNodes[i].end(); nodesPerWindowIter++)
       {
-        if (it->Value() == (*iter))
+        if (dataStorageIterator->Value() == (*nodesPerWindowIter))
         {
           bool globalVisibility(false);
-          it->Value()->GetBoolProperty("visible", globalVisibility);
+          dataStorageIterator->Value()->GetBoolProperty("visible", globalVisibility);
 
           std::vector<mitk::DataNode*> nodes;
-          nodes.push_back(it->Value());
+          nodes.push_back(dataStorageIterator->Value());
 
           m_Widgets[i]->SetRendererSpecificVisibility(nodes, globalVisibility);
         }

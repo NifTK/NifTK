@@ -95,10 +95,11 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   // (mwah ha ha ha .. evil laughter).
   QString collaborators = QObject::tr(
       "<p>"
-      "%1 is grateful to all our clinical research collaborators including:"
+      "%1 is grateful for the continued support of our clinical and research collaborators including:"
       "<ul>"
-      "<li><a href=\"http://dementia.ion.ucl.ac.uk/\">UCL's Dementia Research Centre</a></li>"
-      "<li><a href=\"http://www.nmrgroup.ion.ucl.ac.uk//\">UCL's NMR Research Unit</a></li>"
+      "<li>the <a href=\"http://dementia.ion.ucl.ac.uk/\">UCL Dementia Research Centre</a>.</li>"
+      "<li>the <a href=\"http://www.ucl.ac.uk/ion/departments/neuroinflammation/\">UCL Department of Neuroinflammation</a>.</li>"
+      "<li>the <a href=\"http://www.ucl.ac.uk/cabi/\">UCL Centre for Advanced Biomedical Imaging</a>.</li>"
       "</ul>"
       "In addition, the software development team would like to acknowledge the kind support of the open-source software community "
       "during development of NifTK and are especially grateful to the developers of "

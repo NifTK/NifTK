@@ -25,9 +25,14 @@
 #include "QmitkMIDASStdMultiWidget.h"
 #include "QmitkRenderWindow.h"
 #include "vtkRenderWindow.h"
+#include "vtkSmartPointer.h"
+#include "vtkMatrix4x4.h"
 #include <QStackedLayout>
 #include <QGridLayout>
 #include <QFrame>
+#include "itkConversionUtils.h"
+#include "itkMatrix.h"
+#include "itkSpatialOrientationAdapter.h"
 
 QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     mitk::RenderingManager* renderingManager,
@@ -51,16 +56,16 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   assert(renderingManager);
   assert(dataStorage);
 
-  // As soon as the base class is created, de-register the windows with the provided RenderingManager.
-  // This stops a renderer calling m_RenderingManager->RequestUpdateAll when widget is not visible.
-  // Then we re-register them, as soon as we are given a valid geometry to work with.
+  // Store renderingManager and dataStorage.
   m_RenderingManager = renderingManager;
-  m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
-  m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
-  m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
-  m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
 
-  // Store this immediately, calling base class method.
+  // Strictly speaking don't need this if we pass in a local RenderingManager.
+  // If we are using a global on then we should use them to try and avoid Invalid Drawable errors on Mac.
+//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
+//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
+//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
+//  m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+
   this->SetDataStorage(dataStorage);
 
   // See also SetEnabled(bool) to see things that are dynamically on/off
@@ -303,7 +308,7 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
   // The point of all this is to minimise the number of Updates.
   // So, ONLY call RequestUpdate on the specific window that is shown.
 
-  if (this->isVisible() && this->IsEnabled())
+  if (this->isVisible())
   {
     switch(this->m_View)
     {
@@ -419,13 +424,6 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
   for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
     if (it->Value().IsNull())
-    {
-      continue;
-    }
-
-    bool isHelperNode = false;
-    it->Value()->GetBoolProperty("helper object", isHelperNode);
-    if (isHelperNode)
     {
       continue;
     }
@@ -572,12 +570,15 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
 
 void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
 {
-  // Add these the first time we have a real geometry.
+  // Add these annotations the first time we have a real geometry.
   if (geometry != NULL)
   {
     this->m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
     this->m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
     this->m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
+
+    // Strictly speaking, if m_RenderingManager is a local rendering manager
+    // not the global singleton instance, then we never have to worry about this.
 
     std::vector< vtkRenderWindow* > registeredWindows = m_RenderingManager->GetAllRegisteredRenderWindows();
     if (registeredWindows.size() == 0)
@@ -588,7 +589,290 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       m_RenderingManager->AddRenderWindow(this->GetRenderWindow4()->GetVtkRenderWindow());
     }
 
-    m_RenderingManager->InitializeViews(geometry);
+    std::vector<vtkRenderWindow*> vtkWindows = this->GetAllVtkWindows();
+    for (unsigned int window = 0; window < vtkWindows.size(); window++)
+    {
+      vtkRenderWindow* vtkWindow = vtkWindows[window];
+      mitk::BaseRenderer *baseRenderer = mitk::BaseRenderer::GetInstance(vtkWindow);
+      int id = baseRenderer->GetMapperID();
+
+      // Get access to slice navigation controller, as this sorts out most of the process.
+      mitk::SliceNavigationController *sliceNavigationController = baseRenderer->GetSliceNavigationController();
+      sliceNavigationController->SetViewDirectionToDefault();
+
+      if (window < 3)
+      {
+        // Get the view/orientation flags.
+        mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
+        itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationFlag = this->GetSpatialOrientation(geometry);
+        std::string orientationString = itk::ConvertSpatialOrientationToString(orientationFlag);
+
+        MITK_DEBUG << "Matt, this viewDirection=" << viewDirection << ", orientation =" << orientationString << std::endl;
+
+        // Inspired by:
+        // http://www.na-mic.org/Wiki/index.php/Coordinate_System_Conversion_Between_ITK_and_Slicer3
+
+        mitk::AffineTransform3D::Pointer affineTransform = geometry->GetIndexToWorldTransform();
+        itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+        mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedAffineTransformMatrix;
+        for (unsigned int i=0; i < 3; i++)
+        {
+          for (unsigned int j = 0; j < 3; j++)
+          {
+            normalisedAffineTransformMatrix[i][j] = affineTransformMatrix[i][j];
+          }
+        }
+        normalisedAffineTransformMatrix.normalize_columns();
+        for (unsigned int i=0; i < 3; i++)
+        {
+          for (unsigned int j = 0; j < 3; j++)
+          {
+            affineTransformMatrix[i][j] = normalisedAffineTransformMatrix[i][j];
+          }
+        }
+
+        MITK_DEBUG << "Matt, original matrix=" << std::endl;
+
+        for (unsigned int i=0; i < 3; i++)
+        {
+          for (unsigned int j = 0; j < 3; j++)
+          {
+            MITK_DEBUG << affineTransformMatrix[i][j] << " ";
+          }
+          MITK_DEBUG << std::endl;
+        }
+
+        mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
+
+        MITK_DEBUG << "Matt, inverseTransformMatrix matrix=" << std::endl;
+
+        for (unsigned int i=0; i < 3; i++)
+        {
+          for (unsigned int j = 0; j < 3; j++)
+          {
+            MITK_DEBUG << inverseTransformMatrix[i][j] << " ";
+          }
+          MITK_DEBUG << std::endl;
+        }
+
+        int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0],inverseTransformMatrix[1][0],inverseTransformMatrix[2][0]);
+        int signRL = itk::Function::Sign(inverseTransformMatrix[dominantAxisRL][0]);
+        int dominantAxisAP = itk::Function::Max3(inverseTransformMatrix[0][1],inverseTransformMatrix[1][1],inverseTransformMatrix[2][1]);
+        int signAP = itk::Function::Sign(inverseTransformMatrix[dominantAxisAP][1]);
+        int dominantAxisSI = itk::Function::Max3(inverseTransformMatrix[0][2],inverseTransformMatrix[1][2],inverseTransformMatrix[2][2]);
+        int signSI = itk::Function::Sign(inverseTransformMatrix[dominantAxisSI][2]);
+
+        int permutedBoundingBox[3];
+        int permutedAxes[3];
+        int flippedAxes[3];
+        double permutedSpacing[3];
+
+        permutedAxes[0] = dominantAxisRL;
+        permutedAxes[1] = dominantAxisAP;
+        permutedAxes[2] = dominantAxisSI;
+
+        flippedAxes[0] = signRL;
+        flippedAxes[1] = signAP;
+        flippedAxes[2] = signSI;
+
+        permutedBoundingBox[0] = geometry->GetExtent(dominantAxisRL);
+        permutedBoundingBox[1] = geometry->GetExtent(dominantAxisAP);
+        permutedBoundingBox[2] = geometry->GetExtent(dominantAxisSI);
+
+        permutedSpacing[0] = geometry->GetSpacing()[permutedAxes[0]];
+        permutedSpacing[1] = geometry->GetSpacing()[permutedAxes[1]];
+        permutedSpacing[2] = geometry->GetSpacing()[permutedAxes[2]];
+
+        MITK_DEBUG << "Matt, domRL=" << dominantAxisRL << ", signRL=" << signRL << ", domAP=" << dominantAxisAP << ", signAP=" << signAP << ", dominantAxisSI=" << dominantAxisSI << ", signSI=" << signSI << std::endl;
+        MITK_DEBUG << "Matt, permutedBoundingBox=" << permutedBoundingBox[0] << ", " << permutedBoundingBox[1] << ", " << permutedBoundingBox[2] << std::endl;
+        MITK_DEBUG << "Matt, permutedAxes=" << permutedAxes[0] << ", " << permutedAxes[1] << ", " << permutedAxes[2] << std::endl;
+        MITK_DEBUG << "Matt, permutedSpacing=" << permutedSpacing[0] << ", " << permutedSpacing[1] << ", " << permutedSpacing[2] << std::endl;
+        MITK_DEBUG << "Matt, flippedAxes=" << flippedAxes[0] << ", " << flippedAxes[1] << ", " << flippedAxes[2] << std::endl;
+
+        mitk::AffineTransform3D::MatrixType::InternalMatrixType permutedMatrix;
+        permutedMatrix.set_column(0, inverseTransformMatrix.get_row(permutedAxes[0]) * flippedAxes[0]);
+        permutedMatrix.set_column(1, inverseTransformMatrix.get_row(permutedAxes[1]) * flippedAxes[1]);
+        permutedMatrix.set_column(2, inverseTransformMatrix.get_row(permutedAxes[2]) * flippedAxes[2]);
+
+        MITK_DEBUG << "Matt, permuted matrix=" << std::endl;
+
+        for (unsigned int i=0; i < 3; i++)
+        {
+          for (unsigned int j = 0; j < 3; j++)
+          {
+            MITK_DEBUG << permutedMatrix[i][j] << " ";
+          }
+          MITK_DEBUG << std::endl;
+        }
+
+        // Work out transformed voxel origin.
+        mitk::Point3D originVoxels;
+        mitk::Point3D originMillimetres;
+        mitk::Point3D originOfSlice;
+
+        originVoxels[0] = 0;
+        originVoxels[1] = 0;
+        originVoxels[2] = 0;
+
+        MITK_DEBUG << "Matt, geometry->GetExtent(n)=" << geometry->GetExtent(0) << ", " << geometry->GetExtent(1) << ", " << geometry->GetExtent(2) << std::endl;
+
+        if (flippedAxes[0] < 0) originVoxels[permutedAxes[0]] = geometry->GetExtent(permutedAxes[0]) - 1;
+        if (flippedAxes[1] < 0) originVoxels[permutedAxes[1]] = geometry->GetExtent(permutedAxes[1]) - 1;
+        if (flippedAxes[2] < 0) originVoxels[permutedAxes[2]] = geometry->GetExtent(permutedAxes[2]) - 1;
+
+        geometry->IndexToWorld(originVoxels, originMillimetres);
+        MITK_DEBUG << "Matt, RAI originVoxels=" << originVoxels << ", originMillimetres=" << originMillimetres << std::endl;
+
+        if(geometry->GetImageGeometry())
+        {
+          originMillimetres[0] -= 0.5;
+          originMillimetres[1] -= 0.5;
+          originMillimetres[2] -= 0.5;
+        }
+        MITK_DEBUG << "Matt, RAI originVoxels=" << originVoxels << ", originMillimetres=" << originMillimetres << std::endl;
+
+        // Setting up the width, height, axis orientation.
+        mitk::VnlVector  rightDV(3);
+        mitk::VnlVector  bottomDV(3);
+        mitk::VnlVector  normal(3);
+        int              width = 1;
+        int              height = 1;
+        mitk::ScalarType viewSpacing = 1;
+        unsigned int     slices = 1;
+        bool             isFlipped;
+
+        switch(viewDirection)
+        {
+        case mitk::SliceNavigationController::Sagittal:
+          width  = permutedBoundingBox[1];
+          height = permutedBoundingBox[2];
+          originOfSlice[0] = originMillimetres[0];
+          originOfSlice[1] = originMillimetres[1];
+          originOfSlice[2] = originMillimetres[2];
+          rightDV[0] = permutedMatrix[0][1];
+          rightDV[1] = permutedMatrix[1][1];
+          rightDV[2] = permutedMatrix[2][1];
+          bottomDV[0] = permutedMatrix[0][2];
+          bottomDV[1] = permutedMatrix[1][2];
+          bottomDV[2] = permutedMatrix[2][2];
+          normal[0] = permutedMatrix[0][0];
+          normal[1] = permutedMatrix[1][0];
+          normal[2] = permutedMatrix[2][0];
+          viewSpacing = permutedSpacing[0];
+          slices = permutedBoundingBox[0];
+          isFlipped = false;
+          break;
+        case mitk::SliceNavigationController::Frontal:
+          width  = permutedBoundingBox[0];
+          height = permutedBoundingBox[2];
+          originOfSlice[0] = originMillimetres[0];
+          originOfSlice[1] = originMillimetres[1];
+          originOfSlice[2] = originMillimetres[2];
+          rightDV[0] = permutedMatrix[0][0];
+          rightDV[1] = permutedMatrix[1][0];
+          rightDV[2] = permutedMatrix[2][0];
+          bottomDV[0] = permutedMatrix[0][2];
+          bottomDV[1] = permutedMatrix[1][2];
+          bottomDV[2] = permutedMatrix[2][2];
+          normal[0] = permutedMatrix[0][1];
+          normal[1] = permutedMatrix[1][1];
+          normal[2] = permutedMatrix[2][1];
+          viewSpacing = permutedSpacing[1];
+          slices = permutedBoundingBox[1];
+          isFlipped = true;
+          break;
+        default:
+          // Default = Transversal.
+          width  = permutedBoundingBox[0];
+          height = permutedBoundingBox[1];
+          originOfSlice[0] = originMillimetres[0] + permutedBoundingBox[0]*permutedSpacing[0]*permutedMatrix[0][1];
+          originOfSlice[1] = originMillimetres[1] + permutedBoundingBox[1]*permutedSpacing[1]*permutedMatrix[1][1];
+          originOfSlice[2] = originMillimetres[2] + permutedBoundingBox[2]*permutedSpacing[2]*permutedMatrix[2][1];
+          rightDV[0] = permutedMatrix[0][0];
+          rightDV[1] = permutedMatrix[1][0];
+          rightDV[2] = permutedMatrix[2][0];
+          bottomDV[0] = -1.0 * permutedMatrix[0][1];
+          bottomDV[1] = -1.0 * permutedMatrix[1][1];
+          bottomDV[2] = -1.0 * permutedMatrix[2][1];
+          normal[0] = permutedMatrix[0][2];
+          normal[1] = permutedMatrix[1][2];
+          normal[2] = permutedMatrix[2][2];
+          viewSpacing = permutedSpacing[2];
+          slices = permutedBoundingBox[2];
+          isFlipped = true;
+          break;
+        }
+
+        MITK_DEBUG << "Matt, width=" << width << std::endl;
+        MITK_DEBUG << "Matt, height=" << height << std::endl;
+        MITK_DEBUG << "Matt, originOfSlice=" << originOfSlice << std::endl;
+        MITK_DEBUG << "Matt, rightDV=" << rightDV << std::endl;
+        MITK_DEBUG << "Matt, bottomDV=" << bottomDV << std::endl;
+        MITK_DEBUG << "Matt, normal=" << normal << std::endl;
+        MITK_DEBUG << "Matt, viewSpacing=" << viewSpacing << std::endl;
+        MITK_DEBUG << "Matt, slices=" << slices << std::endl;
+        MITK_DEBUG << "Matt, isFlipped=" << isFlipped << std::endl;
+
+        mitk::ScalarType bounds[6]= { 0, width, 0, height, 0, 1 };
+
+        // A SlicedGeometry3D is initialised from a 2D plane geometry, plus the number of slices.
+        // So here is the plane.
+        mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
+        planeGeometry->SetIdentity();
+        planeGeometry->SetImageGeometry(geometry->GetImageGeometry());
+        planeGeometry->SetBounds(bounds);
+        planeGeometry->SetMatrixByVectors(rightDV, bottomDV, normal.two_norm());
+        planeGeometry->SetOrigin(originOfSlice);
+
+        // And here we create the slicedGeometry from an initial plane, and a given number of slices.
+        mitk::SlicedGeometry3D::Pointer slicedGeometry = mitk::SlicedGeometry3D::New();
+        slicedGeometry->SetReferenceGeometry(geometry);
+        slicedGeometry->SetImageGeometry(geometry->GetImageGeometry());
+        slicedGeometry->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped );
+
+        // If input geometry is time sliced and we have >1 timestep, we must also cope with that.
+        mitk::TimeSlicedGeometry::Pointer timeSlicedGeometry = static_cast<mitk::TimeSlicedGeometry*>(geometry);
+        if (timeSlicedGeometry.IsNotNull() && timeSlicedGeometry->GetTimeSteps() > 1)
+        {
+          mitk::TimeSlicedGeometry::Pointer createdTimeSlicedGeometry = mitk::TimeSlicedGeometry::New();
+          createdTimeSlicedGeometry->InitializeEmpty(timeSlicedGeometry->GetTimeSteps());
+          createdTimeSlicedGeometry->SetImageGeometry(timeSlicedGeometry->GetImageGeometry());
+          createdTimeSlicedGeometry->SetTimeBounds(timeSlicedGeometry->GetTimeBounds());
+          createdTimeSlicedGeometry->SetEvenlyTimed(timeSlicedGeometry->GetEvenlyTimed());
+          createdTimeSlicedGeometry->SetIndexToWorldTransform(slicedGeometry->GetIndexToWorldTransform());
+          createdTimeSlicedGeometry->SetBounds(timeSlicedGeometry->GetBounds());
+
+          for (unsigned int i = 0; i < timeSlicedGeometry->GetTimeSteps(); i++)
+          {
+            mitk::SlicedGeometry3D::Pointer createdSlicedGeometryForEachTimeStep = mitk::SlicedGeometry3D::New();
+            createdSlicedGeometryForEachTimeStep->SetIdentity();
+            createdSlicedGeometryForEachTimeStep->SetReferenceGeometry(geometry);
+            createdSlicedGeometryForEachTimeStep->SetImageGeometry(geometry->GetImageGeometry());
+            createdSlicedGeometryForEachTimeStep->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped );
+            createdSlicedGeometryForEachTimeStep->SetTimeBounds(timeSlicedGeometry->GetGeometry3D(i)->GetTimeBounds());
+
+            createdTimeSlicedGeometry->SetGeometry3D(createdSlicedGeometryForEachTimeStep, i);
+          }
+          createdTimeSlicedGeometry->UpdateInformation();
+          sliceNavigationController->SetInputWorldGeometry(createdTimeSlicedGeometry);
+        }
+        else
+        {
+          sliceNavigationController->SetInputWorldGeometry(slicedGeometry);
+        }
+        sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
+      }
+
+      // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
+      if ( id == 1 )
+      {
+        // Now geometry is established, set to middle slice.
+        sliceNavigationController->GetSlice()->SetPos( sliceNavigationController->GetSlice()->GetSteps() / 2 );
+      }
+      // Now geometry is established, get the display geometry to fit the picture to the window.
+      baseRenderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
+      baseRenderer->GetDisplayGeometry()->Fit();
+    }
   }
 }
 
@@ -820,8 +1104,12 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(MIDASOrientation orientati
 void QmitkMIDASStdMultiWidget::SetTime(unsigned int timeSlice)
 {
   mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-  assert(snc);
+  snc->GetTime()->SetPos(timeSlice);
 
+  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+  snc->GetTime()->SetPos(timeSlice);
+
+  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
   snc->GetTime()->SetPos(timeSlice);
 }
 
@@ -1157,5 +1445,241 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
     camera->SetFocalPoint(this->m_Cameras[i]->GetFocalPoint());
     camera->SetViewUp(this->m_Cameras[i]->GetViewUp());
     camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
+  }
+}
+
+itk::SpatialOrientation::ValidCoordinateOrientationFlags QmitkMIDASStdMultiWidget::GetSpatialOrientation(const mitk::Geometry3D* geometry) const
+{
+  itk::SpatialOrientationAdapter adaptor;
+  itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
+
+  itk::Matrix<float, 3, 3> matrix = geometry->GetIndexToWorldTransform()->GetMatrix();
+  itk::Matrix<double, 3, 3> direction;
+
+  for (unsigned int i = 0; i < 3; i++)
+  {
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      direction[i][j] = matrix[i][j];
+    }
+  }
+  orientation = adaptor.FromDirectionCosines(direction);
+  return orientation;
+}
+
+QmitkMIDASStdMultiWidget::ImageSliceOrientation QmitkMIDASStdMultiWidget::GetImageSliceOrientation(const mitk::Geometry3D* geometry, const mitk::SliceNavigationController::ViewDirection viewDirection) const
+{
+  ImageSliceOrientation result = XY;
+
+  itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationFlag = this->GetSpatialOrientation(geometry);
+  if (viewDirection == mitk::SliceNavigationController::Transversal)
+  {
+    switch(orientationFlag)
+    {
+      // Searching for L/R, A/P.
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS):
+        result = XY;
+        break;
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL):
+        result = XZ;
+        break;
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL):
+        result = YZ;
+        break;
+      default:
+        MITK_ERROR << "Invalid orientationFlag=" << orientationFlag << std::endl;
+        break;
+    }
+  }
+  else if (viewDirection == mitk::SliceNavigationController::Sagittal)
+  {
+    switch(orientationFlag)
+    {
+      // Searching for A/P, S/I.
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL):
+        result = XY;
+        break;
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS):
+        result = XZ;
+        break;
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS):
+        result = YZ;
+        break;
+      default:
+        MITK_ERROR << "Invalid orientationFlag=" << orientationFlag << std::endl;
+        break;
+    }
+  }
+  else if (viewDirection == mitk::SliceNavigationController::Frontal)
+  {
+    switch(orientationFlag)
+    {
+      // Searching for L/R, S/I.
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA):
+        result = XY;
+        break;
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS):
+      result = XZ;
+        break;
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS):
+      case(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS):
+      result = YZ;
+        break;
+      default:
+        MITK_ERROR << "Invalid orientationFlag=" << orientationFlag << std::endl;
+        break;
+    }
+  }
+  return result;
+}
+
+int QmitkMIDASStdMultiWidget::GetImageSliceAxis(ImageSliceOrientation orientation)
+{
+
+  if (orientation == XY)
+  {
+    return 2;
+  }
+  else if (orientation == XZ)
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
   }
 }

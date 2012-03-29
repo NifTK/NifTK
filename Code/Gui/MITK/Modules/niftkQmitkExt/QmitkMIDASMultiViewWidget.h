@@ -187,6 +187,9 @@ public:
   /// \brief Returns the orientation from the orientation widgets, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. 3D view selected).
   MIDASOrientation GetOrientation() const;
 
+  // Callback method that gets called by the mitk::FocusManager to indicate the currently focussed window.
+  void OnFocusChanged();
+
 signals:
 
   /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
@@ -224,13 +227,15 @@ protected slots:
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
 
+protected:
+
+  // overloaded paint handler
+  virtual void paintEvent(QPaintEvent* event);
+
 private:
 
   // Called from the QRadioButtons to set the view.
   void SwitchView(MIDASView view);
-
-  // Callback method that gets called by the mitk::FocusManager to indicate the currently focussed window.
-  void OnFocusChanged();
 
   /// \brief Gets the row number, given a viewer index [0, m_MaxRows*m_MaxCols-1]
   unsigned int GetRowFromIndex(unsigned int i);

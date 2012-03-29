@@ -216,8 +216,8 @@ void QmitkMIDASMultiViewEditor::PartVisible( berry::IWorkbenchPartReference::Poi
 
     if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
     {
-      m_MIDASMultiViewWidget->setEnabled(true);
       m_MIDASMultiViewWidget->Activated();
+      m_MIDASMultiViewWidget->setEnabled(true);
     }
   }
 }
