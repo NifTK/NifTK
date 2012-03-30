@@ -353,7 +353,15 @@ void QmitkMIDASMultiViewWidget::RequestUpdateAll()
   {
     m_SingleViewWidgets[listToUpdate[i]]->RequestUpdate();
   }
-  this->update();
+}
+
+void QmitkMIDASMultiViewWidget::ForceUpdateAll()
+{
+  std::vector<unsigned int> listToUpdate = GetViewerIndexesToUpdate(false, false);
+  for (unsigned int i = 0; i < listToUpdate.size(); i++)
+  {
+    m_SingleViewWidgets[listToUpdate[i]]->ForceUpdate();
+  }
 }
 
 void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType)
@@ -832,9 +840,9 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   {
     int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnification);
-
-    this->RequestUpdateAll();
   }
+
+  this->RequestUpdateAll();
 }
 
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
@@ -931,7 +939,6 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
     m_MIDASOrientationWidget->SetBlockSignals(false);
 
     this->Update2DCursorVisibility();
-    this->RequestUpdateAll();
   }
 }
 

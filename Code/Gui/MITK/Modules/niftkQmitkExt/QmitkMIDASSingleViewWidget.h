@@ -188,6 +188,9 @@ public:
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
 
+  /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
+  void ForceUpdate();
+
   /// \brief Sets the world geometry that we are sampling.
   void SetGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
 

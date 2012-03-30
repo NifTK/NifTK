@@ -87,6 +87,9 @@ public:
   /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdateAll();
 
+  /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
+  void ForceUpdateAll();
+
   /// \brief Connects the widget to the FocusManager.
   void Activated();
 
