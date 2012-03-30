@@ -317,11 +317,6 @@ void QmitkMIDASSingleViewWidget::RequestUpdate()
   m_MultiWidget->RequestUpdate();
 }
 
-void QmitkMIDASSingleViewWidget::ForceUpdate()
-{
-  m_MultiWidget->ForceImmediateUpdate();
-}
-
 unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundOffset() const
 {
   // So we have arrays of length 2, index=0 corresponds to 'Un-bound', and index=1 corresponds to 'Bound'.

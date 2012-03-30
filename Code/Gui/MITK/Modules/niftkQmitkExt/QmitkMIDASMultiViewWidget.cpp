@@ -355,15 +355,6 @@ void QmitkMIDASMultiViewWidget::RequestUpdateAll()
   }
 }
 
-void QmitkMIDASMultiViewWidget::ForceUpdateAll()
-{
-  std::vector<unsigned int> listToUpdate = GetViewerIndexesToUpdate(false, false);
-  for (unsigned int i = 0; i < listToUpdate.size(); i++)
-  {
-    m_SingleViewWidgets[listToUpdate[i]]->ForceUpdate();
-  }
-}
-
 void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType)
 {
   m_VisibilityManager->SetDefaultInterpolationType(interpolationType);
@@ -705,7 +696,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
 
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      if (i == selectedIndex)
+      if (i == selectedIndex && !m_SingleViewWidgets[i]->IsSelected())
       {
         m_SingleViewWidgets[i]->SetSelected(true);
         if (!m_LinkWindowsCheckBox->isChecked())
@@ -713,7 +704,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
           m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
         }
       }
-      else
+      else if (i != selectedIndex && m_SingleViewWidgets[i]->IsSelected())
       {
         m_SingleViewWidgets[i]->SetSelected(false);
         if (!m_LinkWindowsCheckBox->isChecked())
@@ -940,6 +931,7 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
 
     this->Update2DCursorVisibility();
   }
+  this->RequestUpdateAll();
 }
 
 void QmitkMIDASMultiViewWidget::OnDropSingleRadioButtonToggled(bool toggled)
