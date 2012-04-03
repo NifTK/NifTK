@@ -1,29 +1,28 @@
 /**
 
-\page ThirdPartySoftware Third Party Software
+\page ThirdPartySoftware Dependencies on Third Party Software
 
 \section ThirdPartySoftwareIntro Introduction
 
 With the exception of NiftyView, each of the individual Nifty<Something> packages, 
 listed <a href="http://cmic.cs.ucl.ac.uk/home/software/">here</a> can be downloaded individually, 
 and by design have very few dependencies and are easy to build. This design choice was to
-satisfy the needs of the research community, where our users are typically interested in small
+satisfy the needs of the research community, where our research users are typically interested in small
 lightweight packages that do a very specific job very well. So the Nifty<Something> packages
 are self contained, and can be built independently of each other.
 
-However, this project contains 
+The @NIFTK_PLATFORM@ project contains 
 <ul>
 <li>\ref UserManualNiftyView - for all platforms.</li>
 <li>\ref UserManualCommandLineApps - for all platforms.</li> 
 <li>\ref UserManualScripts - for Unix/Linux/Mac users only.</li>
 </ul>
-as well as the means to download and install all the light-weight Nifty<Something> packages.
-The dependencies on third part software are now explained in detail.
+and so has dependencies on several third party libraries, each of which enjoy widespread use 
+within the medical imaging community.
 
-\section ThirdPartySoftwareVersions Current Versions
+\section ThirdPartySoftwareVersions Current Versions of Third Party Software
 
-The @NIFTK_PLATFORM@ platform contains what has become a very typical technology stack for providing desktop support
-of medical imaging analysis and visualisation functionality. Specifically, the following third party libraries are used:
+The following third party libraries are used:
 
 <ul>
 <li>Boost: @BOOST_VERSION@ </li>
@@ -36,8 +35,12 @@ of medical imaging analysis and visualisation functionality. Specifically, the f
 </ul>
 
 and this version of the @NIFTK_PLATFORM@ documentation was generated from Subversion revision ID: @NIFTK_SVN_REVISION_ID@.
+These version numbers contained within this document are generated during the build process so should always be correct.
+The subversion revision ID of @NIFTK_PLATFORM@ refers to the last checked in version in the repository.  
+So, if a developer has checked out version @NIFTK_SVN_REVISION_ID@, and made changes, the revision ID displayed
+within the Help About box of NiftyView will be @NIFTK_SVN_REVISION_ID@ until the code is checked in.
 
-\section ThirdPartySoftwareDependencies Dependencies
+\section ThirdPartySoftwareDependencies Dependencies between Third Party Software
 
 Before building the toolkit, the user must decide whether or not they are building the GUI
 by selecting the BUILD_GUI flag to be either OFF or ON. If the user has no intention of building 
@@ -74,9 +77,13 @@ For GUI builds:
 <li>@NIFTK_PLATFORM@ -> Qt </li>
 </ol>
 
-Note: So from these lists we can see that Qt, Boost and GDCM have no dependencies, they are built without the
+From these lists we can see that Qt, Boost and GDCM have no dependencies, they are built without the
 knowledge of any of the other packages. Also note that the larger packages such as CTK can download and install
 additional packages, not listed here. For example CTK will download DCMTK, but as the rest of @NIFTK_PLATFORM@
 is not specifically using CMake to do a FindDCMTK we do not list it here.
 
+It is also worth noting that on many cluster machines, graphics cards, OpenGL or Qt may or may not be installed.
+This means that the two types of build, GUI and non-GUI are not just a convenience. This choice of build
+structure enables the user to build a GUI build for a workstation, and a non-GUI build for a headless server.
+ 
 */
