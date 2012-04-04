@@ -1,0 +1,12 @@
+/**
+
+\page ArchitectureNiftyView Architecture - NiftyView
+
+\section ArchitectureNiftyViewIntro Introduction
+
+Given the list of third party libraries, and the technology stack within NifTK, it is a non-trivial 
+task to understand how it all fits together to produce the GUI NiftyView.  This page aims to explain exactly that.
+
+\image html ArchitectureNiftyViewConceptual.png "Figure 1. An over-view of the NiftyView architecture"
+
+*/

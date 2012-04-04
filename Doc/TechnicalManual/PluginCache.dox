@@ -1,0 +1,22 @@
+/**
+
+\page MITKPluginCache Plugin Cache
+
+The CTK/MITK plugin framework maintains a cache to improve the speed of loading and unloading
+of plugins at run time.  The first time the NiftyView GUI runs, the necessary data is copied to a platform specific folder.
+This does take some time and subsequent startups are much quicker.
+
+When a new version of NiftyView is released, and the new version of NiftyView is run, the plugin framework should replace the 
+information in the cache.  However, under certain conditions this may fail, so it is worth knowing where the cache is,
+as it may need to be manually deleted.
+
+You can safely delete the following folders:
+
+\li Linux: ~/.local/share/data/CMIC*
+\li Mac: ~/Library/Application Support/CMIC*
+\li Windows: C:\Documents and Settings\ 
+
+The cache includes all preference settings.  So removing the cache will also remove all your preference settings,
+and the application will return to default preferences.
+
+*/

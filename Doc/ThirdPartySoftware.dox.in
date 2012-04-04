@@ -6,19 +6,13 @@
 
 With the exception of NiftyView, each of the individual Nifty<Something> packages, 
 listed <a href="http://cmic.cs.ucl.ac.uk/home/software/">here</a> can be downloaded individually, 
-and by design have very few dependencies and are easy to build. This design choice was to
-satisfy the needs of the research community, where our research users are typically interested in small
-lightweight packages that do a very specific job very well. So the Nifty<Something> packages
-are self contained, and can be built independently of each other.
-
-The @NIFTK_PLATFORM@ project contains 
+and by design have very few dependencies and are easy to build. However, this @NIFTK_PLATFORM@ project contains 
 <ul>
 <li>\ref UserManualNiftyView - for all platforms.</li>
 <li>\ref UserManualCommandLineApps - for all platforms.</li> 
 <li>\ref UserManualScripts - for Unix/Linux/Mac users only.</li>
 </ul>
-and so has dependencies on several third party libraries, each of which enjoy widespread use 
-within the medical imaging community.
+and has dependencies on several widely used third party libraries.
 
 \section ThirdPartySoftwareVersions Current Versions of Third Party Software
 
@@ -34,8 +28,8 @@ The following third party libraries are used:
 <li>MITK: @MITK_REVISION_ID@ </li>
 </ul>
 
-and this version of the @NIFTK_PLATFORM@ documentation was generated from Subversion revision ID: @NIFTK_SVN_REVISION_ID@.
-These version numbers contained within this document are generated during the build process so should always be correct.
+and this version of the @NIFTK_PLATFORM@ documentation was generated from subversion revision ID: @NIFTK_SVN_REVISION_ID@.
+These version numbers contained within this document are generated during the build process so should always be up-to-date.
 The subversion revision ID of @NIFTK_PLATFORM@ refers to the last checked in version in the repository.  
 So, if a developer has checked out version @NIFTK_SVN_REVISION_ID@, and made changes, the revision ID displayed
 within the Help About box of NiftyView will be @NIFTK_SVN_REVISION_ID@ until the code is checked in.
@@ -43,47 +37,20 @@ within the Help About box of NiftyView will be @NIFTK_SVN_REVISION_ID@ until the
 \section ThirdPartySoftwareDependencies Dependencies between Third Party Software
 
 Before building the toolkit, the user must decide whether or not they are building the GUI
-by selecting the BUILD_GUI flag to be either OFF or ON. If the user has no intention of building 
-the GUI, and only wants scripts and command line programs, then the list of dependencies is smaller. 
-Thus there are two different sets of dependencies listed below, where -> denotes "depends upon".
+by selecting the BUILD_GUI flag to be either OFF or ON. If the user only wants scripts and command line programs, 
+then the list of dependencies is smaller, and the build is quicker.
+The following figure illustrates the compile time dependencies where the arrow denotes 'depends upon'.
 
-For NON-GUI builds:
-<ol>
-<li>ITK -> GDCM </li>
-<li>MITK -> ITK </li>
-<li>MITK -> VTK </li>
-<li>MITK -> Boost </li>
-<li>@NIFTK_PLATFORM@ -> ITK </li>
-<li>@NIFTK_PLATFORM@ -> VTK </li>
-<li>@NIFTK_PLATFORM@ -> Boost </li>
-<li>@NIFTK_PLATFORM@ -> MITK </li>
-</ol>
+\image html ThirdPartyLibs.png "Figure 1. Compile time dependencies of the third part libraries, where each arrow denotes 'depends upon'."
 
-For GUI builds:
-<ol>
-<li>VTK -> Qt</li>
-<li>ITK -> GDCM </li>
-<li>CTK -> Qt </li>
-<li>MITK -> ITK </li>
-<li>MITK -> VTK </li>
-<li>MITK -> Boost </li>
-<li>MITK -> CTK </li>
-<li>MITK -> Qt </li>
-<li>@NIFTK_PLATFORM@ -> ITK </li>
-<li>@NIFTK_PLATFORM@ -> VTK </li>
-<li>@NIFTK_PLATFORM@ -> Boost </li>
-<li>@NIFTK_PLATFORM@ -> CTK </li>
-<li>@NIFTK_PLATFORM@ -> MITK </li>
-<li>@NIFTK_PLATFORM@ -> Qt </li>
-</ol>
-
-From these lists we can see that Qt, Boost and GDCM have no dependencies, they are built without the
+From Figure 1. we can see that Qt, Boost and GDCM have no dependencies, they are built without the
 knowledge of any of the other packages. Also note that the larger packages such as CTK can download and install
 additional packages, not listed here. For example CTK will download DCMTK, but as the rest of @NIFTK_PLATFORM@
-is not specifically using CMake to do a FindDCMTK we do not list it here.
+is not specifically calling DCMTK methods, it is not listed here.
 
 It is also worth noting that on many cluster machines, graphics cards, OpenGL or Qt may or may not be installed.
 This means that the two types of build, GUI and non-GUI are not just a convenience. This choice of build
-structure enables the user to build a GUI build for a workstation, and a non-GUI build for a headless server.
+structure enables the user to build a GUI build for a workstation, and a non-GUI build for running command
+line programs on a headless server.
  
 */

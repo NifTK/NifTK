@@ -1,28 +1,28 @@
 /**
 
-\page Architecture Architecture
+\page ArchitectureProject Architecture - Directories and Third Party Libraries
 
 It is important to understand the project directory structure, the overall technology stack, 
-the dependencies between third party libraries and some of the key design patterns within the project.
+and the dependencies between third party libraries.
 
-\section ArchitectureStructure Project Structure
+\section ArchitectureProjectStructure Project Structure
 
 The top level directory structure contains
 
 \li Code - The main project code base.
 \li Config - Various files that are generated into the build, or to setup the environment at runtime.
 \li CMake - Contains CMake code to build all external projects, find external packages and set up ctest and cpack.
-\li Doc - Contains the User Manual and Technical Manual.
-\li Prototype - Contains prototype code, that is not ready to be published as open source, or not yet published in research papers (i.e. top-secret).
+\li Doc - Contains the User Manual and Technical Manual, generated using Doxygen.
+\li Prototype - Contains prototype code, that is not ready to be published as open source, or not yet published in research papers (i.e. confidential).
 \li Testing - Contains unit tests, test input data, and test baseline data (data to check against).
 \li Utilities - Various utility scripts.
 
-Under the Testing directory, the Code subdirectory should exactly match the top-level Code subdirectory.
+Under the Testing directory, the Code subdirectory should match the top-level Code subdirectory.
 
 The most important folder is the Code folder which contains:
 
 \li Applications - Command line applications.
-\li Gui - The MITK based GUI.
+\li Gui - The <a href="http://www.mitk.org">MITK</a> based GUI.
 \li Libs - C++ libraries, used in both the command line applications and the GUI. 
 \li Scripts - Various Unix scripts.
 
@@ -30,13 +30,13 @@ It has become customary within the field of medical imaging research to write sm
 programs, typically as command line applications. These command line applications demonstrate loose-coupling,
 and hence can easily be combined into pipelines of programs using unix / perl / python scripts. This can
 be clearly seen in the above directory structure. Furthermore due to the prevalence of Unix type systems,
-most researchers use a Unix / Mac operating system, and so bash scripts are currently recommended scripting language.
-The next alternative to bash should be python.
+most researchers use a Unix or Mac operating system, and so currently bash scripts are the recommended scripting
+language, and the next alternative would be python.
 
 Command line apps also allow a minimal entry point for researchers to contribute C++ code. A single file 
 can be used to write a small application, for example using ITK filters, that can be self contained and easy to understand.
 
-\section ArchitectureTechnologyStack Technology Stack
+\section ArchitectureProjectTechnologyStack Technology Stack
 
 It is important to consider the various third party libraries, with their various dependencies, organised in
 layers, which herein will be called a technology stack (Figure 1).
@@ -50,7 +50,7 @@ about ITK, as it is a library for reading DICOM images.  ITK however can use GDC
 an ITK data-structure.  Similarly, the VTK library can be connected to an ITK pipeline, to visualize the results.
 So, logically speaking, VTK depends on ITK, but ITK code should never be concerned with how the data is rendered.
 
-There are a couple of exceptions worth mentioning.  If you download ITK, you will find adaptors for VTK classes,
+There are a couple of exceptions worth mentioning.  If you download ITK v3.20, you will find adaptors for VTK classes,
 which seems to contradict the hierarchy above. However, the ITK-VTK bridge in ITK v3.20 is templated meaning that
 the code is not compiled unless it is instantiated, and so it can be safely packaged within the ITK code-base.
 Secondly, CTK is designed to be a general purpose library, but it always depends on Qt, as Qt contains a lot
@@ -58,7 +58,7 @@ of nice code (smart pointers, memory management etc), written in a cross-platfor
 types of application within NifTK.  Command line applications refer to libraries to the left of the blue line, 
 and the NiftyView GUI additionally includes libraries to the right. Here, MITK can be
 build without Qt or CTK, and hence can be used in command line programs, or with Qt and CTK for building a
-GUI.  So, we can see that by the time CTK is required, Qt will always be present, so this additional dependency,
-not indicated in the diagram is OK.
+GUI.  So, we can see that by the time CTK is required, Qt will always be present for the GUI, so this additional
+dependency, not indicated in the diagram is OK.
 
 */

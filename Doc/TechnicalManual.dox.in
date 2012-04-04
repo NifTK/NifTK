@@ -17,7 +17,9 @@ the design decisions will be explained in detail. It is however assumed that the
 \section TechnicalManualTable Table Of Contents
 
 \li \subpage ThirdPartySoftware
-\li \subpage Architecture
+\li \subpage ArchitectureProject
+\li \subpage ArchitectureNiftyView
+\li \subpage MITKPluginCache
 \li \subpage MITKPluginsIntro
 \li \subpage CTKWidgetsIntro
 
