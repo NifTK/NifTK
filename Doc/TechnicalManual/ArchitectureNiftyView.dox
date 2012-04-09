@@ -4,9 +4,80 @@
 
 \section ArchitectureNiftyViewIntro Introduction
 
-Given the list of third party libraries, and the technology stack within NifTK, it is a non-trivial 
-task to understand how it all fits together to produce the GUI NiftyView.  This page aims to explain exactly that.
+This page explains how the NiftyView GUI fits together, covering the high level concepts.
+While it is simple to put together a single ITK or VTK pipeline, it is much more challenging
+to make a modular extensible application. For this reason, it is necessary to utilise various
+frameworks to provide structure and methodology so that future code can be easily plugged-in
+and the application continue to grow in a comprehensible fashion.
+
+\section ArchitectureNiftyViewCTK The Common Toolkit (CTK)
+
+The <a href="http://www.commontk.org">Common Toolkit (CTK)</a> provides various components that
+might be useful in any medical imaging application, such as the Qt widgets developed for Slicer 4,
+DICOM query/retrieve using DCMTK, DICOM application hosting (under development), a plugin framework
+based on the OSGi specification, an Event Bus based on the OSGi specification and so on. The CTK project 
+is built in a modular fashion so that a third party project can select exactly which parts to build,
+as it is unlikely that an application will need them all. NiftyView uses
+
+\li The Plugin Framework for a clearly defined plugin model following OSGi specifications.
+\li The Event Bus for broadcasting events between plugins.
+\li Some of the Qt widgets.
+
+\section ArchitectureNiftyViewMITK The Medical Imaging Toollkit (MITK)
+
+The <a href="http://www.mitk.org">Medical Imaging Toolkit (MITK)</a> provides a more high level
+set of functionality than CTK, and MITK uses CTK quite extensively.
+For example, MITK provides an ortho-viewer editor, enabling a 2x2 image viewer, with a
+synchronised axial, coronal, sagittal and 3D view. However, it supplies this within a CTK plugin.
+Of the many things that MITK provides, NiftyView uses
+
+\li The main window and menu bar.
+\li Image viewers, providing easy slice views, 3D views, outline of binary masks, rendering of surfaces, points and meshes.
+\li A DataStorage to manage a tree like structure of data items.
+\li A PreferenceManager singleton that uses Qt to store user preferences.
+\li A GlobalInteraction singleton that manages a State Machine based interactor pattern for easy manipulation of data.
+\li A FocusManager singleton to keep track of which window has focus.
+\li The Undo/Redo framework.
+\li Macros to make easy use of ITK filters.
+
+So, for the large part, NiftyView is based on the MITK framework, and hence uses CTK as a consequence.
+
+\section ArchitectureNiftyViewConceptual Conceptual Overview of NiftyView
+
+At this point, a high level view of NiftyView may provide helpful. Figure 1 shows how NiftyView can be understood conceptually.
 
 \image html ArchitectureNiftyViewConceptual.png "Figure 1. An over-view of the NiftyView architecture"
+
+Imagine that all data currently visible in the NiftyView GUI has been loaded from disk into a DataStorage.
+The DataStorage therefore is the single repository for all the data. Data can be images, surfaces, pointsets, objects
+such as lines, polygons, contours etc.  Each piece of Data is associated with a DataNode. The DataNode can have properties
+such as colour, opacity, line thickness.  The user can create any number of new properties and store them on each DataNode.
+Thus the DataStorage, with each piece of Data, stored on a DataNode with all the properties is the Data Model.
+It should be considered as the Model part in a <a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern.
+
+MITK provides various windows called "Editors" that enable a certain view of the data.  Each of these editors
+is provided as a class within a CTK plugin. The main editor is the QmitkStdMultiWidgetEditor which provides the
+default orthogonal view component.  NifTK has added an additional editor the QmitkMIDASMultiViewEditor which provides
+a viewer that acts more like the MIDAS application.  So, editors would normally provide views of the data, in various forms,
+but can also include things like a Python console.  So several Editors are providing a View of the data
+and can be considered the View part of the  
+<a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern.
+
+The final part in the <a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern 
+is the controller. The controller takes user input, converts this to some set of updates to the model data, and then 
+requests that the view components re-draw the view of the data.  Thus the main interaction components, for most 
+development revolve around the controllers. In the original MITK paper [1], the controllers were called "Functionalities".  
+So, each controller is a functionality, and each controller is delivered as a CTK plugin. 
+
+\section ArchitectureNiftyViewFurtherReading Further Reading
+
+The MITK framework can be understood further by reading [1] and [2].
+
+\section ArchitectureNiftyViewReferences References
+
+<ol>
+<li> <a href="http://www.sciencedirect.com/science/article/pii/S1361841505000344">The MITK framework</a>. </li>
+<li> <a href="http://www.cmpbjournal.com/article/S0169-2607(09)00122-9/abstract">The MITK segmentation framework</a>. </li>
+</ol>
 
 */
