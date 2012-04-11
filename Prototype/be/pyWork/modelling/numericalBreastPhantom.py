@@ -410,11 +410,15 @@ class numericalBreastPhantom:
     def generateXMLmodel( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
                           fileIdentifier=None, extMeshNodes=None, skin=True ):
         ''' @summary: Generates the xml model
-            @param gravityVector: Direction of gravity
+            @param gravityVector:    Direction of gravity
             @param gravityMagnitude: Assumed gravitational acceleration
-            @param extMeshNodes: np-Array with the mesh nodes. Must be valid for the mesh generated 
-                                 within this class. Assumed to be given in mm (millimetre).
-            @param fileIdentifier: Extension which is used to specify the model file. 
+            @param extMeshNodes:     np-Array with the mesh nodes. Must be valid for the mesh generated 
+                                     within this class. Assumed to be given in mm (millimetre).
+            @param fileIdentifier:   Extension which is used to specify the model file. 
+            @param extMeshNodes:     np-array holding the mesh nodes (coordinates) to allow external 
+                                     defomration and relaxation. 
+            @param skin:             String if skin should be simulated either 'none', 'volume' or 'membrane'.
+                                     For backwards compatibility this can also be a boolean (true = volume, false = none)
             @return: the xmlModelGenerator Instance
         '''
         
@@ -447,16 +451,31 @@ class numericalBreastPhantom:
         gen.setFixConstraint( self.idxFixChest, 2 )
         
         
-        if skin:
+        if isinstance( skin, bool ) :
+            if skin == True : 
+                skin = 'volume'
+            else :
+                skin = 'membrane'
+                
+        if skin == 'volume':
             # Case skin and fat 
             gen.setMaterialElementSet( self.skinMaterialType, 'SKIN', self.skinMaterialParams, self.materialGen.skinElements )
             gen.setMaterialElementSet( self.fatMaterialType,  'FAT',  self.fatMaterialParams,  self.materialGen.fatElemetns, 
                                        self.fatViscoNumIsoTerms, self.fatViscoNumVolTerms, self.fatViscoParmas ) 
 
-        else :
+        elif skin == 'none' :
             # Case: fat only 
             gen.setMaterialElementSet( self.fatMaterialType, 'FAT', self.fatMaterialParams, gen.allElemenstArray,
                                        self.fatViscoNumIsoTerms, self.fatViscoNumVolTerms, self.fatViscoParmas )
+        else :
+            # Case: skin with membrane elements
+            gen.setMaterialElementSet( self.fatMaterialType, 'FAT', self.fatMaterialParams, gen.allElemenstArray,
+                                       self.fatViscoNumIsoTerms, self.fatViscoNumVolTerms, self.fatViscoParmas )
+            
+            gen.setShellElements('T3', self.materialGen.shellElements )
+            gen.setShellElementSet(0, 'NeoHookean', [500], 1000, 0.003)  # TODO: Needs to be made variable!
+            
+        
         
         gen.setGravityConstraint( gravityVector, gravityMagnitude, gen.allNodesArray, 'RAMP' )
         gen.setOutput( 5000, 'U' )
@@ -478,5 +497,5 @@ if __name__ == '__main__':
     mlxFile    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx'
     phantom    = numericalBreastPhantom( outPath, edgeLength, mlxFile, 
                                          fatMaterialType='NHV', fatViscoNumIsoTerms=1, fatViscoNumVolTerms=1, fatViscoParams=[1.0, 0.2, 1.0, 1e9] )
-    phantom.generateXMLmodel( skin=False )
+    phantom.generateXMLmodel( skin='membrane' )
     

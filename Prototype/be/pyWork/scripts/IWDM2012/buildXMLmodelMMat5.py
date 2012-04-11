@@ -110,7 +110,8 @@ pectoralMuscleMaskImage   = 'W:/philipsBreastProneSupine/ManualSegmentation/Comb
 
 
 # original images
-strProneImg               = 'W:/philipsBreastProneSupine/proneCrop2Pad-zeroOrig.nii'
+strProneImg               = 'W:/philipsBreastProneSupine/proneCrop2Pad-zeroOrig.nii'#
+
 strSupineImg              = 'W:/philipsBreastProneSupine/rigidAlignment/supine1kTransformCrop2Pad_zeroOrig.nii'
 
 # msaked images

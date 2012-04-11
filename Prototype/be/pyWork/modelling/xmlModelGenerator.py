@@ -14,7 +14,7 @@ import vtk
 class xmlModelGenrator :
 
     def __init__ ( self, nodes, elements, elementType = 'T4ANP' ):
-        ''' @param nodes: Expected to be a 2D numpy array of type 'float'. 
+        ''' @param nodes: Expected to be a 2D numpy array of type 'float' representing the coordinates. 
             @param elements: Expected to be a 2D numpy array of type 'int'.
         '''
         self.nodes                  = nodes
@@ -27,6 +27,10 @@ class xmlModelGenrator :
         self.uniformDispConstraints = []
         self.difformDispConstraints = []
         self.elementType            = elementType
+        
+        # Shell elements only exist in a pre-release version of niftySim
+        self.shellElements = []
+        self.shellElementSets = []
         
         # Track which and how many elements were set.
         self._systemParametersSet   = False
@@ -159,6 +163,29 @@ class xmlModelGenrator :
     def setContactCylinder(self, arrayOrigin, arrayAxis, scalarRadius, scalarLength, arrayOrigDisp, scalarRadChange, slvNodes ):
         
         self.contactCylinders.append( [arrayOrigin, arrayAxis, scalarRadius, scalarLength, arrayOrigDisp, scalarRadChange, slvNodes ] )
+        
+    
+    
+    
+    def setShellElements( self, elementType, nodes ):
+        
+        self.shellElements.append( {'type' : elementType,
+                                    'nodes' : nodes } )
+        
+    
+    
+    
+    def setShellElementSet( self, elements, materialType, materialParams, density, thickness ):
+        ''' @param elements: Can either be a numpy array with the nodes or zero
+        '''
+        
+        
+        self.shellElementSets.append( {'elements'       : elements,
+                                       'materialType'   : materialType,
+                                       'materialParams' : materialParams, 
+                                       'density'        : density,
+                                       'thickness'      : thickness } )
+        
         
     
     
@@ -444,6 +471,56 @@ class xmlModelGenrator :
             
             model.appendChild( constr )
         
+
+        # Shell elements
+        for shElms in self.shellElements :
+            
+            shellEl = doc.createElement('ShellElements')
+            shellEl.setAttribute( 'Type', shElms['type'] )
+            shellEl.setAttribute( 'NumEls', '%i' % shElms['nodes'].shape[0] )
+            shellEl.appendChild( doc.createTextNode( writeArrayToStr( shElms['nodes'], False, '    ' ) ) )
+            
+            model.appendChild( shellEl )
+            
+
+        for elSet in self.shellElementSets :
+            #        self.shellElementSets.append( {'elements'       : elements,
+            #                                       'materialType'   : materialType,
+            #                                       'materialParams' : materialParams, 
+            #                                       'density'        : density,
+            #                                       'thickness'      : thickness } )
+            shellSet = doc.createElement('ShellElementSet')
+            
+            if isinstance( elSet['elements'], np.ndarray ): 
+                shellSet.setAttribute( 'Size', '%i' % elSet['elements'].shape[0] )
+                shellSet.appendChild(doc.createTextNode(writeArrayToStr(elSet['elements'], False, '    ' ) ) ) 
+
+            else : # the default if only one element set is given...
+                shellSet.setAttribute( 'Size', '0' )
+                shellSet.appendChild( doc.createTextNode( '0' ) )
+            
+            mat = doc.createElement( 'Material' )
+            mat.setAttribute('Type', elSet['materialType'] )    
+            
+            strElaParams  = ''
+            
+            for p in  elSet['materialParams']:
+                strElaParams = strElaParams + str('%.2f ' % p )
+            
+            mat.appendChild( doc.createTextNode( strElaParams ) )
+            density = doc.createElement( 'Density' ) 
+            density.appendChild(doc.createTextNode('%.4f' % elSet['density']))
+
+            mat.appendChild( density )
+            
+            thickness = doc.createElement('Thickness')
+            thickness.appendChild( doc.createTextNode( '%.4f' % elSet['thickness'] ) )
+            
+            mat.appendChild( thickness )
+            
+            shellSet.appendChild( mat )
+            model.appendChild( shellSet )
+            
 
         # System parameters
         if self._systemParametersSet :

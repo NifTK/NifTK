@@ -105,6 +105,8 @@ class materialSetGenerator:
         labelImgData = self.labelImg.get_data()
         skinImgData  = self.skinMaskImg.get_data() 
         
+        self.shellElements = [] # T3 elements using nodes...
+        
         for i in range( self.elements.shape[0] ) :
             
             #
@@ -153,7 +155,7 @@ class materialSetGenerator:
                 # Check if the coordinate is labelled in the skin image
                 #c = [cdsA, cdsB, cdsC, cdsD ]
                 #c = c[ min( found ) ]
-                # average over those coordinates which were found to be on the surfce 
+                # average over those coordinates which were found to be on the surface 
                 skinCDS = np.array( skinCDS )
                 skinCDS = np.mean( skinCDS, 0 )
                                 
@@ -170,6 +172,12 @@ class materialSetGenerator:
                     if found.count( 2 ) == 1 : self.skinNodes.append ( C )
                     if found.count( 3 ) == 1 : self.skinNodes.append ( D )
                     
+                    if len(found) == 3 : # Consider shell elements only when tetrahedron is completely on surface.
+                        
+                        self.shellElements.append( np.array( (self.skinNodes[-3], 
+                                                              self.skinNodes[-2], 
+                                                              self.skinNodes[-1] ) ) )
+
                     continue
             
             # First attempt: Take a single sample in the label image
@@ -214,10 +222,13 @@ class materialSetGenerator:
         self.skinNodes = np.array( self.skinNodes )
         self.skinNodes = np.unique( self.skinNodes )
         
+        self.shellElements = np.array( self.shellElements )
+        
         print( 'Found the following number of elements: ')
-        print( ' - Skin:    %8i' % nNdsSkinFound )       
-        print( ' - Fat:     %8i' % self.fatElemetns.shape[0] )       
-        print( ' - Muscle:  %8i' % self.muscleElements.shape[0] )       
-        print( ' - Gland:   %8i' % self.glandElements.shape[0] )       
+        print( ' - Skin (tet):  %8i' % nNdsSkinFound )       
+        print( ' - Skin (tri):  %8i' % self.shellElements.shape[0] )       
+        print( ' - Fat:         %8i' % self.fatElemetns.shape[0] )       
+        print( ' - Muscle:      %8i' % self.muscleElements.shape[0] )       
+        print( ' - Gland:       %8i' % self.glandElements.shape[0] )       
         
-        
+    

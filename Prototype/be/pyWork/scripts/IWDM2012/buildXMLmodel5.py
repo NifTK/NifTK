@@ -138,6 +138,7 @@ strSimulatedSupine = meshDir + 'out.nii'
 
 # original images
 strProneImg        = 'W:/philipsBreastProneSupine/proneCrop2Pad-zeroOrig.nii'
+
 strSupineImg       = 'W:/philipsBreastProneSupine/rigidAlignment/supine1kTransformCrop2Pad_zeroOrig.nii'
 
 # run the simulation and resampling at the same time
