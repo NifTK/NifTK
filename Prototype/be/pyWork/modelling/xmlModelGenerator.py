@@ -176,7 +176,7 @@ class xmlModelGenrator :
     
     
     def setShellElementSet( self, elements, materialType, materialParams, density, thickness ):
-        ''' @param elements: Can either be a numpy array with the nodes or zero
+        ''' @param elements: Can either be a numpy array with the nodes or zero (integer assumes only one material within model)
         '''
         
         
@@ -496,7 +496,7 @@ class xmlModelGenrator :
                 shellSet.appendChild(doc.createTextNode(writeArrayToStr(elSet['elements'], False, '    ' ) ) ) 
 
             else : # the default if only one element set is given...
-                shellSet.setAttribute( 'Size', '0' )
+                shellSet.setAttribute( 'Size', '%i' % (self.shellElements[0]['nodes']).shape[0])
                 shellSet.appendChild( doc.createTextNode( '0' ) )
             
             mat = doc.createElement( 'Material' )

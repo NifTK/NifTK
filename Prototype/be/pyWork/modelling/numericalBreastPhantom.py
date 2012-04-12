@@ -19,7 +19,8 @@ class numericalBreastPhantom:
                   timeStep=1e-4, totalTime=1, damping=50, 
                   fatMaterialType='NH', fatMaterialParams=[100,50000], 
                   fatViscoNumIsoTerms=0, fatViscoNumVolTerms=0, fatViscoParams=[], 
-                  skinMaterialType='NH', skinMaterialParams=[1000,50000], cylindricalBase=False ):
+                  skinMaterialType='NH', skinMaterialParams=[1000,50000], cylindricalBase=False,
+                  skinMembraneMaterialType='NeoHookean', skinMembraneMaterialParams=[500], skinMembraneThickness=0.005, skinMembraneDensity=1000. ):
         
         self.outDir               = outDir
         
@@ -58,10 +59,16 @@ class numericalBreastPhantom:
         self.skinMaterialType     = skinMaterialType
         self.skinMaterialParams   = skinMaterialParams
         
+        # skin membrane material
+        self.skinMembraneMaterialType   = skinMembraneMaterialType
+        self.skinMembraneMaterialParams = skinMembraneMaterialParams
+        self.skinMembraneThickness      = skinMembraneThickness 
+        self.skinMembraneDensity        = skinMembraneDensity
+        
+        # system parameters
         self.totalTime            = totalTime
         self.timeStep             = timeStep
         self.damping              = damping
-        
         
         self._breastVolIntensity  = 255.
         self._chestWallIntensity  = 64.
@@ -359,56 +366,56 @@ class numericalBreastPhantom:
     
 
     
-    def generateXMLmodelFatOnly( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
-                                 fileIdentifier=None, extMeshNodes=None ):
-        ''' @summary: Generates the xml model
-            @param gravityVector: Direction of gravity
-            @param gravityMagnitude: Assumed gravitational acceleration
-            @param extMeshNodes: np-Array with the mesh nodes. Must be valid for the mesh generated 
-                                 within this class. Assumed to be given in mm (millimetre).
-            @param fileIdentifier: Extension which is used to specify the model file. 
-            @return: the xmlModelGenerator Instance
-            @deprecated: Use the more general method generateXMLmodel instead.
-        '''
-        
-        if not os.path.exists(self.outVolMesh) :
-            print('Error: Surface mesh does not exists')
-            return
-        
-        
-        if fileIdentifier != None :
-            self.outXmlModelFat = self._outXmlModelFat.split('.xm')[0] + str( fileIdentifier ) + '.xml'
-        else :
-            self.outXmlModelFat = self._outXmlModelFat
-        
-        self.mesh = vmh.vtkVolMeshHandler( self.outVolMesh )
-               
-        if (extMeshNodes == None) :
-            fatGen = xmlGen.xmlModelGenrator( self.mesh.volMeshPoints/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
-        else :
-            fatGen = xmlGen.xmlModelGenrator( extMeshNodes/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
-        
-        fatGen.setFixConstraint( self.idxFixChest, 0 )
-        fatGen.setFixConstraint( self.idxFixChest, 1 )
-        fatGen.setFixConstraint( self.idxFixChest, 2 )
-        
-        fatGen.setMaterialElementSet( 'NH', 'FAT', [100, 50000], fatGen.allElemenstArray )
-        
-        fatGen.setGravityConstraint( gravityVector, gravityMagnitude, fatGen.allNodesArray, 'RAMP' )
-        fatGen.setOutput( 5000, 'U' )
-        fatGen.setSystemParameters( timeStep           = self.timeStep, 
-                                    totalTime          = self.totalTime, 
-                                    dampingCoefficient = self.damping, 
-                                    hgKappa = 0.05, density = 1000 )    
-        fatGen.writeXML( self.outXmlModelFat )
-        
-        return fatGen
+#    def generateXMLmodelFatOnly( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
+#                                 fileIdentifier=None, extMeshNodes=None ):
+#        ''' @summary: Generates the xml model
+#            @param gravityVector: Direction of gravity
+#            @param gravityMagnitude: Assumed gravitational acceleration
+#            @param extMeshNodes: np-Array with the mesh nodes. Must be valid for the mesh generated 
+#                                 within this class. Assumed to be given in mm (millimetre).
+#            @param fileIdentifier: Extension which is used to specify the model file. 
+#            @return: the xmlModelGenerator Instance
+#            @deprecated: Use the more general method generateXMLmodel instead.
+#        '''
+#        
+#        if not os.path.exists(self.outVolMesh) :
+#            print('Error: Surface mesh does not exists')
+#            return
+#        
+#        
+#        if fileIdentifier != None :
+#            self.outXmlModelFat = self._outXmlModelFat.split('.xm')[0] + str( fileIdentifier ) + '.xml'
+#        else :
+#            self.outXmlModelFat = self._outXmlModelFat
+#        
+#        self.mesh = vmh.vtkVolMeshHandler( self.outVolMesh )
+#               
+#        if (extMeshNodes == None) :
+#            fatGen = xmlGen.xmlModelGenrator( self.mesh.volMeshPoints/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
+#        else :
+#            fatGen = xmlGen.xmlModelGenrator( extMeshNodes/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
+#        
+#        fatGen.setFixConstraint( self.idxFixChest, 0 )
+#        fatGen.setFixConstraint( self.idxFixChest, 1 )
+#        fatGen.setFixConstraint( self.idxFixChest, 2 )
+#        
+#        fatGen.setMaterialElementSet( 'NH', 'FAT', [100, 50000], fatGen.allElemenstArray )
+#        
+#        fatGen.setGravityConstraint( gravityVector, gravityMagnitude, fatGen.allNodesArray, 'RAMP' )
+#        fatGen.setOutput( 5000, 'U' )
+#        fatGen.setSystemParameters( timeStep           = self.timeStep, 
+#                                    totalTime          = self.totalTime, 
+#                                    dampingCoefficient = self.damping, 
+#                                    hgKappa = 0.05, density = 1000 )    
+#        fatGen.writeXML( self.outXmlModelFat )
+#        
+#        return fatGen
 
 
 
 
     def generateXMLmodel( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
-                          fileIdentifier=None, extMeshNodes=None, skin=True ):
+                          fileIdentifier=None, extMeshNodes=None, skin='none' ):
         ''' @summary: Generates the xml model
             @param gravityVector:    Direction of gravity
             @param gravityMagnitude: Assumed gravitational acceleration
@@ -473,7 +480,7 @@ class numericalBreastPhantom:
                                        self.fatViscoNumIsoTerms, self.fatViscoNumVolTerms, self.fatViscoParmas )
             
             gen.setShellElements('T3', self.materialGen.shellElements )
-            gen.setShellElementSet(0, 'NeoHookean', [500], 1000, 0.003)  # TODO: Needs to be made variable!
+            gen.setShellElementSet(0, self.skinMembraneMaterialType, self.skinMembraneMaterialParams, self.skinMembraneDensity, self.skinMembraneThickness )  
             
         
         
@@ -496,6 +503,8 @@ if __name__ == '__main__':
     edgeLength = 400
     mlxFile    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx'
     phantom    = numericalBreastPhantom( outPath, edgeLength, mlxFile, 
-                                         fatMaterialType='NHV', fatViscoNumIsoTerms=1, fatViscoNumVolTerms=1, fatViscoParams=[1.0, 0.2, 1.0, 1e9] )
+                                         cylindricalBase=True,
+                                         fatMaterialType='NHV', fatViscoNumIsoTerms=1, fatViscoNumVolTerms=1, fatViscoParams=[1.0, 0.2, 1.0, 1e9],
+                                         skinMembraneMaterialType='NeoHookean', skinMembraneMaterialParams=[5000] )
     phantom.generateXMLmodel( skin='membrane' )
     
