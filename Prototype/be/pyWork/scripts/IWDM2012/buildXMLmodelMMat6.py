@@ -22,8 +22,9 @@ import materialSetGenerator
 import commandExecution as cmdEx
 import f3dRegistrationTask as f3dTask
 
+
 # starting from the images
-# 1) soft tissue (currently seen as homogeneous material... to be coorected later on)
+# 1) soft tissue (currently seen as homogeneous material... to be corrected later on)
 #    -> W:/philipsBreastProneSupine/ManualSegmentation/proneMaskMuscleFatGland-clippedShoulder-pad.nii
 #    -> intensity value 255
 #
@@ -32,12 +33,12 @@ import f3dRegistrationTask as f3dTask
 #    -> intensity value 255
 #
 
-meshDir            = 'W:/philipsBreastProneSupine/Meshes/meshMaterials3/'
+meshDir            = 'W:/philipsBreastProneSupine/Meshes/meshMaterials6/'
 breastVolMeshName  = meshDir + 'breastSurf_impro.1.vtk'    # volume mesh
 breastSurfMeshName = meshDir + 'breastSurf_impro.stl'    
 xmlFileOut         = meshDir + 'model.xml'
 chestWallMaskImage = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh-dilateR2I4.nii'
-labelImage         = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad.nii'
+labelImage         = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM2_Crp2-pad.nii'
 skinMaskImage      = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-AirThresh-dilateR2I4.nii'
 
 
@@ -50,9 +51,9 @@ breastVolMeshPoints = VN.vtk_to_numpy( breastVolMesh.GetPoints().GetData() )
 breastVolMeshCells = VN.vtk_to_numpy( breastVolMesh.GetCells().GetData() )
 breastVolMeshCells = breastVolMeshCells.reshape( breastVolMesh.GetNumberOfCells(),breastVolMeshCells.shape[0]/breastVolMesh.GetNumberOfCells() )
 
-stlR = vtk.vtkSTLReader()
-stlR.SetFileName( breastSurfMeshName )
-stlR.Update()
+#stlR = vtk.vtkSTLReader()
+#stlR.SetFileName( breastSurfMeshName )
+#stlR.Update()
 
 surfaceExtractor = vtk.vtkDataSetSurfaceFilter()
 surfaceExtractor.SetInput( breastVolMesh )
@@ -87,6 +88,26 @@ print( 'Found %i points within an x range between [ -inf ; %f ]' % (len( lowXIdx
 plotArrayAs3DPoints(lowXPoints, ( 0, 0, 1.0 ) )
 
 
+
+# find those nodes of the model, which are close to the mid axillary line i.e. high y-values
+maxYCoordinate = np.max( breastVolMeshPoints[:,1] )
+deltaY = 3
+
+highYPoints = []
+highYIdx    = []
+
+for i in range( breastVolMeshPoints.shape[0] ):
+    if breastVolMeshPoints[i,1] > ( maxYCoordinate - deltaY ) :
+        highYIdx.append( i )
+        highYPoints.append( [breastVolMeshPoints[i,0], breastVolMeshPoints[i,1], breastVolMeshPoints[i,2] ] )
+    
+highYPoints = np.array( highYPoints )
+highYIdx    = np.array( lowXIdx    )
+
+print( 'Found %i points within an x range between [ %f ; inf ]' % (len( highYIdx ), maxYCoordinate + deltaY ) )
+plotArrayAs3DPoints( highYPoints, ( 0, 0, 1.0 ) )
+
+
 #
 # Find the points close to the chest surface
 #
@@ -101,19 +122,19 @@ allElemenstArray = np.array( range( breastVolMeshCells.shape[0]  ) )
 
 genFix = xGen.xmlModelGenrator(  breastVolMeshPoints / 1000., breastVolMeshCells[ : , 1:5], 'T4ANP' )
 
-genFix.setFixConstraint( lowXIdx, 0 )
-#genFix.setFixConstraint( lowXIdx, 1 )
-#genFix.setFixConstraint( lowXIdx, 2 )
-genFix.setFixConstraint( idxCloseToChest, 0 )
+# Fix constraints
+genFix.setFixConstraint( lowXIdx, 0 )          # sternum
+genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
+genFix.setFixConstraint( idxCloseToChest, 0 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 1 )
 genFix.setFixConstraint( idxCloseToChest, 2 )
 
+
 #genFix.setMaterialElementSet( 'NH', 'FAT', [500, 50000], allElemenstArray )
 
-genFix.setMaterialElementSet( 'NHV', 'FAT',    [  250, 50000], matGen.fatElemetns, 1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NH', 'SKIN',    [ 2000, 50000], matGen.skinElements   )
-genFix.setMaterialElementSet( 'NH', 'GLAND',   [  500, 50000], matGen.glandElements  )
-genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [ 1000, 50000], matGen.muscleElements )
+genFix.setMaterialElementSet( 'NHV', 'FAT',     [  250, 50000], np.union1d( matGen.fatElements, matGen.skinElemetns), 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NHV', 'GLAND',   [  250, 50000], matGen.fatElements, 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NH',  'MUSCLE',  [  250, 50000], matGen.fatElements, 1, 0, [1.0, 0.2] )
 
 genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
 genFix.setOutput( 5000, 'U' )
@@ -121,6 +142,8 @@ genFix.setSystemParameters( timeStep=1e-4, totalTime=1, dampingCoefficient=50, h
 genFix.writeXML( xmlFileOut )
 
 
+import sys
+sys.exit()
 
 #
 # run the simulation
