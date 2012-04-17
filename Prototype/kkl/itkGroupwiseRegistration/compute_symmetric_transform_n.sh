@@ -58,6 +58,7 @@ asym_dof=""
 interpolation=4
 double_window="yes"
 ss_atlas=""
+just_dbc="no"
 
 # Parse command line options
 while [ "$#" -gt 0 ]
@@ -78,6 +79,10 @@ do
       ss_atlas=$2
       shift 1
       ;; 
+    -just_dbc)
+      just_dbc=$2
+      shift 1
+      ;;
     *)
       echo "break"
       break
@@ -175,7 +180,7 @@ function transform()
   makeroi -img ${resliced_region1_img} -out ${resliced_mask} -alt 128
 }
 
-if [ 1 == 1 ]
+if [ "${just_dbc}" != "yes" ]
 then 
 
 # Create the pairwise symmetric dof files. 
@@ -256,13 +261,40 @@ done
 
 fi 
 
+# need to shift the image index along if dummy is found, because mtpdbc will only count the number of input images. 
+shift_image=0
+
 # Differential bias correction. 
 arguments=""
 for ((i=1; i<=${number_of_images}; i++))
 do 
-  arguments="${arguments} ${output_dir}/${output_prefix}_${i}.hdr ${output_dir}/${output_prefix}_${i}_mask.img ${output_dir}/${output_prefix}_${i}_dbc.hdr"
+  if [ "${image[${i}]}" != "dummy" ] 
+  then 
+    arguments="${arguments} ${output_dir}/${output_prefix}_${i}.hdr ${output_dir}/${output_prefix}_${i}_mask.img ${output_dir}/${output_prefix}_${i}_dbc.hdr"
+  else
+    (( shift_image++ ))
+  fi 
 done  
 niftkMTPDbc -mode 1 ${arguments} 
+
+if [ ${shift_image} != 0 ]
+then 
+  for ((i=${number_of_images}; i>=1; i--))
+  do
+    (( j=i-shift_image ))
+    if [ "${image[${i}]}" != "dummy" ] 
+    then 
+      mv ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${i}_dbc.img
+      mv ${output_dir}/${output_prefix}_${j}_dbc.hdr ${output_dir}/${output_prefix}_${i}_dbc.hdr
+    else
+      (( shift_image-- ))
+      if [ ${shift_image} == 0 ]
+      then 
+        break 
+      fi 
+    fi 
+  done
+fi 
 
 # Compute BSI. 
 for ((i=1; i<=${number_of_images}; i++))
@@ -270,9 +302,14 @@ do
   (( j=i+1 ))
   for ((; j<=${number_of_images}; j++))
   do 
+    if [ "${image[${i}]}" == "dummy" ] || [ "${image[${j}]}" == "dummy" ]  
+    then 
+      continue
+    fi 
+    
     if [ ! -f "${local_region[${i}]}" ] || [ ! -f "${air_file[${i}]}" ] 
     then 
-      compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_${i}_dbc ${output_dir}/${output_prefix}_${i}_mask \
+        compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_${i}_dbc ${output_dir}/${output_prefix}_${i}_mask \
                         ${output_dir}/${output_prefix}_${j}_dbc ${output_dir}/${output_prefix}_${j}_mask \
                         ${output_dir}
     else

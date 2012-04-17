@@ -66,6 +66,7 @@ Optional Arguments:
   -interpolation i      : NN: 1, linear: 2, cubic: 3, sinc: 4. 
   -double_window yes/no : double window or not. 
   -ss_atlas dummy       : atlas used to generate img from midas region. 
+  -just_dbc yes/no      : just do dbc without transformation if yes. 
                         
 EOF
 exit 127 
@@ -83,7 +84,7 @@ function IterateThroughFile()
     then 
       if [ "$mode" != "CHECK" ]; then
         # Generate a file of all commands
-        echo "${script_dir}/compute_symmetric_transform_n.sh ${asym_flag} ${interpolation} ${double_window} ${ss_atlas} ${output} ${each_line}" >> $command_file
+        echo "${script_dir}/compute_symmetric_transform_n.sh ${asym_flag} ${interpolation} ${double_window} ${just_dbc} ${ss_atlas} ${output} ${each_line}" >> $command_file
       fi
     elif [ "${tp3}" == "" ] 
     then 
@@ -158,6 +159,7 @@ interpolation="-interpolation 4"
 double_window="-double_window yes"
 ss_atlas="-ss_atlas dummy"
 pairwise="no"
+just_dbc="-just_dbc no"
 
 # Parse remaining command line options
 shift $ndefargs
@@ -189,6 +191,10 @@ do
       pairwise="-pairwise $2"
       shift 1
       ;; 
+    -just_dbc)
+      just_dbc="-just_dbc $2"
+      shift 1
+      ;;
     -*)
         Usage
       exitprog "Error: option $1 not recognised" 1
