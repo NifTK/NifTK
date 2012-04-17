@@ -258,11 +258,8 @@ do
   fi 
 done  
 
-
 fi 
 
-# need to shift the image index along if dummy is found, because mtpdbc will only count the number of input images. 
-shift_image=0
 
 # Differential bias correction. 
 arguments=""
@@ -270,31 +267,14 @@ for ((i=1; i<=${number_of_images}; i++))
 do 
   if [ "${image[${i}]}" != "dummy" ] 
   then 
+    if [ ! -f "${output_dir}/${output_prefix}_${i}_mask.img" ] 
+    then 
+      makemask ${output_dir}/${output_prefix}_${i}.img ${output_dir}/${output_prefix}_${i}_mask ${output_dir}/${output_prefix}_${i}_mask.img
+    fi 
     arguments="${arguments} ${output_dir}/${output_prefix}_${i}.hdr ${output_dir}/${output_prefix}_${i}_mask.img ${output_dir}/${output_prefix}_${i}_dbc.hdr"
-  else
-    (( shift_image++ ))
   fi 
 done  
 niftkMTPDbc -mode 1 ${arguments} 
-
-if [ ${shift_image} != 0 ]
-then 
-  for ((i=${number_of_images}; i>=1; i--))
-  do
-    (( j=i-shift_image ))
-    if [ "${image[${i}]}" != "dummy" ] 
-    then 
-      mv ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${i}_dbc.img
-      mv ${output_dir}/${output_prefix}_${j}_dbc.hdr ${output_dir}/${output_prefix}_${i}_dbc.hdr
-    else
-      (( shift_image-- ))
-      if [ ${shift_image} == 0 ]
-      then 
-        break 
-      fi 
-    fi 
-  done
-fi 
 
 # Compute BSI. 
 for ((i=1; i<=${number_of_images}; i++))
@@ -309,14 +289,6 @@ do
     
     if [ ! -f "${local_region[${i}]}" ] || [ ! -f "${air_file[${i}]}" ] 
     then 
-      if [ ! -f "${output_dir}/${output_prefix}_${i}_mask.img" ] 
-      then 
-        makemask ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_mask ${output_dir}/${output_prefix}_${i}_mask.img
-      fi 
-      if [ ! -f "${output_dir}/${output_prefix}_${j}_mask.img" ] 
-      then 
-        makemask ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_mask ${output_dir}/${output_prefix}_${j}_mask.img
-      fi 
       compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_${i}_dbc ${output_dir}/${output_prefix}_${i}_mask \
                         ${output_dir}/${output_prefix}_${j}_dbc ${output_dir}/${output_prefix}_${j}_mask \
                         ${output_dir}
