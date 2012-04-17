@@ -309,8 +309,14 @@ do
     
     if [ ! -f "${local_region[${i}]}" ] || [ ! -f "${air_file[${i}]}" ] 
     then 
-      makemask ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_mask ${output_dir}/${output_prefix}_${i}_mask.img
-      makemask ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_mask ${output_dir}/${output_prefix}_${j}_mask.img
+      if [ ! -f "${output_dir}/${output_prefix}_${i}_mask.img" ] 
+      then 
+        makemask ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_mask ${output_dir}/${output_prefix}_${i}_mask.img
+      fi 
+      if [ ! -f "${output_dir}/${output_prefix}_${j}_mask.img" ] 
+      then 
+        makemask ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_mask ${output_dir}/${output_prefix}_${j}_mask.img
+      fi 
       compute-kmeans-bsi.sh ${output_dir}/${output_prefix}_${i}_dbc ${output_dir}/${output_prefix}_${i}_mask \
                         ${output_dir}/${output_prefix}_${j}_dbc ${output_dir}/${output_prefix}_${j}_mask \
                         ${output_dir}
