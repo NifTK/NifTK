@@ -467,7 +467,7 @@ class numericalBreastPhantom:
         if skin == 'volume':
             # Case skin and fat 
             gen.setMaterialElementSet( self.skinMaterialType, 'SKIN', self.skinMaterialParams, self.materialGen.skinElements )
-            gen.setMaterialElementSet( self.fatMaterialType,  'FAT',  self.fatMaterialParams,  self.materialGen.fatElemetns, 
+            gen.setMaterialElementSet( self.fatMaterialType,  'FAT',  self.fatMaterialParams,  self.materialGen.fatElements, 
                                        self.fatViscoNumIsoTerms, self.fatViscoNumVolTerms, self.fatViscoParmas ) 
 
         elif skin == 'none' :

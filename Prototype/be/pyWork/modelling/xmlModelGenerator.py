@@ -169,7 +169,7 @@ class xmlModelGenrator :
     
     def setShellElements( self, elementType, nodes ):
         
-        self.shellElements.append( {'type' : elementType,
+        self.shellElements.append( {'type'  : elementType,
                                     'nodes' : nodes } )
         
     
@@ -179,6 +179,8 @@ class xmlModelGenrator :
         ''' @param elements: Can either be a numpy array with the nodes or zero (integer assumes only one material within model)
         '''
         
+        if isinstance(materialParams, (int,float) ) :
+            materialParams = [materialParams]
         
         self.shellElementSets.append( {'elements'       : elements,
                                        'materialType'   : materialType,

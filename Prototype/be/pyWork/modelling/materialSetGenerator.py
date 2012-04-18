@@ -64,7 +64,7 @@ class materialSetGenerator:
         self.muscleElements = []
         self.skinElements   = []
         self.skinNodes      = []
-        self.fatElemetns    = []
+        self.fatElements    = []
         self.glandElements  = []
         
         self.muscleElementMidPoints = []
@@ -187,7 +187,7 @@ class materialSetGenerator:
             curLabel = labelImgData[idxCentre[0], idxCentre[1], idxCentre[2]]
             
             if curLabel == self.labelFat :
-                self.fatElemetns.append( i )
+                self.fatElements.append( i )
                 self.fatElementMidPoints.append( cdsTetCentre )
                 continue
                 
@@ -202,7 +202,7 @@ class materialSetGenerator:
                 continue
             
             # default case if the mask is not accurate...
-            self.fatElemetns.append( i )
+            self.fatElements.append( i )
             self.fatElementMidPoints.append( cdsTetCentre )
              
         
@@ -210,7 +210,7 @@ class materialSetGenerator:
         # Convert the arrays to numpy and print some information 
         #
         self.skinElements   = np.array( self.skinElements ) 
-        self.fatElemetns    = np.array( self.fatElemetns  ) 
+        self.fatElements    = np.array( self.fatElements  ) 
         self.glandElements  = np.array( self.glandElements) 
         self.muscleElements = np.array( self.muscleElements  ) 
         
@@ -227,7 +227,7 @@ class materialSetGenerator:
         print( 'Found the following number of elements: ')
         print( ' - Skin (tet):  %8i' % nNdsSkinFound )       
         print( ' - Skin (tri):  %8i' % self.shellElements.shape[0] )       
-        print( ' - Fat:         %8i' % self.fatElemetns.shape[0] )       
+        print( ' - Fat:         %8i' % self.fatElements.shape[0] )       
         print( ' - Muscle:      %8i' % self.muscleElements.shape[0] )       
         print( ' - Gland:       %8i' % self.glandElements.shape[0] )       
         

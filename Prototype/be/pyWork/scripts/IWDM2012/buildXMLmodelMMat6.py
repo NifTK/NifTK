@@ -102,7 +102,7 @@ for i in range( breastVolMeshPoints.shape[0] ):
         highYPoints.append( [breastVolMeshPoints[i,0], breastVolMeshPoints[i,1], breastVolMeshPoints[i,2] ] )
     
 highYPoints = np.array( highYPoints )
-highYIdx    = np.array( lowXIdx    )
+highYIdx    = np.array( highYIdx    )
 
 print( 'Found %i points within an x range between [ %f ; inf ]' % (len( highYIdx ), maxYCoordinate + deltaY ) )
 plotArrayAs3DPoints( highYPoints, ( 0, 0, 1.0 ) )
@@ -123,22 +123,25 @@ allElemenstArray = np.array( range( breastVolMeshCells.shape[0]  ) )
 genFix = xGen.xmlModelGenrator(  breastVolMeshPoints / 1000., breastVolMeshCells[ : , 1:5], 'T4ANP' )
 
 # Fix constraints
-genFix.setFixConstraint( lowXIdx, 0 )          # sternum
+genFix.setFixConstraint( lowXIdx,  0 )         # sternum
+genFix.setFixConstraint( highYIdx, 0 )         # mid-axillary line
 genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
+genFix.setFixConstraint( highYIdx, 2 )         # mid-axillary line
 genFix.setFixConstraint( idxCloseToChest, 0 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 1 )
 genFix.setFixConstraint( idxCloseToChest, 2 )
 
 
-#genFix.setMaterialElementSet( 'NH', 'FAT', [500, 50000], allElemenstArray )
+genFix.setMaterialElementSet( 'NH', 'FAT',     [  150, 50000], np.union1d( matGen.fatElements, matGen.skinElements))#, 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NH', 'GLAND',   [  150, 50000], matGen.glandElements)#,  1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [  150, 50000], matGen.muscleElements)#, 1, 0, [1.0, 0.2] )
 
-genFix.setMaterialElementSet( 'NHV', 'FAT',     [  250, 50000], np.union1d( matGen.fatElements, matGen.skinElemetns), 1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NHV', 'GLAND',   [  250, 50000], matGen.fatElements, 1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NH',  'MUSCLE',  [  250, 50000], matGen.fatElements, 1, 0, [1.0, 0.2] )
+genFix.setShellElements('T3', matGen.shellElements )
+genFix.setShellElementSet(0, 'NeoHookean', [800], 1000, 0.005)
 
 genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
 genFix.setOutput( 5000, 'U' )
-genFix.setSystemParameters( timeStep=1e-4, totalTime=1, dampingCoefficient=50, hgKappa=0.05, density=1000 )    
+genFix.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=250, hgKappa=0.05, density=1000 )    
 genFix.writeXML( xmlFileOut )
 
 
