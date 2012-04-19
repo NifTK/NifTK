@@ -49,35 +49,47 @@ At this point, a high level view of NiftyView may provide helpful. Figure 1 show
 \image html ArchitectureNiftyViewConceptual.png "Figure 1. An over-view of the NiftyView architecture"
 
 Imagine that all data currently visible in the NiftyView GUI has been loaded from disk into a DataStorage.
-The DataStorage therefore is the single repository for all the data. Data can be images, surfaces, pointsets, objects
-such as lines, polygons, contours etc.  Each piece of Data is associated with a DataNode. The DataNode can have properties
-such as colour, opacity, line thickness.  The user can create any number of new properties and store them on each DataNode.
+The DataStorage therefore is the single repository for all the data. Data can be images, surfaces, pointsets and objects
+such as lines, polygons or contours.  Each piece of Data is associated with a DataNode. The DataNode can have properties
+such as colour, opacity, line thickness and so on.  The user can create any number of new properties and store them on each DataNode.
 Thus the DataStorage, with each piece of Data, stored on a DataNode with all the properties is the Data Model.
-It should be considered as the Model part in a <a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern.
+It should be considered as the Model part in a <a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller (MVC) </a> pattern.
 
 MITK provides various windows called "Editors" that enable a certain view of the data.  Each of these editors
 is provided as a class within a CTK plugin. The main editor is the QmitkStdMultiWidgetEditor which provides the
-default orthogonal view component.  NifTK has added an additional editor the QmitkMIDASMultiViewEditor which provides
-a viewer that acts more like the MIDAS application.  So, editors would normally provide views of the data, in various forms,
-but can also include things like a Python console.  So several Editors are providing a View of the data
-and can be considered the View part of the  
-<a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern.
+default orthogonal image viewer component.  NiftyView has added an additional editor the QmitkMIDASMultiViewEditor 
+which provides a viewer that acts more like the MIDAS application with drag and drop functionality, and multiple panes. 
+So several Editors are providing different views of the data and can be considered the View part of the  
+<a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern. However, in addition
+to this, for those readers familiar with the 
+<a href="http://www.eclipse.org/home/categories/rcp.php">Eclipse RCP project</a>, and the OSGi specification concerning how the 
+workbench is assembled, the term Editor is more appropriate. When a file is selected, the file type determines what
+editor can be used to view and edit it.  For example in Eclipse, a .cpp file is known to be C++, and so a text editor
+with C++ formatting is opened. In the case of NiftyView, the data is typically images, surfaces, meshes or points, all of which
+need rendering. So, both the default editor and the MIDAS Drag and Drop editor all display these types of data.
+But the concept is also naturally extensible to things like a python console.  So if a python text file was loaded 
+it could be associated with the right editor due to the underlying OSGi framework.  So, we keep the term Editor
+for the main windows displaying data as the term is a bit more generic.
 
 The final part in the <a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern 
-is the controller. The controller takes user input, converts this to some set of updates to the model data, and then 
-requests that the view components re-draw the view of the data.  Thus the main interaction components, for most 
-development revolve around the controllers. In the original MITK paper [1], the controllers were called "Functionalities".  
-So, each controller is a functionality, and each controller is delivered as a CTK plugin. 
+is the controller. The controller takes user input, converts this to some set of updates to the Model, and then 
+requests that the display components re-draw the Model.  In the original
+<a href="http://www.sciencedirect.com/science/article/pii/S1361841505000344">original MITK paper</a>, the controllers 
+were called "Functionalities" and are nowadays called "Views" implemented as CTK plugins with a Qt front end. 
+Within the NiftyView GUI, the list of available Functionalities or Views can be found under the Window menu.
+Each of these Functionalities is delivered as a separate plugin, and for new development, the developer will usually
+focus on which new Functionalities need developing to satisfy a particular purpose.    
+In addition to Functionalities, it can be seen that mouse clicks and key-presses in the main editor windows also produce
+an effect. This is because there is a controller component called GlobalInteraction which listens to Qt events.
+These are forwarded onto the GlobalInteraction singleton which can then distribute events to any number of StateMachine
+observers. This interaction pattern is further described 
+<a href="http://docs.mitk.org/nightly-qt4/InteractionPage.html">here</a>
+along with the related concept, the Undo/Redo pattern.
 
-\section ArchitectureNiftyViewFurtherReading Further Reading
-
-The MITK framework can be understood further by reading [1] and [2].
-
-\section ArchitectureNiftyViewReferences References
-
-<ol>
-<li> <a href="http://www.sciencedirect.com/science/article/pii/S1361841505000344">The MITK framework</a>. </li>
-<li> <a href="http://www.cmpbjournal.com/article/S0169-2607(09)00122-9/abstract">The MITK segmentation framework</a>. </li>
-</ol>
+To summarise: Figure 1 illustrates then that the GUI revolves around the MVC pattern. Within each 
+View (Functionality) or Editor (data viewing) component, the user can additionally lookup various services such as the FocusManager, GlobalInteraction, 
+PreferencesService. Examples can be found in the MITK base class <a href="http://docs.mitk.org/nightly-qt4/classQmitkAbstractView.html">QmitkAbstractView</a>
+or <a href="http://docs.mitk.org/nightly-qt4/classQmitkAbstractRenderEditor.html">QmitkAbstractRenderEditor</a>. 
+MITK uses Singleton's but are currently migrating towards Micro-Services, which can be considered like Singleton's but with a more managed lifecycle.
 
 */

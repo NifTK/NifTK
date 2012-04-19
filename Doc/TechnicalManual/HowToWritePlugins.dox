@@ -1,12 +1,6 @@
 /**
 
-\page MITKPluginsIntro Introduction To Plugins
-
-\ref MITKPluginsIntroLocation
-
-\ref MITKPluginsIntroNaming
-
-\ref MITKPluginsIntroPluginGenerator
+\page HowToWritePlugins How to write a Plugin
 
 \section MITKPluginsIntroLocation Location
 

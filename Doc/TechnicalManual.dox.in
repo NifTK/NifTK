@@ -17,10 +17,11 @@ the design decisions will be explained in detail. It is however assumed that the
 \section TechnicalManualTable Table Of Contents
 
 \li \subpage ThirdPartySoftware
-\li \subpage ArchitectureProject
+\li \subpage ArchitectureStack
 \li \subpage ArchitectureNiftyView
-\li \subpage MITKPluginCache
-\li \subpage MITKPluginsIntro
-\li \subpage CTKWidgetsIntro
-
+\li \subpage HowToErasePluginCache
+\li \subpage HowToWritePlugins
+\li \subpage HowToWriteWidgets
+\li \subpage UnderstandingFileIO
+\li \subpage UnderstandingGeometry
 */

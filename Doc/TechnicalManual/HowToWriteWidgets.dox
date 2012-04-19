@@ -1,12 +1,6 @@
 /**
 
-\page CTKWidgetsIntro Introduction To Widgets
-
-\ref CTKWidgetsIntroduction
-
-\ref CTKWidgetsDescription
-
-\ref CTKWidgetsOurCommonWidgets
+\page HowToWriteWidgets How to Write Qt Widgets
 
 \section CTKWidgetsIntroduction Introduction
 

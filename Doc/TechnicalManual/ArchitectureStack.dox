@@ -1,6 +1,6 @@
 /**
 
-\page ArchitectureProject Architecture - Directories and Third Party Libraries
+\page ArchitectureStack Architecture - Project Structure and Technology Stack
 
 It is important to understand the project directory structure, the overall technology stack, 
 and the dependencies between third party libraries.
