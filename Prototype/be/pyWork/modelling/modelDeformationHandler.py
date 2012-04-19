@@ -5,6 +5,7 @@
 
 
 import xmlModelGenerator as xGen
+import xmlModelReader as xRead
 from glob import glob
 import os
 import numpy as np
@@ -13,9 +14,13 @@ import numpy as np
 class modelDeformationHandler :
     
     def __init__ ( self, xmlModelGenerator, deformationFileName=None ) :
+        ''' @attention: The xmlModelGenrator can also be an xmlModelReader, provided it has the 
+                        member .nodes, .elements and .xmlFileName
+        '''
 
         # check if generator is of correct type        
-        if not isinstance( xmlModelGenerator, xGen.xmlModelGenrator ) :
+        if not ( isinstance( xmlModelGenerator, xGen.xmlModelGenrator ) or 
+                 isinstance( xmlModelGenerator, xRead.xmlModelReader  ) ):
             print( 'Error Expected an xmlModelGenerator as input...' )
             return
         

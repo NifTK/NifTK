@@ -1,10 +1,10 @@
 #! /usr/bin/env python 
 # -*- coding: utf-8 -*-
 
-# Evaluation: Comparing Tanner simulations with registration results
 
 
 import xmlModelGenerator as xGen
+import xmlModelReader as xRead
 from glob import glob
 import os
 import numpy as np
@@ -16,7 +16,8 @@ class modelDeformationVisualiser :
     def __init__ ( self, xmlModelGenerator, deformationFileName=None ) :
 
         # check if generator is of correct type        
-        if not isinstance( xmlModelGenerator, xGen.xmlModelGenrator ) :
+        if not ( isinstance( xmlModelGenerator, xGen.xmlModelGenrator ) or
+                 isinstance(xmlModelGenerator, xRead.xmlModelReader   ) ):
             print( 'Error Expected an xmlModelGenerator as input...' )
             return
         

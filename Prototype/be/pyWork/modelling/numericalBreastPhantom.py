@@ -462,7 +462,7 @@ class numericalBreastPhantom:
             if skin == True : 
                 skin = 'volume'
             else :
-                skin = 'membrane'
+                skin = 'none'
                 
         if skin == 'volume':
             # Case skin and fat 
@@ -501,8 +501,8 @@ if __name__ == '__main__':
     
     outPath    = 'C:/data/test/'
     edgeLength = 400
-    mlxFile    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx'
-    phantom    = numericalBreastPhantom( outPath, edgeLength, mlxFile, 
+    mlxFile    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing.mlx'
+    phantom    = numericalBreastPhantom( outPath, edgeLength, mlxFile, tetgenVol=10,
                                          cylindricalBase=True,
                                          fatMaterialType='NHV', fatViscoNumIsoTerms=1, fatViscoNumVolTerms=1, fatViscoParams=[1.0, 0.2, 1.0, 1e9],
                                          skinMembraneMaterialType='NeoHookean', skinMembraneMaterialParams=[5000] )
