@@ -68,6 +68,7 @@ int main(int argc, char** argv)
   bool isOnlySaveLargest = false; 
   InputPixelType backgroundValue = 0; 
   bool isVerbose = false; 
+  bool isFullyConnected = false;
 
   if (argc < 3)
   {
@@ -86,13 +87,18 @@ int main(int argc, char** argv)
   argIndex += 1; 
   outputImageExtName = argv[argIndex]; 
   std::cout << "output_ext=" << outputImageExtName<< std::endl;
-  
+
   for (int i=4; i < argc; i++)
   {
     if (strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0)
     {
       StartUsage(argv[0]);
       return -1;
+    }
+    else if(strcmp(argv[i], "-fullyconnected") == 0)
+    {
+      isFullyConnected = true; 
+      std::cout << "Set -largest"<< std::endl;
     }
     else if(strcmp(argv[i], "-largest") == 0)
     {
@@ -132,7 +138,7 @@ int main(int argc, char** argv)
   
     ConnectedComponentImageFilterType::Pointer ccFilter = ConnectedComponentImageFilterType::New();
     ccFilter->SetInput(reader->GetOutput());
-    ccFilter->SetFullyConnected(false);
+    ccFilter->SetFullyConnected(isFullyConnected);
     ccFilter->SetBackgroundValue(backgroundValue); 
     ccFilter->Update(); 
     
