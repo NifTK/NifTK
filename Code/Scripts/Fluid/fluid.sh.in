@@ -50,6 +50,10 @@ Options:
   -niftk                 : use NifTK fluid registration [default: no]. 
   -padding size          : [NifTK options] pad the images to the given size [default: 256]. 
   -output output_dir     : [NifTK options] specify the output directory. 
+  
+Suggestions:
+  Recommended parameters for fluid options are -o " -u 1.0 -s 500 -b 0.01 -j 0.3 -c 1 -r 2 -p 281 -v -t -350 "
+  
 EOF
 exit 127
 }
