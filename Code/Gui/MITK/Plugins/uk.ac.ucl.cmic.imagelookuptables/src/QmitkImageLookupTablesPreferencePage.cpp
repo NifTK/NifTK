@@ -85,8 +85,6 @@ void QmitkImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
   initialisationOptionsLayout->addWidget( m_UseImageDataRadioButton );
 
   QFormLayout *formLayout = new QFormLayout;
-  formLayout->setHorizontalSpacing(8);
-  formLayout->setVerticalSpacing(24);
   formLayout->addRow( "Initialization:", initialisationOptionsLayout );
 
   m_PercentageOfDataRangeDoubleSpinBox = new QDoubleSpinBox(m_MainControl );

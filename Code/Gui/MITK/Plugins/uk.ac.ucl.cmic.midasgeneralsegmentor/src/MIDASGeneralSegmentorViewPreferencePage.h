@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-11-18 09:05:48 +0000 (Fri, 18 Nov 2011) $
- Revision          : $Revision: 7804 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,23 +22,23 @@
 
  ============================================================================*/
 
-#ifndef _MIDASMORPHOLOGICALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
-#define _MIDASMORPHOLOGICALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
+#ifndef _MIDASGENERALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
+#define _MIDASGENERALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
 
 #include "berryIQtPreferencePage.h"
-#include "uk_ac_ucl_cmic_midasmorphologicalsegmentor_Export.h"
+#include "uk_ac_ucl_cmic_midasgeneralsegmentor_Export.h"
 #include <berryIPreferences.h>
 
 class QWidget;
 class QPushButton;
 
 /**
- * \class MIDASMorphologicalSegmentorViewPreferencePage
+ * \class MIDASGeneralSegmentorViewPreferencePage
  * \brief Preferences page for this plugin, enabling choice volume rendering on/off.
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor
+ * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor
  *
  */
-class MIDASMORPHOLOGICALSEGMENTOR_EXPORTS MIDASMorphologicalSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class MIDASGENERALSEGMENTOR_EXPORTS MIDASGeneralSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
@@ -48,9 +48,9 @@ public:
   /// \brief Stores the name of the preferences node.
   static const std::string PREFERENCES_NODE_NAME;
 
-  MIDASMorphologicalSegmentorViewPreferencePage();
-  MIDASMorphologicalSegmentorViewPreferencePage(const MIDASMorphologicalSegmentorViewPreferencePage& other);
-  ~MIDASMorphologicalSegmentorViewPreferencePage();
+  MIDASGeneralSegmentorViewPreferencePage();
+  MIDASGeneralSegmentorViewPreferencePage(const MIDASGeneralSegmentorViewPreferencePage& other);
+  ~MIDASGeneralSegmentorViewPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -87,8 +87,8 @@ protected:
 
   bool m_Initializing;
 
-  berry::IPreferences::Pointer m_MIDASMorphologicalSegmentorViewPreferencesNode;
+  berry::IPreferences::Pointer m_MIDASGeneralSegmentorViewPreferencesNode;
 };
 
-#endif /* _MIDASMORPHOLOGICALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED */
+#endif /* _MIDASGENERALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED */
 

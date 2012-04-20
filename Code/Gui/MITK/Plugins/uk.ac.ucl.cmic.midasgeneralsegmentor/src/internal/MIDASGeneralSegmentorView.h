@@ -32,6 +32,7 @@
 #include "MIDASGeneralSegmentorCommands.h"
 #include "MIDASGeneralSegmentorViewPipeline.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
+#include "MIDASGeneralSegmentorViewPreferencePage.h"
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
 #include "mitkPointSet.h"
 #include "mitkMIDASContourTool.h"
@@ -162,6 +163,9 @@ protected:
   /// in the DataManager, and if the binary image has the correct child images (actually hidden nodes), then
   /// this returns true, indicating that it's a valid in-progress segmentation.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
+
+  /// \brief Returns the name of the preferences node to look up.
+  virtual std::string GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
 private:
 

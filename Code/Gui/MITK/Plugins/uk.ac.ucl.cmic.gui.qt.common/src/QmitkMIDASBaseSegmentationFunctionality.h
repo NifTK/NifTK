@@ -29,6 +29,9 @@
 #include "QmitkMIDASBaseFunctionality.h"
 #include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
 #include "QmitkMIDASToolSelectorWidget.h"
+#include "berryIPreferences.h"
+#include "berryIPreferencesService.h"
+#include "berryIBerryPreferences.h"
 #include "mitkToolManager.h"
 #include "itkImage.h"
 #include "itkSpatialOrientationAdapter.h"
@@ -60,6 +63,13 @@ public:
     UNKNOWN = -1
   };
 
+
+  /// \brief Stores the preference name  of the default outline colour.
+  static const std::string DEFAULT_COLOUR;
+
+  /// \brief Stores the preference name of the default outline colour style sheet.
+  static const std::string DEFAULT_COLOUR_STYLE_SHEET;
+
   QmitkMIDASBaseSegmentationFunctionality();
   QmitkMIDASBaseSegmentationFunctionality(const QmitkMIDASBaseSegmentationFunctionality& other);
   virtual ~QmitkMIDASBaseSegmentationFunctionality();
@@ -77,7 +87,7 @@ public:
   virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the user hits the button "New segmentation".
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed(QColor &defaultColor);
 
   /// \brief Called when this plugin (which is an "Exclusive" plugin), is Activated.
   virtual void Activated();
@@ -197,6 +207,15 @@ protected:
   /// \brief Makes sure the reference image is the selected one
   void SetReferenceImageSelected();
 
+  /// \brief Called when preferences are updated.
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+
+  /// \brief Retrieve's the pref values from preference service, and store locally.
+  virtual void RetrievePreferenceValues();
+
+  /// \brief Derived classes decide which preferences are actually read.
+  virtual std::string GetPreferencesNodeName() = 0;
+
   // Keeps track of the last selected node, whever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;
   mitk::Image::Pointer m_SelectedImage;
@@ -210,6 +229,9 @@ protected:
   /// \brief Store pointer to widget, so we don't have to repeatedly look for it.
   QmitkStdMultiWidget *m_MITKWidget;
   QmitkMIDASMultiViewWidget *m_MIDASWidget;
+
+  /// \brief Default colour to be displayed in the new segmentation dialog box.
+  QColor m_DefaultSegmentationColor;
 
 private:
 

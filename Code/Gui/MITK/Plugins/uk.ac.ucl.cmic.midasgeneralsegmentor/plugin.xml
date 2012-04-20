@@ -8,4 +8,10 @@
           icon="resources/MIDASGeneralSegmentor.png" />
   </extension>
 
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.midasgeneralsegmentor.preferencepage" name="MIDAS Irregular Volume Editor" class="MIDASGeneralSegmentorViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.midasgeneralsegmentor.keywords"></keywordreference>
+    </page>
+  </extension>
+
 </plugin>

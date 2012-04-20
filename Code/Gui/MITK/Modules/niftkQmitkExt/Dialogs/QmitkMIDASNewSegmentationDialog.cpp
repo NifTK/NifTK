@@ -24,12 +24,22 @@
 
 #include "QmitkMIDASNewSegmentationDialog.h"
 #include <QPushButton>
+#include <QString>
 
-QmitkMIDASNewSegmentationDialog::QmitkMIDASNewSegmentationDialog(QWidget* parent)
+QmitkMIDASNewSegmentationDialog::QmitkMIDASNewSegmentationDialog(const QColor &defaultColor, QWidget* parent)
 : QmitkNewSegmentationDialog(parent)
 {
-  btnColor->setStyleSheet("background-color:rgb(0,255,0)");
-  m_Color.setRedF(0);
-  m_Color.setGreenF(1);
-  m_Color.setBlueF(0);
+  QString styleSheet = "background-color: rgb(";
+  styleSheet.append(QString::number(defaultColor.red()));
+  styleSheet.append(",");
+  styleSheet.append(QString::number(defaultColor.green()));
+  styleSheet.append(",");
+  styleSheet.append(QString::number(defaultColor.blue()));
+  styleSheet.append(")");
+
+  btnColor->setStyleSheet(styleSheet);
+
+  m_Color.setRedF(defaultColor.redF());
+  m_Color.setGreenF(defaultColor.greenF());
+  m_Color.setBlueF(defaultColor.blueF());
 }

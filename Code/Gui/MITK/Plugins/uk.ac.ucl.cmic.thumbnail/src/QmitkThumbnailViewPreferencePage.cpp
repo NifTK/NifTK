@@ -99,8 +99,6 @@ void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
   m_BoxLayer->setValue(99);
 
   QFormLayout *formLayout = new QFormLayout;
-  formLayout->setHorizontalSpacing(8);
-  formLayout->setVerticalSpacing(24);
   formLayout->addRow("line width", m_BoxThickness );
   formLayout->addRow("line opacity", m_BoxOpacity );
 

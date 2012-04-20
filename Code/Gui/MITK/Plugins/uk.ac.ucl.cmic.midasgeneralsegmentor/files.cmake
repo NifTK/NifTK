@@ -1,11 +1,12 @@
-SET(SRC_CPP_FILES  
+SET(SRC_CPP_FILES
+  MIDASGeneralSegmentorViewPreferencePage.cpp   
 )
 
 SET(INTERNAL_CPP_FILES
+  MIDASGeneralSegmentorViewActivator.cpp
   MIDASGeneralSegmentorViewHelper.cpp
   MIDASGeneralSegmentorViewControlsWidget.cpp
   MIDASGeneralSegmentorView.cpp
-  MIDASGeneralSegmentorViewActivator.cpp
 )
 
 SET(UI_FILES
@@ -13,9 +14,10 @@ SET(UI_FILES
 )
 
 SET(MOC_H_FILES
+  src/internal/MIDASGeneralSegmentorViewActivator.h
   src/internal/MIDASGeneralSegmentorViewControlsWidget.h
   src/internal/MIDASGeneralSegmentorView.h
-  src/internal/MIDASGeneralSegmentorViewActivator.h
+  src/MIDASGeneralSegmentorViewPreferencePage.h
 )
 
 SET(CACHED_RESOURCE_FILES

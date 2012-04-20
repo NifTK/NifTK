@@ -27,6 +27,7 @@
 
 #include "niftkQmitkExtExports.h"
 #include "QmitkNewSegmentationDialog.h"
+#include <QColor>
 
 /**
  * \class QmitkMIDASNewSegmentationDialog
@@ -39,8 +40,8 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASNewSegmentationDialog : public QmitkNewSegm
 
 public:
 
-  /// \brief Constructor, which sets the default button colour to green.
-  QmitkMIDASNewSegmentationDialog(QWidget* parent = 0);
+  /// \brief Constructor, which sets the default button colour to that given by defaultColor.
+  QmitkMIDASNewSegmentationDialog(const QColor &defaultColor, QWidget* parent = 0);
   ~QmitkMIDASNewSegmentationDialog() {}
 };
 #endif /*QMITKMIDASNEWSEGMENTATIONDIALOG_H_*/

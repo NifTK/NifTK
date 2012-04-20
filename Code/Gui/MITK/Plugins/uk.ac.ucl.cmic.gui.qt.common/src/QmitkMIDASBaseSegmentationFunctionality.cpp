@@ -55,6 +55,9 @@
 #include "NifTKConfigure.h"
 #include "itkConversionUtils.h"
 
+const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
+const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
+
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality()
 : m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
@@ -372,7 +375,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFrom
   return result;
 }
 
-mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed()
+mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(QColor &defaultColor)
 {
   mitk::DataNode::Pointer emptySegmentation = NULL;
 
@@ -389,7 +392,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentation
     {
       if (referenceImage->GetDimension() > 2)
       {
-        QmitkMIDASNewSegmentationDialog* dialog = new QmitkMIDASNewSegmentationDialog( m_Parent ); // needs a QWidget as parent, "this" is not QWidget
+        QmitkMIDASNewSegmentationDialog* dialog = new QmitkMIDASNewSegmentationDialog(defaultColor, m_Parent ); // needs a QWidget as parent, "this" is not QWidget
         int dialogReturnValue = dialog->exec();
         if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
 
@@ -692,3 +695,29 @@ void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
   mitk::DataNode::Pointer referenceDataNode = this->GetReferenceNodeFromToolManager();
   this->FireNodeSelected(referenceDataNode);
 }
+
+
+void QmitkMIDASBaseSegmentationFunctionality::OnPreferencesChanged(const berry::IBerryPreferences*)
+{
+  this->RetrievePreferenceValues();
+}
+
+void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
+{
+  berry::IPreferencesService::Pointer prefService
+    = berry::Platform::GetServiceRegistry()
+    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+
+  assert( prefService );
+
+  berry::IBerryPreferences::Pointer prefs
+      = (prefService->GetSystemPreferences()->Node(this->GetPreferencesNodeName()))
+        .Cast<berry::IBerryPreferences>();
+
+  assert( prefs );
+
+  QString defaultColorName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, ""));
+  QColor defaultColor(defaultColorName);
+  m_DefaultSegmentationColor = defaultColor;
+}
+

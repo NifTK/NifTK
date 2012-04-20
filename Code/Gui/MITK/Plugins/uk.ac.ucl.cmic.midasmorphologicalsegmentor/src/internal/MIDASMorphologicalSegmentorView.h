@@ -31,6 +31,7 @@
 #include "MorphologicalSegmentorPipelineParams.h"
 #include "MorphologicalSegmentorPipelineInterface.h"
 #include "MorphologicalSegmentorPipeline.h"
+#include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
 
 /**
@@ -143,6 +144,9 @@ protected:
 
   /// \brief Called when a node changed.
   virtual void NodeChanged(const mitk::DataNode* node);
+
+  /// \brief Returns the name of the preferences node to look up.
+  virtual std::string GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
 private:
 

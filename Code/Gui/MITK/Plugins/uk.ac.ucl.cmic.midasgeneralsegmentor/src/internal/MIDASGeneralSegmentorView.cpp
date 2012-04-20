@@ -324,7 +324,7 @@ void MIDASGeneralSegmentorView::CopyImage(
 mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
   // This creates the "final output image"... i.e. the segmentation result.
-  mitk::DataNode::Pointer emptySegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed();
+  mitk::DataNode::Pointer emptySegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
 
   // The above method returns NULL if the use exited the colour selection dialog box.
   if (emptySegmentation.IsNull())
