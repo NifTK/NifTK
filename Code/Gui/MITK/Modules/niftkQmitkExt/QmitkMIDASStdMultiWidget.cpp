@@ -1333,14 +1333,12 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
         // We only want to pick pairs of points where the points are different
         // and also differ in 3D space along exactly one axis (i.e. no diagonals).
         unsigned int differentVoxelIndexesCounter=0;
-        int differentVoxelAxis = -1;
 
         for (unsigned int k = 0; k < 3; k++)
         {
           if (fabs(pointsInVoxels[1][k] - pointsInVoxels[0][k]) > 0.1)
           {
             differentVoxelIndexesCounter++;
-            differentVoxelAxis = k;
           }
         }
         if (differentVoxelIndexesCounter == 1)

@@ -53,7 +53,7 @@ int main(int argc, char** argv)
   std::string outputName; 
   std::string outputVectorName;
   std::string outputJacobianNiiName; 
-  int imageSize[Dimension]; 
+  int imageSize[Dimension] = {0, 0, 0};
   bool isResize = false; 
 
   // Parse command line args

@@ -79,6 +79,13 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*itk::Index.*may be used uninitialized in this function.*"
   ".*itk::Vector.*may be used uninitialized in this function.*"
   
+  # Trac #1405, various suppressions.
+  ".*itkBlockMatchingMethod.*variable.*set but not used.*" 
+  ".*itkBSplineTransform.txx.*variable.*set but not used.*" 
+  ".*itkIndex.*warning: array subscript is above array bounds*"
+  ".*warning C4099: 'itk::hash<key>' : type name first seen using 'class' now seen using 'struct'.*"
+  ".*Source\MITK.*" 
+  
   # PythonQt suppressions
   "PythonQt.*src.*PythonQt.*(cpp|h)"
   "include.PythonQt.PythonQt.*h"
