@@ -56,10 +56,8 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   assert(renderingManager);
   assert(dataStorage);
 
-  // Store renderingManager and dataStorage.
+  this->SetDataStorage(dataStorage);
   
-  m_RenderingManager = renderingManager;
-
   // We don't need these 4 lines if we pass in a widget specific RenderingManager.
   // If we are using a global one then we should use them to try and avoid Invalid Drawable errors on Mac.
   if (m_RenderingManager == mitk::RenderingManager::GetInstance())
@@ -69,8 +67,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
     m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
   }
-
-  this->SetDataStorage(dataStorage);
 
   // See also SetEnabled(bool) to see things that are dynamically on/off
   this->HideAllWidgetToolbars();
@@ -582,7 +578,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
     this->m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
     this->m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
 
-    // Strictly speaking, if m_RenderingManager is a local rendering manager
+    // If m_RenderingManager is a local rendering manager
     // not the global singleton instance, then we never have to worry about this.
     if (m_RenderingManager == mitk::RenderingManager::GetInstance())
     {

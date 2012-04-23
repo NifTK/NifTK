@@ -29,7 +29,7 @@
 
 #include "berryQtViewPart.h"
 #include "berryIBerryPreferences.h"
-#include "QmitkFunctionality.h"
+#include "QmitkAbstractView.h"
 #include "mitkLevelWindowManager.h"
 #include "mitkDataNode.h"
 
@@ -43,7 +43,7 @@ class LookupTableManager;
  * and a choice of many lookup tables.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
-class ImageLookupTablesView : public QmitkFunctionality
+class ImageLookupTablesView : public QmitkAbstractView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -58,17 +58,13 @@ public:
   /// \brief Each view for a plugin has its own globally unique ID.
   static const std::string VIEW_ID;
 
-  /// \brief When this plugin is activated, we register the data store with m_LevelWindowManager, and listen for ChangedNodeEvents.
-  virtual void Activated();
+protected:
 
-  /// \brief When this plugin is deactivated, we remove the listeners of the ChangedNodeEvents.
-  virtual void Deactivated();
+  /// \brief Called by framework, this method creates all the controls for this view
+  virtual void CreateQtPartControl(QWidget *parent);
 
-  /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
-
-  /// \brief Called when the data store thinks a node has changed (for whatever reason).
-  void OnNodeChanged(const mitk::DataNode* node);
+  /// \brief Called by framework, sets the focus on a specific widget.
+  virtual void SetFocus();
 
 protected slots:
 
@@ -87,12 +83,7 @@ protected slots:
   /// \brief Called when the reset button is pressed which will recalculate the minimum and maximum intensity values, and set the minimum and maximum value on the sliders.
   void OnResetButtonPressed();
 
-protected:
-
 private:
-
-  /// \brief This method creates all the controls for this view.
-  void CreateQtPartControl(QWidget *parent);
 
   /// \brief Creation of the connections of widgets to slots.
   void CreateConnections();
@@ -114,6 +105,12 @@ private:
 
   /// \brief Retrieve's the pref values from preference service, and stored in member variables.
   void RetrievePreferenceValues();
+
+  /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+
+  /// \brief Called when the data store thinks a node has changed (for whatever reason).
+  virtual void NodeChanged(const mitk::DataNode* node);
 
   /// \brief Retrieve's the corresponding node for the image
   mitk::DataNode* FindNodeForImage(mitk::Image* image);
@@ -137,5 +134,8 @@ private:
   mitk::Image::Pointer m_CurrentImage;
   mitk::LevelWindow m_CurrentLevelWindow;
   bool m_InUpdate;
+
+  // Store a reference to the parent widget of this view.
+  QWidget *m_Parent;
 };
 #endif // _IMAGELOOKUPTABLESVIEW_H_INCLUDED

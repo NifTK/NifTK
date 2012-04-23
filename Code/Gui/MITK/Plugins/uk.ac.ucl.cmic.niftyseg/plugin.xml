@@ -6,7 +6,7 @@
       id="org.mitk.views.general"
       name="MITK General"/>
     <view id="uk.ac.ucl.cmic.views.niftysegview"
-          name="CMIC NiftySeg Segmentation"
+          name="NiftySeg Segmentation"
           category="org.mitk.views.general" 
           class="QmitkNiftySegView"
           icon="resources/NiftySegLogo.png" />

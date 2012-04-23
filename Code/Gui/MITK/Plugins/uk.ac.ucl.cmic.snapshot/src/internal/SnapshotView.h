@@ -25,7 +25,7 @@
 #ifndef SnapshotView_h
 #define SnapshotView_h
 
-#include "QmitkFunctionality.h"
+#include "QmitkAbstractView.h"
 #include "ui_SnapshotViewControls.h"
 
 
@@ -34,7 +34,7 @@
  * \brief Simple user interface to provide screenshots of the current editor window.
  * \ingroup uk_ac_ucl_cmic_snapshot_internal
 */
-class SnapshotView : public QmitkFunctionality
+class SnapshotView : public QmitkAbstractView
 {
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -48,8 +48,13 @@ public:
   /// \brief Static view ID = uk.ac.ucl.cmic.snapshot
   static const std::string VIEW_ID;
 
-  /// \brief Called from framework to instantiate the Qt GUI components.
+protected:
+
+  /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief Called by framework, sets the focus on a specific widget.
+  virtual void SetFocus();
 
 protected slots:
   

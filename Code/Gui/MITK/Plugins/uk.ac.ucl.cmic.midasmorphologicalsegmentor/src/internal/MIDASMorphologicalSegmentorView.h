@@ -75,9 +75,6 @@ public:
   /// \brief Returns VIEW_ID = uk.ac.ucl.cmic.midasmorphologicalsegmentor.
   virtual std::string GetViewID() const;
 
-  /// \brief Invoked when the DataManager selection changed.
-  virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
-
   /// \brief If the user hits the close icon, it is equivalent to a Cancel.
   virtual void ClosePart();
 
@@ -112,6 +109,15 @@ protected slots:
 
 protected:
 
+  /// \brief Called by framework, this method creates all the controls for this view
+  virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief Called by framework, sets the focus on a specific widget.
+  virtual void SetFocus();
+
+  /// \brief Creation of the connections of main and control widget
+  virtual void CreateConnections();
+
   /// \brief For Morphological Editing, if the tool manager has the correct WorkingData registered, then the Segmentation node is the immediate binary parent image of either working node.
   virtual mitk::DataNode* GetSegmentationNodeUsingToolManager();
 
@@ -136,17 +142,11 @@ protected:
   /// \brief method to enable derived classes to turn widgets off/on
   virtual void EnableSegmentationWidgets(bool b);
 
-  /// \brief Creation of the connections of main and control widget
-  virtual void CreateConnections();
-
-  /// \brief This method creates all the controls for this view
-  virtual void CreateQtPartControl(QWidget *parent);
-
   /// \brief Called when a node changed.
   virtual void NodeChanged(const mitk::DataNode* node);
 
-  /// \brief Returns the name of the preferences node to look up.
-  virtual std::string GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+  /// \brief \see QmitkAbstractView::OnSelectionChanged.
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
 private:
 

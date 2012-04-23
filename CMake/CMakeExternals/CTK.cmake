@@ -18,7 +18,7 @@ IF(QT_FOUND)
   
   IF(NOT DEFINED CTK_DIR)
   
-      SET(revision_tag 6f26c34)
+      SET(revision_tag 6925794b)
       IF(${proj}_REVISION_TAG)
         SET(revision_tag ${${proj}_REVISION_TAG})
       ENDIF()
@@ -34,14 +34,17 @@ IF(QT_FOUND)
         ${EP_COMMON_ARGS}
         -DDESIRED_QT_VERSION:STRING=4
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+        -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
+        -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DCTK_LIB_PluginFramework:BOOL=ON
         -DCTK_LIB_DICOM/Widgets:BOOL=ON
         -DCTK_PLUGIN_org.commontk.eventadmin:BOOL=ON
+        -DCTK_PLUGIN_org.commontk.configadmin:BOOL=ON
         -DCTK_USE_GIT_PROTOCOL:BOOL=${NIFTK_USE_GIT_PROTOCOL}
         -DADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
         -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
-        -DVTK_DIR:PATH=${VTK_DIR}                              # FindVTK expects VTK_DIR
-        -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
+        -DVTK_DIR:PATH=${VTK_DIR}
+        -DITK_DIR:PATH=${ITK_DIR}
       DEPENDS ${proj_DEPENDENCIES}
     )
   SET(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)

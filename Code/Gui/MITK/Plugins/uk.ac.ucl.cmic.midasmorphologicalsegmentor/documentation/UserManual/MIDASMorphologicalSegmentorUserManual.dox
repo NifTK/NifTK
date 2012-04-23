@@ -1,7 +1,7 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.midasmorphologicalsegmentor} MIDAS Morphological Editor
+\bundlemainpage{uk.ac.ucl.cmic.midasmorphologicalsegmentor} The MIDAS Morphological Editor View
 
-\image html MIDASMorphologicalSegmentor.png "Icon of the Module"
+\image html MIDASMorphologicalSegmentor.png "The Icon for MIDAS Morphological Editor "
 
 \li \ref MorphEditorIntro
 \li \ref MorphEditorThreshold

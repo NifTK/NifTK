@@ -1,7 +1,10 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.snapshot} CMIC Snapshot
+\bundlemainpage{uk.ac.ucl.cmic.snapshot} The Snapshot View
 
-\image html SnapshotIcon.png "Icon of Snapshot"
+\image html SnapshotIcon.png "The Icon for Snapshot"
+
+\addindex Screenshot
+\addindex Snapshot
 
 \section SnapshotIntroduction Introduction
 
@@ -10,7 +13,7 @@ Any windows covering the viewer will be included in the snapshot. So, make sure 
 
 \section SnapshotUsage Usage
 
-The Snapshot plugin is launched by clicking on "Window" on the top menu bar, then "Show View", then "CMIC Snapshot".
+The Snapshot plugin is launched by clicking on "Window" on the top menu bar, then "Show View", then "Snapshot".
 The controls are a single button (Figure 1).
 
 \image html SnapshotControls.png "Figure 1. The Snapshot plugin controls are a single button."

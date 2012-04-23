@@ -31,6 +31,7 @@
 #include <QEvent>
 #include "mitkBaseProperty.h"
 #include "mitkMIDASKeyPressStateMachine.h"
+#include "mitkRenderingManager.h"
 #include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
@@ -63,9 +64,6 @@ class QmitkRenderWindow;
  * a QmitkMIDASStdMultiViewWidget, meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
  *
- *
- *
- *
  */
 class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASKeyPressResponder
 {
@@ -76,6 +74,7 @@ public:
   /// \brief Constructor which builds up the controls and layout, and sets the selected window to zero, the default drop type to MIDAS_DROP_TYPE_SINGLE, and sets the number of rows and columns to those specified in the parameter list.
   QmitkMIDASMultiViewWidget(
       QmitkMIDASMultiViewVisibilityManager* visibilityManager,
+      mitk::RenderingManager* renderingManager,
       mitk::DataStorage::Pointer dataStorage,
       int defaultNumberOfRows,
       int defaultNumberOfColumns,
@@ -87,10 +86,10 @@ public:
   /// \brief As each QmitkMIDASSingleViewWidget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdateAll();
 
-  /// \brief Connects the widget to the FocusManager.
+  /// \brief Currently does nothing, but if I were you, I would check the code.
   void Activated();
 
-  /// \brief Disconnects the widget from the FocusManager.
+  /// \brief Currently does nothing, but if I were you, I would check the code.
   void Deactivated();
 
   /// \brief Set the background colour on all contained widgets.
@@ -190,6 +189,31 @@ public:
   // Callback method that gets called by the mitk::FocusManager to indicate the currently focussed window.
   void OnFocusChanged();
 
+  /**
+   * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
+   */
+  virtual QmitkRenderWindow* GetActiveRenderWindow() const;
+
+  /**
+   * \see mitk::IRenderWindowPart::GetRenderWindows(), where we return all render windows for all widgets.
+   */
+  virtual QHash<QString,QmitkRenderWindow*> GetRenderWindows() const;
+
+  /**
+   * \see mitk::IRenderWindowPart::GetRenderWindow(QString), where we return the first render window that matches the given id.
+   */
+  virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
+
+  /**
+   * \see mitk::IRenderWindowPart::GetSelectionPosition(), where we report the position of the currently selected render window.
+   */
+  virtual mitk::Point3D GetSelectedPosition(const QString& id = QString()) const;
+
+  /**
+   * \see mitk::IRenderWindowPart::SetSelectedPosition(), where we set the position of the currently selected render window, and if linked mode is on, make sure all the others update.
+   */
+  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+
 signals:
 
   /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
@@ -228,9 +252,6 @@ protected slots:
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
 
 protected:
-
-  // overloaded paint handler
-  virtual void paintEvent(QPaintEvent* event);
 
 private:
 
@@ -334,7 +355,8 @@ private:
   // Dependencies, injected via constructor.
   // We don't own them, so don't delete them.
   QmitkMIDASMultiViewVisibilityManager          *m_VisibilityManager;
-  mitk::DataStorage::Pointer                     m_DataStorage;
+  mitk::DataStorage                             *m_DataStorage;
+  mitk::RenderingManager                        *m_RenderingManager;
 
   // Member variables for control purposes.
   unsigned long                                  m_FocusManagerObserverTag;

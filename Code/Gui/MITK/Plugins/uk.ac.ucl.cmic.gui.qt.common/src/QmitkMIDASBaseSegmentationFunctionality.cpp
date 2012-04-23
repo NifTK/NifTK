@@ -59,10 +59,11 @@ const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
 
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality()
-: m_ImageAndSegmentationSelector(NULL)
+:
+  m_SelectedNode(NULL)
+, m_SelectedImage(NULL)
+, m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
-, m_MITKWidget(NULL)
-, m_MIDASWidget(NULL)
 {
   m_SelectedNode = NULL;
 }
@@ -91,6 +92,10 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
 {
   if (!m_ImageAndSegmentationSelector)
   {
+    // Set up these pointers in base class. This should only be done ONCE ... here.
+    m_MITKWidget = this->GetActiveStdMultiWidget();
+    m_MIDASWidget = this->GetActiveMIDASMultiViewWidget();
+
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
     m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(parentForSelectorWidget);
@@ -98,7 +103,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->setText("<font color='red'>please load an image!</font>");
     m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetDataStorage(this->GetDefaultDataStorage());
+    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetDataStorage(this->GetDataStorage());
     m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetPredicate(mitk::NodePredicateDataType::New("Image"));
     if( m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->GetSelectedNode().IsNotNull() )
     {
@@ -120,7 +125,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Connect the ToolManager to DataStorage straight away.
     mitk::ToolManager* toolManager = this->GetToolManager();
     assert ( toolManager );
-    toolManager->SetDataStorage( *(this->GetDefaultDataStorage()) );
+    toolManager->SetDataStorage( *(this->GetDataStorage()) );
 
     // We listen to NewNodesGenerated messages as the ToolManager is responsible for instantiating them.
     toolManager->NewNodesGenerated +=
@@ -129,24 +134,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // We listen to NewNodObjectGenerated as the ToolManager is responsible for instantiating them.
     toolManager->NewNodeObjectsGenerated +=
       mitk::MessageDelegate1<QmitkMIDASBaseSegmentationFunctionality, mitk::ToolManager::DataVectorType*>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated );
-
-    // Needs re-working, we have to lookup the QmitkStdMultiWidget, as we are
-    // relying on the interactors in that class, as all the interactors in the QmitkMIDASMultiViewWidget are off.
-
-    m_MITKWidget = this->GetActiveStdMultiWidget();
-    assert(m_MITKWidget);
-
-    m_MIDASWidget = this->GetActiveMIDASMultiViewWidget();
-    assert(m_MIDASWidget);
   }
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::Activated()
-{
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::Deactivated()
-{
 }
 
 mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
@@ -156,17 +144,20 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
-  if (toolID >= 0)
+  if (m_MITKWidget != NULL && m_MIDASWidget != NULL)
   {
-    this->m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
-    this->m_MITKWidget->DisableNavigationControllerEventListening();
-    this->m_MIDASWidget->SetNavigationControllerEventListening(false);
-  }
-  else
-  {
-    this->m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
-    this->m_MITKWidget->EnableNavigationControllerEventListening();
-    this->m_MIDASWidget->SetNavigationControllerEventListening(true);
+    if (toolID >= 0)
+    {
+      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
+      m_MITKWidget->DisableNavigationControllerEventListening();
+      m_MIDASWidget->SetNavigationControllerEventListening(false);
+    }
+    else
+    {
+      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+      m_MITKWidget->EnableNavigationControllerEventListening();
+      m_MIDASWidget->SetNavigationControllerEventListening(true);
+    }
   }
 }
 
@@ -184,17 +175,9 @@ void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::P
 {
   assert(node);
   this->FireNodeSelected(node);
-  this->OnSelectionChanged(node);
 }
 
-void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(mitk::DataNode* node)
-{
-  std::vector<mitk::DataNode*> nodes;
-  nodes.push_back( node );
-  this->OnSelectionChanged( nodes );
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(std::vector<mitk::DataNode*> nodes)
+void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   // If the plugin is not visible, then we have nothing to do.
   if (!m_Parent || !m_Parent->isVisible()) return;
@@ -327,7 +310,7 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageFromToolM
 
 mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
-  mitk::DataNode* result = FindFirstParentImage(this->GetDefaultDataStorage(), node, false );
+  mitk::DataNode* result = FindFirstParentImage(this->GetDataStorage(), node, false );
   return result;
 }
 
@@ -409,7 +392,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentation
             if (emptySegmentation.IsNotNull())
             {
               this->ApplyDisplayOptions(emptySegmentation);
-              this->GetDefaultDataStorage()->Add(emptySegmentation, referenceNode); // add as a child, because the segmentation "derives" from the original
+              this->GetDataStorage()->Add(emptySegmentation, referenceNode); // add as a child, because the segmentation "derives" from the original
 
             } // have got a new segmentation
           }
@@ -440,7 +423,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnComboBoxSelectionChanged( const 
   if( selectedNode != NULL )
   {
     m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->hide();
-    QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged( const_cast<mitk::DataNode*>(node) );
+    this->SelectNode(selectedNode);
   }
   else
   {
@@ -493,7 +476,7 @@ void QmitkMIDASBaseSegmentationFunctionality::ForceDisplayPreferencesUponAllImag
     // iterate all images
     mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
 
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = this->GetDefaultDataStorage()->GetSubset( isImage );
+    mitk::DataStorage::SetOfObjects::ConstPointer allImages = this->GetDataStorage()->GetSubset( isImage );
     for ( mitk::DataStorage::SetOfObjects::const_iterator iter = allImages->begin(); iter != allImages->end(); ++iter)
     {
       mitk::DataNode* node = *iter;
@@ -502,8 +485,7 @@ void QmitkMIDASBaseSegmentationFunctionality::ForceDisplayPreferencesUponAllImag
       ApplyDisplayOptions(node);
     }
   }
-
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 

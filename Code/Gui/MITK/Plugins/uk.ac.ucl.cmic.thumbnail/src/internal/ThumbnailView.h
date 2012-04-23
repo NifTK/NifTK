@@ -25,7 +25,7 @@
 #ifndef ThumbnailView_h
 #define ThumbnailView_h
 
-#include "QmitkMIDASBaseFunctionality.h"
+#include "QmitkAbstractView.h"
 #include "berryIPartListener.h"
 #include "berryIPreferences.h"
 #include "berryIPreferencesService.h"
@@ -41,11 +41,11 @@
  *
  * Note: This class should basically just be a wrapper that instantiates the
  * widget QmitkThumnailRenderWindow, and does almost nothing else.
- * Do not try and add loads more functionality here, just the necessary plumbing.
+ * Do not try and add loads more functionality here, just do the necessary plumbing.
  *
  * \sa QmitkThumbnailRenderWindow
 */
-class ThumbnailView : public QmitkMIDASBaseFunctionality
+class ThumbnailView : public QmitkAbstractView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -63,14 +63,19 @@ public:
   /// \brief Returns the view ID.
   virtual std::string GetViewID() const;
 
-  /// \brief Called from framework to instantiate the Qt GUI components.
-  virtual void CreateQtPartControl(QWidget *parent);
-
   /// \brief Called when preferences are updated.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   /// \brief This is not an exclusive functionality, as it just listens to input and updates itself, and can happily live alongside other functionalities.
   virtual bool IsExclusiveFunctionality() const { return false; }
+
+protected:
+
+  /// \brief Called by framework, this method creates all the controls for this view
+  virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief Called by framework, sets the focus on a specific widget.
+  virtual void SetFocus();
 
 private:
 

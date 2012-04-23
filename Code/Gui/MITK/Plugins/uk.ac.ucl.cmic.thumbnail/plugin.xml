@@ -6,7 +6,7 @@
       id="org.mitk.views.general" 
       name="MITK General"/> 
     <view id="uk.ac.ucl.cmic.thumbnail"
-          name="CMIC Thumbnail"
+          name="Thumbnail"
           category="org.mitk.views.general" 
           class="ThumbnailView"
           icon="resources/icon.xpm" />

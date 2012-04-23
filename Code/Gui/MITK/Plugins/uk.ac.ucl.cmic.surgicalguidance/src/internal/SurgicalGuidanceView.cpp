@@ -39,7 +39,6 @@
 const std::string SurgicalGuidanceView::VIEW_ID = "uk.ac.ucl.cmic.surgicalguidance";
 
 SurgicalGuidanceView::SurgicalGuidanceView()
-: m_Parent(NULL)
 {
   // Matt: I'm just creating a NiftyLink / OpenIGTLink function to check that include paths, and library linkage works.
   igtl::StringMessage::Pointer myFirstMessage = igtl::StringMessage::New();
@@ -53,10 +52,13 @@ SurgicalGuidanceView::~SurgicalGuidanceView()
 
 void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
 {
-  m_Parent = parent;
-
   // create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi( parent );
 
   // connect signals-slots etc.
+}
+
+void SurgicalGuidanceView::SetFocus()
+{
+  m_Controls.buttonPerformImageProcessing->setFocus();
 }

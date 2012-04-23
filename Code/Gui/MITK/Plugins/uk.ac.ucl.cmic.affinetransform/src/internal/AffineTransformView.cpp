@@ -135,19 +135,9 @@ void AffineTransformView::CreateQtPartControl( QWidget *parent )
   }
 }
 
-mitk::DataStorage::Pointer AffineTransformView::GetDataStorage() const
+void AffineTransformView::SetFocus()
 {
-  mitk::IDataStorageService::Pointer service =
-    berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
-
-  if (service.IsNotNull())
-  {
-    return service->GetDefaultDataStorage()->GetDataStorage();
-  }
-  else
-  {
-    return NULL;
-  }
+  m_Controls->resetButton->setFocus();
 }
 
 void AffineTransformView::_SetControlsEnabled(bool isEnabled)
@@ -211,7 +201,7 @@ void AffineTransformView::_InitialiseNodeProperties(mitk::DataNode& node)
   }
 }
 
-void AffineTransformView::OnSelectionChanged( std::vector<mitk::DataNode*> nodes )
+void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   if (nodes.size() != 1)
   {
@@ -219,7 +209,7 @@ void AffineTransformView::OnSelectionChanged( std::vector<mitk::DataNode*> nodes
     return;
   }
 
-  if (nodes[0] == NULL)
+  if (nodes[0].IsNull())
   {
     this->_SetControlsEnabled(false);
     return;
@@ -505,7 +495,7 @@ void AffineTransformView::_UpdateTransformationGeometry()
           );
     }
 
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    QmitkAbstractView::RequestRenderWindowUpdate();
   }
 }
 
@@ -766,6 +756,7 @@ void AffineTransformView::_ApplyResampleToCurrentNode() {
   vtkSmartPointer<vtkMatrix4x4> sp_incTransform = vtkMatrix4x4::New();
   vtkMatrix4x4::Invert(sp_combinedTransform, sp_incTransform);
 
+/** TODO: Matt says: mitkIpPic has been deprecated, so this needs reworking
   try {
 #define APPLY_MULTICHANNEL(TMultiChannelType) \
       AccessFixedPixelTypeByItk_n(image, _ApplyTransformMultiChannel, ( TMultiChannelType ), (*sp_incTransform))
@@ -834,7 +825,7 @@ void AffineTransformView::_ApplyResampleToCurrentNode() {
   } catch (mitk::AccessByItkException &r_ex) {
     MITK_ERROR << "MITK Exception:\n" << r_ex.what() << endl;
   }
-
+*/
   image->Modified();
   msp_DataOwnerNode->Modified();
 }
@@ -879,5 +870,5 @@ void AffineTransformView::OnResampleTransformPushed() {
     _ResetControls();
     _UpdateTransformDisplay();
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }

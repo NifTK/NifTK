@@ -32,6 +32,7 @@
 #include "mitkRenderingManager.h"
 #include "mitkImageCast.h"
 #include "mitkImage.h"
+#include "mitkImageStatisticsHolder.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPaintbrushTool.h"
 #include "mitkColorProperty.h"
@@ -105,9 +106,7 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
     mitk::ToolManager* toolManager = this->GetToolManager();
     m_PaintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
 
-    // Finally create connections.
     this->CreateConnections();
-
   }
 }
 
@@ -128,6 +127,11 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
     connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
     connect(m_MorphologicalControls, SIGNAL(ClearButtonClicked()), this, SLOT(OnClearButtonClicked()));
   }
+}
+
+void MIDASMorphologicalSegmentorView::SetFocus()
+{
+  m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->setFocus();
 }
 
 void MIDASMorphologicalSegmentorView::ClosePart()
@@ -160,12 +164,12 @@ bool MIDASMorphologicalSegmentorView::IsNodeASegmentationImage(const mitk::DataN
   if (IsNodeABinaryImage(node))
   {
 
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDefaultDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
 
     if (parent.IsNotNull())
     {
       // Should also have two children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME
-      mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDefaultDataStorage(), node, true);
+      mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true);
       if (children->size() == 2)
       {
         std::string name1;
@@ -192,7 +196,7 @@ bool MIDASMorphologicalSegmentorView::IsNodeAWorkingImage(const mitk::DataNode::
 
   if (IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDefaultDataStorage(), node, true);
+    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, true);
 
     if (parent.IsNotNull())
     {
@@ -215,7 +219,7 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingNod
   assert(node);
   mitk::ToolManager::DataVectorType result;
 
-  mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDefaultDataStorage(), node, true );
+  mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true );
 
   for (unsigned int i = 0; i < children->size(); i++)
   {
@@ -255,7 +259,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeFromWorkingN
 
   if (IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDefaultDataStorage(), node, true);
+    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())
     {
       result = parent;
@@ -272,7 +276,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeUsingToolMan
 
   if (workingNodesFromToolManager.size() > 0)
   {
-    result = FindFirstParentImage(this->GetDefaultDataStorage(), workingNodesFromToolManager[0], true);
+    result = FindFirstParentImage(this->GetDataStorage(), workingNodesFromToolManager[0], true);
   }
   return result;
 }
@@ -289,9 +293,9 @@ mitk::Image* MIDASMorphologicalSegmentorView::GetSegmentationImageUsingToolManag
   return result;
 }
 
-void MIDASMorphologicalSegmentorView::OnSelectionChanged(std::vector<mitk::DataNode*> nodes)
+void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
-  QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(nodes);
+  QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(part, nodes);
 
   bool enableWidgets = false;
 
@@ -326,10 +330,10 @@ void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImag
   assert(segmentationNode);
 
   segmentationNode->SetIntProperty("midas.morph.stage", 0);
-  segmentationNode->SetFloatProperty("midas.morph.thresholding.lower", referenceImage->GetScalarValueMin());
-  segmentationNode->SetFloatProperty("midas.morph.thresholding.upper", referenceImage->GetScalarValueMin());
+  segmentationNode->SetFloatProperty("midas.morph.thresholding.lower", referenceImage->GetStatistics()->GetScalarValueMin());
+  segmentationNode->SetFloatProperty("midas.morph.thresholding.upper", referenceImage->GetStatistics()->GetScalarValueMin());
   segmentationNode->SetIntProperty("midas.morph.thresholding.slice", 0);
-  segmentationNode->SetFloatProperty("midas.morph.erosion.threshold", referenceImage->GetScalarValueMax());
+  segmentationNode->SetFloatProperty("midas.morph.erosion.threshold", referenceImage->GetStatistics()->GetScalarValueMax());
   segmentationNode->SetIntProperty("midas.morph.erosion.iterations", 0);
   segmentationNode->SetFloatProperty("midas.morph.dilation.lower", 60);
   segmentationNode->SetFloatProperty("midas.morph.dilation.upper", 160);
@@ -388,8 +392,8 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
         this->ApplyDisplayOptions(segmentationSubtractionsImageDataNode);
         this->ApplyDisplayOptions(segmentationAdditionsImageDataNode);
-        this->GetDefaultDataStorage()->Add(segmentationSubtractionsImageDataNode, emptySegmentation); // add as a child, because the segmentation "derives" from the original
-        this->GetDefaultDataStorage()->Add(segmentationAdditionsImageDataNode, emptySegmentation); // add as a child, because the segmentation "derives" from the original
+        this->GetDataStorage()->Add(segmentationSubtractionsImageDataNode, emptySegmentation); // add as a child, because the segmentation "derives" from the original
+        this->GetDataStorage()->Add(segmentationAdditionsImageDataNode, emptySegmentation); // add as a child, because the segmentation "derives" from the original
 
         // Set working data. Compare with MIDASGeneralSegmentorView.
         // Note the order:
@@ -455,7 +459,10 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         }
 
         // Make sure the controls match the parameters and the new segmentation is selected
-        this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+        if (this->m_MIDASWidget != NULL)
+        {
+          m_MIDASWidget->SetMIDASSegmentationMode(true);
+        }
         this->SetControlsByParameterValues();
         this->SelectNode(emptySegmentation);
       }
@@ -571,7 +578,7 @@ void MIDASMorphologicalSegmentorView::UpdateSegmentation()
     mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(1);
     if (editsNode.IsNotNull())
     {
-      mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDefaultDataStorage().GetPointer(), editsNode, true);
+      mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage().GetPointer(), editsNode, true);
       if (parent.IsNotNull())
       {
         mitk::Image::Pointer outputImage    = dynamic_cast<mitk::Image*>( parent->GetData() );
@@ -634,8 +641,11 @@ void MIDASMorphologicalSegmentorView::UpdateSegmentation()
           outputImage->Modified();
           parent->Modified();
 
-          mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-          m_MIDASWidget->RequestUpdateAll();
+          QmitkAbstractView::RequestRenderWindowUpdate();
+          if (m_MIDASWidget != NULL)
+          {
+            m_MIDASWidget->RequestUpdateAll();
+          }
         }
       }
     }
@@ -647,7 +657,7 @@ void MIDASMorphologicalSegmentorView::FinalizeSegmentation()
   mitk::DataNode::Pointer workingDataNode = this->GetToolManager()->GetWorkingData(0);
   if (workingDataNode.IsNotNull())
   {
-    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDefaultDataStorage().GetPointer(), workingDataNode, true);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage().GetPointer(), workingDataNode, true);
     if (parent.IsNotNull())
     {
       mitk::Image::Pointer outputImage = mitk::Image::New();
@@ -801,7 +811,7 @@ MIDASMorphologicalSegmentorView
   output->InitializeByItk< ImageType >(pipeline->GetOutput(editingImageBeingUpdated, additionsImageBeingUpdated).GetPointer());
   output->SetImportChannel(pipeline->GetOutput(editingImageBeingUpdated, additionsImageBeingUpdated)->GetBufferPointer(), 0, mitk::Image::ReferenceMemory);
 
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -876,8 +886,8 @@ void MIDASMorphologicalSegmentorView::SetControlsByImageData()
     int numberOfAxialSlices = image->GetDimension(axialAxis);
 
     m_MorphologicalControls->SetControlsByImageData(
-        image->GetScalarValueMin(),
-        image->GetScalarValueMax(),
+        image->GetStatistics()->GetScalarValueMin(),
+        image->GetStatistics()->GetScalarValueMax(),
         numberOfAxialSlices);
   }
 }
@@ -887,7 +897,7 @@ void MIDASMorphologicalSegmentorView::GetParameterValues(MorphologicalSegmentorP
   mitk::DataNode::Pointer workingDataNode = this->GetToolManager()->GetWorkingData(0);
   if (workingDataNode.IsNotNull())
   {
-    mitk::DataNode::Pointer segmentationDataNode = mitk::FindFirstParentImage(this->GetDefaultDataStorage().GetPointer(), workingDataNode, true);
+    mitk::DataNode::Pointer segmentationDataNode = mitk::FindFirstParentImage(this->GetDataStorage().GetPointer(), workingDataNode, true);
     if (segmentationDataNode.IsNotNull())
     {
       segmentationDataNode->GetIntProperty("midas.morph.stage", params.m_Stage);
@@ -921,8 +931,8 @@ void MIDASMorphologicalSegmentorView::RemoveWorkingData()
   mitk::DataNode::Pointer editsNode = this->GetToolManager()->GetWorkingData(1);
   assert(editsNode);
 
-  this->GetDefaultDataStorage()->Remove(additionsNode);
-  this->GetDefaultDataStorage()->Remove(editsNode);
+  this->GetDataStorage()->Remove(additionsNode);
+  this->GetDataStorage()->Remove(editsNode);
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType emptyWorkingDataArray;
@@ -979,7 +989,7 @@ void MIDASMorphologicalSegmentorView::OnClearButtonClicked()
   this->UpdateSegmentation();
   this->FireNodeSelected(this->GetSegmentationNodeUsingToolManager());
   this->OnToolSelected(-1);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
@@ -988,11 +998,14 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
   this->SetReferenceImageSelected();
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
-  this->m_MIDASWidget->SetMIDASSegmentationMode(false);
+  if (this->m_MIDASWidget != NULL)
+  {
+    this->m_MIDASWidget->SetMIDASSegmentationMode(false);
+  }
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
   m_MorphologicalControls->m_TabWidget->blockSignals(false);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
@@ -1003,13 +1016,16 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
   this->ClearWorkingData();
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  this->GetDefaultDataStorage()->Remove(segmentationNode);
+  this->GetDataStorage()->Remove(segmentationNode);
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
-  this->m_MIDASWidget->SetMIDASSegmentationMode(false);
+  if (this->m_MIDASWidget != NULL)
+  {
+    this->m_MIDASWidget->SetMIDASSegmentationMode(false);
+  }
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
   m_MorphologicalControls->m_TabWidget->blockSignals(false);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 

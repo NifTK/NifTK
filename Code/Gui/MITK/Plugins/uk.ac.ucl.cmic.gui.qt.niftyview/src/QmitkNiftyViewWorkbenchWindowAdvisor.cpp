@@ -23,6 +23,7 @@
  ============================================================================*/
 
 #include "QmitkNiftyViewWorkbenchWindowAdvisor.h"
+#include "internal/QmitkNiftyViewApplicationPlugin.h"
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
@@ -33,6 +34,7 @@
 #include "mitkDataNode.h"
 #include "mitkDataNodeFactory.h"
 #include "mitkDataStorage.h"
+#include "mitkDataStorageEditorInput.h"
 #include "mitkIDataStorageService.h"
 #include "mitkNodePredicateData.h"
 #include "mitkNodePredicateNot.h"
@@ -98,58 +100,21 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
     }
   }
 
-  // 2. Load any command line args that look like images
-  QApplication *application = dynamic_cast<QApplication*>(qApp);
-  if (application != NULL)
+  // In NiftyView, I have set in the midaseditor plugin.xml for the Midas Drag and Drop editor to be default.
+  // This section is to try and force the Display editor open.
+  berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
+  berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
+  ctkPluginContext* context = QmitkNiftyViewApplicationPlugin::GetDefault()->GetPluginContext();
+  ctkServiceReference dsServiceRef = context->getServiceReference<mitk::IDataStorageService>();
+  if (dsServiceRef)
   {
-    QStringList arguments = application->arguments();
-    unsigned int argumentsAdded = 0;
-
-    if (arguments.size() > 1)
+    mitk::IDataStorageService* dsService = context->getService<mitk::IDataStorageService>(dsServiceRef);
+    if (dsService)
     {
-
-      mitk::IDataStorageService::Pointer service =
-        berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
-
-      mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
-
-      for (int i = 1; i < arguments.size(); i++)
-      {
-        QString argument = arguments[i];
-        mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
-        try
-        {
-          nodeReader->SetFileName(argument.toLocal8Bit().constData());
-          nodeReader->Update();
-          for ( unsigned int i = 0 ; i < nodeReader->GetNumberOfOutputs( ); ++i )
-          {
-            mitk::DataNode::Pointer node;
-            node = nodeReader->GetOutput(i);
-            if ( node->GetData() != NULL )
-            {
-              dataStorage->Add(node);
-              argumentsAdded++;
-              MITK_INFO << "QmitkExtWorkbenchWindowAdvisor::PostWindowCreate, loaded:" << argument.toLocal8Bit().constData() << std::endl;
-            }
-          }
-        }
-        catch(...)
-        {
-          MITK_DEBUG << "QmitkExtWorkbenchWindowAdvisor::PostWindowCreate failed to load argument:" << argument.toLocal8Bit().constData() << std::endl;
-        }
-      } // end for each command line argument
-
-      if (argumentsAdded > 0)
-      {
-        // Get bounds of every dataset that doesn't have "includeInBoundingBox" set to false.
-        mitk::NodePredicateNot::Pointer pred
-          = mitk::NodePredicateNot::New(mitk::NodePredicateProperty::New("includeInBoundingBox"
-          , mitk::BoolProperty::New(false)));
-
-        mitk::DataStorage::SetOfObjects::ConstPointer rs = dataStorage->GetSubset(pred);
-        mitk::TimeSlicedGeometry::Pointer bounds = dataStorage->ComputeBoundingGeometry3D(rs);
-        mitk::RenderingManager::GetInstance()->InitializeViews(bounds);
-      }
+      berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(dsService->GetActiveDataStorage()));
+      // Use MATCH_ID as matching strategy, otherwise another editor using the same input
+      // might by reused but we explicitly want an editor instance with id org.mitk.editors.stdmultiwidget.
+      page->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
     }
   }
 }

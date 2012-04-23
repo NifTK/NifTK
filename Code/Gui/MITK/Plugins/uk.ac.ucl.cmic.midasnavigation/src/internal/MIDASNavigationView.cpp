@@ -41,8 +41,7 @@
 const std::string MIDASNavigationView::VIEW_ID = "uk.ac.ucl.cmic.midasnavigationview";
 
 MIDASNavigationView::MIDASNavigationView()
-: QmitkMIDASBaseFunctionality()
-, m_NavigationViewControls(NULL)
+: m_NavigationViewControls(NULL)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
 {
@@ -63,14 +62,10 @@ std::string MIDASNavigationView::GetViewID() const
 
 void MIDASNavigationView::CreateQtPartControl( QWidget *parent )
 {
-  m_Parent = parent;
-
   if (!m_NavigationViewControls)
   {
     m_NavigationViewControls = new MIDASNavigationViewControlsImpl();
     m_NavigationViewControls->setupUi(parent);
-
-    QmitkMIDASBaseFunctionality::CreateQtPartControl(parent);
 
     connect(m_NavigationViewControls->m_MIDASOrientationWidget->m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialRadioButtonToggled(bool)));
     connect(m_NavigationViewControls->m_MIDASOrientationWidget->m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalRadioButtonToggled(bool)));
@@ -103,6 +98,11 @@ void MIDASNavigationView::CreateQtPartControl( QWidget *parent )
     m_EventAdmin->subscribeSlot(this, SLOT(handleEvent(ctkEvent)), propsForSlot);
 
   }
+}
+
+void MIDASNavigationView::SetFocus()
+{
+  m_NavigationViewControls->m_MIDASSlidersWidget->m_SliceSelectionWidget->setFocus();
 }
 
 void MIDASNavigationView::OnAxialRadioButtonToggled(bool isToggled)

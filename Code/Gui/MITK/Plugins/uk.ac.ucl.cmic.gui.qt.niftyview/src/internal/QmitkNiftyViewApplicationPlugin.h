@@ -30,8 +30,6 @@
 
 #include <QString>
 
-#include <berryQCHPluginListener.h>
-
 /**
  * \class QmitkNiftyViewApplicationPlugin
  * \brief Implements QT and CTK specific functionality to launch the application as a plugin.
@@ -78,9 +76,7 @@ private:
   static QmitkNiftyViewApplicationPlugin* inst;
 
   ctkPluginContext* context;
-  berry::QCHPluginListener* pluginListener;
 
-  mutable QString helpCollectionFile;
 };
 
 #endif /* QMITKEXTAPPLICATIONPLUGIN_H_ */

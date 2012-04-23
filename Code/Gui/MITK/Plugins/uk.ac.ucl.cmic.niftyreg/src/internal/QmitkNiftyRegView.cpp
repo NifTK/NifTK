@@ -46,6 +46,9 @@ void QmitkNiftyRegView::CreateQtPartControl(QWidget *parent)
 {
   // create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi( parent );
-
 }
 
+void QmitkNiftyRegView::SetFocus()
+{
+  m_Controls.m_SourceImageComboBox->setFocus();
+}

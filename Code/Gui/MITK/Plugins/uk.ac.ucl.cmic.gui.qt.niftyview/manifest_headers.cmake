@@ -1,5 +1,5 @@
-set(Plugin-Name "CMIC NiftyView Application")
+set(Plugin-Name "NiftyView Application")
 set(Plugin-Version "0.1")
 set(Plugin-Vendor "CMIC, Centre For Medical Image Computing, UCL.")
 set(Plugin-ContactAddress "http://cmic.cs.ucl.ac.uk/")
-set(Require-Plugin org.mitk.gui.qt.ext)
+set(Require-Plugin org.mitk.gui.qt.ext )

@@ -25,7 +25,7 @@
 #ifndef SurgicalGuidanceView_h
 #define SurgicalGuidanceView_h
 
-#include "QmitkFunctionality.h"
+#include "QmitkAbstractView.h"
 #include "ui_SurgicalGuidanceViewControls.h"
 
 
@@ -34,7 +34,7 @@
  * \brief User interface to provide Image Guided Surgery functionality.
  * \ingroup uk_ac_ucl_cmic_surgicalguidance_internal
 */
-class SurgicalGuidanceView : public QmitkFunctionality
+class SurgicalGuidanceView : public QmitkAbstractView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -48,8 +48,13 @@ public:
   /// \brief Static view ID = uk.ac.ucl.cmic.surgicalguidance
   static const std::string VIEW_ID;
 
-  /// \brief Called from framework to instantiate the Qt GUI components.
+protected:
+
+  /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief Called by framework, sets the focus on a specific widget.
+  virtual void SetFocus();
 
 protected slots:
 
@@ -59,7 +64,6 @@ protected:
 
 private:
 
-  QWidget* m_Parent;
 };
 
 #endif // SurgicalGuidanceView_h

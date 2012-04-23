@@ -26,7 +26,7 @@
 #define QMITKMIDASMULTIVIEWEDITORPREFERENCEPAGE_H
 
 #include "berryIQtPreferencePage.h"
-#include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
+#include <uk_ac_ucl_cmic_midaseditor_Export.h>
 #include <berryIPreferences.h>
 
 class QWidget;
@@ -40,7 +40,7 @@ class QCheckBox;
  * \brief Provides a preferences page for the CMIC MIDAS Display, including default number of rows,
  * default number of columns, image interpolation, default view and background colour.
  */
-struct CMIC_QT_COMMON QmitkMIDASMultiViewEditorPreferencePage : public QObject, public berry::IQtPreferencePage
+struct MIDASEDITOR_EXPORT QmitkMIDASMultiViewEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

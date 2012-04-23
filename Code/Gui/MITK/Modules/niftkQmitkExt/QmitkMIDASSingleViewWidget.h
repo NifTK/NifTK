@@ -79,7 +79,13 @@ class QmitkMIDASSingleViewWidget : public QWidget {
 
 public:
 
-  QmitkMIDASSingleViewWidget(QWidget *parent, QString windowName, int minimumMagnification, int maximumMagnification, mitk::DataStorage* dataStorage);
+  QmitkMIDASSingleViewWidget(QWidget *parent,
+                             QString windowName,
+                             int minimumMagnification,
+                             int maximumMagnification,
+                             mitk::DataStorage* dataStorage,
+                             mitk::RenderingManager* renderingManager
+                             );
   ~QmitkMIDASSingleViewWidget();
 
   /// \brief Returns true if the view is axial, coronal or sagittal and false otherwise (e.g. if ortho-view or 3D view).
@@ -118,6 +124,9 @@ public:
 
   /// \brief Returns the Sagittal Window.
   QmitkRenderWindow* GetSagittalWindow() const;
+
+  /// \brief Returns the 3D Window.
+  QmitkRenderWindow* Get3DWindow() const;
 
   /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
   MIDASOrientation GetOrientation();
@@ -232,6 +241,16 @@ public:
 
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
+
+  /// \brief Returns the current intersection point of the 3 orthogonal planes.
+  mitk::Point3D GetSelectedPosition() const;
+
+  /// \brief Sets the current intersection point of the 3 orthogonal planes.
+  void SetSelectedPosition(const mitk::Point3D &pos);
+
+protected:
+
+  virtual void paintEvent(QPaintEvent *event);
 
 signals:
 

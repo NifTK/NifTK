@@ -144,14 +144,17 @@ protected slots:
 
 protected:
 
-  ///  \brief Method to enable derived classes to turn all widgets off/on.
-  virtual void EnableSegmentationWidgets(bool b);
-
-  /// \brief This method creates all the controls for this view, and if subclasses override this, they must call MIDASGeneralSegmentorView::CreateQtPartControl.
+  /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief Called by framework, sets the focus on a specific widget.
+  virtual void SetFocus();
 
   /// \brief Creation of the connections of widgets in this class and the slots in this class.
   virtual void CreateConnections();
+
+  ///  \brief Method to enable derived classes to turn all widgets off/on.
+  virtual void EnableSegmentationWidgets(bool b);
 
   /// \brief Called when a node changed.
   virtual void NodeChanged(const mitk::DataNode* node);

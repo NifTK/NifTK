@@ -37,12 +37,11 @@
 #include "itkSpatialOrientationAdapter.h"
 
 class QmitkRenderWindow;
-class QmitkStdMultiWidget;
-class QmitkMIDASMultiViewWidget;
 
 /**
  * \class QmitkMIDASBaseSegmentationFunctionality
- * \brief Base view component for both MIDASMorphologicalSegmentorView and MIDASGeneralSegmentorView.
+ * \brief Base view component for both MIDASMorphologicalSegmentorView and MIDASGeneralSegmentorView,
+ * and in future any other segmentation plugin that could be considered MIDAS like.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  *
@@ -80,20 +79,8 @@ public:
   /// \brief Reaction to new segmentations being created by segmentation tools, currently does nothing.
   virtual void NewNodeObjectsGenerated(mitk::ToolManager::DataVectorType*);
 
-  /// \brief Invoked when the DataManager selection changed.
-  virtual void OnSelectionChanged(mitk::DataNode* node);
-
-  /// \brief Invoked when the DataManager selection changed.
-  virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
-
   /// \brief Called when the user hits the button "New segmentation".
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed(QColor &defaultColor);
-
-  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Activated.
-  virtual void Activated();
-
-  /// \brief Called when this plugin (which is an "Exclusive" plugin), is Deactivated.
-  virtual void Deactivated();
 
 protected slots:
 
@@ -171,6 +158,9 @@ protected:
   /// \brief Selects a node, which must not be null
   virtual void SelectNode(const mitk::DataNode::Pointer node);
 
+  /// \brief \see QmitkAbstractView::OnSelectionChanged.
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+
   /// \brief Returns the axis (0,1,2) that corresponds to axial, or -1 if it can't be found.
   int GetAxialAxis();
 
@@ -225,10 +215,6 @@ protected:
 
   /// \brief Common widget, enabling selection of a segmentation tool.
   QmitkMIDASToolSelectorWidget *m_ToolSelector;
-
-  /// \brief Store pointer to widget, so we don't have to repeatedly look for it.
-  QmitkStdMultiWidget *m_MITKWidget;
-  QmitkMIDASMultiViewWidget *m_MIDASWidget;
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;

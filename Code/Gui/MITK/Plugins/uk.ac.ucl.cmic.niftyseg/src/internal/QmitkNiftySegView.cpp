@@ -57,6 +57,11 @@ void QmitkNiftySegView::CreateQtPartControl(QWidget *parent)
   connect(m_Controls.m_EMMeansRadioButton, SIGNAL(clicked(bool)), this, SLOT(OnClickedEMInitialisationRadioButtons(bool)));
 }
 
+void QmitkNiftySegView::SetFocus()
+{
+  m_Controls.m_ReferenceImageComboBox->setFocus();
+}
+
 void QmitkNiftySegView::OnClickedEMInitialisationRadioButtons(bool bClicked)
 {
   if(m_Controls.m_EMAutomaticRadioButton->isChecked())

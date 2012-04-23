@@ -28,7 +28,10 @@
 #include "../QmitkNiftyViewApplication.h"
 
 #include <mitkVersion.h>
-#include <berryQtAssistantUtil.h>
+#include <mitkLogMacros.h>
+
+#include <service/cm/ctkConfigurationAdmin.h>
+#include <service/cm/ctkConfiguration.h>
 
 #include <QFileInfo>
 #include <QDateTime>
@@ -213,14 +216,12 @@ const std::string QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_M
 QmitkNiftyViewApplicationPlugin* QmitkNiftyViewApplicationPlugin::inst = 0;
 
 QmitkNiftyViewApplicationPlugin::QmitkNiftyViewApplicationPlugin()
-  : pluginListener(0)
 {
   inst = this;
 }
 
 QmitkNiftyViewApplicationPlugin::~QmitkNiftyViewApplicationPlugin()
 {
-  delete pluginListener;
 }
 
 QmitkNiftyViewApplicationPlugin* QmitkNiftyViewApplicationPlugin::GetDefault()
@@ -234,22 +235,30 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   
   this->context = context;
   
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewCMICPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewMIDASPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
 
-  QString collectionFile = GetQtHelpCollectionFile();
+  ctkServiceReference cmRef = context->getServiceReference<ctkConfigurationAdmin>();
+  ctkConfigurationAdmin* configAdmin = 0;
+  if (cmRef)
+  {
+    configAdmin = context->getService<ctkConfigurationAdmin>(cmRef);
+  }
 
-  berry::QtAssistantUtil::SetHelpCollectionFile(collectionFile);
-  berry::QtAssistantUtil::SetDefaultHelpUrl("qthelp://uk.ac.ucl.cmic.gui.qt.niftyview/bundle/index.html");
-
-  delete pluginListener;
-  pluginListener = new berry::QCHPluginListener(context);
-  context->connectPluginListener(pluginListener, SLOT(pluginChanged(ctkPluginEvent)), Qt::DirectConnection);
-
-  // register all QCH files from all the currently installed plugins
-  pluginListener->processPlugins();
-
+  // Use the CTK Configuration Admin service to configure the BlueBerry help system
+  if (configAdmin)
+  {
+    ctkConfigurationPtr conf = configAdmin->getConfiguration("org.blueberry.services.help", QString());
+    ctkDictionary helpProps;
+    helpProps.insert("homePage", "qthelp://uk.ac.ucl.cmic.gui.qt.niftyview/bundle/index.html");
+    conf->update(helpProps);
+    context->ungetService(cmRef);
+  }
+  else
+  {
+    MITK_WARN << "Configuration Admin service unavailable, cannot set home page url.";
+  }
 
   // Load StateMachine patterns
   mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
@@ -272,52 +281,6 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
 ctkPluginContext* QmitkNiftyViewApplicationPlugin::GetPluginContext() const
 {
   return context;
-}
-
-QString QmitkNiftyViewApplicationPlugin::GetQtHelpCollectionFile() const
-{
-  if (!helpCollectionFile.isEmpty())
-  {
-    return helpCollectionFile;
-  }
-
-  QString collectionFilename;
-  QString na("n/a");
-  if (na != MITK_REVISION)
-  {
-    collectionFilename = "CMICNiftyViewQtHelpCollection_" MITK_REVISION ".qhc";
-  }
-  else
-  {
-    collectionFilename = "CMICNiftyViewQtHelpCollection.qhc";
-  }
-
-  QFileInfo collectionFileInfo = context->getDataFile(collectionFilename);
-  QFileInfo pluginFileInfo = QFileInfo(QUrl(context->getPlugin()->getLocation()).toLocalFile());
-  if (!collectionFileInfo.exists() ||
-      pluginFileInfo.lastModified() > collectionFileInfo.lastModified())
-  {
-    // extract the qhc file from the plug-in
-    QByteArray content = context->getPlugin()->getResource(collectionFilename);
-    if (content.isEmpty())
-    {
-      BERRY_WARN << "Could not get plug-in resource: " << collectionFilename.toStdString();
-    }
-    else
-    {
-      QFile file(collectionFileInfo.absoluteFilePath());
-      file.open(QIODevice::WriteOnly);
-      file.write(content);
-      file.close();
-    }
-  }
-
-  if (QFile::exists(collectionFileInfo.absoluteFilePath()))
-  {
-    helpCollectionFile = collectionFileInfo.absoluteFilePath();
-  }
-
-  return helpCollectionFile;
 }
 
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_niftyview, QmitkNiftyViewApplicationPlugin)

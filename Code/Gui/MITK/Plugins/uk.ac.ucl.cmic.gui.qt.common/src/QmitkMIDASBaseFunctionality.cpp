@@ -22,66 +22,28 @@
 
  ============================================================================*/
 
+#include "QmitkMIDASBaseFunctionality.h"
+
 #include "berryIPartListener.h"
 #include "berryPlatform.h"
 #include "berryIWorkbenchPage.h"
 #include "berryConstants.h"
 
 #include "mitkMIDASDataStorageEditorInput.h"
+#include "mitkDataStorageEditorInput.h"
 #include "mitkIDataStorageReference.h"
 #include "mitkIDataStorageService.h"
 
-#include "QmitkStdMultiWidget.h"
-#include "QmitkMIDASBaseFunctionality.h"
-#include "QmitkMIDASMultiViewEditor.h"
 #include "QmitkMIDASMultiViewWidget.h"
-
-class QmitkMIDASBaseFunctionalityPartListener : public berry::IPartListener
-{
-public:
-
-  QmitkMIDASBaseFunctionalityPartListener(QmitkMIDASBaseFunctionality* view)
-    : m_View(view)
-  {}
-
-  berry::IPartListener::Events::Types GetPartEventTypes() const
-  {
-    return berry::IPartListener::Events::OPENED |
-        berry::IPartListener::Events::CLOSED;
-  }
-
-  void PartClosed(berry::IWorkbenchPartReference::Pointer partRef)
-  {
-    if((partRef->GetId() == m_View->GetViewID()) || (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID))
-    {
-      m_View->SetMIDASMultiViewWidget(NULL);
-    }
-  }
-
-  void PartOpened(berry::IWorkbenchPartReference::Pointer partRef)
-  {
-    if ((partRef->GetId() == m_View->GetViewID()) || (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID))
-    {
-      if (QmitkMIDASMultiViewEditor::Pointer multiWidgetPart =
-          partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>())
-      {
-        m_View->SetMIDASMultiViewWidget(multiWidgetPart->GetMIDASMultiViewWidget());
-      }
-      else
-      {
-        m_View->SetMIDASMultiViewWidget(NULL);
-      }
-    }
-  }
-
-private:
-
-  QmitkMIDASBaseFunctionality* m_View;
-};
+#include "QmitkMIDASMultiViewEditor.h"
+#include "QmitkStdMultiWidget.h"
+#include "QmitkStdMultiWidgetEditor.h"
 
 QmitkMIDASBaseFunctionality::QmitkMIDASBaseFunctionality()
+: m_Parent(NULL)
+, m_MITKWidget(NULL)
+, m_MIDASWidget(NULL)
 {
-  m_MIDASMultiViewWidgetListener = new QmitkMIDASBaseFunctionalityPartListener(this);
 }
 
 QmitkMIDASBaseFunctionality::QmitkMIDASBaseFunctionality(const QmitkMIDASBaseFunctionality& other)
@@ -92,61 +54,34 @@ QmitkMIDASBaseFunctionality::QmitkMIDASBaseFunctionality(const QmitkMIDASBaseFun
 
 QmitkMIDASBaseFunctionality::~QmitkMIDASBaseFunctionality()
 {
-  this->GetSite()->GetPage()->RemovePartListener(m_MIDASMultiViewWidgetListener);
-}
-
-void QmitkMIDASBaseFunctionality::CreateQtPartControl(QWidget *parent)
-{
-  m_MIDASMultiViewWidget = this->GetActiveMIDASMultiViewWidget();
-  this->GetSite()->GetPage()->AddPartListener(m_MIDASMultiViewWidgetListener);
-}
-
-void QmitkMIDASBaseFunctionality::SetFocus ()
-{
-
-}
-
-void QmitkMIDASBaseFunctionality::Activated()
-{
-}
-
-void QmitkMIDASBaseFunctionality::Deactivated()
-{
-}
-
-mitk::DataStorage::Pointer QmitkMIDASBaseFunctionality::GetDefaultDataStorage() const
-{
-  mitk::IDataStorageService::Pointer service =
-    berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
-  assert(service);
-
-  mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
-  assert(dataStorage);
-
-  return dataStorage;
-}
-
-void QmitkMIDASBaseFunctionality::SetMIDASMultiViewWidget(QmitkMIDASMultiViewWidget *widget)
-{
-  m_MIDASMultiViewWidget = widget;
+  // We don't own any of m_Parent, m_MITKWidget, m_MIDASWidget.
 }
 
 QmitkMIDASMultiViewWidget* QmitkMIDASBaseFunctionality::GetActiveMIDASMultiViewWidget()
 {
   QmitkMIDASMultiViewWidget* activeMIDASMultiViewWidget = 0;
-  berry::IEditorPart::Pointer editor =
-      this->GetSite()->GetPage()->GetActiveEditor();
 
-  if (editor.Cast<QmitkMIDASMultiViewEditor>().IsNotNull())
-  {
-    activeMIDASMultiViewWidget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
-  }
-  else
-  {
-    mitk::MIDASDataStorageEditorInput::Pointer editorInput;
-    editorInput = new mitk::MIDASDataStorageEditorInput();
-    editor = this->GetSite()->GetPage()->OpenEditor(editorInput, QmitkMIDASMultiViewEditor::EDITOR_ID, false);
-    activeMIDASMultiViewWidget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
-  }
+  berry::IEditorInput::Pointer dsInput(new mitk::MIDASDataStorageEditorInput(this->GetDataStorageReference()));
+  berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, QmitkMIDASMultiViewEditor::EDITOR_ID, false, berry::IWorkbenchPage::MATCH_ID);
+  assert(editor);
+
+  activeMIDASMultiViewWidget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
+  assert(activeMIDASMultiViewWidget);
+
   return activeMIDASMultiViewWidget;
+}
+
+QmitkStdMultiWidget* QmitkMIDASBaseFunctionality::GetActiveStdMultiWidget()
+{
+  QmitkStdMultiWidget *activeMultiWidget = 0;
+
+  berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(this->GetDataStorageReference()));
+  berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
+  assert(editor);
+
+  activeMultiWidget = editor.Cast<QmitkStdMultiWidgetEditor>()->GetStdMultiWidget();
+  assert(activeMultiWidget);
+
+  return activeMultiWidget;
+
 }

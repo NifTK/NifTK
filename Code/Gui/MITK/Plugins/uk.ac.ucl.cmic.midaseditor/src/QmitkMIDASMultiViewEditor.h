@@ -35,20 +35,16 @@
 #include <berryISelectionProvider.h>
 #include <berryISelectionListener.h>
 
-#include <QmitkDnDFrameWidget.h>
-#include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
+#include <uk_ac_ucl_cmic_midaseditor_Export.h>
+
+#include "QmitkAbstractRenderEditor.h"
 #include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include "mitkDataStorage.h"
+#include "mitkRenderingManager.h"
+#include "mitkIRenderingManager.h"
 #include "mitkMIDASKeyPressStateMachine.h"
-
-// CTK for event handling
-#include "service/event/ctkEventHandler.h"
-#include "service/event/ctkEventAdmin.h"
-
-class ctkPluginContext;
-struct ctkEventAdmin;
 
 namespace mitk {
   class DataNode;
@@ -57,74 +53,101 @@ namespace mitk {
 /**
  * \class QmitkMIDASMultiViewEditor
  * \brief Provides a MIDAS style layout, with up to 5 x 5 panes of equal size in a grid layout.
- * This class uses the ctkEventAdmin service to send and receive messages.
+ *
+ * As of 18th April 2012, this editor inherits from the QmitkAbstractRenderEditor, and hence
+ * conforms to the mitk::IRenderWindowPart which is the new Render Window Abstraction provided by
+ * MITK on 24.02.2012, apart from the decorations. This editor purposefully implements the methods
+ * EnableDecorations, IsDecorationEnabled, GetDecorations to do nothing (see method documentation).
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class CMIC_QT_COMMON QmitkMIDASMultiViewEditor :
-  public berry::QtEditorPart, public ctkEventHandler, virtual public berry::IPartListener
+class MIDASEDITOR_EXPORT QmitkMIDASMultiViewEditor :
+  public QmitkAbstractRenderEditor, virtual public berry::IPartListener
 {
   Q_OBJECT
-  Q_INTERFACES(ctkEventHandler)
 
 public:
 
   berryObjectMacro(QmitkMIDASMultiViewEditor)
+
   QmitkMIDASMultiViewEditor();
   QmitkMIDASMultiViewEditor(const QmitkMIDASMultiViewEditor& other);
   ~QmitkMIDASMultiViewEditor();
 
-  void Init(berry::IEditorSite::Pointer site, berry::IEditorInput::Pointer input);
-  void DoSave() {}
-  void DoSaveAs() {}
-  bool IsDirty() const { return false; }
-  bool IsSaveAsAllowed() const { return false; }
-
   static const std::string EDITOR_ID;
-
-  /// \brief Tells the contained QmitkMIDASMultiViewWidget to setFocus().
-  void SetFocus();
 
   /// \brief Get hold of the internal QmitkMIDASMultiViewWidget.
   QmitkMIDASMultiViewWidget* GetMIDASMultiViewWidget();
 
-  /// \brief Called when the preferences object of this editor changed.
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+  // -------------------  mitk::IRenderWindowPart  ----------------------
 
-signals:
+  /**
+   * \see mitk::IRenderWindowPart::GetActiveRenderWindow()
+   */
+  virtual QmitkRenderWindow* GetActiveRenderWindow() const;
 
-  /// \brief Signal that the value of the MIDAS controls (orientation, slice, magnification) should change.
-  void UpdateMIDASViewingControlsValues(const ctkDictionary&);
+  /**
+   * \see mitk::IRenderWindowPart::GetRenderWindows()
+   */
+  virtual QHash<QString,QmitkRenderWindow*> GetRenderWindows() const;
 
-  /// \brief Signal that the part has changed, used when the PartVisible, PartHidden and PartClosed are called.
-  void PartStatusChanged(const ctkDictionary&);
+  /**
+   * \see mitk::IRenderWindowPart::GetRenderWindow(QString)
+   */
+  virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
 
-public Q_SLOTS:
+  /**
+   * \see mitk::IRenderWindowPart::GetSelectionPosition()
+   */
+  virtual mitk::Point3D GetSelectedPosition(const QString& id = QString()) const;
 
-  /// \brief Handle events coming from the event admin service.
-  void handleEvent(const ctkEvent& event);
+  /**
+   * \see mitk::IRenderWindowPart::SetSelectedPosition()
+   */
+  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
 
-  /// \brief This is received from QmitkMIDASMultiWidget when the window or image changes requiring to update the value of the controls on MIDASNavigationView.
-  void OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info);
+  /**
+   * \see mitk::IRenderWindowPart::EnableDecorations(), and in this class, deliberately implemented as a no-op.
+   */
+  virtual void EnableDecorations(bool enable, const QStringList& decorations = QStringList());
+
+  /**
+   * \see mitk::IRenderWindowPart::IsDecorationEnabled(), and in this class, only returns false.
+   */
+  virtual bool IsDecorationEnabled(const QString& decoration) const;
+
+  /**
+   * \see mitk::IRenderWindowPart::GetDecorations(), and in this class, always returns empty list.
+   */
+  virtual QStringList GetDecorations() const;
+
+  /**
+   * Get the RenderingManager used by this editor. This default implementation uses the
+   * global MITK RenderingManager provided by mitk::RenderingManager::GetInstance().
+   *
+   * \see mitk::IRenderWindowPart::GetRenderingManager
+   */
+  virtual mitk::IRenderingManager* GetRenderingManager() const;
 
 protected:
 
+  /// \brief Tells the contained QmitkMIDASMultiViewWidget to setFocus().
+  virtual void SetFocus();
+
   // Creates the main Qt GUI element parts.
-  void CreateQtPartControl(QWidget* parent);
+  virtual void CreateQtPartControl(QWidget* parent);
 
-  // Used to emit a message of type part_status=status.
-  void OnPartChanged(QString status);
+  /// \brief Called when the preferences object of this editor changed.
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
-  // IPartListener
+  // -------------------  mitk::IPartListener  ----------------------
+
   Events::Types GetPartEventTypes() const;
   virtual void PartClosed (berry::IWorkbenchPartReference::Pointer partRef);
   virtual void PartHidden (berry::IWorkbenchPartReference::Pointer partRef);
   virtual void PartVisible (berry::IWorkbenchPartReference::Pointer partRef);
 
 private:
-
-  // Looks up the data storage service.
-  mitk::DataStorage::Pointer GetDataStorage() const;
 
   // This class hooks into the Global Interaction system to respond to Key press events.
   mitk::MIDASKeyPressStateMachine::Pointer m_KeyPressStateMachine;
@@ -135,14 +158,9 @@ private:
   // This class is to manage visibility when nodes added, removed, main visibility properties changed etc. and manage the renderer specific properties.
   QmitkMIDASMultiViewVisibilityManager* m_MidasMultiViewVisibilityManager;
 
-  // For Event Admin, we store a reference to the CTK plugin context
-  ctkPluginContext* m_Context;
+  // We maintain our own RenderingManager. NOTE: It's NOT the Global one.
+  mitk::RenderingManager::Pointer m_RenderingManager;
 
-  // For Event Admin, we store a reference to the CTK event admin service
-  ctkServiceReference m_EventAdminRef;
-
-  // For Event Admin, we store a pointer to the actual CTK event admin implementation.
-  ctkEventAdmin* m_EventAdmin;
 };
 
 #endif /*QMITKMIDASMULTIVIEWEDITOR_H*/

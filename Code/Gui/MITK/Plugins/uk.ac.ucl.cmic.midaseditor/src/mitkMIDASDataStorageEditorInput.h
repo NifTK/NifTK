@@ -27,7 +27,7 @@
 
 #include <berryIEditorInput.h>
 #include <mitkIDataStorageReference.h>
-#include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
+#include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
 namespace mitk
 {
@@ -39,7 +39,7 @@ namespace mitk
  * this is a valid type of editor with which to view the data.
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class CMIC_QT_COMMON MIDASDataStorageEditorInput : public berry::IEditorInput
+class MIDASEDITOR_EXPORT MIDASDataStorageEditorInput : public berry::IEditorInput
 {
 public:
   berryObjectMacro(MIDASDataStorageEditorInput);

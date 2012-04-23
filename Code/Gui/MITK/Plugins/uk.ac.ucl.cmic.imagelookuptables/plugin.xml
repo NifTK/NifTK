@@ -6,14 +6,14 @@
       id="org.mitk.views.general" 
       name="MITK General"/> 
     <view id="uk.ac.ucl.cmic.imagelookuptables"
-          name="CMIC Image Lookup Tables"
+          name="Image Lookup Tables"
           category="org.mitk.views.general" 
           class="ImageLookupTablesView"
           icon="resources/ImageLookupTables.png" />
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.ImageLookupTablesPreferencePage" name="CMIC Image Lookup Tables" class="QmitkImageLookupTablesPreferencePage">
+    <page id="uk.ac.ucl.cmic.ImageLookupTablesPreferencePage" name="Image Lookup Tables" class="QmitkImageLookupTablesPreferencePage">
       <keywordreference id="uk.ac.ucl.cmic.ImageLookupTablesPreferencePageKeywords"></keywordreference>
     </page>
   </extension>

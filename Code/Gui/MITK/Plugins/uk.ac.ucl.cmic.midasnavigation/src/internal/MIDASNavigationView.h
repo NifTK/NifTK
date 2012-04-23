@@ -25,7 +25,7 @@
 #ifndef MIDASNavigationView_h
 #define MIDASNavigationView_h
 
-#include "QmitkMIDASBaseFunctionality.h"
+#include "QmitkAbstractView.h"
 
 // GUI
 #include "ui_MIDASNavigationViewControls.h"
@@ -56,7 +56,7 @@ struct ctkEventAdmin;
  * \ingroup uk_ac_ucl_cmic_midasnavigation_internal
  * \sa QmitkMIDASBaseFunctionality
 */
-class MIDASNavigationView : public QmitkMIDASBaseFunctionality, public ctkEventHandler
+class MIDASNavigationView : public QmitkAbstractView, public ctkEventHandler
 {  
   /// \brief This is needed for all Qt objects that should have a Qt meta-object
   /// (everything that derives from QObject and wants to have signal/slots)
@@ -76,8 +76,13 @@ public:
   /// \brief Returns the view ID.
   virtual std::string GetViewID() const;
 
-  /// \brief Called from framework to instantiate the Qt GUI components.
+protected:
+
+  /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief Called by framework, sets the focus on a specific widget.
+  virtual void SetFocus();
 
 signals:
 

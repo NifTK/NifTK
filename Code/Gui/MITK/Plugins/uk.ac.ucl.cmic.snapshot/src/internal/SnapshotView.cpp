@@ -30,15 +30,22 @@
 
 // Qmitk
 #include "SnapshotView.h"
-#include "QmitkStdMultiWidgetEditor.h"
-#include "QmitkStdMultiWidget.h"
-#include "QmitkMIDASMultiViewEditor.h"
-#include "QmitkMIDASMultiViewWidget.h"
+#include "QmitkRenderWindow.h"
+
+// MITK
+#include "mitkIRenderWindowPart.h"
 
 // Qt
 #include <QMessageBox>
 #include <QPixmap>
 #include <QFileDialog>
+
+// VTK
+#include "vtkRenderWindow.h"
+#include "vtkRenderLargeImage.h"
+#include "vtkImageWriter.h"
+#include "vtkPNGWriter.h"
+#include "vtkJPEGWriter.h"
 
 const std::string SnapshotView::VIEW_ID = "uk.ac.ucl.cmic.snapshot";
 
@@ -60,96 +67,83 @@ void SnapshotView::CreateQtPartControl( QWidget *parent )
   connect(m_Controls.m_TakeSnapshotButton, SIGNAL(pressed()), this, SLOT(OnTakeSnapshotButtonPressed()));
 }
 
+void SnapshotView::SetFocus()
+{
+  m_Controls.m_TakeSnapshotButton->setFocus();
+}
+
 void SnapshotView::OnTakeSnapshotButtonPressed()
 {
-  QWidget *widget = NULL;
+  int magnificationFactor = 1;
+  QString windowName = tr("CMIC Snapshot");
+  QString fileName = QFileDialog::getSaveFileName( m_Parent, tr("Save Snapshot As ..."), QDir::currentPath(), "JPEG file (*.jpg);;PNG file (*.png)" );
 
-  berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->GetActiveEditor();
-
-  if (editor.Cast<QmitkStdMultiWidgetEditor>().IsNull() && editor.Cast<QmitkMIDASMultiViewEditor>().IsNull())
+  mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart();
+  if (renderWindowPart != NULL)
   {
-    QMessageBox::warning(m_Parent,
-        QString("Warning"),
-        QString("Unfortunately we cannot take a screenshot of this type of editor"),
-        QMessageBox::Ok);
-    return;
-  }
-
-  if (editor.Cast<QmitkStdMultiWidgetEditor>().IsNotNull())
-  {
-    widget = editor.Cast<QmitkStdMultiWidgetEditor>()->GetStdMultiWidget();
-  }
-  else if (editor.Cast<QmitkMIDASMultiViewEditor>().IsNotNull())
-  {
-    widget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
-  }
-
-  if (widget != NULL)
-  {
-    bool imageSaved = true;
-
-    QPixmap snapshotImage = QPixmap::grabWindow(widget->winId());
-
-    if(!snapshotImage.isNull())
+    QmitkRenderWindow *window = renderWindowPart->GetActiveRenderWindow();
+    if (window != NULL)
     {
-
-      QString fileName = QFileDialog::getSaveFileName( m_Parent, tr("Save Snapshot As"), "", tr("*.png;;*.bmp;;*.jpg;;*.jpeg;;All files(*.*)") );
-
-      if(!fileName.isNull())
+      vtkRenderer *renderer = window->GetRenderer()->GetVtkRenderer();
+      if (renderer != NULL)
       {
-        MITK_DEBUG << "SnapshotView::OnTakeSnapshotButtonPressed(): saving file to " << fileName.toLocal8Bit().constData() << std::endl;
 
-        QStringList splitString = fileName.split(".");
-        QString fileExtension;
+        // Basically, "inspired by" QmitkSimpleExampleView.cpp
 
-        if (splitString.length() != 1)
+        bool doubleBuffering( renderer->GetRenderWindow()->GetDoubleBuffer() );
+
+        renderer->GetRenderWindow()->DoubleBufferOff();
+
+        vtkImageWriter* fileWriter;
+
+        QFileInfo fi(fileName);
+        QString suffix = fi.suffix();
+        if (suffix.compare("png", Qt::CaseInsensitive) == 0)
         {
-          // An extension has been specified.
-          fileExtension = splitString[splitString.size() -1];
-          if (fileExtension != "png"
-              && fileExtension != "bmp"
-              && fileExtension != "jpg"
-              && fileExtension != "jpeg"
-             )
-          {
-            QMessageBox::warning(m_Parent,
-                QString("Warning"),
-                QString("Invalid file extension, only .png, .bmp, .jpg and .jpeg are allowed"),
-                QMessageBox::Ok);
-            return;
-          }
-          else
-          {
-            std::string fileFormat = fileExtension.toLocal8Bit().constData();
-            const char* chFormat = fileFormat.c_str();
-
-            // Here is where you save the image
-            imageSaved = snapshotImage.save(fileName, chFormat, -1);
-          }
+          fileWriter = vtkPNGWriter::New();
+        }
+        else  // default is jpeg
+        {
+          vtkJPEGWriter* w = vtkJPEGWriter::New();
+          w->SetQuality(100);
+          w->ProgressiveOff();
+          fileWriter = w;
         }
 
-        if(!imageSaved)
-        {
-          QMessageBox::critical(m_Parent, QString("CMIC Snapshot"),
-              QString("Unknown ERROR: The Snapshot couldn't be saved. Please report this."),
-              QMessageBox::Ok);
-          return;
-        }
-      } // end if we have a filename
-    } // end if we have successfully grabbed an image.
+        vtkRenderLargeImage* magnifier = vtkRenderLargeImage::New();
+        magnifier->SetInput(renderer);
+        magnifier->SetMagnification(magnificationFactor);
+
+        fileWriter->SetInput(magnifier->GetOutput());
+        fileWriter->SetFileName(fileName.toLatin1());
+        fileWriter->Write();
+        fileWriter->Delete();
+
+        renderer->GetRenderWindow()->SetDoubleBuffer(doubleBuffering);
+
+      }
+      else
+      {
+        QMessageBox::critical(m_Parent, windowName,
+            QString("Unknown ERROR: Failed to find VTK renderer. Please report this."),
+            QMessageBox::Ok);
+        return;
+      }
+    }
     else
     {
-      QMessageBox::critical(m_Parent, QString("CMIC Snapshot"),
-          QString("Unknown ERROR: Failed to grab an image. Please report this."),
+      QMessageBox::critical(m_Parent, windowName,
+          QString("Unknown ERROR: Failed to find render window. Please report this."),
           QMessageBox::Ok);
       return;
     }
-  } // end if we have a widget
+  }
   else
   {
-    QMessageBox::critical(m_Parent, tr("CMIC Snapshot"),
-        QString("Unknown ERROR: Failed to grab an image. Please report this."),
+    QMessageBox::critical(m_Parent, windowName,
+        QString("Unknown ERROR: Failed to find render window part. Please report this."),
         QMessageBox::Ok);
     return;
   }
+  return;
 }

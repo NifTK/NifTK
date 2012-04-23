@@ -27,22 +27,18 @@
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 
-#include "QmitkFunctionality.h"
-#include "berryIPartListener.h"
-#include <berryISelectionListener.h>
-#include <QWidget>
-#include "mitkDataStorage.h"
+#include "QmitkAbstractView.h"
 
 class QmitkMIDASMultiViewWidget;
+class QmitkStdMultiWidget;
 
 /**
  * \class QmitkMIDASBaseFunctionality
- * \brief Base view component for MIDAS plugins handling creating, connecting to
- * and disconnecting from the QmitkMIDASMultiViewWidget, to give the MIDAS style layouts.
+ * \brief Base view component for MIDAS plugins providing access to QmitkMIDASMultiViewWidget.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class CMIC_QT_COMMON QmitkMIDASBaseFunctionality : public QmitkFunctionality
+class CMIC_QT_COMMON QmitkMIDASBaseFunctionality : public QmitkAbstractView
 {
 
   Q_OBJECT
@@ -56,39 +52,25 @@ public:
   /// \brief Derived classes must provide a method to return the view ID.
   virtual std::string GetViewID() const = 0;
 
-  /// \brief Called by framework to create the plugins controls.
-  virtual void CreateQtPartControl(QWidget *parent);
-
-  /// \brief Required implementation, inherited from base classes, currently does nothing.
-  virtual void SetFocus();
-
-  /// \brief When this plugin is activated we setup the datastore.
-  virtual void Activated();
-
-  /// \brief Called when this plugin is deactivated, currently does nothing.
-  virtual void Deactivated();
-
-  /// \brief Inject the widget pointer into this class, this gets called by m_MIDASMultiViewWidgetListener when the widget part is opened/closed.
-  virtual void SetMIDASMultiViewWidget(QmitkMIDASMultiViewWidget *widget);
-
-  /// \brief Returns the default data storage.
-  virtual mitk::DataStorage::Pointer GetDefaultDataStorage() const;
-
 protected:
 
   /// \brief Saves the parent of this view.
-  QWidget* m_Parent;
+  QWidget *m_Parent;
+
+  /// \brief Saves the MITK widget, if available.
+  QmitkStdMultiWidget *m_MITKWidget;
+
+  /// \brief Saves the MIDAS widget, if available.
+  QmitkMIDASMultiViewWidget *m_MIDASWidget;
+
+  /// \brief Does a lookup and returns a pointer to the QmitkStdMultiWidget from the editor.
+  QmitkStdMultiWidget* GetActiveStdMultiWidget();
 
   /// \brief Does a lookup and returns a pointer to the QmitkMIDASMultiViewWidget from the editor.
   QmitkMIDASMultiViewWidget* GetActiveMIDASMultiViewWidget();
 
 private:
 
-  // Each derived class will have access to this pointer, which will be populated when the part opens.
-  QmitkMIDASMultiViewWidget *m_MIDASMultiViewWidget;
-
-  // This listener is reponsible for looking up the editor, and getting hold of the QmitkMIDASMultiViewWidget.
-  berry::IPartListener::Pointer m_MIDASMultiViewWidgetListener;
 };
 
 #endif // QMITKMIDASBASEFUNCTIONALITY_H

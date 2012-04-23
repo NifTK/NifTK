@@ -59,6 +59,7 @@
 #include "mitkOperationEvent.h"
 #include "mitkUndoController.h"
 #include "mitkDataStorageUtils.h"
+#include "mitkImageStatisticsHolder.h"
 #include "QmitkStdMultiWidget.h"
 #include "QmitkRenderWindow.h"
 #include "QmitkStdMultiWidget.h"
@@ -205,6 +206,11 @@ void MIDASGeneralSegmentorView::CreateConnections()
   }
 }
 
+void MIDASGeneralSegmentorView::SetFocus()
+{
+  m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->setFocus();
+}
+
 void MIDASGeneralSegmentorView::ClosePart()
 {
   mitk::Image* workingImage = this->GetWorkingImageFromToolManager(0);
@@ -222,7 +228,7 @@ bool MIDASGeneralSegmentorView::CanStartSegmentationForBinaryNode(const mitk::Da
       && mitk::IsNodeABinaryImage(node)
       )
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDefaultDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
     {
       if (mitk::IsNodeAGreyScaleImage(parent))
@@ -243,13 +249,13 @@ bool MIDASGeneralSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::P
   if (IsNodeABinaryImage(node))
   {
 
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDefaultDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
 
     if (parent.IsNotNull())
     {
-      mitk::DataNode::Pointer regionGrowingNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer seePriorNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer seeNextNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seePriorNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seeNextNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), node, true);
 
       if (regionGrowingNode.IsNotNull() && seePriorNode.IsNotNull() && seeNextNode.IsNotNull())
       {
@@ -297,7 +303,7 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
   helperImageNode->SetBoolProperty("helper object", true);
 
   this->ApplyDisplayOptions(helperImageNode);
-  this->GetDefaultDataStorage()->Add(helperImageNode, segmentationNode);
+  this->GetDataStorage()->Add(helperImageNode, segmentationNode);
 
   return helperImageNode;
 }
@@ -343,8 +349,8 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     assert(toolManager);
 
     // Make sure these are up to date, even though we don't use them right now.
-    image->GetScalarValueMin();
-    image->GetScalarValueMax();
+    image->GetStatistics()->GetScalarValueMin();
+    image->GetStatistics()->GetScalarValueMax();
 
     // This creates the point set for the seeds.
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
@@ -356,7 +362,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New( 3 ) );
     pointSetNode->SetBoolProperty("helper object", true);
     pointSetNode->SetColor( 1.0, 0.75, 0.8 );
-    this->GetDefaultDataStorage()->Add(pointSetNode, emptySegmentation);
+    this->GetDataStorage()->Add(pointSetNode, emptySegmentation);
 
     // In addition, (and this may need re-visiting), we create 3 volumes for working data
     // even though, in all 3 cases, we only ever display 1 slice at once. It will enable
@@ -411,7 +417,10 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     }
 
     // Setup widgets.
-    this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+    if (this->m_MIDASWidget != NULL)
+    {
+      this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+    }
     this->m_GeneralControls->SetEnableAllWidgets(true);
     this->m_GeneralControls->SetEnableThresholdingWidgets(false);
     this->m_GeneralControls->SetEnableThresholdingCheckbox(true);
@@ -426,8 +435,8 @@ void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfImage()
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
   {
-    double min = referenceImage->GetScalarValueMinNoRecompute();
-    double max = referenceImage->GetScalarValueMaxNoRecompute();
+    double min = referenceImage->GetStatistics()->GetScalarValueMinNoRecompute();
+    double max = referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute();
     this->m_GeneralControls->SetLowerAndUpperIntensityRanges(min, max);
   }
 }
@@ -440,7 +449,7 @@ mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
   if (workingImage != NULL)
   {
     mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
-    mitk::DataStorage::SetOfObjects::ConstPointer allPointSets = this->GetDefaultDataStorage()->GetSubset( isPointSet );
+    mitk::DataStorage::SetOfObjects::ConstPointer allPointSets = this->GetDataStorage()->GetSubset( isPointSet );
     for ( mitk::DataStorage::SetOfObjects::const_iterator iter = allPointSets->begin();
           iter != allPointSets->end();
           ++iter)
@@ -537,7 +546,7 @@ void MIDASGeneralSegmentorView::SetVisiblityOnDerivedImage(std::string name, boo
   mitk::DataNode::Pointer workingData = toolManager->GetWorkingData(0);
   if (workingData.IsNotNull())
   {
-    mitk::DataNode::Pointer node = this->GetDefaultDataStorage()->GetNamedDerivedNode(name.c_str(), workingData, true);
+    mitk::DataNode::Pointer node = this->GetDataStorage()->GetNamedDerivedNode(name.c_str(), workingData, true);
     if (node.IsNotNull())
     {
       node->SetVisibility(visibility);
@@ -545,7 +554,7 @@ void MIDASGeneralSegmentorView::SetVisiblityOnDerivedImage(std::string name, boo
     }
   }
 
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASGeneralSegmentorView::OnSeePriorCheckBoxToggled(bool b)
@@ -574,13 +583,13 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
 
     if (workingImage.IsNotNull())
     {
-      mitk::DataNode::Pointer priorNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), workingNode, true);
+      mitk::DataNode::Pointer priorNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), workingNode, true);
       assert(priorNode);
 
       mitk::Image::Pointer priorImage = dynamic_cast<mitk::Image*>(priorNode->GetData());
       assert(priorImage);
 
-      mitk::DataNode::Pointer nextNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), workingNode, true);
+      mitk::DataNode::Pointer nextNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), workingNode, true);
       assert(nextNode);
 
       mitk::Image::Pointer nextImage = dynamic_cast<mitk::Image*>(nextNode->GetData());
@@ -742,7 +751,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
 
     if (workingImage.IsNotNull())
     {
-      mitk::DataNode::Pointer regionGrowingNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
       assert(regionGrowingNode);
 
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
@@ -869,7 +878,7 @@ MIDASGeneralSegmentorView
   }
 
   // Make sure all renderers update.
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
@@ -940,9 +949,9 @@ void MIDASGeneralSegmentorView::ClearWorkingData()
   mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
   if (workingData.IsNotNull())
   {
-    mitk::DataNode::Pointer seePriorNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), workingData, true);
-    mitk::DataNode::Pointer seeNextNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), workingData, true);
-    mitk::DataNode::Pointer regionGrowingNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
+    mitk::DataNode::Pointer seePriorNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), workingData, true);
+    mitk::DataNode::Pointer seeNextNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), workingData, true);
+    mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
 
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(workingData->GetData());
     mitk::Image::Pointer priorImage = dynamic_cast<mitk::Image*>(seePriorNode->GetData());
@@ -994,18 +1003,18 @@ void MIDASGeneralSegmentorView::RemoveWorkingData()
   mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
   if (workingData.IsNotNull())
   {
-    mitk::DataNode::Pointer seePriorNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), workingData, true);
+    mitk::DataNode::Pointer seePriorNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME.c_str(), workingData, true);
     assert(seePriorNode);
 
-    mitk::DataNode::Pointer seeNextNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), workingData, true);
+    mitk::DataNode::Pointer seeNextNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::SEE_NEXT_IMAGE_NAME.c_str(), workingData, true);
     assert(seeNextNode);
 
-    mitk::DataNode::Pointer regionGrowingNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
+    mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
     assert(regionGrowingNode);
 
-    this->GetDefaultDataStorage()->Remove(seePriorNode);
-    this->GetDefaultDataStorage()->Remove(seeNextNode);
-    this->GetDefaultDataStorage()->Remove(regionGrowingNode);
+    this->GetDataStorage()->Remove(seePriorNode);
+    this->GetDataStorage()->Remove(seeNextNode);
+    this->GetDataStorage()->Remove(regionGrowingNode);
 
     mitk::ToolManager* toolManager = this->GetToolManager();
     mitk::ToolManager::DataVectorType emptyWorkingDataArray;
@@ -1019,7 +1028,7 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
   this->WipeTools();
   this->ClearWorkingData();
   this->UpdateRegionGrowing();
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASGeneralSegmentorView::OnOKButtonPressed()
@@ -1033,8 +1042,11 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   this->UpdateVolumeProperty(segmentationNode);
   this->SetReferenceImageSelected();
   this->EnableSegmentationWidgets(false);
-  this->m_MIDASWidget->SetMIDASSegmentationMode(true);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  if (this->m_MIDASWidget != NULL)
+  {
+    this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+  }
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASGeneralSegmentorView::OnCancelButtonPressed()
@@ -1045,10 +1057,13 @@ void MIDASGeneralSegmentorView::OnCancelButtonPressed()
   this->WipeTools();
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  this->GetDefaultDataStorage()->Remove(segmentationNode);
+  this->GetDataStorage()->Remove(segmentationNode);
   this->EnableSegmentationWidgets(false);
-  this->m_MIDASWidget->SetMIDASSegmentationMode(true);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  if (this->m_MIDASWidget != NULL)
+  {
+    this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+  }
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
@@ -1245,7 +1260,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
     }
   default:;
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
 void MIDASGeneralSegmentorView::OnThresholdApplyButtonPressed()
@@ -1256,7 +1271,7 @@ void MIDASGeneralSegmentorView::OnThresholdApplyButtonPressed()
   mitk::DataNode::Pointer workingData = toolManager->GetWorkingData(0);
   assert(workingData);
 
-  mitk::DataNode::Pointer regionGrowingNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
+  mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
   assert(regionGrowingNode);
 
   this->m_GeneralControls->m_ThresholdCheckBox->setChecked(false);
@@ -1364,7 +1379,7 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp)
   mitk::DataNode::Pointer workingData = toolManager->GetWorkingData(0);
   assert(workingData);
 
-  mitk::DataNode::Pointer regionGrowingNode = this->GetDefaultDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
+  mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingData, true);
   assert(regionGrowingNode);
 
   mitk::DataNode::Pointer referenceNode = this->GetReferenceNodeFromToolManager();
@@ -1528,14 +1543,25 @@ void MIDASGeneralSegmentorView::OnToolSelected(int id)
 
 int MIDASGeneralSegmentorView::GetSliceNumber()
 {
-  return this->m_MIDASWidget->GetSliceNumber();
+  if (this->m_MIDASWidget != NULL)
+  {
+    return m_MIDASWidget->GetSliceNumber();
+  }
+  else
+  {
+    return 0;
+  }
 }
 
 int MIDASGeneralSegmentorView::GetAxis()
 {
   int axisNumber = -1;
 
-  MIDASOrientation orientation = this->m_MIDASWidget->GetOrientation();
+  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+  if (this->m_MIDASWidget != NULL)
+  {
+    orientation = this->m_MIDASWidget->GetOrientation();
+  }
 
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {
@@ -1556,7 +1582,11 @@ int MIDASGeneralSegmentorView::GetAxis()
 itk::ORIENTATION_ENUM MIDASGeneralSegmentorView::GetOrientationAsEnum()
 {
   itk::ORIENTATION_ENUM itkOrientation = itk::ORIENTATION_UNKNOWN;
-  MIDASOrientation orientation = this->m_MIDASWidget->GetOrientation();
+  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+  if (this->m_MIDASWidget != NULL)
+  {
+    orientation = this->m_MIDASWidget->GetOrientation();
+  }
 
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {

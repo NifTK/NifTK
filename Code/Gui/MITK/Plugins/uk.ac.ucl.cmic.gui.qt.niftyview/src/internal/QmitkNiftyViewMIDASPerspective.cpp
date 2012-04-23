@@ -40,7 +40,7 @@ void QmitkNiftyViewMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Poi
   std::string editorArea = layout->GetEditorArea();
 
   layout->AddView("org.mitk.views.datamanager", 
-    berry::IPageLayout::LEFT, 0.25f, editorArea);
+    berry::IPageLayout::LEFT, 0.2f, editorArea);
 
   berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
   lo->SetCloseable(false);

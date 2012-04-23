@@ -50,6 +50,7 @@
 
 QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     QmitkMIDASMultiViewVisibilityManager* visibilityManager,
+    mitk::RenderingManager* renderingManager,
     mitk::DataStorage::Pointer dataStorage,
     int defaultNumberOfRows,
     int defaultNumberOfColumns,
@@ -73,9 +74,12 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_NavigationControllerEventListening(false)
 {
   assert(visibilityManager);
-  assert(dataStorage);
 
+  assert(dataStorage);
   m_DataStorage = dataStorage;
+
+  assert(renderingManager);
+  m_RenderingManager = renderingManager;
 
   m_TopLevelLayout = new QHBoxLayout(this);
   m_TopLevelLayout->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_TopLevelLayout"));
@@ -329,14 +333,9 @@ void QmitkMIDASMultiViewWidget::Deactivated()
 {
 }
 
-void QmitkMIDASMultiViewWidget::paintEvent(QPaintEvent* event)
-{
-  this->RequestUpdateAll();
-}
-
 QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 {
-  QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkRenderWindow"), -5, 20, m_DataStorage);
+  QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkRenderWindow"), -5, 20, m_DataStorage, m_RenderingManager);
   widget->setObjectName(tr("QmitkMIDASSingleViewWidget"));
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
@@ -833,6 +832,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnification);
   }
 
+  this->Update2DCursorVisibility();
   this->RequestUpdateAll();
 }
 
@@ -1324,3 +1324,88 @@ MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
 
   return orientation;
 }
+
+QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
+{
+  QmitkRenderWindow *window = NULL;
+
+  if (m_SelectedWindow >= 0)
+  {
+    std::vector<QmitkRenderWindow*> selectedWindows = m_SingleViewWidgets[m_SelectedWindow]->GetSelectedWindows();
+    if (selectedWindows.size() == 1)
+    {
+      window = selectedWindows[0];
+    }
+  }
+  return window;
+}
+
+QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() const
+{
+  QHash<QString, QmitkRenderWindow*> wnds;
+
+  // See org.mitk.gui.qt.imagenavigator plugin.
+  //
+  // The assumption is that a QmitkStdMultiWidget has windows called
+  // transversal, sagittal, coronal, 3d.
+  //
+  // So, if we take the currently selected widget, and name these render windows
+  // accordingly, then the MITK imagenavigator can be used to update it.
+
+  if (m_SelectedWindow >= 0)
+  {
+    wnds.insert("transversal", m_SingleViewWidgets[m_SelectedWindow]->GetAxialWindow());
+    wnds.insert("sagittal", m_SingleViewWidgets[m_SelectedWindow]->GetSagittalWindow());
+    wnds.insert("coronal", m_SingleViewWidgets[m_SelectedWindow]->GetCoronalWindow());
+    wnds.insert("3d", m_SingleViewWidgets[m_SelectedWindow]->Get3DWindow());
+  }
+
+  for (int i = 0; i < (int)m_SingleViewWidgets.size(); i++)
+  {
+    if (i != m_SelectedWindow)
+    {
+      QString id = tr(".%1").arg(i);
+
+      wnds.insert("transversal" + id, m_SingleViewWidgets[i]->GetAxialWindow());
+      wnds.insert("sagittal" + id, m_SingleViewWidgets[i]->GetSagittalWindow());
+      wnds.insert("coronal" + id, m_SingleViewWidgets[i]->GetCoronalWindow());
+      wnds.insert("3d" + id, m_SingleViewWidgets[i]->Get3DWindow());
+    }
+  }
+
+  return wnds;
+}
+
+QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetRenderWindow(const QString& id) const
+{
+  QHash<QString,QmitkRenderWindow*> windows = this->GetRenderWindows();
+  QHash<QString,QmitkRenderWindow*>::iterator iter = windows.find(id);
+  if (iter != windows.end())
+  {
+    return iter.value();
+  }
+  else
+  {
+    return NULL;
+  }
+}
+
+mitk::Point3D QmitkMIDASMultiViewWidget::GetSelectedPosition(const QString& /*id*/) const
+{
+  mitk::Point3D position;
+
+  if (m_SelectedWindow >= 0)
+  {
+    position = m_SingleViewWidgets[m_SelectedWindow]->GetSelectedPosition();
+  }
+  return position;
+}
+
+void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, const QString& /*id*/)
+{
+  if (m_SelectedWindow >= 0)
+  {
+    m_SingleViewWidgets[m_SelectedWindow]->SetSelectedPosition(pos);
+  }
+}
+

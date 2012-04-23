@@ -31,30 +31,52 @@ IF(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_org.mitk.gui.qt.measurement OFF CACHE BOOL \"Build the MITK measurement plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.pointsetinteraction OFF CACHE BOOL \"Build the MITK point set interaction plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.volumevisualization ON CACHE BOOL \"Build the MITK volume visualization plugin\")
+      set(MITK_BUILD_org.mitk.gui.qt.stdmultiwidgeteditor ON CACHE BOOL \"Build the MITK ortho-viewer plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
-      set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")      
+      set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
+      set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
       set(BOOST_INCLUDEDIR ${BOOST_INCLUDEDIR} CACHE PATH \"Path to Boost include directory\")
       set(BOOST_LIBRARYDIR ${BOOST_LIBRARYDIR} CACHE PATH \"Path to Boost library directory\")
     ")
 
     #########################################################
-    # As of Trac 1257, we are building off of a fork of MITK.
-    # The fork is branch niftk.
-    # mitk revision f1953dbbb0
-    # + https://cmicdev.cs.ucl.ac.uk/trac/ticket/853  (opacity for black) 
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1255 (StateMachine.xml)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1256 (improve file extension gz)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1264 (Qt Assistant in installer)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1300 (Enable drop in QmitkRenderWindow)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1301 (Pass RenderingManager in QmitkStdMultiWidget constructor)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1341 (Uniquely name QmitkStdMultiWidget planes)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1342 (Stop RenderingManager eroneously adding to m_RenderWindowList)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1343 (Fix AutoTopMost in mitkLevelWindowManager)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1344 (Turn off interactors in mitkMouseModeSwitcher)
-    #   https://cmicdev.cs.ucl.ac.uk/trac/ticket/1366 (Don't create PACS interactors in mitkMouseModeSwitcher)
+    #
+    # 1. Trac 1257, MITK revision f1953dbbb0, forked to branch niftk.
+    #    The following changes were made, and merged in. 
+    #
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/853  (opacity for black) 
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1255 (StateMachine.xml)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1256 (improve file extension gz)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1264 (Qt Assistant in installer)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1300 (Enable drop in QmitkRenderWindow)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1301 (Pass RenderingManager in QmitkStdMultiWidget constructor)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1341 (Uniquely name QmitkStdMultiWidget planes)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1342 (Stop RenderingManager eroneously adding to m_RenderWindowList)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1343 (Fix AutoTopMost in mitkLevelWindowManager)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1344 (Turn off interactors in mitkMouseModeSwitcher)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1366 (Don't create PACS interactors in mitkMouseModeSwitcher)
+    # 
+    # 2. Trac 1379, merged MITK master version 8334d5b025 into niftk.
+    #    Items in the list above, but not in the list below have already been 
+    #    merged into MITK master branch, or are obselete. So, the effective codebase is 
+    #    MITK 8334d5b025, plus the following list, resulting in niftk branch hashtag 5342dbafbc.
+    #
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/853  (opacity for black. MITK working on proper fix).
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1256 (improve file extension gz. Not entirely merged ... needs re-checking).
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1344 (Turn off interactors in mitkMouseModeSwitcher)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1366 (Don't create PACS interactors in mitkMouseModeSwitcher)
+    #
+    # 3. Trac 1379, merged MITK master cdaf95f4cd (20.04.2012 07:23) 
+    #    to pick up MITK bug 11572, 11573, 11574, Jamies DICOM slice sorting 
+    #    issue which is Trac 1365. Currently Im doing this on branch 
+    #    NifTK-Trac-1379-MITK-upgrade, so 1365 will be done implicitly when 
+    #    1379 complete. So, current code base is MITK cdaf95f4cd, plus 
+    #    Trac 853, 1256, 1344 1366 as listed above, resulting in 
+    #    2e5c698299 on MattClarkson github fork.
+    # 
     #########################################################
     
-    SET(revision_tag ee2afd0b1b)
+    SET(revision_tag 2e5c698299)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})

@@ -1,7 +1,7 @@
 /**
-\bundlemainpage{uk_ac_ucl_cmic_niftyseg} CMIC NiftySeg Segmentation
+\bundlemainpage{uk_ac_ucl_cmic_niftyseg} The NiftySeg Segmentation View
 
-\image html NiftySegLogo.png "Icon of the Module"
+\image html NiftySegLogo.png "The Icon for NiftySeg"
  
 \section Introduction
 

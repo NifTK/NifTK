@@ -1,7 +1,9 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.midasnavigation} MIDAS Navigation
+\bundlemainpage{uk.ac.ucl.cmic.midasnavigation} The MIDAS Navigation View
 
-\image html MidasNavigationIcon.png "Icon of MIDAS Navigation Controller"
+\image html MidasNavigationIcon.png "The Icon for MIDAS Navigation"
+
+<H1> This plugin is obselete and should not be visible in NiftyView </H1>
 
 \section MidasNavigationIntro Introduction
 

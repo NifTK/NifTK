@@ -44,7 +44,7 @@ class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewAppWorkbenchAdvisor: public berry::QtWo
 {
 public:
 
-  static const std::string DEFAULT_PERSPECTIVE_ID; // = "uk.ac.ucl.cmic.gui.qt.niftyview.defaultperspective"
+  static const std::string DEFAULT_PERSPECTIVE_ID;
 
   void Initialize(berry::IWorkbenchConfigurer::Pointer configurer);
 

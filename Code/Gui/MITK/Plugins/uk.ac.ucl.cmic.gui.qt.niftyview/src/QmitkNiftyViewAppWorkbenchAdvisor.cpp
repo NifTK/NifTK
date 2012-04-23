@@ -22,11 +22,11 @@
 
  ============================================================================*/
 
+#include "QmitkNiftyViewWorkbenchWindowAdvisor.h"
 #include "QmitkNiftyViewAppWorkbenchAdvisor.h"
 #include "internal/QmitkNiftyViewApplicationPlugin.h"
 
 #include <berryQtAssistantUtil.h>
-#include <QmitkNiftyViewWorkbenchWindowAdvisor.h>
 
 const std::string QmitkNiftyViewAppWorkbenchAdvisor::DEFAULT_PERSPECTIVE_ID =
     "uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective";
@@ -37,14 +37,6 @@ QmitkNiftyViewAppWorkbenchAdvisor::Initialize(berry::IWorkbenchConfigurer::Point
   berry::QtWorkbenchAdvisor::Initialize(configurer);
 
   configurer->SetSaveAndRestore(true);
-
-  if (!berry::QtAssistantUtil::GetHelpCollectionFile().isEmpty())
-  {
-    typedef std::vector<berry::IBundle::Pointer> BundleContainer;
-    BundleContainer bundles = berry::Platform::GetBundles();
-    berry::QtAssistantUtil::RegisterQCHFiles(bundles);
-  }
-
 }
 
 berry::WorkbenchWindowAdvisor*
@@ -53,6 +45,14 @@ QmitkNiftyViewAppWorkbenchAdvisor::CreateWorkbenchWindowAdvisor(
 {
   QmitkNiftyViewWorkbenchWindowAdvisor* advisor = new
       QmitkNiftyViewWorkbenchWindowAdvisor(this, configurer);
+
+  // Exclude the help perspective from org.blueberry.ui.qt.help from
+  // the normal perspective list.
+  // The perspective gets a dedicated menu entry in the help menu
+  std::vector<std::string> excludePerspectives;
+  excludePerspectives.push_back("org.blueberry.perspectives.help");
+  advisor->SetPerspectiveExcludeList(excludePerspectives);
+
   advisor->SetWindowIcon(":/QmitkNiftyViewApplication/icon_ucl.xpm");
   return advisor;
 }

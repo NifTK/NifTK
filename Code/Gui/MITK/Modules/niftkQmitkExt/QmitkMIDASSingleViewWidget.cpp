@@ -43,7 +43,8 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
     QString windowName,
     int minimumMagnification,
     int maximumMagnification,
-    mitk::DataStorage* dataStorage
+    mitk::DataStorage* dataStorage,
+    mitk::RenderingManager* renderingManager
     )
   : QWidget(parent)
 , m_DataStorage(NULL)
@@ -59,6 +60,9 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 {
   assert(dataStorage);
   m_DataStorage = dataStorage;
+
+  assert(renderingManager);
+  m_RenderingManager = renderingManager;
 
   this->setAcceptDrops(true);
 
@@ -85,11 +89,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
     m_PreviousViews.push_back(MIDAS_VIEW_UNKNOWN);
   }
 
-  // Create our own RenderingManager, so we are NOT using the Global one.
-  m_RenderingManager = mitk::RenderingManager::New();
-  m_RenderingManager->SetConstrainedPaddingZooming(false);
-
-  // Create the main QmitkMIDASStdMultiWidget, and pass in our OWN RenderingManager.
+  // Create the main QmitkMIDASStdMultiWidget
   m_MultiWidget = new QmitkMIDASStdMultiWidget(m_RenderingManager, m_DataStorage, this, NULL);
   this->SetNavigationControllerEventListening(false);
 
@@ -163,6 +163,11 @@ QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetSagittalWindow() const
 QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetCoronalWindow() const
 {
   return m_MultiWidget->GetRenderWindow3();
+}
+
+QmitkRenderWindow* QmitkMIDASSingleViewWidget::Get3DWindow() const
+{
+  return m_MultiWidget->GetRenderWindow4();
 }
 
 std::vector<vtkRenderWindow*> QmitkMIDASSingleViewWidget::GetAllVtkWindows() const
@@ -288,7 +293,6 @@ bool QmitkMIDASSingleViewWidget::GetRememberViewSettingsPerOrientation() const
 void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   this->m_DataStorage = dataStorage;
-  this->m_RenderingManager->SetDataStorage(dataStorage);
   this->m_MultiWidget->SetDataStorage(dataStorage);
 }
 
@@ -552,4 +556,26 @@ void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
 {
   this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()] = magnificationFactor;
   this->m_MultiWidget->SetMagnificationFactor(magnificationFactor);
+}
+
+mitk::Point3D QmitkMIDASSingleViewWidget::GetSelectedPosition() const
+{
+  return this->m_MultiWidget->GetCrossPosition();
+}
+
+void QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D &pos)
+{
+  this->m_MultiWidget->MoveCrossToPosition(pos);
+}
+
+void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
+{
+  QWidget::paintEvent(event);
+//  this->GetRenderer()->GetRenderingManager()->RequestUpdate(GetRenderWindow());
+  this->RequestUpdate();
+//  std::vector<vtkRenderWindow*> vtkRenderWindows = GetAllVtkWindows();
+//  for (unsigned int i = 0; i < vtkRenderWindows.size(); i++)
+//  {
+//    vtkRenderWindows[i]->Render();
+//  }
 }

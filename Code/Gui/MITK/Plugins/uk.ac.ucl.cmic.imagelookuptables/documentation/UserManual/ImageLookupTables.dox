@@ -1,29 +1,38 @@
 /**
 
-\bundlemainpage{uk.ac.ucl.cmic.imagelookuptables} CMIC Image Lookup Tables
+\bundlemainpage{uk.ac.ucl.cmic.imagelookuptables} The Image Lookup Tables View
 
-\image html ImageLookupTables.png "Icon of the Module"
+\image html ImageLookupTables.png "The Icon for Image Lookup Tables"
+
+\addindex Lookup tables
+\addindex Mapping scalars to colours
+\addindex Visualising scalar data range
+\addindex Colour mapping
+\addindex PET colour map
+\addindex Jacobian colour map
+\addindex MR colour map
+\addindex Fire colour map
 
 \section Introduction
 
 The Image Lookup Tables plugin provides the ability to assign a different colour map to each image.
 Each image will have range of intensity values, for example ranging from some minimum value such as 0
 to a maximum value such as 4096.  These image intensity values must be converted to the colour values 
-we see on the screen.  
+seen on the screen.  
 
 Consider the diagram in Figure 1. A lookup table may have 256 colours, that are listed in order,
 starting at 0 and continuing up to 255.  If we select a minimum image intensity value such as 100,
-then all image intensities equal or lower than 100 will be mapped to the first index in the colour
-map at index 0.  If the first value is black, then all image intensities equal or lower than 100 will 
+then all image intensities less than or equal to 100 will be mapped to the first index in the lookup table
+at index 0.  If the first value is black, then all image intensities less than or equal to 100 will 
 be mapped to black. Similarly, if we select a maximum image intensity value such as 4000, then all image
-intensities equal or above 4000 will be mapped to the last index in the colour map at index 255.
-If this colour corresponds to white, then all image intensity values equal or above 4000 will
+intensities greater than or equal to 4000 will be mapped to the last index in the colour map at index 255.
+If this colour corresponds to white, then all image intensity values greater than or equal to 4000 will
 be mapped to white. Image intensity values between 100 and 4000 will be converted to an index
 in the colour map between 0 and 255 in a linear fashion.
 
 \image html Diagram1.png "Figure 1. Intensity values are mapped to indexes within the lookup table."
  
-This plugin provides a range of pre-set colour maps to enable different colour schemes to be applied.
+This plugin provides a range of pre-set "lookup tables" or "colour maps" to enable different colour schemes to be applied.
 For example, there are colour maps suitable for MR images (grey), PET images (NIH),
 images of the determinant of a Jacobian of a transformation (MIDAS overlay) and ones derived from
 popular image processing packages, such as Image J's Fire lookup table, and MATLAB's hot, cool,
@@ -31,9 +40,9 @@ spring, summer, autumn, winter.
 
 \image html ExampleLookupTables.png "Figure 2. Lookup tables include greyscale, ImageJ Fire and the NIH Pet colour map."
 
-\section Usage
+\section ImageLookupTablesUsage Usage
 
-\subsection Selecting a Lookup Table
+\subsection ImageLookupTablesUsageSelecting Selecting a Lookup Table
 
 \image html ScreenshotMainView.png "Figure 3. The main GUI view."
 
@@ -46,14 +55,12 @@ which corresponds to the same image that the MITK Level/Window slider operates o
 Lookup Tables plugin, there is a drop down combo-box enabling the selection of a lookup table. The lookup 
 table is applied to the current image (the top-most visible one).
 
-\image html ScreenshotMainView.png "Figure 4. A lookup table may be selected from the list of available lookup tables."
-
 The lookup table is immediately applied to the top most visible image. To remove the lookup table, and 
 revert to the default colour scheme, select "NONE" in the combo box.
 
-\subsection Selecting the Colour Range.
+\subsection ImageLookupTablesUsageRange Selecting the Colour Range.
 
-Once a lookup table is selected, the colours can be adjusted via the min, max, level and window sliders or spin boxes.
+The colours can be adjusted via the min, max, level and window sliders or spin boxes.
 The min and max are related to the window and level by
 
 <ul>
@@ -61,9 +68,9 @@ The min and max are related to the window and level by
   <li> window = max - min
 </ul>
 
-and vice versa.  Also, level is equivalent to brightness and window is equivalent to contrast.
+The term level is equivalent to brightness and window is equivalent to contrast.
 
-\subsection Setting the Minimum and Maximum Limits
+\subsection ImageLookupTablesUsageMinMax Setting the Minimum and Maximum Limits
 
 When an image is first loaded the minimum and maximum values are calculated, and normally these are
 the range of data that the user is interested in viewing. For this reason, the minimum and maximum
@@ -72,11 +79,11 @@ cases where it is necessary to specify these limits manually.  These limits can 
 using the data limits min and max boxes. The reset button will then revert back to the minimum
 and maximum image values.
 
-\subsection Preferences
+\subsection ImageLookupTablesUsagePreferences Preferences
 
-\image html SnapshotPreferences.png Figure 5. Preferences that apply to the Image Lookup Tables plugin.
+\image html SnapshotPreferences.png Figure 4. Preferences that apply to the Image Lookup Tables plugin.
 
-The preference page can be seen in Figure 5. When the plugin first encounters an image, it will have 
+The preference page can be seen in Figure 4. When the plugin first encounters an image, it will have 
 to set the sliders to a suitable minimum and maximum range. There are two types of initialisation.
 <ul>
   <li> Initialise to the same values as on the MITK Level/Window widget. </li>
@@ -87,7 +94,7 @@ Furthermore, for the second option only, you can select that the even when the m
 sliders are set to the minimum and maximum range of the image data, the maximum slider is set to the given
 percentage of the full range. The final preference specifies the precision of the spin boxes.
 
-\section References
+\section ImageLookupTablesUsageReferences References
 
 Further information can be gathered from:
 

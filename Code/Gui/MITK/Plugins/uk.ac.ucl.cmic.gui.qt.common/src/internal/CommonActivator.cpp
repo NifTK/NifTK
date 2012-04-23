@@ -23,8 +23,6 @@
  ============================================================================*/
 
 #include "CommonActivator.h"
-#include "QmitkMIDASMultiViewEditor.h"
-#include "QmitkMIDASMultiViewEditorPreferencePage.h"
 #include <QtPlugin>
 
 namespace mitk {
@@ -33,8 +31,6 @@ ctkPluginContext* CommonActivator::s_PluginContext(NULL);
 
 void CommonActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASMultiViewEditor, context)
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASMultiViewEditorPreferencePage, context);
   s_PluginContext = context;
 }
 

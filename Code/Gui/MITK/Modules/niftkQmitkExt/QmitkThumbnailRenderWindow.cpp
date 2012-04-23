@@ -172,6 +172,9 @@ void QmitkThumbnailRenderWindow::SetDataStorage(mitk::DataStorage::Pointer dataS
   // Don't allow anyone to pass in a null dataStorage.
   assert(dataStorage);
   m_DataStorage = dataStorage;
+
+  mitk::BaseRenderer::Pointer thumbnailWindowRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
+  thumbnailWindowRenderer->SetDataStorage(dataStorage);
 }
 
 mitk::DataStorage::Pointer QmitkThumbnailRenderWindow::GetDataStorage()
@@ -288,52 +291,54 @@ void QmitkThumbnailRenderWindow::UpdateVisibility()
     // so......    Objects will be visible, unless the the node has a render window specific property that says otherwise.
 
     mitk::BaseRenderer::Pointer mitkRendererForThumbnail = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
-    assert(mitkRendererForThumbnail);
     mitk::BaseRenderer::Pointer mitkRendererForTrackedWidget = mitk::BaseRenderer::GetInstance(m_TrackedRenderWindow);
-    assert(mitkRendererForTrackedWidget);
 
-    mitk::DataStorage::SetOfObjects::ConstPointer allNodes = dataStorage->GetAll();
-    mitk::DataStorage::SetOfObjects::const_iterator allNodesIter;
-
-    int counter = 0;
-
-    for (allNodesIter = allNodes->begin(); allNodesIter != allNodes->end(); ++allNodesIter)
+    if (mitkRendererForThumbnail.IsNotNull() && mitkRendererForTrackedWidget.IsNotNull())
     {
-      bool globalVisible(false);
-      bool foundGlobalVisible(false);
-      foundGlobalVisible = (*allNodesIter)->GetBoolProperty("visible", globalVisible);
+      mitk::DataStorage::SetOfObjects::ConstPointer allNodes = dataStorage->GetAll();
+      mitk::DataStorage::SetOfObjects::const_iterator allNodesIter;
 
-      bool trackedWindowVisible(false);
-      bool foundTrackedWindowVisible(false);
-      foundTrackedWindowVisible = (*allNodesIter)->GetBoolProperty("visible", trackedWindowVisible, mitkRendererForTrackedWidget);
+      int counter = 0;
 
-      // We default to ON.
-      bool finalVisibility(true);
-
-      // The logic.
-      if ((foundTrackedWindowVisible && !trackedWindowVisible)
-          || (foundGlobalVisible && !globalVisible)
-          )
+      for (allNodesIter = allNodes->begin(); allNodesIter != allNodes->end(); ++allNodesIter)
       {
-        finalVisibility = false;
-      }
+        bool globalVisible(false);
+        bool foundGlobalVisible(false);
+        foundGlobalVisible = (*allNodesIter)->GetBoolProperty("visible", globalVisible);
 
-      /*
-      qDebug() << QString("QmitkThumbnailRenderWindow::UpdateVisibility():c=%1, gv=%2, fgv=%3, twv=%4, ftwv=%5, finalVisibility=%6") \
-          .arg(counter) \
-          .arg(globalVisible) \
-          .arg(foundGlobalVisible) \
-          .arg(trackedWindowVisible) \
-          .arg(foundTrackedWindowVisible) \
-          .arg(finalVisibility) \
-          .toLocal8Bit().constData();
-      */
+        bool trackedWindowVisible(false);
+        bool foundTrackedWindowVisible(false);
+        foundTrackedWindowVisible = (*allNodesIter)->GetBoolProperty("visible", trackedWindowVisible, mitkRendererForTrackedWidget);
 
-      // Set the final visibility flag
-      (*allNodesIter)->SetBoolProperty("visible", finalVisibility, mitkRendererForThumbnail);
+        // We default to ON.
+        bool finalVisibility(true);
 
-      counter++;
-    } // end for
+        // The logic.
+        if ((foundTrackedWindowVisible && !trackedWindowVisible)
+            || (foundGlobalVisible && !globalVisible)
+            )
+        {
+          finalVisibility = false;
+        }
+
+        /*
+        qDebug() << QString("QmitkThumbnailRenderWindow::UpdateVisibility():c=%1, gv=%2, fgv=%3, twv=%4, ftwv=%5, finalVisibility=%6") \
+            .arg(counter) \
+            .arg(globalVisible) \
+            .arg(foundGlobalVisible) \
+            .arg(trackedWindowVisible) \
+            .arg(foundTrackedWindowVisible) \
+            .arg(finalVisibility) \
+            .toLocal8Bit().constData();
+        */
+
+        // Set the final visibility flag
+        (*allNodesIter)->SetBoolProperty("visible", finalVisibility, mitkRendererForThumbnail);
+
+        counter++;
+      } // end for
+    } // end if not null
+
   } // end if
 }
 
@@ -350,7 +355,11 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 
 void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
 {
+  this->UpdateSliceAndTimeStep();
+  this->OnDisplayGeometryChanged();
   this->UpdateVisibility();
+  this->UpdateBoundingBox();
+
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
@@ -367,6 +376,11 @@ void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
 
 void QmitkThumbnailRenderWindow::NodeChanged( const mitk::DataNode* node)
 {
+  this->UpdateSliceAndTimeStep();
+  this->OnDisplayGeometryChanged();
+  this->UpdateVisibility();
+  this->UpdateBoundingBox();
+
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
@@ -385,22 +399,22 @@ void QmitkThumbnailRenderWindow::UpdateSliceAndTimeStep()
   if (m_TrackedRenderWindow != NULL)
   {
     mitk::BaseRenderer::Pointer mitkRendererForThumbnail = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
-    assert(mitkRendererForThumbnail);
-
     mitk::BaseRenderer::Pointer mitkRendererForTrackedWidget = mitk::BaseRenderer::GetInstance(m_TrackedRenderWindow);
-    assert(mitkRendererForTrackedWidget);
 
-    if (mitkRendererForTrackedWidget->GetTimeStep() != mitkRendererForThumbnail->GetTimeStep())
+    if (mitkRendererForThumbnail.IsNotNull() && mitkRendererForTrackedWidget.IsNotNull())
     {
-      mitkRendererForThumbnail->SetTimeStep(mitkRendererForTrackedWidget->GetTimeStep());
-    }
+      if (mitkRendererForTrackedWidget->GetTimeStep() != mitkRendererForThumbnail->GetTimeStep())
+      {
+        mitkRendererForThumbnail->SetTimeStep(mitkRendererForTrackedWidget->GetTimeStep());
+      }
 
-    if (mitkRendererForTrackedWidget->GetSlice() != mitkRendererForThumbnail->GetSlice())
-    {
-      mitkRendererForThumbnail->SetSlice(mitkRendererForTrackedWidget->GetSlice());
-    }
+      if (mitkRendererForTrackedWidget->GetSlice() != mitkRendererForThumbnail->GetSlice())
+      {
+        mitkRendererForThumbnail->SetSlice(mitkRendererForTrackedWidget->GetSlice());
+      }
 
-    this->UpdateWorldGeometry(true);
+      this->UpdateWorldGeometry(true);
+    }
   }
 }
 
@@ -452,10 +466,6 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
         if (!(focusedWindowRenderWindow == this->GetVtkRenderWindow())
             && focusedWindowRenderer->GetMapperID() != mitk::BaseRenderer::Standard3D)
         {
-          // Make sure this thumbnail is connected to the data storage.
-          mitk::BaseRenderer::Pointer thumbnailWindowRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
-          thumbnailWindowRenderer->SetDataStorage(dataStorage);
-
           // Remove any existing geometry observers
           this->RemoveObserversFromTrackedObjects();
 

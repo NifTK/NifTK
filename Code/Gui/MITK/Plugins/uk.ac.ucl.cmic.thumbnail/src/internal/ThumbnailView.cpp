@@ -28,7 +28,10 @@
 #include "berryIWorkbenchPage.h"
 #include "mitkIDataStorageService.h"
 #include "mitkDataStorage.h"
+#include "mitkDataStorageEditorInput.h"
+#include "mitkWorkbenchUtil.h"
 #include "QmitkThumbnailViewPreferencePage.h"
+#include "QmitkMIDASMultiViewEditor.h"
 
 const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
@@ -59,8 +62,6 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::ThumbnailViewControls();
     m_Controls->setupUi(parent);
 
-    QmitkMIDASBaseFunctionality::CreateQtPartControl(parent);
-
     RetrievePreferenceValues();
 
     mitk::IDataStorageService::Pointer service =
@@ -73,6 +74,11 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
     m_Controls->m_RenderWindow->Activated();
   }
+}
+
+void ThumbnailView::SetFocus()
+{
+  m_Controls->m_RenderWindow->setFocus();
 }
 
 void ThumbnailView::OnPreferencesChanged(const berry::IBerryPreferences*)

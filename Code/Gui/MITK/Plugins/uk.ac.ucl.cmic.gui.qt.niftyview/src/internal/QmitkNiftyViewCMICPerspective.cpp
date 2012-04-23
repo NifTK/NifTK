@@ -40,11 +40,12 @@ void QmitkNiftyViewCMICPerspective::CreateInitialLayout(berry::IPageLayout::Poin
   std::string editorArea = layout->GetEditorArea();
 
   layout->AddView("org.mitk.views.datamanager",
-    berry::IPageLayout::LEFT, 0.2f, editorArea);
+    berry::IPageLayout::LEFT, 0.25f, editorArea);
 
   berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
   lo->SetCloseable(false);
 
   layout->AddView("org.mitk.views.propertylistview",
     berry::IPageLayout::BOTTOM, 0.3f, "org.mitk.views.datamanager");
+
 }

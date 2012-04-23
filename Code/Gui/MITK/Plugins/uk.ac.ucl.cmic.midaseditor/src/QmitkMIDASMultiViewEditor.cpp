@@ -36,16 +36,10 @@
 #include "mitkNodePredicateNot.h"
 #include "mitkNodePredicateProperty.h"
 #include "mitkMIDASDataStorageEditorInput.h"
-#include "internal/CommonActivator.h"
 
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include "QmitkMIDASMultiViewEditorPreferencePage.h"
-
-// CTK
-#include "ctkPluginContext.h"
-#include "service/event/ctkEvent.h"
-#include "service/event/ctkEventConstants.h"
 
 const std::string QmitkMIDASMultiViewEditor::EDITOR_ID = "org.mitk.editors.midasmultiview";
 
@@ -54,9 +48,10 @@ QmitkMIDASMultiViewEditor::QmitkMIDASMultiViewEditor()
   m_KeyPressStateMachine(NULL)
 , m_MIDASMultiViewWidget(NULL)
 , m_MidasMultiViewVisibilityManager(NULL)
-, m_Context(NULL)
-, m_EventAdmin(NULL)
+, m_RenderingManager(NULL)
 {
+  m_RenderingManager = mitk::RenderingManager::GetInstance();
+  m_RenderingManager->SetConstrainedPaddingZooming(false);
 }
 
 QmitkMIDASMultiViewEditor::QmitkMIDASMultiViewEditor(const QmitkMIDASMultiViewEditor& other)
@@ -85,34 +80,12 @@ QmitkMIDASMultiViewWidget* QmitkMIDASMultiViewEditor::GetMIDASMultiViewWidget()
   return m_MIDASMultiViewWidget;
 }
 
-void QmitkMIDASMultiViewEditor::Init(berry::IEditorSite::Pointer site, berry::IEditorInput::Pointer input)
-{
-  if (input.Cast<mitk::MIDASDataStorageEditorInput>().IsNull())
-  {
-    throw berry::PartInitException("Invalid Input: Must be MIDASDataStorageEditorInput");
-  }
-  this->SetSite(site);
-  this->SetInput(input);
-}
-
-mitk::DataStorage::Pointer QmitkMIDASMultiViewEditor::GetDataStorage() const
-{
-  mitk::IDataStorageService::Pointer service =
-    berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
-
-  if (service.IsNotNull())
-  {
-    return service->GetDefaultDataStorage()->GetDataStorage();
-  }
-
-  return 0;
-}
-
 void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
 {
   if (m_MIDASMultiViewWidget == NULL)
   {
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+    assert(dataStorage);
 
     berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
     berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
@@ -139,9 +112,12 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     m_MidasMultiViewVisibilityManager->SetDefaultViewType(defaultView);
     m_MidasMultiViewVisibilityManager->SetDropType(defaultDropType);
 
+    m_RenderingManager->SetDataStorage(dataStorage);
+
     // Create the QmitkMIDASMultiViewWidget
     m_MIDASMultiViewWidget = new QmitkMIDASMultiViewWidget(
         m_MidasMultiViewVisibilityManager,
+        m_RenderingManager,
         dataStorage,
         defaultNumberOfRows,
         defaultNumberOfColumns,
@@ -166,28 +142,53 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     prefs->OnChanged.AddListener( berry::MessageDelegate1<QmitkMIDASMultiViewEditor, const berry::IBerryPreferences*>( this, &QmitkMIDASMultiViewEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
 
-    // Connect slots
-    connect(m_MIDASMultiViewWidget, SIGNAL(UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)), this, SLOT(OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo)));
-
-    m_Context = mitk::CommonActivator::GetPluginContext();
-    m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
-    m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
-
-    m_EventAdmin->publishSignal(this, SIGNAL(UpdateMIDASViewingControlsValues(ctkDictionary)),
-                              "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/OnUpdateMIDASViewingControlsValues", Qt::QueuedConnection);
-
-    m_EventAdmin->publishSignal(this, SIGNAL(PartStatusChanged(ctkDictionary)),
-                              "uk/ac/ucl/cmic/gui/qt/common/QmitkMIDASMultiViewEditor/PartStatusChanged", Qt::QueuedConnection);
-
     // Create/Connect the state machine
     m_KeyPressStateMachine = mitk::MIDASKeyPressStateMachine::New("MIDASKeyPressStateMachine", m_MIDASMultiViewWidget);
     mitk::GlobalInteraction::GetInstance()->AddListener( m_KeyPressStateMachine );
-
-    ctkDictionary propsForSlot;
-    propsForSlot[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/midasnavigationview/*";
-    m_EventAdmin->subscribeSlot(this, SLOT(handleEvent(ctkEvent)), propsForSlot);
   }
 }
+
+void QmitkMIDASMultiViewEditor::SetFocus()
+{
+  if (m_MIDASMultiViewWidget != NULL)
+  {
+    m_MIDASMultiViewWidget->setFocus();
+  }
+}
+
+void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
+{
+  if (m_MIDASMultiViewWidget != NULL)
+  {
+    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR, ""));
+    QColor backgroundColour(backgroundColourName);
+    mitk::Color bgColour;
+    if (backgroundColourName=="") // default values
+    {
+      bgColour[0] = 0;
+      bgColour[1] = 0;
+      bgColour[2] = 0;
+    }
+    else
+    {
+      bgColour[0] = backgroundColour.red() / 255.0;
+      bgColour[1] = backgroundColour.green() / 255.0;
+      bgColour[2] = backgroundColour.blue() / 255.0;
+    }
+    m_MIDASMultiViewWidget->SetBackgroundColour(bgColour);
+    m_MIDASMultiViewWidget->SetDefaultInterpolationType((MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2)));
+    m_MIDASMultiViewWidget->SetDefaultViewType((MIDASView)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW, 3)));
+    m_MIDASMultiViewWidget->SetDropTypeWidget((MIDASDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE, 0)));
+    m_MIDASMultiViewWidget->SetShowDropTypeWidgets(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
+    m_MIDASMultiViewWidget->SetShowLayoutButtons(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS, false));
+    m_MIDASMultiViewWidget->SetShowMagnificationSlider(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER, false));
+    m_MIDASMultiViewWidget->SetShow2DCursors(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true));
+    m_MIDASMultiViewWidget->SetShow3DViewInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
+    m_MIDASMultiViewWidget->SetRememberViewSettingsPerOrientation(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, false));
+  }
+}
+
+// -------------------  mitk::IPartListener  ----------------------
 
 berry::IPartListener::Events::Types QmitkMIDASMultiViewEditor::GetPartEventTypes() const
 {
@@ -236,144 +237,52 @@ void QmitkMIDASMultiViewEditor::PartHidden( berry::IWorkbenchPartReference::Poin
   }
 }
 
-void QmitkMIDASMultiViewEditor::SetFocus()
+// -------------------  mitk::IRenderWindowPart  ----------------------
+
+QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveRenderWindow() const
 {
-  if (m_MIDASMultiViewWidget != NULL)
-  {
-    m_MIDASMultiViewWidget->setFocus();
-  }
+  return m_MIDASMultiViewWidget->GetActiveRenderWindow();
 }
 
-void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
+QHash<QString, QmitkRenderWindow *> QmitkMIDASMultiViewEditor::GetRenderWindows() const
 {
-  if (m_MIDASMultiViewWidget != NULL)
-  {
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR, ""));
-    QColor backgroundColour(backgroundColourName);
-    mitk::Color bgColour;
-    if (backgroundColourName=="") // default values
-    {
-      bgColour[0] = 0;
-      bgColour[1] = 0;
-      bgColour[2] = 0;
-    }
-    else
-    {
-      bgColour[0] = backgroundColour.red() / 255.0;
-      bgColour[1] = backgroundColour.green() / 255.0;
-      bgColour[2] = backgroundColour.blue() / 255.0;
-    }
-    m_MIDASMultiViewWidget->SetBackgroundColour(bgColour);
-    m_MIDASMultiViewWidget->SetDefaultInterpolationType((MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2)));
-    m_MIDASMultiViewWidget->SetDefaultViewType((MIDASView)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW, 3)));
-    m_MIDASMultiViewWidget->SetDropTypeWidget((MIDASDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE, 0)));
-    m_MIDASMultiViewWidget->SetShowDropTypeWidgets(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
-    m_MIDASMultiViewWidget->SetShowLayoutButtons(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS, false));
-    m_MIDASMultiViewWidget->SetShowMagnificationSlider(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER, false));
-    m_MIDASMultiViewWidget->SetShow2DCursors(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true));
-    m_MIDASMultiViewWidget->SetShow3DViewInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
-    m_MIDASMultiViewWidget->SetRememberViewSettingsPerOrientation(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, false));
-  }
+  return m_MIDASMultiViewWidget->GetRenderWindows();
 }
 
-void QmitkMIDASMultiViewEditor::handleEvent(const ctkEvent& event)
+QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetRenderWindow(const QString &id) const
 {
-  try
-  {
-    if (m_MIDASMultiViewWidget != NULL)
-    {
-      QString topic = event.getProperty(ctkEventConstants::EVENT_TOPIC).toString();
-
-      if (topic == "uk/ac/ucl/cmic/midasnavigationview/SLICE_CHANGED")
-      {
-        QString slice = event.getProperty("slice_number").toString();
-        m_MIDASMultiViewWidget->SetSelectedWindowSliceNumber(slice.toInt());
-      }
-      else if (topic == "uk/ac/ucl/cmic/midasnavigationview/MAGNIFICATION_CHANGED")
-      {
-        QString magnification = event.getProperty("magnification_factor").toString();
-        m_MIDASMultiViewWidget->SetSelectedWindowMagnification(magnification.toInt());
-      }
-      if (topic == "uk/ac/ucl/cmic/midasnavigationview/TIME_CHANGED")
-      {
-        QString time = event.getProperty("time_step").toString();
-        m_MIDASMultiViewWidget->SetSelectedTimeStep(time.toInt());
-      }
-      else if (topic == "uk/ac/ucl/cmic/midasnavigationview/ORIENTATION_CHANGED")
-      {
-        QString orientation = event.getProperty("orientation").toString();
-        if (orientation == "axial")
-        {
-          m_MIDASMultiViewWidget->SetSelectedWindowToAxial();
-        }
-        else if (orientation == "sagittal")
-        {
-          m_MIDASMultiViewWidget->SetSelectedWindowToSagittal();
-        }
-        else if (orientation == "coronal")
-        {
-          m_MIDASMultiViewWidget->SetSelectedWindowToCoronal();
-        }
-      }
-    }
-  }
-  catch (const ctkRuntimeException& e)
-  {
-    MITK_ERROR << "QmitkMIDASMultiViewEditor::handleEvent, failed with:" << e.what() \
-        << ", caused by " << e.getCause().toLocal8Bit().constData() \
-        << std::endl;
-  }
+  return m_MIDASMultiViewWidget->GetRenderWindow(id);
 }
 
-void QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info)
+mitk::Point3D QmitkMIDASMultiViewEditor::GetSelectedPosition(const QString &id) const
 {
-  try
-  {
-    ctkDictionary properties;
-    properties["min_time"] = info.minTime;
-    properties["max_time"] = info.maxTime;
-    properties["min_slice"] = info.minSlice;
-    properties["max_slice"] = info.maxSlice;
-    properties["min_magnification"] = info.minMagnification;
-    properties["max_magnification"] = info.maxMagnification;
-    properties["current_time"] = info.currentTime;
-    properties["current_slice"] = info.currentSlice;
-    properties["current_magnification"] = info.currentMagnification;
-    if (info.isAxial)
-    {
-      properties["orientation"] = "axial";
-    }
-    else if (info.isSagittal)
-    {
-      properties["orientation"] = "sagittal";
-    }
-    else if (info.isCoronal)
-    {
-      properties["orientation"] = "coronal";
-    }
-
-    emit UpdateMIDASViewingControlsValues(properties);
-  }
-  catch (const ctkRuntimeException& e)
-  {
-    MITK_ERROR << "QmitkMIDASMultiViewEditor::OnUpdateMIDASViewingControls, failed with:" << e.what() \
-        << ", caused by " << e.getCause().toLocal8Bit().constData() \
-        << std::endl;
-  }
+  return m_MIDASMultiViewWidget->GetSelectedPosition(id);
 }
 
-void QmitkMIDASMultiViewEditor::OnPartChanged(QString status)
+void QmitkMIDASMultiViewEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
 {
-  try
-  {
-    ctkDictionary properties;
-    properties["part_status"] = status;
-    emit PartStatusChanged(properties);
-  }
-  catch (const ctkRuntimeException& e)
-  {
-    MITK_ERROR << "QmitkMIDASMultiViewEditor::OnPartChanged, failed with:" << e.what() \
-        << ", caused by " << e.getCause().toLocal8Bit().constData() \
-        << std::endl;
-  }
+  return m_MIDASMultiViewWidget->SetSelectedPosition(pos, id);
+}
+
+void QmitkMIDASMultiViewEditor::EnableDecorations(bool enable, const QStringList &decorations)
+{
+  // Deliberately do nothing.
+}
+
+bool QmitkMIDASMultiViewEditor::IsDecorationEnabled(const QString &decoration) const
+{
+  // Deliberately deny having any decorations.
+  return false;
+}
+
+QStringList QmitkMIDASMultiViewEditor::GetDecorations() const
+{
+  // Deliberately return nothing.
+  QStringList decorations;
+  return decorations;
+}
+
+mitk::IRenderingManager* QmitkMIDASMultiViewEditor::GetRenderingManager() const
+{
+  return mitk::MakeRenderingManagerInterface(m_RenderingManager);
 }

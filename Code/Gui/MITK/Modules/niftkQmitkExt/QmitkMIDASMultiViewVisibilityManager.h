@@ -41,8 +41,8 @@ class QmitkMIDASSingleViewWidget;
 /**
  * \class QmitkMultiViewVisibilityManager
  * \brief Maintains a list of QmitkMIDASSingleViewWidget and coordinates visibility
- * properties by listening to AddNodeEvent, RemoveNodeEvent and listens directly
- * to Modified events from the nodes "visibility" property.
+ * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
+ * to Modified events from the nodes "visibility" property in DataStorage.
  */
 class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
 {
@@ -50,7 +50,7 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
 
 public:
 
-  /// \brief This class must have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
+  /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
   QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Destructor, which unregisters all the listeners.

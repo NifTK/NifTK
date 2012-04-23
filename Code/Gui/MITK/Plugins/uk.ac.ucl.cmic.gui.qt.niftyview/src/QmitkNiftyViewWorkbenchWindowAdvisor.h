@@ -26,9 +26,9 @@
 #define QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_
 
 #include "mitkQtNiftyViewAppDll.h"
-#include "QmitkExtWorkbenchWindowAdvisor.h"
 #include <QObject>
 #include <berryWorkbenchAdvisor.h>
+#include "QmitkExtWorkbenchWindowAdvisor.h"
 
 /**
  * \class QmitkNiftyViewWorkbenchWindowAdvisor
