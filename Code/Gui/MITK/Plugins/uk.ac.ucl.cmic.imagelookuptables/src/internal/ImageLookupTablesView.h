@@ -58,6 +58,11 @@ public:
   /// \brief Each view for a plugin has its own globally unique ID.
   static const std::string VIEW_ID;
 
+  static const std::string DATA_MIN;
+  static const std::string DATA_MAX;
+  static const std::string DATA_MEAN;
+  static const std::string DATA_STDDEV;
+
 protected:
 
   /// \brief Called by framework, this method creates all the controls for this view
@@ -125,7 +130,7 @@ private:
   mitk::LevelWindowManager::Pointer m_LevelWindowManager;
 
   // Preferences.
-  bool m_UseImageRangeToInitialise;
+  std::string m_InitialisationMethod;
   double m_PercentageOfRange;
   int m_Precision;
 

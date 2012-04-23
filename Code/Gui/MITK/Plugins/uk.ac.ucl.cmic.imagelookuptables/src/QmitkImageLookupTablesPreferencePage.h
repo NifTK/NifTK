@@ -53,7 +53,10 @@ public:
   QmitkImageLookupTablesPreferencePage(const QmitkImageLookupTablesPreferencePage& other);
   ~QmitkImageLookupTablesPreferencePage();
 
-  static const std::string USE_IMAGE_DATA_NAME;
+  static const std::string INITIALISATION_METHOD_NAME;
+  static const std::string INITIALISATION_MIDAS;
+  static const std::string INITIALISATION_LEVELWINDOW;
+  static const std::string INITIALISATION_PERCENTAGE;
   static const std::string PERCENTAGE_NAME;
   static const std::string PRECISION_NAME;
 
@@ -80,13 +83,14 @@ public:
 
 protected slots:
 
+  void OnMIDASInitialisationRadioButtonChecked(bool);
   void OnLevelWindowRadioButtonChecked(bool);
   void OnImageDataRadioButtonChecked(bool);
-  void OnPercentageSpinBoxChanged(double);
 
 protected:
 
   QWidget* m_MainControl;
+  QRadioButton* m_UseMidasInitialisationRadioButton;
   QRadioButton* m_UseLevelWindowRadioButton;
   QRadioButton* m_UseImageDataRadioButton;
   QDoubleSpinBox* m_PercentageOfDataRangeDoubleSpinBox;

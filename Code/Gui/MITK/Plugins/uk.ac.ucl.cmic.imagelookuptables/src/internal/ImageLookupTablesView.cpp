@@ -31,6 +31,7 @@
 #include "vtkLookupTable.h"
 #include "mitkImage.h"
 #include "mitkImageStatisticsHolder.h"
+#include "mitkImageStatisticsCalculator.h"
 #include "mitkLevelWindowManager.h"
 #include "mitkRenderingManager.h"
 #include "mitkLookupTable.h"
@@ -49,11 +50,16 @@
 
 const std::string ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
+const std::string ImageLookupTablesView::DATA_MIN("data min");
+const std::string ImageLookupTablesView::DATA_MAX("data max");
+const std::string ImageLookupTablesView::DATA_MEAN("data mean");
+const std::string ImageLookupTablesView::DATA_STDDEV("data std dev");
+
 ImageLookupTablesView::ImageLookupTablesView()
 : m_Controls(0)
 , m_LookupTableManager(0)
 , m_LevelWindowManager(0)
-, m_UseImageRangeToInitialise(true)
+, m_InitialisationMethod(QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS)
 , m_PercentageOfRange(100)
 , m_Precision(2)
 , m_CurrentNode(NULL)
@@ -96,8 +102,8 @@ void ImageLookupTablesView::RetrievePreferenceValues()
         .Cast<berry::IBerryPreferences>();
   assert( prefs );
 
-  m_UseImageRangeToInitialise = prefs->GetBool(QmitkImageLookupTablesPreferencePage::USE_IMAGE_DATA_NAME, true);
-  m_PercentageOfRange = prefs->GetDouble(QmitkImageLookupTablesPreferencePage::PERCENTAGE_NAME, 60);
+  m_InitialisationMethod = prefs->Get(QmitkImageLookupTablesPreferencePage::INITIALISATION_METHOD_NAME, QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS);
+  m_PercentageOfRange = prefs->GetDouble(QmitkImageLookupTablesPreferencePage::PERCENTAGE_NAME, 50);
   m_Precision = prefs->GetInt(QmitkImageLookupTablesPreferencePage::PRECISION_NAME, 2);
 
   m_Controls->m_MinSlider->setDecimals(m_Precision);
@@ -108,7 +114,7 @@ void ImageLookupTablesView::RetrievePreferenceValues()
   m_Controls->m_MaxLimitDoubleSpinBox->setDecimals(m_Precision);
 
   MITK_DEBUG << "ImageLookupTablesView::RetrievePreferenceValues" \
-      " , m_UseImageRangeToInitialise=" << m_UseImageRangeToInitialise \
+      " , m_InitialisationMethod=" << m_InitialisationMethod \
       << ", m_PercentageOfRange=" << m_PercentageOfRange \
       << ", m_Precision=" << m_Precision \
       << std::endl;
@@ -196,9 +202,14 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
   int lookupTableIndex(0);
   float minDataLimit(0);
   float maxDataLimit(0);
-  bool minDataLimitFound = m_CurrentNode->GetFloatProperty("minDataLimit", minDataLimit);
-  bool maxDataLimitFound = m_CurrentNode->GetFloatProperty("maxDataLimit", maxDataLimit);
+  float meanData(0);
+  float stdDevData(0);
+  bool minDataLimitFound = m_CurrentNode->GetFloatProperty(DATA_MIN.c_str(), minDataLimit);
+  bool maxDataLimitFound = m_CurrentNode->GetFloatProperty(DATA_MAX.c_str(), maxDataLimit);
+  bool meanDataFound = m_CurrentNode->GetFloatProperty(DATA_MEAN.c_str(), meanData);
+  bool stdDevDataFound = m_CurrentNode->GetFloatProperty(DATA_STDDEV.c_str(), stdDevData);
   bool lookupTableIndexFound = m_CurrentNode->GetIntProperty("LookupTableIndex", lookupTableIndex);
+
   double dataMin = image->GetStatistics()->GetScalarValueMin();
   double dataMax = image->GetStatistics()->GetScalarValueMax();
   double windowMin = 0;
@@ -208,15 +219,58 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
   if (!minDataLimitFound || !maxDataLimitFound)
   {
     // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
-    // i.e. we haven't seen it before.
-    if (m_UseImageRangeToInitialise)
+    // i.e. we haven't seen it before. So we have a choice of how to initialise the Level/Window.
+    if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS)
+    {
+
+      if (!meanDataFound || !stdDevDataFound)
+      {
+        mitk::ImageStatisticsCalculator::Pointer calculator = mitk::ImageStatisticsCalculator::New();
+        calculator->SetImage(image);
+        calculator->SetIgnorePixelValue(0);
+        calculator->SetDoIgnorePixelValue(true);
+        calculator->ComputeStatistics();
+
+        mitk::ImageStatisticsCalculator::Statistics stats = calculator->GetStatistics();
+
+        meanData = stats.Mean;
+        stdDevData = stats.Sigma;
+
+        m_CurrentNode->SetFloatProperty(DATA_MEAN.c_str(), meanData);
+        m_CurrentNode->SetFloatProperty(DATA_STDDEV.c_str(), stdDevData);
+
+      }
+
+      double centre = (dataMin + 4.51*stdDevData)/2.0;
+      double width = 4.5*stdDevData;
+      minDataLimit = dataMin;
+      maxDataLimit = dataMax;
+      windowMin = centre - width/2.0;
+      windowMax = centre + width/2.0;
+
+      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from MIDAS method" \
+          << ", mean=" << meanData \
+          << ", stdDev=" << stdDevData \
+          << ", minDataLimit=" << minDataLimit \
+          << ", maxDataLimit=" << maxDataLimit \
+          << ", windowMin=" << windowMin \
+          << ", windowMax=" << windowMax \
+          << std::endl;
+    }
+    else if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_PERCENTAGE)
     {
       minDataLimit = dataMin;
       maxDataLimit = dataMax;
       windowMin = dataMin;
       windowMax = dataMin + (dataMax - dataMin)*m_PercentageOfRange/100.0;
 
-      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from range, m_PercentageOfRange=" << m_PercentageOfRange << ", minDataLimit=" << minDataLimit << ", maxDataLimit=" << maxDataLimit << ", windowMin=" << windowMin << ", windowMax=" << windowMax << std::endl;
+      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from range" \
+          << ", m_PercentageOfRange=" << m_PercentageOfRange \
+          << ", minDataLimit=" << minDataLimit \
+          << ", maxDataLimit=" << maxDataLimit \
+          << ", windowMin=" << windowMin \
+          << ", windowMax=" << windowMax \
+          << std::endl;
     }
     else if (m_LevelWindowManager->GetLevelWindowProperty())
     {
@@ -226,10 +280,14 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
       windowMin = levelWindow.GetLowerWindowBound();
       windowMax = levelWindow.GetUpperWindowBound();
 
-      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from current levelWindow, minDataLimit=" << minDataLimit << ", maxDataLimit=" << maxDataLimit << ", windowMin=" << windowMin << ", windowMax=" << windowMax << std::endl;
+      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from current levelWindow: " \
+          << ", minDataLimit=" << minDataLimit \
+          << ", maxDataLimit=" << maxDataLimit \
+          << ", windowMin=" << windowMin \
+          << ", windowMax=" << windowMax << std::endl;
     }
-    m_CurrentNode->SetFloatProperty("minDataLimit", minDataLimit);
-    m_CurrentNode->SetFloatProperty("maxDataLimit", maxDataLimit);
+    m_CurrentNode->SetFloatProperty(DATA_MIN.c_str(), minDataLimit);
+    m_CurrentNode->SetFloatProperty(DATA_MAX.c_str(), maxDataLimit);
   }
   else
   {
@@ -240,7 +298,11 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
     windowMax = levelWindow.GetUpperWindowBound();
   }
 
-  MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, dataMin=" << minDataLimit << ", dataMax=" << maxDataLimit << ", windowMin=" << windowMin << ", windowMax=" << windowMax << std::endl;
+  MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected" \
+      << ", dataMin=" << minDataLimit \
+      << ", dataMax=" << maxDataLimit \
+      << ", windowMin=" << windowMin \
+      << ", windowMax=" << windowMax << std::endl;
 
   // Propagate to min/max controls and back to m_LevelWindowManager
   m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
@@ -341,8 +403,8 @@ void ImageLookupTablesView::OnRangeChanged()
   m_Controls->m_LevelSlider->setMaximum(rangeMax);
   m_Controls->m_LevelSlider->setSingleStep(singleStep);
 
-  m_CurrentNode->SetFloatProperty("minDataLimit", levelWindow.GetRangeMin());
-  m_CurrentNode->SetFloatProperty("maxDataLimit", levelWindow.GetRangeMax());
+  m_CurrentNode->SetFloatProperty(DATA_MIN.c_str(), levelWindow.GetRangeMin());
+  m_CurrentNode->SetFloatProperty(DATA_MAX.c_str(), levelWindow.GetRangeMax());
 
   BlockMinMaxSignals(false);
 
