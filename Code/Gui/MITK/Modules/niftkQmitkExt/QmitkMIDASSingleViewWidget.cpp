@@ -571,11 +571,9 @@ void QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D &pos)
 void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
-//  this->GetRenderer()->GetRenderingManager()->RequestUpdate(GetRenderWindow());
-  this->RequestUpdate();
-//  std::vector<vtkRenderWindow*> vtkRenderWindows = GetAllVtkWindows();
-//  for (unsigned int i = 0; i < vtkRenderWindows.size(); i++)
-//  {
-//    vtkRenderWindows[i]->Render();
-//  }
+  std::vector<vtkRenderWindow*> vtkRenderWindows = GetAllVtkWindows();
+  for (unsigned int i = 0; i < vtkRenderWindows.size(); i++)
+  {
+    vtkRenderWindows[i]->Render();
+  }
 }

@@ -145,6 +145,9 @@ protected:
   /// \brief Called when a node changed.
   virtual void NodeChanged(const mitk::DataNode* node);
 
+  /// \brief Returns the name of the preferences node to look up.
+  virtual std::string GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
