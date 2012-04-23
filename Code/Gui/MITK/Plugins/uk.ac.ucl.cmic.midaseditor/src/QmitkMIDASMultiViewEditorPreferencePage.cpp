@@ -213,15 +213,15 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
 
   m_DefaultNumberOfRowsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_ROWS, 1));
   m_DefaultNumberOfColumnsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_COLUMNS, 1));
-  m_DefaultViewComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW, 3));
+  m_DefaultViewComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW, 2));
   m_ImageInterpolationComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
   m_DefaultDropType->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_DROP_TYPE, 0));
   m_ShowDropTypeWidgetsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
-  m_ShowLayoutButtonsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_LAYOUT_BUTTONS, false));
+  m_ShowLayoutButtonsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_LAYOUT_BUTTONS, true));
   m_Show3DInOrthoCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
   m_Show2DCursorsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_2D_CURSORS, true));
-  m_ShowMagnificationSliderCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, false));
-  m_RememberEachOrientationsViewSettings->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, false));
+  m_ShowMagnificationSliderCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, true));
+  m_RememberEachOrientationsViewSettings->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, true));
 }
 
 void QmitkMIDASMultiViewEditorPreferencePage::OnBackgroundColourChanged()
