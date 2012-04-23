@@ -82,7 +82,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   // Short introduction.
   QString introduction = QObject::tr(
       "<p>"
-      "%1 is the user interface for the <a href=\"%2\">%3 (%4)</a> translational imaging platform called %5."
+      "%1 is the user interface for the <a href=\"%2\">%3 (%4)</a> translational imaging platform called <a href=\"http://cmic.cs.ucl.ac.uk/home/software/\">%5</a>."
       "</p>"
       "<p>"
       "%1 was developed with funding from the NIHR and the Comprehensive Biomedical Research Centre at UCL and UCLH grant 168 and TSB grant M1638A. "
@@ -103,7 +103,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "</ul>"
       "In addition, the software development team would like to acknowledge the kind support of the open-source software community "
       "during development of NifTK and are especially grateful to the developers of "
-      "<a href=\"http://www.mitk.org\">MITK</a> and <a href=\"http://www.commontk.org\">CTK</a>."
+      "<a href=\"http://www.mitk.org\">MITK</a> and <a href=\"http://www.commontk.org\">CTK</a>. "
       "In addition, various clip art comes from <a href=\"http://www.openclipart.org\">openclipart.org</a>"
       "</p>"
       ).arg(originShortText);
@@ -113,7 +113,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString versions = QObject::tr(
       "<h3>Software Versions</h3>"
       "<p>"
-      "%1 has been developed using the following libraries"
+      "%1 has been developed using the following libraries, each with its own license:"
       "<ul>"
       "<li><a href=\"http://www.boost.org\">Boost</a>:%2</li>"
       "<li><a href=\"http://qt.nokia.com/products\">Qt</a>:%6</li>"
@@ -143,11 +143,13 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<p>"
       "%1 has been compiled and tested on:"
       "<ul>"
-      "<li>Mac OSX 10.7</li>"
-      "<li>Mac OSX 10.6</li>"
+      "<li>Mac OSX 10.7 (Lion)</li>"
+      "<li>Mac OSX 10.6 (Snow Leopard)</li>"
+      "<li>Ubuntu 11.04 (Natty)</li>"
+      "<li>Linux Mint 12</li>"
       "<li>Scientific Linux 6.1</li>"
       "<li>Centos 5.0</li>"
-      "<li>Ubuntu 11.04</li>"
+      "<li>Debian 6.0.5</li>"
       "<li>Windows 7</li>"
       "<li>Windows XP</li>"
       "</ul>"
