@@ -245,6 +245,7 @@ MARK_AS_ADVANCED(NIFTK_ADDITIONAL_CXX_FLAGS)
 ######################################################################
 # Set GIT protocol, as dependencies need it
 ######################################################################
+FIND_PACKAGE(Git REQUIRED)
 SET(GIT_PROTOCOL "git")
 IF(NOT NIFTK_USE_GIT_PROTOCOL)
   SET(GIT_PROTOCOL "http")
