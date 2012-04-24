@@ -201,7 +201,8 @@ void QmitkMIDASMultiViewEditor::PartClosed( berry::IWorkbenchPartReference::Poin
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
 
-    if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
+    if (midasMultiViewEditor.IsNotNull()
+      && midasMultiViewEditor->GetMIDASMultiViewWidget() == m_MIDASMultiViewWidget)
     {
       m_MIDASMultiViewWidget->Deactivated();
       m_MIDASMultiViewWidget->setEnabled(false);
@@ -215,7 +216,8 @@ void QmitkMIDASMultiViewEditor::PartVisible( berry::IWorkbenchPartReference::Poi
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
 
-    if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
+    if (midasMultiViewEditor.IsNotNull()
+      && midasMultiViewEditor->GetMIDASMultiViewWidget() == m_MIDASMultiViewWidget)
     {
       m_MIDASMultiViewWidget->Activated();
       m_MIDASMultiViewWidget->setEnabled(true);
@@ -229,7 +231,8 @@ void QmitkMIDASMultiViewEditor::PartHidden( berry::IWorkbenchPartReference::Poin
   {
     QmitkMIDASMultiViewEditor::Pointer midasMultiViewEditor = partRef->GetPart(false).Cast<QmitkMIDASMultiViewEditor>();
 
-    if (m_MIDASMultiViewWidget == midasMultiViewEditor->GetMIDASMultiViewWidget())
+    if (midasMultiViewEditor.IsNotNull()
+      && midasMultiViewEditor->GetMIDASMultiViewWidget() == m_MIDASMultiViewWidget)
     {
       m_MIDASMultiViewWidget->Deactivated();
       m_MIDASMultiViewWidget->setEnabled(false);

@@ -22,7 +22,7 @@
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective"
-      name="NiftyView Perspective"
+      name="MIDAS Perspective"
       class="QmitkNiftyViewMIDASPerspective"
     icon="resources/icon_ion.xpm">
     </perspective>
