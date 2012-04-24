@@ -112,6 +112,11 @@ do
     moving_roi1=${!roi1_arg}
     (( roi2_arg=inner_arg+3 ))
     moving_roi2=${!roi2_arg}
+    
+    if [ "${fixed_image}" == "dummy" ] || [ "${moving_image}" == "dummy" ]
+    then 
+      continue
+    fi 
   
     if [ 1 ]
     then 
