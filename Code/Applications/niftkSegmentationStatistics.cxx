@@ -48,6 +48,7 @@ void Usage(char *name)
   std::cout << "    -debug                         Turn on debugging" << std::endl;
   std::cout << "    -fp <file>                     Output a binary image with the false positve voxels" << std::endl;
   std::cout << "    -fn <file>                     Output a binary image with the false negative voxels" << std::endl;
+  std::cout << "    -ignore 0/1/2 g/s slice        Ignore slices (g)reater or (s)maller the specified nubmer" << std::endl; 
 }
 
 /**
@@ -66,6 +67,9 @@ int main(int argc, char** argv)
   int firstArgumentAfterOptions = std::numeric_limits<PixelType>::min();
   bool outputImageName=true;
   bool debug = false;
+  int ignoreAxis = 0; 
+  char ignoreDirection = 'g'; 
+  int ignoreSlice = -1; 
   std::string outputFpFilename; 
   std::string outputFnFilename; 
   
@@ -101,6 +105,17 @@ int main(int argc, char** argv)
     else if(strcmp(argv[i], "-fn") == 0){
       outputFnFilename = argv[++i];
       std::cout << "Set -fn=" << outputFnFilename << std::endl;
+    }
+    else if (strcmp(argv[i], "-ignore") == 0){
+      ignoreAxis = atoi(argv[++i]); 
+      ignoreDirection = *(argv[++i]); 
+      ignoreSlice = atoi(argv[++i]); 
+      if (ignoreDirection != 'g' || ignoreDirection != 's')
+      {
+        std::cout << "Direction must be either g or s." << std::endl; 
+        return EXIT_FAILURE; 
+      }
+      std::cout << "Set -ignore=" << ignoreAxis << "," << ignoreDirection << "," << ignoreSlice << std::endl;
     }
     else 
       {
@@ -251,7 +266,7 @@ int main(int argc, char** argv)
       segmentedImageThresholder->UpdateLargestPossibleRegion();
       
       itk::ImageRegionConstIterator<InputImageType> groundTruthIterator(groundTruthThresholder->GetOutput(), groundTruthThresholder->GetOutput()->GetLargestPossibleRegion());
-      itk::ImageRegionConstIterator<InputImageType> segmentedImageIterator(segmentedImageThresholder->GetOutput(), segmentedImageThresholder->GetOutput()->GetLargestPossibleRegion());
+      itk::ImageRegionConstIteratorWithIndex<InputImageType> segmentedImageIterator(segmentedImageThresholder->GetOutput(), segmentedImageThresholder->GetOutput()->GetLargestPossibleRegion());
 
       PixelType groundTruthValue;
       PixelType segmentedImageValue;
@@ -280,20 +295,42 @@ int main(int argc, char** argv)
         {
           groundTruthValue = groundTruthIterator.Get();
           segmentedImageValue = segmentedImageIterator.Get();
+          bool isIgnore = false; 
           
-          if ( groundTruthValue &&  segmentedImageValue) truePositive++;
-          if (!groundTruthValue && !segmentedImageValue) trueNegative++;
-          if (!groundTruthValue &&  segmentedImageValue) 
+          if (ignoreSlice >= 0)
           {
-            falsePositive++;
-            if (outputFpFilename.length() > 0)
-              falsePositiveImageIterator->Set(1); 
+            if (ignoreDirection == 'g')
+            {
+              if (segmentedImageIterator.GetIndex()[ignoreAxis] > ignoreSlice)
+              {
+                isIgnore = true; 
+              }
+            }
+            else
+            {
+              if (segmentedImageIterator.GetIndex()[ignoreAxis] < ignoreSlice)
+              {
+                isIgnore = true; 
+              }
+            }
           }
-          if ( groundTruthValue && !segmentedImageValue) 
+          
+          if (!isIgnore)
           {
-            falseNegative++;
-            if (outputFnFilename.length() > 0)
-              falseNegativeImageIterator->Set(1); 
+            if ( groundTruthValue &&  segmentedImageValue) truePositive++;
+            if (!groundTruthValue && !segmentedImageValue) trueNegative++;
+            if (!groundTruthValue &&  segmentedImageValue) 
+            {
+              falsePositive++;
+              if (outputFpFilename.length() > 0)
+                falsePositiveImageIterator->Set(1); 
+            }
+            if ( groundTruthValue && !segmentedImageValue) 
+            {
+              falseNegative++;
+              if (outputFnFilename.length() > 0)
+                falseNegativeImageIterator->Set(1); 
+            }
           }
           
           ++groundTruthIterator;
