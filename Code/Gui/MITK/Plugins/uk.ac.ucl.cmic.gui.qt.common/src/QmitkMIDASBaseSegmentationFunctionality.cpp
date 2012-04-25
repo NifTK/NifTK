@@ -122,6 +122,8 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea( m_ToolSelector->m_ManualToolGUIContainer );
     m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode( QmitkToolSelectionBox::EnabledWithReferenceAndWorkingData );
 
+    this->RetrievePreferenceValues();
+
     // Connect the ToolManager to DataStorage straight away.
     mitk::ToolManager* toolManager = this->GetToolManager();
     assert ( toolManager );

@@ -4,9 +4,14 @@
 
 \section UserManualIntroduction Introduction
 
-This is the user manual for the main @NIFTK_PLATFORM@ project, containing
+Welcome to the @NIFTK_PLATFORM@ user manual. This manual provides
 information on how to use the various components, such the graphical user
 interface (GUI) NiftyView, command line apps and batch scripts.
+Further information can be obtained be joining:
+
+\li <a href="@NIFTK_USER_CONTACT@">the users mailing list</a>
+
+\section UserManualTable Table Of Contents
 
 \li \subpage UserManualNiftyView
 \li \subpage UserManualCommandLineApps

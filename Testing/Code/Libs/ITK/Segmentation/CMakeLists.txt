@@ -61,12 +61,14 @@ ADD_TEST(MIDAS-Seg-WipeMinus ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASWipeMinus
 ADD_TEST(MIDAS-Seg-SliceRoiCalulator ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorBySlicesTest )
 ADD_TEST(MIDAS-Seg-RetainMarksNoThresh ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRetainMarksNoThresholdingTest )
 ADD_TEST(MIDAS-Seg-SplitRegion ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorSplitExistingRegionTest )
+ADD_TEST(MIDAS-Seg-MinROI ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorMinimumRegionTest)
+ADD_TEST(MIDAS-Seg-ThreshApply ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASThresholdApplyProcessorTest)
 ADD_TEST(MIDAS-Seg-RegGrowProc ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionGrowingProcessorTest )
 ADD_TEST(MIDAS-Seg-PropUp ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASPropagateUpProcessorTest)
 ADD_TEST(MIDAS-Seg-PropDown ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASPropagateDownProcessorTest)
-ADD_TEST(MIDAS-Seg-MinROI ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorMinimumRegionTest)
-ADD_TEST(MIDAS-Seg-ThreshApply ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASThresholdApplyProcessorTest)
-ADD_TEST(MIDAS-Seg-MorphLargest ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest ${INPUT_DATA}/centered_2d 2 ${INPUT_DATA}/right_border_grey_2d 2)
+
+# Need a new test, as filter no longer works in 2D
+#ADD_TEST(MIDAS-Seg-MorphLargest ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest ${INPUT_DATA}/centered_2d 2 ${INPUT_DATA}/right_border_grey_2d 2)
 
 #################################################################################
 # Build instructions.

@@ -125,7 +125,7 @@ int itkMIDASMeanIntensityWithinARegionFilterTest(int argc, char * argv[])
 
   double meanIntensityOfMainImage = meanIntensityFilter->GetMeanIntensityMainImage();
 
-  if(meanIntensityOfMainImage  >= 8.5 )
+  if(meanIntensityOfMainImage  == 8.5 )
   {
     return EXIT_SUCCESS;
   }

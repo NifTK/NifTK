@@ -108,7 +108,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*itkBSplineTransform.txx.*variable.*set but not used.*" 
   ".*itkIndex.*warning: array subscript is above array bounds*"
   ".*warning C4099: 'itk::hash<key>' : type name first seen using 'class' now seen using 'struct'.*"
-  ".*Source\MITK.*" 
+  ".*Source.*MITK.*" 
   
   # PythonQt suppressions
   "PythonQt.*src.*PythonQt.*(cpp|h)"
