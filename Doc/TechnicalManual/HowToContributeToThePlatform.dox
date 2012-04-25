@@ -1,0 +1,22 @@
+/**
+
+\page HowToContributeToThePlatform How To - Contribute to The Platform
+
+There are several ways to contribute. These are listed below in approximately increasing order of complexity.
+
+\li \ref ContributingUseThePlatform
+\li \ref ContributingWriteAnITKFilter
+\li \ref ContributingWriteAScript
+\li \ref ContributingWriteAGUIPlugin
+
+These are now describe in bullet-point detail.
+
+\section ContributingUseThePlatform Use the platform and provide feedback
+
+\section ContributingWriteAnITKFilter Write a new world changing algorithm as an ITK filter
+
+\section ContributingWriteAScript Combine algorithms together in a pipeline
+
+\section ContributingWriteAGUIPlugin Develop a new GUI plugin
+ 
+*/

@@ -1,6 +1,30 @@
 #!/bin/bash
 THIS_SCRIPT=$(realpath ${0})
 
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2011-10-27 11:01:03 +0100 (Thu, 27 Oct 2011) $ 
+#  Revision          : $Revision: 7614 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : stian.johnsen.09@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
 function _rename_files() {
     local OLD_SUBSTR=${1}
     local NEW_SUBSTR=${2}

@@ -3,8 +3,8 @@ Contributing Groups.
 
 This project is a collaboration between the following groups:
 
-UCL Dementia Research Centre: 
-http://dementia.ion.ucl.ac.uk
-
 UCL Centre For Medical Image Computing:
 http://cmic.cs.ucl.ac.uk
+
+UCL Dementia Research Centre: 
+http://dementia.ion.ucl.ac.uk

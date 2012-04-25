@@ -14,11 +14,24 @@ The aim of providing this manual is to enable developers to understand the archi
 layout and conventions, and to start coding and contributing to the platform. Where necessary or informative 
 the design decisions will be explained in detail. It is however assumed that the reader is a C++ developer.
 
+Throughout the manual we refer to an application called MIDAS. MIDAS is an application developed by
+Pete Freeborough and Nick Fox at the UCL Dementia Research Centre (DRC). MIDAS is used as a core part of
+the imaging trials infrastructure, and has influenced much of the design of NiftyView. NiftyView can
+be seen as a re-implementation of many of the important concepts from MIDAS, making the application
+multi-platform and bringing a lot of new functionality. The interested reader should refer to:
+
+[1] Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the 
+segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
+(53), 15-25, 1997. 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
+
 \section TechnicalManualTable Table Of Contents
 
 \li \subpage ThirdPartySoftware
 \li \subpage ArchitectureStack
 \li \subpage ArchitectureNiftyView
+\li \subpage ArchitectureDragAndDropDisplay
+\li \subpage HowToContributeToThePlatform
 \li \subpage HowToErasePluginCache
 \li \subpage HowToWritePlugins
 \li \subpage HowToWriteWidgets

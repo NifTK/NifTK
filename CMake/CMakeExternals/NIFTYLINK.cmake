@@ -1,16 +1,18 @@
 #/*================================================================================
 #
-#  NiftyGuide: A software package for light-weight client applications for 
-#              Image Guided Interventions, developed at University College London.
-#  
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#
+#  See:        http://dementia.ion.ucl.ac.uk/
 #              http://cmic.cs.ucl.ac.uk/
 #              http://www.ucl.ac.uk/
 #
 #  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
 #
-#  Last Changed      : $LastChangedDate: 2011-12-01 15:19:31 +0000 (Thu, 01 Dec 2011) $ 
-#  Revision          : $Revision: 7901 $
-#  Last modified by  : $Author: gerge $
+#  Last Changed      : $LastChangedDate: 2011-12-17 14:35:07 +0000 (Sat, 17 Dec 2011) $ 
+#  Revision          : $Revision: 8065 $
+#  Last modified by  : $Author: mjc $
 #
 #  Original author   : m.clarkson@ucl.ac.uk
 #

@@ -1,7 +1,7 @@
 /**
 \bundlemainpage{uk.ac.ucl.cmic.midasmorphologicalsegmentor} The MIDAS Morphological Editor View
 
-\image html MIDASMorphologicalSegmentor.png "The Icon for MIDAS Morphological Editor "
+\image html MIDASMorphologicalSegmentor.png "The Icon for MIDAS Morphological Editor"
 
 \li \ref MorphEditorIntro
 \li \ref MorphEditorThreshold
@@ -182,9 +182,9 @@ segmented volume.
 Select the slices where the segmentation needs editing, pay particular attention to the temporal 
 lobes and cerebellum, as these are areas where editing is most often required. If brain tissue has been excluded, 
 the border can be deleted by clicking on the Draw button in the irregular volume window and holding down the middle 
-mouse button. [Matt - dont understand this "A new border can be redrawn using the left mouse button. The position 
+mouse button. [Matt - dont understand this 'A new border can be redrawn using the left mouse button. The position 
 bar can be used to show the equivelent slice in the other view, this is also shown by the region being red on the 
-voxels where the views align."] New regions can be included by placing a seed in the appropriate area. Select the 
+voxels where the views align.'] New regions can be included by placing a seed in the appropriate area. Select the 
 Seed button in the irregular volume window and press the right mouse button. Seeds can be deleted using the middle 
 mouse button. Either a border can be drawn manually around the structure, or alternatively upper and lower thresholds 
 can be selected to automatically delineate the structure.To automatically deliniate/rethreshold a structure set the 

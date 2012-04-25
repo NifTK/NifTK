@@ -1,6 +1,6 @@
 /**
 
-\page HowToErasePluginCache How To Erase the Plugin Cache
+\page HowToErasePluginCache How To - Erase the Plugin Cache
 
 The CTK/MITK plugin framework maintains a cache to improve the speed of loading and unloading
 of plugins at run time.  The first time the NiftyView GUI runs, the necessary data is copied to a platform specific folder.

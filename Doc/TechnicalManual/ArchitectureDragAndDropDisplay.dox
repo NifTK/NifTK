@@ -1,0 +1,111 @@
+/**
+
+\page ArchitectureDragAndDropDisplay Architecture - The Drag and Drop Display
+
+\addindex Drag and Drop Display - Architecture
+\addindex Drag and Drop Display - Class Diagram
+
+\section ArchitectureDragAndDropDisplayIntro Introduction
+
+NiftyView, by virtue of the MITK application framework, supports the concepts of Editors.
+For developers familiar with development environments like Eclipse, XCode, KDevelop or Visual Studio,
+this is a simple concept to understand. Each of these workbench applications has some kind of file browser.
+When the user clicks and selects a file, the workbench determines the correct editor with which
+to open the file. For C++, this may be a text editor with C++ syntax formatting.  For an image file
+an image editor could be opened.
+
+The MITK application framework has the same concept.  An Editor is a tabbed central widget containing
+a window for viewing and interacting with some data. In the case of NiftyView, this is normally
+images, surfaces and pointsets and so on. It is possible to have more than one editor for each datatype,
+which makes it possible for NiftyView to have 2 or more editors for images, each displaying markedly different
+capabilities.  
+
+In MITK, the standard editor is the QmitkStdMultiWidgetEditor
+\verbatim
+MITK/Plugins/org.mitk.gui.qt.stdmultiwidgeteditor/src/QmitkStdMultiWidgetEditor.h
+\endverbatim
+
+In addition, NiftyView has an additional editor, based on the previous MIDAS functionality called QmitkMIDASStdMultiViewEditor.
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midaseditor/src/QmitkMIDASMultiViewEditor.h
+\endverbatim
+The user manual, and the GUI help files provides information on how to use this editor. This page will now describe the
+technical implementation.
+
+
+\section ArchitectureDragAndDropDisplayInstantiation Instantiation
+
+The editor is contained within its own CTK plugin at the path shown above. The plugin.xml shows how the plugin is named
+
+\code
+  <extension point="org.blueberry.ui.editors">
+    <editor
+      id="org.mitk.editors.midasmultiview"
+      name="Drag And Drop Display"
+      default="true"
+      extensions="mitk"
+      class="QmitkMIDASMultiViewEditor">
+    </editor>
+  </extension>
+\endcode
+
+and the editor is registered in the plugin activator class.
+
+\verbatim
+Plugins/uk.ac.ucl.cmic.midaseditor/src/internal/uk_ac_ucl_cmic_midaseditor_Activator.cpp
+\endverbatim
+
+using
+
+\code
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASMultiViewEditor, context)
+\endcode
+
+and similarly for the preference page.
+
+\section ArchitectureDragAndDropDisplayClassDiagram Class Diagram
+
+The editor contains a single widget called the QmitkMIDASMultiViewWidget.  This QmitkMIDASMultiViewWidget 
+contains various controls, buttons and sliders, and most importantly a central area of render windows with 
+which to display imaging data. 
+
+The MIDAS editor could display a grid of up to 5 rows and 5 columns of imaging panes, where each imaging pane could
+display a single axial, coronal or sagittal slice. In contrast, the new QmitkMIDASMultiViewWidget can display
+a grid of up to 5 x 5 ortho-viewers where an ortho-viewer contains a linked set of axial, coronal, sagittal and 3D windows.
+Each ortho-viewer can then be switched to display JUST an axial, coronal or sagittal view, thereby providing the original
+MIDAS functionality.
+
+A pseudo-UML style Class Diagram shows the overall structure of the code (Figure 1.)
+
+\image html ArchitectureDragAndDropDisplayClasses.png "Figure 1. An over-view of the relevant Drag and Drop Display classes"
+
+It can be seen that the QmitkMIDASMultiViewWidget contains up to 25 QmitkMIDASSingleViewWidget, each of which wraps
+a QmitkMIDASStdMultiWidget. The QmitkMIDASStdMultiWidget class derives from QmitkStdMultiWidget, which is an MITK class
+providing the ortho-viewer.  QmitkMIDASStdMultiWidget simply provides simple methods for turning borders on / off, 
+turning the cursors on and off, setting up the geometry of the QmitkStdMultiWidget and so on.
+
+\section ArchitectureDragAndDropDisplayInteractions Class Interactions
+
+All these widgets extend from QWidget, and so signals and slots are used to pass messages between Qt objects.
+
+\section ArchitectureDragAndDropDisplayGUIInteractions GUI Interactions
+
+The main MITK QmitkStdMultiWidget contains 4 QmitkRenderWindow. Each of these QmitkRenderWindow derives from QVTKWidget,
+and intercepts the mouse and keyboard interactions, and passes them to the 
+<a href="http://www.mitk.org/wiki/Interaction_concept">MITK interaction pattern</a>.
+However, if each QmitkRenderWindow sends events to the mitk::GlobalInteraction class, which implements
+the Observer pattern, then it can become problematic to know which object, or how many objects are listening to each mouse click.
+
+Currently, and this may be re-visited, the following caveat applies. NiftyView relies on having BOTH Display and
+the Drag and Drop Display (or equivalently, the QmitkStdMultiWidgetEditor and QmitkMIDASMultiViewEditor) present.
+The main Display contains interactors that are always on. The interactors in the render windows contained within
+QmitkMIDASMultiViewEditor are turned off. NifTK is using a GitHub clone of MITK, where an additional option
+to mitk::MouseModeSwitcher enables NiftyView to turn interactors off. So for each render window created within
+QmitkMIDASStdMultiWidget, the interactors are always off. So within the QmitkMIDASStdMultiWidget constructor we see
+
+\code
+this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
+\endcode
+
+
+*/
