@@ -376,11 +376,12 @@ void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
 
 void QmitkThumbnailRenderWindow::NodeChanged( const mitk::DataNode* node)
 {
+/*
   this->UpdateSliceAndTimeStep();
   this->OnDisplayGeometryChanged();
   this->UpdateVisibility();
   this->UpdateBoundingBox();
-
+*/
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 

@@ -59,29 +59,36 @@ QmitkMIDASBaseFunctionality::~QmitkMIDASBaseFunctionality()
 
 QmitkMIDASMultiViewWidget* QmitkMIDASBaseFunctionality::GetActiveMIDASMultiViewWidget()
 {
-  QmitkMIDASMultiViewWidget* activeMIDASMultiViewWidget = 0;
+  if (m_MIDASWidget == NULL)
+  {
+    QmitkMIDASMultiViewWidget* activeMIDASMultiViewWidget = 0;
 
-  berry::IEditorInput::Pointer dsInput(new mitk::MIDASDataStorageEditorInput(this->GetDataStorageReference()));
-  berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, QmitkMIDASMultiViewEditor::EDITOR_ID, false, berry::IWorkbenchPage::MATCH_ID);
-  assert(editor);
+    berry::IEditorInput::Pointer dsInput(new mitk::MIDASDataStorageEditorInput(this->GetDataStorageReference()));
+    berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, QmitkMIDASMultiViewEditor::EDITOR_ID, false, berry::IWorkbenchPage::MATCH_ID);
+    assert(editor);
 
-  activeMIDASMultiViewWidget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
-  assert(activeMIDASMultiViewWidget);
+    activeMIDASMultiViewWidget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
+    assert(activeMIDASMultiViewWidget);
 
-  return activeMIDASMultiViewWidget;
+    m_MIDASWidget = activeMIDASMultiViewWidget;
+  }
+  return m_MIDASWidget;
 }
 
 QmitkStdMultiWidget* QmitkMIDASBaseFunctionality::GetActiveStdMultiWidget()
 {
-  QmitkStdMultiWidget *activeMultiWidget = 0;
+  if (m_MITKWidget == NULL)
+  {
+    QmitkStdMultiWidget *activeMultiWidget = 0;
 
-  berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(this->GetDataStorageReference()));
-  berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
-  assert(editor);
+    berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(this->GetDataStorageReference()));
+    berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
+    assert(editor);
 
-  activeMultiWidget = editor.Cast<QmitkStdMultiWidgetEditor>()->GetStdMultiWidget();
-  assert(activeMultiWidget);
+    activeMultiWidget = editor.Cast<QmitkStdMultiWidgetEditor>()->GetStdMultiWidget();
+    assert(activeMultiWidget);
 
-  return activeMultiWidget;
-
+    m_MITKWidget = activeMultiWidget;
+  }
+  return m_MITKWidget;
 }

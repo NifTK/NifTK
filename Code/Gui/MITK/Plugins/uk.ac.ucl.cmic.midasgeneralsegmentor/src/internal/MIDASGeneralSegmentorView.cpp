@@ -417,9 +417,9 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     }
 
     // Setup widgets.
-    if (this->m_MIDASWidget != NULL)
+    if (this->GetActiveMIDASMultiViewWidget() != NULL)
     {
-      this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+      this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(true);
     }
     this->m_GeneralControls->SetEnableAllWidgets(true);
     this->m_GeneralControls->SetEnableThresholdingWidgets(false);
@@ -1042,9 +1042,9 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   this->UpdateVolumeProperty(segmentationNode);
   this->SetReferenceImageSelected();
   this->EnableSegmentationWidgets(false);
-  if (this->m_MIDASWidget != NULL)
+  if (this->GetActiveMIDASMultiViewWidget() != NULL)
   {
-    this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+    this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(true);
   }
   QmitkAbstractView::RequestRenderWindowUpdate();
 }
@@ -1059,9 +1059,9 @@ void MIDASGeneralSegmentorView::OnCancelButtonPressed()
   this->RemoveWorkingData();
   this->GetDataStorage()->Remove(segmentationNode);
   this->EnableSegmentationWidgets(false);
-  if (this->m_MIDASWidget != NULL)
+  if (this->GetActiveMIDASMultiViewWidget() != NULL)
   {
-    this->m_MIDASWidget->SetMIDASSegmentationMode(true);
+    this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(true);
   }
   QmitkAbstractView::RequestRenderWindowUpdate();
 }
@@ -1543,9 +1543,9 @@ void MIDASGeneralSegmentorView::OnToolSelected(int id)
 
 int MIDASGeneralSegmentorView::GetSliceNumber()
 {
-  if (this->m_MIDASWidget != NULL)
+  if (this->GetActiveMIDASMultiViewWidget() != NULL)
   {
-    return m_MIDASWidget->GetSliceNumber();
+    return this->GetActiveMIDASMultiViewWidget()->GetSliceNumber();
   }
   else
   {
@@ -1558,9 +1558,9 @@ int MIDASGeneralSegmentorView::GetAxis()
   int axisNumber = -1;
 
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-  if (this->m_MIDASWidget != NULL)
+  if (this->GetActiveMIDASMultiViewWidget() != NULL)
   {
-    orientation = this->m_MIDASWidget->GetOrientation();
+    orientation = this->GetActiveMIDASMultiViewWidget()->GetOrientation();
   }
 
   if (orientation == MIDAS_ORIENTATION_AXIAL)
@@ -1583,9 +1583,9 @@ itk::ORIENTATION_ENUM MIDASGeneralSegmentorView::GetOrientationAsEnum()
 {
   itk::ORIENTATION_ENUM itkOrientation = itk::ORIENTATION_UNKNOWN;
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-  if (this->m_MIDASWidget != NULL)
+  if (this->GetActiveMIDASMultiViewWidget() != NULL)
   {
-    orientation = this->m_MIDASWidget->GetOrientation();
+    orientation = this->GetActiveMIDASMultiViewWidget()->GetOrientation();
   }
 
   if (orientation == MIDAS_ORIENTATION_AXIAL)

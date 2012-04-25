@@ -57,12 +57,6 @@ protected:
   /// \brief Saves the parent of this view.
   QWidget *m_Parent;
 
-  /// \brief Saves the MITK widget, if available.
-  QmitkStdMultiWidget *m_MITKWidget;
-
-  /// \brief Saves the MIDAS widget, if available.
-  QmitkMIDASMultiViewWidget *m_MIDASWidget;
-
   /// \brief Does a lookup and returns a pointer to the QmitkStdMultiWidget from the editor.
   QmitkStdMultiWidget* GetActiveStdMultiWidget();
 
@@ -70,6 +64,12 @@ protected:
   QmitkMIDASMultiViewWidget* GetActiveMIDASMultiViewWidget();
 
 private:
+
+  /// \brief Saves the MITK widget, if available.
+  QmitkStdMultiWidget *m_MITKWidget;
+
+  /// \brief Saves the MIDAS widget, if available.
+  QmitkMIDASMultiViewWidget *m_MIDASWidget;
 
 };
 

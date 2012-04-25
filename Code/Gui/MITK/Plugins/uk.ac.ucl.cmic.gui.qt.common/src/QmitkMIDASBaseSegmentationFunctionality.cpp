@@ -92,10 +92,6 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
 {
   if (!m_ImageAndSegmentationSelector)
   {
-    // Set up these pointers in base class. This should only be done ONCE ... here.
-    m_MITKWidget = this->GetActiveStdMultiWidget();
-    m_MIDASWidget = this->GetActiveMIDASMultiViewWidget();
-
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
     m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(parentForSelectorWidget);
@@ -146,19 +142,19 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
-  if (m_MITKWidget != NULL && m_MIDASWidget != NULL)
+  if (this->GetActiveStdMultiWidget() != NULL && this->GetActiveMIDASMultiViewWidget() != NULL)
   {
     if (toolID >= 0)
     {
-      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
-      m_MITKWidget->DisableNavigationControllerEventListening();
-      m_MIDASWidget->SetNavigationControllerEventListening(false);
+      this->GetActiveStdMultiWidget()->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
+      this->GetActiveStdMultiWidget()->DisableNavigationControllerEventListening();
+      this->GetActiveMIDASMultiViewWidget()->SetNavigationControllerEventListening(false);
     }
     else
     {
-      m_MITKWidget->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
-      m_MITKWidget->EnableNavigationControllerEventListening();
-      m_MIDASWidget->SetNavigationControllerEventListening(true);
+      this->GetActiveStdMultiWidget()->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+      this->GetActiveStdMultiWidget()->EnableNavigationControllerEventListening();
+      this->GetActiveMIDASMultiViewWidget()->SetNavigationControllerEventListening(true);
     }
   }
 }

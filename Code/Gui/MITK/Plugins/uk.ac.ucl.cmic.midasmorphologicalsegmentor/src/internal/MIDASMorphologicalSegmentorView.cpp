@@ -459,9 +459,9 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         }
 
         // Make sure the controls match the parameters and the new segmentation is selected
-        if (this->m_MIDASWidget != NULL)
+        if (this->GetActiveMIDASMultiViewWidget() != NULL)
         {
-          m_MIDASWidget->SetMIDASSegmentationMode(true);
+          this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(true);
         }
         this->SetControlsByParameterValues();
         this->SelectNode(emptySegmentation);
@@ -642,9 +642,9 @@ void MIDASMorphologicalSegmentorView::UpdateSegmentation()
           parent->Modified();
 
           QmitkAbstractView::RequestRenderWindowUpdate();
-          if (m_MIDASWidget != NULL)
+          if (this->GetActiveMIDASMultiViewWidget() != NULL)
           {
-            m_MIDASWidget->RequestUpdateAll();
+            this->GetActiveMIDASMultiViewWidget()->RequestUpdateAll();
           }
         }
       }
@@ -998,9 +998,9 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
   this->SetReferenceImageSelected();
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
-  if (this->m_MIDASWidget != NULL)
+  if (this->GetActiveMIDASMultiViewWidget() != NULL)
   {
-    this->m_MIDASWidget->SetMIDASSegmentationMode(false);
+    this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(false);
   }
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
@@ -1019,9 +1019,9 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
   this->GetDataStorage()->Remove(segmentationNode);
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
-  if (this->m_MIDASWidget != NULL)
+  if (this->GetActiveMIDASMultiViewWidget() != NULL)
   {
-    this->m_MIDASWidget->SetMIDASSegmentationMode(false);
+    this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(false);
   }
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
