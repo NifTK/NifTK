@@ -55,7 +55,7 @@ IF(NOT WIN32)
          ${TEMPORARY_OUTPUT}/kn-bsi-test-output.txt)
 
   ADD_TEST(itkKN-BSITest2 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/kn-bsi-test-output.txt ${TEMPORARY_OUTPUT}/kn-bsi-test-output.txt)
-  #ADD_TEST(itkKN-BSITest3 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/repeat-normalised.img ${TEMPORARY_OUTPUT}/repeat-normalised.img)
+  ADD_TEST(itkKN-BSITest3 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/repeat-normalised.img ${TEMPORARY_OUTPUT}/repeat-normalised.img)
   #ADD_TEST(itkKN-BSITest4 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/repeat-normalised.hdr ${TEMPORARY_OUTPUT}/repeat-normalised.hdr)
 ENDIF(NOT WIN32)
 
