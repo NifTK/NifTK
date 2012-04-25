@@ -1311,6 +1311,15 @@ void MIDASGeneralSegmentorView::OnWipeButtonPressed()
 
 void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 {
+  int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+                                                   tr("All slices anterior to present will be cleared.\n"
+                                                      "Are you sure?"),
+                                                   QMessageBox::Yes | QMessageBox::No);
+  if (returnValue == QMessageBox::No)
+  {
+    return;
+  }
+
   mitk::ToolManager *toolManager = this->GetToolManager();
   assert(toolManager);
 
@@ -1331,6 +1340,15 @@ void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 
 void MIDASGeneralSegmentorView::OnWipeMinusButtonPressed()
 {
+  int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+                                                   tr("All slices posterior to present will be cleared.\n"
+                                                      "Are you sure?"),
+                                                   QMessageBox::Yes | QMessageBox::No);
+  if (returnValue == QMessageBox::No)
+  {
+    return;
+  }
+
   mitk::ToolManager *toolManager = this->GetToolManager();
   assert(toolManager);
 
@@ -1351,22 +1369,45 @@ void MIDASGeneralSegmentorView::OnWipeMinusButtonPressed()
 
 void MIDASGeneralSegmentorView::OnPropagate3DButtonPressed()
 {
-  this->OnPropagateUpButtonPressed();
-  this->OnPropagateDownButtonPressed();
+  bool didPropagation = this->DoPropagate(true, true);
+  if (didPropagation)
+  {
+    this->DoPropagate(false, false);
+  }
 }
 
 void MIDASGeneralSegmentorView::OnPropagateUpButtonPressed()
 {
-  this->DoPropagate(true);
+  this->DoPropagate(true, true);
 }
 
 void MIDASGeneralSegmentorView::OnPropagateDownButtonPressed()
 {
-  this->DoPropagate(false);
+  this->DoPropagate(true, false);
 }
 
-void MIDASGeneralSegmentorView::DoPropagate(bool isUp)
+bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp)
 {
+  bool propagationWasPerformed = false;
+
+  if (showWarning)
+  {
+    QString direction("posterior");
+    if (isUp)
+    {
+      direction = "anterior";
+    }
+
+    int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+                                                     tr("All slices %1 to present will be cleared.\n"
+                                                        "Are you sure?").arg(direction),
+                                                     QMessageBox::Yes | QMessageBox::No);
+    if (returnValue == QMessageBox::No)
+    {
+      return propagationWasPerformed;
+    }
+  }
+
   mitk::ToolManager *toolManager = this->GetToolManager();
   assert(toolManager);
 
@@ -1419,11 +1460,13 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp)
   catch(const mitk::AccessByItkException& e)
   {
     MITK_ERROR << "Caught exception, so abandoning CreateAndPopulatePropagateProcessor." << e.what();
-    return;
+    return propagationWasPerformed;
   }
 
   mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
   ExecuteOperation(operationEvent->GetOperation());
+
+  return propagationWasPerformed;
 }
 
 template <typename TGreyScalePixel, unsigned int VImageDimension>

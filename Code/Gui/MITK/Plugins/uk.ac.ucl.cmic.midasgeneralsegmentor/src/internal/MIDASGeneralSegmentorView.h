@@ -276,8 +276,8 @@ private:
   /// \brief Removes the images we are using for editing during segmentation.
   void RemoveWorkingData();
 
-  /// \brief Does propagate up/down.
-  void DoPropagate(bool isUp);
+  /// \brief Does propagate up/down, returning true if the propagation was performed and false otherwise.
+  bool DoPropagate(bool showWarning, bool isUp);
 
   /// \brief For propagation, will create a suitable propagate processor, and initialize it.
   template<typename TPixel, unsigned int VImageDimension>
