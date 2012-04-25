@@ -38,6 +38,8 @@
 #include "mitkMIDASContourTool.h"
 #include "mitkMIDASDrawTool.h"
 #include "mitkMIDASPolyTool.h"
+#include "mitkMIDASToolKeyPressStateMachine.h"
+#include "mitkMIDASToolKeyPressResponder.h"
 #include "mitkOperationActor.h"
 #include "mitkOperation.h"
 #include "itkImage.h"
@@ -62,7 +64,7 @@ class QGridLayout;
  * \sa QmitkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorView
  */
-class MIDASGeneralSegmentorView : public QmitkMIDASBaseSegmentationFunctionality, public mitk::OperationActor
+class MIDASGeneralSegmentorView : public QmitkMIDASBaseSegmentationFunctionality, public mitk::OperationActor, public mitk::MIDASToolKeyPressResponder
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -113,6 +115,24 @@ public:
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
   virtual void ExecuteOperation(mitk::Operation* operation);
+
+  /// \see mitk::MIDASToolKeyPressResponder::SelectSeedTool()
+  virtual bool SelectSeedTool();
+
+  /// \see mitk::MIDASToolKeyPressResponder::SelectDrawTool()
+  virtual bool SelectDrawTool();
+
+  /// \see mitk::MIDASToolKeyPressResponder::UnselectTools()
+  virtual bool UnselectTools();
+
+  /// \see mitk::MIDASToolKeyPressResponder::SelectPolyTool()
+  virtual bool SelectPolyTool();
+
+  /// \see mitk::MIDASToolKeyPressResponder::SelectViewMode()
+  virtual bool SelectViewMode();
+
+  /// \see mitk::MIDASToolKeyPressResponder::CleanSlice()
+  virtual bool CleanSlice();
 
 protected slots:
  
@@ -305,6 +325,9 @@ private:
       bool redo,
       int sliceNumber,
       itk::ORIENTATION_ENUM orientation);
+
+  /// \brief This class hooks into the Global Interaction system to respond to Key press events.
+  mitk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   MIDASGeneralSegmentorViewEventInterface *m_Interface;

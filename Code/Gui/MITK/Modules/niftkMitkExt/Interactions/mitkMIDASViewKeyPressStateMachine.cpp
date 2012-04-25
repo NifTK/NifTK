@@ -22,47 +22,47 @@
 
  ============================================================================*/
 
-#include "mitkMIDASKeyPressStateMachine.h"
+#include "mitkMIDASViewKeyPressStateMachine.h"
 #include "mitkWheelEvent.h"
 #include "mitkStateEvent.h"
 
 namespace mitk
 {
 
-MIDASKeyPressStateMachine::MIDASKeyPressStateMachine(const char * stateMachinePattern, MIDASKeyPressResponder* responder)
+MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char * stateMachinePattern, MIDASViewKeyPressResponder* responder)
 : StateMachine(stateMachinePattern)
 {
   assert(responder);
   m_Responder = responder;
 
-  CONNECT_ACTION( 350001, MovePosterior );  // These are currently mapped the wrong way round.
-  CONNECT_ACTION( 350002, MoveAnterior );   // i.e. A, maps to Posterior, when spec says Anterior, but it looks correct in GUI???
+  CONNECT_ACTION( 350001, MoveAnterior );
+  CONNECT_ACTION( 350002, MovePosterior );
   CONNECT_ACTION( 350003, SwitchToAxial );
   CONNECT_ACTION( 350004, SwitchToSagittal );
   CONNECT_ACTION( 350005, SwitchToCoronal );
 }
 
-bool MIDASKeyPressStateMachine::MoveAnterior(Action*, const StateEvent*)
+bool MIDASViewKeyPressStateMachine::MoveAnterior(Action*, const StateEvent*)
 {
   return m_Responder->MoveAnterior();
 }
 
-bool MIDASKeyPressStateMachine::MovePosterior(Action*, const StateEvent*)
+bool MIDASViewKeyPressStateMachine::MovePosterior(Action*, const StateEvent*)
 {
   return m_Responder->MovePosterior();
 }
 
-bool MIDASKeyPressStateMachine::SwitchToAxial(Action*, const StateEvent*)
+bool MIDASViewKeyPressStateMachine::SwitchToAxial(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToAxial();
 }
 
-bool MIDASKeyPressStateMachine::SwitchToSagittal(Action*, const StateEvent*)
+bool MIDASViewKeyPressStateMachine::SwitchToSagittal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToSagittal();
 }
 
-bool MIDASKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
+bool MIDASViewKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToCoronal();
 }

@@ -45,7 +45,7 @@ const std::string QmitkMIDASMultiViewEditor::EDITOR_ID = "org.mitk.editors.midas
 
 QmitkMIDASMultiViewEditor::QmitkMIDASMultiViewEditor()
  :
-  m_KeyPressStateMachine(NULL)
+  m_ViewKeyPressStateMachine(NULL)
 , m_MIDASMultiViewWidget(NULL)
 , m_MidasMultiViewVisibilityManager(NULL)
 , m_RenderingManager(NULL)
@@ -143,8 +143,8 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     this->OnPreferencesChanged(prefs.GetPointer());
 
     // Create/Connect the state machine
-    m_KeyPressStateMachine = mitk::MIDASKeyPressStateMachine::New("MIDASKeyPressStateMachine", m_MIDASMultiViewWidget);
-    mitk::GlobalInteraction::GetInstance()->AddListener( m_KeyPressStateMachine );
+    m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASKeyPressStateMachine", m_MIDASMultiViewWidget);
+    mitk::GlobalInteraction::GetInstance()->AddListener( m_ViewKeyPressStateMachine );
   }
 }
 

@@ -44,7 +44,7 @@
 #include "mitkDataStorage.h"
 #include "mitkRenderingManager.h"
 #include "mitkIRenderingManager.h"
-#include "mitkMIDASKeyPressStateMachine.h"
+#include "mitkMIDASViewKeyPressStateMachine.h"
 
 namespace mitk {
   class DataNode;
@@ -149,16 +149,16 @@ protected:
 
 private:
 
-  // This class hooks into the Global Interaction system to respond to Key press events.
-  mitk::MIDASKeyPressStateMachine::Pointer m_KeyPressStateMachine;
+  /// \brief This class hooks into the Global Interaction system to respond to Key press events.
+  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
 
-  // This class is the main central widget, containing multiple widgets such as rendering windows and control buttons.
+  /// \brief This class is the main central widget, containing multiple widgets such as rendering windows and control buttons.
   QmitkMIDASMultiViewWidget* m_MIDASMultiViewWidget;
 
-  // This class is to manage visibility when nodes added, removed, main visibility properties changed etc. and manage the renderer specific properties.
+  /// \brief This class is to manage visibility when nodes added, removed, main visibility properties changed etc. and manage the renderer specific properties.
   QmitkMIDASMultiViewVisibilityManager* m_MidasMultiViewVisibilityManager;
 
-  // We maintain our own RenderingManager. NOTE: It's NOT the Global one.
+  /// \brief We maintain our own RenderingManager. NOTE: It's NOT the Global one.
   mitk::RenderingManager::Pointer m_RenderingManager;
 
 };

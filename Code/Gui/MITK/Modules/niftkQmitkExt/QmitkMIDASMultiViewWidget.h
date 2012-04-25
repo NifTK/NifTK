@@ -30,7 +30,7 @@
 #include <QWidget>
 #include <QEvent>
 #include "mitkBaseProperty.h"
-#include "mitkMIDASKeyPressStateMachine.h"
+#include "mitkMIDASViewKeyPressResponder.h"
 #include "mitkRenderingManager.h"
 #include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASSingleViewWidget.h"
@@ -65,7 +65,7 @@ class QmitkRenderWindow;
  * including the option for 3D views, which current MIDAS does not have.
  *
  */
-class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASKeyPressResponder
+class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
 {
   Q_OBJECT
 

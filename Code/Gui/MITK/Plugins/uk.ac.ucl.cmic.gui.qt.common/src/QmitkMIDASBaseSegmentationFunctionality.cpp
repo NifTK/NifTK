@@ -697,7 +697,10 @@ void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
   assert( prefs );
 
   QString defaultColorName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, ""));
-  QColor defaultColor(defaultColorName);
-  m_DefaultSegmentationColor = defaultColor;
+  m_DefaultSegmentationColor = QColor(defaultColorName);
+  if (defaultColorName=="") // default values
+  {
+    m_DefaultSegmentationColor = QColor(0, 255, 0);
+  }
 }
 

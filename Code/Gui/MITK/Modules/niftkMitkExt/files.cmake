@@ -10,7 +10,8 @@ set(CPP_FILES
   Interactions/mitkMIDASPaintbrushToolEventInterface.cpp
   Interactions/mitkMIDASPaintbrushToolOpEditImage.cpp
   Interactions/mitkMIDASPaintbrushTool.cpp
-  Interactions/mitkMIDASKeyPressStateMachine.cpp
+  Interactions/mitkMIDASViewKeyPressStateMachine.cpp
+  Interactions/mitkMIDASToolKeyPressStateMachine.cpp
   DataManagement/mitkDataStorageUtils.cpp
   DataManagement/mitkAffineTransformParametersDataNodeProperty.cpp
   DataManagement/mitkAffineTransformDataNodeProperty.cpp

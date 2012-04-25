@@ -83,6 +83,7 @@ const mitk::OperationType MIDASGeneralSegmentorView::OP_RETAIN_MARKS = 9320417;
 
 MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 : QmitkMIDASBaseSegmentationFunctionality()
+, m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
 , m_Layout(NULL)
 , m_ContainerForSelectorWidget(NULL)
@@ -140,7 +141,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly Add Subtract Paint Wipe Correction Fill Erase");
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(2);
     m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
-    m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
+    m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
     // Turn 3D interpolation off for all MITK tools.
     mitk::ToolManager* toolManager = this->GetToolManager();
@@ -175,6 +176,11 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     eraseTool->Enable3DInterpolation(false);
 
     this->CreateConnections();
+
+    // Create/Connect the state machine
+    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
+    mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
+
   }
 }
 
@@ -1681,3 +1687,34 @@ void MIDASGeneralSegmentorView::OnRetainMarksCheckBoxToggled(bool b)
 {
   // Actually nothing to do until you move slice, then the current slice gets propagated.
 }
+
+bool MIDASGeneralSegmentorView::SelectDrawTool()
+{
+  std::cerr << "TODO SelectDrawTool" << std::endl;
+}
+
+bool MIDASGeneralSegmentorView::SelectPolyTool()
+{
+  std::cerr << "TODO SelectPolyTool" << std::endl;
+}
+
+bool MIDASGeneralSegmentorView::SelectSeedTool()
+{
+  std::cerr << "TODO SelectSeedTool" << std::endl;
+}
+
+bool MIDASGeneralSegmentorView::UnselectTools()
+{
+  std::cerr << "TODO UnselectTools" << std::endl;
+}
+
+bool MIDASGeneralSegmentorView::SelectViewMode()
+{
+  std::cerr << "TODO SelectViewMode" << std::endl;
+}
+
+bool MIDASGeneralSegmentorView::CleanSlice()
+{
+  std::cerr << "TODO CleanSlice" << std::endl;
+}
+

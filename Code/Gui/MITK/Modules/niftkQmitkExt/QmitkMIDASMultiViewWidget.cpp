@@ -43,6 +43,7 @@
 #include "mitkFocusManager.h"
 #include "mitkGlobalInteraction.h"
 #include "mitkTimeSlicedGeometry.h"
+#include "mitkMIDASViewKeyPressResponder.h"
 #include "QmitkRenderWindow.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "vtkRenderer.h"
@@ -56,7 +57,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     int defaultNumberOfColumns,
     QWidget* parent, Qt::WindowFlags f)
 : QWidget(parent, f)
-, mitk::MIDASKeyPressResponder()
+, mitk::MIDASViewKeyPressResponder()
 , m_TopLevelLayout(NULL)
 , m_LayoutToPutControlsOnTopOfWindows(NULL)
 , m_LayoutForRenderWindows(NULL)
