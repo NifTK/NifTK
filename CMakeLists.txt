@@ -268,6 +268,10 @@ IF(BUILD_GUI)
   ENDIF(NOT BUILD_SHARED_LIBS)
 ENDIF(BUILD_GUI)
 
+IF(BUILD_GUI)
+  SET(NIFTK_GENERATE_DOXYGEN_HELP ON)
+ENDIF(BUILD_GUI)
+
 ######################################################################
 # Find Qt. We need to check for Qt first, before we go ahead and do
 # the Superbuild, because VTK needs to know if we have Qt.
