@@ -50,6 +50,9 @@
 #include "mitkEraseRegionTool.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPosnTool.h"
+#include "mitkMIDASSeedTool.h"
+#include "mitkMIDASPolyTool.h"
+#include "mitkMIDASDrawTool.h"
 #include "mitkNodePredicateDataType.h"
 #include "mitkPointSet.h"
 #include "mitkImageAccessByItk.h"
@@ -206,6 +209,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
     connect(m_GeneralControls->m_ThresholdCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnThresholdCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeePriorCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeNextCheckBoxToggled(bool)));
+    connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeImageCheckBoxPressed(bool)));
     connect(m_GeneralControls->m_ThresholdLowerSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnLowerThresholdValueChanged(double)));
     connect(m_GeneralControls->m_ThresholdUpperSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnUpperThresholdValueChanged(double)));
     connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
@@ -1678,9 +1682,104 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int before, int after)
   this->UpdatePriorAndNext();
 }
 
+bool MIDASGeneralSegmentorView::SelectDrawTool()
+{
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  int toolId = toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>();
+  toolManager->ActivateTool(toolId);
+  return true;
+}
+
+bool MIDASGeneralSegmentorView::SelectPolyTool()
+{
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  int toolId = toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>();
+  toolManager->ActivateTool(toolId);
+  return true;
+}
+
+bool MIDASGeneralSegmentorView::SelectSeedTool()
+{
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  int toolId = toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>();
+  toolManager->ActivateTool(toolId);
+  return true;
+}
+
+bool MIDASGeneralSegmentorView::UnselectTools()
+{
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  toolManager->ActivateTool(-1);
+  return true;
+}
+
+bool MIDASGeneralSegmentorView::SelectViewMode()
+{
+  if (m_GeneralControls->m_SeeImageCheckBox->isChecked())
+  {
+    this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
+  }
+  else if (!m_GeneralControls->m_SeeImageCheckBox->isChecked())
+  {
+    this->m_GeneralControls->m_SeeImageCheckBox->setChecked(true);
+  }
+  return true;
+}
+
+bool MIDASGeneralSegmentorView::CleanSlice()
+{
+  this->OnCleanButtonPressed();
+  return true;
+}
+
 void MIDASGeneralSegmentorView::OnCleanButtonPressed()
 {
-  std::cerr << "TODO clean button pressed, which should simplify seeds/contours" << std::endl;
+  std::cerr << "TODO OnCleanButtonPressed" << std::endl;
+}
+
+void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool visible)
+{
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
+  if (workingData.IsNotNull())
+  {
+    mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+    mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
+
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+    {
+      if (it->Value().IsNull()
+          || it->Value()->GetProperty("visible") == NULL
+          || it->Value()->GetProperty("name") == NULL
+          )
+      {
+        continue;
+      }
+
+      // So basically, if the object is ANY of the MIDAS contour lines, or MIDAS images, then we toggle visibility.
+      std::string name = it->Value()->GetName();
+      if (name == mitk::MIDASTool::REGION_GROWING_IMAGE_NAME
+          || name == mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME
+          || name == mitk::MIDASTool::SEE_NEXT_IMAGE_NAME
+          || name == mitk::MIDASTool::SEED_POINT_SET_NAME
+          || name == mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS
+          || name == mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR
+          || name == mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_CUMULATIVE_FEEDBACK_CONTOUR
+          || name == workingData->GetName())
+      {
+        bool currentVisibleFlag(false);
+        bool currentVisibilityPropertyFound = it->Value()->GetVisibility(currentVisibleFlag, NULL);
+        if (currentVisibilityPropertyFound)
+        {
+          if ((currentVisibleFlag && !visible)
+              || (!currentVisibleFlag && visible))
+          {
+            it->Value()->SetVisibility(visible);
+          }
+        }
+      }
+    }
+
+  }
 }
 
 void MIDASGeneralSegmentorView::OnRetainMarksCheckBoxToggled(bool b)
@@ -1688,33 +1787,5 @@ void MIDASGeneralSegmentorView::OnRetainMarksCheckBoxToggled(bool b)
   // Actually nothing to do until you move slice, then the current slice gets propagated.
 }
 
-bool MIDASGeneralSegmentorView::SelectDrawTool()
-{
-  std::cerr << "TODO SelectDrawTool" << std::endl;
-}
 
-bool MIDASGeneralSegmentorView::SelectPolyTool()
-{
-  std::cerr << "TODO SelectPolyTool" << std::endl;
-}
-
-bool MIDASGeneralSegmentorView::SelectSeedTool()
-{
-  std::cerr << "TODO SelectSeedTool" << std::endl;
-}
-
-bool MIDASGeneralSegmentorView::UnselectTools()
-{
-  std::cerr << "TODO UnselectTools" << std::endl;
-}
-
-bool MIDASGeneralSegmentorView::SelectViewMode()
-{
-  std::cerr << "TODO SelectViewMode" << std::endl;
-}
-
-bool MIDASGeneralSegmentorView::CleanSlice()
-{
-  std::cerr << "TODO CleanSlice" << std::endl;
-}
 

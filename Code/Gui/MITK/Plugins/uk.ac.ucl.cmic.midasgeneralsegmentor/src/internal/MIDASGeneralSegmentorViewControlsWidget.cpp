@@ -97,6 +97,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
   m_RetainMarksCheckBox->setEnabled(enabled);
   m_SeePriorCheckBox->setEnabled(enabled);
   m_SeeNextCheckBox->setEnabled(enabled);
+  m_SeeImageCheckBox->setEnabled(enabled);
   m_CleanButton->setEnabled(enabled);
   m_WipeButton->setEnabled(enabled);
   m_WipePlusButton->setEnabled(enabled);

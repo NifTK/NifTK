@@ -39,6 +39,9 @@
 #include "itkContinuousIndex.h"
 
 const std::string mitk::MIDASContourTool::EDITING_PROPERTY_NAME = std::string("midas.contour.editing");
+const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR("MIDAS Background Contour");
+const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_CUMULATIVE_FEEDBACK_CONTOUR("MIDAS Cumulative Feedback Contour");
+const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_CUMULATIVE_BACKGROUND_CONTOUR("MIDAS Cumulative Background Contour");
 
 mitk::MIDASContourTool::~MIDASContourTool()
 {
@@ -58,7 +61,7 @@ mitk::MIDASContourTool::MIDASContourTool(const char* type) : MIDASTool(type)
   m_BackgroundContour = Contour::New();
   m_BackgroundContourNode = DataNode::New();
   m_BackgroundContourNode->SetData( m_BackgroundContour );
-  m_BackgroundContourNode->SetProperty("name", StringProperty::New("One of MIDASContourTool's background contour nodes"));
+  m_BackgroundContourNode->SetProperty("name", StringProperty::New(MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR));
   m_BackgroundContourNode->SetProperty("visible", BoolProperty::New(false));
   m_BackgroundContourNode->SetProperty("helper object", BoolProperty::New(true));
   m_BackgroundContourNode->SetProperty("Width", FloatProperty::New(1));
@@ -149,7 +152,7 @@ void mitk::MIDASContourTool::AddToCumulativeFeedbackContours(mitk::Contour& feed
 
   DataNode::Pointer feedbackContourNode = DataNode::New();
   feedbackContourNode->SetData( feedbackContour );
-  feedbackContourNode->SetProperty("name", StringProperty::New("MIDASContourTool cumulative feedback contour"));
+  feedbackContourNode->SetProperty("name", StringProperty::New(MIDAS_CONTOUR_TOOL_CUMULATIVE_FEEDBACK_CONTOUR));
   feedbackContourNode->SetProperty("visible", BoolProperty::New(true));
   feedbackContourNode->SetProperty("helper object", BoolProperty::New(true));
   feedbackContourNode->SetProperty("Width", FloatProperty::New(1));
@@ -162,7 +165,7 @@ void mitk::MIDASContourTool::AddToCumulativeFeedbackContours(mitk::Contour& feed
 
   DataNode::Pointer backgroundContourNode = DataNode::New();
   backgroundContourNode->SetData( backgroundContour );
-  backgroundContourNode->SetProperty("name", StringProperty::New("MIDASContourTool cumulative background contour"));
+  backgroundContourNode->SetProperty("name", StringProperty::New(MIDAS_CONTOUR_TOOL_CUMULATIVE_BACKGROUND_CONTOUR));
   backgroundContourNode->SetProperty("visible", BoolProperty::New(false));
   backgroundContourNode->SetProperty("helper object", BoolProperty::New(true));
   backgroundContourNode->SetProperty("Width", FloatProperty::New(1));

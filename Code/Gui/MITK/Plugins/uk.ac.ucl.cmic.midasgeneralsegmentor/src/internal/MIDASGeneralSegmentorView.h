@@ -64,7 +64,9 @@ class QGridLayout;
  * \sa QmitkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorView
  */
-class MIDASGeneralSegmentorView : public QmitkMIDASBaseSegmentationFunctionality, public mitk::OperationActor, public mitk::MIDASToolKeyPressResponder
+class MIDASGeneralSegmentorView : public QmitkMIDASBaseSegmentationFunctionality,
+                                  public mitk::OperationActor,
+                                  public mitk::MIDASToolKeyPressResponder
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -155,6 +157,7 @@ protected slots:
   void OnThresholdCheckBoxToggled(bool b);
   void OnSeePriorCheckBoxToggled(bool b);
   void OnSeeNextCheckBoxToggled(bool b);
+  void OnSeeImageCheckBoxPressed(bool b);
   void OnPropagateUpButtonPressed();
   void OnPropagateDownButtonPressed();
   void OnPropagate3DButtonPressed();

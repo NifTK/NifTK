@@ -29,6 +29,9 @@
 #include "mitkBaseRenderer.h"
 #include "mitkContour.h"
 
+const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS Poly Tool anchor points");
+const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("PolyTool previous contour");
+
 namespace mitk{
   MITK_TOOL_MACRO(NIFTKMITKEXT_EXPORT, MIDASPolyTool, "MIDAS Poly Tool");
 }
@@ -57,7 +60,7 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
   m_PolyLinePointSet = mitk::PointSet::New();
   m_PolyLinePointSetNode = mitk::DataNode::New();
   m_PolyLinePointSetNode->SetData( m_PolyLinePointSet );
-  m_PolyLinePointSetNode->SetProperty("name", mitk::StringProperty::New( "MIDAS Poly Tool anchor points" ) );
+  m_PolyLinePointSetNode->SetProperty("name", mitk::StringProperty::New(MIDAS_POLY_TOOL_ANCHOR_POINTS) );
   m_PolyLinePointSetNode->SetProperty("visible", BoolProperty::New(true));
   m_PolyLinePointSetNode->SetProperty("helper object", BoolProperty::New(true));
   m_PolyLinePointSetNode->SetProperty("color", ColorProperty::New(1, 1, 0));
@@ -66,7 +69,7 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
   m_PreviousContour = Contour::New();
   m_PreviousContourNode = DataNode::New();
   m_PreviousContourNode->SetData( m_PreviousContour );
-  m_PreviousContourNode->SetProperty("name", StringProperty::New("PolyTool previous contour"));
+  m_PreviousContourNode->SetProperty("name", StringProperty::New(MIDAS_POLY_TOOL_PREVIOUS_CONTOUR));
   m_PreviousContourNode->SetProperty("visible", BoolProperty::New(true));
   m_PreviousContourNode->SetProperty("helper object", BoolProperty::New(true));
   m_PreviousContourNode->SetProperty("Width", FloatProperty::New(1));

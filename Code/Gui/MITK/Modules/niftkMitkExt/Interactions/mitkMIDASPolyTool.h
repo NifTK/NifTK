@@ -44,6 +44,12 @@ namespace mitk {
     virtual const char* GetName() const;
     virtual const char** GetXPM() const;
 
+    // We store the name of the anchor points data object.
+    static const std::string MIDAS_POLY_TOOL_ANCHOR_POINTS;
+
+    // We store the name of the previous contour (the one displayed when moving the poly line).
+    static const std::string MIDAS_POLY_TOOL_PREVIOUS_CONTOUR;
+
     // When called, we initialize contours, as the PolyLine keeps going until the whole tool is Activated/Deactivated.
     virtual void Activated();
 

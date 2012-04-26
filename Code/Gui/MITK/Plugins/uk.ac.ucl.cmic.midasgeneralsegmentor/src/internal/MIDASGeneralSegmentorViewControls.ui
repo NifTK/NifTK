@@ -86,6 +86,19 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="4">
+        <widget class="QCheckBox" name="m_SeeImageCheckBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>see image</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

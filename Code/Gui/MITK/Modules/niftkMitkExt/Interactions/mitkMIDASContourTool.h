@@ -37,6 +37,15 @@ namespace mitk {
 
     mitkClassMacro(MIDASContourTool, MIDASTool);
 
+    // We store the name of the contours we create.
+    static const std::string MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR;
+
+    // We store the name of the contours we create.
+    static const std::string MIDAS_CONTOUR_TOOL_CUMULATIVE_FEEDBACK_CONTOUR;
+
+    // We store the name of the contours we create.
+    static const std::string MIDAS_CONTOUR_TOOL_CUMULATIVE_BACKGROUND_CONTOUR;
+
     // Wipe's any tool specific data, such as contours, seed points etc.
     virtual void Wipe();
 
