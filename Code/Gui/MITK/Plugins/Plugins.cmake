@@ -10,6 +10,6 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.snapshot:ON
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
-  Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
+  Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:OFF        # Not ready yet (unfortunately).
   Plugins/uk.ac.ucl.cmic.surgicalguidance:ON
 )
