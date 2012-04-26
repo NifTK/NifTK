@@ -446,6 +446,24 @@
          <attribute name="verticalHeaderMinimumSectionSize">
           <number>10</number>
          </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderDefaultSectionSize">
+          <number>25</number>
+         </attribute>
+         <attribute name="horizontalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderMinimumSectionSize">
+          <number>10</number>
+         </attribute>
+         <attribute name="verticalHeaderMinimumSectionSize">
+          <number>10</number>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>70</number>
+         </attribute>
          <row/>
          <row/>
          <row/>
@@ -488,6 +506,26 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>rotationSpinBoxX</tabstop>
+  <tabstop>rotationSpinBoxY</tabstop>
+  <tabstop>rotationSpinBoxZ</tabstop>
+  <tabstop>scalingSpinBoxX</tabstop>
+  <tabstop>scalingSpinBoxY</tabstop>
+  <tabstop>scalingSpinBoxZ</tabstop>
+  <tabstop>translationSpinBoxX</tabstop>
+  <tabstop>translationSpinBoxY</tabstop>
+  <tabstop>translationSpinBoxZ</tabstop>
+  <tabstop>shearSpinBoxXY</tabstop>
+  <tabstop>shearSpinBoxXZ</tabstop>
+  <tabstop>shearSpinBoxYZ</tabstop>
+  <tabstop>resetButton</tabstop>
+  <tabstop>resampleButton</tabstop>
+  <tabstop>loadButton</tabstop>
+  <tabstop>saveButton</tabstop>
+  <tabstop>centreRotationRadioButton</tabstop>
+  <tabstop>affineTransformDisplay</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -653,7 +653,7 @@ void AffineTransformView::OnSaveTransformPushed() {
 
     try {
 
-      vtkSmartPointer<vtkMatrix4x4> transform = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(COMBINED_TRANSFORM_KEY.c_str(), *(msp_DataOwnerNode.GetPointer()));
+      vtkSmartPointer<vtkMatrix4x4> transform = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(mitk::AffineTransformDataNodeProperty::PropertyKey.c_str(), *(msp_DataOwnerNode.GetPointer()));
       sp_writer->SetInput(_ConvertToITKTransform<3, false>(*transform));
       sp_writer->Update();
 
