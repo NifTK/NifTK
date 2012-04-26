@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+  <extension point="org.blueberry.ui.views">
+    <view id="it.unito.cim.IntensityProfileView"
+          name="Intensity Profile"
+          class="IntensityProfileView" 
+          icon="resources/plot1.jpg" />
+  </extension>
+
+  <extension point="org.mitk.gui.qt.datamanager.contextMenuActions">
+    <contextMenuAction
+          nodeDescriptorName="ImageMask"
+          label="Propagate Along Time"
+          class="PropagateSegmentationAlongTimeAction"
+          icon="" />
+  </extension>
+
+</plugin>

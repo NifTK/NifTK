@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/it.unito.cim.core">
+    <file>patient-icon.png</file>
+    <file>study-icon.png</file>
+    <file>sequence-icon.png</file>
+    <file>fitting-icon.png</file>
+    <file>model-icon.png</file>
+  </qresource>
+</RCC>

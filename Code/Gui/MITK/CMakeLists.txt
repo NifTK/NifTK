@@ -79,7 +79,7 @@ ADD_SUBDIRECTORY(Modules)
 ####################################################################################
 
 macro(GetMyTargetLibraries all_target_libraries varname)
-  set(re_ctkplugin "^uk_ac_ucl_[a-zA-Z0-9_]+$")
+  set(re_ctkplugin "^(uk_ac_ucl|it_unito_cim)_[a-zA-Z0-9_]+$")
   set(_tmp_list)
   list(APPEND _tmp_list ${all_target_libraries})
   ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})

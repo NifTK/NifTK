@@ -1,0 +1,16 @@
+/**
+  \defgroup it_unito_cim_dce it.unito.cim.dce Plugin
+  \ingroup MITKPlugins
+
+  \brief Plugin for calculating kinetic maps for DCE experiments
+  
+*/
+
+/**
+  \defgroup it_unito_cim_dce_internal Internal
+  \ingroup it_unito_cim_dce
+
+  \brief This subcategory includes the internal classes of the it.unito.cim.dce plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

@@ -1,0 +1,6 @@
+set(Plugin-Name "Intensity Profile Plugin")
+set(Plugin-Version "0.1")
+set(Plugin-Vendor "CIM Unito")
+set(Plugin-ContactAddress "http://www.cim.unito.it")
+set(Require-Plugin org.mitk.gui.qt.common org.mitk.gui.qt.datamanager it.unito.cim.core)
+#set(Require-Plugin org.mitk.gui.qt.common org.mitk.gui.qt.datamanager)
