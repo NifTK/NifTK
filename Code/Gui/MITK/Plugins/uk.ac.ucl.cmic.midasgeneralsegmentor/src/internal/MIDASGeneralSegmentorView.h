@@ -329,6 +329,9 @@ private:
       int sliceNumber,
       itk::ORIENTATION_ENUM orientation);
 
+  /// \brief Used to toggle tools on/off.
+  void ToggleTool(int toolId);
+
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
   mitk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 

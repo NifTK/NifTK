@@ -435,6 +435,9 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->SetEnableThresholdingWidgets(false);
     this->m_GeneralControls->SetEnableThresholdingCheckbox(true);
     this->m_GeneralControls->m_ThresholdCheckBox->setChecked(false);
+    this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(true);
+    this->m_GeneralControls->m_SeeImageCheckBox->setChecked(true);
+    this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
     this->SelectNode(emptySegmentation);
   }
   return emptySegmentation.GetPointer();
@@ -1682,11 +1685,26 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int before, int after)
   this->UpdatePriorAndNext();
 }
 
+void MIDASGeneralSegmentorView::ToggleTool(int toolId)
+{
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  int activeToolId = toolManager->GetActiveToolID();
+
+  if (toolId == activeToolId)
+  {
+    toolManager->ActivateTool(-1);
+  }
+  else
+  {
+    toolManager->ActivateTool(toolId);
+  }
+}
+
 bool MIDASGeneralSegmentorView::SelectDrawTool()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int toolId = toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>();
-  toolManager->ActivateTool(toolId);
+  this->ToggleTool(toolId);
   return true;
 }
 
@@ -1694,7 +1712,7 @@ bool MIDASGeneralSegmentorView::SelectPolyTool()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int toolId = toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>();
-  toolManager->ActivateTool(toolId);
+  this->ToggleTool(toolId);
   return true;
 }
 
@@ -1702,7 +1720,7 @@ bool MIDASGeneralSegmentorView::SelectSeedTool()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int toolId = toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>();
-  toolManager->ActivateTool(toolId);
+  this->ToggleTool(toolId);
   return true;
 }
 
