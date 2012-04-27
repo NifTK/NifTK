@@ -12,6 +12,8 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
   Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:OFF        # Not ready yet (unfortunately).
   Plugins/uk.ac.ucl.cmic.surgicalguidance:ON
-  Plugins/it.unito.cim.core:ON
-  Plugins/it.unito.cim.intensityprofile:ON
+  
+  # Default these to off, until further testing, code tidying , and license check
+  Plugins/it.unito.cim.core:OFF                           
+  Plugins/it.unito.cim.intensityprofile:OFF                
 )
