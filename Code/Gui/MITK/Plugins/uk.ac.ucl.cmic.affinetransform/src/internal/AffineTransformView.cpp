@@ -138,7 +138,6 @@ void AffineTransformView::CreateQtPartControl( QWidget *parent )
 
 void AffineTransformView::SetFocus()
 {
-  m_Controls->resetButton->setFocus();
 }
 
 void AffineTransformView::_SetControlsEnabled(bool isEnabled)
@@ -179,7 +178,6 @@ void AffineTransformView::_InitialiseTransformProperty(std::string name, mitk::D
 void AffineTransformView::_InitialiseNodeProperties(mitk::DataNode& node)
 {
   // Make sure the node has the specified properties listed below, and if not create defaults.
-  _InitialiseTransformProperty(INITIAL_TRANSFORM_KEY, node);
   _InitialiseTransformProperty(INCREMENTAL_TRANSFORM_KEY, node);
   _InitialiseTransformProperty(PRELOADED_TRANSFORM_KEY, node);
   _InitialiseTransformProperty(DISPLAYED_TRANSFORM_KEY, node);
@@ -191,6 +189,17 @@ void AffineTransformView::_InitialiseNodeProperties(mitk::DataNode& node)
     affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
     affineTransformParametersProperty->Identity();
     node.SetProperty(DISPLAYED_PARAMETERS_KEY.c_str(), affineTransformParametersProperty);
+  }
+
+  // In addition, if we have not already done so, we take any existing geometry,
+  // and store it back on the node as the "Initial" geometry.
+  mitk::AffineTransformDataNodeProperty::Pointer transform
+    = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node.GetProperty(INITIAL_TRANSFORM_KEY.c_str()));
+  if (transform.IsNull())
+  {
+    transform = mitk::AffineTransformDataNodeProperty::New();
+    transform->SetTransform(*(const_cast<const vtkMatrix4x4*>(node.GetData()->GetGeometry()->GetVtkTransform()->GetMatrix())));
+    node.SetProperty(INITIAL_TRANSFORM_KEY.c_str(), transform);
   }
 }
 
@@ -761,7 +770,7 @@ void AffineTransformView::_ApplyResampleToCurrentNode() {
 
   try {
 #define APPLY_MULTICHANNEL(TMultiChannelType) \
-      AccessFixedPixelTypeByItk_n(image, _ApplyTransformMultiChannel, ( TMultiChannelType ), (*sp_incTransform))
+      AccessFixedPixelTypeByItk_n(image, _ApplyTransformMultiChannel, ( TMultiChannelType ), (*sp_combinedTransform))
 
     if (image->GetPixelType().GetNumberOfComponents() == 3) {
 #define APPLY_MULTICHANNEL_RGB(TBaseType) APPLY_MULTICHANNEL(itk::RGBPixel< TBaseType >)
@@ -820,7 +829,7 @@ void AffineTransformView::_ApplyResampleToCurrentNode() {
 
 #undef APPLY_MULTICHANNEL_RGBA
     } else {
-      AccessByItk_n(image, _ApplyTransform, (*sp_incTransform));
+      AccessByItk_n(image, _ApplyTransform, (*sp_combinedTransform));
     }
 
 #undef APPLY_MULTICHANNEL
@@ -860,13 +869,14 @@ void AffineTransformView::OnResampleTransformPushed() {
     vtkSmartPointer<vtkMatrix4x4> initial = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(msp_DataOwnerNode.GetPointer()));
     msp_DataOwnerNode->GetData()->GetGeometry()->Compose( initial );
 
+    // Do the resampling, according to current GUI parameters, which represent the "current" transformation.
+    _ApplyResampleToCurrentNode();
+
     vtkSmartPointer<vtkMatrix4x4> identity = vtkMatrix4x4::New();
     identity->Identity();
     mitk::AffineTransformDataNodeProperty::StoreTransformInNode(INCREMENTAL_TRANSFORM_KEY, *(identity.GetPointer()), *(msp_DataOwnerNode.GetPointer()));
     mitk::AffineTransformDataNodeProperty::StoreTransformInNode(PRELOADED_TRANSFORM_KEY, *(identity.GetPointer()), *(msp_DataOwnerNode.GetPointer()));
-
-    // Do the resampling, according to current GUI parameters, which represent the "current" transformation.
-    _ApplyResampleToCurrentNode();
+    mitk::AffineTransformDataNodeProperty::StoreTransformInNode(DISPLAYED_TRANSFORM_KEY, *(identity.GetPointer()), *(msp_DataOwnerNode.GetPointer()));
 
     // Then reset the parameters.
     _ResetControls();
