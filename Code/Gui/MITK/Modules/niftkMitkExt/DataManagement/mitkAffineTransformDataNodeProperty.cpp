@@ -27,8 +27,6 @@
 namespace mitk
 {
 
-const std::string AffineTransformDataNodeProperty::PropertyKey = "niftk.affinetransform";
-
 vtkSmartPointer<vtkMatrix4x4> AffineTransformDataNodeProperty::LoadTransformFromNode(const std::string propertyName, const mitk::DataNode &node) {
   vtkSmartPointer<vtkMatrix4x4> sp_transform;
   AffineTransformDataNodeProperty *p_property;
@@ -48,7 +46,7 @@ void AffineTransformDataNodeProperty::StoreTransformInNode(const std::string pro
 
   sp_property = AffineTransformDataNodeProperty::New();
   sp_property->SetTransform(transform);
-  r_node.AddProperty(PropertyKey.c_str(), sp_property, NULL, true);
+  r_node.AddProperty(propertyName.c_str(), sp_property, NULL, true);
 }
 
 std::string AffineTransformDataNodeProperty::GetValueAsString() const

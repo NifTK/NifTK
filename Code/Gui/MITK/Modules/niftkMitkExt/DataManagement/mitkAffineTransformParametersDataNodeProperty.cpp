@@ -27,8 +27,6 @@
 namespace mitk
 {
 
-const std::string AffineTransformParametersDataNodeProperty::PropertyKey = "niftk.affinetransformparameters";
-
 AffineTransformParametersDataNodeProperty::AffineTransformParametersDataNodeProperty()
 {
   this->Identity();

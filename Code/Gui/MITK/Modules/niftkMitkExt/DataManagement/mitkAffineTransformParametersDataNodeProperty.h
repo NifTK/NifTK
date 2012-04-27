@@ -49,13 +49,9 @@ public:
   mitkClassMacro(AffineTransformParametersDataNodeProperty, BaseProperty);
   itkNewMacro(AffineTransformParametersDataNodeProperty);
   mitkNewMacro1Param(AffineTransformParametersDataNodeProperty, const std::vector<double>&);
-  virtual ~AffineTransformParametersDataNodeProperty();
 
   /// \brief The ParametersType is defined to be an array of double, it should be exactly 13 doubles long.
   typedef std::vector<double> ParametersType;
-
-  /// \brief Property name under which affine transforms are stored.
-  static const std::string PropertyKey;
 
   /// \brief Get the parameters from this property object.
   const ParametersType& GetAffineTransformParameters() const;
@@ -73,6 +69,7 @@ protected:
 
   AffineTransformParametersDataNodeProperty();                                  // Purposefully hidden.
   AffineTransformParametersDataNodeProperty(const ParametersType& parameters);  // Purposefully hidden.
+  virtual ~AffineTransformParametersDataNodeProperty();
 
 private:
 

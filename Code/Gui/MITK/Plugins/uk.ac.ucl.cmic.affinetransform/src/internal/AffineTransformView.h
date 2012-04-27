@@ -38,8 +38,33 @@
 
 /**
  * \class AffineTransformView
- * \brief Affine transform UI plugin, provides controls to rotate, translate, scale and shear
- * an mitk::DataNode's image to world geometry.
+ * \brief Affine transform UI plugin, provides controls to rotate, translate,
+ * scale and shear an mitk::DataNode's index to world geometry, which can be applied
+ * to images, surfaces and meshes alike.  However, the Resample button only applies to images.
+ *
+ * This class stores several AffineTransformDataNodeProperty on each data node:
+ * <pre>
+ * 1. The "Initial" transformation     = The transformation that was on the object, before this view added anything.
+ *                                       So, if you load an image from file, this transformation is a copy of the geometry implied by the image header.
+ *
+ * 2. The "Incremental" transformation = Firstly, the dataNode->GetData()->GetGeometry() can only be composed with.
+ *                                       So, we always have to calculate, for any change, the delta to be composed onto the existing transformation.
+ *
+ * 3. The "Pre-Loaded" transformation  = A transformation loaded from file.
+ *                                       Loading a transformation from file also resets the GUI parameters.
+ *                                       So, if you then add a rotation of 10 degrees about X axis, it is performed AFTER the transformation loaded from file.
+ *
+ * 4. The "Displayed" transformation   = The transformation that matches the GUI display.
+ *                                       So, if you then add a rotation of 10 degrees about X axis, this transformation is just that.
+ *
+ * </pre>
+ * and additionally a single AffineTransformParametersDataNodeProperty:
+ * <pre>
+ * 1. The "Displayed" parameters to match the "Displayed" transformation above.
+ * </pre>
+ * At no point are parameters derived or extracted from the affine transformation matrix,
+ * as this is ambiguous and prone to numerical instability.
+ *
  * \ingroup uk_ac_ucl_cmic_affinetransform_internal
  */
 class AffineTransformView : public QmitkAbstractView
@@ -50,10 +75,23 @@ class AffineTransformView : public QmitkAbstractView
   
   public:  
 
+    /// \brief Simply stores the view name = "uk.ac.ucl.cmic.affinetransformview"
     static const std::string VIEW_ID;
+
+    /// \brief See class introduction.
     static const std::string INITIAL_TRANSFORM_KEY;
+
+    /// \brief See class introduction.
+    static const std::string INCREMENTAL_TRANSFORM_KEY;
+
+    /// \brief See class introduction.
     static const std::string PRELOADED_TRANSFORM_KEY;
-    static const std::string COMBINED_TRANSFORM_KEY;
+
+    /// \brief See class introduction.
+    static const std::string DISPLAYED_TRANSFORM_KEY;
+
+    /// \brief See class introduction.
+    static const std::string DISPLAYED_PARAMETERS_KEY;
 
     AffineTransformView();
     virtual ~AffineTransformView();
@@ -89,12 +127,12 @@ class AffineTransformView : public QmitkAbstractView
     /** \brief Computes a new linear transform (as 4x4 transform matrix) from the parameters set through the UI. */
     virtual vtkSmartPointer<vtkMatrix4x4> ComputeTransformFromParameters(void) const;
 
-    /// \brief \see QmitkAbstractView::OnSelectionChanged.
+    /// \see QmitkAbstractView::OnSelectionChanged.
     virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
   private:
 
-    /** Enables or Disables the controls. */
+    /** Enables or Disables all the controls. */
     void _SetControlsEnabled(bool isEnabled);
 
     /** Sets the controls to the values given in the specific parameters property. */
@@ -112,16 +150,16 @@ class AffineTransformView : public QmitkAbstractView
     /** Called by OnSelectionChanged to setup a node with default transformation properties, if it doesn't already have them. */
     void _InitialiseNodeProperties(mitk::DataNode& node);
 
+    /** Called by _UpdateTransformationGeometry to set new transformations in the right properties of the node. */
+    void _UpdateNodeProperties(
+        const vtkSmartPointer<vtkMatrix4x4> displayedTransformFromParameters,
+        const vtkSmartPointer<vtkMatrix4x4> incrementalTransformToBeComposed,
+        mitk::DataNode& node);
+
     /** Called by _UpdateNodeProperties to update a transform property on a given node. */
     void _UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node);
 
-    /** Called by _UpdateTransformationGeometry to set new transformations in the right properties of the node. */
-    void _UpdateNodeProperties(
-        const vtkSmartPointer<vtkMatrix4x4> transformFromParameters,
-        const vtkSmartPointer<vtkMatrix4x4> combinedTransform,
-        mitk::DataNode& node);
-
-    /** When we load a transform, we apply to all children, so this method applies to a single node, so can be called repeatedly. */
+    /** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
     void _ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode& node);
 
     /**
