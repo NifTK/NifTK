@@ -1,0 +1,18 @@
+/**
+
+\page TechnicalFAQ Frequently Asked Questions
+
+Please see below for the most recently asked questions:
+
+<b>Q</b>: Is the software open-sourced?
+
+<b>A</b>: NiftyView and this platform project NifTK is not yet open-sourced, but some of the component
+parts are. See <a href="http://cmic.cs.ucl.ac.uk/software">the CMIC software page</a> for details.
+
+
+<b>Q</b>: Where can I download binaries from?
+
+<b>A</b>: Due to the fact that this project is not yet open-sourced, the binaries are only available on
+the internal network. See <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">the internal wiki</a> for details.
+
+*/

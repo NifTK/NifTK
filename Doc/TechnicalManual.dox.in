@@ -26,14 +26,16 @@ segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Prog
 
 \section TechnicalManualTable Table Of Contents
 
+\li \subpage TechnicalFAQ
 \li \subpage ThirdPartySoftware
 \li \subpage ArchitectureStack
 \li \subpage ArchitectureNiftyView
 \li \subpage ArchitectureDragAndDropDisplay
-\li \subpage HowToContributeToThePlatform
-\li \subpage HowToErasePluginCache
-\li \subpage HowToWritePlugins
-\li \subpage HowToWriteWidgets
+\li \subpage ArchitectureMIDASMorphEditor
 \li \subpage UnderstandingFileIO
 \li \subpage UnderstandingGeometry
+\li \subpage HowToContributeToThePlatform
+\li \subpage HowToWritePlugins
+\li \subpage HowToWriteWidgets
+\li \subpage HowToErasePluginCache
 */
