@@ -499,12 +499,13 @@ class numericalBreastPhantom:
 
 if __name__ == '__main__':
     
-    outPath    = 'C:/data/test/'
+    outPath    = 'D:/data/testNumPhantomCoarse/'
     edgeLength = 400
-    mlxFile    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing.mlx'
+    mlxFile    = 'D:/data/copiedFromUCL/mlxFiles/surfProcessing_coarse.mlx'
     phantom    = numericalBreastPhantom( outPath, edgeLength, mlxFile, tetgenVol=10,
                                          cylindricalBase=True,
-                                         fatMaterialType='NHV', fatViscoNumIsoTerms=1, fatViscoNumVolTerms=1, fatViscoParams=[1.0, 0.2, 1.0, 1e9],
+                                         fatMaterialType='NHV', fatViscoNumIsoTerms=1, fatViscoNumVolTerms=0, fatViscoParams=[1.0, 0.2],
                                          skinMembraneMaterialType='NeoHookean', skinMembraneMaterialParams=[5000] )
+    
     phantom.generateXMLmodel( skin='membrane' )
     

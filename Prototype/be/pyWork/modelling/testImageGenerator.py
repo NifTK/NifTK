@@ -9,6 +9,11 @@ from mayaviPlottingWrap import plotArrayAs3DPoints
 from conversions import numpyArrayToStr
 from mayavi import mlab
 import nibabel as nib
+import os
+import xmlModelGenerator as xGen
+import commandExecution as cmdEx
+import vtk2stl
+import stlBinary2stlASCII
 
 
 class testImageGenerator :
@@ -70,7 +75,8 @@ class testImageGenerator :
         self.xyData[ (xPP < self.squareSize[0] / 2.) & (xPP > -self.squareSize[0] / 2.) & 
                      (yPP < self.squareSize[1] / 2.) & (yPP > -self.squareSize[1] / 2.)   ] = 255
         
-        self.data = np.zeros( self.imageSize, np.uint8 )
+        self.data    = np.zeros( self.imageSize, np.uint8 )
+        self.dataLMS = np.zeros( self.imageSize, np.uint8 )
         
         startIdx = int((self.imageSize[2] - self.squareSize[2]) / 2.)   
         endIdx = startIdx + self.squareSize[2]
@@ -82,10 +88,24 @@ class testImageGenerator :
         
         # Which points should be kept as landmarks?
         #   all x, lowest y
-        bLMS = (xPP < self.squareSize[0] / 2.) & (xPP >  -self.squareSize[0] / 2.) & (yPP < -self.squareSize[1] / 2. + 1.0 ) & (yPP > (-self.squareSize[1] / 2.) ) 
-        
+        dilateSize = 2
+        bLMS       = (xPP < self.squareSize[0] / 2.) & (xPP >  -self.squareSize[0] / 2.) & (yPP < -self.squareSize[1] / 2. + 1.0 ) & (yPP > (-self.squareSize[1] / 2.) ) 
         self.xyLMS = np.zeros( (self.imageSize[0], self.imageSize[1]), np.int8 )
         self.xyLMS[ bLMS ] = 255        
+        
+        
+        # dilated image of the landmarks
+        bLMSdilate= ( ( xPP < (  self.squareSize[0] / 2. + dilateSize ) ) & 
+                      ( xPP > ( -self.squareSize[0] / 2. - dilateSize ) ) &
+                      ( yPP < ( -self.squareSize[1] / 2. + 1.0 + dilateSize ) ) & 
+                      ( yPP > ( -self.squareSize[1] / 2. - dilateSize) ) )
+
+        self.xyLMSDilate = np.zeros( (self.imageSize[0], self.imageSize[1]), np.int8 )
+        self.xyLMSDilate[ bLMSdilate ] = 255        
+        
+        # fill in-plane data into volume data
+        for i in range(startIdx-dilateSize, endIdx + dilateSize ):
+            self.dataLMS[:,:,i] = self.xyLMSDilate
         
         
         # real world coordinates
@@ -128,7 +148,9 @@ class testImageGenerator :
         
         
         
-    def writeLandmarkFile(self, fileName):
+    def writeLandmarkFile(self, fileName) :
+        
+        self.landmarkFileName = fileName
         f = file(fileName, 'w')
         f.write(numpyArrayToStr(self.landmarkCds, True, '' ))
         f.close()
@@ -136,12 +158,83 @@ class testImageGenerator :
 
 
 
-    def writeImageFile(self, imageFileName):
-        A=self.affine.copy()
+    def writeImageFile(self, imageFileName) :
+        
+        self.imageFileName         = imageFileName
+        self.imageLandmakrFileName = imageFileName.split('.nii')[0] + '_lmsDilate.nii' 
+        A = self.affine.copy()
         A = np.dot( rotMatZ(np.pi), A )
         niiImageOut = nib.Nifti1Image( np.array(self.data, np.uint8 ), A )
         nib.save( niiImageOut, imageFileName )
 
+        # Save the landmarks
+        niiLMSImageOut = nib.Nifti1Image( np.array(self.dataLMS, np.uint8 ), A )
+        nib.save( niiLMSImageOut, self.imageLandmakrFileName )
+
+
+
+    def buildNiftySimModel( self, xmlFileName, mlxFile = None ):
+        
+        #
+        # WARNING: Consider Mesh generation from data as this is a really simple example!
+        #
+        
+        self.xmlFileName = xmlFileName
+        self.surfSmesh    = self.imageFileName.split('.nii')[0] + '.smesh'
+        self.surfVTK      = self.imageFileName.split('.nii')[0] + '.vtk'
+        #
+        # Parameters used for meshMaterial
+        #
+        medSurferParms  = ' -iso 80 '      
+        medSurferParms += ' -df 0.8 '       
+        #medSurferParms += ' -shrink 2 2 2 '
+        #medSurferParms += ' -presmooth'
+        #medSurferParms += ' -niter 40'
+        
+        
+        # Build the soft tissue mesh:
+        
+        medSurfBreastParams  = ' -img '  + self.imageFileName 
+        medSurfBreastParams += ' -surf ' + self.surfSmesh
+        medSurfBreastParams += ' -vtk '  + self.surfVTK
+        medSurfBreastParams += medSurferParms
+        
+        cmdEx.runCommand( 'medSurfer', medSurfBreastParams )
+        
+        
+        surfMeshSTL      = vtk2stl.vtk2stl( [self.surfVTK] )
+        surfMeshImproSTL = surfMeshSTL[0].split('.stl')[0] + '_impro.stl'
+        meshLabParams         = ' -i ' + surfMeshSTL[0]
+        meshLabParams        += ' -o ' + surfMeshImproSTL
+        if mlxFile != None :
+            meshLabParams    += ' -s ' + mlxFile
+            
+        meshLabCommand        = 'meshlabserver' 
+        cmdEx.runCommand( meshLabCommand, meshLabParams )
+
+        # Surface mesh generation XXX
+        # Volume mesh generation
+        # Build xml file
+        #   - fix constraints?
+        curDir = os.getcwd()
+        meshdir = os.path.dirname(self.imageFileName)
+        
+        # Build the volume mesh
+        
+        os.chdir(meshdir)
+        
+        tetCmd = 'tetgen'
+        # convert the output file to ASCII format
+        stlBinary2stlASCII.stlBinary2stlASCII( surfMeshImproSTL )
+        
+        
+        # build the volume mesh
+        tetVolParams = ' -pq1.42a50K ' + surfMeshImproSTL
+        cmdEx.runCommand( 'tetgen', tetVolParams )        
+        
+        os.chdir(curDir)
+        
+        
 
 
         
@@ -174,14 +267,21 @@ if __name__ == '__main__':
     sqS  = np.array( (60,60,60) )
     phi  = 45. * np.pi/180.0
     
-    niiFileOut = 'W:/philipsBreastProneSupine/feirGravTest/input/square_120_60_r45.nii'
-    lmFileOut  = 'W:/philipsBreastProneSupine/feirGravTest/input/square_120_60_r45_LM.txt'
+    #niiFileOut = 'W:/philipsBreastProneSupine/feirGravTest/input/square_120_60_r45.nii'
+    #lmFileOut  = 'W:/philipsBreastProneSupine/feirGravTest/input/square_120_60_r45_LM.txt'
+    
+    niiFileOut = 'D:/data/test/square_120_60_r45.nii'
+    lmFileOut  = 'D:/data/test/square_120_60_r45_LM.txt'
+    xmlModel   = 'D:/data/test/square_120_60_r45.xml'
+    
+    mlxSurfImproFile = 'D:/data/copiedFromUCL/mlxFiles/uniformRemeshing.mlx'
     
     tig = testImageGenerator(imgS, sqS, phi)
     tig.showXYLMS()    
     tig.showLMSin3D()
-    tig.writeImageFile(niiFileOut)
+    tig.writeImageFile(niiFileOut) 
     tig.writeLandmarkFile(lmFileOut)
+    tig.buildNiftySimModel(xmlModel, mlxSurfImproFile)
     
 
 

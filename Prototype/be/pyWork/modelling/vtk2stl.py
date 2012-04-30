@@ -6,6 +6,8 @@ import vtk
 def vtk2stl(files):
     pdr = vtk.vtkPolyDataReader()
 
+    writtenFiles =[]
+    
     for f in files:
         print 'Reading VTK data from', f, '...'
         pdr.SetFileName(f)
@@ -17,12 +19,14 @@ def vtk2stl(files):
         triangles.SetInput(clean.GetOutput())
         
         # convert to STL and save:
+        
         if f.endswith('.vtk'):
             outfile = f[:-3]
         else:
             outfile = f
         outfile = outfile + 'stl'
-
+        writtenFiles.append(outfile)
+        
         print 'Writing STL data to', outfile, '...'
 
         sw = vtk.vtkSTLWriter()
@@ -30,6 +34,9 @@ def vtk2stl(files):
         sw.SetInput(triangles.GetOutput())
         #sw.SetFileTypeToBinary()
         sw.Write()
+        
+    return writtenFiles
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
