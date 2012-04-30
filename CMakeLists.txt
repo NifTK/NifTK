@@ -27,7 +27,7 @@
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 04 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 05 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
