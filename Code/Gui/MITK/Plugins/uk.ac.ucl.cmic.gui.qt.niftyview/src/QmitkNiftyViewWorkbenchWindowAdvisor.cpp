@@ -63,12 +63,19 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PreWindowOpen()
   this->ShowVersionInfo(false);     // Please look in QmitkHelpAboutDialog.h
 
   QmitkExtWorkbenchWindowAdvisor::PreWindowOpen();
+
+  // When the GUI starts, I don't want the Modules plugin to be visible.
+  std::vector<std::string> viewExcludeList = this->GetViewExcludeList();
+  viewExcludeList.push_back("org.mitk.views.modules");
+  this->SetViewExcludeList(viewExcludeList);
 }
 
 void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
 {
   QmitkExtWorkbenchWindowAdvisor::PostWindowCreate();
 
+  // Get rid of Welcome menu item, and re-connect the About menu item.
+  //
   // 1. Get hold of menu bar
   berry::IWorkbenchWindow::Pointer window =
    this->GetWindowConfigurer()->GetWindow();
@@ -101,7 +108,7 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
   }
 
   // In NiftyView, I have set in the midaseditor plugin.xml for the Midas Drag and Drop editor to be default.
-  // This section is to try and force the Display editor open.
+  // This section is to try and force the standard MITK Display editor open.
   berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
   berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
   ctkPluginContext* context = QmitkNiftyViewApplicationPlugin::GetDefault()->GetPluginContext();
