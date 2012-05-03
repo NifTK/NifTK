@@ -25,9 +25,18 @@
 #ifndef SurgicalGuidanceView_h
 #define SurgicalGuidanceView_h
 
+#include <QPlainTextEdit.h>
+
+#include <QmitkFiducialRegistrationWidget.h>
+#include <QmitkUpdateTimerWidget.h>
+#include <QmitkToolSelectionWidget.h>
+#include <QmitkToolTrackingStatusWidget.h>
+
 #include "QmitkAbstractView.h"
 #include "ui_SurgicalGuidanceViewControls.h"
 
+#include "OIGTLSocketObject.h"
+#include "Common/NiftyLinkXMLBuilder.h"
 
 /**
  * \class SurgicalGuidanceView
@@ -58,11 +67,36 @@ protected:
 
 protected slots:
 
+  /// \brief This function displays handles the messages coming from the tracker
+  void handleTrackerData(OIGTLMessage::Pointer msg);
+
+  /// \brief This function displays the received tracker data on the UI
+  void displayTrackerData(OIGTLMessage::Pointer msg);
+
+  /// \brief This function interprets the received OIGTL messages
+  void interpretMessage(OIGTLMessage::Pointer msg);
+
+  /// \brief This slot is triggered when a client connects to the local server, it changes the UI accordingly
+  void clientConnected();
+  
+  /// \brief This slot is triggered when a client disconnects from the local server, it changes the UI accordingly
+  void clientDisconnected();
+
 protected:
 
   Ui::SurgicalGuidanceViewControls m_Controls;
 
+private slots:
+  void OnAddListeningPort();
+  void OnRemoveListeningPort();
+  void OnTableSelectionChange(int r, int c, int pr = 0, int pc = 0);
+
 private:
+  unsigned long int            m_msgCounter;
+  OIGTLMessage::Pointer        m_lastMsg;
+  OIGTLSocketObject          * m_sockPointer;
+  QList<OIGTLSocketObject *>   m_sockets;
+  QPlainTextEdit             * m_trackerDataDisplay;
 
 };
 
