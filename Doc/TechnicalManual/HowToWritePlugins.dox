@@ -2,9 +2,56 @@
 
 \page HowToWritePlugins How To - Write a Plugin
 
+\li \ref MITKPluginsIntroLocation
+\li \ref MITKPluginsIntroPluginGenerator
+\li \ref MITKPluginsIntroNaming
+\li \ref MITKPluginsIntroUserInterface
+\li \ref MITKPluginsIntroFunctionality
+\li \ref MITKPluginsIntroDocumentation
+\li \ref MITKPluginsIntroModularisation
+\li \ref MITKPluginsIntroConclusion
+
 \section MITKPluginsIntroLocation Location
 
-All GUI plugins are contained in the folder NifTK/Code/Gui/MITK/Plugins.
+All GUI plugins are contained in the folder 
+\verbatim
+NifTK/Code/Gui/MITK/Plugins
+\endverbatim
+
+\section MITKPluginsIntroPluginGenerator The MITK Plugin Generator
+
+The basic structure of each plugin can be created by using the MITK Plugin Generator.
+Once the whole NifTK code has been built once, in the main build folder, there will be sub folders 
+\verbatim
+MITK-build/MITK-build/bin
+\endverbatim
+
+Within that MITK bin folder there is a program called MITKPluginGenerator.
+
+From the NifTK-build sub-folder (i.e. not the top-level "Super Build" folder) a new plugin can be generated 
+with a single command such as the following for a plugin called "Affine Transform".
+
+\code
+../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/Code/Gui/MITK/Plugins -l ~/build/NifTK/Doc/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "Affine Transform"
+\endcode
+
+The above command demonstrates that we are placing the output directly into the NifTK source tree, so it will need
+adding to version control manually. We also use a standard template text file to create the correct copyright headers. 
+
+You can then add the name of the plugin into 
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/Plugins.cmake
+\endverbatim
+ 
+and build. In addition, due to various compiler bugs, the following rules must be checked.
+
+<ol>
+<li>Find the Activator class within the plugin, and make sure it has a unique name.  For example: Plugins/uk.ac.ucl.cmic.affinetransform/src/internal/AffineTransformViewActivator.h and .cpp</li>
+<li>If you use Qt resource files (.qrc), give them a unique name. For example: Plugins/uk.ac.ucl.cmic.gui.qt.common/resources/CommonResources.qrc</li>
+<li>Adjust files.cmake accordingly to get the build to work.
+</ol>
+
+As the version of MITK changes, the plugin generator may do this automatically.
 
 \section MITKPluginsIntroNaming Naming Conventions
 
@@ -15,20 +62,22 @@ Affine Transform plugin as a template, and applied to all other plugins at
 the time of writing. Please make every effort to keep each plugin and its
 documentation up to date, and to keep the names of things consistent.
 
-The following general rules must be applied to get good user documentation.
+The following general rules must be applied to get nice user documentation.
+Again, lots of this will be automated by the MITK Plugin Generator, but it is worth checking
+and understanding what each feature is.
 
 <ol>
 <li>The top level directory structure must be in reverse domain name order, lower case, separated by dots. For example, uk.ac.uk.cmic.affinetransform </li>
 <li>For CMake purposes, each plugin is a 'project'. Within each plugin, there is a CMakeLists, and the first line contains the name of the project. The plugin name is in reverse domain name order, lower case, separated by underscores. For example, uk_ac_ucl_cmic_affinetransform </li>
 <li>Each plugin contains a manifest_headers.cmake file, which is used by MITK and CTK macros to generate the plugin. In other words, this file is not simply a nice-to-have text description that gets bundled inside the plugin. It is in fact used to generate the plugin. </li>
-<li>Within manifest_headers.cmake the Plugin-Name is used to generate the top level plugin name within the GUI help pages. Use convention "CMIC <plugin name>". For example "CMIC Affine Transform". Avoid the term "plugin", as it is unnecessary jargon. </li>
-<li>Within plugin.xml the XML name tag is used to generate the name that goes on the GUI menu item. Use convention "CMIC <plugin name>", as in the previous point, so the names match. </li>
+<li>Within manifest_headers.cmake the Plugin-Name is used to generate the top level plugin name within the GUI help pages. Use convention "<plugin name>". For example "Affine Transform". Avoid the term "plugin", as it is unnecessary jargon. </li>
+<li>Within plugin.xml the XML name tag is used to generate the name that goes on the GUI menu item. Use convention "<plugin name>", as in the previous point, so the names match. </li>
 <li>Within plugin.xml if you have a preferences page defined, again, use the same name as the view name. </li>
 <li>Within <plugin>/documentation/UserManual there is a user manual doxygen file (file name doesn't matter). Please generate a FULL description of how to use that plugin. This doxygen page is the main page that the user will see when operating the plugin within the GUI. Use the full power of doxygen. Go crazy and write to your hearts content. </li>
 </ol>
 
 Under <plugin>/documentation/doxygen there is doxygen.dox and the following additional 
-rules must be applied to get good code documentation. As mentioned above, use an example
+rules must be applied to get consistent code documentation. As mentioned above, use an example
 as a guideline, for example, go and look at the Affine Transform plugin.
 
 <ol>
@@ -37,31 +86,18 @@ as a guideline, for example, go and look at the Affine Transform plugin.
 <li>A brief description should be placed using the "\brief" tag. This should be one sentence, fit on one line and succinctly capture what the plugin is for.</li>
 <li>Please put a "Written by" line, containing email addresses of people to contact concerning the plugin. </li>
 <li>Note that there are two doxygen sections. The first defines the external interface, and the second the internal interface. These correspond to the src folder (external) and the src/internal folder (internal). </li>
-<li>Each class with the exception of the plugin activator (most probably called mitkPluginActivator) in the src/internal folder should declare itself in the documentation as being part of the internal doxygen group, defined in doxygen.dox for that plugin.</li>
+<li>Each class with the exception of the plugin activator in the src/internal folder should declare itself in the documentation as being part of the internal doxygen group, defined in doxygen.dox for that plugin.</li>
 <li>Each class in the src folder should declare itself to be part of the same group as the plugin.
 </ol>
 
-\section MITKPluginsIntroPluginGenerator The MITK Plugin Generator
+\section MITKPluginsIntroUserInterface User Interface
 
-The basic structure of each plugin can be created by using the MITK Plugin Generator.
-Once the whole NifTK code has been built once, in the main build folder, there will be sub folders MITK-build/MITK-build/bin.
-Within that MITK folder there is a program called MITKPluginGenerator.
+\section MITKPluginsIntroFunctionality Functionality
 
-From the NifTK-build folder a new plugin can be generated with a single command such as
+\section MITKPluginsIntroDocumentation Documentation
 
-\code
-../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/Code/Gui/MITK/Plugins -l ~/build/NifTK/Doc/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "CMIC Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "CMIC Affine Transform"
-\endcode
+\section MITKPluginsIntroModularisation Testing
 
-You can then add the name of the plugin into NifTK/Code/Gui/MITK/Plugins/Plugins.cmake and build.
-In addition, the following rules must be applied
+\section MITKPluginsIntroConclusion Conclusion
 
-<ol>
-<li>Find the Activator class within the plugin, and give it a unique name.  For example: Plugins/uk.ac.ucl.cmic.affinetransform/src/internal/AffineTransformViewActivator.h</li>
-<li>If you use Qt resource files (.qrc), give them a unique name. For example: Plugins/uk.ac.ucl.cmic.gui.qt.common/resources/CommonResources.qrc</li>
-<li>Adjust files.cmake accordingly to get the build to work.
-</ol>
-
-These rules are mandated due to various compiler bugs, which the MITK/CTK team are aware of, and have implemented fixes
-and changes for in the plugin framework, and so represent a second line of defense. 
 */ 

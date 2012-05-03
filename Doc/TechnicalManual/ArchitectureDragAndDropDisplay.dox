@@ -2,9 +2,6 @@
 
 \page ArchitectureDragAndDropDisplay Architecture - NiftyView Drag and Drop Display
 
-\addindex Drag and Drop Display - Architecture
-\addindex Drag and Drop Display - Class Diagram
-
 \section ArchitectureDragAndDropDisplayIntro Introduction
 
 NiftyView, by virtue of the MITK application framework, supports the concepts of Editors.

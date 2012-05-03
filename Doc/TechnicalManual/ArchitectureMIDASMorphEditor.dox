@@ -2,6 +2,12 @@
 
 \page ArchitectureMIDASMorphEditor Architecture - MIDAS Morphological Editor
 
+\li \ref ArchitectureMIDASMorphEditorIntro
+\li \ref ArchitectureMIDASMorphEditorDescription
+\li \ref ArchitectureMIDASMorphEditorPipeline
+\li \ref ArchitectureMIDASMorphEditorEdits
+\li \ref ArchitectureMIDASMorphEditorConclusion
+
 \section ArchitectureMIDASMorphEditorIntro Introduction
 
 The <a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">MIDAS Morphological editor</a>
@@ -17,7 +23,7 @@ NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic/midasmorphologicalsegmentor
 \verbatim
 NifTK/Code/Libs/ITK/Segmentation
 \endverbatim
-\li Unit tests in:
+\li Unit tests for ITK classes in:
 \verbatim
 NifTK/Testing/Code/Libs/ITK/Segmentation
 \endverbatim
@@ -103,7 +109,9 @@ is used so that the mitk::MIDASPaintbrushTool can undo and redo the edits.
 
 \section ArchitectureMIDASMorphEditorConclusion Conclusion
 
-So, the MIDAS Morphological Editor is re-implemented as a Qt GUI calling an ITK pipeline, delivered within an MITK plugin.
-Future researchers can easily add filters, easily unit test filters, and easily provide additional editing tools to provide more complex functionality as desired.
+The MIDAS Morphological Editor is re-implemented as a Qt GUI calling an ITK pipeline, delivered within an MITK plugin.
+Future researchers can easily add filters to the pipeline, easily add unit tests for these filters, and easily 
+provide additional editing tools to provide more complex editing functionality as desired. The plugin is not designed
+to be infinitely extensible as by design it is for a very specific task.
 
 */

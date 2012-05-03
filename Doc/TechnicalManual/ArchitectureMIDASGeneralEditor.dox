@@ -1,0 +1,72 @@
+/**
+
+\page ArchitectureMIDASGeneralEditor Architecture - MIDAS Irregular Volume Editor
+
+\li \ref ArchitectureMIDASGeneralEditorIntro
+\li \ref ArchitectureMIDASGeneralEditorClasses
+\li \ref ArchitectureMIDASGeneralEditorTools
+\li \ref ArchitectureMIDASGeneralEditorRegionGrowing
+\li \ref ArchitectureMIDASGeneralEditorBulkUpdates
+\li \ref ArchitectureMIDASGeneralEditorConclusion
+
+\section ArchitectureMIDASGeneralEditorIntro Introduction
+
+The MIDAS Irregular Volume editor</a> has been implemented within NiftyView using
+
+\li An MITK plugin:
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic/midasgeneralsegmentor
+\endverbatim
+\li Qt widgets, signals and slots.
+\li Use of the <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a> for the Seed, Draw and Poly tools.
+\li Use of MITK ITK accessor macros for calling from MITK code to ITK code.
+\li ITK classes in: 
+\verbatim
+NifTK/Code/Libs/ITK/Segmentation
+\endverbatim
+\li Unit tests for ITK classes in:
+\verbatim
+NifTK/Testing/Code/Libs/ITK/Segmentation
+\endverbatim
+
+At first glance the MIDAS Irregular Volume Editor may appear to be little more than an intensity based
+region growing algorithm with various drawing/erasing tools to edit the "current" segmented image.
+This is not the case. The editing is largely contour based, and only when a contour is "accepted" is it converted
+to voxel data, and stored within the segmented image. The contour based design makes it substantially different
+to other voxel based tools.
+
+\section ArchitectureMIDASGeneralEditorClasses Class Overview
+
+\image html ArchitectureMIDASGeneralEditor.png "Figure 1. An overview of the main classes involved in the construction of the MIDAS Irregular Volume Editor plugin."
+
+It can be seen from Figure 1, that the overall architecture or design of this plugin is similar in class structure to
+the \link ArchitectureMIDASMorphEditor MIDAS Morphological Editor. \endlink 
+The class overview for MIDAS Morphological Editor and MIDAS Irregular Volume Editor are almost identical, and apart 
+from the main class names such as MIDASMorphologicalSegmentorView and MIDASGeneralSegmentorView the structure is the same.
+
+\section ArchitectureMIDASGeneralEditorTools Seed, Draw and Poly Tools
+
+To Do
+
+\section ArchitectureMIDASGeneralEditorRegionGrowing Intensity Thresholding (Region Growing)
+
+To Do
+
+\section ArchitectureMIDASGeneralEditorBulkUpdates Bulk Updates
+
+To Do
+
+\section ArchitectureMIDASGeneralEditorConclusion Conclusion
+
+The MIDAS Irregular Volume Editor is more complex than the \link ArchitectureMIDASMorphEditor MIDAS Morphological Editor. \endlink
+This functionality can be seen as a combination of tools provided via the 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>
+and extra Qt widgets calling various update functions to affect the segmented image. 
+
+The mitk::MIDASTool subclasses are used to edit the contours, and the contours are then applied to update 
+the image volume. This plugin can therefore be easily extended by providing different mitk::Tool subclasses.
+
+The additional Qt widgets providing bulk functionality such as Wipe, Wipe+, Wipe-, PropUp, PropDown, Prop3D
+provide bulk updates. The GUI can be extended with more of this type of functionality, typically provided via ITK filters.
+
+*/
