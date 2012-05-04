@@ -570,7 +570,7 @@ MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNo
   {
     // "As Acquired" means you take the orientation of the XY plane
     // in the original image data, so we switch to ITK to work it out.
-    MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+    MIDASOrientation orientation = MIDAS_ORIENTATION_CORONAL;
 
     mitk::Image::Pointer image = NULL;
     for (unsigned int i = 0; i < nodes.size(); i++)
@@ -581,7 +581,7 @@ MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNo
         break;
       }
     }
-    if (image.IsNotNull())
+    if (image.IsNotNull() && image->GetDimension() >= 3)
     {
       try
       {

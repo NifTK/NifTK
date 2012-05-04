@@ -338,7 +338,7 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
       break;
     default:
       // die, this should never happen
-      assert(m_View >= 0 && m_View <= 4);
+      assert(m_View >= 0 && m_View <= 6);
       break;
     }
   }
@@ -1036,7 +1036,7 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
     break;
   default:
     // die, this should never happen
-    assert(m_View >= 0 && m_View <= 4);
+    assert(m_View >= 0 && m_View <= 6);
     break;
   }
   m_View = view;
