@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
 <plugin>
-  
   <extension point="org.blueberry.ui.editors">
     <editor
       id="org.mitk.editors.midasmultiview"
       name="Drag And Drop Display"
-      default="true"
       extensions="mitk"
+      default="true"
       class="QmitkMIDASMultiViewEditor">
     </editor>
   </extension>
-
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePage" name="Drag And Drop Display" class="QmitkMIDASMultiViewEditorPreferencePage">
-      <keywordreference id="org.mitk.editors.midasmultiview.MIDASMultiViewEditorPreferencePageKeywords"></keywordreference>
+    <page id="org.mitk.MIDASMultiViewEditorPreferencePage" name="Drag And Drop Display" 
+      class="QmitkMIDASMultiViewEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords"/>
     </page>     
   </extension>
 
+  <extension point="org.blueberry.ui.keywords">
+    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="interpolation"/>
+    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="rows"/>
+    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="columns"/>
+    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="default view"/>
+    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="drop"/>
+    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="ortho"/>
+  </extension>
+  
 </plugin>

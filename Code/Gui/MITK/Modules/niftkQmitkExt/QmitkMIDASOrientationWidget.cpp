@@ -48,6 +48,8 @@ void QmitkMIDASOrientationWidget::SetBlockSignals(bool block)
   m_SagittalRadioButton->blockSignals(block);
   m_SliceOrientationLabel->blockSignals(block);
   m_ThreeDRadioButton->blockSignals(block);
+  m_ThreeHRadioButton->blockSignals(block);
+  m_ThreeVRadioButton->blockSignals(block);
 }
 
 void QmitkMIDASOrientationWidget::SetEnabled(bool enabled)
@@ -58,4 +60,6 @@ void QmitkMIDASOrientationWidget::SetEnabled(bool enabled)
   m_SagittalRadioButton->setEnabled(enabled);
   m_SliceOrientationLabel->setEnabled(enabled);
   m_ThreeDRadioButton->setEnabled(enabled);
+  m_ThreeHRadioButton->setEnabled(enabled);
+  m_ThreeVRadioButton->setEnabled(enabled);
 }

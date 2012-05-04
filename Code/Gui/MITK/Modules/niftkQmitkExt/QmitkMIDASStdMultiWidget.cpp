@@ -327,6 +327,12 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
+    case MIDAS_VIEW_3H:
+    case MIDAS_VIEW_3V:
+      m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
+      m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
+      m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
+      break;
     case MIDAS_VIEW_3D:
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
@@ -545,7 +551,7 @@ MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
   {
     result = MIDAS_ORIENTATION_CORONAL;
   }
-  else if (m_View == MIDAS_VIEW_ORTHO)
+  else if (m_View == MIDAS_VIEW_ORTHO || m_View == MIDAS_VIEW_3H || m_View == MIDAS_VIEW_3V)
   {
     if (m_RectangleRendering1->IsEnabled())
     {
@@ -892,10 +898,27 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
     QmitkStdMultiWidgetLayout->setContentsMargins(0, 0, 0, 0);
     QmitkStdMultiWidgetLayout->setSpacing(0);
 
-    m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
-    m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);
-    m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);
-    m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+    if (view == MIDAS_VIEW_3H)
+    {
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 2);
+      m_GridLayout->addWidget(this->mitkWidget4Container, 0, 3);
+    }
+    else if (view == MIDAS_VIEW_3V)
+    {
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
+      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
+      m_GridLayout->addWidget(this->mitkWidget3Container, 2, 0);
+      m_GridLayout->addWidget(this->mitkWidget4Container, 3, 0);
+    }
+    else
+    {
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);
+      m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+    }
 
     QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
   }
@@ -972,6 +995,25 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
     if (!this->mitkWidget4Container->isVisible())
     {
       this->mitkWidget4Container->show();
+    }
+    break;
+  case MIDAS_VIEW_3H:
+  case MIDAS_VIEW_3V:
+    if (!this->mitkWidget1Container->isVisible())
+    {
+      this->mitkWidget1Container->show();
+    }
+    if (!this->mitkWidget2Container->isVisible())
+    {
+      this->mitkWidget2Container->show();
+    }
+    if (!this->mitkWidget3Container->isVisible())
+    {
+      this->mitkWidget3Container->show();
+    }
+    if (this->mitkWidget4Container->isVisible())
+    {
+      this->mitkWidget4Container->hide();
     }
     break;
   case MIDAS_VIEW_3D:

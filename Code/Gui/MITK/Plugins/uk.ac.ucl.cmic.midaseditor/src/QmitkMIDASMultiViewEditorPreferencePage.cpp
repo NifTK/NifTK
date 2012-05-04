@@ -113,11 +113,10 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_DefaultViewComboBox->insertItem(1, "sagittal");
   m_DefaultViewComboBox->insertItem(2, "coronal");
   m_DefaultViewComboBox->insertItem(3, "orthogonal");
-  // Deliberately getting rid of 3D as a default drop type.
-  // If you have this, it's immediately confusing as things like the thumbnail don't work for 3D mappers.
-  //m_DefaultViewComboBox->insertItem(4, "3D");
-  //m_DefaultViewComboBox->insertItem(5, "as acquired (XY plane)");
-  m_DefaultViewComboBox->insertItem(4, "as acquired (XY plane)");
+  m_DefaultViewComboBox->insertItem(4, "3D");
+  m_DefaultViewComboBox->insertItem(5, "3-horizontal");
+  m_DefaultViewComboBox->insertItem(6, "3-vertical");
+  m_DefaultViewComboBox->insertItem(7, "as acquired (XY plane)");
 
   m_DefaultDropType = new QComboBox(parent);
   formLayout->addRow("default drop type", m_DefaultDropType);
@@ -213,7 +212,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
 
   m_DefaultNumberOfRowsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_ROWS, 1));
   m_DefaultNumberOfColumnsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_COLUMNS, 1));
-  m_DefaultViewComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW, 2));
+  m_DefaultViewComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW, 7));
   m_ImageInterpolationComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
   m_DefaultDropType->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_DROP_TYPE, 0));
   m_ShowDropTypeWidgetsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
@@ -258,7 +257,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::OnResetBackgroundColour()
 
 void QmitkMIDASMultiViewEditorPreferencePage::OnResetMIDASBackgroundColour()
 {
-  m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS salmon colour.
-  m_BackgroundColor = "#fffaf0";                                      // That strange MIDAS salmon colour.
+  m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS off-white colour.
+  m_BackgroundColor = "#fffaf0";                                      // That strange MIDAS off-white colour.
   m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 }

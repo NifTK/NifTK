@@ -126,11 +126,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   m_MIDASOrientationWidget = new QmitkMIDASOrientationWidget(this);
   m_MIDASOrientationWidget->m_SliceOrientationLabel->setVisible(false);
-  m_MIDASOrientationWidget->m_AxialRadioButton->setLayoutDirection(Qt::RightToLeft);
-  m_MIDASOrientationWidget->m_SagittalRadioButton->setLayoutDirection(Qt::RightToLeft);
-  m_MIDASOrientationWidget->m_CoronalRadioButton->setLayoutDirection(Qt::RightToLeft);
-  m_MIDASOrientationWidget->m_OrthogonalRadioButton->setLayoutDirection(Qt::RightToLeft);
-  m_MIDASOrientationWidget->m_ThreeDRadioButton->setLayoutDirection(Qt::RightToLeft);
 
   m_MIDASSlidersWidget = new QmitkMIDASSlidersWidget(this);
 
@@ -306,6 +301,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_MIDASOrientationWidget->m_OrthogonalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
   connect(m_MIDASOrientationWidget->m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
   connect(m_MIDASOrientationWidget->m_ThreeDRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
+  connect(m_MIDASOrientationWidget->m_ThreeHRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
+  connect(m_MIDASOrientationWidget->m_ThreeVRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrientationSelected(bool)));
 
   itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::Pointer onFocusChangedCommand =
     itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::New();
@@ -897,6 +894,15 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
       {
         m_MIDASOrientationWidget->m_ThreeDRadioButton->setChecked(true);
       }
+      else if (view == MIDAS_VIEW_3H)
+      {
+        m_MIDASOrientationWidget->m_ThreeHRadioButton->setChecked(true);
+      }
+      else if (view == MIDAS_VIEW_3V)
+      {
+        m_MIDASOrientationWidget->m_ThreeVRadioButton->setChecked(true);
+      }
+
     }
     if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
@@ -1094,6 +1100,14 @@ void QmitkMIDASMultiViewWidget::OnOrientationSelected(bool toggled)
     else if (m_MIDASOrientationWidget->m_ThreeDRadioButton->isChecked())
     {
       this->SwitchView(MIDAS_VIEW_3D);
+    }
+    else if (m_MIDASOrientationWidget->m_ThreeHRadioButton->isChecked())
+    {
+      this->SwitchView(MIDAS_VIEW_3H);
+    }
+    else if (m_MIDASOrientationWidget->m_ThreeVRadioButton->isChecked())
+    {
+      this->SwitchView(MIDAS_VIEW_3V);
     }
     // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
     // (or indeed anything that's listening to the FocusManager).

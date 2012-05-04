@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
+    <width>462</width>
     <height>40</height>
    </rect>
   </property>
@@ -36,10 +36,13 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view (red outline) to axial</string>
+      <string>switch the currently selected view to axial</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>axial</string>
+      <string>ax</string>
      </property>
      <property name="iconSize">
       <size>
@@ -58,10 +61,13 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view (red outline) to sagittal</string>
+      <string>switch the currently selected view to sagittal</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>sagittal</string>
+      <string>sag</string>
      </property>
      <property name="iconSize">
       <size>
@@ -80,10 +86,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view (red outline) to coronal</string>
+      <string>switch the currently selected view to coronal</string>
      </property>
      <property name="text">
-      <string>coronal</string>
+      <string>cor</string>
      </property>
      <property name="iconSize">
       <size>
@@ -102,7 +108,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view (red outline) to coronal</string>
+      <string>switch the currently selected view to display a 2x2 grid showing axial, sagittal, coronal and 3D views</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
       <string>ortho</string>
@@ -124,10 +133,63 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view (red outline) to coronal</string>
+      <string>switch the currently selected view to 3D</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
       <string>3D</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="6">
+    <widget class="QRadioButton" name="m_ThreeHRadioButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>switch the currently selected view show axial, sagittal and coronal views side by side horizontally</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>3H</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="7">
+    <widget class="QRadioButton" name="m_ThreeVRadioButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>switch the currently selected view to show axial, sagittal and coronal views vertically</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>3V</string>
      </property>
      <property name="iconSize">
       <size>
