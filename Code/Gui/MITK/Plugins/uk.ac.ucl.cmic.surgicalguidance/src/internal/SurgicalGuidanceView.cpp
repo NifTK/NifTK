@@ -56,11 +56,19 @@ void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
   // create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi( parent );
 
-  //m_Controls.tableWidget->setH
+  QmitkFiducialRegistrationWidget * frw = new QmitkFiducialRegistrationWidget(parent);
+  m_Controls.verticalLayout->addWidget(frw);
+  //frw->HideTrackingFiducialButton(true);
+  //frw->HideContinousRegistrationRadioButton(true);
+  //frw->HideStaticRegistrationRadioButton(true);
+  //frw->HideFiducialRegistrationGroupBox(true);
+  //frw->HideUseICPRegistrationCheckbox(true);
 
-  QmitkPointListWidget * plw = new QmitkPointListWidget(parent);
-  m_Controls.verticalLayout->addWidget(plw);
-  plw->show();
+  frw->show();
+
+  //QmitkPointListWidget * plw = new QmitkPointListWidget(parent);
+  //m_Controls.verticalLayout->addWidget(plw);
+  //plw->show();
   
   // connect signals-slots etc.
 
@@ -117,7 +125,6 @@ void SurgicalGuidanceView::OnAddListeningPort()
     newItem2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_Controls.tableWidget->setItem(row, 1, newItem2);
 
-    //m_Controls.tableWidget->setDisabled(true);
     m_Controls.tableWidget->show();
   }
 }
@@ -171,8 +178,6 @@ void SurgicalGuidanceView::OnRemoveListeningPort()
 
 void SurgicalGuidanceView::OnTableSelectionChange(int r, int c, int pr, int pc)
 {
-  //m_Controls.tableWidget->selectRow(r);
-
   if (r < 0 || c < 0)
     return;
 
@@ -203,13 +208,11 @@ void SurgicalGuidanceView::clientConnected()
       tItem->setFlags(Qt::ItemIsEditable);
       tItem->setIcon(pix);
       tItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      //m_Controls.tableWidget->setItem(i, 0, tItem);
 
       tItem = m_Controls.tableWidget->item(i, 1);
       tItem->setFlags(Qt::ItemIsEditable);
       tItem->setText(QString("Client Connected"));
       tItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      //m_Controls.tableWidget->setItem(i, 1, tItem);
 
       return;
     }
@@ -280,8 +283,6 @@ void SurgicalGuidanceView::handleTrackerData(OIGTLMessage::Pointer msg)
 //This function prints the message content into the text field
 void SurgicalGuidanceView::displayTrackerData(OIGTLMessage::Pointer msg)
 {
-  //++m_msgCounter;
-
   //Don't print every message, otherwise the UI freezes
   if (msg->getMessageType() == QString("TRANSFORM"))// && ((m_msgCounter % 1000 ==0) || (m_msgCounter % 1000 ==1)))
   {
@@ -304,8 +305,6 @@ void SurgicalGuidanceView::displayTrackerData(OIGTLMessage::Pointer msg)
     tmp.append(trMsg->getHostName());
     tmp.append("\nMessage ID: ");
     tmp.append(QString::number(trMsg->getId()));
-    //tmp.append("\nTool ID: ");
-    //tmp.append(trMsg->getTrackerToolName());
     m_trackerDataDisplay->appendPlainText(tmp);
     m_trackerDataDisplay->appendPlainText(trMsg->getMatrixAsString());
     m_trackerDataDisplay->appendPlainText("\n");
@@ -378,10 +377,7 @@ void SurgicalGuidanceView::interpretMessage(OIGTLMessage::Pointer msg)
       
       bool ok = false;
       int portNum = clientInfo.getClientPort().toInt(&ok, 10);
-      
-      //qDebug() <<m_Controls.tableWidget->rowCount();
-
-        
+       
       for (int i = 0; i < m_Controls.tableWidget->rowCount(); i++)
       {
         QTableWidgetItem *tItem = m_Controls.tableWidget->item(i, 0);
