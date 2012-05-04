@@ -23,6 +23,7 @@
  ============================================================================*/
 
 #include "QmitkMIDASOrientationWidget.h"
+#include <QtDebug>
 
 QmitkMIDASOrientationWidget::QmitkMIDASOrientationWidget(QWidget *parent)
 {
@@ -62,4 +63,37 @@ void QmitkMIDASOrientationWidget::SetEnabled(bool enabled)
   m_ThreeDRadioButton->setEnabled(enabled);
   m_ThreeHRadioButton->setEnabled(enabled);
   m_ThreeVRadioButton->setEnabled(enabled);
+}
+
+void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
+{
+  this->SetBlockSignals(true);
+
+  switch(view)
+  {
+  case MIDAS_VIEW_AXIAL:
+    this->m_AxialRadioButton->setChecked(true);
+    break;
+  case MIDAS_VIEW_SAGITTAL:
+    this->m_SagittalRadioButton->setChecked(true);
+    break;
+  case MIDAS_VIEW_CORONAL:
+    this->m_CoronalRadioButton->setChecked(true);
+    break;
+  case MIDAS_VIEW_ORTHO:
+    this->m_OrthogonalRadioButton->setChecked(true);
+    break;
+  case MIDAS_VIEW_3D:
+    this->m_ThreeDRadioButton->setChecked(true);
+    break;
+  case MIDAS_VIEW_3H:
+    this->m_ThreeHRadioButton->setChecked(true);
+    break;
+  case MIDAS_VIEW_3V:
+    this->m_ThreeVRadioButton->setChecked(true);
+    break;
+  default:
+    qWarning() << "QmitkMIDASOrientationWidget::SetToView, unrecognised view, can't set radio button";
+  }
+  this->SetBlockSignals(false);
 }

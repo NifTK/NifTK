@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>462</width>
+    <width>570</width>
     <height>40</height>
    </rect>
   </property>
@@ -88,6 +88,9 @@
      <property name="toolTip">
       <string>switch the currently selected view to coronal</string>
      </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
      <property name="text">
       <string>cor</string>
      </property>
@@ -114,7 +117,7 @@
       <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>ortho</string>
+      <string>2x2</string>
      </property>
      <property name="iconSize">
       <size>

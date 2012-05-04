@@ -26,6 +26,7 @@
 #define QMITKMIDASORIENTATIONWIDGET_H
 
 #include "ui_QmitkMIDASOrientationWidget.h"
+#include "QmitkMIDASViewEnums.h"
 
 /**
  * \class QmitkMIDASOrientationWidget
@@ -51,6 +52,9 @@ public:
 
   /// \brief Calls setEnabled(enabled) on all contained widgets.
   void SetEnabled(bool enabled);
+
+  /// \brief Method to set the widget checkboxes to match the supplied view.
+  void SetToView(MIDASView view);
 
 signals:
 

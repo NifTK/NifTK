@@ -126,6 +126,13 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   m_MIDASOrientationWidget = new QmitkMIDASOrientationWidget(this);
   m_MIDASOrientationWidget->m_SliceOrientationLabel->setVisible(false);
+  m_MIDASOrientationWidget->m_AxialRadioButton->setLayoutDirection(Qt::RightToLeft);
+  m_MIDASOrientationWidget->m_SagittalRadioButton->setLayoutDirection(Qt::RightToLeft);
+  m_MIDASOrientationWidget->m_CoronalRadioButton->setLayoutDirection(Qt::RightToLeft);
+  m_MIDASOrientationWidget->m_OrthogonalRadioButton->setLayoutDirection(Qt::RightToLeft);
+  m_MIDASOrientationWidget->m_ThreeDRadioButton->setLayoutDirection(Qt::RightToLeft);
+  m_MIDASOrientationWidget->m_ThreeHRadioButton->setLayoutDirection(Qt::RightToLeft);
+  m_MIDASOrientationWidget->m_ThreeVRadioButton->setLayoutDirection(Qt::RightToLeft);
 
   m_MIDASSlidersWidget = new QmitkMIDASSlidersWidget(this);
 
@@ -828,6 +835,9 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   {
     int magnification = m_SingleViewWidgets[m_SelectedWindow]->GetMagnificationFactor();
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnification);
+
+    MIDASView view = m_SingleViewWidgets[m_SelectedWindow]->GetView();
+    m_MIDASOrientationWidget->SetToView(view);
   }
 
   this->Update2DCursorVisibility();

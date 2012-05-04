@@ -112,7 +112,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_DefaultViewComboBox->insertItem(0, "axial");
   m_DefaultViewComboBox->insertItem(1, "sagittal");
   m_DefaultViewComboBox->insertItem(2, "coronal");
-  m_DefaultViewComboBox->insertItem(3, "orthogonal");
+  m_DefaultViewComboBox->insertItem(3, "2x2 orthogonal");
   m_DefaultViewComboBox->insertItem(4, "3D");
   m_DefaultViewComboBox->insertItem(5, "3-horizontal");
   m_DefaultViewComboBox->insertItem(6, "3-vertical");
