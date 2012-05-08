@@ -67,6 +67,9 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PreWindowOpen()
   // When the GUI starts, I don't want the Modules plugin to be visible.
   std::vector<std::string> viewExcludeList = this->GetViewExcludeList();
   viewExcludeList.push_back("org.mitk.views.modules");
+  viewExcludeList.push_back("org.mitk.views.segmentationboolean");
+  viewExcludeList.push_back("org.mitk.views.deformableclippingplane");
+  viewExcludeList.push_back("org.mitk.views.regiongrowing");
   this->SetViewExcludeList(viewExcludeList);
 }
 
