@@ -14,7 +14,7 @@ an image editor could be opened.
 The MITK application framework has the same concept.  An Editor is a tabbed central widget containing
 a window for viewing and interacting with some data. In the case of NiftyView, this is normally
 images, surfaces and pointsets and so on. It is possible to have more than one editor for each datatype,
-which makes it possible for NiftyView to have 2 or more editors for images, each displaying markedly different
+which makes it possible for NiftyView to have 2 or more editors for images, each having significantly different
 capabilities.  
 
 In MITK, the standard editor is the QmitkStdMultiWidgetEditor
