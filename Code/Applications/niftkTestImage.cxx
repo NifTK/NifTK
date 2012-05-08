@@ -54,6 +54,7 @@ void Usage(char *exec)
     std::cout << "                              2 = generate grid" << std::endl;
     std::cout << "                              3 = generate testcard image" << std::endl;
     std::cout << "                              4 - generate distance from centre image" << std::endl;
+    std::cout << "                              5 - generate increasing voxel number as intensity value" << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "*** [options]   ***" << std::endl << std::endl;  
     std::cout << "    -dir a b c d e f g h i    Direction matrix" << std::endl;
@@ -223,7 +224,7 @@ int main(int argc, char** argv)
     }            
   }
 
-  if (mode < 0 || mode > 4)
+  if (mode < 0 || mode > 5)
   {
     std::cerr << "Invalid mode" << std::endl;
     return EXIT_FAILURE;
@@ -407,6 +408,27 @@ int main(int argc, char** argv)
                   distance = voxelLocationInMillimetres.EuclideanDistanceTo(middleOfImageInMillimetres);
                   testImage->SetPixel(index, distance);
                 }
+              }
+          }
+      }
+  }
+  else if (mode == 5)
+  {
+    unsigned long int voxelCounter = 0;
+
+    for (int z = 0; z < nz; z++)
+      {
+        for (int y = 0; y < ny; y++)
+          {
+            for (int x = 0; x < nx; x++)
+              {
+
+                index[0] = x;
+                index[1] = y;
+                index[2] = z;
+
+                testImage->SetPixel(index, voxelCounter);
+                voxelCounter++;
               }
           }
       }
