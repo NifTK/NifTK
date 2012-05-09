@@ -33,10 +33,14 @@
  * \page niftkAdd
  * \section niftkAddSummary Runs ITK AddImageFilter to add two images of equal sizes on a voxel by voxel basis.
  *
- * In more detail, this program iterates through two images, which must have the same
- * number of voxels, and adds corresponding voxels together. Technically this means
- * that its the number of voxels that matter, not the shape of the image.
+ * This program uses ITK ImageFileReaders to load two images, and then uses ITK AddImageFilter to add them
+ * together on a voxel by voxel basis before writing them with ITK ImageFileWriter.
+ * \li Dimensions: 2,3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
  *
+ * \section niftkAddCaveat Caveats
+ * \li File readers may not support the data type correctly.
+ * \li File sizes not checked.
  */
 void Usage(char *exec)
   {
