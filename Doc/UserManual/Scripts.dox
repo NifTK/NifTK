@@ -3,6 +3,7 @@
 \page UserManualScripts Batch Scripts
 
 NifTK also contains a large array of Unix/Linux/Mac scripts. These are briefly listed below.
+For the most up to date usage information, run each script with zero arguments.
 
 ToDo.
 

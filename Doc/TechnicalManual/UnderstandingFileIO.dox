@@ -1,7 +1,110 @@
 /**
 
-\page UnderstandingFileIO Understanding - File Input and Output
+\page UnderstandingFileIO Understanding - File Input and Output (I/O)
 
-To Do
+\li \ref UnderstandingFileIOIntro
+\li \ref UnderstandingFileIOCommandLine 
+\li \ref UnderstandingFileIOLoadingVolumes
+\li \ref UnderstandingFileIOLoadingFileSeries
+\li \ref UnderstandingFileIONiftyView
+
+\section UnderstandingFileIOIntro Introduction
+
+There are two types of file access within the binary programs of NifTK, and they are currently sufficiently different
+as to warrant an explanation. Future work may endeavour to make these methods more consistent.
+NiftyView and command line programs use a different mechanism for file I/O, and these are now explained in some detail.
+If the following information is not sufficiently detailed, the next alternative is to step through the code with
+a debugger.
+ 
+\section UnderstandingFileIOCommandLine Command Line Programs
+
+Command line programs currently use ITK directly for image I/O. A typical example proceeds as follows:
+
+\code
+
+  #include "itkImage.h"
+  #include "itkImageFileReader.h"
+
+  typedef typename itk::Image< PixelType, Dimension >     InputImageType;   
+  typedef typename itk::ImageFileReader< InputImageType > InputImageReaderType;
+
+  typename InputImageReaderType::Pointer imageReader1 = InputImageReaderType::New();
+  imageReader1->SetFileName(args.inputImage1);
+  imageReader1->Update();
+  
+\endcode
+
+Within this example, the ImageFileReader is instantiated and assigned to a smart pointer. The ImageFileReader is
+templated based on image type, and the image type is templated on pixel type and dimensions. Thus, potentially,
+the ImageFileReader is generic, but in practice, all the command line programs make a choice as to which
+type of files they support. This is usually implemented using code like the following incomplete code snippet.
+
+\code
+
+  int dims = itk::PeekAtImageDimension(args.inputImage1);
+  if (dims != 2 && dims != 3)
+    {
+      std::cout << "Unsuported image dimension" << std::endl;
+      return EXIT_FAILURE;
+    }
+  
+  int result;
+
+  switch (itk::PeekAtComponentType(args.inputImage1))
+    {
+    case itk::ImageIOBase::UCHAR:
+      if (dims == 2)
+        {
+          result = DoMain<2, unsigned char>(args);  
+        }
+      else
+        {
+          result = DoMain<3, unsigned char>(args);
+        }
+      break;
+    case itk::ImageIOBase::CHAR:
+
+\endcode
+ 
+The full code example can be seen in \ref niftkAdd.cxx. In this example, it is possible to peek at the image dimensions 
+using utility methods in itk::ImageIOBase, and on that basis instantiate a templated function with the right number of 
+dimensions and pixel type. The consequence of this per-program coding is that each command line program implements this 
+in a different way, according to the requirements of each program.
+
+\section UnderstandingFileIOLoadingVolumes Loading Volumes using ITK
+
+We now take a detour to explain how the ITK Object Factory Mechanism works. The ITK ImageFileReader uses the 
+ObjectFactory method to instantiate the correct file reader. Figure 1. shows a pseudo-sequence diagram to help explain 
+how the ObjectFactory works for loading files.
+
+\image html UnderstandingFileIOITKReader.png "Figure 1. Pseudo UML sequence diagram for loading an image using itk::ImageFileReader."
+
+When a client creates an itk::ImageFileReader, and reads a file, the itk::ImageFileReader needs to create the correct
+itk::ImageIOBase subclass. It calls the static itk::ImageIOFactory::CreateImageIO which registers all the known itk::ImageIOFactory
+subclasses with the ObjectFactoryBase. It then asks the ObjectFactoryBase for all objects implementing the itkImageIOBase interface.
+Each of these returned objects can be cast to itk::ImageIOBase, which contains a method CanReadFile which returns a boolean. So,
+the itk::ImageIOFactory iterates through the list of all the provided ImageIOBase classes, and the first one that returns true
+will be returned to the itk::ImageFileReader as the correct itk::ImageIOBase subclass that can read the data.
+
+The advantage of this approach is that the client calling the itk::ImageFileReader and the itk::ImageFileReader itself
+has no idea how many, or even what class will implement that interface. The ObjectFactory is able to manage all possible
+classes implementing the interface. The ObjectFactory can also provide services such as dynamically loading classes at runtime.
+So the list of available classes can be extended without calling code knowing about it.
+
+From this we also see that 
+
+\li The itk::ImageIOBase is determined by filename extension.
+\li Refer to itk::ObjectFactoryBase source code, and see how the itk::ObjectFactoryBase can load classes from the ITK_AUTOLOAD_PATH. 
+This is the same mechanism used to dynamically load extra segmentation tools references in the 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>.
+\li The itk::ObjectFactoryBase can programmatically add/remove factories, so they can be programatically removed and replaced
+without calling code knowing about it.
+
+So, when the command line programs are running, all except \ref niftkDicomSeriesReadImageWrite.cxx use this default 
+ITK mechanism. 
+
+\section UnderstandingFileIOLoadingFileSeries Loading File Series using ITK
+
+\section UnderstandingFileIONiftyView NiftyView
 
 */

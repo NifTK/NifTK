@@ -17,10 +17,12 @@ All GUI plugins are contained in the folder
 \verbatim
 NifTK/Code/Gui/MITK/Plugins
 \endverbatim
+and the file Plugins.cmake controls which ones are on/off by default. In order to turn them on/off in a 
+development environment, you must re-run CMake, change the plugin's flag, and re-configure and re-build.
 
 \section MITKPluginsIntroPluginGenerator The MITK Plugin Generator
 
-The basic structure of each plugin can be created by using the MITK Plugin Generator.
+The basic structure of each plugin can be created automatically by using the MITK Plugin Generator.
 Once the whole NifTK code has been built once, in the main build folder, there will be sub folders 
 \verbatim
 MITK-build/MITK-build/bin
@@ -43,12 +45,12 @@ You can then add the name of the plugin into
 NifTK/Code/Gui/MITK/Plugins/Plugins.cmake
 \endverbatim
  
-and build. In addition, due to various compiler bugs, the following rules must be checked.
+and build. It is currently worth checking the following:
 
 <ol>
 <li>Find the Activator class within the plugin, and make sure it has a unique name.  For example: Plugins/uk.ac.ucl.cmic.affinetransform/src/internal/AffineTransformViewActivator.h and .cpp</li>
 <li>If you use Qt resource files (.qrc), give them a unique name. For example: Plugins/uk.ac.ucl.cmic.gui.qt.common/resources/CommonResources.qrc</li>
-<li>Adjust files.cmake accordingly to get the build to work.
+<li>Edit files.cmake for the plugin accordingly to reference any files that you rename manually.
 </ol>
 
 As the version of MITK changes, the plugin generator may do this automatically.

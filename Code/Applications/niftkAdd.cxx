@@ -31,7 +31,7 @@
 /*!
  * \file niftkAdd.cxx
  * \page niftkAdd
- * \brief niftkAdd - A program to add two images of equal sizes together on a voxel by voxel basis.
+ * \section niftkAddSummary Runs ITK AddImageFilter to add two images of equal sizes on a voxel by voxel basis.
  *
  * In more detail, this program iterates through two images, which must have the same
  * number of voxels, and adds corresponding voxels together. Technically this means

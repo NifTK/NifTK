@@ -3,7 +3,11 @@
 \page UserManualCommandLineApps Command Line Apps
 
 NifTK also contains a large array of command line applications. These are briefly listed below.
+For the most up to date usage information, run each program with zero arguments.
 
-\li \subpage niftkAdd
+<table>
+<tr><td>\subpage niftkAdd</td><td>\ref niftkAddSummary</td></tr>
+<tr><td>\subpage niftkDicomSeriesReadImageWrite</td><td>\ref niftkDicomSeriesReadImageWriteSummary</td></tr>
+</table>
 
 */
