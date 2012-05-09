@@ -39,8 +39,8 @@
  * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
  *
  * \section niftkAddCaveat Caveats
- * \li File readers may not support the data type correctly.
  * \li File sizes not checked.
+ * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
  */
 void Usage(char *exec)
   {

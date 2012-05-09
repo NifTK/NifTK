@@ -10,4 +10,12 @@ For the most up to date usage information, run each program with zero arguments.
 <tr><td>\subpage niftkDicomSeriesReadImageWrite</td><td>\ref niftkDicomSeriesReadImageWriteSummary</td></tr>
 </table>
 
+\section UserManualCommandLineAppsCaveats Known Caveats
+
+\li Please read \link UnderstandingFileIO some background on file I/O in NifTK.
+\li Most file read/write is based on file extensions, with each file reader/writer being implemented by different
+classes and hence different authors in ITK/MITK/NifTK.  Command line programs make no guarantees about how well these 
+readers/writers work. Please refer to original documentation for each reader/writer.
+\li Many ITK filters work on a "voxel by voxel" basis, such as adding, subtracting and multiplying images. 
+By this we mean that image geometry such as origin, spacing, orientation etc. are not checked.
 */
