@@ -33,7 +33,7 @@ ENDIF(NOT NIFTYSEG_DIR)
 IF(CUDA_FOUND)
 
   FIND_PATH(NIFTYSEG_INCLUDE_DIR
-    niftyseg.h
+    _seg_tools.h
     ${NIFTYSEG_DIR}/include
     ${NIFTYSEG_DIR}-1.0/include
     @NIFTK_LINK_PREFIX@/include
@@ -42,7 +42,7 @@ IF(CUDA_FOUND)
     )
   
   FIND_LIBRARY(NIFTYSEG_LIBRARIES
-    nifty_seg
+    _seg_nifti
     ${NIFTYSEG_DIR}/lib
     ${NIFTYSEG_DIR}-1.0/lib
     @NIFTK_LINK_PREFIX@/lib
@@ -53,7 +53,7 @@ IF(CUDA_FOUND)
 ELSE(CUDA_FOUND)
 
   FIND_PATH(NIFTYSEG_INCLUDE_DIR
-    niftyseg.h
+    _seg_tools.h
     ${NIFTYSEG_DIR}/include
     ${NIFTYSEG_DIR}-1.0/include
     @NIFTK_LINK_PREFIX@/include
@@ -62,7 +62,7 @@ ELSE(CUDA_FOUND)
     )
   
   FIND_LIBRARY(NIFTYSEG_LIBRARIES
-    nifty_seg
+    _seg_nifti
     ${NIFTYSEG_DIR}/lib
     ${NIFTYSEG_DIR}-1.0/lib
     @NIFTK_LINK_PREFIX@/lib
