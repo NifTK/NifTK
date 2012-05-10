@@ -167,6 +167,14 @@ int PrintImageInfo(arguments args)
 
   unsigned long int counter = 0;
   
+  IndexType lowerLeft; 
+  IndexType upperRight; 
+  for (int i = 0; i < Dimension; i++)
+  {
+    lowerLeft[i] = std::numeric_limits<typename IndexType::IndexValueType>::max(); 
+    upperRight[i] = 0; 
+  }
+  
   ScalarType value;
   itk::ImageRegionConstIteratorWithIndex<InputImageType> imageIterator(imageReader->GetOutput(), imageReader->GetOutput()->GetLargestPossibleRegion());
   for (imageIterator.GoToBegin(); !imageIterator.IsAtEnd(); ++imageIterator)
@@ -187,6 +195,19 @@ int PrintImageInfo(arguments args)
           sum += value;
           volume += value*volumePerPixel;
           counter++;
+          
+          IndexType index = imageIterator.GetIndex(); 
+          for (int i = 0; i < Dimension; i++)
+          {
+            if (index[i] > upperRight[i])
+            {
+              upperRight[i] = index[i]; 
+            }
+            if (index[i] < lowerLeft[i])
+            {
+              lowerLeft[i] = index[i]; 
+            }
+          }
         }
     }
   mean = sum / (double)counter;
@@ -223,6 +244,8 @@ int PrintImageInfo(arguments args)
   voxelCoordinate[2] = size[2] - 1;
   imageReader->GetOutput()->TransformContinuousIndexToPhysicalPoint(voxelCoordinate, millimetreCoordinateForITK);
   std::cout << "Image last voxel        :" << voxelCoordinate << " (vox), " << millimetreCoordinateForITK << std::endl;
+  
+  std::cout << "Bounding box: " << lowerLeft << " (vox)," << upperRight << " (vox)." << std::endl; 
 
   return EXIT_SUCCESS;
 }
