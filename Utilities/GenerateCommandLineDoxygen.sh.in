@@ -1,0 +1,144 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+BINARY_DIR=@EXECUTABLE_OUTPUT_PATH@
+DOXYGEN_DIR=@CMAKE_BINARY_DIR@/Doxygen/CommandLine/
+SUMMARY_FILE_APPS=${DOXYGEN_DIR}/CommandLineApplications.dox
+SUMMARY_FILE_SCRIPTS=${DOXYGEN_DIR}/CommandLineScripts.dox
+COPYRIGHT_TEXT="@NIFTK_COPYRIGHT@"
+PLATFORM_TEXT="@NIFTK_PLATFORM@, @NIFTK_VERSION_STRING@"
+WARNING_GENERATED="<b>(Note: This page is generated. Please do not attempt to edit it!)</b>"
+
+echo "Generating Doxygen for command line applications and scripts"
+echo "  binary=${BINARY_DIR}"
+echo "  doxygen=${DOXYGEN_DIR}"
+echo "  copyright filter=${COPYRIGHT_TEXT}"
+echo "  platform_filter=${PLATFORM_TEXT}"
+
+if [ ! -d ${DOXYGEN_DIR} ]; then
+  mkdir -p ${DOXYGEN_DIR}
+fi
+
+for f in Applications Scripts
+do
+
+  if [ "${f}" = "Applications" ]; then
+    SUMMARY_FILE=${SUMMARY_FILE_APPS}
+  else
+    SUMMARY_FILE=${SUMMARY_FILE_SCRIPTS}
+  fi
+  
+  echo "/**" > ${SUMMARY_FILE}
+  echo "" >> ${SUMMARY_FILE}
+  echo "\page UserManualCommandLine${f}Generated Command Line ${f}" >> ${SUMMARY_FILE}
+  echo "" >> ${SUMMARY_FILE}
+  echo "${WARNING_GENERATED}" >> ${SUMMARY_FILE}
+  echo "" >> ${SUMMARY_FILE}
+  echo "NifTK also contains a large array of command line ${f}. These are briefly listed in the table below. The left column links to a page describing the command line usage, and the right column is the first two lines from the usage message." >> ${SUMMARY_FILE}
+  echo "" >> ${SUMMARY_FILE}
+done
+
+echo "\section UserManualCommandLineAppsCaveats Known Caveats" >> ${SUMMARY_FILE_APPS}
+echo "" >> ${SUMMARY_FILE_APPS}
+echo "\li Please read \link UnderstandingFileIO some background \endlink on file I/O in NifTK." >> ${SUMMARY_FILE_APPS}
+echo "\li Most file read/write is based on file extensions, with each file reader/writer being implemented by different" >> ${SUMMARY_FILE_APPS}
+echo "classes and hence different authors in ITK/MITK/NifTK. Thus users should be aware that there may be different behaviour for different file types. " >> ${SUMMARY_FILE_APPS}
+echo "The only way to be sure is to test each application for your own file type of interest. " >> ${SUMMARY_FILE_APPS}
+echo "\li Many ITK filters work on a "voxel by voxel" basis, such as adding, subtracting and multiplying images." >> ${SUMMARY_FILE_APPS} 
+echo "By this we mean that image geometry such as origin, spacing, orientation etc. are not checked." >> ${SUMMARY_FILE_APPS}
+echo "" >> ${SUMMARY_FILE_APPS}
+
+PATH=${BINARY_DIR}:$PATH
+
+for f in Applications Scripts
+do
+  if [ "${f}" = "Applications" ]; then
+    SUMMARY_FILE=${SUMMARY_FILE_APPS}
+  else
+    SUMMARY_FILE=${SUMMARY_FILE_SCRIPTS}
+  fi
+
+  # Work out what files we are dealing with
+  if [ "${f}" = "Applications" ]; then
+    FILE_LIST=`cd ${BINARY_DIR} ; ls niftk* | grep -v TestDriver `
+  else
+    # Aim: files ending in .sh, not containing the word batch, not starting with underscore
+    FILE_LIST=`cd ${BINARY_DIR} ; ls *.sh | grep -v batch | grep -v Batch | grep -v regAIRForVents | egrep -v -e "^[_].*"`
+  fi
+  
+  echo "<table>" >> ${SUMMARY_FILE}
+
+  for g in ${FILE_LIST}
+  do
+    BASENAME=`basename ${g}`
+    echo "Running file ${BASENAME}"
+    
+    # Aim:
+    # The first colum in the table contains the executable name, linked to the Usage statement.
+    # Each usage statement is made by running the application with zero arguments, and putting the output in a file.
+    # The second column in the table contains a 2 line summary, from the top 2 lines of usage 
+    # statement, filtering out NifTK copyright and version information.
+    
+    # First run the application.
+     
+    ${BINARY_DIR}/${g} &> doxygen.executable.txt
+    
+    # Extract a summary file
+    
+    DOXYGEN_SUMMARY=`cat doxygen.executable.txt | grep -v "${COPYRIGHT_TEXT}" | grep -v "${PLATFORM_TEXT}" | head -2`
+    
+    # Generate a doxygen compatible page header
+    
+    echo "/**" > doxygen.header.txt
+    echo "" >> doxygen.header.txt
+    echo "\page ${BASENAME} ${BASENAME}" >> doxygen.header.txt
+    echo "${WARNING_GENERATED}" >> doxygen.header.txt 
+    echo "\verbatim" >> doxygen.header.txt
+    
+    # Generate a doxygen compatible page footer
+    
+    echo "\endverbatim" > doxygen.footer.txt
+    echo "*/" >> doxygen.footer.txt
+    
+    # Stick it all together.
+    
+    cat doxygen.header.txt doxygen.executable.txt doxygen.footer.txt > ${DOXYGEN_DIR}/${BASENAME}.dox
+  
+    # Generate links in summary file  
+    echo "<tr><td>\subpage ${BASENAME}</td><td>${DOXYGEN_SUMMARY}</td></tr>" >> ${SUMMARY_FILE}
+  
+  # End foreach file    
+  done
+
+  echo "</table>" >> ${SUMMARY_FILE}
+  echo "" >> ${SUMMARY_FILE}
+  echo "*/" >> ${SUMMARY_FILE}
+
+# End foreach Applications Scripts
+done
+
+
+

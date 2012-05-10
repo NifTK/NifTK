@@ -631,6 +631,9 @@ FOREACH(type LIBRARY RUNTIME ARCHIVE)
   MARK_AS_ADVANCED(CMAKE_${type}_OUTPUT_DIRECTORY)
 ENDFOREACH()
 
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Utilities/GenerateCommandLineDoxygen.sh.in 
+  ${EXECUTABLE_OUTPUT_PATH}/GenerateCommandLineDoxygen @ONLY)
+
 ######################################################################
 # Compilation specific stuff, like flags etc.
 ######################################################################

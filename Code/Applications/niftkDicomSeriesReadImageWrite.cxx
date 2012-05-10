@@ -34,16 +34,6 @@
 
 #include <vector>
 
-/*!
- * \file niftkDicomSeriesReadImageWrite.cxx
- * \page niftkDicomSeriesReadImageWrite
- * \section niftkDicomSeriesReadImageWriteSummary ITK based DICOM series to image volume converter.
- *
- * Uses ITK ImageSeriesReader to load DICOM volumes using ITK GCDMImageIO, stacks the slices into a volume
- * and then uses ITK ImageFileWrite to output the volume.
- *
- */
-
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "v", NULL, "Verbose output."},

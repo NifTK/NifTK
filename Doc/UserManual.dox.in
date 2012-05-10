@@ -14,8 +14,8 @@ Further information can be obtained be joining:
 \section UserManualTable Table Of Contents
 
 \li \subpage UserManualNiftyView
-\li \subpage UserManualCommandLineApps
-\li \subpage UserManualScripts
+\li \subpage UserManualCommandLineApplicationsGenerated 
+\li \subpage UserManualCommandLineScriptsGenerated
 
 The batch scripts are only written for Unix/Linux/Mac operating systems.
  
