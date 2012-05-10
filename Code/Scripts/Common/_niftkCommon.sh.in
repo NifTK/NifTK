@@ -21,19 +21,19 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
-IMGINFO=`which imginfo`
-MAKEMASK=`which makemask`
-ANCHANGE=`which anchange`
-MAKEROI=`which makeroi`
-REGCHANGE=`which regchange`
-FLIRT=`which flirt`
-FAST=`which fast`
-BC=`which bc`
-CUT=`which cut`
-DATE=`which date`
-COPY=`which cp`
-MOVE=`which mv`
-SED=`which sed`
+IMGINFO=`which imginfo 2> /dev/null `
+MAKEMASK=`which makemask 2> /dev/null `
+ANCHANGE=`which anchange 2> /dev/null `
+MAKEROI=`which makeroi 2> /dev/null `
+REGCHANGE=`which regchange 2> /dev/null `
+FLIRT=`which flirt 2> /dev/null `
+FAST=`which fast 2> /dev/null `
+BC=`which bc 2> /dev/null `
+CUT=`which cut 2> /dev/null `
+DATE=`which date 2> /dev/null `
+COPY=`which cp 2> /dev/null `
+MOVE=`which mv 2> /dev/null `
+SED=`which sed 2> /dev/null `
 
 ####################################################
 # Please try and keep exit codes in this file >= 950
