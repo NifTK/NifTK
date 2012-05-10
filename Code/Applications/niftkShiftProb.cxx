@@ -24,6 +24,17 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
+/*!
+ * \file niftkShiftProb.cxx
+ * \page niftkShiftProb
+ * \section niftkShiftProbSummary Adjust prob. output from STAPLE. 
+ *
+ * This program adjusts prob. output from STAPLE. 
+ * \li Dimensions: 4. 
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float. 
+ *
+ */
+
 int main(int argc, char* argv[])
 {
   const unsigned int Dimension = 4;

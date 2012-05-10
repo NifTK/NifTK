@@ -10,6 +10,20 @@
 #include "itkIndent.h"
 #include <stdio.h>
 
+/*!
+ * \file niftkSimpleBoundaryShiftIntegral.cxx
+ * \page niftkSimpleBoundaryShiftIntegral
+ * \section niftkSimpleBoundaryShiftIntegralSummary     Program to calculate the boundary shift integral, based on the paper". 
+ * 
+ * Program to calculate the boundary shift integral, based on the paper
+ * Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI,
+ * IEEE Trans Med Imaging. 1997 Oct;16(5):623-9.
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
+ *
+ * \section niftkSimpleBoundaryShiftIntegralCaveat Caveats
+ * \li Notice that all the images and masks for intensity normalisation must have the SAME voxel sizes and image dimensions. The same applies to the images and masks for BSI.
+ */
 
 int main(int argc, char* argv[])
 {

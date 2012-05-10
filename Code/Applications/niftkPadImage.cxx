@@ -30,6 +30,18 @@
 #include "itkConstantPadImageFilter.h"
 #include "itkRegionOfInterestImageFilter.h"
 
+/*!
+ * \file niftkPadImage.cxx
+ * \page niftkPadImage
+ * \section niftkPadImageSummary Enlarge the image size and pad it with a background value.
+ *
+ * This program enlarges the image size and pad it with a background value. 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int. 
+ *
+ */
+
+
 int main(int argc, char** argv)
 {
   if (argc < 7) 

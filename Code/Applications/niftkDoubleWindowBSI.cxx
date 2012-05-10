@@ -12,6 +12,25 @@
 #include "itkIndent.h"
 #include <stdio.h>
 
+
+/*!
+ * \file niftkDoubleWindowBSI.cxx
+ * \page niftkDoubleWindowBSI
+ * \section niftkDoubleWindowBSISummary Program to calculate the double window boundary shift integral.
+ * 
+ * This program calculates the double window boundary shift integral. 
+ * The double window BSI aims to capture the boundary change between CSF and GM as well as the boundary change 
+ * between GM and WM. This is mainly used to calculate the caudate BSI because one bounday of 
+ * caudate is CSF/GM and the other side is GM/WM.
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
+ *
+ * \section niftkDoubleWindowBSICaveat Caveats
+ * \li File sizes not checked.
+ * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
+ */
+
+
 /**
  * Typedefs. 
  */

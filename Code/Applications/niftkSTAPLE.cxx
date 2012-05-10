@@ -26,6 +26,21 @@
 #include "itkImageFileWriter.h"
 #include "itkSTAPLEImageFilter.h"
 
+/*!
+ * \file niftkSTAPLE.cxx
+ * \page niftkSTAPLE
+ * \section niftkSTAPLESummary Runs ITK STAPLEImageFilter to perform label fusion.
+ *
+ * STAPLE: The STAPLE algorithm is described in
+ * S. Warfield, K. Zou, W. Wells, "Validation of image segmentation and expert quality with an 
+ * expectation-maximization algorithm" in MICCAI 2002: Fifth International Conference on 
+ * Medical Image Computing and Computer-Assisted Intervention, Springer-Verlag, Heidelberg, Germany, 2002, pp. 298-306.
+ * 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short. 
+ */
+
+
 /**
  * STAPLE: The STAPLE algorithm is described in
  * S. Warfield, K. Zou, W. Wells, "Validation of image segmentation and expert quality with an 

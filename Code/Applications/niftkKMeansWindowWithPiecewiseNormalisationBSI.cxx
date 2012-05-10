@@ -36,6 +36,25 @@
 #include <stdio.h>
 #include "itkCastImageFilter.h"
 
+/*!
+ * \file niftkKMeansWindowNBSIWithPiecewiseNormalisation.cxx
+ * \page niftkKMeansWindowNBSIWithPiecewiseNormalisation
+ * \section niftkKMeansWindowNBSIWithPiecewiseNormalisationSummary     Program to calculate KN-BSI (piecewise normalisation)". 
+ * 
+ * Program to calculate the KN-BSI, based on the papers:
+ * Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI,
+ * IEEE Trans Med Imaging. 1997 Oct;16(5):623-9.
+ * 
+ * Leung et al, Robust atrophy rate measurement in Alzheimer's disease using multi-site serial MRI: Tissue-specific intensity normalization and parameter selection, 
+ * NeuroImage. 2010. 50 (2) 516 - 523.
+ * 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
+ *
+ * \section niftkKMeansWindowNBSIWithPiecewiseNormalisationCaveat Caveats
+ * \li Notice that all the images and masks for intensity normalisation must have the SAME voxel sizes and image dimensions. The same applies to the images and masks for BSI.
+ */
+
 /**
  * Calculate BSI using the linear regression results. 
  */

@@ -37,6 +37,22 @@
 #include "itkDivideImageFilter.h"
 #include "itkImageDuplicator.h"
 
+/*!
+ * \file niftkMTPDbc.cxx
+ * \page niftkMTPDbc
+ * \section niftkMTPDbcSummary Runs multiple-time-point differential bias correction.
+ *
+ * This program runs multiple-time-point differential bias correction, based on:
+ * Emma B. Lewis, Nicholas C. Fox, Correction of differential intensity inhomogeneity in longitudinal MR images, NeuroImage, 
+ * Volume 23, Issue 1, September 2004, Pages 75-83, ISSN 1053-8119, 10.1016/j.neuroimage.2004.04.030.
+ * 
+ * Leung KK, Ridgway GR, Ourselin S, Fox NC, Consistent multi-time-point brain atrophy estimation from the boundary shift integral.
+ * Neuroimage. 2012 Feb 15;59(4):3995-4005.
+ * 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float. 
+ *
+ */
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 

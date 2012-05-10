@@ -11,6 +11,21 @@
 #include "itkIndent.h"
 #include <stdio.h>
 
+/*!
+ * \file niftkKMeansWindowNBSI.cxx
+ * \page niftkKMeansWindowNBSI
+ * \section niftkKMeansWindowNBSISummary     Program to calculate BSI with automatic window". 
+ * 
+ * Program to calculate BSI with automatic window, based on the papers:
+ * Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI,
+ * IEEE Trans Med Imaging. 1997 Oct;16(5):623-9.
+ * 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
+ *
+ * \section niftkKMeansWindowNBSICaveat Caveats
+ * \li Notice that all the images and masks for intensity normalisation must have the SAME voxel sizes and image dimensions. The same applies to the images and masks for BSI.
+ */
 
 int main(int argc, char* argv[])
 {

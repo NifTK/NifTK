@@ -27,6 +27,17 @@
 #include "itkImageFileReader.h"
 #include "itkImageRegionConstIterator.h"
 
+/*!
+ * \file niftkJacobianStatisitcs.cxx
+ * \page niftkJacobianStatisitcs
+ * \section niftkJacobianStatisitcsSummary Take a jacobian image, and a mask, and calculate statistics for the region.
+ *
+ * This program take a jacobian image, and a mask, and calculate statistics for the region.
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float
+ *
+ */
+
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

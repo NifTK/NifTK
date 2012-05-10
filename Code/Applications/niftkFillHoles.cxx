@@ -31,6 +31,17 @@
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
 
+/*!
+ * \file niftkFillHoles.cxx
+ * \page niftkFillHoles
+ * \section niftkFillHolesSummary Runs ITK VotingBinaryIterativeHoleFillingImageFilterType to fill holes in a image.
+ *
+ * This program uses ITK runs ITK VotingBinaryIterativeHoleFillingImageFilterType to fill holes in a image. 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, short
+ *
+ */
+
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_STRING|OPT_REQ, "i",  "filename", "Input image."},
