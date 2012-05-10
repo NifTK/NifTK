@@ -36,6 +36,21 @@
 #include "itkMultiplyImageFilter.h"
 #include "itkDivideImageFilter.h"
 
+/*!
+ * \file niftkDbc.cxx
+ * \page niftkDbc
+ * \section niftkDbcSummary Implements "Correction of differential intensity inhomogeneity in longitudinal MR images", Lewis and Fox, 2004, NeuroImage. 
+ *
+ * This program implements "Correction of differential intensity inhomogeneity in longitudinal MR images", Lewis and Fox, 2004, NeuroImage. 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float. 
+ *
+ * \section niftkDbcCaveat Caveats
+ * \li File sizes not checked.
+ * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
+ */
+
+
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 

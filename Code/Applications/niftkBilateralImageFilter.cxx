@@ -31,7 +31,17 @@
 #include "itkBilateralImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-
+/*!
+ * \file niftkBilteralImageFilter.cxx
+ * \page niftkBilteralImageFilter
+ * \section niftkBilteralImageFilterSummary Runs ITK BilateralImageFilter to do bilteral filter.
+ *
+ * Runs ITK BilateralImageFilter to do bilteral filter. 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
+ *
+ * \section niftkBilteralImageFilterCaveat Caveats
+ */
 void StartUsage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

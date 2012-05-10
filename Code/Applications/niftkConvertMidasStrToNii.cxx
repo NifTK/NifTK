@@ -28,6 +28,14 @@
 #include "itkImageRegistrationFactory.h"
 #include "itkCastImageFilter.h"
 
+/*!
+ * \file niftkConvertMidasStrToNii.cxx
+ * \page niftkConvertMidasStrToNii
+ * \section niftkConvertMidasStrToNiiSummary Converts a Jacobian file in Midas str format to nii format. 
+ *
+ * This program converts a Jacobian file in Midas str format to nii format.
+ * \li Dimensions: 3
+ */
 void Usage(char *name)
 {
   std::cout << "  " << std::endl;

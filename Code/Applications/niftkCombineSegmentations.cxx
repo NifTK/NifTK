@@ -37,6 +37,19 @@
 const unsigned int Dimension = 3;
 typedef short PixelType;
 
+/*!
+ * \file niftkCombineSegmentations.cxx
+ * \page niftkCombineSegmentations
+ * \section niftkCombineSegmentationsSummary Merges several segmentations together to create a single best segmentation. 
+ *
+ * This program Merges several segmentations together to create a single best segmentation using 
+ *   1. STAPLE: Validation of image segmentation and expert quality with an expectation-maximization algorithm, Warfield et. al, MICCAI, 2002.
+ *   2. SBA: Shaped-Based Averaging, Rohlfing and Maurer, TMI, 2007.
+ *   3. VOTE: Multi-classifier framework for atlas-based image segmentation. Rohlfing and Maurer, Pattern Recognition Letters, 2005.
+ * 
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of short. 
+ */
 void StartUsage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

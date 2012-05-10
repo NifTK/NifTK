@@ -33,7 +33,16 @@
 #include "itkImageRegionIterator.h"
 #include "itkImageRegionConstIterator.h"
 
-
+/*!
+ * \file niftkConnectedComponents.cxx
+ * \page niftkConnectedComponents
+ * \section niftkConnectedComponentsSummary Runs ITK ConnectedComponentImageFilter to find connected components.
+ *
+ * This program runs ITK ConnectedComponentImageFilter to find connected components.
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of unsigned char, char, short. 
+ *
+ */
 void StartUsage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

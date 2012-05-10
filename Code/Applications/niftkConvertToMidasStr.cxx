@@ -28,6 +28,15 @@
 #include "itkImageFileWriter.h"
 #include "itkImageRegistrationFactory.h"
 
+/*!
+ * \file niftkConvertToMidasStr.cxx
+ * \page niftkConvertToMidasStr
+ * \section niftkConvertToMidasStrSummary Output a Jacobian file in Midas str format. 
+ *
+ * This program convert a Jacobian file in Midas str format to nii format.
+ * \li Dimensions: 3
+ * \li Pixel type: Vectors only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
