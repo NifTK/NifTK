@@ -38,6 +38,7 @@ class meshStatistics:
                         xPts[self.elements[:,2]], yPts[self.elements[:,2]], zPts[self.elements[:,2]],
                         xPts[self.elements[:,3]], yPts[self.elements[:,3]], zPts[self.elements[:,3]] ) ).T
         
+        # Vectors within each element...
         a = M[:,0:3] - M[:,3: 6]
         b = M[:,0:3] - M[:,6: 9]
         c = M[:,0:3] - M[:,9:12]
@@ -79,7 +80,7 @@ if __name__ == '__main__' :
     vtkMeshName = 'W:/philipsBreastProneSupine/referenceState/00/referenceState/surfMeshImpro.1.vtk'
     mesh = vmr.vtkMeshFileReader( vtkMeshName )
     
-    stat = meshStatistics(mesh.points, mesh.cells[:,1:] )
+    stat = meshStatistics( mesh.points, mesh.cells[:,1:] )
 
 
 

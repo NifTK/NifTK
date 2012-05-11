@@ -12,7 +12,6 @@ import scipy.linalg as la
 import aladinRegistrationTask as aladinTask
 import rregRegistrationTask as rregTask
 import sys
-from buildXMLmodel import minDist
 
 
 def readFileAsArray( strFileNameIn ):

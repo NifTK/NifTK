@@ -414,8 +414,8 @@ class numericalBreastPhantom:
 
 
 
-    def generateXMLmodel( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
-                          fileIdentifier=None, extMeshNodes=None, skin='none' ):
+    def generateXMLmodel( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, gravityLoadShape = 'RAMP', 
+                          fileIdentifier=None, extMeshNodes=None, skin='none', outputFrequency = 5000 ):
         ''' @summary: Generates the xml model
             @param gravityVector:    Direction of gravity
             @param gravityMagnitude: Assumed gravitational acceleration
@@ -432,6 +432,8 @@ class numericalBreastPhantom:
         if not os.path.exists(self.outVolMesh) :
             print('Error: Surface mesh does not exists')
             return
+        
+        self.outputFrequency  = outputFrequency
         
         if self.materialGen == None:
             self.materialGen = matGen.materialSetGenerator( self.mesh.volMeshPoints, 
@@ -484,8 +486,8 @@ class numericalBreastPhantom:
             
         
         
-        gen.setGravityConstraint( gravityVector, gravityMagnitude, gen.allNodesArray, 'RAMP' )
-        gen.setOutput( 5000, 'U' )
+        gen.setGravityConstraint( gravityVector, gravityMagnitude, gen.allNodesArray, gravityLoadShape )
+        gen.setOutput( self.outputFrequency, 'U' )
         gen.setSystemParameters( timeStep           = self.timeStep, 
                                  totalTime          = self.totalTime, 
                                  dampingCoefficient = self.damping, 

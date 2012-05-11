@@ -15,7 +15,7 @@ from mayaviPlottingWrap import plotArrayAs3DPoints, plotVectorsAtPoints
 
 
 
-def referenceStatePhantomExperiment( configID ) :
+def referenceStatePhantomExperiment( configID ) : 
 
     if ( (configID != '00'   ) and (configID != '01'   ) and (configID != '02'   ) and (configID != '03'   ) and
          (configID != '00s'  ) and (configID != '01s'  ) and (configID != '02s'  ) and (configID != '03s'  ) and
@@ -224,7 +224,7 @@ def referenceStatePhantomExperiment( configID ) :
         aXmlGenP1G.append(xmlGenP1G)
         
         niftySimCmd    = 'niftySim'
-        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport '
+        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport -export ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
         
         if cmdEx.runCommand( niftySimCmd, niftySimParams ) != 0 :
             print('Simulation diverged.')
@@ -246,7 +246,7 @@ def referenceStatePhantomExperiment( configID ) :
         xmlGenP1S2G = phantom.generateXMLmodel( gravSupine, 20, p1s2G, deformP1G.deformedNodes * 1000., skin=simSkin )
         aXmlGenP1S2G.append( xmlGenP1S2G )
          
-        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport '
+        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport -export ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
     
         if cmdEx.runCommand( niftySimCmd, niftySimParams ) != 0 :
             print('Simulation diverged.')
@@ -265,7 +265,7 @@ def referenceStatePhantomExperiment( configID ) :
         xmlGenS1G = phantom.generateXMLmodel( gravSupine, 10, s1G, skin=simSkin )
         aXmlGenS1G.append( xmlGenS1G )
         
-        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport '
+        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
         
         if cmdEx.runCommand( niftySimCmd, niftySimParams ) != 0 :
             print('Simulation diverged.')
