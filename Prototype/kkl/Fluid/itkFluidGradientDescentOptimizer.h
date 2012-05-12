@@ -145,6 +145,7 @@ public:
   itkGetMacro(IsSymmetric, bool); 
   itkSetMacro(DBCStepSizeTrigger, double); 
   itkSetMacro(UseJacobianInForce, bool); 
+  itkSetMacro(ComposeTransformation, bool); 
   
   /** Start optimization. */
   virtual void StartOptimization( void );
@@ -471,6 +472,10 @@ protected:
    * Use Jacobian in calculating force. 
    */
   bool m_UseJacobianInForce; 
+  /**
+   * Compose transformation intead of adding. 
+   */
+  bool m_ComposeTransformation; 
   
   
 private:

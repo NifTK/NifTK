@@ -139,6 +139,7 @@ void EndUsage()
   std::cout << "    -dbc fixed_mask moving_mask size   Perform DBC during registration. " << std::endl;
   std::cout << "    -uj                                Use Jacobian in force." << std::endl; 
   std::cout << "    -rmask                             Resample within the mask." << std::endl; 
+  std::cout << "    -co                                Compose transform instead of adding." << std::endl; 
   std::cout << std::endl; 
   std::cout << "    ///////////////////////////////////////////////////////////////////////////////////" << std::endl; 
   std::cout << "    // The following options are not really used.                                      " << std::endl; 
@@ -394,6 +395,7 @@ int fluid_main(int argc, char** argv)
   double dbcStepSizeTrigger = 0.5; 
   bool useJacobianInForce = false; 
   bool resampleWithinMask = false; 
+  bool composeTransform = false; 
 
   for(int i=1; i < argc; i++){
     if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
@@ -726,6 +728,10 @@ int fluid_main(int argc, char** argv)
     else if (strcmp(argv[i], "-rmask") == 0) {
       resampleWithinMask = true; 
       std::cout << "Set -rmask " << std::endl;
+    }
+    else if (strcmp(argv[i], "-co") == 0) {
+      composeTransform = true; 
+      std::cout << "Set -co " << std::endl;
     }
     else{
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
@@ -1067,6 +1073,7 @@ int fluid_main(int argc, char** argv)
     optimizer->SetAsgdMask(asgdMaskImage); 
   }
   optimizer->SetUseJacobianInForce(useJacobianInForce); 
+  optimizer->SetComposeTransformation(composeTransform); 
   // optimizer->SetIsPropagateRegriddedMovingImage(true); 
   if (isSymmetric)
   {

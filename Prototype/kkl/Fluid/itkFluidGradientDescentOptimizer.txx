@@ -53,6 +53,7 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   this->m_UseJacobianInForce = false;   
   
   this->m_DBCStepSizeTrigger = 0.5; 
+  this->m_ComposeTransformation = false; 
   
   niftkitkDebugMacro(<< "FluidGradientDescentOptimizer():Constructed");
 }
@@ -325,27 +326,58 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
   // For Fluid, the deformation is already the output of the grid. 
     
   typedef ImageRegionIterator<typename DeformableTransformType::DeformableParameterType> DeformableParametersIteratorType; 
-  DeformableParametersIteratorType currentDeformableParametersIterator(current, current->GetLargestPossibleRegion()); 
-  DeformableParametersIteratorType nextDeformableParametersIterator(next, next->GetLargestPossibleRegion()); 
   
-  for (currentDeformableParametersIterator.GoToBegin(), nextDeformableParametersIterator.GoToBegin(), iterator.GoToBegin(); 
-       !iterator.IsAtEnd(); 
-       ++currentDeformableParametersIterator, ++nextDeformableParametersIterator, ++iterator)
+  if (!m_ComposeTransformation)
   {
-    nextDeformableParametersIterator.Set(currentDeformableParametersIterator.Get() + iterator.Get()*bestStepSize); 
+    // Add up to the next deformation. 
+    DeformableParametersIteratorType currentDeformableParametersIterator(current, current->GetLargestPossibleRegion()); 
+    DeformableParametersIteratorType nextDeformableParametersIterator(next, next->GetLargestPossibleRegion()); 
+    
+    for (currentDeformableParametersIterator.GoToBegin(), nextDeformableParametersIterator.GoToBegin(), iterator.GoToBegin(); 
+        !iterator.IsAtEnd(); 
+        ++currentDeformableParametersIterator, ++nextDeformableParametersIterator, ++iterator)
+    {
+      nextDeformableParametersIterator.Set(currentDeformableParametersIterator.Get() + iterator.Get()*bestStepSize); 
+    }
+  }
+  else
+  {
+    // Compose the next deformation. 
+    std::cout << "Composing next deformation field..."; 
+    next = DeformableTransformType::DuplicateDeformableParameters(current); 
+    for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+    {
+      iterator.Set(iterator.Get()*bestStepSize); 
+    }
+    GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(next, output, 1); 
+    std::cout << "Done" << std::endl; 
   }
   
   if (this->m_IsSymmetric)
   {
     OutputImageIteratorType fixedIterator(m_FluidVelocityToFixedImageDeformationFilter->GetOutput(), m_FluidVelocityToFixedImageDeformationFilter->GetOutput()->GetLargestPossibleRegion());
-    DeformableParametersIteratorType currentFixedDeformableParametersIterator(currentFixed, currentFixed->GetLargestPossibleRegion()); 
-    DeformableParametersIteratorType nextFixedDeformableParametersIterator(nextFixed, nextFixed->GetLargestPossibleRegion()); 
-    
-    for (currentFixedDeformableParametersIterator.GoToBegin(), nextFixedDeformableParametersIterator.GoToBegin(), fixedIterator.GoToBegin(); 
-        !fixedIterator.IsAtEnd(); 
-        ++currentFixedDeformableParametersIterator, ++nextFixedDeformableParametersIterator, ++fixedIterator)
+    if (!m_ComposeTransformation)
     {
-      nextFixedDeformableParametersIterator.Set(currentFixedDeformableParametersIterator.Get() + fixedIterator.Get()*bestFixedImageStepSize); 
+      DeformableParametersIteratorType currentFixedDeformableParametersIterator(currentFixed, currentFixed->GetLargestPossibleRegion()); 
+      DeformableParametersIteratorType nextFixedDeformableParametersIterator(nextFixed, nextFixed->GetLargestPossibleRegion()); 
+      
+      for (currentFixedDeformableParametersIterator.GoToBegin(), nextFixedDeformableParametersIterator.GoToBegin(), fixedIterator.GoToBegin(); 
+          !fixedIterator.IsAtEnd(); 
+          ++currentFixedDeformableParametersIterator, ++nextFixedDeformableParametersIterator, ++fixedIterator)
+      {
+        nextFixedDeformableParametersIterator.Set(currentFixedDeformableParametersIterator.Get() + fixedIterator.Get()*bestFixedImageStepSize); 
+      }
+    }
+    else 
+    {
+      std::cout << "Composing nextFixed deformation field..."; 
+      nextFixed = DeformableTransformType::DuplicateDeformableParameters(currentFixed); 
+      for (fixedIterator.GoToBegin(); !fixedIterator.IsAtEnd(); ++fixedIterator)
+      {
+        fixedIterator.Set(fixedIterator.Get()*bestFixedImageStepSize); 
+      }
+      GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(nextFixed, m_FluidVelocityToFixedImageDeformationFilter->GetOutput(), 1); 
+      std::cout << "Done" << std::endl;  
     }
   }
     
