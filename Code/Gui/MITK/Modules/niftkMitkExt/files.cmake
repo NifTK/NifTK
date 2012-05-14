@@ -18,7 +18,8 @@ set(CPP_FILES
   DataManagement/mitkITKRegionParametersDataNodeProperty.cpp
   IO/itkAnalyzeImageIO3160.cpp
   IO/itkDRCAnalyzeImageIO3160.cpp
-  IO/mitkDRCItkImageFileReader.cpp
-  IO/mitkDRCItkImageFileIOFactory.cpp
-  Algorithms/mitkDRCCoreObjectFactory.cpp
+  IO/itkNiftiImageIO3201.cpp
+  IO/mitkNifTKItkImageFileReader.cpp
+  IO/mitkNifTKItkImageFileIOFactory.cpp
+  Algorithms/mitkNifTKCoreObjectFactory.cpp
 )

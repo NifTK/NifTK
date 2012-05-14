@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef MITKDRCITKIMAGEUIFACTORY_H
-#define MITKDRCITKIMAGEUIFACTORY_H
+#ifndef MITKNIFTKITKIMAGEUIFACTORY_H
+#define MITKNIFTKITKIMAGEUIFACTORY_H
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
@@ -37,17 +37,18 @@ namespace mitk
 {
 
 /**
- * \class DRCItkImageFileIOFactory
- * \brief A DRC specific MITK Object factory, to instantiate file readers based on ITK technology,
+ * \class NifTKItkImageFileIOFactory
+ * \brief A NifTK specific MITK Object factory, to instantiate file readers based on ITK technology,
  * where the functionality will differ from the standard MITK Object factory, due to the
- * Analyze images being flipped/converted as per DRC "standards".
+ * Analyze images being flipped/converted as per DRC "standards", and Nifti images
+ * including sform if present.
  */
-class NIFTKMITKEXT_EXPORT DRCItkImageFileIOFactory : public itk::ObjectFactoryBase
+class NIFTKMITKEXT_EXPORT NifTKItkImageFileIOFactory : public itk::ObjectFactoryBase
 {
 public:
 
   /** Standard class typedefs. */
-  typedef DRCItkImageFileIOFactory       Self;
+  typedef NifTKItkImageFileIOFactory     Self;
   typedef itk::ObjectFactoryBase         Superclass;
   typedef itk::SmartPointer<Self>        Pointer;
   typedef itk::SmartPointer<const Self>  ConstPointer;
@@ -58,24 +59,24 @@ public:
 
   /** Method for class instantiation. */
   itkFactorylessNewMacro(Self);
-  static DRCItkImageFileIOFactory* FactoryNew() { return new DRCItkImageFileIOFactory;}
+  static NifTKItkImageFileIOFactory* FactoryNew() { return new NifTKItkImageFileIOFactory;}
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(DRCItkImageFileIOFactory, ObjectFactoryBase);
+  itkTypeMacro(NifTKItkImageFileIOFactory, ObjectFactoryBase);
 
   /** Register one factory of this type  */
   static void RegisterOneFactory(void)
   {
-    DRCItkImageFileIOFactory::Pointer factory = DRCItkImageFileIOFactory::New();
+    NifTKItkImageFileIOFactory::Pointer factory = NifTKItkImageFileIOFactory::New();
     ObjectFactoryBase::RegisterFactory(factory);
   }
 
 protected:
-  DRCItkImageFileIOFactory();
-  ~DRCItkImageFileIOFactory();
+  NifTKItkImageFileIOFactory();
+  ~NifTKItkImageFileIOFactory();
 
 private:
-  DRCItkImageFileIOFactory(const Self&); //purposely not implemented
+  NifTKItkImageFileIOFactory(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
 };
@@ -83,4 +84,4 @@ private:
 
 } // end namespace mitk
 
-#endif // MITKDRCITKIMAGEUIFACTORY_H
+#endif // MITKNIFTKITKIMAGEUIFACTORY_H

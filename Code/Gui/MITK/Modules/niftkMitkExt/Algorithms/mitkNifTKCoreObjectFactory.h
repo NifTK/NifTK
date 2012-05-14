@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef MITKDRCCOREOBJECTFACTORY_H
-#define MITKDRCCOREOBJECTFACTORY_H
+#ifndef MITKNIFTKCOREOBJECTFACTORY_H
+#define MITKNIFTKCOREOBJECTFACTORY_H
 
 #include "mitkCoreObjectFactory.h"
 #include "niftkMitkExtExports.h"
@@ -31,20 +31,20 @@
 namespace mitk {
 
 /**
- * \class DRCCoreObjectFactory
+ * \class NifTKCoreObjectFactory
  * \brief Object factory class to create and register our factory classes.
  *
  * Specifically, this class contains the logic to register a DRC specific
- * Analyze image reader, and this class contains the logic to instantiate
- * the normal MITK object factory, hunt down and kill the "normal"
- * MITK based image file reader that is based on ITK, and installs our
- * ITK based file reader.
+ * Analyze image reader, and NifTK specific Nifti reader and additionally,
+ * this class contains the logic to instantiate the normal MITK object factory,
+ * hunt down and kill the "normal" MITK based image file reader that is based on ITK,
+ * and installs our ITK based file reader.
  */
-class NIFTKMITKEXT_EXPORT DRCCoreObjectFactory : public CoreObjectFactoryBase
+class NIFTKMITKEXT_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
 {
   public:
-    mitkClassMacro(DRCCoreObjectFactory,CoreObjectFactoryBase);
-    itkNewMacro(DRCCoreObjectFactory);
+    mitkClassMacro(NifTKCoreObjectFactory,CoreObjectFactoryBase);
+    itkNewMacro(NifTKCoreObjectFactory);
     virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
     virtual void SetDefaultProperties(mitk::DataNode* node);
     virtual const char* GetFileExtensions();
@@ -52,7 +52,7 @@ class NIFTKMITKEXT_EXPORT DRCCoreObjectFactory : public CoreObjectFactoryBase
     virtual const char* GetSaveFileExtensions();
     virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
   protected:
-    DRCCoreObjectFactory(bool registerSelf = true);
+    NifTKCoreObjectFactory(bool registerSelf = true);
     void CreateFileExtensionsMap();
     MultimapType m_FileExtensionsMap;
     MultimapType m_SaveFileExtensionsMap;
@@ -60,7 +60,7 @@ class NIFTKMITKEXT_EXPORT DRCCoreObjectFactory : public CoreObjectFactoryBase
 
 }
 // global declaration for simple call by applications
-void NIFTKMITKEXT_EXPORT RegisterDRCCoreObjectFactory();
+void NIFTKMITKEXT_EXPORT RegisterNifTKCoreObjectFactory();
 
 #endif
 

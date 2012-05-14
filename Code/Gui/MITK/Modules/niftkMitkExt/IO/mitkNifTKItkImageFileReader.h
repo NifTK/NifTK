@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef MITKDRCITKIMAGEFILEREADER_H
-#define MITKDRCITKIMAGEFILEREADER_H
+#ifndef MITKNIFTKITKIMAGEFILEREADER_H
+#define MITKNIFTKITKIMAGEFILEREADER_H
 
 #include "niftkMitkExtExports.h"
 #include "mitkCommon.h"
@@ -33,15 +33,18 @@
 namespace mitk {
 
 /**
- * \class DRCItkImageFileReader
- * \brief DRC specific version of file reader that uses ITK readers to read images, APART
- * from Analyze, where we override the normal pipeline to cope with DRC specific versions.
+ * \class NifTKItkImageFileReader
+ * \brief NifTK specific version of an ItkImageFileReader that uses ITK readers to read images, APART
+ * from Analyze and Nifti, where we override the normal ITK classes and install NifTK specific ones.
+ *
+ * For Analyze images, we flip them to cope with DRC conventions.
+ * For Nifti images, we include the sform if present.
  */
-class /*NIFTKMITKEXT_EXPORT*/ DRCItkImageFileReader : public ItkImageFileReader
+class /*NIFTKMITKEXT_EXPORT*/ NifTKItkImageFileReader : public ItkImageFileReader
 {
 public:
 
-    mitkClassMacro(DRCItkImageFileReader, ItkImageFileReader);
+    mitkClassMacro(NifTKItkImageFileReader, ItkImageFileReader);
 
     /** Method for creation through the object factory. */
     itkNewMacro(Self);
@@ -50,8 +53,8 @@ protected:
 
     virtual void GenerateData();
 
-    DRCItkImageFileReader();
-    ~DRCItkImageFileReader();
+    NifTKItkImageFileReader();
+    ~NifTKItkImageFileReader();
 
 private:
 
@@ -65,4 +68,4 @@ private:
 
 } // namespace mitk
 
-#endif // MITKDRCITKIMAGEFILEREADER_H
+#endif // MITKNIFTKITKIMAGEFILEREADER_H

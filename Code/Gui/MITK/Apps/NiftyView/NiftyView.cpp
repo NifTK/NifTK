@@ -28,7 +28,7 @@
 #include <QMessageBox>
 #include <QtSingleApplication>
 
-#include "mitkDRCCoreObjectFactory.h"
+#include "mitkNifTKCoreObjectFactory.h"
 
 class QtSafeApplication : public QtSingleApplication
 {
@@ -119,11 +119,11 @@ int main(int argc, char** argv)
   // So, for now we block them completely.  This could be command line driven, or just done on Windows.
   vtkObject::GlobalWarningDisplayOff();
 
-  // This is a DRC specific override (could make it controlled by command line params).
+  // This is a NifTK specific override (could make it controlled by command line params).
   // It takes care of registering the default MITK core object factories, which includes
   // the ITK based file reader. It then hunts down the ITK based file reader, and kills
-  // it, and replaces it with a more DRC suitable one.
-  RegisterDRCCoreObjectFactory();
+  // it, and replaces it with a more NifTK suitable one.
+  RegisterNifTKCoreObjectFactory();
 
   return berry::Starter::Run(argc, argv, sbConfig);
 }

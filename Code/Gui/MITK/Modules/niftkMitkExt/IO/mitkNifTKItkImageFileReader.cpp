@@ -23,7 +23,7 @@
  ============================================================================*/
 
 #include "mitkConfig.h"
-#include "mitkDRCItkImageFileReader.h"
+#include "mitkNifTKItkImageFileReader.h"
 #include "mitkImageCast.h"
 #include "itkImageFileReader.h"
 #include "itksys/SystemTools.hxx"
@@ -34,20 +34,24 @@
 #include "itkImageIORegion.h"
 #include "itkImageIOBase.h"
 #include "itkDRCAnalyzeImageIO3160.h"
+#include "itkNiftiImageIO3201.h"
 
-mitk::DRCItkImageFileReader::DRCItkImageFileReader()
+// TODO: Marc - make this load our Nifti reader called
+
+mitk::NifTKItkImageFileReader::NifTKItkImageFileReader()
 {
 }
 
-mitk::DRCItkImageFileReader::~DRCItkImageFileReader()
+mitk::NifTKItkImageFileReader::~NifTKItkImageFileReader()
 {
 }
 
-void mitk::DRCItkImageFileReader::GenerateData()
+void mitk::NifTKItkImageFileReader::GenerateData()
 {
+
   // Basic plan here:
   // If its Analyze,
-  //   call DRC specific functionality
+  //   call NifTK specific functionality
   // Else
   //   call base class functionality
 
@@ -60,7 +64,7 @@ void mitk::DRCItkImageFileReader::GenerateData()
     //   We don't know data type.
     //   So take a peek at the header,
     //   Then instantiate the right type itkFileReader
-    //   Override the default (ITK) IO object, with the DRC specific one
+    //   Override the default (ITK) IO object, with the NifTK specific one
     //   Read image
     //   Use mitk::Image::InitializeFromItk to create the output.
     try
@@ -76,7 +80,7 @@ void mitk::DRCItkImageFileReader::GenerateData()
         itk::ImageIOBase::IOComponentType componentType = imageIO->GetComponentType();
         unsigned int numberOfDimensions = imageIO->GetNumberOfDimensions();
 
-        MITK_INFO << "DRCItkImageFileReader::GenerateData(), Reading data using DRC specific code, numberOfDimensions=" << numberOfDimensions << ", componentType=" << imageIO->GetComponentTypeAsString(componentType) << std::endl;
+        MITK_INFO << "NifTKItkImageFileReader::GenerateData(), Reading data using NifTK specific code, numberOfDimensions=" << numberOfDimensions << ", componentType=" << imageIO->GetComponentTypeAsString(componentType) << std::endl;
 
         switch(componentType)
         {
@@ -211,17 +215,17 @@ void mitk::DRCItkImageFileReader::GenerateData()
   }
   else
   {
-    MITK_INFO << "DRCItkImageFileReader::GenerateData(), reverting to ItkImageFileReader::GenerateData()" << std::endl;
+    MITK_INFO << "NifTKItkImageFileReader::GenerateData(), reverting to ItkImageFileReader::GenerateData()" << std::endl;
     ItkImageFileReader::GenerateData();
   }
 }
 
 template<unsigned int VImageDimension, typename TPixel>
 bool
-mitk::DRCItkImageFileReader
+mitk::NifTKItkImageFileReader
 ::LoadImageUsingItk(mitk::Image::Pointer mitkImage, std::string fileName)
 {
-  MITK_INFO << "DRCItkImageFileReader::LoadImageUsingItk loading filename=" << fileName << std::endl;
+  MITK_INFO << "NifTKItkImageFileReader::LoadImageUsingItk loading filename=" << fileName << std::endl;
 
   bool result = false;
 
@@ -238,7 +242,7 @@ mitk::DRCItkImageFileReader
 
     mitk::CastToMitkImage<ImageType>(reader->GetOutput(), mitkImage);
 
-    MITK_INFO << "DRCItkImageFileReader::LoadImageUsingItk finished" << std::endl;
+    MITK_INFO << "NifTKItkImageFileReader::LoadImageUsingItk finished" << std::endl;
     result = true;
   }
   catch( itk::ExceptionObject& err )

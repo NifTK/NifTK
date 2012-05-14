@@ -23,33 +23,33 @@
  ============================================================================*/
 
 #include "mitkIOAdapter.h"
-#include "mitkDRCItkImageFileIOFactory.h"
-#include "mitkDRCItkImageFileReader.h"
+#include "mitkNifTKItkImageFileIOFactory.h"
+#include "mitkNifTKItkImageFileReader.h"
 #include "itkVersion.h"
 
 namespace mitk
 {
-DRCItkImageFileIOFactory::DRCItkImageFileIOFactory()
+NifTKItkImageFileIOFactory::NifTKItkImageFileIOFactory()
 {
   this->RegisterOverride("mitkIOAdapter",
-                         "mitkDRCItkImageFileReader",
-                         "DRC specific ITK based image IO",
+                         "mitkNifTKItkImageFileReader",
+                         "NifTK specific ITK based image IO",
                          1,
-                         itk::CreateObjectFunction<IOAdapter<DRCItkImageFileReader> >::New());
+                         itk::CreateObjectFunction<IOAdapter<NifTKItkImageFileReader> >::New());
 }
 
-DRCItkImageFileIOFactory::~DRCItkImageFileIOFactory()
+NifTKItkImageFileIOFactory::~NifTKItkImageFileIOFactory()
 {
 }
 
-const char* DRCItkImageFileIOFactory::GetITKSourceVersion() const
+const char* NifTKItkImageFileIOFactory::GetITKSourceVersion() const
 {
   return ITK_SOURCE_VERSION;
 }
 
-const char* DRCItkImageFileIOFactory::GetDescription() const
+const char* NifTKItkImageFileIOFactory::GetDescription() const
 {
-  return "DRCItkImageFile IO Factory, allows the DRC specific loading of images supported by ITK";
+  return "NifTKItkImageFile IO Factory, allows the NifTK specific loading of images supported by ITK";
 }
 
 } // end namespace mitk

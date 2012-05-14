@@ -22,26 +22,26 @@
 
  ============================================================================*/
 
-#include "mitkDRCCoreObjectFactory.h"
+#include "mitkNifTKCoreObjectFactory.h"
 
 #include "mitkProperties.h"
 #include "mitkBaseRenderer.h"
 #include "mitkDataNode.h"
 #include "mitkImage.h"
-#include "mitkDRCItkImageFileIOFactory.h"
+#include "mitkNifTKItkImageFileIOFactory.h"
 #include "mitkVolumeDataVtkMapper3D.h"
 #include "mitkImageVtkMapper2D.h"
 #include "mitkItkImageFileIOFactory.h"
 
 #include "itkObjectFactory.h"
 
-mitk::DRCCoreObjectFactory::DRCCoreObjectFactory(bool /*registerSelf*/)
+mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
 :CoreObjectFactoryBase()
 {
   static bool alreadyDone = false;
   if (!alreadyDone)
   {
-    MITK_INFO << "DRCCoreObjectFactory c'tor" << std::endl;
+    MITK_INFO << "NifTKCoreObjectFactory c'tor" << std::endl;
 
     // At this point in this constructor, the main MITK CoreObjectFactory has been created,
     // (because in RegisterDRCCoreObjectFactory, the call to mitk::CoreObjectFactory::GetInstance()
@@ -62,17 +62,17 @@ mitk::DRCCoreObjectFactory::DRCCoreObjectFactory(bool /*registerSelf*/)
 
     // Load our specific factory, which will be used to load all ITK images, just like the MITK one,
     // but then in addition, will load DRC Analyze files differently.
-    mitk::DRCItkImageFileIOFactory::RegisterOneFactory();
+    mitk::NifTKItkImageFileIOFactory::RegisterOneFactory();
 
     // Carry on as per normal.
     CreateFileExtensionsMap();
     alreadyDone = true;
-    MITK_INFO << "DRCCoreObjectFactory c'tor finished" << std::endl;
+    MITK_INFO << "NifTKCoreObjectFactory c'tor finished" << std::endl;
   }
 
 }
 
-mitk::Mapper::Pointer mitk::DRCCoreObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
+mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
 {
   mitk::Mapper::Pointer newMapper = NULL;
   mitk::BaseData *data = node->GetData();
@@ -88,7 +88,7 @@ mitk::Mapper::Pointer mitk::DRCCoreObjectFactory::CreateMapper(mitk::DataNode* n
   return newMapper;
 }
 
-void mitk::DRCCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
+void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 {
 
   if(node == NULL)
@@ -106,7 +106,7 @@ void mitk::DRCCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
   }
 }
 
-void mitk::DRCCoreObjectFactory::CreateFileExtensionsMap()
+void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 {
   // Nothing to do. We don't need the following, if the file extensions are already in mitkCoreObjectFactory.cpp.
   /*
@@ -118,37 +118,37 @@ void mitk::DRCCoreObjectFactory::CreateFileExtensionsMap()
   */
 }
 
-mitk::DRCCoreObjectFactory::MultimapType mitk::DRCCoreObjectFactory::GetFileExtensionsMap()
+mitk::NifTKCoreObjectFactory::MultimapType mitk::NifTKCoreObjectFactory::GetFileExtensionsMap()
 {
   return m_FileExtensionsMap;
 }
 
-mitk::DRCCoreObjectFactory::MultimapType mitk::DRCCoreObjectFactory::GetSaveFileExtensionsMap()
+mitk::NifTKCoreObjectFactory::MultimapType mitk::NifTKCoreObjectFactory::GetSaveFileExtensionsMap()
 {
   return m_SaveFileExtensionsMap;
 }
 
-const char* mitk::DRCCoreObjectFactory::GetFileExtensions()
+const char* mitk::NifTKCoreObjectFactory::GetFileExtensions()
 {
   std::string fileExtension;
   this->CreateFileExtensions(m_FileExtensionsMap, fileExtension);
   return fileExtension.c_str();
 };
 
-const char* mitk::DRCCoreObjectFactory::GetSaveFileExtensions()
+const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
 {
   std::string fileExtension;
   this->CreateFileExtensions(m_SaveFileExtensionsMap, fileExtension);
   return fileExtension.c_str();
 }
 
-void RegisterDRCCoreObjectFactory()
+void RegisterNifTKCoreObjectFactory()
 {
-  static bool oneDRCCoreObjectFactoryRegistered = false;
-  if ( ! oneDRCCoreObjectFactoryRegistered )
+  static bool oneNifTKCoreObjectFactoryRegistered = false;
+  if ( ! oneNifTKCoreObjectFactoryRegistered )
   {
-    MITK_INFO << "Registering DRCCoreObjectFactory..." << std::endl;
-    mitk::CoreObjectFactory::GetInstance()->RegisterExtraFactory(mitk::DRCCoreObjectFactory::New());
-    oneDRCCoreObjectFactoryRegistered = true;
+    MITK_INFO << "Registering NifTKCoreObjectFactory..." << std::endl;
+    mitk::CoreObjectFactory::GetInstance()->RegisterExtraFactory(mitk::NifTKCoreObjectFactory::New());
+    oneNifTKCoreObjectFactoryRegistered = true;
   }
 }
