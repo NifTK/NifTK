@@ -34,6 +34,17 @@
 
 #include "itkLogHelper.h"
 
+/*!
+ * \file niftkBackProject2Dto3D.cxx
+ * \page niftkBackProject2Dto3D
+ * \section niftkBackProject2Dto3DSummary Back projects a 2D image into a 3D volume.
+ *
+ *
+ * \li Dimensions: Input must be 2D, output is 3D.
+ * \li Pixel type: Scalars only, of type float.
+ *
+ * \section niftkBackProject2Dto3DCaveat Caveats
+ */
 
 void Usage(char *exec)
   {

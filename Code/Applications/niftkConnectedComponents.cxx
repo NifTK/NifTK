@@ -47,7 +47,7 @@ void StartUsage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
-  std::cout << "  Connected component analysis " << std::endl;
+  std::cout << "  Runs ITK ConnectedComponentImageFilter to find connected components. " << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  " << name << " <input> <output_prefix> <output_ext> -largest -background background -verbose" << std::endl;
   std::cout << "  " << std::endl;

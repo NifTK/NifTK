@@ -30,11 +30,26 @@
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
 
+/*!
+ * \file niftkAverage.cxx
+ * \page niftkAverage
+ * \section niftkAverageSummary Uses ITK ImageFileReader to load any number of input images, creating the arithmetic mean on a voxel by voxel basis, writing the output with ITK ImageFileWriter.
+ *
+ * This program uses ITK ImageFileReaders to load any number of images, and then uses simple ITK iterators to accumulate
+ * the data into a single image before calculating the arithmetic mean. The output is written using ITK ImageFileWriter.
+ *
+ * \li Dimensions: 2,3
+ * \li Pixel type: All input images are converted to float on input.
+ *
+ * \section niftkAverageCaveat Caveats
+ * \li All images must have the same size, determined by an ITK Region, which checks the Region Size and Index.
+ */
+
 void Usage(char *exec)
   {
 	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Create's an average (arithmetic mean) from a group of images. All input images must be the same size." << std::endl;
+    std::cout << "  Uses ITK ImageFileReader to load any number of input images, creating the arithmetic mean on a voxel by voxel basis, writing the output with ITK ImageFileWriter. All input images must be the same size, and are converted to float on input, and hence are float on output." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -o outputImage -i inputImage " << std::endl;
     std::cout << "  " << std::endl;

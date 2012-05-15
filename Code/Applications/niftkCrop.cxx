@@ -27,11 +27,24 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
+/*!
+ * \file niftkCrop.cxx
+ * \page niftkCrop
+ * \section niftkCropSummary Crops the input image using the mask.
+ *
+ * \li Dimensions: 3
+ * \li Pixel type: Scalars only, of type short.
+ *
+ * \section niftkCropCavear Caveats
+ * \li File sizes not checked.
+ * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
+ */
+
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Crops the input image using the mask" << std::endl;
+    std::cout << "  Crops the input image using the mask." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -m maskFileName -o outputFileName" << std::endl;
     std::cout << "  " << std::endl;

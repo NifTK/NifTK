@@ -34,12 +34,28 @@
 #include "vtkFloatArray.h"
 #include "vtkIndent.h"
 
+/*!
+ * \file niftkConvertImageToVTKStrcuturedGrid.cxx
+ * \page niftkConvertImageToVTKStrcuturedGrid
+ * \section niftkConvertImageToVTKStrcuturedGridSummary Transform's an image, as read by ITK, into a VTK structured grid. This program was written because ITK only writes VTK structured points, which doesn't include direction cosines.
+ *
+ * This program uses ITK ImageFileReaders to load an image. A VTK Structured Grid is created programmatically
+ * and is passed to a VTK StructuredGridWriter.
+ *
+ * \li Dimensions: 2,3. 2D images are converted to 3D images of 1 slice thickness.
+ * \li Pixel type: Scalars only, converted to float on input.
+ *
+ * \section niftkConvertImageToVTKStrcuturedGridCaveat Caveats
+ */
+
 void Usage(char *exec)
   {
 	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Transform's an image, as read by ITK, into a VTK structured grid." << std::endl;
-    std::cout << "  This program was written because ITK only writes VTK structured points, which doesn't include direction cosines." << std::endl;
+    std::cout << "  Transform's an image, as read by ITK, into a VTK structured grid. This program was written because ITK only writes VTK structured points, which doesn't include direction cosines." << std::endl;
+    std::cout << "  Note:" << std::endl;
+    std::cout << "    1. 2D images are converted to 3D images of 1 slice." << std::endl;
+    std::cout << "    2. Data is converted to float." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputImage.nii -o outputImage.vtk [options]" << std::endl;
     std::cout << "  " << std::endl;

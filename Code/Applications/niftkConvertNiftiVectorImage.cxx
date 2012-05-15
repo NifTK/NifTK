@@ -1,14 +1,26 @@
-/*
- * Purpose: Convert a vector image saved as a nifti-file into a different format...
- *          The issue with itk is, that it does not recognise a vector valued image
- *          purely by the image dimensions. For itk the intent_code must be correctly
- *          set to NIFIT_INTENT_VECTOR = 1007. For correct itk-internal image handling
- *          an intermediate image is generated () prior to reading.
- *
- *          The file extension of the output image file name will be stripped and
- *          replaced with "nii" to define an inter mediate image.
- */
+/*=============================================================================
 
+ NifTK: An image processing toolkit jointly developed by the
+ Dementia Research Centre, and the Centre For Medical Image Computing
+ at University College London.
+
+ See:
+ http://dementia.ion.ucl.ac.uk/
+ http://cmic.cs.ucl.ac.uk/
+ http://www.ucl.ac.uk/
+
+ $Author:: jhh                 $
+ $Date:: 2010-07-06 13:48:39 +#$
+ $Rev:: 3464                   $
+
+ Copyright (c) UCL : See the file NifTKCopyright.txt in the top level
+ directory for futher details.
+
+ This software is distributed WITHOUT ANY WARRANTY; without even
+ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the above copyright notices for more information.
+
+ ============================================================================*/
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -25,6 +37,16 @@
 
 #include "boost/filesystem.hpp"
 
+/*
+ * Purpose: Convert a vector image saved as a nifti-file into a different format...
+ *          The issue with itk is, that it does not recognise a vector valued image
+ *          purely by the image dimensions. For itk the intent_code must be correctly
+ *          set to NIFIT_INTENT_VECTOR = 1007. For correct itk-internal image handling
+ *          an intermediate image is generated () prior to reading.
+ *
+ *          The file extension of the output image file name will be stripped and
+ *          replaced with "nii" to define an inter mediate image.
+ */
 
 /*
  * Stucture defining the command line options

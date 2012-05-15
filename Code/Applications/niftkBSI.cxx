@@ -12,11 +12,12 @@
 /*!
  * \file niftkBSI.cxx
  * \page niftkBSI
- * \section niftkBSISummary     Program to calculate the boundary shift integral, based on the paper". 
+ * \section niftkBSISummary Program to calculate the boundary shift integral, based on the paper".
  * 
  * Program to calculate the boundary shift integral, based on the paper
  * Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI,
  * IEEE Trans Med Imaging. 1997 Oct;16(5):623-9.
+ *
  * \li Dimensions: 3
  * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
  *
@@ -28,29 +29,26 @@ int main(int argc, char* argv[])
 	if (argc < 13)
 	{
 	  niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);
-	  std::cerr << std::endl;
-    std::cerr << "Classic BSI" << std::endl << std::endl; 
-		std::cerr << "Program to calculate the boundary shift integral, based on the paper" << std::endl; 
-		std::cerr << "  Freeborough PA and Fox NC, The boundary shift integral: an accurate and" << std::endl; 
-		std::cerr << "  robust measure of cerebral volume changes from registered repeat MRI," << std::endl; 
-		std::cerr << "  IEEE Trans Med Imaging. 1997 Oct;16(5):623-9." << std::endl << std::endl;
-		std::cerr << "Usage: " << argv[0] << std::endl;
-		std::cerr << "         <baseline image for intensity normalisation>" << std::endl; 
-		std::cerr << "         <baseline mask for intensity normalisation>" << std::endl; 
-		std::cerr << "         <repeat image for intensity normalisation>" << std::endl; 
-		std::cerr << "         <repeat mask for intensity normalisation>" << std::endl; 
-		std::cerr << "         <baseline image for BSI>" << std::endl;
-		std::cerr << "         <baseline mask for BSI>" << std::endl; 
-		std::cerr << "         <repeat image for BSI>" << std::endl;
-		std::cerr << "         <repeat mask for BSI>" << std::endl;
-		std::cerr << "         <number of erosion>" << std::endl;
-		std::cerr << "         <number of dilation>" << std::endl;
-		std::cerr << "         <lower intensity in the BSI window in %% mean brain intensity>" << std::endl;
-		std::cerr << "         <upper intensity in the BSI window in %% mean brain intensity>" << std::endl;
-		std::cerr << "         <optional: sub ROI to intersect with the BSI XOR region>" << std::endl << std::endl;
-		std::cerr << "Notice that all the images and masks for intensity normalisation must " << std::endl;
-		std::cerr << "have the SAME voxel sizes and image dimensions. The same applies to the " << std::endl;
-		std::cerr << "images and masks for BSI." << std::endl;
+	  std::cout << std::endl;
+    std::cout << "Classic BSI. Program to calculate the boundary shift integral, based on the paper: Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI, IEEE Trans Med Imaging. 1997 Oct;16(5):623-9." << std::endl;
+		std::cout << "  " << std::endl;
+		std::cout << "Usage: " << argv[0] << std::endl;
+		std::cout << "         <baseline image for intensity normalisation>" << std::endl;
+		std::cout << "         <baseline mask for intensity normalisation>" << std::endl;
+		std::cout << "         <repeat image for intensity normalisation>" << std::endl;
+		std::cout << "         <repeat mask for intensity normalisation>" << std::endl;
+		std::cout << "         <baseline image for BSI>" << std::endl;
+		std::cout << "         <baseline mask for BSI>" << std::endl;
+		std::cout << "         <repeat image for BSI>" << std::endl;
+		std::cout << "         <repeat mask for BSI>" << std::endl;
+		std::cout << "         <number of erosion>" << std::endl;
+		std::cout << "         <number of dilation>" << std::endl;
+		std::cout << "         <lower intensity in the BSI window in %% mean brain intensity>" << std::endl;
+		std::cout << "         <upper intensity in the BSI window in %% mean brain intensity>" << std::endl;
+		std::cout << "         <optional: sub ROI to intersect with the BSI XOR region>" << std::endl << std::endl;
+		std::cout << "Notice that all the images and masks for intensity normalisation must " << std::endl;
+		std::cout << "have the SAME voxel sizes and image dimensions. The same applies to the " << std::endl;
+		std::cout << "images and masks for BSI." << std::endl;
 		return EXIT_FAILURE;
 	}
 	

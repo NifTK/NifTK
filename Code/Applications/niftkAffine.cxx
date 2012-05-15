@@ -38,11 +38,22 @@
 #include "itkTransformFileWriter.h"
 #include "itkImageMomentsCalculator.h"
 
+/*!
+ * \file niftkAffine.cxx
+ * \page niftkAffine
+ * \section niftkAffineSummary Using standard ITK filters, and the NifTK image registration library, implements a general purpose affine registration.
+ *
+ * \li Dimensions: 2,3.
+ * \li Pixel type: Scalar images only that are converted to float on input.
+ *
+ * \section niftkAffineCaveats Caveats
+ * \li Rarely used in 2D, use with caution.
+ */
 void StartUsage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
-  std::cout << "  Implements a general purpose affine 3D registration." << std::endl;
+  std::cout << "  Using standard ITK filters, and the NifTK image registration library, implements a general purpose affine registration." << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  " << name << " -ti <filename> -si <filename> -ot <filename> [options] " << std::endl;
   std::cout << "  " << std::endl;  

@@ -29,12 +29,20 @@
 #include "itkTransformFileWriter.h"
 #include "itkAffineTransform.h"
 
+/*!
+ * \file niftkCreateAffineTransform.cxx
+ * \page niftkCreateAffineTransform
+ * \section niftkCreateAffineTransformSummary Creates an ITK affine transformation from user specified parameters.
+ *
+ * \section niftkCreateAffineTransformCaveat Caveats
+ */
+
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     
     std::cout << "  " << std::endl
-	      << "  Creates an affine transformation from user specified parameters" << std::endl
+	      << "  Creates an ITK affine transformation from user specified parameters." << std::endl
 	      << "  (transformation order is: UnChangeOrigin Translate Rx Ry Rz Scale Skew ChangeOrigin)." << std::endl
 	      << "  If your origin is (0,0,0), then the order is the same as SPM, but we specify rotations in degrees not radians." << std::endl << std::endl
 

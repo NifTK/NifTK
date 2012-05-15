@@ -31,7 +31,7 @@
 /*!
  * \file niftkConvertToMidasStr.cxx
  * \page niftkConvertToMidasStr
- * \section niftkConvertToMidasStrSummary Output a Jacobian file in Midas str format. 
+ * \section niftkConvertToMidasStrSummary Output a Jacobian file in MIDAS str format.
  *
  * This program convert a Jacobian file in Midas str format to nii format.
  * \li Dimensions: 3
@@ -41,7 +41,7 @@ void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
-  std::cout << "  Output a Jacobian file in Midas str format." << std::endl;
+  std::cout << "  Output a Jacobian file in MIDAS str format." << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  " << name << " -ti input -oi outputJacobian -ov outputVector -onii outputNiiJacobian" << std::endl;
   std::cout << "  " << std::endl;  

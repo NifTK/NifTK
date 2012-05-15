@@ -31,7 +31,7 @@
 /*!
  * \file niftkConvertMidasStrToNii.cxx
  * \page niftkConvertMidasStrToNii
- * \section niftkConvertMidasStrToNiiSummary Converts a Jacobian file in Midas str format to nii format. 
+ * \section niftkConvertMidasStrToNiiSummary Converts a Jacobian file in MIDAS str format to nii format.
  *
  * This program converts a Jacobian file in Midas str format to nii format.
  * \li Dimensions: 3
@@ -39,7 +39,7 @@
 void Usage(char *name)
 {
   std::cout << "  " << std::endl;
-  std::cout << "  Convert a Jacobian file in Midas str format to nii format." << std::endl;
+  std::cout << "  Convert a Jacobian file in MIDAS str format to nii format." << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  " << name << " -ti inputImage inputStr -onii outputNiiJacobian" << std::endl;
   std::cout << "  " << std::endl;  

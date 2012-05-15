@@ -102,9 +102,9 @@ do
     # The second column in the table contains a 2 line summary, from the top 2 lines of usage 
     # statement, filtering out NifTK copyright and version information.
     
-    # First run the application.
+    # First run the application with the -h switch.
      
-    ${BINARY_DIR}/${g} &> doxygen.executable.txt
+    ${BINARY_DIR}/${g} -h &> doxygen.executable.txt
     
     # Extract a summary file
     

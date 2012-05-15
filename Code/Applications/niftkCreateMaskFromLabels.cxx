@@ -30,12 +30,27 @@
 #include <set>
 #include <algorithm>
 
+/*!
+ * \file niftkCreateMaskFromLabels.cxx
+ * \page niftkCreateMaskFromLabels
+ * \section niftkCreateMaskFromLabelsSummary Given an image and a list of labels, will output a binary mask, where all voxels with voxel intensities matching the list are output as foreground, and all other voxels are background.
+ *
+ * This program uses ITK ImageFileReaders to load an image, creates an output image programmatically and
+ * then simply compares voxels against the input list of intensities. If the voxel matches the list, the output is
+ * a foreground pixel and if the voxels does not match, the output is a background voxel.
+ *
+ * \li Dimensions: 2,3
+ * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
+ *
+ * \section niftkCreateMaskFromLabelsCaveat Caveats
+ */
+
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Given an image and a list of labels, will output a binary mask, where all voxels with" << std::endl;
-    std::cout << "  the specified voxel intensities are output as foreground, and all other voxels are background" << std::endl;
+    std::cout << "  voxel intensities matching the list are output as foreground, and all other voxels are background." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

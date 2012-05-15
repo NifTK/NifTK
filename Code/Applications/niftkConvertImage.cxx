@@ -33,12 +33,21 @@
 #include "itkINRImageIOFactory.h"
 #include "itkVectorImage.h"
 
+/*!
+ * \file niftkConvertImage.cxx
+ * \page niftkConvertImage
+ * \section niftkConvertImageSummary Converts an input file to an output file. Originally based on Marc Modat's convertImage.
+ *
+ * \li Dimensions: 2,3
+ *
+ * \section niftkConvertImageCaveat Caveats
+ */
+
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Converts an input file to an output file" << std::endl;
-    std::cout << "  Originally based on Marc Modat's convertImage" << std::endl;
+    std::cout << "  Converts an input file to an output file. Originally based on Marc Modat's convertImage." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

@@ -43,12 +43,28 @@ class InvalidImageSizeException: public std::exception
   }
 } myex;
 
+/*!
+ * \file niftkAtlasStatistics.cxx
+ * \page niftkAtlasStatistics
+ * \section niftkAtlasStatisticsSummary Takes an atlas, containing a set of image labels, and for each input image, and for each region, computes region based statistics (count, min, max, mean, std dev, median, IQM), resulting in a comma separated output.
+ *
+ * This program uses ITK ImageFileReaders to load an atlas follwed by any number of images images, and then image iterators to
+ * compute region based statistics.
+ *
+ * \li Dimensions: 2,3
+ * \li Pixel type: The atlas is loaded as an int type, and data volumes as float.
+ *
+ * \section niftkAtlasStatisticsCaveats Caveats
+ * \li File sizes not checked.
+ * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
+ */
+
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Takes an atlas, containing a set of image labels, and for each input image, " << std::endl;
-  std::cout << "  and for each region, computes a bunch of statistics, resulting in a comma separated output. " << std::endl;
+  std::cout << "  and for each region, computes region based statistics (count, min, max, mean, std dev, median, IQM), resulting in a comma separated output. " << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  The input images MUST already be in atlas space, no checking is performed." << std::endl;
   std::cout << "  " << std::endl;

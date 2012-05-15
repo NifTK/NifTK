@@ -1,4 +1,3 @@
-
 /*=============================================================================
 
  NifTK: An image processing toolkit jointly developed by the

@@ -31,10 +31,11 @@
 /*!
  * \file niftkAnd.cxx
  * \page niftkAnd
- * \section niftkAndSummary Runs ITK AAndImageFilter to add two images of equal sizes on a voxel by voxel basis.
+ * \section niftkAndSummary Runs the ITK AndImageFilter to add two images of equal sizes on a voxel by voxel basis.
  *
  * This program uses ITK ImageFileReaders to load two images, and then uses ITK AndImageFilter to and them
  * together on a voxel by voxel basis before writing them with ITK ImageFileWriter.
+ *
  * \li Dimensions: 2,3
  * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
  *
@@ -43,12 +44,11 @@
  * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
  */
 
-
 void Usage(char *exec)
   {
 	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK and image function" << std::endl;
+    std::cout << "  Runs the ITK AndImageFilter to add two images of equal sizes on a voxel by voxel basis." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName1 -j inputFileName2 -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

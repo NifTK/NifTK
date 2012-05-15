@@ -29,11 +29,25 @@
 #include "itkImageFileWriter.h"
 #include "itkAbsImageFilter.h"
 
+/*!
+ * \file niftkAbsImageFilter.cxx
+ * \page niftkAbsImageFilter
+ * \section niftkAbsImageFilterSummary Runs the ITK AbsImageFilter on a single image to output the absolute value image.
+ *
+ * This program uses ITK ImageFileReaders to load an image, then ITK AbsImageFilter to take the absolute value of each voxel
+ * and then writes the output using ITK ImageFileWriter.
+ *
+ * \li Dimensions: 2,3.
+ * \li Pixel type: Scalars only of char, short, int, long, float and double.
+ *
+ * \section niftkAbsImageFilterCaveat Caveats
+ * \li None.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Take the abs value of an image, for displaying the image properly in Midas" << std::endl;
+    std::cout << "  Runs the ITK AbsImageFilter on a single image to output the absolute value image, useful for displaying the image properly in MIDAS" << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName" << std::endl;
     std::cout << "  " << std::endl;

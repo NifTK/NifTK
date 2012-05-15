@@ -35,11 +35,19 @@
 #include <iostream>
 #include <fstream>
 
+/*!
+ * \file niftkConvertTransformToRIREFormat.cxx
+ * \page niftkConvertTransformToRIREFormat
+ * \section niftkConvertTransformToRIREFormatSummary Converts an ITK transformation file to that required by Vanderbilt's Retrospective Image Registration Evaluation project.
+
+ * \section niftkConvertTransformToRIREFormatCaveat Caveats
+ */
+
 void Usage(char *exec)
   {
 	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Converts an ITK transformation file to that required by Vanderbilt's Retrospective Image Registration Evaluation" << std::endl;
+    std::cout << "  Converts an ITK transformation file to that required by Vanderbilt's Retrospective Image Registration Evaluation project." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputImage -t inputTransformationFile -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;
