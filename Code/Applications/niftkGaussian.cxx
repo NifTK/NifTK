@@ -28,11 +28,16 @@
 #include "itkImageFileWriter.h"
 #include "itkDiscreteGaussianImageFilter.h"
 
+/*!
+ * \file niftkGaussian.cxx
+ * \page niftkGaussian
+ * \section niftkGaussianSummary Runs the ITK DiscreteGaussianImageFilter.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK Gaussian smoothing function" << std::endl;
+    std::cout << "  Runs the ITK DiscreteGaussianImageFilter." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

@@ -33,11 +33,16 @@
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkPoint.h"
 
+/*!
+ * \file niftkMapVolumeDataToPolyDataVertices.cxx
+ * \page niftkMapVolumeDataToPolyDataVertices
+ * \section niftkMapVolumeDataToPolyDataVerticesSummary Takes an image and a VTK PolyData, and for each vertex, interpolates the image, and stores the scalar value with the vertex.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Takes an image and a VTK PolyData, and for each vertex, interpolates the image, and stores the scalar value with the vertex" << std::endl;
+    std::cout << "  Takes an image and a VTK PolyData, and for each vertex, interpolates the image, and stores the scalar value with the vertex." << std::endl;
     std::cout << "  In actuality, if you set radius to zero, we just interpolate volume." << std::endl;
     std::cout << "  If you set a radius and a number of steps, we search for the closest value" << std::endl;
     std::cout << "  " << std::endl;

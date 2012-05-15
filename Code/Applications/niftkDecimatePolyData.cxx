@@ -28,11 +28,16 @@
 #include "vtkPolyDataWriter.h"
 #include "vtkDecimatePro.h"
 
+/*!
+ * \file niftkDecimatePolyData.cxx
+ * \page niftkDecimatePolyData
+ * \section niftkDecimatePolyDataSummary Runs the VTK vtkDecimatePro filter on a vtkPolyData.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs the VTK vtkDecimatePro filter on a vtkPolyData" << std::endl;
+    std::cout << "  Runs the VTK vtkDecimatePro filter on a vtkPolyData." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputPolyData.vtk -o outputPolyData.vtk [options]" << std::endl;
     std::cout << "  " << std::endl;

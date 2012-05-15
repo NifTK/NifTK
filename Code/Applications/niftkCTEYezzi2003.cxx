@@ -34,6 +34,11 @@
 #include "itkOrderedTraversalStreamlinesFilter.h"
 #include "itkCastImageFilter.h"
 
+/*!
+ * \file niftkCTEYezzi2003.cxx
+ * \page niftkCTEYezzi2003
+ * \section niftkCTEYezzi2003Summary Implements Yezzi and Prince, IEEE TMI Vol. 22, No. 10, Oct 2003, for cortical thickness.
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

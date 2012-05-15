@@ -31,6 +31,12 @@
 #include "vtkContourFilter.h"
 #include "NifTKConfigure.h"
 
+/*!
+ * \file niftkMarchingCubes.cxx
+ * \page niftkMarchingCubes
+ * \section niftkMarchingCubesSummary Takes an image as a VTK structured grid (NOT structured points), and performs a marching cubes iso-surface extraction.
+ */
+
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

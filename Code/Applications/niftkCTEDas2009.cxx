@@ -41,6 +41,11 @@
 #include "itkDiscreteGaussianImageFilter.h"
 #include "itkMultiplyImageFilter.h"
 
+/*!
+ * \file niftkCTEDas2009.cxx
+ * \page niftkCTEDas2009
+ * \section niftkCTEDas2009Summary Implements "Registration based cortical thickness measurement" S. R. Das et. al., NeuroImage 45 (2009) 867-879
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

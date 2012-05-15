@@ -30,6 +30,11 @@
 #include "itkConversionUtils.h"
 #include "itkSpatialOrientationAdapter.h"
 
+/*!
+ * \file niftkResetDirectionField.cxx
+ * \page niftkResetDirectionField
+ * \section niftkResetDirectionFieldSummary Takes a copy of an input image, copying data into another image, where the origin, spacing and direction can be over-written.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

@@ -50,8 +50,6 @@
  * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
  */
 
-
-
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_STRING|OPT_REQ, "i1",  "filename", "Input image 1."},

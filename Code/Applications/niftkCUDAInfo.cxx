@@ -30,6 +30,11 @@
 #include <string.h>
 #include <stdio.h>
 
+/*!
+ * \file niftkCUDAInfo.cxx
+ * \page niftkCUDAInfo
+ * \section niftkCUDAInfoSummary Prints out information on the GPU enabled devices on the current machine.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

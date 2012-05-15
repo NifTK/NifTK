@@ -34,6 +34,11 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 
+/*!
+ * \file niftkGradientVectorField.cxx
+ * \page niftkGradientVectorField
+ * \section niftkGradientVectorFieldSummary Take the gradient of an image, and outputs a vector image. Mainly used for generating test images.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

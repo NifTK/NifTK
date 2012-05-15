@@ -27,11 +27,16 @@
 #include "itkImageFileWriter.h"
 #include "itkShiftScaleImageFilter.h"
 
+/*!
+ * \file niftkShiftScale.cxx
+ * \page niftkShiftScale
+ * \section niftkShiftScaleSummary Runs the ITK ShiftScaleImageFilter.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK shift scale image function" << std::endl;
+    std::cout << "  Runs the ITK ShiftScaleImageFilter." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

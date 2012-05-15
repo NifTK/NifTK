@@ -40,11 +40,16 @@
 #include "itkIdentityTransform.h"
 #include "itkShiftScaleImageFilter.h"
 
+/*!
+ * \file niftkTransformation.cxx
+ * \page niftkTransformation
+ * \section niftkTransformationSummary Transforms an image by a transformation.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Transforms an image by a transformation" << std::endl;
+    std::cout << "  Transforms an image by a transformation." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -ti inputFixedImage -si inputMovingImage -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

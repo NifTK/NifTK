@@ -29,6 +29,11 @@
 #include "itkImageFileWriter.h"
 #include "itkForwardAndBackProjectionDifferenceFilter.h"
 
+/*!
+ * \file niftkForwardAndBackProjectionDifferenceFilter.cxx
+ * \page niftkForwardAndBackProjectionDifferenceFilter
+ * \section niftkForwardAndBackProjectionDifferenceFilterSummar Compute the difference between a set of projection images and a reconstruction estimate (or zero).
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

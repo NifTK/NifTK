@@ -34,6 +34,12 @@
 #include "itkImageFileWriter.h"
 #include <algorithm>
 
+/*!
+ * \file niftkCTEExtractGMWMBoundaryFromLabelImage.cxx
+ * \page niftkCTEExtractGMWMBoundaryFromLabelImage
+ * \section niftkCTEExtractGMWMBoundaryFromLabelImageSummary From a given label image, assumed to have 3 values, one for GM, one for WM and one for CSF, will extract the GM/WM boundary.
+ */
+
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

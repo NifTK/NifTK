@@ -28,11 +28,16 @@
 #include "itkImageFileWriter.h"
 #include "itkSubtractImageFilter.h"
 
+/*!
+ * \file niftkSubtract.cxx
+ * \page niftkSubtract
+ * \section niftkSubtractSummary Runs the ITKSubtractImageFilter.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK subtract image function" << std::endl;
+    std::cout << "  Runs the ITKSubtractImageFilter." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName1 -j inputFileName2 -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

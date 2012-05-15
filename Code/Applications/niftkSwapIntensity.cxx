@@ -30,6 +30,11 @@
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
 
+/*!
+ * \file niftkSwapIntensity.cxx
+ * \page niftkSwapIntensity
+ * \section niftkSwapIntensitySummary Takes an image and swaps one intensity for another.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

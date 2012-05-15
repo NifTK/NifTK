@@ -31,6 +31,11 @@
 #include <iostream>
 #include <fstream>
 
+/*!
+ * \file niftkDecomposeAffineMatrix.cxx
+ * \page niftkDecomposeAffineMatrix
+ * \section niftkDecomposeAffineMatrixSummary Decomposes an affine transformation, See also niftkCreateAffineTransform.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

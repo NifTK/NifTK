@@ -30,7 +30,6 @@
  * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
  */
 
-
 /**
  * Typedefs. 
  */

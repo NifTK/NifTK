@@ -34,6 +34,11 @@
 #include "itkImageFileWriter.h"
 #include <algorithm>
 
+/*!
+ * \file niftkCTEMaskedSmoothing.cxx
+ * \page niftkCTEMaskedSmoothing
+ * \section niftkCTEMaskedSmoothingSummary Takes a data image (eg. thickness) and a binary mask, and for each voxel in the mask image > 0 will compute the inter quartile mean of the data image within a circular radius.
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

@@ -30,6 +30,12 @@
 #include "itkImageRegionIterator.h"
 #include "itkImageRegionIteratorWithIndex.h"
 
+/*!
+ * \file niftkCTEAcosta2009Subsampling.cxx
+ * \page niftkCTEAcosta2009Subsampling
+ * \section niftkCTEAcosta2009SubsamplingSummary Implements the subsampling described in section 3.2 and 3.2.1 of Acosta et. al. MIA 13 (2009) 730-743 doi:10.1016/j.media.2009.07.03
+ */
+
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

@@ -26,6 +26,11 @@
 #include "itkCommandLineHelper.h"
 #include "itkEulerAffineTransform.h"
 
+/*!
+ * \file niftkInvertAffineTransform.cxx
+ * \page niftkInvertAffineTransform
+ * \section niftkInvertAffineTransformSummary Inverts an affine transform.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

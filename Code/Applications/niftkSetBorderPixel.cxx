@@ -29,11 +29,16 @@
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkImageRegionIterator.h"
 
+/*!
+ * \file niftkSetBorderPixel.cxx
+ * \page niftkSetBorderPixel
+ * \section niftkSetBorderPixelSummary Simply sets the border pixel to the specified value.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Simply sets the border pixel to the specified value" << std::endl;
+    std::cout << "  Simply sets the border pixel to the specified value." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

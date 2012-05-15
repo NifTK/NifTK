@@ -37,6 +37,11 @@
 #include "itkMIDASDownSamplingFilter.h"
 #include "itkMIDASUpSamplingFilter.h"
 
+/*!
+ * \file niftkExtractScalp.cxx
+ * \page niftkExtractScalp
+ * \section niftkExtractScalpSummary Implements Dogdas et al. Human Brain Mapping 26:273-285(2005) to extract the scalp.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

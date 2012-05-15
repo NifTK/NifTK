@@ -28,11 +28,16 @@
 #include "itkImageFileWriter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
+/*!
+ * \file niftkRescale.cxx
+ * \page niftkRescale
+ * \section niftkRescaleSummary Runs ITK RescaleIntensityImageFilter.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK rescale image function" << std::endl;
+    std::cout << "  Runs ITK RescaleIntensityImageFilter." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;

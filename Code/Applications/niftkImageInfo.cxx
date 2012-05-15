@@ -34,11 +34,16 @@
 #include "itkContinuousIndex.h"
 #include "itkPoint.h"
 
+/*!
+ * \file niftkImageInfo.cxx
+ * \page niftkImageInfo
+ * \section niftkImageInfoSummary Prints image hader information.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Prints image information" << std::endl;
+    std::cout << "  Prints image hader information." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i <image> [options]" << std::endl;
     std::cout << "  " << std::endl;

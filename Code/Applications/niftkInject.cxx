@@ -27,6 +27,11 @@
 #include "itkImageFileWriter.h"
 #include "itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter.h"
 
+/*!
+ * \file niftkInject.cxx
+ * \page niftkInject
+ * \section niftkInjectSummary Injects a mask image into the input image.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

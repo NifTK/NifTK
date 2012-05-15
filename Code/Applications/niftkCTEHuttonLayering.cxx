@@ -35,6 +35,13 @@
 #include "itkVector.h"
 #include "itkBinaryThresholdImageFilter.h"
 
+/*!
+ * \file niftkCTEHuttonLayering.cxx
+ * \page niftkCTEHuttonLayering
+ * \section niftkCTEHuttonLayeringSummary Implements Chloe Hutton's method for detecting sulcal CSF via adding layers of GM and iteratively calculating thickness.
+ *
+ * See section 'Preserving cortocal topography' as found in Hutton et. al. NeuroImage 2008 paper: doi:10.1016/j.neuroimage.2008.01.027
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

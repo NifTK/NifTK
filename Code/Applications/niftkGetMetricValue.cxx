@@ -39,15 +39,18 @@ typedef itk::ImageFileReader<ImageType> ImageReaderType;
 typedef itk::ImageRegionConstIterator<ImageType> IteratorType;
 typedef itk::RescaleIntensityImageFilter<ImageType,ImageType> RescaleFilter;
 
+/*!
+ * \file niftkGetMetricValue.cxx
+ * \page niftkGetMetricValue
+ * \section niftkGetMetricValueSummary This program returns a metric value (NMI, MI, JE, SSD) between two input files
+ */
 void Usage(char *exec)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
   std::cout<<std::endl;
-	std::cout<<" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"<<std::endl;
 	std::cout<<"This program returns a metric value between two input files"<<std::endl;
 	std::cout<< "Usage:\t"<< exec << " <inputFileName> <inputFileName> [metric] [bin number]"<<std::endl;
 	std::cout<< "Metric:\t"<<"0:NMI | 1:MI | 2:JE | 3:SSD"<<std::endl;
-	std::cout<<" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"<<std::endl;
 	return;
 }
 

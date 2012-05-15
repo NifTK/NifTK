@@ -28,27 +28,10 @@
 #include "itkMultiplyImageFilter.h"
 #include "itkExtendedBrainMaskWithSmoothDropOffCompositeFilter.h"
 
-void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs Fluid Cropping process" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -m maskFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image " << std::endl;
-    std::cout << "    -m    <filename>        Mask image " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -t    <float> [127]     Initial threshold for mask" << std::endl;
-    std::cout << "    -f    <int>   [3]       First round of dilations" << std::endl;
-    std::cout << "    -s    <int>   [2]       Second round of dilations" << std::endl;
-    std::cout << "    -g    <float> [2]       Gaussian FWHM in mm" << std::endl;
-  }
-
-/**
- * \brief Takes an image and a mask, and crops the image around the mask.
+/*!
+ * \file niftkDilateMaskAndCrop.cxx
+ * \page niftkDilateMaskAndCrop
+ * \section niftkDilateMaskAndCropSummary Takes an image and a mask, and crops the image around the mask.
  *
  * This program was designed for Nicky Hobbs to create a brain mask for her 
  * fluid registration experiments. As per email from Jo Barnes, you have 4 parameters,
@@ -77,8 +60,26 @@ void Usage(char *exec)
  * 6.) Then multiply the image by the mask.
  * 
  * </pre>
- 
  */
+void Usage(char *exec)
+  {
+    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    std::cout << "  " << std::endl;
+    std::cout << "  Runs Fluid Cropping process" << std::endl;
+    std::cout << "  " << std::endl;
+    std::cout << "  " << exec << " -i inputFileName -m maskFileName -o outputFileName [options]" << std::endl;
+    std::cout << "  " << std::endl;
+    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+    std::cout << "    -i    <filename>        Input image " << std::endl;
+    std::cout << "    -m    <filename>        Mask image " << std::endl;
+    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;
+    std::cout << "*** [options]   ***" << std::endl << std::endl;
+    std::cout << "    -t    <float> [127]     Initial threshold for mask" << std::endl;
+    std::cout << "    -f    <int>   [3]       First round of dilations" << std::endl;
+    std::cout << "    -s    <int>   [2]       Second round of dilations" << std::endl;
+    std::cout << "    -g    <float> [2]       Gaussian FWHM in mm" << std::endl;
+  }
+
 int main(int argc, char** argv)
 {
 

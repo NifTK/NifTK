@@ -30,6 +30,11 @@
 #include "itkContinuousIndex.h"
 #include "itkVector.h"
 
+/*!
+ * \file niftkResetVoxelDimensionsField.cxx
+ * \page niftkResetVoxelDimensionsField
+ * \section niftkResetVoxelDimensionsFieldSummary Loads an image in, and sets the voxel size to the ones you specified.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

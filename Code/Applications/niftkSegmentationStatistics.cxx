@@ -29,12 +29,16 @@
 #include "itkImageRegionConstIterator.h"
 #include "itkLogHelper.h"
 
+/*!
+ * \file niftkSegmentationStatistics.cxx
+ * \page niftkSegmentationStatistics
+ * \section niftkSegmentationStatisticsSummary Computes segmentation statistics between different segmentations. Initially based on Shattuck et. al. NeuroImage 45(2009) 431-439.
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
-  std::cout << "  Computes segmentation statistics between different segmentations." << std::endl;
-  std::cout << "  Initially based on Shattuck et. al. NeuroImage 45(2009) 431-439." << std::endl;
+  std::cout << "  Computes segmentation statistics between different segmentations. Initially based on Shattuck et. al. NeuroImage 45(2009) 431-439." << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  " << name << " -si groundTruthSegmentedImage [options] segmentedExample1 segmentedExample2 ... segmentedExampleN" << std::endl;
   std::cout << "  " << std::endl;  

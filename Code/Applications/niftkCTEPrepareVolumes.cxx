@@ -40,6 +40,12 @@
 
 typedef float InputPixelType;
 
+/*!
+ * \file niftkCTEPrepareVolumes.cxx
+ * \page niftkCTEPrepareVolumes
+ * \section niftkCTEPrepareVolumesSummary Takes up to 5 volumes, each one being a probability map with values [0-1], and produces a single volume with 3 labels (GM, WM, CSF).
+ */
+
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

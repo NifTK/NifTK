@@ -45,6 +45,12 @@
 #include "itkTransformFileWriter.h"
 #include "itkLinearlyInterpolatedDerivativeFilter.h"
 
+/*!
+ * \file niftkFFD.cxx
+ * \page niftkFFD
+ * \section niftkFFDSummary Implements FFD registration, initially based on Rueckert et. al., IEEE TMI Vol. 18, No. 8, Aug 1999.
+ */
+
 void StartUsage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

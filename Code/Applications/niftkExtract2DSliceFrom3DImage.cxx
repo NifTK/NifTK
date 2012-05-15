@@ -28,11 +28,16 @@
 #include "itkImageFileWriter.h"
 #include "itkExtractImageFilter.h"
 
+/*!
+ * \file niftkExtract2DSliceFrom3DImage.cxx
+ * \page niftkExtract2DSliceFrom3DImage
+ * \section niftkExtract2DSliceFrom3DImageSummary Runs the ITK ExtractImageFilter.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK Extract Image filter" << std::endl;
+    std::cout << "  Runs the ITK ExtractImageFilter." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

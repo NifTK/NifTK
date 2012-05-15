@@ -33,15 +33,16 @@
 #include "itkPoint.h"
 #include <stdio.h>
 
+/*!
+ * \file niftkVolToFreeSurfer.cxx
+ * \page niftkVolToFreeSurfer
+ * \section niftkVolToFreeSurferSummary Takes a FreeSurfer surface (in ASCII format), and a volume containing (eg.) thickness data, and then for each point in the surface, finds the thickness, either the closest in the neighborhood, or by smoothing and dividing the volume data.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Takes a FreeSurfer surface (in ASCII format), and a volume" << std::endl;
-    std::cout << "  containing (eg.) thickness data, and then for each point" << std::endl;
-    std::cout << "  in the surface, finds the thickness, either the closest in " << std::endl;
-    std::cout << "  the neighborhood, or by smoothing and dividing the volume" << std::endl;
-    std::cout << "  data." << std::endl;
+    std::cout << "  Takes a FreeSurfer surface (in ASCII format), and a volume containing (eg.) thickness data, and then for each point in the surface, finds the thickness, either the closest in the neighborhood, or by smoothing and dividing the volume data." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -s surfaceFileName -v volumeFileName -o outputFileName" << std::endl;
     std::cout << "  " << std::endl;

@@ -34,6 +34,11 @@
 #include "itkImageFileWriter.h"
 #include <algorithm>
 
+/*!
+ * \file niftkCTEAssignAtlasValues.cxx
+ * \page niftkCTEAssignAtlasValues
+ * \section niftkCTEAssignAtlasValuesSummary Takes an atlas, and an input image, and for each voxel in the input image that is not background will find the nearest atlas voxel, and assign to the output voxel that atlas label.
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

@@ -39,6 +39,11 @@
 #include "itkSubtractConstantFromImageFilter.h"
 #include "itkZeroCrossingImageFilter.h"
 
+/*!
+ * \file niftkCTEBourgeat2008.cxx
+ * \page niftkCTEBourgeat2008
+ * \section niftkCTEBourgeat2008Summary Implements Bourgeat et. al. ISBI 2008 to calculate cortical thickness.
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

@@ -28,11 +28,16 @@
 #include "itkImageFileWriter.h"
 #include "itkMultiplyImageFilter.h"
 
+/*!
+ * \file niftkMultiply.cxx
+ * \page niftkMultiply
+ * \section niftkMultiplySummary Multiplies image 1 by image 2 on a voxel-by-voxel basis, without checking image sizes.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Multiplies image 1 by image 2" << std::endl;
+    std::cout << "  Multiplies image 1 by image 2 on a voxel-by-voxel basis, without checking image sizes." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i image1FileName -j image2FileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

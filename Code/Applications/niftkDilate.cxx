@@ -29,11 +29,16 @@
 #include "itkBinaryCrossStructuringElement.h"
 #include "itkBinaryDilateImageFilter.h"
 
+/*!
+ * \file niftkDilate.cxx
+ * \page niftkDilate
+ * \section niftkDilateSummary Runs the ITK BinaryDilateImageFilter, using a BinaryCrossStructuringElement.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK dilate function" << std::endl;
+    std::cout << "  Runs the ITK BinaryDilateImageFilter, using a BinaryCrossStructuringElement." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

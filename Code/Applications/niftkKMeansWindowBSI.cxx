@@ -33,8 +33,7 @@ int main(int argc, char* argv[])
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);
     std::cerr << std::endl;
-    std::cerr << "K-BSI" << std::endl << std::endl; 
-    std::cerr << "Program to calculate the boundary shift integral, based on the paper" << std::endl; 
+    std::cerr << "K-BSI: Program to calculate the boundary shift integral, based on the paper" << std::endl;
     std::cerr << "  Freeborough PA and Fox NC, The boundary shift integral: an accurate and" << std::endl; 
     std::cerr << "  robust measure of cerebral volume changes from registered repeat MRI," << std::endl; 
     std::cerr << "  IEEE Trans Med Imaging. 1997 Oct;16(5):623-9." << std::endl << std::endl;

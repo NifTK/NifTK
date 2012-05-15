@@ -29,11 +29,16 @@
 #include "itkImageFileWriter.h"
 #include "itkSubtract2DImageFromVolumeSliceFilter.h"
 
+/*!
+ * \file niftkSubtractSliceFromVolume.cxx
+ * \page niftkSubtractSliceFromVolume
+ * \section niftkSubtractSliceFromVolumeSummary Subtracts a 2D image from a specific 3D volume slice.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl
-	      << "  Subtracts a 2D image from a specific 3D volume slice" << std::endl << std::endl
+	      << "  Subtracts a 2D image from a specific 3D volume slice." << std::endl << std::endl
 
 	      << "  " << exec 
 	      << " -im3D Input3Dimage -im2D Input2Dimage -slice SliceNumber -o Output3Dimage " << std::endl << std::endl

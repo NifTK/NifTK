@@ -30,6 +30,11 @@
 #include "itkImageFileWriter.h"
 #include "itkJonesThicknessFilter.h"
 
+/*!
+ * \file niftkCTEJones2000.cxx
+ * \page niftkCTEJones2000
+ * \section niftkCTEJones2000Summary Implements Jones et. al. Human Brain Mapping 11:12-32(2000), with optional Gauss-Seidel optimisation.
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

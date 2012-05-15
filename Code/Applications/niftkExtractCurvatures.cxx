@@ -31,6 +31,11 @@
 #include "itkMinimumCurvatureImageFilter.h"
 #include "itkMaximumCurvatureImageFilter.h"
 
+/*!
+ * \file niftkExtractCurvatures.cxx
+ * \page niftkExtractCurvatures
+ * \section niftkExtractCurvaturesSummary Computes Gaussian, mean, minimum or maximum curvatures of a scalar image.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

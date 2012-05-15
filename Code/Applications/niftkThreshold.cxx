@@ -29,11 +29,16 @@
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkCommandLineHelper.h"
 
+/*!
+ * \file niftkThreshold.cxx
+ * \page niftkThreshold
+ * \section niftkThresholdSummary Runs the ITK BinaryThresholdImageFilter.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK threshold image function" << std::endl;
+    std::cout << "  Runs the ITK BinaryThresholdImageFilter." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

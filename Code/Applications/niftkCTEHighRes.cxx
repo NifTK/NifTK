@@ -35,11 +35,16 @@
 #include "itkHighResRelaxStreamlinesFilter.h"
 #include "itkCastImageFilter.h"
 
+/*!
+ * \file niftkCTEHighRes.cxx
+ * \page niftkCTEHighRes
+ * \section niftkCTEHighResSummary Implements a high resolution version of Bourgeat et. al. ISBI 2008 to calculate cortical thickness.
+ */
 void Usage(char *name)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
-  std::cout << "  Implements Bourgeat et. al. ISBI 2008," << std::endl;
+  std::cout << "  Implements a high resolution version of Bourgeat et. al. ISBI 2008, to calculate cortical thickness" << std::endl;
   std::cout << "  using Yezzi and Prince, IEEE TMI Vol. 22, No. 10, Oct 2003 for solving the thickness PDE by relaxation, " << std::endl;
   std::cout << "  using Diep et. al ISBI 2007 to cope with anisotropic voxel sizes." << std::endl;
   std::cout << "  Also implements Acosta et. al. MIA 13 (2009) 730-743 doi:10.1016/j.media.2009.07.03 if you specify -acosta flag," << std::endl;

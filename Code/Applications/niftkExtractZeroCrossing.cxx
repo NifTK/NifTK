@@ -28,11 +28,16 @@
 #include "itkImageFileWriter.h"
 #include "itkZeroCrossingImageFilter.h"
 
+/*!
+ * \file niftkExtractZeroCrossing.cxx
+ * \page niftkExtractZeroCrossing
+ * \section niftkExtractZeroCrossingSummary Runs ITK ZeroCrossingImageFilter.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK ZeroCrossingImageFilter" << std::endl;
+    std::cout << "  Runs ITK ZeroCrossingImageFilter." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

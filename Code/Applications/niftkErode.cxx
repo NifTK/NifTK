@@ -29,11 +29,16 @@
 #include "itkBinaryCrossStructuringElement.h"
 #include "itkBinaryErodeImageFilter.h"
 
+/*!
+ * \file niftkErode.cxx
+ * \page niftkErode
+ * \section niftkErodeSummary Runs the ITK BinaryErodeImageFilter, using a BinaryCrossStructuringElement.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK erode function" << std::endl;
+    std::cout << "  Runs the ITK BinaryErodeImageFilter, using a BinaryCrossStructuringElement." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

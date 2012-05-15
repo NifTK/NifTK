@@ -35,7 +35,11 @@
 #include "itkPerspectiveProjectionTransform.h"
 #include "itkNIFTKTransformIOFactory.h"
 
-
+/*!
+ * \file niftkForwardProject3Dto2D.cxx
+ * \page niftkForwardProject3Dto2D
+ * \section niftkForwardProject3Dto2DSummary Projects a 3D image volume into 2D
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

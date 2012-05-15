@@ -33,6 +33,11 @@
 #include "vtkIndent.h"
 #include "vtkTransformPolyDataFilter.h"
 
+/*!
+ * \file niftkTransformPolyData.cxx
+ * \page niftkTransformPolyData
+ * \section niftkTransformPolyDataSummary Transform's a VTK Poly Data file by any number of affine transformations.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

@@ -33,11 +33,16 @@
 #include "itkBinaryErodeImageFilter.h"
 #include "itkNegateImageFilter.h"
 
+/*!
+ * \file niftkDistanceTransform.cxx
+ * \page niftkDistanceTransform
+ * \section niftkDistanceTransformSummary Runs the ITK DanielssonDistanceMapImageFilter, specifically for binary images, outputting the distance transform.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK DanielssonDistanceMapImageFilter, specifically for binary images, outputting the distance transform." << std::endl;
+    std::cout << "  Runs the ITK DanielssonDistanceMapImageFilter, specifically for binary images, outputting the distance transform." << std::endl;
     std::cout << "  Assumes your input image, has 1 object, with background = 0, and foreground = 1." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;

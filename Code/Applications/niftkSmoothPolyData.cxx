@@ -28,11 +28,16 @@
 #include "vtkPolyDataWriter.h"
 #include "vtkSmoothPolyDataFilter.h"
 
+/*!
+ * \file niftkSmoothPolyData.cxx
+ * \page niftkSmoothPolyData
+ * \section niftkSmoothPolyDataSummary Runs the VTK vtkSmoothPolyDataFilter on a vtkPolyData.
+ */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs the VTK vtkSmoothPolyDataFilter on a vtkPolyData" << std::endl;
+    std::cout << "  Runs the VTK vtkSmoothPolyDataFilter on a vtkPolyData." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputPolyData.vtk -o outputPolyData.vtk [options]" << std::endl;
     std::cout << "  " << std::endl;
