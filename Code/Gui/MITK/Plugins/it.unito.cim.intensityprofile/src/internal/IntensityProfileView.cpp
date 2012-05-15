@@ -608,7 +608,7 @@ IntensityProfileView::selectNode(mitk::DataNode* node)
   Q_D(IntensityProfileView);
 
   mitk::DataNode* selectedNode = node;
-  mitk::DataNode* referenceNode = selectedNode;
+//  mitk::DataNode* referenceNode = selectedNode;
 
   // The dimension must equal for every selected 4D image,
   // otherwise skipped.
@@ -1207,7 +1207,7 @@ IntensityProfileView::on_storeCrosshairButton_clicked()
 void
 IntensityProfileView::on_storeStatisticsButton_clicked()
 {
-  Q_D(IntensityProfileView);
+//  Q_D(IntensityProfileView);
 
   // TODO add this feature back!
 
@@ -1428,13 +1428,15 @@ IntensityProfileView::eventFilter(QObject *obj, QEvent *event)
       return true;
     }
     else if (event->type() == QEvent::Wheel) {
-      QWheelEvent* wheelEvent = dynamic_cast<QWheelEvent*>(event);
+      // Mouse wheel events can be handled here. (E.g. to change the range.)
+//      QWheelEvent* wheelEvent = dynamic_cast<QWheelEvent*>(event);
       return true;
     }
   }
   else if (obj == d->yAxis) {
     if (event->type() == QEvent::Wheel) {
-      QWheelEvent* wheelEvent = dynamic_cast<QWheelEvent*>(event);
+        // Mouse wheel events can be handled here. (E.g. to change the range.)
+//      QWheelEvent* wheelEvent = dynamic_cast<QWheelEvent*>(event);
       return true;
     }
   }

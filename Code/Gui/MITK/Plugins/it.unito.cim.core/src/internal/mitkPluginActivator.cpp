@@ -56,7 +56,7 @@ PluginActivator::start(ctkPluginContext* context)
 
 //  registerNodeDescriptors();
 
-  Q_D(PluginActivator);
+//  Q_D(PluginActivator);
 
 //  d->imageInfoRenderer = new ImageInfoRenderer();
 //  d->geometryRecalculator = new GeometryRecalculator();
@@ -67,7 +67,7 @@ void
 PluginActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context);
-  Q_D(PluginActivator);
+//  Q_D(PluginActivator);
 //  delete d->nodeVisibilityManager;
 //  delete d->geometryRecalculator;
 //  delete d->imageInfoRenderer;
