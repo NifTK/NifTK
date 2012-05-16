@@ -1112,8 +1112,8 @@ DeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
   invertedTransform->m_DeformationField->FillBuffer(zero); 
   this->ExtractComponents(); 
   // Setup the interpolation for the forward deformation field. Prefer the more accureate bspline interpolation. 
-  typedef BSplineInterpolateImageFunction<DeformationFieldComponentImageType, double> InterpolatorType; 
-  // typedef LinearInterpolateImageFunction<DeformationFieldComponentImageType, double> InterpolatorType; 
+  //typedef BSplineInterpolateImageFunction<DeformationFieldComponentImageType, double> InterpolatorType; 
+  typedef LinearInterpolateImageFunction<DeformationFieldComponentImageType, double> InterpolatorType; 
   typename InterpolatorType::Pointer interpolator[NDimensions]; 
   for (unsigned int i = 0; i < NDimensions; i++)
   {
@@ -1141,11 +1141,13 @@ DeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
     previousInvertedValue.Fill(0.);
     int count = 0; 
     int outerCount = 0; 
-    double stepSize = 1; 
+    double stepSize = 1.; 
     double previousDiff = 0.; 
+    double finalDiff = 0.; 
+    previousInvertedValue = vectorIterator.Get(); 
     while (diff > tol && outerCount < maxOuterIterations)
     {
-      while (diff > tol && count < maxIterations && fabs(previousDiff-diff) > 1.e-7)
+      while (diff > tol && count < maxIterations && fabs(previousDiff-diff) > 1.e-12)
       {
         // Transform current point using the inverse. 
         transformedPoint = invertedTransform->TransformPoint(currentPoint); 
@@ -1164,13 +1166,15 @@ DeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
         }
         previousDiff = diff; 
         diff = (previousInvertedValue-invertedValue).GetNorm(); 
+        double factor = std::min<double>(stepSize, stepSize/diff); 
         count++; 
         // Small modification to improve convergence by controlling the amount of update. When stepSize=1, this is the original fixed point iteration. 
-        invertedValue = previousInvertedValue + (invertedValue-previousInvertedValue)*stepSize; 
+        invertedValue = previousInvertedValue + (invertedValue-previousInvertedValue)*factor; 
         vectorIterator.Set(invertedValue); 
         previousInvertedValue = invertedValue; 
       }
       
+      finalDiff = diff; 
       if (diff > tol)
       {
         stepSize *= 0.618033989; 
@@ -1182,7 +1186,7 @@ DeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
     }
     if (diff > tol)
     {
-      std::cout << "index=" << index << ",count=" << count << ",diff=" << diff << ",invertedValue=" << invertedValue << std::endl;  
+      std::cout << "index=" << index << ",count=" << count << ",finalDiff=" << finalDiff << ",invertedValue=" << invertedValue << std::endl;  
     }
 #if 0
     // Inverse by using iterative refinement. Iteratively adjust the inverse through a number of step size. 
