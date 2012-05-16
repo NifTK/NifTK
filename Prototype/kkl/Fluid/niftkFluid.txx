@@ -776,10 +776,10 @@ int fluid_main(int argc, char** argv)
     return -1;
   }
 
-  if(minJac <= 0){
-    std::cerr << argv[0] << "\tThe minJac must be > 0" << std::endl;
-    return -1;
-  }
+  //if(minJac <= 0){
+  //  std::cerr << argv[0] << "\tThe minJac must be > 0" << std::endl;
+  //  return -1;
+  //}
 
   if(iReduce <= 0){
     std::cerr << argv[0] << "\tThe iReduce must be > 0" << std::endl;
@@ -1370,10 +1370,13 @@ int fluid_main(int argc, char** argv)
       }
       
       // Get the inverse transformations. 
-      fixedImageInverseTransform->SetIdentity(); 
-      movingImageInverseTransform->SetIdentity(); 
-      fixedImageTransform->InvertUsingIterativeFixedPoint(fixedImageInverseTransform.GetPointer(), 30, 5, 0.005); 
-      transform->InvertUsingIterativeFixedPoint(movingImageInverseTransform.GetPointer(), 30, 5, 0.005); 
+      if (!composeTransform)
+      {
+        fixedImageInverseTransform->SetIdentity(); 
+        movingImageInverseTransform->SetIdentity(); 
+        fixedImageTransform->InvertUsingIterativeFixedPoint(fixedImageInverseTransform.GetPointer(), 30, 5, 0.001); 
+        transform->InvertUsingIterativeFixedPoint(movingImageInverseTransform.GetPointer(), 30, 5, 0.001); 
+      }
       
       // Output the composed Jacobian. 
       typedef itk::ResampleImageFilter<typename OptimizerType::JacobianImageType, typename OptimizerType::JacobianImageType> JacobianResampleFilterType; 

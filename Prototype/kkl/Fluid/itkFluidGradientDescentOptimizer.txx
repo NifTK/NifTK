@@ -349,7 +349,16 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     {
       iterator.Set(iterator.Get()*bestStepSize); 
     }
+    typename DeformableTransformType::DeformableParameterPointerType scaledOutput = DeformableTransformType::DuplicateDeformableParameters(output); 
     GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(next, output, 1); 
+    std::cout << "Done" << std::endl; 
+    
+    // Update the inverse.       
+    typename DeformableTransformType::DeformableParameterPointerType currentMovingImageInverse = DeformableTransformType::DuplicateDeformableParameters(this->m_MovingImageInverseTransform->GetDeformableParameters()); 
+    GetFluidDeformableTransform()->SetDeformableParameters(scaledOutput); 
+    GetFluidDeformableTransform()->InvertUsingIterativeFixedPoint(this->m_MovingImageInverseTransform.GetPointer(), 30, 5, 0.001); 
+    std::cout << "Composing next moving image inverse deformation field..."; 
+    GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(this->m_MovingImageInverseTransform->GetDeformableParameters(), currentMovingImageInverse, 1); 
     std::cout << "Done" << std::endl; 
   }
   
@@ -376,8 +385,18 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
       {
         fixedIterator.Set(fixedIterator.Get()*bestFixedImageStepSize); 
       }
+      typename DeformableTransformType::DeformableParameterPointerType scaledOutput = DeformableTransformType::DuplicateDeformableParameters(m_FluidVelocityToFixedImageDeformationFilter->GetOutput()); 
       GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(nextFixed, m_FluidVelocityToFixedImageDeformationFilter->GetOutput(), 1); 
       std::cout << "Done" << std::endl;  
+      
+      // Update the inverse.       
+      typename DeformableTransformType::DeformableParameterPointerType currentFuxedImageInverse = DeformableTransformType::DuplicateDeformableParameters(this->m_FixedImageInverseTransform->GetDeformableParameters()); 
+      GetFluidDeformableTransform()->SetDeformableParameters(scaledOutput); 
+      GetFluidDeformableTransform()->InvertUsingIterativeFixedPoint(this->m_FixedImageInverseTransform.GetPointer(), 30, 5, 0.001); 
+      std::cout << "Composing next fixed image inverse deformation field..."; 
+      GetFluidDeformableTransform()->UpdateRegriddedDeformationParameters(this->m_FixedImageInverseTransform->GetDeformableParameters(), currentFuxedImageInverse, 1); 
+      std::cout << "Done" << std::endl; 
+      
     }
   }
     
@@ -648,9 +667,12 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
       {
         // Jacobian ok - take the next deformation fields and similarity value. 
         this->m_CurrentDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextDeformableParameters); 
+        GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters);
+        
         if (this->m_IsSymmetric)
         {
           this->m_CurrentFixedDeformableParameters = DeformableTransformType::DuplicateDeformableParameters(this->m_NextFixedDeformableParameters); 
+          this->m_FixedImageTransform->SetDeformableParameters(this->m_CurrentFixedDeformableParameters); 
         }
         this->m_Value = nextValue;
         // Also set the previous gradient to the current gradient. 
@@ -1302,6 +1324,153 @@ void
 FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformationScalar>
 ::ComposeJacobian()
 {                               
+#if 1
+  typedef MultiplyImageFilter<JacobianImageType> MultiplyImageFilterType; 
+  typename MultiplyImageFilterType::Pointer multiplyFilter = MultiplyImageFilterType::New(); 
+  typedef ImageDuplicator<JacobianImageType> JacobianDuplicatorType; 
+  typename JacobianDuplicatorType::Pointer duplicator = JacobianDuplicatorType::New(); 
+  typedef ResampleImageFilter<JacobianImageType, JacobianImageType> JacobianResampleFilterType; 
+  typename JacobianResampleFilterType::Pointer jacobianResampleFilter = JacobianResampleFilterType::New(); 
+  typedef LinearInterpolateImageFunction<JacobianImageType, double > InterpolatorType; 
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  
+  // Compose the jacobian of the forward moving image transform. 
+  this->m_DeformableTransform->ComputeMinJacobian(); 
+  if (this->m_MovingImageTransformComposedJacobianForward.IsNotNull())
+  {
+    // Need to transform the regridded jacobian in the regridded image to the fixed image space. 
+    jacobianResampleFilter->SetInput(this->m_MovingImageTransformComposedJacobianForward);
+    jacobianResampleFilter->SetTransform(this->m_DeformableTransform);
+    jacobianResampleFilter->SetOutputParametersFromImage(this->m_MovingImageTransformComposedJacobianForward);
+    jacobianResampleFilter->SetDefaultPixelValue(0);
+    jacobianResampleFilter->SetInterpolator(interpolator);      
+    jacobianResampleFilter->Update();
+    multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
+    multiplyFilter->SetInput2(this->m_DeformableTransform->GetJacobianImage()); 
+    multiplyFilter->Update(); 
+    this->m_MovingImageTransformComposedJacobianForward = multiplyFilter->GetOutput(); 
+  }
+  else
+  {
+    duplicator->SetInputImage(this->m_DeformableTransform->GetJacobianImage()); 
+    duplicator->Update(); 
+    this->m_MovingImageTransformComposedJacobianForward = duplicator->GetOutput(); 
+  }
+  this->m_MovingImageTransformComposedJacobianForward->DisconnectPipeline(); 
+  
+  if (m_IsSymmetric)
+  {
+    if (!m_ComposeTransformation)
+    {
+      // Compose the jacobian of the backward moving image transform. 
+      this->m_MovingImageInverseTransform->SetIdentity(); 
+      if (this->m_CurrentIteration > 0)
+        this->m_DeformableTransform->InvertUsingIterativeFixedPoint(this->m_MovingImageInverseTransform.GetPointer(), 30, 5, 0.001); 
+    }
+    this->m_MovingImageInverseTransform->ComputeMinJacobian();
+    if (this->m_MovingImageTransformComposedJacobianBackward.IsNotNull())
+    {
+      if (!m_ComposeTransformation)
+      {
+        // Need to get the inverse of the regrdded transform to compose the deformation field. 
+        if (this->m_CurrentIteration > 0)
+        {
+          GetFluidDeformableTransform()->SetDeformableParameters(this->m_RegriddedDeformableParameters); 
+          GetFluidDeformableTransform()->InvertUsingIterativeFixedPoint(this->m_MovingImageInverseTransform.GetPointer(), 30, 5, 0.001); 
+          GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters); 
+        }
+        // Need to transform the inverse of the current jacobian in the regridded image space back to the moving image space. 
+        jacobianResampleFilter->SetInput(this->m_MovingImageInverseTransform->GetJacobianImage());
+        jacobianResampleFilter->SetTransform(this->m_MovingImageInverseTransform);
+        jacobianResampleFilter->SetOutputParametersFromImage(this->m_MovingImageInverseTransform->GetJacobianImage());
+        jacobianResampleFilter->SetDefaultPixelValue(0);
+        jacobianResampleFilter->SetInterpolator(interpolator);      
+        jacobianResampleFilter->Update();
+        multiplyFilter->SetInput1(this->m_MovingImageTransformComposedJacobianBackward); 
+        multiplyFilter->SetInput2(jacobianResampleFilter->GetOutput()); 
+        multiplyFilter->Update(); 
+        this->m_MovingImageTransformComposedJacobianBackward = multiplyFilter->GetOutput(); 
+      }
+      else
+      {
+        this->m_MovingImageTransformComposedJacobianBackward = this->m_MovingImageInverseTransform->GetJacobianImage(); 
+      }
+    }
+    else
+    {
+      duplicator->SetInputImage(this->m_MovingImageInverseTransform->GetJacobianImage()); 
+      duplicator->Update(); 
+      this->m_MovingImageTransformComposedJacobianBackward = duplicator->GetOutput(); 
+    }
+    this->m_MovingImageTransformComposedJacobianBackward->DisconnectPipeline(); 
+    
+    // Compose the jacobian of the forward fixed image transform. 
+    this->m_FixedImageTransform->ComputeMinJacobian(); 
+    if (this->m_FixedImageTransformComposedJacobianForward.IsNotNull())
+    {
+      jacobianResampleFilter->SetInput(this->m_FixedImageTransformComposedJacobianForward);
+      jacobianResampleFilter->SetTransform(this->m_FixedImageTransform);
+      jacobianResampleFilter->SetOutputParametersFromImage(this->m_FixedImageTransformComposedJacobianForward);
+      jacobianResampleFilter->SetDefaultPixelValue(0);
+      jacobianResampleFilter->SetInterpolator(interpolator);      
+      jacobianResampleFilter->Update();
+      multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
+      multiplyFilter->SetInput2(this->m_FixedImageTransform->GetJacobianImage()); 
+      multiplyFilter->Update(); 
+      this->m_FixedImageTransformComposedJacobianForward = multiplyFilter->GetOutput(); 
+    }
+    else
+    {
+      duplicator->SetInputImage(this->m_FixedImageTransform->GetJacobianImage()); 
+      duplicator->Update(); 
+      this->m_FixedImageTransformComposedJacobianForward = duplicator->GetOutput(); 
+    }
+    this->m_FixedImageTransformComposedJacobianForward->DisconnectPipeline(); 
+    
+    if (!m_ComposeTransformation)
+    {
+      // Compose the jacobian of the backwarxd fixed image transform. 
+      this->m_FixedImageInverseTransform->SetIdentity(); 
+      if (this->m_CurrentIteration > 0)
+        this->m_FixedImageTransform->InvertUsingIterativeFixedPoint(this->m_FixedImageInverseTransform.GetPointer(), 30, 5, 0.005); 
+    }
+    this->m_FixedImageInverseTransform->ComputeMinJacobian(); 
+    if (this->m_FixedImageTransformComposedJacobianBackward.IsNotNull())
+    {
+      if (!m_ComposeTransformation)
+      {
+        // Need to get the inverse of the regrdded transform to compose the deformation field. 
+        if (this->m_CurrentIteration > 0)
+        {
+          this->m_FixedImageTransform->SetDeformableParameters(this->m_RegriddedFixedDeformableParameters); 
+          this->m_FixedImageTransform->InvertUsingIterativeFixedPoint(this->m_FixedImageInverseTransform.GetPointer(), 30, 5, 0.005); 
+          this->m_FixedImageTransform->SetDeformableParameters(this->m_CurrentFixedDeformableParameters); 
+        }
+        jacobianResampleFilter->SetInput(this->m_FixedImageInverseTransform->GetJacobianImage());
+        jacobianResampleFilter->SetTransform(this->m_FixedImageInverseTransform);
+        jacobianResampleFilter->SetOutputParametersFromImage(this->m_FixedImageInverseTransform->GetJacobianImage());
+        jacobianResampleFilter->SetDefaultPixelValue(0);
+        jacobianResampleFilter->SetInterpolator(interpolator);      
+        jacobianResampleFilter->Update();
+        multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
+        multiplyFilter->SetInput2(this->m_FixedImageTransformComposedJacobianBackward); 
+        multiplyFilter->Update(); 
+        this->m_FixedImageTransformComposedJacobianBackward = multiplyFilter->GetOutput(); 
+      }
+      else
+      {
+        this->m_FixedImageTransformComposedJacobianBackward = this->m_FixedImageInverseTransform->GetJacobianImage(); 
+      }
+    }
+    else
+    {
+      duplicator->SetInputImage(this->m_FixedImageInverseTransform->GetJacobianImage()); 
+      duplicator->Update(); 
+      this->m_FixedImageTransformComposedJacobianBackward = duplicator->GetOutput(); 
+    }
+    this->m_FixedImageTransformComposedJacobianBackward->DisconnectPipeline(); 
+  }
+#else
   typedef MultiplyImageFilter<JacobianImageType> MultiplyImageFilterType; 
   typename MultiplyImageFilterType::Pointer multiplyFilter = MultiplyImageFilterType::New(); 
   typedef ImageDuplicator<JacobianImageType> JacobianDuplicatorType; 
@@ -1338,30 +1507,10 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
   if (m_IsSymmetric)
   {
     // Compose the jacobian of the backward moving image transform. 
-    this->m_MovingImageInverseTransform->SetIdentity(); 
-    if (this->m_CurrentIteration > 0)
-      this->m_DeformableTransform->InvertUsingIterativeFixedPoint(this->m_MovingImageInverseTransform.GetPointer(), 30, 5, 0.005); 
     this->m_MovingImageInverseTransform->ComputeMinJacobian();
     if (this->m_MovingImageTransformComposedJacobianBackward.IsNotNull())
     {
-      // Need to get the inverse of the regrdded transform to compose the deformation field. 
-      if (this->m_CurrentIteration > 0)
-      {
-        GetFluidDeformableTransform()->SetDeformableParameters(this->m_RegriddedDeformableParameters); 
-        GetFluidDeformableTransform()->InvertUsingIterativeFixedPoint(this->m_MovingImageInverseTransform.GetPointer(), 30, 5, 0.005); 
-        GetFluidDeformableTransform()->SetDeformableParameters(this->m_CurrentDeformableParameters); 
-      }
-      // Need to transform the inverse of the current jacobian in the regridded image space back to the moving image space. 
-      jacobianResampleFilter->SetInput(this->m_MovingImageInverseTransform->GetJacobianImage());
-      jacobianResampleFilter->SetTransform(this->m_MovingImageInverseTransform);
-      jacobianResampleFilter->SetOutputParametersFromImage(this->m_MovingImageInverseTransform->GetJacobianImage());
-      jacobianResampleFilter->SetDefaultPixelValue(0);
-      jacobianResampleFilter->SetInterpolator(interpolator);      
-      jacobianResampleFilter->Update();
-      multiplyFilter->SetInput1(this->m_MovingImageTransformComposedJacobianBackward); 
-      multiplyFilter->SetInput2(jacobianResampleFilter->GetOutput()); 
-      multiplyFilter->Update(); 
-      this->m_MovingImageTransformComposedJacobianBackward = multiplyFilter->GetOutput(); 
+      this->m_MovingImageTransformComposedJacobianBackward = this->m_MovingImageInverseTransform->GetJacobianImage(); 
     }
     else
     {
@@ -1395,29 +1544,10 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     this->m_FixedImageTransformComposedJacobianForward->DisconnectPipeline(); 
     
     // Compose the jacobian of the backwarxd fixed image transform. 
-    this->m_FixedImageInverseTransform->SetIdentity(); 
-    if (this->m_CurrentIteration > 0)
-      this->m_FixedImageTransform->InvertUsingIterativeFixedPoint(this->m_FixedImageInverseTransform.GetPointer(), 30, 5, 0.005); 
     this->m_FixedImageInverseTransform->ComputeMinJacobian(); 
     if (this->m_FixedImageTransformComposedJacobianBackward.IsNotNull())
     {
-      // Need to get the inverse of the regrdded transform to compose the deformation field. 
-      if (this->m_CurrentIteration > 0)
-      {
-        this->m_FixedImageTransform->SetDeformableParameters(this->m_RegriddedFixedDeformableParameters); 
-        this->m_FixedImageTransform->InvertUsingIterativeFixedPoint(this->m_FixedImageInverseTransform.GetPointer(), 30, 5, 0.005); 
-        this->m_FixedImageTransform->SetDeformableParameters(this->m_CurrentFixedDeformableParameters); 
-      }
-      jacobianResampleFilter->SetInput(this->m_FixedImageInverseTransform->GetJacobianImage());
-      jacobianResampleFilter->SetTransform(this->m_FixedImageInverseTransform);
-      jacobianResampleFilter->SetOutputParametersFromImage(this->m_FixedImageInverseTransform->GetJacobianImage());
-      jacobianResampleFilter->SetDefaultPixelValue(0);
-      jacobianResampleFilter->SetInterpolator(interpolator);      
-      jacobianResampleFilter->Update();
-      multiplyFilter->SetInput1(jacobianResampleFilter->GetOutput()); 
-      multiplyFilter->SetInput2(this->m_FixedImageTransformComposedJacobianBackward); 
-      multiplyFilter->Update(); 
-      this->m_FixedImageTransformComposedJacobianBackward = multiplyFilter->GetOutput(); 
+      this->m_FixedImageTransformComposedJacobianBackward = this->m_FixedImageInverseTransform->GetJacobianImage(); 
     }
     else
     {
@@ -1427,6 +1557,7 @@ FluidGradientDescentOptimizer<TFixedImage,TMovingImage, TScalarType, TDeformatio
     }
     this->m_FixedImageTransformComposedJacobianBackward->DisconnectPipeline(); 
   }
+#endif    
 }
 
     
