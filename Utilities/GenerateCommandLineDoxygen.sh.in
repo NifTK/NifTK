@@ -83,7 +83,8 @@ do
 
   # Work out what files we are dealing with
   if [ "${f}" = "Applications" ]; then
-    FILE_LIST=`cd ${BINARY_DIR} ; ls niftk* | grep -v TestDriver `
+    # Aim: Applications starting with niftk, not including the word TestDriver, not including stuff ending in .sh
+    FILE_LIST=`cd ${BINARY_DIR} ; ls niftk* | grep -v TestDriver | egrep -v -e ".*[.]sh"`
   else
     # Aim: files ending in .sh, not containing the word batch, not starting with underscore
     FILE_LIST=`cd ${BINARY_DIR} ; ls *.sh | grep -v batch | grep -v Batch | grep -v regAIRForVents | egrep -v -e "^[_].*"`
