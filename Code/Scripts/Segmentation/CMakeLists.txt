@@ -22,11 +22,13 @@
 #
 #=================================================================================*/
 
-#---------------------------------
-# Install the shell scripts
-#---------------------------------
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/segRelaxPriors.sh.in ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriors.sh @ONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriors.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+#-----------------------------------------------------------------------------------
+# Deprecated: These scripts were used for Jorge's early Matlab version, which is no
+# longer part of this project. Download and use NiftySeg directly.
+#-----------------------------------------------------------------------------------
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/segRelaxPriorsBatch.sh.in ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriorsBatch.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriorsBatch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+# CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/segRelaxPriors.sh.in ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriors.sh @ONLY )
+# INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriors.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+
+# CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/segRelaxPriorsBatch.sh.in ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriorsBatch.sh COPYONLY )
+# INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/segRelaxPriorsBatch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)

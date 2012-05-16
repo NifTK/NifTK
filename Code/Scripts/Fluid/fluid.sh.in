@@ -24,6 +24,10 @@
 #
 #=================================================================================*/
 
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
   cat <<EOF
@@ -108,6 +112,12 @@ function iterate_through_input_file()
 }
 
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -lt 1 ]; then
   Usage
 fi
@@ -144,8 +154,6 @@ if [ "$FILENAME" = "" ]; then
 fi
 
 echo "Running $0 using file=$FILENAME, options=$OPTIONS"
-
-source _niftkCommon.sh
 
 check_program_exists "fluid_jo"
 

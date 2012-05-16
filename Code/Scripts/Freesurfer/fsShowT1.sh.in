@@ -22,5 +22,32 @@
 #
 #=================================================================================*/
 
+source _fsInclude.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+  cat <<EOF
+Simple way to launch tkmedit on a patient.
+
+Usage: fsShowT1.sh <subject>
+
+where: <subject> is the name of a single FreeSurfer directory structure in the current directory.
+EOF
+exit 127
+}
+
+# Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
 SUBJECTS_DIR=`pwd`
 tkmedit $1 wm.mgz lh.white -aux T1.mgz -aux-surface rh.white

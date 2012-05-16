@@ -26,14 +26,18 @@
 
 export SUBJECTS_DIR=`pwd`
 
+source _fsInclude.sh
+    
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+    
 function Usage()
 {
 cat <<EOF
+This script will run the FreeSurfer stats.
 
 Usage: fsRunStats.sh dataFile nameOfAverageSubject outputPrefix [options]
   
-This script will run the FreeSurfer stats, as follows:
-
+Performs the following:
   1. Parse the input file, checking directories exist, and checking which patient is in which group.
   2. For each group, we extract thickness, volume, mean curvature and area for each hemisphere,
      and then volume and mean for the whole brain.
@@ -79,6 +83,12 @@ exit 127
 }
 
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -lt 3 ]; then
   Usage
 fi
@@ -126,8 +136,6 @@ done
 
 echo "Using dataFile=$DATA_FILE, and nameOfAverage='$NAME_OF_AVERAGE', outputPrefix='$OUTPUT_PREFIX', fwhm=$FWHM, sending results to '$EMAIL', starting at step=$START, and finishing at step=$STOP"
 
-source _fsInclude.sh
-    
 check_freesurfer_env
 
 check_all_freesurfer_programs_exist

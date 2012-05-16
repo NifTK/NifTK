@@ -19,17 +19,35 @@
 #
 #=================================================================================*/
 
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+cat <<EOF
+Anonymise images for DTI
+Usage: anonymise input_csv_file input_directory output_directory
+       where input_csv_file: csv file containing at least 3 columns, with study ID (2nd column) and subject code (3rd column)
+             input_directory: directory containing the input images
+             output_directory: directory storing the output images
+EOF
+exit 127
+}
+
+# Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 inputFile=$1
 directory=$2
 outputDirectory=$3
 
 if [ -z ${inputFile} ]; then
-  echo "Anonymise images for DTI"
-  echo "Usage: anonymise input_csv_file input_directory output_directory"
-  echo "       where input_csv_file: csv file containing at least 3 columns, with study ID (2nd column) and subject code (3rd column)"
-  echo "             input_directory: directory containing the input images"
-  echo "             output_directory: directory storing the output images"
-  exit
+  Usage
 fi
 
 cat ${inputFile} | while read eachLine 

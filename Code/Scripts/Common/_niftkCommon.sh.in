@@ -21,6 +21,14 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
+
+####################################################
+# Please try and keep exit codes in this file >= 950
+####################################################
+
+####################################################
+# These which commands are taken from MIDAS scripts.
+####################################################
 IMGINFO=`which imginfo 2> /dev/null `
 MAKEMASK=`which makemask 2> /dev/null `
 ANCHANGE=`which anchange 2> /dev/null `
@@ -35,13 +43,29 @@ COPY=`which cp 2> /dev/null `
 MOVE=`which mv 2> /dev/null `
 SED=`which sed 2> /dev/null `
 
-####################################################
-# Please try and keep exit codes in this file >= 950
-####################################################
+##########################################################################
+# Function   : Will check the supplied array for -h, returning 1
+#              if present and zero otherwise.
+# Parameters : $1 an array, normally of command line arguments.
+##########################################################################
+function check_for_help_arg()
+{
+  local we_all_need_help_sometimes=0
+  
+  for argument in $1
+  do
+    if [ "${argument}" = "-h" ]; then
+      we_all_need_help_sometimes=1
+    fi
+  done
+  
+  return ${we_all_need_help_sometimes}
+}
 
+######################################################################
 # Function  : Simply checks if a file exists, and exits if it doesn't.
 # Parameters: $1 file name
-
+######################################################################
 function check_file_exists()
 {
   local verbose="yes"
@@ -68,9 +92,10 @@ function check_file_exists()
 
 }
 
+###########################################################################
 # Function  : Simply checks if a directory exists, and exits if it doesn't.
 # Parameters: $1 directory name
-
+###########################################################################
 function check_directory_exists()
 {
   if [ -d $1 ]; then
@@ -82,10 +107,11 @@ function check_directory_exists()
 
 }
 
+###########################################################################
 # Function   : This is a bit drastic, can be used to execute any command
 #              and stops if the exit code of the command is non-zero.
 # Parameters : $1 a string containing a command. We simply 'eval' it.
-
+###########################################################################
 function execute_command_or_else_stop()
 {
   evalstr=$1
@@ -108,9 +134,10 @@ function execute_command_or_else_stop()
   fi
 }
 
+###########################################################################
 # Function   : To Run a command, but print it out first.
 # Parameters : $1 a string containing a command. We simply 'eval' it.
-
+###########################################################################
 function execute_command()
 {
   evalstr=$1
@@ -121,6 +148,11 @@ function execute_command()
 
 }
 
+###########################################################################
+# Function   : Can run a coomand or just echo it.
+# Parameters : $1 a string containing a command, and if if $2="OFF"
+#              run the command. Any other argument for $2 causes an echo.
+###########################################################################          
 function execute_command_or_echo_it()
 {
   evalstr=$1
@@ -133,9 +165,10 @@ function execute_command_or_echo_it()
   fi
 }
 
-# Function  : Checks if a command exists by running 'which' on $1
-# Parameters: $1 command name like 'ls' or 'cat' or 'echo' or anything
-
+###########################################################################
+# Function  : Checks if a command exists by running 'which' on $1.
+# Parameters: $1 command name like 'ls' or 'cat' or 'echo' or anything.
+###########################################################################
 function check_program_exists()
 {
   evalstr="which $1"
@@ -148,9 +181,10 @@ function check_program_exists()
   return 0
 }
 
+###########################################################################
 # Function  : Checks if file $1 exists, and if so tries to run it.
 # Parameters: $1 filename
-
+###########################################################################
 function check_and_run_file()
 {
   TMP=""
@@ -169,9 +203,10 @@ function check_and_run_file()
   
 }
 
+#####################################################################################
 # Function  : Checks a whole load of files from command line to make sure they exist.
 # Parameters: $1 string containing file names.
-
+#####################################################################################
 function check_all_files_in_string_exists()
 {
   for name in $1
@@ -180,11 +215,12 @@ function check_all_files_in_string_exists()
   done
 }
 
+#######################################################################################
 # Function   : Runs a batch job. The difference is in the way programs are submitted to
 #              different clusters. CMIC runs Sungrid, and DRC runs Mosix.
 # Parameters : $1 File of commands. This is simply a text file of intended commands.
 #               Then this function sorts out how to run them.
-               
+########################################################################################               
 function run_batch_job()
 {
   command_file=$1
@@ -334,12 +370,13 @@ function run_batch_job()
       
 }
 
+#####################################################################################
 # Function  : Copies an analyze image to a given directory.
 #
 # Param     : $1 from directory
 # Param     : $2 to directory
 # Param     : $3 base file name, no .img or .hdr extension
-
+#####################################################################################
 function copy_and_unzip_analyze_image()
 {
   FROM=$1
@@ -369,13 +406,14 @@ function copy_and_unzip_analyze_image()
 
 }
 
+#####################################################################################
 # Function   : Converts a segmented region into a masked image
 #
 # Param      : $1 image.img (ie. with img extension)
 # Param      : $2 region    (no file extension)
 # Param      : $3 output    (no file extension)
 # Param      : $4 number of dilations
-
+#####################################################################################
 function make_mask()
 {
   if [ "_$4" != "_" ]; then
@@ -389,9 +427,11 @@ function make_mask()
 
 }
 
+#####################################################################################
 # Function      : Check that all files in a string exist
-# Parameters $1 : String containing file names, such as might be available on a command line.
-
+# Parameters $1 : String containing file names, such as might be 
+#                 available on a command line.
+#####################################################################################
 function check_all_files_in_string_exists()
 {
   echo "Checking arg '$1'"
@@ -401,7 +441,9 @@ function check_all_files_in_string_exists()
   done
 }
 
+#####################################################################################
 # Check that the input is an integer
+#####################################################################################
 check_int(){
     echo $1 | grep '^[0-9]*$' > /dev/null 2>&1
     if [ $? -ne 0 ]; then
@@ -411,7 +453,9 @@ check_int(){
     fi
 }
 
+#####################################################################################
 # Check that we can create/write to a specified file
+#####################################################################################
 checkf_writeable(){
         
     #If file does not exist, we have to
@@ -443,7 +487,9 @@ checkf_writeable(){
     fi
 }
 
-# Exit with a message, status
+#####################################################################################
+# Exit with a message, status.
+#####################################################################################
 exitprog(){
     echo -e "$1"
     check_int $2
@@ -454,7 +500,9 @@ exitprog(){
     fi
 }
 
+#####################################################################################
 # Write out a pretty message
+#####################################################################################
 message(){
     local dashes='==============' # 14
     local spaces='                                      ' # 38
@@ -462,12 +510,17 @@ message(){
     echo "$dashes $msg $dashes"
 }
 
-# Routine to run command and write a message
+#####################################################################################
+# Routine to run command and write a message.
+#####################################################################################
 runcommand(){
     message "$2"
     $1
 }
 
+#####################################################################################
+# Function: Requires documentation, and possibly a usage analysis.
+#####################################################################################
 stripimg() {
     local inimg=$1
     local roi=$2
@@ -493,12 +546,18 @@ stripimg() {
     fi
 }
 
+#####################################################################################
+# Function: Requires documentation, and possibly a usage analysis.
+#####################################################################################
 copyimg() {
     local from=$1
     local to=$2
     execute_command "$ANCHANGE $from $to -sex m > /dev/null 2>&1"
 }
 
+#####################################################################################
+# Function: Requires documentation, and possibly a usage analysis.
+#####################################################################################
 make_midas_mask() {
     local img=$1
     local region=$2
@@ -512,8 +571,9 @@ make_midas_mask() {
     execute_command "makemask $img $region $output -bpp 16 -val 255 $dilationArg"
 }
 
-#Make the midas information (like patient name, etc)
-#in the roi like that of source_img
+#########################################################################################
+# Make the midas information (like patient name, etc) in the roi like that of source_img.
+#########################################################################################
 extendroiheader() {
     
     local source_img=$1
@@ -553,6 +613,9 @@ extendroiheader() {
     rm -f $tmpdir/anchange.sh
 }
 
+#####################################################################################
+# Function: Requires documentation, and possibly a usage analysis.
+#####################################################################################
 roitomidas() {
 
     local image=$1
@@ -586,6 +649,9 @@ roitomidas() {
     rm -rf $regtmpdir
 }
 
+#####################################################################################
+# Function: Requires documentation, and possibly a usage analysis.
+#####################################################################################
 dilateroi() {
     local inimg=$1
     local roi=$2
@@ -599,6 +665,9 @@ dilateroi() {
     rm -rf $drtmpdir
 }
 
+#####################################################################################
+# Function: Requires documentation, and possibly a usage analysis.
+#####################################################################################
 eroderoi() {
     local inimg=$1
     local roi=$2
@@ -610,6 +679,10 @@ eroderoi() {
     rm -rf $ertmpdir
 }
 
+#####################################################################################
+# Function:  Checks if a file is file is writable, and if it is runs dos2unix on it.
+#            If not writable, method will print a message, but soldier on regardless.
+#####################################################################################
 dos_2_unix() {
   checkf_writeable $1
   if [ $? -ne 0 ]; then

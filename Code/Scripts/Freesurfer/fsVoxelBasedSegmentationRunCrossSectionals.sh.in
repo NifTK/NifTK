@@ -28,9 +28,12 @@ SUBJECTS_DIR=`pwd`
 
 source _fsInclude.sh
 
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
+Used to run a voxel based cortical thickness estimation on a FreeSurfer folder.
 
 Usage: fsVoxelBasedSegmentationRunCrossSectionals.sh [ options ] ALLFR ALLHA CCCCC DDDDD etc.
 
@@ -56,6 +59,12 @@ exit 127
 }
 
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -lt 1 ]; then
   Usage
 fi

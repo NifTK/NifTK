@@ -25,6 +25,10 @@
 #=================================================================================*/
 #
 
+source _regInclude.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
@@ -60,11 +64,6 @@ Options:
 EOF
 exit 127
 }
-
-# Check args
-if [ $# -lt 4 ]; then
-  Usage
-fi
 
 function iterate_through_input_file()
 {
@@ -113,6 +112,17 @@ function iterate_through_input_file()
   done
 }
 
+# Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+if [ $# -lt 4 ]; then
+  Usage
+fi
+
 # Pick up command line parameters
 IMAGE_DIR=$1
 shift
@@ -160,8 +170,6 @@ while [ "_$1" != "_"  ] ; do
         Usage
     fi
 done
-
-source _regInclude.sh
 
 check_directory_exists $OUTPUT_DIR
 

@@ -26,6 +26,10 @@
 
 SUBJECTS_DIR=`pwd`
 
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
@@ -134,6 +138,12 @@ function import_files()
 }
 
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -lt 1 ]; then
   Usage
 fi

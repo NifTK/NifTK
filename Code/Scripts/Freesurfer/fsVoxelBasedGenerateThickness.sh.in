@@ -28,6 +28,8 @@ SUBJECTS_DIR=`pwd`
 
 source _fsInclude.sh
 
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
@@ -65,6 +67,17 @@ EOF
 exit 127
 }
 
+# Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
 regbased=0
 time=1
 vmf=1
@@ -89,11 +102,6 @@ while [ "_$1" != "_" -a "$DONE_OPTIONS" = "FALSE" ] ; do
         DONE_OPTIONS="TRUE"
     fi
 done
-
-# Check args
-if [ $# -lt 1 ]; then
-  Usage
-fi
 
 # If no directories, no point continuing
 if [ "_$1" = "_" ]; then

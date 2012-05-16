@@ -26,6 +26,10 @@
 
 export SUBJECTS_DIR=`pwd`
 
+source _fsInclude.sh
+    
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
@@ -57,6 +61,12 @@ exit 127
 }
 
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -lt 1 ]; then
   Usage
 fi
@@ -83,8 +93,6 @@ while [ "_$1" != "_" -a "$DONE_OPTIONS" = "FALSE" ] ; do
     fi
 done
 
-source _fsInclude.sh
-    
 check_freesurfer_env
 
 check_all_freesurfer_programs_exist

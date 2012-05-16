@@ -27,37 +27,14 @@
 
 source _niftkCommon.sh
 
-ndefargs=1
-keeptmp=0
-tmp_root=/tmp/
-tmpdir=
-use_tmp_dir=0
-use_tmp_root=0
-spm_dir=
-set_spm_dir=0
-use_fsl=0
-atlas=
-use_atlas=0
-grey_prior= 
-use_grey=0
-white_prior=
-use_white=0
-csf_prior=
-use_csf=0
-deep_grey_prior=
-use_deep_grey=0
-internal_csf_prior=
-use_internal_csf=0
-use_gpu=0
-levels_pyramid=3
-levels_perform=2
-dilations=2
-
-command_file=segRelaxPriorsBatch_$$_commands.txt   
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
 
 function Usage()
 {
 cat <<EOF
+#######################################################################################
+# NOTE: Deprecated. Use NiftySeg instead.                                             #
+#######################################################################################
 
 This script runs Jorge's segmentation as described in [1],
 using linear [2] and non-linear [3] registration to an atlas.
@@ -124,10 +101,46 @@ Josephine Barnes, Nick C Fox, David J Hawkes, and Sebastien Ourselin.
 "Fast free-form deformation using graphics processing units" 
 Comput Meth Prog Bio 2009: doi:10.1016/j.cmpb.2009.09.002
 
+#######################################################################################
+# NOTE: Deprecated. Use NiftySeg instead.
+#######################################################################################
                              
 EOF
 exit 127
 }
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+ndefargs=1
+keeptmp=0
+tmp_root=/tmp/
+tmpdir=
+use_tmp_dir=0
+use_tmp_root=0
+spm_dir=
+set_spm_dir=0
+use_fsl=0
+atlas=
+use_atlas=0
+grey_prior= 
+use_grey=0
+white_prior=
+use_white=0
+csf_prior=
+use_csf=0
+deep_grey_prior=
+use_deep_grey=0
+internal_csf_prior=
+use_internal_csf=0
+use_gpu=0
+levels_pyramid=3
+levels_perform=2
+dilations=2
+
+command_file=segRelaxPriorsBatch_$$_commands.txt   
 
 function IterateThroughFile()
 {
@@ -208,7 +221,6 @@ function IterateThroughFile()
 
 if [ $# -lt $ndefargs ]; then
     Usage
-    exitprog "$help\nError: Incorrect number of arguments...."
 fi
 
 data_file=$1

@@ -23,20 +23,39 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
+
 #
 # Script that was developed for the ADNI scaling project, to take an image,
 # and generate a load of images with different voxel sizes in the header.
 
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+cat <<EOF
+Script used to generate a bunch of randomly scaled images, used for the ADNI scaling project (Clarkson et al. NeuroImage 2009).
+
+Usage: $0 image numberOfImages minVoxelMultiplier maxVoxelMultiplier
+ 
+  image              - in Analyze format, without specifying the .img part.
+  numberOfImages     - number of random images you want to generate
+  minVoxelMultiplier - factor to scale voxel sizes by. eg. 0.99 is a 1% reduction.
+  maxVoxelMultiplier - factor to scale voxel sizes by. eg. 1.01 is a 1% increase.
+
+EOF
+exit 127
+}
+
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -ne 4 ]; then
-  echo 1>&2 "Usage: $0 image numberOfImages minVoxelMultiplier maxVoxelMultiplier"
-  echo 1>&2 "" 
-  echo 1>&2 "  image              - in Analyze format, without specifying the .img part."
-  echo 1>&2 "  numberOfImages     - number of random images you want to generate"
-  echo 1>&2 "  minVoxelMultiplier - factor to scale voxel sizes by. eg. 0.99 is a 1% reduction."
-  echo 1>&2 "  maxVoxelMultiplier - factor to scale voxel sizes by. eg. 1.01 is a 1% increase."
-  echo 1>&2 ""
-  exit 127
 fi
 
 IMAGE=$1

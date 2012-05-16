@@ -27,14 +27,9 @@
 # Script to run a batch of SIENA processes. Can be used to submit jobs to cluster.
 # 
 
-ndefargs=1
-input_file=""
-image_directory="."
-region_directory="."
-output_directory="."
-siena_options=""
-bet_options=""
-use_regions=1
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
 
 function Usage()
 {
@@ -70,6 +65,20 @@ Options:
 EOF
 exit 127                            
 }
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+ndefargs=1
+input_file=""
+image_directory="."
+region_directory="."
+output_directory="."
+siena_options=""
+bet_options=""
+use_regions=1
 
 function iterate_through_input_file()
 {
@@ -166,8 +175,6 @@ do
     esac
     shift 1
 done
-
-source _niftkCommon.sh
 
 check_directory_exists $image_directory
 check_directory_exists $region_directory

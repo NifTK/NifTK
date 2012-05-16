@@ -26,28 +26,43 @@
 
 SUBJECTS_DIR=`pwd`
 
+source _fsInclude.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+cat <<EOF
+This script can be used to transfer subjects as a zipped tar file to a remote machine.
+
+Usage: $0 remoteLocation AAAAA BBBBB CCCCC DDDDD etc.
+
+  This script assumes:
+    \$SUBJECTS_DIR environment variable exists, and the directory it points to exists.
+ 
+    All arguments after remoteLocation are FreeSurfer directories under the current directory.
+
+    remoteLocation specifies the username, machine, and folder where you want the tar files placing.
+    eg.
+      clarkson@comic1.cs.ucl.ac.uk:subjects
+
+    ie.
+      <username>@<full machine name>:<full directory name or subdirectory relative to home directory>
+
+EOF
+exit 127
+}
+
 # Check args
-if [ $# -le 2 ]; then
-  echo 1>&2 "This script can be used to transfer subjects as a zipped tar file to a remote machine."
-  echo 1>&2 ""
-  echo 1>&2 "Usage: $0 remoteLocation AAAAA BBBBB CCCCC DDDDD etc."
-  echo 1>&2 ""
-  echo 1>&2 "  This script assumes:"
-  echo 1>&2 "    \$SUBJECTS_DIR environment variable exists, and the directory it points to exists."
-  echo 1>&2 "" 
-  echo 1>&2 "    All arguments after remoteLocation are FreeSurfer directories under the current directory."
-  echo 1>&2 ""
-  echo 1>&2 "    remoteLocation specifies the username, machine, and folder where you want the tar files placing."
-  echo 1>&2 "    eg."
-  echo 1>&2 "      clarkson@comic100.cs.ucl.ac.uk:subjects"
-  echo 1>&2 ""
-  echo 1>&2 "    ie."
-  echo 1>&2 "      <username>@<full machine name>:<subdirectory under your remote home directory>"
-  echo 1>&2 ""
-  exit 127
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
 fi
 
-source _fsInclude.sh
+if [ $# -le 2 ]; then
+  Usage
+fi
 
 remoteLocation=$1
 shift

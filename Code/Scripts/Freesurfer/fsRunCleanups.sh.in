@@ -28,15 +28,30 @@ SUBJECTS_DIR=`pwd`
 
 source _fsInclude.sh
     
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+cat <<EOF
+This script will cleanup the FreeSurfer directories so you can re-run them from the beginning.
+
+Usage: fsRunCleanups.sh ALLFR ALLHA CCCCC DDDDD etc.
+
+  All arguments after fsRunCleanups.sh are FreeSurfer directories under the current directory.
+
+EOF
+exit 127
+}
+
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -lt 1 ]; then
-  echo 1>&2 "This script will cleanup the FreeSurfer directories so you can re-run them from the beginning."
-  echo 1>&2 ""
-  echo 1>&2 "Usage: fsRunCleanups.sh ALLFR ALLHA CCCCC DDDDD etc."
-  echo 1>&2 "" 
-  echo 1>&2 "  All arguments after fsRunCleanups.sh are FreeSurfer directories under the current directory."
-  echo 1>&2 ""
-  exit 127
+  Usage
 fi
 
 check_freesurfer_env

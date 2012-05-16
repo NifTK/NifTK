@@ -23,9 +23,15 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
-#
+
+########################################################
 # Script to run TBSS stats in a basic kind of way.
-# 
+########################################################
+ 
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
   cat <<EOF
@@ -66,11 +72,15 @@ exit 127
 }
 
 # Check args
-if [ $# -lt 3 ]; then
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
   Usage
 fi
 
-source _niftkCommon.sh
+if [ $# -lt 3 ]; then
+  Usage
+fi
 
 # Get the directory, and check it exists.
 directory=$1

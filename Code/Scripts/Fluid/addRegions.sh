@@ -29,6 +29,8 @@ set -u
 
 source _niftkCommon.sh
 
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
@@ -47,6 +49,13 @@ Mandatory Arguments:
 EOF
 exit 127
 }
+
+# Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
 
 ndefargs=4
 

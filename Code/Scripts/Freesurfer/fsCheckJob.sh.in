@@ -26,6 +26,23 @@
 
 SUBJECTS_DIR=`pwd`
 
+source _fsInclude.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+cat <<EOF
+This script will check the status of your FreeSurfer job.
+
+Usage: fsCheckJob.sh ALLFR ALLHA AAAAA BBBBB etc.
+
+  All arguments after fsCheckJob.sh should be FreeSurfer subject directories in the current directory.
+  
+EOF
+exit 127
+}
+
 function check_job()
 {
   PD=$1
@@ -48,22 +65,19 @@ function check_is_running()
 }
 
 # Check args
-if [ $# -lt 1 ]; then
-  echo 1>&2 "This script will check the status of your FreeSurfer job."
-  echo 1>&2 ""
-  echo 1>&2 "Usage: fsCheckJob.sh ALLFR ALLHA AAAAA BBBBB etc."
-  echo 1>&2 "" 
-  echo 1>&2 "  All arguments after fsCheckJob.sh should be FreeSurfer subject directories in the current directory."
-  echo 1>&2 ""
-  exit 127
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
 fi
 
-source _fsInclude.sh
-    
+if [ $# -lt 1 ]; then
+  Usage
+fi
+
 check_freesurfer_env
 
 check_all_directories_in_string_exists "$*"
-
 
 echo "###########################"
 echo "# Checking each log file  #" 

@@ -23,41 +23,21 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
-# Script to run Jorge's segmentation.
+
+#######################################################################################
+# Deprecated: Script to run Jorge's segmentation.
+#######################################################################################
 
 source _niftkCommon.sh
 
-# You need to generate this. You cant do `dirname $0` as it wont work on the cluster.
-progdir=@NIFTK_INSTALL_BIN_DIR@
-
-ndefargs=2
-keeptmp=0
-tmp_root=/tmp
-use_tmp_dir=0
-spm_dir=
-set_spm_dir=0
-use_gpu=0
-atlas=${progdir}/../matlab/segmentation/single_subj_T1.nii
-use_atlas=0
-grey_prior=${progdir}/../matlab/segmentation/grey_prior.nii 
-use_grey=0
-white_prior=${progdir}/../matlab/segmentation/white.nii
-use_white=0
-csf_prior=${progdir}/../matlab/segmentation/csf_prior.nii
-use_csf=0
-deep_grey_prior=${progdir}/../matlab/segmentation/deep_grey_prior.nii
-use_deep_grey=0
-internal_csf_prior=${progdir}/../matlab/segmentation/internal_csf_prior.nii
-use_internal_csf=0
-levels_pyramid=3
-levels_perform=2
-dilations=2
-cpp_trans=
-use_cpp_trans=0
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
 
 function Usage()
 {
 cat <<EOF
+#######################################################################################
+# NOTE: Deprecated. Use NiftySeg instead.                                             #
+#######################################################################################
 
 This script runs Jorge's segmentation as described in [1],
 using linear [2] and non-linear [3] registration to an atlas.
@@ -124,9 +104,47 @@ Josephine Barnes, Nick C Fox, David J Hawkes, and Sebastien Ourselin.
 "Fast free-form deformation using graphics processing units" 
 Comput Meth Prog Bio 2009: doi:10.1016/j.cmpb.2009.09.002
 
+#######################################################################################
+# NOTE: Deprecated. Use NiftySeg instead.
+#######################################################################################
+
 EOF
 exit 127
 }
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+# You need to generate this. You cant do `dirname $0` as it wont work on the cluster.
+progdir=@NIFTK_INSTALL_BIN_DIR@
+
+ndefargs=2
+keeptmp=0
+tmp_root=/tmp
+use_tmp_dir=0
+spm_dir=
+set_spm_dir=0
+use_gpu=0
+atlas=${progdir}/../matlab/segmentation/single_subj_T1.nii
+use_atlas=0
+grey_prior=${progdir}/../matlab/segmentation/grey_prior.nii 
+use_grey=0
+white_prior=${progdir}/../matlab/segmentation/white.nii
+use_white=0
+csf_prior=${progdir}/../matlab/segmentation/csf_prior.nii
+use_csf=0
+deep_grey_prior=${progdir}/../matlab/segmentation/deep_grey_prior.nii
+use_deep_grey=0
+internal_csf_prior=${progdir}/../matlab/segmentation/internal_csf_prior.nii
+use_internal_csf=0
+levels_pyramid=3
+levels_perform=2
+dilations=2
+cpp_trans=
+use_cpp_trans=0
+
 
 # Check args
 if [ $# -lt $ndefargs ]; then
@@ -141,7 +159,10 @@ mask=$2
 shift $ndefargs
 while [ "$#" -gt 0 ]
 do
-    case $1 in
+  case $1 in
+  -h)
+      Usage
+      ;;
 	-tmpdir)
 	    tmpdir=$2
 	    shift 1
@@ -150,7 +171,7 @@ do
 	    tmp_root=$2
 	    shift 1
 	    ;;
-    -keeptmp)
+  -keeptmp)
 	    keeptmp=1
 	    ;;
 	-spm)

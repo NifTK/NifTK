@@ -72,6 +72,8 @@ method=1
 voxel_multiplication=1
 use_voxel_multiplication=0
 
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
@@ -227,6 +229,12 @@ exit 127
 }
 
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -lt $ndefargs ]; then
   Usage
 fi

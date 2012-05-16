@@ -23,18 +23,38 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
+
 #
 # Script that was developed for the ADNI scaling project, to take an image and scale it
 # by a known percentage in all directions by changing image header.
 
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+cat <<EOF
+Scales an image by a certain amount by multiplying voxel dimensions by a scaling factor.
+
+Usage: $0 image percentage
+ 
+  image          - in Analyze format, without specifying the .img part.
+  percentage     - as a scale factor, eg. 0.99
+
+EOF
+exit 127
+}
+
 # Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
 if [ $# -ne 2 ]; then
-  echo 1>&2 "Usage: $0 image percentage"
-  echo 1>&2 "" 
-  echo 1>&2 "  image          - in Analyze format, without specifying the .img part."
-  echo 1>&2 "  percentage     - as a scale factor, eg. 0.99"
-  echo 1>&2 ""
-  exit 127
+  Usage
 fi
 
 IMAGE=$1

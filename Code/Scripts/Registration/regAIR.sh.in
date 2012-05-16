@@ -28,6 +28,10 @@
 # as specified in an input filename.
 # 
 
+source _regInclude.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
 function Usage()
 {
 cat <<EOF
@@ -73,11 +77,6 @@ Options:
 EOF
 exit 127
 }
-
-# Check args
-if [ $# -lt 4 ]; then
-  Usage
-fi
 
 # Function   : Function will iterate through file fileContainingImageNames, 
 #              and if $2="REGISTER" it will execute the registration.
@@ -131,6 +130,17 @@ function iterate_through_input_file()
     i=$(($i+1))
   done
 }
+
+# Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+if [ $# -lt 4 ]; then
+  Usage
+fi
 
 # Pick up command line parameters
 IMAGE_DIR=$1
@@ -199,8 +209,6 @@ REG_TMP_DIR=$OUTPUT_DIR/reg-tmp
 
 # And this is the main output dir, where all the results go.
 REG_RESULTS_DIR=$OUTPUT_DIR
-
-source _regInclude.sh
 
 check_midas_env
 
