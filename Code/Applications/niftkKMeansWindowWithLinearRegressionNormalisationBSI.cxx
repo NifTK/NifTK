@@ -37,9 +37,9 @@
 #include "itkSubtractImageFilter.h"
 
 /*!
- * \file niftkKMeansWindowNBSIWithLinearRegressionNormalisation.cxx
- * \page niftkKMeansWindowNBSIWithLinearRegressionNormalisation
- * \section niftkKMeansWindowNBSIWithLinearRegressionNormalisationSummary     Program to calculate KN-BSI". 
+ * \file niftkKMeansWindowWithLinearRegressionNormalisationBSI.cxx
+ * \page niftkKMeansWindowWithLinearRegressionNormalisationBSI
+ * \section niftkKMeansWindowWithLinearRegressionNormalisationBSISummary Program to calculate KN-BSI".
  * 
  * Program to calculate the KN-BSI, based on the papers:
  * Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI,

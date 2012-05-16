@@ -35,9 +35,9 @@
 #include "vtkIndent.h"
 
 /*!
- * \file niftkConvertImageToVTKStrcuturedGrid.cxx
- * \page niftkConvertImageToVTKStrcuturedGrid
- * \section niftkConvertImageToVTKStrcuturedGridSummary Transform's an image, as read by ITK, into a VTK structured grid. This program was written because ITK only writes VTK structured points, which doesn't include direction cosines.
+ * \file niftkConvertImageToVTKStructuredGrid.cxx
+ * \page niftkConvertImageToVTKStructuredGrid
+ * \section niftkConvertImageToVTKStructuredGridSummary Transform's an image, as read by ITK, into a VTK structured grid. This program was written because ITK only writes VTK structured points, which doesn't include direction cosines.
  *
  * This program uses ITK ImageFileReaders to load an image. A VTK Structured Grid is created programmatically
  * and is passed to a VTK StructuredGridWriter.

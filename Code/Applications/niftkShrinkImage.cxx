@@ -29,9 +29,9 @@
 #include "itkCommandLineHelper.h"
 
 /*!
- * \file niftkShringImageFilter.cxx
- * \page niftkShringImageFilter
- * \section niftkShringImageFilterSummary Runs the ITK ShrinkImageFilter.
+ * \file niftkShrinkImageFilter.cxx
+ * \page niftkShrinkImageFilter
+ * \section niftkShrinkImageFilterSummary Runs the ITK ShrinkImageFilter.
  */
 void Usage(char *exec)
   {

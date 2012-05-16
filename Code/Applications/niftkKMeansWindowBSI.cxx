@@ -12,9 +12,9 @@
 #include <stdio.h>
 
 /*!
- * \file niftkKMeansWindowNBSI.cxx
- * \page niftkKMeansWindowNBSI
- * \section niftkKMeansWindowNBSISummary     Program to calculate BSI with automatic window". 
+ * \file niftkKMeansWindowBSI.cxx
+ * \page niftkKMeansWindowBSI
+ * \section niftkKMeansWindowBSISummary Program to calculate BSI with automatic window".
  * 
  * Program to calculate BSI with automatic window, based on the papers:
  * Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI,

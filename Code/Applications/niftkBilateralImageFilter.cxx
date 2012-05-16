@@ -32,9 +32,9 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 /*!
- * \file niftkBilteralImageFilter.cxx
- * \page niftkBilteralImageFilter
- * \section niftkBilteralImageFilterSummary Runs ITK BilateralImageFilter to do bilteral filter.
+ * \file niftkBilateralImageFilter.cxx
+ * \page niftkBilateralImageFilter
+ * \section niftkBilateralImageFilterSummary Runs ITK BilateralImageFilter to do bilteral filter.
  *
  * Runs ITK BilateralImageFilter to do bilteral filter. 
  * \li Dimensions: 3
