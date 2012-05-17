@@ -44,7 +44,7 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
     MITK_INFO << "NifTKCoreObjectFactory c'tor" << std::endl;
 
     // At this point in this constructor, the main MITK CoreObjectFactory has been created,
-    // (because in RegisterDRCCoreObjectFactory, the call to mitk::CoreObjectFactory::GetInstance()
+    // (because in RegisterNifTKCoreObjectFactory, the call to mitk::CoreObjectFactory::GetInstance()
     // will instantiate the MITK CoreObjectFactory, which will create lots of Core MITK objects),
     // so MITKs file reader for ITK images will already be available. So, now we remove it.
     std::list<itk::ObjectFactoryBase*> listOfObjectFactories = itk::ObjectFactoryBase::GetRegisteredFactories();

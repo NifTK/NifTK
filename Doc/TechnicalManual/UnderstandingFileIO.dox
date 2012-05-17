@@ -4,33 +4,32 @@
 
 \li \ref UnderstandingFileIOIntro
 \li \ref UnderstandingFileIOCommandLine 
-\li \ref UnderstandingFileIOLoadingVolumes
-\li \ref UnderstandingFileIOLoadingFileSeries
+\li \ref UnderstandingFileIOLoadingVolumesITK
+\li \ref UnderstandingFileIOLoadingFileSeriesITK
 \li \ref UnderstandingFileIONiftyView
 
 \section UnderstandingFileIOIntro Introduction
 
-There are two types of file access within the binary programs of NifTK, and they are currently sufficiently different
-as to warrant an explanation. Future work may endeavour to make these methods more consistent.
 NiftyView and command line programs use a different mechanism for file I/O, and these are now explained in some detail.
-If the following information is not sufficiently detailed, the next alternative is to step through the code with
-a debugger.
+Future work may endeavour to make these methods more consistent.
  
-\section UnderstandingFileIOCommandLine Command Line Programs
+\section UnderstandingFileIOCommandLine Command Line Programs Use ITK Directly
 
-Command line programs currently use ITK directly for image I/O. A typical example proceeds as follows:
+Command line programs currently use ITK directly for image I/O. Please refer to the 
+<a href="http://www.itk.org/ITK/help/documentation.html">ITK Software Guide</a>
+for a detailed explanation from the ITK authors. The general approach can be seen in the following incomplete code snippet:
 
 \code
 
   #include "itkImage.h"
   #include "itkImageFileReader.h"
 
-  typedef typename itk::Image< PixelType, Dimension >     InputImageType;   
-  typedef typename itk::ImageFileReader< InputImageType > InputImageReaderType;
+  typedef itk::Image< PixelType, Dimension >     InputImageType;   
+  typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
 
-  typename InputImageReaderType::Pointer imageReader1 = InputImageReaderType::New();
-  imageReader1->SetFileName(args.inputImage1);
-  imageReader1->Update();
+  typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
+  imageReader->SetFileName(args.inputImage1);
+  imageReader->Update();
   
 \endcode
 
@@ -66,14 +65,19 @@ type of files they support. This is usually implemented using code like the foll
 
 \endcode
  
-The full code example can be seen in \ref niftkAdd.cxx. In this example, it is possible to peek at the image dimensions 
-using utility methods in itk::ImageIOBase, and on that basis instantiate a templated function with the right number of 
-dimensions and pixel type. The consequence of this per-program coding is that each command line program implements this 
-in a different way, according to the requirements of each program.
+The full code for this example can be seen in \ref niftkAdd.cxx. In this example, it is possible to peek at the image dimensions 
+using utility methods in the NifTK file
+\verbatim
+NifTK/Code/Libs/ITK/Common/itkCommandLineHelper.cxx
+\endverbatim
+and in ITK's itk::ImageIOBase. Given the image dimensions and pixel type the right template function can be instantiated.
+The consequence of this per-program coding is that each command line program could potentially implement this 
+in a different way, according to the requirements of each program. For example a program multiplying probability images
+would assume that all images were a float data type, with the range 0 to 1.
 
-\section UnderstandingFileIOLoadingVolumes Loading Volumes using ITK
+\section UnderstandingFileIOLoadingVolumesITK Loading Volumes using ITK
 
-We now take a detour to explain how the ITK Object Factory Mechanism works. The ITK ImageFileReader uses the 
+We now take a detour to explain how the ITK ObjectFactory Mechanism works. The ITK ImageFileReader uses the 
 ObjectFactory method to instantiate the correct file reader. Figure 1. shows a pseudo-sequence diagram to help explain 
 how the ObjectFactory works for loading files.
 
@@ -81,14 +85,16 @@ how the ObjectFactory works for loading files.
 
 When a client creates an itk::ImageFileReader, and reads a file, the itk::ImageFileReader needs to create the correct
 itk::ImageIOBase subclass. It calls the static itk::ImageIOFactory::CreateImageIO which registers all the known itk::ImageIOFactory
-subclasses with the ObjectFactoryBase. It then asks the ObjectFactoryBase for all objects implementing the itkImageIOBase interface.
+subclasses with the itk::ObjectFactoryBase. It then asks the ObjectFactoryBase for all objects implementing the itkImageIOBase interface.
 Each of these returned objects can be cast to itk::ImageIOBase, which contains a method CanReadFile which returns a boolean. So,
 the itk::ImageIOFactory iterates through the list of all the provided ImageIOBase classes, and the first one that returns true
 will be returned to the itk::ImageFileReader as the correct itk::ImageIOBase subclass that can read the data.
 
 The advantage of this approach is that the client calling the itk::ImageFileReader and the itk::ImageFileReader itself
-has no idea how many, or even what class will implement that interface. The ObjectFactory is able to manage all possible
-classes implementing the interface. The ObjectFactory can also provide services such as dynamically loading classes at runtime.
+has no idea how many, or even what class will implement that interface. The itk::ObjectFactory is able to manage all possible
+classes implementing the interface. The itk::ObjectFactory can also provide services such as dynamically loading classes at runtime,
+and provide methods to programmatically add and remove classes at runtime.
+
 So the list of available classes can be extended without calling code knowing about it.
 
 From this we also see that 
@@ -103,8 +109,184 @@ without calling code knowing about it.
 So, when the command line programs are running, all except \ref niftkDicomSeriesReadImageWrite.cxx use this default 
 ITK mechanism. 
 
-\section UnderstandingFileIOLoadingFileSeries Loading File Series using ITK
+\section UnderstandingFileIOLoadingFileSeriesITK Loading File Series using ITK
 
-\section UnderstandingFileIONiftyView NiftyView
+Reading image series using ITK can be seen as an extension of the above mechanism. Put simply, the itk::ImageSeriesReader
+provides the mechanism for repeatedly loading a series of slices, and uses itk::ImageFileReader to read each 2D slice.
+A full explanation can be found in the <a href="http://www.itk.org/ITK/help/documentation.html">ITK Software Guide</a>.
 
+DICOM files within ITK are loaded using this approach, and an example can be seen in niftkDicomSeriesReadImageWrite.cxx.
+In that example it can be seen that a directory is scanned to pick up a list of all DICOM files, GDCM is then used
+to decide which series and which slices to load, the itk::ImageSeriesReader is then used to load each slice using 
+itk::ImageFileReader, and to stack them into a volume.
+
+\section UnderstandingFileIONiftyView NiftyView uses MITK Application Framework
+
+NiftyView however uses the MITK application framework. The MITK application framework does mainly delegate down to an ITK
+based layer for most image file reading operations, but NifTK has implemented some notable differences.  These notable differences
+therefore mean a departure from the ITK mechanism mentioned above. NiftyView loads a different 
+Analyze and Nifti file reader. All other file types are loaded as per MITK.
+
+\section UnderstandingFileIOMITKObjectFactories Loading Files Within MITK
+
+The MITK concept is that a given data type will require readers, writers, mappers for rendering, file extensions to add to the
+GUI dialog boxes and so on. This requires groups of objects to be created in a consistent fashion, similar to the 
+<a href="http://en.wikipedia.org/wiki/Abstract_factory_pattern">Abstract Factory</a> pattern. MITK therefore defines the 
+mitk::CoreObjectFactoryBase, with most methods virtual, and the main implementation is mitk::CoreObjectFactory.
+
+\image html MITKCoreObjectFactoryBase.png "Figure 2. MITK provides multiple object factories to coordinate the registration of additional readers, writers, file extensions and mappers."
+
+So, for example for an "Image" type, the mitk::CoreObjectFactory creates many individual factories to manufacture all the correct image file readers.
+
+Looking at:
+\code
+mitk::CoreObjectFactory::CoreObjectFactory()
+{
+  static bool alreadyDone = false;
+  if (!alreadyDone)
+  {
+    itk::ObjectFactoryBase::RegisterFactory( PointSetIOFactory::New() );
+    itk::ObjectFactoryBase::RegisterFactory( STLFileIOFactory::New() );
+    itk::ObjectFactoryBase::RegisterFactory( VtkSurfaceIOFactory::New() );
+    itk::ObjectFactoryBase::RegisterFactory( VtkImageIOFactory::New() );
+    itk::ObjectFactoryBase::RegisterFactory( VtiFileIOFactory::New() );
+    itk::ObjectFactoryBase::RegisterFactory( ItkImageFileIOFactory::New() );
+
+    mitk::SurfaceVtkWriterFactory::RegisterOneFactory();
+    mitk::PointSetWriterFactory::RegisterOneFactory();
+    mitk::ImageWriterFactory::RegisterOneFactory();
+
+    CreateFileExtensionsMap();
+
+    alreadyDone = true;
+  }
+}
+\endcode
+we can see how MITK is using ItkImageFileIOFactory which uses ITK classes to load images. The mitk::CoreObjectFactory 
+instantiates mitk::ItkImageFileIOFactory and registers that with the ITK factory mechanism. Within mitk::ItkImageFileIOFactory 
+we can see 
+\code
+ItkImageFileIOFactory::ItkImageFileIOFactory()
+{
+  this->RegisterOverride("mitkIOAdapter",
+                         "mitkItkImageFileReader",
+                         "itk Image IO",
+                         1,
+                         itk::CreateObjectFunction<IOAdapter<ItkImageFileReader> >::New());
+}
+\endcode
+which means that we are registering a class that implements the "mitkIOAdaptor" capability. 
+The itk::ObjectFactory could therefore contain many classes all of which implement the mitkIOAdaptor capability,
+and in this case the code above denotes the fact that "mitkItkImageFileReader" is a class that implements "mitkIOAdapter",
+and that in order to create it, we instantiate the templated mitk::IOAdaptor, giving it the mitk::ItkImageFileReader.
+The mitk::ItkImageFileReader can essentially use any ITK class it likes to load images, and convert them to MITK images.
+
+Within NiftyView we do not want to use the standard ITK Analyze reader and Nifti reader, so we replace them with our own
+under
+\verbatim
+NifTK/Code/Gui/MITK/Modules/niftkMitkExt/IO
+\endverbatim
+We have itk::AnalyzeImageIO3160 and itk::DRCAnalyzeImageIO3160. The naming convention here is that itk::AnalyzeImageIO3160
+is directly copied from the ITK project version 3.16.0. The itk::DRCAnalyzeImageIO3160 is a subclass of itk::AnalyzeImageIO3160
+implementing DRC specific functionality. The DRC specific functionality is to correct the orientation field as in 
+this piece of code:
+\code
+    itk::DRCAnalyzeImageIO3160::ValidDRCAnalyzeOrientationFlags temporient = static_cast<itk::DRCAnalyzeImageIO3160::ValidDRCAnalyzeOrientationFlags> (header.hist.orient);
+    itk::SpatialOrientation::ValidCoordinateOrientationFlags coord_orient;
+
+    switch (temporient) {
+    case itk::DRCAnalyzeImageIO3160::ITK_DRC_ANALYZE_ORIENTATION_RAI_AXIAL:
+      coord_orient = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI;
+      break;
+    case itk::DRCAnalyzeImageIO3160::ITK_DRC_ANALYZE_ORIENTATION_RSP_CORONAL:
+      coord_orient = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP;
+      break;
+    case itk::DRCAnalyzeImageIO3160::ITK_DRC_ANALYZE_ORIENTATION_ASL_SAGITTAL:
+      coord_orient = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL;
+      break;
+    default:
+      coord_orient = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI;
+      itkWarningMacro("Unknown orientation in file " << m_FileName);
+    }
+\endcode
+
+Similarly itk::NiftiImageIO3201 is copied from ITK version 3.20.1, which is a patched version of ITK 3.20.0.
+In our Nifti reader, we additionally read the sform matrix if present. This code will eventually make it back into ITK.
+
+In order to include these within NiftyView, we need therefore to replace the 
+<a href="http://docs.mitk.org/nightly-qt4/classmitk_1_1ItkImageFileReader.html">mitk::ItkImageFileReader</a> with our own.
+So we create a factory class in mitk::NifTKItkImageFileIOFactory that derives from mitk::ItkImageFileReader which says:
+\code
+NifTKItkImageFileIOFactory::NifTKItkImageFileIOFactory()
+{
+  this->RegisterOverride("mitkIOAdapter",
+                         "mitkNifTKItkImageFileReader",
+                         "NifTK specific ITK based image IO",
+                         1,
+                         itk::CreateObjectFunction<IOAdapter<NifTKItkImageFileReader> >::New());
+}
+\endcode
+i.e. we are implementing the mitkIOAdaptor interface, by providing class mitk::NifTKItkImageFileReader
+(a subclass of the original mitkItkImageFileReader) and creating the NifTKItkImageFileReader class by 
+passing it to the templated IOAdaptor class. Then in mitk::NifTKItkImageFileReader.cpp we can write our 
+code to read images using our modified itk::DRCAnalyzeImageIO3160 and itk::NiftiImageIO3201.
+
+The remaining hurdle is to make sure our class gets created as a replacement for the standard MITK factory.
+The reason is that the underlying itk::ObjectFactory stores all the objects it manages in an ordered list.
+So, if you have two classes implementing exactly the same interface, only the first one is used.
+
+So we create mitk::NifTKCoreObjectFactory. Recall that in general each subclass of mitk::CoreObjectFactoryBase
+adds new functionality, like new readers, and new file extensions and new mappers. For example, take a 
+look at the mitk::DiffusionImagingObjectFactory as this adds lots of new data-types to the main application.
+In our case however, we want to forcibly replace the existing functionality.
+
+Thus we create mitk::NifTKCoreObjectFactory which is really a dummy factory, as all the required file extensions,
+mappers and readers are created in mitk::CoreObjectFactory. The main method of interest is the constructor:
+\code
+mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
+:CoreObjectFactoryBase()
+{
+  static bool alreadyDone = false;
+  if (!alreadyDone)
+  {
+    MITK_INFO << "NifTKCoreObjectFactory c'tor" << std::endl;
+
+    // At this point in this constructor, the main MITK CoreObjectFactory has been created,
+    // (because in RegisterNifTKCoreObjectFactory, the call to mitk::CoreObjectFactory::GetInstance()
+    // will instantiate the MITK CoreObjectFactory, which will create lots of Core MITK objects),
+    // so MITKs file reader for ITK images will already be available. So, now we remove it.
+    
+    std::list<itk::ObjectFactoryBase*> listOfObjectFactories = itk::ObjectFactoryBase::GetRegisteredFactories();
+    std::list<itk::ObjectFactoryBase*>::iterator iter;
+    mitk::ItkImageFileIOFactory::Pointer itkIOFactory = NULL;
+    for (iter = listOfObjectFactories.begin(); iter != listOfObjectFactories.end(); iter++)
+    {
+      itkIOFactory = dynamic_cast<mitk::ItkImageFileIOFactory*>(*iter);
+      if (itkIOFactory.IsNotNull())
+      {
+        break;
+      }
+    }
+    itk::ObjectFactoryBase::UnRegisterFactory(itkIOFactory.GetPointer());
+
+    // Load our specific factory, which will be used to load all ITK images, just like the MITK one,
+    // but then in addition, will load DRC Analyze files differently.
+    mitk::NifTKItkImageFileIOFactory::RegisterOneFactory();
+
+    // Carry on as per normal.
+    CreateFileExtensionsMap();
+    alreadyDone = true;
+    MITK_INFO << "NifTKCoreObjectFactory c'tor finished" << std::endl;
+  }
+}
+\endcode
+which can be seen to remove the mitk::ItkImageFileIOFactory and insert mitk::NifTKItkImageFileIOFactory.
+This mitk::NifTKCoreObjectFactory is simply created when NiftyView starts be calling 
+RegisterNifTKCoreObjectFactory found in mitkNifTKCoreObjectFactory.h, as can be seen in the main NiftyView application
+\verbatim
+NifTK/Code/Gui/MITK/Apps/NiftyView/NiftyView.cpp
+\endverbatim
+To summarise, we create a factory called mitk::NifTKItkImageFileIOFactory to load all ITK image types, using the standard ITK mechanism,
+except for Analyze and Nifti files where we provide modified readers. This factory is registered with the ITK ObjectFactory
+at application startup, replacing the default MITK class. This process is not done for command line applications.
 */

@@ -13,8 +13,8 @@ There are several ways to contribute. These are listed below in increasing order
 
 The first suggestion is to simply use NifTK and especially NiftyView. The NifTK project has daily, weekly and monthly builds.
 The monthly builds are for general use, and so it is important to make sure these work well. Other builds are for 
-development and testing purposes. The only way to effectively test NiftyView is to have lots of users feedback, so 
-this is one of the most important things people can do.
+development and testing purposes. In addition to nightly unit testing, the only way to make sure NiftyView is genuinely useful
+is to have lots of users feedback, so this is one of the most important things people can do.
 
 \li <b>Daily</b>: Work with the development team to test a known issue. When code has been checked in, verify it by testing it the next day.
 \li <b>Weekly</b>: The development team works throughout the week, trying to make sure things are stable by Friday. So you
@@ -27,7 +27,7 @@ The location of these pre-built packages is listed on the wiki.
 
 \section ContributingWriteAScript Combine algorithms together in a pipeline
 
-NifTK has many \link UserManualCommandLineApps command line applications\endlink. These can be connected together 
+NifTK has many \link UserManualCommandLineApplicationsGenerated command line applications\endlink. These can be connected together 
 using bash or python scripting. 
 
 \li Write a script and place it in:
@@ -40,7 +40,9 @@ under a suitably named folder.
 NifTK/Code/Scripts/CMakeLists.txt
 \endverbatim
 \li If you create a new folder, add a new CMakeLists.txt into the new folder to build the new scripts into 
-the released software. Look in the existing folders for suitable examples. We currently have scripts for registration, 
+the released software. Look in the existing folders for suitable examples. 
+
+We currently have scripts for registration, 
 segmentation, TBSS, FreeSurfer, Voxel Based Cortical Thickness Estimation and so on. Speak to Matt, or Kelvin for examples to 
 suit your needs.
 
@@ -51,8 +53,9 @@ entry point to NifTK development.
 
 \section ContributingWriteAnITKFilter Write a new world changing algorithm as an ITK filter
 
-Writing an ITK filter is easy if you know C++. In addition, the UCL MSc module Information Processing in Medical Imaging 
-course has a workshop on writing ITK filters, and ITK itself and the NifTK toolit have many examples. You can simply 
+Writing an ITK filter is easy if you know C++. Please refer to the ITK Software Guide for an introduction.
+In addition, the UCL MSc module Information Processing in Medical Imaging 
+course has a workshop on writing ITK filters, and ITK itself and the NifTK toolit have many real examples. You can simply 
 integrate your new medical image processing algorithm by writing a command line program and calling ITK filters directly. 
 The use of ITK provides a standard architecture for things like multi-threaded processing, and coping with n-dimensional 
 images of arbitrary datatypes.
@@ -82,16 +85,27 @@ application file. Look in \ref niftkAdd for an example.
 
 \section ContributingWriteAGUIPlugin Develop a new GUI plugin
 
-Writing a GUI plugin is still quite easy. It is advisable to place any algorithm logic in a C++ library under
+Writing a GUI plugin is still quite easy and the number of examples and documentation at <a href="http://www.mitk.org">MITK</a>
+and for NifTK is growing all the time. 
+
+\li Place any ITK/VTK or general algorithm logic in a C++ library under
 \verbatim
 NifTK/Code/Libs
 \endverbatim
-as this will make unit testing easier. Unit testing GUI components is much harder. If your algorithm or piece of 
-functionality that you are testing depends heavily on MITK, then it should go under
+\li If your algorithm or piece of functionality that you are testing depends heavily on MITK, then most of the logic should go under
 \verbatim
 NifTK/Code/Gui/MITK/Modules
 \endverbatim
-and again there are a few examples of unit tests for the niftkMitkExt module. Building the GUI will often require some 
-iteration, as different users discover different usability features and suggestions. You should follow the more detailed 
-instructions \link HowToWritePlugins here\endlink, and work collaboratively to achieve an effective plugin.
+\li Unit tests can be placed under
+\verbatim
+NifTK/Testing/Code/Libs
+\endverbatim
+or
+\verbatim
+NifTK/Code/Gui/MITK/Modules
+\endverbatim
+
+Building the GUI will often require some iteration, as different users discover different usability features and suggestions. 
+You should follow the more detailed instructions \link HowToWritePlugins here\endlink, and work collaboratively to achieve 
+an effective plugin.
 */

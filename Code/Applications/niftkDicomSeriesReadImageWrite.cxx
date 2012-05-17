@@ -34,6 +34,12 @@
 
 #include <vector>
 
+/*!
+ * \file niftkDicomSeriesReadImageWrite.cxx
+ * \page niftkDicomSeriesReadImageWrite
+ * \section niftkDicomSeriesReadImageWriteSummary Reads DICOM series using ITK and hence GDCM, and writes an image volume using ITK.
+ */
+
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "v", NULL, "Verbose output."},

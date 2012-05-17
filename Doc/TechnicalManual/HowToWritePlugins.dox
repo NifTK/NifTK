@@ -23,7 +23,7 @@ development environment, you must re-run CMake, change the plugin's flag, and re
 \section MITKPluginsIntroPluginGenerator The MITK Plugin Generator
 
 The basic structure of each plugin can be created automatically by using the MITK Plugin Generator.
-Once the whole NifTK code has been built once, in the main build folder, there will be sub folders 
+Once the whole NifTK code has been built once, in the main build folder, there will be a sub folder
 \verbatim
 MITK-build/MITK-build/bin
 \endverbatim
@@ -37,60 +37,56 @@ with a single command such as the following for a plugin called "Affine Transfor
 ../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/Code/Gui/MITK/Plugins -l ~/build/NifTK/Doc/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "Affine Transform"
 \endcode
 
-The above command demonstrates that we are placing the output directly into the NifTK source tree, so it will need
-adding to version control manually. We also use a standard template text file to create the correct copyright headers. 
+The above command demonstrates that we are placing the output directly into the NifTK source tree. The newly created
+files will need adding to version control manually. We also use a standard template text file to create the correct 
+copyright headers. 
 
 You can then add the name of the plugin into 
 \verbatim
 NifTK/Code/Gui/MITK/Plugins/Plugins.cmake
 \endverbatim
  
-and build. It is currently worth checking the following:
+and build. It is currently worth manually checking the following:
 
-<ol>
-<li>Find the Activator class within the plugin, and make sure it has a unique name.  For example: Plugins/uk.ac.ucl.cmic.affinetransform/src/internal/AffineTransformViewActivator.h and .cpp</li>
-<li>If you use Qt resource files (.qrc), give them a unique name. For example: Plugins/uk.ac.ucl.cmic.gui.qt.common/resources/CommonResources.qrc</li>
-<li>Edit files.cmake for the plugin accordingly to reference any files that you rename manually.
-</ol>
+\li Find the Activator class within the plugin, and make sure it has a unique name. 
+\li If you use Qt resource files (.qrc), give them a unique name. For example: Plugins/uk.ac.ucl.cmic.gui.qt.common/resources/CommonResources.qrc</li>
+\li Edit files.cmake for the plugin accordingly to reference any files that you rename manually.
 
 As the version of MITK changes, the plugin generator may do this automatically.
 
 \section MITKPluginsIntroNaming Naming Conventions
 
-For consistency sake, it is important to take care when naming plugins and
-to understand which XML tags and strings will eventually be visible in the front
-end of the application. This set of instructions was written using the
-Affine Transform plugin as a template, and applied to all other plugins at
-the time of writing. Please make every effort to keep each plugin and its
-documentation up to date, and to keep the names of things consistent.
+For consistency sake, it is important to take care when naming plugins and providing various strings that appear
+in the front end of the application, and in the documentation. This set of instructions was written using the
+Affine Transform plugin as a template, and applied to all other plugins at the time of writing. Please make every 
+effort to keep each plugin and its documentation up to date, and to keep the names of things consistent.
 
 The following general rules must be applied to get nice user documentation.
 Again, lots of this will be automated by the MITK Plugin Generator, but it is worth checking
 and understanding what each feature is.
 
-<ol>
-<li>The top level directory structure must be in reverse domain name order, lower case, separated by dots. For example, uk.ac.uk.cmic.affinetransform </li>
-<li>For CMake purposes, each plugin is a 'project'. Within each plugin, there is a CMakeLists, and the first line contains the name of the project. The plugin name is in reverse domain name order, lower case, separated by underscores. For example, uk_ac_ucl_cmic_affinetransform </li>
-<li>Each plugin contains a manifest_headers.cmake file, which is used by MITK and CTK macros to generate the plugin. In other words, this file is not simply a nice-to-have text description that gets bundled inside the plugin. It is in fact used to generate the plugin. </li>
-<li>Within manifest_headers.cmake the Plugin-Name is used to generate the top level plugin name within the GUI help pages. Use convention "<plugin name>". For example "Affine Transform". Avoid the term "plugin", as it is unnecessary jargon. </li>
-<li>Within plugin.xml the XML name tag is used to generate the name that goes on the GUI menu item. Use convention "<plugin name>", as in the previous point, so the names match. </li>
-<li>Within plugin.xml if you have a preferences page defined, again, use the same name as the view name. </li>
-<li>Within <plugin>/documentation/UserManual there is a user manual doxygen file (file name doesn't matter). Please generate a FULL description of how to use that plugin. This doxygen page is the main page that the user will see when operating the plugin within the GUI. Use the full power of doxygen. Go crazy and write to your hearts content. </li>
-</ol>
+
+\li The top level directory structure must be in reverse domain name order, lower case, separated by dots. For example, uk.ac.uk.cmic.affinetransform.
+\li For CMake purposes, each plugin is a 'project'. Within each plugin, there is a CMakeLists, and the first line contains the name of the project. The plugin name is in reverse domain name order, lower case, separated by underscores. For example, uk_ac_ucl_cmic_affinetransform.
+\li Each plugin contains a manifest_headers.cmake file, which is used by MITK and CTK macros to generate the plugin. In other words, this file is not simply a nice-to-have text description that gets bundled inside the plugin. It is in fact used to generate the plugin.
+\li Within manifest_headers.cmake the Plugin-Name is used to generate the top level plugin name within the GUI help pages. Use convention "<plugin name>". For example "Affine Transform". Avoid the term "plugin", as it is unnecessary jargon.
+\li Within plugin.xml the XML name tag is used to generate the name that goes on the GUI menu item. Use convention "<plugin name>", as in the previous point, so the names match. Try to avoid extra words like "The", or "Plugin", so keep it brief.
+\li Within plugin.xml if you have a preferences page defined, again, use the same name as the view name.
+\li Within <plugin>/documentation/UserManual there is a user manual doxygen file (file name doesn't matter). Please generate a FULL description of how to use that plugin. This doxygen page is the main page that the user will see when operating the plugin within the GUI. Use the full power of doxygen. Go crazy and write to your hearts content. This page is also included in the on-line \link \ref UserManual User Manual \endlink.
 
 Under <plugin>/documentation/doxygen there is doxygen.dox and the following additional 
 rules must be applied to get consistent code documentation. As mentioned above, use an example
 as a guideline, for example, go and look at the Affine Transform plugin.
 
-<ol>
-<li>The first line should read something like "\defgroup uk_ac_ucl_cmic_affinetransform uk.ac.ucl.cmic.affinetransform Plugin". So, its the tag "\defgroup", followed by the plugin project name, then the plugin directory name followed by the word "Plugin". </li>
-<li>The group tag should be CMICPlugins.</li>
-<li>A brief description should be placed using the "\brief" tag. This should be one sentence, fit on one line and succinctly capture what the plugin is for.</li>
-<li>Please put a "Written by" line, containing email addresses of people to contact concerning the plugin. </li>
-<li>Note that there are two doxygen sections. The first defines the external interface, and the second the internal interface. These correspond to the src folder (external) and the src/internal folder (internal). </li>
-<li>Each class with the exception of the plugin activator in the src/internal folder should declare itself in the documentation as being part of the internal doxygen group, defined in doxygen.dox for that plugin.</li>
-<li>Each class in the src folder should declare itself to be part of the same group as the plugin.
-</ol>
+\li The first line should read something like "\defgroup uk_ac_ucl_cmic_affinetransform uk.ac.ucl.cmic.affinetransform Plugin". So, its the tag "\defgroup", followed by the plugin project name, then the plugin directory name followed by the word "Plugin".
+\li The group tag should be CMICPlugins.
+\li A brief description should be placed using the "\brief" tag. This should be one sentence, fit on one line and succinctly capture what the plugin is for.
+\li Please put a "Written by" line, containing email addresses of people to contact concerning the plugin.
+\li Note that there are two doxygen sections. The first defines the external interface, and the second the internal interface. These correspond to the src folder (external) and the src/internal folder (internal).
+\li Each class with the exception of the plugin activator in the src/internal folder should declare itself in the documentation as being part of the internal doxygen group, defined in doxygen.dox for that plugin.
+\li Each class in the src folder should declare itself to be part of the same group as the plugin.
+
+\section MITKPluginsIntroManagingDependencies Managing Dependencies
 
 \section MITKPluginsIntroUserInterface User Interface
 
