@@ -21,6 +21,7 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
+#include "itkLogHelper.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
@@ -35,8 +36,41 @@
  *
  */
 
+void Usage(char *exec)
+{
+  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  This program adjusts prob. output from STAPLE" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " inputFileName thresholdProb newProb outputFileName" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    inputFileName        Input image " << std::endl;
+  std::cout << "    thresholdProb        Threshold prob. " << std::endl;
+  std::cout << "    newProb              New prob. " << std::endl;
+  std::cout << "    outputFileName       Output image" << std::endl << std::endl;      
+}
+
+
 int main(int argc, char* argv[])
 {
+  
+  // Parse command line args
+  for(int i=1; i < argc; i++)
+  {
+    if (strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0)
+    {
+      Usage(argv[0]);
+      return -1;
+    }
+  }
+  
+  if (argc < 5)
+  {
+    Usage(argv[0]); 
+    return -1; 
+  }
+  
   const unsigned int Dimension = 4;
   typedef float PixelType;
   typedef itk::Image< PixelType, Dimension > FixedImageType;
