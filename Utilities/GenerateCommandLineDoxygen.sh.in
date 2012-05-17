@@ -30,7 +30,7 @@ SUMMARY_FILE_APPS=${DOXYGEN_DIR}/CommandLineApplications.dox
 SUMMARY_FILE_SCRIPTS=${DOXYGEN_DIR}/CommandLineScripts.dox
 COPYRIGHT_TEXT="@NIFTK_COPYRIGHT@"
 PLATFORM_TEXT="@NIFTK_PLATFORM@, @NIFTK_VERSION_STRING@"
-WARNING_GENERATED="<b>(Note: This page is generated. Please do not attempt to edit it!)</b>"
+WARNING_GENERATED="<b>(Note: This page is automatically generated. Please do not attempt to edit it!)</b>"
 
 echo "Generating Doxygen for command line applications and scripts"
 echo "  binary=${BINARY_DIR}"
@@ -109,7 +109,7 @@ do
     
     # Extract a summary file
     
-    DOXYGEN_SUMMARY=`cat doxygen.executable.txt | grep -v "${COPYRIGHT_TEXT}" | grep -v "${PLATFORM_TEXT}" | grep -v "Executing:" | head -2`
+    DOXYGEN_SUMMARY=`cat doxygen.executable.txt | gawk 'BEGIN {flgStop=0} /^Copyright/ {next} /^NifTK/ {next} /^Executing/ {next} /^$/ {next} /Usage/ {flgStop=1} {if (! flgStop) {print}}' | head -2`
     
     # Generate a doxygen compatible page header
     
