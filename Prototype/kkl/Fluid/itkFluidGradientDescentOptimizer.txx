@@ -265,10 +265,18 @@ FluidGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDeformationS
     
   // Delta must be set before injecting m_FluidVelocityToDeformationFilter into this class.
   // m_FluidVelocityToDeformationFilter->SetInputMask(this->m_AsgdMask); 
+  if (!m_ComposeTransformation)
+    m_FluidVelocityToDeformationFilter->SetIsTakeDerivative(true); 
+  else
+    m_FluidVelocityToDeformationFilter->SetIsTakeDerivative(false); 
   m_FluidVelocityToDeformationFilter->SetCurrentDeformationField(transform->GetDeformationField());
   m_FluidVelocityToDeformationFilter->SetVelocityField(this->m_CurrentVelocityField);
   if (this->m_IsSymmetric)
   {
+    if (!m_ComposeTransformation)
+      m_FluidVelocityToFixedImageDeformationFilter->SetIsTakeDerivative(true); 
+    else
+      m_FluidVelocityToFixedImageDeformationFilter->SetIsTakeDerivative(false); 
     m_FluidVelocityToFixedImageDeformationFilter->SetIsNegativeVelocity(true); 
     // m_FluidVelocityToFixedImageDeformationFilter->SetInputMask(this->m_AsgdMask); 
     m_FluidVelocityToFixedImageDeformationFilter->SetCurrentDeformationField(m_FixedImageTransform->GetDeformationField()); 

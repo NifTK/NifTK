@@ -98,6 +98,7 @@ public:
    */
   itkSetMacro(IsNegativeVelocity, bool); 
   itkGetMacro(IsNegativeVelocity, bool); 
+  itkSetMacro(IsTakeDerivative, bool); 
 
 protected:
   FluidVelocityToDeformationFilter();
@@ -127,6 +128,11 @@ protected:
    * Input image mask. 
    */
   const InputImageMaskType* m_InputMask; 
+  
+  /**
+   * Taking derivative?
+   */
+  bool m_IsTakeDerivative; 
   
 private:
   

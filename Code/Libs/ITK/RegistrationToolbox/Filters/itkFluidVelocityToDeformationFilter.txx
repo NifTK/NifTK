@@ -43,6 +43,7 @@ FluidVelocityToDeformationFilter<TScalarType, NDimensions>
   m_MaxDeformation = 0.0;
   m_IsNegativeVelocity = false; 
   m_InputMask = NULL; 
+  m_IsTakeDerivative = true; 
 }
 
 template <class TScalarType, unsigned int NDimensions>
@@ -199,10 +200,13 @@ FluidVelocityToDeformationFilter<TScalarType, NDimensions>
       
         deltaDeformation = velocity;
     
-        for (unsigned int index = 0; index < NDimensions; index++)
-          {
-            deltaDeformation -= velocity[index]*innerProduct(deformationIterator.GetSlice(index), deformationIterator, derivativeOperator[index]);
-          }
+        if (m_IsTakeDerivative)
+        {
+          for (unsigned int index = 0; index < NDimensions; index++)
+            {
+              deltaDeformation -= velocity[index]*innerProduct(deformationIterator.GetSlice(index), deformationIterator, derivativeOperator[index]);
+            }
+        }
     
         newDeformationFieldIterator.Set(deltaDeformation);
       }    
