@@ -31,7 +31,6 @@
 #include "mitkDataStorageEditorInput.h"
 #include "mitkWorkbenchUtil.h"
 #include "QmitkThumbnailViewPreferencePage.h"
-#include "QmitkMIDASMultiViewEditor.h"
 
 const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
