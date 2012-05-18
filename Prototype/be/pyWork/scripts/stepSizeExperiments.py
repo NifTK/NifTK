@@ -16,9 +16,10 @@ from modelDeformationHandler import modelDeformationHandler
 
 
 
-class stepSizeExperiments ( ):
+class stepSizeExperiments (  ):
     
-    def __init__(self, gpu=True, totalTimeIn = 1.0, loadShape='RAMP', configID = '00_step' ):
+    def __init__(self, gpu=True, totalTimeIn = 1.0, loadShape='RAMP', configID = '00_step', 
+                 maxIterations=None, startIterations=None, iterationIncrement=None ):
         
         meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
         tetgenVol       = 75
@@ -134,8 +135,16 @@ class stepSizeExperiments ( ):
         aDeformP1G   = []
         
         timeSteps = []
-        numIts = range( 2000, 50001, 500 )
-        numIts.extend( range( 51000, 100001, 1000 ) )
+        
+        # below 50000 the incement is 500
+        if (startIterations != None) and (maxIterations != None) and (iterationIncrement != None):
+            print('Setting iteration numbers explicitly')
+            numIts = range( startIterations, maxIterations+1, iterationIncrement )
+            
+        else:
+            print('Using standard iteration numbers')
+            numIts = range( startIterations, 50001, 500 )
+            numIts.extend( range( 51000, 100001, 1000 ) )
         
         performedIts = []
         

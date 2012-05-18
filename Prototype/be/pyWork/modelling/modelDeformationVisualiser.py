@@ -72,11 +72,12 @@ class modelDeformationVisualiser :
         
         # try an array of deformed numpyArrays. One element for each time point captured...
         self.deformedNodes = []
+        self.displacements = []
         
         for i in range( self.u.shape[1] ) :
             
-            
-            self.deformedNodes.append( self.u[:,i].reshape( (-1, self.dim) ) + self.mdlNodes )
+            self.displacements.append( self.u[:,i].reshape( (-1, self.dim) ) )
+            self.deformedNodes.append( self.displacements[-1] + self.mdlNodes )
             
         print( 'Deformed nodes were generated' )
         

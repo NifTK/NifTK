@@ -7,7 +7,6 @@ import numpy as np
 import modelDeformationHandler as mdh
 import commandExecution as cmdEx
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from conversions import numpyArrayToStr
 import sys
 from xmlModelReader import xmlModelReader
@@ -70,7 +69,8 @@ class stepSizeExperimentsRecovery ():
         for vtkF in vtkFiles :
             numIts.append( int( vtkF.split('it')[1].split('.vtk')[0] ) )
 
-
+        numIts.sort()
+        
         for numIt in numIts:
             timeStep = 1.0 / numIt
             timeSteps.append( timeStep )
@@ -79,9 +79,9 @@ class stepSizeExperimentsRecovery ():
             # reconstruct name....
             p1G = '_prone1G' + str( '_it%06i' % numIt )
             
-            deformFileName    = self.experimentDir + 'U.txt'
             deformFileNameP1G = self.experimentDir + 'U' + p1G + '.txt'
             
+            print('Model file: \t' + simDir + 'modelFat' + p1G + '.xml')
             xmlGenP1G = xRead.xmlModelReader( simDir + 'modelFat' + p1G + '.xml' ) 
             
             #
@@ -132,9 +132,15 @@ class stepSizeExperimentsRecovery ():
     
     
     
-    def parseLogFilesForKineticAndStrainEnergy( self, logFileBaseName ):
+    def parseLogFilesForKineticAndStrainEnergy( self, logFileBaseName='log', useNumIts = True ):
         
-        logFiles = glob( self.experimentDir + logFileBaseName + '*' )
+        logFiles = []
+        
+        if useNumIts :
+            for it in self.iterationNumbers :
+                logFiles.extend( glob( self.experimentDir + logFileBaseName + str('%06i' %it)+ '.*' ) )
+        else:
+            logFiles = glob( self.experimentDir + logFileBaseName + '*' )
         
         for logFile in logFiles :
         
@@ -166,17 +172,15 @@ class stepSizeExperimentsRecovery ():
         meanLabel   = '$\overline{\|u_{p}\|}$'
     
         # plot 
-        plt.hold( True )
-        plt.xlabel(xLabel)
-        plt.ylabel(yLabel)
-        plt.grid(color = 'gray', linestyle='-')
+        fig = plt.figure()
+        ax  = fig.gca()
+        ax.set_xlabel(xLabel)
+        ax.set_ylabel(yLabel)
+        ax.grid(color = 'gray', linestyle='-')
         
-        plt.plot( self.iterationNumbers/1000., self.meanDisplacements*1000.,   'b-+', label = meanLabel )
+        ax.plot( self.iterationNumbers/1000., self.meanDisplacements*1000.,   'b-+', label = meanLabel )
+        ax.set_ylim(bottom=0)
         
-        #plt.ylim(ymin=0)
-        #plt.legend(loc='upper left')
-        
-        plt.hold( False )
         plt.show()
         plt.savefig( self.plotDir + 'meanDeformOverNumIterations.pdf' )
         plt.savefig( self.plotDir + 'meanDeformOverNumIterations.png', dpi = 300 )
@@ -198,6 +202,9 @@ class stepSizeExperimentsRecovery ():
             ax1.set_ylabel( yLabel  )
             ax2.set_ylabel( y2Label )
             
+            ax1.set_ylim(bottom=0)
+            ax2.set_ylim(bottom=0)
+            
             #ax1.legend(loc = 'upper left')
             #ax2.legend(loc = 'upper right')
             ax1.grid(color = 'gray', linestyle='-')
@@ -217,8 +224,9 @@ if __name__ == '__main__':
     
     simDir = 'W:/philipsBreastProneSupine/referenceState/00_step_gpu2/'
     simDir = 'W:/philipsBreastProneSupine/referenceState/00_step_gpu1/'
-    simDir = 'W:/philipsBreastProneSupine/referenceState/00_step/'
-    s=stepSizeExperimentsRecovery(simDir)    
+    simDir = 'W:/philipsBreastProneSupine/referenceState/00_step_totalTime02/'
+    s=stepSizeExperimentsRecovery(simDir) 
+    s.parseLogFilesForKineticAndStrainEnergy()   
     s.plotAndSaveResults()
     pass
     

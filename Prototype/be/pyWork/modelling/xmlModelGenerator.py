@@ -134,12 +134,16 @@ class xmlModelGenrator :
         
     
     
-    def setOutput( self, freq, variableName ):
+    def setOutput( self, freq, variableNames ):
         ''' @summary: Specify which variable should be  saved with which frequency.
+            
         '''
         
-        self.outputFreq   = freq
-        self.outputVarName = variableName
+        if not isinstance(variableNames, list ):
+            variableNames = [variableNames]
+        
+        self.outputFreq     = freq
+        self.outputVarNames = variableNames
         
         self._outputSet = True
         
@@ -556,9 +560,12 @@ class xmlModelGenrator :
         if self._outputSet :
             outPut = doc.createElement( 'Output' )
             outPut.setAttribute( 'Freq', '%i' % self.outputFreq )
-            var = doc.createElement( 'Variable' )
-            var.appendChild( doc.createTextNode( self.outputVarName ) )
-            outPut.appendChild( var )
+            
+            for outVarName in self.outputVarNames:
+                var = doc.createElement( 'Variable' )
+                var.appendChild( doc.createTextNode( outVarName ) )
+                outPut.appendChild( var )
+            
             model.appendChild( outPut )
              
 

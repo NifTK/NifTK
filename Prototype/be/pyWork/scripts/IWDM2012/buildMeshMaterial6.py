@@ -96,7 +96,7 @@ stlBinary2stlASCII.stlBinary2stlASCII( improBreastSurfMeshSTL )
 
 
 # build the volume mesh
-tetVolParams = ' -pq1.42a50K ' + improBreastSurfMeshSTL
+tetVolParams = ' -pq1.41a50K ' + improBreastSurfMeshSTL
 cmdEx.runCommand( 'tetgen', tetVolParams )
 
 

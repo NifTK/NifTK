@@ -120,7 +120,7 @@ class criticalTimeStep():
     
 if __name__ == '__main__' :
     
-    fileName = 'W:/philipsBreastProneSupine/referenceState/00_step_totalTime01/modelFat_prone1G_it002000.xml'
+    fileName = 'W:/philipsBreastProneSupine/referenceState/01_load/modelFat_prone1G_phi00.xml'
     #R = xReader.xmlModelReader( fileName )
     cts = criticalTimeStep( xmlFileName=fileName )
     print( 'Found the following critical time steps:' )

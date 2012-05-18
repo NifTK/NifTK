@@ -21,6 +21,7 @@ import getNodesCloseToMask as ndProx
 import materialSetGenerator
 import commandExecution as cmdEx
 import f3dRegistrationTask as f3dTask
+from lowAndHighModelCoordinates import lowAndHighModelCoordinates
 
 
 # starting from the images
@@ -68,45 +69,25 @@ if not 'matGen' in locals():
                                                         breastVolMesh, 
                                                         95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
 
-
-# find those nodes of the model, which are close to the sternum... i.e. low x-values
-minXCoordinate = np.min( breastVolMeshPoints[:,0] )
+#
+# Find model boundaries
+#
 deltaX = 5
-
-lowXPoints = []
-lowXIdx    = []
-
-for i in range( breastVolMeshPoints.shape[0] ):
-    if breastVolMeshPoints[i,0] < ( minXCoordinate + deltaX ) :
-        lowXIdx.append( i )
-        lowXPoints.append( [breastVolMeshPoints[i,0], breastVolMeshPoints[i,1], breastVolMeshPoints[i,2] ] )
-    
-lowXPoints = np.array( lowXPoints )
-lowXIdx    = np.array( lowXIdx    )
-
-print( 'Found %i points within an x range between [ -inf ; %f ]' % (len( lowXIdx ), minXCoordinate + deltaX ) )
-plotArrayAs3DPoints(lowXPoints, ( 0, 0, 1.0 ) )
-
-
-
-# find those nodes of the model, which are close to the mid axillary line i.e. high y-values
-maxYCoordinate = np.max( breastVolMeshPoints[:,1] )
 deltaY = 3
+deltaZ = 3
 
-highYPoints = []
-highYIdx    = []
+lowXPoints, lowXIdx, highXPoints, highXIdx, lowYPoints, lowYIdx, highYPoints, highYIdx, lowZPoints, lowZIdx, highZPoints, highZIdx = lowAndHighModelCoordinates( breastVolMeshPoints, deltaX, deltaY, deltaZ )
 
-for i in range( breastVolMeshPoints.shape[0] ):
-    if breastVolMeshPoints[i,1] > ( maxYCoordinate - deltaY ) :
-        highYIdx.append( i )
-        highYPoints.append( [breastVolMeshPoints[i,0], breastVolMeshPoints[i,1], breastVolMeshPoints[i,2] ] )
-    
-highYPoints = np.array( highYPoints )
-highYIdx    = np.array( highYIdx    )
+print( 'Found %i low x points'  % len( lowXIdx  ) )
+print( 'Found %i high x points' % len( highXIdx ) )
+print( 'Found %i low y points'  % len( lowYIdx  ) )
+print( 'Found %i high y points' % len( highYIdx ) )
+print( 'Found %i low z points'  % len( lowZIdx  ) )
+print( 'Found %i high z points' % len( highZIdx ) )
 
-print( 'Found %i points within an x range between [ %f ; inf ]' % (len( highYIdx ), maxYCoordinate + deltaY ) )
-plotArrayAs3DPoints( highYPoints, ( 0, 0, 1.0 ) )
-
+plotArrayAs3DPoints( lowXPoints,  ( 0, 0, 1.0 ) ) # sternum
+plotArrayAs3DPoints( lowZPoints,  ( 0, 0, 1.0 ) ) # inferior 
+plotArrayAs3DPoints( highZPoints, ( 0, 0, 1.0 ) ) # superior
 
 #
 # Find the points close to the chest surface
@@ -124,24 +105,30 @@ genFix = xGen.xmlModelGenrator(  breastVolMeshPoints / 1000., breastVolMeshCells
 
 # Fix constraints
 genFix.setFixConstraint( lowXIdx,  0 )         # sternum
-genFix.setFixConstraint( highYIdx, 0 )         # mid-axillary line
-genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
-genFix.setFixConstraint( highYIdx, 2 )         # mid-axillary line
+genFix.setFixConstraint( lowZIdx,  0 )         # inferior breast boundary
+genFix.setFixConstraint( lowZIdx,  1 )         # inferior breast boundary
+genFix.setFixConstraint( lowZIdx,  2 )         # inferior breast boundary
+genFix.setFixConstraint( highZIdx, 0 )         # superior breast boundary
+genFix.setFixConstraint( highZIdx, 1 )
+genFix.setFixConstraint( highZIdx, 2 )
+#genFix.setFixConstraint( highYIdx, 0 )         # mid-axillary line
+#genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
+#genFix.setFixConstraint( highYIdx, 2 )         # mid-axillary line
 genFix.setFixConstraint( idxCloseToChest, 0 )  # chest wall
-genFix.setFixConstraint( idxCloseToChest, 1 )
-genFix.setFixConstraint( idxCloseToChest, 2 )
+genFix.setFixConstraint( idxCloseToChest, 1 )  # chest wall
+genFix.setFixConstraint( idxCloseToChest, 2 )  # chest wall
 
 
 genFix.setMaterialElementSet( 'NH', 'FAT',     [  150, 50000], np.union1d( matGen.fatElements, matGen.skinElements))#, 1, 0, [1.0, 0.2] )
 genFix.setMaterialElementSet( 'NH', 'GLAND',   [  150, 50000], matGen.glandElements)#,  1, 0, [1.0, 0.2] )
 genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [  150, 50000], matGen.muscleElements)#, 1, 0, [1.0, 0.2] )
 
-genFix.setShellElements('T3', matGen.shellElements )
-genFix.setShellElementSet(0, 'NeoHookean', [800], 1000, 0.005)
+#genFix.setShellElements('T3', matGen.shellElements )
+#genFix.setShellElementSet(0, 'NeoHookean', [800], 1000, 0.005)
 
-genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMP' )
-genFix.setOutput( 5000, 'U' )
-genFix.setSystemParameters( timeStep=0.5e-4, totalTime=1, dampingCoefficient=250, hgKappa=0.05, density=1000 )    
+genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMPFLAT4' )
+genFix.setOutput( 500, ['U', 'EKinTotal', 'EStrainTotal'] )
+genFix.setSystemParameters( timeStep=0.5e-4, totalTime=5.0, dampingCoefficient=250, hgKappa=0.05, density=1000 )    
 genFix.writeXML( xmlFileOut )
 
 
