@@ -4,10 +4,9 @@
 
 \section BuildInstructionsDeveloper Are you Really a NifTK developer?
 
-The build process is relatively simple for a software engineer. If you just want 
-to use NifTK, and don't plan on extending it, and don't need up to the minute code changes, 
+If you just want to use NifTK, and don't plan on extending it, and don't need up to the minute code changes, 
 then please enquire on the <a href="@NIFTK_USER_CONTACT@">users mailing list</a> for the
-whereabouts of binary packages. 
+whereabouts of binary packages. If you are keen to build your own, then read on.
 
 \section BuildInstructionsSuperBuild Building Using The SuperBuild Process
 

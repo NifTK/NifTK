@@ -61,7 +61,7 @@ protected slots:
   virtual void OnTakeSnapshotButtonPressed();
 
 protected:
-  Ui::SnapshotViewControls m_Controls;
+  Ui::SnapshotViewControls *m_Controls;
 
 private:
 

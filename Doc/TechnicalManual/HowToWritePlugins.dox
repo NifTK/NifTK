@@ -18,26 +18,27 @@ All GUI plugins are contained in the folder
 NifTK/Code/Gui/MITK/Plugins
 \endverbatim
 and the file Plugins.cmake controls which ones are on/off by default. In order to turn them on/off in a 
-development environment, you must re-run CMake, change the plugin's flag, and re-configure and re-build.
+development environment, you must re-run CMake from the build folder, change the plugin's ON/OFF flag, 
+and re-configure and re-build. 
 
 \section MITKPluginsIntroPluginGenerator The MITK Plugin Generator
 
 The basic structure of each plugin can be created automatically by using the MITK Plugin Generator.
 Once the whole NifTK code has been built once, in the main build folder, there will be a sub folder
 \verbatim
-MITK-build/MITK-build/bin
+<my-build>/MITK-build/MITK-build/bin
 \endverbatim
 
 Within that MITK bin folder there is a program called MITKPluginGenerator.
 
 From the NifTK-build sub-folder (i.e. not the top-level "Super Build" folder) a new plugin can be generated 
-with a single command such as the following for a plugin called "Affine Transform".
+with a single command such as the following example for a plugin called "Affine Transform".
 
 \code
 ../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/Code/Gui/MITK/Plugins -l ~/build/NifTK/Doc/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "Affine Transform"
 \endcode
 
-The above command demonstrates that we are placing the output directly into the NifTK source tree. The newly created
+In the above code, the -o options outputs the generated code directly to the NifTK source tree. The newly created
 files will need adding to version control manually. We also use a standard template text file to create the correct 
 copyright headers. 
 
@@ -46,11 +47,11 @@ You can then add the name of the plugin into
 NifTK/Code/Gui/MITK/Plugins/Plugins.cmake
 \endverbatim
  
-and build. It is currently worth manually checking the following:
+and build. Please manually checking the following:
 
-\li Find the Activator class within the plugin, and make sure it has a unique name. 
-\li If you use Qt resource files (.qrc), give them a unique name. For example: Plugins/uk.ac.ucl.cmic.gui.qt.common/resources/CommonResources.qrc</li>
-\li Edit files.cmake for the plugin accordingly to reference any files that you rename manually.
+\li Find the Activator class within the plugin, and make sure it has a unique name, something pertaining specifically to your plugin.
+\li If you use Qt resource files (.qrc), give them a unique name, again, something pertaining specifically to your plugin.
+\li Edit files.cmake for the plugin accordingly to directly refer to any files that you just renamed manually.
 
 As the version of MITK changes, the plugin generator may do this automatically.
 
@@ -61,22 +62,27 @@ in the front end of the application, and in the documentation. This set of instr
 Affine Transform plugin as a template, and applied to all other plugins at the time of writing. Please make every 
 effort to keep each plugin and its documentation up to date, and to keep the names of things consistent.
 
-The following general rules must be applied to get nice user documentation.
-Again, lots of this will be automated by the MITK Plugin Generator, but it is worth checking
-and understanding what each feature is.
-
+The following general rules must be applied to get nice user documentation. Again, lots of this will be automated 
+by the MITK Plugin Generator, but it is worth checking and understanding what each feature is.
 
 \li The top level directory structure must be in reverse domain name order, lower case, separated by dots. For example, uk.ac.uk.cmic.affinetransform.
 \li For CMake purposes, each plugin is a 'project'. Within each plugin, there is a CMakeLists, and the first line contains the name of the project. The plugin name is in reverse domain name order, lower case, separated by underscores. For example, uk_ac_ucl_cmic_affinetransform.
-\li Each plugin contains a manifest_headers.cmake file, which is used by MITK and CTK macros to generate the plugin. In other words, this file is not simply a nice-to-have text description that gets bundled inside the plugin. It is in fact used to generate the plugin.
-\li Within manifest_headers.cmake the Plugin-Name is used to generate the top level plugin name within the GUI help pages. Use convention "<plugin name>". For example "Affine Transform". Avoid the term "plugin", as it is unnecessary jargon.
-\li Within plugin.xml the XML name tag is used to generate the name that goes on the GUI menu item. Use convention "<plugin name>", as in the previous point, so the names match. Try to avoid extra words like "The", or "Plugin", so keep it brief.
+\li Each plugin contains a manifest_headers.cmake file, which is used by MITK and CTK macros to generate the plugin. In other words, this file is not simply a nice-to-have text description that gets bundled inside the plugin. It is in fact used to generate the plugin, and generates things link include directives.
+\li Within manifest_headers.cmake the Plugin-Name is used to generate the top level plugin name within the GUI help pages. Avoid unnecessary jargon in the plugin name, e.g. the term "Plugin" is non-informative for the clinical end-user.
+\li Within plugin.xml the XML name tag is used to generate the name that goes on the GUI menu item. Use the same string as the plugin name in the previous point, so the names match. Try to avoid extra words like "The", or "Plugin", to keep it brief.
 \li Within plugin.xml if you have a preferences page defined, again, use the same name as the view name.
-\li Within <plugin>/documentation/UserManual there is a user manual doxygen file (file name doesn't matter). Please generate a FULL description of how to use that plugin. This doxygen page is the main page that the user will see when operating the plugin within the GUI. Use the full power of doxygen. Go crazy and write to your hearts content. This page is also included in the on-line \link \ref UserManual User Manual \endlink.
+\li Within <plugin>/documentation/UserManual there is a user manual doxygen file (file name doesn't matter). Please 
+generate a FULL description of how to use that plugin. This doxygen page is the main page that the user will see when 
+operating the plugin within the GUI. Use the full power of doxygen. Go crazy and write to your hearts content.
 
-Under <plugin>/documentation/doxygen there is doxygen.dox and the following additional 
-rules must be applied to get consistent code documentation. As mentioned above, use an example
-as a guideline, for example, go and look at the Affine Transform plugin.
+Under 
+\verbatim
+<plugin>/documentation/doxygen
+\endverbatim
+there is doxygen.dox and the following additional rules must be applied to get consistent code documentation. 
+The doxygen.dox is used to generate the page within this Technical Manual. It is not seen within the GUI,
+and is for developers only. As mentioned above, use an example as a guideline, for example, go and look at the 
+Affine Transform plugin.
 
 \li The first line should read something like "\defgroup uk_ac_ucl_cmic_affinetransform uk.ac.ucl.cmic.affinetransform Plugin". So, its the tag "\defgroup", followed by the plugin project name, then the plugin directory name followed by the word "Plugin".
 \li The group tag should be CMICPlugins.
@@ -88,14 +94,180 @@ as a guideline, for example, go and look at the Affine Transform plugin.
 
 \section MITKPluginsIntroManagingDependencies Managing Dependencies
 
+For each plugin, the plugin's top-level CMakeLists.txt shows the library dependencies. For example in
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor
+\endverbatim
+we see
+\code
+  MODULE_DEPENDENCIES CTK QmitkExt niftkMitkExt niftkQmitkExt
+)
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
+                      niftkQt
+                      niftkITK
+)
+\endcode
+which immediately reveals that the plugin is dependent on the MITK based modules CTK QmitkExt, and the NifTK modules
+niftkMitkExt and niftkQmitkExt which are MITK based modules within this project. In addition, extra link libraries 
+have been added to link back to niftkQt and niftkITK which are built from the 
+\verbatim
+NifTK/Code/Libs/Qt
+\endverbatim
+and
+\verbatim
+NifTK/Code/Libs/ITK
+\endverbatim
+In addition, the top level manifest_headers.cmake we see
+\code
+set(Require-Plugin uk.ac.ucl.cmic.gui.qt.common )
+\endcode
+Each plugin can define plugins that it depends on at both compile time and run time. So the above line is used when
+generating the plugin, and in this case will set up correct include paths for compilation.
+
+So, with this in mind, it is important to keep the number of dependencies to a minimum. Don't include extra libraries
+in the CMakeLists.txt by just cutting and pasting and don't make your plugin's manifest_headers.cmake depend
+on too many other plugins. Also remember that plugin dependencies are transitive, so if A depends on B, which depends on C,
+then A also depends on C. So, try and make sure all NifTK plugins only depend on MITK plugins and our own Modules,
+and the list of dependencies is always minimal.
+
 \section MITKPluginsIntroUserInterface User Interface
+
+There are two ways to generate a Qt GUI component for each plugin.
+
+\li Use Qt Designer to draw it. This is good for standard layouts of standard widgets.
+\li Write all the code, and layout programmatically. This is better for adding custom widgets, but layout can be tricky.
+
+Lets look at the Snapshot plugin for a simple example of how to build a GUI, with code found here:
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.snapshot/src/internal
+\endverbatim
+
+The steps required for this are:
+\li Launch Qt Designer, and create a .ui file, and save it into src/internal folder for example.
+\li Instantiate your GUI. For example, in SnapshotView.h we are creating a pointer to hold all the controls:
+\code
+protected:
+  Ui::SnapshotViewControls *m_Controls;
+\endcode
+and then in SnapshotView.cpp we have
+\code
+void SnapshotView::CreateQtPartControl( QWidget *parent )
+{
+  m_Parent = parent;
+
+  if (!m_Controls)
+  {
+    // create GUI widgets from the Qt Designer's .ui file
+    m_Controls = new Ui::SnapshotViewControls();
+    m_Controls->setupUi( parent );
+
+    // Connect Qt signals and slots programmatically.
+    connect(m_Controls->m_TakeSnapshotButton, SIGNAL(pressed()), this, SLOT(OnTakeSnapshotButtonPressed()));
+  }
+}
+\endcode
+so, you should aim to do similarly.
+\li Add the files to CMakeLists, so refer to
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.snapshot/CMakeLists.txt
+\endverbatim
+\li and compile.
+
+The BlueBerry framework (part of MITK) creates the GUI at the appropriate time, so we do not put GUI construction code
+in the View components constructor. Also if Qt GUI components are registered with their parent in the layout
+then when the top level widget is destroyed, so will all registered children. For this reason, you will often not
+see class destructors trying to destroy Qt widgets.
+
+The second option of writing all Qt code programmatically is very similar. Any widget could be created in the View class
+CreateQtPartControl and signals and slots connected to methods. Thus the View class is the main GUI starting point for
+each new plugin. There are now several examples in NifTK and many examples in MITK to inspire and to guide.
+
+Within the project, Qt widgets can be stored in a number of places, depending on how general purpose the Qt widget is.
+The following guidelines may help.
+
+\li General purpose widgets can be placed in 
+\verbatim
+NifTK/Code/Libs/Qt
+\endverbatim
+Notice that the TARGET_LINK_LIBRARIES only depends on default Qt libraries. So, widgets here, know NOTHING 
+about the application they will be used for.
+\li Under 
+\verbatim
+NifTK/Code/Gui/MITK/Modules
+\endverbatim
+we have Modules called niftkMitkExt and niftkQmitkExt. These folder names simply refer to the fact that they are
+NifTK specifc extensions to the MITK libraries called MitkExt and QmitkExt. Qt widgets can be placed in niftkQmitkExt
+and NOT niftkMitkExt. Widgets in this folder are somewhat specific to NiftyView.
+\li Each plugin can have its own widgets as appropriate. The can be created within the 
+\verbatim
+<plugin-name>/src/internal
+\endverbatim
+folder.
+
+In order to become proficient at writing Qt widgets please refer to:
+
+\li The <a href="http://www.commontk.org">CTK</a> website contains a lot of well written widgets, 
+developed for <a href="http://www.slicer.org">Slicer 4</a>. These can be used as model widgets to inspire your coding, or 
+used directly by including CTK within the MODULE_DEPENDENCIES of your plugin.
+\li A selection of Qt books such as <a href="http://www.amazon.com/gp/product/0132354160">this</a> and 
+<a href="http://www.amazon.com/Advanced-Qt-Programming-Creating-Development/dp/0321635906/ref=sr_1_1?ie=UTF8&qid=1337322453&sr=8-1">this</a>.
+\li Practice, Practice, Practice.
 
 \section MITKPluginsIntroFunctionality Functionality
 
+The actual functionality of a plugin can obviously vary immensely depending on user requirements. The View class is the starting
+point for methods. Here are some guiding principals, and hopefully this list can be extended over time.
+
+\li Your view class should extend from the MITK QmitkAbstractView. Get to know this class.
+\li Remember the <a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern. 
+The central data storage is shared, and lots of things listen to updates. This is the model, plugins are controllers 
+that take user input, and update the model. 
+\li Try to keep a clear focus on the purpose of the plugin, prefering to do a small number of things in a well defined manner.
+\li Data storage can be retrieved simply by (in ThumbnailView.cpp)
+\code
+mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
+\endcode
+\li Preference Pages can be created for each plugin. Again, preferences should be specific to the actual functionality
+of that plugin. For example, the MIDAS Morphological Editor has a preference page MIDASMorphologicalSegmentorViewPreferencePage
+defined in
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor/src/MIDASMorphologicalSegmentorViewPreferencePage.h/.cpp
+\endverbatim
+and this page is added to files.cmake to compile it, plugin.xml to run it at run-time and registered with the framework in 
+MIDASMorphologicalSegmentorViewActivator.
+\li When the user hits "OK" in the Preferences dialog page, the preferences are broadcast to all plugins. For a simple example,
+see how ThumbnailView implements ThumbnailView::OnPreferencesChanged to update itself.
+
 \section MITKPluginsIntroDocumentation Documentation
+
+The GUI is constructed from all the plugins. So, each plugin must provide its own documentation page, written using Doxygen.
+For example look in:
+\verbatim
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.imagelookuptables/documentation/UserManual
+\endverbatim
+The Doxygen manual is <a href="http://www.stack.nl/~dimitri/doxygen/">here</a>.
 
 \section MITKPluginsIntroModularisation Testing
 
+Unit testing a plugin can be difficult. For this reason the NifTK project structure has been set up so that as much
+as possible, all the functionality is provided in libraries/modules and the plugin should be a small wrapper bringing it 
+all together. So the initial focus should be on unit testing each class outside of a plugin.
+
+For example
+\li All ITK code should be placed under NifTK/Code/Libs/ITK and hence unit tested under NifTK/Testing/Code/Libs/ITK
+\li Similarly for VTK
+\li MITK based code should be placed under NifTK/Code/Gui/MITK/Modules/niftkMitkExt and unit tested under
+NifTK/Code/Gui/MITK/Modules/niftkMitkExt/Testing using mitkITKRegionParametersDataNodeProperty as an example.
+
+Further examples are available throughout ITK, VTK and MITK. CTK has a Qt testing framework. It may be possible to leverage
+that, or provide good widgets back to CTK so they are unit tested as part of that project.
+
+Also, keep an eye on the project dashboards to see how the project is currently compiling on different platforms.
+
 \section MITKPluginsIntroConclusion Conclusion
+
+Writing a plugin is easy in principal. In practice it may take a few attempts to get the user interaction to work nicely,
+but this is a small price to pay for having a nice GUI application.
 
 */ 

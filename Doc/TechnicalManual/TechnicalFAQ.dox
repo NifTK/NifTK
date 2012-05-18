@@ -4,15 +4,32 @@
 
 Please see below for the most recently asked questions:
 
+<p>
 <b>Q</b>: Is the software open-sourced?
 
 <b>A</b>: NiftyView and this platform project NifTK is not yet open-sourced, but some of the component
 parts are. See <a href="http://cmic.cs.ucl.ac.uk/software">the CMIC software page</a> for details.
+</p>
 
-
+<p>
 <b>Q</b>: Where can I download binaries from?
 
 <b>A</b>: Due to the fact that this project is not yet open-sourced, the binaries are only available on
 the internal network. See <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">the internal wiki</a> for details.
+</p>
+
+<p>
+<b>Q</b>: How do I turn on more MITK plugins?
+
+<b>A</b>: Having performed a complete NifTK SuperBuild, you run CMake with the source folder as
+\verbatim
+<my-build>/CMakeExternals/Source/MITK
+\endverbatim
+and the build folder as
+\verbatim
+<my-build>/MITK-build/MITK-build
+\endverbatim
+and look for lines starting MITK_BUILD_org.mitk. These are boolean flags to turn plugins on and off. Re-configure and
+rebuild MITK. Then return to your NifTK build folder and re-build NifTK.
 
 */

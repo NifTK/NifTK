@@ -2,7 +2,7 @@
 
 \page UnderstandingGeometry Understanding - Geometry
 
-To Do - Ask Matt directly, and pester him to finish the documentation.
+To Do - we want more detail on DICOM, Nifti, ITK, VTK conventions, and how these work in an MITK application.
 
 In the mean time you could start by reading <a href="http://docs.mitk.org/nightly-qt4/GeometryOverviewPage.html">this</a>.
 

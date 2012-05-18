@@ -7,6 +7,8 @@
 \li \ref UnderstandingFileIOLoadingVolumesITK
 \li \ref UnderstandingFileIOLoadingFileSeriesITK
 \li \ref UnderstandingFileIONiftyView
+\li \ref UnderstandingFileIODicomITK
+\li \ref UnderstandingFileIODicomMITK
 
 \section UnderstandingFileIOIntro Introduction
 
@@ -34,9 +36,9 @@ for a detailed explanation from the ITK authors. The general approach can be see
 \endcode
 
 Within this example, the ImageFileReader is instantiated and assigned to a smart pointer. The ImageFileReader is
-templated based on image type, and the image type is templated on pixel type and dimensions. Thus, potentially,
-the ImageFileReader is generic, but in practice, all the command line programs make a choice as to which
-type of files they support. This is usually implemented using code like the following incomplete code snippet.
+templated based on image type, and the image type is templated on pixel type and dimensions. Thus,
+the ImageFileReader is potentially very generic, but in practice, all the command line programs make a choice 
+as to which type of files they support. This is usually implemented using code like the following incomplete code snippet.
 
 \code
 
@@ -73,7 +75,8 @@ NifTK/Code/Libs/ITK/Common/itkCommandLineHelper.cxx
 and in ITK's itk::ImageIOBase. Given the image dimensions and pixel type the right template function can be instantiated.
 The consequence of this per-program coding is that each command line program could potentially implement this 
 in a different way, according to the requirements of each program. For example a program multiplying probability images
-would assume that all images were a float data type, with the range 0 to 1.
+would assume that all images were a float data type, with the range 0 to 1, and a program working with segmentation or label
+images would most likely only deal with integer types.
 
 \section UnderstandingFileIOLoadingVolumesITK Loading Volumes using ITK
 
@@ -103,8 +106,8 @@ From this we also see that
 \li Refer to itk::ObjectFactoryBase source code, and see how the itk::ObjectFactoryBase can load classes from the ITK_AUTOLOAD_PATH. 
 This is the same mechanism used to dynamically load extra segmentation tools references in the 
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>.
-\li The itk::ObjectFactoryBase can programmatically add/remove factories, so they can be programatically removed and replaced
-without calling code knowing about it.
+\li The itk::ObjectFactoryBase can also programmatically add/remove factories, so they can be programatically removed 
+and replaced without calling code knowing about it.
 
 So, when the command line programs are running, all except \ref niftkDicomSeriesReadImageWrite.cxx use this default 
 ITK mechanism. 
@@ -289,4 +292,46 @@ NifTK/Code/Gui/MITK/Apps/NiftyView/NiftyView.cpp
 To summarise, we create a factory called mitk::NifTKItkImageFileIOFactory to load all ITK image types, using the standard ITK mechanism,
 except for Analyze and Nifti files where we provide modified readers. This factory is registered with the ITK ObjectFactory
 at application startup, replacing the default MITK class. This process is not done for command line applications.
+
+\section UnderstandingFileIODicomITK Loading DICOM files in ITK
+
+To-date, the only command line application that reads DICOM is \ref niftkDicomSeriesReadImageWrite.cxx. It uses ITK, which
+uses GDCM. In brief detail, the program niftkDicomSeriesReadImageWrite.cxx
+
+\li Creates itk::ImageSeriesReader to handle parsing of file names. The series reader uses a vector of strings
+to contain a list of file names to read.
+\li The list of file names is computed using itk::GDCMSeriesFileNames which is a wrapper around GDCM functionality to scan
+a directory structure, parse images based on DICOM tags and so on. The program \ref niftkDicomSeriesReadImageWrite.cxx
+provides an additional filtering of file names, but essentially, the final, correctly ordered list of file names is
+passed to itk::ImageSeriesReader.
+\li As described above, the itk::ImageSeriesReader uses itk::ImageFileReader to read all the slices, and stacks them.
+\li The method itk::ImageSeriesReader::SetImageIO specifically takes an itk::GDCMImageIO, which short-cuts the factory
+approach mentioned above.
+\li The itk::GDCMImageIO is the starting point for all GDCM file reading capability in ITK. 
+
+Within the ITK code, the GDCM files of interest are:
+
+\verbatim
+Code/IO/itkGDCMImageIO.cxx
+Code/IO/itkGDCMImageIO.h
+Code/IO/itkGDCMImageIOFactory.h
+Code/IO/itkGDCMSeriesFileNames.cxx
+Code/IO/itkGDCMSeriesFileNames.h
+\endverbatim
+
+\section UnderstandingFileIODicomMITK Loading DICOM files in MITK
+
+Within MITK, all file based DICOM import is also performed using GDCM, and the files of interest are:
+\verbatim
+Core/Code/Algorithms/mitkCoreObjectFactory.cpp
+Core/Code/Algorithms/mitkCoreObjectFactoryBase.cpp
+Core/Code/IO/mitkDicomSeriesReader.cpp
+Core/Code/IO/mitkDicomSeriesReader.h
+Core/Code/IO/mitkDicomSeriesReader.txx
+\endverbatim
+We can see in the object factories that file name extensions are registered, but the DicomSeriesReader is not instantiated
+there. The DicomSeriesReader is used within mitk::DataNodeFactory to load an image into an MITK image, but all the logic
+of interest is in DicomSeriesReader. Again it can be seen that MITK uses GDCM, but have preferred to write their own
+reader rather than rely on the default ITK one. When troubleshooting DICOM loading in NiftyView, DicomSeriesReader is the place
+to start, and rather than patch MITK locally, contribute any changes back to MITK.
 */

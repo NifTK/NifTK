@@ -35,8 +35,7 @@ segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Prog
 \li \subpage ArchitectureMIDASGeneralEditor
 \li \subpage UnderstandingFileIO
 \li \subpage UnderstandingGeometry
-\li \subpage HowToErasePluginCache
 \li \subpage HowToContributeToThePlatform
-\li \subpage HowToWriteWidgets
+\li \subpage HowToErasePluginCache
 \li \subpage HowToWritePlugins
 */

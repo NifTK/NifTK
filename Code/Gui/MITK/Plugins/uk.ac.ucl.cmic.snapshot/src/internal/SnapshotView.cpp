@@ -62,14 +62,20 @@ void SnapshotView::CreateQtPartControl( QWidget *parent )
 {
   m_Parent = parent;
 
-  // create GUI widgets from the Qt Designer's .ui file
-  m_Controls.setupUi( parent );
-  connect(m_Controls.m_TakeSnapshotButton, SIGNAL(pressed()), this, SLOT(OnTakeSnapshotButtonPressed()));
+  if (!m_Controls)
+  {
+    // create GUI widgets from the Qt Designer's .ui file
+    m_Controls = new Ui::SnapshotViewControls();
+    m_Controls->setupUi( parent );
+
+    // Connect Qt signals and slots programmatically.
+    connect(m_Controls->m_TakeSnapshotButton, SIGNAL(pressed()), this, SLOT(OnTakeSnapshotButtonPressed()));
+  }
 }
 
 void SnapshotView::SetFocus()
 {
-  m_Controls.m_TakeSnapshotButton->setFocus();
+  m_Controls->m_TakeSnapshotButton->setFocus();
 }
 
 void SnapshotView::OnTakeSnapshotButtonPressed()
