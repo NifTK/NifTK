@@ -28,9 +28,9 @@
 #include "itkImageRegionConstIterator.h"
 
 /*!
- * \file niftkJacobianStatisitcs.cxx
- * \page niftkJacobianStatisitcs
- * \section niftkJacobianStatisitcsSummary Take a jacobian image, and a mask, and calculate statistics for the region.
+ * \file niftkJacobianStatistics.cxx
+ * \page niftkJacobianStatistics
+ * \section niftkJacobianStatisticsSummary Take a jacobian image, and a mask, and calculate statistics for the region.
  *
  * This program take a jacobian image, and a mask, and calculate statistics for the region.
  * \li Dimensions: 3

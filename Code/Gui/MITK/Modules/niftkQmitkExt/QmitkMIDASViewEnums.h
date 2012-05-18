@@ -29,7 +29,7 @@
  * \file QmitkMIDASViewEnums.h
  * \brief Contains MIDAS enums, which we move out of the classes, so
  * they are independent, which makes manually analysing classes for
- * their #include dependencies a bit easier.
+ * their include dependencies a bit easier.
  */
 
 /*!

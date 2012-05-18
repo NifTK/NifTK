@@ -32,8 +32,9 @@
 namespace itk
 {
 
-/** \class MIDASThresholdAndAxialCutoffFilter
- * \brief .
+/**
+ * \class MIDASThresholdAndAxialCutoffFilter
+ * \brief Performs a thresholding, and also given a region of interest will blank outside that region.
  *
  * MIDASThresholdAndAxialCutoffFilter has one input image and one 
  * output image. 

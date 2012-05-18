@@ -37,9 +37,9 @@
 #include "itkCastImageFilter.h"
 
 /*!
- * \file niftkKMeansWindowNBSIWithPiecewiseNormalisation.cxx
- * \page niftkKMeansWindowNBSIWithPiecewiseNormalisation
- * \section niftkKMeansWindowNBSIWithPiecewiseNormalisationSummary     Program to calculate KN-BSI (piecewise normalisation)". 
+ * \file niftkKMeansWindowWithPiecewiseNormalisation.cxx
+ * \page niftkKMeansWindowWithPiecewiseNormalisation
+ * \section niftkKMeansWindowWithPiecewiseNormalisationSummary     Program to calculate KN-BSI (piecewise normalisation)".
  * 
  * Program to calculate the KN-BSI, based on the papers:
  * Freeborough PA and Fox NC, The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI,

@@ -150,7 +150,7 @@ setting it as the startup project.
 <li> On Windows, sometimes building the dependencies can be tricky. Open the Visual Studio project file at the Superbuild level, and build the CLEAN, BOOST, GDCM, VTK, ITK, CTK, MITK one at a time, in that order. </li>
 </ul>
 
-\section 10. Final Installation 
+\section BuildInstructionsFinalInstallation 10. Final Installation 
 
 In addition, to make use of the NifTK scripts, and NifTK command line programs, 
 the following <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> should be followed.
