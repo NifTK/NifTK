@@ -607,7 +607,7 @@ IntensityProfileView::selectNode(mitk::DataNode* node)
 {
   Q_D(IntensityProfileView);
 
-  mitk::DataNode* selectedNode = node;
+//  mitk::DataNode* selectedNode = node;
 //  mitk::DataNode* referenceNode = selectedNode;
 
   // The dimension must equal for every selected 4D image,
