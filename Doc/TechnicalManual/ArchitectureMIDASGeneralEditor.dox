@@ -43,30 +43,103 @@ It can be seen from Figure 1, that the overall architecture or design of this pl
 the \link ArchitectureMIDASMorphEditor MIDAS Morphological Editor. \endlink 
 The class overview for MIDAS Morphological Editor and MIDAS Irregular Volume Editor are almost identical, and apart 
 from the main class names such as MIDASMorphologicalSegmentorView and MIDASGeneralSegmentorView the structure is the same.
+In Figure 1, the ITK part refers to the region growing pipeline used when the intensity thresholding box is checked.
+In addition to this there are a large number of ITK functions that are called via the MITK ITK access macros.
+These represent a more procedural style of programming, and should be inspected on a case by case basis.
 
 \section ArchitectureMIDASGeneralEditorTools Seed, Draw and Poly Tools
 
-To Do
+The mitk::ToolManager has access to the following data sets, registered as "Working Data",
+as described in the <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>:
+
+\li 0 = The segmented volume = The Output
+\li 1 = Seeds for region growing.
+\li 2 = Current contours = Represents the contours on the current 2D slice.
+\li 3 = Region Growing Image = 3D image, the same size as The Output.
+\li 4 = Contours for Prior slice.
+\li 5 = Contours for Next slice.
+
+These datasets are operated upon by mitk::MIDASSeedTool, mitk::MIDASPolyTool and mitk::MIDASDrawTool.
+
+\image html ArchitectureMIDASGeneralEditorTools.png "Figure 2. Hierarchy of editing tools"
+
+It can be seen in Figure 2 that these derive from mitk::MIDASTool.  The MIDAS Seed based functionality is:
+
+\li Right mouse click = place seed
+\li Middle mouse click = erase seed
+\li Left mouse click and move = move seed
+
+However, the Right mouse click works regardless of which tool is selected.  For this reason, the mitk::MIDASTool
+has an mitk::PointSetInterfactor subclass that registers with mitk::GlobalInteraction when the tool is activated, and de-registers
+when de-actived.  Thus each of mitk::MIDASDrawTool, mitk::MIDASPolyTool and mitk::MIDASSeedTool can add
+seeds. But it is only the mitk::MIDASSeedTool that can erase / move seeds. Also note that the seeds are defined 
+at voxel locations, and editing works on a slice by slice basis.  There may be many seeds on slices that are not visible,
+but these do not affect the current slice.
+
+The mitk::MIDASDrawTool performs
+
+\li Left mouse button click and move = draw contour
+\li Middle mouse button click and move = erase contours
+
+These contours are added directly to WorkingData 2. mitk::MIDASContourTool can signal when a contour has been updated,
+and the MIDASGeneralSegmentorView can register with that signal (implemented without Qt), to know when to update
+any region growing.
+
+The mitk::MIDASPolyTool performs
+
+\li Left mouse button = add poly=line point
+\li Middle mouse button click and move = find nearest control point and drag it.
+
+The mitk::MIDASPolyTool maintains its own internal contour, which is rendered in yellow. When the user de-activates
+the tool, or activates another tool, the PolyLine is copied to the WorkingData 2 to join all other contours. For
+each left or middle click operation, the MIDAS PolyTool signals to MIDASGeneralSegmentorView that it has performed an edit.
 
 \section ArchitectureMIDASGeneralEditorRegionGrowing Intensity Thresholding (Region Growing)
 
-To Do
+The intensity based thresholding is performed using a simple region growing pipeline implemented in 
+MIDASGeneralSegmentorViewPipeline.
+
+\li Extract the relevant slice from the mitk::ToolManager's ReferenceData 0 using ITK's itk::ExtractImageFilter.
+\li Take the contours from mitk::ToolManager's WorkingData 2, and the mitk::MIDASPolyTool feedback contour, and render them into an image.
+\li Perform conditional region growing adding pixels if the grey value is within range, and up to and including a contour using itk::MIDASRegionGrowingImageFilter.
+
+This MIDASGeneralSegmentorViewPipeline is also used in 3D for Propagate Up/Down functionality, and also used to work out
+whether there are un-enclosed seeds. This can be performed by region growing without intensity limits, and checking if the
+edge of the image was hit.
 
 \section ArchitectureMIDASGeneralEditorBulkUpdates Bulk Updates
 
-To Do
+The class MIDASGeneralSegmentorView contains a large number of additional updated. These are generally called via
+Qt signals and slots from the GUI widgets. For example when the "Propagate Up" button is pressed, a Qt signal
+calls back to MIDASGeneralSegmentorView, to perform the operation. The general scheme repeated throughout the class
+is
+
+\li Work out what volume needs to change
+\li Create a new point set for current seeds and next seeds.
+\li Add the sets of seeds to an mitk::Operation command object
+\li Register 2 commands, one for Redo, one for Undo with the MITK UndoController.
+
+The image processing can be typically performed by a subclass of itk::ImageUpdateProcessor.
+
+\image html ArchitectureMIDASGeneralEditorProcessors.png "Figure 3. Hierarchy of Update Processors".
+
+These classes are purely ITK classes. The idea is that the base class itk::ImageUpdateProcessor provides methods so 
+that you specify a destination image, and a region of interest. The class uses TemplateMethod to implement an ITK
+based Undo/Redo method.  The region of interest is specified, and the itk::ImageUpdateProcessor takes a backup
+of the region of interest before it is edited. Derived classes then provide some way of editing it. For example,
+dervied classes may simply erase (itk::ImageUpdateClearRegionProcessor), or copy from another image
+(itk::ImageUpdateCopyRegionProcessor).  The base class itk::ImageUpdateProcessor can then apply the change to Redo it,
+or copy back the back image to effect an Undo operation. 
 
 \section ArchitectureMIDASGeneralEditorConclusion Conclusion
 
 The MIDAS Irregular Volume Editor is more complex than the \link ArchitectureMIDASMorphEditor MIDAS Morphological Editor. \endlink
 This functionality can be seen as a combination of tools provided via the 
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>
-and extra Qt widgets calling various update functions to affect the segmented image. 
-
-The mitk::MIDASTool subclasses are used to edit the contours, and the contours are then applied to update 
-the image volume. This plugin can therefore be easily extended by providing different mitk::Tool subclasses.
-
-The additional Qt widgets providing bulk functionality such as Wipe, Wipe+, Wipe-, PropUp, PropDown, Prop3D
-provide bulk updates. The GUI can be extended with more of this type of functionality, typically provided via ITK filters.
+and extra Qt widgets calling various update functions to affect the segmented image. The mitk::MIDASTool subclasses 
+are used to edit the contours, and the contours are then applied to update the image volume. This plugin can therefore be 
+easily extended by providing different mitk::Tool subclasses. The additional Qt widgets call back to MIDASGeneralSegmentorView
+to provide bulk functionality such as Wipe, Wipe+, Wipe-, PropUp, PropDown, Prop3D etc. 
+The GUI can be extended with more of this type of functionality, typically provided via ITK filters or ITK methods.
 
 */
