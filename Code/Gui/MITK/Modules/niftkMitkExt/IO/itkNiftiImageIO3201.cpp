@@ -42,7 +42,7 @@
 #include <stdlib.h>
 #include <vector>
 
-namespace itk
+namespace niftk
 {
 //#define __USE_VERY_VERBOSE_NIFTI_DEBUGGING__
 #if defined(__USE_VERY_VERBOSE_NIFTI_DEBUGGING__)
@@ -344,6 +344,10 @@ int SymMatDim(int count)
   return dim;
 }
 
+} // end namespace niftk
+
+namespace itk
+{
 
 ImageIORegion
 NiftiImageIO3201
@@ -619,7 +623,7 @@ void NiftiImageIO3201::Read(void* buffer)
        this->GetPixelType() == ImageIOBase::SYMMETRICSECONDRANKTENSOR)
       {
 //      vecOrder = LowerToUpperOrder(SymMatDim(numComponents));
-      vecOrder = UpperToLowerOrder(SymMatDim(numComponents));
+        vecOrder = niftk::UpperToLowerOrder(niftk::SymMatDim(numComponents));
       }
     else
       {
@@ -1934,7 +1938,7 @@ NiftiImageIO3201
     if(this->GetPixelType() == ImageIOBase::DIFFUSIONTENSOR3D ||
        this->GetPixelType() == ImageIOBase::SYMMETRICSECONDRANKTENSOR)
       {
-      vecOrder = UpperToLowerOrder(SymMatDim(numComponents));
+        vecOrder = niftk::UpperToLowerOrder(niftk::SymMatDim(numComponents));
       }
     else
       {
