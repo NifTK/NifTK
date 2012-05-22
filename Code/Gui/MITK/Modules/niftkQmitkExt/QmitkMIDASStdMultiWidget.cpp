@@ -605,10 +605,11 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       mitk::SliceNavigationController *sliceNavigationController = baseRenderer->GetSliceNavigationController();
       sliceNavigationController->SetViewDirectionToDefault();
 
+      // Get the view/orientation flags.
+      mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
+
       if (window < 3)
       {
-        // Get the view/orientation flags.
-        mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
 
         // Inspired by:
         // http://www.na-mic.org/Wiki/index.php/Coordinate_System_Conversion_Between_ITK_and_Slicer3
@@ -863,6 +864,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         }
         sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
       }
+      sliceNavigationController->SetViewDirection(viewDirection);
 
       // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
       if ( id == 1 )

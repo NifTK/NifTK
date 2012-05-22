@@ -59,7 +59,6 @@ void QmitkNiftySegView::CreateQtPartControl(QWidget *parent)
 
 void QmitkNiftySegView::SetFocus()
 {
-  m_Controls.m_ReferenceImageComboBox->setFocus();
 }
 
 void QmitkNiftySegView::OnClickedEMInitialisationRadioButtons(bool bClicked)

@@ -35,6 +35,7 @@
 #include "mitkProperties.h"
 #include "mitkColorProperty.h"
 #include "mitkRenderingManager.h"
+#include "mitkBaseRenderer.h"
 #include "mitkSegTool2D.h"
 #include "mitkVtkResliceInterpolationProperty.h"
 #include "mitkPointSet.h"
@@ -50,10 +51,9 @@
 #include "mitkMIDASSeedTool.h"
 #include "QmitkMIDASNewSegmentationDialog.h"
 #include "QmitkRenderWindow.h"
-#include "QmitkStdMultiWidget.h"
 #include "QmitkMIDASMultiViewWidget.h"
 #include "NifTKConfigure.h"
-#include "itkConversionUtils.h"
+#include "itkMIDASHelper.h"
 
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
@@ -526,48 +526,54 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
   }
 }
 
-template<typename TPixel, unsigned int VImageDimension>
-void
-QmitkMIDASBaseSegmentationFunctionality
-::GetAxisFromITK(
-  itk::Image<TPixel, VImageDimension>* itkImage,
-  ORIENTATION_ENUM orientation,
-  int &outputAxis
-  )
+int QmitkMIDASBaseSegmentationFunctionality::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
 {
-  outputAxis = -1;
+  int sliceNumber = -1;
 
-  typename itk::SpatialOrientationAdapter adaptor;
-  typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationFlag;
-  orientationFlag = adaptor.FromDirectionCosines(itkImage->GetDirection());
-  std::string orientationString = itk::ConvertSpatialOrientationToString(orientationFlag);
+  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
+  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
 
-  if (orientationString != "UNKNOWN")
+  if (referenceImage.IsNotNull() && snc.IsNotNull())
   {
-    for (int i = 0; i < 3; i++)
+    mitk::PlaneGeometry::ConstPointer pg = snc->GetCurrentPlaneGeometry();
+    if (pg.IsNotNull())
     {
-      if (orientation == AXIAL && (orientationString[i] == 'S' || orientationString[i] == 'I'))
-      {
-        outputAxis = i;
-        break;
-      }
+      mitk::Point3D originInMillimetres = pg->GetOrigin();
+      mitk::Point3D originInVoxelCoordinates;
+      referenceImage->GetGeometry()->WorldToIndex(originInMillimetres, originInVoxelCoordinates);
 
-      if (orientation == CORONAL && (orientationString[i] == 'A' || orientationString[i] == 'P'))
-      {
-        outputAxis = i;
-        break;
-      }
-
-      if (orientation == SAGITTAL && (orientationString[i] == 'L' || orientationString[i] == 'R'))
-      {
-        outputAxis = i;
-        break;
-      }
+      int viewAxis = this->GetViewAxis();
+      sliceNumber = originInVoxelCoordinates[viewAxis];
     }
   }
+  return sliceNumber;
 }
 
-int QmitkMIDASBaseSegmentationFunctionality::GetAxis(ORIENTATION_ENUM orientation)
+itk::ORIENTATION_ENUM QmitkMIDASBaseSegmentationFunctionality::GetOrientationAsEnum()
+{
+  itk::ORIENTATION_ENUM orientation = itk::ORIENTATION_UNKNOWN;
+  mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
+  if (sliceNavigationController != NULL)
+  {
+    mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
+
+    if (viewDirection == mitk::SliceNavigationController::Transversal)
+    {
+      orientation = itk::ORIENTATION_AXIAL;
+    }
+    else if (viewDirection == mitk::SliceNavigationController::Sagittal)
+    {
+      orientation = itk::ORIENTATION_SAGITTAL;
+    }
+    else if (viewDirection == mitk::SliceNavigationController::Frontal)
+    {
+      orientation = itk::ORIENTATION_CORONAL;
+    }
+  }
+  return orientation;
+}
+
+int QmitkMIDASBaseSegmentationFunctionality::GetAxisFromReferenceImage(itk::ORIENTATION_ENUM orientation)
 {
   int axis = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
@@ -575,7 +581,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetAxis(ORIENTATION_ENUM orientatio
   {
     try
     {
-      AccessFixedDimensionByItk_n(referenceImage, GetAxisFromITK, 3, (orientation, axis));
+      AccessFixedDimensionByItk_n(referenceImage, GetAxisFromReferenceImageUsingITK, 3, (orientation, axis));
     }
     catch(const mitk::AccessByItkException& e)
     {
@@ -585,20 +591,80 @@ int QmitkMIDASBaseSegmentationFunctionality::GetAxis(ORIENTATION_ENUM orientatio
   return axis;
 }
 
-int QmitkMIDASBaseSegmentationFunctionality::GetAxialAxis()
+template<typename TPixel, unsigned int VImageDimension>
+void
+QmitkMIDASBaseSegmentationFunctionality
+::GetAxisFromReferenceImageUsingITK(
+  itk::Image<TPixel, VImageDimension>* itkImage,
+  itk::ORIENTATION_ENUM orientation,
+  int &outputAxis
+  )
 {
-  return this->GetAxis(AXIAL);
+  itk::GetAxisFromITKImage(itkImage, orientation, outputAxis);
 }
 
-int QmitkMIDASBaseSegmentationFunctionality::GetCoronalAxis()
+int QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageAxialAxis()
 {
-  return this->GetAxis(CORONAL);
+  return this->GetAxisFromReferenceImage(itk::ORIENTATION_AXIAL);
 }
 
-int QmitkMIDASBaseSegmentationFunctionality::GetSagittalAxis()
+int QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageCoronalAxis()
 {
-  return this->GetAxis(SAGITTAL);
+  return this->GetAxisFromReferenceImage(itk::ORIENTATION_CORONAL);
 }
+
+int QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageSagittalAxis()
+{
+  return this->GetAxisFromReferenceImage(itk::ORIENTATION_SAGITTAL);
+}
+
+int QmitkMIDASBaseSegmentationFunctionality::GetViewAxis()
+{
+
+  int axisNumber = -1;
+
+  // Use the above method to work out which orientation we are currently looking at, in the current 2D window.
+  itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+  if (orientation != -1)
+  {
+    axisNumber = this->GetAxisFromReferenceImage(orientation);
+  }
+
+  return axisNumber;
+}
+
+int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
+{
+  int upDirection = 0;
+
+  itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+  if (referenceImage.IsNotNull())
+  {
+    try
+    {
+      AccessFixedDimensionByItk_n(referenceImage, GetUpDirectionUsingITK, 3, (orientation, upDirection));
+    }
+    catch(const mitk::AccessByItkException& e)
+    {
+      MITK_ERROR << "Caught exception, so can't get up direction:" << e.what();
+    }
+  }
+  return upDirection;
+}
+
+template<typename TPixel, unsigned int VImageDimension>
+void
+QmitkMIDASBaseSegmentationFunctionality
+::GetUpDirectionUsingITK(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    itk::ORIENTATION_ENUM orientation,
+    int &upDirection
+)
+{
+  GetUpDirectionFromITKImage(itkImage, orientation, upDirection);
+}
+
 
 void QmitkMIDASBaseSegmentationFunctionality::UpdateVolumeProperty(mitk::DataNode::Pointer segmentationImageNode)
 {
@@ -631,43 +697,7 @@ QmitkMIDASBaseSegmentationFunctionality
     double &imageVolume
     )
 {
-  typedef itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::SpacingType SpacingType;
-
-  SpacingType imageSpacing = itkImage->GetSpacing();
-  double voxelVolume = 1;
-  for ( unsigned int i = 0; i < imageSpacing.Size(); i++)
-  {
-    voxelVolume *= imageSpacing[i];
-  }
-
-  unsigned long int numberOfForegroundVoxels = 0;
-  itk::ImageRegionConstIterator<ImageType> iter(itkImage, itkImage->GetLargestPossibleRegion());
-  for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter)
-  {
-    if (iter.Get() > 0)
-    {
-      numberOfForegroundVoxels++;
-    }
-  }
-
-  imageVolume = numberOfForegroundVoxels * voxelVolume;
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::WipeTools()
-{
-  mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  mitk::MIDASTool::Pointer midasTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>()));
-  assert(midasTool);
-  midasTool->Wipe();
-  midasTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-  assert(midasTool);
-  midasTool->Wipe();
-  midasTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
-  assert(midasTool);
-  midasTool->Wipe();
+  itk::GetVolumeFromITKImage(itkImage, imageVolume);
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
@@ -675,7 +705,6 @@ void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
   mitk::DataNode::Pointer referenceDataNode = this->GetReferenceNodeFromToolManager();
   this->FireNodeSelected(referenceDataNode);
 }
-
 
 void QmitkMIDASBaseSegmentationFunctionality::OnPreferencesChanged(const berry::IBerryPreferences*)
 {

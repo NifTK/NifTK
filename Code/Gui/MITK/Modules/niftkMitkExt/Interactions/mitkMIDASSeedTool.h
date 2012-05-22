@@ -35,8 +35,18 @@ namespace mitk {
    * \class MIDASSeedTool
    * \brief MIDAS seed tool for adding / removing / moving seeds.
    *
-   * Interestingly, ANY of the MIDAS tools, PolyTool, DrawTool etc can add seeds.
-   * but this is the only tool that can remove them.
+   * Interestingly, ANY of mitk::MIDASPolyTool, mitk::MIDASDrawTool or mitk::MIDASSeedTool can add seeds.
+   * but only mitk::MIDASSeedTool can remove them.
+   *
+   * Provides
+   * <pre>
+   * 1. Right mouse button = place seed
+   * 2. Left mouse button = select seed
+   * 3. Move with left mouse button down = move selected seed
+   * 4. Middle mouse button = select a seed if it is within a given distance and remove it.
+   * </pre>
+   * and includes Undo/Redo functionality. Given the above list, to remove seeds most people
+   * hold the middle mouse button down, and drag it around, sucking up the seed points like a hoover.
    */
   class NIFTKMITKEXT_EXPORT MIDASSeedTool : public MIDASTool {
 
@@ -45,13 +55,16 @@ namespace mitk {
     mitkClassMacro(MIDASSeedTool, MIDASTool);
     itkNewMacro(MIDASSeedTool);
 
+    /// \see mitk::Tool::GetName()
     virtual const char* GetName() const;
+
+    /// \see mitk::Tool::GetXPM()
     virtual const char** GetXPM() const;
 
-    // When called, we create and register an mitkPointSetInteractor.
+    /// \brief When called, we create and register an mitkPointSetInteractor.
     virtual void Activated();
 
-    // When called, we unregister the mitkPointSetInteractor.
+    /// \brief When called, we unregister the mitkPointSetInteractor.
     virtual void Deactivated();
 
   protected:

@@ -34,7 +34,7 @@
 #include "berryIBerryPreferences.h"
 #include "mitkToolManager.h"
 #include "itkImage.h"
-#include "itkSpatialOrientationAdapter.h"
+#include "itkMIDASHelper.h"
 
 class QmitkRenderWindow;
 
@@ -55,23 +55,15 @@ class CMIC_QT_COMMON QmitkMIDASBaseSegmentationFunctionality : public QmitkMIDAS
 
 public:
 
-  enum ORIENTATION_ENUM {
-    AXIAL = 0,
-    SAGITTAL = 1,
-    CORONAL = 2,
-    UNKNOWN = -1
-  };
-
-
-  /// \brief Stores the preference name  of the default outline colour.
-  static const std::string DEFAULT_COLOUR;
-
-  /// \brief Stores the preference name of the default outline colour style sheet.
-  static const std::string DEFAULT_COLOUR_STYLE_SHEET;
-
   QmitkMIDASBaseSegmentationFunctionality();
   QmitkMIDASBaseSegmentationFunctionality(const QmitkMIDASBaseSegmentationFunctionality& other);
   virtual ~QmitkMIDASBaseSegmentationFunctionality();
+
+  /// \brief Stores the preference name of the default outline colour (defaults to pure green).
+  static const std::string DEFAULT_COLOUR;
+
+  /// \brief Stores the preference name of the default outline colour style sheet (defaults to pure green).
+  static const std::string DEFAULT_COLOUR_STYLE_SHEET;
 
   /// \brief Reaction to new segmentations being created by segmentation tools, currently does nothing.
   virtual void NewNodesGenerated();
@@ -92,26 +84,79 @@ protected slots:
 
 protected:
 
-  /// \brief Returns the tool manager associated with this object (derived classes provide ones in different ways).
-  virtual mitk::ToolManager* GetToolManager();
-
-  /// \brief Gets a vector of the binary images registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
+  /// \brief Gets a vector of the working data nodes (normally image, but could be surfaces etc) registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
   mitk::ToolManager::DataVectorType GetWorkingNodesFromToolManager();
 
-  /// \brief Gets a single binary image registered with the tool manager (that tools can edit), or empty list of this doesnt exist.
+  /// \brief Gets a single binary image registered with the ToolManager (that tools can edit), or NULL if it can't be found or is not an image.
   mitk::Image* GetWorkingImageFromToolManager(int i);
 
-  /// \brief Gets the grey scale image registered with the tool manager, or NULL if it doesn't exist.
+  /// \brief Gets the reference node from the ToolManager or NULL if it can't be found.
   mitk::DataNode* GetReferenceNodeFromToolManager();
 
-  /// \brief Gets the current grey scale image being segmented registered as with the tool manager, or NULL if this doesn't yet exist
+  /// \brief Gets the reference image from the ToolManager, or NULL if this doesn't yet exist or is not an image.
   mitk::Image* GetReferenceImageFromToolManager();
 
   /// \brief Assumes that the Reference (grey scale) node is always the direct parent of the Segmentation (binary) node, so we simply search for a non binary parent.
   mitk::DataNode* GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Reference (grey scale) image is ALWAYS registered with the ToolManager, so this method returns the reference image registered with the tool manager.
-  virtual mitk::Image* GetReferenceImage();
+  mitk::Image* GetReferenceImage();
+
+  /// \brief Works out the slice number.
+  int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
+
+  /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
+  itk::ORIENTATION_ENUM GetOrientationAsEnum();
+
+  /// \brief Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2] that corresponds to the given orientation, or -1 if it can't be found.
+  int GetAxisFromReferenceImage(itk::ORIENTATION_ENUM orientation);
+
+  /// \brief Returns the axis (0,1,2) that corresponds to the given orientation, or -1 if it can't be found.
+  template<typename TPixel, unsigned int VImageDimension>
+  void GetAxisFromReferenceImageUsingITK(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      itk::ORIENTATION_ENUM orientation,
+      int &outputAxis
+      );
+
+  /// \brief Returns the reference image axial axis [0,1,2] or -1 if it can't be found.
+  int GetReferenceImageAxialAxis();
+
+  /// \brief Returns the reference image coronal axis [0,1,2] or -1 if it can't be found.
+  int GetReferenceImageCoronalAxis();
+
+  /// \brief Returns the reference image coronal axis [0,1,2] or -1 if it can't be found.
+  int GetReferenceImageSagittalAxis();
+
+  /// \brief Retrieves the currently active QmitkRenderWindow, and the reference image registered with the ToolManager, and returns the Image axis that the current view is looking along, or -1 if it can not be worked out.
+  int GetViewAxis();
+
+  /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
+  int GetUpDirection();
+
+  /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
+  template<typename TPixel, unsigned int VImageDimension>
+  void GetUpDirectionUsingITK(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      itk::ORIENTATION_ENUM orientation,
+      int &upDirection
+  );
+
+  /// \brief Calculates the volume using GetVolumeFromITK, and then stores it on a property midas.volume.
+  void UpdateVolumeProperty(mitk::DataNode::Pointer segmentationImageNode);
+
+  /// \brief Calculates the volume of segmentation using ITK. Assumes background = 0, and anything > 0 is foreground.
+  template<typename TPixel, unsigned int VImageDimension>
+  void GetVolumeFromITK(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      double &volume
+      );
+
+  /// \brief Makes sure the reference image is the selected one
+  void SetReferenceImageSelected();
+
+  /// \brief Returns the tool manager associated with this object (derived classes provide ones in different ways).
+  virtual mitk::ToolManager* GetToolManager();
 
   /// \brief Returns true if node represent an image that is non binary, and false otherwise.
   virtual bool IsNodeAReferenceImage(const mitk::DataNode::Pointer node);
@@ -138,7 +183,7 @@ protected:
   virtual void EnableSegmentationWidgets(bool b) {};
 
   /// \brief Turns the tool selection box on/off
-  void SetEnableManualToolSelectionBox(bool enabled);
+  virtual void SetEnableManualToolSelectionBox(bool enabled);
 
   /// \brief Creates the GUI parts.
   virtual void CreateQtPartControl(QWidget *parentForSelectorWidget, QWidget *parentForToolWidget);
@@ -161,42 +206,6 @@ protected:
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
-  /// \brief Returns the axis (0,1,2) that corresponds to axial, or -1 if it can't be found.
-  int GetAxialAxis();
-
-  /// \brief Returns the axis (0,1,2) that corresponds to coronal, or -1 if it can't be found.
-  int GetCoronalAxis();
-
-  /// \brief Returns the axis (0,1,2) that corresponds to sagittal, or -1 if it can't be found.
-  int GetSagittalAxis();
-
-  /// \brief Returns the axis (0,1,2) that corresponds to the given orientation, or -1 if it can't be found.
-  int GetAxis(ORIENTATION_ENUM orientation);
-
-  /// \brief Returns the axis (0,1,2) that corresponds to the given orientation, or -1 if it can't be found.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetAxisFromITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      ORIENTATION_ENUM orientation,
-      int &outputAxis
-      );
-
-  /// \brief Calculates the volume using GetVolumeFromITK, and then stores it on a property midas.volume.
-  void UpdateVolumeProperty(mitk::DataNode::Pointer segmentationImageNode);
-
-  /// \brief Calculates the volume of segmentation using ITK. Assumes background = 0, and anything > 0 is foreground.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetVolumeFromITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      double &volume
-      );
-
-  /// \brief Empties the tools of all their contours/seeds etc.
-  void WipeTools();
-
-  /// \brief Makes sure the reference image is the selected one
-  void SetReferenceImageSelected();
-
   /// \brief Called when preferences are updated.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
@@ -206,8 +215,10 @@ protected:
   /// \brief Derived classes decide which preferences are actually read.
   virtual std::string GetPreferencesNodeName() = 0;
 
-  // Keeps track of the last selected node, whever only a single node is selected. If you multi-select, this is not updated.
+  /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;
+
+  /// \brief Keeps track of the last selected image, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::Image::Pointer m_SelectedImage;
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.

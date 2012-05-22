@@ -29,7 +29,6 @@
 #include "berryIWorkbenchPage.h"
 #include "mitkImageAccessByItk.h"
 #include "mitkITKImageImport.h"
-#include "mitkRenderingManager.h"
 #include "mitkImageCast.h"
 #include "mitkImage.h"
 #include "mitkImageStatisticsHolder.h"
@@ -38,7 +37,7 @@
 #include "mitkColorProperty.h"
 #include "mitkDataStorageUtils.h"
 #include "mitkITKRegionParametersDataNodeProperty.h"
-#include "itkImageFileWriter.h"
+#include "mitkSegmentationObjectFactory.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkConversionUtils.h"
 #include "QmitkMIDASMultiViewWidget.h"
@@ -57,6 +56,7 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 , m_ContainerForControlsWidget(NULL)
 , m_PaintbrushToolId(-1)
 {
+  RegisterSegmentationObjectFactory();
 }
 
 MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView(
@@ -131,7 +131,6 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
 
 void MIDASMorphologicalSegmentorView::SetFocus()
 {
-  m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->setFocus();
 }
 
 void MIDASMorphologicalSegmentorView::ClosePart()
@@ -459,10 +458,6 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         }
 
         // Make sure the controls match the parameters and the new segmentation is selected
-        if (this->GetActiveMIDASMultiViewWidget() != NULL)
-        {
-          this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(true);
-        }
         this->SetControlsByParameterValues();
         this->SelectNode(emptySegmentation);
       }
@@ -642,10 +637,6 @@ void MIDASMorphologicalSegmentorView::UpdateSegmentation()
           parent->Modified();
 
           QmitkAbstractView::RequestRenderWindowUpdate();
-          if (this->GetActiveMIDASMultiViewWidget() != NULL)
-          {
-            this->GetActiveMIDASMultiViewWidget()->RequestUpdateAll();
-          }
         }
       }
     }
@@ -751,7 +742,7 @@ MIDASMorphologicalSegmentorView
   std::string orientationString = itk::ConvertSpatialOrientationToString(orientation);
 
   // 3. Get Axis that represents superior/inferior
-  int axialAxis = QmitkMIDASBaseSegmentationFunctionality::GetAxialAxis();
+  int axialAxis = QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageAxialAxis();
   if (axialAxis != -1)
   {
     // 4. Calculate size of region of interest in that axis
@@ -882,7 +873,7 @@ void MIDASMorphologicalSegmentorView::SetControlsByImageData()
 
   if (image != NULL)
   {
-    int axialAxis = QmitkMIDASBaseSegmentationFunctionality::GetAxialAxis();
+    int axialAxis = QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageAxialAxis();
     int numberOfAxialSlices = image->GetDimension(axialAxis);
 
     m_MorphologicalControls->SetControlsByImageData(
@@ -998,10 +989,6 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
   this->SetReferenceImageSelected();
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
-  if (this->GetActiveMIDASMultiViewWidget() != NULL)
-  {
-    this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(false);
-  }
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
   m_MorphologicalControls->m_TabWidget->blockSignals(false);
@@ -1019,10 +1006,6 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
   this->GetDataStorage()->Remove(segmentationNode);
   this->OnToolSelected(-1);
   this->EnableSegmentationWidgets(false);
-  if (this->GetActiveMIDASMultiViewWidget() != NULL)
-  {
-    this->GetActiveMIDASMultiViewWidget()->SetMIDASSegmentationMode(false);
-  }
   m_MorphologicalControls->m_TabWidget->blockSignals(true);
   m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
   m_MorphologicalControls->m_TabWidget->blockSignals(false);

@@ -63,14 +63,22 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString dashboardText(NIFTK_DASHBOARD_TEXT);
   QString userContact(NIFTK_USER_CONTACT);
   QString developerContact(NIFTK_DEVELOPER_CONTACT);
+  QString qtVersion(NIFTK_QT_VERSION);
   QString boostVersion(NIFTK_BOOST_VERSION);
   QString gdcmVersion(NIFTK_GDCM_VERSION);
+  QString dcmtkVersion(NIFTK_DCMTK_VERSION);
   QString itkVersion(NIFTK_ITK_VERSION);
   QString vtkVersion(NIFTK_VTK_VERSION);
-  QString qtVersion(NIFTK_QT_VERSION);
   QString ctkVersion(NIFTK_CTK_VERSION);
   QString mitkVersion(NIFTK_MITK_VERSION);
   QString svnVersion(NIFTK_SVN_VERSION);
+  QString boostLocation(NIFTK_BOOST_LOCATION);
+  QString gdcmLocation(NIFTK_GDCM_LOCATION);
+  QString dcmtkLocation(NIFTK_DCMTK_LOCATION);
+  QString itkLocation(NIFTK_ITK_LOCATION);
+  QString vtkLocation(NIFTK_VTK_LOCATION);
+  QString ctkLocation(NIFTK_CTK_LOCATION);
+  QString mitkLocation(NIFTK_MITK_LOCATION);
 
   // Main titles with application name, release version and copyright statement.
   QString titles = QObject::tr(
@@ -104,7 +112,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "In addition, the software development team would like to acknowledge the kind support of the open-source software community "
       "during development of NifTK and are especially grateful to the developers of "
       "<a href=\"http://www.mitk.org\">MITK</a> and <a href=\"http://www.commontk.org\">CTK</a>. "
-      "In addition, various clip art comes from <a href=\"http://www.openclipart.org\">openclipart.org</a>"
+      "In addition, various clip art comes from <a href=\"http://www.openclipart.org\">openclipart.org</a>."
       "</p>"
       ).arg(originShortText);
 
@@ -114,27 +122,37 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<h3>Software Versions</h3>"
       "<p>"
       "%1 has been developed using the following libraries."
-      "<ul>"
-      "<table>"
-      "<tr><td><a href=\"http://www.boost.org\">Boost</a></td><td>%2</td><td><a href=\"http://www.boost.org/LICENSE_1_0.txt\">Boost Software License v1.0</a></td></tr>"
-      "<tr><td><a href=\"http://qt.nokia.com/products\">Qt</a></td><td>%6</td><td><a href=\"http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\">LGPL version 2.1</a></td></tr>"
-      "<tr><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/\">GDCM</a></td><td>%3</td><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html\">GDCM Berkely-like license</a></td></tr>"
-      "<tr><td><a href=\"http://www.itk.org\">ITK</a></td><td>%4</td><td><a href=\"http://www.itk.org/ITK/project/licenseversion2.html\">Simplified BSD license for version 3.20</a></td></tr>"
-      "<tr><td><a href=\"http://www.vtk.org\">VTK</a></td><td>%5</td><td><a href=\"http://www.vtk.org/VTK/project/license.html\">BSD license</a></td></tr>"
-      "<tr><td><a href=\"http://www.commontk.org\">CTK</a></td><td>%7</td><td><a href=\"http://www.apache.org/licenses/LICENSE-2.0.html\">Apache 2.0 license</a></td></tr>"
-      "<tr><td><a href=\"http://www.mitk.org\">MITK</a></td><td>%8</td><td><a href=\"http://www.mitk.org/wiki/License\">BSD-style license</a></td></tr>"
-      "</table>"
-      "The licenses can be found online and are additionally included in the installation folder. This version of %9 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%10</a>"
+      "</p>"
+      "<p><table>"
+      "<tr><td><a href=\"http://www.boost.org\">Boost</a></td><td>%2</td><td><a href=\"http://www.boost.org/LICENSE_1_0.txt\">Boost software license version 1.0</a></td><td><a href=\"%3\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://qt.nokia.com/products\">Qt</a></td><td>%4</td><td><a href=\"http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\">LGPL version 2.1</a></td><td><a href=\"http://qt.nokia.com/products\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/\">GDCM</a></td><td>%5</td><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html\">GDCM Berkely-like license</a></td><td><a href=\"%6\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://dicom.offis.de/\">DCMTK</a></td><td>%7</td><td><a href=\"ftp://dicom.offis.de/pub/dicom/offis/software/dcmtk/dcmtk360/COPYRIGHT\">DCMTK license</a></td><td><a href=\"%8\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.itk.org\">ITK</a></td><td>%9</td><td><a href=\"http://www.itk.org/ITK/project/licenseversion2.html\">Simplified BSD license for version 3.20</a></td><td><a href=\"%10\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.vtk.org\">VTK</a></td><td>%11</td><td><a href=\"http://www.vtk.org/VTK/project/license.html\">BSD license</a></td><td><a href=\"%12\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.commontk.org\">CTK</a></td><td>%13</td><td><a href=\"http://www.apache.org/licenses/LICENSE-2.0.html\">Apache 2.0 license</a></td><td><a href=\"%14\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.mitk.org\">MITK</a>(Modified)</td><td>%15</td><td><a href=\"http://www.mitk.org/wiki/License\">BSD-style license</a></td><td><a href=\"%16\">from here</a></td></tr>"
+      "</table></p>"
+      "<p>"
+      "The licenses can be found online and are additionally included in the installation folder. This version of %17 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%18</a>."
       "</p>"
       )
       .arg(applicationName)
       .arg(boostVersion)
-      .arg(gdcmVersion)
-      .arg(itkVersion)
-      .arg(vtkVersion)
+      .arg(boostLocation)
       .arg(qtVersion)
+      .arg(gdcmVersion)
+      .arg(gdcmLocation)
+      .arg(dcmtkVersion)
+      .arg(dcmtkLocation)
+      .arg(itkVersion)
+      .arg(itkLocation)
+      .arg(vtkVersion)
+      .arg(vtkLocation)
       .arg(ctkVersion.left(10))
+      .arg(ctkLocation)
       .arg(mitkVersion.left(10))
+      .arg(mitkLocation)
       .arg(applicationName)
       .arg(svnVersion);
 
@@ -142,7 +160,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   // (but these should be backed up with a Dashboard or else it ain't worth diddly-squat).
   QString testingDetails = QObject::tr(
       "<p>"
-      "%1 has been compiled and tested on:"
+      "%1 has been compiled and tested on the following platforms:"
       "<ul>"
       "<li>Mac OSX 10.7 (Lion)</li>"
       "<li>Mac OSX 10.6 (Snow Leopard)</li>"
@@ -154,7 +172,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<li>Windows 7</li>"
       "<li>Windows XP</li>"
       "</ul>"
-      "and our software quality control statistics can be seen on this <a href=\"%2\">%3</a>."
+      "We assume a 64 bit operating system. Our software quality control statistics can be seen on this <a href=\"%2\">%3</a>."
       "</p>"
       ).arg(applicationName).arg(dashboardURL).arg(dashboardText);
 

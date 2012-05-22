@@ -23,14 +23,21 @@
  ============================================================================*/
 
 #include "mitkMIDASPolyTool.h"
+#include "mitkMIDASPolyToolEventInterface.h"
+#include "mitkMIDASPolyToolOpAddToFeedbackContour.h"
+#include "mitkMIDASPolyToolOpUpdateFeedbackContour.h"
 #include "mitkMIDASPolyTool.xpm"
+#include "mitkOperationEvent.h"
+#include "mitkUndoController.h"
 #include "mitkPointUtils.h"
 #include "mitkToolManager.h"
 #include "mitkBaseRenderer.h"
 #include "mitkContour.h"
 
-const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS Poly Tool anchor points");
-const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("PolyTool previous contour");
+const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS PolyTool anchor points");
+const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("MIDAS PolyTool previous contour");
+const mitk::OperationType mitk::MIDASPolyTool::MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR = 320420;
+const mitk::OperationType mitk::MIDASPolyTool::MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR = 320421;
 
 namespace mitk{
   MITK_TOOL_MACRO(NIFTKMITKEXT_EXPORT, MIDASPolyTool, "MIDAS Poly Tool");
@@ -39,12 +46,12 @@ namespace mitk{
 mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
 , m_ReferencePoints(NULL)
 , m_PreviousContourReferencePoints(NULL)
-, m_PolyLinePointSet(NULL)
-, m_PolyLinePointSetNode(NULL)
-, m_PolyLinePointSetVisible(false)
 , m_PreviousContour(NULL)
 , m_PreviousContourNode(NULL)
 , m_PreviousContourVisible(false)
+, m_PolyLinePointSet(NULL)
+, m_PolyLinePointSetNode(NULL)
+, m_PolyLinePointSetVisible(false)
 {
   // great magic numbers, connecting interactor straight to method calls.
   CONNECT_ACTION( 12, OnLeftMousePressed );
@@ -52,7 +59,7 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
   CONNECT_ACTION( 90, OnMiddleMousePressedAndMoved );
   CONNECT_ACTION( 76, OnMiddleMouseReleased );
 
-  // These are not added to DataStorage as they are never drawn
+  // These are not added to DataStorage as they are never drawn, they are just an internal data structure
   m_ReferencePoints = Contour::New();
   m_PreviousContourReferencePoints = Contour::New();
 
@@ -76,11 +83,17 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
   m_PreviousContourNode->SetProperty("color", ColorProperty::New(0, 1, 0));
 
   this->Disable3dRenderingOfPreviousContour();
+
+  m_Interface = new MIDASPolyToolEventInterface();
+  m_Interface->SetMIDASPolyTool(this);
 }
 
 mitk::MIDASPolyTool::~MIDASPolyTool()
 {
-
+  if (m_Interface != NULL)
+  {
+    delete m_Interface;
+  }
 }
 
 const char* mitk::MIDASPolyTool::GetName() const
@@ -95,7 +108,7 @@ const char** mitk::MIDASPolyTool::GetXPM() const
 
 void mitk::MIDASPolyTool::Disable3dRenderingOfPreviousContour()
 {
-  this->Disable3dRenderingOfContour(m_PreviousContourNode);
+  this->Disable3dRenderingOfNode(m_PreviousContourNode);
 }
 
 void mitk::MIDASPolyTool::Activated()
@@ -143,10 +156,15 @@ void mitk::MIDASPolyTool::Activated()
   // Turn the contours on, and set to correct colour. The FeedBack contour is yellow.
   FeedbackContourTool::SetFeedbackContourVisible(true);
   FeedbackContourTool::SetFeedbackContourColor(1, 1, 0);
+
   MIDASContourTool::SetBackgroundContourVisible(false);
   MIDASContourTool::SetBackgroundContourColorDefault();
-  MIDASContourTool::SetCumulativeFeedbackContoursVisible(true);
-  MIDASContourTool::SetCumulativeFeedbackContoursColor(0, 1, 0);
+
+  feedbackContour->Initialize();
+  backgroundContour->Initialize();
+  m_PreviousContour->Initialize();
+  m_ReferencePoints->Initialize();
+  m_PreviousContourReferencePoints->Initialize();
 
   // Just to be explicit
   this->Disable3dRenderingOfPreviousContour();
@@ -159,16 +177,17 @@ void mitk::MIDASPolyTool::Deactivated()
   MIDASTool::Deactivated();
 
   Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
-  this->AddToCumulativeFeedbackContours(*feedbackContour, *backgroundContour);
+  this->AccumulateContourInWorkingData(*feedbackContour, 2);
+
+  // Re-initialize contours to zero length.
+  feedbackContour->Initialize();
+  mitk::Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
+  backgroundContour->Initialize();
 
   FeedbackContourTool::SetFeedbackContourVisible(false);
   MIDASContourTool::SetBackgroundContourVisible(false);
   this->SetPreviousContourVisible(false);
   this->SetPolyLinePointSetVisible(false);
-
-  MIDASContourTool::SetCumulativeFeedbackContoursVisible(true);
-  MIDASContourTool::SetCumulativeFeedbackContoursColor(0, 1, 0);
 
   this->RenderAllWindows();
 }
@@ -267,13 +286,14 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
     const PlaneGeometry& planeGeometry,
     mitk::Contour& contourReferencePointsInput,
     mitk::Contour& feedbackContour,
-    mitk::Contour& backgroundContour
+    mitk::Contour& backgroundContour,
+    bool provideUndo
     )
 {
   // Find closest point in reference points
   float distance = std::numeric_limits<float>::max();
   float closestDistance = std::numeric_limits<float>::max();
-  unsigned long closestPointIndex = 0;
+  unsigned int closestPointIndex = 0;
   mitk::Point3D closestPoint;
   mitk::Point3D p1;
   mitk::Point3D p2;
@@ -291,14 +311,37 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
     }
   }
 
-  // Now we need to update the closest point in the contour, with the corner point nearest the current mouse position.
-  points->SetElement(closestPointIndex, closestCornerPoint);
+  if (provideUndo)
+  {
+    mitk::MIDASPolyToolOpUpdateFeedbackContour *doOp = new mitk::MIDASPolyToolOpUpdateFeedbackContour(
+        MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR,
+        closestPointIndex,
+        closestCornerPoint,
+        &feedbackContour,
+        &planeGeometry
+        );
 
-  // and draw a line from point to point, going round voxel edges
-  this->DrawWholeContour(contourReferencePointsInput, planeGeometry, feedbackContour, backgroundContour);
+
+    mitk::MIDASPolyToolOpUpdateFeedbackContour *undoOp = new mitk::MIDASPolyToolOpUpdateFeedbackContour(
+        MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR,
+        closestPointIndex,
+        m_PreviousContour->GetPoints()->GetElement(closestPointIndex),
+        &feedbackContour,
+        &planeGeometry
+        );
+
+    mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Update PolyLine");
+    mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+    ExecuteOperation(doOp);
+  }
+  else
+  {
+    points->SetElement(closestPointIndex, closestCornerPoint);
+    this->DrawWholeContour(contourReferencePointsInput, planeGeometry, feedbackContour, backgroundContour);
+  }
 }
 
-void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* stateEvent)
+void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* stateEvent, bool provideUndo)
 {
   if (m_ReferencePoints->GetNumberOfPoints() > 1)
   {
@@ -332,14 +375,17 @@ void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* state
     this->DrawWholeContour(*(m_PreviousContourReferencePoints.GetPointer()), *planeGeometry, *(m_PreviousContour.GetPointer()), *backgroundContour);
 
     // Redraw the "current" contour line in yellow.
-    this->UpdateFeedbackContour(closestCornerPoint, *planeGeometry, *(m_ReferencePoints.GetPointer()), *feedbackContour, *backgroundContour);
+    this->UpdateFeedbackContour(closestCornerPoint, *planeGeometry, *(m_ReferencePoints.GetPointer()), *feedbackContour, *backgroundContour, provideUndo);
+
+    // Make sure all views everywhere get updated.
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   }
 }
 
 /**
  * Poly lines are created by responding only to left mouse down.
  * When the tool is activated, the next mouse click starts the line.
- * We then keep adding points, and lines until the tool is deactivated.
+ * We then keep adding points and lines until the tool is deactivated.
  */
 bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* stateEvent)
 {
@@ -349,13 +395,6 @@ bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* 
   // If these are not set, something is fundamentally wrong.
   assert(m_WorkingImage);
   assert(m_WorkingImageGeometry);
-
-  // Retrieve the contour that we will add points to.
-  Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  assert(feedbackContour);
-
-  Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
-  assert(backgroundContour);
 
   // Make sure we have a valid position event, otherwise no point continuing.
   const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
@@ -369,32 +408,40 @@ bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* 
   mitk::Point3D closestCornerPoint;
   this->ConvertPointToNearestVoxelCentreInMillimetreCoordinates(positionEvent->GetWorldPosition(), closestCornerPoint);
 
-  // Either store the point for the next click, or draw a line.
-  if (m_ReferencePoints->GetNumberOfPoints() == 0)
+  mitk::Point3D previousPoint;
+  if (m_ReferencePoints->GetNumberOfPoints() > 0)
   {
-    m_MostRecentPointInMillimetres = closestCornerPoint;
-    m_ReferencePoints->AddVertex(closestCornerPoint);
-    m_PolyLinePointSet->InsertPoint(0, closestCornerPoint);
-    this->SetPolyLinePointSetVisible(true);
-  }
-  else
-  {
-    this->SetPolyLinePointSetVisible(false);
-    this->DrawLineAroundVoxelEdges
-      (
-          *m_WorkingImage,
-          *m_WorkingImageGeometry,
-          *planeGeometry,
-          closestCornerPoint,
-          m_MostRecentPointInMillimetres,
-          *feedbackContour,
-          *backgroundContour
-      );
-    this->m_ReferencePoints->AddVertex(closestCornerPoint);
-    this->m_MostRecentPointInMillimetres = closestCornerPoint;
+    previousPoint = m_ReferencePoints->GetPoints()->GetElement(m_ReferencePoints->GetNumberOfPoints() -1);
   }
 
-  this->RenderCurrentWindow(*positionEvent);
+  mitk::Contour::Pointer currentPoints = mitk::Contour::New();
+  this->CopyContour(*(m_ReferencePoints.GetPointer()), *(currentPoints.GetPointer()));
+
+  mitk::Contour::Pointer nextPoints = mitk::Contour::New();
+  this->CopyContour(*(m_ReferencePoints.GetPointer()), *(nextPoints.GetPointer()));
+  nextPoints->AddVertex(closestCornerPoint);
+
+  mitk::MIDASPolyToolOpAddToFeedbackContour *doOp = new mitk::MIDASPolyToolOpAddToFeedbackContour(
+      MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR,
+      closestCornerPoint,
+      nextPoints,
+      planeGeometry
+      );
+
+
+  mitk::MIDASPolyToolOpAddToFeedbackContour *undoOp = new mitk::MIDASPolyToolOpAddToFeedbackContour(
+      MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR,
+      previousPoint,
+      currentPoints,
+      planeGeometry
+      );
+
+  mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Add to PolyLine");
+  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+  ExecuteOperation(doOp);
+
+  // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
+  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 
@@ -405,11 +452,9 @@ bool mitk::MIDASPolyTool::OnMiddleMousePressed (Action* action, const StateEvent
 
   this->CopyContour(*(m_ReferencePoints), *(m_PreviousContourReferencePoints));
   this->SetPreviousContourVisible(true);
-  this->UpdateContours(action, stateEvent);
 
-  // Set this flag to indicate that we are editing, which will block the update of the region growing.
-  this->UpdateWorkingImageBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
-
+  this->UpdateContours(action, stateEvent, false);
+  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
@@ -418,13 +463,8 @@ bool mitk::MIDASPolyTool::OnMiddleMousePressedAndMoved(Action* action, const Sta
   const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
   if (!positionEvent) return false;
 
-  this->UpdateContours(action, stateEvent);
-
-  // Set this flag to indicate that we are editing, which will block the update of the region growing.
-  this->UpdateWorkingImageBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
-
-  // Make sure all views everywhere get updated.
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  this->UpdateContours(action, stateEvent, false);
+  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
@@ -432,10 +472,79 @@ bool mitk::MIDASPolyTool::OnMiddleMouseReleased(Action* action, const StateEvent
 {
   this->SetPreviousContourVisible(false);
 
-  // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
-  this->UpdateWorkingImageBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  this->UpdateContours(action, stateEvent, true);
+  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  return true;
+}
+
+void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
+{
+  if (!operation) return;
+
+  mitk::MIDASContourTool::ExecuteOperation(operation);
+
+  mitk::Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
+  assert(feedbackContour);
+
+  // Retrieve the background contour, used to plot the closest straight line.
+  mitk::Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
+  assert(backgroundContour);
+
+  switch (operation->GetOperationType())
+  {
+  case MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR:
+    {
+      MIDASPolyToolOpAddToFeedbackContour *op = static_cast<MIDASPolyToolOpAddToFeedbackContour*>(operation);
+      if (op != NULL)
+      {
+        mitk::Point3D point = op->GetPoint();
+        mitk::Contour* contour = op->GetContour();
+        const mitk::PlaneGeometry* planeGeometry = op->GetPlaneGeometry();
+
+        if (contour->GetNumberOfPoints() == 1)
+        {
+          m_PolyLinePointSet->InsertPoint(0, point);
+          this->SetPolyLinePointSetVisible(true);
+        }
+        else
+        {
+          this->SetPolyLinePointSetVisible(false);
+        }
+        this->CopyContour(*contour, *(m_ReferencePoints.GetPointer()));
+        this->m_MostRecentPointInMillimetres = point;
+        this->DrawWholeContour(*(m_ReferencePoints.GetPointer()), *planeGeometry, *feedbackContour, *backgroundContour);
+      }
+    }
+    break;
+  case MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR:
+    {
+      MIDASPolyToolOpUpdateFeedbackContour *op = static_cast<MIDASPolyToolOpUpdateFeedbackContour*>(operation);
+      if (op != NULL)
+      {
+        unsigned int pointId = op->GetPointId();
+        mitk::Point3D point = op->GetPoint();
+        mitk::Contour* contour = op->GetContour();
+        const mitk::PlaneGeometry* planeGeometry = op->GetPlaneGeometry();
+
+        if (pointId >= 0 && pointId < contour->GetNumberOfPoints())
+        {
+          contour->GetPoints()->SetElement(pointId, point);
+          this->DrawWholeContour(*contour, *planeGeometry, *feedbackContour, *backgroundContour);
+        }
+        else
+        {
+          MITK_ERROR << "Received invalid pointId=" << pointId << std::endl;
+        }
+      }
+    }
+    break;
+  default:
+    ;
+  }
+
+  // Signal that something has happened, and that it may be worth updating.
+  ContoursHaveChanged.Send();
 
   // Make sure all views everywhere get updated.
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-  return true;
 }

@@ -30,6 +30,7 @@
 #include "mitkDataNode.h"
 #include "mitkMIDASPointSetInteractor.h"
 #include "mitkPositionEvent.h"
+#include "mitkMessage.h"
 
 namespace mitk {
 
@@ -37,7 +38,25 @@ namespace mitk {
    * \class MIDASTool
    * \brief Base class for MIDAS tools that need access to the list of
    * seeds for the current reference data volume registered with the ToolManager.
-   * I made it inherit from FeedbackContourTool, as multiple inheritance was getting messy.
+   *
+   * Matt: I made it inherit from FeedbackContourTool, as multiple inheritance was getting messy.
+   *
+   * Note that the MIDASSeedTool, MIDASDrawTool and MIDASPolyTool all inherit from this class.
+   * Each of these tools will have their MIDASPointSetInteractor. Each tool is managed
+   * by an mitk::ToolManager which guarantees that only one is active at any given time.
+   * As each tool becomes activated it will register the interactor with GlobalInteraction,
+   * and as the tool becomes deactivated it will de-register the interactor with GlobalInteraction.
+   *
+   * In addition (as of 18th May 2012), this class keeps track of the number of seeds
+   * and calls OnNumberOfSeedsChanged(int numberOfSeeds) when the number of seeds changed.
+   * This means derived classes could be notified when the number of seeds has changed.
+   * This is only called if the tool is Active.
+   *
+   * \sa mitk::MIDASSeedTool
+   * \sa mitk::MIDASContourTool
+   * \sa mitk::MIDASDrawTool
+   * \sa mitk::MIDASPolyTool
+   * \sa mitk::MIDASPointSetInteractor
    */
   class NIFTKMITKEXT_EXPORT MIDASTool : public FeedbackContourTool {
 
@@ -46,26 +65,29 @@ namespace mitk {
     mitkClassMacro(MIDASTool, FeedbackContourTool);
     const char* GetGroup() const;
 
-    // We store a seed point set name, so all classes have access to it.
+    /// \brief We store a seed point set name, so all classes have access to the name.
     static const std::string SEED_POINT_SET_NAME;
 
-    // We store a name for region growing image used in the general editor.
+    /// \brief We store the name of the current slice contours, so all class have access to the name.
+    static const std::string CURRENT_CONTOURS_NAME;
+
+    /// \brief We store the name of the region growing image, so all class have access to the name.
     static const std::string REGION_GROWING_IMAGE_NAME;
 
-    // We store a name for see prior image used in the general editor.
-    static const std::string SEE_PRIOR_IMAGE_NAME;
+    /// \brief We store the name of the prior contours, so all class have access to the name.
+    static const std::string PRIOR_CONTOURS_NAME;
 
-    // We store a name for see next image used in the general editor.
-    static const std::string SEE_NEXT_IMAGE_NAME;
+    /// \brief We store the name of the next contours, so all class have access to the name.
+    static const std::string NEXT_CONTOURS_NAME;
 
-    // When called, we get a reference to the set of seeds, and set up the interactor(s).
+    /// \brief When called, we get a reference to the set of seeds, and set up the interactor(s).
     virtual void Activated();
 
-    // When called, we unregister the reference to the set of seeds, and deactivate the interactors(s).
+    /// \brief When called, we unregister the reference to the set of seeds, and deactivate the interactors(s).
     virtual void Deactivated();
 
-    // Wipe's any tool specific data, such as contours, seed points etc.
-    virtual void Wipe();
+    /// \brief Used to signal that the number of seeds has changed
+    Message1<int> NumberOfSeedsHasChanged;
 
   protected:
 
@@ -73,22 +95,37 @@ namespace mitk {
     MIDASTool(const char* type); // purposefully hidden
     virtual ~MIDASTool(); // purposely hidden
 
-    // Makes the current window re-render
+    /// \brief Makes the current window re-render
     virtual void RenderCurrentWindow(const PositionEvent& event);
 
-    // Makes all windows re-render
+    /// \brief Makes all windows re-render
     virtual void RenderAllWindows();
 
-    // Can be called by derived classes to try and set the point set
+    /// \brief Can be called by derived classes to try and set the point set
     virtual void FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode);
 
-    // Helper method to update a boolean property on a given working image.
-    virtual void UpdateWorkingImageBooleanProperty(int workingImageNumber, std::string name, bool value);
+    /// \brief Helper method to update a boolean property on a given working data node.
+    virtual void UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value);
+
+    /// \brief Called when the number of seeds has changed, and derived classes can override it.
+    virtual void OnNumberOfSeedsChanged(int numberOfSeeds);
 
   private:
 
+    /// \brief Called when the seeds have been modified.
+    void OnSeedsModified();
+
     // This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
     mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
+
+    // Used to track when the number of seeds changes.
+    int m_LastSeenNumberOfSeeds;
+
+    // Used to track when the number of seeds changes.
+    unsigned long m_SeedsChangedTag;
+
+    //  Track whether this tool is activated or not.
+    bool m_IsActivated;
 
   };//class
 

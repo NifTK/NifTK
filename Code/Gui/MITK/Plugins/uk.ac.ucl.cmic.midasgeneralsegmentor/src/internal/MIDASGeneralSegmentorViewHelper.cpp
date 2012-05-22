@@ -28,10 +28,12 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 {
   mitk::Point3D mitkPointIn3DMillimetres;
   PointSetPointType itkPointIn3DMillimetres;
+
+  unsigned long numberOfSeeds = seeds->GetSize();
   unsigned long numberOfPoints = points->GetNumberOfPoints();
   PointSetType::PointsContainer* itkContainer = points->GetPoints();
 
-  for (int seedCounter = 0; seedCounter < seeds->GetSize(); seedCounter++)
+  for (unsigned long seedCounter = 0; seedCounter < numberOfSeeds; seedCounter++)
   {
     mitkPointIn3DMillimetres = seeds->GetPoint(seedCounter);
     for (int i = 0; i < 3; i++)
@@ -43,35 +45,23 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
   }
 }
 
-void ConvertMITKContoursFromOneToolAndAppendToITKPoints(mitk::MIDASContourTool *tool, PointSetType* points)
+void ConvertMITKContoursAndAppendToITKContours(GeneralSegmentorPipelineParams &params, ParametricPathVectorType& contours)
 {
-  mitk::Point3D mitkPointIn3DMillimetres;
-  PointSetPointType itkPointIn3DMillimetres;
-  unsigned long numberOfPoints = points->GetNumberOfPoints();
-  PointSetType::PointsContainer* itkContainer = points->GetPoints();
-
-  const std::vector<mitk::MIDASContourTool::PairOfContours>* vectorOfPairsOfContours = tool->GetCumulativeContours();
-  for (unsigned int contourCounter = 0; contourCounter < vectorOfPairsOfContours->size(); contourCounter++)
-  {
-    mitk::MIDASContourTool::PairOfContours pairOfContours = (*vectorOfPairsOfContours)[contourCounter];
-    mitk::Contour::Pointer contour = pairOfContours.second;
-    mitk::Contour::PointsContainerPointer currentPoints = contour->GetPoints();
-
-    for (unsigned int pointCounter = 0; pointCounter < contour->GetNumberOfPoints(); pointCounter++)
-    {
-      mitkPointIn3DMillimetres = currentPoints->GetElement(pointCounter);
-      for (int i = 0; i < 3; i++)
-      {
-        itkPointIn3DMillimetres[i] = mitkPointIn3DMillimetres[i];
-      }
-      itkContainer->InsertElement(numberOfPoints, itkPointIn3DMillimetres);
-      numberOfPoints++;
-    }
-  }
+  ConvertMITKContoursAndAppendToITKContours(params.m_GreenContours, contours);
+  ConvertMITKContoursAndAppendToITKContours(params.m_YellowContours, contours);
 }
 
-void ConvertMITKContoursFromAllToolsAndAppendToITKPoints(GeneralSegmentorPipelineParams &params, PointSetType* points)
+void ConvertMITKContoursAndAppendToITKContours(mitk::ContourSet *mitkContourSet, ParametricPathVectorType& itkContourVector)
 {
-  ConvertMITKContoursFromOneToolAndAppendToITKPoints(params.m_DrawTool, points);
-  ConvertMITKContoursFromOneToolAndAppendToITKPoints(params.m_PolyTool, points);
+  // The mitkContourSet is actually a map containing std::pair<int, mitk::Contour::Pointer>
+  // where int is the contour number. The itkContourSet is actually a vector of
+  // mitk::Contour::Pointer. So we can just copy the pointers, as we are only passing it along.
+
+  mitk::ContourSet::ContourVectorType mitkContoursToCopy = mitkContourSet->GetContours();
+  mitk::ContourSet::ContourVectorType::iterator iter;
+  for (iter = mitkContoursToCopy.begin(); iter != mitkContoursToCopy.end(); ++iter)
+  {
+    mitk::Contour::Pointer mitkContour = (*iter).second;
+    itkContourVector.push_back(mitkContour->GetContourPath());
+  }
 }

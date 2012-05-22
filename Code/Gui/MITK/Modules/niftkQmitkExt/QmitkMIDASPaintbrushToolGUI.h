@@ -35,7 +35,7 @@ class QFrame;
 
 /**
  * \class QmitkMIDASPaintbrushToolGUI
- * \brief GUI component for the mitkMIDASPaintbrushTool
+ * \brief GUI component for the mitk::MIDASPaintbrushTool
 */
 class NIFTKQMITKEXT_EXPORT QmitkMIDASPaintbrushToolGUI : public QmitkToolGUI
 {

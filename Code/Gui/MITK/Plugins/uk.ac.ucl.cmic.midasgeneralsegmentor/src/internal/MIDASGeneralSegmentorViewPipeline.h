@@ -25,12 +25,15 @@
 #ifndef _MIDASGENERALSEGMENTORVIEWPIPELINE_H_INCLUDED
 #define _MIDASGENERALSEGMENTORVIEWPIPELINE_H_INCLUDED
 
-#include "MIDASGeneralSegmentorViewHelper.h"
 #include "itkIndex.h"
 #include "itkContinuousIndex.h"
 #include "itkImage.h"
+#include "itkExtractImageFilter.h"
+#include "itkCastImageFilter.h"
+#include "itkPasteImageFilter.h"
 #include "itkMIDASHelper.h"
-#include "itkMIDASRegionGrowingProcessor.h"
+#include "itkMIDASRegionGrowingImageFilter.h"
+#include "MIDASGeneralSegmentorViewHelper.h"
 
 /**
  * \class GeneralSegmentorPipelineInterface
@@ -50,43 +53,50 @@ public:
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
  * The input images are 3D, and the contours from the MIDASDrawTool and MIDASPolyTool are in 3D.
- * Note, that the region growing is currently on a 3D image, thats 1 slice thick.
- * So, you may think it should be 2D, but the template type is intentionally 3D.
  */
 template<typename TPixel, unsigned int VImageDimension>
 class GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
 {
 public:
 
-  typedef itk::Index<VImageDimension>                                          IndexType;
-  typedef itk::ContinuousIndex<float, VImageDimension>                         ContinuousIndexType;
-
-  typedef itk::Image<TPixel, VImageDimension>                                  GreyScaleImageType;
-  typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, VImageDimension> SegmentationImageType;
-
-  // Extra typedefs to make life easier.
-  typedef typename GreyScaleImageType::RegionType                              RegionType;
-  typedef typename GreyScaleImageType::SizeType                                SizeType;
-  typedef itk::MIDASRegionGrowingProcessor<GreyScaleImageType, SegmentationImageType, PointSetType>   MIDASRegionGrowingProcessorType;
-  typedef typename MIDASRegionGrowingProcessorType::Pointer                                           MIDASRegionGrowingProcessorPointer;
+  typedef itk::Index<VImageDimension>                                     IndexType;
+  typedef itk::ContinuousIndex<double, VImageDimension>                   ContinuousIndexType;
+  typedef itk::Image<TPixel, VImageDimension>                             GreyScaleImageType;
+  typedef itk::Image<mitk::Tool::DefaultSegmentationDataType,
+                     VImageDimension>                                     SegmentationImageType;
+  typedef typename GreyScaleImageType::RegionType                         RegionType;
+  typedef typename GreyScaleImageType::SizeType                           SizeType;
+  typedef typename GreyScaleImageType::PointType                          PointType;
+  typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType> ExtractGreySliceFromGreyImageFilterType;
+  typedef typename ExtractGreySliceFromGreyImageFilterType::Pointer       ExtractGreySliceFromGreyImageFilterPointer;
+  typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType> CastGreySliceToSegmentationSliceFilterType;
+  typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer    CastGreySliceToSegmentationSliceFilterPointer;
+  typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType,
+                                             SegmentationImageType,
+                                             PointSetType>                MIDASRegionGrowingFilterType;
+  typedef typename MIDASRegionGrowingFilterType::Pointer                  MIDASRegionGrowingFilterPointer;
 
   // Methods
   GeneralSegmentorPipeline();
   void SetParam(GeneralSegmentorPipelineParams &params);
   void Update(GeneralSegmentorPipelineParams &params);
 
-  // Member variables
+  // Member variables.
   int m_SliceNumber;
   int m_AxisNumber;
   double m_LowerThreshold;
   double m_UpperThreshold;
-  itk::ORIENTATION_ENUM m_Orientation;
   PointSetPointer m_AllSeeds;
-  PointSetPointer m_AllContours;
+  ParametricPathVectorType m_AllContours;
 
-  // Note: All ITK processing has been externalised to a pure ITK class to help with unit testing
-  // and consistent usage within the Undo/Redo framework where we need to support undo-able PropUp/PropDown functionality.
-  MIDASRegionGrowingProcessorPointer m_RegionGrowingProcessor;
+  // Controls whether we write to output. Default = true. If false, we can directly look at m_RegionGrowingFilter->GetOutput().
+  bool m_UseOutput;
+
+  // The main filters.
+  ExtractGreySliceFromGreyImageFilterPointer    m_ExtractRegionOfInterestFilter;
+  CastGreySliceToSegmentationSliceFilterPointer m_CastToBinaryFilter;
+  MIDASRegionGrowingFilterPointer               m_RegionGrowingFilter;
+  SegmentationImageType*                        m_OutputImage;
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION

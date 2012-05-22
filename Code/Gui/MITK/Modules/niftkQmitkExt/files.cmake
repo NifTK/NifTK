@@ -2,6 +2,7 @@ SET(CPP_FILES
   Dialogs/QmitkHelpAboutDialog.cpp
   Dialogs/QmitkMIDASNewSegmentationDialog.cpp
   QmitkThumbnailRenderWindow.cpp
+  QmitkMIDASDrawToolGUI.cpp
   QmitkMIDASPaintbrushToolGUI.cpp
   QmitkMIDASSlidersWidget.cpp
   QmitkMIDASOrientationWidget.cpp
@@ -18,6 +19,7 @@ SET(MOC_H_FILES
   Dialogs/QmitkHelpAboutDialog.h
   Dialogs/QmitkMIDASNewSegmentationDialog.h
   QmitkThumbnailRenderWindow.h
+  QmitkMIDASDrawToolGUI.h
   QmitkMIDASPaintbrushToolGUI.h
   QmitkMIDASSlidersWidget.h
   QmitkMIDASOrientationWidget.h

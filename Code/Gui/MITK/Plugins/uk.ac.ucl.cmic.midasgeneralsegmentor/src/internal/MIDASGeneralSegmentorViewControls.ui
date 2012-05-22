@@ -95,7 +95,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>see image</string>
+          <string>view</string>
          </property>
         </widget>
        </item>

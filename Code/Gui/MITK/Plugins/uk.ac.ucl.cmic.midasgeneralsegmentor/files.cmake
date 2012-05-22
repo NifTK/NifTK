@@ -6,6 +6,7 @@ SET(INTERNAL_CPP_FILES
   MIDASGeneralSegmentorViewActivator.cpp
   MIDASGeneralSegmentorViewHelper.cpp
   MIDASGeneralSegmentorViewControlsWidget.cpp
+  MIDASGeneralSegmentorViewEventInterface.cpp
   MIDASGeneralSegmentorView.cpp
 )
 

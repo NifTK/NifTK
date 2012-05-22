@@ -75,7 +75,6 @@ void SnapshotView::CreateQtPartControl( QWidget *parent )
 
 void SnapshotView::SetFocus()
 {
-  m_Controls->m_TakeSnapshotButton->setFocus();
 }
 
 void SnapshotView::OnTakeSnapshotButtonPressed()

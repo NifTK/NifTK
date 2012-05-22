@@ -24,6 +24,7 @@
 
 #include "mitkVector.h"
 #include "mitkMIDASContourTool.h"
+#include "mitkMIDASContourToolEventInterface.h"
 #include "mitkToolManager.h"
 #include "mitkBaseRenderer.h"
 #include "mitkRenderingManager.h"
@@ -32,6 +33,10 @@
 #include "mitkGeometry3D.h"
 #include "mitkExtractImageFilter.h"
 #include "mitkImageAccessByItk.h"
+#include "mitkContourSet.h"
+#include "mitkMIDASContourToolOpAccumulateContour.h"
+#include "mitkOperationEvent.h"
+#include "mitkUndoController.h"
 #include "vtkImageData.h"
 #include "itkImage.h"
 #include "itkPoint.h"
@@ -40,13 +45,7 @@
 
 const std::string mitk::MIDASContourTool::EDITING_PROPERTY_NAME = std::string("midas.contour.editing");
 const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR("MIDAS Background Contour");
-const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_CUMULATIVE_FEEDBACK_CONTOUR("MIDAS Cumulative Feedback Contour");
-const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_CUMULATIVE_BACKGROUND_CONTOUR("MIDAS Cumulative Background Contour");
-
-mitk::MIDASContourTool::~MIDASContourTool()
-{
-
-}
+const mitk::OperationType mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR = 320419;
 
 mitk::MIDASContourTool::MIDASContourTool(const char* type) : MIDASTool(type)
 , m_ContourWidth(1)
@@ -56,7 +55,6 @@ mitk::MIDASContourTool::MIDASContourTool(const char* type) : MIDASTool(type)
 , m_WorkingImage(NULL)
 , m_ReferenceImage(NULL)
 , m_BackgroundContourVisible(false)
-, m_CumulativeFeedbackContoursVisible(false)
 {
   m_BackgroundContour = Contour::New();
   m_BackgroundContourNode = DataNode::New();
@@ -69,13 +67,34 @@ mitk::MIDASContourTool::MIDASContourTool(const char* type) : MIDASTool(type)
   this->Disable3dRenderingOfBackgroundContour();
   this->SetBackgroundContourColorDefault();
 
-  this->Disable3dRenderingOfCumulativeFeedbackContours();
-  this->SetCumulativeFeedbackContoursColorDefault();
+  m_Interface = new MIDASContourToolEventInterface();
+  m_Interface->SetMIDASContourTool(this);
+
+}
+
+mitk::MIDASContourTool::~MIDASContourTool()
+{
+  if (m_Interface != NULL)
+  {
+    delete m_Interface;
+  }
+}
+
+void mitk::MIDASContourTool::Disable3dRenderingOfNode(mitk::DataNode* node)
+{
+  const RenderingManager::RenderWindowVector& renderWindows = RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
+  for (RenderingManager::RenderWindowVector::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
+  {
+    if ( mitk::BaseRenderer::GetInstance((*iter))->GetMapperID() == BaseRenderer::Standard3D )
+    {
+      node->SetProperty("visible", BoolProperty::New(false), mitk::BaseRenderer::GetInstance((*iter)));
+    }
+  }
 }
 
 void mitk::MIDASContourTool::Disable3dRenderingOfBackgroundContour()
 {
-  this->Disable3dRenderingOfContour(m_BackgroundContourNode);
+  this->Disable3dRenderingOfNode(m_BackgroundContourNode);
 }
 
 void mitk::MIDASContourTool::SetBackgroundContour(Contour& contour)
@@ -124,162 +143,32 @@ mitk::Contour* mitk::MIDASContourTool::GetBackgroundContour()
   return m_BackgroundContour;
 }
 
-void mitk::MIDASContourTool::Disable3dRenderingOfCumulativeFeedbackContours()
+mitk::Contour* mitk::MIDASContourTool::GetContour()
 {
-  for (unsigned int i = 0; i < m_CumulativeFeedbackContoursNodes.size(); i++)
-  {
-    this->Disable3dRenderingOfContour(m_CumulativeFeedbackContoursNodes[i].first);
-    this->Disable3dRenderingOfContour(m_CumulativeFeedbackContoursNodes[i].second);
-  }
+  return FeedbackContourTool::GetFeedbackContour();
 }
 
-void mitk::MIDASContourTool::AddToCumulativeFeedbackContours(mitk::Contour& feedbackContourInput, mitk::Contour& backgroundContourInput)
+void mitk::MIDASContourTool::SetFeedbackContourVisible(bool b)
 {
-
-  this->Disable3dRenderingOfCumulativeFeedbackContours();
-
-  bool currentlyVisible = m_CumulativeFeedbackContoursVisible;
-
-  if (currentlyVisible)
-  {
-    this->SetCumulativeFeedbackContoursVisible(false);
-  }
-
-  // First create a feedback contour to match input
-  Contour::Pointer feedbackContour = Contour::New();
-  feedbackContour->SetClosed(m_ContourClosed);
-  feedbackContour->SetWidth(m_ContourWidth);
-
-  DataNode::Pointer feedbackContourNode = DataNode::New();
-  feedbackContourNode->SetData( feedbackContour );
-  feedbackContourNode->SetProperty("name", StringProperty::New(MIDAS_CONTOUR_TOOL_CUMULATIVE_FEEDBACK_CONTOUR));
-  feedbackContourNode->SetProperty("visible", BoolProperty::New(true));
-  feedbackContourNode->SetProperty("helper object", BoolProperty::New(true));
-  feedbackContourNode->SetProperty("Width", FloatProperty::New(1));
-  this->CopyContour(feedbackContourInput, *(feedbackContour));
-
-  // Also create copy of background contour to match input
-  Contour::Pointer backgroundContour = Contour::New();
-  backgroundContour->SetClosed(m_ContourClosed);
-  backgroundContour->SetWidth(m_ContourWidth);
-
-  DataNode::Pointer backgroundContourNode = DataNode::New();
-  backgroundContourNode->SetData( backgroundContour );
-  backgroundContourNode->SetProperty("name", StringProperty::New(MIDAS_CONTOUR_TOOL_CUMULATIVE_BACKGROUND_CONTOUR));
-  backgroundContourNode->SetProperty("visible", BoolProperty::New(false));
-  backgroundContourNode->SetProperty("helper object", BoolProperty::New(true));
-  backgroundContourNode->SetProperty("Width", FloatProperty::New(1));
-  this->CopyContour(backgroundContourInput, *(backgroundContour));
-
-  m_CumulativeFeedbackContours.push_back(PairOfContours(feedbackContour, backgroundContour));
-  m_CumulativeFeedbackContoursNodes.push_back(PairOfNodes(feedbackContourNode, backgroundContourNode));
-
-  if (currentlyVisible)
-  {
-    this->SetCumulativeFeedbackContoursVisible(true);
-  }
-}
-
-void mitk::MIDASContourTool::ClearCumulativeFeedbackContours()
-{
-  this->Disable3dRenderingOfCumulativeFeedbackContours();
-
-  if ( DataStorage* storage = m_ToolManager->GetDataStorage() )
-  {
-    for (unsigned int i = 0; i < m_CumulativeFeedbackContoursNodes.size(); i++)
-    {
-      storage->Remove( m_CumulativeFeedbackContoursNodes[i].first );
-      storage->Remove( m_CumulativeFeedbackContoursNodes[i].second );
-    }
-    m_CumulativeFeedbackContoursNodes.clear();
-    m_CumulativeFeedbackContours.clear();
-  }
-}
-
-void mitk::MIDASContourTool::SetCumulativeFeedbackContoursVisible(bool visible)
-{
-  this->Disable3dRenderingOfCumulativeFeedbackContours();
-
-  if ( m_CumulativeFeedbackContoursVisible == visible )
-  {
-    return; // nothing changed
-  }
-
-  if ( DataStorage* storage = m_ToolManager->GetDataStorage() )
-  {
-    if (visible)
-    {
-      for (unsigned int i = 0; i < m_CumulativeFeedbackContoursNodes.size(); i++)
-      {
-        storage->Add( m_CumulativeFeedbackContoursNodes[i].first );
-        storage->Add( m_CumulativeFeedbackContoursNodes[i].second );
-      }
-    }
-    else
-    {
-      for (unsigned int i = 0; i < m_CumulativeFeedbackContoursNodes.size(); i++)
-      {
-        storage->Remove( m_CumulativeFeedbackContoursNodes[i].first );
-        storage->Remove( m_CumulativeFeedbackContoursNodes[i].second );
-      }
-    }
-  }
-  m_CumulativeFeedbackContoursVisible = visible;
-}
-
-void mitk::MIDASContourTool::SetCumulativeFeedbackContoursColorDefault()
-{
-  this->SetCumulativeFeedbackContoursColor(0, 1, 0);
-}
-
-void mitk::MIDASContourTool::SetCumulativeFeedbackContoursColor( float r, float g, float b )
-{
-  for (unsigned int i = 0; i < m_CumulativeFeedbackContoursNodes.size(); i++)
-  {
-    m_CumulativeFeedbackContoursNodes[i].first->SetProperty("color", ColorProperty::New(r, g, b));
-    m_CumulativeFeedbackContoursNodes[i].second->SetProperty("color", ColorProperty::New(r, g, b));
-  }
+  FeedbackContourTool::SetFeedbackContourVisible(b);
 }
 
 bool mitk::MIDASContourTool::OnMousePressed (Action* action, const StateEvent* stateEvent)
 {
   if (!FeedbackContourTool::OnMousePressed( action, stateEvent )) return false;
 
-  DataNode* workingNode( m_ToolManager->GetWorkingData(0) );
-  if (!workingNode) return false;
-
   DataNode* referenceNode( m_ToolManager->GetReferenceData(0) );
   if (!referenceNode) return false;
+
+  DataNode* workingNode( m_ToolManager->GetWorkingData(0) );
+  if (!workingNode) return false;
 
   // Store these for later, as dynamic casts are slow. HOWEVER, IT IS NOT THREAD SAFE.
   m_WorkingImage = dynamic_cast<Image*>(workingNode->GetData());
   m_WorkingImageGeometry = m_WorkingImage->GetGeometry();
-
   m_ReferenceImage = dynamic_cast<Image*>(referenceNode->GetData());
 
   return true;
-}
-
-void mitk::MIDASContourTool::Disable3dRenderingOfContour(mitk::DataNode* node)
-{
-  const RenderingManager::RenderWindowVector& renderWindows = RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
-  for (RenderingManager::RenderWindowVector::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
-  {
-    if ( mitk::BaseRenderer::GetInstance((*iter))->GetMapperID() == BaseRenderer::Standard3D )
-    {
-      node->SetProperty("visible", BoolProperty::New(false), mitk::BaseRenderer::GetInstance((*iter)));
-    }
-  }
-}
-
-void mitk::MIDASContourTool::CopyContour(mitk::Contour &a, mitk::Contour &b)
-{
-  b.Initialize();
-  mitk::Contour::PointsContainerPointer currentPoints = a.GetPoints();
-  for (unsigned long i = 0; i < currentPoints->Size(); i++)
-  {
-    b.GetPoints()->InsertElement(i, currentPoints->GetElement(i));
-  }
 }
 
 void mitk::MIDASContourTool::ConvertPointToVoxelCoordinate(
@@ -591,18 +480,124 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
   return numberOfPointsAdded;
 }
 
-void mitk::MIDASContourTool::Wipe()
+void mitk::MIDASContourTool::InitialiseContour(mitk::Contour& a, mitk::Contour& b)
 {
-  mitk::MIDASTool::Wipe();
-  if (m_BackgroundContour.IsNotNull())
+  b.SetClosed(a.GetClosed());
+  b.SetSelected(a.GetSelected());
+  b.SetWidth(a.GetWidth());
+}
+
+void mitk::MIDASContourTool::CopyContour(mitk::Contour &a, mitk::Contour &b)
+{
+  b.Initialize();
+  mitk::MIDASContourTool::InitialiseContour(a, b);
+  mitk::Contour::PointsContainerPointer currentPoints = a.GetPoints();
+  for (unsigned long i = 0; i < currentPoints->Size(); i++)
   {
-    m_BackgroundContour->Clear();
+    b.AddVertex(currentPoints->GetElement(i));
   }
-  mitk::Contour* feedbackContour = GetFeedbackContour();
-  if (feedbackContour != NULL)
+  b.UpdateOutputInformation();
+}
+
+void mitk::MIDASContourTool::CopyContourSet(mitk::ContourSet &a, mitk::ContourSet &b)
+{
+  b.Initialize();
+
+  mitk::ContourSet::ContourVectorType contourVec = a.GetContours();
+  mitk::ContourSet::ContourIterator contourIt = contourVec.begin();
+
+  unsigned int contourCounter = 0;
+  while ( contourIt != contourVec.end() )
   {
-    feedbackContour->Clear();
+    mitk::Contour::Pointer nextContour = (mitk::Contour::Pointer) (*contourIt).second;
+
+    mitk::Contour::Pointer outputContour = mitk::Contour::New();
+    mitk::MIDASContourTool::CopyContour(*(nextContour.GetPointer()), *(outputContour).GetPointer());
+
+    b.AddContour(contourCounter, outputContour);
+    contourCounter++;
+
+    ++contourIt;
   }
-  this->ClearCumulativeFeedbackContours();
+}
+
+void mitk::MIDASContourTool::AccumulateContourInWorkingData(mitk::Contour& contour, int dataSetNumber)
+{
+  assert(m_ToolManager);
+
+  mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(dataSetNumber) );
+  assert(workingNode);
+
+  mitk::ContourSet* inputContourSet = dynamic_cast<mitk::ContourSet*>(workingNode->GetData());
+  assert(inputContourSet);
+
+  mitk::ContourSet::Pointer copyOfInputContourSet = mitk::ContourSet::New();
+  mitk::MIDASContourTool::CopyContourSet(*(inputContourSet), *(copyOfInputContourSet.GetPointer()));
+
+  mitk::ContourSet::Pointer newContourSet = mitk::ContourSet::New();
+  mitk::MIDASContourTool::CopyContourSet(*(inputContourSet), *(newContourSet.GetPointer()));
+
+  mitk::Contour::Pointer copyOfInputContour = mitk::Contour::New();
+  mitk::MIDASContourTool::CopyContour(contour, *(copyOfInputContour.GetPointer()));
+
+  newContourSet->AddContour(newContourSet->GetNumberOfContours(), copyOfInputContour);
+
+  mitk::MIDASContourToolOpAccumulateContour *doOp = new mitk::MIDASContourToolOpAccumulateContour(
+      MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR,
+      true,
+      dataSetNumber,
+      newContourSet
+      );
+
+
+  mitk::MIDASContourToolOpAccumulateContour *undoOp = new mitk::MIDASContourToolOpAccumulateContour(
+      MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR,
+      false,
+      dataSetNumber,
+      copyOfInputContourSet
+      );
+
+  mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Add Contour");
+  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+  ExecuteOperation(doOp);
+}
+
+void mitk::MIDASContourTool::ExecuteOperation(Operation* operation)
+{
+  if (!operation) return;
+
+  switch (operation->GetOperationType())
+  {
+  case MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR:
+    {
+      MIDASContourToolOpAccumulateContour *op = static_cast<MIDASContourToolOpAccumulateContour*>(operation);
+      if (op != NULL)
+      {
+        assert(m_ToolManager);
+
+        int dataSetNumber = op->GetDataSetNumber();
+
+        mitk::ContourSet* newContours = op->GetContourSet();
+        assert(newContours);
+
+        mitk::ContourSet* contoursToReplace = static_cast<mitk::ContourSet*>((m_ToolManager->GetWorkingData(dataSetNumber))->GetData());
+        assert(contoursToReplace);
+
+        mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
+
+        contoursToReplace->UpdateOutputInformation();
+        contoursToReplace->Modified();
+        m_ToolManager->GetWorkingData(dataSetNumber)->Modified();
+
+        // Signal that something has happened, and that it may be worth updating.
+        ContoursHaveChanged.Send();
+      }
+    }
+  default:
+    ;
+  }
+
+  // Make sure all views everywhere get updated.
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 

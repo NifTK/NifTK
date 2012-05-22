@@ -65,6 +65,8 @@ public:
       msg = "Unknown exception";
     }
 
+    MITK_ERROR << "NiftyView: Error occured\n" << msg.toLocal8Bit().constData() << std::endl;
+
     QString text("An error occurred. You should save all data and quit the program to "
                  "prevent possible data loss.\nSee the error log for details.\n\n");
     text += msg;

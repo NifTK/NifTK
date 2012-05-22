@@ -26,41 +26,67 @@
 
 #include "niftkMitkExtExports.h"
 #include "mitkPointUtils.h"
+#include "mitkContour.h"
+#include "mitkContourSet.h"
 #include "mitkMIDASTool.h"
+#include "mitkOperation.h"
+#include "mitkOperationActor.h"
 #include "mitkExtractImageFilter.h"
+#include "mitkMessage.h"
 
 namespace mitk {
 
+class MIDASContourToolEventInterface;
+
+  /**
+   * \class MIDASContourTool
+   * \brief Provides common functionality for mitk::MIDASDrawTool and mitk::MIDASPolyTool
+   * where these two tools enable drawing lines and poly-lines around voxel edges.
+   *
+   * This class derives from mitk::FeedbackContourTool, and uses several contours to
+   * do its magic.  The base class "FeedbackContour" is the one that is visible as the tool
+   * is used. In addition, in this class we store a "BackgroundContour". The FeedbackContour
+   * goes round the edges of each voxel, and the BackgroundContour simply stores each
+   * mouse position, as each mouse event is received, and hence contains the trajectory of the
+   * mouse.
+   *
+   * \sa mitk::FeedbackContourTool
+   * \sa mitk::MIDASTool
+   * \sa mitk::MIDASDrawTool
+   * \sa mitk::MIDASPolyTool
+   */
   class NIFTKMITKEXT_EXPORT MIDASContourTool : public MIDASTool {
 
   public:
 
     mitkClassMacro(MIDASContourTool, MIDASTool);
 
-    // We store the name of the contours we create.
+    /// \brief We store the name of a property to say we are editing.
+    static const std::string EDITING_PROPERTY_NAME;
+
+    /// \brief We store the name of the background contour, which is the contour storing exact mouse position events.
     static const std::string MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR;
 
-    // We store the name of the contours we create.
-    static const std::string MIDAS_CONTOUR_TOOL_CUMULATIVE_FEEDBACK_CONTOUR;
+    /// \brief Method to enable this class to interact with the Undo/Redo framework.
+    virtual void ExecuteOperation(Operation* operation);
 
-    // We store the name of the contours we create.
-    static const std::string MIDAS_CONTOUR_TOOL_CUMULATIVE_BACKGROUND_CONTOUR;
+    /// \brief Get a pointer to the current feedback contour.
+    mitk::Contour* GetContour();
 
-    // Wipe's any tool specific data, such as contours, seed points etc.
-    virtual void Wipe();
+    /// \brief Turns the feedback contour on/off.
+    void SetFeedbackContourVisible(bool);
 
-    // Base class method that checks a few things and sets m_Image and m_Geometry.
-    virtual bool OnMousePressed (Action*, const StateEvent*);
+    /// \brief Copies contour from a to b.
+    static void CopyContour(mitk::Contour &a, mitk::Contour &b);
 
-    /// Make these typedefs available.
-    typedef std::pair<mitk::Contour::Pointer, mitk::Contour::Pointer> PairOfContours;
-    typedef std::pair<mitk::DataNode::Pointer, mitk::DataNode::Pointer> PairOfNodes;
+    /// \brief Copies contour set from a to b.
+    static void CopyContourSet(mitk::ContourSet &a, mitk::ContourSet &b);
 
-    /// Return a pointer to the cumulative contours.
-    const std::vector<PairOfContours>* GetCumulativeContours() { return &m_CumulativeFeedbackContours; }
+    /// \brief Initialises the output contour b with properties like, closed, width and selected, copied from the reference contour a.
+    static void InitialiseContour(mitk::Contour &a, mitk::Contour &b);
 
-    // We store a string of a property to say we are editing.
-    static const std::string EDITING_PROPERTY_NAME;
+    /// \brief Used to signal that the contours have changed.
+    Message<> ContoursHaveChanged;
 
   protected:
 
@@ -68,11 +94,14 @@ namespace mitk {
     MIDASContourTool(const char* type); // purposely hidden
     virtual ~MIDASContourTool(); // purposely hidden
 
-    // This method makes sure that the contour will not show up in ANY 3D viewer (thats currently registered).
-    void Disable3dRenderingOfContour(mitk::DataNode* node);
+    /// \brief Calls the FeedbackContour::OnMousePressed method, then checks for working image, reference image and geometry.
+    virtual bool OnMousePressed (Action*, const StateEvent*);
 
-    // I wrote a copy method because the assignment operator didn't appear to copy anything,
-    void CopyContour(mitk::Contour& a, mitk::Contour& b);
+    /// \brief This method makes sure that the argument node will not show up in ANY 3D viewer thats currently registered with the global mitk::RenderingManager.
+    void Disable3dRenderingOfNode(mitk::DataNode* node);
+
+    /// \brief Adds the given contour to the Working Data registered with mitk::ToolManager, where the ToolManager can have multiple data sets registered, so we add the contour to the dataset specified by dataSetNumber.
+    void AccumulateContourInWorkingData(mitk::Contour& contour, int dataSetNumber);
 
     // Utility methods for helping draw lines that require m_Geometry to be set.
     void ConvertPointToVoxelCoordinate(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInVoxelCoordinates);
@@ -99,23 +128,10 @@ namespace mitk {
     // Methods for manipulating the "BackgroundContour", which typically doesn't get drawn, but is useful for converting to image coordinates, e.g. for rendering into images for boundaries.
     Contour* GetBackgroundContour();
     void SetBackgroundContour(Contour&);
-    void Disable3dRenderingOfBackgroundContour(); // According to MITK commments, it appears there is a problem rendering contours in 3D
+    void Disable3dRenderingOfBackgroundContour();
     void SetBackgroundContourVisible(bool);
     void SetBackgroundContourColor( float r, float g, float b );
     void SetBackgroundContourColorDefault();
-
-    // Methods for manipulating the "Cumulative Contour", which increases as you draw more and more lines.
-    void AddToCumulativeFeedbackContours(mitk::Contour& feedbackContour, mitk::Contour& backgroundContour);
-    void ClearCumulativeFeedbackContours();
-    void Disable3dRenderingOfCumulativeFeedbackContours(); // According to MITK commments, it appears there is a problem rendering contours in 3D
-    void SetCumulativeFeedbackContoursVisible(bool);
-    void SetCumulativeFeedbackContoursColor( float r, float g, float b );
-    void SetCumulativeFeedbackContoursColorDefault();
-
-    // Each time a contour is finished:
-    //   (i.e. mitkMIDASPolyTool mouse clicked, or mitkMIDASDrawTool mouse released - we need a PositionEvent)
-    //   we re-calculate the image of rendered lines.
-    void UpdateImageOfRenderedContours();
 
     // We default this to 1, and use throughout.
     int m_ContourWidth;
@@ -123,7 +139,7 @@ namespace mitk {
     // We default this to false, and use throughout.
     bool m_ContourClosed;
 
-    // We default this to 0.0001, and use throughout when comparing point positions.
+    // We default this to 0.01, and use throughout when comparing point positions.
     float m_Tolerance;
 
     // This is the 3D geometry associated with the m_WorkingImage
@@ -140,15 +156,13 @@ namespace mitk {
     mitk::DataNode::Pointer m_BackgroundContourNode;
     bool                    m_BackgroundContourVisible;
 
-    // We also keep matched pairs of:
-    //   FeedBack contours, which actually get drawn, and go round voxel edge.
-    //   Background contours, which don't get drawn, but go in straight line.
-    // we have cumulative contours, which are a vector of contours.
-    bool                           m_CumulativeFeedbackContoursVisible;
-    std::vector<PairOfContours>    m_CumulativeFeedbackContours;
-    std::vector<PairOfNodes>       m_CumulativeFeedbackContoursNodes;
-
   private:
+
+    // Operation constant, used in Undo/Redo framework.
+    static const mitk::OperationType MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR;
+
+    /// \brief Pointer to interface object, used as callback in Undo/Redo framework
+    MIDASContourToolEventInterface *m_Interface;
 
   };//class
 

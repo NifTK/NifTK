@@ -27,12 +27,27 @@
 #include "niftkMitkExtExports.h"
 #include "mitkMIDASContourTool.h"
 #include "mitkPointSet.h"
+#include "mitkOperation.h"
+#include "mitkOperationActor.h"
 
 namespace mitk {
 
+class MIDASPolyToolEventInterface;
+
   /**
    * \class MIDASPolyTool
-   * \brief Tool to draw poly lines around voxel edges rather than through them.
+   * \brief Tool to draw poly lines around voxel edges like MIDAS does rather than through them as most of the MITK tools do.
+   *
+   * Provides
+   * <pre>
+   * 1. Left mouse button = place marker for poly line
+   * 2. Middle mouse button = select nearest marker point
+   * 3. Move with middle mouse button down = move/drag the marker point selected in step 2.
+   * </pre>
+   * and includes Undo/Redo functionality. The poly lines keep going until the tool is deselected.
+   * When the tool is deselected, the poly line is copied to the mitk::ToolManagers WorkingData, specifically dataset 2,
+   * which should be the mitk::ContourSet representing the current set of contours in the gui, which in MIDAS terms
+   * is the green lines representing the current segmentation.
    */
   class NIFTKMITKEXT_EXPORT MIDASPolyTool : public MIDASContourTool {
 
@@ -41,31 +56,37 @@ namespace mitk {
     mitkClassMacro(MIDASPolyTool, Tool);
     itkNewMacro(MIDASPolyTool);
 
+    /// \see mitk::Tool::GetName()
     virtual const char* GetName() const;
+
+    /// \see mitk::Tool::GetXPM()
     virtual const char** GetXPM() const;
 
-    // We store the name of the anchor points data object.
+    /// \brief We store the name of the anchor points node, which is used to store the first point on a poly line.
     static const std::string MIDAS_POLY_TOOL_ANCHOR_POINTS;
 
-    // We store the name of the previous contour (the one displayed when moving the poly line).
+    /// \brief We store the name of the previous contour node, which is the contour display in green when middle-click dragging the poly line.
     static const std::string MIDAS_POLY_TOOL_PREVIOUS_CONTOUR;
 
-    // When called, we initialize contours, as the PolyLine keeps going until the whole tool is Activated/Deactivated.
+    /// \brief Method to enable this class to interact with the Undo/Redo framework.
+    virtual void ExecuteOperation(Operation* operation);
+
+    /// \brief When called, we initialize contours, as the PolyLine keeps going until the whole tool is Activated/Deactivated.
     virtual void Activated();
 
-    // When called, add the current poly line to the cumulative contours.
+    /// \brief When called, add the current poly line to the node specified by mitk::MIDASTool::CURRENT_CONTOURS_NAME.
     virtual void Deactivated();
 
-    // When called, we incrementally build up a poly line.
+    /// \brief When called, we incrementally build up a poly line.
     virtual bool OnLeftMousePressed(Action* action, const StateEvent* stateEvent);
 
-    // When called, we select the closest point in poly line, ready to move it.
+    /// \brief When called, we select the closest point in poly line, ready to move it.
     virtual bool OnMiddleMousePressed(Action* action, const StateEvent* stateEvent);
 
-    // When called, we move the selected point and hence move the poly line.
+    /// \brief When called, we move the selected point and hence move the poly line.
     virtual bool OnMiddleMousePressedAndMoved(Action* action, const StateEvent* stateEvent);
 
-    // When called, we release the selected point and hence stop moving the poly line.
+    /// \brief When called, we release the selected point and hence stop moving the poly line.
     virtual bool OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent);
 
   protected:
@@ -75,33 +96,50 @@ namespace mitk {
 
   private:
 
+    /// \brief Sets the m_PolyLinePointSet to be visible/invisible.
     void SetPolyLinePointSetVisible(bool visible);
-    void SetPreviousContourVisible(bool visible);
-    void Disable3dRenderingOfPreviousContour();
-    void DrawWholeContour(const mitk::Contour& contourReferencePointsInput, const PlaneGeometry& planeGeometry, mitk::Contour& feedbackContour, mitk::Contour& backgroundContour);
-    void UpdateFeedbackContour(const mitk::Point3D& closestCornerPoint, const PlaneGeometry& planeGeometry, mitk::Contour& contourReferencePointsInput, mitk::Contour& feedbackContour, mitk::Contour& backgroundContour);
-    void UpdateContours(Action* action, const StateEvent* stateEvent);
 
-    // We use this to store the last point between mouse clicks.
+    /// \brief Sets whether the m_PreviousContour is visible/invisible.
+    void SetPreviousContourVisible(bool visible);
+
+    /// \brief Makes sure the previous contour is not rendered in any 3D window.
+    void Disable3dRenderingOfPreviousContour();
+
+    /// \brief Takes the contourReferencePointsInput and planeGeometry, and if there are >1 points in the contour, generates new feedbackContour and backgroundContour by calling mitk::MIDASContourTool::DrawLineAroundVoxelEdges.
+    void DrawWholeContour(const mitk::Contour& contourReferencePointsInput, const PlaneGeometry& planeGeometry, mitk::Contour& feedbackContour, mitk::Contour& backgroundContour);
+
+    /// \brief Called from UpdateContours, takes the given point and geometry, and the existing contour (poly line), and calculates the closest point in the current contourReferencePointsInput, sets it to the closestCornerPoint and redraws the feedbackContour and backgroundContour by calling DrawWholeContour.
+    void UpdateFeedbackContour(const mitk::Point3D& closestCornerPoint, const PlaneGeometry& planeGeometry, mitk::Contour& contourReferencePointsInput, mitk::Contour& feedbackContour, mitk::Contour& backgroundContour, bool provideUndo);
+
+    /// \brief Called from OnMiddleMousePressed and OnMiddleMousePressedAndMoved, used to draw the previous contour in green, and the current contour (which is being dragged by the mouse with the middle click) in yellow.
+    void UpdateContours(Action* action, const StateEvent* stateEvent, bool provideUndo);
+
+    /// \brief We use this to store the last point between mouse clicks.
     mitk::Point3D m_MostRecentPointInMillimetres;
 
-    // Reference points are contours containing just the nodes that were clicked.
-    // i.e. they represent the control points that define the poly line.
+    /// \brief Reference points are points containing just the nodes that were clicked.
     mitk::Contour::Pointer m_ReferencePoints;
+
+    /// \brief When we middle-click-and-drag, we need to remember where the previous line was, so we can draw it in green.
     mitk::Contour::Pointer m_PreviousContourReferencePoints;
 
-    // Use this point set to render a single seed position, for the start of the current contour.
+    /// \brief When user moves the contour, we give interactive feedback of
+    /// the "Current" contour in yellow, and the "Previous" contour in green.
+    mitk::Contour::Pointer  m_PreviousContour;
+    mitk::DataNode::Pointer m_PreviousContourNode;
+    bool                    m_PreviousContourVisible;
+
+    /// \brief Use this point set to render a single seed position as a cross, for the start of the current contour.
     mitk::PointSet::Pointer m_PolyLinePointSet;
     mitk::DataNode::Pointer m_PolyLinePointSetNode;
     bool                    m_PolyLinePointSetVisible;
 
-    // When user moves the contour, we give interactive feedback of
-    // the "Current" contour in yellow, and the "Previous" contour in green.
-    // This flag controls whether the previous contour is visible,
-    // and the data node is used to add it to the data manager.
-    mitk::Contour::Pointer  m_PreviousContour;
-    mitk::DataNode::Pointer m_PreviousContourNode;
-    bool                    m_PreviousContourVisible;
+    /// \brief Operation constant, used in Undo/Redo framework.
+    static const mitk::OperationType MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR;
+    static const mitk::OperationType MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR;
+
+    /// \brief Pointer to interface object, used as callback in Undo/Redo framework
+    MIDASPolyToolEventInterface *m_Interface;
 
   };//class
 

@@ -25,11 +25,13 @@
 #include "mitkMIDASTool.h"
 #include "mitkToolManager.h"
 #include "mitkGlobalInteraction.h"
+#include "itkCommand.h"
 
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
-const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = std::string("MIDAS_REGION_GROWING");
-const std::string mitk::MIDASTool::SEE_PRIOR_IMAGE_NAME = std::string("MIDAS_SEE_PRIOR");
-const std::string mitk::MIDASTool::SEE_NEXT_IMAGE_NAME = std::string("MIDAS_SEE_NEXT");
+const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
+const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = std::string("MIDAS_PRIOR_CONTOURS");
+const std::string mitk::MIDASTool::NEXT_CONTOURS_NAME = std::string("MIDAS_NEXT_CONTOURS");
+const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = std::string("MIDAS_REGION_GROWING_IMAGE");
 
 mitk::MIDASTool::~MIDASTool()
 {
@@ -40,7 +42,7 @@ mitk::MIDASTool::MIDASTool(const char* type) :
     FeedbackContourTool(type),
     m_AddToPointSetInteractor(NULL)
 {
-
+  m_IsActivated = false;
 }
 
 const char* mitk::MIDASTool::GetGroup() const
@@ -51,21 +53,31 @@ const char* mitk::MIDASTool::GetGroup() const
 void mitk::MIDASTool::Deactivated()
 {
   Superclass::Deactivated();
+  m_IsActivated = false;
 
   if (m_AddToPointSetInteractor.IsNotNull())
   {
     mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
   }
 
+  mitk::PointSet* pointSet = NULL;
+  mitk::DataNode* pointSetNode = NULL;
+
+  this->FindPointSet(pointSet, pointSetNode);
+
+  if (pointSet != NULL)
+  {
+    pointSet->RemoveObserver(m_SeedsChangedTag);
+  }
 }
 
 void mitk::MIDASTool::Activated()
 {
   Superclass::Activated();
+  m_IsActivated = true;
 
   mitk::PointSet* pointSet = NULL;
   mitk::DataNode* pointSetNode = NULL;
-
   this->FindPointSet(pointSet, pointSetNode);
 
   // Additionally create an interactor to add points to the point set.
@@ -76,6 +88,13 @@ void mitk::MIDASTool::Activated()
       m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
     }
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
+
+    itk::SimpleMemberCommand<mitk::MIDASTool>::Pointer onSeedsModifiedCommand =
+      itk::SimpleMemberCommand<mitk::MIDASTool>::New();
+    onSeedsModifiedCommand->SetCallbackFunction( this, &mitk::MIDASTool::OnSeedsModified );
+    m_SeedsChangedTag = pointSet->AddObserver(itk::ModifiedEvent(), onSeedsModifiedCommand);
+
+    m_LastSeenNumberOfSeeds = pointSet->GetSize();
   }
 }
 
@@ -117,25 +136,37 @@ void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& p
   } // end if working data exists
 }
 
-void mitk::MIDASTool::Wipe()
-{
-  mitk::PointSet* pointSet = NULL;
-  mitk::DataNode* pointSetNode = NULL;
-
-  this->FindPointSet(pointSet, pointSetNode);
-
-  if (pointSet != NULL && pointSetNode != NULL)
-  {
-    pointSet->Clear();
-  }
-}
-
-void mitk::MIDASTool::UpdateWorkingImageBooleanProperty(int workingImageNumber, std::string name, bool value)
+void mitk::MIDASTool::UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value)
 {
   assert(m_ToolManager);
 
-  DataNode* workingNode( m_ToolManager->GetWorkingData(workingImageNumber) );
+  mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(workingDataNodeNumber) );
   assert(workingNode);
 
   workingNode->ReplaceProperty(name.c_str(), mitk::BoolProperty::New(value));
+}
+
+void mitk::MIDASTool::OnSeedsModified()
+{
+  if (m_IsActivated)
+  {
+    mitk::PointSet* pointSet = NULL;
+    mitk::DataNode* pointSetNode = NULL;
+    this->FindPointSet(pointSet, pointSetNode);
+
+    if (pointSet != NULL)
+    {
+      if (pointSet->GetSize() != m_LastSeenNumberOfSeeds)
+      {
+        m_LastSeenNumberOfSeeds = pointSet->GetSize();
+        this->OnNumberOfSeedsChanged(pointSet->GetSize());
+      }
+    }
+  }
+
+}
+
+void mitk::MIDASTool::OnNumberOfSeedsChanged(int numberOfSeeds)
+{
+  NumberOfSeedsHasChanged.Send(numberOfSeeds);
 }

@@ -25,18 +25,27 @@
 #ifndef _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
 #define _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
 
+#include "MIDASGeneralSegmentorViewHelper.h"
+#include "itkImageRegionIterator.h"
+#include "itkImage.h"
+
 template<typename TPixel, unsigned int VImageDimension>
 GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::GeneralSegmentorPipeline()
 {
-  m_SliceNumber = 0;
+  m_SliceNumber = -1;
   m_AxisNumber = -1;
-  m_Orientation = itk::ORIENTATION_UNKNOWN;
   m_LowerThreshold = 0;
   m_UpperThreshold = 0;
-  m_RegionGrowingProcessor = MIDASRegionGrowingProcessorType::New();
   m_AllSeeds = PointSetType::New();
-  m_AllContours = PointSetType::New();
+  m_AllContours.clear(); // STL vector of smart pointers to contours.
+  m_UseOutput = true;
+  m_OutputImage = NULL;
+  m_ExtractRegionOfInterestFilter = ExtractGreySliceFromGreyImageFilterType::New();
+  m_CastToBinaryFilter = CastGreySliceToSegmentationSliceFilterType::New();
+  m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
+  m_RegionGrowingFilter->SetBackgroundValue(0);
+  m_RegionGrowingFilter->SetForegroundValue(255);
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -44,37 +53,10 @@ void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetParam(GeneralSegmentorPipelineParams& p)
 {
-  if (p.m_SliceNumber != m_SliceNumber || p.m_Orientation != m_AxisNumber || p.m_Orientation != m_Orientation)
-  {
-    RegionType region3D = m_RegionGrowingProcessor->GetGreyScaleImage()->GetLargestPossibleRegion();
-    SizeType   sliceSize3D = region3D.GetSize();
-    IndexType  sliceIndex3D = region3D.GetIndex();
-
-    sliceSize3D[p.m_AxisNumber] = 1;
-    sliceIndex3D[p.m_AxisNumber] = p.m_SliceNumber;
-
-    region3D.SetSize(sliceSize3D);
-    region3D.SetIndex(sliceIndex3D);
-
-    m_RegionGrowingProcessor->SetRegionOfInterest(region3D);
-    m_RegionGrowingProcessor->SetSliceNumber(p.m_SliceNumber);
-    m_RegionGrowingProcessor->SetOrientation(p.m_Orientation);
-    m_SliceNumber = p.m_SliceNumber;
-    m_AxisNumber = p.m_AxisNumber;
-    m_Orientation = p.m_Orientation;
-  }
-
-  if (p.m_LowerThreshold != m_LowerThreshold)
-  {
-    m_RegionGrowingProcessor->SetLowerThreshold(p.m_LowerThreshold);
-    m_LowerThreshold = p.m_LowerThreshold;
-  }
-
-  if (p.m_UpperThreshold != m_UpperThreshold)
-  {
-    m_RegionGrowingProcessor->SetUpperThreshold(p.m_UpperThreshold);
-    m_UpperThreshold = p.m_UpperThreshold;
-  }
+  m_SliceNumber = p.m_SliceNumber;
+  m_AxisNumber = p.m_AxisNumber;
+  m_LowerThreshold = p.m_LowerThreshold;
+  m_UpperThreshold = p.m_UpperThreshold;
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -84,24 +66,100 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 {
   try
   {
-    // Note that from an implementation perspective, don't forget the following :-)
-    // 1. List of seeds may be empty.
-    // 2. DrawTool and PolyTool and any other future tool may have zero contours.
+    // 1. Work out the single slice region of interest.
+    RegionType region3D = m_ExtractRegionOfInterestFilter->GetInput()->GetLargestPossibleRegion();
+    SizeType sliceSize3D = region3D.GetSize();
+    IndexType sliceIndex3D = region3D.GetIndex();
 
-    // 1. Clear points
+    sliceSize3D[m_AxisNumber] = 1;
+    sliceIndex3D[m_AxisNumber] = m_SliceNumber;
+
+    region3D.SetSize(sliceSize3D);
+    region3D.SetIndex(sliceIndex3D);
+
+    // 2. Clear internal point/contour buffers.
     m_AllSeeds->GetPoints()->Initialize();
-    m_AllContours->GetPoints()->Initialize();
+    m_AllContours.clear();
 
-    // 2. Convert seeds and contours to ITK PointSets.
-    ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);
-    ConvertMITKContoursFromAllToolsAndAppendToITKPoints(params, m_AllContours);
+    // 3. Convert seeds to ITK PointSets and contours to ITK PolyLineParametricPaths.
+    //  - this pipeline uses 2D slices, so we never need to have seeds outside region.
+    ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);  // This copies MITK seeds to ITK seeds, but there should not be too many of them.
+    ConvertMITKContoursAndAppendToITKContours(params, m_AllContours); // This copies pointers to contours, so should not be too slow.
 
-    // 3. Hook up the ITK PointSets. Images (Greyscale, Destination) should already be set in the main InvokeITKPipeline method.
-    m_RegionGrowingProcessor->SetSeeds(m_AllSeeds);
-    m_RegionGrowingProcessor->SetContours(m_AllContours);
+    // 4. Update the pipeline so far to get output slice that we can draw onto.
+    m_ExtractRegionOfInterestFilter->SetExtractionRegion(region3D);
+    m_ExtractRegionOfInterestFilter->UpdateLargestPossibleRegion();    
+    m_CastToBinaryFilter->SetInput(m_ExtractRegionOfInterestFilter->GetOutput());
+    m_CastToBinaryFilter->UpdateLargestPossibleRegion();
+    
+    // 5. Render the contours into the contours image.
+    m_CastToBinaryFilter->GetOutput()->FillBuffer(0);
+    
+    IndexType voxelIndex;
+    ContinuousIndexType continuousIndex;
+    ParametricPathVertexType vertex;
+    
+    if (m_AllContours.size() > 0)
+    {
+      // Basically, we need to draw all contours into image.
+      // Each contour is a set of points that run "between" voxels.
+      // (i.e. at exactly the half way point between voxels).
+      // So we need to paint either side of the contour line.
 
-    // 4. Go.
-    m_RegionGrowingProcessor->Execute();
+      for (unsigned int j = 0; j < m_AllContours.size(); j++)
+      {
+        ParametricPathPointer path = m_AllContours[j];
+        const ParametricPathVertexListType* list = path->GetVertexList();
+
+        for (unsigned int k = 0; k < list->Size(); k++)
+        {
+          vertex = list->ElementAt(k);            
+          m_CastToBinaryFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
+            
+          for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
+          {
+            voxelIndex[a] = continuousIndex[a];
+          }
+            
+          IndexType  paintingRegionIndex = voxelIndex;
+          SizeType   paintingRegionSize;
+          paintingRegionSize.Fill(2);
+          paintingRegionSize[m_AxisNumber] = 1;
+            
+          RegionType paintingRegion;
+          paintingRegion.SetSize(paintingRegionSize);
+          paintingRegion.SetIndex(paintingRegionIndex);
+
+          itk::ImageRegionIterator<SegmentationImageType> iterator(m_CastToBinaryFilter->GetOutput(), paintingRegion);
+          for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+          {
+            iterator.Set(255);
+          }
+        } // end for k 
+      } // end for j
+    } // end if we have some contours.
+     
+    // 6. Update Region growing.
+    m_RegionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
+    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);     
+    m_RegionGrowingFilter->SetRegionOfInterest(region3D);
+    m_RegionGrowingFilter->SetUseRegionOfInterest(true);
+    m_RegionGrowingFilter->SetProjectSeedsIntoRegion(false);
+    m_RegionGrowingFilter->SetInput(m_ExtractRegionOfInterestFilter->GetOutput());
+    m_RegionGrowingFilter->SetContourImage(m_CastToBinaryFilter->GetOutput());
+    m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
+    m_RegionGrowingFilter->UpdateLargestPossibleRegion();
+    
+    // 7. Paste it back into output image. This will crash if m_OutputImage is not set.
+    if (m_UseOutput && m_OutputImage != NULL)
+    {
+      itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_RegionGrowingFilter->GetOutput(), region3D);
+      itk::ImageRegionIterator<SegmentationImageType> outputIter(m_OutputImage, region3D);
+      for (regionGrowingIter.GoToBegin(), outputIter.GoToBegin(); !regionGrowingIter.IsAtEnd(); ++regionGrowingIter, ++outputIter)
+      {
+        outputIter.Set(regionGrowingIter.Get());
+      }
+    }
   }
   catch( itk::ExceptionObject & err )
   {

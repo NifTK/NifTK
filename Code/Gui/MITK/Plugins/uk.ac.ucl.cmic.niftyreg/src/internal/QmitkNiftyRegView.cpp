@@ -50,5 +50,4 @@ void QmitkNiftyRegView::CreateQtPartControl(QWidget *parent)
 
 void QmitkNiftyRegView::SetFocus()
 {
-  m_Controls.m_SourceImageComboBox->setFocus();
 }

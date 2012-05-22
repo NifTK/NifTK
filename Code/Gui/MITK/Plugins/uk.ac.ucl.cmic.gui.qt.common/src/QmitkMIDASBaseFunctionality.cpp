@@ -33,14 +33,18 @@
 #include "mitkDataStorageEditorInput.h"
 #include "mitkIDataStorageReference.h"
 #include "mitkIDataStorageService.h"
+#include "mitkIRenderWindowPart.h"
 
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewEditor.h"
 #include "QmitkStdMultiWidget.h"
 #include "QmitkStdMultiWidgetEditor.h"
+#include "QmitkRenderWindow.h"
 
 QmitkMIDASBaseFunctionality::QmitkMIDASBaseFunctionality()
 : m_Parent(NULL)
+, m_IsActivated(false)
+, m_IsVisible(false)
 , m_MITKWidget(NULL)
 , m_MIDASWidget(NULL)
 {
@@ -63,9 +67,18 @@ QmitkMIDASMultiViewWidget* QmitkMIDASBaseFunctionality::GetActiveMIDASMultiViewW
   {
     QmitkMIDASMultiViewWidget* activeMIDASMultiViewWidget = 0;
 
-    berry::IEditorInput::Pointer dsInput(new mitk::MIDASDataStorageEditorInput(this->GetDataStorageReference()));
-    berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, QmitkMIDASMultiViewEditor::EDITOR_ID, false, berry::IWorkbenchPage::MATCH_ID);
+    berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->GetActiveEditor();
     assert(editor);
+
+    if (editor.Cast<QmitkMIDASMultiViewEditor>() == NULL)
+    {
+      // This has the side-effect of switching editors when we don't want to.
+      berry::IEditorInput::Pointer dsInput(new mitk::MIDASDataStorageEditorInput(this->GetDataStorageReference()));
+      editor = this->GetSite()->GetPage()->OpenEditor(dsInput, QmitkMIDASMultiViewEditor::EDITOR_ID, false, berry::IWorkbenchPage::MATCH_ID);
+
+      // So this should switch it back.
+      this->GetSite()->GetPage()->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", true, berry::IWorkbenchPage::MATCH_ID);
+    }
 
     activeMIDASMultiViewWidget = editor.Cast<QmitkMIDASMultiViewEditor>()->GetMIDASMultiViewWidget();
     assert(activeMIDASMultiViewWidget);
@@ -81,9 +94,18 @@ QmitkStdMultiWidget* QmitkMIDASBaseFunctionality::GetActiveStdMultiWidget()
   {
     QmitkStdMultiWidget *activeMultiWidget = 0;
 
-    berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(this->GetDataStorageReference()));
-    berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
+    berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->GetActiveEditor();
     assert(editor);
+
+    if (editor.Cast<QmitkStdMultiWidgetEditor>() == NULL)
+    {
+      // This has the side-effect of switching editors when we don't want to.
+      berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(this->GetDataStorageReference()));
+      editor = this->GetSite()->GetPage()->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
+
+      // So this should switch it back.
+      this->GetSite()->GetPage()->OpenEditor(dsInput, QmitkMIDASMultiViewEditor::EDITOR_ID, true, berry::IWorkbenchPage::MATCH_ID);
+    }
 
     activeMultiWidget = editor.Cast<QmitkStdMultiWidgetEditor>()->GetStdMultiWidget();
     assert(activeMultiWidget);
@@ -91,4 +113,54 @@ QmitkStdMultiWidget* QmitkMIDASBaseFunctionality::GetActiveStdMultiWidget()
     m_MITKWidget = activeMultiWidget;
   }
   return m_MITKWidget;
+}
+
+mitk::SliceNavigationController::Pointer QmitkMIDASBaseFunctionality::GetSliceNavigationController()
+{
+  mitk::SliceNavigationController::Pointer result = NULL;
+
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  if (renderWindowPart != NULL)
+  {
+    QmitkRenderWindow *renderWindow = renderWindowPart->GetActiveRenderWindow();
+    if (renderWindow != NULL)
+    {
+      result = renderWindow->GetSliceNavigationController();
+    }
+  }
+  return result;
+}
+
+int QmitkMIDASBaseFunctionality::GetSliceNumberFromSliceNavigationController()
+{
+  int sliceNumber = -1;
+  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
+  if (snc.IsNotNull())
+  {
+    sliceNumber = snc->GetSlice()->GetPos();
+  }
+  return sliceNumber;
+}
+
+void QmitkMIDASBaseFunctionality::Activated()
+{
+  m_IsActivated = true;
+}
+
+void QmitkMIDASBaseFunctionality::Deactivated()
+{
+  m_IsActivated = false;
+  MITK_INFO << "TODO, QmitkMIDASBaseFunctionality::Deactivated()" << std::endl;
+}
+
+void QmitkMIDASBaseFunctionality::Visible()
+{
+  m_IsVisible = true;
+  MITK_INFO << "TODO, QmitkMIDASBaseFunctionality::Visible()" << std::endl;
+}
+
+void QmitkMIDASBaseFunctionality::Hidden()
+{
+  m_IsVisible = false;
+  MITK_INFO << "TODO, QmitkMIDASBaseFunctionality::Hidden()" << std::endl;
 }

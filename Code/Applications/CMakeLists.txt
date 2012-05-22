@@ -400,9 +400,13 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   TARGET_LINK_LIBRARIES(niftkMTPDbc ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkMTPDbc RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   
-   ADD_EXECUTABLE(niftkConvertNiftiVectorImage niftkConvertNiftiVectorImage.cxx )
-   TARGET_LINK_LIBRARIES(niftkConvertNiftiVectorImage ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} )
-   INSTALL(TARGETS niftkConvertNiftiVectorImage RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  ADD_EXECUTABLE(niftkConvertNiftiVectorImage niftkConvertNiftiVectorImage.cxx )
+  TARGET_LINK_LIBRARIES(niftkConvertNiftiVectorImage ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkConvertNiftiVectorImage RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  
+  ADD_EXECUTABLE(niftkContourExtractor2DImageFilter niftkContourExtractor2DImageFilter.cxx )
+  TARGET_LINK_LIBRARIES(niftkContourExtractor2DImageFilter ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkContourExtractor2DImageFilter RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   
   ##############################################################
   # Other command line applications, that require VTK.

@@ -258,6 +258,8 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
       || name.find("MIDASContourTool") != std::string::npos
       || name.find(mitk::MIDASTool::SEED_POINT_SET_NAME) != std::string::npos
       || name.find(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME) != std::string::npos
+      || name.find(mitk::MIDASTool::PRIOR_CONTOURS_NAME) != std::string::npos
+      || name.find(mitk::MIDASTool::NEXT_CONTOURS_NAME) != std::string::npos
       || name.find("Paintbrush_Node") != std::string::npos
       )
   {

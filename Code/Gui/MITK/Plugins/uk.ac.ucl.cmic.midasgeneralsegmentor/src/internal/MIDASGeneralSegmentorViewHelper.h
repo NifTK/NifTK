@@ -25,16 +25,22 @@
 #ifndef _MIDASGENERALSEGMENTORVIEWHELPER_H_INCLUDED
 #define _MIDASGENERALSEGMENTORVIEWHELPER_H_INCLUDED
 
-#include "mitkPointSet.h"
-#include "mitkMIDASContourTool.h"
 #include "itkPointSet.h"
+#include "itkPolyLineParametricPath.h"
+#include "mitkPointSet.h"
+#include "mitkContourSet.h"
+
 #include "itkMIDASHelper.h"
 
 /** Typedefs that we use for this plugin. */
-typedef itk::PointSet<float, 3> PointSetType;
-typedef PointSetType::Pointer   PointSetPointer;
-typedef PointSetType::PointType PointSetPointType;
-typedef PointSetType::PixelType PointSetPixelType;
+typedef itk::PointSet<float, 3>      PointSetType;
+typedef PointSetType::Pointer        PointSetPointer;
+typedef PointSetType::PointType      PointSetPointType;
+typedef itk::PolyLineParametricPath<3>     ParametricPathType;
+typedef ParametricPathType::Pointer        ParametricPathPointer;
+typedef std::vector<ParametricPathPointer> ParametricPathVectorType;
+typedef ParametricPathType::VertexListType ParametricPathVertexListType;
+typedef ParametricPathType::VertexType     ParametricPathVertexType;
 
 /**
  * \class GeneralSegmentorPipelineParams
@@ -47,20 +53,20 @@ struct GeneralSegmentorPipelineParams
   int m_AxisNumber;
   double m_LowerThreshold;
   double m_UpperThreshold;
-  itk::ORIENTATION_ENUM m_Orientation;
-  mitk::MIDASContourTool *m_PolyTool;
-  mitk::MIDASContourTool *m_DrawTool;
   mitk::PointSet *m_Seeds;
+  mitk::ContourSet *m_GreenContours;
+  mitk::ContourSet *m_YellowContours;
+
 };
 
 /** Converts Points from MITK to ITK. */
 void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points);
 
 /** Convert contours contained in a mitk::MIDASContourTool into ITK points. */
-void ConvertMITKContoursFromOneToolAndAppendToITKPoints(mitk::MIDASContourTool *tool, PointSetType* points);
+void ConvertMITKContoursAndAppendToITKContours(mitk::ContourSet *contourSet, ParametricPathVectorType& contours);
 
 /** Convert all contours for a pipeline into ITK points. */
-void ConvertMITKContoursFromAllToolsAndAppendToITKPoints(GeneralSegmentorPipelineParams &params, PointSetType* points);
+void ConvertMITKContoursAndAppendToITKContours(GeneralSegmentorPipelineParams &params, ParametricPathVectorType& contours);
 
 #endif
 

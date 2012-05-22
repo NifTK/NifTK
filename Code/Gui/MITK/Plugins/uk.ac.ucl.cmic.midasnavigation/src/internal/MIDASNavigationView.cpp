@@ -102,7 +102,6 @@ void MIDASNavigationView::CreateQtPartControl( QWidget *parent )
 
 void MIDASNavigationView::SetFocus()
 {
-  m_NavigationViewControls->m_MIDASSlidersWidget->m_SliceSelectionWidget->setFocus();
 }
 
 void MIDASNavigationView::OnAxialRadioButtonToggled(bool isToggled)

@@ -1,9 +1,16 @@
 set(CPP_FILES
   Interactions/mitkPointUtils.cpp
   Interactions/mitkMIDASTool.cpp
+  Interactions/mitkMIDASContourToolEventInterface.cpp
+  Interactions/mitkMIDASContourToolOpAccumulateContour.cpp
   Interactions/mitkMIDASContourTool.cpp
+  Interactions/mitkMIDASDrawToolEventInterface.cpp
+  Interactions/mitkMIDASDrawToolOpEraseContour.cpp
   Interactions/mitkMIDASDrawTool.cpp
   Interactions/mitkMIDASPointSetInteractor.cpp
+  Interactions/mitkMIDASPolyToolEventInterface.cpp
+  Interactions/mitkMIDASPolyToolOpAddToFeedbackContour.cpp
+  Interactions/mitkMIDASPolyToolOpUpdateFeedbackContour.cpp
   Interactions/mitkMIDASPolyTool.cpp
   Interactions/mitkMIDASSeedTool.cpp
   Interactions/mitkMIDASPosnTool.cpp

@@ -171,7 +171,6 @@ void ImageLookupTablesView::CreateConnections()
 
 void ImageLookupTablesView::SetFocus()
 {
-  m_Controls->m_MaxSlider->setFocus();
 }
 
 void ImageLookupTablesView::LevelWindowChanged()
