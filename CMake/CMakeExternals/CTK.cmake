@@ -37,25 +37,29 @@ ENDIF()
 IF(QT_FOUND)
 
   SET(proj CTK)
-  SET(proj_DEPENDENCIES VTK ITK)
+  SET(proj_DEPENDENCIES VTK ITK DCMTK)
   SET(CTK_DEPENDS ${proj})
   
   IF(NOT DEFINED CTK_DIR)
   
-      SET(revision_tag 6925794b)
+      SET(revision_tag 70c0a8d3)
       IF(${proj}_REVISION_TAG)
         SET(revision_tag ${${proj}_REVISION_TAG})
       ENDIF()
       
       ExternalProject_Add(${proj}
-      GIT_REPOSITORY ${GIT_PROTOCOL}://github.com/commontk/CTK.git
-      GIT_TAG ${revision_tag}
+      SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
       BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      GIT_REPOSITORY ${GIT_PROTOCOL}:${NIFTK_LOCATION_CTK}
+      GIT_TAG ${revision_tag}
+      URL_MD5 a3130b2c3e7a1d320740938f61b65840
       UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DDCMTK_DIR:PATH=${DCMTK_DIR}        
         -DDESIRED_QT_VERSION:STRING=4
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}

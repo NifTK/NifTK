@@ -45,13 +45,13 @@ IF(NOT DEFINED ITK_DIR)
   ENDIF()
   
   IF(GDCM_IS_2_0_18)
-    IF(NIFTK_ITK_VERSION_IN_SUPERBUILD MATCHES "3.20.1")
+    IF(NIFTK_VERSION_ITK MATCHES "3.20.1")
       SET(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-3.20.cmake)
     ENDIF()
   ENDIF()
   
   ExternalProject_Add(${proj}
-     URL http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_ITK_VERSION_IN_SUPERBUILD}.tar.gz
+     URL ${NIFTK_LOCATION_ITK} 
      BINARY_DIR ${proj}-build
      INSTALL_COMMAND ""
      PATCH_COMMAND ${ITK_PATCH_COMMAND}

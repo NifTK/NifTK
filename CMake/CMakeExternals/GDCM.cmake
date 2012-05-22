@@ -38,11 +38,10 @@ ENDIF()
 SET(proj GDCM)
 SET(proj_DEPENDENCIES )
 SET(GDCM_DEPENDS ${proj})
-SET(GDCM_VERSION 2.0.18)
 
 IF(NOT DEFINED GDCM_DIR)
   ExternalProject_Add(${proj}
-     URL http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${GDCM_VERSION}.tar.gz
+     URL ${NIFTK_LOCATION_GDCM}
      BINARY_DIR ${proj}-build
      INSTALL_COMMAND ""
      PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-2.0.18.cmake

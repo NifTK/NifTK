@@ -48,7 +48,7 @@ IF(NOT DEFINED VTK_DIR)
   ENDIF(MINGW)
 
   ExternalProject_Add(${proj}
-    URL http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${VTK_VERSION}.tar.gz
+    URL ${NIFTK_LOCATION_VTK}
     BINARY_DIR ${proj}-build
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}

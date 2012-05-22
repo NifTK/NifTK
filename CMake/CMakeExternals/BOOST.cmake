@@ -36,7 +36,6 @@ SET(proj BOOST)
 SET(proj_DEPENDENCIES )
 SET(proj_INSTALL ${EP_BASE}/Install/${proj})
 SET(BOOST_DEPENDS ${proj})
-SET(BOOST_VERSION 1.46.1)
 
 IF(NOT DEFINED BOOST_ROOT)
 
@@ -98,7 +97,7 @@ IF(NOT DEFINED BOOST_ROOT)
   ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
 
   ExternalProject_Add(${proj}
-    URL http://cmic.cs.ucl.ac.uk/platform/dependencies/boost-${BOOST_VERSION}.tar.gz
+    URL ${NIFTK_LOCATION_BOOST}
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -119,8 +118,8 @@ IF(NOT DEFINED BOOST_ROOT)
     SET(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
     SET(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
   ELSE(WIN32)
-    SET(BOOST_INCLUDEDIR "${BOOST_ROOT}/include/boost-${BOOST_VERSION}")
-    SET(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib/boost-${BOOST_VERSION}")
+    SET(BOOST_INCLUDEDIR "${BOOST_ROOT}/include/boost-${NIFTK_VERSION_BOOST}")
+    SET(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib/boost-${NIFTK_VERSION_BOOST}")
   ENDIF(WIN32)
 
   MESSAGE("SuperBuild loading Boost from ${BOOST_ROOT}")

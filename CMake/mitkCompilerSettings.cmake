@@ -29,16 +29,17 @@ INCLUDE(mitkFunctionGetGccVersion)
 INCLUDE(mitkFunctionGetVersion)
 
 # Retrieve some software versions
-mitkFunctionGetVersion("${CMAKE_BINARY_DIR}/../CMakeExternals/Source/CTK" CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
+mitkFunctionGetVersion("${CMAKE_BINARY_DIR}/../CTK-src" CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
 mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
 mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK_SVN)
 
 # Print out the versions
-MESSAGE("BOOST version=${BOOST_VERSION}")                 
-MESSAGE("GDCM version=${GDCM_VERSION}")                   
 MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-MESSAGE("ITK version=${NIFTK_ITK_VERSION_IN_SUPERBUILD}") 
-MESSAGE("VTK version=${VTK_VERSION}")                     
+MESSAGE("BOOST version=${NIFTK_VERSION_BOOST}")                 
+MESSAGE("GDCM version=${NIFTK_VERSION_GDCM}")                   
+MESSAGE("DCMTK version=${NIFTK_VERSION_DCMTK}")
+MESSAGE("ITK version=${NIFTK_VERSION_ITK}") 
+MESSAGE("VTK version=${NIFTK_VERSION_VTK}")                     
 MESSAGE("MITK version=${MITK_REVISION_ID}")
 MESSAGE("CTK version=${CTK_REVISION_ID}")
 

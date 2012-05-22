@@ -32,9 +32,9 @@ IF(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
 ENDIF()
 
 SET(proj MITK)
-SET(proj_DEPENDENCIES BOOST ITK VTK GDCM)  # Don't put CTK here, as it's optional, dependent on Qt.
+SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
 IF(QT_FOUND)
-  SET(proj_DEPENDENCIES BOOST ITK VTK GDCM CTK)
+  SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK CTK)
 ENDIF(QT_FOUND)
 SET(MITK_DEPENDS ${proj})
 
@@ -63,6 +63,7 @@ IF(NOT DEFINED MITK_DIR)
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
       set(BOOST_INCLUDEDIR ${BOOST_INCLUDEDIR} CACHE PATH \"Path to Boost include directory\")
       set(BOOST_LIBRARYDIR ${BOOST_LIBRARYDIR} CACHE PATH \"Path to Boost library directory\")
+      set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"Path to DCMTK installation directory\")
     ")
 
     #########################################################
@@ -100,16 +101,26 @@ IF(NOT DEFINED MITK_DIR)
     #    Trac 853, 1256, 1344 1366 as listed above, resulting in 
     #    2e5c698299 on MattClarkson github fork.
     # 
+    # 4. Trac 1429 - merged MITK master 58f3a08c84 (08.05.2012 08:46) onto niftk branch
+    #    to pick up MITK bug 11820. So the current build is effectively MITK master 
+    #    58f3a08c84 plus the trac items 853, 1256, 1344 and 1366 listed above. The version
+    #    we are using is thus 1bbf9184dd on MattClarkson github fork.
+    # 
+    # 5. Trac 1429 - merged MITK master 4ddb84dc4e (22.05.2012 08:09) onto niftk branch
+    #    to pick up MITK latest, including such fixes as 11913 for apple. So the current
+    #    build is effectively MITK master 4ddb84dc4e plus the trac items 853, 1256, 
+    #    1344 and 1366 listed above. The version we are using is thus 1da33a0b08 on
+    #    MattClarkson github fork.
     #########################################################
     
-    SET(revision_tag 2e5c698299)
+    SET(revision_tag 1da33a0b08)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
     ENDIF()
     
     ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${GIT_PROTOCOL}://github.com/MattClarkson/MITK.git
+    GIT_REPOSITORY ${GIT_PROTOCOL}:${NIFTK_LOCATION_MITK}
     GIT_TAG ${revision_tag}
     BINARY_DIR ${proj}-build
     UPDATE_COMMAND ""
@@ -139,6 +150,7 @@ IF(NOT DEFINED MITK_DIR)
       -DVTK_DIR:PATH=${VTK_DIR}                              # FindVTK expects VTK_DIR
       -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
       -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
+      -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
       -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
     DEPENDS ${proj_DEPENDENCIES}
   )

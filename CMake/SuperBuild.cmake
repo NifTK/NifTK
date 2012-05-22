@@ -85,6 +85,7 @@ IF (BUILD_MESHING)
     VTK
     GDCM       
     ITK
+    DCMTK
     CTK
     NIFTYLINK
     MITK
@@ -100,6 +101,7 @@ ELSE (BUILD_MESHING)
     VTK
     GDCM       
     ITK
+    DCMTK
     CTK
     NIFTYLINK
     MITK
@@ -200,11 +202,6 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNIFTK_FFTWINSTALL:PATH=${NIFTK_LINK_PREFIX}/fftw     # We don't have CMake SuperBuild version of FFTW, so must rely on it already being there
       -DVTK_DIR:PATH=${VTK_DIR}                              
       -DITK_DIR:PATH=${ITK_DIR}                              
-      -DGDCM_VERSION:PATH=${GDCM_VERSION}
-      -DBOOST_ROOT:PATH=${BOOST_ROOT}                        
-      -DBOOST_VERSION:STRING=${BOOST_VERSION}                  
-      -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            
-      -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
       -DMITK_DIR:PATH=${MITK_DIR}
       -DCTK_DIR:PATH=${CTK_DIR}
       -DNiftyLink_DIR:PATH=${NIFTYLINK_DIR}
