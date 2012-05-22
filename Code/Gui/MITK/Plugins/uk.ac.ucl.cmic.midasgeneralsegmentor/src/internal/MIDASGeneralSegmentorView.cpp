@@ -651,7 +651,7 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
 
   m_IsUpdating = false;
 
-  QmitkAbstractView::RequestRenderWindowUpdate();
+  this->RequestRenderWindowUpdate();
 }
 
 
@@ -1812,37 +1812,133 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
     mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
     mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
 
+    mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
+    assert(regionGrowingNode);
+
+    mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
+    assert(regionGrowingImage);
+
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
 
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-
-      bool hasUnEnclosedSeeds = this->DoesSliceHaveUnenclosedSeeds();
-      bool sliceIsEmpty(false);
+      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
 
       if (axisNumber != -1 && sliceNumber != -1)
       {
-        try
+
+        mitk::PointSet* seeds = this->GetSeeds();
+        assert(seeds);
+
+        int numberOfSeeds = seeds->GetSize();
+
+        if (numberOfSeeds > 0)
         {
-          AccessFixedDimensionByItk_n(workingImage,
-              ITKSliceIsEmpty, 3,
-              (axisNumber,
-               sliceNumber,
-               sliceIsEmpty
-              )
-            );
-        }
-        catch(const mitk::AccessByItkException& e)
-        {
-          MITK_ERROR << "Could not complete UpdateCurrentSlice, when calling ITKSliceIsEmpty due to:" << e.what();
+
+          mitk::ContourSet* greenContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
+          assert(greenContours);
+
+          mitk::ToolManager *toolManager = this->GetToolManager();
+          assert(toolManager);
+
+          mitk::MIDASPolyTool *polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
+          assert(polyTool);
+
+          mitk::ContourSet::Pointer yellowContours = mitk::ContourSet::New();
+
+          mitk::Contour* polyToolContour = polyTool->GetContour();
+          if (polyToolContour != NULL && polyToolContour->GetPoints()->Size() > 0)
+          {
+            yellowContours->AddContour(0, polyToolContour);
+          }
+
+          bool hasUnEnclosedSeeds = this->DoesSliceHaveUnenclosedSeeds();
+          double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
+          double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
+
+          if (hasUnEnclosedSeeds)
+          {
+            // Wipe slice.
+            try
+            {
+              AccessFixedDimensionByItk_n(workingImage,
+                  ITKClearSlice, 3,
+                  (axisNumber,
+                   sliceNumber
+                  )
+                );
+            }
+            catch(const mitk::AccessByItkException& e)
+            {
+              MITK_ERROR << "Could not complete UpdateCurrentSlice, when calling ITKClearSlice due to:" << e.what();
+            }
+          }
+          else if (!hasUnEnclosedSeeds
+                   && ((greenContours->GetNumberOfContours() > 0) || (yellowContours->GetNumberOfContours() > 0))
+                   && !this->m_GeneralControls->m_ThresholdCheckBox->isChecked()
+                  )
+          {
+
+            // We do region growing unlimited by thresholds.
+            try
+            {
+              AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+                  ITKUpdateRegionGrowing, 3,
+                  (false,
+                   *seeds,
+                   *greenContours,
+                   *yellowContours,
+                   orientation,
+                   sliceNumber,
+                   axisNumber,
+                   this->m_GeneralControls->m_ThresholdLowerSliderWidget->minimum(),  // i.e. min and max possible values.
+                   this->m_GeneralControls->m_ThresholdLowerSliderWidget->maximum(),
+                   workingNode,
+                   workingImage
+                  )
+                );
+            }
+            catch(const mitk::AccessByItkException& e)
+            {
+              MITK_ERROR << "Could not complete UpdateCurrentSlice, when calling ITKUpdateRegionGrowing without thresholds due to:" << e.what();
+            }
+
+          }
+          else if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+          {
+            // We do region growing with thresholds.
+            std::cerr << "Matt, updating with thresholds" << std::endl;
+            try
+            {
+              AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+                  ITKUpdateRegionGrowing, 3,
+                  (false,
+                   *seeds,
+                   *greenContours,
+                   *yellowContours,
+                   orientation,
+                   sliceNumber,
+                   axisNumber,
+                   lowerThreshold,
+                   upperThreshold,
+                   workingNode,
+                   workingImage
+                  )
+                );
+            }
+            catch(const mitk::AccessByItkException& e)
+            {
+              MITK_ERROR << "Could not complete UpdateCurrentSlice, when calling ITKUpdateRegionGrowing without thresholds due to:" << e.what();
+            }
+
+          }
         }
 
-        if (hasUnEnclosedSeeds && !sliceIsEmpty)
-        {
-          // Wipe slice
-
-        }
+        // Make sure we are rendering the latest.
+        workingImage->Modified();
+        workingNode->Modified();
+        this->RequestRenderWindowUpdate();
       }
       else
       {
@@ -2156,7 +2252,7 @@ MIDASGeneralSegmentorView
 
   RegionType region = itkImage->GetLargestPossibleRegion();
   SizeType regionSize = region.GetSize();
-  IndexType regionIndex = region.GetIndex;
+  IndexType regionIndex = region.GetIndex();
 
   regionSize[axis] = 1;
   regionIndex[axis] = slice;
@@ -2179,8 +2275,9 @@ MIDASGeneralSegmentorView
   typedef typename ImageType::RegionType RegionType;
 
   RegionType sliceRegion;
+  TPixel pixelValue = 0;
   this->ITKCalculateSliceRegion(itkImage, axis, slice, sliceRegion);
-  this->ITKFillRegion(itkImage, sliceRegion, 0);
+  this->ITKFillRegion(itkImage, sliceRegion, pixelValue);
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -2448,8 +2545,8 @@ MIDASGeneralSegmentorView
   GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = sliceNumber;
   params.m_AxisNumber = axisNumber;
-  params.m_LowerThreshold = lowerThreshold;
-  params.m_UpperThreshold = upperThreshold;
+  params.m_LowerThreshold = (TPixel)lowerThreshold;
+  params.m_UpperThreshold = (TPixel)upperThreshold;
   params.m_Seeds = &seeds;
   params.m_GreenContours = &greenContours;
   params.m_YellowContours = &yellowContours;

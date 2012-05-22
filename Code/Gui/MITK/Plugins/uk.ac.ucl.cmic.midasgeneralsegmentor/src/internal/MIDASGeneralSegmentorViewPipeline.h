@@ -84,8 +84,8 @@ public:
   // Member variables.
   int m_SliceNumber;
   int m_AxisNumber;
-  double m_LowerThreshold;
-  double m_UpperThreshold;
+  TPixel m_LowerThreshold;
+  TPixel m_UpperThreshold;
   PointSetPointer m_AllSeeds;
   ParametricPathVectorType m_AllContours;
 
