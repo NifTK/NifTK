@@ -317,33 +317,31 @@ private:
   QVBoxLayout                                   *m_LayoutToPutControlsOnTopOfWindows;
   QGridLayout                                   *m_LayoutForRenderWindows;
   QGridLayout                                   *m_LayoutForTopControls;
-  QHBoxLayout                                   *m_LayoutForLayoutButtons;
-  QHBoxLayout                                   *m_LayoutForRowsAndColumns;
+  QGridLayout                                   *m_LayoutForLayoutWidgets;
   QHBoxLayout                                   *m_LayoutForOrientation;
   QVBoxLayout                                   *m_LayoutForRightControls;
+  QVBoxLayout                                   *m_LayoutForDropWidgets;
+  QVBoxLayout                                   *m_LayoutForBindWidgets;
 
   // Widgets
   QmitkMIDASOrientationWidget                   *m_MIDASOrientationWidget;
   QmitkMIDASSlidersWidget                       *m_MIDASSlidersWidget;
   QPushButton                                   *m_1x1LayoutButton;
   QPushButton                                   *m_1x2LayoutButton;
-  QPushButton                                   *m_2x1LayoutButton;
-  QPushButton                                   *m_3x1LayoutButton;
   QPushButton                                   *m_1x3LayoutButton;
   QPushButton                                   *m_2x2LayoutButton;
-  QPushButton                                   *m_3x2LayoutButton;
-  QPushButton                                   *m_2x3LayoutButton;
-  QPushButton                                   *m_5x5LayoutButton;
   QSpinBox                                      *m_RowsSpinBox;
   QLabel                                        *m_RowsLabel;
   QSpinBox                                      *m_ColumnsSpinBox;
   QLabel                                        *m_ColumnsLabel;
-  QLabel                                        *m_DropLabel;
   QRadioButton                                  *m_DropSingleRadioButton;
   QRadioButton                                  *m_DropMultipleRadioButton;
   QRadioButton                                  *m_DropThumbnailRadioButton;
-  QCheckBox                                     *m_BindWindowsCheckBox;
-  QCheckBox                                     *m_LinkWindowsCheckBox;
+  QCheckBox                                     *m_DropAccumulateCheckBox;
+  QCheckBox                                     *m_BindCursorsCheckBox;
+  QCheckBox                                     *m_BindMagnificationCheckBox;
+  QCheckBox                                     *m_BindGeometryCheckBox;
+  QCheckBox                                     *m_BindCameraCheckBox;
 
   // This determines the total number of QmitkMIDASSingleViewWidget windows.
   static const unsigned int m_MaxRows = 5;

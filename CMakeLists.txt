@@ -34,7 +34,11 @@ MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.4)
+IF(APPLE)
+  CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
+ELSE(APPLE)
+  CMAKE_MINIMUM_REQUIRED(VERSION 2.8.4)
+ENDIF(APPLE)
 
 # If CMake is the version we're expecting, don't show the
 # CMAKE_BACKWARDS_COMPATIBILITY option. If the version is higher than the

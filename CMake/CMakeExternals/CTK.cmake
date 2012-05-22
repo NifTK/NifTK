@@ -53,19 +53,19 @@ IF(QT_FOUND)
       PREFIX ${proj}-cmake
       GIT_REPOSITORY ${GIT_PROTOCOL}:${NIFTK_LOCATION_CTK}
       GIT_TAG ${revision_tag}
-      URL_MD5 a3130b2c3e7a1d320740938f61b65840
       UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
-        ${EP_COMMON_ARGS}
-        -DDCMTK_DIR:PATH=${DCMTK_DIR}        
+        ${EP_COMMON_ARGS}       
         -DDESIRED_QT_VERSION:STRING=4
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DCTK_LIB_PluginFramework:BOOL=ON
-        -DCTK_LIB_DICOM/Widgets:BOOL=ON
+        -DCTK_LIB_DICOM/Widgets:BOOL=OFF
+        -DCTK_LIB_DICOM/Core:BOOL=OFF
+        -DCTK_LIB_WIDGETS:BOOL=ON
         -DCTK_PLUGIN_org.commontk.eventadmin:BOOL=ON
         -DCTK_PLUGIN_org.commontk.configadmin:BOOL=ON
         -DCTK_USE_GIT_PROTOCOL:BOOL=${NIFTK_USE_GIT_PROTOCOL}
@@ -73,6 +73,7 @@ IF(QT_FOUND)
         -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
         -DVTK_DIR:PATH=${VTK_DIR}
         -DITK_DIR:PATH=${ITK_DIR}
+        -DDCMTK_URL:STRING=http://cmic.cs.ucl.ac.uk/platform/dependencies/CTK_DCMTK_085525e6.tar.gz 
       DEPENDS ${proj_DEPENDENCIES}
     )
   SET(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
