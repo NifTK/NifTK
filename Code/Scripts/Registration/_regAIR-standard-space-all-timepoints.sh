@@ -93,9 +93,9 @@ do
   cp ${input_dir}/${repeat_region} ${repeat_input_dir}/. 
   repeat_ss_input_file=${repeat_input_dir}/repeat_ss_input_file.txt
   echo "`basename ${baseline_ss_image%.img}` `basename ${baseline_ss_region}` `basename ${repeat_image}` `basename ${repeat_region}`" > ${repeat_ss_input_file}
-  regAIR.sh ${repeat_input_dir} ${repeat_input_dir} ${repeat_ss_input_file} ${repeat_output_dir} -m 12 -d 8
+  regAIR.sh ${repeat_input_dir} ${repeat_input_dir} ${repeat_ss_input_file} ${repeat_output_dir} -m 12 -d 8 -rreg_init
   # Handle the -ve ID of the image by getting the image with the original ID and fixing the orientation. 
-  repeat_ss_image_wrong_orientation=${repeat_output_dir}/${baseline_id}-${repeat_id:0:5}.img
+  repeat_ss_image_wrong_orientation=${repeat_output_dir}/${baseline_id:0:5}-${repeat_id:0:5}.img
   repeat_ss_image=${output_dir}/${repeat_id}-075-1.img 
   repeat_orient=`imginfo ${input_dir}/${repeat_image}.img -orient`
   anchange ${repeat_ss_image_wrong_orientation} ${repeat_ss_image} -setorient ${repeat_orient} -study ${repeat_id} -series 75
