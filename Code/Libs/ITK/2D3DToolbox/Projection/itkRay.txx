@@ -543,7 +543,7 @@ Ray<TInputImage, TCoordRep>
         cornerVect[i][1] = m_BoundingCorner[c[i]][1] - intercepty[j];
         cornerVect[i][2] = m_BoundingCorner[c[i]][2] - interceptz[j];
       }
-      else if ( noInterFlag[j]==0 ) {
+      else {
 
         cornerVect[i][0] = 0;
         cornerVect[i][1] = 0;
