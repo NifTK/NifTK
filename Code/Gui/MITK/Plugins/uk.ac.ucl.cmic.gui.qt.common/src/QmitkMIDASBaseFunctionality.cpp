@@ -70,7 +70,7 @@ QmitkMIDASMultiViewWidget* QmitkMIDASBaseFunctionality::GetActiveMIDASMultiViewW
     berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->GetActiveEditor();
     assert(editor);
 
-    if (editor.Cast<QmitkMIDASMultiViewEditor>() == NULL)
+    if (editor.Cast<QmitkMIDASMultiViewEditor>().IsNull())
     {
       // This has the side-effect of switching editors when we don't want to.
       berry::IEditorInput::Pointer dsInput(new mitk::MIDASDataStorageEditorInput(this->GetDataStorageReference()));
@@ -97,7 +97,7 @@ QmitkStdMultiWidget* QmitkMIDASBaseFunctionality::GetActiveStdMultiWidget()
     berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->GetActiveEditor();
     assert(editor);
 
-    if (editor.Cast<QmitkStdMultiWidgetEditor>() == NULL)
+    if (editor.Cast<QmitkStdMultiWidgetEditor>().IsNull())
     {
       // This has the side-effect of switching editors when we don't want to.
       berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(this->GetDataStorageReference()));

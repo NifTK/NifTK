@@ -110,6 +110,10 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*warning C4099: 'itk::hash<key>' : type name first seen using 'class' now seen using 'struct'.*"
   ".*Source.*MITK.*" 
   
+  # Trac #1455, various suppressions:
+  # Trac #1455: Sometimes we set values, and output them only in debug code. Seems a shame to delete the debug code just to get rid of the warning.
+  ".*variable.*set but not used.*"
+  
   # PythonQt suppressions
   "PythonQt.*src.*PythonQt.*(cpp|h)"
   "include.PythonQt.PythonQt.*h"
