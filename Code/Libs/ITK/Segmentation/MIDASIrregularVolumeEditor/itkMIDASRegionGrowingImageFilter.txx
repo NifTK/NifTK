@@ -122,8 +122,6 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 
   // Now grow those seeds conditionally. We iterate over the 9 (27) connected neighborhood.
 	{
-		const __ImageSizeType imgSize = this->GetInput()->GetLargestPossibleRegion().GetSize();
-
 		while (nextPixelsStack.size() > 0) {
 			const __IndexType currImgIndex = nextPixelsStack.top();
 

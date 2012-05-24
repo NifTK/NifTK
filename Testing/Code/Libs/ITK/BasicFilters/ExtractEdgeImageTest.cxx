@@ -79,7 +79,6 @@ int ExtractEdgeImageTest(int argc, char * argv[])
 
   InputImageType::SizeType inputSize = reader->GetOutput()->GetLargestPossibleRegion().GetSize();
   InputImageType::SpacingType inputSpacing = reader->GetOutput()->GetSpacing();
-  InputImageType::PointType inputOrigin = reader->GetOutput()->GetOrigin();
 
   InputImageType::SizeType outputSize;
   for (unsigned int i = 0; i < InputDimension; i++)
