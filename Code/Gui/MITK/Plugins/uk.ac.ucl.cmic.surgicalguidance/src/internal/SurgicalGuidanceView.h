@@ -25,7 +25,7 @@
 #ifndef SurgicalGuidanceView_h
 #define SurgicalGuidanceView_h
 
-#include <QPlainTextEdit.h>
+#include <QPlainTextEdit>
 
 #include <QmitkFiducialRegistrationWidget.h>
 #include <QmitkUpdateTimerWidget.h>
