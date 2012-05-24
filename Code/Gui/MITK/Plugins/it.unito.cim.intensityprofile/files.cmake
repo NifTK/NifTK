@@ -2,7 +2,7 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  mitkPluginActivator.cpp
+  it_unito_cim_intensityprofile_Activator.cpp
   IntensityProfileView.cpp
   PropagateSegmentationAlongTimeAction.cpp
   ItkProcessObserver.cpp
@@ -13,7 +13,7 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/mitkPluginActivator.h
+  src/internal/it_unito_cim_intensityprofile_Activator.h
   src/internal/IntensityProfileView.h
   src/internal/PropagateSegmentationAlongTimeAction.h
 )
@@ -31,7 +31,7 @@ set(CACHED_RESOURCE_FILES
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-  resources/resources.qrc
+  resources/IntensityProfileResources.qrc
 )
 
 set(CPP_FILES)

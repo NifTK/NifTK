@@ -16,7 +16,7 @@
 
  ============================================================================*/
 
-#include "mitkPluginActivator.h"
+#include "it_unito_cim_core_Activator.h"
 
 #include <QtPlugin>
 
@@ -31,7 +31,7 @@
 
 namespace mitk {
 
-class PluginActivatorPrivate
+class it_unito_cim_core_ActivatorPrivate
 {
 public:
 //  ImageInfoRenderer* imageInfoRenderer;
@@ -39,20 +39,20 @@ public:
 //  NodeVisibilityManager* nodeVisibilityManager;
 };
 
-PluginActivator::PluginActivator()
-: d_ptr(new PluginActivatorPrivate)
+it_unito_cim_core_Activator::it_unito_cim_core_Activator()
+: d_ptr(new it_unito_cim_core_ActivatorPrivate)
 {
 }
 
-PluginActivator::~PluginActivator()
+it_unito_cim_core_Activator::~it_unito_cim_core_Activator()
 {
 }
 
 void
-PluginActivator::start(ctkPluginContext* context)
+it_unito_cim_core_Activator::start(ctkPluginContext* context)
 {
   Q_UNUSED(context);
-  MITK_INFO << "Core plugin activated";
+  MITK_DEBUG << "Core plugin activated";
 
 //  registerNodeDescriptors();
 
@@ -64,7 +64,7 @@ PluginActivator::start(ctkPluginContext* context)
 }
 
 void
-PluginActivator::stop(ctkPluginContext* context)
+it_unito_cim_core_Activator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context);
 //  Q_D(PluginActivator);
@@ -133,4 +133,4 @@ PluginActivator::stop(ctkPluginContext* context)
 
 }
 
-Q_EXPORT_PLUGIN2(it_unito_cim_core, mitk::PluginActivator)
+Q_EXPORT_PLUGIN2(it_unito_cim_core, mitk::it_unito_cim_core_Activator)

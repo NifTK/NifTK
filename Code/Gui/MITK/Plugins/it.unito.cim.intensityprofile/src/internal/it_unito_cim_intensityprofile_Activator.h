@@ -16,26 +16,26 @@
 
  ============================================================================*/
 
-#include "mitkPluginActivator.h"
+#ifndef it_unito_cim_intensityprofile_Activator_h
+#define it_unito_cim_intensityprofile_Activator_h
 
-#include <QtPlugin>
-
-#include "IntensityProfileView.h"
-#include "PropagateSegmentationAlongTimeAction.h"
+#include <ctkPluginActivator.h>
 
 namespace mitk {
 
-void PluginActivator::start(ctkPluginContext* context)
+class it_unito_cim_intensityprofile_Activator :
+  public QObject, public ctkPluginActivator
 {
-  BERRY_REGISTER_EXTENSION_CLASS(IntensityProfileView, context);
-  BERRY_REGISTER_EXTENSION_CLASS(PropagateSegmentationAlongTimeAction, context);
+  Q_OBJECT
+  Q_INTERFACES(ctkPluginActivator)
+
+public:
+
+  void start(ctkPluginContext* context);
+  void stop(ctkPluginContext* context);
+
+}; // it_unito_cim_intensityprofile_Activator
+
 }
 
-void PluginActivator::stop(ctkPluginContext* context)
-{
-  Q_UNUSED(context)
-}
-
-}
-
-Q_EXPORT_PLUGIN2(it_unito_cim_intensityprofile, mitk::PluginActivator)
+#endif // it_unito_cim_intensityprofile_Activator_h
