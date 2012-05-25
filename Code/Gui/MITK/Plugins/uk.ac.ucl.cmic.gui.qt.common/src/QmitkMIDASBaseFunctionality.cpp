@@ -34,6 +34,9 @@
 #include "mitkIDataStorageReference.h"
 #include "mitkIDataStorageService.h"
 #include "mitkIRenderWindowPart.h"
+#include "mitkBaseRenderer.h"
+#include "mitkGlobalInteraction.h"
+#include "mitkFocusManager.h"
 
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewEditor.h"
@@ -45,9 +48,21 @@ QmitkMIDASBaseFunctionality::QmitkMIDASBaseFunctionality()
 : m_Parent(NULL)
 , m_IsActivated(false)
 , m_IsVisible(false)
+, m_FocusManagerObserverTag(0)
+, m_Focussed2DRenderer(NULL)
+, m_PreviouslyFocussed2DRenderer(NULL)
 , m_MITKWidget(NULL)
 , m_MIDASWidget(NULL)
 {
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager != NULL)
+  {
+    itk::SimpleMemberCommand<QmitkMIDASBaseFunctionality>::Pointer onFocusChangedCommand =
+      itk::SimpleMemberCommand<QmitkMIDASBaseFunctionality>::New();
+    onFocusChangedCommand->SetCallbackFunction( this, &QmitkMIDASBaseFunctionality::OnFocusChanged );
+
+    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+  }
 }
 
 QmitkMIDASBaseFunctionality::QmitkMIDASBaseFunctionality(const QmitkMIDASBaseFunctionality& other)
@@ -59,6 +74,11 @@ QmitkMIDASBaseFunctionality::QmitkMIDASBaseFunctionality(const QmitkMIDASBaseFun
 QmitkMIDASBaseFunctionality::~QmitkMIDASBaseFunctionality()
 {
   // We don't own any of m_Parent, m_MITKWidget, m_MIDASWidget.
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager != NULL && m_FocusManagerObserverTag != 0)
+  {
+    focusManager->RemoveObserver(m_FocusManagerObserverTag);
+  }
 }
 
 QmitkMIDASMultiViewWidget* QmitkMIDASBaseFunctionality::GetActiveMIDASMultiViewWidget()
@@ -119,13 +139,21 @@ mitk::SliceNavigationController::Pointer QmitkMIDASBaseFunctionality::GetSliceNa
 {
   mitk::SliceNavigationController::Pointer result = NULL;
 
-  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
-  if (renderWindowPart != NULL)
+  if (m_Focussed2DRenderer != NULL)
   {
-    QmitkRenderWindow *renderWindow = renderWindowPart->GetActiveRenderWindow();
-    if (renderWindow != NULL)
+    result = m_Focussed2DRenderer->GetSliceNavigationController();
+  }
+
+  if (result.IsNull())
+  {
+    mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+    if (renderWindowPart != NULL)
     {
-      result = renderWindow->GetSliceNavigationController();
+      QmitkRenderWindow *renderWindow = renderWindowPart->GetActiveRenderWindow();
+      if (renderWindow != NULL)
+      {
+        result = renderWindow->GetSliceNavigationController();
+      }
     }
   }
   return result;
@@ -150,17 +178,31 @@ void QmitkMIDASBaseFunctionality::Activated()
 void QmitkMIDASBaseFunctionality::Deactivated()
 {
   m_IsActivated = false;
-  MITK_INFO << "TODO, QmitkMIDASBaseFunctionality::Deactivated()" << std::endl;
 }
 
 void QmitkMIDASBaseFunctionality::Visible()
 {
   m_IsVisible = true;
-  MITK_INFO << "TODO, QmitkMIDASBaseFunctionality::Visible()" << std::endl;
 }
 
 void QmitkMIDASBaseFunctionality::Hidden()
 {
   m_IsVisible = false;
-  MITK_INFO << "TODO, QmitkMIDASBaseFunctionality::Hidden()" << std::endl;
+}
+
+void QmitkMIDASBaseFunctionality::OnFocusChanged()
+{
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager != NULL)
+  {
+    mitk::BaseRenderer* base = focusManager->GetFocused();
+    if (base != NULL && base->GetMapperID() == mitk::BaseRenderer::Standard2D)
+    {
+      if (m_Focussed2DRenderer != NULL)
+      {
+        m_PreviouslyFocussed2DRenderer = m_Focussed2DRenderer;
+      }
+      m_Focussed2DRenderer = base;
+    }
+  }
 }

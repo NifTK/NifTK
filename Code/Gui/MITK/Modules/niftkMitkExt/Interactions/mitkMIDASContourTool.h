@@ -70,11 +70,14 @@ class MIDASContourToolEventInterface;
     /// \brief Method to enable this class to interact with the Undo/Redo framework.
     virtual void ExecuteOperation(Operation* operation);
 
+    /// \brief Clears the contour, meaning it re-initialised the feedback contour in mitk::FeedbackContourTool, and also the background contour herein.
+    virtual void ClearData();
+
     /// \brief Get a pointer to the current feedback contour.
-    mitk::Contour* GetContour();
+    virtual mitk::Contour* GetContour();
 
     /// \brief Turns the feedback contour on/off.
-    void SetFeedbackContourVisible(bool);
+    virtual void SetFeedbackContourVisible(bool);
 
     /// \brief Copies contour from a to b.
     static void CopyContour(mitk::Contour &a, mitk::Contour &b);

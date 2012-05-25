@@ -111,32 +111,9 @@ void mitk::MIDASPolyTool::Disable3dRenderingOfPreviousContour()
   this->Disable3dRenderingOfNode(m_PreviousContourNode);
 }
 
-void mitk::MIDASPolyTool::Activated()
+void mitk::MIDASPolyTool::ClearData()
 {
-  MIDASTool::Activated();
-
-  DataNode* workingNode( m_ToolManager->GetWorkingData(0) );
-  if (!workingNode) return;
-
-  // Store these for later (in base class), as dynamic casts are slow. HOWEVER, IT IS NOT THREAD SAFE.
-  m_WorkingImage = dynamic_cast<Image*>(workingNode->GetData());
-  m_WorkingImageGeometry = m_WorkingImage->GetGeometry();
-
-  // If these are not set, something is fundamentally wrong.
-  assert(m_WorkingImage);
-  assert(m_WorkingImageGeometry);
-
-  // Initialize feedback contour, and set properties.
-  Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  feedbackContour->Initialize();
-  feedbackContour->SetClosed(m_ContourClosed);
-  feedbackContour->SetWidth(m_ContourWidth);
-
-  // Initialize background contour, and set properties.
-  Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
-  backgroundContour->Initialize();
-  backgroundContour->SetClosed(m_ContourClosed);
-  backgroundContour->SetWidth(m_ContourWidth);
+  mitk::MIDASContourTool::ClearData();
 
   // These are added to the DataManager, but only drawn when the middle mouse is down (and subsequently moved).
   m_PreviousContour->Initialize();
@@ -152,6 +129,25 @@ void mitk::MIDASPolyTool::Activated()
   m_PreviousContourReferencePoints->Initialize();
   m_PreviousContourReferencePoints->SetClosed(m_ContourClosed);
   m_PreviousContourReferencePoints->SetWidth(m_ContourWidth);
+}
+
+void mitk::MIDASPolyTool::Activated()
+{
+  MIDASTool::Activated();
+
+  DataNode* workingNode( m_ToolManager->GetWorkingData(0) );
+  if (!workingNode) return;
+
+  // Store these for later (in base class), as dynamic casts are slow. HOWEVER, IT IS NOT THREAD SAFE.
+  m_WorkingImage = dynamic_cast<Image*>(workingNode->GetData());
+  m_WorkingImageGeometry = m_WorkingImage->GetGeometry();
+
+  // If these are not set, something is fundamentally wrong.
+  assert(m_WorkingImage);
+  assert(m_WorkingImageGeometry);
+
+  // Initialize data, and set properties.
+  this->ClearData();
 
   // Turn the contours on, and set to correct colour. The FeedBack contour is yellow.
   FeedbackContourTool::SetFeedbackContourVisible(true);
@@ -159,12 +155,6 @@ void mitk::MIDASPolyTool::Activated()
 
   MIDASContourTool::SetBackgroundContourVisible(false);
   MIDASContourTool::SetBackgroundContourColorDefault();
-
-  feedbackContour->Initialize();
-  backgroundContour->Initialize();
-  m_PreviousContour->Initialize();
-  m_ReferencePoints->Initialize();
-  m_PreviousContourReferencePoints->Initialize();
 
   // Just to be explicit
   this->Disable3dRenderingOfPreviousContour();
@@ -179,16 +169,14 @@ void mitk::MIDASPolyTool::Deactivated()
   Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
   this->AccumulateContourInWorkingData(*feedbackContour, 2);
 
-  // Re-initialize contours to zero length.
-  feedbackContour->Initialize();
-  mitk::Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
-  backgroundContour->Initialize();
+  // Initialize data, and set properties.
+  this->ClearData();
 
+  // Set visibility.
   FeedbackContourTool::SetFeedbackContourVisible(false);
   MIDASContourTool::SetBackgroundContourVisible(false);
   this->SetPreviousContourVisible(false);
   this->SetPolyLinePointSetVisible(false);
-
   this->RenderAllWindows();
 }
 

@@ -120,6 +120,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*CMakeExternals.*" 
   ".*CTK-src.*" 
   ".*DCMTK-src."
+  ".*itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter.txx:144.*imgSize.*"
   
   # PythonQt suppressions
   "PythonQt.*src.*PythonQt.*(cpp|h)"

@@ -84,7 +84,6 @@ void Usage(char *exec)
     std::cout << "      none" << std::endl;
     std::cout << "  4" << std::endl;
     std::cout << "      none" << std::endl;
-    std::cout << "Test2" << std::endl;
   }
 
 /**

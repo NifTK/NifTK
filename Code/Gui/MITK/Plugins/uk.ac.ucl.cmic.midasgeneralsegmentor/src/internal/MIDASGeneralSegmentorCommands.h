@@ -34,6 +34,7 @@
 #include "itkImageUpdateClearRegionProcessor.h"
 #include "itkImageUpdateCopyRegionProcessor.h"
 #include "itkImageUpdatePasteRegionProcessor.h"
+#include "itkMIDASRetainMarksNoThresholdingProcessor.h"
 
 namespace mitk
 {
@@ -90,7 +91,7 @@ private:
 class OpPropagate: public OpGeneralSegmentorBaseCommand
 {
 public:
-  typedef itk::ImageUpdatePasteRegionProcessor<unsigned char, 3> ProcessorType;
+  typedef itk::ImageUpdatePasteRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
   typedef ProcessorType::Pointer ProcessorPointer;
 
   OpPropagate(
@@ -173,7 +174,7 @@ private:
 class OpWipe: public OpGeneralSegmentorBaseCommand
 {
 public:
-  typedef itk::ImageUpdateClearRegionProcessor<unsigned char, 3> ProcessorType;
+  typedef itk::ImageUpdateClearRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
   typedef ProcessorType::Pointer ProcessorPointer;
 
   OpWipe(
@@ -204,6 +205,91 @@ public:
 private:
   int m_SliceNumber;
   int m_AxisNumber;
+  std::vector<int> m_Region;
+  mitk::PointSet::Pointer m_Seeds;
+  ProcessorPointer m_Processor;
+};
+
+/**
+ * \class OpPropagateSeeds
+ * \brief Class to hold data to pass back to MIDASGeneralSegmentorView to Undo/Redo the propagation of seeds that occurs when slice changes.
+ * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
+ */
+class OpPropagateSeeds: public OpGeneralSegmentorBaseCommand
+{
+public:
+
+  OpPropagateSeeds(
+      mitk::OperationType type,
+      bool redo,
+      int sliceNumber,
+      int axisNumber,
+      mitk::PointSet::Pointer seeds
+      )
+  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
+  , m_SliceNumber(sliceNumber)
+  , m_AxisNumber(axisNumber)
+  , m_Seeds(seeds)
+  {
+  };
+  ~OpPropagateSeeds()
+  { };
+  int GetSliceNumber() const { return m_SliceNumber; }
+  int GetAxisNumber() const { return m_AxisNumber; }
+  mitk::PointSet::Pointer GetSeeds() const { return m_Seeds; }
+private:
+  int m_SliceNumber;
+  int m_AxisNumber;
+  mitk::PointSet::Pointer m_Seeds;
+};
+
+/**
+ * \class OpRetainMarks
+ * \brief Class to hold data to pass back to MIDASGeneralSegmentorView to Undo/Redo the Retain Marks commands.
+ * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
+ */
+class OpRetainMarks: public OpGeneralSegmentorBaseCommand
+{
+public:
+  typedef itk::MIDASRetainMarksNoThresholdingProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
+  typedef ProcessorType::Pointer ProcessorPointer;
+
+  OpRetainMarks(
+      mitk::OperationType type,
+      bool redo,
+      int fromSlice,
+      int toSlice,
+      int axisNumber,
+      itk::ORIENTATION_ENUM orientation,
+      std::vector<int> &region,
+      mitk::PointSet::Pointer seeds,
+      ProcessorPointer processor
+      )
+  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
+  , m_FromSlice(fromSlice)
+  , m_ToSlice(toSlice)
+  , m_AxisNumber(axisNumber)
+  , m_Orientation(orientation)
+  , m_Region(region)
+  , m_Seeds(seeds)
+  , m_Processor(processor)
+  {
+  };
+  ~OpRetainMarks()
+  { };
+  int GetFromSlice() const { return m_FromSlice; }
+  int GetToSlice() const { return m_ToSlice; }
+  int GetAxisNumber() const { return m_AxisNumber; }
+  itk::ORIENTATION_ENUM GetOrientation() const { return m_Orientation; }
+  std::vector<int> GetRegion() const { return m_Region; }
+  mitk::PointSet::Pointer GetSeeds() const { return m_Seeds; }
+  ProcessorPointer GetProcessor() const { return m_Processor; }
+
+private:
+  int m_FromSlice;
+  int m_ToSlice;
+  int m_AxisNumber;
+  itk::ORIENTATION_ENUM m_Orientation;
   std::vector<int> m_Region;
   mitk::PointSet::Pointer m_Seeds;
   ProcessorPointer m_Processor;

@@ -106,7 +106,7 @@ class QGridLayout;
  * output to the current segmentation volume, overwriting anything already there.
  * The current slice is not affected. So, you can leave the threshold tick box either on or off.
  * For each subsequent slice in the up/down direction, the number of seeds is recomputed (as above).
- * 3D propagation is equivalent to clicking "prop up" followed by "prop down".
+ * 3D propagation is exactly equivalent to clicking "prop up" followed by "prop down".
  *
  * <h2>Threshold Apply</h2>
  *
@@ -116,8 +116,7 @@ class QGridLayout;
  *
  * When we hit "apply":
  * <pre>
- * 1. Takes the current region growing image, adds any non-zero voxels to the current segmented volume.
- * In other words, it is cumulative, so you can keep adding new regions.
+ * 1. Takes the current region growing image, and writes it to the current image.
  * 2. Recalculate the number of seeds for that slice, 1 per disjoint region, as above.
  * 3. Turn off thresholding, leaving sliders at current value.
  * </pre>
@@ -373,8 +372,9 @@ private:
   static const mitk::OperationType OP_PROPAGATE;
   static const mitk::OperationType OP_THRESHOLD_APPLY;
   static const mitk::OperationType OP_WIPE;
-  static const mitk::OperationType OP_CHANGE_SLICE;
   static const mitk::OperationType OP_CLEAN;
+  static const mitk::OperationType OP_CHANGE_SLICE;
+  static const mitk::OperationType OP_RETAIN_MARKS;
 
   /// \brief Callback for when the window focus changes, where we update this view
   /// to be listening to the right window, and make sure ITK pipelines know we have
@@ -431,6 +431,11 @@ private:
 
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
   void UpdateCurrentSliceContours();
+
+  /// \brief Takes the currently focussed window, and makes sure the segmented volume
+  /// is not visible in the currently focussed window and takes the global visibility value in the previously
+  /// focussed window, unless overrideToOn=true whereby both renderer specific properties are removed to revert to the global one.
+  void UpdateSegmentationImageVisibility(bool overrideToGlobal);
 
   /// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.
   ///
@@ -641,15 +646,19 @@ private:
       mitk::PointSet &outputNewSeeds
       );
 
-  /// \brief Does any pre-processing necessary to facilitate Undo/Redo for Threshold Apply,
-  /// which in this case means calculating the region of interest, and also a new set of
-  /// seeds based on connected component analysis.
+  /// \brief Does any pre-processing of seeds necessary to facilitate Undo/Redo
+  /// for Threshold Apply, and also changing slice.
+  ///
+  /// In this case means calculating the region of interest as a slice
+  /// and if we are changing slice we propagate the seeds on the current slice to the new slice,
+  /// and if we are doing threshold apply, we re-calculate seeds for the current slice based
+  /// on the connected component analysis described in the class header at the top of this file.
   ///
   /// Notice how this is similar to the PreProcessing required for Propagate, seen in
   /// PropagateToRegionGrowingImageUsingITK. Also note that itkImage input should be the
   /// binary region growing node.
   template<typename TPixel, unsigned int VImageDimension>
-  void ITKPreProcessingForThresholdApply(
+  void ITKPreProcessingOfSeedsForChangingSlice(
       itk::Image<TPixel, VImageDimension> *itkImage,
       mitk::PointSet &inputSeeds,
       int sliceNumber,
@@ -775,9 +784,8 @@ private:
   /// \brief Each time the window changes, we register to the current slice navigation controller.
   unsigned long m_SliceNavigationControllerObserverTag;
 
-  /// \brief Keep track of the previous slice number that we received from SNC,
-  /// and this is reset to -1 when the window focus changes.
-  int m_SliceNavigationControllerPreviousSliceNumber;
+  /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
+  int m_PreviousSliceNumber;
 
   /// \brief Used for the mitkFocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;

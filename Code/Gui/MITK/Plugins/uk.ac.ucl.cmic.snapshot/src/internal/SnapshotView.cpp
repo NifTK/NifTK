@@ -58,6 +58,11 @@ SnapshotView::~SnapshotView()
 {
 }
 
+std::string SnapshotView::GetViewID() const
+{
+  return VIEW_ID;
+}
+
 void SnapshotView::CreateQtPartControl( QWidget *parent )
 {
   m_Parent = parent;

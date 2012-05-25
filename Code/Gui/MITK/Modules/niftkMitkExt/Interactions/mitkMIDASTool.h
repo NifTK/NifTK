@@ -89,6 +89,12 @@ namespace mitk {
     /// \brief Used to signal that the number of seeds has changed
     Message1<int> NumberOfSeedsHasChanged;
 
+    /// \brief Set the flag to block the signal that indicates that the number of seeds has changed.
+    itkSetMacro(BlockNumberOfSeedsSignal, bool);
+
+    /// \brief Get the flag to block the signal that indicates that the number of seeds has changed.
+    itkGetMacro(BlockNumberOfSeedsSignal, bool);
+
   protected:
 
     MIDASTool(); // purposefully hidden
@@ -107,9 +113,6 @@ namespace mitk {
     /// \brief Helper method to update a boolean property on a given working data node.
     virtual void UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value);
 
-    /// \brief Called when the number of seeds has changed, and derived classes can override it.
-    virtual void OnNumberOfSeedsChanged(int numberOfSeeds);
-
   private:
 
     /// \brief Called when the seeds have been modified.
@@ -126,6 +129,9 @@ namespace mitk {
 
     //  Track whether this tool is activated or not.
     bool m_IsActivated;
+
+    // To control if we block the NumberOfSeedsHasChanged signal.
+    bool m_BlockNumberOfSeedsSignal;
 
   };//class
 

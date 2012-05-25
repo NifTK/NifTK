@@ -48,6 +48,9 @@ public:
   /// \brief Static view ID = uk.ac.ucl.cmic.snapshot
   static const std::string VIEW_ID;
 
+  /// \brief Returns the view ID.
+  virtual std::string GetViewID() const;
+
 protected:
 
   /// \brief Called by framework, this method creates all the controls for this view

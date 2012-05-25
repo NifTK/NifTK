@@ -78,6 +78,7 @@ void mitk::MIDASTool::Activated()
 
   mitk::PointSet* pointSet = NULL;
   mitk::DataNode* pointSetNode = NULL;
+
   this->FindPointSet(pointSet, pointSetNode);
 
   // Additionally create an interactor to add points to the point set.
@@ -159,14 +160,12 @@ void mitk::MIDASTool::OnSeedsModified()
       if (pointSet->GetSize() != m_LastSeenNumberOfSeeds)
       {
         m_LastSeenNumberOfSeeds = pointSet->GetSize();
-        this->OnNumberOfSeedsChanged(pointSet->GetSize());
+
+        if (!m_BlockNumberOfSeedsSignal)
+        {
+          NumberOfSeedsHasChanged.Send(pointSet->GetSize());
+        }
       }
     }
   }
-
-}
-
-void mitk::MIDASTool::OnNumberOfSeedsChanged(int numberOfSeeds)
-{
-  NumberOfSeedsHasChanged.Send(numberOfSeeds);
 }

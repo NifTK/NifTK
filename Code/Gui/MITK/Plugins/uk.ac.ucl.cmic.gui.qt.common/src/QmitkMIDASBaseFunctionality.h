@@ -74,6 +74,9 @@ protected:
   /** \see berry::IPartListener::PartHidden */
   virtual void Hidden();
 
+  // Callback for when the focus changes, where we update the current render window.
+  virtual void OnFocusChanged();
+
   /// \brief Retrieve the current slice navigation controller from the currently focussed render window, returning NULL if it can't be determined.
   mitk::SliceNavigationController::Pointer GetSliceNavigationController();
 
@@ -95,12 +98,19 @@ protected:
   /// Stores the visible status.
   bool m_IsVisible;
 
+  // Used for the mitkFocusManager to register callbacks to track the currently focus window.
+  unsigned long m_FocusManagerObserverTag;
+
+  // Used to track the focussed renderer.
+  mitk::BaseRenderer* m_Focussed2DRenderer;
+  mitk::BaseRenderer* m_PreviouslyFocussed2DRenderer;
+
 private:
 
-  /// \brief Saves the MITK widget, if available, to avoid repeated lookups.
+  // Saves the MITK widget, if available, to avoid repeated lookups.
   QmitkStdMultiWidget *m_MITKWidget;
 
-  /// \brief Saves the MIDAS widget, if available, to avoid repeated lookups.
+  // Saves the MIDAS widget, if available, to avoid repeated lookups.
   QmitkMIDASMultiViewWidget *m_MIDASWidget;
 
 };

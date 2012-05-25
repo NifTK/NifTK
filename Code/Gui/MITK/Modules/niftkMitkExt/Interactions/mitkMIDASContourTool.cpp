@@ -128,6 +128,19 @@ void mitk::MIDASContourTool::SetBackgroundContourVisible(bool visible)
   m_BackgroundContourVisible = visible;
 }
 
+void mitk::MIDASContourTool::ClearData()
+{
+  mitk::Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
+  feedbackContour->Initialize();
+  feedbackContour->SetClosed(m_ContourClosed);
+  feedbackContour->SetWidth(m_ContourWidth);
+
+  mitk::Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
+  backgroundContour->Initialize();
+  backgroundContour->SetClosed(m_ContourClosed);
+  backgroundContour->SetWidth(m_ContourWidth);
+}
+
 void mitk::MIDASContourTool::SetBackgroundContourColor( float r, float g, float b )
 {
   m_BackgroundContourNode->SetProperty("color", ColorProperty::New(r, g, b));

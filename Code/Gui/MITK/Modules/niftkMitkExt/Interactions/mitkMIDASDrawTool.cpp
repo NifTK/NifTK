@@ -90,16 +90,7 @@ bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* 
   if (!positionEvent) return false;
 
   // Initialize contours, and set properties.
-  Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  feedbackContour->Initialize();
-  feedbackContour->SetClosed(m_ContourClosed);
-  feedbackContour->SetWidth(m_ContourWidth);
-
-  // Initialize contours, and set properties.
-  Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
-  backgroundContour->Initialize();
-  backgroundContour->SetClosed(m_ContourClosed);
-  backgroundContour->SetWidth(m_ContourWidth);
+  this->ClearData();
 
   // Turn the feedback contours on, background contours off and default the colours.
   FeedbackContourTool::SetFeedbackContourVisible(true);
@@ -175,10 +166,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
   this->AccumulateContourInWorkingData(*feedbackContour, 2);
 
   // Re-initialize contours to zero length.
-  feedbackContour->Initialize();
-  mitk::Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
-  backgroundContour->Initialize();
-
+  this->ClearData();
   FeedbackContourTool::SetFeedbackContourVisible(false);
   MIDASContourTool::SetBackgroundContourVisible(false);
 

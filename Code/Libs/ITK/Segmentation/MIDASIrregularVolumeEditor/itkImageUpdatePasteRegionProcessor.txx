@@ -32,7 +32,7 @@ template<class TPixel, unsigned int VImageDimension>
 ImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
 ::ImageUpdatePasteRegionProcessor()
 : m_SourceImage(NULL)
-, m_CopyBackground(false)
+, m_CopyBackground(true)
 {
 }
 
@@ -43,7 +43,10 @@ ImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
 {
   Superclass::PrintSelf(os,indent);   
   os << indent << "m_SourceImage=" << std::endl;
-  os << indent.GetNextIndent() << m_SourceImage << std::endl;   
+  os << indent.GetNextIndent() << m_SourceImage << std::endl;
+  os << indent << "m_CopyBackground=" << m_CopyBackground << std::endl;   
+  os << indent << "m_SourceRegionOfInterest=" <<std::endl;
+  os << indent.GetNextIndent() << m_SourceRegionOfInterest << std::endl;
 }
 
 template<class TPixel, unsigned int VImageDimension>

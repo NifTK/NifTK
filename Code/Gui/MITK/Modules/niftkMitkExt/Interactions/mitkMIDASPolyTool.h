@@ -89,6 +89,11 @@ class MIDASPolyToolEventInterface;
     /// \brief When called, we release the selected point and hence stop moving the poly line.
     virtual bool OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent);
 
+    /// \brief Clears the contour, meaning it re-initialised the feedback contour in
+    /// mitk::FeedbackContourTool, and also the background contour in mitk::MIDASContourTool
+    /// and the Previous Contour and Poly Line points in this class.
+    virtual void ClearData();
+
   protected:
 
     MIDASPolyTool(); // purposely hidden

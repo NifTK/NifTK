@@ -543,7 +543,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetSliceNumberFromSliceNavigationCo
       referenceImage->GetGeometry()->WorldToIndex(originInMillimetres, originInVoxelCoordinates);
 
       int viewAxis = this->GetViewAxis();
-      sliceNumber = originInVoxelCoordinates[viewAxis];
+      sliceNumber = (int)(originInVoxelCoordinates[viewAxis] + 0.5);
     }
   }
   return sliceNumber;
