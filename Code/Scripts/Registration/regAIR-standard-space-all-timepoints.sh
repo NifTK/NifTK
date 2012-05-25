@@ -68,10 +68,19 @@ Mandatory Arguments:
                              mni_305_image mni_305_region baseline_image baseline_region repeat_image1 repeat_region1 ...
 
   outputDir                : is where the output is writen to.
+  
+Options:
+  
+  -native_air_init         : use native registration and baseline ss air for the initialisation. 
 
 EOF
 exit 127
 }
+
+if [ "$1" == "-h" ]
+then
+  Usage
+fi   
 
 ndefargs=3
 
@@ -83,6 +92,18 @@ fi
 input_dir=$1
 input_file=$2
 output_dir=$3
+native_air_init="no"
+
+shift 3
+while [ "$1" != ""  ] 
+do
+    if [ "$1" = "-native_air_init" ] 
+    then
+      native_air_init=$2
+      shift 2
+    fi 
+done    
+
 
 command_filename=regAIR-standard-space-all-timepoints-`date +"%Y%m%d-%H%M%S"`.txt
 
@@ -102,6 +123,7 @@ function iterate_through_input_file
     echo ${script_dir}/_regAIR-standard-space-all-timepoints.sh \
          ${input_dir} \
          ${output_dir} \
+         ${native_air_init} \
          ${each_line} >> ${command_filename}
   done   
 }

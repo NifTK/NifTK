@@ -73,6 +73,8 @@ Options:
   -justdbc                 : for running just the dbc in case you forgot it!                               
                              Assumes you already ran the registration via this script,
                              as it looks for certain files that this script creates.
+                             
+  -air_init air_init       : Use the input air init file for initialisation.
 
 EOF
 exit 127
@@ -107,7 +109,7 @@ function iterate_through_input_file()
     if [ "$DO_THE_REG" = "REGISTER" ]; then
 
       # Generate a file of all commands
-      echo "_regAIR.sh $REG_TMP_DIR $REG_RESULTS_DIR $IMAGE_DIR $BRAINREGION_DIR $BASELINE_IMG $BASELINE_MASK $REPEAT_IMG $REPEAT_MASK $DOF $BSI_LOWER $BSI_UPPER $REG_METHOD $DILATIONS $COST_FUNCTION $DBC $MAYO $JUST_DBC" >> regAIR_$$_commands.txt
+      echo "_regAIR.sh $REG_TMP_DIR $REG_RESULTS_DIR $IMAGE_DIR $BRAINREGION_DIR $BASELINE_IMG $BASELINE_MASK $REPEAT_IMG $REPEAT_MASK $DOF $BSI_LOWER $BSI_UPPER $REG_METHOD $DILATIONS $COST_FUNCTION $DBC $MAYO $JUST_DBC ${air_init}" >> regAIR_$$_commands.txt
 
     else
     
@@ -162,6 +164,7 @@ COST_FUNCTION=1
 DBC=OFF
 MAYO=OFF
 JUST_DBC=FALSE
+air_init="_____dummy"
 
 # Parse command line
 
@@ -189,7 +192,10 @@ while [ "_$1" != "_"  ] ; do
         shift 1
     elif [ "$1" = "-justdbc" ] ; then
         JUST_DBC="TRUE"
-        shift 1                        
+        shift 1        
+    elif [ "$1" = "-air_init" ] ; then
+        air_init="$2"
+        shift 2       
     elif [ "$1" = "-x" ] ; then
         COST_FUNCTION="$2"
         shift 2        

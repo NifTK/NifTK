@@ -48,6 +48,7 @@ COST_FUNCTION=${14}
 DBC=${15}
 MAYO=${16}
 JUST_DBC=${17}
+AIR_INIT=${18}
 
 # Include necessary functions
 source _regInclude.sh
@@ -89,11 +90,23 @@ if [ "$JUST_DBC" = "FALSE" ]; then
   
     # Do pre-alignment.
   
-    PRE_ALIGN_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.pre 
-  
-    reg_pre_align $REG_TMP_DIR/$BASELINE_IMG.img $REG_TMP_DIR/$REPEAT_IMG.img $BRAINREGION_DIR/$BASELINE_MASK $BRAINREGION_DIR/$REPEAT_MASK $PRE_ALIGN_OUTPUT $DOF             
-
-    FINAL_REG_RESULT_INI=$PRE_ALIGN_OUTPUT
+    if [ ! -f "${AIR_INIT}" ]
+    then 
+      echo "Using reg_prealign for initialisation"
+      PRE_ALIGN_OUTPUT=$REG_RESULTS_DIR/$BASE_OUTPUT_NAME.pre 
+    
+      reg_pre_align $REG_TMP_DIR/$BASELINE_IMG.img $REG_TMP_DIR/$REPEAT_IMG.img $BRAINREGION_DIR/$BASELINE_MASK $BRAINREGION_DIR/$REPEAT_MASK $PRE_ALIGN_OUTPUT $DOF             
+      FINAL_REG_RESULT_INI=$PRE_ALIGN_OUTPUT
+    else
+      echo "Using air init for initialisation"
+      air_parameters=`${AIR_BIN}/scanair ${AIR_INIT} | tail -n 6`
+      air_parameters=${air_parameters:1}
+      echo ${air_parameters} | awk '{printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' > $PRE_ALIGN_OUTPUT
+      
+      FINAL_REG_RESULT_INI=$PRE_ALIGN_OUTPUT
+      
+      cat ${FINAL_REG_RESULT_INI}
+    fi # RREG_INIT
   
   fi
 
@@ -127,7 +140,7 @@ if [ "$JUST_DBC" = "FALSE" ]; then
     align_linear $firstReg
   
     echo "alignlinear executed with $firstReg" >> $DATA_LOG_PATH
-
+    
     FINAL_REG_RESULT_INI=$FIRST_REG_OUTPUT_INI
     FINAL_REG_RESULT_AIR=$FIRST_REG_OUTPUT_AIR
 

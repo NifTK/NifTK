@@ -25,15 +25,38 @@
 #=================================================================================*/
 set -x
 
+function Usage()
+{
+cat <<EOF
+
+This script is called by regAIR-standard-space-all-timepointss.sh to perform registration of all time points to standard space. 
+
+EOF
+exit 127
+}
+
+if [ "$1" == "-h" ]
+then
+  Usage
+fi   
+
+ndefargs=7
+# Check args
+if [ $# -lt ${ndefargs} ]; then
+  Usage
+fi
+
+
 current_dir=`dirname $0`
 
 input_dir=$1
 output_dir=$2
-ss_image=$3
-ss_region=$4
-baseline_image=$5
-baseline_region=$6
-starting_arg=7
+native_air_init=$3
+ss_image=$4
+ss_region=$5
+baseline_image=$6
+baseline_region=$7
+starting_arg=8
 
 check_file_exists "${input_dir}/${ss_image}" "no"
 check_file_exists "${input_dir}/${ss_region}" "no"
@@ -53,7 +76,7 @@ function cleanup
   echo "Cleaning up..."
   rm -rf  ${tmp_dir}
 }
-trap "cleanup" EXIT SIGINT SIGTERM SIGKILL 
+#trap "cleanup" EXIT SIGINT SIGTERM SIGKILL 
 
 # Register the baseline image to the ss_image. 
 baseline_ss_input_file=${tmp_dir}/baseline_ss_input_file.txt
@@ -72,7 +95,8 @@ anchange ${baseline_ss_image_wrong_orientation} ${baseline_ss_image} -setorient 
 baseline_ss_region_large_id=`ls ${baseline_output_dir}/reg-tmp/???_*_*`
 dims=`imginfo ${baseline_ss_image} -dims | awk '{printf "%d %d %d", $1, $2, $3}'`
 regchange ${baseline_ss_region_large_id} ${output_dir}/. ${dims} -study ${baseline_id} -series 75 
-baseline_ss_region=`ls ${output_dir}/???_${baseline_id}_*`
+baseline_ss_region=`ls ${output_dir}/???_${baseline_id}_* | tail -n 1`
+cp ${baseline_output_dir}/${baseline_id}-00125.second.air ${output_dir}/.
 rm -rf ${baseline_output_dir}
 
 # Perform all pairwise registration. 
@@ -82,6 +106,28 @@ do
   (( arg_plus_1=arg+1 ))
   repeat_region=${!arg_plus_1}
   repeat_id=`echo ${repeat_image} | awk -F- '{printf $1}'`
+  air_init=""
+  
+  if [ "${native_air_init}" == "yes" ]
+  then 
+    # Register the repeat image to the baseline_ss_image. 
+    repeat_input_dir=${tmp_dir}/repeat_native_${arg}
+    repeat_output_dir=${tmp_dir}/repeat_native_${arg}/results
+    mkdir ${repeat_input_dir} ${repeat_output_dir}
+    anchange ${baseline_image} ${repeat_input_dir}/`basename ${baseline_image}` -study ${baseline_id}
+    cp ${baseline_region} ${repeat_input_dir}/.
+    anchange ${input_dir}/${repeat_image} ${repeat_input_dir}/`basename ${repeat_image}` -study ${repeat_id}
+    cp ${input_dir}/${repeat_region} ${repeat_input_dir}/. 
+    repeat_input_file=${repeat_input_dir}/repeat_input_file.txt
+    echo "`basename ${baseline_image%.img}` `basename ${baseline_region}` `basename ${repeat_image}` `basename ${repeat_region}`" > ${repeat_input_file}
+    regAIR.sh ${repeat_input_dir} ${repeat_input_dir} ${repeat_input_file} ${repeat_output_dir} -m 12 -d 8 
+    native_air=`basename ${baseline_image%.img}`-`basename ${repeat_image}`.second.air
+    cp ${repeat_output_dir}/${native_air} ${output_dir}/.
+    # Combine the air files. 
+    ${AIR_BIN}/combine_air ${output_dir}/${repeat_id}-combine.air y ${output_dir}/${baseline_id}-00125.second.air ${output_dir}/${native_air}
+    
+    air_init="-air_init ${output_dir}/${repeat_id}-combine.air"
+  fi     
   
   # Register the repeat image to the baseline_ss_image. 
   repeat_input_dir=${tmp_dir}/repeat_${arg}
@@ -93,7 +139,8 @@ do
   cp ${input_dir}/${repeat_region} ${repeat_input_dir}/. 
   repeat_ss_input_file=${repeat_input_dir}/repeat_ss_input_file.txt
   echo "`basename ${baseline_ss_image%.img}` `basename ${baseline_ss_region}` `basename ${repeat_image}` `basename ${repeat_region}`" > ${repeat_ss_input_file}
-  regAIR.sh ${repeat_input_dir} ${repeat_input_dir} ${repeat_ss_input_file} ${repeat_output_dir} -m 12 -d 8 -rreg_init
+  regAIR.sh ${repeat_input_dir} ${repeat_input_dir} ${repeat_ss_input_file} ${repeat_output_dir} -m 12 -d 8 ${air_init}
+  
   # Handle the -ve ID of the image by getting the image with the original ID and fixing the orientation. 
   repeat_ss_image_wrong_orientation=${repeat_output_dir}/${baseline_id:0:5}-${repeat_id:0:5}.img
   repeat_ss_image=${output_dir}/${repeat_id}-075-1.img 
