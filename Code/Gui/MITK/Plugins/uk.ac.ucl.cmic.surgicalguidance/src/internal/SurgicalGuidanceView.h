@@ -31,9 +31,11 @@
 #include <QmitkUpdateTimerWidget.h>
 #include <QmitkToolSelectionWidget.h>
 #include <QmitkToolTrackingStatusWidget.h>
-
+#include "QmitkMIDASBaseFunctionality.h"
 #include "QmitkAbstractView.h"
+
 #include "ui_SurgicalGuidanceViewControls.h"
+#include "TrackerControlsWidget.h"
 
 #include "OIGTLSocketObject.h"
 #include "Common/NiftyLinkXMLBuilder.h"
@@ -43,11 +45,13 @@
  * \brief User interface to provide Image Guided Surgery functionality.
  * \ingroup uk_ac_ucl_cmic_surgicalguidance_internal
 */
-class SurgicalGuidanceView : public QmitkAbstractView
+class SurgicalGuidanceView : public QmitkMIDASBaseFunctionality
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
   Q_OBJECT
+
+friend class TrackerControlsWidget;
   
 public:
 
@@ -57,6 +61,9 @@ public:
   /// \brief Static view ID = uk.ac.ucl.cmic.surgicalguidance
   static const std::string VIEW_ID;
 
+  /// \brief Returns the view ID.
+  virtual std::string GetViewID() const;
+
 protected:
 
   /// \brief Called by framework, this method creates all the controls for this view
@@ -64,6 +71,8 @@ protected:
 
   /// \brief Called by framework, sets the focus on a specific widget.
   virtual void SetFocus();
+
+  QDomDocument CreateTestDeviceDescriptor();
 
 protected slots:
 
@@ -84,20 +93,27 @@ protected slots:
 
 protected:
 
-  Ui::SurgicalGuidanceViewControls m_Controls;
+  Ui::SurgicalGuidanceViewControls   m_Controls;
+  QPlainTextEdit                   * m_consoleDisplay;
 
 private slots:
   void OnAddListeningPort();
   void OnRemoveListeningPort();
   void OnTableSelectionChange(int r, int c, int pr = 0, int pc = 0);
-
+  void OnCellDoubleClicked(int r, int c);
+  
 private:
-  unsigned long int            m_msgCounter;
-  OIGTLMessage::Pointer        m_lastMsg;
-  OIGTLSocketObject          * m_sockPointer;
-  QList<OIGTLSocketObject *>   m_sockets;
-  QPlainTextEdit             * m_trackerDataDisplay;
+  unsigned long int                  m_msgCounter;
+  OIGTLMessage::Pointer              m_lastMsg;
+  OIGTLSocketObject                * m_sockPointer;
+  QList<OIGTLSocketObject *>         m_sockets;
+  QList<ClientDescriptorXMLBuilder>  m_clientDescriptors;
 
+  //mitk::DataNode::Pointer            m_ImageFiducialsDataNode;
+  //mitk::DataNode::Pointer            m_TrackerFiducialsDataNode;
+
+  TrackerControlsWidget            * m_TrackerControlsWidget;     
+  QWidget                          * m_WidgetOnDisplay;        
 };
 
 #endif // SurgicalGuidanceView_h

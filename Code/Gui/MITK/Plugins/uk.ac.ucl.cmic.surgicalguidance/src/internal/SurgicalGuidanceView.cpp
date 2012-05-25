@@ -40,15 +40,26 @@ const std::string SurgicalGuidanceView::VIEW_ID = "uk.ac.ucl.cmic.surgicalguidan
 
 SurgicalGuidanceView::SurgicalGuidanceView()
 {
-  m_trackerDataDisplay = NULL;
+  m_consoleDisplay = NULL;
+  m_TrackerControlsWidget = NULL;
+  m_WidgetOnDisplay    = NULL;
   m_msgCounter = 0;
-
+  //m_ImageFiducialsDataNode.operator =(NULL);
+  //m_TrackerFiducialsDataNode.operator =(NULL);
 }
 
 SurgicalGuidanceView::~SurgicalGuidanceView()
 {
-  if (m_trackerDataDisplay != NULL)
-    delete m_trackerDataDisplay;
+  //if (m_consoleDisplay != NULL)
+  //  delete m_consoleDisplay;
+
+  //if (m_TrackerControlsWidget != NULL)
+  //  delete m_TrackerControlsWidget;
+}
+
+std::string SurgicalGuidanceView::GetViewID() const
+{
+  return VIEW_ID;
 }
 
 void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
@@ -56,32 +67,17 @@ void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
   // create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi( parent );
 
-  QmitkFiducialRegistrationWidget * frw = new QmitkFiducialRegistrationWidget(parent);
-  m_Controls.verticalLayout->addWidget(frw);
-  //frw->HideTrackingFiducialButton(true);
-  //frw->HideContinousRegistrationRadioButton(true);
-  //frw->HideStaticRegistrationRadioButton(true);
-  //frw->HideFiducialRegistrationGroupBox(true);
-  //frw->HideUseICPRegistrationCheckbox(true);
-
-  frw->show();
-
-  //QmitkPointListWidget * plw = new QmitkPointListWidget(parent);
-  //m_Controls.verticalLayout->addWidget(plw);
-  //plw->show();
-  
-  // connect signals-slots etc.
-
   connect(m_Controls.pushButton_openPort, SIGNAL(clicked()), this, SLOT(OnAddListeningPort()) );
   connect(m_Controls.pushButton_closePort, SIGNAL(clicked()), this, SLOT(OnRemoveListeningPort()) );
 
   connect(m_Controls.tableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(OnTableSelectionChange(int, int)) ); 
   connect(m_Controls.tableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(OnTableSelectionChange(int, int, int, int)) );
+  connect(m_Controls.tableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
 }
 
 void SurgicalGuidanceView::SetFocus()
 {
-  m_Controls.buttonPerformImageProcessing->setFocus();
+  //m_Controls.buttonPerformImageProcessing->setFocus();
 }
 
 
@@ -126,6 +122,21 @@ void SurgicalGuidanceView::OnAddListeningPort()
     m_Controls.tableWidget->setItem(row, 1, newItem2);
 
     m_Controls.tableWidget->show();
+
+    // For testing only: connect to self
+    QUrl url;
+    url.setHost("localhost");
+    url.setPort(portNum);
+
+    socket->connectToRemote(url);
+   
+    
+    // Once the connection is established we start with sending through the host description that the remote peer can enlist us
+    OIGTLStringMessage::Pointer infoMsg(new OIGTLStringMessage());
+    infoMsg->setString(this->CreateTestDeviceDescriptor().toString());
+    this->interpretMessage(infoMsg);
+
+
   }
 }
 
@@ -188,6 +199,54 @@ void SurgicalGuidanceView::OnTableSelectionChange(int r, int c, int pr, int pc)
   if (ok)
     m_Controls.spinBox->setValue(portNum);
 }
+
+void SurgicalGuidanceView::OnCellDoubleClicked(int r, int c)
+{
+  if (r < 0 || c < 0)
+    return;
+
+  QTableWidgetItem *tItem = m_Controls.tableWidget->item(r, 0);
+  bool ok = false;
+  
+  int portNum = tItem->text().toInt(&ok, 10);
+  if (!ok)
+    return;
+  
+  QString deviceType;
+
+  for (int i = 0; i < m_clientDescriptors.count(); i++)
+  {
+    ClientDescriptorXMLBuilder clientInfo = m_clientDescriptors.at(i);
+        
+    if (clientInfo.getClientPort() == QString::number(portNum) )
+    {
+      deviceType = clientInfo.getDeviceType();
+      break;
+    }
+  }
+  
+  if (deviceType == QString("Tracker"))
+  {
+    if (m_WidgetOnDisplay != NULL)
+       m_Controls.gridLayout_clientControls->removeWidget(m_WidgetOnDisplay);
+
+    if (m_TrackerControlsWidget == NULL)
+    {
+      m_TrackerControlsWidget = new TrackerControlsWidget((QWidget *)this->parent());
+      m_TrackerControlsWidget->SetSurgicalGuidanceViewPointer(this);
+      //connect(....)
+    }
+    
+    m_Controls.gridLayout_clientControls->addWidget(m_TrackerControlsWidget);
+    m_WidgetOnDisplay = (QWidget * )m_TrackerControlsWidget;
+
+    m_WidgetOnDisplay->show();
+  }
+  else
+  {
+  }
+}
+
 
 void SurgicalGuidanceView::clientConnected()
 {
@@ -292,10 +351,10 @@ void SurgicalGuidanceView::displayTrackerData(OIGTLMessage::Pointer msg)
     trMsg = static_cast<OIGTLTransformMessage::Pointer>(msg);
 
     //Instanciate the text field
-    if (m_trackerDataDisplay == NULL)
-      m_trackerDataDisplay = new QPlainTextEdit();
+    if (m_consoleDisplay == NULL)
+      m_consoleDisplay = new QPlainTextEdit((QWidget *)this->parent());
 
-    m_Controls.scrollArea_trackerMessage->setWidget(m_trackerDataDisplay);
+    m_Controls.scrollArea_console->setWidget(m_consoleDisplay);
 
     //Print stuff
     QString tmp;
@@ -305,9 +364,9 @@ void SurgicalGuidanceView::displayTrackerData(OIGTLMessage::Pointer msg)
     tmp.append(trMsg->getHostName());
     tmp.append("\nMessage ID: ");
     tmp.append(QString::number(trMsg->getId()));
-    m_trackerDataDisplay->appendPlainText(tmp);
-    m_trackerDataDisplay->appendPlainText(trMsg->getMatrixAsString());
-    m_trackerDataDisplay->appendPlainText("\n");
+    m_consoleDisplay->appendPlainText(tmp);
+    m_consoleDisplay->appendPlainText(trMsg->getMatrixAsString());
+    m_consoleDisplay->appendPlainText("\n");
   }
   else if (msg->getMessageType() == QString("TDATA"))// && ((m_msgCounter % 1000 ==0) || (m_msgCounter % 1000 ==1)))
   {
@@ -315,10 +374,10 @@ void SurgicalGuidanceView::displayTrackerData(OIGTLMessage::Pointer msg)
     trMsg = static_cast<OIGTLTrackingDataMessage::Pointer>(msg);
 
     //Instanciate the text field
-    if (m_trackerDataDisplay == NULL)
-      m_trackerDataDisplay = new QPlainTextEdit();
+    if (m_consoleDisplay == NULL)
+      m_consoleDisplay = new QPlainTextEdit((QWidget *)this->parent());
 
-     m_Controls.scrollArea_trackerMessage->setWidget(m_trackerDataDisplay);
+    m_Controls.scrollArea_console->setWidget(m_consoleDisplay);
 
     //Print stuff
     QString tmp;
@@ -330,9 +389,9 @@ void SurgicalGuidanceView::displayTrackerData(OIGTLMessage::Pointer msg)
     tmp.append(QString::number(trMsg->getId()));
     tmp.append("\nTool ID: ");
     tmp.append(trMsg->getTrackerToolName());
-    m_trackerDataDisplay->appendPlainText(tmp);
-    m_trackerDataDisplay->appendPlainText(trMsg->getMatrixAsString());
-    m_trackerDataDisplay->appendPlainText("\n");
+    m_consoleDisplay->appendPlainText(tmp);
+    m_consoleDisplay->appendPlainText(trMsg->getMatrixAsString());
+    m_consoleDisplay->appendPlainText("\n");
   }
 }
 
@@ -341,10 +400,10 @@ void SurgicalGuidanceView::interpretMessage(OIGTLMessage::Pointer msg)
   ++m_msgCounter;
 
    //Instanciate the text field
-  if (m_trackerDataDisplay == NULL)
-    m_trackerDataDisplay = new QPlainTextEdit();
+  if (m_consoleDisplay == NULL)
+    m_consoleDisplay = new QPlainTextEdit((QWidget *)this->parent());
 
-  m_Controls.scrollArea_trackerMessage->setWidget(m_trackerDataDisplay);
+  m_Controls.scrollArea_console->setWidget(m_consoleDisplay);
 
   if (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
   {
@@ -374,6 +433,8 @@ void SurgicalGuidanceView::interpretMessage(OIGTLMessage::Pointer msg)
 
       if (!clientInfo.isMessageValid())
         return;
+
+      ClientDescriptorXMLBuilder clientInfo2(clientInfo);
       
       bool ok = false;
       int portNum = clientInfo.getClientPort().toInt(&ok, 10);
@@ -387,6 +448,9 @@ void SurgicalGuidanceView::interpretMessage(OIGTLMessage::Pointer msg)
       
         if (ok && pNum == portNum)
         {
+          //Store client desriptor
+          m_clientDescriptors.append(clientInfo);
+
           //Set IP
           QTableWidgetItem *newItem = new QTableWidgetItem(clientInfo.getClientIP());
           newItem->setTextAlignment(Qt::AlignCenter);
@@ -433,8 +497,8 @@ void SurgicalGuidanceView::interpretMessage(OIGTLMessage::Pointer msg)
       tmp.append(clientInfo.getClientPort());
       tmp.append("\n");
 
-      m_trackerDataDisplay->appendPlainText(tmp);
-      m_trackerDataDisplay->appendPlainText("\n");
+      m_consoleDisplay->appendPlainText(tmp);
+      m_consoleDisplay->appendPlainText("\n");
     }
     else if (type == QString("CommandDescriptor") )
     {
@@ -461,4 +525,28 @@ void SurgicalGuidanceView::interpretMessage(OIGTLMessage::Pointer msg)
       }
     }
   }
+}
+
+QDomDocument SurgicalGuidanceView::CreateTestDeviceDescriptor()
+{
+  QDomDocument domDocument("ClientDescriptorML");
+
+  QDomElement root = domDocument.createElement("ClientDescriptor");
+
+
+  QDomElement device = domDocument.createElement("Device");
+  device.setAttribute("DeviceName", "NDI Polaris Vicra");
+  device.setAttribute("DeviceType", "Tracker");
+  device.setAttribute("CommunicationType", "Serial");
+  device.setAttribute("PortName", QString("Tracker not connected"));
+  root.appendChild(device);
+
+  QDomElement client = domDocument.createElement("Client");
+  client.setAttribute("ClientIP", getLocalHostAddress());
+  client.setAttribute("ClientPort", 3200);
+  root.appendChild(client);
+
+  domDocument.appendChild(root);
+
+  return domDocument;
 }
