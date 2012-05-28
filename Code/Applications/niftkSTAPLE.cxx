@@ -55,10 +55,17 @@ int main(int argc, char** argv)
   if (argc < 4)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << std::endl;    
-    std::cout << "Usage: " << argv[0]
-        << " outputFilename foregroundValue confidenceWeight inputFilenames1 inputFilenames2 ..." << std::endl;
-    return EXIT_FAILURE; 
+    std::cout << "  " << std::endl;
+    std::cout << "  This program perform STAPLE on input segmentations." << std::endl;
+    std::cout << " " << std::endl;
+    std::cout << " " << argv[0] << " outputFilename foregroundValue confidenceWeight inputFilenames1 inputFilenames2 ..." << std::endl;
+    std::cout << " " << std::endl;
+    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+    std::cout << "    outputFilename        Output image " << std::endl;
+    std::cout << "    foregroundValue       Foreground value in the segmentation. " << std::endl;
+    std::cout << "    confidenceWeight      Weight." << std::endl;
+    std::cout << "    inputFilenames1       Input segmentations" << std::endl << std::endl;      
+    return EXIT_FAILURE;    
   }
 
   char* outputFilename = argv[1]; 
