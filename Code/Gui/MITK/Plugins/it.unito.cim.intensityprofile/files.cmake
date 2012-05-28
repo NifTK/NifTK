@@ -24,8 +24,7 @@ set(MOC_H_FILES
 # plug-in views in the workbench
 set(CACHED_RESOURCE_FILES
   plugin.xml
-  resources/plot1.jpg
-  resources/plot2.svg
+  resources/intensity_profile_icon.jpg
 )
 
 # list of Qt .qrc files which contain additional resources

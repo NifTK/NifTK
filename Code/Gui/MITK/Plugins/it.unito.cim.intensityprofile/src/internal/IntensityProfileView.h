@@ -21,7 +21,7 @@
 
 #include <berryISelectionListener.h>
 
-#include <FunctionalityBase.h>
+#include <QmitkMIDASBaseView.h>
 
 #include "ui_IntensityProfileView.h"
 
@@ -52,7 +52,7 @@ class DataNode;
  \sa QmitkFunctionality
  \ingroup Functionalities
  */
-class IntensityProfileView: public FunctionalityBase {
+class IntensityProfileView: public QmitkMIDASBaseView {
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
     Q_OBJECT
@@ -97,7 +97,6 @@ private slots:
   void calculateRoiStatistics(mitk::DataNode* node, mitk::DataNode* roiNode);
   void plotRoiProfiles(mitk::DataNode* node);
   void plotRoiProfile(mitk::DataNode* node, mitk::DataNode* roi);
-  void plotModelProfiles(mitk::DataNode* node);
   void plotStoredProfiles();
 
 private:
@@ -118,9 +117,6 @@ private:
 
   void setDefaultLevelWindow(mitk::DataNode* node);
 
-  void cacheModelNodeInfo(mitk::DataNode* model);
-  void recalculateModelProfiles(mitk::DataNode* modelNode, mitk::Point3D crosshairPos);
-
   typedef mitk::ImageStatisticsCalculator::Statistics Statistics;
 
   static mitk::NodePredicateDimension::Pointer is4DImage;
@@ -134,7 +130,6 @@ private:
   static mitk::NodePredicateAnd::Pointer has4DBinaryImage;
   static mitk::TNodePredicateDataType<mitk::PointSet>::Pointer hasPointSet;
   static mitk::NodePredicateAnd::Pointer is4DNotBinaryImage;
-  static mitk::NodePredicateProperty::Pointer isModel;
   static mitk::NodePredicateAnd::Pointer isCrosshair;
   static mitk::NodePredicateData::Pointer isGroup;
   static mitk::NodePredicateAnd::Pointer isStudy;

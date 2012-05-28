@@ -1,4 +1,5 @@
 SET(SRC_CPP_FILES
+  QmitkMIDASBaseView.cpp
   QmitkMIDASBaseFunctionality.cpp
   QmitkMIDASBaseSegmentationFunctionality.cpp
   QmitkMIDASToolSelectorWidget.cpp
@@ -7,6 +8,8 @@ SET(SRC_CPP_FILES
 
 SET(INTERNAL_CPP_FILES
   CommonActivator.cpp
+  VisibilityChangedCommand.cpp
+  VisibilityChangeObserver.cpp
 )
 
 SET(UI_FILES
@@ -16,6 +19,7 @@ SET(UI_FILES
 
 SET(MOC_H_FILES
   src/internal/CommonActivator.h
+  src/QmitkMIDASBaseView.h
   src/QmitkMIDASBaseFunctionality.h
   src/QmitkMIDASBaseSegmentationFunctionality.h
   src/QmitkMIDASToolSelectorWidget.h

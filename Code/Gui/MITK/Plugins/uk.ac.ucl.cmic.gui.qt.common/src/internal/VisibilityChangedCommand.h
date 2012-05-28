@@ -1,14 +1,20 @@
 /*=============================================================================
 
- KMaps:     An image processing toolkit for DCE-MRI analysis developed
-            at the Molecular Imaging Center at University of Torino.
+ NifTK: An image processing toolkit jointly developed by the
+             Dementia Research Centre, and the Centre For Medical Image Computing
+             at University College London.
 
- See:       http://www.cim.unito.it
+ See:        http://dementia.ion.ucl.ac.uk/
+             http://cmic.cs.ucl.ac.uk/
+             http://www.ucl.ac.uk/
 
- Author:    Miklos Espak <espakm@gmail.com>
+ Last Changed      : $Date: 2011-11-24 15:53:45 +0000 (Thu, 24 Nov 2011) $
+ Revision          : $Revision: 7857 $
+ Last modified by  : $Author: mjc $
 
- Copyright (c) Miklos Espak
- All Rights Reserved.
+ Original author   : Miklos Espak <espakm@gmail.com>
+
+ Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR

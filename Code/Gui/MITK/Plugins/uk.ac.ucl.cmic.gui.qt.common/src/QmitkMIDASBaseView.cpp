@@ -1,14 +1,20 @@
 /*=============================================================================
 
- KMaps:     An image processing toolkit for DCE-MRI analysis developed
-            at the Molecular Imaging Center at University of Torino.
+ NifTK: An image processing toolkit jointly developed by the
+             Dementia Research Centre, and the Centre For Medical Image Computing
+             at University College London.
 
- See:       http://www.cim.unito.it
+ See:        http://dementia.ion.ucl.ac.uk/
+             http://cmic.cs.ucl.ac.uk/
+             http://www.ucl.ac.uk/
 
- Author:    Miklos Espak <espakm@gmail.com>
+ Last Changed      : $Date: 2011-11-24 15:53:45 +0000 (Thu, 24 Nov 2011) $
+ Revision          : $Revision: 7857 $
+ Last modified by  : $Author: mjc $
 
- Copyright (c) Miklos Espak
- All Rights Reserved.
+ Original author   : Miklos Espak <espakm@gmail.com>
+
+ Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
@@ -16,25 +22,25 @@
 
  ============================================================================*/
 
-#include "FunctionalityBase.h"
+#include "QmitkMIDASBaseView.h"
 
 #include <itkCommand.h>
 
 #include "internal/VisibilityChangedCommand.h"
 
-class FunctionalityBasePrivate
+class QmitkMIDASBaseViewPrivate
 {
 public:
   QMap<const mitk::DataNode*, unsigned long> visibilityObserverTags;
 
-  mitk::MessageDelegate1<FunctionalityBase, const mitk::DataNode*>* addNodeEventListener;
-  mitk::MessageDelegate1<FunctionalityBase, const mitk::DataNode*>* removeNodeEventListener;
+  mitk::MessageDelegate1<QmitkMIDASBaseView, const mitk::DataNode*>* addNodeEventListener;
+  mitk::MessageDelegate1<QmitkMIDASBaseView, const mitk::DataNode*>* removeNodeEventListener;
 };
 
 
-FunctionalityBase::FunctionalityBase()
+QmitkMIDASBaseView::QmitkMIDASBaseView()
 : QmitkAbstractView(),
-  d_ptr(new FunctionalityBasePrivate)
+  d_ptr(new QmitkMIDASBaseViewPrivate)
 {
   mitk::DataStorage* dataStorage = GetDataStorage();
 
@@ -48,22 +54,22 @@ FunctionalityBase::FunctionalityBase()
       ++it;
     }
 
-    Q_D(FunctionalityBase);
+    Q_D(QmitkMIDASBaseView);
     d->addNodeEventListener =
-        new mitk::MessageDelegate1<FunctionalityBase, const mitk::DataNode*>(this, &FunctionalityBase::onNodeAddedInternal);
+        new mitk::MessageDelegate1<QmitkMIDASBaseView, const mitk::DataNode*>(this, &QmitkMIDASBaseView::onNodeAddedInternal);
     dataStorage->AddNodeEvent.AddListener(*d->addNodeEventListener);
 
     d->removeNodeEventListener =
-        new mitk::MessageDelegate1<FunctionalityBase, const mitk::DataNode*>(this, &FunctionalityBase::onNodeRemovedInternal);
+        new mitk::MessageDelegate1<QmitkMIDASBaseView, const mitk::DataNode*>(this, &QmitkMIDASBaseView::onNodeRemovedInternal);
     dataStorage->RemoveNodeEvent.AddListener(*d->removeNodeEventListener);
   }
   else {
-    MITK_INFO << "FunctionalityBase() data storage not ready";
+    MITK_INFO << "QmitkMIDASBaseView() data storage not ready";
   }
 }
 
-FunctionalityBase::~FunctionalityBase() {
-  Q_D(FunctionalityBase);
+QmitkMIDASBaseView::~QmitkMIDASBaseView() {
+  Q_D(QmitkMIDASBaseView);
 
   mitk::DataStorage* dataStorage = GetDataStorage();
   if (dataStorage)
@@ -73,8 +79,6 @@ FunctionalityBase::~FunctionalityBase() {
 
     delete d->addNodeEventListener;
     delete d->removeNodeEventListener;
-//    d->dataStorage->ChangedNodeEvent.AddListener(
-//        mitk::MessageDelegate1<PluginCore, const mitk::DataNode*>(this, &PluginCore::onNodeChangedInternal));
   }
 
   foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys()) {
@@ -86,15 +90,15 @@ FunctionalityBase::~FunctionalityBase() {
 }
 
 bool
-FunctionalityBase::IsExclusiveFunctionality() const
+QmitkMIDASBaseView::IsExclusiveFunctionality() const
 {
   return false;
 }
 
 void
-FunctionalityBase::onNodeAddedInternal(const mitk::DataNode* node)
+QmitkMIDASBaseView::onNodeAddedInternal(const mitk::DataNode* node)
 {
-  Q_D(FunctionalityBase);
+  Q_D(QmitkMIDASBaseView);
 
   mitk::BaseProperty* property = node->GetProperty("visible");
   if (property) {
@@ -104,9 +108,9 @@ FunctionalityBase::onNodeAddedInternal(const mitk::DataNode* node)
 }
 
 void
-FunctionalityBase::onNodeRemovedInternal(const mitk::DataNode* node)
+QmitkMIDASBaseView::onNodeRemovedInternal(const mitk::DataNode* node)
 {
-  Q_D(FunctionalityBase);
+  Q_D(QmitkMIDASBaseView);
   if (d->visibilityObserverTags.contains(node)) {
     mitk::BaseProperty* property = node->GetProperty("visible");
     if (property) {
@@ -117,6 +121,6 @@ FunctionalityBase::onNodeRemovedInternal(const mitk::DataNode* node)
 }
 
 void
-FunctionalityBase::onVisibilityChanged(const mitk::DataNode* /*node*/)
+QmitkMIDASBaseView::onVisibilityChanged(const mitk::DataNode* /*node*/)
 {
 }

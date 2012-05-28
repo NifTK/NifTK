@@ -1,7 +1,6 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
   <qresource prefix="/it.unito.cim.intensityprofile">
-    <file>plot1.jpg</file>
-    <file>plot2.svg</file>
+    <file>intensity_profile_icon.jpg</file>
   </qresource>
  </RCC>

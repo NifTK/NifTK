@@ -45,9 +45,6 @@
 #include <QWheelEvent>
 #include <QInputDialog>
 
-//#include <fit/Model.h>
-//#include <fit/ModelFactory.h>
-
 void MedianHybridQuickSort(std::vector<double> array, std::vector<unsigned>& array2);
 
 class IntensityProfileViewPrivate {
@@ -105,14 +102,6 @@ public:
   typedef QMap<mitk::DataNode*, RoiProfileMap> RoiProfileMapsByNode;
   RoiProfileMapsByNode roiProfileMapsByNode;
 
-  QList<mitk::DataNode::Pointer> models;
-  typedef QMap<mitk::DataNode*, QwtPlotCurve*> ModelProfileMap;
-  typedef QMap<mitk::DataNode*, ModelProfileMap> ModelProfileMapsByNode;
-  ModelProfileMapsByNode modelProfileMapsByNode;
-  QMap<mitk::DataNode*, QVector<mitk::DataNode*> > modelParameterMaps;
-//  typedef QMap<mitk::DataNode*, kmaps::Model*> FitFunctionMap;
-//  FitFunctionMap fitFunctions;
-
   QList<mitk::DataNode::Pointer> profileNodes;
   QMap<mitk::DataNode*, unsigned long> profileNodeChangeObservers;
   QList<QwtPlotCurve*> storedProfileCurves;
@@ -120,7 +109,6 @@ public:
   QwtScaleWidget* xAxis;
   QwtScaleWidget* yAxis;
 
-//  kmaps::ModelFactory* modelFactory;
 };
 
 QwtSymbol IntensityProfileViewPrivate::Symbols[MaxSymbols];
@@ -204,9 +192,6 @@ mitk::NodePredicateAnd::Pointer IntensityProfileView::has4DBinaryImage =
 mitk::TNodePredicateDataType<mitk::PointSet>::Pointer IntensityProfileView::hasPointSet =
     mitk::TNodePredicateDataType<mitk::PointSet>::New();
 
-mitk::NodePredicateProperty::Pointer IntensityProfileView::isModel =
-    mitk::NodePredicateProperty::New("Model");
-
 mitk::NodePredicateAnd::Pointer IntensityProfileView::isCrosshair =
     mitk::NodePredicateAnd::New(
         mitk::NodePredicateProperty::New("name", mitk::StringProperty::New("widget1Plane")),
@@ -232,8 +217,6 @@ IntensityProfileView::IntensityProfileView()
   d->crosshairPositionListener = new mitk::MessageDelegate<IntensityProfileView>(this, &IntensityProfileView::onCrosshairPositionEvent);
 
   d->display = 0;
-
-//  d->modelFactory = kmaps::ModelFactory::GetInstance();
 
   d->levelWindowModifiedCommand = itk::SimpleMemberCommand<IntensityProfileView>::New();
   d->levelWindowModifiedCommand->SetCallbackFunction(this, &IntensityProfileView::initPlotter);
@@ -263,9 +246,6 @@ IntensityProfileView::~IntensityProfileView()
   // TODO somewhere these observers should be removed. Maybe not here.
   foreach (mitk::DataNode* roiNode, d->roiNodes) {
     onVisibilityOff(roiNode);
-  }
-  foreach (mitk::DataNode* modelNode, d->models) {
-    onVisibilityOff(modelNode);
   }
   foreach (mitk::DataNode* node, d->referenceNodes) {
     deselectNode(node);
@@ -366,14 +346,6 @@ IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode)
       }
     }
   }
-  else if (isModel->CheckNode(node)) {
-    if (d->models.contains(node)) {
-      return;
-    }
-    d->models.push_back(node);
-    cacheModelNodeInfo(node);
-    onCrosshairPositionEvent();
-  }
   else {
     return;
   }
@@ -418,26 +390,6 @@ IntensityProfileView::onVisibilityOff(const mitk::DataNode* cnode)
       itRoiProfileMaps->erase(itRoiProfile);
       delete *itRoiProfile;
       ++itRoiProfileMaps;
-    }
-  }
-  else if (isModel->CheckNode(node)) {
-    if (!d->models.contains(node)) {
-      return;
-    }
-    d->models.removeOne(node);
-//    if (d->fitFunctions.contains(node)) {
-//      kmaps::Model* fitFunction = d->fitFunctions[node];
-//      d->fitFunctions.remove(node);
-//      delete fitFunction;
-//    }
-
-    IntensityProfileViewPrivate::ModelProfileMapsByNode::iterator itModelProfileMaps = d->modelProfileMapsByNode.begin();
-    IntensityProfileViewPrivate::ModelProfileMapsByNode::iterator endModelProfileMaps = d->modelProfileMapsByNode.end();
-    while (itModelProfileMaps != endModelProfileMaps) {
-      IntensityProfileViewPrivate::ModelProfileMap::iterator itModelProfile = itModelProfileMaps->find(node);
-      itModelProfileMaps->erase(itModelProfile);
-      delete *itModelProfile;
-      ++itModelProfileMaps;
     }
   }
 
@@ -698,14 +650,6 @@ IntensityProfileView::deselectNode(mitk::DataNode* node)
     d->roiProfileMapsByNode.remove(node);
   }
 
-  if (d->modelProfileMapsByNode.contains(node)) {
-    foreach (QwtPlotCurve* profile, d->modelProfileMapsByNode[node]) {
-      delete profile;
-    }
-    d->modelProfileMapsByNode[node].clear();
-    d->modelProfileMapsByNode.remove(node);
-  }
-
   foreach (mitk::DataNode* profileNode, d->profileNodeChangeObservers.keys()) {
     profileNode->RemoveObserver(d->profileNodeChangeObservers[profileNode]);
   }
@@ -803,15 +747,8 @@ IntensityProfileView::onCrosshairPositionEventDelayed()
   }
   const mitk::Point3D crossPosition = display->GetSelectedPosition();
   calculateCrosshairProfiles(crossPosition);
-  foreach (mitk::DataNode* model, d->models) {
-    recalculateModelProfiles(model, crossPosition);
-  }
   foreach (mitk::DataNode* node, d->referenceNodes) {
     d->crosshairProfiles[node]->attach(ui->plotter);
-    IntensityProfileViewPrivate::ModelProfileMap modelProfiles = d->modelProfileMapsByNode[node];
-    foreach (mitk::DataNode* model, d->models) {
-      d->modelProfileMapsByNode[node][model]->attach(ui->plotter);
-    }
   }
   ui->plotter->replot();
 }
@@ -856,78 +793,6 @@ IntensityProfileView::calculateCrosshairProfiles(mitk::Point3D crosshairPos)
 
     symbolIndex = (symbolIndex + 1) % IntensityProfileViewPrivate::MaxSymbols;
   }
-}
-
-void
-IntensityProfileView::recalculateModelProfiles(mitk::DataNode* modelNode, mitk::Point3D crosshairPos)
-{
-//  Q_D(IntensityProfileView);
-//
-//  QwtSymbol modelSymbol;
-//  modelSymbol.setStyle(QwtSymbol::NoSymbol);
-//
-//  kmaps::Model* fitFunction = d->fitFunctions[modelNode];
-//  if (!fitFunction) {
-//    cacheModelNodeInfo(modelNode);
-//    fitFunction = d->fitFunctions[modelNode];
-//    if (!fitFunction) {
-//      QMessageBox::warning(m_Parent, "Warning", "Model function not recognized.");
-//      return;
-//    }
-//  }
-//
-//  foreach (mitk::DataNode* node, d->referenceNodes) {
-//    mitk::Image::Pointer image4D = dynamic_cast<mitk::Image*>(node->GetData());
-//    int timeSteps = image4D->GetTimeSteps();
-//
-//    mitk::Index3D crosshairIndex;
-//    image4D->GetGeometry()->WorldToIndex(crosshairPos, crosshairIndex);
-//    d->crosshairIndex = crosshairIndex;
-//
-//    QwtPlotCurve* profile = d->modelProfileMapsByNode[node][modelNode];
-//    if (!profile) {
-//      QString profileName = QString("%1 [fit]").
-//          arg(QString::fromStdString(node->GetName()));
-//      profile = new QwtPlotCurve(profileName);
-//      QPen pen = profile->pen();
-//      pen.setColor(Qt::darkGreen);
-//      profile->setPen(pen);
-//      profile->setSymbol(modelSymbol);
-//      d->modelProfileMapsByNode[node][modelNode] = profile;
-//    }
-//
-//    QVector<double> xValues(timeSteps);
-//    QVector<unsigned> xValueOrder(timeSteps);
-//    getXValues(node, xValues, xValueOrder);
-//    double xFirst = xValues[xValueOrder[0]];
-//    double xLast = xValues[xValueOrder[timeSteps - 1]];
-//    double interval = (xLast - xFirst) / 1023;
-//    QVector<double> xVector(1024);
-//    double x = xFirst;
-//    for (int i = 0; i < 1024; ++i) {
-//      xVector[i] = x;
-//      x += interval;
-//    }
-//
-//    QVector<mitk::DataNode*> parameterMapNodes = d->modelParameterMaps[modelNode];
-//    int parameterNumber = parameterMapNodes.size();
-//    if (parameterNumber == 0) {
-//      QMessageBox::critical(m_Parent, "Error", "Required parameter maps not found.");
-//      continue;
-//    }
-//    std::vector<double> parameters(parameterNumber);
-//    for (unsigned par = 0; par < parameterNumber; ++par) {
-//      mitk::Image* parameterMap =
-//          dynamic_cast<mitk::Image*>(parameterMapNodes[par]->GetData());
-//      parameters[par] = parameterMap->GetPixelValueByIndex(crosshairIndex);
-//    }
-//    std::vector<double> xv = xVector.toStdVector();
-//    std::vector<double> yv = fitFunction->calculate(parameters, xv);
-//    QVector<double> yVector = QVector<double>::fromStdVector(yv);
-//    profile->setData(xVector, yVector);
-//
-//    d->modelProfileMapsByNode[node][modelNode] = profile;
-//  }
 }
 
 void
@@ -1085,17 +950,6 @@ void IntensityProfileView::plotRoiProfile(mitk::DataNode* node, mitk::DataNode* 
     msgBox.setDetailedText(tr(exception.what()));
     msgBox.exec();
   }
-}
-
-void
-IntensityProfileView::plotModelProfiles(mitk::DataNode* node) {
-//  Q_D(IntensityProfileView);
-//
-//  unsigned modelNumber = d->models.size();
-//  for (unsigned i = 0; i < modelNumber; ++i) {
-//    mitk::DataNode* model = d->models[i];
-//    plotModelProfile(node, model);
-//  }
 }
 
 void
@@ -1402,14 +1256,6 @@ IntensityProfileView::on_clearCacheButton_clicked()
   }
   d->roiProfileMapsByNode.clear();
 
-  typedef QMap<mitk::DataNode*, QwtPlotCurve*> ModelProfiles;
-  foreach (ModelProfiles modelProfiles, d->modelProfileMapsByNode) {
-    foreach (QwtPlotCurve* profile, modelProfiles) {
-      delete profile;
-    }
-    modelProfiles.clear();
-  }
-  d->modelProfileMapsByNode.clear();
 }
 
 bool
@@ -1702,81 +1548,4 @@ IntensityProfileView::setDefaultLevelWindow(mitk::DataNode* node)
   levelWindow.SetRangeMinMax(rangeMin, rangeMax);
   levelWindow.SetWindowBounds(windowMin, windowMax);
   node->SetLevelWindow(levelWindow);
-}
-
-void
-IntensityProfileView::cacheModelNodeInfo(mitk::DataNode* modelNode)
-{
-//  Q_D(IntensityProfileView);
-//
-//  kmaps::Model* fitFunction = d->fitFunctions[modelNode];
-//  if (!fitFunction) {
-//    std::string modelName;
-//    modelNode->GetStringProperty("Model", modelName);
-//    fitFunction = d->modelFactory->createModel(modelName);
-//    d->fitFunctions[modelNode] = fitFunction;
-//  }
-//
-//  int i = 0;
-//  while (true) {
-//    const char* fixedParameterName = QString("fixed parameter %1").arg(i).toStdString().c_str();
-//    mitk::BaseProperty* fixedParameterProperty = modelNode->GetProperty(fixedParameterName);
-//    if (!fixedParameterProperty) {
-//      break;
-//    }
-//    if (mitk::IntProperty* property = dynamic_cast<mitk::IntProperty*>(fixedParameterProperty)) {
-//      fitFunction->setFixedParameter(i, property->GetValue());
-//    }
-//    else if (mitk::FloatProperty* property = dynamic_cast<mitk::FloatProperty*>(fixedParameterProperty)) {
-//      fitFunction->setFixedParameter(i, property->GetValue());
-//    }
-//    else if (mitk::IntLookupTableProperty* property = dynamic_cast<mitk::IntLookupTableProperty*>(fixedParameterProperty)) {
-//      mitk::IntLookupTable intLut = property->GetValue();
-//      unsigned size = intLut.GetLookupTable().size();
-//      std::vector<int> intVector(size);
-//      for (unsigned j = 0; j < size; ++j) {
-//        intVector[j] = intLut.GetTableValue(j);
-//      }
-//      fitFunction->setFixedParameter(i, intVector);
-//    }
-//    else if (mitk::FloatLookupTableProperty* property = dynamic_cast<mitk::FloatLookupTableProperty*>(fixedParameterProperty)) {
-//      mitk::FloatLookupTable floatLut = property->GetValue();
-//      unsigned size = floatLut.GetLookupTable().size();
-//      std::vector<double> doubleVector(size);
-//      for (unsigned j = 0; j < size; ++j) {
-//        doubleVector[j] = floatLut.GetTableValue(j);
-//      }
-//      fitFunction->setFixedParameter(i, doubleVector);
-//    }
-//    ++i;
-//  }
-//
-//  mitk::DataStorage* dataStorage = GetDataStorage();
-//  typedef mitk::DataStorage::SetOfObjects NodeSet;
-//  NodeSet::ConstPointer fittingNodeSet = dataStorage->GetSources(modelNode, 0, true);
-//  if (fittingNodeSet->size() != 1) {
-//    return;
-//  }
-//  mitk::DataNode::Pointer fittingNode = fittingNodeSet->GetElement(0);
-//
-//  mitk::StringLookupTableProperty::Pointer parameterMapNamesProp;
-//  bool success = modelNode->GetProperty(parameterMapNamesProp, "parameter maps");
-//  if (!success) {
-//    return;
-//  }
-//  mitk::StringLookupTable parameterMapNames = parameterMapNamesProp->GetValue();
-//  unsigned parameterNumber = parameterMapNames.GetLookupTable().size();
-//  QVector<mitk::DataNode*> parameterMaps(parameterNumber);
-//  for (unsigned p = 0; p < parameterNumber; ++p) {
-//    mitk::NodePredicateProperty::Pointer namePredicate =
-//        mitk::NodePredicateProperty::New(
-//            "name", mitk::StringProperty::New(parameterMapNames.GetTableValue(p)));
-//    NodeSet::ConstPointer maps = dataStorage->GetDerivations(fittingNode, namePredicate, true);
-//    if (maps->size() != 1) {
-//      // TODO there must not be two nodes with the same name within the same study
-//      return;
-//    }
-//    parameterMaps[p] = maps->GetElement(0);
-//  }
-//  d->modelParameterMaps[modelNode] = parameterMaps;
 }
