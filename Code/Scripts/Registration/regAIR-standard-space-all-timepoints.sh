@@ -77,11 +77,6 @@ EOF
 exit 127
 }
 
-if [ "$1" == "-h" ]
-then
-  Usage
-fi   
-
 ndefargs=3
 
 # Check args
