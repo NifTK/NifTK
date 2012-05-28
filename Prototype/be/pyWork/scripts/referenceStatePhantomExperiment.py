@@ -42,9 +42,9 @@ def referenceStatePhantomExperiment( configID ) :
     tetgenQ         = 1.5
     
     # system parameters
-    timeStep        = 2e-5
-    totalTime       = 1.0
-    damping         = 50
+    timeStep        = 1e-4
+    totalTime       = 5.0
+    damping         = 100
 
 
     ##############################
@@ -220,7 +220,7 @@ def referenceStatePhantomExperiment( configID ) :
         #
         # 1) prone simulation
         #
-        xmlGenP1G = phantom.generateXMLmodel( gravProne, 10, p1G, skin=simSkin)
+        xmlGenP1G = phantom.generateXMLmodel( gravProne, 10, p1G, skin=simSkin, gravityLoadShape='RAMPFLAT4')
         aXmlGenP1G.append(xmlGenP1G)
         
         niftySimCmd    = 'niftySim'
@@ -243,7 +243,7 @@ def referenceStatePhantomExperiment( configID ) :
         # 2) build model from loaded states with
         # 3) inversed and doubled gravity
         #
-        xmlGenP1S2G = phantom.generateXMLmodel( gravSupine, 20, p1s2G, deformP1G.deformedNodes * 1000., skin=simSkin )
+        xmlGenP1S2G = phantom.generateXMLmodel( gravSupine, 20, p1s2G, deformP1G.deformedNodes * 1000., skin=simSkin, gravityLoadShape='RAMPFLAT4' )
         aXmlGenP1S2G.append( xmlGenP1S2G )
          
         niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport -export ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
@@ -262,7 +262,7 @@ def referenceStatePhantomExperiment( configID ) :
         #
         # Now run the supine simulation from the reference state
         #
-        xmlGenS1G = phantom.generateXMLmodel( gravSupine, 10, s1G, skin=simSkin )
+        xmlGenS1G = phantom.generateXMLmodel( gravSupine, 10, s1G, skin=simSkin, gravityLoadShape='RAMPFLAT4' )
         aXmlGenS1G.append( xmlGenS1G )
         
         niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'

@@ -415,7 +415,7 @@ class numericalBreastPhantom:
 
 
     def generateXMLmodel( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, gravityLoadShape = 'RAMP', 
-                          fileIdentifier=None, extMeshNodes=None, skin='none', outputFrequency = 5000 ):
+                          fileIdentifier=None, extMeshNodes=None, skin='none', outputFrequency = 5000, outputVars=['U', 'EKinTotal', 'EStrainTotal'] ):
         ''' @summary: Generates the xml model
             @param gravityVector:    Direction of gravity
             @param gravityMagnitude: Assumed gravitational acceleration
@@ -487,7 +487,7 @@ class numericalBreastPhantom:
         
         
         gen.setGravityConstraint( gravityVector, gravityMagnitude, gen.allNodesArray, gravityLoadShape )
-        gen.setOutput( self.outputFrequency, 'U' )
+        gen.setOutput( self.outputFrequency, outputVars )
         gen.setSystemParameters( timeStep           = self.timeStep, 
                                  totalTime          = self.totalTime, 
                                  dampingCoefficient = self.damping, 
