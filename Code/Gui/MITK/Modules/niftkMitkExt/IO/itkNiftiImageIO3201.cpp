@@ -1701,15 +1701,17 @@ SetImageIOOrientationFromNIfTI(unsigned short int dims)
   //
   // qform or sform
   //
+
   mat44 theMat;
-  if(this->m_NiftiImage->qform_code > 0)
+  // [Change by Marc next line - Use the sform first and if it's not defined, use the qform then]
+  if(this->m_NiftiImage->sform_code > 0) //if(this->m_NiftiImage->qform_code > 0)
     {
-    theMat = this->m_NiftiImage->qto_xyz;
+    theMat = this->m_NiftiImage->sto_xyz;
     }
   //    else if(this->m_NiftiImage->sform_code > 0)
   else
     {
-    theMat = this->m_NiftiImage->sto_xyz;
+    theMat = this->m_NiftiImage->qto_xyz;
     }
 
   //
@@ -1772,108 +1774,109 @@ void
 NiftiImageIO3201::
 SetNIfTIOrientationFromImageIO(unsigned short int origdims, unsigned short int dims)
 {
-  //
-  // use NIFTI method 2
-  this->m_NiftiImage->sform_code = NIFTI_XFORM_SCANNER_ANAT;
-  this->m_NiftiImage->qform_code = NIFTI_XFORM_ALIGNED_ANAT;
+    //
+    // use NIFTI method 2
+    this->m_NiftiImage->sform_code = NIFTI_XFORM_SCANNER_ANAT;
+    this->m_NiftiImage->qform_code = NIFTI_XFORM_ALIGNED_ANAT;
 
-  //
-  // set the quarternions, from the direction vectors
-  //Initialize to size 3 with values of 0
-  //
-  //The type here must be float, because that matches the signature
-  //of the nifti_make_orthog_mat44() method below.
-  typedef float DirectionMatrixComponentType;
-  int mindims(dims < 3 ? 3 : dims);
-  std::vector<DirectionMatrixComponentType> dirx(mindims,0);
-  unsigned int i;
-  for(i=0; i < this->GetDirection(0).size(); i++)
+    //
+    // set the quarternions, from the direction vectors
+    //Initialize to size 3 with values of 0
+    //
+    //The type here must be float, because that matches the signature
+    //of the nifti_make_orthog_mat44() method below.
+    typedef float DirectionMatrixComponentType;
+    int mindims(dims < 3 ? 3 : dims);
+    std::vector<DirectionMatrixComponentType> dirx(mindims,0);
+    unsigned int i;
+    for(i=0; i < this->GetDirection(0).size(); i++)
     {
-    dirx[i] = static_cast<DirectionMatrixComponentType>(-this->GetDirection(0)[i]);
+        dirx[i] = static_cast<DirectionMatrixComponentType>(-this->GetDirection(0)[i]);
     }
-  if(i < 3)
-    {
-    dirx[2] = 0.0f;
-    }
-  std::vector<DirectionMatrixComponentType> diry(mindims,0);
-  if(origdims > 1)
-    {
-    for(i=0; i < this->GetDirection(1).size(); i++)
-      {
-      diry[i] = static_cast<DirectionMatrixComponentType>(-this->GetDirection(1)[i]);
-      }
     if(i < 3)
-      {
-      diry[2] = 0.0f;
-      }
-    }
-  std::vector<DirectionMatrixComponentType> dirz(mindims,0);
-  if(origdims > 2)
     {
-    for(unsigned int ii=0; ii < this->GetDirection(2).size(); ii++)
-      {
-      dirz[ii] = static_cast<DirectionMatrixComponentType>( -this->GetDirection(2)[ii] );
-      }
-    //  Read comments in nifti1.h about interpreting 
-    //  "DICOM Image Orientation (Patient)"
-    dirx[2] = - dirx[2];
-    diry[2] = - diry[2];
-    dirz[2] = - dirz[2];
+        dirx[2] = 0.0f;
     }
-  else
+    std::vector<DirectionMatrixComponentType> diry(mindims,0);
+    if(origdims > 1)
     {
-    dirz[0] = dirz[1] = 0.0f;
-    dirz[2] = 1.0f;
+        for(i=0; i < this->GetDirection(1).size(); i++)
+        {
+            diry[i] = static_cast<DirectionMatrixComponentType>(-this->GetDirection(1)[i]);
+        }
+        if(i < 3)
+        {
+            diry[2] = 0.0f;
+        }
     }
-  mat44 matrix =
-    nifti_make_orthog_mat44(dirx[0],dirx[1],dirx[2],
-                            diry[0],diry[1],diry[2],
-                            dirz[0],dirz[1],dirz[2]);
-  matrix = mat44_transpose(matrix);
-  // Fill in origin.
-  matrix.m[0][3]=  static_cast<float>(-this->GetOrigin(0));
-  matrix.m[1][3] = (origdims > 1) ? static_cast<float>(-this->GetOrigin(1)) : 0.0f;
-  //NOTE:  The final dimension is not negated!
-  matrix.m[2][3] = (origdims > 2) ? static_cast<float>(this->GetOrigin(2)) : 0.0f;
+    std::vector<DirectionMatrixComponentType> dirz(mindims,0);
+    if(origdims > 2)
+    {
+        for(unsigned int ii=0; ii < this->GetDirection(2).size(); ii++)
+        {
+            dirz[ii] = static_cast<DirectionMatrixComponentType>( -this->GetDirection(2)[ii] );
+        }
+        //  Read comments in nifti1.h about interpreting
+        //  "DICOM Image Orientation (Patient)"
+        dirx[2] = - dirx[2];
+        diry[2] = - diry[2];
+        dirz[2] = - dirz[2];
+    }
+    else
+    {
+        dirz[0] = dirz[1] = 0.0f;
+        dirz[2] = 1.0f;
+    }
+    mat44 matrix =
+            nifti_make_orthog_mat44(dirx[0],dirx[1],dirx[2],
+                                    diry[0],diry[1],diry[2],
+                                    dirz[0],dirz[1],dirz[2]);
 
-  nifti_mat44_to_quatern(matrix,
-                         &(this->m_NiftiImage->quatern_b),
-                         &(this->m_NiftiImage->quatern_c),
-                         &(this->m_NiftiImage->quatern_d),
-                         &(this->m_NiftiImage->qoffset_x),
-                         &(this->m_NiftiImage->qoffset_y),
-                         &(this->m_NiftiImage->qoffset_z),
-                         0,
-                         0,
-                         0,
-                         &(this->m_NiftiImage->qfac));
-  // copy q matrix to s matrix
-  this->m_NiftiImage->qto_xyz =  matrix;
-  this->m_NiftiImage->sto_xyz =  matrix;
-  //
-  //
-  unsigned int sto_limit = origdims > 3 ? 3 : origdims;
-  for(unsigned int ii = 0; ii < sto_limit; ii++)
+    matrix = mat44_transpose(matrix);
+    // Fill in origin.
+    matrix.m[0][3]=  static_cast<float>(-this->GetOrigin(0));
+    matrix.m[1][3] = (origdims > 1) ? static_cast<float>(-this->GetOrigin(1)) : 0.0f;
+    //NOTE:  The final dimension is not negated!
+    matrix.m[2][3] = (origdims > 2) ? static_cast<float>(this->GetOrigin(2)) : 0.0f;
+
+    nifti_mat44_to_quatern(matrix,
+                           &(this->m_NiftiImage->quatern_b),
+                           &(this->m_NiftiImage->quatern_c),
+                           &(this->m_NiftiImage->quatern_d),
+                           &(this->m_NiftiImage->qoffset_x),
+                           &(this->m_NiftiImage->qoffset_y),
+                           &(this->m_NiftiImage->qoffset_z),
+                           0,
+                           0,
+                           0,
+                           &(this->m_NiftiImage->qfac));
+    // copy q matrix to s matrix
+    this->m_NiftiImage->qto_xyz =  matrix;
+    this->m_NiftiImage->sto_xyz =  matrix;
+    //
+    //
+    unsigned int sto_limit = origdims > 3 ? 3 : origdims;
+    for(unsigned int ii = 0; ii < sto_limit; ii++)
     {
-    for(unsigned int jj = 0; jj < sto_limit; jj++)
-      {
-      this->m_NiftiImage->sto_xyz.m[ii][jj] = 
-        static_cast<float>( this->GetSpacing(jj) ) *
-        this->m_NiftiImage->sto_xyz.m[ii][jj];
+        for(unsigned int jj = 0; jj < sto_limit; jj++)
+        {
+            this->m_NiftiImage->sto_xyz.m[ii][jj] =
+                    static_cast<float>( this->GetSpacing(jj) ) *
+                    this->m_NiftiImage->sto_xyz.m[ii][jj];
 #if 0 // this is almost certainly wrong and gets overwritten immediately
-      // below...
-      this->m_NiftiImage->sto_ijk.m[ii][jj] =
-        this->m_NiftiImage->sto_xyz.m[ii][jj] / this->GetSpacing(jj);
+            // below...
+            this->m_NiftiImage->sto_ijk.m[ii][jj] =
+                    this->m_NiftiImage->sto_xyz.m[ii][jj] / this->GetSpacing(jj);
 #endif
-      }
+        }
     }
-  this->m_NiftiImage->sto_ijk =
-    nifti_mat44_inverse(this->m_NiftiImage->sto_xyz);
-  this->m_NiftiImage->qto_ijk =
-    nifti_mat44_inverse(this->m_NiftiImage->qto_xyz);
+    this->m_NiftiImage->sto_ijk =
+            nifti_mat44_inverse(this->m_NiftiImage->sto_xyz);
+    this->m_NiftiImage->qto_ijk =
+            nifti_mat44_inverse(this->m_NiftiImage->qto_xyz);
 
-  this->m_NiftiImage->pixdim[0] = this->m_NiftiImage->qfac;
-  //  this->m_NiftiImage->sform_code = 0;
+    this->m_NiftiImage->pixdim[0] = this->m_NiftiImage->qfac;
+    //  this->m_NiftiImage->sform_code = 0;
 }
 
 /**

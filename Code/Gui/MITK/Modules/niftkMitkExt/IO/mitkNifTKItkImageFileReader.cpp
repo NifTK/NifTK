@@ -56,7 +56,8 @@ void mitk::NifTKItkImageFileReader::GenerateData()
   //   call base class functionality
 
   itk::DRCAnalyzeImageIO3160::Pointer drcAnalyzeIO = itk::DRCAnalyzeImageIO3160::New();
-  if (drcAnalyzeIO->CanReadFile(this->m_FileName.c_str()))
+  itk::NiftiImageIO3201::Pointer niftiIO = itk::NiftiImageIO3201::New();
+  if (drcAnalyzeIO->CanReadFile(this->m_FileName.c_str()) || niftiIO->CanReadFile(this->m_FileName.c_str()))
   {
     mitk::Image::Pointer image = this->GetOutput();
 
@@ -229,34 +230,69 @@ mitk::NifTKItkImageFileReader
 
   bool result = false;
 
-  try
-  {
-    typedef itk::Image<TPixel, VImageDimension> ImageType;
+  typename itk::DRCAnalyzeImageIO3160::Pointer drcAnalyzeIO = itk::DRCAnalyzeImageIO3160::New();
+  typename itk::NiftiImageIO3201::Pointer niftiIO = itk::NiftiImageIO3201::New();
 
-    typename itk::ImageFileReader<ImageType>::Pointer reader = itk::ImageFileReader<ImageType>::New();
-    typename itk::DRCAnalyzeImageIO3160::Pointer fileIO = itk::DRCAnalyzeImageIO3160::New();
+  if (drcAnalyzeIO->CanReadFile(this->m_FileName.c_str())){
+      try
+      {
+        typedef itk::Image<TPixel, VImageDimension> ImageType;
 
-    reader->SetImageIO(fileIO);
-    reader->SetFileName(fileName);
-    reader->Update();
+        typename itk::ImageFileReader<ImageType>::Pointer reader = itk::ImageFileReader<ImageType>::New();
 
-    mitk::CastToMitkImage<ImageType>(reader->GetOutput(), mitkImage);
+        reader->SetImageIO(drcAnalyzeIO);
+        reader->SetFileName(fileName);
+        reader->Update();
 
-    MITK_INFO << "NifTKItkImageFileReader::LoadImageUsingItk finished" << std::endl;
-    result = true;
+        mitk::CastToMitkImage<ImageType>(reader->GetOutput(), mitkImage);
+
+        MITK_INFO << "NifTKItkImageFileReader::LoadImageUsingItk finished" << std::endl;
+        result = true;
+      }
+      catch( itk::ExceptionObject& err )
+      {
+        std::string msg = std::string("Failed to Load image:") \
+          + this->m_FileName \
+          + std::string("\nEXCEPTION:") \
+          + std::string(err.GetDescription()) \
+          + std::string("\n\tat location:") \
+          + std::string(err.GetLocation()) \
+          + std::string("\n\tat file:") \
+          + std::string(err.GetFile()) \
+        ;
+        MITK_ERROR << msg;
+      }
   }
-  catch( itk::ExceptionObject& err )
-  {
-    std::string msg = std::string("Failed to Load image:") \
-      + this->m_FileName \
-      + std::string("\nEXCEPTION:") \
-      + std::string(err.GetDescription()) \
-      + std::string("\n\tat location:") \
-      + std::string(err.GetLocation()) \
-      + std::string("\n\tat file:") \
-      + std::string(err.GetFile()) \
-    ;
-    MITK_ERROR << msg;
+  else if(niftiIO->CanReadFile(this->m_FileName.c_str())){
+      try
+      {
+        typedef itk::Image<TPixel, VImageDimension> ImageType;
+
+        typename itk::ImageFileReader<ImageType>::Pointer reader = itk::ImageFileReader<ImageType>::New();
+
+        reader->SetImageIO(niftiIO);
+        reader->SetFileName(fileName);
+        reader->Update();
+
+        mitk::CastToMitkImage<ImageType>(reader->GetOutput(), mitkImage);
+
+        MITK_INFO << "NifTKItkImageFileReader::LoadImageUsingItk finished" << std::endl;
+        result = true;
+      }
+      catch( itk::ExceptionObject& err )
+      {
+        std::string msg = std::string("Failed to Load image:") \
+          + this->m_FileName \
+          + std::string("\nEXCEPTION:") \
+          + std::string(err.GetDescription()) \
+          + std::string("\n\tat location:") \
+          + std::string(err.GetLocation()) \
+          + std::string("\n\tat file:") \
+          + std::string(err.GetFile()) \
+        ;
+        MITK_ERROR << msg;
+      }
+
   }
 
   return result;
