@@ -24,6 +24,23 @@
 #
 #=================================================================================*/
 
+function Usage()
+{
+cat <<EOF
+
+This script is the working script which is called Hippo-MAPS.sh to perform automated hippo segmentation. Please use Hippo-MAPS-batch.sh. 
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 3 ]; then
+  Usage
+fi
+
+
+
 # Debug
 #set -x
 

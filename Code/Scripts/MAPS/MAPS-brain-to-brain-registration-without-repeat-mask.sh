@@ -22,6 +22,8 @@
 #
 #=================================================================================*/
 
+echo "Helper functions for brain to brain registration" 
+
 function brain_to_brain_registration_without_repeat_mask_using_air()
 {
   local baseline_image=$1
@@ -70,7 +72,8 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
 
   local temp_dir=`mktemp -d -q ~/temp/__areg.XXXXXXXX`
   
-  if [ ! -f ${output_reg_air} ] 
+#if [ ! -f ${output_reg_air} ] 
+  if [ 1 == 1 ] 
   then 
   
     # Registration. 
@@ -87,9 +90,14 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
     echo "No. of steps = 2"  >> ${parameter_file}
     echo "Length of steps = 1"  >> ${parameter_file}
     echo "Similarity measure = CC"  >> ${parameter_file}
-    ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -dof 12 -comreg -params ${parameter_file} -tmpdir ${temp_dir}
+#${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -dof 9 -comreg -params ${parameter_file} -tmpdir ${temp_dir} 
     rm -f ${parameter_file}
     
+    
+    local temp_dir1=`mktemp -d -q ~/temp/__areg.XXXXXXXX`
+    
+    makemask ${baseline_image} ${baseline_region} ${temp_dir1}/baseline_region.img -d 8 
+    makeroi -img ${temp_dir1}/baseline_region.img -out ${temp_dir1}/baseline_region -alt 0 
     local parameter_file=`mktemp ~/temp/param.XXXXXXXXXX`
     echo "Target blurring (in mm) = 0 "  > ${parameter_file}
     echo "Target resolution (in mm) = 0"  >> ${parameter_file}
@@ -103,8 +111,9 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
     echo "No. of steps = 4"  >> ${parameter_file}
     echo "Length of steps = 2"  >> ${parameter_file}
     echo "Similarity measure = CC"  >> ${parameter_file}
-    ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -troi ${baseline_region} -dof 12 -inidof ${output_reg_air} -params ${parameter_file} -tmpdir ${temp_dir}
+    ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -troi ${temp_dir1}/baseline_region -dof 9 -inidof ${output_reg_air} -params ${parameter_file} -tmpdir ${temp_dir}
     rm -f ${parameter_file}
+    rm -rf ${temp_dir1}
   fi 
   
   # Transform the image. 

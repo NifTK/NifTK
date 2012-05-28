@@ -24,6 +24,22 @@
 #
 #=================================================================================*/
 
+function Usage()
+{
+cat <<EOF
+
+This script is a working wrapper which is called by MAPS-build-brain-template-library-batch.sh to build a template library. Please use MAPS-build-brain-template-library-batch.sh. 
+
+EOF
+exit 127
+}
+
+# Check args
+if [ $# -lt 3 ]; then
+  Usage
+fi
+
+
 # Debug
 # set -x
 

@@ -25,6 +25,7 @@
 #
 # Common functions used MAPS. 
 # 
+echo "Helper functions for hippo segmentation" 
 
 #
 # Simple brain to brain registration with 12-dof. 

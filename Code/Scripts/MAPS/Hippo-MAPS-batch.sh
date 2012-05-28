@@ -24,34 +24,6 @@
 #
 #=================================================================================*/
 
-source _niftkCommon.sh
-
-# Default values used on img-135 by Kelvin. 
-if [ ! -n "${MIDAS_BIN}" ]
-then 
-  export MIDAS_BIN=/var/NOT_BACKUP/work/midas/build/bin
-fi 
-if [ ! -n "${FFITK_BIN}" ]
-then
-  export FFITK_BIN=/var/NOT_BACKUP/work/ffitk/bin
-fi 
-if [ ! -n "${MIDAS_FFD}" ]
-then
-  export MIDAS_FFD=/var/NOT_BACKUP/work/midasffd
-fi   
-if [ ! -n "${FSLDIR}" ]
-then 
-  export FSLDIR=/var/lib/midas/pkg/i686-pc-linux-gnu/fsl
-fi   
-# F3D not used for now. 
-export F3D_BIN=/home/samba/user/leung/work/nifti-reg/nifty_reg-1.2/reg-apps
-export HIPPO_TEMPLATE_LIBRARY=/var/drc/software/32bit/niftk-data/hippo-template-library
-
-# set up shell for the cluster jobs. 
-export SGE_SHELL=/bin/bash 
-
-script_dir=`dirname $0`
-
 function Usage()
 {
 cat <<EOF
@@ -81,9 +53,39 @@ exit 127
 }
 
 # Check args
-if [ $# -lt 2 ]; then
+if [ $# -lt 3 ]; then
   Usage
 fi
+
+
+source _niftkCommon.sh
+
+# Default values used on img-135 by Kelvin. 
+if [ ! -n "${MIDAS_BIN}" ]
+then 
+  export MIDAS_BIN=/var/NOT_BACKUP/work/midas/build/bin
+fi 
+if [ ! -n "${FFITK_BIN}" ]
+then
+  export FFITK_BIN=/var/NOT_BACKUP/work/ffitk/bin
+fi 
+if [ ! -n "${MIDAS_FFD}" ]
+then
+  export MIDAS_FFD=/var/NOT_BACKUP/work/midasffd
+fi   
+if [ ! -n "${FSLDIR}" ]
+then 
+  export FSLDIR=/var/lib/midas/pkg/i686-pc-linux-gnu/fsl
+fi   
+# F3D not used for now. 
+export F3D_BIN=/home/samba/user/leung/work/nifti-reg/nifty_reg-1.2/reg-apps
+export HIPPO_TEMPLATE_LIBRARY=/var/drc/software/32bit/niftk-data/hippo-template-library
+
+# set up shell for the cluster jobs. 
+export SGE_SHELL=/bin/bash 
+
+script_dir=`dirname $0`
+
 
 ndefargs=2
 do_threshold="both"

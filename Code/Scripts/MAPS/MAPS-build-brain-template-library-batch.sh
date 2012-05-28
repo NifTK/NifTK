@@ -63,7 +63,7 @@ function Usage()
 {
 cat <<EOF
 
-This script is a wrapper which calls MAPS-build-template-library.sh to build a template library.
+This script is a wrapper which calls MAPS-build-brain-template-library.sh to build a brain template library.
 
 Usage: $0 input_file output_dir 
 
@@ -86,7 +86,7 @@ exit 127
 }
 
 # Check args
-if [ $# -lt 2 ]; then
+if [ $# -lt 3 ]; then
   Usage
 fi
 

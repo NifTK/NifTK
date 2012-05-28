@@ -87,7 +87,7 @@ do
     FILE_LIST=`cd ${BINARY_DIR} ; ls niftk* | grep -v TestDriver | egrep -v -e ".*[.]sh"`
   else
     # Aim: files ending in .sh, not containing the word batch, not starting with underscore
-    FILE_LIST=`cd ${BINARY_DIR} ; ls *.sh | grep -v batch | grep -v Batch | grep -v regAIRForVents | egrep -v -e "^[_].*"`
+    FILE_LIST=`cd ${BINARY_DIR} ; ls *.sh | grep -v Batch | egrep -v -e "^[_].*"`
   fi
   
   echo "<table>" >> ${SUMMARY_FILE}

@@ -1,10 +1,4 @@
 #!/bin/bash
-
-if [ ${_NIFTK_DEBUG} == 1 ]
-then 
-  set -x
-fi 
-
 #/*================================================================================
 #
 #  NifTK: An image processing toolkit jointly developed by the
@@ -28,6 +22,26 @@ fi
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
+function Usage()
+{
+cat <<EOF
+
+Working script to perform AIR vents registration and compute VBSI using automatic window selection. Please use regAIRForVentsBatch.sh. 
+
+                       
+EOF
+exit 127
+}
+
+if [ $# -lt 3 ]; then
+  Usage
+fi
+
+if [ "${_NIFTK_DEBUG}" == "1" ]
+then 
+  set -x
+fi 
+
 source _niftkCommon.sh
 
 baseline_img=$1

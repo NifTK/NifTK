@@ -63,7 +63,7 @@ exit 127
 }
 
 # Check args
-if [ $# -lt 2 ]; then
+if [ $# -lt 3 ]; then
   Usage
 fi
 

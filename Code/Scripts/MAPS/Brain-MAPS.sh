@@ -24,6 +24,22 @@
 #
 #=================================================================================*/
 
+function Usage()
+{
+cat <<EOF
+
+This script is the working script which is called Brain-MAPS-batch.sh to perform automated brain segmentation. Please use Brain-MAPS-batch.sh. 
+  
+EOF
+exit 127
+}
+
+if [ $# -lt 3 ]
+then 
+  Usage
+fi 
+
+
 # Debug
 #set -x
 
