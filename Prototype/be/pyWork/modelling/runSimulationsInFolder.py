@@ -20,6 +20,8 @@ def runSimulationsInFolder( dirIn, exportVTK=True, verbose=True, gpu=True,  log=
     #
     xmlFiles = glob( '*.xml' )
     
+    xmlFiles.sort()
+    
     print('Print found the following xml-files:')
     for f in xmlFiles:
         print( f )

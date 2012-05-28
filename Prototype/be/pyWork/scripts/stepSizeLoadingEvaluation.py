@@ -5,6 +5,7 @@ import xmlModelReader as xReader
 import modelDeformationVisualiser as defVis
 import numpy as np
 from os.path import exists
+import os
 import sys
 import matplotlib.pyplot as plt
 
@@ -17,7 +18,7 @@ def plotDoubleYAxis( xVals, y1Vals, y2Vals, xLabel, xLabelUint, y1Label, y1Label
     plt.rcParams['font.size']=16
     
     fig = plt.figure()
-    plt.hold( True )
+    #plt.hold( True )
     ax1 = fig.gca()
     ax1.plot( xVals, y1Vals, 'b-', label = y1Label )
     ax2 = ax1.twinx()
@@ -35,14 +36,14 @@ def plotDoubleYAxis( xVals, y1Vals, y2Vals, xLabel, xLabelUint, y1Label, y1Label
     if printLegend:
         plt.legend( (ax1.get_lines(), ax2.get_lines()), (y1Label, y2Label), loc = 'lower right' )
     
-    plt.hold( False )
-    plt.show()
-    plt.savefig( plotDirAndBaseName + '.pdf' )
-    plt.savefig( plotDirAndBaseName + '.png', dpi = 300 )
+    #plt.hold( False )
+    fig.show()
+    fig.savefig( plotDirAndBaseName + '.pdf' )
+    fig.savefig( plotDirAndBaseName + '.png', dpi = 300 )
 
 
 
-def evaluate( simDirs, modelPFileBaseNameIn = 'modelFat_prone1G_it050000_totalTime05_rampflat4' ):
+def evaluate( simDirs, modelPFileBaseNameIn = 'modelFat_prone1G_it050000_totalTime05_rampflat4', loadShape='RAMPFLAT4', simTime = 5.0 ):
     
     for simDir in simDirs:
 
@@ -114,11 +115,28 @@ def evaluate( simDirs, modelPFileBaseNameIn = 'modelFat_prone1G_it050000_totalTi
         #
         plotDir = simDir + 'plot/'
         
+        if not exists(plotDir):
+            os.mkdir( plotDir )
+        
         # generate time and loading function
-        tMax = 5.0
+        tMax = simTime
         time = np.arange( 0, tMax, tMax/itPRampFlat4 )
         load = time.copy()
-        load[load>1.0] = 1.0
+        
+        N = 1.0
+
+        if loadShape == 'RAMPFLAT':
+            N = 2.0  # 1 part ramp up, 1 part keep constant...
+        if loadShape == 'RAMPFLAT2':
+            N = 3.0  # 1 part ramp up, 2 parts keep constant...
+        if loadShape == 'RAMPFLAT4':
+            N = 5.0  # 1 part ramp up, 4 parts keep constant...
+        if loadShape == 'RAMPFLAT8':
+            N = 9.0  # 1 part ramp up, 4 parts keep constant...
+        
+        load[load >  simTime/N ] = 1.0
+        load[load <= simTime/N ] = load * N / simTime        
+        
         
         # define labels
         eLabel= '$E_\mathrm{kin} / E_\mathrm{strain}$'

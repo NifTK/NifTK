@@ -1,3 +1,4 @@
+## {{{ http://code.activestate.com/recipes/534109/ (r8)
 import re
 import xml.sax.handler
 
@@ -82,20 +83,4 @@ def xml2obj(src):
     else:
         xml.sax.parse(src, builder)
     return builder.root._attrs.values()[0]
-
-
-
-
-if __name__ == '__main__':
-    
-    fileName = 'W:/philipsBreastProneSupine/referenceState/00AB/modelFat_prone1G_phi00.xml'
-    F = open(fileName)
-    dat = F.read()
-    o = xml2obj( dat )
-    print o.ElementSet[0].Material.Type
-    print o.ElementSet[0].Material.Name
-    print o.ElementSet[0].Material.ElasticParams
-    print o.ElementSet[0].Material.ElasticParams.NumParams
-    print o.ElementSet[0].Size
-    print 'Done'
-     
+## end of http://code.activestate.com/recipes/534109/ }}}

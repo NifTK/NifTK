@@ -19,13 +19,13 @@ from modelDeformationHandler import modelDeformationHandler
 class stepSizeExperiments (  ):
     
     def __init__(self, gpu=True, totalTimeIn = 1.0, loadShape='RAMP', configID = '00_step', 
-                 maxIterations=None, startIterations=None, iterationIncrement=None ):
+                 maxIterations=None, startIterations=None, iterationIncrement=None, 
+                 meshlabSript    = 'Q:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' ):
         
-        meshlabSript    = 'W:/philipsBreastProneSupine/Meshes/mlxFiles/surfProcessing_coarse.mlx' 
         tetgenVol       = 75
         
         # directory
-        baseExperimentDir = 'W:/philipsBreastProneSupine/referenceState/'
+        baseExperimentDir = 'Q:/philipsBreastProneSupine/referenceState/'
         self.experimentDir     = baseExperimentDir + configID + '/'
         self.plotDir           = self.experimentDir + 'plots/'
         
@@ -170,66 +170,10 @@ class stepSizeExperiments (  ):
                                                   fileIdentifier=p1G, skin=simSkin, outputFrequency=numIt )
             aXmlGenP1G.append( xmlGenP1G )
             
-            tmpProgOutFile = self.experimentDir + 'log' + str( '%06i' % numIt ) + '.txt'
-            
-            niftySimCmd    = 'niftySim'
-            niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -export ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk -print EK -print ES '
-            if gpu:
-                niftySimParams = niftySimParams + ' -sport '
-                
-            if cmdEx.runCommand( niftySimCmd, niftySimParams, logFileName=tmpProgOutFile ) != 0 :
-                print('Simulation diverged.')
-                
-                print('Trying next step size...')
-                continue
-            
-            
-            self._parseFileForKineticAndStrainEnergy(tmpProgOutFile, numIt)
-            
-            timeSteps.append( timeStep )
-            performedIts.append( numIt )
-            
-            # rename the deformation file 
-            if os.path.exists( deformFileNameP1G ) :
-                os.remove(deformFileNameP1G)
-            
-            os.rename( deformFileName, deformFileNameP1G )
-            deformP1G = mdh.modelDeformationHandler( xmlGenP1G, deformFileNameP1G.split('/')[-1] )
-            aDeformP1G.append( deformP1G )
-            
-        
-        #
-        # Now plot the results
-        #
-        timeSteps    = np.array( timeSteps    )
-        self.Eiter   = np.array( self.Eiter   )
-        self.Ekin    = np.array( self.Ekin    )
-        self.Estrain = np.array( self.Estrain )
-        
-        p1U          = []
-        p1meanDisp   = []
-        
-        for dh in aDeformP1G :
-            #
-            # Read the model and the deformations accordingly
-            #
-            p1U.append( dh )
-            
-            #
-            # Mean deformations
-            #
-            p1meanDisp.append( np.mean( np.sqrt( p1U[-1].deformVectors[:,0]**2 + 
-                                                 p1U[-1].deformVectors[:,1]**2 + 
-                                                 p1U[-1].deformVectors[:,2]**2 ) ) )
-            
-            
-        p1meanDisp   = np.array( p1meanDisp )
 
-        # Remeber for later use...
-        self.xmlGens = aXmlGenP1G
-        self.deformHandlers = p1U
-        self.meanDisplacements = p1meanDisp
-        self.iterationNumbers = np.array( performedIts )
+            
+        
+
         
     
     

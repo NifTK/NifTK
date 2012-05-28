@@ -487,7 +487,7 @@ class numericalBreastPhantom:
         
         
         gen.setGravityConstraint( gravityVector, gravityMagnitude, gen.allNodesArray, gravityLoadShape )
-        gen.setOutput( self.outputFrequency, outputVars )
+        gen.setOutput( self.outputFrequency, [ 'U', 'EKinTotal', 'EStrainTotal' ] )
         gen.setSystemParameters( timeStep           = self.timeStep, 
                                  totalTime          = self.totalTime, 
                                  dampingCoefficient = self.damping, 
