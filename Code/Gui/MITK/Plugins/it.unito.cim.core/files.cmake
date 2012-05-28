@@ -4,9 +4,6 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   PluginCore.cpp
-#  ImageInfoRenderer.cpp
-#  GeometryRecalculator.cpp
-#  NodeVisibilityManager.cpp
   VisibilityChangedCommand.cpp
   VisibilityChangeObserver.cpp
   it_unito_cim_core_Activator.cpp
@@ -18,7 +15,6 @@ set(UI_FILES
 set(MOC_H_FILES
   src/FunctionalityBase.h
   src/internal/it_unito_cim_core_Activator.h
-#  src/internal/ImageInfoRenderer.h
 )
 
 # list of resource files which can be used by the plug-in
