@@ -150,6 +150,16 @@ int main(int argc, char **argv)
     imageIO->SetFileName(flag.inputName);
     imageIO->ReadImageInformation();
     int dimension=imageIO->GetNumberOfDimensions();
+    int nNonUnityDimensions = dimension;
+
+    for (unsigned int i=0; i<dimension; i++) 
+    {
+      if ( imageIO->GetDimensions( i ) <= 1 )
+      {
+	nNonUnityDimensions--;
+      }
+    }
+    dimension = nNonUnityDimensions;
 
     std::cout << "Image Dimension   :\t"<< dimension <<std::endl;
     std::cout << "Vector type       :\t" << vector << std::endl;
