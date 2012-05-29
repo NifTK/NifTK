@@ -3,7 +3,7 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  SurgicalGuidanceActivator.cpp
+  uk_ac_ucl_cmic_surgicalguidance_Activator.cpp
   SurgicalGuidanceView.cpp
   TrackerControlsWidget.cpp
 )
@@ -14,9 +14,9 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/SurgicalGuidanceActivator.h
+  src/internal/uk_ac_ucl_cmic_surgicalguidance_Activator.h
   src/internal/SurgicalGuidanceView.h
-  src/internal/TrackerControlsWidget.H
+  src/internal/TrackerControlsWidget.h
 )
 
 # list of resource files which can be used by the plug-in
