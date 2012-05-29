@@ -29,6 +29,7 @@
 #include <itkImage.h>
 #include <itkSpatialObjectToImageFilter.h>
 #include <itkImageToImageFilter.h>
+#include <itkImageFileWriter.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkBinaryFunctorImageFilter.h>
 
@@ -128,8 +129,6 @@ private:
 	    const typename OutputImageType::IndexType &currentImgIdx,
 	    const typename OutputImageType::IndexType &nextImgIdx
 	    );
-
-	bool PixelIsNotOnBorder(const typename OutputImageType::IndexType &nextImgIdx);
 
 protected:
 	virtual void GenerateData(void);

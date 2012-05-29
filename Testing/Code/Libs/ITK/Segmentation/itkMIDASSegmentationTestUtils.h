@@ -31,6 +31,7 @@
 #include "itkImage.h"
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
+#include "itkMIDASSegmentationTestUtils.h"
 
 template <class TPixel, unsigned int VImageDimension>
 unsigned long int CountVoxelsAboveValue(TPixel value, itk::Image<TPixel, VImageDimension>* image)

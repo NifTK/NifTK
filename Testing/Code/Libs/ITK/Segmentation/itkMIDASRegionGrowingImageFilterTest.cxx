@@ -42,6 +42,13 @@
 
 using namespace std;
 
+/***********************************************************
+ * This test deprecated. This test assumes that the
+ * region growing goes up to and not including the boundary.
+ * As of 2012/05/29, we do include boundary, and this makes
+ * it a bit difficult to generate the images in this way.
+ **********************************************************/
+
 /*
  * Replaces true with trueValue, false with falseValue
  */
@@ -328,13 +335,15 @@ int _TestImage2(const string &gsImgPath, const string &regionImgPath,
 		sp_filter->SetContourImage(sp_contImg);
 		sp_filter->Update();
 
-		if (sp_filter->GetOutput()->GetOrigin() != sp_groundTruth->GetOrigin() || sp_filter->GetOutput()->GetSpacing() != sp_groundTruth->GetSpacing() || sp_filter->GetOutput()->GetLargestPossibleRegion().GetSize() != sp_groundTruth->GetLargestPossibleRegion().GetSize()) {
+		if (sp_filter->GetOutput()->GetOrigin() != sp_groundTruth->GetOrigin()
+		    || sp_filter->GetOutput()->GetSpacing() != sp_groundTruth->GetSpacing()
+		    || sp_filter->GetOutput()->GetLargestPossibleRegion().GetSize() != sp_groundTruth->GetLargestPossibleRegion().GetSize()) {
 			cerr << "Spatial mismatch\n";
-
 			return EXIT_FAILURE;
 		}
 
 		{
+
 			itk::ImageRegionConstIterator<TBinImg> ic_testPx(sp_filter->GetOutput(), sp_filter->GetOutput()->GetLargestPossibleRegion());
 			itk::ImageRegionConstIterator<TBinImg> ic_refPx(sp_groundTruth, sp_groundTruth->GetLargestPossibleRegion());
 
@@ -343,7 +352,6 @@ int _TestImage2(const string &gsImgPath, const string &regionImgPath,
 				if (ic_testPx.Get() != ic_refPx.Get()) {
 					cout << ic_testPx.Get() << endl;
 					cout << ic_refPx.Get() << endl;
-
 					return EXIT_FAILURE;
 				}
 			}
@@ -367,9 +375,9 @@ int itkMIDASRegionGrowingImageFilterTest(int argc, char *argv[]) {
 		const int lowerThrsh = atoi(argv[inputIdx + 2]);
 		const int upperThrsh = atoi(argv[inputIdx + 3]);
 
-		eVal |= _TestImage2<itk::Image<unsigned short, 2>, itk::Image<bool, 2> > (gsImgPath, regImgPath, lowerThrsh, upperThrsh);
+		eVal |= _TestImage2<itk::Image<unsigned short, 2>, itk::Image<bool, 2> >           (gsImgPath, regImgPath, lowerThrsh, upperThrsh);
 		eVal |= _TestImage2<itk::Image<unsigned short, 2>, itk::Image<unsigned short, 2> > (gsImgPath, regImgPath, lowerThrsh, upperThrsh);
-		eVal |= _TestImage2<itk::Image<float, 2>, itk::Image<unsigned short, 2> > (gsImgPath, regImgPath, lowerThrsh, upperThrsh);
+		eVal |= _TestImage2<itk::Image<float, 2>, itk::Image<unsigned short, 2> >          (gsImgPath, regImgPath, lowerThrsh, upperThrsh);
 	}
 
 	return eVal;

@@ -50,7 +50,6 @@ ADD_TEST(MIDAS-Seg-UpSampling ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASUpSampli
 ADD_TEST(MIDAS-Seg-Rethresholding ${SEGMENTATION_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MIDASRethresholding.nii.gz ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz itkMIDASRethresholdingFilterTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img 400 ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz)
 ADD_TEST(MIDAS-Seg-ExcludeImageFilter ${SEGMENTATION_INTEGRATION_TESTS} itkExcludeImageFilterTest)
 ADD_TEST(MIDAS-Seg-LimitByRegionFunction ${SEGMENTATION_INTEGRATION_TESTS} itkLimitByRegionFunctionTest)
-ADD_TEST(MIDAS-Seg-RegionGrowingImageFilter ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionGrowingImageFilterTest ${INPUT_DATA}/two_regions_three_intensities.png ${INPUT_DATA}/two_regions_three_intensities_regiondef.png 1 300 ${INPUT_DATA}/two_regions_three_intensities.png ${INPUT_DATA}/two_regions_three_intensities_regiondef.png 1 200)
 ADD_TEST(MIDAS-Seg-Upd-CopyRegion ${SEGMENTATION_INTEGRATION_TESTS} itkImageUpdateCopyRegionProcessorTest )
 ADD_TEST(MIDAS-Seg-Upd-ClearRegion ${SEGMENTATION_INTEGRATION_TESTS} itkImageUpdateClearRegionProcessorTest )
 ADD_TEST(MIDAS-Seg-Upd-PixelWise ${SEGMENTATION_INTEGRATION_TESTS} itkImageUpdatePixelWiseSingleValueProcessorTest )
@@ -68,7 +67,11 @@ ADD_TEST(MIDAS-Seg-PropUp ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASPropagateUpP
 ADD_TEST(MIDAS-Seg-PropDown ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASPropagateDownProcessorTest)
 
 # Need a new test, as filter no longer works in 2D
-#ADD_TEST(MIDAS-Seg-MorphLargest ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest ${INPUT_DATA}/centered_2d 2 ${INPUT_DATA}/right_border_grey_2d 2)
+# ADD_TEST(MIDAS-Seg-MorphLargest ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest ${INPUT_DATA}/centered_2d 2 ${INPUT_DATA}/right_border_grey_2d 2)
+
+# itkMIDASRegionGrowingImageFilterTest is deprecated, use itkMIDASRegionGrowingImageFilterTest2 instead.
+# ADD_TEST(MIDAS-Seg-RegionGrowingImageFilter ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionGrowingImageFilterTest ${INPUT_DATA}/two_regions_three_intensities.png ${INPUT_DATA}/two_regions_three_intensities_regiondef.png 1 300 ${INPUT_DATA}/two_regions_three_intensities.png ${INPUT_DATA}/two_regions_three_intensities_regiondef.png 1 200)
+ADD_TEST(MIDAS-Seg-RegionGrowingImageFilter ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASRegionGrowingImageFilterTest2)
 
 #################################################################################
 # Build instructions.
@@ -87,7 +90,6 @@ itkMIDASLargestConnectedComponentFilterTest.cxx
 itkMIDASDownSamplingFilterTest.cxx
 itkMIDASUpSamplingFilterTest.cxx
 itkMIDASRethresholdingFilterTest.cxx
-itkMIDASRegionGrowingImageFilterTest.cxx
 itkMIDASRegionOfInterestCalculatorTest.cxx
 itkMIDASWipeSliceTest.cxx
 itkMIDASWipePlusTest.cxx
@@ -101,6 +103,7 @@ itkMIDASPropagateDownProcessorTest.cxx
 itkMIDASRegionOfInterestCalculatorMinimumRegionTest.cxx
 itkMIDASThresholdApplyProcessorTest.cxx
 itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest.cxx
+itkMIDASRegionGrowingImageFilterTest2.cxx
 )
 
 ADD_EXECUTABLE(SegmentationIntegrationTests SegmentationIntegrationTests ${SegmentationIntegrationTests_SRCS})

@@ -27,7 +27,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
 		std::stack<typename OutputImageType::IndexType> &r_stack,
 		const typename OutputImageType::IndexType &currentImgIdx,
 		const typename OutputImageType::IndexType &nextImgIdx) {
-		
+
 	if (   (   this->m_UseRegionOfInterest == false
 	        || (this->m_UseRegionOfInterest == true && m_RegionOfInterest.IsInside(nextImgIdx))
 	        )
@@ -35,7 +35,9 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
 			&& this->GetInput()->GetPixel(nextImgIdx) <= GetUpperThreshold()
 			&& this->GetOutput()->GetPixel(nextImgIdx) == GetBackgroundValue()
 			&& (   this->GetContourImage() == NULL
-          || this->GetContourImage()->GetPixel(nextImgIdx) == GetBackgroundValue()
+          || (this->GetContourImage()->GetPixel(currentImgIdx) == GetBackgroundValue()
+              && this->GetContourImage()->GetPixel(nextImgIdx) == GetBackgroundValue()
+             )
           || (this->GetContourImage()->GetPixel(nextImgIdx) == GetForegroundValue()
               && this->GetContourImage()->GetPixel(currentImgIdx) == GetBackgroundValue()
              )
@@ -158,7 +160,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
       for (outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator)
       {
         nextImgIndex = outputIterator.GetIndex();
-        if (nextImgIndex != currImgIndex)
+        if (nextImgIndex != currImgIndex && outputRegion.IsInside(nextImgIndex))
         {
           ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex);
         }
