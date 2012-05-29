@@ -111,6 +111,22 @@ IF(NOT DEFINED MITK_DIR)
     #    build is effectively MITK master 4ddb84dc4e plus the trac items 853, 1256, 
     #    1344 and 1366 listed above. The version we are using is thus 1da33a0b08 on
     #    MattClarkson github fork.
+    #
+    # 6. Trac 1482 - merged MITK master 53aba30c0c (Sat May 26 14:58:13 2012 +0200) onto niftk
+    #    branch, to pick up MITK latest. Then created branches 
+    #    MITK-bug-10420-trac-1479-render-window-steal-mouse-clicks
+    #    MITK-bug-12002-trac-1467-QmitkFunctionality-crash-if-QmitkStdMultiWidgetEditor-not-the-only-editor
+    #    MITK-bug-12003-trac-1469-Make-crosses-only-appear-on-current-slice
+    #    locally, then merged into niftk, to push niftk version fdfefc50c9.
+    #    Thus, the effective codebase is:
+    #    MITK version 53aba30c0c plus:
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/853  (opacity for black. MITK working on proper fix).
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1256 (improve file extension gz. Not entirely merged ... needs re-checking).
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1344 (Turn off interactors in mitkMouseModeSwitcher)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1366 (Don't create PACS interactors in mitkMouseModeSwitcher)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1467 (Stop QmitkFunctionality crash when QmitkStdMultiWidgetEditor not the only editor)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1469 (Make crosses only appear on current slice)
+    #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1479 (Stop QmitkRenderWindow steal mouse clicks).
     #########################################################
     
     SET(revision_tag 1da33a0b08)
