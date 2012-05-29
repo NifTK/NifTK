@@ -33,7 +33,6 @@ class QAbstractButton;
 /**
  * \class MIDASMorphologicalSegmentorViewControlsImpl
  * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
- *
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
 class MIDASMorphologicalSegmentorViewControlsImpl : public QWidget, public Ui_MIDASMorphologicalSegmentorViewControls

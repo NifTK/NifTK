@@ -37,7 +37,7 @@ namespace mitk
  * \brief Used to connect the editor to the data-storage, and provide a key such that
  * when a data image in the data storage is opened, the application framework knows that
  * this is a valid type of editor with which to view the data.
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
+ * \ingroup uk_ac_ucl_cmic_midaseditor
  */
 class MIDASEDITOR_EXPORT MIDASDataStorageEditorInput : public berry::IEditorInput
 {

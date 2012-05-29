@@ -29,6 +29,11 @@
 
 namespace mitk {
 
+/**
+ * \class MIDASGeneralSegmentorViewActivator
+ * \brief CTK Plugin Activator class for MIDASGeneralSegmentorView.
+ * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
+ */
 class MIDASGeneralSegmentorViewActivator :
   public QObject, public ctkPluginActivator
 {

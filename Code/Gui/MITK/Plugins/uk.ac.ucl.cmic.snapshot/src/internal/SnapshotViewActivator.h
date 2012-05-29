@@ -29,6 +29,11 @@
 
 namespace mitk {
 
+/**
+ * \class SnapshotViewActivator
+ * \brief CTK Plugin Activator class for SnapshotView.
+ * \ingroup uk_ac_ucl_cmic_snapshot_internal
+ */
 class SnapshotViewActivator :
   public QObject, public ctkPluginActivator
 {

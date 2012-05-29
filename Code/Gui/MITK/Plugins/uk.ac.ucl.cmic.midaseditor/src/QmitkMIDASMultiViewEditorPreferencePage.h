@@ -39,6 +39,7 @@ class QCheckBox;
  * \class QmitkMIDASMultiViewEditorPreferencePage
  * \brief Provides a preferences page for the CMIC MIDAS Display, including default number of rows,
  * default number of columns, image interpolation, default view and background colour.
+ * \ingroup uk_ac_ucl_cmic_midaseditor
  */
 struct MIDASEDITOR_EXPORT QmitkMIDASMultiViewEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {

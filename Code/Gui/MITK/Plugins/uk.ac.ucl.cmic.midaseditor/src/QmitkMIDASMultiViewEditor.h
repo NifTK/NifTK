@@ -59,7 +59,7 @@ namespace mitk {
  * MITK on 24.02.2012, apart from the decorations. This editor purposefully implements the methods
  * EnableDecorations, IsDecorationEnabled, GetDecorations to do nothing (see method documentation).
  *
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
+ * \ingroup uk_ac_ucl_cmic_midaseditor
  */
 class MIDASEDITOR_EXPORT QmitkMIDASMultiViewEditor :
   public QmitkAbstractRenderEditor, virtual public berry::IPartListener

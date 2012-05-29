@@ -31,10 +31,9 @@
 class MIDASGeneralSegmentorView;
 
 /**
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
- *
  * \class MIDASGeneralSegmentorViewEventInterface
  * \brief Interface class, simply to callback onto MIDASGeneralSegmentorView class for Undo/Redo purposes.
+ * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class MIDASGeneralSegmentorViewEventInterface: public itk::Object, public mitk::OperationActor
 {

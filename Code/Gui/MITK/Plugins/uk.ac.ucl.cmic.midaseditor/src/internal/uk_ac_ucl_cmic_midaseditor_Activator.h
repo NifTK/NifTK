@@ -31,6 +31,11 @@
 
 namespace mitk {
 
+/**
+ * \class uk_ac_ucl_cmic_midaseditor_Activator
+ * \brief CTK Plugin Activator class for the MIDAS Editor (Drag And Drop Display) Plugin.
+ * \ingroup uk_ac_ucl_cmic_midaseditor_internal
+ */
 class uk_ac_ucl_cmic_midaseditor_Activator :
   public QObject, public ctkPluginActivator
 {

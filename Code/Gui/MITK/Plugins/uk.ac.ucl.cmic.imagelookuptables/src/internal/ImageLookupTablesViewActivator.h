@@ -29,6 +29,11 @@
 
 namespace mitk {
 
+/**
+ * \class ImageLookupTablesViewActivator
+ * \brief CTK Plugin Activator class for ImageLookupTablesView.
+ * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
+ */
 class ImageLookupTablesViewActivator :
   public QObject, public ctkPluginActivator
 {

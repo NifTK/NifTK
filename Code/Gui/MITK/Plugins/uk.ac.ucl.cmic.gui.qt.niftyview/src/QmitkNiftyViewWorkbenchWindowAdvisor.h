@@ -33,7 +33,7 @@
 /**
  * \class QmitkNiftyViewWorkbenchWindowAdvisor
  * \brief Advisor class to set up NiftyView windows on startup.
- *
+ * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview
  * \sa QmitkHelpAboutDialog
  */
 class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewWorkbenchWindowAdvisor : public QmitkExtWorkbenchWindowAdvisor

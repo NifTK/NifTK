@@ -30,6 +30,11 @@
 
 namespace mitk {
 
+/**
+ * \class AffineTransformViewActivator
+ * \brief CTK Plugin Activator class for AffineTransformView.
+ * \ingroup uk_ac_ucl_cmic_affinetransform_internal
+ */
 class AffineTransformViewActivator :
   public QObject, public ctkPluginActivator
 {
