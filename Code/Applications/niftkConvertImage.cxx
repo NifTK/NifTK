@@ -152,7 +152,7 @@ int main(int argc, char **argv)
     int dimension=imageIO->GetNumberOfDimensions();
     int nNonUnityDimensions = dimension;
 
-    for (unsigned int i=0; i<dimension; i++) 
+    for ( int i=0; i<dimension; i++ )  
     {
       if ( imageIO->GetDimensions( i ) <= 1 )
       {
