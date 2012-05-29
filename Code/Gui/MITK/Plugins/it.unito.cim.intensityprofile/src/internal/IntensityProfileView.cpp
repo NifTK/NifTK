@@ -209,6 +209,7 @@ IntensityProfileView::IntensityProfileView()
 : d_ptr(new IntensityProfileViewPrivate()),
   ui(0)
 {
+  MITK_INFO << "IntensityProfileView::IntensityProfileView()";
   Q_D(IntensityProfileView);
   d->pendingCrosshairPositionEvent = false;
   d->showCrosshairProfile = true;
@@ -274,6 +275,8 @@ void IntensityProfileView::CreateQtPartControl(QWidget *parent) {
   ui->storeStatisticsButton->hide();
   ui->storeCrosshairButton->hide();
 
+  d->display = GetRenderWindowPart();
+
 //  connect(ui->storeCrosshairButton, SIGNAL(clicked()), SLOT(on_storeCrosshairButton_clicked()));
 //  connect(ui->storeStatisticsButton, SIGNAL(clicked()), SLOT(on_storeStatisticsButton_clicked()));
   connect(ui->copyStatisticsButton, SIGNAL(clicked()), SLOT(on_copyStatisticsButton_clicked()));
@@ -306,8 +309,26 @@ IntensityProfileView::SetFocus()
 void
 IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node)
 {
+//  MITK_INFO << "IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node)";
+  Q_D(IntensityProfileView);
   if (node->IsVisible(0)) {
+//    MITK_INFO << "IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node) render independent visible property on";
     onVisibilityOn(node);
+  }
+  else if (d->display) {
+    QmitkRenderWindow* renderWindow = d->display->GetActiveRenderWindow();
+    if (renderWindow) {
+      if (node->IsVisible(renderWindow->GetRenderer())) {
+//        MITK_INFO << "IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node) render dependent visible property on " << renderWindow;
+        onVisibilityOn(node);
+      }
+      else {
+//        MITK_INFO << "IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node) render dependent visible property off " << renderWindow;
+      }
+    }
+    else {
+//      MITK_INFO << "IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node) no active render window";
+    }
   }
   else {
     onVisibilityOff(node);
@@ -317,19 +338,23 @@ IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node)
 void
 IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode)
 {
+//  MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) begin";
   if (!cnode) {
+//    MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) end 1";
     return;
   }
-
   Q_D(IntensityProfileView);
 
   mitk::DataNode* node = const_cast<mitk::DataNode*>(cnode);
 
   if (isCrosshair->CheckNode(node)) {
+//    MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) is crosshair node";
     onCrosshairVisibilityOn();
   }
   else if (is4DNotBinaryImage->CheckNode(node)) {
+//    MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) is 4D, not binary";
     if (d->referenceNodes.contains(node)) {
+//      MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) end 2";
       return;
     }
     d->referenceNodes.push_back(node);
@@ -337,6 +362,7 @@ IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode)
   }
   else if (hasBinaryImage->CheckNode(node)) {
     if (d->roiNodes.contains(node)) {
+//      MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) end 3";
       return;
     }
     d->roiNodes.push_back(node);
@@ -347,13 +373,15 @@ IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode)
     }
   }
   else {
+//    MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) end 4";
     return;
   }
 
-  if (d->showCrosshairProfile && !d->crosshairPositionListenerIsAdded) {
-    onCrosshairVisibilityOn();
-  }
+//  if (d->showCrosshairProfile && !d->crosshairPositionListenerIsAdded) {
+//    onCrosshairVisibilityOn();
+//  }
   initPlotter();
+//  MITK_INFO << "IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode) end 5";
 }
 
 void
@@ -447,8 +475,8 @@ IntensityProfileView::NodeChanged(const mitk::DataNode* node)
 void
 IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)
 {
-  MITK_INFO << "IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)  begin";
-  MITK_INFO << "render window : " << display;
+//  MITK_INFO << "IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)  begin";
+//  MITK_INFO << "render window : " << display;
   Q_D(IntensityProfileView);
 
   if (d->display && d->display != display) {
@@ -457,18 +485,18 @@ IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display
 
   d->display = display;
   onCrosshairVisibilityOn();
-  MITK_INFO << "IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)  end";
+//  MITK_INFO << "IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)  end";
 }
 
 void
 IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)
 {
-  MITK_INFO << "IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)  begin";
-  MITK_INFO << "render window: " << display;
+//  MITK_INFO << "IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)  begin";
+//  MITK_INFO << "render window: " << display;
   Q_D(IntensityProfileView);
   onCrosshairVisibilityOff();
   d->display = 0;
-  MITK_INFO << "IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)  end";
+//  MITK_INFO << "IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)  end";
 }
 
 
@@ -585,12 +613,14 @@ IntensityProfileView::dimensionsAreEqual(const mitk::DataNode* node1, const mitk
 void
 IntensityProfileView::selectNode(mitk::DataNode* node)
 {
+//  MITK_INFO << "IntensityProfileView::selectNode(mitk::DataNode* node) begin";
   Q_D(IntensityProfileView);
 
   // The dimension must equal for every selected 4D image,
   // otherwise skipped.
   if (!d->referenceNodes.isEmpty()) {
     if (!dimensionsAreEqual(node, d->referenceNodes[0], false)) {
+//      MITK_INFO << "IntensityProfileView::selectNode(mitk::DataNode* node) end 1";
       return;
     }
   }
@@ -626,6 +656,7 @@ IntensityProfileView::selectNode(mitk::DataNode* node)
         d->profileNodeChangedCommand);
     d->profileNodeChangeObservers[d->profileNodes[i]] = observerTag;
   }
+//  MITK_INFO << "IntensityProfileView::selectNode(mitk::DataNode* node) end 2";
 }
 
 void
@@ -665,35 +696,42 @@ IntensityProfileView::deselectNode(mitk::DataNode* node)
 void
 IntensityProfileView::onCrosshairVisibilityOn()
 {
-  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() begin";
+//  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() begin";
   Q_D(IntensityProfileView);
   d->showCrosshairProfile = true;
+  d->crosshairPositionListenerIsAdded = false;
 
+  if (!d->display)
+  {
+//    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() no display yet";
+//    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() end";
+    return;
+  }
   onCrosshairPositionEvent();
-  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() add listeners";
+//  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() add listeners";
   foreach (QmitkRenderWindow* display, d->display->GetRenderWindows().values()) {
     display->GetSliceNavigationController()->crosshairPositionEvent.AddListener(*d->crosshairPositionListener);
   }
   d->crosshairPositionListenerIsAdded = true;
-  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() end";
+//  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() end";
 }
 
 void
 IntensityProfileView::onCrosshairVisibilityOff()
 {
-  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() begin";
+//  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() begin";
   Q_D(IntensityProfileView);
 
   if (!d->display)
   {
-    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() display is null - should not happen";
-    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() end";
+//    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() display is null - should not happen";
+//    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() end";
     return;
   }
 
   d->showCrosshairProfile = false;
 
-  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() remove listeners";
+//  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() remove listeners";
   foreach (QmitkRenderWindow* display, d->display->GetRenderWindows().values()) {
     display->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
   }
@@ -704,7 +742,7 @@ IntensityProfileView::onCrosshairVisibilityOff()
   }
   d->crosshairProfiles.clear();
   ui->plotter->replot();
-  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() end";
+//  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() end";
 }
 
 void
@@ -712,6 +750,10 @@ IntensityProfileView::onCrosshairPositionEvent()
 {
   Q_D(IntensityProfileView);
   if (!d->pendingCrosshairPositionEvent) {
+    if (!d->display) {
+//      MITK_INFO << "IntensityProfileView::onCrosshairPositionEvent() should not get here";
+      return;
+    }
     d->pendingCrosshairPositionEvent = true;
     QTimer::singleShot(0, this, SLOT(onCrosshairPositionEventDelayed()));
   }
