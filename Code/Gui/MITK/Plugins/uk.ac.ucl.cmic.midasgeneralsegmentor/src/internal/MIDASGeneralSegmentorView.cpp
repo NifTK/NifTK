@@ -440,7 +440,8 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetColor( 1.0, 0.75, 0.8 );
     this->GetDataStorage()->Add(pointSetNode, emptySegmentation);
 
-    // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate"
+    // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate",
+    // and furthermore, there seem to be several seg faults rendering contour code in 3D. Haven't investigated yet.
     const mitk::RenderingManager::RenderWindowVector& renderWindows = mitk::RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
     for (mitk::RenderingManager::RenderWindowVector::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
     {
@@ -2269,6 +2270,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
   assert(workingNodes.size() == 6);
 
+  segmentedImage->Modified();
   seeds->Modified();
 
   for (unsigned int i = 0; i < workingNodes.size(); i++)
