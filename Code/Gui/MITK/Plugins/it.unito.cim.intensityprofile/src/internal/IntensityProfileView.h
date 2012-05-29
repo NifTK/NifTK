@@ -33,6 +33,7 @@
 #include <mitkNodePredicateDimension.h>
 #include <mitkNodePredicateData.h>
 #include <mitkPointSet.h>
+#include <mitkIRenderWindowPartListener.h>
 
 #include <itkImage.h>
 #include <itkFixedArray.h>
@@ -52,7 +53,8 @@ class DataNode;
  \sa QmitkFunctionality
  \ingroup Functionalities
  */
-class IntensityProfileView: public QmitkMIDASBaseView {
+class IntensityProfileView: public QmitkMIDASBaseView, public mitk::IRenderWindowPartListener
+{
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
     Q_OBJECT
@@ -83,8 +85,11 @@ public:
   virtual void NodeRemoved(const mitk::DataNode* node);
   virtual void NodeChanged(const mitk::DataNode* node);
 
+  virtual void RenderWindowPartActivated(mitk::IRenderWindowPart* renderWindowPart);
+  virtual void RenderWindowPartDeactivated(mitk::IRenderWindowPart* renderWindowPart);
+
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+  bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
   void onProfileNodeChanged();

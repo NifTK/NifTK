@@ -445,6 +445,34 @@ IntensityProfileView::NodeChanged(const mitk::DataNode* node)
 }
 
 void
+IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)
+{
+  MITK_INFO << "IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)  begin";
+  MITK_INFO << "render window : " << display;
+  Q_D(IntensityProfileView);
+
+  if (d->display && d->display != display) {
+    RenderWindowPartDeactivated(d->display);
+  }
+
+  d->display = display;
+  onCrosshairVisibilityOn();
+  MITK_INFO << "IntensityProfileView::RenderWindowPartActivated(mitk::IRenderWindowPart* display)  end";
+}
+
+void
+IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)
+{
+  MITK_INFO << "IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)  begin";
+  MITK_INFO << "render window: " << display;
+  Q_D(IntensityProfileView);
+  onCrosshairVisibilityOff();
+  d->display = 0;
+  MITK_INFO << "IntensityProfileView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* display)  end";
+}
+
+
+void
 IntensityProfileView::initPlotter()
 {
 //  mitk::TimeBounds timeBounds = ComputeTimeBounds();
@@ -559,9 +587,6 @@ IntensityProfileView::selectNode(mitk::DataNode* node)
 {
   Q_D(IntensityProfileView);
 
-//  mitk::DataNode* selectedNode = node;
-//  mitk::DataNode* referenceNode = selectedNode;
-
   // The dimension must equal for every selected 4D image,
   // otherwise skipped.
   if (!d->referenceNodes.isEmpty()) {
@@ -569,32 +594,6 @@ IntensityProfileView::selectNode(mitk::DataNode* node)
       return;
     }
   }
-
-//  if (isIntensityProfile->CheckNode(selectedNode) ||
-//      hasPointSet->CheckNode(selectedNode) ||
-//      has4DBinaryImage->CheckNode(selectedNode)) {
-//    mitk::DataStorage::SetOfObjects::ConstPointer selectedNodeSources =
-//        GetDataStorage()->GetSources(selectedNode);
-//    if (selectedNodeSources->Size() != 1) {
-//      deselectNode();
-//      d->referenceNode = 0;
-//      d->selectedNode = 0;
-//      return;
-//    }
-//    referenceNode = *selectedNodeSources->begin();
-//  }
-//  if (!is4DImage->CheckNode(referenceNode)) {
-//    deselectNode();
-//    d->referenceNode = 0;
-//    d->selectedNode = 0;
-//    return;
-//  }
-//
-//  if (d->referenceNode == referenceNode) {
-//    d->selectedNode = selectedNode;
-//    return;
-//  }
-//  deselectNode();
 
   setDefaultLevelWindow(node);
   mitk::BaseProperty* levelWindowProperty = node->GetProperty("levelwindow");
@@ -666,56 +665,46 @@ IntensityProfileView::deselectNode(mitk::DataNode* node)
 void
 IntensityProfileView::onCrosshairVisibilityOn()
 {
+  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() begin";
   Q_D(IntensityProfileView);
   d->showCrosshairProfile = true;
 
-//  QmitkStdMultiWidget* display = GetActiveStdMultiWidget(false);
-  mitk::IRenderWindowPart* display = GetRenderWindowPart();
-  if (display != d->display) {
-    if (d->display && d->showCrosshairProfile) {
-      d->display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-      d->display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-      d->display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-    }
-    d->display = display;
-  }
-  if (!display) {
-    return;
-  }
-
   onCrosshairPositionEvent();
-  display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.AddListener(*d->crosshairPositionListener);
-  display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.AddListener(*d->crosshairPositionListener);
-  display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.AddListener(*d->crosshairPositionListener);
+  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() add listeners";
+  foreach (QmitkRenderWindow* display, d->display->GetRenderWindows().values()) {
+    display->GetSliceNavigationController()->crosshairPositionEvent.AddListener(*d->crosshairPositionListener);
+  }
   d->crosshairPositionListenerIsAdded = true;
+  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() end";
 }
 
 void
 IntensityProfileView::onCrosshairVisibilityOff()
 {
+  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() begin";
   Q_D(IntensityProfileView);
-  d->showCrosshairProfile = false;
 
-  mitk::IRenderWindowPart* display = GetRenderWindowPart();
-  if (display != d->display) {
-    if (d->display && d->showCrosshairProfile) {
-      d->display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-      d->display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-      d->display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-    }
-    d->display = display;
-  }
-  if (!display) {
+  if (!d->display)
+  {
+    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() display is null - should not happen";
+    MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() end";
     return;
   }
 
-  display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-  display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-  display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-  d->crosshairPositionListenerIsAdded = true;
+  d->showCrosshairProfile = false;
 
+  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() remove listeners";
+  foreach (QmitkRenderWindow* display, d->display->GetRenderWindows().values()) {
+    display->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
+  }
+  d->crosshairPositionListenerIsAdded = false;
+
+  foreach (QwtPlotCurve* profile, d->crosshairProfiles) {
+    delete profile;
+  }
   d->crosshairProfiles.clear();
   ui->plotter->replot();
+  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() end";
 }
 
 void
@@ -733,19 +722,12 @@ IntensityProfileView::onCrosshairPositionEventDelayed()
 {
   Q_D(IntensityProfileView);
   d->pendingCrosshairPositionEvent = false;
-  mitk::IRenderWindowPart* display = GetRenderWindowPart();
-  if (display != d->display) {
-    if (d->display && d->showCrosshairProfile) {
-      d->display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-      d->display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-      d->display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
-    }
-    d->display = display;
-  }
-  if (!display) {
-    return;
-  }
-  const mitk::Point3D crossPosition = display->GetSelectedPosition();
+//  if (d->display && d->showCrosshairProfile) {
+//    d->display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
+//    d->display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
+//    d->display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
+//  }
+  const mitk::Point3D crossPosition = d->display->GetSelectedPosition();
   calculateCrosshairProfiles(crossPosition);
   foreach (mitk::DataNode* node, d->referenceNodes) {
     d->crosshairProfiles[node]->attach(ui->plotter);
