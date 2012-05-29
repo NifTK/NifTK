@@ -25,16 +25,15 @@
 #ifndef QMITKWHEELEVENTEATER_H_
 #define QMITKWHEELEVENTEATER_H_
 
-#include "niftkQmitkExtExports.h"
-
 #include <QWidget>
 #include <QEvent>
+#include "uk_ac_ucl_cmic_thumbnail_Export.h"
 
 /**
  * \class QmitkWheelEventEater
  * \brief Qt event filter to eat wheel events.
  */
-class NIFTKQMITKEXT_EXPORT QmitkWheelEventEater : public QObject
+class THUMBNAIL_EXPORT QmitkWheelEventEater : public QObject
 {
   Q_OBJECT
 

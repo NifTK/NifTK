@@ -25,16 +25,16 @@
 #ifndef QMITKMOUSEEVENTEATER_H_
 #define QMITKMOUSEEVENTEATER_H_
 
-#include "niftkQmitkExtExports.h"
-
 #include <QWidget>
 #include <QEvent>
+#include "uk_ac_ucl_cmic_thumbnail_Export.h"
 
 /**
  * \class QmitkMouseEventEater
  * \brief Qt event filter to eat mouse events
+ * \ingroup uk.ac.ucl.cmic.thumbnail
  */
-class NIFTKQMITKEXT_EXPORT QmitkMouseEventEater : public QObject
+class THUMBNAIL_EXPORT QmitkMouseEventEater : public QObject
 {
   Q_OBJECT
 

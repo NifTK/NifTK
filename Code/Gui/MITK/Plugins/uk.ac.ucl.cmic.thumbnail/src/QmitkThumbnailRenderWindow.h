@@ -25,8 +25,8 @@
 #ifndef QMITKTHUMBNAILRENDERWINDOW_H_
 #define QMITKTHUMBNAILRENDERWINDOW_H_
 
-#include "niftkQmitkExtExports.h"
 #include <QColor>
+#include "uk_ac_ucl_cmic_thumbnail_Export.h"
 #include "QmitkRenderWindow.h"
 #include "mitkDataStorage.h"
 #include "mitkDataNode.h"
@@ -41,6 +41,7 @@ class QmitkWheelEventEater;
  * \brief Subclass of QmitkRenderWindow to listen to the currently focused QmitkRenderWindow
  * and provide a zoomed-out view with an overlay of a bounding box to provide the
  * current size of the currently focused QmitkRenderWindow's view-port size.
+ * \ingroup uk.ac.ucl.cmic.thumbnail
  *
  * The client must
  * <pre>
@@ -67,7 +68,7 @@ class QmitkWheelEventEater;
  * \sa mitk::DataStorage
  * \sa mitk::FocusManager
  */
-class NIFTKQMITKEXT_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
+class THUMBNAIL_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
 {
   Q_OBJECT
 

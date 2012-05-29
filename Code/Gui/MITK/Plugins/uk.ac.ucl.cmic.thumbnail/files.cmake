@@ -1,5 +1,6 @@
 set(SRC_CPP_FILES
-  QmitkThumbnailViewPreferencePage.cpp  
+  QmitkThumbnailViewPreferencePage.cpp
+  QmitkThumbnailRenderWindow.cpp  
 )
 
 set(INTERNAL_CPP_FILES
@@ -13,6 +14,9 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/QmitkThumbnailViewPreferencePage.h
+  src/QmitkWheelEventEater.h
+  src/QmitkMouseEventEater.h
+  src/QmitkThumbnailRenderWindow.h
   src/internal/ThumbnailViewActivator.h
   src/internal/ThumbnailView.h
 )

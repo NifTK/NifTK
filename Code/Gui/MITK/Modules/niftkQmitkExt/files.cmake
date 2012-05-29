@@ -1,7 +1,6 @@
 SET(CPP_FILES
   Dialogs/QmitkHelpAboutDialog.cpp
   Dialogs/QmitkMIDASNewSegmentationDialog.cpp
-  QmitkThumbnailRenderWindow.cpp
   QmitkMIDASDrawToolGUI.cpp
   QmitkMIDASPaintbrushToolGUI.cpp
   QmitkMIDASSlidersWidget.cpp
@@ -12,13 +11,10 @@ SET(CPP_FILES
   QmitkMIDASMultiViewVisibilityManager.cpp
 )
 
-SET(MOC_H_FILES
-  Events/QmitkMouseEventEater.h 
+SET(MOC_H_FILES 
   Events/QmitkPaintEventEater.h
-  Events/QmitkWheelEventEater.h
   Dialogs/QmitkHelpAboutDialog.h
   Dialogs/QmitkMIDASNewSegmentationDialog.h
-  QmitkThumbnailRenderWindow.h
   QmitkMIDASDrawToolGUI.h
   QmitkMIDASPaintbrushToolGUI.h
   QmitkMIDASSlidersWidget.h

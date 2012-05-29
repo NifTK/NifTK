@@ -29,6 +29,11 @@
 
 namespace mitk {
 
+/**
+ * \class ThumbnailViewActivator
+ * \brief CTK Plugin Activator class for ThumbnailView.
+ * \ingroup uk.ac.ucl.cmic.thumbnail_internal
+ */
 class ThumbnailViewActivator :
   public QObject, public ctkPluginActivator
 {
