@@ -394,7 +394,6 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
 {
   // This creates the "final output image"... i.e. the segmentation result.
   mitk::DataNode::Pointer emptySegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
-  emptySegmentation->SetProperty("layer", mitk::IntProperty::New(90));
 
   // The above method returns NULL if the user exited the colour selection dialog box.
   if (emptySegmentation.IsNull())
@@ -402,7 +401,8 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     return NULL;
   }
 
-  // Set some initial properties, to make sure they are initialised properly.
+  // Set initial properties.
+  emptySegmentation->SetProperty("layer", mitk::IntProperty::New(90));
   emptySegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
 
   // Make sure we have a reference images... which should always be true at this point.
@@ -434,6 +434,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New( 5 ) );
     pointSetNode->SetBoolProperty("helper object", true);
     pointSetNode->SetBoolProperty("show distant lines", false);
+    pointSetNode->SetBoolProperty("show distant points", false);
     pointSetNode->SetBoolProperty("show distances", false);
     pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
     pointSetNode->SetColor( 1.0, 0.75, 0.8 );
