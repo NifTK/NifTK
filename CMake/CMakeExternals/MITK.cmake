@@ -129,7 +129,7 @@ IF(NOT DEFINED MITK_DIR)
     #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1479 (Stop QmitkRenderWindow steal mouse clicks).
     #########################################################
     
-    SET(revision_tag 1da33a0b08)
+    SET(revision_tag fdfefc50c9)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
