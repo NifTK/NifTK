@@ -79,38 +79,22 @@ ENDIF()
 # Loop round for each external project, compiling it
 ######################################################################
 
-IF (BUILD_MESHING)
-  SET(EXTERNAL_PROJECTS
-    BOOST
-    VTK
-    GDCM       
-    ITK
-    DCMTK
-    CTK
-    NIFTYLINK
-    MITK
-    CGAL
-    NiftySim
-    NiftyReg
-    NiftyRec
-    NiftySeg
-  )
-ELSE (BUILD_MESHING)
-  SET(EXTERNAL_PROJECTS
-    BOOST
-    VTK
-    GDCM       
-    ITK
-    DCMTK
-    CTK
-    NIFTYLINK
-    MITK
-    NiftySim
-    NiftyReg
-    NiftyRec
-    NiftySeg
-  )
-ENDIF (BUILD_MESHING)
+SET(EXTERNAL_PROJECTS
+  BOOST
+  VTK
+  GDCM       
+  ITK
+  DCMTK
+  CTK
+  NIFTYLINK
+  MITK
+  CGAL
+  NiftySim
+  NiftyReg
+  NiftyRec
+  NiftySeg
+  NifTKData
+)
 
 FOREACH(p ${EXTERNAL_PROJECTS})
   INCLUDE("CMake/CMakeExternals/${p}.cmake")
@@ -123,6 +107,10 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
 
   SET(proj NIFTK)
   SET(proj_DEPENDENCIES ${BOOST_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} )
+  
+  IF(BUILD_TESTING)
+    LIST(APPEND proj_DEPENDENCIES ${NifTKData_DEPENDS})
+  ENDIF(BUILD_TESTING)
   
   IF(BUILD_NIFTYLINK)
     LIST(APPEND proj_DEPENDENCIES ${NIFTYLINK_DEPENDS})
@@ -200,6 +188,7 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNIFTK_ADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
       -DNIFTK_ADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
       -DNIFTK_FFTWINSTALL:PATH=${NIFTK_LINK_PREFIX}/fftw     # We don't have CMake SuperBuild version of FFTW, so must rely on it already being there
+      -DNIFTK_DATA_DIR:PATH=${NIFTK_DATA_DIR}      
       -DVTK_DIR:PATH=${VTK_DIR}                              
       -DITK_DIR:PATH=${ITK_DIR}
       -DBOOST_ROOT:PATH=${BOOST_ROOT}

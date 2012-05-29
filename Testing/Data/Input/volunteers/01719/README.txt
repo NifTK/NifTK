@@ -1,1 +1,0 @@
-There is a marker in the image, that was physically placed on the right hand side.

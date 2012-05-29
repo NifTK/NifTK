@@ -126,7 +126,7 @@ OPTION(BUILD_PROTOTYPE_JHH "Build prototype code in NifTK/Prototype/jhh" OFF)
 OPTION(BUILD_PROTOTYPE_KKL "Build prototype code in NifTK/Prototype/kkl" OFF)
 OPTION(BUILD_PROTOTYPE_MJC "Build prototype code in NifTK/Prototype/mjc" OFF)
 OPTION(BUILD_PROTOTYPE_TM "Build prototype code in NifTK/Prototype/tm" OFF)
-OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code" ON)
+OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code" OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
 OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
@@ -177,6 +177,7 @@ SET(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightTo
 SET(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK")
 SET(NIFTK_LOCATION_CTK "//github.com/commontk/CTK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_MITK "//github.com/MattClarkson/MITK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
+SET(NIFTK_LOCATION_DATA "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING  "Location of NifTK unit test data.")
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -214,6 +215,7 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_ITK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_VTK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CTK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_MITK)
+MARK_AS_ADVANCED(NIFTK_LOCATION_DATA)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.

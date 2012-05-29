@@ -22,8 +22,8 @@
 #
 #=================================================================================*/
 
-SET(BASELINE ${CMAKE_SOURCE_DIR}/Testing/Data/Baseline)
-SET(INPUT_DATA ${CMAKE_SOURCE_DIR}/Testing/Data/Input)
+SET(BASELINE ${NIFTK_DATA_DIR}/Baseline)
+SET(INPUT_DATA ${NIFTK_DATA_DIR}/Input)
 
 MAKE_DIRECTORY(${CMAKE_BINARY_DIR}/Testing/Temporary)
 SET(TEMP ${CMAKE_BINARY_DIR}/Testing/Temporary)
