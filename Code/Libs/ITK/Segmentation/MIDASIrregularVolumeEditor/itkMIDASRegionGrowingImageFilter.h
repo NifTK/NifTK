@@ -80,6 +80,8 @@ private:
 	OutputImageRegionType                  m_RegionOfInterest;
 	bool                                   m_UseRegionOfInterest;
 	bool                                   m_ProjectSeedsIntoRegion;
+	unsigned int                           m_MaximumSeedProjectionDistanceInVoxels;
+
 public:
 
 	itkSetMacro(LowerThreshold, InputPixelType);
@@ -102,6 +104,9 @@ public:
 
   itkSetMacro(ProjectSeedsIntoRegion, bool);
   itkGetConstMacro(ProjectSeedsIntoRegion, bool);
+
+  itkSetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
+  itkGetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
 
 	const PointSetType& GetSeedPoints(void) const {
 		return *mspc_SeedPoints;
@@ -144,12 +149,7 @@ protected:
 	 * @{
 	 */
 public:
-	MIDASRegionGrowingImageFilter(void) {
-		this->SetNumberOfThreads(0);
-		this->m_UseRegionOfInterest = false;
-		this->m_ProjectSeedsIntoRegion = false;
-	}
-
+	MIDASRegionGrowingImageFilter();
 	virtual ~MIDASRegionGrowingImageFilter(void) {}
 	/** @} */
 };

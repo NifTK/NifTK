@@ -233,5 +233,127 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   }
 
 
+  // Test 9. Blank contour image· Define region of interest. Then place seed outside region of interest, and check that
+  // the seeds are NOT projected, and hence no region growing occurs. i.e. the seeds are outside region.
+  contourImage->FillBuffer(0);
+
+  regionIndex.Fill(0);
+  contourImage->TransformIndexToPhysicalPoint(regionIndex, seedPoint);
+  points->GetPoints()->InsertElement(0, seedPoint);
+
+  regionSize.Fill(3);
+  regionIndex.Fill(3);
+  region.SetSize(regionSize);
+  region.SetIndex(regionIndex);
+  filter->SetRegionOfInterest(region);
+  filter->SetUseRegionOfInterest(true);
+  filter->SetProjectSeedsIntoRegion(false);
+  filter->Modified();
+  filter->Update();
+
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 0)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 0 as seed is outside region, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // Test 10. Now project seeds. Default projection distance is 1 though, so seed should not be projected.
+  filter->SetProjectSeedsIntoRegion(true);
+  filter->Modified();
+  filter->Update();
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 0)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 0 as seed is outside region, and outside projection distance, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
+
+  // Test 11. Seed distance to 2, so should still be no projection, as we are 1 voxel short.
+  filter->SetProjectSeedsIntoRegion(true);
+  filter->SetMaximumSeedProjectionDistanceInVoxels(2);
+  filter->Modified();
+  filter->Update();
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 0)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 0 as seed is outside region, and still outside projection distance, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // Test 12. Seed distance to 3, so point should be projected, and region growing kicks in.
+  filter->SetProjectSeedsIntoRegion(true);
+  filter->SetMaximumSeedProjectionDistanceInVoxels(3);
+  filter->Modified();
+  filter->Update();
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 9)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 9 as seed is projected into region, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // Test 13. Try from the other side of the image. So, repeat test 9-12, using seeds on opposite side of image, to check boundary conditions.
+  contourImage->FillBuffer(0);
+
+  regionIndex.Fill(6);
+  contourImage->TransformIndexToPhysicalPoint(regionIndex, seedPoint);
+  points->GetPoints()->InsertElement(0, seedPoint);
+
+  regionSize.Fill(3);
+  regionIndex.Fill(1);
+  region.SetSize(regionSize);
+  region.SetIndex(regionIndex);
+  filter->SetRegionOfInterest(region);
+  filter->SetUseRegionOfInterest(true);
+  filter->SetProjectSeedsIntoRegion(false);
+  filter->Modified();
+  filter->Update();
+
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 0)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: Test 13, expected 0 as seed is outside region, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // Test 14. Now project seeds. Default projection distance is 1 though, so seed should not be projected.
+  filter->SetProjectSeedsIntoRegion(true);
+  filter->SetMaximumSeedProjectionDistanceInVoxels(1);
+  filter->Modified();
+  filter->Update();
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 0)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: Test 14, expected 0 as seed is outside region, and outside projection distance, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
+
+  // Test 15. Seed distance to 2, so should still be no projection, as we are 1 voxel short.
+  filter->SetProjectSeedsIntoRegion(true);
+  filter->SetMaximumSeedProjectionDistanceInVoxels(2);
+  filter->Modified();
+  filter->Update();
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 0)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: Test 15, expected 0 as seed is outside region, and still outside projection distance, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // Test 15. Seed distance to 3, so point should be projected, and region growing kicks in.
+  filter->SetProjectSeedsIntoRegion(true);
+  filter->SetMaximumSeedProjectionDistanceInVoxels(3);
+  filter->Modified();
+  filter->Update();
+  numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
+  if (numberOfVoxels != 9)
+  {
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: Test 15, expected 9 as seed is projected into region, but got " << numberOfVoxels << std::endl;
+    return EXIT_FAILURE;
+  }
+
   return EXIT_SUCCESS;
 }

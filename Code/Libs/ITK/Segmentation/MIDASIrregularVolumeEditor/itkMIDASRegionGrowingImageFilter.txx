@@ -23,6 +23,21 @@
  ============================================================================*/
 
 template<class TInputImage, class TOutputImage, class TPointSet>
+MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
+::MIDASRegionGrowingImageFilter() 
+:
+  m_LowerThreshold(0)
+, m_UpperThreshold(0)
+, m_ForegroundValue(0)
+, m_BackgroundValue(0)
+, m_UseRegionOfInterest(false)
+, m_ProjectSeedsIntoRegion(false)
+, m_MaximumSeedProjectionDistanceInVoxels(1)
+{
+  this->SetNumberOfThreads(0);
+}
+
+template<class TInputImage, class TOutputImage, class TPointSet>
 void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::ConditionalAddPixel(
 		std::stack<typename OutputImageType::IndexType> &r_stack,
 		const typename OutputImageType::IndexType &currentImgIdx,
@@ -88,7 +103,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	{
 		typename PointSetType::PointsContainer::ConstIterator ic_seedPoint;
 		__IndexType imgIdx;
-
+    
 		if (GetSeedPoints().GetNumberOfPoints() > 0)
 		{
 	    for (ic_seedPoint = GetSeedPoints().GetPoints()->Begin(); ic_seedPoint != GetSeedPoints().GetPoints()->End(); ++ic_seedPoint) 
@@ -98,13 +113,22 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	      if (this->m_ProjectSeedsIntoRegion && this->m_UseRegionOfInterest)
 	      {
 	        // Adjust seed so that it is within region.
+	        //
+	        // We simply move the seed along any axis until it hits the first voxel.
+	        // We also have a distance threshold, in voxels, that determines the maximum distance to project.
+	        	        
 	        for (int axis = __ImageSizeType::GetSizeDimension() - 1; axis >= 0; axis--) 
 	        {
-	          if (imgIdx[axis] < m_RegionOfInterest.GetIndex()[axis])
+	          if (   (int)imgIdx[axis] < (int)m_RegionOfInterest.GetIndex()[axis]
+	              && abs(m_RegionOfInterest.GetIndex()[axis] - imgIdx[axis]) <= (int)m_MaximumSeedProjectionDistanceInVoxels
+	             )
 	          {
 	            imgIdx[axis] = m_RegionOfInterest.GetIndex()[axis];
 	          }
-	          else if ((int)imgIdx[axis] >= (int)(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis]))
+	          else if (
+	                     (int)imgIdx[axis] > (int)(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] - 1)
+	                  && abs(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] -1 - imgIdx[axis]) <= (int)m_MaximumSeedProjectionDistanceInVoxels
+	                  )
 	          {
 	            imgIdx[axis] = m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] - 1;
 	          }
@@ -155,7 +179,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
       
       neighborhoodRegion.SetSize(neighborhoodRegionSize);
       neighborhoodRegion.SetIndex(neighborhoodRegionStartingIndex);
-      
+       
       typename itk::ImageRegionConstIteratorWithIndex<OutputImageType> outputIterator(sp_output, neighborhoodRegion);
       for (outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator)
       {
