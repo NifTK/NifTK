@@ -112,34 +112,37 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         const ParametricPathVertexListType* list = path->GetVertexList();
 
         // NOTE: Intentionally ignoring first and last point.
-        for (unsigned int k = 1; k < list->Size() - 1; k++)
+        if (list != NULL && list->Size() >= 3)
         {
-          vertex = list->ElementAt(k);            
-          m_CastToBinaryFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
-            
-          for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
+          for (unsigned int k = 1; k < list->Size() - 1; k++)
           {
-            voxelIndex[a] = continuousIndex[a];
-          }
-            
-          IndexType  paintingRegionIndex = voxelIndex;
-          SizeType   paintingRegionSize;
-          paintingRegionSize.Fill(2);
-          paintingRegionSize[m_AxisNumber] = 1;
-            
-          RegionType paintingRegion;
-          paintingRegion.SetSize(paintingRegionSize);
-          paintingRegion.SetIndex(paintingRegionIndex);
-
-          if (region3D.IsInside(paintingRegion))
-          {
-            itk::ImageRegionIterator<SegmentationImageType> iterator(m_CastToBinaryFilter->GetOutput(), paintingRegion);
-            for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+            vertex = list->ElementAt(k);            
+            m_CastToBinaryFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
+              
+            for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
             {
-              iterator.Set(255);
+              voxelIndex[a] = continuousIndex[a];
             }
-          }
-        } // end for k 
+              
+            IndexType  paintingRegionIndex = voxelIndex;
+            SizeType   paintingRegionSize;
+            paintingRegionSize.Fill(2);
+            paintingRegionSize[m_AxisNumber] = 1;
+              
+            RegionType paintingRegion;
+            paintingRegion.SetSize(paintingRegionSize);
+            paintingRegion.SetIndex(paintingRegionIndex);
+  
+            if (region3D.IsInside(paintingRegion))
+            {
+              itk::ImageRegionIterator<SegmentationImageType> iterator(m_CastToBinaryFilter->GetOutput(), paintingRegion);
+              for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+              {
+                iterator.Set(255);
+              }
+            }
+          } // end for k         
+        } // end if size of line at least 3.
       } // end for j
     } // end if we have some contours.
      
