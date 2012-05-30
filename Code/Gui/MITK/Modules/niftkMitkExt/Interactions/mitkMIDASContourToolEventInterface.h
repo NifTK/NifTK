@@ -25,6 +25,8 @@
 #define MITKMIDASCONTOURTOOLEVENTINTERFACE_H
 
 #include "itkObject.h"
+#include "itkSmartPointer.h"
+#include "itkObjectFactory.h"
 #include "mitkOperationActor.h"
 
 namespace mitk {
@@ -38,10 +40,22 @@ class MIDASContourTool;
 class MIDASContourToolEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
+  typedef MIDASContourToolEventInterface       Self;
+  typedef itk::SmartPointer<const Self>        ConstPointer;
+  typedef itk::SmartPointer<Self>              Pointer;
+
+  /// \brief Creates the object via the ITK object factory.
+  itkNewMacro(Self);
+
+  /// \brief Sets the tool to callback on to.
+  void SetMIDASContourTool( MIDASContourTool* tool );
+
+  /// \brief Main execution function.
+  virtual void  ExecuteOperation(mitk::Operation* op);
+
+protected:
   MIDASContourToolEventInterface();
   ~MIDASContourToolEventInterface();
-  void SetMIDASContourTool( MIDASContourTool* tool );
-  virtual void  ExecuteOperation(mitk::Operation* op);
 private:
   MIDASContourTool* m_Tool;
 };

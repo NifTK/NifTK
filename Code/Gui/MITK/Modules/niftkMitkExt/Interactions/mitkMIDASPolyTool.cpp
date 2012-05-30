@@ -85,16 +85,12 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
 
   this->Disable3dRenderingOfPreviousContour();
 
-  m_Interface = new MIDASPolyToolEventInterface();
+  m_Interface = MIDASPolyToolEventInterface::New();
   m_Interface->SetMIDASPolyTool(this);
 }
 
 mitk::MIDASPolyTool::~MIDASPolyTool()
 {
-  if (m_Interface != NULL)
-  {
-    delete m_Interface;
-  }
 }
 
 const char* mitk::MIDASPolyTool::GetName() const

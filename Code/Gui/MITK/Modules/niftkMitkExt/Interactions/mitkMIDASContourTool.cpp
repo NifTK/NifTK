@@ -67,17 +67,13 @@ mitk::MIDASContourTool::MIDASContourTool(const char* type) : MIDASTool(type)
   this->Disable3dRenderingOfBackgroundContour();
   this->SetBackgroundContourColorDefault();
 
-  m_Interface = new MIDASContourToolEventInterface();
+  m_Interface = MIDASContourToolEventInterface::New();
   m_Interface->SetMIDASContourTool(this);
 
 }
 
 mitk::MIDASContourTool::~MIDASContourTool()
 {
-  if (m_Interface != NULL)
-  {
-    delete m_Interface;
-  }
 }
 
 void mitk::MIDASContourTool::Disable3dRenderingOfNode(mitk::DataNode* node)

@@ -53,16 +53,12 @@ mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
   CONNECT_ACTION( 320413, OnMiddleMousePressed );
   CONNECT_ACTION( 320414, OnMiddleMouseMoved );
 
-  m_Interface = new MIDASDrawToolEventInterface();
+  m_Interface = MIDASDrawToolEventInterface::New();
   m_Interface->SetMIDASDrawTool(this);
 }
 
 mitk::MIDASDrawTool::~MIDASDrawTool()
 {
-  if (m_Interface != NULL)
-  {
-    delete m_Interface;
-  }
 }
 
 const char* mitk::MIDASDrawTool::GetName() const

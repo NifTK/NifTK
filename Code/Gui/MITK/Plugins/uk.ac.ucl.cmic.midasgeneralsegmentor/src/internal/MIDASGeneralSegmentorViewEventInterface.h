@@ -26,6 +26,8 @@
 #define _MIDASGENERALSEGMENTORVIEWEVENTINTERFACE_H_INCLUDED
 
 #include "itkObject.h"
+#include "itkSmartPointer.h"
+#include "itkObjectFactory.h"
 #include "mitkOperationActor.h"
 
 class MIDASGeneralSegmentorView;
@@ -38,10 +40,22 @@ class MIDASGeneralSegmentorView;
 class MIDASGeneralSegmentorViewEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
+  typedef MIDASGeneralSegmentorViewEventInterface       Self;
+  typedef itk::SmartPointer<const Self>                 ConstPointer;
+  typedef itk::SmartPointer<Self>                       Pointer;
+
+  /// \brief Creates the object via the ITK object factory.
+  itkNewMacro(Self);
+
+  /// \brief Sets the view to callback on to.
+  void SetMIDASGeneralSegmentorView( MIDASGeneralSegmentorView* view );
+
+  /// \brief Main execution function.
+  virtual void  ExecuteOperation(mitk::Operation* op);
+
+protected:
   MIDASGeneralSegmentorViewEventInterface();
   ~MIDASGeneralSegmentorViewEventInterface();
-  void SetMIDASGeneralSegmentorView( MIDASGeneralSegmentorView* view );
-  virtual void  ExecuteOperation(mitk::Operation* op);
 private:
   MIDASGeneralSegmentorView* m_View;
 };

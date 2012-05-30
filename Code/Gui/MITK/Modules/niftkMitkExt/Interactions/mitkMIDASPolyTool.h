@@ -29,10 +29,9 @@
 #include "mitkPointSet.h"
 #include "mitkOperation.h"
 #include "mitkOperationActor.h"
+#include "mitkMIDASPolyToolEventInterface.h"
 
 namespace mitk {
-
-class MIDASPolyToolEventInterface;
 
   /**
    * \class MIDASPolyTool
@@ -144,7 +143,7 @@ class MIDASPolyToolEventInterface;
     static const mitk::OperationType MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR;
 
     /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-    MIDASPolyToolEventInterface *m_Interface;
+    MIDASPolyToolEventInterface::Pointer m_Interface;
 
     /// \brief When we are dragging a point, we want to keep track of the point we clicked on,
     /// and not always pick the closest point. Otherwise, if you middle clicked on a point

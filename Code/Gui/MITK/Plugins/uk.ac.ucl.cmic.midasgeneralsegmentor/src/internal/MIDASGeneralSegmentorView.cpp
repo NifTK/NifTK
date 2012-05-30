@@ -101,7 +101,7 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 {
   RegisterSegmentationObjectFactory();
 
-  m_Interface = new MIDASGeneralSegmentorViewEventInterface();
+  m_Interface = MIDASGeneralSegmentorViewEventInterface::New();
   m_Interface->SetMIDASGeneralSegmentorView(this);
 }
 
@@ -146,11 +146,6 @@ MIDASGeneralSegmentorView::~MIDASGeneralSegmentorView()
   if (m_GeneralControls != NULL)
   {
     delete m_GeneralControls;
-  }
-
-  if (m_Interface != NULL)
-  {
-    delete m_Interface;
   }
 }
 

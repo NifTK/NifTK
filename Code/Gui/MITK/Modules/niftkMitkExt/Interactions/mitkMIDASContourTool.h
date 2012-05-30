@@ -33,10 +33,9 @@
 #include "mitkOperationActor.h"
 #include "mitkExtractImageFilter.h"
 #include "mitkMessage.h"
+#include "mitkMIDASContourToolEventInterface.h"
 
 namespace mitk {
-
-class MIDASContourToolEventInterface;
 
   /**
    * \class MIDASContourTool
@@ -165,7 +164,7 @@ class MIDASContourToolEventInterface;
     static const mitk::OperationType MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR;
 
     /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-    MIDASContourToolEventInterface *m_Interface;
+    MIDASContourToolEventInterface::Pointer m_Interface;
 
   };//class
 

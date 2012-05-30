@@ -26,10 +26,9 @@
 
 #include "niftkMitkExtExports.h"
 #include "mitkMIDASContourTool.h"
+#include "mitkMIDASDrawToolEventInterface.h"
 
 namespace mitk {
-
-class MIDASDrawToolEventInterface;
 
   /**
    * \class MIDASDrawTool
@@ -109,7 +108,7 @@ class MIDASDrawToolEventInterface;
     static const mitk::OperationType MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR;
 
     /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-    MIDASDrawToolEventInterface *m_Interface;
+    MIDASDrawToolEventInterface::Pointer m_Interface;
 
   };//class
 

@@ -32,13 +32,12 @@
 #include "mitkImage.h"
 #include "mitkGeometry3D.h"
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
+#include "mitkMIDASPaintbrushToolEventInterface.h"
 #include "itkImage.h"
 #include "itkImageUpdatePixelWiseSingleValueProcessor.h"
 
 namespace mitk
 {
-
-class MIDASPaintbrushToolEventInterface;
 
  /**
   * \class MIDASPaintbrushTool
@@ -166,7 +165,7 @@ private:
       );
 
   // Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASPaintbrushToolEventInterface *m_Interface;
+  MIDASPaintbrushToolEventInterface::Pointer m_Interface;
 
   // Cursor size for editing, and cursor type is currently always a cross.
   int m_CursorSize;

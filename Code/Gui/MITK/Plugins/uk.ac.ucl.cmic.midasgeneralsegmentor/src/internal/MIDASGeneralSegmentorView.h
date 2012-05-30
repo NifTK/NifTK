@@ -756,7 +756,7 @@ private:
   mitk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASGeneralSegmentorViewEventInterface *m_Interface;
+  MIDASGeneralSegmentorViewEventInterface::Pointer m_Interface;
 
   /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
   /// as a key, and the object containing the whole pipeline for single slice 2D region growing.

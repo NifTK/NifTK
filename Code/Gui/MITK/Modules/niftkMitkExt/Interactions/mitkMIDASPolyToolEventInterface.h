@@ -25,6 +25,8 @@
 #define MITKMIDASPOLYTOOLEVENTINTERFACE_H
 
 #include "itkObject.h"
+#include "itkSmartPointer.h"
+#include "itkObjectFactory.h"
 #include "mitkOperationActor.h"
 
 namespace mitk {
@@ -38,10 +40,22 @@ class MIDASPolyTool;
 class MIDASPolyToolEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
+  typedef MIDASPolyToolEventInterface       Self;
+  typedef itk::SmartPointer<const Self>     ConstPointer;
+  typedef itk::SmartPointer<Self>           Pointer;
+
+  /// \brief Creates the object via the ITK object factory.
+  itkNewMacro(Self);
+
+  /// \brief Sets the tool to callback on to.
+  void SetMIDASPolyTool( MIDASPolyTool* tool );
+
+  /// \brief Main execution function.
+  virtual void  ExecuteOperation(mitk::Operation* op);
+
+protected:
   MIDASPolyToolEventInterface();
   ~MIDASPolyToolEventInterface();
-  void SetMIDASPolyTool( MIDASPolyTool* tool );
-  virtual void  ExecuteOperation(mitk::Operation* op);
 private:
   MIDASPolyTool* m_Tool;
 };

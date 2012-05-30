@@ -63,16 +63,12 @@ mitk::MIDASPaintbrushTool::MIDASPaintbrushTool() : SegTool2D("MIDASPaintbrushToo
   CONNECT_ACTION( 320408, OnRightMouseReleased );
   CONNECT_ACTION( 320409, OnRightMouseMoved );
 
-  m_Interface = new mitk::MIDASPaintbrushToolEventInterface();
+  m_Interface = mitk::MIDASPaintbrushToolEventInterface::New();
   m_Interface->SetMIDASPaintbrushTool( this );
 }
 
 mitk::MIDASPaintbrushTool::~MIDASPaintbrushTool()
 {
-  if (m_Interface)
-  {
-    m_Interface->Delete();
-  }
 }
 
 const char* mitk::MIDASPaintbrushTool::GetName() const
