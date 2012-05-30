@@ -131,10 +131,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
           paintingRegion.SetSize(paintingRegionSize);
           paintingRegion.SetIndex(paintingRegionIndex);
 
-          itk::ImageRegionIterator<SegmentationImageType> iterator(m_CastToBinaryFilter->GetOutput(), paintingRegion);
-          for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+          if (region3D.IsInside(paintingRegion))
           {
-            iterator.Set(255);
+            itk::ImageRegionIterator<SegmentationImageType> iterator(m_CastToBinaryFilter->GetOutput(), paintingRegion);
+            for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+            {
+              iterator.Set(255);
+            }
           }
         } // end for k 
       } // end for j
