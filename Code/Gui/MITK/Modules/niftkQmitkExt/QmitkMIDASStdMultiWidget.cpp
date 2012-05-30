@@ -49,6 +49,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_IsEnabled(false)
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
+, m_Display3DViewInOrthoView(false)
 , m_View(MIDAS_VIEW_ORTHO)
 , m_MagnificationFactor(0)
 {
@@ -56,6 +57,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   assert(renderingManager);
   assert(dataStorage);
 
+  // Pass this to base class.
   this->SetDataStorage(dataStorage);
   
   // We don't need these 4 lines if we pass in a widget specific RenderingManager.
@@ -216,6 +218,7 @@ QColor QmitkMIDASStdMultiWidget::GetBackgroundColor() const
 void QmitkMIDASStdMultiWidget::SetSelected(bool b)
 {
   m_IsSelected = b;
+
   if (b)
   {
     this->EnableColoredRectangles();
@@ -567,6 +570,16 @@ MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
     }
   }
   return result;
+}
+
+void QmitkMIDASStdMultiWidget::FitToDisplay()
+{
+  std::vector<vtkRenderWindow*> vtkWindows = this->GetAllVtkWindows();
+  for (unsigned int window = 0; window < vtkWindows.size(); window++)
+  {
+    mitk::BaseRenderer *baseRenderer = mitk::BaseRenderer::GetInstance(vtkWindows[window]);
+    baseRenderer->GetDisplayGeometry()->Fit();
+  }
 }
 
 void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *geometry)
@@ -1484,4 +1497,3 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
     camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
   }
 }
-

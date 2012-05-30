@@ -207,10 +207,10 @@ public:
   void SetBoundGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
 
   /// \brief If we tell the widget to be in bound mode, it uses the bound geometries.
-  void SetBound(bool isBound);
+  void SetBoundGeometryActive(bool isBound);
 
   /// \brief Returns the bound flag.
-  bool GetBound();
+  bool GetBoundGeometryActive();
 
   /// \brief Get the current slice number for a given orientation.
   unsigned int GetSliceNumber(MIDASOrientation orientation) const;
@@ -247,6 +247,9 @@ public:
 
   /// \brief Sets the current intersection point of the 3 orthogonal planes.
   void SetSelectedPosition(const mitk::Point3D &pos);
+
+  /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
+  void FitToDisplay();
 
 protected:
 

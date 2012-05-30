@@ -113,6 +113,12 @@ public:
   /// \brief When we drop nodes onto a window, if true, we add all the children.
   bool GetAutomaticallyAddChildren() const { return m_AutomaticallyAddChildren; }
 
+  /// \brief Sets the flag deciding whether we prefer to accumulate images each time they are dropped.
+  void SetAccumulateWhenDropping(bool accumulate) { m_Accumulate = accumulate; }
+
+  /// \brief Gets the flag deciding whether we accumulate images each time we drop.
+  bool GetAccumulateWhenDropped() const { return m_Accumulate; }
+
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
@@ -130,6 +136,9 @@ protected:
 
   /// \brief For a given window (denoted by its windowIndex, or index number in m_Widgets), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromWindow(int windowIndex);
+
+  /// \brief Gets the number of nodes currently visible in a window.
+  virtual int GetNodesInWindow(int windowIndex);
 
   /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
   virtual void AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility=true);
@@ -199,8 +208,11 @@ private:
   // Keeps track of the default interpolation, as it affects the response when images are dropped, as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
   MIDASDefaultInterpolationType m_DefaultInterpolation;
 
-  // Boolean to decide whether to automatically add children, default to true.
+  // Boolean to indicate whether to automatically add children, default to true.
   bool m_AutomaticallyAddChildren;
+
+  // Boolean to indicate whether successive drops into the same window are cumulative.
+  bool m_Accumulate;
 
 };
 

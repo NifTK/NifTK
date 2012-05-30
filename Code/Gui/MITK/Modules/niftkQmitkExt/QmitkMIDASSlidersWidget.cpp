@@ -37,11 +37,11 @@ QmitkMIDASSlidersWidget::~QmitkMIDASSlidersWidget()
 void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
 {
   Ui_QmitkMIDASSlidersWidget::setupUi(parent);
-  m_MagnificationFactorWidget->setToolTip("changes the magnification of the currently selected view (red outline).");
-  m_SliceSelectionWidget->setToolTip("changes the slice number of the currently selected view (red outline), where slice numbering starts at one.");
-  m_SliceSelectionWidget->SetOffset(1);
+  m_MagnificationFactorWidget->setToolTip("changes the magnification of the currently selected view.");
+  m_SliceSelectionWidget->setToolTip("changes the slice number of the currently selected view.");
+  //m_SliceSelectionWidget->SetOffset(1); MIDAS numbers slices from 1, but programmers prefer zero. :-)
   m_TimeSelectionWidget->SetText("time");
-  m_TimeSelectionWidget->setToolTip("changes the time step number of the currently selected view (red outline), where time number starts at zero.");
+  m_TimeSelectionWidget->setToolTip("changes the time step number of the currently selected view.");
 }
 
 void QmitkMIDASSlidersWidget::SetBlockSignals(bool block)

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QmitkMIDASBindWidget</class>
+ <widget class="QWidget" name="QmitkMIDASBindWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>125</width>
+    <height>143</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QCheckBox" name="m_BindNoneCheckBox">
+     <property name="toolTip">
+      <string>unbind windows</string>
+     </property>
+     <property name="text">
+      <string>none</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="m_BindCursorsCheckBox">
+     <property name="toolTip">
+      <string>bind cursors across multiple views</string>
+     </property>
+     <property name="text">
+      <string>cursors</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QCheckBox" name="m_BindMagnificationCheckBox">
+     <property name="toolTip">
+      <string>bind magnification across multiple views</string>
+     </property>
+     <property name="text">
+      <string>magnification</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QCheckBox" name="m_BindGeometryCheckBox">
+     <property name="toolTip">
+      <string>bind magnification across multiple views</string>
+     </property>
+     <property name="text">
+      <string>geometry</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

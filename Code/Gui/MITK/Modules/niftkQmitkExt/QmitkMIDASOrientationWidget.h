@@ -30,7 +30,12 @@
 
 /**
  * \class QmitkMIDASOrientationWidget
- * \brief Qt Widget class to contain radio buttons for axial, coronal, sagittal.
+ * \brief Qt Widget class to contain radio buttons for axial, coronal, sagittal, and a combo box for any
+ * other layouts of interest.
+ *
+ * By default MIDAS only provides axial, coronal and sagittal, whereas here we can use the combo box
+ * for any number of layouts, and still keep a reasonably compact screen layout.
+ *
  */
 class QmitkMIDASOrientationWidget : public QWidget, public Ui_QmitkMIDASOrientationWidget
 {
@@ -40,11 +45,9 @@ class QmitkMIDASOrientationWidget : public QWidget, public Ui_QmitkMIDASOrientat
 public:
 
   QmitkMIDASOrientationWidget(QWidget *parent = 0);
-
-  /** Destructor. */
   ~QmitkMIDASOrientationWidget();
 
-  /// \brief Creates the GUI.
+  /// \brief Creates the GUI, called from within constructor.
   void setupUi(QWidget*);
 
   /// \brief Calls setBlockSignals(block) on all contained widgets.
@@ -53,17 +56,27 @@ public:
   /// \brief Calls setEnabled(enabled) on all contained widgets.
   void SetEnabled(bool enabled);
 
-  /// \brief Method to set the widget checkboxes to match the supplied view.
+  /// \brief Method to set the widget check-boxes to match the supplied view.
   void SetToView(MIDASView view);
 
 signals:
 
+  /// \brief Indicates when the view has changed.
+  void ViewChanged(MIDASView view);
+
 protected slots:
+
+  void OnAxialRadioButtonPressed(bool b);
+  void OnCoronalRadioButtonPressed(bool b);
+  void OnSagittalRadioButtonPressed(bool b);
+  void OnOtherRadioButtonPressed(bool b);
+  void OnComboBoxIndexChanged(int i);
 
 protected:
 
 private:
 
+  MIDASView m_CurrentView;
 };
 
 #endif

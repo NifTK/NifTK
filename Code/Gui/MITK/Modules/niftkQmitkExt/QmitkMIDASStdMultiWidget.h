@@ -40,23 +40,20 @@ class QStackedLayout;
 
 /**
  * \class QmitkMIDASStdMultiWidget
- * \brief Subclass of QmitkStdMultiWidget to provide convenient methods
- * to control geometry, background, cursors on/off in the base class QmitkStdMultiWidget,
- * and thereby provide MIDAS specific functionality.
+ * \brief Subclass of QmitkStdMultiWidget to provide MIDAS specific functionality
+ * by having convenient methods to control geometry, background, cursors on/off etc.
+ * via calling methods in the base class QmitkStdMultiWidget.
  *
- * In MIDAS terms, the widget will always be in Axial, Coronal or Sagittal mode, but we
- * subclass QmitkStdMultiWidget so that we can optionally have all the available views,
- * useful for providing FSLView-like multiple orthogonal windows, 3D windows and several
- * other nice layouts.
+ * In MIDAS terms, the widget will nearly always be in Axial, Coronal or Sagittal mode, but we
+ * subclass QmitkStdMultiWidget so that we can optionally have 3D views, ortho-views etc.
  *
- * Please do NOT expose this class to the rest of the NiftyView codebase, or else
+ * Please do NOT expose this class to the rest of the NiftyView code-base, or else
  * dependency management becomes a bit of an issue.  The class QmitkMIDASSingleViewWidget
  * wraps this one, and the rest of our application should only deal with
  * QmitkMIDASSingleViewWidget.
  *
+ * Note: The requirements specification for MIDAS style zoom basically says:
  * <pre>
- * Note: The requirements specification for MIDAS style zoom basically says.
- *
  * magnification   : actual pixels per voxel.
  * on MIDAS widget :
  * 2               : 3
@@ -66,9 +63,11 @@ class QStackedLayout;
  * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
  * etc.
  * </pre>
+ * So, it is deliberately not a continuous magnification scale.
  *
  * \sa QmitkStdMultiWidget
  * \sa QmitkMIDASSingleViewWidget
+ * \sa QmitkMIDASMultiViewWidget
  */
 class QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
 {
@@ -93,16 +92,16 @@ public:
   /// \brief Return whether this widget is considered 'enabled'.
   bool IsEnabled() const;
 
-  /// \brief Turn the 2D cursors created within this class on/off for this viewer (renderer specific properties), controlled by a user preference.
+  /// \brief Turn the 2D cursors visible/invisible for this viewer (renderer specific properties).
   void SetDisplay2DCursorsLocally(bool visible);
 
-  /// \brief Get the flag controlling the 2D cursors created within this class on/off for this viewer (renderer specific properties), which is controlled via a user preference.
+  /// \brief Get the flag controlling the 2D cursors visibility (renderer specific properties).
   bool GetDisplay2DCursorsLocally() const;
 
-  /// \brief Turn the 2D cursors created within this class on/off globally, controlled by a user preference.
+  /// \brief Turn the 2D cursors visible/invisible globally, controlled by a user preference.
   void SetDisplay2DCursorsGlobally(bool visible);
 
-  /// \brief Get the flag controlling 2D cursors created within this class on/off globally, which is controlled via a user preference.
+  /// \brief Get the flag controlling 2D cursors global visibility.
   bool GetDisplay2DCursorsGlobally() const;
 
   /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
@@ -112,7 +111,7 @@ public:
   bool GetDisplay3DViewInOrthoView() const;
 
   /// \brief Set the view (layout), as the MIDAS functionality is only interested in
-  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D.
+  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
   ///
   /// We must specify the geometry to re-initialise the QmitkStdMultiWidget base class properly.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
@@ -125,7 +124,7 @@ public:
   void SetGeometry(mitk::Geometry3D* geometry);
 
   /// \brief Get the view (layout), where the MIDAS functionality is only interested in
-  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D.
+  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
   MIDASView GetMIDASView() const;
 
   /// \brief Works out the orientation of the current view, which is different to the MIDASView.
@@ -197,6 +196,9 @@ public:
 
   /// \brief Works out a suitable magnification factor given the current geometry.
   int FitMagnificationFactor();
+
+  /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
+  void FitToDisplay();
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);

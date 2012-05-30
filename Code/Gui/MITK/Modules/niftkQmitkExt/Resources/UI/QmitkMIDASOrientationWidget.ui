@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>40</height>
+    <width>272</width>
+    <height>158</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,19 +15,6 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <widget class="QLabel" name="m_SliceOrientationLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>orientation</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
     <widget class="QRadioButton" name="m_AxialRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -42,7 +29,7 @@
       <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>ax</string>
+      <string/>
      </property>
      <property name="iconSize">
       <size>
@@ -52,7 +39,20 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
+   <item row="0" column="1">
+    <widget class="QLabel" name="m_AxialLabel">
+     <property name="toolTip">
+      <string>switch to axial view</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>axial</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
     <widget class="QRadioButton" name="m_SagittalRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -67,7 +67,7 @@
       <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>sag</string>
+      <string/>
      </property>
      <property name="iconSize">
       <size>
@@ -77,7 +77,20 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="3">
+   <item row="1" column="1">
+    <widget class="QLabel" name="m_SagittalLabel">
+     <property name="toolTip">
+      <string>switch to sagittal view</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>sagittal</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
     <widget class="QRadioButton" name="m_CoronalRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -92,7 +105,7 @@
       <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>cor</string>
+      <string/>
      </property>
      <property name="iconSize">
       <size>
@@ -102,8 +115,21 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="4">
-    <widget class="QRadioButton" name="m_OrthogonalRadioButton">
+   <item row="2" column="1">
+    <widget class="QLabel" name="m_CoronalLabel">
+     <property name="toolTip">
+      <string>switch to coronal view</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>coronal</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QRadioButton" name="m_OtherRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -111,13 +137,13 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view to display a 2x2 grid showing axial, sagittal, coronal and 3D views</string>
+      <string>switch the currently selected view to coronal</string>
      </property>
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>2x2</string>
+      <string/>
      </property>
      <property name="iconSize">
       <size>
@@ -127,78 +153,10 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="5">
-    <widget class="QRadioButton" name="m_ThreeDRadioButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="m_OtherOrientationComboBox">
      <property name="toolTip">
-      <string>switch the currently selected view to 3D</string>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>3D</string>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="6">
-    <widget class="QRadioButton" name="m_ThreeHRadioButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>switch the currently selected view show axial, sagittal and coronal views side by side horizontally</string>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>3H</string>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="7">
-    <widget class="QRadioButton" name="m_ThreeVRadioButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>switch the currently selected view to show axial, sagittal and coronal views vertically</string>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>3V</string>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
+      <string>choose from a variety of views</string>
      </property>
     </widget>
    </item>

@@ -3,6 +3,7 @@ SET(CPP_FILES
   Dialogs/QmitkMIDASNewSegmentationDialog.cpp
   QmitkMIDASDrawToolGUI.cpp
   QmitkMIDASPaintbrushToolGUI.cpp
+  QmitkMIDASBindWidget.cpp
   QmitkMIDASSlidersWidget.cpp
   QmitkMIDASOrientationWidget.cpp
   QmitkMIDASStdMultiWidget.cpp
@@ -17,6 +18,7 @@ SET(MOC_H_FILES
   Dialogs/QmitkMIDASNewSegmentationDialog.h
   QmitkMIDASDrawToolGUI.h
   QmitkMIDASPaintbrushToolGUI.h
+  QmitkMIDASBindWidget.h
   QmitkMIDASSlidersWidget.h
   QmitkMIDASOrientationWidget.h
   QmitkMIDASStdMultiWidget.h
@@ -27,6 +29,7 @@ SET(MOC_H_FILES
 
 SET(UI_FILES
   Resources/UI/QmitkHelpAboutDialog.ui
+  Resources/UI/QmitkMIDASBindWidget.ui
   Resources/UI/QmitkMIDASOrientationWidget.ui
   Resources/UI/QmitkMIDASSlidersWidget.ui
 )

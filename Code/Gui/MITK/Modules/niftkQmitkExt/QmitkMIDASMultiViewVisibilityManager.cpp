@@ -38,6 +38,7 @@
 QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_InDataStorageChanged(false)
 , m_AutomaticallyAddChildren(true)
+, m_Accumulate(false)
 {
   assert(dataStorage);
   m_DataStorage = dataStorage;
@@ -258,6 +259,7 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
   if (   name.find("FeedbackContourTool") != std::string::npos
       || name.find("MIDASContourTool") != std::string::npos
       || name.find(mitk::MIDASTool::SEED_POINT_SET_NAME) != std::string::npos
+      || name.find(mitk::MIDASTool::CURRENT_CONTOURS_NAME) != std::string::npos
       || name.find(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME) != std::string::npos
       || name.find(mitk::MIDASTool::PRIOR_CONTOURS_NAME) != std::string::npos
       || name.find(mitk::MIDASTool::NEXT_CONTOURS_NAME) != std::string::npos
@@ -406,6 +408,12 @@ void QmitkMIDASMultiViewVisibilityManager::RemoveNodesFromWindow(int windowIndex
 
   widget->SetRendererSpecificVisibility(nodes, false);
   m_DataNodes[windowIndex].clear();
+}
+
+int QmitkMIDASMultiViewVisibilityManager::GetNodesInWindow(int windowIndex)
+{
+  int result = m_DataNodes[windowIndex].size();
+  return result;
 }
 
 void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility)
@@ -625,12 +633,6 @@ MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNo
 void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
-  // Works out the initial window index that the image is dropped into.
-  // Remember:
-  //   There are always 5x5 windows, arranged in row order.
-  //   These may or may not be visible, so for example if you have 2x2 visible,
-  //   then this corresponds to indexes 0,1 then skip 2,3,4, then 5,6 are visible.
-
   int windowIndex = this->GetIndexFromWindow(window);
   MIDASView view = this->GetView(nodes);
 
@@ -658,7 +660,10 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       }
 
       // Clear all nodes from the single window denoted by windowIndex (the one that was dropped into).
-      this->RemoveNodesFromWindow(windowIndex);
+      if (this->GetNodesInWindow(windowIndex) > 0 && !this->GetAccumulateWhenDropped())
+      {
+        this->RemoveNodesFromWindow(windowIndex);
+      }
 
       // Then add all nodes into the same window denoted by windowIndex (the one that was dropped into).
       for (unsigned int i = 0; i < nodes.size(); i++)
@@ -667,9 +672,12 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       }
 
       // Then set up geometry of that single window.
-      this->m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
-      this->m_Widgets[windowIndex]->SetView(view, true);
-      this->m_Widgets[windowIndex]->SetEnabled(true);
+      if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+      {
+        this->m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
+        this->m_Widgets[windowIndex]->SetView(view, true);
+        this->m_Widgets[windowIndex]->SetEnabled(true);
+      }
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
     {
@@ -702,15 +710,21 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         }
 
         // So we are removing all images that are present from the window denoted by dropIndex,
-        this->RemoveNodesFromWindow(dropIndex);
+        if (this->GetNodesInWindow(windowIndex) > 0 && !this->GetAccumulateWhenDropped())
+        {
+          this->RemoveNodesFromWindow(dropIndex);
+        }
 
         // ...and then adding a single image to that window, denoted by dropIndex.
         this->AddNodeToWindow(dropIndex, nodes[i]);
 
         // Initialise geometry according to first image
-        this->m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
-        this->m_Widgets[dropIndex]->SetView(view, true);
-        this->m_Widgets[dropIndex]->SetEnabled(true);
+        if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+        {
+          this->m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
+          this->m_Widgets[dropIndex]->SetView(view, true);
+          this->m_Widgets[dropIndex]->SetEnabled(true);
+        }
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
         dropIndex++;
@@ -728,7 +742,10 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       }
 
       // Clear all nodes from every window.
-      this->ClearAllWindows();
+      if (this->GetNodesInWindow(0) > 0 && !this->GetAccumulateWhenDropped())
+      {
+        this->ClearAllWindows();
+      }
 
       // Note: Remember that we have view = axial, coronal, sagittal, 3D and ortho (+ others maybe)
       // So this thumbnail drop, has to switch to a single orientation. If the current default
@@ -753,9 +770,13 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
 
       // Then we need to check if the number of slices < the number of windows, if so, we just
       // spread the slices, one per window, until we run out of windows.
+      //
       // If we have more slices than windows, we need to interpolate the number of slices.
-      m_Widgets[0]->SetGeometry(geometry.GetPointer());
-      m_Widgets[0]->SetView(view, true);
+      if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+      {
+        m_Widgets[0]->SetGeometry(geometry.GetPointer());
+        m_Widgets[0]->SetView(view, true);
+      }
 
       unsigned int minSlice = m_Widgets[0]->GetMinSlice(orientation);
       unsigned int maxSlice = m_Widgets[0]->GetMaxSlice(orientation);
@@ -779,11 +800,14 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have less slices than windows, so we just spread them in increasing order.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
-          this->m_Widgets[i]->SetView(view, true);
-          this->m_Widgets[i]->SetEnabled(true);
+          if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+          {
+            this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
+            this->m_Widgets[i]->SetView(view, true);
+            this->m_Widgets[i]->SetEnabled(true);
+          }
           this->m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
-
+          this->m_Widgets[i]->FitToDisplay();
           MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
         }
       }
@@ -792,10 +816,12 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have more slices than windows, so we spread them evenly over the max number of windows.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
-          this->m_Widgets[i]->SetView(view, true);
-          this->m_Widgets[i]->SetEnabled(true);
-
+          if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+          {
+            this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
+            this->m_Widgets[i]->SetView(view, true);
+            this->m_Widgets[i]->SetEnabled(true);
+          }
           unsigned int minSlice = m_Widgets[i]->GetMinSlice(orientation);
           unsigned int maxSlice = m_Widgets[i]->GetMaxSlice(orientation);
           unsigned int numberOfEdgeSlicesToIgnore = numberOfSlices * 0.05; // ignore first and last 5 percent, as usually junk/blank.
@@ -811,6 +837,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
               << ", fraction=" << fraction \
               << ", chosenSlice=" << chosenSlice << std::endl;
           m_Widgets[i]->SetSliceNumber(orientation, chosenSlice);
+          m_Widgets[i]->FitToDisplay();
         }
       } // end if (which method of spreading thumbnails)
     } // end if (which method of dropping)

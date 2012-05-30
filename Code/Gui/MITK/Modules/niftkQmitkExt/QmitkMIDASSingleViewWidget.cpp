@@ -55,6 +55,8 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 , m_UnBoundTimeSlicedGeometry(NULL)
 , m_BoundTimeSlicedGeometry(NULL)
 , m_ActiveTimeSlicedGeometry(NULL)
+, m_MinimumMagnification(minimumMagnification)
+, m_MaximumMagnification(maximumMagnification)
 , m_NavigationControllerEventListening(false)
 , m_RememberViewSettingsPerOrientation(false)
 {
@@ -65,9 +67,6 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
   m_RenderingManager = renderingManager;
 
   this->setAcceptDrops(true);
-
-  m_MinimumMagnification = minimumMagnification;
-  m_MaximumMagnification = maximumMagnification;
 
   // We maintain "current slice, current magnification" for both bound and unbound views = 2 of each.
   for (unsigned int i = 0; i < 2; i++)
@@ -260,6 +259,11 @@ MIDASOrientation QmitkMIDASSingleViewWidget::GetOrientation()
   return m_MultiWidget->GetOrientation();
 }
 
+void QmitkMIDASSingleViewWidget::FitToDisplay()
+{
+  m_MultiWidget->FitToDisplay();
+}
+
 void QmitkMIDASSingleViewWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
   m_MultiWidget->SetRendererSpecificVisibility(nodes, visible);
@@ -442,12 +446,12 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeSlicedGeometry::Poin
   }
 }
 
-bool QmitkMIDASSingleViewWidget::GetBound()
+bool QmitkMIDASSingleViewWidget::GetBoundGeometryActive()
 {
   return this->m_IsBound;
 }
 
-void QmitkMIDASSingleViewWidget::SetBound(bool isBound)
+void QmitkMIDASSingleViewWidget::SetBoundGeometryActive(bool isBound)
 {
   if (isBound == m_IsBound)
   {
