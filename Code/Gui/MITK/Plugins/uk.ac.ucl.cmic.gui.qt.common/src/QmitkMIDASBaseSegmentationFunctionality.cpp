@@ -124,14 +124,6 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     mitk::ToolManager* toolManager = this->GetToolManager();
     assert ( toolManager );
     toolManager->SetDataStorage( *(this->GetDataStorage()) );
-
-    // We listen to NewNodesGenerated messages as the ToolManager is responsible for instantiating them.
-    toolManager->NewNodesGenerated +=
-      mitk::MessageDelegate<QmitkMIDASBaseSegmentationFunctionality>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated );
-
-    // We listen to NewNodObjectGenerated as the ToolManager is responsible for instantiating them.
-    toolManager->NewNodeObjectsGenerated +=
-      mitk::MessageDelegate1<QmitkMIDASBaseSegmentationFunctionality, mitk::ToolManager::DataVectorType*>( this, &QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated );
   }
 }
 
@@ -157,16 +149,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
       this->GetActiveMIDASMultiViewWidget()->SetNavigationControllerEventListening(true);
     }
   }
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated()
-{
-  std::cerr << "Matt, not finished yet, QmitkMIDASBaseSegmentationFunctionality::NewNodesGenerated" << std::endl;
-}
-
-void QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated(mitk::ToolManager::DataVectorType* nodes)
-{
-  std::cerr << "Matt, not finished yet, QmitkMIDASBaseSegmentationFunctionality::NewNodeObjectsGenerated" << std::endl;
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::Pointer node)

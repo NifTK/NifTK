@@ -65,12 +65,6 @@ public:
   /// \brief Stores the preference name of the default outline colour style sheet (defaults to pure green).
   static const std::string DEFAULT_COLOUR_STYLE_SHEET;
 
-  /// \brief Reaction to new segmentations being created by segmentation tools, currently does nothing.
-  virtual void NewNodesGenerated();
-
-  /// \brief Reaction to new segmentations being created by segmentation tools, currently does nothing.
-  virtual void NewNodeObjectsGenerated(mitk::ToolManager::DataVectorType*);
-
   /// \brief Called when the user hits the button "New segmentation".
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed(QColor &defaultColor);
 
