@@ -127,9 +127,13 @@ IF(NOT DEFINED MITK_DIR)
     #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1467 (Stop QmitkFunctionality crash when QmitkStdMultiWidgetEditor not the only editor)
     #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1469 (Make crosses only appear on current slice)
     #    https://cmicdev.cs.ucl.ac.uk/trac/ticket/1479 (Stop QmitkRenderWindow steal mouse clicks).
+    #
+    # 7. Trac 1482 - updated MITK-bug-10420-trac-1479-render-window-steal-mouse-clicks, and merged back onto niftk branch.
+    #    This produced commit number b716de0d73.
+    #
     #########################################################
     
-    SET(revision_tag fdfefc50c9)
+    SET(revision_tag b716de0d73)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
