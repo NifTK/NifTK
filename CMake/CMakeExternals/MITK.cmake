@@ -131,9 +131,12 @@ IF(NOT DEFINED MITK_DIR)
     # 7. Trac 1482 - updated MITK-bug-10420-trac-1479-render-window-steal-mouse-clicks, and merged back onto niftk branch.
     #    This produced commit number b716de0d73.
     #
+    # 8. Trac 1494 - Merged MITK commit 250107a06aa onto niftk to produce 1ad3934a4a.
+    #    MITK had also merged our trac changes 1467 (MITK 12002) and 1479 (MITK bug 10420), so the 
+    #    current code base would be MITK 250107a06aa + Trac 853, 1256, 1344, 1366, 1469.
     #########################################################
     
-    SET(revision_tag b716de0d73)
+    SET(revision_tag 1ad3934a4a)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
