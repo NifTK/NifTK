@@ -23,7 +23,7 @@
  ============================================================================*/
 
 #include "QmitkNiftyViewApplicationPlugin.h"
-#include "QmitkNiftyViewCMICPerspective.h"
+#include "QmitkNiftyViewIGIPerspective.h"
 #include "QmitkNiftyViewMIDASPerspective.h"
 #include "../QmitkNiftyViewApplication.h"
 
@@ -263,7 +263,7 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   this->context = context;
   
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewCMICPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewMIDASPerspective, context);
 
   ctkServiceReference cmRef = context->getServiceReference<ctkConfigurationAdmin>();

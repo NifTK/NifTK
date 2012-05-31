@@ -23,28 +23,27 @@
  ============================================================================*/
 
 
-#ifndef QMITKNIFTYVIEWCMICPERSPECTIVE_H_
-#define QMITKNIFTYVIEWCMICPERSPECTIVE_H_
+#ifndef QMITKNIFTYVIEWIGIPERSPECTIVE_H_
+#define QMITKNIFTYVIEWIGIPERSPECTIVE_H_
 
 #include <berryIPerspectiveFactory.h>
 
 /**
- * \class QmitkNiftyViewCMICPerspective
- * \brief Perspective to arrange widgets as would be suitable for CMIC applications that
- * typically want an FSL/MITK style orthoviewer as the default look.
+ * \class QmitkNiftyViewIGIPerspective
+ * \brief Perspective to arrange widgets as would be suitable for CMIC IGI applications.
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview_internal
  *
  * Note: We have to load at least one view component, to get an editor created.
  */
-class QmitkNiftyViewCMICPerspective : public QObject, public berry::IPerspectiveFactory
+class QmitkNiftyViewIGIPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)
   
 public:
 
-  QmitkNiftyViewCMICPerspective();
-  QmitkNiftyViewCMICPerspective(const QmitkNiftyViewCMICPerspective& other);
+  QmitkNiftyViewIGIPerspective();
+  QmitkNiftyViewIGIPerspective(const QmitkNiftyViewIGIPerspective& other);
   
   void CreateInitialLayout(berry::IPageLayout::Pointer layout);
 

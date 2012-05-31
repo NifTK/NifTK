@@ -22,20 +22,20 @@
 
  ============================================================================*/
 
-#include "QmitkNiftyViewCMICPerspective.h"
+#include "QmitkNiftyViewIGIPerspective.h"
 #include "berryIViewLayout.h"
 
-QmitkNiftyViewCMICPerspective::QmitkNiftyViewCMICPerspective()
+QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective()
 {
 }
  
-QmitkNiftyViewCMICPerspective::QmitkNiftyViewCMICPerspective(const QmitkNiftyViewCMICPerspective& other)
+QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective(const QmitkNiftyViewIGIPerspective& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
 }
 
-void QmitkNiftyViewCMICPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
+void QmitkNiftyViewIGIPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
   std::string editorArea = layout->GetEditorArea();
 
@@ -45,7 +45,7 @@ void QmitkNiftyViewCMICPerspective::CreateInitialLayout(berry::IPageLayout::Poin
   berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
   lo->SetCloseable(false);
 
-  layout->AddView("org.mitk.views.propertylistview",
+  layout->AddView("uk.ac.ucl.cmic.surgicalguidance",
     berry::IPageLayout::BOTTOM, 0.3f, "org.mitk.views.datamanager");
 
 }

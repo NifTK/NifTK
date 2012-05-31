@@ -8,16 +8,14 @@
     </application>
   </extension>
 
-<!-- Don't really need this.
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftyview.cmicperspective"
-      name="Display"
-      class="QmitkNiftyViewCMICPerspective"
+      id="uk.ac.ucl.cmic.gui.qt.niftyview.igiperspective"
+      name="IGI Perspective"
+      class="QmitkNiftyViewIGIPerspective"
 	  icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
--->
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective

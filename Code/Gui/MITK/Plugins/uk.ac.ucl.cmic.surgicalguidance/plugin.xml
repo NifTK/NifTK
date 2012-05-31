@@ -2,8 +2,8 @@
 <plugin>
   
   <extension point="org.blueberry.ui.views">
-    <view id="uk.ac.ucl.cmic.cmicsurgicalguidance"
-          name="CMIC Surgical Guidance"
+    <view id="uk.ac.ucl.cmic.surgicalguidance"
+          name="Surgical Guidance"
           class="SurgicalGuidanceView"
           icon="resources/icon.xpm" />
   </extension>
