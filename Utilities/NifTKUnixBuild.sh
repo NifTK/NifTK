@@ -80,7 +80,7 @@ if [ "${GCC4}" = "gcc44" ]; then
 fi
 
 if [ "${IGI}" = "igi" ]; then
-  IGI_ARG="-DBUILD_NIFTYLINK=ON"
+  IGI_ARG="-DBUILD_IGI=ON"
 fi
 
 if [ "${GITHTTP}" = "http" ]; then

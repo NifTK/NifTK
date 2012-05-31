@@ -108,28 +108,25 @@ ENDIF(BUILD_SUPERBUILD)
 # build. So, look in CMake/Superbuild.cmake to see where they are
 # passed to the main build of NifTK when doing the Superbuild.
 ######################################################################
-OPTION(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications" ON)
-OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts" ON)
-OPTION(BUILD_GUI "Build GUI in NifTK/Code/Gui" OFF)
+OPTION(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
+OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
+OPTION(BUILD_GUI "Build GUI in NifTK/Code/Gui." OFF)
+OPTION(BUILD_IGI "Build CMIC IGI platform." OFF)
 OPTION(BUILD_MESHING "Build meshing?" OFF)
-OPTION(BUILD_NIFTYLINK "Build NiftyLink. " OFF)
-OPTION(BUILD_NIFTYREG "Build NiftyReg. Experimental. " OFF)
-OPTION(BUILD_NIFTYREC "Build NiftyRec. Experimental. " OFF)
-OPTION(BUILD_NIFTYSIM "Build NiftySim. Experimental. " OFF)
-OPTION(BUILD_NIFTYSEG "Build NiftySeg. Experimental. " OFF)
-OPTION(BUILD_OPENCV "Build OpenCV (via MITK)" OFF)
-OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype" OFF)
-OPTION(BUILD_PROTOTYPE_BE "Build prototype code in NifTK/Prototype/be" OFF)
-OPTION(BUILD_PROTOTYPE_GY "Build prototype code in NifTK/Prototype/gy" OFF)
-OPTION(BUILD_PROTOTYPE_IM "Build prototype code in NifTK/Prototype/im" OFF)
-OPTION(BUILD_PROTOTYPE_JHH "Build prototype code in NifTK/Prototype/jhh" OFF)
-OPTION(BUILD_PROTOTYPE_KKL "Build prototype code in NifTK/Prototype/kkl" OFF)
-OPTION(BUILD_PROTOTYPE_MJC "Build prototype code in NifTK/Prototype/mjc" OFF)
-OPTION(BUILD_PROTOTYPE_TM "Build prototype code in NifTK/Prototype/tm" OFF)
-OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code" OFF)
+OPTION(BUILD_NIFTYREG "Build NiftyReg." OFF)
+OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
+OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
+OPTION(BUILD_NIFTYSEG "Build NiftySeg." OFF)
+OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
+OPTION(BUILD_PROTOTYPE_BE "Build prototype code in NifTK/Prototype/be." OFF)
+OPTION(BUILD_PROTOTYPE_GY "Build prototype code in NifTK/Prototype/gy." OFF)
+OPTION(BUILD_PROTOTYPE_IM "Build prototype code in NifTK/Prototype/im." OFF)
+OPTION(BUILD_PROTOTYPE_JHH "Build prototype code in NifTK/Prototype/jhh." OFF)
+OPTION(BUILD_PROTOTYPE_KKL "Build prototype code in NifTK/Prototype/kkl." OFF)
+OPTION(BUILD_PROTOTYPE_MJC "Build prototype code in NifTK/Prototype/mjc." OFF)
+OPTION(BUILD_PROTOTYPE_TM "Build prototype code in NifTK/Prototype/tm." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
-OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
-OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
+OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code." OFF)
 OPTION(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 IF(CMAKE_BUILD_TYPE MATCHES "Debug")
   SET(NIFTK_SHOW_CONSOLE_WINDOW ON)
@@ -138,8 +135,11 @@ ELSE()
 ENDIF()
 OPTION(NIFTK_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications on Windows" ${NIFTK_SHOW_CONSOLE_WINDOW})
 OPTION(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OFF)
-OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
 OPTION(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK does" OFF)
+OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
+OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
+OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
+OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
 
 ######################################################################
 # Variables that get compiled into C++ code. 
@@ -203,6 +203,8 @@ MARK_AS_ADVANCED(NIFTK_CHECK_COVERAGE)
 MARK_AS_ADVANCED(NIFTK_VERBOSE_COMPILER_WARNINGS)
 MARK_AS_ADVANCED(NIFTK_GENERATE_DOXYGEN_HELP)
 MARK_AS_ADVANCED(NIFTK_NIGHTLY_DOCS)
+MARK_AS_ADVANCED(NIFTK_BUILD_INSTRUCTIONS)
+MARK_AS_ADVANCED(NIFTK_INSTALL_INSTRUCTIONS)
 MARK_AS_ADVANCED(NIFTK_VERSION_BOOST)
 MARK_AS_ADVANCED(NIFTK_VERSION_GDCM)
 MARK_AS_ADVANCED(NIFTK_VERSION_DCMTK)
@@ -216,6 +218,10 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_VTK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CTK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_MITK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA)
+MARK_AS_ADVANCED(NIFTK_USE_FFTW)
+MARK_AS_ADVANCED(NIFTK_USE_CUDA)
+MARK_AS_ADVANCED(NIFTK_USE_GIT_PROTOCOL)
+MARK_AS_ADVANCED(NIFTK_USE_OPENCV)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
@@ -305,17 +311,21 @@ IF(BUILD_GUI)
   SET(NIFTK_GENERATE_DOXYGEN_HELP ON)
 ENDIF(BUILD_GUI)
 
+IF(BUILD_IGI AND NOT BUILD_GUI)
+  MESSAGE(FATAL_ERROR "You have selected BUILD_IGI=ON, but to do so, you must enabled BUILD_GUI=ON")
+ENDIF()
+
 ######################################################################
 # Find Qt. We need to check for Qt first, before we go ahead and do
 # the Superbuild, because VTK needs to know if we have Qt.
 ######################################################################
 
 IF(BUILD_GUI)
-  IF(BUILD_NIFTYLINK)
+  IF(BUILD_IGI)
     FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
-  ELSE(BUILD_NIFTYLINK)
+  ELSE(BUILD_IGI)
     FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
-  ENDIF(BUILD_NIFTYLINK)
+  ENDIF(BUILD_IGI)
   
   IF(QT_FOUND)
   
@@ -503,17 +513,18 @@ ENDIF (BUILD_MESHING)
 ######################################################################
 # Find NiftyLink
 ######################################################################
-IF(BUILD_NIFTYLINK)
-  FIND_PACKAGE(NiftyLink)
+IF(BUILD_IGI)
+  FIND_PACKAGE(NiftyLink REQUIRED)
   IF(NiftyLink_FOUND)
     MESSAGE("Found NiftyLink")    
     INCLUDE(${NiftyLink_USE_FILE})
   ENDIF(NiftyLink_FOUND)
-ENDIF(BUILD_NIFTYLINK)
+ENDIF(BUILD_IGI)
 
 IF(NOT NiftyLink_FOUND)
-  MESSAGE("No NiftyLink found, so turning off Surgical Guidance Plugin")
+  MESSAGE("No NiftyLink found, so turning off Surgical Guidance Plugin, and setting BUILD_IGI to false.")
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
+  SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
 ENDIF()
 
 ######################################################################
@@ -982,6 +993,25 @@ IF(BUILD_SHARED_LIBS)
     ENDFOREACH(boostlibrary)
   ENDFOREACH(boostlib)
 
+  ############################################################################################
+  # Trac 1497: Getting NiftyLink properly working within NiftyView, fixing installers.
+  #            The whole of this section, copying libraries around needs sorting out.
+  ############################################################################################
+  IF(NiftyLink_FOUND)
+    SET(_subdir)
+    IF(WIN32)
+      SET(_subdir ${CMAKE_BUILD_TYPE})
+    ENDIF()
+    FOREACH(niftylinklibrary ${NiftyLink_LIBRARIES})
+      FOREACH(niftklinkdir ${NiftyLink_LIBRARY_DIRS})
+        FILE(GLOB niftylinklibs ${niftklinkdir}/${_subdir}/*${niftylinklibrary}*)
+        FOREACH(niftylinklib ${niftylinklibs})
+          INSTALL(FILES ${niftylinklib} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
+        ENDFOREACH()
+      ENDFOREACH()
+    ENDFOREACH()
+  ENDIF()
+  
 ELSE(BUILD_SHARED_LIBS)
   IF(WIN32)
     ADD_DEFINITIONS(-DNIFTK_STATIC)
