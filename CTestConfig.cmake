@@ -23,7 +23,7 @@
 #=================================================================================*/
 
 SET(CTEST_PROJECT_NAME "NifTK")
-SET(CTEST_NIGHTLY_START_TIME "22:00:00 GMT")
+SET(CTEST_NIGHTLY_START_TIME "20:00:00 GMT")
 SET(CTEST_TEST_TIMEOUT "3600")
 
 IF(NOT DEFINED CTEST_DROP_METHOD)
