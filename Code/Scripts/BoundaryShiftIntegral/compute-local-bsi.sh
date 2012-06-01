@@ -372,6 +372,7 @@ then
   
   output_dw_qnt_file=${output_dir}/${output_study_id}-${sub_roi_name}-${weight_image_name}-${dbc}DBC-${use_kn}kn-mw${min_window}-bsi-dw.qnt
   output_classic_qnt_file=${output_dir}/${output_study_id}-${sub_roi_name}-${weight_image_name}-${dbc}DBC-${use_kn}kn-classic-bsi.qnt
+  output_dw_global_intensity_qnt_file=${output_dir}/${output_study_id}-${dbc}DBC-${use_kn}kn-mw${min_window}-bsi-dw-global-mean.qnt
   
   bsi_baseline_image=${baseline_image}.img
   bsi_repeat_image=${registered_repeat}
