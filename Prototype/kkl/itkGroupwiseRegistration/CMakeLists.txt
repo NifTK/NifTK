@@ -46,6 +46,7 @@ ADD_EXECUTABLE(niftkKBilateralImageFilter niftkKBilateralImageFilter.cxx)
 ADD_EXECUTABLE(niftkCropMidasStr niftkCropMidasStr.cxx)    
 ADD_EXECUTABLE(niftkConvertNiiToMidasStr niftkConvertNiiToMidasStr.cxx)
 ADD_EXECUTABLE(niftkSetImageDirection niftkSetImageDirection.cxx)
+ADD_EXECUTABLE(niftkFindSkull niftkFindSkull.cxx)
 
 
 TARGET_LINK_LIBRARIES(itkGroupwiseRegistrationTest  
@@ -243,6 +244,15 @@ TARGET_LINK_LIBRARIES(niftkSetImageDirection
   ${Boost_LIBRARIES} 
   )
   
+TARGET_LINK_LIBRARIES(niftkFindSkull
+  niftkcommon   
+  niftkITK 
+  ITKCommon 
+  ITKIO   
+  ${Boost_LIBRARIES} 
+  )
+  
+  
 INSTALL(TARGETS itkComputeMeanTransformation RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
 
 INSTALL(TARGETS itkInvertTransformation RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
@@ -264,3 +274,6 @@ INSTALL(TARGETS niftkConvertNiiToMidasStr RUNTIME DESTINATION ${NIFTK_INSTALL_BI
 INSTALL(TARGETS niftkSetImageDirection RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
 
 
+INSTALL(TARGETS niftkFindSkull RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+
+INSTALL(TARGETS itkKmeansClassifierTest RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
