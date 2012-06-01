@@ -375,15 +375,45 @@ function brain_delineation()
   local output_left_hippo_local_region_threshold_cd_img=${temp_dir}/threshold-cd.img
   local output_left_hippo_local_region_threshold_cd=${temp_dir}/threshold-cd
   
-  # Threshold. 
-  makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
-  makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
-    -alt ${threshold_70} -aut ${threshold_160}
-  # erode once, followed by conditional dilation once between 60% and 160% of mean brain intensity. 
-  #makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -e 1 
-  #makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
-  makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 60 160
-  makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+  if [ "${use_kmeans}" == "no" ]
+  then 
+    # Threshold. 
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
+      -alt ${threshold_70} -aut ${threshold_160}
+    # erode once, followed by conditional dilation once between 60% and 160% of mean brain intensity. 
+    #makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -e 1 
+    #makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 60 160
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+  else
+    local output_left_hippo_local_region_img=${temp_dir}/region.img
+    local init_1=`echo "${mean_intensity}*0.3" | bc -l`
+    local init_2=`echo "${mean_intensity}*0.7" | bc -l`
+    local init_3=`echo "${mean_intensity}*1.1" | bc -l`
+    
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 3
+    kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}`
+    
+    csf=`echo ${kmeans_output} | awk '{printf $1}'`
+    gm=`echo ${kmeans_output} | awk '{printf $3}'`
+    gm_sd=`echo ${kmeans_output} | awk '{printf $4}'`
+    wm=`echo ${kmeans_output} | awk '{printf $5}'`
+    wm_sd=`echo ${kmeans_output} | awk '{printf $6}'`
+    #lower_threshold=`echo "(${csf}+${gm})/2" | bc -l`
+    lower_threshold=`echo "${gm}-2.6*${gm_sd}" | bc -l`
+    lower_threshold_percent=`echo "(100*${lower_threshold})/${mean_intensity}" | bc -l`
+    upper_threshold=`echo "${wm}+2.6*${wm_sd}" | bc -l`
+    upper_threshold_percent=`echo "(100*${upper_threshold})/${mean_intensity}" | bc -l`
+    
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
+      -alt ${threshold_70} -aut ${threshold_160}
+#      -alt ${lower_threshold} -aut ${upper_threshold}
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+  fi 
+  
   
   # Add in the vents, if needed. 
   if [ -f "${template_vents_region}"  ]
@@ -680,7 +710,8 @@ function brain-delineation-using-staple()
 
 
 
-echo "Starting..."
+echo "Starting on `hostname`..."
+echo "Arguments: $*"
 
 hippo_template_library_dir=$1
 subject_image=$2
@@ -705,6 +736,7 @@ vents_or_not=${20}
 remove_dir=${21}
 use_orientation=${22}
 leaveoneout=${23}
+use_kmeans=${24}
 
 output_areg_template_brain_series_number=400
 output_left_series_number=665
