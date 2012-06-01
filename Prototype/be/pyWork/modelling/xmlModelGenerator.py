@@ -196,6 +196,9 @@ class xmlModelGenrator :
     
     
     def writeXML( self, xmlFileName ):
+        ''' Generate the output xmlFile. 
+            @param xmlFileName: String describing the complete path of the outptu xml-model. 
+        '''
         
         print( 'Preparing xml document...' )
         

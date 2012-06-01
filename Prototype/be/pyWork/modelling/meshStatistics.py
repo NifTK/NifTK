@@ -48,34 +48,6 @@ class meshStatistics:
             tet.GetPointIds().SetId(2, self.elements[ i, 2 ])    
             tet.GetPointIds().SetId(3, self.elements[ i, 3 ])
             self.unstructuredGrid.InsertNextCell(tet.GetCellType(), tet.GetPointIds())
-            
-#        aTetraMapper = vtk.vtkDataSetMapper()
-#        aTetraMapper.SetInput( self.unstructuredGrid )
-#        aTetraActor = vtk.vtkActor()
-#        aTetraActor.SetMapper(aTetraMapper)
-#        aTetraActor.AddPosition(4, 0, 0)
-#        aTetraActor.GetProperty().SetDiffuseColor(0, 1, 0)
-#            
-#        ren = vtk.vtkRenderer()
-#        renWin = vtk.vtkRenderWindow()
-#        renWin.AddRenderer(ren)
-#        renWin.SetSize(300, 150)
-#        iren = vtk.vtkRenderWindowInteractor()
-#        iren.SetRenderWindow(renWin)
-#        
-#        ren.SetBackground(.1, .2, .4)
-#        
-#        ren.AddActor(aTetraActor)
-#        ren.ResetCamera()
-#        ren.GetActiveCamera().Azimuth(30)
-#        ren.GetActiveCamera().Elevation(20)
-#        ren.GetActiveCamera().Dolly(2.8)
-#        ren.ResetCameraClippingRange()
-#        
-#        # Render the scene and start interaction.
-#        iren.Initialize()
-#        renWin.Render()
-#        iren.Start()
         
         
         
@@ -88,26 +60,6 @@ class meshStatistics:
         # iterate through all the different mesh quality measures and store these in the 
         # dictionary self.qualityMeasures
         #
-        
-        
-#      X  SetTetQualityMeasureToAspectBeta 
-#      X  SetTetQualityMeasureToAspectFrobenius 
-#      X  SetTetQualityMeasureToAspectGamma 
-#      X  SetTetQualityMeasureToAspectRatio 
-#      X  SetTetQualityMeasureToCollapseRatio 
-#      X  SetTetQualityMeasureToCondition 
-#      X  SetTetQualityMeasureToDistortion 
-#      X  SetTetQualityMeasureToEdgeRatio 
-#      X  SetTetQualityMeasureToJacobian 
-#      X  SetTetQualityMeasureToMinAngle 
-#      X  SetTetQualityMeasureToRadiusRatio 
-#      X  SetTetQualityMeasureToRelativeSizeSquared 
-#      X  SetTetQualityMeasureToScaledJacobian 
-#      X  SetTetQualityMeasureToShape 
-#      X  SetTetQualityMeasureToShapeAndSize 
-#      X  SetTetQualityMeasureToVolume 
-
-        
         self.meshQualityFilter = vtk.vtkMeshQuality()
         self.meshQualityFilter.SetInput( self.unstructuredGrid )
         
@@ -368,7 +320,6 @@ class meshStatistics:
                             a[:,1] *(  b[:,2] * c[:,0] - b[:,0] * c[:,2] ) + 
                             a[:,2] *(  b[:,0] * c[:,1] - b[:,1] * c[:,0] ) ) / 6.0  
         
-        print( 'Done.' )
         
         
         

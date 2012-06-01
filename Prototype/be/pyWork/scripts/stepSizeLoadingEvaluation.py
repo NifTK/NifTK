@@ -7,39 +7,9 @@ import numpy as np
 from os.path import exists
 import os
 import sys
-import matplotlib.pyplot as plt
+import loadingFunction as lf
+from plotDoubleAxis import plotDoubleYAxis
 
-
-
-
-def plotDoubleYAxis( xVals, y1Vals, y2Vals, xLabel, xLabelUint, y1Label, y1LabelUnit, y2Label, y2LabelUnit, plotDirAndBaseName, printLegend=True, y1Max = None ):
-    
-    plt.rc( 'text', usetex=True )
-    plt.rcParams['font.size']=16
-    
-    fig = plt.figure()
-    #plt.hold( True )
-    ax1 = fig.gca()
-    ax1.plot( xVals, y1Vals, 'b-', label = y1Label )
-    ax2 = ax1.twinx()
-    ax2.plot( xVals, y2Vals, 'r-', label = y2Label )
-    ax1.set_xlabel( xLabel        )
-    ax1.set_ylabel( y1LabelUnit )
-    ax2.set_ylabel( y2LabelUnit )
-    ax1.set_ylim( bottom=0 )
-    ax2.set_ylim( bottom=0, top=1.1 )
-    ax1.grid( color = 'gray', linestyle='-' )
-    
-    if y1Max != None:
-        ax1.set_ylim( top=y1Max )
-    
-    if printLegend:
-        plt.legend( (ax1.get_lines(), ax2.get_lines()), (y1Label, y2Label), loc = 'lower right' )
-    
-    #plt.hold( False )
-    fig.show()
-    fig.savefig( plotDirAndBaseName + '.pdf' )
-    fig.savefig( plotDirAndBaseName + '.png', dpi = 300 )
 
 
 
@@ -119,24 +89,7 @@ def evaluate( simDirs, modelPFileBaseNameIn = 'modelFat_prone1G_it050000_totalTi
             os.mkdir( plotDir )
         
         # generate time and loading function
-        tMax = simTime
-        time = np.arange( 0, tMax, tMax/itPRampFlat4 )
-        load = time.copy()
-        
-        N = 1.0
-
-        if loadShape == 'RAMPFLAT':
-            N = 2.0  # 1 part ramp up, 1 part keep constant...
-        if loadShape == 'RAMPFLAT2':
-            N = 3.0  # 1 part ramp up, 2 parts keep constant...
-        if loadShape == 'RAMPFLAT4':
-            N = 5.0  # 1 part ramp up, 4 parts keep constant...
-        if loadShape == 'RAMPFLAT8':
-            N = 9.0  # 1 part ramp up, 4 parts keep constant...
-        
-        load[load >  simTime/N ] = 1.0
-        load[load <= simTime/N ] = load * N / simTime        
-        
+        load, time = lf.loadingFunction(simTime, loadShape, itPRampFlat4)
         
         # define labels
         eLabel= '$E_\mathrm{kin} / E_\mathrm{strain}$'
