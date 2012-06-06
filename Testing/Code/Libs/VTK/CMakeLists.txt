@@ -33,7 +33,6 @@ SET(NIFTK_TEST_EXT_VTK_LINK_LIBRARIES
 # This is the name of the actual executable that gets run.  
 SET(VTK_INTEGRATION_TESTS ${CXX_TEST_PATH}/VTKIntegrationTests)
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
-SET(BASELINE ${NIFTK_DATA_ROOT}/Baseline)
 
 #----------------------------------
 # Dont forget its:  ADD_TEST(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>

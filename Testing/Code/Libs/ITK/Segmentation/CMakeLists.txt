@@ -31,7 +31,6 @@ SET(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES
 # This is the name of the actual executable that gets run.  
 SET(SEGMENTATION_INTEGRATION_TESTS ${CXX_TEST_PATH}/SegmentationIntegrationTests)
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
-SET(BASELINE ${NIFTK_DATA_ROOT}/Baseline)
 
 #----------------------------------
 # Dont forget its:  ADD_TEST(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>
