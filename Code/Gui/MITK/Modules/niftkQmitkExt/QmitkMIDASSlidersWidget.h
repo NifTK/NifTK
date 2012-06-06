@@ -52,6 +52,12 @@ public:
   /// \brief Calls setEnabled(enabled) on all contained widgets.
   void SetEnabled(bool enabled);
 
+  /// \brief Can be used to invert the slice slider.
+  void SetSliceSliderInverted(bool inverted);
+
+  /// \brief Can be used to add a constant offset to the values on the slice slider.
+  void SetSliceSliderOffset(int offset);
+
 signals:
 
 protected slots:

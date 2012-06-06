@@ -249,7 +249,7 @@ protected slots:
   void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
-  void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
+  void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
 protected:
 
@@ -317,6 +317,8 @@ private:
   /// \brief Force all visible viewers to match the 'currently selected' viewers magnification.
   void UpdateBoundMagnification(bool isBoundNow);
 
+  void SwitchWindows(int selectedViewer, vtkRenderWindow *selectedWindow);
+
   // Layouts
   QHBoxLayout                                   *m_TopLevelLayout;
   QGridLayout                                   *m_LayoutForRenderWindows;
@@ -370,6 +372,7 @@ private:
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
+  bool                                           m_Dropped;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

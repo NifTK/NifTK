@@ -56,13 +56,6 @@ public:
   /** Increment slice number, where i can be positive or negative, and the result will emit signals. */
   void AddToSliceNumber(int i);
 
-signals:
-
-  /** Emitted to indicate that the slice number has changed. */
-  void SliceNumberChanged(int previousValue, int newValue);
-
-public slots:
-
   /** Sets the current value, called from external clients. */
   void SetSliceNumber(int value);
 
@@ -70,11 +63,6 @@ private:
 
   SliceSelectWidget(const SliceSelectWidget&);  // Purposefully not implemented.
   void operator=(const SliceSelectWidget&);  // Purposefully not implemented.
-
-private slots:
-
-  /** Internally connected to the slider and spin box. */
-  void OnChangeSliceNumber(int);
 
 };
 #endif

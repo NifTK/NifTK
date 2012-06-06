@@ -37,8 +37,6 @@ MagnificationFactorWidget::MagnificationFactorWidget(QWidget *parent)
   this->setObjectName(OBJECT_NAME);
   this->SetMinimum(-5);
   this->SetMaximum(20);
-  connect(this->spinBox, SIGNAL(valueChanged(int)), this, SLOT(OnChangeMagnificationFactor(int)));
-  connect(this->horizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(OnChangeMagnificationFactor(int)));
 }
 
 MagnificationFactorWidget::~MagnificationFactorWidget()
@@ -49,11 +47,6 @@ MagnificationFactorWidget::~MagnificationFactorWidget()
 void MagnificationFactorWidget::SetMagnificationFactor(int value)
 {
   this->SetValue(value);
-}
-
-void MagnificationFactorWidget::OnChangeMagnificationFactor(int value)
-{
-  emit MagnificationFactorChanged(m_PreviousValue - m_Offset, value - m_Offset);
 }
 
 #endif

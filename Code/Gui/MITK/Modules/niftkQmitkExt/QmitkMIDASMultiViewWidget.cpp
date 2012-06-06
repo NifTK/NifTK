@@ -92,6 +92,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
+, m_Dropped(false)
 {
   assert(visibilityManager);
   assert(dataStorage);
@@ -134,8 +135,11 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForTopControls->setVerticalSpacing(0);
   m_LayoutForTopControls->setHorizontalSpacing(2);
 
-  m_MIDASOrientationWidget = new QmitkMIDASOrientationWidget(this);
   m_MIDASSlidersWidget = new QmitkMIDASSlidersWidget(this);
+  m_MIDASSlidersWidget->SetSliceSliderOffset(1);
+
+  m_MIDASOrientationWidget = new QmitkMIDASOrientationWidget(this);
+
   m_MIDASBindWidget = new QmitkMIDASBindWidget(this);
 
   m_1x1LayoutButton = new QPushButton(this);
@@ -244,8 +248,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   this->EnableLayoutWidgets(false);
 
   // Connect Qt Signals to make it all hang together.
-  connect(m_MIDASSlidersWidget->m_SliceSelectionWidget, SIGNAL(SliceNumberChanged(int, int)), this, SLOT(OnSliceNumberChanged(int, int)));
-  connect(m_MIDASSlidersWidget->m_MagnificationFactorWidget, SIGNAL(MagnificationFactorChanged(int, int)), this, SLOT(OnMagnificationFactorChanged(int, int)));
+  connect(m_MIDASSlidersWidget->m_SliceSelectionWidget, SIGNAL(IntegerValueChanged(int, int)), this, SLOT(OnSliceNumberChanged(int, int)));
+  connect(m_MIDASSlidersWidget->m_MagnificationFactorWidget, SIGNAL(IntegerValueChanged(int, int)), this, SLOT(OnMagnificationFactorChanged(int, int)));
   connect(m_MIDASSlidersWidget->m_TimeSelectionWidget, SIGNAL(IntegerValueChanged(int, int)), this, SLOT(OnTimeChanged(int, int)));
   connect(m_1x1LayoutButton, SIGNAL(pressed()), this, SLOT(On1x1ButtonPressed()));
   connect(m_1x2LayoutButton, SIGNAL(pressed()), this, SLOT(On1x2ButtonPressed()));
@@ -294,7 +298,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
-  connect(widget, SIGNAL(PositionChanged(QmitkMIDASSingleViewWidget*, mitk::Point3D, mitk::Point3D)), this, SLOT(OnPositionChanged(QmitkMIDASSingleViewWidget*,mitk::Point3D,mitk::Point3D)));
+  connect(widget, SIGNAL(PositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
 
   return widget;
 }
@@ -634,7 +638,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   {
     selectedWindow = 0;
   }
-  this->SetSelectedWindow(selectedWindow);
+  this->SwitchWindows(selectedWindow, this->m_SingleViewWidgets[selectedWindow]->GetAxialWindow()->GetVtkRenderWindow());
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
@@ -747,18 +751,16 @@ void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
   this->SetLayoutSize((unsigned int)m_RowsSpinBox->value(), (unsigned int)c, false);
 }
 
-void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation)
+void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
   for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (m_SingleViewWidgets[i] == widget)
     {
       std::vector<QmitkRenderWindow*> windows = m_SingleViewWidgets[i]->GetSelectedWindows();
-      if (windows.size() == 1)
+      if (windows.size() == 1 && window == windows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->GetValue())
       {
-        mitk::SliceNavigationController::Pointer snc = windows[0]->GetSliceNavigationController();
-        int slice = snc->GetSlice()->GetPos();
-        m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(slice);
+        m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(sliceNumber);
       }
     }
   }
@@ -767,16 +769,20 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
 void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
   // See also QmitkMIDASMultiViewVisibilityManager::OnNodesDropped which should trigger first.
-
   if (!this->m_DropThumbnailRadioButton->isChecked())
   {
     this->EnableWidgets(true);
   }
 
+  // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
+  if (!m_Dropped)
+  {
+    this->OnFocusChanged();
+    m_Dropped = true;
+  }
 
   int selectedWindow = this->GetSelectedWindowIndex();
-
   int magnification = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnification);
 
@@ -784,6 +790,66 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   m_MIDASOrientationWidget->SetToView(view);
 
   this->Update2DCursorVisibility();
+  this->RequestUpdateAll();
+}
+
+void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindow *selectedWindow)
+{
+  if (selectedViewer >= 0 && selectedViewer < (int)m_SingleViewWidgets.size() && selectedWindow != NULL)
+  {
+    // This, to turn off borders on all other windows.
+    this->SetSelectedWindow(selectedViewer);
+
+    // This to specifically set the border round one sub-pane for if its an ortho-view.
+    this->m_SingleViewWidgets[selectedViewer]->SetSelectedWindow(selectedWindow);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    MIDASOrientation orientation = this->m_SingleViewWidgets[selectedViewer]->GetOrientation();
+    MIDASView view = this->m_SingleViewWidgets[selectedViewer]->GetView();
+
+    m_MIDASSlidersWidget->SetBlockSignals(true);
+    m_MIDASOrientationWidget->SetBlockSignals(true);
+
+    if (view != MIDAS_VIEW_UNKNOWN)
+    {
+      m_MIDASOrientationWidget->SetToView(view);
+    }
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      unsigned int minSlice = this->m_SingleViewWidgets[selectedViewer]->GetMinSlice(orientation);
+      unsigned int maxSlice = this->m_SingleViewWidgets[selectedViewer]->GetMaxSlice(orientation);
+      unsigned int currentSlice = this->m_SingleViewWidgets[selectedViewer]->GetSliceNumber(orientation);
+
+      m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMinimum(minSlice);
+      m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMaximum(maxSlice);
+      m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(currentSlice);
+    }
+
+    unsigned int minMag = this->m_SingleViewWidgets[selectedViewer]->GetMinMagnification();
+    unsigned int maxMag = this->m_SingleViewWidgets[selectedViewer]->GetMaxMagnification();
+    unsigned int currentMag = this->m_SingleViewWidgets[selectedViewer]->GetMagnificationFactor();
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMinimum(minMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMaximum(maxMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(currentMag);
+
+    unsigned int minTime = this->m_SingleViewWidgets[selectedViewer]->GetMinTime();
+    unsigned int maxTime = this->m_SingleViewWidgets[selectedViewer]->GetMaxTime();
+    unsigned int currentTime = this->m_SingleViewWidgets[selectedViewer]->GetTime();
+    m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMinimum(minTime);
+    m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMaximum(maxTime);
+    m_MIDASSlidersWidget->m_TimeSelectionWidget->SetValue(currentTime);
+
+    m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(true);
+    m_MIDASSlidersWidget->m_TimeSelectionWidget->setEnabled(true);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
+
+    m_MIDASSlidersWidget->SetBlockSignals(false);
+    m_MIDASOrientationWidget->SetBlockSignals(false);
+
+    this->Update2DCursorVisibility();
+  }
   this->RequestUpdateAll();
 }
 
@@ -808,64 +874,7 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
       }
     }
   }
-
-  if (selectedWindow != -1)
-  {
-    // This, to turn off borders on all other windows.
-    this->SetSelectedWindow(selectedWindow);
-
-    // This to specifically set the border round one sub-pane for if its an ortho-view.
-    this->m_SingleViewWidgets[selectedWindow]->SetSelectedWindow(focusedRenderWindow);
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
-    MIDASView view = this->m_SingleViewWidgets[selectedWindow]->GetView();
-
-    m_MIDASSlidersWidget->SetBlockSignals(true);
-    m_MIDASOrientationWidget->SetBlockSignals(true);
-
-    if (view != MIDAS_VIEW_UNKNOWN)
-    {
-      m_MIDASOrientationWidget->SetToView(view);
-    }
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-    {
-      unsigned int minSlice = this->m_SingleViewWidgets[selectedWindow]->GetMinSlice(orientation);
-      unsigned int maxSlice = this->m_SingleViewWidgets[selectedWindow]->GetMaxSlice(orientation);
-      unsigned int currentSlice = this->m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
-
-      m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMinimum(minSlice);
-      m_MIDASSlidersWidget->m_SliceSelectionWidget->SetMaximum(maxSlice);
-      m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(currentSlice);
-    }
-
-    unsigned int minMag = this->m_SingleViewWidgets[selectedWindow]->GetMinMagnification();
-    unsigned int maxMag = this->m_SingleViewWidgets[selectedWindow]->GetMaxMagnification();
-    unsigned int currentMag = this->m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMinimum(minMag);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMaximum(maxMag);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(currentMag);
-
-    unsigned int minTime = this->m_SingleViewWidgets[selectedWindow]->GetMinTime();
-    unsigned int maxTime = this->m_SingleViewWidgets[selectedWindow]->GetMaxTime();
-    unsigned int currentTime = this->m_SingleViewWidgets[selectedWindow]->GetTime();
-    m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMinimum(minTime);
-    m_MIDASSlidersWidget->m_TimeSelectionWidget->SetMaximum(maxTime);
-    m_MIDASSlidersWidget->m_TimeSelectionWidget->SetValue(currentTime);
-
-    m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(true);
-    m_MIDASSlidersWidget->m_TimeSelectionWidget->setEnabled(true);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
-
-    m_MIDASSlidersWidget->SetBlockSignals(false);
-    m_MIDASOrientationWidget->SetBlockSignals(false);
-
-    this->Update2DCursorVisibility();
-  }
-
-  this->RequestUpdateAll();
+  this->SwitchWindows(selectedWindow, focusedRenderWindow);
 }
 
 void QmitkMIDASMultiViewWidget::OnDropSingleRadioButtonToggled(bool toggled)

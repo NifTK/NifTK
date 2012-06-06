@@ -35,6 +35,9 @@
 /**
  * \class IntegerSpinBoxAndSliderWidget
  * \brief Provides an integer spin box and slider, which should be subclassed to set/get the right signals.
+ *
+ * The public interface requires values that should not include the m_Offset and m_Inverse, so the rest of
+ * the application uses the widget as if those values do not exist.
  */
 class NIFTKQT_WINEXPORT IntegerSpinBoxAndSliderWidget : public QWidget, public Ui_IntegerSpinBoxAndSliderWidget
 {
@@ -49,32 +52,44 @@ public:
   /** Destructor. */
   ~IntegerSpinBoxAndSliderWidget();
 
-  /** Returns the current value. */
-  virtual int GetValue() const;
-
-  /** Returns the minimum allowed value. */
-  virtual int GetMinimum() const;
-
-  /** Returns the maximum allowed value. */
-  virtual int GetMaximum() const;
-
   /** Sets the current value */
   virtual void SetValue(int value);
+
+  /** Returns the current value. */
+  virtual int GetValue() const;
 
   /** Sets the minimum value. */
   virtual void SetMinimum(int min);
 
+  /** Returns the minimum allowed value. */
+  virtual int GetMinimum() const;
+
   /** Sets the maximum value. */
   virtual void SetMaximum(int max);
 
-  /** Sets the text that appears next to the spin box. */
-  virtual void SetText(QString text);
+  /** Returns the maximum allowed value. */
+  virtual int GetMaximum() const;
 
   /** Set the offset, which is the difference between what is displayed, and the signals that are sent. */
   virtual void SetOffset(int i);
 
   /** Returns the offset, which is the difference between what is displayed, and the signals that are sent. */
   virtual int GetOffset() const;
+
+  /** Sets the flag to flip round the output signal values */
+  virtual void SetInverse(bool b);
+
+  /** Gets the flag to flip round the output signal values */
+  virtual bool GetInverse() const;
+
+  /** Sets the Enabled flag on all contained widgets. */
+  virtual void SetEnabled(bool b);
+
+  /** Gets the Enabled flag. */
+  virtual bool GetEnabled() const;
+
+  /** Sets the text that appears next to the spin box. */
+  virtual void SetText(QString text);
 
   /** Sets the contents margin on the grid layout. */
   virtual void SetContentsMargins(int margin);
@@ -85,17 +100,10 @@ public:
   /** Calls setBlockSignals(bool) on all contained widgets. */
   virtual void SetBlockSignals(bool b);
 
-  /** Sets the Enabled flag on all contained widgets. */
-  virtual void SetEnabled(bool b);
-
-  /** Gets the Enabled flag. */
-  virtual bool GetEnabled() const;
-
-  signals:
+signals:
 
   /** Emitted to indicate that the value of the slider and spin box has changed. */
   void IntegerValueChanged(int previousValue, int newValue);
-
 
 protected:
 
@@ -108,25 +116,37 @@ protected:
   /** Stores the previous maximum. */
   int m_PreviousMaximum;
 
-  int ClampValueToWithinRange(int i);
-
   /**
-   * Set during constructor to provide a fixed offset.
+   * Provide a fixed offset.
    * eg. you might want the widget to display slice number 1..n,
    * but the underlying signals/slots to be using 0..n-1
    */
   int m_Offset;
 
-private:
-
-  IntegerSpinBoxAndSliderWidget(const IntegerSpinBoxAndSliderWidget&);  // Purposefully not implemented.
-  void operator=(const IntegerSpinBoxAndSliderWidget&);  // Purposefully not implemented.
+  /**
+   * Used to flip round the output signals so that when the spin box and slider show value
+   * values 0-n, the signals output are n-0;
+   */
+  bool m_Inverse;
 
 private slots:
 
   void SetValueOnSpinBox(int i);
   void SetValueOnSlider(int i);
 
+private:
+
+  IntegerSpinBoxAndSliderWidget(const IntegerSpinBoxAndSliderWidget&);  // Purposefully not implemented.
+  void operator=(const IntegerSpinBoxAndSliderWidget&);  // Purposefully not implemented.
+
+  void EmitCurrentValues();
+  int  ClampValueToWithinRange(int i);
+  int  GetMinimumWithoutOffset() const;
+  void SetMinimumWithoutOffset(int i);
+  int  GetMaximumWithoutOffset() const;
+  void SetMaximumWithoutOffset(int i);
+  int  GetValueWithoutOffset() const;
+  void SetValueWithoutOffset(int i);
 };
 
 #endif

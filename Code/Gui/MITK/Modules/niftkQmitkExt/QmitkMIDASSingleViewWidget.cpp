@@ -101,7 +101,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  connect(m_MultiWidget, SIGNAL(PositionChanged(mitk::Point3D,mitk::Point3D)), this, SLOT(OnPositionChanged(mitk::Point3D,mitk::Point3D)));
+  connect(m_MultiWidget, SIGNAL(PositionChanged(QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkRenderWindow*,mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
 }
 
 QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
@@ -114,9 +114,9 @@ void QmitkMIDASSingleViewWidget::OnNodesDropped(QmitkMIDASStdMultiWidget *widget
   emit NodesDropped(window, nodes);
 }
 
-void QmitkMIDASSingleViewWidget::OnPositionChanged(mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation)
+void QmitkMIDASSingleViewWidget::OnPositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
-  emit PositionChanged(this, voxelLocation, millimetreLocation);
+  emit PositionChanged(this, window, voxelLocation, millimetreLocation, sliceNumber, orientation);
 }
 
 bool QmitkMIDASSingleViewWidget::IsSingle2DView() const

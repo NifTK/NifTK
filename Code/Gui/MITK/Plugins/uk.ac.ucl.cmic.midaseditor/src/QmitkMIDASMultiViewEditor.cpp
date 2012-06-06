@@ -150,10 +150,6 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
 
 void QmitkMIDASMultiViewEditor::SetFocus()
 {
-  if (m_MIDASMultiViewWidget != NULL)
-  {
-    m_MIDASMultiViewWidget->setFocus();
-  }
 }
 
 void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )

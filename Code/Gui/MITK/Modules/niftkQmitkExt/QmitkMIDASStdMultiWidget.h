@@ -177,7 +177,7 @@ public:
   unsigned int GetMaxTime() const;
 
   /// \brief Get the current slice number.
-  unsigned int GetSliceNumber(MIDASOrientation orientation) const;
+  unsigned int GetSliceNumber(const MIDASOrientation orientation) const;
 
   /// \brief Set the current slice number.
   void SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber);
@@ -216,7 +216,7 @@ signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *thisWindow, std::vector<mitk::DataNode*> nodes);
-  void PositionChanged(mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
+  void PositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
 protected slots:
 
@@ -235,7 +235,7 @@ private:
   void OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent);
 
   /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit PositionChanged
-  void OnPositionChanged();
+  void OnPositionChanged(MIDASOrientation orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
@@ -265,6 +265,8 @@ private:
   MIDASView             m_View;
   int                   m_MagnificationFactor;
   vtkCamera*            m_Cameras[4];
+  mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
+  mitk::Geometry3D*     m_Geometry;
 };
 
 #endif

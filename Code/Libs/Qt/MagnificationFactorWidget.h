@@ -53,13 +53,6 @@ public:
   /** Destructor. */
   ~MagnificationFactorWidget();
 
-signals:
-
-  /** Emitted to indicate that the magnification factor has changed. */
-  void MagnificationFactorChanged(int previousValue, int newValue);
-
-public slots:
-
   /** Sets the current value, called from external clients. */
   void SetMagnificationFactor(int value);
 
@@ -67,11 +60,5 @@ private:
 
   MagnificationFactorWidget(const MagnificationFactorWidget&);  // Purposefully not implemented.
   void operator=(const MagnificationFactorWidget&);  // Purposefully not implemented.
-
-private slots:
-
-  /** Internally connected to the slider and spin box. */
-  void OnChangeMagnificationFactor(int);
-
 };
 #endif

@@ -259,13 +259,13 @@ signals:
 
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  void PositionChanged(QmitkMIDASSingleViewWidget *widget, mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
+  void PositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
 protected slots:
 
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  virtual void OnPositionChanged(mitk::Point3D voxelLocation, mitk::Point3D millimetreLocation);
+  virtual void OnPositionChanged(QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
 private:
 

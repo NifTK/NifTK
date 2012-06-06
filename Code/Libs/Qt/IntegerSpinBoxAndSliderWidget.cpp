@@ -30,6 +30,7 @@ IntegerSpinBoxAndSliderWidget::IntegerSpinBoxAndSliderWidget(QWidget *parent)
 {
   this->setupUi(this);
   this->m_Offset = 0;
+  this->m_Inverse = false;
   this->SetMinimum(0);
   this->SetMaximum(100);
   this->SetValue(0);
@@ -48,88 +49,6 @@ IntegerSpinBoxAndSliderWidget::~IntegerSpinBoxAndSliderWidget()
 
 }
 
-void IntegerSpinBoxAndSliderWidget::SetMinimum(int min)
-{
-  this->m_PreviousMinimum = this->spinBox->minimum();
-  this->spinBox->setMinimum(min + m_Offset);
-  this->horizontalSlider->setMinimum(min + m_Offset);
-}
-
-void IntegerSpinBoxAndSliderWidget::SetMaximum(int max)
-{
-  this->m_PreviousMaximum = this->spinBox->maximum();
-  this->spinBox->setMaximum(max + m_Offset);
-  this->horizontalSlider->setMaximum(max + m_Offset);
-}
-
-void IntegerSpinBoxAndSliderWidget::SetText(QString text)
-{
-  this->label->setText(text);
-}
-
-int IntegerSpinBoxAndSliderWidget::ClampValueToWithinRange(int i)
-{
-  int tmp = i;
-  if (tmp < this->spinBox->minimum())
-  {
-    tmp = this->spinBox->minimum();
-  }
-  else if (tmp > this->spinBox->maximum())
-  {
-    tmp = this->spinBox->maximum();
-  }
-  return tmp;
-}
-
-void IntegerSpinBoxAndSliderWidget::SetValue(int value)
-{
-  this->m_PreviousValue = this->spinBox->value();
-
-  int tmp = this->ClampValueToWithinRange(value + m_Offset);
-  this->spinBox->blockSignals(true);
-  this->horizontalSlider->blockSignals(true);
-  this->spinBox->setValue(tmp);
-  this->horizontalSlider->setValue(tmp);
-  this->spinBox->blockSignals(false);
-  this->horizontalSlider->blockSignals(false);
-
-}
-
-int IntegerSpinBoxAndSliderWidget::GetValue() const
-{
-  return this->spinBox->value() - m_Offset;
-}
-
-int IntegerSpinBoxAndSliderWidget::GetMinimum() const
-{
-  return this->spinBox->minimum() - m_Offset;
-}
-
-int IntegerSpinBoxAndSliderWidget::GetMaximum() const
-{
-  return this->spinBox->maximum() - m_Offset;
-}
-
-void IntegerSpinBoxAndSliderWidget::SetValueOnSpinBox(int i)
-{
-  //set the value on the spin box
-  this->m_PreviousValue = this->spinBox->value();
-  this->spinBox->blockSignals(true);
-  this->spinBox->setValue(i);
-  this->spinBox->blockSignals(false);
-  emit IntegerValueChanged(this->m_PreviousValue, i);
-}
-
-void IntegerSpinBoxAndSliderWidget::SetValueOnSlider(int i)
-{
-  //set the value on the slider
-  this->m_PreviousValue = this->horizontalSlider->value();
-  this->horizontalSlider->blockSignals(true);
-  this->horizontalSlider->setValue(i);
-  this->horizontalSlider->blockSignals(false);
-  emit IntegerValueChanged(this->m_PreviousValue, i);
-}
-
 void IntegerSpinBoxAndSliderWidget::SetOffset(int i)
 {
   this->m_Offset = i;
@@ -138,6 +57,182 @@ void IntegerSpinBoxAndSliderWidget::SetOffset(int i)
 int IntegerSpinBoxAndSliderWidget::GetOffset() const
 {
   return m_Offset;
+}
+
+void IntegerSpinBoxAndSliderWidget::SetInverse(bool b)
+{
+  this->m_Inverse = b;
+}
+
+bool IntegerSpinBoxAndSliderWidget::GetInverse() const
+{
+  return this->m_Inverse;
+}
+
+int IntegerSpinBoxAndSliderWidget::GetMinimumWithoutOffset() const
+{
+  return this->spinBox->minimum() - m_Offset;
+}
+
+void IntegerSpinBoxAndSliderWidget::SetMinimumWithoutOffset(int i)
+{
+  int minimumOnWidgets = i + m_Offset;
+  this->m_PreviousMinimum = this->spinBox->minimum() - m_Offset;
+  this->SetBlockSignals(true);
+  if (this->spinBox->minimum() != minimumOnWidgets)
+  {
+    this->spinBox->setMinimum(minimumOnWidgets);
+  }
+  if (this->horizontalSlider->minimum() != minimumOnWidgets)
+  {
+    this->horizontalSlider->setMinimum(minimumOnWidgets);
+  }
+  this->SetBlockSignals(false);
+}
+
+int IntegerSpinBoxAndSliderWidget::GetMaximumWithoutOffset() const
+{
+  return this->spinBox->maximum() - m_Offset;
+}
+
+void IntegerSpinBoxAndSliderWidget::SetMaximumWithoutOffset(int i)
+{
+  int maximumOnWidgets = i + m_Offset;
+  this->m_PreviousMaximum = this->spinBox->maximum() - m_Offset;
+  this->SetBlockSignals(true);
+  if (this->spinBox->maximum() != maximumOnWidgets)
+  {
+    this->spinBox->setMaximum(maximumOnWidgets);
+  }
+  if (this->horizontalSlider->maximum() != maximumOnWidgets)
+  {
+    this->horizontalSlider->setMaximum(maximumOnWidgets);
+  }
+  this->SetBlockSignals(false);
+}
+
+int IntegerSpinBoxAndSliderWidget::GetValueWithoutOffset() const
+{
+  int value = this->spinBox->value() - m_Offset;
+
+  if (m_Inverse)
+  {
+    int minimum = this->GetMinimumWithoutOffset();
+    int maximum = this->GetMaximumWithoutOffset();
+
+    value = maximum - (value - minimum);
+  }
+
+  return value;
+}
+
+void IntegerSpinBoxAndSliderWidget::SetValueWithoutOffset(int i)
+{
+  int valueOnWidgets = i + m_Offset;
+  this->m_PreviousValue = this->spinBox->value() - m_Offset;
+
+  if (m_Inverse)
+  {
+    int minimum = this->GetMinimumWithoutOffset();
+    int maximum = this->GetMaximumWithoutOffset();
+
+    valueOnWidgets = (maximum - (i - minimum)) + m_Offset;
+    this->m_PreviousValue =  maximum - (this->m_PreviousValue - minimum);
+  }
+
+  this->SetBlockSignals(true);
+  if (this->spinBox->value() != valueOnWidgets)
+  {
+    this->spinBox->setValue(valueOnWidgets);
+  }
+  if (this->horizontalSlider->value() != valueOnWidgets)
+  {
+    this->horizontalSlider->setValue(valueOnWidgets);
+  }
+  this->SetBlockSignals(false);
+}
+
+void IntegerSpinBoxAndSliderWidget::EmitCurrentValues()
+{
+  int value = this->GetValueWithoutOffset();
+
+  if (m_Inverse)
+  {
+    int minimum = this->GetMinimumWithoutOffset();
+    int maximum = this->GetMaximumWithoutOffset();
+
+    emit IntegerValueChanged(maximum - (this->m_PreviousValue - minimum), maximum - (value - minimum));
+  }
+  else
+  {
+    emit IntegerValueChanged(this->m_PreviousValue, value);
+  }
+}
+
+void IntegerSpinBoxAndSliderWidget::SetValueOnSpinBox(int i)
+{
+  // Called from the slider, so we set the spin box to match, and input will include offset.
+  int valueWithoutOffset = i - m_Offset;
+  this->SetValueWithoutOffset(valueWithoutOffset);
+  this->EmitCurrentValues();
+}
+
+void IntegerSpinBoxAndSliderWidget::SetValueOnSlider(int i)
+{
+  // Called from the spin box, so we set the slider to match, and input will include offset.
+  int valueWithoutOffset = i - m_Offset;
+  this->SetValueWithoutOffset(valueWithoutOffset);
+  this->EmitCurrentValues();
+}
+
+void IntegerSpinBoxAndSliderWidget::SetMinimum(int min)
+{
+  this->SetMinimumWithoutOffset(min);
+}
+
+int IntegerSpinBoxAndSliderWidget::GetMinimum() const
+{
+  return this->GetMinimumWithoutOffset();
+}
+
+void IntegerSpinBoxAndSliderWidget::SetMaximum(int max)
+{
+  this->SetMaximumWithoutOffset(max);
+}
+
+int IntegerSpinBoxAndSliderWidget::GetMaximum() const
+{
+  return this->GetMaximumWithoutOffset();
+}
+
+void IntegerSpinBoxAndSliderWidget::SetValue(int value)
+{
+  int tmp = this->ClampValueToWithinRange(value);
+  this->SetValueWithoutOffset(tmp);
+}
+
+int IntegerSpinBoxAndSliderWidget::GetValue() const
+{
+  return this->GetValueWithoutOffset();
+}
+
+int IntegerSpinBoxAndSliderWidget::ClampValueToWithinRange(int i)
+{
+  int tmp = i;
+  if (tmp < this->GetMinimumWithoutOffset())
+  {
+    tmp = this->GetMinimumWithoutOffset();
+  }
+  else if (tmp > this->GetMaximumWithoutOffset())
+  {
+    tmp = this->GetMaximumWithoutOffset();
+  }
+  return tmp;
+}
+
+void IntegerSpinBoxAndSliderWidget::SetText(QString text)
+{
+  this->label->setText(text);
 }
 
 void IntegerSpinBoxAndSliderWidget::SetContentsMargins(int margin)

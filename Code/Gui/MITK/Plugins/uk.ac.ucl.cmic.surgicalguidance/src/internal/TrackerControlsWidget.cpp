@@ -225,8 +225,6 @@ void TrackerControlsWidget::DestroyIGTPipeline()
 void TrackerControlsWidget::OnRegisterFiducials( )
 {
   /* retrieve fiducials from data storage */
-  mitk::DataStorage* ds = m_SGViewPointer->GetDataStorage();
-
   mitk::PointSet::Pointer imageFiducials = dynamic_cast<mitk::PointSet*>(m_ImageFiducialsDataNode->GetData());
   mitk::PointSet::Pointer trackerFiducials = dynamic_cast<mitk::PointSet*>(m_TrackerFiducialsDataNode->GetData());
  
@@ -240,7 +238,7 @@ void TrackerControlsWidget::OnRegisterFiducials( )
 
   unsigned int minFiducialCount = 3; // \Todo: move to view option
   
-  if ((imageFiducials->GetSize() < minFiducialCount) || (trackerFiducials->GetSize() < minFiducialCount) || (imageFiducials->GetSize() != trackerFiducials->GetSize()))
+  if (((int)imageFiducials->GetSize() < minFiducialCount) || ((int)trackerFiducials->GetSize() < minFiducialCount) || ((int)imageFiducials->GetSize() != trackerFiducials->GetSize()))
   {
     QMessageBox::warning(NULL, "Registration not possible", QString("Not enough fiducial pairs found. At least %1 fiducial must "
       "exist for the image and the tracking system respectively.\n"

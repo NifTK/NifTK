@@ -33,15 +33,7 @@ SliceSelectWidget::SliceSelectWidget(QWidget *parent)
 {
   this->setObjectName(OBJECT_NAME);
   this->setWindowTitle(tr("Slice Selection Controller"));
-
-  this->m_Offset = 1;
-  this->SetMinimum(0);
-  this->SetMaximum(100);
-  this->SetValue(0);
   this->SetText(tr("slice"));
-
-  connect(this->spinBox, SIGNAL(valueChanged(int)), this, SLOT(OnChangeSliceNumber(int)));
-  connect(this->horizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(OnChangeSliceNumber(int)));
 }
 
 SliceSelectWidget::~SliceSelectWidget()
@@ -54,11 +46,6 @@ void SliceSelectWidget::SetSliceNumber(int value)
   this->SetValue(value);
 }
 
-void SliceSelectWidget::OnChangeSliceNumber(int value)
-{
-  emit SliceNumberChanged(m_PreviousValue - m_Offset, value - m_Offset);
-}
-
 void SliceSelectWidget::AddToSliceNumber(int i)
 {
   int currentValue = this->GetValue();
@@ -66,7 +53,7 @@ void SliceSelectWidget::AddToSliceNumber(int i)
 
   if (nextValue >= this->GetMinimum() && nextValue <= this->GetMaximum())
   {
-    this->horizontalSlider->setValue(nextValue + m_Offset);
+    this->SetValue(i);
   }
 }
 
