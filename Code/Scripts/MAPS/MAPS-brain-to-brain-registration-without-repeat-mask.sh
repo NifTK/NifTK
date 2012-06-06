@@ -69,11 +69,11 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
   local output_reg_brain_series_number=$5
   local output_reg_air=${6}
   local is_invert_air=$7
+  local is_9dof=$8
 
   local temp_dir=`mktemp -d -q ~/temp/__areg.XXXXXXXX`
   
-#if [ ! -f ${output_reg_air} ] 
-  if [ 1 == 1 ] 
+  if [ ! -f ${output_reg_air} ] 
   then 
   
     # Registration. 
@@ -90,7 +90,12 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
     echo "No. of steps = 2"  >> ${parameter_file}
     echo "Length of steps = 1"  >> ${parameter_file}
     echo "Similarity measure = CC"  >> ${parameter_file}
-#${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -dof 9 -comreg -params ${parameter_file} -tmpdir ${temp_dir} 
+    if [ "${is_9dof}" == "yes" ] 
+    then 
+      ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -dof 9 -comreg -params ${parameter_file} -tmpdir ${temp_dir} 
+    else
+      ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -dof 12 -comreg -params ${parameter_file} -tmpdir ${temp_dir} 
+    fi 
     rm -f ${parameter_file}
     
     
@@ -111,7 +116,12 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
     echo "No. of steps = 4"  >> ${parameter_file}
     echo "Length of steps = 2"  >> ${parameter_file}
     echo "Similarity measure = CC"  >> ${parameter_file}
-    ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -troi ${temp_dir1}/baseline_region -dof 9 -inidof ${output_reg_air} -params ${parameter_file} -tmpdir ${temp_dir}
+    if [ "${is_9dof}" == "yes" ] 
+    then 
+      ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -troi ${temp_dir1}/baseline_region -dof 9 -inidof ${output_reg_air} -params ${parameter_file} -tmpdir ${temp_dir}
+    else
+       ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -troi ${baseline_region} -dof 12 -inidof ${output_reg_air} -params ${parameter_file} -tmpdir ${temp_dir}    
+    fi 
     rm -f ${parameter_file}
     rm -rf ${temp_dir1}
   fi 

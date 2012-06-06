@@ -146,10 +146,10 @@ function brain-match()
   if [ "${areg}" == "air" ]
   then 
     brain_to_brain_registration_without_repeat_mask ${watjo_image} ${watjo_brain_region} ${subject_image}  \
-      ${output_brain_image} ${output_brain_series_number} ${output_brain_air} "no"
+      ${output_brain_image} ${output_brain_series_number} ${output_brain_air} "no" 
   else
     brain_to_brain_registration_without_repeat_mask_using_irtk ${watjo_image} ${watjo_brain_region} ${subject_image}   \
-        ${output_brain_image} ${output_brain_series_number} ${output_brain_air}.dof "no"
+        ${output_brain_image} ${output_brain_series_number} ${output_brain_air}.dof "no" "${init_9dof}"
   fi 
   
   rm -f ${output_left_corr}
@@ -293,7 +293,7 @@ function brain_delineation()
       regslice ${output_areg_template_air} ${template_brain_region} ${output_areg_hippo_region} 500
     else 
       brain_to_brain_registration_without_repeat_mask_using_irtk ${template_image} ${template_brain_region} ${subject_image}   \
-          ${output_areg_template_brain_image} ${output_areg_template_brain_series_number} ${output_areg_template_air}.dof "yes"
+          ${output_areg_template_brain_image} ${output_areg_template_brain_series_number} ${output_areg_template_air}.dof "yes" "${init_9dof}"
 	local tmp_dir=`mktemp -d -q ~/temp/__maps-f3d-reg.XXXXXX`
       ${ffdroitransformation} ${template_brain_region} ${output_areg_hippo_region} ${template_image}  ${subject_image} ${output_areg_template_air}.dof -invert -bspline -tmpdir ${tmp_dir}
       rm -rf ${tmp_dir}
@@ -737,6 +737,7 @@ remove_dir=${21}
 use_orientation=${22}
 leaveoneout=${23}
 use_kmeans=${24}
+init_9dof=${25}
 
 output_areg_template_brain_series_number=400
 output_left_series_number=665
