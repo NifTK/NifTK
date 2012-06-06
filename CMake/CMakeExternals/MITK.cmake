@@ -134,9 +134,13 @@ IF(NOT DEFINED MITK_DIR)
     # 8. Trac 1494 - Merged MITK commit 250107a06aa onto niftk to produce 1ad3934a4a.
     #    MITK had also merged our trac changes 1467 (MITK 12002) and 1479 (MITK bug 10420), so the 
     #    current code base would be MITK 250107a06aa + Trac 853, 1256, 1344, 1366, 1469.
+    #
+    # 9. Trac 1494 - Merged MITK commit db2f383b66 onto niftk to produce efe1377731.
+    #    MITK also merged our trac changes 1497 (MITK bug 12084), so the current code base is
+    #    MITK db2f383b66 + Trac 853, 1256, 1344, 1366, 1469, which is efe1377731 on niftk branch. 
     #########################################################
     
-    SET(revision_tag 1ad3934a4a)
+    SET(revision_tag efe1377731)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
