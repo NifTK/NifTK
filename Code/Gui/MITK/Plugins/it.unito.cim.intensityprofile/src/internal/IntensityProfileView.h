@@ -21,8 +21,6 @@
 
 #include <berryISelectionListener.h>
 
-#include <QmitkMIDASBaseView.h>
-
 #include "ui_IntensityProfileView.h"
 
 #include <mitkImageStatisticsCalculator.h>
@@ -38,6 +36,8 @@
 #include <itkImage.h>
 #include <itkFixedArray.h>
 #include <itkImageSeriesReader.h>
+
+#include "QmitkMIDASBaseView.h"
 
 class IntensityProfileViewPrivate;
 
