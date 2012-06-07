@@ -238,7 +238,7 @@ void TrackerControlsWidget::OnRegisterFiducials( )
 
   unsigned int minFiducialCount = 3; // \Todo: move to view option
   
-  if (((int)imageFiducials->GetSize() < minFiducialCount) || ((int)trackerFiducials->GetSize() < minFiducialCount) || ((int)imageFiducials->GetSize() != trackerFiducials->GetSize()))
+  if ((imageFiducials->GetSize() < (int)minFiducialCount) || (trackerFiducials->GetSize() < (int)minFiducialCount) || (imageFiducials->GetSize() != trackerFiducials->GetSize()))
   {
     QMessageBox::warning(NULL, "Registration not possible", QString("Not enough fiducial pairs found. At least %1 fiducial must "
       "exist for the image and the tracking system respectively.\n"
