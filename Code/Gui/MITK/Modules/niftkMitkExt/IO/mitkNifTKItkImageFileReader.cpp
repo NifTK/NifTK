@@ -90,9 +90,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, unsigned char>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, unsigned char>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, unsigned char>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::CHAR:
@@ -100,9 +104,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, char>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, char>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, char>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::USHORT:
@@ -110,9 +118,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, unsigned short>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, unsigned short>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, unsigned short>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::SHORT:
@@ -120,9 +132,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, short>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, short>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, short>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::UINT:
@@ -130,9 +146,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, unsigned int>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, unsigned int>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, unsigned int>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::INT:
@@ -140,9 +160,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, int>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, int>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, int>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::ULONG:
@@ -150,9 +174,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, unsigned long>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, unsigned long>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, unsigned long>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::LONG:
@@ -160,9 +188,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, long>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, long>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, long>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::FLOAT:
@@ -170,9 +202,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, float>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, float>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, float>(image, this->m_FileName);
             }
           break;
         case itk::ImageIOBase::DOUBLE:
@@ -180,9 +216,13 @@ void mitk::NifTKItkImageFileReader::GenerateData()
             {
               result = LoadImageUsingItk<2, double>(image, this->m_FileName);
             }
-          else
+          else if (numberOfDimensions == 3)
             {
               result = LoadImageUsingItk<3, double>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<4, double>(image, this->m_FileName);
             }
           break;
         default:
