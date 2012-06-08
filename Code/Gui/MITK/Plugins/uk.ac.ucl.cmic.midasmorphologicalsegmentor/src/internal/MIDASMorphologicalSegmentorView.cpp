@@ -342,133 +342,111 @@ void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImag
 
 mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
-  // This creates the "final output image"... i.e. the segmentation result.
-  mitk::DataNode::Pointer emptySegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
-
-  // The above method returns NULL if the use exited the colour selection dialog box.
-  if (emptySegmentation.IsNull())
-  {
-    return NULL;
-  }
-
-  emptySegmentation->SetProperty(MIDASMorphologicalSegmentorView::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(false));
+  // Create the new segmentation, either using a previously selected one, or create a new volume.
+  mitk::DataNode::Pointer newSegmentation = NULL;
+  bool isRestarting = false;
 
   // Make sure we have a reference images... which should always be true at this point.
   mitk::Image* image = this->GetReferenceImageFromToolManager();
   if (image != NULL)
   {
+
     // Make sure we can retrieve the paintbrush tool, which can be used to create a new segmentation image.
     mitk::ToolManager* toolManager = this->GetToolManager();
     assert(toolManager);
 
     mitk::Tool* paintbrushTool = toolManager->GetToolById(m_PaintbrushToolId);
+    assert(paintbrushTool);
 
-    if (paintbrushTool)
+    if (mitk::IsNodeABinaryImage(m_SelectedNode)
+        && this->CanStartSegmentationForBinaryNode(m_SelectedNode)
+        && !this->IsNodeASegmentationImage(m_SelectedNode)
+        )
     {
-      try
+      newSegmentation =  m_SelectedNode;
+      isRestarting = true;
+    }
+    else
+    {
+      newSegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
+
+      // The above method returns NULL if the use exited the colour selection dialog box.
+      if (newSegmentation.IsNull())
       {
-        // Create that orange colour that MIDAS uses to highlight edited regions.
-        mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-        col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
+        return NULL;
+      }
+    }
 
-        // Create subtractions data node, and store reference to image
-        mitk::DataNode::Pointer segmentationSubtractionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, SUBTRACTIONS_IMAGE_NAME, col->GetColor());
-        segmentationSubtractionsImageDataNode->SetBoolProperty("helper object", true);
-        segmentationSubtractionsImageDataNode->SetColor(col->GetColor());
-        segmentationSubtractionsImageDataNode->SetProperty("binaryimage.selectedcolor", col);
+    // Mark the newSegmentation as "unfinished".
+    newSegmentation->SetProperty(MIDASMorphologicalSegmentorView::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(false));
 
-        // Create additions data node, and store reference to image
-        float segCol[3];
-        emptySegmentation->GetColor(segCol);
-        mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
+    try
+    {
+      // Create that orange colour that MIDAS uses to highlight edited regions.
+      mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
+      col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
 
-        mitk::DataNode::Pointer segmentationAdditionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, ADDITIONS_IMAGE_NAME, col->GetColor());
-        segmentationAdditionsImageDataNode->SetBoolProperty("helper object", true);
-        segmentationAdditionsImageDataNode->SetBoolProperty("visible", false);
-        segmentationAdditionsImageDataNode->SetColor(segCol);
-        segmentationAdditionsImageDataNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+      // Create subtractions data node, and store reference to image
+      mitk::DataNode::Pointer segmentationSubtractionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, SUBTRACTIONS_IMAGE_NAME, col->GetColor());
+      segmentationSubtractionsImageDataNode->SetBoolProperty("helper object", true);
+      segmentationSubtractionsImageDataNode->SetColor(col->GetColor());
+      segmentationSubtractionsImageDataNode->SetProperty("binaryimage.selectedcolor", col);
 
-        // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
-        this->ApplyDisplayOptions(segmentationSubtractionsImageDataNode);
-        this->ApplyDisplayOptions(segmentationAdditionsImageDataNode);
-        this->GetDataStorage()->Add(segmentationSubtractionsImageDataNode, emptySegmentation); // add as a child, because the segmentation "derives" from the original
-        this->GetDataStorage()->Add(segmentationAdditionsImageDataNode, emptySegmentation); // add as a child, because the segmentation "derives" from the original
+      // Create additions data node, and store reference to image
+      float segCol[3];
+      newSegmentation->GetColor(segCol);
+      mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
 
-        // Set working data. Compare with MIDASGeneralSegmentorView.
-        // Note the order:
-        // 1. The First image is the "Additions" image, that we can manually add data/voxels to.
-        // 2. The Second image is the "Subtractions" image, that is used for connection breaker.
-        // This must match the order in:
-        // 1. UpdateSegmentation
-        // 2. mitkMIDASPaintbrushTool.
+      mitk::DataNode::Pointer segmentationAdditionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, ADDITIONS_IMAGE_NAME, col->GetColor());
+      segmentationAdditionsImageDataNode->SetBoolProperty("helper object", true);
+      segmentationAdditionsImageDataNode->SetBoolProperty("visible", false);
+      segmentationAdditionsImageDataNode->SetColor(segCol);
+      segmentationAdditionsImageDataNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
 
-        mitk::ToolManager::DataVectorType workingData;
-        workingData.push_back(segmentationAdditionsImageDataNode);
-        workingData.push_back(segmentationSubtractionsImageDataNode);
-        toolManager->SetWorkingData(workingData);
+      // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
+      this->ApplyDisplayOptions(segmentationSubtractionsImageDataNode);
+      this->ApplyDisplayOptions(segmentationAdditionsImageDataNode);
+      this->GetDataStorage()->Add(segmentationSubtractionsImageDataNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+      this->GetDataStorage()->Add(segmentationAdditionsImageDataNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
 
-        // Set properties, and then the control values to match.
+      // Set working data. Compare with MIDASGeneralSegmentorView.
+      // Note the order:
+      //
+      // 1. The First image is the "Additions" image, that we can manually add data/voxels to.
+      // 2. The Second image is the "Subtractions" image, that is used for connection breaker.
+      //
+      // This must match the order in:
+      //
+      // 1. UpdateSegmentation
+      // 2. mitkMIDASPaintbrushTool.
+
+      mitk::ToolManager::DataVectorType workingData;
+      workingData.push_back(segmentationAdditionsImageDataNode);
+      workingData.push_back(segmentationSubtractionsImageDataNode);
+      toolManager->SetWorkingData(workingData);
+
+      // Set properties, and then the control values to match.
+      if (isRestarting)
+      {
+        newSegmentation->SetBoolProperty("midas.morph.restarting", true);
+      }
+      else
+      {
         this->SetDefaultParameterValuesFromReferenceImage();
         this->SetControlsByImageData();
-
-        // If we are restarting a segmentation, we need to copy parameters from the previous segmentation.
-        if (m_SelectedNode.IsNotNull()
-            && m_SelectedImage.IsNotNull()
-            && mitk::IsNodeABinaryImage(m_SelectedNode)
-            && m_SelectedNode != emptySegmentation
-            && CanStartSegmentationForBinaryNode(m_SelectedNode)
-            )
-        {
-          // Copy parameters from m_SelectedNode
-          int tmpInt;
-          std::string tmpString;
-          float tmpFloat;
-
-          m_SelectedNode->GetIntProperty("midas.morph.stage", tmpInt);
-          emptySegmentation->SetIntProperty("midas.morph.stage", tmpInt);
-
-          m_SelectedNode->GetFloatProperty("midas.morph.thresholding.lower", tmpFloat);
-          emptySegmentation->SetFloatProperty("midas.morph.thresholding.lower", tmpFloat);
-
-          m_SelectedNode->GetFloatProperty("midas.morph.thresholding.upper", tmpFloat);
-          emptySegmentation->SetFloatProperty("midas.morph.thresholding.upper", tmpFloat);
-
-          m_SelectedNode->GetIntProperty("midas.morph.thresholding.slice", tmpInt);
-          emptySegmentation->SetIntProperty("midas.morph.thresholding.slice", tmpInt);
-
-          m_SelectedNode->GetFloatProperty("midas.morph.erosion.threshold", tmpFloat);
-          emptySegmentation->SetFloatProperty("midas.morph.erosion.threshold", tmpFloat);
-
-          m_SelectedNode->GetIntProperty("midas.morph.erosion.iterations", tmpInt);
-          emptySegmentation->SetIntProperty("midas.morph.erosion.iterations", tmpInt);
-
-          m_SelectedNode->GetFloatProperty("midas.morph.dilation.lower", tmpFloat);
-          emptySegmentation->SetFloatProperty("midas.morph.dilation.lower", tmpFloat);
-
-          m_SelectedNode->GetFloatProperty("midas.morph.dilation.upper", tmpFloat);
-          emptySegmentation->SetFloatProperty("midas.morph.dilation.upper", tmpFloat);
-
-          m_SelectedNode->GetIntProperty("midas.morph.dilation.iterations", tmpInt);
-          emptySegmentation->SetIntProperty("midas.morph.dilation.iterations", tmpInt);
-
-          m_SelectedNode->GetIntProperty("midas.morph.rethresholding.box", tmpInt);
-          emptySegmentation->SetIntProperty("midas.morph.rethresholding.box", tmpInt);
-
-          emptySegmentation->SetBoolProperty("midas.morph.restarting", true);
-        }
-
-        // Make sure the controls match the parameters and the new segmentation is selected
-        this->SetControlsByParameterValues();
-        this->SelectNode(emptySegmentation);
       }
-      catch (std::bad_alloc)
-      {
-        QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
-      }
-    } // end creating edit image
-  }
+      this->SetControlsByParameterValues();
+      this->SelectNode(newSegmentation);
+    }
+    catch (std::bad_alloc)
+    {
+      QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
+    }
 
-  return emptySegmentation;
+  } // end if we have a reference image
+
+  // And... relax.
+  return newSegmentation;
 }
 
 void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool b)
