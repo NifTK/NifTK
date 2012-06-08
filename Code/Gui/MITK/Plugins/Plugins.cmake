@@ -13,6 +13,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
+  Plugins/uk.ac.ucl.cmic.imagestatistics:ON
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.snapshot:ON
   Plugins/uk.ac.ucl.cmic.surgicalguidance:ON

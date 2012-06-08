@@ -1,0 +1,19 @@
+/**
+  \defgroup uk_ac_ucl_cmic_imagestatistics uk.ac.ucl.cmic.imagestatistics Plugin
+  \ingroup CMICPlugins
+
+  \brief Provides a simple plugin to extract image statistics such min, max, mean, std-dev, over the whole image
+  or just a region of interest.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk). 
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_imagestatistics_internal Internal
+  \ingroup uk_ac_ucl_cmic_imagestatistics
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.imagestatistics plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/
