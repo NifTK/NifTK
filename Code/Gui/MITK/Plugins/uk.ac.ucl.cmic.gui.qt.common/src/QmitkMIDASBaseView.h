@@ -25,7 +25,7 @@
 #ifndef __QmitkMIDASBaseView_h
 #define __QmitkMIDASBaseView_h
 
-#include "uk_ac_ucl_cmic_gui_qt_common_Export.h"
+#include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 
 #include <QmitkAbstractView.h>
 
