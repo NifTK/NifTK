@@ -760,7 +760,10 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
       std::vector<QmitkRenderWindow*> windows = m_SingleViewWidgets[i]->GetSelectedWindows();
       if (windows.size() == 1 && window == windows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->GetValue())
       {
+        // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
+        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
         m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(sliceNumber);
+        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(false);
       }
     }
   }
