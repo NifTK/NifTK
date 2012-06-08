@@ -79,6 +79,7 @@ void ImageStatisticsViewPreferencesPage::CreateQtControl(QWidget* parent)
   m_AutoUpdate = new QCheckBox(m_MainControl);
   m_AssumeBinary = new QCheckBox(m_MainControl);
   m_RequireSameSizeImage = new QCheckBox(m_MainControl);
+  m_RequireSameSizeImage->setVisible(false); // TODO - make it work by interpolating millimetre positions.
   m_BackgroundValue = new QSpinBox(m_MainControl);
   m_BackgroundValue->setMinimum(-10000);
   m_BackgroundValue->setMaximum(10000);
@@ -87,7 +88,7 @@ void ImageStatisticsViewPreferencesPage::CreateQtControl(QWidget* parent)
   QFormLayout *formLayout = new QFormLayout;
   formLayout->addRow( "auto-update:", m_AutoUpdate );
   formLayout->addRow( "assume a binary mask:", m_AssumeBinary );
-  //formLayout->addRow( "require same size image and mask:", m_RequireSameSizeImage ); TODO.
+  //formLayout->addRow( "require same size image and mask:", m_RequireSameSizeImage ); TODO  - make it work by interpolating millimetre positions.
   formLayout->addRow( "background value:", m_BackgroundValue);
 
   m_MainControl->setLayout(formLayout);
