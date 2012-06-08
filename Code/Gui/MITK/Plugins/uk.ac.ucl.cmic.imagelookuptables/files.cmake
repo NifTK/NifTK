@@ -1,5 +1,4 @@
-SET(SRC_CPP_FILES  
-  QmitkImageLookupTablesPreferencePage.cpp
+SET(SRC_CPP_FILES    
 )
 
 SET(INTERNAL_CPP_FILES
@@ -7,6 +6,7 @@ SET(INTERNAL_CPP_FILES
   LookupTableSaxHandler.cpp
   LookupTableManager.cpp
   NamedLookupTableProperty.cpp
+  QmitkImageLookupTablesPreferencePage.cpp
   ImageLookupTablesView.cpp
   ImageLookupTablesViewActivator.cpp
 )
@@ -16,7 +16,7 @@ SET(UI_FILES
 )
 
 SET(MOC_H_FILES
-  src/QmitkImageLookupTablesPreferencePage.h
+  src/internal/QmitkImageLookupTablesPreferencePage.h
   src/internal/ImageLookupTablesView.h
   src/internal/ImageLookupTablesViewActivator.h
 )

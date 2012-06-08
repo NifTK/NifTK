@@ -1,9 +1,9 @@
 set(SRC_CPP_FILES
-  QmitkThumbnailViewPreferencePage.cpp
   QmitkThumbnailRenderWindow.cpp  
 )
 
 set(INTERNAL_CPP_FILES
+  QmitkThumbnailViewPreferencePage.cpp
   ThumbnailViewActivator.cpp
   ThumbnailView.cpp
 )
@@ -13,12 +13,12 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/QmitkThumbnailViewPreferencePage.h
-  src/QmitkWheelEventEater.h
-  src/QmitkMouseEventEater.h
-  src/QmitkThumbnailRenderWindow.h
+  src/internal/QmitkThumbnailViewPreferencePage.h
   src/internal/ThumbnailViewActivator.h
   src/internal/ThumbnailView.h
+  src/QmitkWheelEventEater.h
+  src/QmitkMouseEventEater.h  
+  src/QmitkThumbnailRenderWindow.h
 )
 
 # list of resource files which can be used by the plug-in
