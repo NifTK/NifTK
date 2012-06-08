@@ -423,18 +423,9 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
 
 mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
-  // This creates the "final output image"... i.e. the segmentation result.
-  mitk::DataNode::Pointer emptySegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
-
-  // The above method returns NULL if the user exited the colour selection dialog box.
-  if (emptySegmentation.IsNull())
-  {
-    return NULL;
-  }
-
-  // Set initial properties.
-  emptySegmentation->SetProperty("layer", mitk::IntProperty::New(90));
-  emptySegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
+  // Create the new segmentation, either using a previously selected one, or create a new volume.
+  mitk::DataNode::Pointer newSegmentation = NULL;
+  bool isRestarting = false;
 
   // Make sure we have a reference images... which should always be true at this point.
   mitk::Image* image = this->GetReferenceImageFromToolManager();
@@ -443,17 +434,41 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     mitk::ToolManager::Pointer toolManager = this->GetToolManager();
     assert(toolManager);
 
+
+    if (mitk::IsNodeABinaryImage(m_SelectedNode)
+        && this->CanStartSegmentationForBinaryNode(m_SelectedNode)
+        && !this->IsNodeASegmentationImage(m_SelectedNode)
+        )
+    {
+      newSegmentation =  m_SelectedNode;
+      isRestarting = true;
+    }
+    else
+    {
+      newSegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
+
+      // The above method returns NULL if the user exited the colour selection dialog box.
+      if (newSegmentation.IsNull())
+      {
+        return NULL;
+      }
+    }
+
+    // Set initial properties.
+    newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
+    newSegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
+
     // Make sure these are up to date, even though we don't use them right now.
     image->GetStatistics()->GetScalarValueMin();
     image->GetStatistics()->GetScalarValueMax();
 
     // Create the region growing image.
-    mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, emptySegmentation, 0,0,1, mitk::MIDASTool::REGION_GROWING_IMAGE_NAME, true, 95);
+    mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, newSegmentation, 0,0,1, mitk::MIDASTool::REGION_GROWING_IMAGE_NAME, true, 95);
 
     // Create all the contours.
-    mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(emptySegmentation, 0,1,1, mitk::MIDASTool::NEXT_CONTOURS_NAME, false, 96);
-    mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(emptySegmentation, 1,0,1, mitk::MIDASTool::PRIOR_CONTOURS_NAME, false, 97);
-    mitk::DataNode::Pointer currentContours = this->CreateContourSet(emptySegmentation, 0,1,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 98);
+    mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, mitk::MIDASTool::NEXT_CONTOURS_NAME, false, 96);
+    mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 1,0,1, mitk::MIDASTool::PRIOR_CONTOURS_NAME, false, 97);
+    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 98);
 
     // This creates the point set for the seeds.
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
@@ -469,7 +484,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetBoolProperty("show distances", false);
     pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
     pointSetNode->SetColor( 1.0, 0.75, 0.8 );
-    this->GetDataStorage()->Add(pointSetNode, emptySegmentation);
+    this->GetDataStorage()->Add(pointSetNode, newSegmentation);
 
     // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate",
     // and furthermore, there seem to be several seg faults rendering contour code in 3D. Haven't investigated yet.
@@ -487,7 +502,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
 
     // Set working data. See header file, as the order here is critical, and should match the documented order.
     mitk::ToolManager::DataVectorType workingData;
-    workingData.push_back(emptySegmentation);
+    workingData.push_back(newSegmentation);
     workingData.push_back(pointSetNode);
     workingData.push_back(currentContours);
     workingData.push_back(regionGrowingImageNode);
@@ -495,38 +510,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     workingData.push_back(seeNextNode);
     toolManager->SetWorkingData(workingData);
 
-    mitk::Image::Pointer emptySegmentationImage = dynamic_cast<mitk::Image*>(emptySegmentation->GetData());
-
-    // If we are restarting a segmentation, we need to copy the segmentation from m_SelectedNode.
-    if (m_SelectedNode.IsNotNull()
-        && m_SelectedImage.IsNotNull()
-        && emptySegmentationImage.IsNotNull()
-        && mitk::IsNodeABinaryImage(m_SelectedNode)
-        && m_SelectedNode != emptySegmentation
-        && CanStartSegmentationForBinaryNode(m_SelectedNode)
-        )
-    {
-      try
-      {
-        typedef itk::Image<unsigned char, 3> SegmentationImageType;
-        typedef mitk::ImageToItk< SegmentationImageType > SegmentationImageToItkType;
-
-        SegmentationImageToItkType::Pointer previousSegmentationToItk = SegmentationImageToItkType::New();
-        previousSegmentationToItk->SetInput(m_SelectedImage);
-        previousSegmentationToItk->Update();
-
-        SegmentationImageToItkType::Pointer newSegmentationToItk = SegmentationImageToItkType::New();
-        newSegmentationToItk->SetInput(emptySegmentationImage);
-        newSegmentationToItk->Update();
-
-        this->ITKCopyImage(previousSegmentationToItk->GetOutput(), newSegmentationToItk->GetOutput());
-      }
-      catch(const itk::ExceptionObject &err)
-      {
-        MITK_ERROR << "Caught exception, so abandoning update from previous image, caused by:" << err.what();
-      }
-    }
-
+    // Setup GUI.
     this->m_GeneralControls->SetEnableAllWidgets(true);
     this->m_GeneralControls->SetEnableThresholdingWidgets(false);
     this->m_GeneralControls->SetEnableThresholdingCheckbox(true);
@@ -534,9 +518,14 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(true);
     this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
-    this->SelectNode(emptySegmentation);
-  }
-  return emptySegmentation.GetPointer();
+
+    // Request select the segmentation node.
+    this->SelectNode(newSegmentation);
+
+  } // end if we have a reference image
+
+  // And... relax.
+  return newSegmentation;
 }
 
 
