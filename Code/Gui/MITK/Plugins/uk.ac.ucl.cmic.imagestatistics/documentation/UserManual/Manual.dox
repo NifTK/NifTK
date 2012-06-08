@@ -1,19 +1,49 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.imagestatistics} Image Statistics
+\bundlemainpage{uk.ac.ucl.cmic.imagestatistics} The Image Statistics View
 
-\image html icon.xpm "Icon of Image Statistics"
+\image html ImageStatisticsIcon.png "The Icon for Image Statistics View"
 
-Available sections:
-  - \ref uk.ac.ucl.cmic.imagestatisticsOverview
+\section ImageStatisticsIntroduction Introduction
 
-\section uk.ac.ucl.cmic.imagestatisticsOverview
-Describe the features of your awesome plugin here
-<ul>
-<li>Increases productivity
-<li>Creates beautiful images
-<li>Generates PhD thesis
-<li>Brings world peace
-</ul>
+The Image Statistics View provides a simple way to calculate image statistics such as minimum, maximum, mean and standard
+deviation of an image, or of an image within regions of interest specified by a label image.
+
+\section ImageStatisticsUsage Usage
+
+\image html ImageStatisticsViewPlugin.png Figure 1. Once valid images are selected, statistics can be seen for multiple labels.
+
+The basic operation is as follows:
+
+\li The user can select a single grey scale image or a grey scale image followed by a labelled image using the Data Manager.
+\li If the user preference "auto-update" is set to true, the statistics are calculated as soon as the selection is valid.
+\li If the user preference "auto-update" is false, the user should hit the "update" button on the Image Statistics View.
+\li A "valid" selection means either 1 or 2 images of the same size.
+
+<b>Note: The order of selection is important. The first selection must be the grey scale image.</b>
+
+The output shows:
+
+\li If the user selected a single grey scale image, a single row of statistics are shown for the whole image, disregarding the background value.
+\li If the user selected a grey scale image, and a binary image, statistics are shown for the foreground and background.
+\li If the user selected a grey scale image and a label image, there is also a user preference "assume a binary mask". If true, 
+any label value that is not the background value will be considered foreground, and this case is equivalent to case 2. If 
+false, the statistics are computed for each label value.
+ 
+\section ImageStatisticsPreferences Preferences
+
+\image html ImageStatisticsViewPreferences.png Figure 2. The available preferences.
+
+The available preferences are:
+
+\li If "auto-update" is true, the statistics are calculated as soon as a selection is 
+valid. If false, the user must hit the "update" button.
+\li If "assume a binary mask" is true, then any mask value that does not match the background
+value is considered a foreground value, effectively enabling a label image to be used as
+a binary mask.
+\li "background value" is used to specify the background value for grey scale images, that
+will be ignored in the image, when just a grey scale image is selected. When a mask is
+used, the background value is used to specify which mask value is deemed to be background.
+
 
 */
 
