@@ -37,7 +37,7 @@
 #include <itkFixedArray.h>
 #include <itkImageSeriesReader.h>
 
-#include "QmitkMIDASBaseView.h"
+#include <QmitkMIDASBaseView.h>
 
 class IntensityProfileViewPrivate;
 
