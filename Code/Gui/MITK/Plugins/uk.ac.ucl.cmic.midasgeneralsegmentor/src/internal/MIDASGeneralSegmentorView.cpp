@@ -44,13 +44,6 @@
 #include "mitkPointSet.h"
 #include "mitkGlobalInteraction.h"
 #include "mitkTool.h"
-#include "mitkAddContourTool.h"
-#include "mitkSubtractContourTool.h"
-#include "mitkDrawPaintbrushTool.h"
-#include "mitkErasePaintbrushTool.h"
-#include "mitkCorrectorTool2D.h"
-#include "mitkFillRegionTool.h"
-#include "mitkEraseRegionTool.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPosnTool.h"
 #include "mitkMIDASSeedTool.h"
@@ -180,8 +173,8 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_GeneralControls->SetEnableThresholdingWidgets(false);
     m_GeneralControls->SetEnableThresholdingCheckbox(false);
 
-    m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly Add Subtract Paint Wipe Correction Fill Erase");
-    m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(2);
+    m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
+    m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
     m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
@@ -220,42 +213,6 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 
     mitk::MIDASPolyTool* midasPolyTool = dynamic_cast<mitk::MIDASPolyTool*>(polyTool);
     midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
-
-    // Force all MITK tools to 2D mode.
-    mitk::SegTool2D* mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::AddContourTool>()));
-    assert(mitkTool);
-    mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
-
-    mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::SubtractContourTool>()));
-    assert(mitkTool);
-    mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
-
-    mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::DrawPaintbrushTool>()));
-    assert(mitkTool);
-    mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
-
-    mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::ErasePaintbrushTool>()));
-    assert(mitkTool);
-    mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
-
-    mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::CorrectorTool2D>()));
-    assert(mitkTool);
-    mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
-
-    mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::FillRegionTool>()));
-    assert(mitkTool);
-    mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
-
-    mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::EraseRegionTool>()));
-    assert(mitkTool);
-    mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
 
     // Finally do Qt signals/slots.
     this->CreateConnections();
