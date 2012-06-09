@@ -37,9 +37,10 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_EarlyConnectedComponentFilter = LargestConnectedComponentFilterType::New();
   m_EarlyConnectedComponentFilter->SetCapacity(capacity);
   m_ErosionFilter = ErosionFilterType::New();
+  m_ErosionMaskFilter = MaskByRegionFilterType::New();
   m_DilationFilter = DilationFilterType::New();
+  m_DilationMaskFilter = MaskByRegionFilterType::New();
   m_RethresholdingFilter = RethresholdingFilterType::New();
-  m_LateMaskFilter = MaskByRegionFilterType::New();
   m_LateConnectedComponentFilter = LargestConnectedComponentFilterType::New();
   m_LateConnectedComponentFilter->SetCapacity(capacity);
 
@@ -54,11 +55,12 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_EarlyConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
   m_ErosionFilter->SetInValue(m_ForegroundValue);
   m_ErosionFilter->SetOutValue(m_BackgroundValue);
+  m_ErosionMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
   m_DilationFilter->SetInValue(m_ForegroundValue);
   m_DilationFilter->SetOutValue(m_BackgroundValue);
+  m_DilationMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
   m_RethresholdingFilter->SetInValue(m_ForegroundValue);
   m_RethresholdingFilter->SetOutValue(m_BackgroundValue);
-  m_LateMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
   m_LateConnectedComponentFilter->SetInputBackgroundValue(m_BackgroundValue);
   m_LateConnectedComponentFilter->SetOutputBackgroundValue(m_BackgroundValue);
   m_LateConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
@@ -86,8 +88,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_EarlyConnectedComponentFilter->SetInput(m_EarlyMaskFilter->GetOutput());
     m_ErosionFilter->SetBinaryImageInput(m_EarlyConnectedComponentFilter->GetOutput());
     m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_LateMaskFilter->GetOutput());
+    m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
+    m_LateConnectedComponentFilter->SetInput(m_ErosionMaskFilter->GetOutput());
 
     m_ErosionFilter->SetUpperThreshold((TPixel)p.m_UpperErosionsThreshold);
     m_ErosionFilter->SetNumberOfIterations(p.m_NumberOfErosions);
@@ -98,11 +100,12 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_EarlyConnectedComponentFilter->SetInput(m_EarlyMaskFilter->GetOutput());
     m_ErosionFilter->SetBinaryImageInput(m_EarlyConnectedComponentFilter->GetOutput());
     m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_DilationFilter->SetBinaryImageInput(m_ErosionFilter->GetOutput());
+    m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
+    m_LateConnectedComponentFilter->SetInput(m_ErosionMaskFilter->GetOutput());
+    m_DilationFilter->SetBinaryImageInput(m_LateConnectedComponentFilter->GetOutput());
     m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_LateMaskFilter->GetOutput());
-
+    m_DilationMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
+    
     m_DilationFilter->SetLowerThreshold((int)(p.m_LowerPercentageThresholdForDilations));
     m_DilationFilter->SetUpperThreshold((int)(p.m_UpperPercentageThresholdForDilations));
     m_DilationFilter->SetNumberOfIterations((int)(p.m_NumberOfDilations));
@@ -113,13 +116,14 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_EarlyConnectedComponentFilter->SetInput(m_EarlyMaskFilter->GetOutput());
     m_ErosionFilter->SetBinaryImageInput(m_EarlyConnectedComponentFilter->GetOutput());
     m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_DilationFilter->SetBinaryImageInput(m_ErosionFilter->GetOutput());
+    m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
+    m_LateConnectedComponentFilter->SetInput(m_ErosionMaskFilter->GetOutput());
+    m_DilationFilter->SetBinaryImageInput(m_LateConnectedComponentFilter->GetOutput());
     m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_RethresholdingFilter->SetBinaryImageInput(m_DilationFilter->GetOutput());
+    m_DilationMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
+    m_RethresholdingFilter->SetBinaryImageInput(m_DilationMaskFilter->GetOutput());
     m_RethresholdingFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_LateMaskFilter->SetInput(0, m_RethresholdingFilter->GetOutput());
-    m_LateConnectedComponentFilter->SetInput(m_LateMaskFilter->GetOutput());
-
+    
     m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
     m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
     m_RethresholdingFilter->SetHighPercentageThreshold((int)(p.m_UpperPercentageThresholdForDilations));
@@ -156,53 +160,84 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else
   {
-    if (additionsImageBeingEdited)
-    {
-      // Note: This little... Hacklet.. or shall we say "optimisation", basically replicates
-      // the filter logic, over a tiny region of interest. I did try using filters to extract
-      // a region of interest, perform the logic in another filter, and then insert the region
-      // back, but it didn't work, even after sacrificing virgins to several well known deities.
 
-      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_LateMaskFilter->GetOutput(), editingRegionOfInterest);
-      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_LateMaskFilter->GetInput(1), editingRegionOfInterest);
-      for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
-          !outputIterator.IsAtEnd();
-          ++outputIterator, ++editedRegionIterator)
+    if (additionsImageBeingEdited || editingImageBeingEdited)
+    {
+      typename SegmentationImageType::Pointer outputImage = NULL;
+      typename SegmentationImageType::ConstPointer inputImage = NULL;
+      
+      int inputNumber = 0;
+      if (additionsImageBeingEdited)
       {
-        if (outputIterator.Get() > 0 || editedRegionIterator.Get() > 0)
+        inputNumber = 1;
+      }
+      else if (editingImageBeingEdited)
+      {
+        inputNumber = 2;
+      }
+      
+      if (m_Stage == 1)
+      {
+        inputImage = m_ErosionMaskFilter->GetInput(inputNumber);
+        outputImage = m_LateConnectedComponentFilter->GetOutput();
+      }
+      else if (m_Stage == 2)
+      {
+        inputImage = m_DilationMaskFilter->GetInput(inputNumber);
+        outputImage = m_DilationMaskFilter->GetOutput();
+      }
+      else if (m_Stage == 3)
+      {
+        outputImage = m_RethresholdingFilter->GetOutput();
+      }
+    
+      if (additionsImageBeingEdited)
+      {
+        itk::ImageRegionIterator<SegmentationImageType> outputIterator(outputImage, editingRegionOfInterest);
+        itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(inputImage, editingRegionOfInterest);
+        for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
+            !outputIterator.IsAtEnd();
+            ++outputIterator, ++editedRegionIterator)
         {
-          outputIterator.Set(m_ForegroundValue);
+          if (outputIterator.Get() > 0 || editedRegionIterator.Get() > 0)
+          {
+            outputIterator.Set(m_ForegroundValue);
+          }
+          else
+          {
+            outputIterator.Set(m_BackgroundValue);
+          }
         }
-        else
+      }
+      else if (editingImageBeingEdited)
+      {
+        itk::ImageRegionIterator<SegmentationImageType> outputIterator(outputImage, editingRegionOfInterest);
+        itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(inputImage, editingRegionOfInterest);
+        for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
+            !outputIterator.IsAtEnd();
+            ++outputIterator, ++editedRegionIterator)
         {
-          outputIterator.Set(m_BackgroundValue);
+          if (editedRegionIterator.Get() > 0)
+          {
+            outputIterator.Set(m_BackgroundValue);
+          }
         }
       }
     }
-    else if (editingImageBeingEdited)
+    else if (m_Stage == 1)
     {
-      // Note: This little... Hacklet.. or shall we say "optimisation", basically replicates
-      // the filter logic, over a tiny region of interest. I did try using filters to extract
-      // a region of interest, perform the logic in another filter, and then insert the region
-      // back, but it didn't work, even after sacrificing virgins to several well known deities.
-
-      itk::ImageRegionIterator<SegmentationImageType> outputIterator(m_LateMaskFilter->GetOutput(), editingRegionOfInterest);
-      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(m_LateMaskFilter->GetInput(2), editingRegionOfInterest);
-      for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
-          !outputIterator.IsAtEnd();
-          ++outputIterator, ++editedRegionIterator)
-      {
-        if (editedRegionIterator.Get() > 0)
-        {
-          outputIterator.Set(m_BackgroundValue);
-        }
-      }
-    }
-    else
-    {
-      // Executing the pipeline for the whole image - slow, but unavoidable.
       m_LateConnectedComponentFilter->Modified();
       m_LateConnectedComponentFilter->UpdateLargestPossibleRegion();
+    }
+    else if (m_Stage == 2)
+    {
+      m_DilationFilter->Modified();
+      m_DilationFilter->UpdateLargestPossibleRegion();
+    }
+    else if (m_Stage == 3)
+    {
+      m_RethresholdingFilter->Modified();
+      m_RethresholdingFilter->UpdateLargestPossibleRegion();    
     }
   }
 }
@@ -214,20 +249,36 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 {
   typename SegmentationImageType::Pointer result;
 
-  if (m_Stage == 0)
+  if (additionsImageBeingEdited || editingImageBeingEdited)
   {
-    result = m_EarlyMaskFilter->GetOutput();
-  }
-  else
-  {
-    if (additionsImageBeingEdited || editingImageBeingEdited)
-    {
-      result = m_LateMaskFilter->GetOutput();
-    }
-    else
+    if (m_Stage == 1)
     {
       result = m_LateConnectedComponentFilter->GetOutput();
     }
+    else if (m_Stage == 2)
+    {
+      result = m_DilationMaskFilter->GetOutput();
+    }
+    else if (m_Stage == 3)
+    {
+      result = m_RethresholdingFilter->GetOutput();
+    }
+  }
+  else if (m_Stage == 0)
+  {
+    result = m_EarlyMaskFilter->GetOutput();
+  }
+  else if (m_Stage == 1)
+  {
+    result = m_LateConnectedComponentFilter->GetOutput();
+  }
+  else if (m_Stage == 2)
+  {
+    result = m_DilationFilter->GetOutput();
+  }
+  else if (m_Stage == 3)
+  {
+    result = m_RethresholdingFilter->GetOutput();    
   }
   return result;
 }

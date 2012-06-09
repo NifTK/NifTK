@@ -691,8 +691,10 @@ MIDASMorphologicalSegmentorView
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
     pipeline->m_ThresholdingFilter->SetInput(itkImage);
-    pipeline->m_LateMaskFilter->SetInput(2, editsToItk->GetOutput());
-    pipeline->m_LateMaskFilter->SetInput(1, additionsToItk->GetOutput());
+    pipeline->m_ErosionMaskFilter->SetInput(2, editsToItk->GetOutput());
+    pipeline->m_ErosionMaskFilter->SetInput(1, additionsToItk->GetOutput());
+    pipeline->m_DilationMaskFilter->SetInput(2, editsToItk->GetOutput());
+    pipeline->m_DilationMaskFilter->SetInput(1, additionsToItk->GetOutput());
   }
   else
   {
@@ -733,7 +735,8 @@ MIDASMorphologicalSegmentorView
     // 5. Set region on both filters
     regionOfInterest.SetSize(regionOfInterestSize);
     regionOfInterest.SetIndex(regionOfInterestIndex);
-    pipeline->m_LateMaskFilter->SetRegion(regionOfInterest);
+    pipeline->m_ErosionMaskFilter->SetRegion(regionOfInterest);
+    pipeline->m_DilationMaskFilter->SetRegion(regionOfInterest);
   }
 
   // End Trac 998, setting region of interest, on both Mask filters
@@ -755,7 +758,8 @@ MIDASMorphologicalSegmentorView
   }
   else
   {
-    pipeline->m_LateMaskFilter->SetRegion(regionOfInterest);
+    pipeline->m_ErosionMaskFilter->SetRegion(regionOfInterest);
+    pipeline->m_DilationMaskFilter->SetRegion(regionOfInterest);
     pipeline->m_LateConnectedComponentFilter->SetCapacity(expectedSize);
   }
 

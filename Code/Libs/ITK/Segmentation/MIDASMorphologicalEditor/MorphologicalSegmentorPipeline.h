@@ -92,9 +92,10 @@ public:
   typename MaskByRegionFilterType::Pointer                     m_EarlyMaskFilter;
   typename LargestConnectedComponentFilterType::Pointer        m_EarlyConnectedComponentFilter;
   typename ErosionFilterType::Pointer                          m_ErosionFilter;
+  typename MaskByRegionFilterType::Pointer                     m_ErosionMaskFilter;
   typename DilationFilterType::Pointer                         m_DilationFilter;
+  typename MaskByRegionFilterType::Pointer                     m_DilationMaskFilter;
   typename RethresholdingFilterType::Pointer                   m_RethresholdingFilter;
-  typename MaskByRegionFilterType::Pointer                     m_LateMaskFilter;
   typename LargestConnectedComponentFilterType::Pointer        m_LateConnectedComponentFilter;
 };
 
