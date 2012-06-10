@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.mitksegmentation"
+          name="MITK Segmentation"
+          class="MITKSegmentationView"
+          icon="resources/segmentation.png" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.SegmentationPreferencePage" name="MITK Segmentation" class="QmitkSegmentationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.SegmentationPreferencePageKeywords"></keywordreference>
+    </page>
+  </extension>
+
+  <extension point="org.mitk.gui.qt.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="ImageMask" label="Create polygon model" icon="" smoothed="false" class="QmitkCreatePolygonModelAction" />
+    <contextMenuAction nodeDescriptorName="ImageMask" label="Create smoothed polygon model" icon="" smoothed = "true" class="QmitkCreatePolygonModelAction" />
+  </extension>
+
+</plugin>

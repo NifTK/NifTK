@@ -1,0 +1,18 @@
+/**
+  \defgroup uk_ac_ucl_cmic_mitksegmentation uk.ac.ucl.cmic.mitksegmentation Plugin
+  \ingroup CMICPlugins
+
+  \brief A simpler version of the MITK segmentation plugin, providing only 2D editing.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_mitksegmentation_internal Internal
+  \ingroup uk_ac_ucl_cmic_mitksegmentation
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.mitksegmentation plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/
