@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-09-14 05:47:15 +0100 (Wed, 14 Sep 2011) $
- Revision          : $Revision: 7309 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,20 +22,20 @@
 
  ============================================================================*/
 
-#include "QmitkNiftyViewIGIPerspective.h"
+#include "QmitkNiftyViewMITKPerspective.h"
 #include "berryIViewLayout.h"
 
-QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective()
+QmitkNiftyViewMITKPerspective::QmitkNiftyViewMITKPerspective()
 {
 }
- 
-QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective(const QmitkNiftyViewIGIPerspective& other)
+
+QmitkNiftyViewMITKPerspective::QmitkNiftyViewMITKPerspective(const QmitkNiftyViewMITKPerspective& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
 }
 
-void QmitkNiftyViewIGIPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
+void QmitkNiftyViewMITKPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
   std::string editorArea = layout->GetEditorArea();
 
@@ -48,7 +48,7 @@ void QmitkNiftyViewIGIPerspective::CreateInitialLayout(berry::IPageLayout::Point
   layout->AddView("org.mitk.views.propertylistview",
     berry::IPageLayout::BOTTOM, 0.5f, "org.mitk.views.datamanager");
 
-  layout->AddView("uk.ac.ucl.cmic.surgicalguidance",
+  layout->AddView("uk.ac.ucl.cmic.mitksegmentation",
     berry::IPageLayout::RIGHT, 0.7f, editorArea);
 
 }

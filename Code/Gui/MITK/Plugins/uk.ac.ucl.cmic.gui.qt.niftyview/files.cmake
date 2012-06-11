@@ -8,6 +8,7 @@ SET(INTERNAL_CPP_FILES
   QmitkNiftyViewApplicationPlugin.cpp
   QmitkNiftyViewIGIPerspective.cpp
   QmitkNiftyViewMIDASPerspective.cpp
+  QmitkNiftyViewMITKPerspective.cpp
 )
 
 SET(MOC_H_FILES
@@ -16,6 +17,7 @@ SET(MOC_H_FILES
   src/internal/QmitkNiftyViewApplicationPlugin.h
   src/internal/QmitkNiftyViewIGIPerspective.h
   src/internal/QmitkNiftyViewMIDASPerspective.h
+  src/internal/QmitkNiftyViewMITKPerspective.h
 )
 
 SET(CACHED_RESOURCE_FILES
@@ -27,6 +29,7 @@ SET(CACHED_RESOURCE_FILES
   resources/icon_cmic.xpm
   resources/icon_ion.xpm
   resources/icon_ucl.xpm
+  resources/icon_mitk.xpm
 )
 
 SET(QRC_FILES

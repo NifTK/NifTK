@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-11-18 09:05:48 +0000 (Fri, 18 Nov 2011) $
- Revision          : $Revision: 7804 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -23,31 +23,30 @@
  ============================================================================*/
 
 
-#ifndef QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
-#define QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
+#ifndef QMITKNIFTYVIEWMITKPERSPECTIVE_H_
+#define QMITKNIFTYVIEWMITKPERSPECTIVE_H_
 
 #include <berryIPerspectiveFactory.h>
 
 /**
- * \class QmitkNiftyViewMIDASPerspective
- * \brief Perspective to arrange widgets as would be suitable for MIDAS applications,
- * where the standard view has up to 5x5 independent windows.
+ * \class QmitkNiftyViewMITKPerspective
+ * \brief Perspective to arrange widgets, primarily for MITK style segmentation.
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview_internal
  *
  * Note: We have to load at least one view component, to get an editor created.
  */
-class QmitkNiftyViewMIDASPerspective : public QObject, public berry::IPerspectiveFactory
+class QmitkNiftyViewMITKPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)
-  
+
 public:
 
-  QmitkNiftyViewMIDASPerspective();
-  QmitkNiftyViewMIDASPerspective(const QmitkNiftyViewMIDASPerspective& other);
-  
+  QmitkNiftyViewMITKPerspective();
+  QmitkNiftyViewMITKPerspective(const QmitkNiftyViewMITKPerspective& other);
+
   void CreateInitialLayout(berry::IPageLayout::Pointer layout);
 
 };
 
-#endif /* QMITKNIFTYVIEWMIDASPERSPECTIVE_H_ */
+#endif /* QMITKNIFTYVIEWMITKPERSPECTIVE_H_ */
