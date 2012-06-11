@@ -25,6 +25,7 @@ class QWidget;
 class QCheckBox;
 class QRadioButton;
 class QDoubleSpinBox;
+class QPushButton;
 
 class QmitkSegmentationPreferencePage : public QObject, public berry::IQtPreferencePage
 {
@@ -61,17 +62,22 @@ protected slots:
 
   void OnVolumeRenderingCheckboxChecked(int);
   void OnSmoothingCheckboxChecked(int);
+  void OnDefaultColourChanged();
+  void OnResetDefaultColour();
 
 protected:
 
-  QWidget* m_MainControl;
-  QRadioButton* m_RadioOutline;
-  QRadioButton* m_RadioOverlay;
-  QCheckBox* m_VolumeRenderingCheckBox;
-  QCheckBox* m_SmoothingCheckBox;
-  QDoubleSpinBox* m_SmoothingSpinBox;
-  QDoubleSpinBox* m_DecimationSpinBox;
-  QDoubleSpinBox* m_ClosingSpinBox;
+  QWidget        *m_MainControl;
+  QRadioButton   *m_RadioOutline;
+  QRadioButton   *m_RadioOverlay;
+  QCheckBox      *m_VolumeRenderingCheckBox;
+  QCheckBox      *m_SmoothingCheckBox;
+  QDoubleSpinBox *m_SmoothingSpinBox;
+  QDoubleSpinBox *m_DecimationSpinBox;
+  QDoubleSpinBox *m_ClosingSpinBox;
+  QPushButton    *m_DefaultColorPushButton;
+  QString         m_DefauleColorStyleSheet;
+  std::string     m_DefaultColor;
 
   bool m_Initializing;
 
