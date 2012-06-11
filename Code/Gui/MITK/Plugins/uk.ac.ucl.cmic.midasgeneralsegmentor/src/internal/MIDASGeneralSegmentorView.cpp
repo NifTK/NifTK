@@ -64,7 +64,7 @@
 #include "mitkUndoController.h"
 #include "mitkSegmentationObjectFactory.h"
 #include "mitkSurface.h"
-#include "MIDASGeneralSegmentorCommands.h"
+#include "MIDASGeneralSegmentorViewCommands.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
 #include "itkCommand.h"
 #include "itkContinuousIndex.h"

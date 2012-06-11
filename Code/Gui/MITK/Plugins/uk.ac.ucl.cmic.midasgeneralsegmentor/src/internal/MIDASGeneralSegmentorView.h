@@ -51,7 +51,7 @@
 #include "mitkMIDASToolKeyPressStateMachine.h"
 #include "mitkMIDASToolKeyPressResponder.h"
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
-#include "MIDASGeneralSegmentorCommands.h"
+#include "MIDASGeneralSegmentorViewCommands.h"
 #include "MIDASGeneralSegmentorViewPipeline.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
 #include "MIDASGeneralSegmentorViewPreferencePage.h"
