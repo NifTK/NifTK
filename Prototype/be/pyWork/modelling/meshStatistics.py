@@ -221,18 +221,6 @@ class meshStatistics:
         
         
         # 
-        # Relative Size Squared
-        #        
-        self.meshQualityFilter.SetTetQualityMeasureToRelativeSizeSquared()
-        self.meshQualityFilter.Update()
-        
-        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
-        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
-        
-        self.qualityMeasures['RelativeSizeSquared'] = np.array( qualityMeasure, copy=True )
-        
-        
-        # 
         # Shape
         #        
         self.meshQualityFilter.SetTetQualityMeasureToShape()
@@ -270,10 +258,6 @@ class meshStatistics:
         
         
         
-        
-        
-        
-    
     
     def _calcBasicStatistics( self ):
         ''' Calculate the statistics for each element and  

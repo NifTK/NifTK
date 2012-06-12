@@ -8,15 +8,15 @@ import modelDeformationVisualiser as defVis
 import meshQualityTracker as mqt
 from plotDoubleAxis import plotDoubleYAxis
 from loadingFunction import loadingFunction
-
-
+from pyPdf import PdfFileWriter, PdfFileReader
+from scipy.stats import scoreatpercentile
 
 
 class convergenceAnalyser:
     
     
     ''' 
-        This class looks at a single simulation and evaluates the information which is available 
+        This class looks at a single simulation and evaluates the information available 
     '''
     
     
@@ -39,7 +39,7 @@ class convergenceAnalyser:
         #
         
         # Output
-        self._outputFreq = int( self.model.modelObject.Output.Freq ) 
+        self._outputFreq         = int( self.model.modelObject.Output.Freq ) 
         self._outputU            = False
         self._outputEKinTotal    = False
         self._outputEStrainTotal = False
@@ -62,10 +62,21 @@ class convergenceAnalyser:
         
                 if var == 'EStrainTotal':
                     self._outputEStrainTotal = True
+        #
+        # Constraints
+        # Try to find the loading shape...
+        #
+        self.loadShape = 'POLY345FLAT4'
         
+        if isinstance( self.model.modelObject.Constraint, list ):
+            for var in self.model.modelObject.Constraint:
+                if var.LoadShape != None:
+                    self.loadShape = var.LoadShape
+                
+        print( 'Using load shape: ' + self.loadShape )
         
         #
-        # Require all 
+        # Require all possible outputs
         #
         if ( (self._outputU            == False) or 
              (self._outputEKinTotal    == False) or 
@@ -73,16 +84,16 @@ class convergenceAnalyser:
             print( 'Not all information necessary for the evaluation are described in the model file. Add: ' )
             print('  <Output Freq="100">'  )
             print('    <Variable>'         )
-            print('       U')
-            print('    </Variable>')
+            print('       U'               )
+            print('    </Variable>'        )
             print('    <Variable>'         )
-            print('       EKinTotal')
-            print('    </Variable>')
+            print('       EKinTotal'       )
+            print('    </Variable>'        )
             print('    <Variable>'         )
-            print('       EStrainTotal')
-            print('    </Variable>')
-            print('  </Output>')
-            print('To the model file.')
+            print('       EStrainTotal'    )
+            print('    </Variable>'        )
+            print('  </Output>'            )
+            print('To the model file.'     )
 
             return
         
@@ -92,7 +103,7 @@ class convergenceAnalyser:
         #
         self.baseDir     = os.path.split( self.xmlModelFileName )[0]
         self.xmlBaseName = os.path.splitext( os.path.split( self.xmlModelFileName )[1] )[0]
-        self.plotDir     = self.baseDir + '/plot/'
+        self.plotDir     = self.baseDir + '/plot_' + self.xmlBaseName + '/'
         
         
         if eKinTotalFileName == None:
@@ -125,34 +136,61 @@ class convergenceAnalyser:
         #
         # get the deformations and build the statistics...
         #
-        self.vis                = defVis.modelDeformationVisualiser(self.model, self.uFileName )
+        self.vis           = defVis.modelDeformationVisualiser(self.model, self.uFileName )
         self.meshQualities = mqt.meshQualityTracker( modelDeformVis=self.vis )
+        
+        #
+        # Calculate mean displacements
+        #
+        numSamples = len( self.vis.deformedNodes )
+        self.meanDisplacements = np.zeros( numSamples )
+        
+        for i in range( numSamples ):
+            self.meanDisplacements[i] = np.mean( np.sqrt( ( self.vis.displacements[i][:,0] * self.vis.displacements[i][:,0] ) + 
+                                                          ( self.vis.displacements[i][:,1] * self.vis.displacements[i][:,1] ) +
+                                                          ( self.vis.displacements[i][:,2] * self.vis.displacements[i][:,2] )   ) )   
         
         
         #
         # prepare plotting 
-        # TODO: loadShape
-        # TODO: check if kinetic and strain energy do have the same array-length
         #
-        self.loadShape = 'POLY345FLAT4'
         self.evaluationIterations = self.eKinTotal.shape[0]
-        self.loadingCurve, self.timeAxisVals  = loadingFunction(self.totalTime, self.loadShape, self.evaluationIterations)
+        self.loadingCurve, self.timeAxisVals  = loadingFunction( self.totalTime, self.loadShape, self.evaluationIterations )
+        self.qualityMeasures = ['RadiusRatio',
+                                'MinAngle',
+                                'EdgeRatio',
+                                'Jacobian',
+                                'ScaledJacobian',
+                                'AspectBeta',
+                                'AspectFrobenius',
+                                'AspectGamma',
+                                'AspectRatio',
+                                'CollapseRatio',
+                                'Condition',
+                                'Distortion',
+                                'RelativeSizeSquared',
+                                'Shape',
+                                'ShapeAndSize',
+                                'Volume' ]
         
         #
         # plot energies
         #
         self._plotMeshQualities()
-        self._plotEnergies()
+        self._plotEnergiesAndMeanDisp()
+        self._combinePdfs()
         
         
         
-    def _plotEnergies( self ):
+        
+    def _plotEnergiesAndMeanDisp( self ):
         
         if not os.path.exists( self.plotDir ):
             os.mkdir( self.plotDir )
+
         
         #
-        # kinetic energy first
+        # kinetic energy 
         #
         timeLabel     = '$t$'
         timeLabelUnit = '$t \;\mathrm{[s]}$'
@@ -172,8 +210,11 @@ class convergenceAnalyser:
                          y2LabelUnit        = loadLabelUnit, 
                          plotDirAndBaseName = self.plotDir + 'EKinTotal', 
                          printLegend        = False, 
-                         y1Max              = 1.1 )
+                         y2Max              = 1.1 )
         
+        #
+        # strain energy 
+        #
         eStrainLabel     = '$E_\mathrm{strain}$'
         eStrainLabelUnit = '$E_\mathrm{strain}$'
         
@@ -186,29 +227,70 @@ class convergenceAnalyser:
                          y1LabelUnit        = eStrainLabelUnit, 
                          y2Label            = loadLabel, 
                          y2LabelUnit        = loadLabelUnit, 
-                         plotDirAndBaseName = self.plotDir + 'EKinTotal', 
+                         plotDirAndBaseName = self.plotDir + 'EStrainTotal', 
                          printLegend        = False, 
-                         y1Max              = 1.1 )
+                         y2Max              = 1.1 )
+        
+        
+        #
+        # fraction strain over kinetic energy 
+        #
+        
+        per95 = scoreatpercentile( self.eKinTotal / self.eStrainTotal, 95 )
+        
+        eKinOverStrainLabel     = '$E_\mathrm{kin} / E_\mathrm{strain} $'
+        eKinOverStrainLabelUnit = '$E_\mathrm{kin} / E_\mathrm{strain} $'
+        
+        plotDoubleYAxis( xVals              = self.timeAxisVals, 
+                         y1Vals             = self.eKinTotal / self.eStrainTotal , 
+                         y2Vals             = self.loadingCurve, 
+                         xLabel             = timeLabel, 
+                         xLabelUnit         = timeLabelUnit, 
+                         y1Label            = eKinOverStrainLabel, 
+                         y1LabelUnit        = eKinOverStrainLabelUnit, 
+                         y2Label            = loadLabel, 
+                         y2LabelUnit        = loadLabelUnit, 
+                         plotDirAndBaseName = self.plotDir + 'EKinOverStrainTotal', 
+                         printLegend        = False, 
+                         y1Max              = 1.1 * per95,
+                         y2Max              = 1.1 )
+        
+        
+        #
+        # mean displacement 
+        #
+        meanDispLabel     = '$\overline{ \| u \| }$'
+        meanDispLabelUnit = '$\overline{ \| u \| } \; \mathrm{[mm]}$'
+        
+        plotDoubleYAxis( xVals              = self.timeAxisVals, 
+                         y1Vals             = self.meanDisplacements,
+                         y2Vals             = self.loadingCurve, 
+                         xLabel             = timeLabel, 
+                         xLabelUnit         = timeLabelUnit, 
+                         y1Label            = meanDispLabel, 
+                         y1LabelUnit        = meanDispLabelUnit, 
+                         y2Label            = loadLabel, 
+                         y2LabelUnit        = loadLabelUnit, 
+                         plotDirAndBaseName = self.plotDir + 'MeanDisplacement', 
+                         printLegend        = False, 
+                         y2Max              = 1.1 )
+        
+        
 
 
-
-       
     def _plotMeshQualities( self ):
         
-        self.meshQualities.getQualityMeasureResults('RadiusRatio')
-        self.meshQualities.plotQualityMeasure( self.plotDir, self.loadShape, self.totalTime )
+        if not os.path.exists( self.plotDir ):
+            os.mkdir( self.plotDir )
+            
+        for qm in self.qualityMeasures:
+                    
+            self.meshQualities.getQualityMeasureResults( qm )
+            self.meshQualities.plotQualityMeasure( self.plotDir, self.loadShape, self.totalTime )
         
-        self.meshQualities.getQualityMeasureResults('EdgeRatio')
-        self.meshQualities.plotQualityMeasure( self.plotDir, self.loadShape, self.totalTime )
-        
-        self.meshQualities.getQualityMeasureResults( 'AspectFrobenius' )
-        self.meshQualities.plotQualityMeasure( self.plotDir, self.loadShape, self.totalTime )
-        
-        pass
         
 
 
-        
     def _readEnergyFile( self, energyFileName ):
         ''' Read the specified energy file 
             @param energyFileName:  Complete path to the file which holds the total energies (one entry per iteration)
@@ -236,6 +318,46 @@ class convergenceAnalyser:
         
         
         
+    def _combinePdfs( self ):
+        
+        pdfsIn = []
+        files  = []
+        
+        # mean displacemen
+        files.append(file( self.plotDir + 'MeanDisplacement.pdf', 'rb' ) )
+        pdfsIn.append( PdfFileReader( files[-1] ) )
+        
+        # Energies
+        files.append( file( self.plotDir + 'EKinTotal.pdf', 'rb' ) )
+        pdfsIn.append( PdfFileReader( files[-1] ) )
+
+        files.append( file( self.plotDir + 'EStrainTotal.pdf', 'rb' ) )
+        pdfsIn.append( PdfFileReader( files[-1] ) )
+        
+        files.append( file( self.plotDir + 'EKinOverStrainTotal.pdf', 'rb' ) )
+        pdfsIn.append( PdfFileReader( files[-1] ) )
+        
+        # 
+        for qm in self.qualityMeasures:
+            files.append( file( self.plotDir + qm + '.pdf', 'rb' ) )
+            pdfsIn.append( PdfFileReader( files[-1] ) )
+            
+        output = PdfFileWriter()
+        
+        for pFile in pdfsIn:
+            output.addPage( pFile.getPage( 0 ) )
+        
+        outputStream = file( self.plotDir + "CombinedInfo.pdf", "wb" )
+        output.write( outputStream )
+        outputStream.close()
+    
+        # close the input files
+        for f in files:
+            f.close()
+    
+    
+    
+    
 if __name__ == '__main__':
     
     modelFileName = 'W:/philipsBreastProneSupine/referenceState/00_float_double/debug/modelFat_prone1G_it050000_totalTime05_poly345flat4.xml'

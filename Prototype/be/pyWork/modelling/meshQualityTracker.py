@@ -18,6 +18,7 @@ class meshQualityTracker:
     '''
     
     
+
     def __init__( self, xmlModelFileName='model.xml', deformationFileName='U.txt', qualityMeasure='RadiusRatio', keepStats=True, modelDeformVis=None ):
         ''' @param xmlModelFileName: file name of the xml-model (can be omitted of a visualiser was specified)
             @param deformationFileName: file name of the deformation file (can be omitted of a visualiser was specified)
@@ -42,7 +43,6 @@ class meshQualityTracker:
         
 
 
-        
     def _calculateStats( self, keepStats, qualityMeasure ):
         
         self.min           = []
@@ -105,6 +105,7 @@ class meshQualityTracker:
         self.percentile99 = np.array( self.percentile99 )
 
 
+
         
     def getQualityMeasureResults( self, qualityMeasure ):
         self.qualityMeasure = qualityMeasure
@@ -157,7 +158,6 @@ class meshQualityTracker:
     
     
     
-    
     def plotQualityMeasure( self, plotDir, loadShape, totalTime ):
         
         load, time = lf.loadingFunction(totalTime, loadShape, len( self.vis.deformedNodes ) )
@@ -198,7 +198,7 @@ class meshQualityTracker:
         ax1.plot( time, self.percentile99, c099, label = l099 )
         ax1.plot( time, self.max,          c100, label = l100 )
         ax1.set_xlabel( '$t\;\mathrm{[s]}$' )
-        ax1.set_ylabel( '$q$' )
+        ax1.set_ylabel( '$q_\mathrm{' + self.qualityMeasure + '}$' )
         ax1.grid( color = 'gray', linestyle='-' )
         
         ax2 = ax1.twinx()
@@ -211,38 +211,6 @@ class meshQualityTracker:
         fig.show()
         fig.savefig( plotDir + self.qualityMeasure + '.pdf' )
         fig.savefig( plotDir + self.qualityMeasure + '.png', dpi = 300 )
-
-
-
-#
-#def plotDoubleYAxis( xVals, y1Vals, y2Vals, xLabel, xLabelUint, y1Label, y1LabelUnit, y2Label, y2LabelUnit, plotDirAndBaseName, printLegend=True, y1Max = None ):
-#    
-#    plt.rc( 'text', usetex=True )
-#    plt.rcParams['font.size']=16
-#    
-#    fig = plt.figure()
-#    #plt.hold( True )
-#    ax1 = fig.gca()
-#    ax1.plot( xVals, y1Vals, 'b-', label = y1Label )
-#    ax2 = ax1.twinx()
-#    ax2.plot( xVals, y2Vals, 'r-', label = y2Label )
-#    ax1.set_xlabel( xLabel        )
-#    ax1.set_ylabel( y1LabelUnit )
-#    ax2.set_ylabel( y2LabelUnit )
-#    ax1.set_ylim( bottom=0 )
-#    ax2.set_ylim( bottom=0, top=1.1 )
-#    ax1.grid( color = 'gray', linestyle='-' )
-#    
-#    if y1Max != None:
-#        ax1.set_ylim( top=y1Max )
-#    
-#    if printLegend:
-#        plt.legend( (ax1.get_lines(), ax2.get_lines()), (y1Label, y2Label), loc = 'lower right' )
-#    
-#    #plt.hold( False )
-#    fig.show()
-#    fig.savefig( plotDirAndBaseName + '.pdf' )
-#    fig.savefig( plotDirAndBaseName + '.png', dpi = 300 )
 
 
 

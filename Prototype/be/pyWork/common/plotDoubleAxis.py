@@ -4,7 +4,15 @@
 import matplotlib.pyplot as plt
 
 
-def plotDoubleYAxis( xVals, y1Vals, y2Vals, xLabel, xLabelUnit, y1Label, y1LabelUnit, y2Label, y2LabelUnit, plotDirAndBaseName, printLegend=True, y1Max = None ):
+def plotDoubleYAxis( xVals, 
+                     y1Vals, y2Vals, 
+                     xLabel, xLabelUnit, 
+                     y1Label, y1LabelUnit, 
+                     y2Label, y2LabelUnit, 
+                     plotDirAndBaseName, 
+                     printLegend=True, 
+                     y1Max = None, 
+                     y2Max = None ):
     ''' Generate a twin-y-axis plot and save it to the given directory (.pdf and .png will be appended automatically)
     '''
     
@@ -26,6 +34,9 @@ def plotDoubleYAxis( xVals, y1Vals, y2Vals, xLabel, xLabelUnit, y1Label, y1Label
     
     if y1Max != None:
         ax1.set_ylim( top=y1Max )
+    
+    if y2Max != None:
+        ax2.set_ylim( top=y2Max )
     
     if printLegend:
         plt.legend( (ax1.get_lines(), ax2.get_lines()), (y1Label, y2Label), loc = 'lower right' )

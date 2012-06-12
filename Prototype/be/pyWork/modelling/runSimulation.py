@@ -42,21 +42,33 @@ def runNiftySim( xmlModelFile, workDir, exportVTK=True, verbose=True, gpu=True, 
     # Now rename the outputs...
     #
     if os.path.exists( 'E.txt' ) :
+        if os.path.exists( 'E_' + fBase + '.txt' ):
+            os.remove( 'E_' + fBase + '.txt' )
         os.rename( 'E.txt', 'E_' + fBase + '.txt' )
     
     if os.path.exists( 'S.txt' ) :
+        if os.path.exists( 'S_' + fBase + '.txt' ):
+            os.remove( 'S_' + fBase + '.txt' )
         os.rename( 'S.txt', 'S_' + fBase + '.txt' )
 
     if os.path.exists( 'F.txt' ) :
+        if os.path.exists( 'F_' + fBase + '.txt' ):
+            os.remove( 'F_' + fBase + '.txt' )
         os.rename( 'F.txt', 'F_' + fBase + '.txt' )
 
     if os.path.exists( 'U.txt' ) :
+        if os.path.exists( 'U_' + fBase + '.txt' ):
+            os.remove( 'U_' + fBase + '.txt' )
         os.rename( 'U.txt', 'U_' + fBase + '.txt' )
     
     if os.path.exists( 'EKinTotal.txt' ) :
+        if os.path.exists( 'EKinTotal_' + fBase + '.txt' ):
+            os.remove( 'EKinTotal_' + fBase + '.txt' )
         os.rename( 'EKinTotal.txt', 'EKinTotal_' + fBase + '.txt' )
     
     if os.path.exists( 'EStrainTotal.txt' ) :
+        if os.path.exists( 'EStrainTotal_' + fBase + '.txt' ):
+            os.remove( 'EStrainTotal_' + fBase + '.txt' )
         os.rename( 'EStrainTotal.txt', 'EStrainTotal_' + fBase + '.txt' )
     
     os.chdir( origDir ) 
