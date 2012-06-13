@@ -220,7 +220,7 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
     if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS
         && image->GetDimension() == 4)
     {
-      MITK_ERROR << "Requested initialisation method was MIDAS and image is 4D, but mitk::ImageStatisticsCalculator does not yet support time sequences. Sorry." << std::endl;
+      MITK_WARN << "Requested initialisation method was MIDAS and image is 4D, but mitk::ImageStatisticsCalculator does not yet support time sequences. So, defaulting to full range." << std::endl;
     }
 
     // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
