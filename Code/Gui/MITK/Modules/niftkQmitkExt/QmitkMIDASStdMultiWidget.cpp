@@ -27,6 +27,7 @@
 #include "vtkRenderWindow.h"
 #include "vtkSmartPointer.h"
 #include "vtkMatrix4x4.h"
+#include "vtkLinearTransform.h"
 #include <QStackedLayout>
 #include <QGridLayout>
 #include <QFrame>
@@ -577,9 +578,9 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
 
 void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
 {
-  // Add these annotations the first time we have a real geometry.
   if (geometry != NULL)
   {
+    // Add these annotations the first time we have a real geometry.
     this->m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
     this->m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
     this->m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
@@ -616,29 +617,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       }
     }
 
-    MITK_DEBUG << "Matt, original matrix=" << std::endl;
-
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        MITK_DEBUG << affineTransformMatrix[i][j] << " ";
-      }
-      MITK_DEBUG << std::endl;
-    }
-
     mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
-
-    MITK_DEBUG << "Matt, inverseTransformMatrix matrix=" << std::endl;
-
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        MITK_DEBUG << inverseTransformMatrix[i][j] << " ";
-      }
-      MITK_DEBUG << std::endl;
-    }
 
     int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0],inverseTransformMatrix[1][0],inverseTransformMatrix[2][0]);
     int signRL = itk::Function::Sign(inverseTransformMatrix[dominantAxisRL][0]);
@@ -668,32 +647,43 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
     permutedSpacing[1] = geometry->GetSpacing()[permutedAxes[1]];
     permutedSpacing[2] = geometry->GetSpacing()[permutedAxes[2]];
 
+    mitk::AffineTransform3D::MatrixType::InternalMatrixType permutedMatrix;
+    permutedMatrix.set_column(0, inverseTransformMatrix.get_row(permutedAxes[0]) * flippedAxes[0]);
+    permutedMatrix.set_column(1, inverseTransformMatrix.get_row(permutedAxes[1]) * flippedAxes[1]);
+    permutedMatrix.set_column(2, inverseTransformMatrix.get_row(permutedAxes[2]) * flippedAxes[2]);
+
+    m_OrientationToAxisMap.clear();
+    m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_AXIAL,    dominantAxisSI));
+    m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_SAGITTAL, dominantAxisRL));
+    m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_CORONAL,  dominantAxisAP));
+
+    MITK_DEBUG << "Matt, extent=" << geometry->GetExtent(0) << ", " << geometry->GetExtent(1) << ", " << geometry->GetExtent(2) << std::endl;
     MITK_DEBUG << "Matt, domRL=" << dominantAxisRL << ", signRL=" << signRL << ", domAP=" << dominantAxisAP << ", signAP=" << signAP << ", dominantAxisSI=" << dominantAxisSI << ", signSI=" << signSI << std::endl;
     MITK_DEBUG << "Matt, permutedBoundingBox=" << permutedBoundingBox[0] << ", " << permutedBoundingBox[1] << ", " << permutedBoundingBox[2] << std::endl;
     MITK_DEBUG << "Matt, permutedAxes=" << permutedAxes[0] << ", " << permutedAxes[1] << ", " << permutedAxes[2] << std::endl;
     MITK_DEBUG << "Matt, permutedSpacing=" << permutedSpacing[0] << ", " << permutedSpacing[1] << ", " << permutedSpacing[2] << std::endl;
     MITK_DEBUG << "Matt, flippedAxes=" << flippedAxes[0] << ", " << flippedAxes[1] << ", " << flippedAxes[2] << std::endl;
 
-    mitk::AffineTransform3D::MatrixType::InternalMatrixType permutedMatrix;
-    permutedMatrix.set_column(0, inverseTransformMatrix.get_row(permutedAxes[0]) * flippedAxes[0]);
-    permutedMatrix.set_column(1, inverseTransformMatrix.get_row(permutedAxes[1]) * flippedAxes[1]);
-    permutedMatrix.set_column(2, inverseTransformMatrix.get_row(permutedAxes[2]) * flippedAxes[2]);
+    MITK_DEBUG << "Matt, input normalised matrix=" << std::endl;
+
+    for (unsigned int i=0; i < 3; i++)
+    {
+      MITK_DEBUG << affineTransformMatrix[i][0] << " " << affineTransformMatrix[i][1] << " " << affineTransformMatrix[i][2];
+    }
+
+    MITK_DEBUG << "Matt, inverse normalised matrix=" << std::endl;
+
+    for (unsigned int i=0; i < 3; i++)
+    {
+      MITK_DEBUG << inverseTransformMatrix[i][0] << " " << inverseTransformMatrix[i][1] << " " << inverseTransformMatrix[i][2];
+    }
 
     MITK_DEBUG << "Matt, permuted matrix=" << std::endl;
 
     for (unsigned int i=0; i < 3; i++)
     {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        MITK_DEBUG << permutedMatrix[i][j] << " ";
-      }
-      MITK_DEBUG << std::endl;
+      MITK_DEBUG << permutedMatrix[i][0] << " " << permutedMatrix[i][1] << " " << permutedMatrix[i][2];
     }
-
-    m_OrientationToAxisMap.clear();
-    m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_AXIAL,    dominantAxisSI));
-    m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_SAGITTAL, dominantAxisRL));
-    m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_CORONAL,  dominantAxisAP));
 
     std::vector<vtkRenderWindow*> vtkWindows = this->GetAllVtkWindows();
     for (unsigned int window = 0; window < vtkWindows.size(); window++)
@@ -724,63 +714,38 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         unsigned int     slices = 1;
         bool             isFlipped;
 
-        // Work out transformed voxel origin.
-        /*
+        float voxelOffset = 0;
+        float boundingBoxOffset = 0;
+
         if(geometry->GetImageGeometry())
         {
-          originVoxels[0] = -0.5;
-          originVoxels[1] = -0.5;
-          originVoxels[2] = -0.5;
+          voxelOffset = 0.5;
+          boundingBoxOffset = 0.5;
         }
-        else
-        {
-        */
-          originVoxels[0] = 0;
-          originVoxels[1] = 0;
-          originVoxels[2] = 0;
-        /*
-        }
-        */
 
-        MITK_DEBUG << "Matt, geometry->GetExtent(n)=" << geometry->GetExtent(0) << ", " << geometry->GetExtent(1) << ", " << geometry->GetExtent(2) << std::endl;
+        originVoxels[0] = 0;
+        originVoxels[1] = 0;
+        originVoxels[2] = 0;
 
         if (flippedAxes[0] < 0)
         {
           MITK_DEBUG << "Matt, flippedAxis[0] < 0, so flipping axis " << permutedAxes[0] << std::endl;
           originVoxels[permutedAxes[0]] = geometry->GetExtent(permutedAxes[0]) - 1;
-/*
-          if (geometry->GetImageGeometry())
-          {
-            originVoxels[permutedAxes[0]] += 0.5;
-          }
-*/
         }
         if (flippedAxes[1] < 0)
         {
           MITK_DEBUG << "Matt, flippedAxis[1] < 0, so flipping axis " << permutedAxes[1] << std::endl;
           originVoxels[permutedAxes[1]] = geometry->GetExtent(permutedAxes[1]) - 1;
-/*
-          if (geometry->GetImageGeometry())
-          {
-            originVoxels[permutedAxes[1]] += 0.5;
-          }
-*/
         }
         if (flippedAxes[2] < 0)
         {
           MITK_DEBUG << "Matt, flippedAxis[2] < 0, so flipping axis " << permutedAxes[2] << std::endl;
           originVoxels[permutedAxes[2]] = geometry->GetExtent(permutedAxes[2]) - 1;
-/*
-          if (geometry->GetImageGeometry())
-          {
-            originVoxels[permutedAxes[2]] += 0.5;
-          }
-*/
         }
 
         geometry->IndexToWorld(originVoxels, originMillimetres);
 
-        MITK_DEBUG << "Matt, RAI originVoxels=" << originVoxels << ", originMillimetres=" << originMillimetres << std::endl;
+        MITK_DEBUG << "Matt, originVoxels=" << originVoxels << ", originMillimetres=" << originMillimetres << std::endl;
 
         // Setting up the width, height, axis orientation.
         switch(viewDirection)
@@ -789,14 +754,14 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
           width  = permutedBoundingBox[1];
           height = permutedBoundingBox[2];
           originOfSlice[0] = originMillimetres[0];
-          originOfSlice[1] = originMillimetres[1];
-          originOfSlice[2] = originMillimetres[2];
-          rightDV[0] = permutedMatrix[0][1];
-          rightDV[1] = permutedMatrix[1][1];
-          rightDV[2] = permutedMatrix[2][1];
-          bottomDV[0] = permutedMatrix[0][2];
-          bottomDV[1] = permutedMatrix[1][2];
-          bottomDV[2] = permutedMatrix[2][2];
+          originOfSlice[1] = originMillimetres[1] - voxelOffset*permutedSpacing[1];
+          originOfSlice[2] = originMillimetres[2] - voxelOffset*permutedSpacing[2];
+          rightDV[0] = permutedSpacing[0]*permutedMatrix[0][1];
+          rightDV[1] = permutedSpacing[1]*permutedMatrix[1][1];
+          rightDV[2] = permutedSpacing[2]*permutedMatrix[2][1];
+          bottomDV[0] = permutedSpacing[0]*permutedMatrix[0][2];
+          bottomDV[1] = permutedSpacing[1]*permutedMatrix[1][2];
+          bottomDV[2] = permutedSpacing[2]*permutedMatrix[2][2];
           normal[0] = permutedMatrix[0][0];
           normal[1] = permutedMatrix[1][0];
           normal[2] = permutedMatrix[2][0];
@@ -807,15 +772,15 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         case mitk::SliceNavigationController::Frontal:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[2];
-          originOfSlice[0] = originMillimetres[0];
+          originOfSlice[0] = originMillimetres[0] - voxelOffset*permutedSpacing[0];
           originOfSlice[1] = originMillimetres[1];
-          originOfSlice[2] = originMillimetres[2];
-          rightDV[0] = permutedMatrix[0][0];
-          rightDV[1] = permutedMatrix[1][0];
-          rightDV[2] = permutedMatrix[2][0];
-          bottomDV[0] = permutedMatrix[0][2];
-          bottomDV[1] = permutedMatrix[1][2];
-          bottomDV[2] = permutedMatrix[2][2];
+          originOfSlice[2] = originMillimetres[2] - voxelOffset*permutedSpacing[2];
+          rightDV[0] = permutedSpacing[0]*permutedMatrix[0][0];
+          rightDV[1] = permutedSpacing[1]*permutedMatrix[1][0];
+          rightDV[2] = permutedSpacing[2]*permutedMatrix[2][0];
+          bottomDV[0] = permutedSpacing[0]*permutedMatrix[0][2];
+          bottomDV[1] = permutedSpacing[1]*permutedMatrix[1][2];
+          bottomDV[2] = permutedSpacing[2]*permutedMatrix[2][2];
           normal[0] = permutedMatrix[0][1];
           normal[1] = permutedMatrix[1][1];
           normal[2] = permutedMatrix[2][1];
@@ -827,15 +792,15 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
           // Default = Transversal.
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
-          originOfSlice[0] = originMillimetres[0] + permutedBoundingBox[0]*permutedSpacing[0]*permutedMatrix[0][1];
-          originOfSlice[1] = originMillimetres[1] + permutedBoundingBox[1]*permutedSpacing[1]*permutedMatrix[1][1];
+          originOfSlice[0] = originMillimetres[0] + permutedBoundingBox[0]*permutedSpacing[0]*permutedMatrix[0][1] - voxelOffset*permutedSpacing[0];
+          originOfSlice[1] = originMillimetres[1] + permutedBoundingBox[1]*permutedSpacing[1]*permutedMatrix[1][1] + voxelOffset*permutedSpacing[1];
           originOfSlice[2] = originMillimetres[2] + permutedBoundingBox[2]*permutedSpacing[2]*permutedMatrix[2][1];
-          rightDV[0] = permutedMatrix[0][0];
-          rightDV[1] = permutedMatrix[1][0];
-          rightDV[2] = permutedMatrix[2][0];
-          bottomDV[0] = -1.0 * permutedMatrix[0][1];
-          bottomDV[1] = -1.0 * permutedMatrix[1][1];
-          bottomDV[2] = -1.0 * permutedMatrix[2][1];
+          rightDV[0] = permutedSpacing[0]*permutedMatrix[0][0];
+          rightDV[1] = permutedSpacing[1]*permutedMatrix[1][0];
+          rightDV[2] = permutedSpacing[2]*permutedMatrix[2][0];
+          bottomDV[0] = -1.0 * permutedSpacing[0]*permutedMatrix[0][1];
+          bottomDV[1] = -1.0 * permutedSpacing[1]*permutedMatrix[1][1];
+          bottomDV[2] = -1.0 * permutedSpacing[2]*permutedMatrix[2][1];
           normal[0] = permutedMatrix[0][2];
           normal[1] = permutedMatrix[1][2];
           normal[2] = permutedMatrix[2][2];
@@ -843,8 +808,9 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
           slices = permutedBoundingBox[2];
           isFlipped = true;
           break;
-        }
+        } // end switch
 
+        MITK_DEBUG << "Matt, image=" << geometry->GetImageGeometry() << std::endl;
         MITK_DEBUG << "Matt, width=" << width << std::endl;
         MITK_DEBUG << "Matt, height=" << height << std::endl;
         MITK_DEBUG << "Matt, originOfSlice=" << originOfSlice << std::endl;
@@ -855,57 +821,69 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         MITK_DEBUG << "Matt, slices=" << slices << std::endl;
         MITK_DEBUG << "Matt, isFlipped=" << isFlipped << std::endl;
 
-        mitk::ScalarType bounds[6]= { 0, width, 0, height, 0, 1 };
-
-        // A SlicedGeometry3D is initialised from a 2D plane geometry, plus the number of slices.
-        // So here is the plane.
-        mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
-        planeGeometry->SetIdentity();
-        planeGeometry->SetImageGeometry(geometry->GetImageGeometry());
-        planeGeometry->SetBounds(bounds);
-        planeGeometry->SetMatrixByVectors(rightDV, bottomDV, normal.two_norm());
-        planeGeometry->SetOrigin(originOfSlice);
-
-        // And here we create the slicedGeometry from an initial plane, and a given number of slices.
-        mitk::SlicedGeometry3D::Pointer slicedGeometry = mitk::SlicedGeometry3D::New();
-        slicedGeometry->SetReferenceGeometry(geometry);
-        slicedGeometry->SetImageGeometry(geometry->GetImageGeometry());
-        slicedGeometry->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped );
-
-        // If input geometry is time sliced and we have >1 timestep, we must also cope with that.
-        mitk::TimeSlicedGeometry::Pointer timeSlicedGeometry = static_cast<mitk::TimeSlicedGeometry*>(geometry);
-        if (timeSlicedGeometry.IsNotNull() && timeSlicedGeometry->GetTimeSteps() > 1)
+        unsigned int numberOfTimeSteps = 0;
+        mitk::TimeSlicedGeometry::Pointer inputTimeSlicedGeometry = static_cast<mitk::TimeSlicedGeometry*>(geometry);
+        if (inputTimeSlicedGeometry.IsNotNull())
         {
-          mitk::TimeSlicedGeometry::Pointer createdTimeSlicedGeometry = mitk::TimeSlicedGeometry::New();
-          createdTimeSlicedGeometry->InitializeEmpty(timeSlicedGeometry->GetTimeSteps());
-          createdTimeSlicedGeometry->SetImageGeometry(timeSlicedGeometry->GetImageGeometry());
-          createdTimeSlicedGeometry->SetTimeBounds(timeSlicedGeometry->GetTimeBounds());
-          createdTimeSlicedGeometry->SetEvenlyTimed(timeSlicedGeometry->GetEvenlyTimed());
-          createdTimeSlicedGeometry->SetIndexToWorldTransform(slicedGeometry->GetIndexToWorldTransform());
-          createdTimeSlicedGeometry->SetBounds(timeSlicedGeometry->GetBounds());
-
-          for (unsigned int i = 0; i < timeSlicedGeometry->GetTimeSteps(); i++)
-          {
-            mitk::SlicedGeometry3D::Pointer createdSlicedGeometryForEachTimeStep = mitk::SlicedGeometry3D::New();
-            createdSlicedGeometryForEachTimeStep->SetIdentity();
-            createdSlicedGeometryForEachTimeStep->SetReferenceGeometry(geometry);
-            createdSlicedGeometryForEachTimeStep->SetImageGeometry(geometry->GetImageGeometry());
-            createdSlicedGeometryForEachTimeStep->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped );
-            createdSlicedGeometryForEachTimeStep->SetTimeBounds(timeSlicedGeometry->GetGeometry3D(i)->GetTimeBounds());
-
-            createdTimeSlicedGeometry->SetGeometry3D(createdSlicedGeometryForEachTimeStep, i);
-          }
-          createdTimeSlicedGeometry->UpdateInformation();
-          sliceNavigationController->SetInputWorldGeometry(createdTimeSlicedGeometry);
+          numberOfTimeSteps = inputTimeSlicedGeometry->GetTimeSteps();
         }
         else
         {
-          sliceNavigationController->SetInputWorldGeometry(slicedGeometry);
+          numberOfTimeSteps = 1;
         }
-        sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
-      }
 
-      sliceNavigationController->SetViewDirection(viewDirection);
+        mitk::TimeSlicedGeometry::Pointer createdTimeSlicedGeometry = mitk::TimeSlicedGeometry::New();
+        createdTimeSlicedGeometry->InitializeEmpty(numberOfTimeSteps);
+        createdTimeSlicedGeometry->SetImageGeometry(false);
+        createdTimeSlicedGeometry->SetEvenlyTimed(true);
+
+        if (inputTimeSlicedGeometry.IsNotNull())
+        {
+          createdTimeSlicedGeometry->SetEvenlyTimed(inputTimeSlicedGeometry->GetEvenlyTimed());
+          createdTimeSlicedGeometry->SetTimeBounds(inputTimeSlicedGeometry->GetTimeBounds());
+          createdTimeSlicedGeometry->SetBounds(inputTimeSlicedGeometry->GetBounds());
+        }
+
+        // For the PlaneGeometry.
+        mitk::ScalarType bounds[6]= { 0, width, 0, height, 0, 1 };
+
+        // A SlicedGeometry3D is initialised from a 2D PlaneGeometry, plus the number of slices.
+        mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
+        planeGeometry->SetIdentity();
+        planeGeometry->SetImageGeometry(false);
+        planeGeometry->SetBounds(bounds);
+        planeGeometry->SetOrigin(originOfSlice);
+        planeGeometry->SetMatrixByVectors(rightDV, bottomDV, normal.two_norm());
+
+        for (unsigned int i = 0; i < numberOfTimeSteps; i++)
+        {
+          // Then we create the SlicedGeometry3D from an initial plane, and a given number of slices.
+          mitk::SlicedGeometry3D::Pointer slicedGeometry = mitk::SlicedGeometry3D::New();
+          slicedGeometry->SetIdentity();
+          slicedGeometry->SetReferenceGeometry(geometry);
+          slicedGeometry->SetImageGeometry(false);
+          slicedGeometry->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped );
+
+          if (inputTimeSlicedGeometry.IsNotNull())
+          {
+            slicedGeometry->SetTimeBounds(inputTimeSlicedGeometry->GetGeometry3D(i)->GetTimeBounds());
+          }
+          createdTimeSlicedGeometry->SetGeometry3D(slicedGeometry, i);
+        }
+        createdTimeSlicedGeometry->UpdateInformation();
+
+        MITK_DEBUG << "Matt - final geometry=" << createdTimeSlicedGeometry << std::endl;
+        MITK_DEBUG << "Matt - final geometry origin=" << createdTimeSlicedGeometry->GetOrigin() << std::endl;
+        MITK_DEBUG << "Matt - final geometry center=" << createdTimeSlicedGeometry->GetCenter() << std::endl;
+        for(int i = 0; i < 8; i++)
+        {
+          MITK_DEBUG << "Matt - final geometry i=" << i << ", p=" << createdTimeSlicedGeometry->GetCornerPoint(i) << std::endl;
+        }
+
+        sliceNavigationController->SetInputWorldGeometry(createdTimeSlicedGeometry);
+        sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
+        sliceNavigationController->SetViewDirection(viewDirection);
+      } // if window < 3
 
       // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
       if ( id == 1 )
@@ -1560,6 +1538,29 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *window,
 
     // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
     displayGeometry->Zoom(scaleFactor, centreOfDisplayInDisplayUnits);
+
+    // Now shift the origin, so the viewport is centred on the centre of the image.
+    mitk::Geometry3D::ConstPointer geometry = sliceNavigationController->GetInputWorldGeometry();
+    if (geometry.IsNotNull())
+    {
+      mitk::Point3D centreInVoxels;
+      mitk::Point3D centreInMillimetres;
+      mitk::Point2D projectedCentreInMillimetres;
+      mitk::Point2D projectedCentreInPixels;
+
+      centreInVoxels[0] = (geometry->GetExtent(0)-1)/2.0;
+      centreInVoxels[1] = (geometry->GetExtent(1)-1)/2.0;
+      centreInVoxels[2] = (geometry->GetExtent(2)-1)/2.0;
+
+      geometry->IndexToWorld(centreInVoxels, centreInMillimetres);
+      displayGeometry->Map(centreInMillimetres, projectedCentreInMillimetres);
+      displayGeometry->WorldToDisplay(projectedCentreInMillimetres, projectedCentreInPixels);
+
+      mitk::Vector2D difference;
+      difference[0] = projectedCentreInPixels[0] - centreOfDisplayInDisplayUnits[0];
+      difference[1] = projectedCentreInPixels[1] - centreOfDisplayInDisplayUnits[1];
+      displayGeometry->MoveBy(difference);
+    }
   }
 }
 
