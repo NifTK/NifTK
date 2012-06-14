@@ -84,7 +84,7 @@ int itkMIDASRetainMarksNoThresholdingTest(int argc, char * argv[])
   processor->SetSlices(itk::ORIENTATION_AXIAL, 0, 2);
   processor->Redo();
 
-  ImageType::Pointer outputImage = processor->GetDestinationImage();
+  ImageType* outputImage = processor->GetDestinationImage();
 
   counter = CountVoxelsAboveValue<unsigned char, 3>(2, outputImage);
   if (counter != 0)
