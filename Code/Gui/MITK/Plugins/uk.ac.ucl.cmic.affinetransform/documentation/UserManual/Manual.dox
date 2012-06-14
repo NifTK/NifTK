@@ -3,6 +3,14 @@
 
 \image html AffineTransformIcon.png "The Icon for Affine Transform"
 
+\addindex Affine Transformations
+\addindex Transforming data
+\addindex Rotating data
+\addindex Translating data
+\addindex Scaling data
+\addindex Shearing data
+\addindex Transformation file - load and save
+
 \section Introduction
 This plugin can be used to apply any combination of the following transforms to an item selected in the data manager
 <ul>

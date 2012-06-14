@@ -5,6 +5,14 @@
 
 \section MITKSegmentationIntro Introduction
 
+The MITK Segmentation View provides a cut-down version of the MITK Segmentation View provided as default with the MITK
+application "ExtApp".  The reason to provide a cut-down version was for the sake of simplicity, and reliability.
+At the time of writing, only the 2D tools were required.  The MITK Segmentation View provides simple tools for 
+editing voxels within a binary image. Each edit will affect a specific binary image, and comes with Undo/Redo capabilities.
+
+It is currently possible to perform several segmentations simultaneously, but each segmentation must be stored in a separate
+volume.
+
 \section MITKSegmentationUsage Usage
 
 \section MITKSegmentationPreferences Preferences

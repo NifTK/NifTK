@@ -3,6 +3,12 @@
 
 \image html ImageStatisticsIcon.png "The Icon for Image Statistics View"
 
+\addindex Statistics - Mean (average) of intensity
+\addindex Statistics - Minimum intensity
+\addindex Statistics - Maximum intensity
+\addindex Statistics - Standard deviation of intensity
+\addindex Statistics within a Region Of Interest (ROI)
+
 \section ImageStatisticsIntroduction Introduction
 
 The Image Statistics View provides a simple way to calculate image statistics such as minimum, maximum, mean and standard

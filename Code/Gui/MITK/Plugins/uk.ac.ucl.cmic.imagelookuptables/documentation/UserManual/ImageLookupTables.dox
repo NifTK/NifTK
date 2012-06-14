@@ -13,7 +13,7 @@
 \addindex MR colour map
 \addindex Fire colour map
 
-\section Introduction
+\section ImageLookupTablesIntroduction Introduction
 
 The Image Lookup Tables plugin provides the ability to assign a different colour map to each image.
 Each image will have range of intensity values, for example ranging from some minimum value such as 0
