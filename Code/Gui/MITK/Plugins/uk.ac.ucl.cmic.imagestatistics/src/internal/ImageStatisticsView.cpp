@@ -307,7 +307,7 @@ void ImageStatisticsView::InitializeTable()
   // The order of these columns must match the order in AddTableRow.
   QStringList headers;
   headers << "value";
-  headers << "volume";
+  headers << "volume (ml)";
   headers << "mean";
   headers << "std dev";
   headers << "min";
@@ -326,7 +326,7 @@ ImageStatisticsView
   QTableWidgetItem *valueItem = new QTableWidgetItem(tr("%1").arg(value));
   m_Controls.m_Table->setItem(row, 0, valueItem);
 
-  QTableWidgetItem *volumeItem = new QTableWidgetItem(tr("%1").arg(volume));
+  QTableWidgetItem *volumeItem = new QTableWidgetItem(tr("%1").arg(volume/1000.0)); // convert cubic millimetres to cubic centimetres (ml).
   m_Controls.m_Table->setItem(row, 1, volumeItem);
 
   QTableWidgetItem *meanItem = new QTableWidgetItem(tr("%1").arg(mean));
