@@ -22,7 +22,9 @@ import materialSetGenerator
 import commandExecution as cmdEx
 import f3dRegistrationTask as f3dTask
 from lowAndHighModelCoordinates import lowAndHighModelCoordinates
-
+from runSimulation import runNiftySim
+import convergenceAnalyser as ca
+import os
 
 # starting from the images
 # 1) soft tissue (currently seen as homogeneous material... to be corrected later on)
@@ -105,32 +107,38 @@ genFix = xGen.xmlModelGenrator(  breastVolMeshPoints / 1000., breastVolMeshCells
 
 # Fix constraints
 genFix.setFixConstraint( lowXIdx,  0 )         # sternum
-genFix.setFixConstraint( lowZIdx,  0 )         # inferior breast boundary
-genFix.setFixConstraint( lowZIdx,  1 )         # inferior breast boundary
-genFix.setFixConstraint( lowZIdx,  2 )         # inferior breast boundary
-genFix.setFixConstraint( highZIdx, 0 )         # superior breast boundary
-genFix.setFixConstraint( highZIdx, 1 )
-genFix.setFixConstraint( highZIdx, 2 )
-genFix.setFixConstraint( highYIdx, 0 )         # mid-axillary line
-genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
-genFix.setFixConstraint( highYIdx, 2 )         # mid-axillary line
+#genFix.setFixConstraint( lowZIdx,  0 )         # inferior breast boundary
+#genFix.setFixConstraint( lowZIdx,  1 )         # inferior breast boundary
+#genFix.setFixConstraint( lowZIdx,  2 )         # inferior breast boundary
+#genFix.setFixConstraint( highZIdx, 0 )         # superior breast boundary
+#genFix.setFixConstraint( highZIdx, 1 )
+#genFix.setFixConstraint( highZIdx, 2 )
+#genFix.setFixConstraint( highYIdx, 0 )         # mid-axillary line
+#genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
+#genFix.setFixConstraint( highYIdx, 2 )         # mid-axillary line
 genFix.setFixConstraint( idxCloseToChest, 0 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 1 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 2 )  # chest wall
 
 
-genFix.setMaterialElementSet( 'NH', 'FAT',     [  500, 50000], np.union1d( matGen.fatElements, matGen.skinElements))#, 1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NH', 'GLAND',   [ 1000, 50000], matGen.glandElements)#,  1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [ 2000, 50000], matGen.muscleElements)#, 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NH', 'FAT',     [  250, 50000], np.union1d( matGen.fatElements, matGen.skinElements))#, 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NH', 'GLAND',   [  500, 50000], matGen.glandElements)#,  1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [ 1000, 50000], matGen.muscleElements)#, 1, 0, [1.0, 0.2] )
 
-genFix.setShellElements('T3', matGen.shellElements )
-genFix.setShellElementSet(0, 'NeoHookean', [800], 1000, 0.005)
+#genFix.setShellElements('T3', matGen.shellElements )
+#genFix.setShellElementSet(0, 'NeoHookean', [800], 1000, 0.005)
 
-genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'RAMPFLAT4' )
-genFix.setOutput( 500, ['U', 'EKinTotal', 'EStrainTotal'] )
+genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'POLY345FLAT4' )
+genFix.setOutput( 750, ['U', 'EKinTotal', 'EStrainTotal'] )
 genFix.setSystemParameters( timeStep=0.5e-4, totalTime=15.0, dampingCoefficient=250, hgKappa=0.05, density=1000 )    
 genFix.writeXML( xmlFileOut )
 
+
+#
+# run the simulation and analyse some quantities
+#
+runNiftySim( os.path.basename( xmlFileOut ), meshDir )
+analyser = ca.convergenceAnalyser( xmlFileOut )
 
 import sys
 sys.exit()

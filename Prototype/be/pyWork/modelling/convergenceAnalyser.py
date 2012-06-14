@@ -284,9 +284,7 @@ class convergenceAnalyser:
             os.mkdir( self.plotDir )
             
         for qm in self.qualityMeasures:
-                    
-            self.meshQualities.getQualityMeasureResults( qm )
-            self.meshQualities.plotQualityMeasure( self.plotDir, self.loadShape, self.totalTime )
+            self.meshQualities.plotQualityMeasure( self.plotDir, self.loadShape, self.totalTime, qm )
         
         
 

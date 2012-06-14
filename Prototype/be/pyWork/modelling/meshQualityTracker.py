@@ -19,9 +19,10 @@ class meshQualityTracker:
     
     
 
-    def __init__( self, xmlModelFileName='model.xml', deformationFileName='U.txt', qualityMeasure='RadiusRatio', keepStats=True, modelDeformVis=None ):
+    def __init__( self, xmlModelFileName='model.xml', deformationFileName='U.txt', keepStats=False, modelDeformVis=None ):
         ''' @param xmlModelFileName: file name of the xml-model (can be omitted of a visualiser was specified)
             @param deformationFileName: file name of the deformation file (can be omitted of a visualiser was specified)
+            @param keepStats: Defines if the full (Ture) or only the percentile (Flase) statistics will be kept. Note: Huge memory requirements might arise! 
         '''
         if modelDeformVis == None :
             #
@@ -36,129 +37,81 @@ class meshQualityTracker:
             isinstance( modelDeformVis, modelDeformationVisualiser.modelDeformationVisualiser )
             self.vis = modelDeformVis
         
-        self.qualityMeasure = qualityMeasure
+        self.qualityMeasures = ['RadiusRatio',
+                        'MinAngle',
+                        'EdgeRatio',
+                        'Jacobian',
+                        'ScaledJacobian',
+                        'AspectBeta',
+                        'AspectFrobenius',
+                        'AspectGamma',
+                        'AspectRatio',
+                        'CollapseRatio',
+                        'Condition',
+                        'Distortion',
+                        'RelativeSizeSquared',
+                        'Shape',
+                        'ShapeAndSize',
+                        'Volume' ]
+        self.percentileQuantities = [0,1,5,10,50,90,95,99,100]
+        
         self._keepStats     = keepStats
-        self._calculateStats(self._keepStats, qualityMeasure)
+        self._calculateStats( self._keepStats )
         
         
 
 
-    def _calculateStats( self, keepStats, qualityMeasure ):
-        
-        self.min           = []
-        self.max           = []
-        self.percentile01  = []
-        self.percentile05  = []
-        self.percentile10  = []
-        self.percentile50  = []
-        self.percentile90  = []
-        self.percentile95  = []
-        self.percentile99  = []
+    def _calculateStats( self, keepStats ):
         
         print( 'Found %i deformed model versions.' % len( self.vis.deformedNodes ) )
-        if not keepStats :
-            for i in range( len( self.vis.deformedNodes ) ) :
-                if np.mod( i,10 ) == 0:
-                    print( 'Calculating statistics: %5i' % i )
-                
-                stats = meshStat.meshStatistics( self.vis.deformedNodes[i], self.vis.mldElements ) 
-                
-                self.min.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ],   0.0 ) )
-                self.max.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ], 100.0 ) )
-    
-                self.percentile01.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ],  1.0 ) )
-                self.percentile05.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ],  5.0 ) )
-                self.percentile10.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ], 10.0 ) )
-                self.percentile50.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ], 50.0 ) )
-                self.percentile90.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ], 90.0 ) )
-                self.percentile95.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ], 95.0 ) )
-                self.percentile99.append( scoreatpercentile( stats.qualityMeasures[ qualityMeasure ], 99.0 ) )
-        else:
-            self.stats = []
-           
-            for i in range( len( self.vis.deformedNodes ) ) :
-                if np.mod( i,10 ) == 0:
-                    print( 'Calculating statistics: %5i' % i )
-                
-                self.stats.append( meshStat.meshStatistics( self.vis.deformedNodes[i], self.vis.mldElements ) ) 
-                
-                self.min.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ],   0.0 ) )
-                self.max.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ], 100.0 ) )
-    
-                self.percentile01.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ],  1.0 ) )
-                self.percentile05.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ],  5.0 ) )
-                self.percentile10.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ], 10.0 ) )
-                self.percentile50.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ], 50.0 ) )
-                self.percentile90.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ], 90.0 ) )
-                self.percentile95.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ], 95.0 ) )
-                self.percentile99.append( scoreatpercentile( self.stats[-1].qualityMeasures[ qualityMeasure ], 99.0 ) ) 
-            
-        self.min = np.array( self.min )
-        self.max = np.array( self.max )
-
-        self.percentile01 = np.array( self.percentile01 )
-        self.percentile05 = np.array( self.percentile05 )
-        self.percentile10 = np.array( self.percentile10 )
-        self.percentile50 = np.array( self.percentile50 )
-        self.percentile90 = np.array( self.percentile90 )
-        self.percentile95 = np.array( self.percentile95 )
-        self.percentile99 = np.array( self.percentile99 )
-
-
-
         
-    def getQualityMeasureResults( self, qualityMeasure ):
-        self.qualityMeasure = qualityMeasure
+        self.percentiles = {}
+        self.stats       = []
+
+        #
+        # Prepare the data structures which hold the percentiles
+        #        
+        for qm in self.qualityMeasures:
+            self.percentiles[ qm ] = {}
+            
+            for p in self.percentileQuantities :
+                self.percentiles[qm][p] = []
         
         #
-        # Need to recalculate as this was not saved locally
+        # Evaluate each deformed model
         #
-        if not self._keepStats:
-            self._calculateStats( self._keepStats, qualityMeasure )
-            return
-        
-        #
-        # Otherwise just go through the saved measurements
-        #
-        else:   
-            self.min = []
-            self.max = []
-            self.percentile01  = []
-            self.percentile05  = []
-            self.percentile10  = []
-            self.percentile50  = []
-            self.percentile90  = []
-            self.percentile95  = []
-            self.percentile99  = []
+        for i in range( len( self.vis.deformedNodes ) ) :
             
-            for i in range( len( self.vis.deformedNodes ) ) :
+            if np.mod( i, 10 ) == 0:
+                print( 'Calculating statistics: %5i' % i )
+            
+            # Calculate the statistics for the current set of deformed nodes
+            stats = meshStat.meshStatistics( self.vis.deformedNodes[i], self.vis.mldElements ) 
+            
+            # Keep the full statistics
+            # NOTE: Huge memory requirements likely
+            if keepStats :
+                self.stats.append(stats)
+            
+            # For each quality measure evaluate the percentiles specified
+            for qm in self.qualityMeasures :
                 
-                self.min.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ],   0.0 ) )
-                self.max.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ], 100.0 ) )
-    
-                self.percentile01.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ],  1.0 ) )
-                self.percentile05.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ],  5.0 ) )
-                self.percentile10.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ], 10.0 ) )
-                self.percentile50.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ], 50.0 ) )
-                self.percentile90.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ], 90.0 ) )
-                self.percentile95.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ], 95.0 ) )
-                self.percentile99.append( scoreatpercentile( self.stats[i].qualityMeasures[ qualityMeasure ], 99.0 ) ) 
+                for p in self.percentileQuantities :
+                    
+                    self.percentiles[ qm ][ p ].append( scoreatpercentile( stats.qualityMeasures[ qm ], p ) )
             
-            self.min = np.array( self.min )
-            self.max = np.array( self.max )
-    
-            self.percentile01 = np.array( self.percentile01 )
-            self.percentile05 = np.array( self.percentile05 )
-            self.percentile10 = np.array( self.percentile10 )
-            self.percentile50 = np.array( self.percentile50 )
-            self.percentile90 = np.array( self.percentile90 )
-            self.percentile95 = np.array( self.percentile95 )
-            self.percentile99 = np.array( self.percentile99 )
+        #
+        # Convert the percentiles into numpy arrays
+        #
+        
+        for qm in self.qualityMeasures:
+            for p in self.percentileQuantities :
+                self.percentiles[qm][p] = np.array( self.percentiles[qm][p] )
 
     
     
     
-    def plotQualityMeasure( self, plotDir, loadShape, totalTime ):
+    def plotQualityMeasure( self, plotDir, loadShape, totalTime, qualityMeasure ):
         
         load, time = lf.loadingFunction(totalTime, loadShape, len( self.vis.deformedNodes ) )
         
@@ -188,17 +141,17 @@ class meshQualityTracker:
         fig = plt.figure()
         plt.hold( True )
         ax1 = fig.gca()
-        ax1.plot( time, self.min,          c000, label = l000 )
-        ax1.plot( time, self.percentile01, c001, label = l001 )
-        ax1.plot( time, self.percentile05, c005, label = l005 )
-        ax1.plot( time, self.percentile10, c010, label = l010 )
-        ax1.plot( time, self.percentile50, c050, label = l050 )
-        ax1.plot( time, self.percentile90, c090, label = l090 )
-        ax1.plot( time, self.percentile95, c095, label = l095 )
-        ax1.plot( time, self.percentile99, c099, label = l099 )
-        ax1.plot( time, self.max,          c100, label = l100 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][  0], c000, label = l000 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][  1], c001, label = l001 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][  5], c005, label = l005 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][ 10], c010, label = l010 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][ 50], c050, label = l050 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][ 90], c090, label = l090 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][ 95], c095, label = l095 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][ 90], c099, label = l099 )
+        ax1.plot( time, self.percentiles[qualityMeasure ][100], c100, label = l100 )
         ax1.set_xlabel( '$t\;\mathrm{[s]}$' )
-        ax1.set_ylabel( '$q_\mathrm{' + self.qualityMeasure + '}$' )
+        ax1.set_ylabel( '$q_\mathrm{' + qualityMeasure + '}$' )
         ax1.grid( color = 'gray', linestyle='-' )
         
         ax2 = ax1.twinx()
@@ -209,8 +162,8 @@ class meshQualityTracker:
         plt.hold( False )
         
         fig.show()
-        fig.savefig( plotDir + self.qualityMeasure + '.pdf' )
-        fig.savefig( plotDir + self.qualityMeasure + '.png', dpi = 300 )
+        fig.savefig( plotDir + qualityMeasure + '.pdf' )
+        fig.savefig( plotDir + qualityMeasure + '.png', dpi = 300 )
 
 
 
