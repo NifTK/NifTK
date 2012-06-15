@@ -80,6 +80,12 @@ namespace mitk {
     /// \brief We store the name of the next contours, so all class have access to the name.
     static const std::string NEXT_CONTOURS_NAME;
 
+    /// \brief We store the name of the MIDAS connection breaker image, used in Morphological Editor.
+    static const std::string MORPH_EDITS_SUBTRACTIONS;
+
+    /// \brief We store the name of the MIDAS additions image, used in Morphological Editor.
+    static const std::string MORPH_EDITS_ADDITIONS;
+
     /// \brief When called, we get a reference to the set of seeds, and set up the interactor(s).
     virtual void Activated();
 

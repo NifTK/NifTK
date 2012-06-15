@@ -44,8 +44,6 @@
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 const std::string MIDASMorphologicalSegmentorView::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED = "midas.morph.finished";
-const std::string MIDASMorphologicalSegmentorView::SUBTRACTIONS_IMAGE_NAME = std::string("MIDAS_EDITS_SUBTRACTIONS");
-const std::string MIDASMorphologicalSegmentorView::ADDITIONS_IMAGE_NAME = std::string("MIDAS_EDITS_ADDITIONS");
 
 MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 : QmitkMIDASBaseSegmentationFunctionality()
@@ -176,8 +174,8 @@ bool MIDASMorphologicalSegmentorView::IsNodeASegmentationImage(const mitk::DataN
         std::string name2;
         (*children)[1]->GetStringProperty("name", name2);
 
-        if ((name1 == SUBTRACTIONS_IMAGE_NAME || name1 == ADDITIONS_IMAGE_NAME)
-            && (name2 == SUBTRACTIONS_IMAGE_NAME || name2 == ADDITIONS_IMAGE_NAME)
+        if ((name1 == mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS || name1 == mitk::MIDASTool::MORPH_EDITS_ADDITIONS)
+            && (name2 == mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS || name2 == mitk::MIDASTool::MORPH_EDITS_ADDITIONS)
             )
         {
           result = true;
@@ -202,7 +200,7 @@ bool MIDASMorphologicalSegmentorView::IsNodeAWorkingImage(const mitk::DataNode::
       std::string name;
       if (node->GetStringProperty("name", name))
       {
-        if (name == SUBTRACTIONS_IMAGE_NAME || name == ADDITIONS_IMAGE_NAME)
+        if (name == mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS || name == mitk::MIDASTool::MORPH_EDITS_ADDITIONS)
         {
           result = true;
         }
@@ -225,7 +223,7 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingNod
     std::string name;
     if ((*children)[i]->GetStringProperty("name", name))
     {
-      if (name == ADDITIONS_IMAGE_NAME)
+      if (name == mitk::MIDASTool::MORPH_EDITS_ADDITIONS)
       {
         result.push_back((*children)[i]);
       }
@@ -237,7 +235,7 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingNod
     std::string name;
     if ((*children)[i]->GetStringProperty("name", name))
     {
-      if (name == SUBTRACTIONS_IMAGE_NAME)
+      if (name == mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS)
       {
         result.push_back((*children)[i]);
       }
@@ -387,7 +385,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
 
       // Create subtractions data node, and store reference to image
-      mitk::DataNode::Pointer segmentationSubtractionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, SUBTRACTIONS_IMAGE_NAME, col->GetColor());
+      mitk::DataNode::Pointer segmentationSubtractionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS, col->GetColor());
       segmentationSubtractionsImageDataNode->SetBoolProperty("helper object", true);
       segmentationSubtractionsImageDataNode->SetColor(col->GetColor());
       segmentationSubtractionsImageDataNode->SetProperty("binaryimage.selectedcolor", col);
@@ -397,7 +395,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       newSegmentation->GetColor(segCol);
       mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
 
-      mitk::DataNode::Pointer segmentationAdditionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, ADDITIONS_IMAGE_NAME, col->GetColor());
+      mitk::DataNode::Pointer segmentationAdditionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_ADDITIONS, col->GetColor());
       segmentationAdditionsImageDataNode->SetBoolProperty("helper object", true);
       segmentationAdditionsImageDataNode->SetBoolProperty("visible", false);
       segmentationAdditionsImageDataNode->SetColor(segCol);

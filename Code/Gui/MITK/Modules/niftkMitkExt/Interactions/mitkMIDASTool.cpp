@@ -32,6 +32,8 @@ const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CU
 const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = std::string("MIDAS_PRIOR_CONTOURS");
 const std::string mitk::MIDASTool::NEXT_CONTOURS_NAME = std::string("MIDAS_NEXT_CONTOURS");
 const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = std::string("MIDAS_REGION_GROWING_IMAGE");
+const std::string mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS = std::string("MIDAS_EDITS_SUBTRACTIONS");
+const std::string mitk::MIDASTool::MORPH_EDITS_ADDITIONS = std::string("MIDAS_EDITS_ADDITIONS");
 
 mitk::MIDASTool::~MIDASTool()
 {

@@ -156,12 +156,6 @@ private:
   /// Some static strings, to avoid repetition.
   static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
 
-  // We store a name for subtractions image.
-  static const std::string SUBTRACTIONS_IMAGE_NAME;
-
-  // We store a name for additions image.
-  static const std::string ADDITIONS_IMAGE_NAME;
-
   /// \brief Calls update on the ITK pipeline using the MITK AccessByItk macros.
   void UpdateSegmentation();
 
