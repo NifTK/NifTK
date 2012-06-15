@@ -39,7 +39,7 @@ smallest side of the line is removed. If the line starts and finishes within a r
 \li Fill - Use the left mouse click to fill holes.
 \li Erase - use the left mouse click to erase sections.
 
-\image html org_mitk_gui_qt_segmentationIMGCorrectionActions.png "Figure 2. The correction tool can remove (left), or add (right) regions to a binary segmentation."
+\image html org_mitk_gui_qt_segmentationIMGcorrectionActions.png "Figure 2. The correction tool can remove (left), or add (right) regions to a binary segmentation."
 
 \subsection MITKSegmentationRightClick Context Sensitive Right Click Menu
 
