@@ -51,6 +51,8 @@ class QRadioButton;
 class QCheckBox;
 class QStackedLayout;
 class QmitkRenderWindow;
+class QLine;
+class ctkPopupWidget;
 
 /**
  * \class QmitkMIDASMultiViewWidget
@@ -321,11 +323,12 @@ private:
 
   // Layouts
   QHBoxLayout                                   *m_TopLevelLayout;
-  QGridLayout                                   *m_LayoutForRenderWindows;
+  QGridLayout                                   *m_LayoutToPutControlsOnTopOfWindows;
+  QHBoxLayout                                   *m_LayoutForGroupingControls;
   QGridLayout                                   *m_LayoutForTopControls;
-  QVBoxLayout                                   *m_LayoutToPutControlsOnTopOfWindows;
   QGridLayout                                   *m_LayoutForLayoutWidgets;
   QVBoxLayout                                   *m_LayoutForDropWidgets;
+  QGridLayout                                   *m_LayoutForRenderWindows;
 
   // Widgets
   QmitkMIDASOrientationWidget                   *m_MIDASOrientationWidget;
@@ -343,6 +346,9 @@ private:
   QRadioButton                                  *m_DropMultipleRadioButton;
   QRadioButton                                  *m_DropThumbnailRadioButton;
   QCheckBox                                     *m_DropAccumulateCheckBox;
+  QPushButton                                   *m_PopupPushButton;
+  ctkPopupWidget                                *m_PopupWidget;
+  QFrame                                        *m_ControlsContainerWidget;
 
   // This determines the maximum number of QmitkMIDASSingleViewWidget windows.
   static const unsigned int m_MaxRows = 5;

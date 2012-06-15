@@ -48,6 +48,7 @@
 #include "QmitkMIDASSingleViewWidget.h"
 #include "vtkRenderer.h"
 #include "vtkRendererCollection.h"
+#include "ctkPopupWidget.h"
 
 QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     QmitkMIDASMultiViewVisibilityManager* visibilityManager,
@@ -59,11 +60,12 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 : QWidget(parent, f)
 , mitk::MIDASViewKeyPressResponder()
 , m_TopLevelLayout(NULL)
-, m_LayoutForRenderWindows(NULL)
-, m_LayoutForTopControls(NULL)
 , m_LayoutToPutControlsOnTopOfWindows(NULL)
+, m_LayoutForGroupingControls(NULL)
+, m_LayoutForTopControls(NULL)
 , m_LayoutForLayoutWidgets(NULL)
 , m_LayoutForDropWidgets(NULL)
+, m_LayoutForRenderWindows(NULL)
 , m_MIDASOrientationWidget(NULL)
 , m_MIDASSlidersWidget(NULL)
 , m_MIDASBindWidget(NULL)
@@ -79,6 +81,9 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DropMultipleRadioButton(NULL)
 , m_DropThumbnailRadioButton(NULL)
 , m_DropAccumulateCheckBox(NULL)
+, m_PopupPushButton(NULL)
+, m_PopupWidget(NULL)
+, m_ControlsContainerWidget(NULL)
 , m_VisibilityManager(visibilityManager)
 , m_DataStorage(dataStorage)
 , m_RenderingManager(renderingManager)
@@ -107,7 +112,34 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_TopLevelLayout->setContentsMargins(0, 0, 0, 0);
   m_TopLevelLayout->setSpacing(0);
 
-  m_LayoutToPutControlsOnTopOfWindows = new QVBoxLayout();
+  int buttonRowHeight = 10;
+  m_PopupPushButton = new QPushButton(this);
+  m_PopupPushButton->setContentsMargins(0,0,0,0);
+  m_PopupPushButton->setFlat(true);
+  m_PopupPushButton->setMinimumHeight(buttonRowHeight);
+  m_PopupPushButton->setMaximumHeight(buttonRowHeight);
+
+  m_PopupWidget = new ctkPopupWidget(m_PopupPushButton);
+  m_PopupWidget->setOrientation(Qt::Vertical);
+  m_PopupWidget->setAnimationEffect(ctkBasePopupWidget::ScrollEffect);
+  m_PopupWidget->setHorizontalDirection(Qt::LeftToRight);
+  m_PopupWidget->setVerticalDirection(ctkBasePopupWidget::TopToBottom);
+  m_PopupWidget->setAutoShow(true);
+  m_PopupWidget->setAutoHide(true);
+  m_PopupWidget->setContentsMargins(0,0,0,0);
+  m_PopupWidget->setLineWidth(0);
+
+  m_ControlsContainerWidget = new QFrame(m_PopupWidget);
+  m_ControlsContainerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+  m_ControlsContainerWidget->setContentsMargins(0, 0, 0, 0);
+  m_ControlsContainerWidget->setLineWidth(0);
+
+  m_LayoutForGroupingControls = new QHBoxLayout(m_PopupWidget);
+  m_LayoutForGroupingControls->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForGroupingControls"));
+  m_LayoutForGroupingControls->setContentsMargins(0, 0, 0, 0);
+  m_LayoutForGroupingControls->setSpacing(0);
+
+  m_LayoutToPutControlsOnTopOfWindows = new QGridLayout();
   m_LayoutToPutControlsOnTopOfWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutToPutControlsOnTopOfWindows"));
   m_LayoutToPutControlsOnTopOfWindows->setContentsMargins(0, 0, 0, 0);
   m_LayoutToPutControlsOnTopOfWindows->setSpacing(0);
@@ -131,67 +163,68 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   m_LayoutForTopControls = new QGridLayout();
   m_LayoutForTopControls->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForTopControls"));
-  m_LayoutForTopControls->setContentsMargins(2, 0, 2, 0);
+  m_LayoutForTopControls->setContentsMargins(5, 0, 5, 0);
   m_LayoutForTopControls->setVerticalSpacing(0);
-  m_LayoutForTopControls->setHorizontalSpacing(2);
+  m_LayoutForTopControls->setHorizontalSpacing(5);
 
-  m_MIDASSlidersWidget = new QmitkMIDASSlidersWidget(this);
+  m_MIDASSlidersWidget = new QmitkMIDASSlidersWidget(m_ControlsContainerWidget);
   m_MIDASSlidersWidget->SetSliceSliderOffset(1);
+  m_MIDASSlidersWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-  m_MIDASOrientationWidget = new QmitkMIDASOrientationWidget(this);
+  m_MIDASOrientationWidget = new QmitkMIDASOrientationWidget(m_ControlsContainerWidget);
 
-  m_MIDASBindWidget = new QmitkMIDASBindWidget(this);
+  m_MIDASBindWidget = new QmitkMIDASBindWidget(m_ControlsContainerWidget);
 
-  m_1x1LayoutButton = new QPushButton(this);
+  m_1x1LayoutButton = new QPushButton(m_ControlsContainerWidget);
   m_1x1LayoutButton->setText("1x1");
   m_1x1LayoutButton->setToolTip("display 1 row and 1 column of image viewers");
 
-  m_1x2LayoutButton = new QPushButton(this);
+  m_1x2LayoutButton = new QPushButton(m_ControlsContainerWidget);
   m_1x2LayoutButton->setText("1x2");
   m_1x2LayoutButton->setToolTip("display 1 row and 2 columns of image viewers");
 
-  m_1x3LayoutButton = new QPushButton(this);
+  m_1x3LayoutButton = new QPushButton(m_ControlsContainerWidget);
   m_1x3LayoutButton->setText("1x3");
   m_1x3LayoutButton->setToolTip("display 1 row and 3 columns of image viewers");
 
-  m_2x2LayoutButton = new QPushButton(this);
+  m_2x2LayoutButton = new QPushButton(m_ControlsContainerWidget);
   m_2x2LayoutButton->setText("2x2");
   m_2x2LayoutButton->setToolTip("display 2 rows and 2 columns of image viewers");
 
-  m_RowsSpinBox = new QSpinBox(this);
+  m_RowsSpinBox = new QSpinBox(m_ControlsContainerWidget);
   m_RowsSpinBox->setMinimum(1);
   m_RowsSpinBox->setMaximum(m_MaxRows);
   m_RowsSpinBox->setValue(1);
   m_RowsSpinBox->setToolTip("click the arrows or type to change the number of rows");
 
-  m_RowsLabel = new QLabel(this);
+  m_RowsLabel = new QLabel(m_ControlsContainerWidget);
   m_RowsLabel->setText("rows");
 
-  m_ColumnsSpinBox = new QSpinBox(this);
+  m_ColumnsSpinBox = new QSpinBox(m_ControlsContainerWidget);
   m_ColumnsSpinBox->setMinimum(1);
   m_ColumnsSpinBox->setMaximum(m_MaxCols);
   m_ColumnsSpinBox->setValue(1);
   m_ColumnsSpinBox->setToolTip("click the arrows or type to change the number of columns");
 
-  m_ColumnsLabel = new QLabel(this);
+  m_ColumnsLabel = new QLabel(m_ControlsContainerWidget);
   m_ColumnsLabel->setText("columns");
 
-  m_DropSingleRadioButton = new QRadioButton(this);
+  m_DropSingleRadioButton = new QRadioButton(m_ControlsContainerWidget);
   m_DropSingleRadioButton->setText("single");
   m_DropSingleRadioButton->setToolTip("drop images into a single window");
   m_DropSingleRadioButton->setLayoutDirection(Qt::LeftToRight);
 
-  m_DropMultipleRadioButton = new QRadioButton(this);
+  m_DropMultipleRadioButton = new QRadioButton(m_ControlsContainerWidget);
   m_DropMultipleRadioButton->setText("multiple");
   m_DropMultipleRadioButton->setToolTip("drop images across multiple windows");
   m_DropMultipleRadioButton->setLayoutDirection(Qt::LeftToRight);
 
-  m_DropThumbnailRadioButton = new QRadioButton(this);
+  m_DropThumbnailRadioButton = new QRadioButton(m_ControlsContainerWidget);
   m_DropThumbnailRadioButton->setText("all");
   m_DropThumbnailRadioButton->setToolTip("drop multiple images into any window, and the application will spread them across all windows and provide evenly spaced slices through the image");
   m_DropThumbnailRadioButton->setLayoutDirection(Qt::LeftToRight);
 
-  m_DropAccumulateCheckBox = new QCheckBox(this);
+  m_DropAccumulateCheckBox = new QCheckBox(m_ControlsContainerWidget);
   m_DropAccumulateCheckBox->setText("accumulate");
   m_DropAccumulateCheckBox->setToolTip("dropped images accumulate, meaning you can repeatedly add more images without resetting the geometry");
   m_DropAccumulateCheckBox->setLayoutDirection(Qt::LeftToRight);
@@ -220,14 +253,17 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForTopControls->addLayout(m_LayoutForDropWidgets,   0, 3, 3, 1);
   m_LayoutForTopControls->addWidget(m_MIDASBindWidget,        0, 4, 3, 1);
 
-  m_LayoutForTopControls->setColumnMinimumWidth(0, 20);
+  m_LayoutForTopControls->setColumnMinimumWidth(0, 50);
   m_LayoutForTopControls->setColumnStretch(0, 5);
   m_LayoutForTopControls->setColumnStretch(1, 1);
   m_LayoutForTopControls->setColumnStretch(2, 0);
   m_LayoutForTopControls->setColumnStretch(3, 0);
+  m_LayoutForTopControls->setColumnStretch(4, 0);
 
-  m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForTopControls);
-  m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows);
+  m_LayoutForGroupingControls->addLayout(m_LayoutForTopControls);
+  m_LayoutToPutControlsOnTopOfWindows->addWidget(m_PopupPushButton, 0, 0);
+  m_LayoutToPutControlsOnTopOfWindows->setRowMinimumHeight(0, buttonRowHeight);
+  m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows, 1, 0);
   m_TopLevelLayout->addLayout(m_LayoutToPutControlsOnTopOfWindows);
 
   /************************************
@@ -295,6 +331,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 {
   QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkRenderWindow"), -5, 20, m_DataStorage, m_RenderingManager);
   widget->setObjectName(tr("QmitkMIDASSingleViewWidget"));
+  widget->setVisible(false);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
@@ -607,7 +644,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   m_LayoutForRenderWindows->setVerticalSpacing(0);
   m_LayoutForRenderWindows->setHorizontalSpacing(0);
 
-  m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows);
+  m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows, 1, 0);
 
   unsigned int widgetCounter = 0;
   for (unsigned int r = 0; r < numberOfRows; r++)
