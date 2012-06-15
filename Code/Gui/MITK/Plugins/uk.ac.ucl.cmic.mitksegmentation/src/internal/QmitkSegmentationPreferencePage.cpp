@@ -63,7 +63,7 @@ void QmitkSegmentationPreferencePage::CreateQtControl(QWidget* parent)
   QVBoxLayout* displayOptionsLayout = new QVBoxLayout;
   m_RadioOutline = new QRadioButton( "Draw as outline", m_MainControl);
   displayOptionsLayout->addWidget( m_RadioOutline );
-  m_RadioOverlay = new QRadioButton( "Draw as transparent overlay", m_MainControl);
+  m_RadioOverlay = new QRadioButton( "Draw as semi-transparent overlay", m_MainControl);
   displayOptionsLayout->addWidget( m_RadioOverlay );
 
   QFormLayout *formLayout = new QFormLayout;

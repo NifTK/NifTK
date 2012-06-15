@@ -55,6 +55,8 @@ MITKSegmentationView::MITKSegmentationView()
 , m_ContainerForSelectorWidget(NULL)
 , m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
+, m_OutlineBinary(true)
+, m_VolumeRendering(false)
 {
   RegisterSegmentationObjectFactory();
   m_DefaultSegmentationColor.setRedF(1);
@@ -157,6 +159,9 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
     mitkTool->SetShowMarkerNodes(false);
     mitkTool->Enable3DInterpolation(false);
 
+    // Make sure these are up to date when view first shown.
+    this->RetrievePreferenceValues();
+
     // Finally do Qt signals/slots.
     this->CreateConnections();
   }
@@ -227,6 +232,13 @@ mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
       return NULL;
     }
 
+    // Apply preference values.
+    newSegmentation->SetBoolProperty("outline binary", m_OutlineBinary);
+    newSegmentation->SetBoolProperty("volumerendering", m_VolumeRendering);
+    if (!m_OutlineBinary)
+    {
+      newSegmentation->SetOpacity(0.5);
+    }
     // Give the ToolManager data to segment.
     mitk::ToolManager::DataVectorType workingData;
     workingData.push_back(newSegmentation);
@@ -242,4 +254,24 @@ mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
 
   // And... relax.
   return newSegmentation;
+}
+
+void MITKSegmentationView::RetrievePreferenceValues()
+{
+  QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues();
+
+  berry::IPreferencesService::Pointer prefService
+      = berry::Platform::GetServiceRegistry()
+      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+
+    assert( prefService );
+
+    berry::IBerryPreferences::Pointer prefs
+        = (prefService->GetSystemPreferences()->Node(this->GetPreferencesNodeName()))
+          .Cast<berry::IBerryPreferences>();
+
+    assert( prefs );
+
+    m_OutlineBinary = prefs->GetBool("draw outline", true);
+    m_VolumeRendering = prefs->GetBool("volume rendering", false);
 }

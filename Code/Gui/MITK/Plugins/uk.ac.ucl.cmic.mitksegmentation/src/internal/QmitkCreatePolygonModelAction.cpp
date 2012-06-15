@@ -108,7 +108,7 @@ void QmitkCreatePolygonModelAction::Run(const QList<DataNode::Pointer> &selected
       surfaceFilter->SetParameter("TimeNr", timeNr);
 
       IPreferencesService::Pointer prefService = Platform::GetServiceRegistry().GetServiceById<IPreferencesService>(IPreferencesService::ID);
-      IPreferences::Pointer segPref = prefService->GetSystemPreferences()->Node("/uk_ac_ucl_cmic_midasgeneralsegmentor");
+      IPreferences::Pointer segPref = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.mitksegmentation");
 
       bool smoothingHint = segPref->GetBool("smoothing hint", true);
       float smoothing = (float)segPref->GetDouble("smoothing value", 1.0);

@@ -27,6 +27,9 @@
 
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
 #include "ui_MITKSegmentationViewControls.h"
+#include "berryIPreferences.h"
+#include "berryIPreferencesService.h"
+#include "berryIBerryPreferences.h"
 
 /*!
  * \class MITKSegmentationView
@@ -75,6 +78,9 @@ protected:
   /// \brief Creates the connections of widgets in this class to the slots in this class.
   virtual void CreateConnections();
 
+  /// \brief Retrieve's the pref values from preference service, and store locally.
+  virtual void RetrievePreferenceValues();
+
   /// \brief Method to enable derived classes to turn all widgets off/on to signify
   /// when the view is considered enabled/disabled.
   ///
@@ -109,6 +115,12 @@ private:
 
   /// \brief Container for the Morphological Controls Widgets. \see QmitkMIDASBaseSegmentationFunctionality
   QWidget *m_ContainerForControlsWidget;
+
+  /// \brief When a binary volume is created, this flag decides if it is an outline (the default), or an overlay.
+  bool m_OutlineBinary;
+
+  /// \brief When a binary volume is created, this flag determines if we are volume rendering (default to false).
+  bool m_VolumeRendering;
 };
 
 #endif // MITKSegmentationView_h

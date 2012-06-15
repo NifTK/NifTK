@@ -188,9 +188,6 @@ protected:
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   virtual void ApplyDisplayOptions(mitk::DataNode* node);
 
-  /// \brief Make sure all images/segmentations look as selected by the users in this view's preferences.
-  virtual void ForceDisplayPreferencesUponAllImages();
-
   /// \brief Propagate BlueBerry selection to ToolManager for manual segmentation.
   virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
 

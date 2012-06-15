@@ -444,31 +444,6 @@ void QmitkMIDASBaseSegmentationFunctionality::ApplyDisplayOptions(mitk::DataNode
 }
 
 
-void QmitkMIDASBaseSegmentationFunctionality::ForceDisplayPreferencesUponAllImages()
-{
-  if (!m_Parent || !m_Parent->isVisible()) return;
-
-  if (!m_ImageAndSegmentationSelector) return; // might happen on initialization (preferences loaded)
-
-  mitk::DataNode::Pointer referenceData = this->GetReferenceNodeFromToolManager();
-  if (referenceData.IsNotNull())
-  {
-    // iterate all images
-    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = this->GetDataStorage()->GetSubset( isImage );
-    for ( mitk::DataStorage::SetOfObjects::const_iterator iter = allImages->begin(); iter != allImages->end(); ++iter)
-    {
-      mitk::DataNode* node = *iter;
-
-      // apply display preferences
-      ApplyDisplayOptions(node);
-    }
-  }
-  QmitkAbstractView::RequestRenderWindowUpdate();
-}
-
-
 void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
