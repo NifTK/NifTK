@@ -8,14 +8,57 @@
 The MITK Segmentation View provides a cut-down version of the MITK Segmentation View provided as default with the MITK
 application "ExtApp".  The reason to provide a cut-down version was for the sake of simplicity, and reliability.
 At the time of writing, only the 2D tools were required.  The MITK Segmentation View provides simple tools for 
-editing voxels within a binary image. Each edit will affect a specific binary image, and comes with Undo/Redo capabilities.
-
-It is currently possible to perform several segmentations simultaneously, but each segmentation must be stored in a separate
-volume.
+editing voxels within a binary image and comes with Undo/Redo capabilities. It is currently possible to perform several \
+segmentations simultaneously, but each segmentation must be stored in a separate volume. 
 
 \section MITKSegmentationUsage Usage
 
+Figure 1. shows the simplified MITK segmentation GUI.
+
+\image html MITKSegmentationGUI.png "Figure 1. The Simplified MITK Segmentation GUI."
+
+The usage is as follows:
+
+\li Launch the View by selecting "Window", then "Show View", and then "MITK Segmentation"
+\li Select a grey scale image in the Data Manager View. The "new segmentation" button will become enabled.
+\li Click "new segmentation", and a small dialog box allows to specify a name, and a colour.
+\li Once the "new segmentation" dialog has successfully completed, a new binary image will be available - use the tools to edit.
+
+The currently available tools are:
+
+\li Add - Click the left mouse button and drag to draw a closed contour (i.e. a complete loop). 
+Upon releasing the left mouse button, the outlined shape is converted to voxels and stored in the binary image.
+\li Subtract - The opposite of Add, in that you define a closed contour, and the resultant shape is erased from the binary image
+\li Paint - Uses a paintbrush of a given radius to write voxels to the binary image. Click the left mouse button and drag to
+paint voxels within a circular region. The radius of the region is adjusted via a slider that appears below the toolbox.
+\li Wipe - The opposite of Paint, erasing voxels.
+\li Region Growing - Use the left mouse click to select a starting point, and drag upwards to increase the range of acceptable
+values, and drag downwards to narrow the range. Region growing procedes outwards from the starting point.
+\li Correction = Use the left mouse click, and drag to draw a line. If the line starts and finishes outside the region, the 
+smallest side of the line is removed. If the line starts and finishes within a region, the area enclosed by the line is added. See Figure 2.
+\li Fill - Use the left mouse click to fill holes.
+\li Erase - use the left mouse click to erase sections.
+
+\image html org_mitk_gui_qt_segmentationIMGCorrectionActions.png "Figure 2. The correction tool can remove (left), or add (right) regions to a binary segmentation."
+
+\subsection MITKSegmentationRightClick Context Sensitive Right Click Menu
+
+This View also registers a right click, context sensitive menu with the Data Manager. When you select a binary image in
+the data manager, you will have an option available via right-clicking to "Create Polygonal Surface", and "Create Smoothed Polygonal
+Surface". These options enable a triangle mesh to be created from the binary segmentations.
+ 
 \section MITKSegmentationPreferences Preferences
+
+The MITK Segmentation View within NiftyView provides the default preferences available for MITK, and also enables the specification
+of the default colour when the "new segmentation" dialog box is opened.
+
+\image html MITKSegmentationPreferences.png "Figure 3. The preferenes control the display of the segmentation, and the creation of triangle meshes."
+
+In Figure 3 we can see, that a binary image can be drawn as an outline, or as a semi transparent overlay. The resulting volume 
+can be volume rendered.  There are also default values for the triangle mesh creation, smoothing and decimation process.
+Finally there is a default colour for the segmentations. These preference values apply to any new segmentations. If, for example,
+you have set the volume rendering preference to on, a new segmentation will have volume rendering on. Turning the preference to
+off only affects new segmentations, and you must manually turn off the volume rendering property on the already created binary image.
 
 
 */
