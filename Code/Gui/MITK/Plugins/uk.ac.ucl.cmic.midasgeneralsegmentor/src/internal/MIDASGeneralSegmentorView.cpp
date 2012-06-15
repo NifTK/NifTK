@@ -2722,7 +2722,7 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
   regionGrowingFilter->SetProjectSeedsIntoRegion(true);
-  regionGrowingFilter->SetForegroundValue(255);
+  regionGrowingFilter->SetForegroundValue(1);
   regionGrowingFilter->SetBackgroundValue(0);
   regionGrowingFilter->SetLowerThreshold(lowerThreshold);
   regionGrowingFilter->SetUpperThreshold(upperThreshold);
@@ -2894,7 +2894,7 @@ MIDASGeneralSegmentorView
 
   typename ExtractContoursFilterType::Pointer extractContoursFilter = ExtractContoursFilterType::New();
   extractContoursFilter->SetInput(extractSliceFilter->GetOutput());
-  extractContoursFilter->SetContourValue(127.5);
+  extractContoursFilter->SetContourValue(0.5);
 
   extractContoursFilter->Update();
 
@@ -3063,7 +3063,7 @@ MIDASGeneralSegmentorView
 
   typename BinaryThresholdFilterType::Pointer binaryThresholdFilter = BinaryThresholdFilterType::New();
   binaryThresholdFilter->SetInput(connectedComponentsFilter->GetOutput());
-  binaryThresholdFilter->SetInsideValue(255);
+  binaryThresholdFilter->SetInsideValue(1);
   binaryThresholdFilter->SetOutsideValue(0);
 
   for (unsigned int i = 0; i < regionSize[axisNumber]; i++)

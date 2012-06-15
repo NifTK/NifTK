@@ -81,7 +81,7 @@ public:
   /// \param additionsImageBeingEdited if true, means we were actively editing the "additions" image.
   typename SegmentationImageType::Pointer GetOutput(bool editingImageBeingEdited, bool additionsImageBeingEdited);
 
-  /// \brief The foreground value for the segmentation, equal to 255, set in constructor.
+  /// \brief The foreground value for the segmentation, equal to 1, set in constructor.
   mitk::Tool::DefaultSegmentationDataType                      m_ForegroundValue;
 
   /// \brief The background value for the segmentation, equal to 0, set in constructor.

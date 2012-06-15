@@ -160,7 +160,7 @@ void
 MIDASRegionGrowingProcessor<TInputImage, TOutputImage, TPointSet>
 ::Execute()
 {
-  SegmentationImagePixelType foreground = 255;
+  SegmentationImagePixelType foreground = 1;
   SegmentationImagePixelType background = 0;
   
   if (m_GreyScaleImage.IsNull())

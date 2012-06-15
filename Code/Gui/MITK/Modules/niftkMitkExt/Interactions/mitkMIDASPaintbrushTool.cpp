@@ -316,7 +316,7 @@ bool mitk::MIDASPaintbrushTool::OnLeftMousePressed (Action* action, const StateE
 
 bool mitk::MIDASPaintbrushTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  this->DoMouseMoved(action, stateEvent, 0, 255, 0);
+  this->DoMouseMoved(action, stateEvent, 0, 1, 0);
   return true;
 }
 
@@ -333,7 +333,7 @@ bool mitk::MIDASPaintbrushTool::OnMiddleMousePressed (Action* action, const Stat
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  this->DoMouseMoved(action, stateEvent, 1, 255, 0);
+  this->DoMouseMoved(action, stateEvent, 1, 1, 0);
   return true;
 }
 
@@ -350,7 +350,7 @@ bool mitk::MIDASPaintbrushTool::OnRightMousePressed (Action* action, const State
 
 bool mitk::MIDASPaintbrushTool::OnRightMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  this->DoMouseMoved(action, stateEvent, 1, 0, 255);
+  this->DoMouseMoved(action, stateEvent, 1, 0, 1);
   return true;
 }
 

@@ -45,7 +45,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_LateConnectedComponentFilter->SetCapacity(capacity);
 
   // Making sure that these are only called once in constructor, to avoid unnecessary pipeline updates.
-  m_ForegroundValue = 255;
+  m_ForegroundValue = 1;
   m_BackgroundValue = 0;
   m_ThresholdingFilter->SetInsideValue(m_ForegroundValue);
   m_ThresholdingFilter->SetOutsideValue(m_BackgroundValue);

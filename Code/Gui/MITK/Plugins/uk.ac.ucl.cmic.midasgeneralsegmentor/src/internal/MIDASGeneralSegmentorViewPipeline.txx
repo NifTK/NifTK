@@ -45,7 +45,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_CastToBinaryFilter = CastGreySliceToSegmentationSliceFilterType::New();
   m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
-  m_RegionGrowingFilter->SetForegroundValue(255);
+  m_RegionGrowingFilter->SetForegroundValue(1);
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -138,7 +138,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
               itk::ImageRegionIterator<SegmentationImageType> iterator(m_CastToBinaryFilter->GetOutput(), paintingRegion);
               for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
               {
-                iterator.Set(255);
+                iterator.Set(1);
               }
             }
           } // end for k         
