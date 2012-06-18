@@ -29,7 +29,7 @@ INCLUDE(mitkFunctionGetGccVersion)
 INCLUDE(mitkFunctionGetVersion)
 
 # Retrieve some software versions
-mitkFunctionGetVersion("${CMAKE_BINARY_DIR}/../CTK-src" CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
+mitkFunctionGetVersion(${CTK_SOURCE_DIR} CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
 mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
 mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK_SVN)
 
@@ -44,8 +44,8 @@ MESSAGE("MITK version=${MITK_REVISION_ID}")
 MESSAGE("CTK version=${CTK_REVISION_ID}")
 
 IF(BUILD_IGI)
-  mitkFunctionGetVersion(${NIFTYLINK_SOURCE_DIR} NIFTYLINK_SVN)
-  MESSAGE("NiftyLink version=${NIFTYLINK_SVN_REVISION_ID}")
+  mitkFunctionGetVersion(${NiftyLink_SOURCE_DIR} NIFTYLINK)
+  MESSAGE("NiftyLink version=${NIFTYLINK_REVISION_ID}")
 ENDIF(BUILD_IGI)
 
 MESSAGE("NIFTK version=${NIFTK_SVN_REVISION_ID}")

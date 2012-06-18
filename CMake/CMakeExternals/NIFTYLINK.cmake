@@ -27,17 +27,17 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NIFTYLINK_DIR AND NOT EXISTS ${NIFTYLINK_DIR})
-  MESSAGE(FATAL_ERROR "NIFTYLINK_DIR variable is defined but corresponds to non-existing directory \"${NIFTYLINK_DIR}\".")
+IF(DEFINED NiftyLink_DIR AND NOT EXISTS ${NiftyLink_DIR})
+  MESSAGE(FATAL_ERROR "NiftyLink_DIR variable is defined but corresponds to non-existing directory \"${NIFTYLINK_DIR}\".")
 ENDIF()
 
 IF(BUILD_IGI)
 
-  SET(proj NIFTYLINK)
+  SET(proj NiftyLink)
   SET(proj_DEPENDENCIES)
   SET(NIFTYLINK_DEPENDS ${proj})
   
-  IF(NOT DEFINED NIFTYLINK_DIR)
+  IF(NOT DEFINED NiftyLink_DIR)
   
     ExternalProject_Add(${proj}
        GIT_REPOSITORY git:${NIFTK_LOCATION_NIFTYLINK}
@@ -51,17 +51,17 @@ IF(BUILD_IGI)
        DEPENDS ${proj_DEPENDENCIES}
     )
    
-    SET(NIFTYLINK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/NiftyLink-build)
-    SET(NIFTYLINK_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/NIFTYLINK)
+    SET(NiftyLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/NiftyLink-build)
+    SET(NiftyLink_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/NiftyLink)
     SET(OpenIGTLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
     
-    MESSAGE("SuperBuild loading NiftyLink from ${NIFTYLINK_DIR}")
+    MESSAGE("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     MESSAGE("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")
     
-  ELSE(NOT DEFINED NIFTYLINK_DIR)
+  ELSE(NOT DEFINED NiftyLink_DIR)
   
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
   
-  ENDIF(NOT DEFINED NIFTYLINK_DIR)
+  ENDIF(NOT DEFINED NiftyLink_DIR)
 
 ENDIF(BUILD_IGI)

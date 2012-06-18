@@ -78,6 +78,8 @@ IF(QT_FOUND)
       DEPENDS ${proj_DEPENDENCIES}
     )
   SET(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  SET(CTK_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src)
+
   MESSAGE("SuperBuild loading CTK from ${CTK_DIR}")
   
   ELSE()
