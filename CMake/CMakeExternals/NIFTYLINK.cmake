@@ -40,7 +40,7 @@ IF(BUILD_IGI)
   IF(NOT DEFINED NIFTYLINK_DIR)
   
     ExternalProject_Add(${proj}
-       SVN_REPOSITORY https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyLink
+       GIT_REPOSITORY git:${NIFTK_LOCATION_NIFTYLINK}
        BINARY_DIR ${proj}-build
        INSTALL_COMMAND ""
        CMAKE_GENERATOR ${GEN}

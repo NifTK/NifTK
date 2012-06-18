@@ -177,6 +177,7 @@ SET(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightTo
 SET(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK")
 SET(NIFTK_LOCATION_CTK "//github.com/commontk/CTK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_MITK "//github.com/MattClarkson/MITK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
+SET(NIFTK_LOCATION_NIFTYLINK "//cmicdev.cs.ucl.ac.uk/NiftyLink" CACHE STRING "Location of NiftyLink - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_DATA "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING  "Location of NifTK unit test data.")
 
 ######################################################################
