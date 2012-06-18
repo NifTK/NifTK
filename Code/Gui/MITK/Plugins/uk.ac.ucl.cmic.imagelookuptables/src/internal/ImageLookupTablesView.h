@@ -120,6 +120,15 @@ private:
   /// \brief Retrieve's the corresponding node for the image
   mitk::DataNode* FindNodeForImage(mitk::Image* image);
 
+  /// \brief Gets the stats using itkStatisticsImageFilter.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKGetStatistics(
+      itk::Image<TPixel, VImageDimension> *itkImage,
+      float& min,
+      float& max,
+      float &mean,
+      float &stdDev);
+
   /// \brief All the controls for the main view part.
   Ui::ImageLookupTablesViewControls* m_Controls;
 
