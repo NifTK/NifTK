@@ -30,7 +30,7 @@
 
 #include "itkImage.h"
 #include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
+#include "itkImageRegionIteratorWithIndex.h"
 #include "itkMIDASSegmentationTestUtils.h"
 
 template <class TPixel, unsigned int VImageDimension>
@@ -55,7 +55,7 @@ void FillImageRegionWithValue(TPixel value, itk::Image<TPixel, VImageDimension>*
 {
   typedef itk::Image<TPixel, VImageDimension> ImageType;
 
-  itk::ImageRegionIterator<ImageType> iterator(image, region);
+  itk::ImageRegionIteratorWithIndex<ImageType> iterator(image, region);
   for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
   {
     iterator.Set(value);
