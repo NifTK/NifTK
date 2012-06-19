@@ -58,15 +58,15 @@ public:
 };
 
 
-const std::string SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME = "gaussian smooth";
+const std::string SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME = "surface_extractor.gaussian_smooth";
 const bool SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_DEFAULT = true;
-const std::string SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME = "gaussian standard deviation";
+const std::string SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME = "surface_extractor.gaussian_standard_deviation";
 const double SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_DEFAULT = 0.5;
-const std::string SurfaceExtractorPreferencePage::THRESHOLD_NAME = "threshold";
+const std::string SurfaceExtractorPreferencePage::THRESHOLD_NAME = "surface_extractor.threshold";
 const double SurfaceExtractorPreferencePage::THRESHOLD_DEFAULT = 100.0;
-const std::string SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME = "target reduction";
+const std::string SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME = "surface_extractor.target_reduction";
 const double SurfaceExtractorPreferencePage::TARGET_REDUCTION_DEFAULT = 0.1;
-const std::string SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME = "maximal number of polygons";
+const std::string SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME = "surface_extractor.maximal_number_of_polygons";
 const long SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_DEFAULT = 2000000;
 
 SurfaceExtractorPreferencePage::SurfaceExtractorPreferencePage()

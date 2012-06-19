@@ -32,6 +32,7 @@
 #include <QmitkAbstractView.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
+#include <mitkImageToSurfaceFilter.h>
 
 class QWidget;
 class QEvent;
@@ -107,6 +108,8 @@ private:
 
   void createSurfaceNode();
   void updateSurfaceNode();
+
+  mitk::ImageToSurfaceFilter::Pointer createImageToSurfaceFilter();
 
   /// \brief All the controls for the main view part.
   Ui::SurfaceExtractorViewControls* m_Controls;

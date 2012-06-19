@@ -6,32 +6,32 @@
 
 \section Introduction
 
-The purpose of the plugin is to provide a simple interface for creating the isosurface of 3D volumes. 
+The purpose of the plugin is to provide a simple interface for creating the isosurface of 3D and 4D volumes. 
 Floating point and label images are supported as well. The surface is extracted using the marching cube 
-algorithm, with optional smoothing and decimation step.
+algorithm with an optional smoothing and decimation step.
 
 \section Usage
 
 The "Reference Image" label on the top of the view shows if an image of a supported type is selected. 
 If there is none then the controls of the plugin are disabled.
 
-Select a 3D volume from the Data Manager then press the "Create" button to create a new surface node.
+Select a 3D volume from the Data Manager then press the "Create" button to create a new surface node. 
 
 \image html surface_extractor-new.png "Create new surface"
 
-A new subnode called "Surface 1" will appear in the Data Manager under the reference image node.
+A new subnode called "Surface 1" will appear in the Data Manager under the reference image node. In the 
+Surface Extractor view the name of the surface will appear under the name of the reference image, and 
+the controls of the view will be enabled. You can adjust the parameters, and calculate the surface with 
+the "Apply" button or simply by pressing Enter. If you have modified the parameters, but you want to 
+discard these changes, press Escape, and the original parameters will be restored from the surface node.
 
-If you click on the surface node, the controls of the view will be enabled. You can adjust the parameters, 
-and calculate the surface with the "Apply" button or simply by pressing Enter. If you have modified the 
-parameters, but you want to discard these changes, press Escape, and the original parameters will be restored 
-from the surface node.
-
-The meaning of the parameters is summerized below. You can get a hint of the meaning of the fields if as a 
-tooltip. The default value of the parameters of the new nodes can be customized in the preferences page of the plugin.
+The meaning of the parameters is summarized below. If you move the mouse over a field, you will get 
+a hint of the meaning of the field. The default value of the parameters of the new nodes can be customized 
+in the preferences page of the plugin.
 
 <ul>
-  \li threshold: Threshold that is used to create the surface. All pixel in the input image that are higher than that
-        value will be considered in the surface.
+  \li threshold: Threshold that is used to create the surface. All pixel in the input image that are higher 
+        than that value will be considered in the surface.
   \li smoothing: Perform Gaussian smoothing.
   \li gaussian std.dev: Standard deviation for the gaussian smoothing.
   \li target reduction: the desired target reduction of triangles in the range from 0.0 to 1.0.
@@ -46,11 +46,15 @@ tooltip. The default value of the parameters of the new nodes can be customized 
 
 You can create several surfaces for the same image with different set of parameters. The parameters used to 
 create the surface will be stored in the node, and will be retrieved from them when you select the surface 
-node next time. Each surface node will have different colour. The visualization of the surfaces can be switched 
+next time. Each surface will have different colour. The visualization of the surfaces can be switched 
 on and off individually in the Data Manager view, by the check boxes beside the name of the node. The next 
 screenshot shows two surfaces. For the yellow surface a higher threshold has been used.
 
 \image html surface_extractor-rendered_surfaces.png "Rendered surfaces"
+
+Finally, here is a screenshot of the surface of a labelled volume.
+
+\image html surface_extractor-rendered_label_volume_surface.png "Rendered surfaces"
 
 \section Preferences
 

@@ -39,12 +39,15 @@
 #include <mitkNodePredicateBase.h>
 #include <mitkNodePredicateDimension.h>
 #include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateOr.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkColorSequenceRainbow.h>
+#include <mitkImage.h>
 #include <mitkSurface.h>
 #include <mitkManualSegmentationToSurfaceFilter.h>
+#include <mitkLabeledImageToSurfaceFilter.h>
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateDataType.h>
 
@@ -60,14 +63,54 @@
 #include <berryISelectionListener.h>
 #include <berryIStructuredSelection.h>
 
+class NodePredicateLabelImage : public mitk::NodePredicateBase
+{
+public:
+  mitkClassMacro(NodePredicateLabelImage, NodePredicateBase);
+  itkNewMacro(NodePredicateLabelImage);
+
+  //##Documentation
+  //## @brief Standard Destructor
+  virtual ~NodePredicateLabelImage() {}
+
+  //##Documentation
+  //## @brief Checks, if the nodes contains a property that is equal to m_ValidProperty
+  virtual bool CheckNode(const mitk::DataNode* node) const
+  {
+    if (node == NULL)
+    {
+      throw std::invalid_argument("NodePredicateLabelImage: invalid node");
+    }
+
+    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (!image)
+    {
+      return false;
+    }
+
+    mitk::PixelType pixelType = image->GetPixelType();
+    const std::type_info& pixelTypeId = pixelType.GetPixelTypeId();
+    if (pixelTypeId == typeid(char) || pixelTypeId == typeid(unsigned char))
+    {
+      return true;
+    }
+    return false;
+  }
+};
+
+
 class SurfaceExtractorViewPrivate {
 public:
   SurfaceExtractorViewPrivate();
 
-  mitk::NodePredicateBase::Pointer has3DImage;
-  mitk::NodePredicateBase::Pointer has3DFeatureImage;
-  mitk::NodePredicateBase::Pointer has3DLabelImage;
-  mitk::NodePredicateBase::Pointer has3DSurfaceImage;
+  mitk::NodePredicateBase::Pointer has3dImage;
+  mitk::NodePredicateBase::Pointer has3dOr4dImage;
+  mitk::NodePredicateBase::Pointer has3dGrayScaleImage;
+  mitk::NodePredicateBase::Pointer has3dOr4dGrayScaleImage;
+  mitk::NodePredicateBase::Pointer has3dLabelImage;
+  mitk::NodePredicateBase::Pointer has3dOr4dLabelImage;
+  mitk::NodePredicateBase::Pointer has3dSurfaceImage;
+  mitk::NodePredicateBase::Pointer has3dOr4dSurfaceImage;
 
   mitk::DataNode::Pointer referenceNode;
   mitk::DataStorage::SetOfObjects::ConstPointer surfaceNodes;
@@ -75,14 +118,14 @@ public:
 
   mitk::ColorSequenceRainbow rainbowColor;
 
+  /// Threshold
+  double threshold;
+
   /// Gaussian smoothing
   bool gaussianSmooth;
 
   /// Gaussian standard deviation
   double gaussianStdDev;
-
-  /// Threshold
-  double threshold;
 
   // Value for DecimatePro
   float targetReduction;
@@ -96,8 +139,14 @@ public:
 
 SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
 {
-  mitk::NodePredicateDimension::Pointer has3DImage =
+  mitk::NodePredicateDimension::Pointer has3dImage =
       mitk::NodePredicateDimension::New(3);
+
+  mitk::NodePredicateDimension::Pointer has4dImage =
+      mitk::NodePredicateDimension::New(4);
+
+  mitk::NodePredicateOr::Pointer has3dOr4dImage =
+      mitk::NodePredicateOr::New(has3dImage, has4dImage);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer hasImage =
       mitk::TNodePredicateDataType<mitk::Image>::New();
@@ -108,22 +157,43 @@ SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
   mitk::NodePredicateNot::Pointer isNotBinary =
       mitk::NodePredicateNot::New(isBinary);
 
-  mitk::NodePredicateAnd::Pointer has3DNotBinaryImage =
-      mitk::NodePredicateAnd::New(has3DImage, isNotBinary);
+  mitk::NodePredicateAnd::Pointer has3dNotBinaryImage =
+      mitk::NodePredicateAnd::New(has3dImage, isNotBinary);
+
+  mitk::NodePredicateAnd::Pointer has3dOr4dNotBinaryImage =
+      mitk::NodePredicateAnd::New(has3dOr4dImage, isNotBinary);
 
   mitk::NodePredicateAnd::Pointer hasBinaryImage =
       mitk::NodePredicateAnd::New(hasImage, isBinary);
 
-  mitk::NodePredicateAnd::Pointer has3DBinaryImage =
-      mitk::NodePredicateAnd::New(hasBinaryImage, has3DImage);
+  mitk::NodePredicateAnd::Pointer has3dBinaryImage =
+      mitk::NodePredicateAnd::New(hasBinaryImage, has3dImage);
+
+  mitk::NodePredicateAnd::Pointer has3dOr4dBinaryImage =
+      mitk::NodePredicateAnd::New(has3dOr4dImage, hasBinaryImage);
+
+  // TODO incorrect definition:
+//  mitk::NodePredicateAnd::Pointer hasLabelImage =
+//      mitk::NodePredicateAnd::New(hasImage, isBinary);
+  NodePredicateLabelImage::Pointer hasLabelImage =
+      NodePredicateLabelImage::New();
+
+  mitk::NodePredicateAnd::Pointer has3dLabelImage =
+      mitk::NodePredicateAnd::New(has3dImage, hasLabelImage);
+
+  mitk::NodePredicateAnd::Pointer has3dOr4dLabelImage =
+      mitk::NodePredicateAnd::New(has3dOr4dImage, hasLabelImage);
 
   mitk::NodePredicateProperty::Pointer hasSurfaceImage =
       mitk::NodePredicateProperty::New("Surface", mitk::BoolProperty::New(true));
 
-  this->has3DImage = has3DImage;
-  this->has3DFeatureImage = has3DNotBinaryImage;
-  this->has3DLabelImage = has3DBinaryImage;
-  this->has3DSurfaceImage = hasSurfaceImage;
+  this->has3dImage = has3dImage;
+  this->has3dOr4dImage = has3dOr4dImage;
+  this->has3dGrayScaleImage = has3dNotBinaryImage;
+  this->has3dOr4dGrayScaleImage = has3dOr4dNotBinaryImage;
+  this->has3dLabelImage = has3dLabelImage;
+  this->has3dOr4dLabelImage = has3dOr4dLabelImage;
+  this->has3dOr4dSurfaceImage = hasSurfaceImage;
 }
 
 const std::string SurfaceExtractorView::VIEW_ID = "uk.ac.ucl.cmic.SurfaceExtractor";
@@ -292,11 +362,11 @@ void SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer par
   }
 
   mitk::DataNode::Pointer node = nodes[0];
-  if (d->has3DImage->CheckNode(node) || d->has3DLabelImage->CheckNode(node))
+  if (d->has3dOr4dImage->CheckNode(node))
   {
     selectReferenceNode(node);
   }
-  else if (d->has3DSurfaceImage->CheckNode(node))
+  else if (d->has3dOr4dSurfaceImage->CheckNode(node))
   {
     selectSurfaceNode(node);
   }
@@ -361,7 +431,7 @@ mitk::DataStorage::SetOfObjects::ConstPointer SurfaceExtractorView::findSurfaceN
     return 0;
   }
 
-  return dataStorage->GetDerivations(referenceNode, d->has3DSurfaceImage, true);
+  return dataStorage->GetDerivations(referenceNode, d->has3dOr4dSurfaceImage, true);
 }
 
 mitk::DataNode::Pointer SurfaceExtractorView::findReferenceNodeOf(mitk::DataNode::Pointer surfaceNode)
@@ -369,7 +439,7 @@ mitk::DataNode::Pointer SurfaceExtractorView::findReferenceNodeOf(mitk::DataNode
   MITK_INFO << "SurfaceExtractorView::findReferenceNodeOf(mitk::DataNode::Pointer surfaceNode)";
   Q_D(SurfaceExtractorView);
   mitk::DataStorage::Pointer dataStorage = GetDataStorage();
-  mitk::DataStorage::SetOfObjects::ConstPointer referenceNodes = dataStorage->GetSources(surfaceNode, d->has3DImage, true);
+  mitk::DataStorage::SetOfObjects::ConstPointer referenceNodes = dataStorage->GetSources(surfaceNode, d->has3dOr4dImage, true);
   if (referenceNodes->Size() != 1)
   {
     return 0;
@@ -453,6 +523,7 @@ void SurfaceExtractorView::updateSurfaceNode()
 {
   Q_D(SurfaceExtractorView);
 
+  MITK_INFO << "SurfaceExtractorView::updateSurfaceNode()";
   if (d->referenceNode.IsNull())
   {
     MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): No reference image. The button should be disabled.";
@@ -475,32 +546,28 @@ void SurfaceExtractorView::updateSurfaceNode()
     return;
   }
 
-  //ImageToSurface Instance
-//  mitk::DataNode::Pointer node = m_Controls->m_ImageSelector->GetSelectedNode();
-
-  mitk::ManualSegmentationToSurfaceFilter::Pointer filter = mitk::ManualSegmentationToSurfaceFilter::New();
+  mitk::ImageToSurfaceFilter::Pointer filter = createImageToSurfaceFilter();
   if (filter.IsNull())
   {
-    std::cout<<"NULL Pointer for ManualSegmentationToSurfaceFilter"<<std::endl;
+    MITK_INFO << "SurfaceExtractorView::updateSurface(): No filter created.";
     return;
   }
 
   filter->SetInput(referenceImage);
   filter->SetThreshold(d->threshold); // if( Gauss ) --> TH manipulated for vtkMarchingCube
-  filter->SetUseGaussianImageSmooth(d->gaussianSmooth);
-  filter->SetGaussianStandardDeviation(d->gaussianStdDev);
   filter->SetTargetReduction(d->targetReduction);
 
   try
   {
+    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 40";
     filter->Update();
-    MITK_INFO << "SurfaceExtractorView::createSurfaceNode(): 57";
+    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 57";
   }
   catch (std::exception& exc)
   {
-    MITK_INFO << "SurfaceExtractorView::createSurfaceNode(): 58";
+    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 58";
   }
-  MITK_INFO << "SurfaceExtractorView::createSurfaceNode(): 60";
+  MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 60";
 
   long long numOfPolys = filter->GetOutput()->GetVtkPolyData()->GetNumberOfPolys();
   if (numOfPolys > d->maxNumberOfPolygons)
@@ -518,7 +585,7 @@ void SurfaceExtractorView::updateSurfaceNode()
     }
     QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
   }
-  MITK_INFO << "SurfaceExtractorView::createSurfaceNode(): 30";
+  MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 30";
 
   d->surfaceNode->SetData(filter->GetOutput());
 
@@ -535,6 +602,32 @@ void SurfaceExtractorView::updateSurfaceNode()
   m_Controls->btnApply->setEnabled(false);
 
   QApplication::restoreOverrideCursor();
+}
+
+mitk::ImageToSurfaceFilter::Pointer SurfaceExtractorView::createImageToSurfaceFilter()
+{
+  Q_D(SurfaceExtractorView);
+
+  if (d->has3dOr4dGrayScaleImage->CheckNode(d->referenceNode))
+  {
+    mitk::ManualSegmentationToSurfaceFilter::Pointer filter = mitk::ManualSegmentationToSurfaceFilter::New();
+    filter->SetUseGaussianImageSmooth(d->gaussianSmooth);
+    filter->SetGaussianStandardDeviation(d->gaussianStdDev);
+    mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
+    return f;
+  }
+  else if (d->has3dOr4dLabelImage->CheckNode(d->referenceNode))
+  {
+    mitk::LabeledImageToSurfaceFilter::Pointer filter = mitk::LabeledImageToSurfaceFilter::New();
+    filter->SetGaussianStandardDeviation(d->gaussianStdDev);
+    mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
+    return f;
+  }
+  else
+  {
+    MITK_INFO << "SurfaceExtractorView::createImageToSurfaceFilter() unknown image type";
+    return 0;
+  }
 }
 
 void SurfaceExtractorView::saveParameters()
@@ -572,6 +665,5 @@ void SurfaceExtractorView::loadParameters()
 
 void SurfaceExtractorView::on_cbxGaussianSmooth_toggled(bool checked)
 {
-  MITK_INFO << "SurfaceExtractorView::on_cbxGaussianSmooth_toggled(bool checked): " << checked;
   m_Controls->spbGaussianStdDev->setEnabled(checked);
 }
