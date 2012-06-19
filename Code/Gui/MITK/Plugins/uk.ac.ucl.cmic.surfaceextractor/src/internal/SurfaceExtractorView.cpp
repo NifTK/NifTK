@@ -29,6 +29,9 @@
 #include <berryIBerryPreferences.h>
 #include <berryIWorkbenchPart.h>
 #include <berryIWorkbenchPage.h>
+#include <berryISelection.h>
+#include <berryISelectionProvider.h>
+#include <berrySingleNodeSelection.h>
 
 #include <itkEventObject.h>
 
@@ -49,6 +52,7 @@
 #include <QSlider>
 #include <QApplication>
 #include <QMessageBox>
+#include <QKeyEvent>
 
 #include <cstdio>
 #include <limits>
@@ -85,6 +89,9 @@ public:
 
   // Maximum number of polygons
   long maxNumberOfPolygons;
+
+  bool dirty;
+
 };
 
 SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
@@ -175,7 +182,22 @@ void SurfaceExtractorView::CreateQtPartControl(QWidget *parent)
     m_Controls->spbThreshold->setMaximum(std::numeric_limits<int>::max());
     m_Controls->spbMaxNumberOfPolygons->setMinimum(1);
     m_Controls->spbMaxNumberOfPolygons->setMaximum(std::numeric_limits<int>::max());
-    m_Controls->lblReferenceImage->setFixedHeight(m_Controls->spbThreshold->height());
+    m_Controls->spbTargetReduction->setMinimum(0.0);
+    m_Controls->spbTargetReduction->setMaximum(1.0);
+    m_Controls->spbTargetReduction->setSingleStep(0.05);
+
+    int formRowHeight = m_Controls->spbThreshold->height();
+    m_Controls->lblReferenceImage->setFixedHeight(formRowHeight);
+    m_Controls->lblSurfaceImage->setFixedHeight(formRowHeight);
+    m_Controls->cbxGaussianSmooth->setFixedHeight(formRowHeight);
+
+    m_Controls->wgtControls->installEventFilter(this);
+
+    connect(m_Controls->spbThreshold, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged()));
+    connect(m_Controls->cbxGaussianSmooth, SIGNAL(stateChanged(int)), this, SLOT(onValueChanged()));
+    connect(m_Controls->spbGaussianStdDev, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged()));
+    connect(m_Controls->spbTargetReduction, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged()));
+    connect(m_Controls->spbMaxNumberOfPolygons, SIGNAL(valueChanged(int)), this, SLOT(onValueChanged()));
 
     // Retrieve and store preference values.
     RetrievePreferenceValues();
@@ -185,14 +207,42 @@ void SurfaceExtractorView::CreateQtPartControl(QWidget *parent)
     // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
     CreateConnections();
 
-    // EMULATE INITIAL SELECTION EVENTS
-    // send the current selection
-    berry::IWorkbenchPart::Pointer activePart = this->GetSite()->GetPage()->GetActivePart();
-    if (activePart.IsNotNull())
+    QList<mitk::DataNode::Pointer> selectedNodes = GetDataManagerSelection();
+    berry::IWorkbenchPart::Pointer nullPart;
+    OnSelectionChanged(nullPart, selectedNodes);
+  }
+}
+
+void SurfaceExtractorView::onValueChanged()
+{
+  Q_D(SurfaceExtractorView);
+  if (!d->dirty)
+  {
+    d->dirty = true;
+    m_Controls->btnApply->setEnabled(true);
+  }
+}
+
+bool SurfaceExtractorView::eventFilter(QObject *obj, QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress)
+  {
+    QKeyEvent *keyEvent = dynamic_cast<QKeyEvent *>(event);
+    switch (keyEvent->key())
     {
-      this->OnSelectionChanged(activePart, this->GetCurrentSelection());
+    case Qt::Key_Return:
+      on_btnApply_clicked();
+      return true;
+    case Qt::Key_Escape:
+      updateFields();
+      Q_D(SurfaceExtractorView);
+      mitk::Surface* surface = dynamic_cast<mitk::Surface*>(d->surfaceNode->GetData());
+      m_Controls->btnApply->setEnabled(surface->IsEmpty());
+      return true;
     }
   }
+  // standard event processing
+  return QObject::eventFilter(obj, event);
 }
 
 void SurfaceExtractorView::updateFields()
@@ -209,8 +259,7 @@ void SurfaceExtractorView::CreateConnections()
 {
   connect(m_Controls->cbxGaussianSmooth, SIGNAL(toggled(bool)), this, SLOT(on_cbxGaussianSmooth_toggled(bool)));
   connect(m_Controls->btnCreate, SIGNAL(clicked()), this, SLOT(on_btnCreate_clicked()));
-  connect(m_Controls->btnUpdate, SIGNAL(clicked()), this, SLOT(on_btnUpdate_clicked()));
-  connect(m_Controls->btnCancel, SIGNAL(clicked()), this, SLOT(on_btnCancel_clicked()));
+  connect(m_Controls->btnApply, SIGNAL(clicked()), this, SLOT(on_btnApply_clicked()));
 }
 
 void SurfaceExtractorView::SetFocus()
@@ -236,7 +285,6 @@ void SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer par
   Q_D(SurfaceExtractorView);
 
   int numberOfSelectedNodes = nodes.size();
-
   if (numberOfSelectedNodes != 1)
   {
     deselectNode();
@@ -246,17 +294,14 @@ void SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer par
   mitk::DataNode::Pointer node = nodes[0];
   if (d->has3DImage->CheckNode(node) || d->has3DLabelImage->CheckNode(node))
   {
-    MITK_INFO << "SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) reference node selected";
     selectReferenceNode(node);
   }
   else if (d->has3DSurfaceImage->CheckNode(node))
   {
-    MITK_INFO << "SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) surface node selected";
     selectSurfaceNode(node);
   }
   else
   {
-    MITK_INFO << "SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) unknown node selected";
     deselectNode();
   }
 }
@@ -269,10 +314,10 @@ void SurfaceExtractorView::selectReferenceNode(mitk::DataNode::Pointer node)
   d->surfaceNode = 0;
 
   m_Controls->lblReferenceImage->setText(QString::fromStdString(node->GetName()));
+  m_Controls->lblSurfaceImage->setText("No surface selected.");
   EnableControls(false);
   m_Controls->btnCreate->setEnabled(true);
-  m_Controls->btnUpdate->setEnabled(false);
-  m_Controls->btnCancel->setEnabled(false);
+  m_Controls->btnApply->setEnabled(false);
 }
 
 void SurfaceExtractorView::selectSurfaceNode(mitk::DataNode::Pointer node)
@@ -286,23 +331,24 @@ void SurfaceExtractorView::selectSurfaceNode(mitk::DataNode::Pointer node)
   updateFields();
 
   m_Controls->lblReferenceImage->setText(QString::fromStdString(d->referenceNode->GetName()));
+  m_Controls->lblSurfaceImage->setText(QString::fromStdString(d->surfaceNode->GetName()));
   EnableControls(true);
   m_Controls->btnCreate->setEnabled(true);
-  m_Controls->btnUpdate->setEnabled(true);
-  m_Controls->btnCancel->setEnabled(false);
+  mitk::Surface* surface = dynamic_cast<mitk::Surface*>(d->surfaceNode->GetData());
+  m_Controls->btnApply->setEnabled(surface->IsEmpty());
 }
 
 void SurfaceExtractorView::deselectNode()
 {
   Q_D(SurfaceExtractorView);
-  m_Controls->lblReferenceImage->setText("No 3D image or surface selected");
+  m_Controls->lblReferenceImage->setText("No image selected.");
+  m_Controls->lblSurfaceImage->setText("No surface selected.");
   d->referenceNode = 0;
   d->surfaceNode = 0;
   d->surfaceNodes = 0;
   EnableControls(false);
   m_Controls->btnCreate->setEnabled(false);
-  m_Controls->btnUpdate->setEnabled(false);
-  m_Controls->btnCancel->setEnabled(false);
+  m_Controls->btnApply->setEnabled(false);
 }
 
 mitk::DataStorage::SetOfObjects::ConstPointer SurfaceExtractorView::findSurfaceNodesOf(mitk::DataNode::Pointer referenceNode)
@@ -336,7 +382,7 @@ void SurfaceExtractorView::on_btnCreate_clicked()
   createSurfaceNode();
 }
 
-void SurfaceExtractorView::on_btnUpdate_clicked()
+void SurfaceExtractorView::on_btnApply_clicked()
 {
   Q_D(SurfaceExtractorView);
   d->gaussianSmooth = m_Controls->cbxGaussianSmooth->isChecked();
@@ -345,10 +391,6 @@ void SurfaceExtractorView::on_btnUpdate_clicked()
   d->targetReduction = m_Controls->spbTargetReduction->value();
   d->maxNumberOfPolygons = m_Controls->spbMaxNumberOfPolygons->value();
   updateSurfaceNode();
-}
-
-void SurfaceExtractorView::on_btnCancel_clicked()
-{
 }
 
 void SurfaceExtractorView::createSurfaceNode()
@@ -388,14 +430,12 @@ void SurfaceExtractorView::createSurfaceNode()
   d->surfaceNode->SetBoolProperty("Surface", true);
   d->surfaceNode->SetVisibility(true);
   mitk::Surface::Pointer surface = mitk::Surface::New();
+  MITK_INFO << "create surface node - surface is empty: " << surface->IsEmpty();
   d->surfaceNode->SetData(surface);
 
   RetrievePreferenceValues();
-  MITK_INFO << "SurfaceExtractorView::createSurfaceNode() before updateFields";
   updateFields();
-  MITK_INFO << "SurfaceExtractorView::createSurfaceNode() before saveparameters";
   saveParameters();
-  MITK_INFO << "SurfaceExtractorView::createSurfaceNode() before saveparameters";
 
   GetDataStorage()->Add(d->surfaceNode, d->referenceNode);
   d->surfaceNodes = findSurfaceNodesOf(d->referenceNode);
@@ -403,15 +443,10 @@ void SurfaceExtractorView::createSurfaceNode()
   d->referenceNode->SetSelected(false);
   d->surfaceNode->SetSelected(true);
 
-  // EMULATE INITIAL SELECTION EVENTS
-  // send the current selection
-  berry::IWorkbenchPart::Pointer activePart = this->GetSite()->GetPage()->GetActivePart();
-  if (activePart.IsNotNull())
-    {
-      QList < itk::SmartPointer<mitk::DataNode> > currentSelection =
-          this->GetCurrentSelection();
-      this->OnSelectionChanged(activePart, currentSelection);
-  }
+  QList<mitk::DataNode::Pointer> selectedNodes;
+  selectedNodes.push_back(d->surfaceNode);
+  berry::IWorkbenchPart::Pointer nullPart;
+  OnSelectionChanged(nullPart, selectedNodes);
 }
 
 void SurfaceExtractorView::updateSurfaceNode()
@@ -451,9 +486,9 @@ void SurfaceExtractorView::updateSurfaceNode()
   }
 
   filter->SetInput(referenceImage);
-  filter->SetGaussianStandardDeviation(d->gaussianStdDev);
-  filter->SetUseGaussianImageSmooth(d->gaussianSmooth);
   filter->SetThreshold(d->threshold); // if( Gauss ) --> TH manipulated for vtkMarchingCube
+  filter->SetUseGaussianImageSmooth(d->gaussianSmooth);
+  filter->SetGaussianStandardDeviation(d->gaussianStdDev);
   filter->SetTargetReduction(d->targetReduction);
 
   try
@@ -472,9 +507,9 @@ void SurfaceExtractorView::updateSurfaceNode()
   {
     QApplication::restoreOverrideCursor();
     QString title = "CAUTION!!!";
-    QString text = "The number of polygons is greater than 2 000 000. "
+    QString text = QString("The number of polygons is greater than %1. "
         "If you continue, the program might crash. "
-        "How do you want to go on?";
+        "How do you want to go on?").arg(d->maxNumberOfPolygons);
     QString button0Text = "Proceed anyway!";
     QString button1Text = "Cancel immediately! (maybe you want to insert an other threshold)!";
     if (QMessageBox::question(NULL, title, text, button0Text, button1Text, QString::null, 0 ,1) == 1)
@@ -495,6 +530,9 @@ void SurfaceExtractorView::updateSurfaceNode()
   saveParameters();
 
   RequestRenderWindowUpdate();
+
+  d->dirty = false;
+  m_Controls->btnApply->setEnabled(false);
 
   QApplication::restoreOverrideCursor();
 }

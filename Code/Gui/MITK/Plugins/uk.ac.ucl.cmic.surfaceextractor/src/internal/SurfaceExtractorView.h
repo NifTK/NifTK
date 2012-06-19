@@ -34,6 +34,7 @@
 #include <mitkDataStorage.h>
 
 class QWidget;
+class QEvent;
 class SurfaceExtractorViewPrivate;
 
 /**
@@ -60,6 +61,8 @@ protected:
   /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);
 
+  virtual bool eventFilter(QObject *obj, QEvent *event);
+
   /// \brief Called by framework, sets the focus on a specific widget.
   virtual void SetFocus();
 
@@ -70,9 +73,9 @@ protected slots:
 private slots:
 
   void on_btnCreate_clicked();
-  void on_btnUpdate_clicked();
-  void on_btnCancel_clicked();
+  void on_btnApply_clicked();
   void on_cbxGaussianSmooth_toggled(bool checked);
+  void onValueChanged();
 
 private:
 

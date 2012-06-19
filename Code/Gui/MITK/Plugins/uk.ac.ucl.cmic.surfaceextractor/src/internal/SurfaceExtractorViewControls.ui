@@ -27,76 +27,92 @@
     <number>9</number>
    </property>
    <item>
-    <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
-     <item row="0" column="0">
-      <widget class="QLabel" name="lblRefImageLabel">
-       <property name="text">
-        <string>Reference image:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="lblReferenceImage">
-       <property name="text">
-        <string>No image selected.</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="lblThreshold">
-       <property name="text">
-        <string>Threshold:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QDoubleSpinBox" name="spbThreshold"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="lblTargetReduction">
-       <property name="text">
-        <string>Target reduction:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="lblMaxNumberOfPolygons">
-       <property name="text">
-        <string>Max. number of polygons:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QSpinBox" name="spbMaxNumberOfPolygons"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lblGaussianSmooth">
-       <property name="text">
-        <string>Apply smoothing:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="lblGaussianStdDev">
-       <property name="text">
-        <string>Standard deviation:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QCheckBox" name="cbxGaussianSmooth">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QDoubleSpinBox" name="spbGaussianStdDev"/>
-     </item>
-     <item row="4" column="1">
-      <widget class="QDoubleSpinBox" name="spbTargetReduction"/>
-     </item>
-    </layout>
+    <widget class="QWidget" name="wgtControls" native="true">
+     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblReferenceImageLabel">
+        <property name="text">
+         <string>Reference image:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="lblReferenceImage">
+        <property name="text">
+         <string>No image selected.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="lblTargetReduction">
+        <property name="text">
+         <string>Target reduction:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="lblMaxNumberOfPolygons">
+        <property name="text">
+         <string>Max. number of polygons:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QSpinBox" name="spbMaxNumberOfPolygons"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lblGaussianSmooth">
+        <property name="text">
+         <string>Apply smoothing:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblGaussianStdDev">
+        <property name="text">
+         <string>Standard deviation:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="cbxGaussianSmooth">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QDoubleSpinBox" name="spbGaussianStdDev"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDoubleSpinBox" name="spbTargetReduction"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblThreshold">
+        <property name="text">
+         <string>Threshold:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="spbThreshold"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblSurfaceImageLabel">
+        <property name="text">
+         <string>Surface:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="lblSurfaceImage">
+        <property name="text">
+         <string>No surface selected.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -121,16 +137,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnUpdate">
+      <widget class="QPushButton" name="btnApply">
        <property name="text">
-        <string>Update</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnCancel">
-       <property name="text">
-        <string>Cancel</string>
+        <string>Apply</string>
        </property>
       </widget>
      </item>
@@ -139,6 +148,14 @@
   </layout>
  </widget>
  <layoutdefault spacing="0" margin="0"/>
+ <tabstops>
+  <tabstop>cbxGaussianSmooth</tabstop>
+  <tabstop>spbGaussianStdDev</tabstop>
+  <tabstop>spbTargetReduction</tabstop>
+  <tabstop>spbMaxNumberOfPolygons</tabstop>
+  <tabstop>btnCreate</tabstop>
+  <tabstop>btnApply</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -63,9 +63,9 @@ const bool SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_DEFAULT = true;
 const std::string SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME = "gaussian standard deviation";
 const double SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_DEFAULT = 0.5;
 const std::string SurfaceExtractorPreferencePage::THRESHOLD_NAME = "threshold";
-const double SurfaceExtractorPreferencePage::THRESHOLD_DEFAULT = 1.0;
+const double SurfaceExtractorPreferencePage::THRESHOLD_DEFAULT = 100.0;
 const std::string SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME = "target reduction";
-const double SurfaceExtractorPreferencePage::TARGET_REDUCTION_DEFAULT = 0.05;
+const double SurfaceExtractorPreferencePage::TARGET_REDUCTION_DEFAULT = 0.1;
 const std::string SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME = "maximal number of polygons";
 const long SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_DEFAULT = 2000000;
 
@@ -104,6 +104,15 @@ void SurfaceExtractorPreferencePage::CreateQtControl(QWidget* parent)
 
   QFormLayout *formLayout = new QFormLayout;
 
+  d->lblThreshold = new QLabel("Threshold:");
+  QString ttpThreshold = "Threshold";
+  d->lblThreshold->setToolTip(ttpThreshold);
+  d->spbThreshold = new QDoubleSpinBox(ui);
+  d->spbThreshold->setMinimum(0);
+  d->spbThreshold->setMaximum(std::numeric_limits<int>::max());
+  d->spbThreshold->setToolTip(ttpThreshold);
+  formLayout->addRow(d->lblThreshold, d->spbThreshold);
+
   d->lblGaussianSmooth = new QLabel("Apply Gaussian smoothing:");
   QString ttpGaussianSmooth = "Apply Gaussian smoothing";
   d->lblGaussianSmooth->setToolTip(ttpGaussianSmooth);
@@ -117,15 +126,6 @@ void SurfaceExtractorPreferencePage::CreateQtControl(QWidget* parent)
   d->spbGaussianStdDev = new QDoubleSpinBox(ui);
   d->spbGaussianStdDev->setToolTip(ttpGaussianStdDev);
   formLayout->addRow(d->lblGaussianStdDev, d->spbGaussianStdDev);
-
-  d->lblThreshold = new QLabel("Threshold:");
-  QString ttpThreshold = "Threshold";
-  d->lblThreshold->setToolTip(ttpThreshold);
-  d->spbThreshold = new QDoubleSpinBox(ui);
-  d->spbThreshold->setMinimum(0);
-  d->spbThreshold->setMaximum(std::numeric_limits<int>::max());
-  d->spbThreshold->setToolTip(ttpThreshold);
-  formLayout->addRow(d->lblThreshold, d->spbThreshold);
 
   d->lblTargetReduction = new QLabel("Target reduction:");
   QString ttpTargetReduction = "Target reduction";
