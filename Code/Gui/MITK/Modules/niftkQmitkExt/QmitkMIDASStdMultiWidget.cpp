@@ -1199,7 +1199,15 @@ void QmitkMIDASStdMultiWidget::SetSliceNumber(MIDASOrientation orientation, unsi
     tmp[2] = voxelPoint[2];
 
     geometry->IndexToWorld(tmp, millimetrePoint);
-    this->MoveCrossToPosition(millimetrePoint);
+
+    // Does not work, as it relies on the StateMachine event broadcasting mechanism,
+    // and if the widget is not listening, then it goes unnoticed.
+    //this->MoveCrossToPosition(millimetrePoint);
+
+    // This however, directly forces the SNC to the right place.
+    mitkWidget1->GetSliceNavigationController()->SelectSliceByPoint(millimetrePoint);
+    mitkWidget2->GetSliceNavigationController()->SelectSliceByPoint(millimetrePoint);
+    mitkWidget3->GetSliceNavigationController()->SelectSliceByPoint(millimetrePoint);
   }
 }
 
