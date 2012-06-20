@@ -31,26 +31,26 @@ The Intensity Profile View will propagate a 3D segmentation along time to create
 
 To do that:
 
-\li navigate to the slice that contains the required segment using the 
+\li navigate to the time step that contains the required segment using the 
 <a href="qthelp://org.mitk.gui.qt.imagenavigator/bundle/index.html">Image Navigator</a> View. 
 \li Right click on the image node in the <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> View. 
-\li Select "Propagate along time" or "Propagate along slices", respectively. 
+\li Select "Propagate along time". 
 
-After the propagation when you scroll through the slices or time steps with the image navigator, you will 
+After the propagation when you scroll through the time steps with the image navigator, you will 
 see the segment on each of them. The segments of the individual slices and time steps are independent of each other, 
 so after the propagation you can adjust any image segments according to you needs.
 
-To display the intensity profile of an image segment:
-
-\li Select the reference image and the segmentation image in the 
+To display the intensity profile of an image segment, tick on the visibility checkbox of the segmentation image in the 
 <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> View.
-\li Press the "Add curve" button in the Intensity Profile view. 
 
-To select both images you will have to keep the Ctrl button pressed while clicking the image nodes with the mouse.
 The curve shows the mean intensity of the pixels of the reference image depicted by the segmentation image.
 You can plot the intensity profile from more segmentations as well. The colour of the curve is always the 
 same as that of the segmentation image, so it is suggested to use different colours for different segmentations.
 
-You can clear the curves by pressing the "Clear" button.
+You can plot the profiles from several reference images at the same time. The nodes of the profiles of the different 
+images will be displayed by different symbols.  
+
+\image html intensity_profile-roi_profiles.png "Figure 2. Intensity profile from several ROIs and a cross-hair"
+
 
 */
