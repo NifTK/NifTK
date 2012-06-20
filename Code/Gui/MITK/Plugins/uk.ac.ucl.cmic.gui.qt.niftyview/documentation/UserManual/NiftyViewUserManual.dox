@@ -36,7 +36,10 @@ to understand the Plugins that they themselves are using.
 
 The NiftyView application can potentially start up with an almost empty screen. Figure 1. shows the screen and the top menu bar
 as displayed under Mac OSX. The exact appearance will depend on your platform. The main screen area shows nothing more 
-than a grey outline, and by default the Data Manager View is visible, and uncloseable.
+than a grey outline, and by default the 
+<a href="http://www.mitk.org">MITK</a> <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> 
+View is visible, and uncloseable. Each piece of functionality is provided using Plugins. From the users perspective, 
+a Plugin can either be an Editor or a View, and these are explained below.
 
 The Main Window provides:
 
@@ -56,10 +59,6 @@ various preferences and configuration parameters that can be registered with thi
 
 \image html MainScreenPreferences.png "Figure 3. The 'User Preferences' dialog box, is the single point for application settings"
 
-The Data Manager plugin is provided by <a href="http://www.mitk.org">MITK</a> and is explained on "The DataManager" help page.
-Each piece of functionality is provided using Plugins. From the users perspective, a Plugin can either be an Editor or a
-View, and these are explained below.
-
 \section NiftyViewEditors Editors
 
 Imagine you are using a popular word processing program.  The source of data is the document you are writing.
@@ -75,16 +74,18 @@ for the MIDAS project.
 
 \section NiftyViewPlugins Views
 
-From the main Menu Bar, selecting Window, then View shows the list of Views. Selecting each View will launch a small window, 
-if the View is not already shown. The View provides the necessary controls for that discrete piece of functionality.
-Each View should be designed to be as stand-alone as possible. In addition to the controls on the View's window, there
-may also be an optional preference page. By way of example, Figure 4. shows the controls for 
-The Image Lookup Tables View, enabling the user to choose a lookup table and settings such as window, level, minimum
-intensity and maximum intensity.
+From the main Menu Bar, selecting "Window", then "View" shows the list of Views. A View provides a discrete piece of 
+functionality such as changing intensity window settings, segmentation tools, iso-surface generation and so on.
+Selecting each View will launch a small window, if the View is not already shown. The View provides the necessary 
+controls for that discrete piece of functionality. Each View should be designed to be as stand-alone as possible. 
+In addition to the controls on the View's window, there may also be an optional preference page. By way of example, 
+Figure 4. shows the controls for 
+<a href="qthelp://uk.ac.ucl.cmic.imagelookuptables/bundle/index.html">The Image Lookup Tables View</a>
+enabling the user to choose a lookup table and settings such as window, level, minimum intensity and maximum intensity.
+
+Furthermore, each View has its own Help page. Selecting the View and hitting F1 will launch context sensitive help.
 
 \image html MainScreenPreferenceExample.png "Figure 4. The Image Lookup Tables View provides controls to chose a look-up table, and intensity window."
-
-Furthermore, each View has its own Help page. Selecting the view and hitting F1 will launch context sensitive help.
 
 \section NiftyViewPerspectives Perspectives
 
@@ -96,8 +97,8 @@ exit. Figure 6. shows the screen with some Views and Editors loaded.
 
 \image html MainScreen.png "Figure 6. The Main Screen contains a central Editor, and several Views. A perspective is an arrangement of Editors and Views."
 
-In addition, Views can be moved by dragging the title bar of each plugin, docked on the top, right, bottom or left side of
-the Editor window, and can also be detatched and placed outside of the main window.
+In addition, Views can be moved by dragging the title bar of each plugin, and then docked on the top, right, 
+bottom or left side of the Editor area, and can also be detatched and placed outside of the main window.
 
 \image html MainScreenUndocked.png "Figure 7. Plugins can be re-arranged and even moved outside the main window."
 

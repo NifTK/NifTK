@@ -20,7 +20,8 @@ deviation of an image, or of an image within regions of interest specified by a 
 
 The basic operation is as follows:
 
-\li The user can select a single grey scale image or a grey scale image followed by a labelled image using the Data Manager.
+\li The user can select a single grey scale image or a grey scale image followed by a labelled image using the 
+<a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a>.
 \li If the user preference "auto-update" is set to true, the statistics are calculated as soon as the selection is valid.
 \li If the user preference "auto-update" is false, the user should hit the "update" button on the Image Statistics View.
 \li A "valid" selection means either 1 or 2 images of the same size.
