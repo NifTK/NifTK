@@ -50,24 +50,30 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 {
 
   // Basic plan here:
-  // If its Analyze,
+  // If its Analyze and NIFTK_DRC_ANALYZE is true
+  //   call DRC specific functionality
+  // If its Nifti
   //   call NifTK specific functionality
-  // Else
+  // Else (or in case of any failure scenario).
   //   call base class functionality
 
   itk::DRCAnalyzeImageIO3160::Pointer drcAnalyzeIO = itk::DRCAnalyzeImageIO3160::New();
   itk::NiftiImageIO3201::Pointer niftiIO = itk::NiftiImageIO3201::New();
-  if (drcAnalyzeIO->CanReadFile(this->m_FileName.c_str()) || niftiIO->CanReadFile(this->m_FileName.c_str()))
+
+  bool useDRCAnalyze(false);
+  if (getenv("NIFTK_DRC_ANALYZE"))
+  {
+    std::string niftkDrcAnalyze = getenv("NIFTK_DRC_ANALYZE");
+
+    if (niftkDrcAnalyze == "1" || niftkDrcAnalyze == "ON" || niftkDrcAnalyze == "TRUE" || niftkDrcAnalyze == "YES")
+    {
+      useDRCAnalyze = true;
+    }
+  }
+
+  if (useDRCAnalyze && drcAnalyzeIO->CanReadFile(this->m_FileName.c_str()))
   {
     mitk::Image::Pointer image = this->GetOutput();
-
-    // More detailed plan:
-    //   We don't know data type.
-    //   So take a peek at the header,
-    //   Then instantiate the right type itkFileReader
-    //   Override the default (ITK) IO object, with the NifTK specific one
-    //   Read image
-    //   Use mitk::Image::InitializeFromItk to create the output.
     try
     {
       itk::ImageIOBase::Pointer imageIO = itk::ImageIOFactory::CreateImageIO(this->m_FileName.c_str(), itk::ImageIOFactory::ReadMode);
@@ -81,7 +87,157 @@ void mitk::NifTKItkImageFileReader::GenerateData()
         itk::ImageIOBase::IOComponentType componentType = imageIO->GetComponentType();
         unsigned int numberOfDimensions = imageIO->GetNumberOfDimensions();
 
-        MITK_INFO << "NifTKItkImageFileReader::GenerateData(), Reading data using NifTK specific code, numberOfDimensions=" << numberOfDimensions << ", componentType=" << imageIO->GetComponentTypeAsString(componentType) << std::endl;
+        MITK_INFO << "NifTKItkImageFileReader::GenerateData(), Reading Analyze data using NifTK DRC specific code, numberOfDimensions=" << numberOfDimensions << ", componentType=" << imageIO->GetComponentTypeAsString(componentType) << std::endl;
+
+        switch(componentType)
+        {
+        case itk::ImageIOBase::UCHAR:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, unsigned char>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, unsigned char>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::CHAR:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, char>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, char>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::USHORT:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, unsigned short>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, unsigned short>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::SHORT:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, short>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, short>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::UINT:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, unsigned int>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, unsigned int>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::INT:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, int>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, int>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::ULONG:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, unsigned long>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, unsigned long>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::LONG:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, long>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, long>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::FLOAT:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, float>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, float>(image, this->m_FileName);
+            }
+          break;
+        case itk::ImageIOBase::DOUBLE:
+          if (numberOfDimensions == 2)
+            {
+              result = LoadImageUsingItk<2, double>(image, this->m_FileName);
+            }
+          else
+            {
+              result = LoadImageUsingItk<3, double>(image, this->m_FileName);
+            }
+          break;
+        default:
+          std::cerr << "non standard pixel format" << std::endl;
+        }
+      }
+
+      if (!result)
+      {
+        MITK_ERROR << "Reading file " << this->m_FileName << " failed, so trying default MITK behaviour." << std::endl;
+
+        // Default to normal to avoid crashing.
+        ItkImageFileReader::GenerateData();
+      }
+    }
+    catch( itk::ExceptionObject& err )
+    {
+      std::string msg = std::string("Failed to Load image:") \
+        + this->m_FileName \
+        + std::string("\nEXCEPTION:") \
+        + std::string(err.GetDescription()) \
+        + std::string("\n\tat location:") \
+        + std::string(err.GetLocation()) \
+        + std::string("\n\tat file:") \
+        + std::string(err.GetFile()) \
+      ;
+      MITK_ERROR << msg;
+
+      // Default to normal to avoid crashing.
+      ItkImageFileReader::GenerateData();
+    }
+  }
+  else if (niftiIO->CanReadFile(this->m_FileName.c_str()))
+  {
+    mitk::Image::Pointer image = this->GetOutput();
+    try
+    {
+      itk::ImageIOBase::Pointer imageIO = itk::ImageIOFactory::CreateImageIO(this->m_FileName.c_str(), itk::ImageIOFactory::ReadMode);
+      bool result = false;
+
+      if (imageIO.IsNotNull())
+      {
+        imageIO->SetFileName(this->m_FileName.c_str());
+        imageIO->ReadImageInformation();
+
+        itk::ImageIOBase::IOComponentType componentType = imageIO->GetComponentType();
+        unsigned int numberOfDimensions = imageIO->GetNumberOfDimensions();
+
+        MITK_INFO << "NifTKItkImageFileReader::GenerateData(), Reading data using NifTK sform specific code, numberOfDimensions=" << numberOfDimensions << ", componentType=" << imageIO->GetComponentTypeAsString(componentType) << std::endl;
 
         switch(componentType)
         {
@@ -232,7 +388,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 
       if (!result)
       {
-        MITK_ERROR << "Reading file " << this->m_FileName << " failed" << std::endl;
+        MITK_ERROR << "Reading file " << this->m_FileName << " failed so trying default MITK Nifti functionality" << std::endl;
         // Default to normal to avoid crashing.
         ItkImageFileReader::GenerateData();
       }
