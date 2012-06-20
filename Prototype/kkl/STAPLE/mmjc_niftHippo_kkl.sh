@@ -27,6 +27,8 @@ SEG_CalcTopNCC=${ROOTY}/niftyseg_install/bin/seg_CalcTopNCC
 LNCC_GAUS=1.5 
 # template folder. 
 TEMPLATE_FOLDER=${ROOTY}/template_images 
+# Leave out the subjects with the given ID. 
+LOO=""
 
 ##########################################################################
 ##########################################################################
@@ -75,6 +77,11 @@ while [ "$#" -gt 1 ]
       shift 
       echo "setting TEMPLATE_FOLDER=$2"
       TEMPLATE_FOLDER=$2
+      shift
+  elif [ "$2" == "-loo" ]; then
+      shift 
+      echo "setting LOO=$2"
+      LOO=$2
       shift
   else
       echo "Unknown argument, options are -mask <name> <low thresh> <high thresh> and -jo"
@@ -277,6 +284,13 @@ for side in left right
       else
 	  template_list=`ls ${TEMPLATE_FOLDER}/updatedSform_hippo_right_[0-9]*-1.nii.gz  ${TEMPLATE_FOLDER}/updatedSform_hippo_left_[0-9]*-1_LR_flipped.nii.gz`
       fi
+      
+      if [ "${LOO}" != "" ]
+      then 
+        echo "Leave out ${LOO}..."
+        template_list=`echo ${template_list} | sed '/.*_${LOO}.*/ d'`
+        echo ${template_list}
+      fi 
 
       for template in ${template_list}
 	do
