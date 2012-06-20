@@ -40,6 +40,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QStackedLayout>
+#include <QButtonGroup>
 #include "mitkFocusManager.h"
 #include "mitkGlobalInteraction.h"
 #include "mitkTimeSlicedGeometry.h"
@@ -228,6 +229,11 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_DropAccumulateCheckBox->setText("accumulate");
   m_DropAccumulateCheckBox->setToolTip("dropped images accumulate, meaning you can repeatedly add more images without resetting the geometry");
   m_DropAccumulateCheckBox->setLayoutDirection(Qt::LeftToRight);
+
+  m_DropButtonGroup = new QButtonGroup(m_ControlsContainerWidget);
+  m_DropButtonGroup->addButton(m_DropSingleRadioButton);
+  m_DropButtonGroup->addButton(m_DropMultipleRadioButton);
+  m_DropButtonGroup->addButton(m_DropThumbnailRadioButton);
 
   /************************************
    * Now arrange stuff.

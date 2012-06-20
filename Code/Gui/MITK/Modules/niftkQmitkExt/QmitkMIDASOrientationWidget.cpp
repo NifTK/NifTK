@@ -24,6 +24,7 @@
 
 #include "QmitkMIDASOrientationWidget.h"
 #include <QtDebug>
+#include <QButtonGroup>
 
 QmitkMIDASOrientationWidget::QmitkMIDASOrientationWidget(QWidget *parent)
 {
@@ -46,6 +47,12 @@ void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
   m_OtherOrientationComboBox->addItem("3V");
 
   m_AxialRadioButton->setChecked(true);
+
+  m_ButtonGroup = new QButtonGroup(parent);
+  m_ButtonGroup->addButton(m_AxialRadioButton);
+  m_ButtonGroup->addButton(m_CoronalRadioButton);
+  m_ButtonGroup->addButton(m_SagittalRadioButton);
+  m_ButtonGroup->addButton(m_OtherRadioButton);
 
   connect(m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialRadioButtonPressed(bool)));
   connect(m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalRadioButtonPressed(bool)));

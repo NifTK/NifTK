@@ -52,6 +52,7 @@ class QCheckBox;
 class QStackedLayout;
 class QmitkRenderWindow;
 class QLine;
+class QButtonGroup;
 class ctkPopupWidget;
 
 /**
@@ -345,6 +346,7 @@ private:
   QRadioButton                                  *m_DropSingleRadioButton;
   QRadioButton                                  *m_DropMultipleRadioButton;
   QRadioButton                                  *m_DropThumbnailRadioButton;
+  QButtonGroup                                  *m_DropButtonGroup;
   QCheckBox                                     *m_DropAccumulateCheckBox;
   QPushButton                                   *m_PopupPushButton;
   ctkPopupWidget                                *m_PopupWidget;

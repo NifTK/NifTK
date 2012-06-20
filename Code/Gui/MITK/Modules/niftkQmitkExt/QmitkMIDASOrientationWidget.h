@@ -28,6 +28,8 @@
 #include "ui_QmitkMIDASOrientationWidget.h"
 #include "QmitkMIDASViewEnums.h"
 
+class QButtonGroup;
+
 /**
  * \class QmitkMIDASOrientationWidget
  * \brief Qt Widget class to contain radio buttons for axial, coronal, sagittal, and a combo box for any
@@ -77,6 +79,7 @@ protected:
 private:
 
   MIDASView m_CurrentView;
+  QButtonGroup *m_ButtonGroup;
 };
 
 #endif
