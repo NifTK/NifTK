@@ -173,19 +173,19 @@ void QmitkMIDASOrientationWidget::OnComboBoxIndexChanged(int i)
   {
     if (i == 1)
     {
-      m_CurrentView = MIDAS_VIEW_ORTHO;
+      this->SetToView(MIDAS_VIEW_ORTHO);
     }
     else if (i == 2)
     {
-      m_CurrentView = MIDAS_VIEW_3D;
+      this->SetToView(MIDAS_VIEW_3D);
     }
     else if (i == 3)
     {
-      m_CurrentView = MIDAS_VIEW_3H;
+      this->SetToView(MIDAS_VIEW_3H);
     }
     else if (i == 4)
     {
-      m_CurrentView = MIDAS_VIEW_3V;
+      this->SetToView(MIDAS_VIEW_3V);
     }
 
     emit ViewChanged(m_CurrentView);
