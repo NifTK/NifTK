@@ -1329,6 +1329,11 @@ int QmitkMIDASMultiViewWidget::GetSelectedWindowIndex() const
   {
     windowNumber = 0;
   }
+  if (windowNumber >= (int)m_SingleViewWidgets.size())
+  {
+    // Default back to first viewer.
+    windowNumber = 0;
+  }
 
   // Note the following specification.
   assert(windowNumber >= 0);
