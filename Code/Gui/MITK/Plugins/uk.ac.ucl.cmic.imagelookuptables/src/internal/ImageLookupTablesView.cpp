@@ -214,11 +214,27 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
   {
     try
     {
-      AccessFixedDimensionByItk_n(image,
-          ITKGetStatistics, 3,
-          (minDataLimit, maxDataLimit, meanData, stdDevData)
-        );
-
+      if (image->GetDimension() == 2)
+      {
+        AccessFixedDimensionByItk_n(image,
+            ITKGetStatistics, 2,
+            (minDataLimit, maxDataLimit, meanData, stdDevData)
+          );
+      }
+      else if (image->GetDimension() == 3)
+      {
+        AccessFixedDimensionByItk_n(image,
+            ITKGetStatistics, 3,
+            (minDataLimit, maxDataLimit, meanData, stdDevData)
+          );
+      }
+      else if (image->GetDimension() == 4)
+      {
+        AccessFixedDimensionByItk_n(image,
+            ITKGetStatistics, 4,
+            (minDataLimit, maxDataLimit, meanData, stdDevData)
+          );
+      }
       m_CurrentNode->SetFloatProperty(DATA_MIN.c_str(), minDataLimit);
       m_CurrentNode->SetFloatProperty(DATA_MAX.c_str(), maxDataLimit);
       m_CurrentNode->SetFloatProperty(DATA_MEAN.c_str(), meanData);
@@ -236,17 +252,9 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
 
   if (!minDataLimitFound || !maxDataLimitFound || !meanDataFound || !stdDevDataFound)
   {
-    if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS
-        && image->GetDimension() == 4)
-    {
-      MITK_WARN << "Requested initialisation method was MIDAS and image is 4D, but mitk::ImageStatisticsCalculator does not yet support time sequences. So, defaulting to full range." << std::endl;
-    }
-
     // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
     // i.e. we haven't seen it before. So we have a choice of how to initialise the Level/Window.
-    if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS
-        && image->GetDimension() < 4  // mitk::ImageStatisticsCalculator does not support time sequences.
-        )
+    if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS)
     {
       double centre = (minDataLimit + 4.51*stdDevData)/2.0;
       double width = 4.5*stdDevData;
