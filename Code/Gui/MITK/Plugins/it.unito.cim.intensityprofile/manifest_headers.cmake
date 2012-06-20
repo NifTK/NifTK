@@ -1,4 +1,4 @@
-set(Plugin-Name "Intensity Profile Plugin")
+set(Plugin-Name "Intensity Profile")
 set(Plugin-Version "0.1")
 set(Plugin-Vendor "CIM Unito")
 set(Plugin-ContactAddress "http://www.cim.unito.it")

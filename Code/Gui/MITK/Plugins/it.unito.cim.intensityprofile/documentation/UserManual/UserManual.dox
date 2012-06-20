@@ -1,31 +1,55 @@
 /**
 \bundlemainpage{it.unito.cim.intensityprofile} The Intensity Profile View
 
-\image html intensity_profile_icon.jpg "Icon of Intensity Profile view"
+\image html intensity_profile_icon.jpg "Icon for Intensity Profile"
 
-\section dce_IntensityProfileView Intensity Profile View
+\section dce_IntensityProfileView Introduction
 
-Using the Intensity Profile view you can display the intensity changes of an image over time at a pixel or a ROI. The plugin supports 4D (3D+t) images as feature image and 3D and 4D segmentations as ROI.
+The Intensity Profile View provides a graph of intensity changes over time for a pixel, or averaged over 
+a region of interest (ROI). The plugin supports 4D (3D+t) images as intensity images and 3D and 4D segmentations as ROIs.
 
-To plot an intensity profile of a 4D image, make the image visible by toggling on its checkbox in the Data Manager view. The 
+\section dce_IntensityProfileUsage Usage
 
- If the crosshair is enabled in the rendering windows then you will see the  
+\li The Intensity Profile View is launched by clicking on "Window" then "Show View" then "IntensityProfile"
+\li Select the Display Editor, which is the main viewer within NiftyView.
+\li Select an image in the <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a>, and 
+make it visible by toggling its checkbox in the Data Manager View.
+\li With the cross-hairs enabled, a graph is displayed of the pixel intensity change over time. See Figure 1.
 
-One possible way of creating a ROI is to use the "Threshold" context menu item in the Data Manager view. You can reach it by clicking on an image (3D or 3D+t) in the Data Manager by the right mouse button, then selecting "Threshold".
+\image html IntensityProfilePixelGraph.png "Figure 1. Moving the cross-hairs to a given pixel will display the graph of intensity change over time."
 
-You can designate a ROI in a more flexible way using the <a href="qthelp://org.mitk.gui.qt.segmentation/bundle/index.html">Segmentation</a> view.
+In addition it is possible to create the intensity profile plot, averaged within a given ROI. A ROI is simply a binary image.
+A binary image can be created using any segmentation tool, such as the 
+<a href="qthelp://uk.ac.ucl.cmic.midasgeneralsegmentor/bundle/index.html">MIDAS Irregular Volume Editor</a>
+or the 
+<a href="qthelp://uk.ac.ucl.cmic.mitksegmentation/bundle/index.html">MITK Segmentation</a>
+tools.
 
-Note that the created segmentation image will have the same dimension as the reference image that it is based on. In this sense, every slice at every time step can have a different segment. So that you do not have to draw the segment for each of the slices and time steps, you can propagate the drawn segment from the selected slice and time step to all the other ones.
+A segmentation image will normally have the same dimension as the reference image that it is based on.
+If a 4D segmentation is created, every slice at each time-step can have a different segmentation.
+The Intensity Profile View will propagate a 3D segmentation along time to create a 4D segmentation.
 
-To do that, navigate to the slice that contains the required segment using the <a href="qthelp://org.mitk.gui.qt.imagenavigator/bundle/index.html">Image Navigator</a> view. Then, right click on the image node in the <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> view and select "Propagate along time" or "Propagate along slices", respectively. After the propagation when you scroll through the slices or time steps with the image navigator, you will see the segment on each of them.
+To do that:
 
-The segments of the individual slices and time steps are independent of each other, so after the propagation you can adjust any image segments according to you needs.
+\li navigate to the slice that contains the required segment using the 
+<a href="qthelp://org.mitk.gui.qt.imagenavigator/bundle/index.html">Image Navigator</a> View. 
+\li Right click on the image node in the <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> View. 
+\li Select "Propagate along time" or "Propagate along slices", respectively. 
 
-To display the intensity profile of an image segment, first select the reference image and the segmentation image in the Datamanager view then press the "Add curve" button in the Intensity Profile view. To select the images you will have to keep pressed the Ctrl button while clicking the image nodes by the mouse.
+After the propagation when you scroll through the slices or time steps with the image navigator, you will 
+see the segment on each of them. The segments of the individual slices and time steps are independent of each other, 
+so after the propagation you can adjust any image segments according to you needs.
 
+To display the intensity profile of an image segment:
+
+\li Select the reference image and the segmentation image in the 
+<a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> View.
+\li Press the "Add curve" button in the Intensity Profile view. 
+
+To select both images you will have to keep the Ctrl button pressed while clicking the image nodes with the mouse.
 The curve shows the mean intensity of the pixels of the reference image depicted by the segmentation image.
-
-You can plot the intensity profile from more segmentations as well. The colour of the curve is always the same as that of the segmentation image, so it is suggested to use different colours for different segmentations.
+You can plot the intensity profile from more segmentations as well. The colour of the curve is always the 
+same as that of the segmentation image, so it is suggested to use different colours for different segmentations.
 
 You can clear the curves by pressing the "Clear" button.
 
