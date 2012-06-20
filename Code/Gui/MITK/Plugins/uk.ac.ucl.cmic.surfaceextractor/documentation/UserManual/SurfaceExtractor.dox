@@ -1,13 +1,13 @@
 /**
 
-\bundlemainpage{uk.ac.ucl.cmic.surfacextractor} The Surface Extractor Plugin
+\bundlemainpage{uk.ac.ucl.cmic.surfacextractor} The Surface Extractor
 
-\image html SurfaceExtractor.png "The icon of the Surface Extractor plugin"
+\image html SurfaceExtractor.png "The Icon for Surface Extractor"
 
 \section Introduction
 
-The purpose of the plugin is to provide a simple interface for creating the isosurface of 3D and 4D volumes. 
-Floating point and label images are supported as well. The surface is extracted using the marching cube 
+The purpose of the plugin is to provide a simple interface for creating an iso-surface from 3D and 4D volumes. 
+Floating point and label images are supported as well. The surface is extracted using the marching cubes 
 algorithm with an optional smoothing and decimation step.
 
 \section Usage
@@ -30,24 +30,24 @@ a hint of the meaning of the field. The default value of the parameters of the n
 in the preferences page of the plugin.
 
 <ul>
-  \li threshold: Threshold that is used to create the surface. All pixel in the input image that are higher 
-        than that value will be considered in the surface.
-  \li smoothing: Perform Gaussian smoothing.
-  \li gaussian std.dev: Standard deviation for the gaussian smoothing.
-  \li target reduction: the desired target reduction of triangles in the range from 0.0 to 1.0.
+  <li>threshold: Threshold that is used to create the surface. All pixels in the input image that are higher 
+        than that value will be considered in the surface.</li>
+  <li>smoothing: Perform Gaussian smoothing.</li>
+  <li>gaussian std.dev: Standard deviation for the gaussian smoothing.</li>
+  <li>target reduction: the desired target reduction of triangles in the range from 0.0 to 1.0.
        The destroyed triangles are in relation with the size of data. For example 0.9
-       will reduce the data set to 10%.
-  \li max. number of polygons: High number of polygons can make the rendering slow. If the number of the 
-        polygon is higher then this number then you will be asked after the calculation if you want to 
-        keep the surface or discard it.
+       will reduce the data set to 10% of its original size.</li>
+  <li>max. number of polygons: High number of polygons can make the rendering slow. If the number of the 
+      polygon is higher then this number then you will be asked after the calculation if you want to 
+      keep the surface or discard it.</li>
 </ul>
 
 \image html surface_extractor-parameters.png "Adjust parameters"
 
 You can create several surfaces for the same image with different set of parameters. The parameters used to 
-create the surface will be stored in the node, and will be retrieved from them when you select the surface 
-next time. Each surface will have different colour. The visualization of the surfaces can be switched 
-on and off individually in the Data Manager view, by the check boxes beside the name of the node. The next 
+create the surface will be stored in the node, and will be retrieved from them when you next select the surface. 
+Each surface will have a different colour. The visualization of the surfaces can be switched 
+on and off individually in the Data Manager view by using the check boxes next to the name of the node. The next 
 screenshot shows two surfaces. For the yellow surface a higher threshold has been used.
 
 \image html surface_extractor-rendered_surfaces.png "Rendered surfaces"
