@@ -411,11 +411,7 @@ BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 ::InterpolateDeformationField3DMarc()
 {
   // Store these locally for performance reasons.
-  DeformationFieldOriginType  fieldOrigin  = this->m_DeformationField->GetOrigin();
-  DeformationFieldSpacingType fieldSpacing = this->m_DeformationField->GetSpacing();
-  DeformationFieldSizeType    fieldSize    = this->m_DeformationField->GetLargestPossibleRegion().GetSize();
-  GridOriginType              gridOrigin   = m_Grid->GetOrigin();  
-  GridSpacingType             gridSpacing  = m_Grid->GetSpacing(); 
+  DeformationFieldSizeType    fieldSize    = this->m_DeformationField->GetLargestPossibleRegion().GetSize();  
   GridSizeType                gridSize     = m_Grid->GetLargestPossibleRegion().GetSize();
   GridIndexType               gridIndex;
   GridIndexType               gridMovingIndex;
