@@ -50,7 +50,8 @@
 const std::string SnapshotView::VIEW_ID = "uk.ac.ucl.cmic.snapshot";
 
 SnapshotView::SnapshotView()
-: m_Parent(NULL)
+: m_Controls(NULL)
+, m_Parent(NULL)
 {
 }
 
@@ -85,8 +86,8 @@ void SnapshotView::SetFocus()
 void SnapshotView::OnTakeSnapshotButtonPressed()
 {
   int magnificationFactor = 1;
-  QString windowName = tr("CMIC Snapshot");
-  QString fileName = QFileDialog::getSaveFileName( m_Parent, tr("Save Snapshot As ..."), QDir::currentPath(), "JPEG file (*.jpg);;PNG file (*.png)" );
+  QString windowName = tr("Snapshot");
+  QString fileName = QFileDialog::getSaveFileName( m_Parent, tr("Save Snapshot As ..."), QDir::currentPath(), "PNG file (*.png);;JPEG file (*.jpg)" );
 
   mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart();
   if (renderWindowPart != NULL)
