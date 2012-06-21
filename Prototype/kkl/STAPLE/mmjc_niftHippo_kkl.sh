@@ -288,7 +288,7 @@ for side in left right
       if [ "${LOO}" != "" ]
       then 
         echo "Leave out ${LOO}..."
-        template_list=`echo ${template_list} | sed "s/${${TEMPLATE_FOLDER}}\/updatedSform_hippo_\(left\|right\)_${LOO}-[0-9][0-9][0-9]-1\(_LR_flipped\|\).nii.gz//g"`
+        template_list=`echo ${template_list} | sed "s:${TEMPLATE_FOLDER}/updatedSform_hippo_\(left\|right\)_${LOO}-[0-9][0-9][0-9]-1\(_LR_flipped\|\).nii.gz::g"`
         echo ${template_list}
       fi 
 
