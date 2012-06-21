@@ -288,7 +288,7 @@ for side in left right
       if [ "${LOO}" != "" ]
       then 
         echo "Leave out ${LOO}..."
-        template_list=`echo ${template_list} | sed '/.*_${LOO}.*/ d'`
+        template_list=`echo ${template_list} | sed "/.*_${LOO}.*/ d"`
         echo ${template_list}
       fi 
 
