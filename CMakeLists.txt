@@ -25,6 +25,7 @@
 ######################################################################
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
+# Also, Trac 1592, version number MUST change if CTK changes.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
 SET(NIFTK_VERSION_MINOR 06 CACHE STRING "Month version number" FORCE )
