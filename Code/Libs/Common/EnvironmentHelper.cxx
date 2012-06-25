@@ -57,4 +57,38 @@ std::string GetEnvironmentVariable(const std::string& variableName)
   
 }
 
+bool BooleanEnvironmentVariableIsOn(const std::string& variableName)
+{
+  bool result = false;
+
+  std::string value = GetEnvironmentVariable(variableName);
+  if (value == "1"
+      || value == "ON"
+      || value == "TRUE"
+      || value == "YES"
+      )
+  {
+    result = true;
+  }
+
+  return result;
+}
+
+bool BooleanEnvironmentVariableIsOff(const std::string& variableName)
+{
+  bool result = false;
+
+  std::string value = GetEnvironmentVariable(variableName);
+  if (value == "0"
+      || value == "OFF"
+      || value == "FALSE"
+      || value == "NO"
+      )
+  {
+    result = true;
+  }
+
+  return result;
+}
+
 } // end namespace

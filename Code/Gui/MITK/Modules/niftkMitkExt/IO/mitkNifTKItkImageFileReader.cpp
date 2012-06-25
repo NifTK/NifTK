@@ -35,8 +35,7 @@
 #include "itkImageIOBase.h"
 #include "itkDRCAnalyzeImageIO3160.h"
 #include "itkNiftiImageIO3201.h"
-
-// TODO: Marc - make this load our Nifti reader called
+#include "EnvironmentHelper.h"
 
 mitk::NifTKItkImageFileReader::NifTKItkImageFileReader()
 {
@@ -60,16 +59,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
   itk::DRCAnalyzeImageIO3160::Pointer drcAnalyzeIO = itk::DRCAnalyzeImageIO3160::New();
   itk::NiftiImageIO3201::Pointer niftiIO = itk::NiftiImageIO3201::New();
 
-  bool useDRCAnalyze(false);
-  if (getenv("NIFTK_DRC_ANALYZE"))
-  {
-    std::string niftkDrcAnalyze = getenv("NIFTK_DRC_ANALYZE");
-
-    if (niftkDrcAnalyze == "1" || niftkDrcAnalyze == "ON" || niftkDrcAnalyze == "TRUE" || niftkDrcAnalyze == "YES")
-    {
-      useDRCAnalyze = true;
-    }
-  }
+  bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
 
   if (useDRCAnalyze && drcAnalyzeIO->CanReadFile(this->m_FileName.c_str()))
   {

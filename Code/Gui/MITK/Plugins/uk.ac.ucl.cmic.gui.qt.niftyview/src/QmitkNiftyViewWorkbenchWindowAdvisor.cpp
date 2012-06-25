@@ -41,6 +41,7 @@
 #include "mitkNodePredicateProperty.h"
 #include "mitkProperties.h"
 #include "mitkRenderingManager.h"
+#include "EnvironmentHelper.h"
 
 QmitkNiftyViewWorkbenchWindowAdvisor::QmitkNiftyViewWorkbenchWindowAdvisor(
     berry::WorkbenchAdvisor* wbAdvisor,
@@ -109,19 +110,24 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
 
   // In NiftyView, I have set in the midaseditor plugin.xml for the Midas Drag and Drop editor to be default.
   // This section is to try and force the standard MITK Display editor open.
-  berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
-  berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
-  ctkPluginContext* context = QmitkNiftyViewApplicationPlugin::GetDefault()->GetPluginContext();
-  ctkServiceReference dsServiceRef = context->getServiceReference<mitk::IDataStorageService>();
-  if (dsServiceRef)
+  // It is assumed to be on, unless you specifically set a variable NIFTK_MITK_DISPLAY to be OFF.
+  // It is imagined that at the DRC, they will not want this viewer as much.
+  if (!niftk::BooleanEnvironmentVariableIsOff("NIFTK_MITK_DISPLAY"))
   {
-    mitk::IDataStorageService* dsService = context->getService<mitk::IDataStorageService>(dsServiceRef);
-    if (dsService)
+    berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
+    berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
+    ctkPluginContext* context = QmitkNiftyViewApplicationPlugin::GetDefault()->GetPluginContext();
+    ctkServiceReference dsServiceRef = context->getServiceReference<mitk::IDataStorageService>();
+    if (dsServiceRef)
     {
-      berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(dsService->GetActiveDataStorage()));
-      // Use MATCH_ID as matching strategy, otherwise another editor using the same input
-      // might by reused but we explicitly want an editor instance with id org.mitk.editors.stdmultiwidget.
-      page->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
+      mitk::IDataStorageService* dsService = context->getService<mitk::IDataStorageService>(dsServiceRef);
+      if (dsService)
+      {
+        berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(dsService->GetActiveDataStorage()));
+        // Use MATCH_ID as matching strategy, otherwise another editor using the same input
+        // might by reused but we explicitly want an editor instance with id org.mitk.editors.stdmultiwidget.
+        page->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
+      }
     }
   }
 }

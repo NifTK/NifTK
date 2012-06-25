@@ -45,6 +45,10 @@ namespace niftk
 
   NIFTKCOMMON_WINEXPORT std::string GetEnvironmentVariable(const std::string& variableName);
 
+  NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOn(const std::string& variableName);
+
+  NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOff(const std::string& variableName);
+
 } // end namespace
 
 #endif
