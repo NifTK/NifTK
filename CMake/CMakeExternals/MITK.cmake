@@ -138,9 +138,16 @@ IF(NOT DEFINED MITK_DIR)
     # 9. Trac 1494 - Merged MITK commit db2f383b66 onto niftk to produce efe1377731.
     #    MITK also merged our trac changes 1497 (MITK bug 12084), so the current code base is
     #    MITK db2f383b66 + Trac 853, 1256, 1344, 1366, 1469, which is efe1377731 on niftk branch. 
+    #
+    # 10. Trac 1585 - Merged MITK commit 3d35ed8ff3 onto niftk. This includes DICOM fixes for Trac 1456, 1472 and 1575.
+    #                 Merged MITK bug 12302, 12303 from Matt Clarkson github, straight into niftk branch.
+    #     So the current code base is:
+    #       MITK 3d35ed8ff3 + Trac 853, 1256, + MITK 12302, 12303 (not yet merged into MITK master).
+    #       This results in niftk branch commit d1879853b1   
+    #                 
     #########################################################
     
-    SET(revision_tag efe1377731)
+    SET(revision_tag d1879853b1)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
