@@ -106,7 +106,11 @@ INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_regAIR-standard-space-all-timepoints
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/regAIR-standard-space-all-timepoints.sh ${EXECUTABLE_OUTPUT_PATH}/regAIR-standard-space-all-timepoints.sh COPYONLY )
 INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/regAIR-standard-space-all-timepoints.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
 
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/ComputePairwiseRegistration.sh ${EXECUTABLE_OUTPUT_PATH}/ComputePairwiseRegistration.sh COPYONLY )
+INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/ComputePairwiseRegistration.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
 
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/ComputePairwiseRegistrationBatch.sh ${EXECUTABLE_OUTPUT_PATH}/ComputePairwiseRegistrationBatch.sh COPYONLY )
+INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/ComputePairwiseRegistrationBatch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
 
 
 
