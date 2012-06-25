@@ -29,8 +29,6 @@
 
 source _niftkCommon.sh
 
-set -ux
-
 function Usage()
 {
 cat <<EOF
@@ -45,6 +43,8 @@ if [ $# -lt 3 ]
 then 
   Usage
 fi 
+
+set -ux
 
 asym_dof=""
 interpolation=4

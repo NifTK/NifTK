@@ -29,7 +29,7 @@
 
 source _niftkCommon.sh
 
-set -ux
+#set -ux
 
 function Usage()
 {

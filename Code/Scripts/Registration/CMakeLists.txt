@@ -112,7 +112,17 @@ INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/ComputePairwiseRegistration.sh DESTIN
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/ComputePairwiseRegistrationBatch.sh ${EXECUTABLE_OUTPUT_PATH}/ComputePairwiseRegistrationBatch.sh COPYONLY )
 INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/ComputePairwiseRegistrationBatch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
 
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/compute_symmetric_transform_batch.sh ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform_batch.sh COPYONLY )
+INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform_batch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
 
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/compute_symmetric_transform.sh ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform.sh COPYONLY )
+INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/compute_symmetric_transform_3.sh ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform_3.sh COPYONLY )
+INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform_3.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/compute_symmetric_transform_n.sh ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform_n.sh COPYONLY )
+INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/compute_symmetric_transform_n.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
 
 
 

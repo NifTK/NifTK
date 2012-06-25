@@ -26,8 +26,6 @@
 
 source _niftkCommon.sh
 
-set -x
-
 function Usage()
 {
 cat <<EOF
@@ -58,6 +56,8 @@ ndefargs=8
 if [ $# -lt $ndefargs ]; then
   Usage
 fi
+
+set -x
 
 # Get mandatory parameters
 
