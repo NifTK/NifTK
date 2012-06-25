@@ -24,6 +24,22 @@
 #
 #=================================================================================*/
 
+function Usage()
+{
+cat <<EOF
+
+This script is the working script which is called ComputePairwiseRegistrationBatch.sh to perform pairwise registration. Please use ComputePairwiseRegistrationBatch.sh. 
+  
+EOF
+exit 127
+}
+
+if [ $# -lt 3 ]
+then 
+  Usage
+fi 
+
+
 
 set -x
 
