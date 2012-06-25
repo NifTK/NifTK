@@ -35,15 +35,18 @@
 #include <berryISelectionProvider.h>
 #include <berryISelectionListener.h>
 
+#include <mitkILinkedRenderWindowPart.h>
+
+#include <QmitkAbstractRenderEditor.h>
+#include <mitkDataStorage.h>
+#include <mitkRenderingManager.h>
+#include <mitkIRenderingManager.h>
+
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
-#include "QmitkAbstractRenderEditor.h"
 #include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
-#include "mitkDataStorage.h"
-#include "mitkRenderingManager.h"
-#include "mitkIRenderingManager.h"
 #include "mitkMIDASViewKeyPressStateMachine.h"
 
 namespace mitk {
@@ -61,8 +64,13 @@ namespace mitk {
  *
  * \ingroup uk_ac_ucl_cmic_midaseditor
  */
+
+class QmitkMIDASMultiViewEditorPrivate;
+class QmitkMIDASMultiViewWidget;
+class QmitkRenderWindow;
+
 class MIDASEDITOR_EXPORT QmitkMIDASMultiViewEditor :
-  public QmitkAbstractRenderEditor, virtual public berry::IPartListener
+  public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
@@ -71,7 +79,6 @@ public:
   berryObjectMacro(QmitkMIDASMultiViewEditor)
 
   QmitkMIDASMultiViewEditor();
-  QmitkMIDASMultiViewEditor(const QmitkMIDASMultiViewEditor& other);
   ~QmitkMIDASMultiViewEditor();
 
   static const std::string EDITOR_ID;
@@ -129,38 +136,67 @@ public:
    */
   virtual mitk::IRenderingManager* GetRenderingManager() const;
 
+  /**
+   * \see mitk::IRenderWindowPart::EnableInteractors().
+   */
+  void EnableInteractors(bool enable, const QStringList& interactors = QStringList());
+
+  /**
+   * \see mitk::IRenderWindowPart::IsInteractorEnabled().
+   */
+  bool IsInteractorEnabled(const QString& interactor) const;
+
+  /**
+   * \see mitk::IRenderWindowPart::GetInteractors().
+   */
+  QStringList GetInteractors() const;
+
+  // -------------------  mitk::ILinkedRenderWindowPart  ----------------------
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::GetSlicesRotator().
+   */
+  mitk::SlicesRotator* GetSlicesRotator() const;
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::GetSlicesSwiveller().
+   */
+  mitk::SlicesSwiveller* GetSlicesSwiveller() const;
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::EnableSlicingPlanes().
+   */
+  void EnableSlicingPlanes(bool enable);
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::IsSlicingPlanesEnabled().
+   */
+  bool IsSlicingPlanesEnabled() const;
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::EnableLinkedNavigation().
+   */
+  void EnableLinkedNavigation(bool enable);
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::IsLinkedNavigationEnabled().
+   */
+  bool IsLinkedNavigationEnabled() const;
+
 protected:
 
   /// \brief Tells the contained QmitkMIDASMultiViewWidget to setFocus().
   virtual void SetFocus();
 
-  // Creates the main Qt GUI element parts.
-  virtual void CreateQtPartControl(QWidget* parent);
-
   /// \brief Called when the preferences object of this editor changed.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
-  // -------------------  mitk::IPartListener  ----------------------
-
-  Events::Types GetPartEventTypes() const;
-  virtual void PartClosed (berry::IWorkbenchPartReference::Pointer partRef);
-  virtual void PartHidden (berry::IWorkbenchPartReference::Pointer partRef);
-  virtual void PartVisible (berry::IWorkbenchPartReference::Pointer partRef);
+  /// \brief Creates the main Qt GUI element parts.
+  virtual void CreateQtPartControl(QWidget* parent);
 
 private:
 
-  /// \brief This class hooks into the Global Interaction system to respond to Key press events.
-  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
-
-  /// \brief This class is the main central widget, containing multiple widgets such as rendering windows and control buttons.
-  QmitkMIDASMultiViewWidget* m_MIDASMultiViewWidget;
-
-  /// \brief This class is to manage visibility when nodes added, removed, main visibility properties changed etc. and manage the renderer specific properties.
-  QmitkMIDASMultiViewVisibilityManager* m_MidasMultiViewVisibilityManager;
-
-  /// \brief We maintain our own RenderingManager. NOTE: It's NOT the Global one.
-  mitk::RenderingManager::Pointer m_RenderingManager;
-
+  const QScopedPointer<QmitkMIDASMultiViewEditorPrivate> d;
 };
 
 #endif /*QMITKMIDASMULTIVIEWEDITOR_H*/

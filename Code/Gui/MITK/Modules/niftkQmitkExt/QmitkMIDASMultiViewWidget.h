@@ -57,17 +57,20 @@ class ctkPopupWidget;
 
 /**
  * \class QmitkMIDASMultiViewWidget
- * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image viewing panes, arranged as rows and columns.
+ * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image
+ * viewing panes, arranged as rows and columns.
  *
- * This is a large, composite widget, containing a central area that can be used to view images, several controls
- * located at the top of the widget and all the necessary plumbing to make it work. This widget is used as the
+ * This is a large, composite widget, containing a central area that can be
+ * used to view images, several controls located at the top of the widget and
+ * all the necessary plumbing to make it work. This widget is used as the
  * main editor widget of the QmitkMIDASMultiViewEditor.
  *
- * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2) image panes, each showing a single
- * 2D image slice.  This class contains m_MaxRows x m_MaxCols QmitkMIDASSingleViewWidget each of which itself wraps
- * a QmitkMIDASStdMultiViewWidget which derives from QmitkStdMultiWidget, meaning that we can actually have up to
- * m_MaxRows x m_MaxCols ortho viewers, including the option for 3D views, which current MIDAS does not have.
- *
+ * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
+ * image panes, each showing a single 2D image slice.  This class contains
+ * m_MaxRows x m_MaxCols QmitkMIDASSingleViewWidget each of which itself wraps
+ * a QmitkMIDASStdMultiViewWidget which derives from QmitkStdMultiWidget,
+ * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
+ * including the option for 3D views, which current MIDAS does not have.
  */
 class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
 {
@@ -91,10 +94,10 @@ public:
   /// do is to disconnect from the mitk::FocusManager.
   virtual ~QmitkMIDASMultiViewWidget();
 
-  /// \brief Currently does nothing, but if I were you, I would check the code.
+  /// \brief Used to activate the whole widget.
   void Activated();
 
-  /// \brief Currently does nothing, but if I were you, I would check the code.
+  /// \brief Used to de-activate the whole widget.
   void Deactivated();
 
   /// \brief As each QmitkMIDASSingleViewWidget may have its own rendering manager,
@@ -221,6 +224,31 @@ public:
    * \see mitk::IRenderWindowPart::SetSelectedPosition(), where we set the position of the currently selected render window, and if linked mode is on, make sure all the others update.
    */
   virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+
+  /**
+   * \see mitk::IRenderWindowPart::EnableInteractors()
+   */
+  virtual void EnableInteractors(bool enable, const QStringList& interactors = QStringList());
+
+  /**
+   * \see mitk::IRenderWindowPart::IsInteractorEnabled()
+   */
+  virtual bool IsInteractorEnabled(const QString& interactor) const;
+
+  /**
+   * \see mitk::IRenderWindowPart::GetInteractors()
+   */
+  virtual QStringList GetInteractors() const;
+
+  /**
+   * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
+   */
+  virtual void EnableLinkedNavigation(bool enable);
+
+  /**
+   * \see mitk::IRenderWindowPart::IsLinkedNavigationEnabled()
+   */
+  virtual bool IsLinkedNavigationEnabled() const;
 
 signals:
 

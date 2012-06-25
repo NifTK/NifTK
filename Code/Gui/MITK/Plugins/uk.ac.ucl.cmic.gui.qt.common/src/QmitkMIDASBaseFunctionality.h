@@ -83,9 +83,15 @@ protected:
   /// \brief Works out the current slice number from the currently focussed render window, returning -1 if it can't be determined.
   int GetSliceNumberFromSliceNavigationController();
 
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  /// Should NOT Be Used. Think Very Carefully Before Using This.
+  ////////////////////////////////////////////////////////////////////////////////////////////
   /// \brief Does a lookup and returns a pointer to the QmitkStdMultiWidget from the editor.
   QmitkStdMultiWidget* GetActiveStdMultiWidget();
 
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  /// Should NOT Be Used. Think Very Carefully Before Using This.
+  ////////////////////////////////////////////////////////////////////////////////////////////
   /// \brief Does a lookup and returns a pointer to the QmitkMIDASMultiViewWidget from the editor.
   QmitkMIDASMultiViewWidget* GetActiveMIDASMultiViewWidget();
 

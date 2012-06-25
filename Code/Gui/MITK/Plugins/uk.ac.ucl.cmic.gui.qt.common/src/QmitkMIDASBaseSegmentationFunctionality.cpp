@@ -25,7 +25,8 @@
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
 
 #include <QMessageBox>
-
+#include "internal/CommonActivator.h"
+#include "mitkILinkedRenderWindowPart.h"
 #include "mitkImageAccessByItk.h"
 #include "mitkDataNodeObject.h"
 #include "mitkNodePredicateDataType.h"
@@ -64,6 +65,8 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 , m_SelectedImage(NULL)
 , m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
+, m_Context(NULL)
+, m_EventAdmin(NULL)
 {
   m_SelectedNode = NULL;
 }
@@ -124,6 +127,12 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     mitk::ToolManager* toolManager = this->GetToolManager();
     assert ( toolManager );
     toolManager->SetDataStorage( *(this->GetDataStorage()) );
+
+    m_Context = mitk::CommonActivator::GetPluginContext();
+    m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
+    m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
+    m_EventAdmin->publishSignal(this, SIGNAL(InteractorRequest(ctkDictionary)),
+                              "org/mitk/gui/qt/INTERACTOR_REQUEST", Qt::QueuedConnection);
   }
 }
 
@@ -134,21 +143,49 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
-  if (this->GetActiveStdMultiWidget() != NULL && this->GetActiveMIDASMultiViewWidget() != NULL)
+  mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart(QmitkAbstractView::OPEN);
+  if (renderWindowPart != NULL)
   {
+    // If toolID > 0, we have a tool, so must DISABLE interaction.
+
+    // This if/else for if we want to only influence the current window.
     if (toolID >= 0)
     {
-      this->GetActiveStdMultiWidget()->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
-      this->GetActiveStdMultiWidget()->DisableNavigationControllerEventListening();
-      this->GetActiveMIDASMultiViewWidget()->SetNavigationControllerEventListening(false);
+      renderWindowPart->EnableInteractors(false);
     }
     else
     {
-      this->GetActiveStdMultiWidget()->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
-      this->GetActiveStdMultiWidget()->EnableNavigationControllerEventListening();
-      this->GetActiveMIDASMultiViewWidget()->SetNavigationControllerEventListening(true);
+      renderWindowPart->EnableInteractors(true);
+    }
+
+    // This if/else for if we want to broadcast an event using ctkEventAdmin.
+    /*
+    bool enabled = true;
+    if (toolID >= 0)
+    {
+      enabled = false;
+    }
+    ctkDictionary properties;
+    properties["enabled"] = enabled;
+
+    emit InteractorRequest(properties);
+    */
+
+    mitk::ILinkedRenderWindowPart *linkedRenderWindowPart = dynamic_cast<mitk::ILinkedRenderWindowPart*>(renderWindowPart);
+    if (linkedRenderWindowPart != NULL)
+    {
+      if (toolID >= 0)
+      {
+        linkedRenderWindowPart->EnableLinkedNavigation(false);
+      }
+      else
+      {
+        linkedRenderWindowPart->EnableLinkedNavigation(true);
+      }
     }
   }
+
+
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::Pointer node)

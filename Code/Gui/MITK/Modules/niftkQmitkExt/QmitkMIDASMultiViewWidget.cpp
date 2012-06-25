@@ -287,7 +287,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   // Default all widgets off except layout widgets, until something dropped.
   this->EnableWidgets(false);
-  this->EnableLayoutWidgets(false);
+  this->EnableLayoutWidgets(true);
 
   // Connect Qt Signals to make it all hang together.
   connect(m_MIDASSlidersWidget->m_SliceSelectionWidget, SIGNAL(IntegerValueChanged(int, int)), this, SLOT(OnSliceNumberChanged(int, int)));
@@ -327,10 +327,16 @@ QmitkMIDASMultiViewWidget::~QmitkMIDASMultiViewWidget()
 
 void QmitkMIDASMultiViewWidget::Activated()
 {
+  this->setEnabled(true);
+  this->EnableInteractors(true);
+  this->EnableLinkedNavigation(true);
 }
 
 void QmitkMIDASMultiViewWidget::Deactivated()
 {
+  this->setEnabled(false);
+  this->EnableInteractors(false);
+  this->EnableLinkedNavigation(false);
 }
 
 QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
@@ -1427,3 +1433,25 @@ void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, co
   m_SingleViewWidgets[windowNumber]->SetSelectedPosition(pos);
 }
 
+void QmitkMIDASMultiViewWidget::EnableInteractors(bool enable, const QStringList& interactors)
+{
+}
+
+bool QmitkMIDASMultiViewWidget::IsInteractorEnabled(const QString& interactor) const
+{
+  return false;
+}
+
+QStringList QmitkMIDASMultiViewWidget::GetInteractors() const
+{
+  return QStringList();
+}
+
+void QmitkMIDASMultiViewWidget::EnableLinkedNavigation(bool enable)
+{
+}
+
+bool QmitkMIDASMultiViewWidget::IsLinkedNavigationEnabled() const
+{
+  return false;
+}

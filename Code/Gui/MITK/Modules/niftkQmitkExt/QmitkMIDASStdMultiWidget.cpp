@@ -107,12 +107,8 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->m_CornerAnnotaions[2].cornerText->SetText(0, "");
 
   // Set default layout. Regardless of what you put in parameter1, eg. MIDAS_VIEW_ORTHO
-  // effectively by default all the widgets are enabled in the base class. I have not
-  // hidden them, because if you do hide them, you get lots of InvalidDrawable errors
-  // on a Mac, which while not fatal, are pretty ugly.  So, by default each widget
-  // comes up looking like an ortho-view.  This is no bad thing, as it will remind
-  // MIDAS people that this application has more functionality than MIDAS.
-  this->SetMIDASView(MIDAS_VIEW_ORTHO, true);
+  // effectively by default all the widgets are enabled in the base class.
+  this->SetMIDASView(MIDAS_VIEW_AXIAL, true);
 
   // Default to unselected, so borders are off.
   this->SetSelected(false);

@@ -26,6 +26,11 @@
 #define QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
+
+// CTK for event handling
+#include "service/event/ctkEventHandler.h"
+#include "service/event/ctkEventAdmin.h"
+
 #include "QmitkMIDASBaseFunctionality.h"
 #include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
 #include "QmitkMIDASToolSelectorWidget.h"
@@ -67,6 +72,11 @@ public:
 
   /// \brief Called when the user hits the button "New segmentation".
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed(QColor &defaultColor);
+
+signals:
+
+  /// \brief Signal emmitted when we need to broadcast a request to turn interactors on/off.
+  void InteractorRequest(const ctkDictionary&);
 
 protected slots:
 
@@ -222,6 +232,15 @@ protected:
   QColor m_DefaultSegmentationColor;
 
 private:
+
+  // For Event Admin, we store a reference to the CTK plugin context
+  ctkPluginContext* m_Context;
+
+  // For Event Admin, we store a reference to the CTK event admin service
+  ctkServiceReference m_EventAdminRef;
+
+  // For Event Admin, we store a pointer to the actual CTK event admin implementation.
+  ctkEventAdmin* m_EventAdmin;
 
 };
 #endif // QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
