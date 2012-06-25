@@ -1,5 +1,6 @@
 set(SRC_CPP_FILES
   mitkMIDASDataStorageEditorInput.cpp
+  QmitkMIDASMultiViewWidget.cpp
   QmitkMIDASMultiViewEditor.cpp
   QmitkMIDASMultiViewEditorPreferencePage.cpp  
 )
@@ -13,6 +14,7 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/uk_ac_ucl_cmic_midaseditor_Activator.h
+  src/QmitkMIDASMultiViewWidget.h
   src/QmitkMIDASMultiViewEditor.h
   src/QmitkMIDASMultiViewEditorPreferencePage.h  
 )

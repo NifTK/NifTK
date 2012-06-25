@@ -581,3 +581,8 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
     vtkRenderWindows[i]->Render();
   }
 }
+
+void QmitkMIDASSingleViewWidget::EnableInteractors(bool enable)
+{
+  this->m_MultiWidget->EnableInteractors(enable);
+}

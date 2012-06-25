@@ -45,6 +45,7 @@
 #include "mitkGlobalInteraction.h"
 #include "mitkTimeSlicedGeometry.h"
 #include "mitkMIDASViewKeyPressResponder.h"
+#include "mitkIRenderWindowPart.h"
 #include "QmitkRenderWindow.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "vtkRenderer.h"
@@ -323,20 +324,6 @@ QmitkMIDASMultiViewWidget::~QmitkMIDASMultiViewWidget()
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
   this->Deactivated();
-}
-
-void QmitkMIDASMultiViewWidget::Activated()
-{
-  this->setEnabled(true);
-  this->EnableInteractors(true);
-  this->EnableLinkedNavigation(true);
-}
-
-void QmitkMIDASMultiViewWidget::Deactivated()
-{
-  this->setEnabled(false);
-  this->EnableInteractors(false);
-  this->EnableLinkedNavigation(false);
 }
 
 QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
@@ -701,43 +688,6 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
     this->UpdateBoundMagnification(true);
-  }
-}
-
-void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
-{
-  if (selectedIndex >= 0 && selectedIndex < m_SingleViewWidgets.size())
-  {
-    m_SelectedWindow = selectedIndex;
-
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-    {
-      if (i == selectedIndex && !m_SingleViewWidgets[i]->IsSelected())
-      {
-        m_SingleViewWidgets[i]->SetSelected(true);
-      }
-      else if (i != selectedIndex && m_SingleViewWidgets[i]->IsSelected())
-      {
-        m_SingleViewWidgets[i]->SetSelected(false);
-      }
-
-      if (  this->m_MIDASBindWidget->AreCursorsBound()
-          || (!this->m_MIDASBindWidget->AreCursorsBound() && i == selectedIndex)
-          )
-      {
-        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
-      }
-      else
-      {
-        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
-      }
-    }
-    this->Update2DCursorVisibility();
-    this->RequestUpdateAll();
-  }
-  else
-  {
-    MITK_WARN << "Ignoring request to set the selected window to window number " << selectedIndex << std::endl;
   }
 }
 
@@ -1243,65 +1193,6 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification(bool isBoundNow)
   }
 }
 
-void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
-{
-  bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
-  bool requestedGeometryBound = this->m_MIDASBindWidget->IsGeometryBound();
-  int selectedWindow = this->GetSelectedWindowIndex();
-
-  if (currentGeometryBound != requestedGeometryBound)
-  {
-    this->UpdateBoundGeometry(this->m_MIDASBindWidget->IsGeometryBound());
-  }
-
-  this->UpdateBoundMagnification(this->m_MIDASBindWidget->IsMagnificationBound());
-
-  if (this->m_MIDASBindWidget->AreCursorsBound())
-  {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-    {
-      m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
-    }
-  }
-  else
-  {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-    {
-      if ((int)i == selectedWindow)
-      {
-        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
-      }
-      else
-      {
-        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
-      }
-    }
-  }
-
-  this->Update2DCursorVisibility();
-}
-
-
-void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled)
-{
-  int selectedWindow = this->GetSelectedWindowIndex();
-  if (enabled && !this->m_NavigationControllerEventListening)
-  {
-    m_SingleViewWidgets[selectedWindow]->SetNavigationControllerEventListening(true);
-  }
-  else if (!enabled && this->m_NavigationControllerEventListening)
-  {
-    m_SingleViewWidgets[selectedWindow]->SetNavigationControllerEventListening(false);
-  }
-  this->m_NavigationControllerEventListening = enabled;
-}
-
-bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
-{
-  return m_NavigationControllerEventListening;
-}
-
-
 int QmitkMIDASMultiViewWidget::GetSliceNumber() const
 {
   return this->m_MIDASSlidersWidget->m_SliceSelectionWidget->GetValue();
@@ -1433,25 +1324,173 @@ void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, co
   m_SingleViewWidgets[windowNumber]->SetSelectedPosition(pos);
 }
 
-void QmitkMIDASMultiViewWidget::EnableInteractors(bool enable, const QStringList& interactors)
+
+void QmitkMIDASMultiViewWidget::Activated()
 {
+  this->setEnabled(true);
+  this->EnableInteractors(true);
+  this->EnableLinkedNavigation(true);
 }
 
-bool QmitkMIDASMultiViewWidget::IsInteractorEnabled(const QString& interactor) const
+
+void QmitkMIDASMultiViewWidget::Deactivated()
 {
-  return false;
+  this->setEnabled(false);
+  this->EnableInteractors(false);
+  this->EnableLinkedNavigation(false);
 }
 
-QStringList QmitkMIDASMultiViewWidget::GetInteractors() const
-{
-  return QStringList();
-}
 
 void QmitkMIDASMultiViewWidget::EnableLinkedNavigation(bool enable)
 {
+  this->SetNavigationControllerEventListening(enable);
 }
+
 
 bool QmitkMIDASMultiViewWidget::IsLinkedNavigationEnabled() const
 {
+  return this->GetNavigationControllerEventListening();
+}
+
+
+bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
+{
+  return m_NavigationControllerEventListening;
+}
+
+
+void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled)
+{
+  int selectedWindow = this->GetSelectedWindowIndex();
+  if (enabled && !this->m_NavigationControllerEventListening)
+  {
+    m_SingleViewWidgets[selectedWindow]->SetNavigationControllerEventListening(true);
+  }
+  else if (!enabled && this->m_NavigationControllerEventListening)
+  {
+    m_SingleViewWidgets[selectedWindow]->SetNavigationControllerEventListening(false);
+  }
+  this->m_NavigationControllerEventListening = enabled;
+}
+
+
+void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
+{
+  if (selectedIndex >= 0 && selectedIndex < m_SingleViewWidgets.size())
+  {
+    m_SelectedWindow = selectedIndex;
+
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (i == selectedIndex && !m_SingleViewWidgets[i]->IsSelected())
+      {
+        m_SingleViewWidgets[i]->SetSelected(true);
+      }
+      else if (i != selectedIndex && m_SingleViewWidgets[i]->IsSelected())
+      {
+        m_SingleViewWidgets[i]->SetSelected(false);
+      }
+
+      if (  this->m_MIDASBindWidget->AreCursorsBound()
+          || (!this->m_MIDASBindWidget->AreCursorsBound() && i == selectedIndex)
+          )
+      {
+        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
+      }
+      else
+      {
+        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
+      }
+    }
+    this->EnableInteractors(true);
+    this->Update2DCursorVisibility();
+    this->RequestUpdateAll();
+  }
+  else
+  {
+    MITK_WARN << "Ignoring request to set the selected window to window number " << selectedIndex << std::endl;
+  }
+}
+
+void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
+{
+  bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
+  bool requestedGeometryBound = this->m_MIDASBindWidget->IsGeometryBound();
+  int selectedWindow = this->GetSelectedWindowIndex();
+
+  if (currentGeometryBound != requestedGeometryBound)
+  {
+    this->UpdateBoundGeometry(this->m_MIDASBindWidget->IsGeometryBound());
+  }
+
+  this->UpdateBoundMagnification(this->m_MIDASBindWidget->IsMagnificationBound());
+
+  if (this->m_MIDASBindWidget->AreCursorsBound())
+  {
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
+    }
+  }
+  else
+  {
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if ((int)i == selectedWindow)
+      {
+        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
+      }
+      else
+      {
+        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
+      }
+    }
+  }
+
+  this->Update2DCursorVisibility();
+}
+
+
+void QmitkMIDASMultiViewWidget::EnableInteractors(bool enable, const QStringList& interactors)
+{
+  if (interactors.isEmpty() || interactors.contains(mitk::IRenderWindowPart::INTERACTOR_MITK))
+  {
+
+    int selectedWindow = this->GetSelectedWindowIndex();
+
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (enable && (int)i == selectedWindow)
+      {
+        m_SingleViewWidgets[i]->EnableInteractors(true);
+      }
+      else
+      {
+        m_SingleViewWidgets[i]->EnableInteractors(false);
+      }
+    }
+  }
+}
+
+
+bool QmitkMIDASMultiViewWidget::IsInteractorEnabled(const QString& interactor) const
+{
+  // This widget will always have at least 1 viewer, and that viewer MUST have
+  // an interactor enabled, and so if the input == INTERACTOR_MITK, then we say yes.
+  bool result = false;
+  if (interactor == mitk::IRenderWindowPart::INTERACTOR_MITK)
+  {
+    result = true;
+  }
   return false;
 }
+
+
+QStringList QmitkMIDASMultiViewWidget::GetInteractors() const
+{
+  // This widget only supports the default MITK movement.
+  QStringList interactors;
+  interactors << mitk::IRenderWindowPart::INTERACTOR_MITK;
+  return interactors;
+}
+

@@ -1593,3 +1593,15 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
     camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
   }
 }
+
+void QmitkMIDASStdMultiWidget::EnableInteractors(bool enable)
+{
+  if (enable)
+  {
+    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
+  }
+  else
+  {
+    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
+  }
+}

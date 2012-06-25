@@ -185,12 +185,6 @@ public:
   /// \brief Gets the flag indicating whether this widget is currently in thumnail mode.
   bool GetThumbnailMode() const;
 
-  /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
-  void SetNavigationControllerEventListening(bool enabled);
-
-  /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
-  bool GetNavigationControllerEventListening() const;
-
   /// \brief Returns the slice number from the Slice slider.
   int GetSliceNumber() const;
 
@@ -349,6 +343,12 @@ private:
   void UpdateBoundMagnification(bool isBoundNow);
 
   void SwitchWindows(int selectedViewer, vtkRenderWindow *selectedWindow);
+
+  /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
+  void SetNavigationControllerEventListening(bool enabled);
+
+  /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
+  bool GetNavigationControllerEventListening() const;
 
   // Layouts
   QHBoxLayout                                   *m_TopLevelLayout;

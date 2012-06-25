@@ -251,6 +251,9 @@ public:
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
 
+  /// \brief Turn on/off the relevant interactors.
+  void EnableInteractors(bool enable);
+
 protected:
 
   virtual void paintEvent(QPaintEvent *event);

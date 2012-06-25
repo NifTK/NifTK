@@ -212,6 +212,9 @@ public:
   /// \brief Reverts the camera position back to the stored camera position.
   void RestoreCameras();
 
+  /// \brief Turn on/off the relevant interactors.
+  void EnableInteractors(bool enable);
+
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.

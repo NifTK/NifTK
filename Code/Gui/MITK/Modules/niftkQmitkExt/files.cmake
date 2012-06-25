@@ -8,7 +8,6 @@ SET(CPP_FILES
   QmitkMIDASOrientationWidget.cpp
   QmitkMIDASStdMultiWidget.cpp
   QmitkMIDASSingleViewWidget.cpp
-  QmitkMIDASMultiViewWidget.cpp
   QmitkMIDASMultiViewVisibilityManager.cpp
 )
 
@@ -23,7 +22,6 @@ SET(MOC_H_FILES
   QmitkMIDASOrientationWidget.h
   QmitkMIDASStdMultiWidget.h
   QmitkMIDASSingleViewWidget.h
-  QmitkMIDASMultiViewWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
 )
 
