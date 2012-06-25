@@ -38,7 +38,6 @@ ADD_EXECUTABLE(itkComputeInitialAtlas itkComputeInitialAtlas.cxx)
 ADD_EXECUTABLE(itkComputeInitialAffineAtlas itkComputeInitialAffineAtlas.cxx)
 ADD_EXECUTABLE(itkComputeImageDifference itkComputeImageDifference.cxx)
 ADD_EXECUTABLE(niftkMultiplyTransformation niftkMultiplyTransformation.cxx)
-ADD_EXECUTABLE(itkComputeMeanTransformation itkComputeMeanTransformation.cxx)
 ADD_EXECUTABLE(ComputeSymmetricAtrophyRate ComputeSymmetricAtrophyRate.cxx)
 ADD_EXECUTABLE(niftkMedian niftkMedian.cxx)
 ADD_EXECUTABLE(niftkKBilateralImageFilter niftkKBilateralImageFilter.cxx)
@@ -187,14 +186,6 @@ TARGET_LINK_LIBRARIES(niftkMultiplyTransformation
   ${Boost_LIBRARIES} 
   )
 
-TARGET_LINK_LIBRARIES(itkComputeMeanTransformation
-  niftkcommon   
-  niftkITK 
-  ITKCommon 
-  ITKIO   
-  ${Boost_LIBRARIES} 
-  )
-  
 TARGET_LINK_LIBRARIES(niftkMedian
   niftkcommon   
   niftkITK 
@@ -244,8 +235,6 @@ TARGET_LINK_LIBRARIES(niftkFindSkull
   )
   
   
-INSTALL(TARGETS itkComputeMeanTransformation RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-
 INSTALL(TARGETS niftkMultiplyTransformation RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
 
 INSTALL(TARGETS ComputeSymmetricAtrophyRate RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)

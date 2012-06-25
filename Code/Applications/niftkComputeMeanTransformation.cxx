@@ -27,11 +27,43 @@
 #include "itkImageRegistrationFilter.h"
 #include "itkTransformFileWriter.h" 
 
+/*!
+ * \file niftkComputeMeanTransformation.cxx
+ * \page niftkComputeMeanTransformation
+ * \section niftkCombineSegmentationsSummary Compute the geometric mean of the transformations. 
+ * 
+ * Compute the geometric mean of the transformations
+ *
+ */
+
+void Usage(char *exec)
+{
+  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Compute the geometric mean of the transformation." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " outputTransform tol inputTransform1 weight1 inputTransform2 weight2 ... " << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    outputTransform         Output transformation" << std::endl;
+  std::cout << "    tol                     Tolerance for matrix exp and log, typically 1e-8" << std::endl; 
+  std::cout << "    inputTransform1         Input transformation 1" << std::endl; 
+  std::cout << "    weight1                 Weight of the transformation 1" << std::endl; 
+  std::cout << "    ...                                                   " << std::endl << std::endl;      
+}
+
+
 /**
  * \brief Compute mean transformaitons. 
  */
 int main(int argc, char** argv)
 {
+  if (argc < 7)
+  {
+    Usage(argv[0]); 
+    return EXIT_FAILURE; 
+  }
+  
   const unsigned int Dimension = 3;
   typedef short PixelType;
   typedef itk::Image< PixelType, Dimension >  InputImageType; 
