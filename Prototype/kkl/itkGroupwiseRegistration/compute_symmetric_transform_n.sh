@@ -35,24 +35,16 @@ function Usage()
 {
 cat <<EOF
 
-Script to compute symmetric transform and BSI.
-
-Usage: $0 target.img target.roi target.dof source.img source.roi source.dof output_dir [options]
-
-Mandatory Arguments:
-
-  target.img        : target (or baseline) image
-  target.roi        : target (or baseline) region
-  target.dof        : target (or baseline) dof
-  source.img        : source (or repeat) image
-  source.roi        : source (or repeat) region
-  source.dof        : source (or repeat) dof
-
-  output_dir        : Output directory
-                       
+This script is the working script which is called by compute_symmetric_transform_batch.sh (-tpn) to perform pairwise registration. Please use compute_symmetric_transform_batch.sh.  
+  
 EOF
 exit 127
 }
+
+if [ $# -lt 3 ]
+then 
+  Usage
+fi 
 
 asym_dof=""
 interpolation=4
@@ -146,11 +138,11 @@ function compute_star()
 
   # Get the inverse of repeat transform.
   local _dof_2_1_inverse=${tmpdir}/__dof_2_1_inverse
-  itkInvertTransformation ${_dof_2_1} ${_dof_2_1_inverse}
+  niftkInvertTransformation ${_dof_2_1} ${_dof_2_1_inverse}
 
   # Compute the mean transform for baseline image.
-  itkComputeMeanTransformation ${_dof_1_2_star} 1e-8 ${_dof_1_2} 1 ${_dof_2_1_inverse} 1 ${asym_dof}
-  itkInvertTransformation ${_dof_1_2_star} ${_dof_1_2_star_inverse}
+  niftkComputeMeanTransformation ${_dof_1_2_star} 1e-8 ${_dof_1_2} 1 ${_dof_2_1_inverse} 1 ${asym_dof}
+  niftkInvertTransformation ${_dof_1_2_star} ${_dof_1_2_star_inverse}
 }
 
 function transform()
@@ -165,7 +157,7 @@ function transform()
   
   # Compute the mean transform for baseline image.
   local average_transform=${output_dir}/${_output_prefix}_average.dof
-  itkComputeMeanTransformation ${average_transform} 1e-8 ${_dof_1_2} 2 ${_dof_1_3} 2 ${identity_dof} 1
+  niftkComputeMeanTransformation ${average_transform} 1e-8 ${_dof_1_2} 2 ${_dof_1_3} 2 ${identity_dof} 1
   
   # Do the transform.
   local resliced_image=${output_dir}/${_output_prefix}.img
@@ -221,7 +213,7 @@ do
 
   # Compute the mean transform for baseline image.
   average_transform=${output_dir}/${output_prefix}_${i}_average.dof
-  itkComputeMeanTransformation ${average_transform} 1e-8 ${dof_arguments} ${identity_dof} 1
+  niftkComputeMeanTransformation ${average_transform} 1e-8 ${dof_arguments} ${identity_dof} 1
 
   # Do the transform.
   resliced_image=${output_dir}/${output_prefix}_${i}.img

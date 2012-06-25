@@ -130,11 +130,11 @@ function compute_star()
 
   # Get the inverse of repeat transform.
   local _dof_2_1_inverse=${tmpdir}/__dof_2_1_inverse
-  itkInvertTransformation ${_dof_2_1} ${_dof_2_1_inverse}
+  niftkInvertTransformation ${_dof_2_1} ${_dof_2_1_inverse}
 
   # Compute the mean transform for baseline image.
-  itkComputeMeanTransformation ${_dof_1_2_star} 1e-8 ${_dof_1_2} 1 ${_dof_2_1_inverse} 1 ${asym_dof}
-  itkInvertTransformation ${_dof_1_2_star} ${_dof_1_2_star_inverse}
+  niftkComputeMeanTransformation ${_dof_1_2_star} 1e-8 ${_dof_1_2} 1 ${_dof_2_1_inverse} 1 ${asym_dof}
+  niftkInvertTransformation ${_dof_1_2_star} ${_dof_1_2_star_inverse}
 }
 
 function transform()
@@ -149,7 +149,7 @@ function transform()
   
   # Compute the mean transform for baseline image.
   local average_transform=${output_dir}/${_output_prefix}_average.dof
-  itkComputeMeanTransformation ${average_transform} 1e-8 ${_dof_1_2} 2 ${_dof_1_3} 2 ${identity_dof} 1
+  niftkComputeMeanTransformation ${average_transform} 1e-8 ${_dof_1_2} 2 ${_dof_1_3} 2 ${identity_dof} 1
   
   # Do the transform.
   local resliced_image=${output_dir}/${_output_prefix}.img

@@ -23,9 +23,6 @@
 #  PURPOSE.  See the above copyright notices for more information.
 #
 #=================================================================================*/
-#
-# Script to run a groupwise DBC. 
-# 
 
 source _niftkCommon.sh
 
@@ -115,11 +112,11 @@ fi
 
 # Get the inverse of repeat transform.
 repeat_dof_inverse=${tmpdir}/repeat_inverse.dof
-itkInvertTransformation ${repeat_dof} ${repeat_dof_inverse}
+niftkInvertTransformation ${repeat_dof} ${repeat_dof_inverse}
 
 # Compute the mean transform for baseline image.
 average_transform=${output_dir}/${output_prefix}_average.dof
-itkComputeMeanTransformation ${average_transform} 1e-8 ${baseline_dof} 1 ${repeat_dof_inverse} 1 ${asym_dof}
+niftkComputeMeanTransformation ${average_transform} 1e-8 ${baseline_dof} 1 ${repeat_dof_inverse} 1 ${asym_dof}
 
 # Do the transform.
 resliced_image=${output_dir}/${output_prefix}_0.img
