@@ -45,6 +45,7 @@ class TrackerControlsWidget : public QWidget
 {
   Q_OBJECT
 
+
 public:
   /// \brief Basic constructor which initializes the socket and sets up signal - slot connections
   TrackerControlsWidget(QObject *parent = 0);
@@ -57,8 +58,15 @@ public:
   /// \brief This method initializes the registration for the FiducialRegistrationWidget
   void InitializeRegistration();
 
+  /// \brief This method initializes the tracker tools associated with the remote tracker
+  void InitTrackerTools(QStringList &toolList);
+
+
+  inline void setPort(int port) { m_port = port; }
+  inline int getPort(void) { return m_port; }
 
 signals:
+  void sendCrap(void);
 
 protected:
 
@@ -78,32 +86,28 @@ private slots:
   void OnManageToolsClicked(void);
   void OnFiducialRegistrationClicked(void);
 
+  void OnGetCurrentPosition(void);
+
   /// \brief 
   void OnRegisterFiducials( );
 
-  /// \brief This method sets up the filter pipeline.
-  void SetupIGTPipeline();
-  /// \brief This method initializes all needed filters.
-  void InitializeFilters();
-  /// \brief This method destroys the filter pipeline.
-  void DestroyIGTPipeline();
-
 private:
-  bool                            m_listening;
-  bool                            m_connecting;
-  bool                            m_trackerConnected;
-  bool                            m_tracking;
+  int                                m_port;
+  bool                               m_listening;
+  bool                               m_connecting;
+  bool                               m_trackerConnected;
+  bool                               m_tracking;
   
-  bool                            m_sending1TransMsg;
-  bool                            m_sendingMsgStream;
+  bool                               m_sending1TransMsg;
+  bool                               m_sendingMsgStream;
   
-  OIGTLSocketObject             * m_socket;
-  unsigned long int               m_msgCounter;
+  OIGTLSocketObject                * m_socket;
+  unsigned long int                  m_msgCounter;
 
-  QStringList                     m_toolList;
-  QString                         m_currDir;
+  QStringList                        m_toolList;
+  QString                            m_currDir;
 
-  OIGTLMessage::Pointer           m_lastMsg;
+  OIGTLMessage::Pointer              m_lastMsg;
 
   mitk::DataNode::Pointer            m_ImageFiducialsDataNode;
   mitk::DataNode::Pointer            m_TrackerFiducialsDataNode;
@@ -112,13 +116,6 @@ private:
   SurgicalGuidanceView             * m_SGViewPointer;
 
   bool                               m_FidRegInitialized;
-
-  mitk::Vector3D                                          m_DirectionOfProjectionVector;///< vector for direction of projection of instruments
-  mitk::TrackingDeviceSource::Pointer                     m_Source; ///< source that connects to the tracking device
-  mitk::NavigationDataLandmarkTransformFilter::Pointer    m_FiducialRegistrationFilter; ///< this filter transforms from tracking coordinates into mitk world coordinates
-  mitk::NavigationDataLandmarkTransformFilter::Pointer    m_PermanentRegistrationFilter; ///< this filter transforms from tracking coordinates into mitk world coordinates if needed it is interconnected before the FiducialEegistrationFilter
-  mitk::NavigationDataObjectVisualizationFilter::Pointer  m_Visualizer; ///< visualization filter
-  mitk::CameraVisualization::Pointer                      m_VirtualView; ///< filter to update the vtk camera according to the reference navigation data
 
   Ui::TrackerControlsWidget ui;
 };

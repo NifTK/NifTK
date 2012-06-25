@@ -13,19 +13,19 @@ TrackerControlsWidget::TrackerControlsWidget(QObject *parent)
   m_FiducialRegWidget = NULL;
   m_SGViewPointer     = NULL;
   m_FidRegInitialized = false;
-
-
-  m_Source.operator =(NULL);
-  m_FiducialRegistrationFilter.operator =(NULL);
-  m_PermanentRegistrationFilter.operator =(NULL);
-  m_Visualizer.operator =(NULL);
-  m_VirtualView.operator =(NULL);
-
-  m_DirectionOfProjectionVector[0]=0;
-  m_DirectionOfProjectionVector[1]=0;
-  m_DirectionOfProjectionVector[2]=-1;
+  m_port              = -1;
 
   connect(ui.pushButton_FiducialRegistration, SIGNAL(clicked()), this, SLOT(OnFiducialRegistrationClicked()) );
+  connect(ui.toolButton_Add, SIGNAL(clicked()), this, SLOT(manageToolConnection()) );
+  connect(ui.toolButton_Edit, SIGNAL(clicked()), this, SIGNAL(sendCrap()) );
+  connect(ui.pushButton_GetCurrentPos, SIGNAL(clicked()), this, SLOT(OnGetCurrentPosition()) );
+  //connect(ui.pushButton_ManageTools, SIGNAL(clicked()), this, SLOT(OnManageToolsClicked()) );
+
+  //Extract the ROM files from qrc
+  QFile::copy(":/NiftyLink/8700338.rom", "8700338.rom");
+  QFile::copy(":/NiftyLink/8700339.rom", "8700339.rom");
+  QFile::copy(":/NiftyLink/8700340.rom", "8700340.rom");
+  QFile::copy(":/NiftyLink/8700302.rom", "8700302.rom");
 }
 
 
@@ -38,6 +38,35 @@ TrackerControlsWidget::~TrackerControlsWidget(void)
   }
 }
 
+void TrackerControlsWidget::InitTrackerTools(QStringList &toolList)
+{
+  QPixmap pix(22, 22);
+  pix.fill(QColor(Qt::lightGray));
+
+  QPixmap pix2(22, 22);
+  pix2.fill(QColor("green"));
+
+  if (toolList.contains(QString("8700338.rom")))
+    ui.comboBox_trackerTool->addItem(pix2, "8700338.rom");
+  else
+    ui.comboBox_trackerTool->addItem(pix, "8700338.rom");
+
+  if (toolList.contains(QString("8700339.rom")))
+    ui.comboBox_trackerTool->addItem(pix2, "8700339.rom");
+  else
+    ui.comboBox_trackerTool->addItem(pix, "8700339.rom");
+
+  if (toolList.contains(QString("8700340.rom")))
+    ui.comboBox_trackerTool->addItem(pix2, "8700340.rom");
+  else
+    ui.comboBox_trackerTool->addItem(pix, "8700340.rom");
+
+  if (toolList.contains(QString("8700302.rom")))
+    ui.comboBox_trackerTool->addItem(pix2, "8700302.rom");
+  else
+    ui.comboBox_trackerTool->addItem(pix, "8700302.rom");
+}
+
 void TrackerControlsWidget::SetSurgicalGuidanceViewPointer(SurgicalGuidanceView * p)
 {
   m_SGViewPointer = p;
@@ -45,11 +74,6 @@ void TrackerControlsWidget::SetSurgicalGuidanceViewPointer(SurgicalGuidanceView 
 
 
 void TrackerControlsWidget::manageTrackerConnection()
-{
-}
-
-//Turn tracking of a certain tool on or off
-void TrackerControlsWidget::manageToolConnection()
 {
 }
 
@@ -63,7 +87,49 @@ void TrackerControlsWidget::OnGetCurrentPositionClicked(void)
 
 void TrackerControlsWidget::OnManageToolsClicked(void)
 {
+
 }
+
+//Turn tracking of a certain tool on or off
+void TrackerControlsWidget::manageToolConnection()
+{
+  QString currentTool = ui.comboBox_trackerTool->currentText();
+  
+  //Tracking of tool currently enabled
+  if (m_toolList.contains(currentTool))
+  {
+    int i = m_toolList.indexOf(currentTool);
+    m_toolList.removeAt(i);
+    
+    QPixmap pix(22, 22);
+    pix.fill(QColor(Qt::lightGray));
+    
+    int index = ui.comboBox_trackerTool->currentIndex();
+    ui.comboBox_trackerTool->removeItem(index);
+    ui.comboBox_trackerTool->insertItem(index, pix, currentTool);
+    ui.comboBox_trackerTool->setCurrentIndex(index);
+  }
+  else //Tracking of tool currently disabled
+  {
+    m_toolList.append(currentTool);
+
+    QPixmap pix(22, 22);
+    pix.fill(QColor("green"));
+    
+    int index = ui.comboBox_trackerTool->currentIndex();
+    ui.comboBox_trackerTool->removeItem(index);
+    ui.comboBox_trackerTool->insertItem(index, pix, currentTool);
+    ui.comboBox_trackerTool->setCurrentIndex(index);
+  }
+
+  CommandDescriptorXMLBuilder attachToolCmd;
+  attachToolCmd.setCommandName("AttachTool");
+  attachToolCmd.addParameter("ToolName", "QString", currentTool);
+
+  OIGTLStringMessage::Pointer cmdMsg(new OIGTLStringMessage());
+  cmdMsg->setString(attachToolCmd.getXMLAsString());
+}
+
 
 void TrackerControlsWidget::OnFiducialRegistrationClicked(void)
 {
@@ -73,19 +139,12 @@ void TrackerControlsWidget::OnFiducialRegistrationClicked(void)
     m_FiducialRegWidget->setWindowFlags( Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint );
     m_FiducialRegWidget->setObjectName("FiducialRegistrationWidget");
     connect(m_FiducialRegWidget, SIGNAL(PerformFiducialRegistration()), this, SLOT(OnRegisterFiducials()) );
-
-    //frw->HideTrackingFiducialButton(true);
-    //frw->HideContinousRegistrationRadioButton(true);
-    //frw->HideStaticRegistrationRadioButton(true);
-    //frw->HideFiducialRegistrationGroupBox(true);
-    //frw->HideUseICPRegistrationCheckbox(true);
   }
 
   m_FiducialRegWidget->show();
 
   if (!m_FidRegInitialized)
     this->InitializeRegistration();
-
 }
 
 void TrackerControlsWidget::InitializeRegistration()
@@ -133,98 +192,14 @@ void TrackerControlsWidget::InitializeRegistration()
 
   m_FidRegInitialized = true;
 
-  InitializeFilters();
-}
-
-void TrackerControlsWidget::SetupIGTPipeline()
-{
-  //mitk::DataStorage* ds = this->GetDefaultDataStorage(); // check if DataStorage is available
-  //if(ds == NULL)
-  //  throw std::invalid_argument("DataStorage is not available");
-
-  //mitk::TrackingDevice::Pointer tracker = m_NDIConfigWidget->GetTracker(); // get current tracker from configuration widget
-  //if(tracker.IsNull()) // check if tracker is valid
-  //  throw std::invalid_argument("tracking device is NULL!");
-
-  //m_Source = mitk::TrackingDeviceSource::New(); // create new source for the IGT-Pipeline
-  //m_Source->SetTrackingDevice(tracker); // set the found tracker from the configuration widget to the source
-
-  //this->InitializeFilters(); // initialize all needed filters 
-
-  //if(m_NDIConfigWidget->GetTracker()->GetType() == mitk::NDIAurora)
-  //{
-
-  //  for (unsigned int i=0; i < m_Source->GetNumberOfOutputs(); ++i)
-  //  {
-  //    m_FiducialRegistrationFilter->SetInput(i, m_Source->GetOutput(i)); // set input for registration filter
-  //    m_Visualizer->SetInput(i, m_FiducialRegistrationFilter->GetOutput(i)); // set input for visualization filter
-  //  }
-
-  //  for(unsigned int i= 0; i < m_Visualizer->GetNumberOfOutputs(); ++i)
-  //  {
-  //    const char* toolName = tracker->GetTool(i)->GetToolName();
-
-  //    mitk::DataNode::Pointer representation = this->CreateInstrumentVisualization(this->GetDefaultDataStorage(), toolName);
-  //    m_PSRecToolSelectionComboBox->addItem(QString(toolName));
-
-  //    m_PermanentRegistrationToolSelectionWidget->AddToolName(QString(toolName));
-  //    m_VirtualViewToolSelectionWidget->AddToolName(QString(toolName));
-
-  //    m_Visualizer->SetRepresentationObject(i, representation->GetData());
-
-  //  }
-
-  //  if(m_Source->GetTrackingDevice()->GetToolCount() > 0)
-  //    m_RenderingTimerWidget->setEnabled(true);
-
-  //  mitk::RenderingManager::GetInstance()->RequestUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
-  //  this->GlobalReinit();
-  //}
-
-  //// this->CreateInstrumentVisualization(ds, tracker);//create for each single connected ND a corresponding 3D representation
-}
-
-
-void TrackerControlsWidget::InitializeFilters()
-{
-  //1. Fiducial Registration Filters
-  m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New(); // filter used for initial fiducial registration
-
-  //2. Visualization Filter
-  m_Visualizer = mitk::NavigationDataObjectVisualizationFilter::New(); // filter to display NavigationData
-  m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
-
-  //3. Virtual Camera
-  m_VirtualView = mitk::CameraVisualization::New(); // filter to update the vtk camera according to the reference navigation data
-  m_VirtualView->SetRenderer(mitk::BaseRenderer::GetInstance(m_SGViewPointer->GetActiveStdMultiWidget()->mitkWidget4->GetRenderWindow()));
-
-  mitk::Vector3D viewUpInToolCoordinatesVector;
-  viewUpInToolCoordinatesVector[0]=1;
-  viewUpInToolCoordinatesVector[1]=0;
-  viewUpInToolCoordinatesVector[2]=0;
-
-  m_VirtualView->SetDirectionOfProjectionInToolCoordinates(m_DirectionOfProjectionVector);
-  m_VirtualView->SetFocalLength(5000.0); 
-  m_VirtualView->SetViewUpInToolCoordinates(viewUpInToolCoordinatesVector);
-}
-
-void TrackerControlsWidget::DestroyIGTPipeline()
-{
-  //if(m_Source.IsNotNull())
-  //{
-  //  m_Source->StopTracking();
-  //  m_Source->Disconnect();
-  //  m_Source = NULL;
-  //}
-  //m_FiducialRegistrationFilter = NULL;
-  //m_PermanentRegistrationFilter = NULL;
-  //m_Visualizer = NULL;
-  //m_VirtualView = NULL;
+  m_SGViewPointer->InitializeFilters();
 }
 
 void TrackerControlsWidget::OnRegisterFiducials( )
 {
   /* retrieve fiducials from data storage */
+  mitk::DataStorage* ds = m_SGViewPointer->GetDataStorage();
+
   mitk::PointSet::Pointer imageFiducials = dynamic_cast<mitk::PointSet*>(m_ImageFiducialsDataNode->GetData());
   mitk::PointSet::Pointer trackerFiducials = dynamic_cast<mitk::PointSet*>(m_TrackerFiducialsDataNode->GetData());
  
@@ -238,7 +213,7 @@ void TrackerControlsWidget::OnRegisterFiducials( )
 
   unsigned int minFiducialCount = 3; // \Todo: move to view option
   
-  if ((imageFiducials->GetSize() < (int)minFiducialCount) || (trackerFiducials->GetSize() < (int)minFiducialCount) || (imageFiducials->GetSize() != trackerFiducials->GetSize()))
+  if ((imageFiducials->GetSize() < minFiducialCount) || (trackerFiducials->GetSize() < minFiducialCount) || (imageFiducials->GetSize() != trackerFiducials->GetSize()))
   {
     QMessageBox::warning(NULL, "Registration not possible", QString("Not enough fiducial pairs found. At least %1 fiducial must "
       "exist for the image and the tracking system respectively.\n"
@@ -248,34 +223,44 @@ void TrackerControlsWidget::OnRegisterFiducials( )
 
   /* now we have two PointSets with enough points to perform a landmark based transform */
   if (m_FiducialRegWidget->UseICPIsChecked() )
-    m_FiducialRegistrationFilter->UseICPInitializationOn();
+    m_SGViewPointer->m_FiducialRegistrationFilter->UseICPInitializationOn();
   else
-    m_FiducialRegistrationFilter->UseICPInitializationOff();
+    m_SGViewPointer->m_FiducialRegistrationFilter->UseICPInitializationOff();
 
-    m_FiducialRegistrationFilter->SetSourceLandmarks(trackerFiducials);
-    m_FiducialRegistrationFilter->SetTargetLandmarks(imageFiducials);
+  m_SGViewPointer->m_FiducialRegistrationFilter->SetSourceLandmarks(trackerFiducials);
+  m_SGViewPointer->m_FiducialRegistrationFilter->SetTargetLandmarks(imageFiducials);
 
 
-  if (m_FiducialRegistrationFilter.IsNotNull() && m_FiducialRegistrationFilter->IsInitialized()) // update registration quality display
+  if (m_SGViewPointer->m_FiducialRegistrationFilter.IsNotNull() && m_SGViewPointer->m_FiducialRegistrationFilter->IsInitialized()) // update registration quality display
     {
       QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
         "RMS error is %3mm,\n"
         "Minimum registration error (best fitting landmark) is  %4mm,\n"
         "Maximum registration error (worst fitting landmark) is %5mm.")
         .arg("Fiducial Registration")
-        .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
-        .arg(m_FiducialRegistrationFilter->GetFREStdDev(), 3, 'f', 3)
-        .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3)
-        .arg(m_FiducialRegistrationFilter->GetMinError(), 3, 'f', 3)
-        .arg(m_FiducialRegistrationFilter->GetMaxError(), 3, 'f', 3);
+        .arg(m_SGViewPointer->m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+        .arg(m_SGViewPointer->m_FiducialRegistrationFilter->GetFREStdDev(), 3, 'f', 3)
+        .arg(m_SGViewPointer->m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3)
+        .arg(m_SGViewPointer->m_FiducialRegistrationFilter->GetMinError(), 3, 'f', 3)
+        .arg(m_SGViewPointer->m_FiducialRegistrationFilter->GetMaxError(), 3, 'f', 3);
 
       m_SGViewPointer->m_consoleDisplay->appendPlainText(registrationQuality);
       m_SGViewPointer->m_consoleDisplay->appendPlainText("\n");
 
       QString statusUpdate = QString("Fiducial Registration complete, FRE: %0, RMS: %1")
-        .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
-        .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3);
+        .arg(m_SGViewPointer->m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+        .arg(m_SGViewPointer->m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3);
 
       m_FiducialRegWidget->SetQualityDisplayText(statusUpdate);
     }
+}
+
+void TrackerControlsWidget::OnGetCurrentPosition()
+{
+  OIGTLMessage::Pointer getPos;
+  getPos.reset();
+  OIGTLTrackingDataMessage::Create_GET(getPos);
+
+  m_SGViewPointer->sendMessage(getPos, m_port);
+
 }
