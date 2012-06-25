@@ -408,6 +408,10 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   TARGET_LINK_LIBRARIES(niftkContourExtractor2DImageFilter ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkContourExtractor2DImageFilter RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   
+  ADD_EXECUTABLE(niftkInvertTransformation niftkInvertTransformation.cxx )
+  TARGET_LINK_LIBRARIES(niftkInvertTransformation ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkInvertTransformation RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  
   ##############################################################
   # Other command line applications, that require VTK.
   ##############################################################

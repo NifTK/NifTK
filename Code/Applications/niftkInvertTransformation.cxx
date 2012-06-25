@@ -35,6 +35,16 @@
 #include "itkMaskedImageRegistrationMethod.h"
 #include "itkTransformFileWriter.h"
 
+/*!
+ * \file niftkInvertTransformation.cxx
+ * \page niftkInvertTransformation
+ * \section niftkInvertTransformationSummary Program to invert transformation".
+ * 
+ * Program to invert transformation:. 
+ * 
+ */
+
+
 /**
  * \brief 
  */
@@ -46,7 +56,15 @@ int main(int argc, char** argv)
   
   if (argc < 3)
   {
+    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    std::cout << "  " << std::endl;
+    std::cout << "  Inverts an affine transform" << std::endl;
+    std::cout << "  " << std::endl;
     std::cout << argv[0] << " inputTransform outputTransform" << std::endl; 
+    std::cout << "  " << std::endl;
+    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+    std::cout << "    inputTransform       Input transformation." << std::endl;
+    std::cout << "    outputTransform      Output transformation." << std::endl << std::endl;      
     return -1; 
   }
   
