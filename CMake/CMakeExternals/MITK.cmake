@@ -145,9 +145,13 @@ IF(NOT DEFINED MITK_DIR)
     #       MITK 3d35ed8ff3 + Trac 853, 1256, + MITK 12302, 12303 (not yet merged into MITK master).
     #       This results in niftk branch commit d1879853b1   
     #                 
+    # 11. Trac 1600 - Merged MITK commit c855dedda4 onto niftk due to pickup fix for MITK bug 12299.
+    #     So, the current code base is:
+    #       MITK c855dedda4 + Trac 853, 1256, + MITK 12302, 12303 (not yet merged into MITK master).
+    #       This results in niftk branch commit f6bbb3c5f4
     #########################################################
     
-    SET(revision_tag d1879853b1)
+    SET(revision_tag f6bbb3c5f4)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
