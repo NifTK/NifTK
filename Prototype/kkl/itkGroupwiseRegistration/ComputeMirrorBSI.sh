@@ -78,7 +78,7 @@ image_flip=${output_dir}/`basename ${image%.img}`_flip.img
 brain_region_flip=${output_dir}/`basename ${brain_region}`_flip
 hippo_l_region_flip=${output_dir}/`basename ${hippo_l_region}`_flip
 hippo_r_region_flip=${output_dir}/`basename ${hippo_r_region}`_flip
-anchange ${image} ${flip_image} -flipx 
+anchange ${image} ${image_flip} -flipx 
 dims=`imginfo ${image} -dims | awk '{printf "%s %s %s", $1, $2, $3}'`
 regchange ${brain_region} ${brain_region_flip} ${dims} -flipx
 regchange ${hippo_l_region} ${hippo_l_region_flip} ${dims} -flipx
@@ -87,7 +87,8 @@ regchange ${hippo_r_region} ${hippo_r_region_flip} ${dims} -flipx
 # register them. 
 echo "${image} ${brain_region} ${hippo_l_region} ${hippo_r_region} ${image_flip} ${brain_region_flip} ${hippo_l_region_flip} ${hippo_r_region_flip}" > ${output_dir}/input_${id}_reg.txt
 
-ComputePairwiseRegistrationBatch.sh ${output_dir}/input_${id}_reg.txt ${output} -symmetric sym_midway -dof 4 -similarity 4 -dilation 10 -pptol 0.001
+export SKIP_SGE=1
+ComputePairwiseRegistrationBatch.sh ${output_dir}/input_${id}_reg.txt ${output_dir} -symmetric sym_midway -dof 4 -similarity 4 -dilation 10 -pptol 0.001
 
 # transform them. 
 echo "${id}_l_groupwise 2 ${image} ${brain_region} ${hippo_l_region} dummy ${output}/${id}_pairwise_0_1_affine_second_roi1.dof ${image_flip} ${brain_region_flip} ${hippo_l_region_flip} dummy ${output}/${id}_pairwise_1_0_affine_second_roi1.dof" > ${output_dir}/input_${id}_transform_l.txt
