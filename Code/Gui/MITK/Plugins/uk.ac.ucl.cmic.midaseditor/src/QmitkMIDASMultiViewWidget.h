@@ -25,7 +25,7 @@
 #ifndef QMITKMIDASMULTIVIEWWIDGET_H_
 #define QMITKMIDASMULTIVIEWWIDGET_H_
 
-#include "niftkQmitkExtExports.h"
+#include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
 #include <QWidget>
 #include <QEvent>
@@ -72,7 +72,7 @@ class ctkPopupWidget;
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
  */
-class NIFTKQMITKEXT_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+class MIDASEDITOR_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
 {
   Q_OBJECT
 
