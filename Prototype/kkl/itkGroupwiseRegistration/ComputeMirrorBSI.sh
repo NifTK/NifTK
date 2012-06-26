@@ -85,17 +85,20 @@ regchange ${hippo_l_region} ${hippo_l_region_flip} ${dims} -flipx
 regchange ${hippo_r_region} ${hippo_r_region_flip} ${dims} -flipx
 
 # register them. 
-echo "${image} ${brain_region} ${hippo_l_region} ${hippo_r_region} ${image_flip} ${brain_region_flip} ${hippo_l_region_flip} ${hippo_r_region_flip}" > ${output_dir}/input_${id}_reg.txt
+echo "${image} ${brain_region} ${hippo_l_region} ${hippo_r_region} ${image_flip} ${brain_region_flip} ${hippo_r_region_flip} ${hippo_l_region_flip}" > ${output_dir}/input_${id}_reg.txt
 
 export SKIP_SGE=1
 ComputePairwiseRegistrationBatch.sh ${output_dir}/input_${id}_reg.txt ${output_dir} -symmetric sym_midway -dof 4 -similarity 4 -dilation 10 -pptol 0.001
 
-# transform them. 
-echo "${id}_l_groupwise 2 ${image} ${brain_region} ${hippo_l_region} dummy ${output}/${id}_pairwise_0_1_affine_second_roi1.dof ${image_flip} ${brain_region_flip} ${hippo_l_region_flip} dummy ${output}/${id}_pairwise_1_0_affine_second_roi1.dof" > ${output_dir}/input_${id}_transform_l.txt
-echo "${id}_r_groupwise 2 ${image} ${brain_region} ${hippo_r_region} dummy ${output}/${id}_pairwise_0_1_affine_second_roi2.dof ${image_flip} ${brain_region_flip} ${hippo_r_region_flip} dummy ${output}/${id}_pairwise_1_0_affine_second_roi2.dof" > ${output_dir}/input_${id}_transform_r.txt
+identity_dof=${tmpdir}/identity.dof
+niftkCreateTransformation -type 3 -ot ${identity_dof}  0 0 0 0 0 0 1 1 1 0 0 0
 
-compute_symmetric_transform_batch.sh ${output_dir}/input_${id}_transform_l.txt ${output_dir} -tpn
-compute_symmetric_transform_batch.sh ${output_dir}/input_${id}_transform_r.txt ${output_dir} -tpn
+# transform them. 
+echo "${id}_l_groupwise 2 ${image} ${brain_region} ${hippo_l_region} ${identity_dof} ${output_dir}/${id}_pairwise_0_1_affine_second_roi1.dof ${image_flip} ${brain_region_flip} ${hippo_r_region_flip} ${identity_dof} ${output_dir}/${id}_pairwise_1_0_affine_second_roi1.dof" > ${output_dir}/input_${id}_transform_l.txt
+echo "${id}_r_groupwise 2 ${image} ${brain_region} ${hippo_r_region} ${identity_dof} ${output_dir}/${id}_pairwise_0_1_affine_second_roi2.dof ${image_flip} ${brain_region_flip} ${hippo_l_region_flip} ${identity_dof} ${output_dir}/${id}_pairwise_1_0_affine_second_roi2.dof" > ${output_dir}/input_${id}_transform_r.txt
+
+compute_symmetric_transform_batch.sh ${output_dir}/input_${id}_transform_l.txt ${output_dir} -tpn -double_window yes
+compute_symmetric_transform_batch.sh ${output_dir}/input_${id}_transform_r.txt ${output_dir} -tpn -double_window yes
 
 execute_command "rm ${tmpdir} -rf"
 
