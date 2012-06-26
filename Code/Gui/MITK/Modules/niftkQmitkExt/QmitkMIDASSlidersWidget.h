@@ -26,12 +26,13 @@
 #define QMITKMIDASSLIDERSWIDGET_H
 
 #include "ui_QmitkMIDASSlidersWidget.h"
+#include <niftkQmitkExtExports.h>
 
 /**
  * \class QmitkMIDASSlidersWidget
  * \brief Qt Widget class to contain sliders for slice, time and magnification.
  */
-class QmitkMIDASSlidersWidget : public QWidget, public Ui_QmitkMIDASSlidersWidget
+class NIFTKQMITKEXT_EXPORT QmitkMIDASSlidersWidget : public QWidget, public Ui_QmitkMIDASSlidersWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT

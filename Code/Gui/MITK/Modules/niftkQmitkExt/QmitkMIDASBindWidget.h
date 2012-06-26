@@ -27,12 +27,13 @@
 
 #include "ui_QmitkMIDASBindWidget.h"
 #include "QmitkMIDASViewEnums.h"
+#include <niftkQmitkExtExports.h>
 
 /**
  * \class QmitkMIDASBindWidget
  * \brief Qt Widget class to contain check boxes for none, cursors, magnification, geometry.
  */
-class QmitkMIDASBindWidget : public QWidget, public Ui_QmitkMIDASBindWidget
+class NIFTKQMITKEXT_EXPORT QmitkMIDASBindWidget : public QWidget, public Ui_QmitkMIDASBindWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT

@@ -25,7 +25,7 @@
 #ifndef QMITKMIDASMULTIVIEWVISIBILITYMANAGER_H_
 #define QMITKMIDASMULTIVIEWVISIBILITYMANAGER_H_
 
-#include "niftkQmitkExtExports.h"
+#include <niftkQmitkExtExports.h>
 
 #include <QWidget>
 #include "mitkDataStorage.h"

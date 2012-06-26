@@ -27,6 +27,7 @@
 
 #include "ui_QmitkMIDASOrientationWidget.h"
 #include "QmitkMIDASViewEnums.h"
+#include <niftkQmitkExtExports.h>
 
 class QButtonGroup;
 
@@ -39,7 +40,7 @@ class QButtonGroup;
  * for any number of layouts, and still keep a reasonably compact screen layout.
  *
  */
-class QmitkMIDASOrientationWidget : public QWidget, public Ui_QmitkMIDASOrientationWidget
+class NIFTKQMITKEXT_EXPORT QmitkMIDASOrientationWidget : public QWidget, public Ui_QmitkMIDASOrientationWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT

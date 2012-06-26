@@ -27,7 +27,7 @@
 
 #include "QmitkToolGUI.h"
 #include "mitkMIDASPaintbrushTool.h"
-#include "niftkQmitkExtExports.h"
+#include <niftkQmitkExtExports.h>
 
 class QSlider;
 class QLabel;

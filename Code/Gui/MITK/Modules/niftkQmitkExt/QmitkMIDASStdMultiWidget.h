@@ -34,6 +34,7 @@
 #include "QmitkMIDASViewEnums.h"
 #include "vtkCamera.h"
 #include "itkConversionUtils.h"
+#include <niftkQmitkExtExports.h>
 
 class QGridLayout;
 class QStackedLayout;
@@ -69,7 +70,7 @@ class QStackedLayout;
  * \sa QmitkMIDASSingleViewWidget
  * \sa QmitkMIDASMultiViewWidget
  */
-class QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
+class NIFTKQMITKEXT_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
 {
 
   Q_OBJECT

@@ -34,6 +34,7 @@
 #include "QmitkRenderWindow.h"
 #include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASStdMultiWidget.h"
+#include <niftkQmitkExtExports.h>
 
 class QGridLayout;
 
@@ -72,7 +73,7 @@ class QGridLayout;
  * \sa QmitkRenderWindow
  * \sa QmitkMIDASStdMultiWidget
  */
-class QmitkMIDASSingleViewWidget : public QWidget {
+class NIFTKQMITKEXT_EXPORT QmitkMIDASSingleViewWidget : public QWidget {
 
   /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.
   Q_OBJECT;
