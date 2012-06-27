@@ -58,22 +58,45 @@ class xmlModelReader :
         #
         # Parse for the elements
         #
+        # TODO: Prepare for hexahedral elements!
         nds = self.modelObject.Elements.data.splitlines()
         
         n=[]
-        
-        for l in nds:
-            try:
-                a, b, c, d = l.split()
-                a = int(a)
-                b = int(b)
-                c = int(c)
-                d = int(d)
-                
-                n.append([a,b,c,d])
 
-            except:
-                continue   
+        if len( nds[0].split() ) == 4:
+            print( '4-node tetrahedral elements' )
+            for l in nds:
+                try:
+                    a, b, c, d = l.split()
+                    a = int(a)
+                    b = int(b)
+                    c = int(c)
+                    d = int(d)
+                    
+                    n.append([a,b,c,d])
+
+                except:
+                    continue   
+        
+        if len( nds[0].split() ) == 8:
+            print( '8-node hexahedral elements' )
+        
+            for l in nds:
+                try:
+                    a, b, c, d, e, f, g, h = l.split()
+                    a = int(a)
+                    b = int(b)
+                    c = int(c)
+                    d = int(d)
+                    e = int(e)
+                    f = int(f)
+                    g = int(g)
+                    h = int(h)
+                    
+                    n.append( [a,b,c,d,e,f,g,h] )
+    
+                except:
+                    continue   
             
         self.elements = np.array(n)
         
@@ -116,7 +139,8 @@ class xmlModelReader :
     
     
 if __name__ == '__main__':
-    xReader = xmlModelReader( 'W:/philipsBreastProneSupine/referenceState/00s/modelFat_prone1G_phi00.xml' )
+    #xReader = xmlModelReader( 'W:/philipsBreastProneSupine/referenceState/00s/modelFat_prone1G_phi00.xml' )
+    xReader = xmlModelReader( 'D:/development/niftysim/trunk/nifty_sim/models/cubehex10.xml' )
     
     
     

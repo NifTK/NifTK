@@ -9,3 +9,5 @@ PoissonsRatio = lambda lameMu, lameLambda : lameLambda / ( 2 * (lameMu + lameLam
 lameLambda = lambda YoungsModulus, PoissonsRatio : YoungsModulus * PoissonsRatio / ( (1 + PoissonsRatio) * (1 - 2*PoissonsRatio) )
 
 lameMu = lambda YoungsModulus, PoissonsRatio : YoungsModulus / (2 * (1 + PoissonsRatio) )
+
+# TODO: Bulk and shear modulus
