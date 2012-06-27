@@ -102,6 +102,8 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->show();
+    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
+    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->show();
 
     // Set up the Tool Selector.
     // Subclasses add it to their layouts, at the appropriate point.
@@ -469,8 +471,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
     if (workingDataNodes.size() == 0)
     {
       m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(true);
-      m_ImageAndSegmentationSelector->m_WorkingImageSelectionWarningLabel->show();
-      m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
+      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
     }
     else
     {
@@ -479,16 +480,13 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
       assert(segmentationImage);
 
       m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-      m_ImageAndSegmentationSelector->m_WorkingImageSelectionWarningLabel->hide();
-      m_ImageAndSegmentationSelector->m_SegmentationImageName->setText(segmentationImage->GetName().c_str());
-      m_ImageAndSegmentationSelector->m_SegmentationImageName->show();
+      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(segmentationImage->GetName().c_str()));
     }
   }
   else
   {
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_WorkingImageSelectionWarningLabel->hide();
-    m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
+    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
   }
 }
 
