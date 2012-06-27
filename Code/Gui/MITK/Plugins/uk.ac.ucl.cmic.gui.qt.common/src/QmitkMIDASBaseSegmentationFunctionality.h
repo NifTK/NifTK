@@ -80,9 +80,6 @@ signals:
 
 protected slots:
 
-  /// \brief Called when the user changes the choice of reference image.
-  virtual void OnComboBoxSelectionChanged(const mitk::DataNode* node);
-
   /// \brief Called from QmitkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
   virtual void OnToolSelected(int);
 

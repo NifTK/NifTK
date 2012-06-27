@@ -129,7 +129,7 @@
      <item>
       <layout class="QHBoxLayout" name="m_ReferenceImageHorizontalLayout">
        <item>
-        <widget class="QLabel" name="m_ImageToSegmentLabel">
+        <widget class="QLabel" name="m_ReferenceImageLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -142,7 +142,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="m_SegmentationImagePleaseLoadLabel">
+        <widget class="QLabel" name="m_ReferenceImageNameLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -190,9 +190,6 @@
           <string>please load an image</string>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QmitkDataStorageComboBox" name="m_ImageToSegmentComboBox"/>
        </item>
       </layout>
      </item>
@@ -341,15 +338,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QmitkDataStorageComboBox</class>
-   <extends>QComboBox</extends>
-   <header location="global">QmitkDataStorageComboBox.h</header>
-  </customwidget>
- </customwidgets>
- <resources>
-  <include location="../../../../../../../MITK/Modules/Bundles/org.mitk.gui.qt.segmentation/resources/segmentation.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

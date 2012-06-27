@@ -98,20 +98,10 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
     m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(parentForSelectorWidget);
-    m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
-    m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->setText("<font color='red'>please load an image!</font>");
-    m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetDataStorage(this->GetDataStorage());
-    m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->SetPredicate(mitk::NodePredicateDataType::New("Image"));
-    if( m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->GetSelectedNode().IsNotNull() )
-    {
-      m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->hide();
-    }
-    else
-    {
-      m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->show();
-    }
+    m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
+    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
+    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->show();
 
     // Set up the Tool Selector.
     // Subclasses add it to their layouts, at the appropriate point.
@@ -253,12 +243,17 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     }
 
     // If we have worked out the reference data, then set the combo box.
+    this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(true);
     if (referenceData.IsNotNull())
     {
-      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->blockSignals(true);
-      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->setCurrentIndex(m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->Find(referenceData));
-      this->m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox->blockSignals(false);
+
+      this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
     }
+    else
+    {
+      this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
+    }
+    this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(false);
 
     // Tell the tool manager the images for reference and working purposes.
     this->SetToolManagerSelection(referenceData, workingDataNodes);
@@ -433,28 +428,8 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentation
 }
 
 
-void QmitkMIDASBaseSegmentationFunctionality::OnComboBoxSelectionChanged( const mitk::DataNode* node )
-{
-  mitk::DataNode* selectedNode = const_cast<mitk::DataNode*>(node);
-
-  if( selectedNode != NULL )
-  {
-    m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->hide();
-    this->SelectNode(selectedNode);
-  }
-  else
-  {
-    m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->show();
-  }
-}
-
-
 void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
 {
-  if (m_ImageAndSegmentationSelector != NULL)
-  {
-    connect( m_ImageAndSegmentationSelector->m_ImageToSegmentComboBox, SIGNAL( OnSelectionChanged( const mitk::DataNode* ) ), this, SLOT( OnComboBoxSelectionChanged( const mitk::DataNode* ) ) );
-  }
 }
 
 void QmitkMIDASBaseSegmentationFunctionality::SetEnableManualToolSelectionBox(bool enabled)
@@ -491,8 +466,6 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
 
   if (referenceData)
   {
-    m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->hide();
-
     if (workingDataNodes.size() == 0)
     {
       m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(true);
@@ -513,7 +486,6 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
   }
   else
   {
-    m_ImageAndSegmentationSelector->m_SegmentationImagePleaseLoadLabel->show();
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
     m_ImageAndSegmentationSelector->m_WorkingImageSelectionWarningLabel->hide();
     m_ImageAndSegmentationSelector->m_SegmentationImageName->hide();
