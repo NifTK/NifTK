@@ -68,6 +68,9 @@ def loadingFunction( tTotal, loadShape, numIterations ):
         N = 9.0
         load = _calcPoly345RampN(load, N)
     
+    if loadShape == 'STEP':
+        load = np.ones_like( time )
+    
     #
     # Take care of "holding" part of loading function
     #

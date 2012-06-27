@@ -49,26 +49,26 @@ ugr = vtk.vtkUnstructuredGridReader()
 ugr.SetFileName( breastVolMeshName )
 ugr.Update()
 
-breastVolMesh = ugr.GetOutput()
-breastVolMeshPoints = VN.vtk_to_numpy( breastVolMesh.GetPoints().GetData() )
-breastVolMeshCells = VN.vtk_to_numpy( breastVolMesh.GetCells().GetData() )
-breastVolMeshCells = breastVolMeshCells.reshape( breastVolMesh.GetNumberOfCells(),breastVolMeshCells.shape[0]/breastVolMesh.GetNumberOfCells() )
+boxVolMesh = ugr.GetOutput()
+boxVolMeshPoints = VN.vtk_to_numpy( boxVolMesh.GetPoints().GetData() )
+boxVolMeshCells = VN.vtk_to_numpy( boxVolMesh.GetCells().GetData() )
+boxVolMeshCells = boxVolMeshCells.reshape( boxVolMesh.GetNumberOfCells(),boxVolMeshCells.shape[0]/boxVolMesh.GetNumberOfCells() )
 
 #stlR = vtk.vtkSTLReader()
 #stlR.SetFileName( breastSurfMeshName )
 #stlR.Update()
 
 surfaceExtractor = vtk.vtkDataSetSurfaceFilter()
-surfaceExtractor.SetInput( breastVolMesh )
+surfaceExtractor.SetInput( boxVolMesh )
 surfaceExtractor.Update()
 breastSurfMeshPoints = VN.vtk_to_numpy( surfaceExtractor.GetOutput().GetPoints().GetData() )
 
 if not 'matGen' in locals():
-    matGen = materialSetGenerator.materialSetGenerator( breastVolMeshPoints, 
-                                                        breastVolMeshCells, 
+    matGen = materialSetGenerator.materialSetGenerator( boxVolMeshPoints, 
+                                                        boxVolMeshCells, 
                                                         labelImage, 
                                                         skinMaskImage, 
-                                                        breastVolMesh, 
+                                                        boxVolMesh, 
                                                         95, 105, 180, 3 ) # fat, gland, muscle, number tet-nodes to be surface element
 
 #
@@ -78,7 +78,7 @@ deltaX = 5
 deltaY = 3
 deltaZ = 3
 
-lowXPoints, lowXIdx, highXPoints, highXIdx, lowYPoints, lowYIdx, highYPoints, highYIdx, lowZPoints, lowZIdx, highZPoints, highZIdx = lowAndHighModelCoordinates( breastVolMeshPoints, deltaX, deltaY, deltaZ )
+lowXPoints, lowXIdx, highXPoints, highXIdx, lowYPoints, lowYIdx, highYPoints, highYIdx, lowZPoints, lowZIdx, highZPoints, highZIdx = lowAndHighModelCoordinates( boxVolMeshPoints, deltaX, deltaY, deltaZ )
 
 print( 'Found %i low x points'  % len( lowXIdx  ) )
 print( 'Found %i high x points' % len( highXIdx ) )
@@ -94,16 +94,16 @@ plotArrayAs3DPoints( highZPoints, ( 0, 0, 1.0 ) ) # superior
 #
 # Find the points close to the chest surface
 #
-( ptsCloseToChest, idxCloseToChest ) = ndProx.getNodesWithtinMask( chestWallMaskImage, 200, breastVolMeshPoints, breastSurfMeshPoints )
+( ptsCloseToChest, idxCloseToChest ) = ndProx.getNodesWithtinMask( chestWallMaskImage, 200, boxVolMeshPoints, breastSurfMeshPoints )
 plotArrayAs3DPoints( ptsCloseToChest, (1.0,1.0,1.0) )
 
 
 # This little helper array is used for gravity load and material definition
-allNodesArray    = np.array( range( breastVolMeshPoints.shape[0] ) )
-allElemenstArray = np.array( range( breastVolMeshCells.shape[0]  ) )
+allNodesArray    = np.array( range( boxVolMeshPoints.shape[0] ) )
+allElemenstArray = np.array( range( boxVolMeshCells.shape[0]  ) )
 
 
-genFix = xGen.xmlModelGenrator(  breastVolMeshPoints / 1000., breastVolMeshCells[ : , 1:5], 'T4ANP' )
+genFix = xGen.xmlModelGenrator(  boxVolMeshPoints / 1000., boxVolMeshCells[ : , 1:5], 'T4ANP' )
 
 # Fix constraints
 genFix.setFixConstraint( lowXIdx,  0 )         # sternum
@@ -121,17 +121,18 @@ genFix.setFixConstraint( idxCloseToChest, 1 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 2 )  # chest wall
 
 
-genFix.setMaterialElementSet( 'NH', 'FAT',     [  250, 50000], np.union1d( matGen.fatElements, matGen.skinElements))#, 1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NH', 'GLAND',   [  500, 50000], matGen.glandElements)#,  1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [ 1000, 50000], matGen.muscleElements)#, 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NHV', 'FAT',     [  250, 50000], np.union1d( matGen.fatElements, matGen.skinElements), 1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NHV', 'GLAND',   [  500, 50000], matGen.glandElements,  1, 0, [1.0, 0.2] )
+genFix.setMaterialElementSet( 'NHV', 'MUSCLE',  [ 1000, 50000], matGen.muscleElements, 1, 0, [1.0, 0.2] )
 
 #genFix.setShellElements('T3', matGen.shellElements )
 #genFix.setShellElementSet(0, 'NeoHookean', [800], 1000, 0.005)
 
 genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'POLY345FLAT4' )
 genFix.setOutput( 750, ['U', 'EKinTotal', 'EStrainTotal'] )
-genFix.setSystemParameters( timeStep=0.5e-4, totalTime=15.0, dampingCoefficient=250, hgKappa=0.05, density=1000 )    
+genFix.setSystemParameters( timeStep=1.e-5, totalTime=5.0, dampingCoefficient=150, hgKappa=0.00, density=1000 )    
 genFix.writeXML( xmlFileOut )
+
 
 
 #

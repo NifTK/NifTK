@@ -36,7 +36,10 @@ def runNiftySim( xmlModelFile, workDir, exportVTK=True, verbose=True, gpu=True, 
     else:
         logFile = None
     
-    cmdEX.runCommand( cmd, params, logFile ) 
+    ret = cmdEX.runCommand( cmd, params, logFile ) 
+    
+    if ret != 0:
+        print( 'Simulation diverged!!!' )
     
     #
     # Now rename the outputs...
