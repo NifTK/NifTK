@@ -6,7 +6,7 @@
       id="org.mitk.views.general"
       name="MITK General"/>
     <view id="uk.ac.ucl.cmic.views.niftyregview"
-          name="NiftyReg Registration"
+          name="NiftyRegistration"
           category="org.mitk.views.general" 
           class="QmitkNiftyRegView"
           icon="resources/NiftyRegLogo.png" />

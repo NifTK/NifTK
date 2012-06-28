@@ -1,12 +1,135 @@
 /**
-\bundlemainpage{uk_ac_ucl_cmic_niftyreg} The NiftyReg Registration View
+\bundlemainpage{uk.ac.ucl.cmic.niftyreg} The NiftyReg Registration View
 
 \image html NiftyRegLogo.png "The Icon for NiftyReg"
 
-\section Introduction
+\section NiftyRegIntroduction Introduction
 
-\section Usage
+The NiftyReg plugin to NiftyView allows the user to perform rigid,
+affine and non-linear registrations of 3D images.
 
-\section References
+The rigid and affine registration are performed using an algorithm presented by
+Ourselin et al.[1, 2]; whereas the non-rigid registration is based on the work
+of Modat et al.[3].
+
+If you are planning to use any of our research, we would be grateful if you
+would be kind enough to cite reference(s) [1], [2] (rigid or affine) and/or
+[3] (non-rigid).
+
+\image html MainScreen.png "Figure 1. The Main Screen contains a central Editor, surrounded by Plugins."
+
+\section NiftyRegPlugin The NigftyReg Plugin
+
+\li Filename of a mask image in the reference space
+\li Filename of a mask image in the floating space. Only used when symmetric turned on
+
+\li Number of iteration per level [5]
+\li Number of level to perform [3]
+\li Only perform the first levels [ln]
+
+\li Smooth the reference image using the specified sigma (mm) [0]
+\li Smooth the floating image using the specified sigma (mm) [0]
+
+
+\section NiftyRegAffine Rigid and Affine Registration
+
+Ourselin et al.[1, 2] presented an algorithm called Aladin, which is based on
+a block-matching approach and a Trimmed Least Square (TLS) scheme. Firstly,
+the block matching provides a set of corresponding points between a target and
+a source image. Secondly, using this set of corresponding points, the best
+rigid or affine transformation is evaluated. This two-step loop is repeated
+until convergence to the best transformation.
+
+In the implementation employed here, normalised cross-correlation is
+calculated between the target and source blocks to extract the best
+correspondence. The block width is constant and has been set to 4
+voxels. A coarse-to-fine approach is used, where the registration is
+first performed on down-sampled images (using a Gaussian filter to
+resample images) and finally performed on full resolution images. 
+
+\subsection NiftyRegAffineInitialisation Initialisation
+
+\li Filename which contains an input affine transformation (Affine*Reference=Floating) [none]
+\li Filename which contains an input affine transformation from Flirt [none]
+
+\li Use the nifti header origins to initialise the translation
+
+\subsection NiftyRegAffineMethod Method
+
+\li To perform a rigid registration only (rigid+affine by default)
+\li Directly optimize 12 DoF affine [default is rigid initially then affine]
+
+\li Percentage of block to use [50]
+\li Percentage of inlier for the LTS [50]
+
+
+\section NiftyRegNonRigid Non-Rigid Registration
+
+The non-rigid algorithm implementation is based on the Free-From Deformation
+presented by Rueckert et al.[4]. However, the algorithm has been re-factored
+in order to speed-up registration. The deformation of the source image is
+performed using cubic B-splines to generate the deformation field. Specifically,
+a lattice of equally spaced control points is defined over the target image
+and moving each point allows the mapping to the source image to be modified.
+In order to assess the quality of the warping between both input images, an
+objective function composed from the Normalised Mutual Information (NMI) and
+the Bending-Energy (BE) is used. The objective function value is optimised
+using the analytical derivative of both the NMI and the BE within a conjugate
+gradient scheme.
+
+\subsection NiftyRegNonRigidInitialisation Initialisation
+
+\li Filename which contains an affine transformation (Affine*Reference=Floating)
+\li Filename which contains a flirt affine transformation (Flirt from the FSL package)
+\li Filename of control point grid input. The coarse spacing is defined by this file.
+
+\subsection NiftyRegNonRigidInputImage Input Image
+
+\li Lower threshold to apply to the reference image intensities [none]*
+\li Upper threshold to apply to the reference image intensities [none]*
+\li Lower threshold to apply to the floating image intensities [none]* 
+\li Upper threshold to apply to the floating image intensities [none]* 
+* The scl_slope and scl_inter from the nifti header are taken into account for the thresholds      
+
+\subsection NiftyRegNonRigidSpline Spline
+
+\li Final grid spacing along the x axis in mm (in voxels if negative value) [5 voxels]
+\li Final grid spacing along the y axis in mm (in voxels if negative value) [sx value]
+\li Final grid spacing along the z axis in mm (in voxels if negative value) [sx value]
+
+
+\subsection NiftyRegNonRigidObjectiveFunction Objective Function
+
+\li Number of bin to use for the joint histogram [64]            
+\li Number of bin to use for the joint histogram [64]            
+
+\li Weight of log of the Jacobian determinant penalty term [0.0]   
+\li Weight of the bending energy penalty term [0.005]
+\li To not approximate the JL value only at the control point position
+\li Do not use a pyramidal approach            
+\li To not use the conjuage gradient optimisation but a simple gradient ascent
+\li To use the SSD as the similiarity measure (NMI by default)                
+
+\subsection NiftyRegNonRigidOthers Others
+
+\li To smooth the metric derivative (in mm) [0]
+
+\section NiftyRegReferences References
+
+[1] Sebastien Ourselin, A Roche, G Subsol, Xavier Pennec, and Nicholas Ayache.
+Reconstructing a 3d structure from serial histological sections. %Image 
+and Vision Computing, 19(1-2):25–31, 2001. 
+
+[2] Robust registration of multi-modal images: Towards real-time clinical
+applications, 2002. 
+
+[3] Marc Modat, Gerard G Ridgway, Zeike A Taylor, Manja Lehmann, 
+Josephine Barnes, Nick C Fox, David J Hawkes, and Sebastien Ourselin. 
+Fast free-form deformation using graphics processing units. Comput Meth 
+Prog Bio, accepted. 
+
+[4] D. Rueckert, L.I. Sonoda, C. Hayes, D.L.G. Hill, M.O. Leach, and D.J. 
+Hawkes. Nonrigid Registration Using Free-Form Deformations: Application 
+to Breast MR Images. IEEE Trans. Med. Imag., 18:712–721, 1999.
  
 */

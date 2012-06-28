@@ -5,6 +5,8 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   NiftyRegPluginActivator.cpp
   QmitkNiftyRegView.cpp
+  mitkImageToNifti.cpp
+  niftiImageToMitk.cpp
 )
 
 set(UI_FILES
@@ -14,6 +16,8 @@ set(UI_FILES
 set(MOC_H_FILES
   src/internal/NiftyRegPluginActivator.h
   src/internal/QmitkNiftyRegView.h
+  src/internal/mitkImageToNifti.h
+  src/internal/niftiImageToMitk.h
 )
 
 # list of resource files which can be used by the plug-in
