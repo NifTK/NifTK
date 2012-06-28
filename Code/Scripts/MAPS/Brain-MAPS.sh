@@ -404,7 +404,7 @@ function brain_delineation()
     upper_threshold_95=`echo "${wm}+1.96*${wm_sd}" | bc -l`
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
-      -alt ${lower_threshold_95} -aut ${upper_threshold_95}
+            -alt ${lower_threshold_95} -aut ${upper_threshold_95}
       
     local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
     #lower_threshold=`echo "(${csf}+${gm})/2" | bc -l`
@@ -413,7 +413,8 @@ function brain_delineation()
     lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
     upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
       
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+    #makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} 1000
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
   fi 
   
