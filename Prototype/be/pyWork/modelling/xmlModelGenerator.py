@@ -17,15 +17,18 @@ class xmlModelGenrator :
         ''' @param nodes: Expected to be a 2D numpy array of type 'float' representing the coordinates. 
             @param elements: Expected to be a 2D numpy array of type 'int'.
         '''
-        self.nodes                  = nodes
-        self.elements               = elements
-        self.fixConstraintNodes     = [None, None, None]
-        self.materialSets           = []
-        self.contactSurfaces        = []
-        self.contactSurfaceVTKFiles = []
-        self.contactCylinders       = []
-        self.uniformDispConstraints = []
-        self.difformDispConstraints = []
+        self.nodes                   = nodes
+        self.elements                = elements
+        self.fixConstraintNodes      = [None, None, None]
+        self.materialSets            = []
+        self.contactSurfaces         = []
+        self.contactSurfaceVTKFiles  = []
+        self.contactCylinders        = []
+        self.uniformDispConstraints  = []
+        self.difformDispConstraints  = []
+        self.uniformForceConstraints = []
+        
+        
         self.elementType            = elementType
         
         # Shell elements only exist in a pre-release version of niftySim
@@ -81,6 +84,18 @@ class xmlModelGenrator :
             self.fixConstraintNodes[dofNum] = np.hstack( ( self.fixConstraintNodes[dofNum], nodes ) )
             self.fixConstraintNodes[dofNum] = np.unique( self.fixConstraintNodes[dofNum] )
         
+    
+    
+    
+    def setUniformForceConstraint( self,  dofNum,  loadShape, nodes, magnitude ):
+        ''' @summary: Set a uniform force to the nodes in the direction of the DOF specified
+        '''
+        self.uniformForceConstraints.append( {'dofNum'    : dofNum,
+                                              'loadShape' : loadShape, 
+                                              'nodes'     : nodes,
+                                              'magnitude' : magnitude } )
+    
+    
     
     
     def setUniformDispConstraint( self, dofNum, loadShape, nodes, magnitude ):
@@ -302,6 +317,32 @@ class xmlModelGenrator :
             ndsC.appendChild( ndsCEntires )
             constr.appendChild( ndsC )
             model.appendChild( constr )
+
+
+
+        # Write uniform force constraint
+        for i in range( len( self.uniformForceConstraints ) ):
+            
+            forceConstr = doc.createElement( 'Constraint' ) 
+            forceConstr.setAttribute( 'Type',      'Force'                                                  )
+            forceConstr.setAttribute( 'DOF',       '%i' % self.uniformForceConstraints[i]['dofNum']         )
+            forceConstr.setAttribute( 'LoadShape', '%s' % self.uniformForceConstraints[i]['loadShape']      )
+            forceConstr.setAttribute( 'NumNodes',  '%i' % self.uniformForceConstraints[i]['nodes'].shape[0] )
+        
+            # handle the nodes (integer numbers)
+            nds = doc.createElement( 'Nodes' )
+            ndsIndices = doc.createTextNode( writeArrayToStr( self.uniformForceConstraints[i]['nodes'], False, '      '  ) )
+            nds.appendChild( ndsIndices )
+            
+            forceMag = doc.createElement( 'Magnitudes' )
+            forceMag.setAttribute( 'Type', 'UNIFORM' )
+            forceMag.appendChild( doc.createTextNode('%f' % self.uniformForceConstraints[i]['magnitude'] ))
+            
+            forceConstr.appendChild( nds )
+            forceConstr.appendChild( forceMag )
+            model.appendChild( forceConstr )
+            pass
+
         
         
         # Write uniform displacement constraints
@@ -320,6 +361,7 @@ class xmlModelGenrator :
             
             dispMag =doc.createElement( 'Magnitudes' )
             dispMag.setAttribute( 'Type', 'UNIFORM' )
+            # TODO: Check if NumNodes is needed here as well. Presumably not...
             dispMag.appendChild( doc.createTextNode('%f' % self.uniformDispConstraints[i][3] ))
             
             

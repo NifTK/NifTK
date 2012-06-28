@@ -9,6 +9,7 @@ from glob import glob
 import os
 import numpy as np
 import mayaviPlottingWrap as plotWrap
+import xmlModelReader as xRead
 
 
 class modelDeformationVisualiser :
@@ -18,12 +19,20 @@ class modelDeformationVisualiser :
         # check if generator is of correct type        
         if not ( isinstance( xmlModelGenerator, xGen.xmlModelGenrator ) or
                  isinstance(xmlModelGenerator, xRead.xmlModelReader   ) ):
-            print( 'Error Expected an xmlModelGenerator as input...' )
-            return
+            
+            if isinstance( xmlModelGenerator, str ):
+                self.modelReader = xRead.xmlModelReader( xmlModelGenerator )
+                self.xmlGenerator = self.modelReader 
+            else:
+                print( 'Error Expected an xmlModelGenerator as input...' )
+                return
+    
+        else: 
+            self.xmlGenerator = xmlModelGenerator
         
-        self.mdlNodes     = xmlModelGenerator.nodes
-        self.mldElements  = xmlModelGenerator.elements
-        self.xmlGenerator = xmlModelGenerator
+        self.mdlNodes     = self.xmlGenerator.nodes
+        self.mldElements  = self.xmlGenerator.elements
+    
         self.dim          = 3
         
         if deformationFileName != None :
