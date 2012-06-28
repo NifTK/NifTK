@@ -15,16 +15,17 @@ import convergenceAnalyser as cA
 import matplotlib.pyplot as plt
 
 
+
 ######################################
 # Model parameters used later on...
 #
-meshDir          = 'Q:/philipsBreastProneSupine/referenceState/boxModel/H8/'
-defaultVTKMesh   = 'Q:/philipsBreastProneSupine/referenceState/boxModel/meshes/boxH8_150.vtk'
+meshDir          = 'W:/philipsBreastProneSupine/referenceState/boxModel/H8/'
+defaultVTKMesh   = 'W:/philipsBreastProneSupine/referenceState/boxModel/meshes/boxH8_15.vtk'
 xmlModelNameGrav = 'box_H8_grav.xml'
 xmlModelNameDisp = 'box_H8_disp.xml'
 
 density        = 1000.0
-dampingCoeff   = 5.
+dampingCoeff   = 100.
 totalTime      = 5.
 timeStep       = 1.e-5 
 materialType   = 'NH'
@@ -34,6 +35,8 @@ gravDir = np.array( ( 0, 0, 1.0 ) )
 gravMag = 4.0
 
 numOutput = 100
+
+useGPU = False
 #
 ######################################
 
@@ -45,9 +48,10 @@ ugr.SetFileName( defaultVTKMesh )
 ugr.Update()
 
 boxVolMesh = ugr.GetOutput()
-boxVolMeshPoints = VN.vtk_to_numpy( boxVolMesh.GetPoints().GetData() ) / 10.
+boxVolMeshPoints = VN.vtk_to_numpy( boxVolMesh.GetPoints().GetData() ) 
 boxVolMeshCells = VN.vtk_to_numpy( boxVolMesh.GetCells().GetData() )
 boxVolMeshCells = boxVolMeshCells.reshape( boxVolMesh.GetNumberOfCells(),boxVolMeshCells.shape[0]/boxVolMesh.GetNumberOfCells() )
+boxVolMeshCells = boxVolMeshCells[:,1:9]
 
 #
 # Find model boundaries
@@ -57,8 +61,10 @@ deltaY = 1.e-5
 deltaZ = 1.e-5
 lowXPoints, lowXIdx, highXPoints, highXIdx, lowYPoints, lowYIdx, highYPoints, highYIdx, lowZPoints, lowZIdx, highZPoints, highZIdx = lowAndHighModelCoordinates( boxVolMeshPoints, deltaX, deltaY, deltaZ )
 
-
-genGrav = xGen.xmlModelGenrator( boxVolMeshPoints, boxVolMeshCells[:,1:9], 'H8' )
+#
+# H8 gravity
+#
+genGrav = xGen.xmlModelGenrator( boxVolMeshPoints, boxVolMeshCells, 'H8' )
 
 # set the fix constraint
 genGrav.setFixConstraint( lowZIdx, 0 )
@@ -80,10 +86,10 @@ genGrav.writeXML( meshDir + xmlModelNameGrav )
 
 
 
-
-
-
-genDisp = xGen.xmlModelGenrator( boxVolMeshPoints, boxVolMeshCells[:,1:9], 'H8' )
+#
+# Displacement
+#
+genDisp = xGen.xmlModelGenrator( boxVolMeshPoints, boxVolMeshCells, 'H8' )
 
 # set the fix constraint
 genDisp.setFixConstraint( lowZIdx, 0 )
@@ -105,7 +111,7 @@ genDisp.writeXML( meshDir + xmlModelNameDisp )
 #
 # run the simulation and look at the convergence
 #
-rS.runSimulationsInFolder( meshDir, gpu=False )
+rS.runSimulationsInFolder( meshDir, gpu=useGPU )
 
 cA.convergenceAnalyser( meshDir + xmlModelNameGrav )
 cA.convergenceAnalyser( meshDir + xmlModelNameDisp )

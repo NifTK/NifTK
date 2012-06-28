@@ -16,16 +16,17 @@ import matplotlib.pyplot as plt
 
 meshDir           = 'W:/philipsBreastProneSupine/referenceState/boxModel/meshes/'
 simDir            = 'W:/philipsBreastProneSupine/referenceState/boxModel/T4/'
-boxMeshName       = 'boxT4.vtk'
-xmlModelNameT4    = 'boxGravModel_T4.xml'
-xmlModelNameT4ANP = 'boxGravModel_T4ANP.xml'
+boxMeshName       = 'boxT4_15.vtk'
+xmlModelNameT4    = 'box_T4_grav.xml'
+xmlModelNameT4ANP = 'box_T4ANP_grav.xml'
 
 density      = 1000.0
-dampingCoeff = 50.
+dampingCoeff = 100.
 totalTime    = 5.
 timeStep     = 1.e-5 
 materialType = 'NH'
 materialParams = [100.067, 50000]
+useGPU = False
 
 gravDir = np.array( (0,0,1.0 ) )
 gravMag = 10.
@@ -43,22 +44,7 @@ boxVolMeshPoints = VN.vtk_to_numpy( boxVolMesh.GetPoints().GetData() )
 boxVolMeshCells = VN.vtk_to_numpy( boxVolMesh.GetCells().GetData() )
 boxVolMeshCells = boxVolMeshCells.reshape( boxVolMesh.GetNumberOfCells(),boxVolMeshCells.shape[0]/boxVolMesh.GetNumberOfCells() )
 boxVolMeshCells = boxVolMeshCells[:,1:5]
-
-#mpw.plotArrayAs3DPoints(boxVolMeshPoints * 10., (1.0, 1.0, 1.0) )
-
-mS = meshStats.meshStatistics( boxVolMeshPoints, boxVolMeshCells )
                 
-#
-# lower and upper bounds
-#
-
-boxLowerBounds = np.min( boxVolMeshPoints, axis = 0 )
-boxUpperBounds = np.max( boxVolMeshPoints, axis = 0 )
-
-edgeLength = 0.015
-
-boxVolMeshPoints = edgeLength * boxVolMeshPoints + edgeLength/2
-
 
 deltaX = 1.e-5
 deltaY = 1.e-5
@@ -108,10 +94,9 @@ c = cTS.criticalTimeStep( xmlFileName  = simDir + xmlModelNameT4 )
 #
 # run the simulation and look at the convergence
 #
-rS.runSimulationsInFolder( simDir )
+rS.runSimulationsInFolder( simDir, gpu=useGPU )
 
 cA.convergenceAnalyser( simDir + xmlModelNameT4 )
-plt.close( 'all' )
 cA.convergenceAnalyser( simDir + xmlModelNameT4ANP )
 plt.close( 'all' )
 
