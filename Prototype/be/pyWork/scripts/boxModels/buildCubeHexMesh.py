@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 ######################################
 # Model parameters used later on...
 #
-meshDir          = 'W:/philipsBreastProneSupine/referenceState/boxModel/H8/'
-defaultVTKMesh   = 'W:/philipsBreastProneSupine/referenceState/boxModel/meshes/boxH8_150.vtk'
+meshDir          = 'Q:/philipsBreastProneSupine/referenceState/boxModel/H8/'
+defaultVTKMesh   = 'Q:/philipsBreastProneSupine/referenceState/boxModel/meshes/boxH8_150.vtk'
 xmlModelNameGrav = 'box_H8_grav.xml'
 xmlModelNameDisp = 'box_H8_disp.xml'
 
@@ -45,7 +45,7 @@ ugr.SetFileName( defaultVTKMesh )
 ugr.Update()
 
 boxVolMesh = ugr.GetOutput()
-boxVolMeshPoints = VN.vtk_to_numpy( boxVolMesh.GetPoints().GetData() )
+boxVolMeshPoints = VN.vtk_to_numpy( boxVolMesh.GetPoints().GetData() ) / 10.
 boxVolMeshCells = VN.vtk_to_numpy( boxVolMesh.GetCells().GetData() )
 boxVolMeshCells = boxVolMeshCells.reshape( boxVolMesh.GetNumberOfCells(),boxVolMeshCells.shape[0]/boxVolMesh.GetNumberOfCells() )
 
@@ -105,7 +105,7 @@ genDisp.writeXML( meshDir + xmlModelNameDisp )
 #
 # run the simulation and look at the convergence
 #
-rS.runSimulationsInFolder( meshDir )
+rS.runSimulationsInFolder( meshDir, gpu=False )
 
 cA.convergenceAnalyser( meshDir + xmlModelNameGrav )
 cA.convergenceAnalyser( meshDir + xmlModelNameDisp )

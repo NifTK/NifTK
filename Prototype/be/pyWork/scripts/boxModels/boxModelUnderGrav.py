@@ -55,9 +55,9 @@ mS = meshStats.meshStatistics( boxVolMeshPoints, boxVolMeshCells )
 boxLowerBounds = np.min( boxVolMeshPoints, axis = 0 )
 boxUpperBounds = np.max( boxVolMeshPoints, axis = 0 )
 
-edgeLength = 0.15
+edgeLength = 0.015
 
-boxVolMeshPoints = edgeLength * boxVolMeshPoints
+boxVolMeshPoints = edgeLength * boxVolMeshPoints + edgeLength/2
 
 
 deltaX = 1.e-5
