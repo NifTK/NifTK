@@ -47,8 +47,8 @@ IF(BUILD_NIFTYSIM)
     ENDIF(DEFINED VTK_DIR)
     
     ExternalProject_Add(${proj}
-      SVN_REPOSITORY https://niftysim.svn.sourceforge.net/svnroot/niftysim/trunk/nifty_sim/
-      SVN_REVISION -r 127
+      SVN_REPOSITORY ${NIFTK_LOCATION_NIFTYSIM}
+      SVN_REVISION -r ${NIFTK_VERSION_NIFTYSIM}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}

@@ -79,6 +79,14 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString vtkLocation(NIFTK_VTK_LOCATION);
   QString ctkLocation(NIFTK_CTK_LOCATION);
   QString mitkLocation(NIFTK_MITK_LOCATION);
+  QString niftyRegVersion(NIFTK_NIFTYREG_VERSION);
+  QString niftyRegLocation(NIFTK_NIFTYREG_LOCATION);
+  QString niftySegVersion(NIFTK_NIFTYSEG_VERSION);
+  QString niftySegLocation(NIFTK_NIFTYSEG_LOCATION);
+  QString niftyRecVersion(NIFTK_NIFTYREC_VERSION);
+  QString niftyRecLocation(NIFTK_NIFTYREC_LOCATION);
+  QString niftySimVersion(NIFTK_NIFTYSIM_VERSION);
+  QString niftySimLocation(NIFTK_NIFTYSIM_LOCATION);
 
   // Main titles with application name, release version and copyright statement.
   QString titles = QObject::tr(
@@ -132,9 +140,11 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<tr><td><a href=\"http://www.vtk.org\">VTK</a></td><td>%11</td><td><a href=\"http://www.vtk.org/VTK/project/license.html\">BSD license</a></td><td><a href=\"%12\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.commontk.org\">CTK</a></td><td>%13</td><td><a href=\"http://www.apache.org/licenses/LICENSE-2.0.html\">Apache 2.0 license</a></td><td><a href=\"%14\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.mitk.org\">MITK</a>(Modified)</td><td>%15</td><td><a href=\"http://www.mitk.org/wiki/License\">BSD-style license</a></td><td><a href=\"%16\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www0.cs.ucl.ac.uk/staff/M.Modat/Marcs_Page/Software.html\">NiftyReg</a></td><td>%17</td><td>BSD license</td><td><a href=\"%18\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://niftyseg.sourceforge.net\">NiftySeg</a></td><td>%19</td><td>BSD license</td><td><a href=\"%20\">from here</a></td></tr>"
       "</table></p>"
       "<p>"
-      "The licenses can be found online and are additionally included in the installation folder. This version of %17 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%18</a>."
+      "The licenses can be found online and are additionally included in the installation folder. This version of %21 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%22</a>."
       "</p>"
       )
       .arg(applicationName)
@@ -153,6 +163,10 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .arg(ctkLocation)
       .arg(mitkVersion.left(10))
       .arg(mitkLocation)
+      .arg(niftyRegVersion)
+      .arg(niftyRegLocation)
+      .arg(niftySegVersion)
+      .arg(niftySegLocation)
       .arg(applicationName)
       .arg(svnVersion);
 

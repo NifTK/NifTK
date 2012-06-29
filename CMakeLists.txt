@@ -171,6 +171,10 @@ SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM")
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK")
 SET(NIFTK_VERSION_ITK "3.20.1" CACHE STRING "Version of ITK")
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
+SET(NIFTK_VERSION_NIFTYREG "272" CACHE STRING "Version of NiftyReg")
+SET(NIFTK_VERSION_NIFTYSEG "88" CACHE STRING "Version of NiftySeg")
+SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec")
+SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim")
 SET(NIFTK_LOCATION_BOOST "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost-${NIFTK_VERSION_BOOST}.tar.gz" CACHE STRING "Location of Boost")
 SET(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM")
 SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK")
@@ -180,6 +184,10 @@ SET(NIFTK_LOCATION_CTK "//github.com/commontk/CTK.git" CACHE STRING "Location of
 SET(NIFTK_LOCATION_MITK "//github.com/MattClarkson/MITK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_NIFTYLINK "//cmicdev.cs.ucl.ac.uk/NiftyLink" CACHE STRING "Location of NiftyLink - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_DATA "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING  "Location of NifTK unit test data.")
+SET(NIFTK_LOCATION_NIFTYREG "https://niftyreg.svn.sourceforge.net/svnroot/niftyreg/trunk/nifty_reg/" CACHE STRING  "Location of NiftyReg.")
+SET(NIFTK_LOCATION_NIFTYSEG "https://niftyseg.svn.sourceforge.net/svnroot/niftyseg" CACHE STRING  "Location of NiftySEG.")
+SET(NIFTK_LOCATION_NIFTYREC "https://niftyrec.svn.sourceforge.net/svnroot/niftyrec/" CACHE STRING  "Location of NiftyRec.")
+SET(NIFTK_LOCATION_NIFTYSIM "https://niftysim.svn.sourceforge.net/svnroot/niftysim/trunk/nifty_sim/" CACHE STRING  "Location of NiftyRec.")
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -365,7 +373,7 @@ ENDIF(BUILD_GUI)
 IF(NIFTK_USE_CUDA)
   FIND_PACKAGE(CUDA)
   IF(CUDA_FOUND)
-    INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR})
+    INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR} ${CUDA_TOOLKIT_INCLUDE})
     CUDA_INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR})
     ADD_DEFINITIONS(-D_USE_CUDA)
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-D_USE_CUDA")
@@ -559,6 +567,11 @@ IF(BUILD_NIFTYREG)
   ENDIF(NIFTYREG_FOUND)
 ENDIF(BUILD_NIFTYREG)
 
+IF(NOT NIFTYREG_FOUND)
+  MESSAGE("No NiftyReg found, so turning off plugin")
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.niftyreg" OFF CACHE BOOL "NiftyReg plugin" FORCE)
+ENDIF()
+
 
 ######################################################################
 # Find NIFTYREC - (version will vary according to whether CUDA found)
@@ -610,6 +623,11 @@ IF(BUILD_NIFTYSEG)
     MESSAGE("Didn't find NiftySeg")
   ENDIF(NIFTYSEG_FOUND)
 ENDIF(BUILD_NIFTYSEG)
+
+IF(NOT NIFTYSEG_FOUND)
+  MESSAGE("No NiftySeg found, so turning off breast segmentation plugin")
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.breastsegmentation" OFF CACHE BOOL "Breast segmentation plugin" FORCE)
+ENDIF()
 
 
 ########################################################################

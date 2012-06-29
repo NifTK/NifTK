@@ -41,8 +41,8 @@ IF(BUILD_NIFTYREC)
   IF(NOT DEFINED NIFTYREC_ROOT)
 
     ExternalProject_Add(${proj}
-      SVN_REPOSITORY https://niftyrec.svn.sourceforge.net/svnroot/niftyrec/
-      SVN_REVISION -r 14
+      SVN_REPOSITORY ${NIFTK_LOCATION_NIFTYREC}
+      SVN_REVISION -r ${NIFTK_VERSION_NIFTYREC}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
