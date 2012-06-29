@@ -42,6 +42,14 @@ timeStep       = 1.e-5
 materialType   = 'NH'
 materialParams = [100.067, 50000]
 
+# AB experiments
+# materialType = 'AB'
+# materialParams = [100.067, 1.5, 50000]
+
+#
+# The FEBio equivalent should be  [initial mod. 100.067, links 2.25, bulk mod. 50000]
+#
+
 gravDir = np.array( ( 0, 0, 1.0 ) )
 gravMag = 10.0
 
