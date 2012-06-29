@@ -60,7 +60,7 @@ the source code and compile your own, and install it in a non standard place (i.
 then make sure it really is the version you are using. i.e. run qmake --version on the command line. 
 On Linux/Mac try
 \verbatim
-./configure -prefix=/somewhere/to/install/qt-4.7.4 -release -shared -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/to/install/qt-4.7.4 -release -shared -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 <li> For Windows, a description of building a 64bit version of QT can be found here: <a href="http://blog.shadowgears.com/2008/10/making-qt4-dance-with-msvc-2008.html">Windows QT 64 bit build</a>. </li>
@@ -156,3 +156,4 @@ In addition, to make use of the NifTK scripts, and NifTK command line programs,
 the following <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> should be followed.
  
 */
+
