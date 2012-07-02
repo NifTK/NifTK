@@ -110,9 +110,11 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
 
   // In NiftyView, I have set in the midaseditor plugin.xml for the Midas Drag and Drop editor to be default.
   // This section is to try and force the standard MITK Display editor open.
-  // It is assumed to be on, unless you specifically set a variable NIFTK_MITK_DISPLAY to be OFF.
+  // It is assumed to be off, unless the user sets the NIFTK_MITK_DISPLAY=ON.
   // It is imagined that at the DRC, they will not want this viewer as much.
-  if (!niftk::BooleanEnvironmentVariableIsOff("NIFTK_MITK_DISPLAY"))
+  // The unfortunate side effect is that the GUI will not correctly remember which is the ordering of the editors.
+  // So, restoring a project from a project file may have the wrong viewer on-top on start-up.
+  if (niftk::BooleanEnvironmentVariableIsOn("NIFTK_MITK_DISPLAY"))
   {
     berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
     berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
