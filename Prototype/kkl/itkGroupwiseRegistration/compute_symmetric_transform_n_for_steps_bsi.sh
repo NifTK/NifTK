@@ -145,35 +145,6 @@ function compute_star()
   niftkInvertTransformation ${_dof_1_2_star} ${_dof_1_2_star_inverse}
 }
 
-function transform()
-{
-  local _image1=$1
-  local _region1=$2
-  local _image2=$3
-  local _image3=$4
-  local _dof_1_2=$5
-  local _dof_1_3=$6
-  local _output_prefix=$7
-  
-  # Compute the mean transform for baseline image.
-  local average_transform=${output_dir}/${_output_prefix}_average.dof
-  niftkComputeMeanTransformation ${average_transform} 1e-8 ${_dof_1_2} 2 ${_dof_1_3} 2 ${identity_dof} 1
-  
-  # Do the transform.
-  local resliced_image=${output_dir}/${_output_prefix}.img
-  local resliced_mask=${output_dir}/${_output_prefix}_mask
-  local region1_img=${tmpdir}/baseline_mask.img
-  local resliced_region1_img=${output_dir}/${_output_prefix}_mask.img
-  
-  makemask ${_image1} ${_region1} ${region1_img}
-  niftkTransformation -ti ${_image1} -o ${resliced_image} -j ${interpolation} -g ${average_transform} -sym_midway 3 ${_image1} ${_image2} ${_image3} -invertAffine
-  niftkAbsImageFilter -i ${resliced_image} -o ${resliced_image}
-  niftkTransformation -ti ${region1_img} -o ${resliced_region1_img} -j 2 -g ${average_transform} -sym_midway 3 ${_image1} ${_image2} ${_image3} -invertAffine
-  makeroi -img ${resliced_region1_img} -out ${resliced_mask} -alt 128
-}
-
-if [ "${just_dbc}" != "yes" ]
-then 
 
 # Create the pairwise symmetric dof files. 
 for ((i=1; i<=${number_of_images}; i++))
@@ -183,6 +154,11 @@ do
   do 
     index1=`echo "${i}*${number_of_images}+${j}" | bc`
     index2=`echo "${j}*${number_of_images}+${i}" | bc`
+    
+    if [ ! -f "${dof[${index1}]}" ] || [ ! -f "${dof[${index2}]}" ] 
+    then 
+      continue
+    fi 
     compute_star ${dof[${index1}]} ${dof[${index2}]} ${dof_star[${index1}]} ${dof_star[${index2}]}
   done
 done  
@@ -212,14 +188,25 @@ do
         image_arguments="${image_arguments} ${image[${j}]}"
       fi 
     done
+    all_dof_exist=1
     for ((j=1; j<=${number_of_images}; j++))
     do 
       if [ ${i} != ${j} ]
       then 
         index=`echo "${i}*${number_of_images}+${j}" | bc`
         dof_arguments="${dof_arguments} ${dof_star[${index}]} 2"
+        
+        ls "${dof_star[${index}]}"
+        if [ ! -f "${dof_star[${index}]}" ]
+        then 
+          all_dof_exist=0
+        fi 
       fi 
     done
+    if [ ${all_dof_exist} == 0 ]
+    then 
+      continue
+    fi 
       
     # Compute the mean transform for baseline image.
     average_transform=${output_dir}/${output_prefix}_${i}_average.dof
@@ -249,7 +236,6 @@ do
     fi 
   done  
   
-  fi 
   
   # Compute BSI. 
   for ((i=1; i<=${number_of_images}; i++))
@@ -269,16 +255,6 @@ do
       
       if  [ "${double_window}" == "yes" ] 
       then 
-        niftkKNDoubleWindowBSI \
-          ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_mask.img \
-          ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_mask.img \
-          ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_local_mask.img \
-          ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_local_mask.img \
-          1 1 3   \
-          ${tmpdir}/bs.img ${tmpdir}/rs.img \
-          dummy ${tmpdir}/xor.img ${output_dir}/${output_prefix}_${i}_local_mask.img ${output_dir}/${output_prefix}_${j}_local_mask.img \
-          1.0 0.5 dummy 0.05 > ${output_dir}/${output_prefix}_${i}_dbc-${output_prefix}_${j}_dbc_local_region_${region}.qnt
-          
         niftkKNDoubleWindowBSI \
           ${output_dir}/${output_prefix}_${i}_dbc.img ${output_dir}/${output_prefix}_${i}_mask.img \
           ${output_dir}/${output_prefix}_${j}_dbc.img ${output_dir}/${output_prefix}_${j}_mask.img \
