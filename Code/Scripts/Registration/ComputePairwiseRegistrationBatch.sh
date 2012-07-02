@@ -157,7 +157,8 @@ do
 done
 
 
-command_filename=ComputeInitialAffineAtlas-`date +"%Y%m%d-%H%M%S"`.txt
+command_filename=ComputeInitialAffineAtlas-`date +"%Y%m%d-%H%M%S"`.XXXXXXXXXX
+mktemp ${command_filename}
 
 # Process each line in the input file. 
 function iterate_through_input_file
