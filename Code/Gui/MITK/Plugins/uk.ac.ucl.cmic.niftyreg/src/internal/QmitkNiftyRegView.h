@@ -30,6 +30,9 @@
 #include "berryISelectionListener.h"
 #include "QmitkAbstractView.h"
 
+// ITK
+#include <itkMultiThreader.h>
+
 
 #include "_reg_aladin.h"
 #include "_reg_tools.h"
@@ -92,6 +95,7 @@ class QmitkNiftyRegView : public QmitkAbstractView
     
     void OnSmoothSourceImageDoubleSpinBoxValueChanged( double value );
     void OnSmoothTargetImageDoubleSpinBoxValueChanged( double value );
+    void OnNoSmoothingPushButtonPressed( void );
 
     void OnDoBlockMatchingOnlyRadioButtonToggled( bool checked );
     void OnDoNonRigidOnlyRadioButtonToggled( bool checked );
@@ -162,7 +166,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     void OnLinearEnergyWeightsDoubleSpinBox_1ValueChanged( double value );
     void OnLinearEnergyWeightsDoubleSpinBox_2ValueChanged( double value );
-    void OnLinearEnergyWeightsDoubleSpinBox_3ValueChanged( double value );
 
     void OnApproxJacobianLogCheckBoxStateChanged( int state );
 
@@ -190,8 +193,14 @@ class QmitkNiftyRegView : public QmitkAbstractView
     // Execution
 
     void OnCancelPushButtonPressed( void );
+    void OnResetParametersPushButtonPressed( void );
     void OnSaveAsPushButtonPressed( void );
     void OnExecutePushButtonPressed( void );
+
+    friend void UpdateProgressBar( float pcntProgress, void *param );
+
+    friend ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param );
+
 
   protected:
 
@@ -259,6 +268,13 @@ class QmitkNiftyRegView : public QmitkAbstractView
     /// Flag indicating whether the initial affine transformation is FLIRT
     bool m_FlagFlirtAffine;   // -affFlirt
 
+
+    /** The current progress bar offset (0 < x < 100%) to enable progress to
+     * be divided between multiple processes. */
+    float m_ProgressBarOffset;
+    /** The current progress bar range (0 < x < 100%) to enable progress to
+     * be divided between multiple processes. */
+    float m_ProgressBarRange;
 
     /// Codes for interpolation type
     typedef enum {
@@ -357,7 +373,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
       PrecisionTYPE linearEnergyWeight0;   // -le 
       PrecisionTYPE linearEnergyWeight1;   // -le 
-      PrecisionTYPE linearEnergyWeight2;   // -le 
 
       PrecisionTYPE jacobianLogWeight;     // -jl 
 
@@ -392,6 +407,10 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
 
 };
+
+
+void UpdateProgressBar( float pcntProgress, void *param );
+ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param );
 
 #endif // QmitkNiftyRegView_h
 
