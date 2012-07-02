@@ -353,6 +353,12 @@ ELSE (_boost_IN_CACHE)
   IF (MSVC90)
     SET (_boost_COMPILER "-vc90")
   ENDIF (MSVC90)
+  IF (MSVC10)
+    SET (_boost_COMPILER "-vc")
+  ENDIF (MSVC10)
+  IF (MSVC100)
+    SET (_boost_COMPILER "-vc")
+  ENDIF (MSVC100)
   IF (MINGW)
     EXEC_PROGRAM(${CMAKE_CXX_COMPILER}
       ARGS --version
