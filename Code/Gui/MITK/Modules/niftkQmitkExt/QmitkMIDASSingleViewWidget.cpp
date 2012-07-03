@@ -93,10 +93,14 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
   this->SetNavigationControllerEventListening(false);
 
   // Trac 1628 - make sure every new QmitkMIDASStdMultiWidget has a valid geometry.
-  // We know at this point that m_DataStorage is not null.
-  mitk::TimeSlicedGeometry::Pointer visibleGeometry = m_DataStorage->ComputeVisibleBoundingGeometry3D();
-  this->SetGeometry(visibleGeometry);
-  this->SetBoundGeometry(visibleGeometry);
+
+  mitk::Geometry3D::Pointer defaultGeometry = mitk::Geometry3D::New();
+  defaultGeometry->Initialize();
+  mitk::TimeSlicedGeometry::Pointer timeSlicedGeometry = mitk::TimeSlicedGeometry::New();
+  timeSlicedGeometry->InitializeEmpty(1);
+  timeSlicedGeometry->SetGeometry3D(defaultGeometry, 0);
+  this->SetGeometry(timeSlicedGeometry);
+  this->SetBoundGeometry(timeSlicedGeometry);
 
   m_Layout = new QGridLayout(this);
   m_Layout->setObjectName(QString::fromUtf8("QmitkMIDASSingleViewWidget::m_Layout"));
