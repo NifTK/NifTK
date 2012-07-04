@@ -86,6 +86,7 @@ Optional arguements:
                         9. Normalized Mutual Information
   -region [yes/no]    : brain region is used or not [yes].
   -pptol [float]      : stopping criteria for the powell optimization. [0.0001]
+  -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI. 
                           
   
 
@@ -102,6 +103,7 @@ similarity=4
 ajc="no"
 region="yes"
 pptol=0.0001
+local_region_search="no"
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -148,6 +150,10 @@ do
       pptol=$2
       shift 1
       ;;
+    -local_region_search)
+      local_region_search=$2
+      shift 1
+      ; ; 
     -*)
         Usage
       exitprog "Error: option $1 not recognised" 1
@@ -184,8 +190,9 @@ function iterate_through_input_file
     then 
       echo ${script_dir}/ComputePairwiseRegistration.sh \
            ${output_dir}/${output_format} \
-            ${dilation} ${symmetric}  \
-           ${dof} ${scaling_using_skull} ${similarity} ${ajc} ${pptol} ${region} \
+           ${dilation} ${symmetric}  \
+           ${dof} ${scaling_using_skull} ${similarity} ${ajc} \
+           ${pptol} ${region} ${local_region_search} \
            ${fixed_image} ${fixed_image_mask} ${moving_images_and_masks}  >> ${command_filename}
     else
       check_file_exists ${image} "no"
