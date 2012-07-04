@@ -45,13 +45,6 @@ set(CTEST_CUSTOM_COVERAGE_EXCLUDE
   ".*/CMakeExternals/.*"
   ".*/CTK-src/.*" 
   ".*/DCMTK-src/.*"
-
-  # Trac 1583 - removing Applications folders, as many
-  # people are just stringing together ITK filters, which
-  # are already unit tested elsewhere.
-  ".*/Code/Applications/.*"
-  ".*/Code/Gui/MITK/Apps/.*"
-
   )
 
 # The following tests should not be run under valgrind
