@@ -344,7 +344,10 @@ void QmitkMIDASMultiViewWidget::RequestUpdateAll()
   std::vector<unsigned int> listToUpdate = this->GetViewerIndexesToUpdate(true);
   for (unsigned int i = 0; i < listToUpdate.size(); i++)
   {
-    m_SingleViewWidgets[listToUpdate[i]]->RequestUpdate();
+    if (listToUpdate[i] >= 0 && listToUpdate[i] < this->m_SingleViewWidgets.size())
+    {
+      m_SingleViewWidgets[listToUpdate[i]]->RequestUpdate();
+    }
   }
 }
 
