@@ -25,6 +25,7 @@
 #ifndef QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_H
 #define QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_H
 
+#include <niftkQmitkExtExports.h>
 #include <QWidget>
 #include "ui_QmitkMIDASImageAndSegmentationSelector.h"
 
@@ -33,7 +34,7 @@
  * \brief Implements the widget to select a reference image, and create a new segmentation.
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class QmitkMIDASImageAndSegmentationSelectorWidget : public QWidget, public Ui::QmitkMIDASImageAndSegmentationSelector {
+class NIFTKQMITKEXT_EXPORT QmitkMIDASImageAndSegmentationSelectorWidget : public QWidget, public Ui::QmitkMIDASImageAndSegmentationSelector {
 
   Q_OBJECT
 

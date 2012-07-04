@@ -43,32 +43,32 @@ LookupTableManager::LookupTableManager()
 
 	// TODO: How can I automatically read a list of filenames within a plugin?
 	QStringList fileList;
-  fileList.push_back(":/ImageLookupTables/imagej_fire.lut");
-	fileList.push_back(":/ImageLookupTables/blue.lut");
-  fileList.push_back(":/ImageLookupTables/cyan.lut");
-  fileList.push_back(":/ImageLookupTables/green.lut");
-  fileList.push_back(":/ImageLookupTables/grey.lut");
-  fileList.push_back(":/ImageLookupTables/hot.lut");
-  fileList.push_back(":/ImageLookupTables/hsv.lut");
-  fileList.push_back(":/ImageLookupTables/jet.lut");
-  fileList.push_back(":/ImageLookupTables/magenta.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_autumn.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_bipolar_256_0.1.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_bipolar_256_0.9.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_cool.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_hot.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_spring.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_summer.lut");
-  fileList.push_back(":/ImageLookupTables/matlab_winter.lut");
-  fileList.push_back(":/ImageLookupTables/midas_bands.lut");
-  fileList.push_back(":/ImageLookupTables/midas_hot_iron.lut");
-  fileList.push_back(":/ImageLookupTables/midas_overlay.lut");
-  fileList.push_back(":/ImageLookupTables/midas_pet_map.lut");
-  fileList.push_back(":/ImageLookupTables/midas_spectrum.lut");
-  fileList.push_back(":/ImageLookupTables/nih.lut");
-  fileList.push_back(":/ImageLookupTables/red.lut");
-  fileList.push_back(":/ImageLookupTables/sea.lut");
-  fileList.push_back(":/ImageLookupTables/yellow.lut");
+  fileList.push_back(":imagej_fire.lut");
+	fileList.push_back(":blue.lut");
+  fileList.push_back(":cyan.lut");
+  fileList.push_back(":green.lut");
+  fileList.push_back(":grey.lut");
+  fileList.push_back(":hot.lut");
+  fileList.push_back(":hsv.lut");
+  fileList.push_back(":jet.lut");
+  fileList.push_back(":magenta.lut");
+  fileList.push_back(":matlab_autumn.lut");
+  fileList.push_back(":matlab_bipolar_256_0.1.lut");
+  fileList.push_back(":matlab_bipolar_256_0.9.lut");
+  fileList.push_back(":matlab_cool.lut");
+  fileList.push_back(":matlab_hot.lut");
+  fileList.push_back(":matlab_spring.lut");
+  fileList.push_back(":matlab_summer.lut");
+  fileList.push_back(":matlab_winter.lut");
+  fileList.push_back(":midas_bands.lut");
+  fileList.push_back(":midas_hot_iron.lut");
+  fileList.push_back(":midas_overlay.lut");
+  fileList.push_back(":midas_pet_map.lut");
+  fileList.push_back(":midas_spectrum.lut");
+  fileList.push_back(":nih.lut");
+  fileList.push_back(":red.lut");
+  fileList.push_back(":sea.lut");
+  fileList.push_back(":yellow.lut");
 
 	for (int i = 0; i < fileList.size(); i++)
 	{

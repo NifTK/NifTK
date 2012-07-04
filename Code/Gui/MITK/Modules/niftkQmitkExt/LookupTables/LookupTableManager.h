@@ -24,6 +24,7 @@
 #ifndef LOOKUPTABLEMANAGER_H
 #define LOOKUPTABLEMANAGER_H
 
+#include <niftkQmitkExtExports.h>
 #include <vector>
 
 /**
@@ -41,7 +42,7 @@
 class LookupTableContainer;
 class vtkLookupTable;
 
-class LookupTableManager {
+class NIFTKQMITKEXT_EXPORT LookupTableManager {
 
 public:
 

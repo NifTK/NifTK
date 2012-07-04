@@ -40,10 +40,10 @@
 #include "mitkNodePredicateProperty.h"
 #include "mitkNodePredicateAnd.h"
 #include "mitkNodePredicateNot.h"
+#include "mitkNamedLookupTableProperty.h"
 #include "QmitkImageLookupTablesPreferencePage.h"
 #include "berryIPreferencesService.h"
 #include "berryIBerryPreferences.h"
-#include "NamedLookupTableProperty.h"
 #include "itkStatisticsImageFilter.h"
 #include "itkImage.h"
 
@@ -531,7 +531,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
     mitkLUT->SetVtkLookupTable(const_cast<vtkLookupTable*>(vtkLUT));
     const std::string& lutName = lutContainer->GetDisplayName().toStdString();
-    NamedLookupTableProperty::Pointer mitkLUTProperty = NamedLookupTableProperty::New(lutName, mitkLUT);
+    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New(lutName, mitkLUT);
     m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
     m_CurrentNode->SetBoolProperty("use color", false);
     m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);

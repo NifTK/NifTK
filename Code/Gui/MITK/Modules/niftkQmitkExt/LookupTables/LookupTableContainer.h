@@ -24,6 +24,7 @@
 #ifndef LOOKUPTABLECONTAINER_H
 #define LOOKUPTABLECONTAINER_H
 
+#include <niftkQmitkExtExports.h>
 #include <QString>
 #include "vtkLookupTable.h"
 
@@ -38,7 +39,7 @@
  * copy it, and manage the copy themselves. You should never modify a lookup table
  * once it has been loaded, and you must never share them.
  */
-class LookupTableContainer {
+class NIFTKQMITKEXT_EXPORT LookupTableContainer {
 
 public:
 

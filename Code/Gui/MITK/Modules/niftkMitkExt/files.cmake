@@ -23,6 +23,7 @@ set(CPP_FILES
   DataManagement/mitkAffineTransformParametersDataNodeProperty.cpp
   DataManagement/mitkAffineTransformDataNodeProperty.cpp
   DataManagement/mitkITKRegionParametersDataNodeProperty.cpp
+  DataManagement/mitkNamedLookupTableProperty.cpp
   IO/itkAnalyzeImageIO3160.cpp
   IO/itkDRCAnalyzeImageIO3160.cpp
   IO/itkNiftiImageIO3201.cpp

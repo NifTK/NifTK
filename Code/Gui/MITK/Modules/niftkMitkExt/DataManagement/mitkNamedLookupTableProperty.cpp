@@ -22,37 +22,30 @@
 
  ============================================================================*/
 
+#include "mitkNamedLookupTableProperty.h"
 
-#ifndef NamedLookupTableProperty_h
-#define NamedLookupTableProperty_h
+namespace mitk {
 
-#include <mitkLookupTableProperty.h>
-
-/**
- * \class NamedLookupTableProperty
- * \brief Provides a property so we can see the lookup table name in the property window.
- * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
- */
-class NamedLookupTableProperty : public mitk::LookupTableProperty
+NamedLookupTableProperty::NamedLookupTableProperty()
+: Superclass()
+, m_Name("n/a")
 {
+}
 
-protected:
-  NamedLookupTableProperty();
+NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut)
+: Superclass(lut)
+, m_Name(name)
+{
+}
 
-  NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut);
+NamedLookupTableProperty::~NamedLookupTableProperty()
+{
+}
 
-public:
-  mitkClassMacro(NamedLookupTableProperty, mitk::LookupTableProperty);
+std::string
+NamedLookupTableProperty::GetValueAsString() const
+{
+  return m_Name;
+}
 
-  itkNewMacro(NamedLookupTableProperty);
-  mitkNewMacro2Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer);
-
-  virtual ~NamedLookupTableProperty();
-
-  virtual std::string GetValueAsString() const;
-
-private:
-  std::string m_Name;
-};
-
-#endif /* NamedLookupTableProperty_h */
+} // namespace mitk

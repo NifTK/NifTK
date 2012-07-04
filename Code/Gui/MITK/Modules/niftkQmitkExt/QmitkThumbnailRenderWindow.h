@@ -26,7 +26,7 @@
 #define QMITKTHUMBNAILRENDERWINDOW_H_
 
 #include <QColor>
-#include "uk_ac_ucl_cmic_thumbnail_Export.h"
+#include <niftkQmitkExtExports.h>
 #include "QmitkRenderWindow.h"
 #include "mitkDataStorage.h"
 #include "mitkDataNode.h"
@@ -68,7 +68,7 @@ class QmitkWheelEventEater;
  * \sa mitk::DataStorage
  * \sa mitk::FocusManager
  */
-class THUMBNAIL_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
+class NIFTKQMITKEXT_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
 {
   Q_OBJECT
 

@@ -1,31 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
  <qresource prefix="/ImageLookupTables">
      <file>ImageLookupTables.png</file>
-     <file>blue.lut</file>
-     <file>cyan.lut</file>
-     <file>green.lut</file>
-     <file>grey.lut</file>
-     <file>hot.lut</file>
-     <file>hsv.lut</file>
-     <file>imagej_fire.lut</file>
-     <file>jet.lut</file>
-     <file>magenta.lut</file>
-     <file>matlab_autumn.lut</file>
-     <file>matlab_bipolar_256_0.1.lut</file>
-     <file>matlab_bipolar_256_0.9.lut</file>
-     <file>matlab_cool.lut</file>
-     <file>matlab_hot.lut</file>
-     <file>matlab_spring.lut</file>
-     <file>matlab_summer.lut</file>
-     <file>matlab_winter.lut</file>
-     <file>midas_bands.lut</file>
-     <file>midas_hot_iron.lut</file>
-     <file>midas_overlay.lut</file>
-     <file>midas_pet_map.lut</file>
-     <file>midas_spectrum.lut</file>
-     <file>nih.lut</file>
-     <file>red.lut</file>
-     <file>sea.lut</file>
-     <file>yellow.lut</file>
  </qresource>
  </RCC>
