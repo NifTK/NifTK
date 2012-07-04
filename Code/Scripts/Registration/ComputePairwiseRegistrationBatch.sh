@@ -153,7 +153,7 @@ do
     -local_region_search)
       local_region_search=$2
       shift 1
-      ; ; 
+      ;; 
     -*)
         Usage
       exitprog "Error: option $1 not recognised" 1
