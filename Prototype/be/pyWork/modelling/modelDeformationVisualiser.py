@@ -38,7 +38,7 @@ class modelDeformationVisualiser :
         if deformationFileName != None :
             self.deformationFileName = deformationFileName
         else :
-            self.deformationFileName = 'U.txt'
+            self.deformationFileName = os.path.dirname( self.xmlGenerator.xmlFileName ) + '/U_' + os.path.splitext( os.path.basename(self.xmlGenerator.xmlFileName) )[0] + '.txt' 
         
         self._readDeformationFile()
         self._generateDeformedModels()

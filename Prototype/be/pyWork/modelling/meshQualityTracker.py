@@ -14,7 +14,7 @@ import modelDeformationVisualiser
 
 
 class meshQualityTracker:
-    ''' Track the tetrahedral element quality of the mesh over the iterations
+    ''' Track the element quality of the mesh over the iterations
     '''
     
     
@@ -37,22 +37,7 @@ class meshQualityTracker:
             isinstance( modelDeformVis, modelDeformationVisualiser.modelDeformationVisualiser )
             self.vis = modelDeformVis
         
-        self.qualityMeasures = ['RadiusRatio',
-                        'MinAngle',
-                        'EdgeRatio',
-                        'Jacobian',
-                        'ScaledJacobian',
-                        'AspectBeta',
-                        'AspectFrobenius',
-                        'AspectGamma',
-                        'AspectRatio',
-                        'CollapseRatio',
-                        'Condition',
-                        'Distortion',
-                        'RelativeSizeSquared',
-                        'Shape',
-                        'ShapeAndSize',
-                        'Volume' ]
+        self.qualityMeasures = []
         self.percentileQuantities = [0,1,5,10,50,90,95,99,100]
         
         self._keepStats     = keepStats
@@ -70,12 +55,19 @@ class meshQualityTracker:
 
         #
         # Prepare the data structures which hold the percentiles
-        #        
-        for qm in self.qualityMeasures:
+        #
+        # For this the first statistics need to be generated to see
+        # which quality measures are available.
+        #
+        stats = meshStat.meshStatistics( self.vis.deformedNodes[0], self.vis.mldElements )
+        
+        for qm in stats.qualityMeasures:
+            self.qualityMeasures.append( qm ) 
             self.percentiles[ qm ] = {}
             
             for p in self.percentileQuantities :
                 self.percentiles[qm][p] = []
+        
         
         #
         # Evaluate each deformed model
@@ -86,7 +78,9 @@ class meshQualityTracker:
                 print( 'Calculating statistics: %5i' % i )
             
             # Calculate the statistics for the current set of deformed nodes
-            stats = meshStat.meshStatistics( self.vis.deformedNodes[i], self.vis.mldElements ) 
+            # zero was calculated previously...
+            if i != 0 :
+                stats = meshStat.meshStatistics( self.vis.deformedNodes[i], self.vis.mldElements ) 
             
             # Keep the full statistics
             # NOTE: Huge memory requirements likely
@@ -174,8 +168,8 @@ if __name__ == '__main__':
     modelFileName  = 'modelFat_prone1G_it050000_totalTime05_rampflat4.xml'
     deformFileName = 'U_modelFat_prone1G_it050000_totalTime05_rampflat4.txt'
     
-    mqt = meshQualityTracker( simDir + modelFileName, simDir + deformFileName, 'RadiusRatio', keepStats=True )
-    
+    mqt = meshQualityTracker( simDir + modelFileName, simDir + deformFileName, keepStats=False )
+    mqt.plotQualityMeasure('c:/data/', 'POLY345', 1, mqt.qualityMeasures[0] )
     #
     # evaluate the travel distance
     #

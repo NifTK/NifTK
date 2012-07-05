@@ -36,7 +36,7 @@ xmlModelNameDispT4ANP  = 'box_T4ANP_disp.xml'
 xmlModelNameForceT4ANP = 'box_T4ANP_force.xml'
 
 density        = 1000.0
-dampingCoeff   = 100.
+dampingCoeff   = 5.
 totalTime      = 5.
 timeStep       = 1.e-5 
 materialType   = 'NH'
@@ -54,6 +54,7 @@ gravDir = np.array( ( 0, 0, 1.0 ) )
 gravMag = 10.0
 
 displacementMag = 0.005
+hgKappa = 0.075
 
 forceMagX = 0.
 forceMagY = 2e-4
@@ -152,9 +153,9 @@ genGravT4ANP.setMaterialElementSet( materialType, 'Fat', materialParams, genGrav
 
 
 # define system parameters
-genGravH8.setSystemParameters( timeStep, totalTime, dampingCoeff, 0, 1000.)
-genGravT4.setSystemParameters( timeStep, totalTime, dampingCoeff, 0, 1000.)
-genGravT4ANP.setSystemParameters( timeStep, totalTime, dampingCoeff, 0, 1000.)
+genGravH8.setSystemParameters   ( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
+genGravT4.setSystemParameters   ( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
+genGravT4ANP.setSystemParameters( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
 
 genGravH8.setOutput   ( outputFreq, ['U', 'EKinTotal', 'EStrainTotal' ] )
 genGravT4.setOutput   ( outputFreq, ['U', 'EKinTotal', 'EStrainTotal' ] )
@@ -205,9 +206,9 @@ genDispH8.setMaterialElementSet   ( materialType, 'Fat', materialParams, genDisp
 genDispT4.setMaterialElementSet   ( materialType, 'Fat', materialParams, genDispT4.allElemenstArray    )
 genDispT4ANP.setMaterialElementSet( materialType, 'Fat', materialParams, genDispT4ANP.allElemenstArray )
 
-genDispH8.setSystemParameters   ( timeStep, totalTime, dampingCoeff, 0, 1000.)
-genDispT4.setSystemParameters   ( timeStep, totalTime, dampingCoeff, 0, 1000.)
-genDispT4ANP.setSystemParameters( timeStep, totalTime, dampingCoeff, 0, 1000.)
+genDispH8.setSystemParameters   ( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
+genDispT4.setSystemParameters   ( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
+genDispT4ANP.setSystemParameters( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
 
 
 genDispH8.setOutput   ( outputFreq, ['U', 'EKinTotal', 'EStrainTotal' ] )
@@ -267,9 +268,9 @@ genForceH8.setMaterialElementSet   ( materialType, 'Fat', materialParams, genFor
 genForceT4.setMaterialElementSet   ( materialType, 'Fat', materialParams, genForceT4.allElemenstArray    )
 genForceT4ANP.setMaterialElementSet( materialType, 'Fat', materialParams, genForceT4ANP.allElemenstArray )
 
-genForceH8.setSystemParameters   ( timeStep, totalTime, dampingCoeff, 0, 1000.)
-genForceT4.setSystemParameters   ( timeStep, totalTime, dampingCoeff, 0, 1000.)
-genForceT4ANP.setSystemParameters( timeStep, totalTime, dampingCoeff, 0, 1000.)
+genForceH8.setSystemParameters   ( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
+genForceT4.setSystemParameters   ( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
+genForceT4ANP.setSystemParameters( timeStep, totalTime, dampingCoeff, hgKappa, 1000.)
 
 
 genForceH8.setOutput   ( outputFreq, ['U', 'EKinTotal', 'EStrainTotal' ] )
@@ -291,15 +292,18 @@ rS.runSimulationsInFolder( simDirH8,    gpu=useGPU )
 rS.runSimulationsInFolder( simDirT4,    gpu=useGPU )
 rS.runSimulationsInFolder( simDirT4ANP, gpu=useGPU )
 
-cA.convergenceAnalyser( simDirH8 + xmlModelNameGravH8 )
-cA.convergenceAnalyser( simDirH8 + xmlModelNameDispH8 )
+cA.convergenceAnalyser( simDirH8 + xmlModelNameGravH8  )
+cA.convergenceAnalyser( simDirH8 + xmlModelNameDispH8  )
+cA.convergenceAnalyser( simDirH8 + xmlModelNameForceH8 )
 plt.close( 'all' )
 
-cA.convergenceAnalyser( simDirT4 + xmlModelNameGravT4 )
-cA.convergenceAnalyser( simDirT4 + xmlModelNameDispT4 )
+cA.convergenceAnalyser( simDirT4 + xmlModelNameGravT4  )
+cA.convergenceAnalyser( simDirT4 + xmlModelNameDispT4  )
+cA.convergenceAnalyser( simDirT4 + xmlModelNameForceT4 )
 plt.close( 'all' )
 
-cA.convergenceAnalyser( simDirT4ANP + xmlModelNameGravT4ANP )
-cA.convergenceAnalyser( simDirT4ANP + xmlModelNameDispT4ANP )
+cA.convergenceAnalyser( simDirT4ANP + xmlModelNameGravT4ANP  )
+cA.convergenceAnalyser( simDirT4ANP + xmlModelNameDispT4ANP  )
+cA.convergenceAnalyser( simDirT4ANP + xmlModelNameForceT4ANP ) 
 plt.close( 'all' )
 

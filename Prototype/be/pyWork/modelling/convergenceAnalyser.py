@@ -134,10 +134,12 @@ class convergenceAnalyser:
         self.eStrainTotal = self._readEnergyFile( self.eStrainTotalFileName )
         
         #
-        # get the deformations and build the statistics...
+        # get the deformations and build the statistics.
+        # then get the quality measures which were evaluated 
         #
-        self.vis           = defVis.modelDeformationVisualiser(self.model, self.uFileName )
-        self.meshQualities = mqt.meshQualityTracker( modelDeformVis=self.vis )
+        self.vis             = defVis.modelDeformationVisualiser(self.model, self.uFileName )
+        self.meshQualities   = mqt.meshQualityTracker( modelDeformVis = self.vis )
+        self.qualityMeasures = self.meshQualities.qualityMeasures
         
         #
         # Calculate mean displacements
@@ -156,22 +158,6 @@ class convergenceAnalyser:
         #
         self.evaluationIterations = self.eKinTotal.shape[0]
         self.loadingCurve, self.timeAxisVals  = loadingFunction( self.totalTime, self.loadShape, self.evaluationIterations )
-        self.qualityMeasures = ['RadiusRatio',
-                                'MinAngle',
-                                'EdgeRatio',
-                                'Jacobian',
-                                'ScaledJacobian',
-                                'AspectBeta',
-                                'AspectFrobenius',
-                                'AspectGamma',
-                                'AspectRatio',
-                                'CollapseRatio',
-                                'Condition',
-                                'Distortion',
-                                'RelativeSizeSquared',
-                                'Shape',
-                                'ShapeAndSize',
-                                'Volume' ]
         
         #
         # plot energies

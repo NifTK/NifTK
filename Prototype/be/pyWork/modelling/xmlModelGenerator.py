@@ -45,7 +45,7 @@ class xmlModelGenrator :
 
 
     
-    def setSystemParameters( self, timeStep, totalTime, dampingCoefficient, hgKappa, density ):
+    def setSystemParameters( self, timeStep, totalTime, dampingCoefficient, hgKappa=0.075, density=1000 ):
         ''' @summary: simply collect the parameters needed
         '''
         
