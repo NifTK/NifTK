@@ -149,9 +149,15 @@ IF(NOT DEFINED MITK_DIR)
     #     So, the current code base is:
     #       MITK c855dedda4 + Trac 853, 1256, + MITK 12302, 12303 (not yet merged into MITK master).
     #       This results in niftk branch commit f6bbb3c5f4
+    #
+    # 12. Trac 1641 - Created MITK bugs 12427 to make sure mitkDicomSeriesReader compiles on gcc 4.1.2,
+    #     and also MITK bug 12431 to fix crash in mitkExtractSliceFilter. Merged these straight into niftk branch.
+    #     So, the current code base is:
+    #       MITK c855dedda4 + Trac 853, 1256, + MITK 12302, 12303, 12427 and 12431 (not yet merged into MITK master).
+    #       This results in niftk brach commit 6f6ff4eeb2
     #########################################################
     
-    SET(revision_tag f6bbb3c5f4)
+    SET(revision_tag 6f6ff4eeb2)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
