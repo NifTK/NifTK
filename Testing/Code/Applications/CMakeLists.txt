@@ -10,9 +10,9 @@
 #
 #  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
 #
-#  Last Changed      : $LastChangedDate: 2011-12-16 15:42:03 +0000 (Fri, 16 Dec 2011) $ 
-#  Revision          : $Revision: 8057 $
-#  Last modified by  : $Author: mjc $
+#  Last Changed      : $LastChangedDate$ 
+#  Revision          : $Revision$
+#  Last modified by  : $Author$
 #
 #  Original author   : m.clarkson@ucl.ac.uk
 #
@@ -22,6 +22,11 @@
 #
 #=================================================================================*/
 
-ADD_SUBDIRECTORY(Libs)
-ADD_SUBDIRECTORY(Applications)
+# Example test, documented in NifTK/Doc/TechnicalManual/TestingApplications.dox
 
+ADD_TEST(niftkAdd-Run2D ${EXECUTABLE_OUTPUT_PATH}/niftkAdd -i ${INPUT_DATA}/cte_circle_gm.png -j ${INPUT_DATA}/cte_circle_wm.png -o ${TEMP}/niftkAdd-2D-output.png)
+ADD_TEST(niftkAdd-Test2D ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TEMP}/niftkAdd-2D-output.png -j ${BASELINE}/niftkAdd-2D-output.png -intensity )
+
+# Additional image checks can be added to niftkTestCompareImage to make it more useful.
+# Additional ctest tests should be added below, eventually covering all the applications in NifTK/Code/Applications.
+                                                                  

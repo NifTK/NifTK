@@ -1,0 +1,104 @@
+/**
+
+\page TestingApplications Testing - NifTK/Code/Applications
+
+\section TestingApplicationsIntroduction Introduction
+
+This page shows an example of how to test an application binary. The reason for doing so
+is to actually test the end user application. An ordinary ctest unit test, using the typical
+ctest method such as can be found in:
+
+\verbatim
+NifTK/Testing/Code/Libs/ITK/BasicFilters/BasicFiltersIntegrationTests
+\endverbatim
+
+registers a test file eg. <code>ExtractEdgeImageTest.cxx</code> with the test harness 
+<code>BasicFiltersIntegrationTests</code> and so is useful for testing individual filters,
+or each class individually, which is the purpose of unit tests. However, an application in the 
+\verbatim
+NifTK/Code/Applications
+\endverbatim
+folder may string together many filters. Rather than miss these application programs out from 
+any automated testing, the method below can be used to exercise the code directly. This may also 
+provide a way to get good code coverage, and also prove that each delivered app does what it says it does, 
+as each test can be specific to a user requirement.
+
+\section TestingApplicationsMethod Method
+
+The basic method is to use ctest to first run the program, and then a separate invokation of ctest to 
+check the output. The downside of the method below is that it still does not test negative cases, where the 
+program is meant to fail, for example, testing that a program correctly handles improper command line arguments.
+The other downside, is that the method below introduces dependencies on the ordering of tests.
+This means that randomised testing using the <code>ctest --schedule-random</code> will not work.
+
+First, take a look at variables in NifTK/Testing/CMakeLists.txt
+
+\verbatim
+${EXECUTABLE_OUTPUT_PATH} = on Linux/Mac the <your build folder>/NifTK-build/bin folder, 
+                            on Windows it will be the analagous Debug/Release folder.
+\endverbatim                            
+
+The testing process below uses:
+
+\verbatim
+${INPUT_DATA}             = ${NIFTK_INPUT_DATA}/Input
+${BASELINE}               = ${NIFTK_INPUT_DATA}/Baseline
+${TEMP}                   = <your build folder>/NifTK-build/Testing/Temporary
+\endverbatim
+ 
+The test data is located using the variable ${NIFTK_INPUT_DATA}. You can download
+the test data project NifTKData and specify ${NIFTK_INPUT_DATA} manually, or you
+can specify BUILD_TESTING = ON, in the SuperBuild, and the SuperBuild will download it,
+and set this variable automatically to:
+
+\verbatim
+${NIFTK_INPUT_DATA}       = <your build folder>/CMakeExternals/Source/NifTKData
+\endverbatim
+
+The testing method works as follows, where we use a simple example, running niftkAdd.
+First run the program to produce some output.
+
+\verbatim
+ADD_TEST(niftkAdd-Run2D ${EXECUTABLE_OUTPUT_PATH}/niftkAdd -i ${INPUT_DATA}/cte_circle_gm.png -j ${INPUT_DATA}/cte_circle_wm.png -o ${TEMP}/niftkAdd-2D-output.png)
+\endverbatim
+
+The arguments can be explained as follows:
+
+\verbatim
+niftkAdd-Run2D                     = the name of the test as it appears in the dashboard.
+${EXECUTABLE_OUTPUT_PATH}/niftkAdd = the actual executable
+-i ... -j ... -o                   = the specific arguments for niftkAdd
+\endverbatim
+
+We can see that we are simply using ctest to run the command, and giving it some test data, and writing 
+the output to the <code>${TEMP}</code> folder. In general, test images should be as small as possible, to make the 
+unit tests run fast. This increases the likelihood that people will run them as part of their
+test, code, test, code, test code cycle.
+
+Then we can assess the result as follows. We can either use ctest itself, which has a compare_files option,
+
+\verbatim 
+ADD_TEST(niftkAdd-Test2D ${CMAKE_COMMAND} -E compare_files  ${BASELINE}/cte_circle_gmwm.png ${TEMP}/niftkAdd-2D-output.png )
+\endverbatim
+   
+or in the case of images, especially float images, we want to compare images with a given tolerance. 
+
+The NifTK project has:
+
+\li niftkTestImage        = Generates some 3D test images.
+\li niftkTestCompareImage = Basic harness to compare 2D/3D/4D images, or check things like min, max etc. Additional tests can be added to this application.
+
+ 
+so we can use niftkTestCompareImage to check the output
+\verbatim
+ADD_TEST(niftkAdd-Test2D ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TEMP}/niftkAdd-2D-output.png -j ${BASELINE}/niftkAdd-2D-output.png -intensity )
+\endverbatim
+
+These exact commands can be seen in:
+\verbatim
+NifTK/Testing/Code/Applications/CMakeLists.txt
+\endverbatim
+
+with the results appearing on the nightly dashboard.
+*/
+
