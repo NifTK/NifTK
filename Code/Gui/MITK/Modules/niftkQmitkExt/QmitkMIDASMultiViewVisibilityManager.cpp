@@ -667,18 +667,18 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         this->RemoveNodesFromWindow(windowIndex);
       }
 
-      // Then add all nodes into the same window denoted by windowIndex (the one that was dropped into).
-      for (unsigned int i = 0; i < nodes.size(); i++)
-      {
-        this->AddNodeToWindow(windowIndex, nodes[i]);
-      }
-
       // Then set up geometry of that single window.
       if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
       {
         this->m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
         this->m_Widgets[windowIndex]->SetView(view, true);
         this->m_Widgets[windowIndex]->SetEnabled(true);
+      }
+
+      // Then add all nodes into the same window denoted by windowIndex (the one that was dropped into).
+      for (unsigned int i = 0; i < nodes.size(); i++)
+      {
+        this->AddNodeToWindow(windowIndex, nodes[i]);
       }
     }
     else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
@@ -712,21 +712,21 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         }
 
         // So we are removing all images that are present from the window denoted by dropIndex,
-        if (this->GetNodesInWindow(windowIndex) > 0 && !this->GetAccumulateWhenDropped())
+        if (this->GetNodesInWindow(dropIndex) > 0 && !this->GetAccumulateWhenDropped())
         {
           this->RemoveNodesFromWindow(dropIndex);
         }
 
-        // ...and then adding a single image to that window, denoted by dropIndex.
-        this->AddNodeToWindow(dropIndex, nodes[i]);
-
         // Initialise geometry according to first image
-        if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+        if (this->GetNodesInWindow(dropIndex) == 0 || !this->GetAccumulateWhenDropped())
         {
           this->m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
           this->m_Widgets[dropIndex]->SetView(view, true);
           this->m_Widgets[dropIndex]->SetEnabled(true);
         }
+
+        // ...and then adding a single image to that window, denoted by dropIndex.
+        this->AddNodeToWindow(dropIndex, nodes[i]);
 
         // We need to always increment by at least one window, or else infinite loop-a-rama.
         dropIndex++;
@@ -787,22 +787,13 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
 
       MITK_DEBUG << "Dropping thumbnail, minSlice=" << minSlice << ", maxSlice=" << maxSlice << ", numberOfSlices=" << numberOfSlices << ", windowsToUse=" << windowsToUse << std::endl;
 
-      // Now add the nodes to the right number of Windows.
-      for (unsigned int i = 0; i < windowsToUse; i++)
-      {
-        for (unsigned int j = 0; j < nodes.size(); j++)
-        {
-          this->AddNodeToWindow(i, nodes[j]);
-        }
-      }
-
       // Now decide how we calculate which window is showing which slice.
       if (numberOfSlices <= m_Widgets.size())
       {
         // In this method, we have less slices than windows, so we just spread them in increasing order.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+          if (this->GetNodesInWindow(i) == 0 || !this->GetAccumulateWhenDropped())
           {
             this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
             this->m_Widgets[i]->SetView(view, true);
@@ -818,7 +809,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // In this method, we have more slices than windows, so we spread them evenly over the max number of windows.
         for (unsigned int i = 0; i < windowsToUse; i++)
         {
-          if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
+          if (this->GetNodesInWindow(i) == 0 || !this->GetAccumulateWhenDropped())
           {
             this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
             this->m_Widgets[i]->SetView(view, true);
@@ -842,6 +833,15 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
           m_Widgets[i]->FitToDisplay();
         }
       } // end if (which method of spreading thumbnails)
+
+      // Now add the nodes to the right number of Windows.
+      for (unsigned int i = 0; i < windowsToUse; i++)
+      {
+        for (unsigned int j = 0; j < nodes.size(); j++)
+        {
+          this->AddNodeToWindow(i, nodes[j]);
+        }
+      }
     } // end if (which method of dropping)
   } // end if (we have valid input)
 }
