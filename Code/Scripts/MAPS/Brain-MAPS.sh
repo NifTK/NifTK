@@ -410,14 +410,14 @@ function brain_delineation()
     number_of_gm_sd_90=1.64  # CI=90%
     number_of_gm_sd_95=1.96  # CI=95%
     lower_threshold_95=`echo "${gm}-${number_of_gm_sd_875}*${gm_sd}" | bc -l`
-    upper_threshold_95=`echo "${wm}+1.96*${wm_sd}" | bc -l`
+    upper_threshold_95=`echo "${wm}+4.42*${wm_sd}" | bc -l`
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
-            -alt ${lower_threshold_95} -aut ${threshold_160}
+            -alt ${lower_threshold_95} -aut ${upper_threshold_95}
       
     local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
     lower_threshold=`echo "${gm}-${number_of_gm_sd_875}*${gm_sd}" | bc -l`
-    upper_threshold=`echo "${wm}+3.29*${wm_sd}" | bc -l`
+    upper_threshold=`echo "${wm}+4.42*${wm_sd}" | bc -l`
     lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
     upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
     threshold_160_percent=`echo "(100*${threshold_160})/${new_mean_intensity}" | bc -l`
@@ -425,7 +425,7 @@ function brain_delineation()
 
     echo "percent=${lower_threshold_percent},${upper_threshold_percent},${threshold_70_percent},${threshold_160_percent}"
       
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} 160
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
   fi 
   
@@ -725,7 +725,7 @@ function brain-delineation-using-staple()
 
 
 
-echo "Starting on `hostname`..."
+echo "Starting on `hostname` on `date`..."
 echo "Arguments: $*"
 
 hippo_template_library_dir=$1
@@ -820,6 +820,9 @@ echo brain-delineation-using-staple left ${output_left_shape_corr} ${subject_ima
         ${hippo_template_library_dir} ${hippo_template_library_original} ${output_left_dir} ${mrf_weighting} ${nreg}
             
 echo rm -f ${output_brain_image} ${output_brain_image%.img}.hdr
+
+
+echo "Finished on `hostname` on `date`..."
 
 
 
