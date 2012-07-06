@@ -64,6 +64,8 @@ class QmitkNiftyRegView : public QmitkAbstractView
   // (everything that derives from QObject and wants to have signal/slots)
   Q_OBJECT
   
+  friend class RegistrationExecution;
+
   public:  
 
     static const std::string VIEW_ID;
@@ -204,6 +206,9 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
   protected:
 
+    /// Deallocate the nifti images used in the registration
+    void DeallocateImages( void );
+
     /// \brief Get the list of data nodes from the data manager
     mitk::DataStorage::SetOfObjects::ConstPointer GetNodes();
 
@@ -300,6 +305,14 @@ class QmitkNiftyRegView : public QmitkAbstractView
       DIRECT_AFFINE = 3
     } AffineRegistrationType;
 
+    /// The reference/target image
+    nifti_image *m_ReferenceImage;
+    /// The floating/source image
+    nifti_image *m_FloatingImage;
+    /// The reference/target mask image
+    nifti_image *m_ReferenceMaskImage;
+    /// The input control grid image
+    nifti_image *m_ControlPointGridImage;
 
     // ---------------------------------------------------------------------------
     // Rigid/Affine Aladin Parameters

@@ -38,9 +38,11 @@
 #include "mitkImageToNifti.h"
 #include "niftiImageToMitk.h"
 
+#include "RegistrationExecution.h"
+
 const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregview";
 
-
+#define USE_QT_TREADING
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -49,8 +51,45 @@ const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregvie
 QmitkNiftyRegView::QmitkNiftyRegView()
 {
 
+  m_ReferenceImage = 0;
+  m_FloatingImage = 0;
+  m_ReferenceMaskImage = 0;
+  m_ControlPointGridImage = 0;
+
   SetDefaultParameters();
 
+}
+
+
+// ---------------------------------------------------------------------------
+// DeallocateImages();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::DeallocateImages( void )
+{
+  if ( m_ReferenceImage ) 
+  {
+    nifti_image_free( m_ReferenceImage );
+    m_ReferenceImage = 0;
+  }
+
+  if ( m_FloatingImage ) 
+  {
+    nifti_image_free( m_FloatingImage );
+    m_FloatingImage = 0;
+  }
+    
+  if ( m_ReferenceMaskImage )
+  {
+    nifti_image_free( m_ReferenceMaskImage );
+    m_ReferenceMaskImage = 0;
+  }
+    
+  if ( m_ControlPointGridImage )
+  {
+    nifti_image_free( m_ControlPointGridImage );
+    m_ControlPointGridImage = 0;
+  }
 }
 
 
@@ -1286,9 +1325,27 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
   threader->SpawnThread( pointer, this );
 
 #else
+#ifdef USE_QT_TREADING
+
+  QEventLoop q;
+  RegistrationExecution regExecutionThread( this );
+
+  // The cancel button terminates the registration
+  connect( m_Controls.m_CancelPushButton, SIGNAL( pressed( ) ), 
+	   &regExecutionThread, SLOT( quit( ) ) );
+
+  // The event loop 'q' terminates when the registration finishes (or is terminated)
+  connect( &regExecutionThread, SIGNAL( finished( ) ), 
+	   &q, SLOT( quit( ) ) );
+
+  regExecutionThread.start();
+  q.exec();
+
+#else
 
   ExecuteRegistration( this );
 
+#endif
 #endif
 
 }
@@ -1344,9 +1401,6 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
   QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
 
   QString targetMaskName = userData->m_Controls.m_TargetMaskImageComboBox->currentText();
-
-  std::cout << "OnExecutePushButtonPressed() Source name: " << sourceName.toStdString() << std::endl
-	    << "OnExecutePushButtonPressed() Target name: " << targetName.toStdString() << std::endl;
 
   mitk::Image::Pointer mitkSourceImage = 0;
   mitk::Image::Pointer mitkTransformedImage = 0;
@@ -1428,8 +1482,14 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
 
     userData->GetDataStorage()->Add( resultNode, nodeSource );
 
+    // Deallocate data
+    userData->DeallocateImages();
     delete regAladin;
-    userData->m_ProgressBarOffset = 50.;
+
+    UpdateProgressBar( 100., userData );
+
+    if ( userData->m_FlagDoNonRigidReg ) 
+      userData->m_ProgressBarOffset = 50.;
   }
 
 
@@ -1460,7 +1520,11 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
 
     userData->GetDataStorage()->Add( resultNode, nodeSource );
 
+    // Deallocate data
+    userData->DeallocateImages();
     delete regNonRigid;
+
+    UpdateProgressBar( 100., userData );
    }
 
 
@@ -1479,8 +1543,6 @@ void UpdateProgressBar( float pcntProgress, void *param )
 {
   QmitkNiftyRegView* userData = static_cast<QmitkNiftyRegView*>( param );
   
-  std::cout << "Progress: " << pcntProgress << std::endl;
-
   userData->m_Controls.m_ProgressBar->setValue( (int) (userData->m_ProgressBarOffset 
 						       + userData->m_ProgressBarRange*pcntProgress/100.) );
 
@@ -1501,48 +1563,52 @@ reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( mi
   
   // Get nifti versions of the images
 
-  nifti_image *referenceImage = ConvertMitkImageToNifti( mitkTargetImage );
-  nifti_image *floatingImage  = ConvertMitkImageToNifti( mitkSourceImage );
+  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
+  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
 
-  nifti_set_filenames(referenceImage,"reference.nii",0,0);
-  nifti_image_write(referenceImage);
+  if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
+  m_FloatingImage  = ConvertMitkImageToNifti( mitkSourceImage );
 
-  nifti_set_filenames(floatingImage,"floating.nii",0,0);
-  nifti_image_write(floatingImage);
+#if 1
+  nifti_set_filenames( m_ReferenceImage,"aladinReference.nii",0,0 );
+  nifti_image_write( m_ReferenceImage );
+
+  nifti_set_filenames( m_FloatingImage,"aladinFloating.nii",0,0 );
+  nifti_image_write( m_FloatingImage );
+#endif
 
   // Check the dimensions of the images
 
-  reg_checkAndCorrectDimension( referenceImage );
-  reg_checkAndCorrectDimension( floatingImage );
+  reg_checkAndCorrectDimension( m_ReferenceImage );
+  reg_checkAndCorrectDimension( m_FloatingImage );
 
   // Set the reference and floating image
 
-  REG->SetInputReference( referenceImage );
-  REG->SetInputFloating( floatingImage );
+  REG->SetInputReference( m_ReferenceImage );
+  REG->SetInputFloating( m_FloatingImage );
 
   // Set the reference mask image 
-
-  nifti_image *referenceMaskImage = 0;
 
   if ( mitkTargetMaskImage ) 
   {
 
-    referenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+    if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
+    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
 
-    reg_checkAndCorrectDimension(referenceMaskImage);
+    reg_checkAndCorrectDimension(m_ReferenceMaskImage);
 
     // check the dimensions
 
-    for ( int i=1; i<=referenceImage->dim[0]; i++ ) {
+    for ( int i=1; i<=m_ReferenceImage->dim[0]; i++ ) {
     
-      if ( referenceImage->dim[i] != referenceMaskImage->dim[i] ) 
+      if ( m_ReferenceImage->dim[i] != m_ReferenceMaskImage->dim[i] ) 
       {
 	fprintf(stderr,"* ERROR The reference image and its mask do not have the same dimension\n");
 	return 0;
       }
     }
     
-    REG->SetInputMask( referenceMaskImage );
+    REG->SetInputMask( m_ReferenceMaskImage );
   }
 
   // Aladin - Initialisation
@@ -1592,31 +1658,41 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
 {
   // Get nifti versions of the images
 
-  nifti_image *referenceImage = ConvertMitkImageToNifti( mitkTargetImage );
-  nifti_image *floatingImage = ConvertMitkImageToNifti( mitkSourceImage );
+  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
+  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
+
+  if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
+  m_FloatingImage = ConvertMitkImageToNifti( mitkSourceImage );
+
+#if 1
+  nifti_set_filenames( m_ReferenceImage,"f3dReference.nii",0,0 );
+  nifti_image_write( m_ReferenceImage );
+
+  nifti_set_filenames( m_FloatingImage,"f3dFloating.nii",0,0 );
+  nifti_image_write( m_FloatingImage );
+#endif
 
   // Check the dimensions of the images
 
-  reg_checkAndCorrectDimension( referenceImage );
-  reg_checkAndCorrectDimension( floatingImage );
+  reg_checkAndCorrectDimension( m_ReferenceImage );
+  reg_checkAndCorrectDimension( m_FloatingImage );
 
   // Set the reference mask image 
-
-  nifti_image *referenceMaskImage = 0;
 
   if ( mitkTargetMaskImage )
   {
 
-    referenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+    if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
+    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
 
-    reg_checkAndCorrectDimension( referenceMaskImage );
+    reg_checkAndCorrectDimension( m_ReferenceMaskImage );
 
     // check the dimensions
 
-    for ( int i=1; i<=referenceImage->dim[0]; i++ )
+    for ( int i=1; i<=m_ReferenceImage->dim[0]; i++ )
     {
     
-      if ( referenceImage->dim[i] != referenceMaskImage->dim[i] ) 
+      if ( m_ReferenceImage->dim[i] != m_ReferenceMaskImage->dim[i] ) 
       {
 	fprintf(stderr,"* ERROR The reference image and its mask do not have the same dimension\n");
 	return 0;
@@ -1626,15 +1702,14 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
 
   // Read the input control point grid image
 
-  nifti_image *controlPointGridImage = NULL;
-  
   if ( ! m_RegF3dParameters.inputControlPointGridName.isEmpty() ) 
   {
 
-    controlPointGridImage = nifti_image_read( m_RegF3dParameters.inputControlPointGridName
+    if ( m_ControlPointGridImage ) nifti_image_free( m_ControlPointGridImage );
+    m_ControlPointGridImage = nifti_image_read( m_RegF3dParameters.inputControlPointGridName
 					      .toStdString().c_str(), true );
 
-    if ( controlPointGridImage == NULL ) 
+    if ( m_ControlPointGridImage == NULL ) 
     {
       fprintf(stderr, 
 	      "Error when reading the input control point grid image %s\n",
@@ -1642,7 +1717,7 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
       return 0;
     }
     
-    reg_checkAndCorrectDimension( controlPointGridImage );
+    reg_checkAndCorrectDimension( m_ControlPointGridImage );
   }
 
   // Read the affine transformation
@@ -1670,8 +1745,8 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
     }
     
     reg_tool_ReadAffineFile( affineTransformation,
-			     referenceImage,
-			     floatingImage,
+			     m_ReferenceImage,
+			     m_FloatingImage,
 			     strdup( m_InputAffineName.toStdString().c_str() ),
 			     m_FlagFlirtAffine );
   }
@@ -1695,10 +1770,10 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
       exit(0);
     }
 
-    if ( ( referenceImage->dim[4] == 1 && 
-	   floatingImage->dim[4]  == 1 ) || 
-	 ( referenceImage->dim[4] == 2 &&
-	   floatingImage->dim[4]  == 2 ) ) {
+    if ( ( m_ReferenceImage->dim[4] == 1 && 
+	   m_FloatingImage->dim[4]  == 1 ) || 
+	 ( m_ReferenceImage->dim[4] == 2 &&
+	   m_FloatingImage->dim[4]  == 2 ) ) {
 
       // The CUDA card is setup
 
@@ -1748,7 +1823,7 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
 	return 0;
       }
        
-      REG = new reg_f3d_gpu<PrecisionTYPE>(referenceImage->nt, floatingImage->nt);
+      REG = new reg_f3d_gpu<PrecisionTYPE>(m_ReferenceImage->nt, m_FloatingImage->nt);
 
     }
     else
@@ -1766,23 +1841,23 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
     
   {
     
-    REG = new reg_f3d<PrecisionTYPE>( referenceImage->nt, 
-				      floatingImage->nt );
+    REG = new reg_f3d<PrecisionTYPE>( m_ReferenceImage->nt, 
+				      m_FloatingImage->nt );
 
   }
 
   // Set the reg_f3d parameters
 
-  REG->SetReferenceImage( referenceImage );
-  REG->SetFloatingImage( floatingImage );
+  REG->SetReferenceImage( m_ReferenceImage );
+  REG->SetFloatingImage( m_FloatingImage );
 
   REG->PrintOutInformation();
 
   if ( mitkTargetMaskImage )
-    REG->SetReferenceMask( referenceMaskImage );
+    REG->SetReferenceMask( m_ReferenceMaskImage );
 
-  if ( controlPointGridImage != NULL )
-    REG->SetControlPointGridImage( controlPointGridImage );
+  if ( m_ControlPointGridImage != NULL )
+    REG->SetControlPointGridImage( m_ControlPointGridImage );
 
   if ( affineTransformation != NULL )
     REG->SetAffineTransformation( affineTransformation );
