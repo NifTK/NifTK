@@ -197,7 +197,7 @@ void CompareIntensityValues(
 
   for(iter1.GoToBegin(), iter2.GoToBegin(); !iter1.IsAtEnd() && !iter2.IsAtEnd(); ++iter1, ++iter2)
   {
-    if (fabs(iter1.Get() - iter2.Get()) > tolerance)
+    if (fabs((double)iter1.Get() - (double)iter2.Get()) > tolerance)
     {
       IndexType index1 = iter1.GetIndex();
       IndexType index2 = iter2.GetIndex();
@@ -229,7 +229,7 @@ void CheckMin(
     }
   }
 
-  if (fabs(expectedMin - min) > tolerance)
+  if (fabs(expectedMin - (double)min) > tolerance)
   {
     std::ostringstream oss;
     oss << "CheckMin failed, image 1 has min of " << min << ", expectedMin was " <<  expectedMin << ", tolerance was " << tolerance << std::endl;
@@ -256,7 +256,7 @@ void CheckMax(
     }
   }
 
-  if (fabs(expectedMax - max) > tolerance)
+  if (fabs(expectedMax - (double)max) > tolerance)
   {
     std::ostringstream oss;
     oss << "CheckMax failed, image 1 has max of " << max << ", expectedMax was " <<  expectedMax << ", tolerance was " << tolerance << std::endl;
