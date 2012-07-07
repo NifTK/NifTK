@@ -268,7 +268,21 @@ void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
 
     if (image.IsNotNull() && mask.IsNull())
     {
-      AccessByItk(image, UpdateTable);
+      int dimensions = image->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessFixedDimensionByItk(image, UpdateTable, 2);
+        break;
+      case 3:
+        AccessFixedDimensionByItk(image, UpdateTable, 3);
+        break;
+      case 4:
+        AccessFixedDimensionByItk(image, UpdateTable, 4);
+        break;
+      default:
+        MITK_ERROR << "During ImageStatisticsView::UpdateTable, unsupported number of dimensions:" << dimensions << std::endl;
+      }
     }
     else if (image.IsNotNull() && mask.IsNotNull())
     {
@@ -285,7 +299,7 @@ void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
         AccessTwoImagesFixedDimensionByItk(image, mask, UpdateTableWithMask, 4);
         break;
       default:
-        MITK_ERROR << "During ImageStatisticsView::Update, unsupported number of dimensions:" << dimensions << std::endl;
+        MITK_ERROR << "During ImageStatisticsView::UpdateTableWithMask, unsupported number of dimensions:" << dimensions << std::endl;
       }
     }
   }
