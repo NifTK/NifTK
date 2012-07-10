@@ -49,6 +49,8 @@ use_kn="no"
 use_sym="no"
 min_window=-1
 window_width_sd_factors="1 0.5"
+brain_dof=6
+local_dof=6
 
 function Usage()
 {
@@ -160,6 +162,12 @@ do
         shift 
         window_width_sd_factors=$1
       ;; 
+    -dof) 
+        shift
+        brain_dof=$1
+        shift
+        local_dof=$1
+      ;;
     -*)
       Usage
       exitprog "Error: option $1 not recognised" 1
@@ -313,7 +321,7 @@ then
       ${baseline_local_region} ${repeat_local_region} \
       ${output_dir} ${output_dir} ${output_dir} ${output_dir} \
       ${output_study_id} ${output_series_number} ${output_echo_number} 0.45 0.65 \
-      no ${output_study_id}_xor.roi ${reg_dil} 1 1 ${prealign_brain} 6 6 ${cost_func}"
+      no ${output_study_id}_xor.roi ${reg_dil} 1 1 ${prealign_brain} ${brain_dof} ${local_dof} ${cost_func}"
 else
   echo "Just running BSI"    
 fi 
@@ -332,12 +340,19 @@ then
   execute_command "${MAKEMASK} ${baseline_image}.img ${baseline_region} ${baseline_brain_region_img}"
   
   registered_repeat=${output_dir}/${output_study_id}-${output_series_number}-${output_echo_number}.img
-  execute_command "repeat_brain_region_basename=`basename ${repeat_region}`"
-  execute_command "$COPY ${repeat_region} ${temp_dir}/${repeat_brain_region_basename}"
-  registered_repeat_region=${temp_dir}/registered_repeat_region
   registered_repeat_region_img=${temp_dir}/registered_repeat_region.img
-  air_file="${output_dir}/100001-${output_study_id}.air"
-  execute_command "regslice ${air_file} ${temp_dir}/${repeat_brain_region_basename} ${registered_repeat_region} ${output_series_number} -i 2"
+  if [ ! -f "${output_dir}/${output_study_id}_repeat_brain_region_registered" ]
+  then 
+    echo "Reslicing registered repeat brain region"
+    execute_command "repeat_brain_region_basename=`basename ${repeat_region}`"
+    execute_command "$COPY ${repeat_region} ${temp_dir}/${repeat_brain_region_basename}"
+    registered_repeat_region=${temp_dir}/registered_repeat_region
+    air_file="${output_dir}/100001-${output_study_id}.air"
+    execute_command "regslice ${air_file} ${temp_dir}/${repeat_brain_region_basename} ${registered_repeat_region} ${output_series_number} -i 2"
+  else
+    echo "Using pre-sliced registered repeat brain region"
+    registered_repeat_region="${output_dir}/${output_study_id}_repeat_brain_region_registered"
+  fi 
   execute_command "${MAKEMASK} ${registered_repeat} ${registered_repeat_region} ${registered_repeat_region_img}"
   
   baseline_local_region_img=${temp_dir}/baseline_local_region.img
@@ -401,7 +416,7 @@ then
         ${bsi_repeat_image%.img}.hdr ${registered_repeat_region_img%.img}.hdr \
         ${bsi_baseline_image%.img}.hdr ${baseline_local_region_img%.img}.hdr \
         ${bsi_repeat_image%.img}.hdr ${registered_repeat_local_region_img%.img}.hdr \
-        1 1 3 0.45 0.65 ${baseline_image_seg} ${repeat_image_seg} ${repeat_image_normalised} > ${output_classic_qnt_file}" 
+        1 1 3 -1 -1 ${baseline_image_seg} ${repeat_image_seg} ${repeat_image_normalised} > ${output_classic_qnt_file}" 
         
     if [ ${repeat_local_region} != "dummy" ]
     then
