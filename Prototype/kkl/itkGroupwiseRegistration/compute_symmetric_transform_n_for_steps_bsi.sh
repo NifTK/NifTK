@@ -173,7 +173,31 @@ do
     echo "Not found"
     continue
   fi 
-
+  
+  if [ "${region}" == "49" ]
+  then 
+    continue
+  fi 
+  
+  # clean up wrong results by pairs. 
+  is_odd=`echo "${region}/2" | bc -l`
+  if [ "${is_odd}" == "0" ] 
+  then 
+    old_qnt_size=`stat -c%s ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${region}.qnt`
+    (( even_region=region+1 ))
+    even_qnt_size=`stat -c%s ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${even_region}.qnt`
+    
+    if [ ${old_qnt_size} -l 500 ] || [ ${even_qnt_size} -l 500 ]  
+    then 
+      rm ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${region}.qnt
+      rm ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${even_region}.qnt
+    fi 
+  fi 
+  
+  if [ -f "${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${region}.qnt" ] 
+  then 
+    continue
+  fi 
 
   # Transform the images to a middle space. 
   for ((i=1; i<=${number_of_images}; i++))
