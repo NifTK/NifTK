@@ -209,16 +209,6 @@ class numericalBreastPhantom:
         
         mRect[cond] = 1.0
         
-        # now prepare the mask for the chest...
-        #mChest = np.zeros_like( z )
-        #mChest[ np.nonzero( np.sqrt( ( (x+originXY)**2. + (y + rad / np.sqrt(2))**2.)  )  > rad ) ] = 1.0
-        
-        
-        
-        #for iZ in range( padSize ):
-        #    d = np.zeros_like( z )
-        #    d = self._chestWallIntensity * mRect
-        #    data[:,:,iZ] = d
             
         for iZ in range( padSize, self.edgeLength-1 ) :
             d = np.zeros_like( z )
@@ -228,9 +218,7 @@ class numericalBreastPhantom:
             data[:,:,iZ] = d
             
         # mask the simulated chest
-        #for iY in range( self.edgeLength ):
-        #    data[:,iY,:] = data[:,iY,:] * mChest
-            
+
         #
         # Assumption of the size of the numerical model
         #   the edgeLength (diameter of the retromammary surface) is about 15cm
@@ -339,7 +327,7 @@ class numericalBreastPhantom:
         else :
             volMeshParams  = ' -pq1.42a' + str( self.tetgenVolume ) + 'K ' + self.outSurfMeshImproSTL
             
-        cmdEx.runCommand(volMeshCommand, volMeshParams )
+        cmdEx.runCommand( volMeshCommand, volMeshParams )
         os.chdir( curDir )
 
 
@@ -363,54 +351,6 @@ class numericalBreastPhantom:
         #
         self.materialGen = None
     
-    
-
-    
-#    def generateXMLmodelFatOnly( self, gravityVector = [0., 0., -1. ], gravityMagnitude = 20, 
-#                                 fileIdentifier=None, extMeshNodes=None ):
-#        ''' @summary: Generates the xml model
-#            @param gravityVector: Direction of gravity
-#            @param gravityMagnitude: Assumed gravitational acceleration
-#            @param extMeshNodes: np-Array with the mesh nodes. Must be valid for the mesh generated 
-#                                 within this class. Assumed to be given in mm (millimetre).
-#            @param fileIdentifier: Extension which is used to specify the model file. 
-#            @return: the xmlModelGenerator Instance
-#            @deprecated: Use the more general method generateXMLmodel instead.
-#        '''
-#        
-#        if not os.path.exists(self.outVolMesh) :
-#            print('Error: Surface mesh does not exists')
-#            return
-#        
-#        
-#        if fileIdentifier != None :
-#            self.outXmlModelFat = self._outXmlModelFat.split('.xm')[0] + str( fileIdentifier ) + '.xml'
-#        else :
-#            self.outXmlModelFat = self._outXmlModelFat
-#        
-#        self.mesh = vmh.vtkVolMeshHandler( self.outVolMesh )
-#               
-#        if (extMeshNodes == None) :
-#            fatGen = xmlGen.xmlModelGenrator( self.mesh.volMeshPoints/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
-#        else :
-#            fatGen = xmlGen.xmlModelGenrator( extMeshNodes/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
-#        
-#        fatGen.setFixConstraint( self.idxFixChest, 0 )
-#        fatGen.setFixConstraint( self.idxFixChest, 1 )
-#        fatGen.setFixConstraint( self.idxFixChest, 2 )
-#        
-#        fatGen.setMaterialElementSet( 'NH', 'FAT', [100, 50000], fatGen.allElemenstArray )
-#        
-#        fatGen.setGravityConstraint( gravityVector, gravityMagnitude, fatGen.allNodesArray, 'RAMP' )
-#        fatGen.setOutput( 5000, 'U' )
-#        fatGen.setSystemParameters( timeStep           = self.timeStep, 
-#                                    totalTime          = self.totalTime, 
-#                                    dampingCoefficient = self.damping, 
-#                                    hgKappa = 0.05, density = 1000 )    
-#        fatGen.writeXML( self.outXmlModelFat )
-#        
-#        return fatGen
-
 
 
 
@@ -451,9 +391,9 @@ class numericalBreastPhantom:
         self.mesh = vmh.vtkVolMeshHandler( self.outVolMesh )
                
         if (extMeshNodes == None) :
-            gen = xmlGen.xmlModelGenrator( self.mesh.volMeshPoints/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
+            gen = xmlGen.xmlModelGenrator( self.mesh.volMeshPoints/1000., self.mesh.volMeshCells[ : , 1:5], 'T4')
         else :
-            gen = xmlGen.xmlModelGenrator( extMeshNodes/1000., self.mesh.volMeshCells[ : , 1:5], 'T4ANP')
+            gen = xmlGen.xmlModelGenrator( extMeshNodes/1000., self.mesh.volMeshCells[ : , 1:5], 'T4')
         
         gen.setFixConstraint( self.idxFixChest, 0 )
         gen.setFixConstraint( self.idxFixChest, 1 )

@@ -13,7 +13,7 @@ import vtk
 
 class xmlModelGenrator :
 
-    def __init__ ( self, nodes, elements, elementType = 'T4ANP' ):
+    def __init__ ( self, nodes, elements, elementType = 'T4' ):
         ''' @param nodes: Expected to be a 2D numpy array of type 'float' representing the coordinates. 
             @param elements: Expected to be a 2D numpy array of type 'int'.
         '''

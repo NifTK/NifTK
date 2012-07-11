@@ -36,7 +36,7 @@ xmlModelNameDispT4ANP  = 'box_T4ANP_disp.xml'
 xmlModelNameForceT4ANP = 'box_T4ANP_force.xml'
 
 density        = 1000.0
-dampingCoeff   = 5.
+dampingCoeff   = 25.
 totalTime      = 5.
 timeStep       = 1.e-5 
 materialType   = 'NH'
@@ -60,13 +60,12 @@ forceMagX = 0.
 forceMagY = 2e-4
 forceMagZ = 2e-4
 
-numOutput = 200
+numOutput = 200.
 
 useGPU = True
 #
 ######################################
-
-outputFreq = int( totalTime / timeStep / numOutput )
+outputFreq = int( np.ceil( totalTime / timeStep / numOutput ) )
 
 
 ######################################

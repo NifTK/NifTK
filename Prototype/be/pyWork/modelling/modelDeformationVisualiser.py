@@ -100,13 +100,19 @@ class modelDeformationVisualiser :
     
 
     
-    def animateDeformation( self ) :
+    def animateDeformation( self, scaleFactor = 1., stepSize = 1 ) :
         
-        self.plot = plotWrap.plotArrayAs3DPoints( self.mdlNodes * 1000 )
+        self.plot = plotWrap.plotArrayAs3DPoints( self.mdlNodes * 1000 * scaleFactor )
         ms = self.plot.mlab_source
         
-        for i in range( len( self.deformedNodes ) ) :
-            ms.reset( points = self.deformedNodes[i] * 1000 )
+        iMax = len( self.deformedNodes )
+        
+        for i in range( 0, iMax, stepSize ) :
+            
+            if np.mod( i, 10 ) == 0:
+                print ('%i of %i ' %( i, iMax ))
+
+            ms.reset( points = self.deformedNodes[i] * 1000 * scaleFactor )
         
         
         
