@@ -346,7 +346,7 @@ then
     echo "Reslicing registered repeat brain region"
     execute_command "repeat_brain_region_basename=`basename ${repeat_region}`"
     execute_command "$COPY ${repeat_region} ${temp_dir}/${repeat_brain_region_basename}"
-    registered_repeat_region=${temp_dir}/registered_repeat_region
+    registered_repeat_region=${output_dir}/${output_study_id}_registered_repeat_brain_region
     air_file="${output_dir}/100001-${output_study_id}.air"
     execute_command "regslice ${air_file} ${temp_dir}/${repeat_brain_region_basename} ${registered_repeat_region} ${output_series_number} -i 2"
   else
@@ -363,7 +363,7 @@ then
   if [ ${repeat_local_region} != "dummy" ]
   then 
     registered_repeat_local_region_img=${temp_dir}/repeat_local_region.img
-    registered_repeat_local_region=${temp_dir}/registered_repeat_local_region
+    registered_repeat_local_region=${output_dir}/${output_study_id}_registered_repeat_local_region
     execute_command "regslice ${air_file} ${repeat_local_region} ${registered_repeat_local_region} ${output_series_number} -i 2"
     execute_command "${MAKEMASK} ${registered_repeat} ${registered_repeat_local_region} ${registered_repeat_local_region_img}"
   fi 
