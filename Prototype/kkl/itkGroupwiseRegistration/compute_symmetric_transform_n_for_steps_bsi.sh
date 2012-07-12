@@ -175,7 +175,7 @@ do
   fi 
   
   # clean up wrong results by pairs. 
-  if [ ${region} \< 17 ] || [ ${region} == 45 ] || [ ${region} == 47 ]
+  if [ ${region} -lt  17 ] || [ ${region} == 45 ] || [ ${region} == 47 ]
   then 
     is_odd=`echo "${region} % 2" | bc`
     if [ "${is_odd}" == "1" ] 
@@ -184,7 +184,7 @@ do
       (( even_region=region+1 ))
       even_qnt_size=`stat -c%s ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${even_region}.qnt`
       
-      if [ ${old_qnt_size} \< 500 ] || [ ${even_qnt_size} \< 500 ]  
+      if [ ${old_qnt_size} -lt 500 ] || [ ${even_qnt_size} -lt 500 ]  
       then 
         rm ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${region}.qnt
         rm ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${even_region}.qnt
@@ -196,7 +196,7 @@ do
     (( even_region=region+1 ))
     even_qnt_size=`stat -c%s ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${even_region}.qnt`
     
-    if [ ${old_qnt_size} \< 500 ] || [ ${even_qnt_size} \< 500 ]  
+    if [ ${old_qnt_size} -lt 500 ] || [ ${even_qnt_size} -lt 500 ]  
     then 
       rm ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${region}.qnt
       rm ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${even_region}.qnt
@@ -204,7 +204,7 @@ do
   elif [ "${region}" == "49" ]
   then 
     old_qnt_size=`stat -c%s ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${region}.qnt`
-    if [ ${old_qnt_size} \< 500 ]
+    if [ ${old_qnt_size} -lt 500 ]
     then 
       rm ${output_dir}/${output_prefix}_1_dbc-${output_prefix}_2_dbc_local_global_intensity_window_region_${region}.qnt
     fi 
