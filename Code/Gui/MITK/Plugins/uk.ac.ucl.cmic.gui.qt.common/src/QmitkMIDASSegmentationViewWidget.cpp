@@ -90,6 +90,12 @@ void QmitkMIDASSegmentationViewWidget::Activated()
     onFocusChangedCommand->SetCallbackFunction( this, &QmitkMIDASSegmentationViewWidget::OnFocusChanged );
 
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+
+    // Force this because:
+    // If user launches Drag and Drop Display, loads image, drops into window, and THEN launches this widget,
+    // you don't get the first OnFocusChanged as the window has already been clicked on, and then the
+    // geometry is initialised incorrectly.
+    this->OnFocusChanged();
   }
 }
 
