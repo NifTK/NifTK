@@ -38,6 +38,7 @@
 
 class QGridLayout;
 class QStackedLayout;
+class DisplayGeometryModificationCommand;
 
 /**
  * \class QmitkMIDASStdMultiWidget
@@ -259,6 +260,11 @@ private:
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *window, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
+  void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+  void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+
+  void OnScaleFactorChanged(QmitkRenderWindow *window);
+
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
   unsigned int          m_AxialSliceTag;
@@ -274,6 +280,11 @@ private:
   vtkCamera*            m_Cameras[4];
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
+
+  std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
+  bool m_BlockDisplayGeometryEvents;
+
+  friend class DisplayGeometryModificationCommand;
 };
 
 #endif

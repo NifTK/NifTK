@@ -35,6 +35,56 @@
 #include "itkMatrix.h"
 #include "itkSpatialOrientationAdapter.h"
 
+/**
+ * This class is to notify the SingleViewWidget about the display geometry changes of a render window.
+ */
+class DisplayGeometryModificationCommand : public itk::Command
+{
+public:
+  mitkNewMacro3Param(DisplayGeometryModificationCommand, QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, mitk::DisplayGeometry*);
+
+  DisplayGeometryModificationCommand(QmitkMIDASStdMultiWidget* stdMultiWidget, QmitkRenderWindow* renderWindow, mitk::DisplayGeometry* displayGeometry)
+  : itk::Command()
+  , m_StdMultiWidget(stdMultiWidget)
+  , m_RenderWindow(renderWindow)
+  , m_DisplayGeometry(displayGeometry)
+  , m_LastScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
+  , m_LastOriginInMM(displayGeometry->GetOriginInMM())
+  {
+  }
+
+  void Execute(itk::Object *caller, const itk::EventObject & event)
+  {
+    Execute( (const itk::Object *)caller, event);
+  }
+
+  void Execute(const itk::Object * object, const itk::EventObject & event)
+  {
+    double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
+    // Here we could distinguish the different kinds of geometry changes.
+    if (scaleFactor != m_LastScaleFactor)
+    {
+      m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow);
+      m_LastScaleFactor = scaleFactor;
+    }
+
+    // Not sure if we need this:
+//    mitk::Vector2D originInMM = m_DisplayGeometry->GetOriginInMM();
+//    if (originInMM != m_LastOriginInMM)
+//    {
+//      m_SingleViewWidget->OnOriginChanged(m_DisplayGeometry);
+//      m_LastOriginInMM = originInMM;
+//    }
+  }
+
+private:
+  QmitkMIDASStdMultiWidget* const m_StdMultiWidget;
+  QmitkRenderWindow* const m_RenderWindow;
+  mitk::DisplayGeometry* const m_DisplayGeometry;
+  double m_LastScaleFactor;
+  mitk::Vector2D m_LastOriginInMM;
+};
+
 QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     QWidget* parent,
     Qt::WindowFlags f,
@@ -54,6 +104,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_View(MIDAS_VIEW_ORTHO)
 , m_MagnificationFactor(0)
 , m_Geometry(NULL)
+, m_BlockDisplayGeometryEvents(false)
 {
   if (dataStorage != NULL)
   {
@@ -132,6 +183,14 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   onCoronalSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASStdMultiWidget::OnCoronalSliceChanged );
   m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
 
+  // Listen to the display geometry changes so we raise an event when
+  // the geometry changes through the display interactor (e.g. zooming with the mouse).
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetAllWindows();
+  for (int i = 0; i < 3; ++i)
+  {
+    AddDisplayGeometryModificationObserver(renderWindows[i]);
+  }
+
 }
 
 QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
@@ -156,6 +215,46 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
       m_Cameras[i]->Delete();
     }
   }
+
+  // Stop listening to the display geometry changes so we raise an event when
+  // the geometry changes through the display interactor (e.g. zooming with the mouse).
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetAllWindows();
+  for (int i = 0; i < 3; ++i)
+  {
+    RemoveDisplayGeometryModificationObserver(renderWindows[i]);
+  }
+
+}
+
+void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
+{
+  mitk::VtkPropRenderer* vtkPropRenderer = renderWindow->GetRenderer();
+  assert(vtkPropRenderer);
+
+  mitk::BaseRenderer* baseRenderer = dynamic_cast<mitk::BaseRenderer*>(vtkPropRenderer);
+  assert(baseRenderer);
+
+  mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+  assert(displayGeometry);
+
+  DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, renderWindow, displayGeometry);
+  unsigned long observerTag = displayGeometry->AddObserver(itk::ModifiedEvent(), command);
+  m_DisplayGeometryModificationObservers[renderWindow] = observerTag;
+}
+
+void QmitkMIDASStdMultiWidget::RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
+{
+  mitk::VtkPropRenderer* vtkPropRenderer = renderWindow->GetRenderer();
+  assert(vtkPropRenderer);
+
+  mitk::BaseRenderer* baseRenderer = dynamic_cast<mitk::BaseRenderer*>(vtkPropRenderer);
+  assert(baseRenderer);
+
+  mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+  assert(displayGeometry);
+
+  displayGeometry->RemoveObserver(m_DisplayGeometryModificationObservers[renderWindow]);
+  m_DisplayGeometryModificationObservers.erase(renderWindow);
 }
 
 void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
@@ -1147,6 +1246,20 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
     }
   }
   return result;
+}
+
+void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWindow)
+{
+  if (!m_BlockDisplayGeometryEvents)
+  {
+    double magnificationFactor = FitMagnificationFactor();
+    if (magnificationFactor != m_MagnificationFactor)
+    {
+      MITK_INFO << "New magnification factor: " << magnificationFactor;
+//      emit MagnificationFactorChanged(this, renderWindow);
+    }
+//    double magnificationFactor = CalculateMagnificationFactor(renderWindow);
+  }
 }
 
 void QmitkMIDASStdMultiWidget::OnPositionChanged(MIDASOrientation orientation)
