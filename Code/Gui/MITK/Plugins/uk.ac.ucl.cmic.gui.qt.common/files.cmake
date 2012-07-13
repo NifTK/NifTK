@@ -4,7 +4,7 @@ SET(SRC_CPP_FILES
   QmitkMIDASBaseView.cpp
   QmitkMIDASBaseFunctionality.cpp  
   QmitkMIDASBaseSegmentationFunctionality.cpp
-  QmitkMIDASSegmentationViewWidget.cpp
+#  QmitkMIDASSegmentationViewWidget.cpp
 )
 
 SET(INTERNAL_CPP_FILES
@@ -14,7 +14,7 @@ SET(INTERNAL_CPP_FILES
 )
 
 SET(UI_FILES
-  src/QmitkMIDASSegmentationViewWidget.ui
+#  src/QmitkMIDASSegmentationViewWidget.ui
 )
 
 SET(MOC_H_FILES
@@ -24,7 +24,7 @@ SET(MOC_H_FILES
   src/QmitkMIDASBaseView.h
   src/QmitkMIDASBaseFunctionality.h  
   src/QmitkMIDASBaseSegmentationFunctionality.h
-  src/QmitkMIDASSegmentationViewWidget.h
+#  src/QmitkMIDASSegmentationViewWidget.h
 )
 
 SET(CACHED_RESOURCE_FILES
