@@ -83,8 +83,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
 , m_Layout(NULL)
-, m_ContainerForSelectorWidget(NULL)
-, m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_SliceNavigationController(NULL)
 , m_SliceNavigationControllerObserverTag(0)
@@ -151,24 +149,29 @@ std::string MIDASGeneralSegmentorView::GetViewID() const
 
 void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
-  m_Parent = parent;
+  this->SetParent(parent);
 
   if (!m_GeneralControls)
   {
     m_Layout = new QGridLayout(parent);
+    m_Layout->setContentsMargins(0,0,0,0);
+    m_Layout->setSpacing(0);
+    m_Layout->setRowStretch(0, 0);
+    m_Layout->setRowStretch(1, 10);
+    m_Layout->setRowStretch(2, 0);
+    m_Layout->setRowStretch(3, 0);
 
-    m_ContainerForSelectorWidget = new QWidget(parent);
-    m_ContainerForToolWidget = new QWidget(parent);
     m_ContainerForControlsWidget = new QWidget(parent);
 
     m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget();
     m_GeneralControls->setupUi(m_ContainerForControlsWidget);
 
-    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(m_ContainerForSelectorWidget, m_ContainerForToolWidget);
+    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
-    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget,     1, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
+    m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
+    m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget,             2, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget,         3, 0);
 
     m_GeneralControls->SetEnableThresholdingWidgets(false);
     m_GeneralControls->SetEnableThresholdingCheckbox(false);
@@ -262,20 +265,20 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
   {
     mitk::DataNode::Pointer segmentationNode = nodes[0];
 
-    if (this->m_PreviouslyFocussed2DRenderer != NULL)
+    if (this->GetPreviouslyFocussedRenderer() != NULL)
     {
-      mitk::PropertyList* list = segmentationNode->GetPropertyList(m_PreviouslyFocussed2DRenderer);
+      mitk::PropertyList* list = segmentationNode->GetPropertyList(this->GetPreviouslyFocussedRenderer());
       if (list != NULL)
       {
         list->DeleteProperty("visible");
       }
     }
 
-    if (this->m_Focussed2DRenderer != NULL)
+    if (this->GetCurrentlyFocussedRenderer() != NULL)
     {
       if (overrideToGlobal)
       {
-        mitk::PropertyList* list = segmentationNode->GetPropertyList(m_Focussed2DRenderer);
+        mitk::PropertyList* list = segmentationNode->GetPropertyList(GetCurrentlyFocussedRenderer());
         if (list != NULL)
         {
           list->DeleteProperty("visible");
@@ -283,7 +286,7 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
       }
       else
       {
-        segmentationNode->SetVisibility(false, this->m_Focussed2DRenderer);
+        segmentationNode->SetVisibility(false, this->GetCurrentlyFocussedRenderer());
       }
     }
   }
@@ -291,10 +294,10 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
 
 void MIDASGeneralSegmentorView::OnFocusChanged()
 {
-  mitk::BaseRenderer* currentFocussedRendered = m_Focussed2DRenderer;
-  QmitkMIDASBaseFunctionality::OnFocusChanged();
+  mitk::BaseRenderer* currentFocussedRendered = this->GetCurrentlyFocussedRenderer();
+  QmitkBaseView::OnFocusChanged();
 
-  if (m_Focussed2DRenderer != NULL && m_Focussed2DRenderer != currentFocussedRendered)
+  if (this->GetCurrentlyFocussedRenderer() != NULL && this->GetCurrentlyFocussedRenderer() != currentFocussedRendered)
   {
     // For every new window we get the new windows slice navigation controller.
     if (m_SliceNavigationController.IsNotNull() && m_SliceNavigationController->GetCommand(m_SliceNavigationControllerObserverTag) != NULL)
@@ -1240,7 +1243,7 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
       message = "All slices anterior to present will be cleared";
     }
 
-    int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+    int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                      tr("%1.\n"
                                                         "Are you sure?").arg(message),
                                                      QMessageBox::Yes | QMessageBox::No);
@@ -1364,7 +1367,7 @@ void MIDASGeneralSegmentorView::OnWipeButtonPressed()
 void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 {
 
-  int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                    tr("All slices anterior to present will be cleared.\n"
                                                       "Are you sure?"),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -1379,7 +1382,7 @@ void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 
 void MIDASGeneralSegmentorView::OnWipeMinusButtonPressed()
 {
-  int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                    tr("All slices posterior to present will be cleared.\n"
                                                       "Are you sure?"),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -1479,7 +1482,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
   bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds();
   if (hasUnEnclosedPoints)
   {
-    int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+    int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                      tr("There are unenclosed points - slice will be wiped\n"
                                                         "Are you sure?"),
                                                      QMessageBox::Yes | QMessageBox::No);
@@ -1851,7 +1854,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
             {
               if (!sliceIsEmpty)
               {
-                int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+                int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                                  tr("The new slice is not empty - retain marks will overwrite slice.\n"
                                                                     "Are you sure?"),
                                                                  QMessageBox::Yes | QMessageBox::No);

@@ -65,6 +65,7 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 , m_SelectedImage(NULL)
 , m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
+, m_SegmentationView(NULL)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
 {
@@ -82,6 +83,14 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
   {
     delete m_ToolSelector;
   }
+
+  m_SegmentationView->Deactivated();
+
+  if (m_SegmentationView != NULL)
+  {
+    delete m_SegmentationView;
+  }
+
 }
 
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality(
@@ -91,13 +100,15 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
   throw std::runtime_error("Copy constructor not implemented");
 }
 
-void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *parentForSelectorWidget, QWidget *parentForToolWidget)
+void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *parent)
 {
   if (!m_ImageAndSegmentationSelector)
   {
+
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
-    m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(parentForSelectorWidget);
+    m_ContainerForSelectorWidget = new QWidget(parent);
+    m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(m_ContainerForSelectorWidget);
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
     m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
@@ -107,12 +118,23 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
 
     // Set up the Tool Selector.
     // Subclasses add it to their layouts, at the appropriate point.
-    m_ToolSelector = new QmitkMIDASToolSelectorWidget(parentForToolWidget);
+    m_ContainerForToolWidget = new QWidget(parent);
+    m_ToolSelector = new QmitkMIDASToolSelectorWidget(m_ContainerForToolWidget);
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
     m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea( m_ToolSelector->m_ManualToolGUIContainer );
     m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode( QmitkToolSelectionBox::EnabledWithReferenceAndWorkingData );
 
+    // Set up the Segmentation View
+    // Subclasses add it to their layouts, at the appropriate point.
+    m_ContainerForSegmentationViewWidget = new QWidget(parent);
+    m_SegmentationView = new QmitkMIDASSegmentationViewWidget(m_ContainerForSegmentationViewWidget);
+    m_SegmentationView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_SegmentationView->SetDataStorage(this->GetDataStorage());
+    m_SegmentationView->SetContainingFunctionality(this);
+    m_SegmentationView->Activated();
+
+    // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
 
     // Connect the ToolManager to DataStorage straight away.
@@ -120,6 +142,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     assert ( toolManager );
     toolManager->SetDataStorage( *(this->GetDataStorage()) );
 
+    // Set up the ctkEventAdmin stuff.
     m_Context = mitk::CommonActivator::GetPluginContext();
     m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
     m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
@@ -189,7 +212,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::P
 void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   // If the plugin is not visible, then we have nothing to do.
-  if (!m_Parent || !m_Parent->isVisible()) return;
+  if (!this->GetParent() || !this->GetParent()->isVisible()) return;
 
   // By default, assume we are not going to enable the controls.
   bool valid = false;
@@ -389,7 +412,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentation
     {
       if (referenceImage->GetDimension() > 2)
       {
-        QmitkMIDASNewSegmentationDialog* dialog = new QmitkMIDASNewSegmentationDialog(defaultColor, m_Parent ); // needs a QWidget as parent, "this" is not QWidget
+        QmitkMIDASNewSegmentationDialog* dialog = new QmitkMIDASNewSegmentationDialog(defaultColor, this->GetParent() ); // needs a QWidget as parent, "this" is not QWidget
         int dialogReturnValue = dialog->exec();
         if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
 
@@ -697,3 +720,15 @@ void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
   }
 }
 
+QmitkRenderWindow* QmitkMIDASBaseSegmentationFunctionality::GetRenderWindow(QString id)
+{
+  QmitkRenderWindow* window = NULL;
+
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  if (renderWindowPart != NULL)
+  {
+    window = renderWindowPart->GetRenderWindow(id);
+  }
+
+  return window;
+}

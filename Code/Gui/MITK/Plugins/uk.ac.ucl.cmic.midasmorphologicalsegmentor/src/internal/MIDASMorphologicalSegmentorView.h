@@ -230,12 +230,6 @@ private:
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
 
-  /// \brief Container for Selector Widget (see base class).
-  QWidget *m_ContainerForSelectorWidget;
-
-  /// \brief Container for Tool Widget (see base class).
-  QWidget *m_ContainerForToolWidget;
-
   /// \brief Container for the Morphological Controls Widgets (see this class).
   QWidget *m_ContainerForControlsWidget;
 

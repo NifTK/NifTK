@@ -29,7 +29,7 @@
 #include <QWidget>
 #include <QColor>
 #include "mitkDataStorage.h"
-#include "mitkTimeSlicedGeometry.h"
+#include "mitkGeometry3D.h"
 #include "mitkRenderingManager.h"
 #include "QmitkRenderWindow.h"
 #include "QmitkMIDASViewEnums.h"
@@ -80,12 +80,16 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASSingleViewWidget : public QWidget {
 
 public:
 
-  QmitkMIDASSingleViewWidget(QWidget *parent,
-                             QString windowName,
+  friend class QmitkMIDASSegmentationViewWidget;
+
+  QmitkMIDASSingleViewWidget(QWidget *parent);
+
+  QmitkMIDASSingleViewWidget(QString windowName,
                              int minimumMagnification,
                              int maximumMagnification,
-                             mitk::DataStorage* dataStorage,
-                             mitk::RenderingManager* renderingManager
+                             QWidget *parent = 0,
+                             mitk::RenderingManager* renderingManager = 0,
+                             mitk::DataStorage* dataStorage = 0
                              );
   ~QmitkMIDASSingleViewWidget();
 
@@ -199,13 +203,13 @@ public:
   void RequestUpdate();
 
   /// \brief Sets the world geometry that we are sampling.
-  void SetGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
+  void SetGeometry(mitk::Geometry3D::Pointer geometry);
 
   /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
-  mitk::TimeSlicedGeometry::Pointer GetGeometry();
+  mitk::Geometry3D::Pointer GetGeometry();
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
-  void SetBoundGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
+  void SetBoundGeometry(mitk::Geometry3D::Pointer geometry);
 
   /// \brief If we tell the widget to be in bound mode, it uses the bound geometries.
   void SetBoundGeometryActive(bool isBound);
@@ -228,8 +232,11 @@ public:
   /// \brief Get the view ID.
   MIDASView GetView() const;
 
-  /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho.
+  /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
   void SetView(MIDASView view, bool fitToDisplay);
+
+  /// \brief In contrast to SetView this method does as little as possible, to be analagous to just switching the orientation.
+  void SwitchView(MIDASView view);
 
   /// \brief Set the current magnification factor.
   void SetMagnificationFactor(int magnificationFactor);
@@ -273,6 +280,18 @@ protected slots:
 
 private:
 
+
+  /// \brief Provided here to provide access to the QmitkStdMultiWidget::InitializeStandardViews for friend classes only.
+  void InitializeStandardViews(const mitk::Geometry3D * geometry );
+
+  /// \brief This method is called from both constructors to do the construction.
+  void Initialize(QString windowName,
+                  int minimumMagnification,
+                  int maximumMagnification,
+                  mitk::RenderingManager* renderingManager = 0,
+                  mitk::DataStorage* dataStorage = 0
+                 );
+
   void SetActiveGeometry();
   unsigned int GetBoundUnboundOffset() const;
   unsigned int GetBoundUnboundPreviousArrayOffset() const;
@@ -287,9 +306,9 @@ private:
   QmitkMIDASStdMultiWidget                         *m_MultiWidget;
 
   bool                                              m_IsBound;
-  mitk::TimeSlicedGeometry::Pointer                 m_UnBoundTimeSlicedGeometry;    // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::TimeSlicedGeometry::Pointer                 m_BoundTimeSlicedGeometry;      // Passed in, when we do "bind", so shared amongst multiple windows.
-  mitk::TimeSlicedGeometry::Pointer                 m_ActiveTimeSlicedGeometry;     // The one we actually use, which points to either of the two above.
+  mitk::Geometry3D::Pointer                         m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::Geometry3D::Pointer                         m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
+  mitk::Geometry3D::Pointer                         m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
 
   int                                               m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
   int                                               m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.

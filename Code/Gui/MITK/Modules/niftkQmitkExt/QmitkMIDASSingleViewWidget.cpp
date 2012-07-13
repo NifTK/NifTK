@@ -38,33 +38,55 @@
 #include "itkMatrix.h"
 #include "itkSpatialOrientationAdapter.h"
 
+QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(QWidget *parent)
+: QWidget(parent)
+{
+  mitk::RenderingManager::Pointer renderingManager = mitk::RenderingManager::GetInstance();
+
+  QString name("QmitkMIDASSingleViewWidget");
+  this->Initialize(name, -5, 20, renderingManager, NULL);
+}
+
 QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
-    QWidget *parent,
     QString windowName,
     int minimumMagnification,
     int maximumMagnification,
-    mitk::DataStorage* dataStorage,
-    mitk::RenderingManager* renderingManager
+    QWidget *parent,
+    mitk::RenderingManager* renderingManager,
+    mitk::DataStorage* dataStorage
     )
   : QWidget(parent)
-, m_DataStorage(NULL)
-, m_RenderingManager(NULL)
 , m_Layout(NULL)
 , m_MultiWidget(NULL)
 , m_IsBound(false)
-, m_UnBoundTimeSlicedGeometry(NULL)
-, m_BoundTimeSlicedGeometry(NULL)
-, m_ActiveTimeSlicedGeometry(NULL)
-, m_MinimumMagnification(minimumMagnification)
-, m_MaximumMagnification(maximumMagnification)
+, m_UnBoundGeometry(NULL)
+, m_BoundGeometry(NULL)
+, m_ActiveGeometry(NULL)
 , m_NavigationControllerEventListening(false)
 , m_RememberViewSettingsPerOrientation(false)
 {
-  assert(dataStorage);
-  m_DataStorage = dataStorage;
+  this->Initialize(windowName, minimumMagnification, maximumMagnification, renderingManager, dataStorage);
+}
 
-  assert(renderingManager);
-  m_RenderingManager = renderingManager;
+void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
+                int minimumMagnification,
+                int maximumMagnification,
+                mitk::RenderingManager* renderingManager,
+                mitk::DataStorage* dataStorage
+               )
+{
+  if (renderingManager == NULL)
+  {
+    m_RenderingManager = mitk::RenderingManager::GetInstance();
+  }
+  else
+  {
+    m_RenderingManager = renderingManager;
+  }
+
+  m_DataStorage = dataStorage;
+  m_MinimumMagnification = minimumMagnification;
+  m_MaximumMagnification = maximumMagnification;
 
   this->setAcceptDrops(true);
 
@@ -89,7 +111,9 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
   }
 
   // Create the main QmitkMIDASStdMultiWidget
-  m_MultiWidget = new QmitkMIDASStdMultiWidget(m_RenderingManager, m_DataStorage, this, NULL);
+  m_MultiWidget = new QmitkMIDASStdMultiWidget(this, NULL, m_RenderingManager, m_DataStorage);
+  m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->SetNavigationControllerEventListening(false);
 
   m_Layout = new QGridLayout(this);
@@ -297,7 +321,7 @@ bool QmitkMIDASSingleViewWidget::GetRememberViewSettingsPerOrientation() const
 void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   this->m_DataStorage = dataStorage;
-  this->m_MultiWidget->SetDataStorage(dataStorage);
+  this->m_MultiWidget->SetDataStorage(this->m_DataStorage);
 }
 
 void QmitkMIDASSingleViewWidget::SetNavigationControllerEventListening(bool enabled)
@@ -416,10 +440,10 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions(unsigned int startInde
   }
 }
 
-void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
+void QmitkMIDASSingleViewWidget::SetGeometry(mitk::Geometry3D::Pointer geometry)
 {
   assert(geometry);
-  this->m_UnBoundTimeSlicedGeometry = geometry;
+  this->m_UnBoundGeometry = geometry;
 
   if (!this->m_IsBound)
   {
@@ -428,16 +452,16 @@ void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeSlicedGeometry::Pointer g
   }
 }
 
-mitk::TimeSlicedGeometry::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
+mitk::Geometry3D::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
 {
-  assert(this->m_UnBoundTimeSlicedGeometry);
-  return this->m_UnBoundTimeSlicedGeometry;
+  assert(this->m_UnBoundGeometry);
+  return this->m_UnBoundGeometry;
 }
 
-void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeSlicedGeometry::Pointer geometry)
+void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::Geometry3D::Pointer geometry)
 {
   assert(geometry);
-  this->m_BoundTimeSlicedGeometry = geometry;
+  this->m_BoundGeometry = geometry;
 
   if (this->m_IsBound)
   {
@@ -467,11 +491,11 @@ void QmitkMIDASSingleViewWidget::SetActiveGeometry()
 {
   if (m_IsBound)
   {
-    m_ActiveTimeSlicedGeometry = m_BoundTimeSlicedGeometry;
+    m_ActiveGeometry = m_BoundGeometry;
   }
   else
   {
-    m_ActiveTimeSlicedGeometry = m_UnBoundTimeSlicedGeometry;
+    m_ActiveGeometry = m_UnBoundGeometry;
   }
 }
 
@@ -502,6 +526,11 @@ MIDASView QmitkMIDASSingleViewWidget::GetView() const
   return this->m_CurrentViews[this->GetBoundUnboundOffset()];
 }
 
+void QmitkMIDASSingleViewWidget::SwitchView(MIDASView view)
+{
+  this->m_MultiWidget->SetMIDASView(view, true);
+}
+
 void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 {
   if (view != MIDAS_VIEW_UNKNOWN)
@@ -509,14 +538,24 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     // Makes sure that we do have an active active geometry.
     this->SetActiveGeometry();
 
+    // If for whatever reason, we have no geometry... bail out.
+    if (this->m_ActiveGeometry.IsNull())
+    {
+      return;
+    }
+
     // If we have a currently valid view/orientation, then store the current position, so we can switch back to it if necessary.
     this->StorePosition();
 
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
-    this->m_MultiWidget->SetGeometry(this->m_ActiveTimeSlicedGeometry); // Sets geometry on all 4 MITK views.
-    this->m_MultiWidget->SetMIDASView(view, true);                      // True to always rebuild layout.
-    this->m_MultiWidget->update();                                      // Call Qt update to try and make sure we are painted at the right size.
-    this->m_MultiWidget->Fit();                                         // Fits the MITK DisplayGeometry to the current widget size.
+    this->m_MultiWidget->SetGeometry(this->m_ActiveGeometry); // Sets geometry on all 4 MITK views.
+    this->m_MultiWidget->SetMIDASView(view, true);            // True to always rebuild layout.
+    this->m_MultiWidget->update();                            // Call Qt update to try and make sure we are painted at the right size.
+    if (fitToDisplay)
+    {
+      this->m_MultiWidget->Fit();                             // Fits the MITK DisplayGeometry to the current widget size.
+    }
+
 
     // Now store the current view/orientation.
     this->m_CurrentViews[this->GetBoundUnboundOffset()] = view;
@@ -585,4 +624,9 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 void QmitkMIDASSingleViewWidget::EnableInteractors(bool enable)
 {
   this->m_MultiWidget->EnableInteractors(enable);
+}
+
+void QmitkMIDASSingleViewWidget::InitializeStandardViews(const mitk::Geometry3D * geometry )
+{
+  this->m_MultiWidget->InitializeStandardViews(geometry);
 }

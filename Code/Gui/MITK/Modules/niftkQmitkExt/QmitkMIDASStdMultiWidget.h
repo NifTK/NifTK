@@ -77,8 +77,11 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
 
 public:
 
-  /// \brief Constructor, where renderingManager and dataStorage must be non-NULL.
-  QmitkMIDASStdMultiWidget(mitk::RenderingManager* renderingManager, mitk::DataStorage* dataStorage, QWidget* parent = 0, Qt::WindowFlags f = 0);
+  /// \brief Constructor.
+  QmitkMIDASStdMultiWidget(QWidget* parent = 0,
+                           Qt::WindowFlags f = 0,
+                           mitk::RenderingManager* renderingManager = 0,
+                           mitk::DataStorage* dataStorage = 0);
 
   /// \brief Destructor.
   virtual ~QmitkMIDASStdMultiWidget();

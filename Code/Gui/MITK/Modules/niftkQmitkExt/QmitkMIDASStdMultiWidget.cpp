@@ -36,10 +36,10 @@
 #include "itkSpatialOrientationAdapter.h"
 
 QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
-    mitk::RenderingManager* renderingManager,
-    mitk::DataStorage* dataStorage,
     QWidget* parent,
-    Qt::WindowFlags f
+    Qt::WindowFlags f,
+    mitk::RenderingManager* renderingManager,
+    mitk::DataStorage* dataStorage
     )
 : QmitkStdMultiWidget(parent, f, renderingManager)
 , m_GridLayout(NULL)
@@ -55,12 +55,10 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_MagnificationFactor(0)
 , m_Geometry(NULL)
 {
-  // The spec in the header file says these must be non-null.
-  assert(renderingManager);
-  assert(dataStorage);
-
-  // Pass this to base class.
-  this->SetDataStorage(dataStorage);
+  if (dataStorage != NULL)
+  {
+    this->SetDataStorage(dataStorage);
+  }
   
   // We don't need these 4 lines if we pass in a widget specific RenderingManager.
   // If we are using a global one then we should use them to try and avoid Invalid Drawable errors on Mac.
@@ -106,9 +104,8 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->m_CornerAnnotaions[1].cornerText->SetText(0, "");
   this->m_CornerAnnotaions[2].cornerText->SetText(0, "");
 
-  // Set default layout. Regardless of what you put in parameter1, eg. MIDAS_VIEW_ORTHO
-  // effectively by default all the widgets are enabled in the base class.
-  this->SetMIDASView(MIDAS_VIEW_AXIAL, true);
+  // Set default layout. This must be ORTHO.
+  this->SetMIDASView(MIDAS_VIEW_ORTHO, true);
 
   // Default to unselected, so borders are off.
   this->SetSelected(false);
@@ -264,6 +261,7 @@ void QmitkMIDASStdMultiWidget::SetSelectedWindow(vtkRenderWindow* window)
   {
     this->SetSelected(false);
   }
+  this->ForceImmediateUpdate();
 }
 
 std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetSelectedWindows() const
@@ -323,9 +321,24 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
     case MIDAS_VIEW_3D:
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
+    case MIDAS_VIEW_SAG_COR_H:
+    case MIDAS_VIEW_SAG_COR_V:
+      m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
+      m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
+    break;
+    case MIDAS_VIEW_AX_COR_H:
+    case MIDAS_VIEW_AX_COR_V:
+      m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
+      m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
+    break;
+    case MIDAS_VIEW_AX_SAG_H:
+    case MIDAS_VIEW_AX_SAG_V:
+      m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
+      m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
+    break;
     default:
       // die, this should never happen
-      assert(m_View >= 0 && m_View <= 6);
+      assert((m_View >= 0 && m_View <= 6) || (m_View >= 9 && m_View <= 14));
       break;
     }
   }
@@ -400,45 +413,46 @@ bool QmitkMIDASStdMultiWidget::GetDisplay3DViewInOrthoView() const
 
 void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
 {
-  assert(m_DataStorage);
-
-  vtkRenderWindow *axialVtkRenderWindow = this->mitkWidget1->GetVtkRenderWindow();
-  mitk::BaseRenderer* axialRenderer = mitk::BaseRenderer::GetInstance(axialVtkRenderWindow);
-
-  bool show3DPlanes = false;
-
-  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  if (this->m_DataStorage.IsNotNull())
   {
-    if (it->Value().IsNull())
-    {
-      continue;
-    }
+    vtkRenderWindow *axialVtkRenderWindow = this->mitkWidget1->GetVtkRenderWindow();
+    mitk::BaseRenderer* axialRenderer = mitk::BaseRenderer::GetInstance(axialVtkRenderWindow);
 
-    bool visibleIn3DWindow = false;
-    if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Display3DViewInOrthoView)
-        || this->m_View == MIDAS_VIEW_3D)
-    {
-      visibleIn3DWindow = true;
-    }
+    bool show3DPlanes = false;
 
-    bool visibleInAxialView = false;
-    if (it->Value()->GetBoolProperty("visible", visibleInAxialView, axialRenderer))
+    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
     {
-      if (!visibleInAxialView)
+      if (it->Value().IsNull())
       {
-        visibleIn3DWindow = false;
+        continue;
+      }
+
+      bool visibleIn3DWindow = false;
+      if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Display3DViewInOrthoView)
+          || this->m_View == MIDAS_VIEW_3D)
+      {
+        visibleIn3DWindow = true;
+      }
+
+      bool visibleInAxialView = false;
+      if (it->Value()->GetBoolProperty("visible", visibleInAxialView, axialRenderer))
+      {
+        if (!visibleInAxialView)
+        {
+          visibleIn3DWindow = false;
+        }
+      }
+      this->SetVisibility(this->mitkWidget4, it->Value(), visibleIn3DWindow);
+      if (visibleIn3DWindow)
+      {
+        show3DPlanes = true;
       }
     }
-    this->SetVisibility(this->mitkWidget4, it->Value(), visibleIn3DWindow);
-    if (visibleIn3DWindow)
-    {
-      show3DPlanes = true;
-    }
+    this->SetVisibility(this->mitkWidget4, m_PlaneNode1, show3DPlanes);
+    this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
+    this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
   }
-  this->SetVisibility(this->mitkWidget4, m_PlaneNode1, show3DPlanes);
-  this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
-  this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
 }
 
 void QmitkMIDASStdMultiWidget::SetVisibility(QmitkRenderWindow *window, mitk::DataNode *node, bool visible)
@@ -538,7 +552,16 @@ MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
   {
     result = MIDAS_ORIENTATION_CORONAL;
   }
-  else if (m_View == MIDAS_VIEW_ORTHO || m_View == MIDAS_VIEW_3H || m_View == MIDAS_VIEW_3V)
+  else if (m_View == MIDAS_VIEW_ORTHO
+           || m_View == MIDAS_VIEW_3H
+           || m_View == MIDAS_VIEW_3V
+           || m_View == MIDAS_VIEW_SAG_COR_H
+           || m_View == MIDAS_VIEW_SAG_COR_V
+           || m_View == MIDAS_VIEW_AX_COR_H
+           || m_View == MIDAS_VIEW_AX_COR_V
+           || m_View == MIDAS_VIEW_AX_SAG_H
+           || m_View == MIDAS_VIEW_AX_SAG_V
+           )
   {
     if (m_RectangleRendering1->IsEnabled())
     {
@@ -930,6 +953,34 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
       m_GridLayout->addWidget(this->mitkWidget3Container, 2, 0);
       m_GridLayout->addWidget(this->mitkWidget4Container, 3, 0);
     }
+    else if (view == MIDAS_VIEW_SAG_COR_H)
+    {
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+    }
+    else if (view == MIDAS_VIEW_SAG_COR_V)
+    {
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);
+      m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+    }
+    else if (view == MIDAS_VIEW_AX_COR_H)
+    {
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);
+      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+    }
+    else if (view == MIDAS_VIEW_AX_SAG_V)
+    {
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);
+      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+    }
     else
     {
       m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
@@ -944,123 +995,75 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
   switch(view)
   {
   case MIDAS_VIEW_AXIAL:
-    if (!this->mitkWidget1Container->isVisible())
-    {
-      this->mitkWidget1Container->show();
-    }
-    if (this->mitkWidget2Container->isVisible())
-    {
-      this->mitkWidget2Container->hide();
-    }
-    if (this->mitkWidget3Container->isVisible())
-    {
-      this->mitkWidget3Container->hide();
-    }
-    if (this->mitkWidget4Container->isVisible())
-    {
-      this->mitkWidget4Container->hide();
-    }
+    this->mitkWidget1Container->show();
+    this->mitkWidget2Container->hide();
+    this->mitkWidget3Container->hide();
+    this->mitkWidget4Container->hide();
     this->mitkWidget1->setFocus();
     break;
   case MIDAS_VIEW_SAGITTAL:
-    if (this->mitkWidget1Container->isVisible())
-    {
-      this->mitkWidget1Container->hide();
-    }
-    if (!this->mitkWidget2Container->isVisible())
-    {
-      this->mitkWidget2Container->show();
-    }
-    if (this->mitkWidget3Container->isVisible())
-    {
-      this->mitkWidget3Container->hide();
-    }
-    if (this->mitkWidget4Container->isVisible())
-    {
-      this->mitkWidget4Container->hide();
-    }
+    this->mitkWidget1Container->hide();
+    this->mitkWidget2Container->show();
+    this->mitkWidget3Container->hide();
+    this->mitkWidget4Container->hide();
     this->mitkWidget2->setFocus();
     break;
   case MIDAS_VIEW_CORONAL:
-    if (this->mitkWidget1Container->isVisible())
-    {
-      this->mitkWidget1Container->hide();
-    }
-    if (this->mitkWidget2Container->isVisible())
-    {
-      this->mitkWidget2Container->hide();
-    }
-    if (!this->mitkWidget3Container->isVisible())
-    {
-      this->mitkWidget3Container->show();
-    }
-    if (this->mitkWidget4Container->isVisible())
-    {
-      this->mitkWidget4Container->hide();
-    }
+    this->mitkWidget1Container->hide();
+    this->mitkWidget2Container->hide();
+    this->mitkWidget3Container->show();
+    this->mitkWidget4Container->hide();
     this->mitkWidget3->setFocus();
     break;
   case MIDAS_VIEW_ORTHO:
-    if (!this->mitkWidget1Container->isVisible())
-    {
-      this->mitkWidget1Container->show();
-    }
-    if (!this->mitkWidget2Container->isVisible())
-    {
-      this->mitkWidget2Container->show();
-    }
-    if (!this->mitkWidget3Container->isVisible())
-    {
-      this->mitkWidget3Container->show();
-    }
-    if (!this->mitkWidget4Container->isVisible())
-    {
-      this->mitkWidget4Container->show();
-    }
+    this->mitkWidget1Container->show();
+    this->mitkWidget2Container->show();
+    this->mitkWidget3Container->show();
+    this->mitkWidget4Container->show();
     this->mitkWidget1->setFocus();
     break;
   case MIDAS_VIEW_3H:
   case MIDAS_VIEW_3V:
-    if (!this->mitkWidget1Container->isVisible())
-    {
-      this->mitkWidget1Container->show();
-    }
-    if (!this->mitkWidget2Container->isVisible())
-    {
-      this->mitkWidget2Container->show();
-    }
-    if (!this->mitkWidget3Container->isVisible())
-    {
-      this->mitkWidget3Container->show();
-    }
-    if (this->mitkWidget4Container->isVisible())
-    {
-      this->mitkWidget4Container->hide();
-    }
+    this->mitkWidget1Container->show();
+    this->mitkWidget2Container->show();
+    this->mitkWidget3Container->show();
+    this->mitkWidget4Container->hide();
     this->mitkWidget1->setFocus();
     break;
   case MIDAS_VIEW_3D:
-    if (this->mitkWidget1Container->isVisible())
-    {
-      this->mitkWidget1Container->hide();
-    }
-    if (this->mitkWidget2Container->isVisible())
-    {
-      this->mitkWidget2Container->hide();
-    }
-    if (this->mitkWidget3Container->isVisible())
-    {
-      this->mitkWidget3Container->hide();
-    }
-    if (!this->mitkWidget4Container->isVisible())
-    {
-      this->mitkWidget4Container->show();
-    }
+    this->mitkWidget1Container->hide();
+    this->mitkWidget2Container->hide();
+    this->mitkWidget3Container->hide();
+    this->mitkWidget4Container->show();
+    this->mitkWidget4->setFocus();
+    break;
+  case MIDAS_VIEW_SAG_COR_H:
+  case MIDAS_VIEW_SAG_COR_V:
+    this->mitkWidget1Container->hide();
+    this->mitkWidget2Container->show();
+    this->mitkWidget3Container->show();
+    this->mitkWidget4Container->hide();
+    this->mitkWidget2->setFocus();
+    break;
+  case MIDAS_VIEW_AX_COR_H:
+  case MIDAS_VIEW_AX_COR_V:
+    this->mitkWidget1Container->show();
+    this->mitkWidget2Container->hide();
+    this->mitkWidget3Container->show();
+    this->mitkWidget4Container->hide();
+    this->mitkWidget1->setFocus();
+    break;
+  case MIDAS_VIEW_AX_SAG_H:
+  case MIDAS_VIEW_AX_SAG_V:
+    this->mitkWidget1Container->show();
+    this->mitkWidget2Container->show();
+    this->mitkWidget3Container->hide();
+    this->mitkWidget4Container->hide();
     this->mitkWidget1->setFocus();
     break;
   default:
     // die, this should never happen
-    assert(m_View >= 0 && m_View <= 6);
+    assert((m_View >= 0 && m_View <= 6) || (m_View >= 9 && m_View <= 14));
     break;
   }
   m_View = view;

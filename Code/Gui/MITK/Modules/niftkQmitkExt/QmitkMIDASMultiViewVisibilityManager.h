@@ -119,6 +119,9 @@ public:
   /// \brief Gets the flag deciding whether we accumulate images each time we drop.
   bool GetAccumulateWhenDropped() const { return m_Accumulate; }
 
+  /// \brief Gets the number of nodes currently visible in a window.
+  virtual int GetNodesInWindow(int windowIndex);
+
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
@@ -136,9 +139,6 @@ protected:
 
   /// \brief For a given window (denoted by its windowIndex, or index number in m_Widgets), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromWindow(int windowIndex);
-
-  /// \brief Gets the number of nodes currently visible in a window.
-  virtual int GetNodesInWindow(int windowIndex);
 
   /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
   virtual void AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility=true);

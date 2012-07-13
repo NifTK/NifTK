@@ -43,7 +43,7 @@
 #include <QButtonGroup>
 #include "mitkFocusManager.h"
 #include "mitkGlobalInteraction.h"
-#include "mitkTimeSlicedGeometry.h"
+#include "mitkGeometry3D.h"
 #include "mitkMIDASViewKeyPressResponder.h"
 #include "mitkIRenderWindowPart.h"
 #include "QmitkRenderWindow.h"
@@ -102,8 +102,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_Dropped(false)
 {
   assert(visibilityManager);
-  assert(dataStorage);
-  assert(renderingManager);
 
   /************************************
    * Create stuff.
@@ -328,7 +326,11 @@ QmitkMIDASMultiViewWidget::~QmitkMIDASMultiViewWidget()
 
 QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 {
-  QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(this, tr("QmitkRenderWindow"), -5, 20, m_DataStorage, m_RenderingManager);
+  QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(tr("QmitkRenderWindow"),
+                                                                      -5, 20,
+                                                                      this,
+                                                                      m_RenderingManager,
+                                                                      m_DataStorage);
   widget->setObjectName(tr("QmitkMIDASSingleViewWidget"));
   widget->setVisible(false);
 
@@ -655,6 +657,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
     {
       m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[widgetCounter], r, c);
       m_SingleViewWidgets[widgetCounter]->show();
+      m_SingleViewWidgets[widgetCounter]->setEnabled(true);
       widgetCounter++;
     }
   }
@@ -677,7 +680,8 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   {
     selectedWindow = 0;
   }
-  this->SwitchWindows(selectedWindow, this->m_SingleViewWidgets[selectedWindow]->GetAxialWindow()->GetVtkRenderWindow());
+  // Pass NULL for the selected vtkRenderWindow, to make sure that new windows don't look selected
+  this->SwitchWindows(selectedWindow, NULL);
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
@@ -780,12 +784,12 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   }
 
   // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
-  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
-  if (!m_Dropped)
-  {
-    this->OnFocusChanged();
-    m_Dropped = true;
-  }
+  //mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
+  //if (!m_Dropped)
+  //{
+  //  this->OnFocusChanged();
+  //  m_Dropped = true;
+  //}
 
   int selectedWindow = this->GetSelectedWindowIndex();
   int magnification = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
@@ -800,13 +804,20 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
 
 void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindow *selectedWindow)
 {
-  if (selectedViewer >= 0 && selectedViewer < (int)m_SingleViewWidgets.size() && selectedWindow != NULL)
+  if (selectedViewer >= 0 && selectedViewer < (int)m_SingleViewWidgets.size())
   {
     // This, to turn off borders on all other windows.
     this->SetSelectedWindow(selectedViewer);
 
     // This to specifically set the border round one sub-pane for if its an ortho-view.
-    this->m_SingleViewWidgets[selectedViewer]->SetSelectedWindow(selectedWindow);
+    if (selectedWindow != NULL)
+    {
+      int numberOfNodes = m_VisibilityManager->GetNodesInWindow(selectedViewer);
+      if (numberOfNodes > 0)
+      {
+        this->m_SingleViewWidgets[selectedViewer]->SetSelectedWindow(selectedWindow);
+      }
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
@@ -1160,12 +1171,12 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
 {
   int selectedWindow = this->GetSelectedWindowIndex();
 
-  mitk::TimeSlicedGeometry::Pointer selectedGeometry = m_SingleViewWidgets[selectedWindow]->GetGeometry();
-  MIDASOrientation orientation                       = m_SingleViewWidgets[selectedWindow]->GetOrientation();
-  MIDASView view                                     = m_SingleViewWidgets[selectedWindow]->GetView();
-  int sliceNumber                                    = m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
-  int magnification                                  = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
-  int timeStepNumber                                 = m_SingleViewWidgets[selectedWindow]->GetTime();
+  mitk::Geometry3D::Pointer selectedGeometry = m_SingleViewWidgets[selectedWindow]->GetGeometry();
+  MIDASOrientation orientation               = m_SingleViewWidgets[selectedWindow]->GetOrientation();
+  MIDASView view                             = m_SingleViewWidgets[selectedWindow]->GetView();
+  int sliceNumber                            = m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
+  int magnification                          = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
+  int timeStepNumber                         = m_SingleViewWidgets[selectedWindow]->GetTime();
 
   std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(isBoundNow);
   for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
@@ -1279,7 +1290,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
 
   int windowNumber = this->GetSelectedWindowIndex();
 
-  wnds.insert("transversal", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
+  wnds.insert("axial", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
   wnds.insert("sagittal", m_SingleViewWidgets[windowNumber]->GetSagittalWindow());
   wnds.insert("coronal", m_SingleViewWidgets[windowNumber]->GetCoronalWindow());
   wnds.insert("3d", m_SingleViewWidgets[windowNumber]->Get3DWindow());
@@ -1290,7 +1301,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
     {
       QString id = tr(".%1").arg(i);
 
-      wnds.insert("transversal" + id, m_SingleViewWidgets[i]->GetAxialWindow());
+      wnds.insert("axial" + id, m_SingleViewWidgets[i]->GetAxialWindow());
       wnds.insert("sagittal" + id, m_SingleViewWidgets[i]->GetSagittalWindow());
       wnds.insert("coronal" + id, m_SingleViewWidgets[i]->GetCoronalWindow());
       wnds.insert("3d" + id, m_SingleViewWidgets[i]->Get3DWindow());
@@ -1385,11 +1396,13 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
 
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      if (i == selectedIndex && !m_SingleViewWidgets[i]->IsSelected())
+      int nodesInWindow = m_VisibilityManager->GetNodesInWindow(i);
+
+      if (i == selectedIndex && nodesInWindow > 0)
       {
         m_SingleViewWidgets[i]->SetSelected(true);
       }
-      else if (i != selectedIndex && m_SingleViewWidgets[i]->IsSelected())
+      else
       {
         m_SingleViewWidgets[i]->SetSelected(false);
       }
