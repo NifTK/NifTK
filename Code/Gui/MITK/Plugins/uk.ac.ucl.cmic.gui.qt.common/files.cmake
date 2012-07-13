@@ -1,8 +1,6 @@
 SET(SRC_CPP_FILES
   QmitkBaseView.cpp
   QmitkBaseLegacyView.cpp
-  QmitkMIDASBaseView.cpp
-  QmitkMIDASBaseFunctionality.cpp  
   QmitkMIDASBaseSegmentationFunctionality.cpp
   QmitkMIDASSegmentationViewWidget.cpp
 )
@@ -21,8 +19,6 @@ SET(MOC_H_FILES
   src/internal/CommonActivator.h
   src/QmitkBaseView.h
   src/QmitkBaseLegacyView.h
-  src/QmitkMIDASBaseView.h
-  src/QmitkMIDASBaseFunctionality.h  
   src/QmitkMIDASBaseSegmentationFunctionality.h
   src/QmitkMIDASSegmentationViewWidget.h
 )

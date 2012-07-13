@@ -32,7 +32,7 @@
 #include <QmitkUpdateTimerWidget.h>
 #include <QmitkToolSelectionWidget.h>
 #include <QmitkToolTrackingStatusWidget.h>
-#include "QmitkMIDASBaseFunctionality.h"
+#include "QmitkBaseLegacyView.h"
 #include "QmitkAbstractView.h"
 
 #include "mitkCone.h"
@@ -52,7 +52,7 @@
  * \brief User interface to provide Image Guided Surgery functionality.
  * \ingroup uk_ac_ucl_cmic_surgicalguidance_internal
 */
-class SurgicalGuidanceView : public QmitkMIDASBaseFunctionality
+class SurgicalGuidanceView : public QmitkBaseLegacyView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

@@ -37,7 +37,7 @@
 #include <itkFixedArray.h>
 #include <itkImageSeriesReader.h>
 
-#include <QmitkMIDASBaseView.h>
+#include <QmitkBaseView.h>
 
 class IntensityProfileViewPrivate;
 
@@ -53,7 +53,7 @@ class DataNode;
  \sa QmitkFunctionality
  \ingroup Functionalities
  */
-class IntensityProfileView: public QmitkMIDASBaseView, public mitk::IRenderWindowPartListener
+class IntensityProfileView: public QmitkBaseView, public mitk::IRenderWindowPartListener
 {
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

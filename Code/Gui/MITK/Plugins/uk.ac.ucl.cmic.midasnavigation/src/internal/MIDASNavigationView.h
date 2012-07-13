@@ -54,7 +54,6 @@ struct ctkEventAdmin;
  * in a different thread.
  *
  * \ingroup uk_ac_ucl_cmic_midasnavigation_internal
- * \sa QmitkMIDASBaseFunctionality
 */
 class MIDASNavigationView : public QmitkAbstractView, public ctkEventHandler
 {  
