@@ -1369,6 +1369,8 @@ int QmitkMIDASStdMultiWidget::GetMagnificationFactor() const
 
 void QmitkMIDASStdMultiWidget::SetMagnificationFactor(int magnificationFactor)
 {
+  m_BlockDisplayGeometryEvents = true;
+
   // The aim of this method, is that when a magnificationFactor is passed in,
   // all 2D views update to an equivalent zoom, even if they were different beforehand.
   // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
@@ -1422,6 +1424,8 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(int magnificationFactor)
 
   m_MagnificationFactor = magnificationFactor;
   this->RequestUpdate();
+
+  m_BlockDisplayGeometryEvents = false;
 }
 
 int QmitkMIDASStdMultiWidget::FitMagnificationFactor()
