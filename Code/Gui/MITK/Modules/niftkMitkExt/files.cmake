@@ -20,6 +20,8 @@ set(CPP_FILES
   Interactions/mitkMIDASViewKeyPressStateMachine.cpp
   Interactions/mitkMIDASToolKeyPressStateMachine.cpp
   DataManagement/mitkDataStorageUtils.cpp
+  DataManagement/mitkDataStorageListener.cpp
+  DataManagement/mitkMIDASInitialPropertyManager.cpp
   DataManagement/mitkAffineTransformParametersDataNodeProperty.cpp
   DataManagement/mitkAffineTransformDataNodeProperty.cpp
   DataManagement/mitkITKRegionParametersDataNodeProperty.cpp

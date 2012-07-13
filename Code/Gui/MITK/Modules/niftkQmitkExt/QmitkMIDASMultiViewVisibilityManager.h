@@ -31,7 +31,7 @@
 #include "mitkDataStorage.h"
 #include "mitkBaseProperty.h"
 #include "mitkProperties.h"
-#include "QmitkMIDASViewEnums.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "itkImage.h"
 
