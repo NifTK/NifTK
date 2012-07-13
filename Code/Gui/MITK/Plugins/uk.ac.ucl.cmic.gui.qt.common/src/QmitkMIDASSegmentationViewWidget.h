@@ -29,7 +29,7 @@
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 #include <QWidget>
 #include <QString>
-#include "QmitkMIDASViewEnums.h"
+#include "mitkMIDASEnums.h"
 
 namespace mitk
 {

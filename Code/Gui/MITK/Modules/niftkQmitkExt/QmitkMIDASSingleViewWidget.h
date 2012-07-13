@@ -31,8 +31,8 @@
 #include "mitkDataStorage.h"
 #include "mitkGeometry3D.h"
 #include "mitkRenderingManager.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkRenderWindow.h"
-#include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASStdMultiWidget.h"
 #include <niftkQmitkExtExports.h>
 

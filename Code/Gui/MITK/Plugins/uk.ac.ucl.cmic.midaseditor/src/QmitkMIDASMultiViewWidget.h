@@ -32,7 +32,7 @@
 #include "mitkBaseProperty.h"
 #include "mitkMIDASViewKeyPressResponder.h"
 #include "mitkRenderingManager.h"
-#include "QmitkMIDASViewEnums.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include "QmitkMIDASOrientationWidget.h"

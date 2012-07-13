@@ -30,8 +30,8 @@
 #include "mitkDataNode.h"
 #include "mitkSliceNavigationController.h"
 #include "mitkGeometry3D.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkStdMultiWidget.h"
-#include "QmitkMIDASViewEnums.h"
 #include "vtkCamera.h"
 #include "itkConversionUtils.h"
 #include <niftkQmitkExtExports.h>

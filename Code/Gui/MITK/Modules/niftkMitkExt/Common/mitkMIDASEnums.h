@@ -22,11 +22,11 @@
 
  ============================================================================*/
 
-#ifndef QMITKMIDASVIEWENUMS_H
-#define QMITKMIDASVIEWENUMS_H
+#ifndef MITKMIDASENUMS_H
+#define MITKMIDASENUMS_H
 
 /*!
- * \file QmitkMIDASViewEnums.h
+ * \file mitkMIDASEnums.h
  * \brief Contains MIDAS enums, which we move out of the classes, so
  * they are independent, which makes manually analysing classes for
  * their include dependencies a bit easier.
