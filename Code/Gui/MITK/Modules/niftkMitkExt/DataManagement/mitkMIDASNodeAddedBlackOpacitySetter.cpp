@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-12-16 09:12:58 +0000 (Fri, 16 Dec 2011) $
- Revision          : $Revision: 8039 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date$
+ Revision          : $Revision$
+ Last modified by  : $Author$
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,7 +22,7 @@
 
  ============================================================================*/
 
-#include "mitkMIDASInitialPropertyManager.h"
+#include "mitkMIDASNodeAddedBlackOpacitySetter.h"
 #include <mitkDataNode.h>
 #include <mitkProperties.h>
 #include <mitkVtkResliceInterpolationProperty.h>
@@ -30,16 +30,27 @@
 namespace mitk
 {
 
-MIDASInitialPropertyManager::MIDASInitialPropertyManager(mitk::DataStorage::Pointer dataStorage)
+//-----------------------------------------------------------------------------
+MIDASNodeAddedBlackOpacitySetter::MIDASNodeAddedBlackOpacitySetter()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+MIDASNodeAddedBlackOpacitySetter::MIDASNodeAddedBlackOpacitySetter(mitk::DataStorage::Pointer dataStorage)
 : DataStorageListener(dataStorage)
 {
 }
 
-MIDASInitialPropertyManager::~MIDASInitialPropertyManager()
+
+//-----------------------------------------------------------------------------
+MIDASNodeAddedBlackOpacitySetter::~MIDASNodeAddedBlackOpacitySetter()
 {
 }
 
-void MIDASInitialPropertyManager::NodeAdded(mitk::DataNode* node)
+
+//-----------------------------------------------------------------------------
+void MIDASNodeAddedBlackOpacitySetter::NodeAdded(mitk::DataNode* node)
 {
   // For MIDAS, which might have a light background in the render window, we need to make sure black is not transparent.
   // See MITK bug: http://bugs.mitk.org/show_bug.cgi?id=10174 which hasn't yet been completed.
@@ -49,39 +60,6 @@ void MIDASInitialPropertyManager::NodeAdded(mitk::DataNode* node)
   if (image != NULL)
   {
     node->SetProperty("black opacity", mitk::FloatProperty::New(1));
-
-    bool isBinary = false;
-    node->GetBoolProperty("binary", isBinary);
-
-    if (!isBinary)
-    {
-      if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-      {
-        node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
-      }
-      else
-      {
-        node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
-      }
-
-      mitk::VtkResliceInterpolationProperty::Pointer interpolationProperty = mitk::VtkResliceInterpolationProperty::New();
-
-      if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-      {
-        interpolationProperty->SetInterpolationToNearest();
-      }
-      else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_LINEAR)
-      {
-        interpolationProperty->SetInterpolationToLinear();
-      }
-      else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
-      {
-        interpolationProperty->SetInterpolationToCubic();
-      }
-
-      node->SetProperty("reslice interpolation", interpolationProperty);
-
-    } // end if not binary
   } // end if is an image
 }
 

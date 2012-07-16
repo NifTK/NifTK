@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef MITKMIDASINITIALPROPERTYMANAGER_H_
-#define MITKMIDASINITIALPROPERTYMANAGER_H_
+#ifndef MITKMIDASNODEADDEDINTERPOLATIONSETTER_H
+#define MITKMIDASNODEADDEDINTERPOLATIONSETTER_H
 
 #include "niftkMitkExtExports.h"
 #include <mitkDataStorage.h>
@@ -36,26 +36,29 @@ namespace mitk
 class DataNode;
 
 /**
- * \class MIDASInitialPropertyManager
- * \brief Contains the logic for what to set on a node when it is added to data storage.
+ * \class MIDASNodeAddedInterpolationSetter
+ * \brief When a node is added to data storage, will set initial interpolation properties.
  */
-class NIFTKMITKEXT_EXPORT MIDASInitialPropertyManager : public DataStorageListener
+class NIFTKMITKEXT_EXPORT MIDASNodeAddedInterpolationSetter : public DataStorageListener
 {
 public:
 
-  /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage.
-  MIDASInitialPropertyManager(mitk::DataStorage::Pointer dataStorage);
+  mitkClassMacro(MIDASNodeAddedInterpolationSetter, DataStorageListener);
+  itkNewMacro(MIDASNodeAddedInterpolationSetter);
+  mitkNewMacro1Param(MIDASNodeAddedInterpolationSetter, const mitk::DataStorage::Pointer);
 
-  /// \brief Destructor, which unregisters all the listeners.
-  virtual ~MIDASInitialPropertyManager();
-
-  /// \brief Sets the default interpolation type, which takes effect when a new image is dropped.
-  void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolation) { m_DefaultInterpolation = interpolation; }
-
-  /// \brief Returns the default interpolation type, which takes effect when a new image is dropped.
-  MIDASDefaultInterpolationType GetDefaultInterpolationType() const { return m_DefaultInterpolation; }
+  /// \brief Sets/Gets the default interpolation type,
+  itkSetMacro(DefaultInterpolation, MIDASDefaultInterpolationType);
+  itkGetMacro(DefaultInterpolation, MIDASDefaultInterpolationType);
 
 protected:
+
+  MIDASNodeAddedInterpolationSetter();
+  MIDASNodeAddedInterpolationSetter(const mitk::DataStorage::Pointer);
+  virtual ~MIDASNodeAddedInterpolationSetter();
+
+  MIDASNodeAddedInterpolationSetter(const MIDASNodeAddedInterpolationSetter&); // Purposefully not implemented.
+  MIDASNodeAddedInterpolationSetter& operator=(const MIDASNodeAddedInterpolationSetter&); // Purposefully not implemented.
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and may be reimplemented by deriving classes.
   virtual void NodeAdded(mitk::DataNode* node);

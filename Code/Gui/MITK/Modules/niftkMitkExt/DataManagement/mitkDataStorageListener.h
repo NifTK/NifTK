@@ -27,6 +27,7 @@
 
 #include "niftkMitkExtExports.h"
 
+#include <itkObject.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 
@@ -39,17 +40,29 @@ namespace mitk
  *
  * Derived classes must override NodeAdded, NodeUpdated, NodeRemoved, NodeDeleted.
  */
-class NIFTKMITKEXT_EXPORT DataStorageListener
+class NIFTKMITKEXT_EXPORT DataStorageListener : public itk::Object
 {
 
 public:
 
-  /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage
-  /// so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
-  DataStorageListener(mitk::DataStorage::Pointer dataStorage);
+  mitkClassMacro(DataStorageListener, itk::Object);
+  itkNewMacro(DataStorageListener);
+  mitkNewMacro1Param(DataStorageListener, const mitk::DataStorage::Pointer);
 
-  /// \brief Destructor, which unregisters all the listeners.
+  /// \brief Get the data storage.
+  itkGetMacro(DataStorage, mitk::DataStorage::Pointer);
+
+  /// \brief Set the data storage.
+  void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
+
+protected:
+
+  DataStorageListener();
+  DataStorageListener(const mitk::DataStorage::Pointer);
   virtual ~DataStorageListener();
+
+  DataStorageListener(const DataStorageListener&); // Purposefully not implemented.
+  DataStorageListener& operator=(const DataStorageListener&); // Purposefully not implemented.
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards,
   /// and subclasses should override the NodeAdded event.
@@ -67,8 +80,6 @@ public:
   /// and subclasses should override the NodeDeleted event.
   virtual void NodeDeletedProxy(const mitk::DataNode* node);
 
-protected:
-
   /// \brief In this class, we do nothing, as subclasses should re-define this.
   virtual void NodeAdded(mitk::DataNode* node) {};
 
@@ -81,10 +92,16 @@ protected:
   /// \brief In this class, we do nothing, as subclasses should re-define this.
   virtual void NodeDeleted(mitk::DataNode* node) {};
 
-  /// \brief  This object MUST be connected to a datastorage, hence it is passed in via the constructor.
-  mitk::DataStorage::Pointer m_DataStorage;
-
 private:
+
+  /// \brief Called to register to the data storage.
+  void Activate(const mitk::DataStorage::Pointer storage);
+
+  /// \brief Called to un-register from the data storage.
+  void Deactivate();
+
+  /// \brief  This object MUST be connected to a datastorage for it to work.
+  mitk::DataStorage::Pointer m_DataStorage;
 
   /// \brief Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
   bool m_InDataStorageChanged;

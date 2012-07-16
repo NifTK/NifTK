@@ -25,6 +25,7 @@
 #include "mitkPointUtils.h"
 #include "mitkCommon.h"
 
+//-----------------------------------------------------------------------------
 double mitk::CalculateStepSize(double *spacing)
 {
   double stepSize = 0;
@@ -41,6 +42,8 @@ double mitk::CalculateStepSize(double *spacing)
   return stepSize;
 }
 
+
+//-----------------------------------------------------------------------------
 bool mitk::AreDifferent(const mitk::Point3D& a, const mitk::Point3D& b)
 {
   bool areDifferent = false;
@@ -56,6 +59,8 @@ bool mitk::AreDifferent(const mitk::Point3D& a, const mitk::Point3D& b)
   return areDifferent;
 }
 
+
+//-----------------------------------------------------------------------------
 float mitk::GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3D& b)
 {
     double distance = 0;
@@ -68,6 +73,8 @@ float mitk::GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::
     return distance;
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::GetDifference(const mitk::Point3D& a, const mitk::Point3D& b, mitk::Point3D& output)
 {
   for (int i = 0; i < 3; i++)
@@ -76,6 +83,8 @@ void mitk::GetDifference(const mitk::Point3D& a, const mitk::Point3D& b, mitk::P
   }
 }
 
+
+//-----------------------------------------------------------------------------
 double mitk::Length(mitk::Point3D& vector)
 {
   double length = 0;
@@ -90,6 +99,8 @@ double mitk::Length(mitk::Point3D& vector)
   return length;
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::Normalise(mitk::Point3D& vector)
 {
   double length = Length(vector);

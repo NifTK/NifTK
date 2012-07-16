@@ -39,7 +39,7 @@ class QmitkMIDASSingleViewWidget;
 
 /**
  * \class QmitkMIDASSingleViewWidgetListManager
- * \brief Base class for objects that manager a list of QmitkMIDASSingleViewWidget.
+ * \brief Base class for objects that manipulate nodes over a list of QmitkMIDASSingleViewWidget.
  *
  * This class contains a vector of widgets that it knows about. So each QmitkMIDASSingleViewWidget
  * must be "registered", which means adding to this list.  This class also provides
@@ -89,6 +89,7 @@ protected:
   std::vector< QmitkMIDASSingleViewWidget* > m_Widgets;
 
 private:
+
 };
 
 #endif

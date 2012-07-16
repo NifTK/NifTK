@@ -28,16 +28,21 @@
 #include <QmitkRenderWindow.h>
 #include "QmitkMIDASSingleViewWidget.h"
 
+//-----------------------------------------------------------------------------
 QmitkMIDASSingleViewWidgetListManager::QmitkMIDASSingleViewWidgetListManager()
 {
   m_DataNodes.clear();
   m_Widgets.clear();
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASSingleViewWidgetListManager::~QmitkMIDASSingleViewWidgetListManager()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidgetListManager::RegisterWidget(QmitkMIDASSingleViewWidget *widget)
 {
   std::set<mitk::DataNode*> newNodes;
@@ -45,17 +50,23 @@ void QmitkMIDASSingleViewWidgetListManager::RegisterWidget(QmitkMIDASSingleViewW
   m_Widgets.push_back(widget);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidgetListManager::DeRegisterAllWidgets()
 {
   this->DeRegisterWidgets(0, m_Widgets.size()-1);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidgetListManager::DeRegisterWidgets(unsigned int startWindowIndex, unsigned int endWindowIndex)
 {
   m_DataNodes.erase(m_DataNodes.begin() + startWindowIndex, m_DataNodes.begin() + endWindowIndex+1);
   m_Widgets.erase(m_Widgets.begin() + startWindowIndex, m_Widgets.begin() + endWindowIndex+1);
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkMIDASSingleViewWidgetListManager::GetIndexFromWindow(QmitkRenderWindow* window)
 {
   int result = -1;
@@ -72,12 +83,16 @@ int QmitkMIDASSingleViewWidgetListManager::GetIndexFromWindow(QmitkRenderWindow*
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkMIDASSingleViewWidgetListManager::GetNumberOfNodesRegisteredWithWidget(int windowIndex)
 {
   int result = m_DataNodes[windowIndex].size();
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidgetListManager::RemoveNode( const mitk::DataNode* node)
 {
   for (unsigned int i = 0; i < m_DataNodes.size(); i++)
