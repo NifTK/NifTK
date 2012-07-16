@@ -27,16 +27,6 @@
 
 SET(niftkqt_GUI_UI
 IntegerSpinBoxAndSliderWidget.ui
-MinMaxThresholdWidget.ui
-SliceOrientationWidget.ui
-RowsAndColumnsWidget.ui
-LookupTableWidget.ui
-ThumbnailViewerWidget.ui
-ListViewOKCancelDialog.ui
-DoubleSpinBoxAndSliderWidget.ui
-ToggleWidget.ui
-FixedAndMovingImageWidget.ui
-HelpAboutDialog.ui
 )
 QT4_WRAP_UI(niftkqt_GUI_HEAD ${niftkqt_GUI_UI})
 
@@ -47,22 +37,6 @@ SET(niftkqt_MOC_HEADERS
 IntegerSpinBoxAndSliderWidget.h
 SliceSelectWidget.h
 MagnificationFactorWidget.h
-MinMaxThresholdWidget.h
-SliceOrientationWidget.h
-RowsAndColumnsWidget.h
-LookupTableWidget.h
-DataSetViewWidget.h
-ThumbnailViewerWidget.h
-ListViewOKCancelDialog.h
-DoubleSpinBoxAndSliderWidget.h
-OpacityWidget.h
-ToggleWidget.h
-FixedAndMovingImageWidget.h
-QtFramedView.h
-QtFramedWidget.h
-QtCompositeView.h
-QtFactoryCompositeView.h
-HelpAboutDialog.h
 )
 
 QT4_WRAP_CPP(niftkqt_MOC_SRCS ${niftkqt_MOC_HEADERS})
@@ -75,23 +49,6 @@ WidgetHelper.cpp
 IntegerSpinBoxAndSliderWidget.cpp
 SliceSelectWidget.cpp
 MagnificationFactorWidget.cpp
-MinMaxThresholdWidget.cpp
-SliceOrientationWidget.cpp
-RowsAndColumnsWidget.cpp
-LookupTableWidget.cpp
-DataSetViewListWidget.cpp
-DataSetViewWidget.cpp
-ThumbnailViewerWidget.cpp
-ListViewOKCancelDialog.cpp
-DoubleSpinBoxAndSliderWidget.cpp
-OpacityWidget.cpp
-ToggleWidget.cpp
-FixedAndMovingImageWidget.cpp
-QtFramedView.cpp
-QtFramedWidget.cpp
-QtCompositeView.cpp
-QtFactoryCompositeView.cpp
-HelpAboutDialog.cpp
 )
 
 ADD_LIBRARY(niftkQt
