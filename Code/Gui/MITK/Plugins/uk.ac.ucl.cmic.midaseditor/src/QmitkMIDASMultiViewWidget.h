@@ -38,7 +38,6 @@
 #include "QmitkMIDASOrientationWidget.h"
 #include "QmitkMIDASBindWidget.h"
 #include "QmitkMIDASSlidersWidget.h"
-#include "UpdateMIDASViewingControlsInfo.h"
 
 class QSpinBox;
 class QGridLayout;
@@ -245,9 +244,6 @@ public:
   virtual bool IsLinkedNavigationEnabled() const;
 
 signals:
-
-  /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
-  void UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info);
 
 public slots:
 
