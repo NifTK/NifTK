@@ -49,8 +49,8 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(QWidget *parent)
 
 QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
     QString windowName,
-    int minimumMagnification,
-    int maximumMagnification,
+    double minimumMagnification,
+    double maximumMagnification,
     QWidget *parent,
     mitk::RenderingManager* renderingManager,
     mitk::DataStorage* dataStorage
@@ -69,8 +69,8 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 }
 
 void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
-                int minimumMagnification,
-                int maximumMagnification,
+                double minimumMagnification,
+                double maximumMagnification,
                 mitk::RenderingManager* renderingManager,
                 mitk::DataStorage* dataStorage
                )
@@ -126,6 +126,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(PositionChanged(QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkRenderWindow*,mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
+  connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(QmitkRenderWindow*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkRenderWindow*, double)));
 }
 
 QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
@@ -141,6 +142,12 @@ void QmitkMIDASSingleViewWidget::OnNodesDropped(QmitkMIDASStdMultiWidget *widget
 void QmitkMIDASSingleViewWidget::OnPositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
   emit PositionChanged(this, window, voxelLocation, millimetreLocation, sliceNumber, orientation);
+}
+
+void QmitkMIDASSingleViewWidget::OnMagnificationFactorChanged(QmitkRenderWindow *window, double magnificationFactor)
+{
+//  SetMagnificationFactor(magnificationFactor);
+  emit MagnificationFactorChanged(this, window, magnificationFactor);
 }
 
 bool QmitkMIDASSingleViewWidget::IsSingle2DView() const
@@ -293,12 +300,12 @@ void QmitkMIDASSingleViewWidget::SetRendererSpecificVisibility(std::vector<mitk:
   m_MultiWidget->SetRendererSpecificVisibility(nodes, visible);
 }
 
-int QmitkMIDASSingleViewWidget::GetMinMagnification() const
+double QmitkMIDASSingleViewWidget::GetMinMagnification() const
 {
   return this->m_MinimumMagnification;
 }
 
-int QmitkMIDASSingleViewWidget::GetMaxMagnification() const
+double QmitkMIDASSingleViewWidget::GetMaxMagnification() const
 {
   return this->m_MaximumMagnification;
 }
@@ -386,7 +393,7 @@ void QmitkMIDASSingleViewWidget::StorePosition()
 
   int sliceNumber = m_CurrentSliceNumbers[currentArrayOffset];
   int timeSliceNumber = m_CurrentTimeSliceNumbers[currentArrayOffset];
-  int magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
+  double magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
 
   if (view != MIDAS_VIEW_UNKNOWN && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
@@ -581,7 +588,7 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 
       unsigned int sliceNumber = this->GetSliceNumber(orientation);
       unsigned int timeStep = this->GetTime();
-      int magnificationFactor = this->m_MultiWidget->FitMagnificationFactor();
+      double magnificationFactor = this->m_MultiWidget->FitMagnificationFactor();
 
       this->SetSliceNumber(orientation, sliceNumber);
       this->SetTime(timeStep);
@@ -590,12 +597,12 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
   } // end view != MIDAS_VIEW_UNKNOWN
 }
 
-int QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
+double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
 {
   return this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()];
 }
 
-void QmitkMIDASSingleViewWidget::SetMagnificationFactor(int magnificationFactor)
+void QmitkMIDASSingleViewWidget::SetMagnificationFactor(double magnificationFactor)
 {
   this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()] = magnificationFactor;
   this->m_MultiWidget->SetMagnificationFactor(magnificationFactor);

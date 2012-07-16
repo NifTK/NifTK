@@ -194,13 +194,15 @@ public:
   void SetTime(unsigned int timeSlice);
 
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  int GetMagnificationFactor() const;
+  double GetMagnificationFactor() const;
 
   /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  void SetMagnificationFactor(int magnificationFactor);
+  void SetMagnificationFactor(double magnificationFactor);
+  double ComputeScaleFactor(QmitkRenderWindow* window, double magnificationFactor);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
-  int FitMagnificationFactor();
+  double FitMagnificationFactor();
+  double ComputeMagnificationFactor(QmitkRenderWindow* window);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -225,6 +227,7 @@ signals:
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *thisWindow, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void MagnificationFactorChanged(QmitkRenderWindow *window, double magnificationFactor);
 
 protected slots:
 
@@ -276,7 +279,7 @@ private:
   bool                  m_Display2DCursorsGlobally;
   bool                  m_Display3DViewInOrthoView;
   MIDASView             m_View;
-  int                   m_MagnificationFactor;
+  double                m_MagnificationFactor;
   vtkCamera*            m_Cameras[4];
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;

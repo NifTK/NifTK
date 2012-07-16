@@ -85,8 +85,8 @@ public:
   QmitkMIDASSingleViewWidget(QWidget *parent);
 
   QmitkMIDASSingleViewWidget(QString windowName,
-                             int minimumMagnification,
-                             int maximumMagnification,
+                             double minimumMagnification,
+                             double maximumMagnification,
                              QWidget *parent = 0,
                              mitk::RenderingManager* renderingManager = 0,
                              mitk::DataStorage* dataStorage = 0
@@ -188,10 +188,10 @@ public:
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
   /// \brief Returns the minimum allowed magnification, which is passed in as constructor arg, and held constant.
-  int GetMinMagnification() const;
+  double GetMinMagnification() const;
 
   /// \brief Returns the maximum allowed magnification, which is passed in as constructor arg, and held constant.
-  int GetMaxMagnification() const;
+  double GetMaxMagnification() const;
 
   /// \brief Returns the data storage or NULL if widget is not fully created, or datastorage has not been set.
   mitk::DataStorage::Pointer GetDataStorage() const;
@@ -239,10 +239,10 @@ public:
   void SwitchView(MIDASView view);
 
   /// \brief Set the current magnification factor.
-  void SetMagnificationFactor(int magnificationFactor);
+  void SetMagnificationFactor(double magnificationFactor);
 
   /// \brief Get the current magnification factor.
-  int GetMagnificationFactor() const;
+  double GetMagnificationFactor() const;
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -271,12 +271,14 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
 
 protected slots:
 
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   virtual void OnPositionChanged(QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  virtual void OnMagnificationFactorChanged(QmitkRenderWindow* window, double magnificationFactor);
 
 private:
 
@@ -286,8 +288,8 @@ private:
 
   /// \brief This method is called from both constructors to do the construction.
   void Initialize(QString windowName,
-                  int minimumMagnification,
-                  int maximumMagnification,
+                  double minimumMagnification,
+                  double maximumMagnification,
                   mitk::RenderingManager* renderingManager = 0,
                   mitk::DataStorage* dataStorage = 0
                  );
@@ -310,18 +312,18 @@ private:
   mitk::Geometry3D::Pointer                         m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
   mitk::Geometry3D::Pointer                         m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
 
-  int                                               m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
-  int                                               m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                                            m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                                            m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
 
   std::vector<int>                                  m_CurrentSliceNumbers;          // length 2, one for unbound, then for bound.
   std::vector<int>                                  m_CurrentTimeSliceNumbers;      // length 2, one for unbound, then for bound.
-  std::vector<int>                                  m_CurrentMagnificationFactors;  // length 2, one for unbound, then for bound.
+  std::vector<double>                               m_CurrentMagnificationFactors;  // length 2, one for unbound, then for bound.
   std::vector<MIDASOrientation>                     m_CurrentOrientations;          // length 2, one for unbound, then for bound.
   std::vector<MIDASView>                            m_CurrentViews;                 // length 2, one for unbound, then for bound.
 
   std::vector<int>                                  m_PreviousSliceNumbers;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<int>                                  m_PreviousTimeSliceNumbers;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<int>                                  m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  std::vector<double>                               m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<MIDASOrientation>                     m_PreviousOrientations;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<MIDASView>                            m_PreviousViews;                // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
 

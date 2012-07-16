@@ -34,6 +34,7 @@
 #include "itkConversionUtils.h"
 #include "itkMatrix.h"
 #include "itkSpatialOrientationAdapter.h"
+#include <cmath>
 
 /**
  * This class is to notify the SingleViewWidget about the display geometry changes of a render window.
@@ -49,7 +50,7 @@ public:
   , m_RenderWindow(renderWindow)
   , m_DisplayGeometry(displayGeometry)
   , m_LastScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
-  , m_LastOriginInMM(displayGeometry->GetOriginInMM())
+//  , m_LastOriginInMM(displayGeometry->GetOriginInMM())
   {
   }
 
@@ -72,7 +73,7 @@ public:
 //    mitk::Vector2D originInMM = m_DisplayGeometry->GetOriginInMM();
 //    if (originInMM != m_LastOriginInMM)
 //    {
-//      m_SingleViewWidget->OnOriginChanged(m_DisplayGeometry);
+//      m_StdMultiWidget->OnOriginChanged(m_RenderWindow);
 //      m_LastOriginInMM = originInMM;
 //    }
   }
@@ -82,7 +83,7 @@ private:
   QmitkRenderWindow* const m_RenderWindow;
   mitk::DisplayGeometry* const m_DisplayGeometry;
   double m_LastScaleFactor;
-  mitk::Vector2D m_LastOriginInMM;
+//  mitk::Vector2D m_LastOriginInMM;
 };
 
 QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
@@ -102,7 +103,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Display2DCursorsGlobally(false)
 , m_Display3DViewInOrthoView(false)
 , m_View(MIDAS_VIEW_ORTHO)
-, m_MagnificationFactor(0)
+, m_MagnificationFactor(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
 {
@@ -110,7 +111,14 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   {
     this->SetDataStorage(dataStorage);
   }
-  
+
+  // Trac 1628 - Widget needs a good default geometry
+  mitk::TimeSlicedGeometry::Pointer dsGeometry = dataStorage->ComputeBoundingGeometry3D(dataStorage->GetAll());
+  renderingManager->InitializeView(this->mitkWidget1->GetVtkRenderWindow(), dsGeometry, true);
+  renderingManager->InitializeView(this->mitkWidget2->GetVtkRenderWindow(), dsGeometry, true);
+  renderingManager->InitializeView(this->mitkWidget3->GetVtkRenderWindow(), dsGeometry, true);
+  renderingManager->InitializeView(this->mitkWidget4->GetVtkRenderWindow(), dsGeometry, true);
+
   // We don't need these 4 lines if we pass in a widget specific RenderingManager.
   // If we are using a global one then we should use them to try and avoid Invalid Drawable errors on Mac.
   if (m_RenderingManager == mitk::RenderingManager::GetInstance())
@@ -1252,13 +1260,19 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    double magnificationFactor = FitMagnificationFactor();
+    MITK_INFO << "QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWindow) 1";
+    double magnificationFactor = ComputeMagnificationFactor(renderWindow);
     if (magnificationFactor != m_MagnificationFactor)
     {
       MITK_INFO << "New magnification factor: " << magnificationFactor;
-//      emit MagnificationFactorChanged(this, renderWindow);
+      m_MagnificationFactor = magnificationFactor;
+//      SetMagnificationFactor(magnificationFactor);
+      emit MagnificationFactorChanged(renderWindow, magnificationFactor);
     }
-//    double magnificationFactor = CalculateMagnificationFactor(renderWindow);
+    else
+    {
+      MITK_INFO << "magnification factor not changed: " << magnificationFactor;
+    }
   }
 }
 
@@ -1362,13 +1376,17 @@ unsigned int QmitkMIDASStdMultiWidget::GetTime() const
   return snc->GetTime()->GetPos();
 }
 
-int QmitkMIDASStdMultiWidget::GetMagnificationFactor() const
+double QmitkMIDASStdMultiWidget::GetMagnificationFactor() const
 {
   return m_MagnificationFactor;
 }
 
-void QmitkMIDASStdMultiWidget::SetMagnificationFactor(int magnificationFactor)
+void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor)
 {
+  if (m_MagnificationFactor == magnificationFactor)
+  {
+    return;
+  }
   m_BlockDisplayGeometryEvents = true;
 
   // The aim of this method, is that when a magnificationFactor is passed in,
@@ -1382,45 +1400,9 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(int magnificationFactor)
   {
     QmitkRenderWindow *window = windows[i];
 
-    mitk::Point2D scaleFactorPixPerVoxel;
-    mitk::Point2D scaleFactorPixPerMillimetres;
-    this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
-
-    double effectiveMagnificationFactor = 0;
-    if (magnificationFactor >= 0)
-    {
-      effectiveMagnificationFactor = magnificationFactor + 1;
-    }
-    else
-    {
-      effectiveMagnificationFactor = magnificationFactor - 1;
-      effectiveMagnificationFactor = fabs(1.0/effectiveMagnificationFactor);
-    }
-
-    mitk::Point2D targetScaleFactorPixPerMillimetres;
-
-    // Need to scale both of the current scaleFactorPixPerVoxel[i]
-    for (int i = 0; i < 2; i++)
-    {
-      targetScaleFactorPixPerMillimetres[i] = (effectiveMagnificationFactor / scaleFactorPixPerVoxel[i]) * scaleFactorPixPerMillimetres[i];
-    }
-
-    // Pick the one that has changed the least
-    int axisWithLeastDifference = -1;
-    double leastDifference = std::numeric_limits<double>::max();
-    for(int i = 0; i < 2; i++)
-    {
-      if (fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]) < leastDifference)
-      {
-        leastDifference = fabs(targetScaleFactorPixPerMillimetres[i] - scaleFactorPixPerMillimetres[i]);
-        axisWithLeastDifference = i;
-      }
-    }
-
-    double zoomScaleFactor = targetScaleFactorPixPerMillimetres[axisWithLeastDifference]/scaleFactorPixPerMillimetres[axisWithLeastDifference];
+    double zoomScaleFactor = ComputeScaleFactor(window, magnificationFactor);
     this->ZoomDisplayAboutCentre(window, zoomScaleFactor);
-
-  } // end for
+  }
 
   m_MagnificationFactor = magnificationFactor;
   this->RequestUpdate();
@@ -1428,9 +1410,132 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(int magnificationFactor)
   m_BlockDisplayGeometryEvents = false;
 }
 
-int QmitkMIDASStdMultiWidget::FitMagnificationFactor()
+double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* window, double magnificationFactor)
 {
-  int magnificationFactor = 0;
+  mitk::Point2D scaleFactorPixPerVoxel;
+  mitk::Point2D scaleFactorPixPerMillimetres;
+  this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+
+  double effectiveMagnificationFactor = 0.0;
+  if (magnificationFactor >= 0.0)
+  {
+    effectiveMagnificationFactor = magnificationFactor + 1.0;
+  }
+  else
+  {
+    effectiveMagnificationFactor = -1.0 / (magnificationFactor - 1.0);
+  }
+
+  mitk::Point2D targetScaleFactor;
+
+  // Need to scale both of the current scaleFactorPixPerVoxel[i]
+  for (int i = 0; i < 2; i++)
+  {
+    targetScaleFactor[i] = effectiveMagnificationFactor / scaleFactorPixPerVoxel[i];
+  }
+
+  // Pick the one that has changed the least
+  int axisWithLeastDifference = -1;
+  double leastDifference = std::numeric_limits<double>::max();
+  for(int i = 0; i < 2; i++)
+  {
+    double difference = fabs(targetScaleFactor[i] - 1.0);
+    if (difference < leastDifference)
+    {
+      leastDifference = difference;
+      axisWithLeastDifference = i;
+    }
+  }
+
+  return targetScaleFactor[axisWithLeastDifference];
+}
+
+double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* window)
+{
+  if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN)
+  {
+    MITK_INFO << "if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN): true";
+    return 0;
+  }
+
+  // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
+  mitk::Point2D scaleFactorPixPerVoxel;
+  mitk::Point2D scaleFactorPixPerMillimetres;
+  this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+
+  // Now we scale these values so we get an integer number of pixels per voxel.
+  mitk::Point2D targetScaleFactorPixPerVoxel;
+  mitk::Point2D targetScaleFactorPixPerMillimetres;
+
+  // Need to round the scale factors.
+  for (int i = 0; i < 2; i++)
+  {
+    // If they are >= than 1, we round down towards 1
+    // so you have less pixels per voxel, so image will appear smaller.
+    if (scaleFactorPixPerVoxel[i] >= 1)
+    {
+      targetScaleFactorPixPerVoxel[i] = scaleFactorPixPerVoxel[i];
+    }
+    else
+    {
+      // Otherwise, we still have to make image smaller to fit it on screen.
+      //
+      // For example, if the scale factor is 0.5, we invert it to get 2, which is an integer, so OK.
+      // If however the scale factor is 0.4, we invert it to get 2.5 voxels per pixel, so we have
+      // to round it up to 3, which means the image gets smaller (3 voxels fit into 1 pixel), and then
+      // invert it to get the scale factor again.
+      double tmp = 1.0 / scaleFactorPixPerVoxel[i];
+      int roundedTmp = (int)(tmp + 0.5);
+      targetScaleFactorPixPerVoxel[i] = 1.0 / roundedTmp;
+    }
+    targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i] * (targetScaleFactorPixPerVoxel[i] / scaleFactorPixPerVoxel[i]);
+  }
+
+  // We may have anisotropic voxels, so find the axis that requires most scale factor change.
+  int axisWithLargestDifference = 0;
+  double largestDifference = -1.0 * std::numeric_limits<double>::max();
+  for(int i = 0; i < 2; i++)
+  {
+    double difference = fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]);
+    if (difference > largestDifference)
+    {
+      largestDifference = fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]);
+      axisWithLargestDifference = i;
+    }
+  }
+
+  double effectiveMagnificationFactor = targetScaleFactorPixPerVoxel[axisWithLargestDifference];
+
+  /*
+  * Note: The requirements specification for MIDAS style zoom basically says.
+  *
+  * magnification   : actual pixels per voxel.
+  * on MIDAS widget :
+  * 2               : 3
+  * 1               : 2
+  * 0               : 1 (i.e. no magnification).
+  * -1              : 0.5 (i.e. 1 pixel covers 2 voxels).
+  * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
+  */
+
+  // See comments at top of header file
+  double magnificationFactor;
+  if (effectiveMagnificationFactor >= 1.0)
+  {
+    // So, if pixels per voxel = 2, midas magnification = 1.
+    // So, if pixels per voxel = 1, midas magnification = 0. etc.
+    magnificationFactor = effectiveMagnificationFactor - 1.0;
+  }
+  else
+  {
+    magnificationFactor = (-1.0 / effectiveMagnificationFactor) + 1.0;
+  }
+  return magnificationFactor;
+}
+
+double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
+{
+  double magnificationFactor = 0.0;
 
   MIDASOrientation orientation = this->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -1446,7 +1551,8 @@ int QmitkMIDASStdMultiWidget::FitMagnificationFactor()
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
       window = this->GetRenderWindow2();
-    } else if (orientation == MIDAS_ORIENTATION_CORONAL)
+    }
+    else if (orientation == MIDAS_ORIENTATION_CORONAL)
     {
       window = this->GetRenderWindow3();
     }
@@ -1460,75 +1566,8 @@ int QmitkMIDASStdMultiWidget::FitMagnificationFactor()
     // due to the user manually (right click + mouse move) zooming the window.
     //////////////////////////////////////////////////////////////////////////
 
-    // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
-    mitk::Point2D scaleFactorPixPerVoxel;
-    mitk::Point2D scaleFactorPixPerMillimetres;
-    this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
-
-    // Now we scale these values so we get an integer number of pixels per voxel.
-    mitk::Point2D targetScaleFactorPixPerVoxel;
-    mitk::Point2D targetScaleFactorPixPerMillimetres;
-
-    // Need to round the scale factors.
-    for (int i = 0; i < 2; i++)
-    {
-      // If they are >= than 1, we round down towards 1
-      // so you have less pixels per voxel, so image will appear smaller.
-      if (scaleFactorPixPerVoxel[i] >= 1)
-      {
-        targetScaleFactorPixPerVoxel[i] = (int)(scaleFactorPixPerVoxel[i]);
-      }
-      else
-      {
-        // Otherwise, we still have to make image smaller to fit it on screen.
-        //
-        // For example, if the scale factor is 0.5, we invert it to get 2, which is an integer, so OK.
-        // If however the scale factor is 0.4, we invert it to get 2.5 voxels per pixel, so we have
-        // to round it up to 3, which means the image gets smaller (3 voxels fit into 1 pixel), and then
-        // invert it to get the scale factor again.
-        double tmp = 1.0 / scaleFactorPixPerVoxel[i];
-        int roundedTmp = (int)(tmp + 0.5);
-        tmp = 1.0 / (double) roundedTmp;
-        targetScaleFactorPixPerVoxel[i] = tmp;
-      }
-      targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i] * (targetScaleFactorPixPerVoxel[i]/scaleFactorPixPerVoxel[i]);
-    }
-
-    // We may have anisotropic voxels, so find the axis that requires most scale factor change.
-    int axisWithLargestDifference = 0;
-    double largestDifference = -1.0 * (std::numeric_limits<double>::max());
-    for(int i = 0; i < 2; i++)
-    {
-      if (fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]) > largestDifference)
-      {
-        largestDifference = fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]);
-        axisWithLargestDifference = i;
-      }
-    }
-
-    /*
-    * Note: The requirements specification for MIDAS style zoom basically says.
-    *
-    * magnification   : actual pixels per voxel.
-    * on MIDAS widget :
-    * 2               : 3
-    * 1               : 2
-    * 0               : 1 (i.e. no magnification).
-    * -1              : 0.5 (i.e. 1 pixel covers 2 voxels).
-    * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
-    */
-
-    // See comments at top of header file
-    if (targetScaleFactorPixPerVoxel[axisWithLargestDifference] > 0)
-    {
-      // So, if pixels per voxel = 2, midas magnification = 1.
-      // So, if pixels per voxel = 1, midas magnification = 0. etc.
-      magnificationFactor = targetScaleFactorPixPerVoxel[axisWithLargestDifference] - 1;
-    }
-    else
-    {
-      magnificationFactor = (int)(1.0 / targetScaleFactorPixPerVoxel[axisWithLargestDifference]) + 1;
-    }
+    magnificationFactor = ComputeMagnificationFactor(window);
+    magnificationFactor = static_cast<int>(magnificationFactor);
   }
   return magnificationFactor;
 }

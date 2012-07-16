@@ -337,6 +337,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(PositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
+  connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, double)));
 
   return widget;
 }
@@ -770,6 +771,21 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
         m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
         m_MIDASSlidersWidget->m_SliceSelectionWidget->SetSliceNumber(sliceNumber);
         m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(false);
+      }
+    }
+  }
+}
+
+void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
+{
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnificationFactor);
+  if (this->m_MIDASBindWidget->IsMagnificationBound())
+  {
+    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (m_SingleViewWidgets[i] != widget)
+      {
+        m_SingleViewWidgets[i]->SetMagnificationFactor(magnificationFactor);
       }
     }
   }
