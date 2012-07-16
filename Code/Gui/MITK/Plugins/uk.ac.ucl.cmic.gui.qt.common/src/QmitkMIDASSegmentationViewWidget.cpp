@@ -336,16 +336,6 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     return;
   }
 
-  // Get hold of the windows contained within this widget.
-  QmitkRenderWindow *thisWidgetAxial = this->m_ViewerWidget->GetAxialWindow();
-  QmitkRenderWindow *thisWidgetSagittal = this->m_ViewerWidget->GetSagittalWindow();
-  QmitkRenderWindow *thisWidgetCoronal = this->m_ViewerWidget->GetCoronalWindow();
-
-  // Should never happen, as these windows are created within the constructor of this class.
-  assert(thisWidgetAxial);
-  assert(thisWidgetSagittal);
-  assert(thisWidgetCoronal);
-
   // Check if the user selected a completely different main window widget, or
   // if the user selected a different view (axial, coronal, sagittal) within
   // the same QmitkMIDASStdMultiWidget.
