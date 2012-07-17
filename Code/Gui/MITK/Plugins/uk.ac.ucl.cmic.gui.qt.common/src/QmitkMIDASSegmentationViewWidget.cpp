@@ -24,6 +24,7 @@
 
 #include "QmitkMIDASSegmentationViewWidget.h"
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
+#include "QmitkMIDASSingleViewWidgetListVisibilityManager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>
@@ -39,20 +40,34 @@
 
 QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *parent)
 : m_ContainingFunctionality(NULL)
+, m_FocusManagerObserverTag(0)
 , m_View(MIDAS_VIEW_UNKNOWN)
 , m_MainWindowView(MIDAS_VIEW_UNKNOWN)
 , m_MainWindowAxial(NULL)
 , m_MainWindowSagittal(NULL)
 , m_MainWindowCoronal(NULL)
+, m_NodeAddedSetter(NULL)
+, m_VisibilityTracker(NULL)
 {
   this->setupUi(parent);
-  this->m_ViewerWidget->SetRememberViewSettingsPerOrientation(false);
-  this->m_ViewerWidget->SetSelected(false);
-  this->m_TwoViewCheckBox->setChecked(false);
-  this->m_VerticalCheckBox->setChecked(false);
-  this->m_VerticalCheckBox->setEnabled(false);
-  this->m_AxialRadioButton->setChecked(true);
-  this->ChangeLayout(true);
+  m_ViewerWidget->SetRememberViewSettingsPerOrientation(false);
+  m_ViewerWidget->SetSelected(false);
+  m_TwoViewCheckBox->setChecked(false);
+  m_VerticalCheckBox->setChecked(false);
+  m_VerticalCheckBox->setEnabled(false);
+  m_AxialRadioButton->setChecked(true);
+  ChangeLayout(true);
+
+  m_Renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetAxialWindow()->GetVtkRenderWindow()));
+  m_Renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetSagittalWindow()->GetVtkRenderWindow()));
+  m_Renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetCoronalWindow()->GetVtkRenderWindow()));
+
+  m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
+  m_NodeAddedSetter->SetRenderers(m_Renderers);
+  m_NodeAddedSetter->SetVisibility(false);
+
+  m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
+  m_VisibilityTracker->SetRenderersToUpdate(m_Renderers);
 
   connect(m_TwoViewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnTwoViewStateChanged(int)));
   connect(m_VerticalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnVerticalLayoutStateChanged(int)));
@@ -64,14 +79,20 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
 
 QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
 {
+  // m_NodeAddedSetter deleted by smart pointer.
+  // m_VisibilityTracker deleted by smart pointer.
 }
 
 void QmitkMIDASSegmentationViewWidget::SetDataStorage(mitk::DataStorage* storage)
 {
   if (storage != NULL)
   {
-    this->m_ViewerWidget->SetDataStorage(storage);
-    this->m_ViewerWidget->SetEnabled(true);
+    m_ViewerWidget->SetDataStorage(storage);
+    m_ViewerWidget->SetEnabled(true);
+
+    m_NodeAddedSetter->SetDataStorage(storage);
+
+    m_VisibilityTracker->SetDataStorage(storage);
   }
 }
 
@@ -177,8 +198,7 @@ void QmitkMIDASSegmentationViewWidget::OnOrthoToggled(bool)
 
 void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
 {
-  // If in doubt, stick with what we have. :-)
-  MIDASView nextView = m_View;
+  MIDASView nextView = MIDAS_VIEW_UNKNOWN;
 
   this->SetBlockSignals(true);
 
@@ -223,13 +243,14 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
       {
         nextView = MIDAS_VIEW_SAGITTAL;
       }
-      else if (this->m_CoronalRadioButton->isChecked())
-      {
-        nextView = MIDAS_VIEW_CORONAL;
-      }
       else if (this->m_OrthoRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_ORTHO;
+      }
+      else
+      {
+        nextView = MIDAS_VIEW_CORONAL;
+        this->m_CoronalRadioButton->setChecked(true);
       }
     }
     else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
@@ -238,28 +259,30 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
       {
         nextView = MIDAS_VIEW_AXIAL;
       }
-      else if (this->m_CoronalRadioButton->isChecked())
-      {
-        nextView = MIDAS_VIEW_CORONAL;
-      }
       else if (this->m_OrthoRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_ORTHO;
       }
+      else
+      {
+        nextView = MIDAS_VIEW_CORONAL;
+        this->m_CoronalRadioButton->setChecked(true);
+      }
     }
     else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
     {
-      if (this->m_AxialRadioButton->isChecked())
-      {
-        nextView = MIDAS_VIEW_AXIAL;
-      }
-      else if (this->m_SagittalRadioButton->isChecked())
+      if (this->m_SagittalRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_SAGITTAL;
       }
       else if (this->m_OrthoRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_ORTHO;
+      }
+      else
+      {
+        nextView = MIDAS_VIEW_AXIAL;
+        this->m_AxialRadioButton->setChecked(true);
       }
     }
   }
@@ -351,6 +374,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   // This will only be valid if we are not currently focussed on THIS widget.
   // This should always be true at this point due to early exit above.
   MIDASView mainWindowView = this->GetCurrentMainWindowView();
+
   bool mainWindowViewChanged = false;
   if (mainWindowView != MIDAS_VIEW_UNKNOWN && mainWindowView != this->m_MainWindowView)
   {
@@ -374,6 +398,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       this->m_ViewerWidget->SetNavigationControllerEventListening(true);
       this->m_ViewerWidget->SetDisplay2DCursorsLocally(true);
       this->m_ViewerWidget->SetDisplay3DViewInOrthoView(true);
+
       this->m_MainWindowAxial = mainWindowAxial;
       this->m_MainWindowSagittal = mainWindowSagittal;
       this->m_MainWindowCoronal = mainWindowCoronal;
@@ -381,6 +406,14 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       this->ChangeLayout(true);
 
       this->m_ViewerWidget->FitToDisplay();
+
+      std::vector<mitk::DataNode*> crossHairs = m_ViewerWidget->GetWidgetPlanes();
+      std::vector<mitk::BaseRenderer*> windowsToTrack;
+      windowsToTrack.push_back(mitk::BaseRenderer::GetInstance(mainWindowAxial->GetVtkRenderWindow()));
+
+      this->m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
+      this->m_VisibilityTracker->SetNodesToIgnore(crossHairs);
+      this->m_VisibilityTracker->OnPropertyChanged(); // force update
     }
   }
   else if (mainWindowViewChanged)

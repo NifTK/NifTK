@@ -30,8 +30,7 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::DataStoragePropertyListener()
-: m_DataStorage(NULL)
-, m_PropertyName("")
+: m_PropertyName("")
 {
   m_ObserverToPropertyMap.clear();
 }
@@ -39,53 +38,83 @@ DataStoragePropertyListener::DataStoragePropertyListener()
 
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::DataStoragePropertyListener(const mitk::DataStorage::Pointer dataStorage)
-: m_DataStorage(dataStorage)
+: mitk::DataStorageListener(dataStorage)
 , m_PropertyName("")
 {
   m_ObserverToPropertyMap.clear();
-  this->Activate(dataStorage);
 }
 
 
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::~DataStoragePropertyListener()
 {
-  this->Deactivate();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStoragePropertyListener::SetDataStorage(const mitk::DataStorage::Pointer dataStorage)
-{
-  this->Activate(dataStorage);
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::Activate(const mitk::DataStorage::Pointer dataStorage)
 {
-  if (this->m_DataStorage.IsNotNull())
-  {
-    this->Deactivate();
-  }
-
-  if (dataStorage.IsNotNull())
-  {
-    m_DataStorage = dataStorage;
-
-    this->Modified();
-  }
+  mitk::DataStorageListener::Activate(dataStorage);
+  this->UpdateObserverToPropertyMap();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::Deactivate()
 {
-  if (m_DataStorage.IsNotNull())
-  {
-    this->RemoveAllFromObserverToPropertyMap();
-    this->Modified();
-  }
+  mitk::DataStorageListener::Deactivate();
+  this->RemoveAllFromObserverToPropertyMap();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::SetPropertyName(const std::string& name)
+{
+  m_PropertyName = name;
+  this->Modified();
+
+  this->UpdateObserverToPropertyMap();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
+{
+  m_Renderers = list;
+  this->Modified();
+
+  this->UpdateObserverToPropertyMap();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::ClearRenderers()
+{
+  m_Renderers.clear();
+  this->Modified();
+
+  this->UpdateObserverToPropertyMap();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::NodeAdded(mitk::DataNode* node)
+{
+  this->UpdateObserverToPropertyMap();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::NodeRemoved(mitk::DataNode* node)
+{
+  this->UpdateObserverToPropertyMap();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::NodeDeleted(mitk::DataNode* node)
+{
+  this->UpdateObserverToPropertyMap();
 }
 
 
@@ -98,6 +127,7 @@ void DataStoragePropertyListener::RemoveAllFromObserverToPropertyMap()
     (*iter).second->RemoveObserver((*iter).first);
   }
   m_ObserverToPropertyMap.clear();
+  this->Modified();
 }
 
 
@@ -109,6 +139,7 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
   {
     return;
   }
+
   if (m_PropertyName.size() == 0)
   {
     return;
@@ -132,14 +163,37 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
       continue;
     }
 
-    /* register listener for changes in visible property */
+    /* register listener for changes in property */
     itk::ReceptorMemberCommand<DataStoragePropertyListener>::Pointer command
       = itk::ReceptorMemberCommand<DataStoragePropertyListener>::New();
     command->SetCallbackFunction(this, &DataStoragePropertyListener::OnPropertyChanged);
+
     m_ObserverToPropertyMap[it->Value()->GetProperty(m_PropertyName.c_str())->AddObserver( itk::ModifiedEvent(), command )]
                             = it->Value()->GetProperty(m_PropertyName.c_str());
+
+    for (unsigned int i = 0; i < m_Renderers.size(); i++)
+    {
+      itk::ReceptorMemberCommand<DataStoragePropertyListener>::Pointer rendererSpecificCommand
+        = itk::ReceptorMemberCommand<DataStoragePropertyListener>::New();
+      rendererSpecificCommand->SetCallbackFunction(this, &DataStoragePropertyListener::OnPropertyChanged);
+
+      m_ObserverToPropertyMap[it->Value()->GetProperty(m_PropertyName.c_str(), m_Renderers[i])->AddObserver( itk::ModifiedEvent(), command )]
+                              = it->Value()->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+
+    }
+    this->Modified();
   }
 
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::OnPropertyChanged(const itk::EventObject&)
+{
+  if (!this->GetBlock())
+  {
+    PropertyChanged.Send();
+  }
 }
 
 } // end namespace

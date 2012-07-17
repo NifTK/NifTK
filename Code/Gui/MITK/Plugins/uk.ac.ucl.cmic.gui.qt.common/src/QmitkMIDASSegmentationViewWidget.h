@@ -30,12 +30,16 @@
 #include <QWidget>
 #include <QString>
 #include "mitkMIDASEnums.h"
+#include "mitkMIDASNodeAddedVisibilitySetter.h"
+#include "mitkDataStorageVisibilityTracker.h"
 
 namespace mitk
 {
-  class DataStorage;
+class DataStorage;
+class BaseRenderer;
 }
 
+class QmitkMIDASSingleViewWidgetListVisibilityManager;
 class QmitkMIDASBaseSegmentationFunctionality;
 class QmitkRenderWindow;
 
@@ -43,8 +47,19 @@ class QmitkRenderWindow;
  * \class QmitkMIDASSegmentationViewWidget
  * \brief Qt Widget to provide a single QmitkMIDASSingleViewWidget, and some associated
  * buttons controlling 2/3 view, vertical/horizontal and axial/coronal/sagittal/ortho.
+ *
+ * The widget will display whatever data nodes are visible in the currently focussed
+ * render window, not including this widget. This means:
+ *
+ * <pre>
+ * 1. If this widget visible, when new data is added to the data storage, defaults to not-visible in this viewer.
+ * 2. When the focus changes, get the current editor axial, sagittal, coronal view:
+ *     a. update visibility properties so that whatever is visible in main editor is visible in this widget.
+ * </pre>
  */
-class CMIC_QT_COMMON QmitkMIDASSegmentationViewWidget : public QWidget, public Ui_QmitkMIDASSegmentationViewWidget
+class CMIC_QT_COMMON QmitkMIDASSegmentationViewWidget :
+  public QWidget,
+  public Ui_QmitkMIDASSegmentationViewWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
@@ -146,6 +161,9 @@ private:
   QmitkRenderWindow* m_MainWindowAxial;
   QmitkRenderWindow* m_MainWindowSagittal;
   QmitkRenderWindow* m_MainWindowCoronal;
+  mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+  mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
+  std::vector<mitk::BaseRenderer*> m_Renderers;
 
 };
 

@@ -112,13 +112,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     this->SetDataStorage(dataStorage);
   }
 
-  // Trac 1628 - Widget needs a good default geometry
-  mitk::TimeSlicedGeometry::Pointer dsGeometry = dataStorage->ComputeBoundingGeometry3D(dataStorage->GetAll());
-  renderingManager->InitializeView(this->mitkWidget1->GetVtkRenderWindow(), dsGeometry, true);
-  renderingManager->InitializeView(this->mitkWidget2->GetVtkRenderWindow(), dsGeometry, true);
-  renderingManager->InitializeView(this->mitkWidget3->GetVtkRenderWindow(), dsGeometry, true);
-  renderingManager->InitializeView(this->mitkWidget4->GetVtkRenderWindow(), dsGeometry, true);
-
   // We don't need these 4 lines if we pass in a widget specific RenderingManager.
   // If we are using a global one then we should use them to try and avoid Invalid Drawable errors on Mac.
   if (m_RenderingManager == mitk::RenderingManager::GetInstance())
@@ -1260,18 +1253,16 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    MITK_INFO << "QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWindow) 1";
     double magnificationFactor = ComputeMagnificationFactor(renderWindow);
     if (magnificationFactor != m_MagnificationFactor)
     {
-      MITK_INFO << "New magnification factor: " << magnificationFactor;
+      MITK_DEBUG << "New magnification factor: " << magnificationFactor;
       m_MagnificationFactor = magnificationFactor;
-//      SetMagnificationFactor(magnificationFactor);
       emit MagnificationFactorChanged(renderWindow, magnificationFactor);
     }
     else
     {
-      MITK_INFO << "magnification factor not changed: " << magnificationFactor;
+      MITK_DEBUG << "magnification factor not changed: " << magnificationFactor;
     }
   }
 }
@@ -1454,7 +1445,7 @@ double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* w
 {
   if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN)
   {
-    MITK_INFO << "if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN): true";
+    MITK_DEBUG << "if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN): true";
     return 0;
   }
 

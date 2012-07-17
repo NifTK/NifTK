@@ -28,105 +28,105 @@
 namespace mitk
 {
 
-  //-----------------------------------------------------------------------------
-  template<typename TPixel, unsigned int VImageDimension>
-  void
-  GetAsAcquiredOrientation(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    MIDASOrientation &outputOrientation
-  )
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+GetAsAcquiredOrientation(
+  itk::Image<TPixel, VImageDimension>* itkImage,
+  MIDASOrientation &outputOrientation
+)
+{
+  typedef itk::Image<TPixel, VImageDimension> ImageType;
+
+  typename itk::SpatialOrientationAdapter adaptor;
+  typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
+  orientation = adaptor.FromDirectionCosines(itkImage->GetDirection());
+  std::string orientationString = itk::ConvertSpatialOrientationToString(orientation);
+
+  if (orientationString[0] == 'L' || orientationString[0] == 'R')
   {
-    typedef itk::Image<TPixel, VImageDimension> ImageType;
-
-    typename itk::SpatialOrientationAdapter adaptor;
-    typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
-    orientation = adaptor.FromDirectionCosines(itkImage->GetDirection());
-    std::string orientationString = itk::ConvertSpatialOrientationToString(orientation);
-
-    if (orientationString[0] == 'L' || orientationString[0] == 'R')
+    if (orientationString[1] == 'A' || orientationString[1] == 'P')
     {
-      if (orientationString[1] == 'A' || orientationString[1] == 'P')
-      {
-        outputOrientation = MIDAS_ORIENTATION_AXIAL;
-      }
-      else
-      {
-        outputOrientation = MIDAS_ORIENTATION_CORONAL;
-      }
+      outputOrientation = MIDAS_ORIENTATION_AXIAL;
     }
-    else if (orientationString[0] == 'A' || orientationString[0] == 'P')
+    else
     {
-      if (orientationString[1] == 'L' || orientationString[1] == 'R')
-      {
-        outputOrientation = MIDAS_ORIENTATION_AXIAL;
-      }
-      else
-      {
-        outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
-      }
-    }
-    else if (orientationString[0] == 'S' || orientationString[0] == 'I')
-    {
-      if (orientationString[1] == 'L' || orientationString[1] == 'R')
-      {
-        outputOrientation = MIDAS_ORIENTATION_CORONAL;
-      }
-      else
-      {
-        outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
-      }
+      outputOrientation = MIDAS_ORIENTATION_CORONAL;
     }
   }
-
-
-  //-----------------------------------------------------------------------------
-  MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::DataNode* node)
+  else if (orientationString[0] == 'A' || orientationString[0] == 'P')
   {
-    MIDASView view = defaultView;
-    if (view == MIDAS_VIEW_AS_ACQUIRED && node != NULL)
+    if (orientationString[1] == 'L' || orientationString[1] == 'R')
     {
-      // "As Acquired" means you take the orientation of the XY plane
-      // in the original image data, so we switch to ITK to work it out.
-      MIDASOrientation orientation = MIDAS_ORIENTATION_CORONAL;
+      outputOrientation = MIDAS_ORIENTATION_AXIAL;
+    }
+    else
+    {
+      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
+    }
+  }
+  else if (orientationString[0] == 'S' || orientationString[0] == 'I')
+  {
+    if (orientationString[1] == 'L' || orientationString[1] == 'R')
+    {
+      outputOrientation = MIDAS_ORIENTATION_CORONAL;
+    }
+    else
+    {
+      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
+    }
+  }
+}
 
-      mitk::Image::Pointer image = NULL;
-      image = dynamic_cast<mitk::Image*>(node->GetData());
 
-      if (image.IsNotNull() && image->GetDimension() >= 3)
-      {
-        try
-        {
-          AccessFixedDimensionByItk_n(image, GetAsAcquiredOrientation, 3, (orientation));
-        }
-        catch (const mitk::AccessByItkException &e)
-        {
-          MITK_ERROR << "GetAsAcquiredView: AccessFixedDimensionByItk_n failed to work out 'As Acquired' orientation." << e.what() << std::endl;
-        }
-      }
-      else
-      {
-        MITK_ERROR << "GetAsAcquiredView: failed to find an image to work out 'As Acquired' orientation." << std::endl;
-      }
+//-----------------------------------------------------------------------------
+MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::DataNode* node)
+{
+  MIDASView view = defaultView;
+  if (view == MIDAS_VIEW_AS_ACQUIRED && node != NULL)
+  {
+    // "As Acquired" means you take the orientation of the XY plane
+    // in the original image data, so we switch to ITK to work it out.
+    MIDASOrientation orientation = MIDAS_ORIENTATION_CORONAL;
 
-      if (orientation == MIDAS_ORIENTATION_AXIAL)
+    mitk::Image::Pointer image = NULL;
+    image = dynamic_cast<mitk::Image*>(node->GetData());
+
+    if (image.IsNotNull() && image->GetDimension() >= 3)
+    {
+      try
       {
-        view = MIDAS_VIEW_AXIAL;
+        AccessFixedDimensionByItk_n(image, GetAsAcquiredOrientation, 3, (orientation));
       }
-      else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+      catch (const mitk::AccessByItkException &e)
       {
-        view = MIDAS_VIEW_SAGITTAL;
-      }
-      else if (orientation == MIDAS_ORIENTATION_CORONAL)
-      {
-        view = MIDAS_VIEW_CORONAL;
-      }
-      else
-      {
-        MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped defaulting to view=" << view << std::endl;
+        MITK_ERROR << "GetAsAcquiredView: AccessFixedDimensionByItk_n failed to work out 'As Acquired' orientation." << e.what() << std::endl;
       }
     }
-    return view;
+    else
+    {
+      MITK_ERROR << "GetAsAcquiredView: failed to find an image to work out 'As Acquired' orientation." << std::endl;
+    }
+
+    if (orientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      view = MIDAS_VIEW_AXIAL;
+    }
+    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      view = MIDAS_VIEW_SAGITTAL;
+    }
+    else if (orientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      view = MIDAS_VIEW_CORONAL;
+    }
+    else
+    {
+      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped defaulting to view=" << view << std::endl;
+    }
   }
+  return view;
+}
 
 } // end namespace
 

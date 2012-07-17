@@ -637,3 +637,12 @@ void QmitkMIDASSingleViewWidget::InitializeStandardViews(const mitk::Geometry3D 
 {
   this->m_MultiWidget->InitializeStandardViews(geometry);
 }
+
+std::vector<mitk::DataNode*> QmitkMIDASSingleViewWidget::GetWidgetPlanes()
+{
+  std::vector<mitk::DataNode*> result;
+  result.push_back(this->m_MultiWidget->GetWidgetPlane1());
+  result.push_back(this->m_MultiWidget->GetWidgetPlane2());
+  result.push_back(this->m_MultiWidget->GetWidgetPlane3());
+  return result;
+}

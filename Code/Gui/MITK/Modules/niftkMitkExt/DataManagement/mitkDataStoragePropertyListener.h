@@ -26,10 +26,12 @@
 #define MITKMIDASDATASTORAGEPROPERTYLISTENER_H_
 
 #include "niftkMitkExtExports.h"
+#include "mitkDataStorageListener.h"
 
 #include <itkObject.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
+#include <mitkMessage.h>
 
 namespace mitk
 {
@@ -43,24 +45,33 @@ namespace mitk
  *
  * Derived classes must implement OnPropertyChanged.
  */
-class NIFTKMITKEXT_EXPORT DataStoragePropertyListener : public itk::Object
+class NIFTKMITKEXT_EXPORT DataStoragePropertyListener : public mitk::DataStorageListener
 {
 
 public:
 
-  mitkClassMacro(DataStoragePropertyListener, itk::Object);
+  mitkClassMacro(DataStoragePropertyListener, mitk::DataStorageListener);
   itkNewMacro(DataStoragePropertyListener);
   mitkNewMacro1Param(DataStoragePropertyListener, const mitk::DataStorage::Pointer);
 
-  /// \brief Get the data storage.
-  itkGetMacro(DataStorage, mitk::DataStorage::Pointer);
-
-  /// \brief Set the data storage.
-  void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
-
-  /// \brief Set/Get the property name.
-  itkSetMacro(PropertyName, std::string);
+  /// \brief Get the property name.
   itkGetMacro(PropertyName, std::string);
+
+  /// \brief Set the property name, which triggers an update UpdateObserverToPropertyMap.
+  void SetPropertyName(const std::string& name);
+
+  /**
+   * \brief Sets the list of renderers to check.
+   */
+  void SetRenderers(std::vector<mitk::BaseRenderer*>& list);
+
+  /**
+   * \brief Clears all filters.
+   */
+  void ClearRenderers();
+
+  /// \brief GUI independent message callback.
+  Message<> PropertyChanged;
 
 protected:
 
@@ -71,32 +82,66 @@ protected:
   DataStoragePropertyListener(const DataStoragePropertyListener&); // Purposefully not implemented.
   DataStoragePropertyListener& operator=(const DataStoragePropertyListener&); // Purposefully not implemented.
 
-  /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void OnPropertyChanged(const itk::EventObject&) {};
+  /**
+   * \brief Called to register to the data storage.
+   */
+  virtual void Activate(const mitk::DataStorage::Pointer storage);
 
-  /// \brief Will refresh the observers of the named property, and sub-classes should call this at the appropriate time.
+  /**
+   * \brief Called to un-register from the data storage.
+   */
+  virtual void Deactivate();
+
+  /**
+   * \brief In this class, we do nothing, as subclasses should re-define this.
+   */
+  virtual void OnPropertyChanged(const itk::EventObject&);
+
+  /**
+   * \brief Will refresh the observers of the named property, and sub-classes should call this at the appropriate time.
+   */
   virtual void UpdateObserverToPropertyMap();
 
-  /// \brief Will remove all observers from the m_ObserverToPropertyMap, and sub-classes should call this at the appropriate time.
+  /**
+   * \brief Will remove all observers from the m_ObserverToPropertyMap, and sub-classes should call this at the appropriate time.
+   */
   virtual void RemoveAllFromObserverToPropertyMap();
+
+  /**
+   * \brief Triggers UpdateObserverToPropertyMap.
+   * \see DataStoragePropertyListener::NodeAdded
+   */
+  virtual void NodeAdded(mitk::DataNode* node);
+
+  /**
+   * \brief Triggers UpdateObserverToPropertyMap.
+   * \see DataStoragePropertyListener::NodeAdded
+   */
+  virtual void NodeRemoved(mitk::DataNode* node);
+
+  /**
+   * \brief Triggers UpdateObserverToPropertyMap.
+   * \see DataStoragePropertyListener::NodeAdded
+   */
+  virtual void NodeDeleted(mitk::DataNode* node);
 
 private:
 
-  /// \brief Called to register to the data storage.
-  void Activate(const mitk::DataStorage::Pointer storage);
-
-  /// \brief Called to un-register from the data storage.
-  void Deactivate();
-
-  // We observe all the global properties for each registered node.
+  /**
+   * We observe all the global properties for each registered node.
+   */
   typedef std::map<unsigned long, mitk::BaseProperty::Pointer> ObserverToPropertyMap;
   ObserverToPropertyMap m_ObserverToPropertyMap;
 
-  /// \brief This object MUST be connected to a datastorage for it to work.
-  mitk::DataStorage::Pointer m_DataStorage;
-
-  /// \brief The name of the property we are tracking.
+  /**
+   * \brief The name of the property we are tracking.
+   */
   std::string m_PropertyName;
+
+  /**
+   * \brief We store an optional list of renderers for watching renderer specific changes.
+   */
+  std::vector<mitk::BaseRenderer*> m_Renderers;
 };
 
 } // end namespace

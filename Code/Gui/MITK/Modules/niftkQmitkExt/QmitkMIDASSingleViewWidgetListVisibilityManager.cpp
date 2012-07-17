@@ -63,7 +63,7 @@ void QmitkMIDASSingleViewWidgetListVisibilityManager::SetNodeVisibilityForWindow
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidgetListVisibilityManager::SetAllNodeVisibilityForWindow(const unsigned int& widgetIndex, const bool& visibility)
 {
-  if (m_DataStorage.IsNotNull())
+  if (m_DataStorage.IsNull())
   {
     return;
   }

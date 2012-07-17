@@ -39,7 +39,6 @@
 namespace mitk
 {
   /**
-   * \fn GetAsAcquiredOrientation
    * \brief Given an image, returns the MIDASOrientation for the XY plane.
    * \param itkImage an ITK image
    * \param outputOrientation the output MIDASOrientation as either axial, sagittal, coronal,
@@ -53,7 +52,6 @@ namespace mitk
   );
 
   /**
-   * \fn GetAsAcquiredView
    * \brief Checks if the supplied node is an image, and returns the MIDASView corresponding to the XY plane, or else returns the supplied default.
    * \param defaultView A default MIDASView that will be returned if we can't work out the As Acquired view.
    * \param node A node to check.

@@ -262,6 +262,9 @@ public:
   /// \brief Turn on/off the relevant interactors.
   void EnableInteractors(bool enable);
 
+  /// \brief Returns pointers to the widget planes.
+  std::vector<mitk::DataNode*> GetWidgetPlanes();
+
 protected:
 
   virtual void paintEvent(QPaintEvent *event);

@@ -47,6 +47,9 @@ public:
   itkNewMacro(MIDASNodeAddedBlackOpacitySetter);
   mitkNewMacro1Param(MIDASNodeAddedBlackOpacitySetter, const mitk::DataStorage::Pointer);
 
+  itkSetMacro(Opacity, float);
+  itkGetMacro(Opacity, float);
+
 protected:
 
   MIDASNodeAddedBlackOpacitySetter();
@@ -56,11 +59,14 @@ protected:
   MIDASNodeAddedBlackOpacitySetter(const MIDASNodeAddedBlackOpacitySetter&); // Purposefully not implemented.
   MIDASNodeAddedBlackOpacitySetter& operator=(const MIDASNodeAddedBlackOpacitySetter&); // Purposefully not implemented.
 
-  /// \brief Called when a DataStorage AddNodeEvent was emmitted and may be reimplemented by deriving classes.
+  /**
+   * \see DataStorageListener::NodeAdded
+   */
   virtual void NodeAdded(mitk::DataNode* node);
 
 private:
 
+  float m_Opacity;
 };
 
 } // end namespace

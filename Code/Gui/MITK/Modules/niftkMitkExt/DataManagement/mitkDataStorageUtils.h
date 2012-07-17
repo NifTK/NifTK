@@ -63,7 +63,6 @@ namespace mitk
   NIFTKMITKEXT_EXPORT mitk::DataStorage::SetOfObjects::Pointer FindDerivedVisibleNonHelperChildren(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node);
 
   /**
-   * \fn GetPreferedGeometry
    * \brief GetPreferedGeometry will return the geometry to use by picking one from the list of nodes, or NULL, if none can be found.
    *
    * \param nodes A vector of mitk::DataNode pointers where we assume each node has a Geometry (which should always be the case).

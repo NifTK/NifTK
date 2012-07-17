@@ -22,7 +22,7 @@
 
  ============================================================================*/
 
-#include "mitkMIDASNodeAddedBlackOpacitySetter.h"
+#include "mitkMIDASNodeAddedVisibilitySetter.h"
 #include <mitkDataNode.h>
 #include <mitkProperties.h>
 
@@ -30,36 +30,55 @@ namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedBlackOpacitySetter::MIDASNodeAddedBlackOpacitySetter()
-: m_Opacity(1)
+MIDASNodeAddedVisibilitySetter::MIDASNodeAddedVisibilitySetter()
+: m_Visibility(false)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedBlackOpacitySetter::MIDASNodeAddedBlackOpacitySetter(mitk::DataStorage::Pointer dataStorage)
+MIDASNodeAddedVisibilitySetter::MIDASNodeAddedVisibilitySetter(mitk::DataStorage::Pointer dataStorage)
 : DataStorageListener(dataStorage)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedBlackOpacitySetter::~MIDASNodeAddedBlackOpacitySetter()
+MIDASNodeAddedVisibilitySetter::~MIDASNodeAddedVisibilitySetter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASNodeAddedBlackOpacitySetter::NodeAdded(mitk::DataNode* node)
+void MIDASNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
 {
-  // For MIDAS, which might have a light background in the render window, we need to make sure black is not transparent.
-  // See MITK bug: http://bugs.mitk.org/show_bug.cgi?id=10174 which hasn't yet been completed.
-  // See also Trac ticket https://cmicdev.cs.ucl.ac.uk/trac/ticket/853 where we provide a property "black opacity".
-  mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-  if (image != NULL)
+  m_Renderers = list;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASNodeAddedVisibilitySetter::ClearRenderers()
+{
+  m_Renderers.clear();
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASNodeAddedVisibilitySetter::NodeAdded(mitk::DataNode* node)
+{
+  if (m_Renderers.size() > 0)
   {
-    node->SetProperty("black opacity", mitk::FloatProperty::New(m_Opacity));
-  } // end if is an image
+    for (unsigned int i = 0; i < m_Renderers.size(); i++)
+    {
+      node->SetBoolProperty("visible", m_Visibility, m_Renderers[i]);
+    }
+  }
+  else
+  {
+    node->SetBoolProperty("visible", m_Visibility);
+  }
 }
 
 } // end namespace

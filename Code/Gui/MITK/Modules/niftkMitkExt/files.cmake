@@ -2,11 +2,14 @@ set(CPP_FILES
   Algorithms/mitkNifTKCoreObjectFactory.cpp
   Common/mitkMIDASImageUtils.cpp
   Common/mitkPointUtils.cpp
+  DataManagement/mitkDataNodeBoolPropertyFilter.cpp
   DataManagement/mitkDataStorageUtils.cpp
   DataManagement/mitkDataStorageListener.cpp
   DataManagement/mitkDataStoragePropertyListener.cpp
+  DataManagement/mitkDataStorageVisibilityTracker.cpp
   DataManagement/mitkMIDASNodeAddedInterpolationSetter.cpp
   DataManagement/mitkMIDASNodeAddedBlackOpacitySetter.cpp
+  DataManagement/mitkMIDASNodeAddedVisibilitySetter.cpp
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cpp
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cpp
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cpp
@@ -35,6 +38,4 @@ set(CPP_FILES
   IO/itkNiftiImageIO3201.cpp
   IO/mitkNifTKItkImageFileReader.cpp
   IO/mitkNifTKItkImageFileIOFactory.cpp
-  
-
 )

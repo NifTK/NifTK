@@ -60,12 +60,14 @@ protected:
   MIDASNodeAddedInterpolationSetter(const MIDASNodeAddedInterpolationSetter&); // Purposefully not implemented.
   MIDASNodeAddedInterpolationSetter& operator=(const MIDASNodeAddedInterpolationSetter&); // Purposefully not implemented.
 
-  /// \brief Called when a DataStorage AddNodeEvent was emmitted and may be reimplemented by deriving classes.
+  /**
+   * \see DataStorageListener::NodeAdded
+   */
   virtual void NodeAdded(mitk::DataNode* node);
 
 private:
 
-  // Keeps track of the default interpolation.
+  /// \brief Keeps track of the default interpolation.
   MIDASDefaultInterpolationType m_DefaultInterpolation;
 };
 

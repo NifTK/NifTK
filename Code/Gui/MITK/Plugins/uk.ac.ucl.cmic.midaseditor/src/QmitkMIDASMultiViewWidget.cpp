@@ -778,7 +778,9 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
 
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
 {
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->SetMagnificationFactor(magnificationFactor);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(false);
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -800,12 +802,12 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   }
 
   // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
-  //mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
-  //if (!m_Dropped)
-  //{
-  //  this->OnFocusChanged();
-  //  m_Dropped = true;
-  //}
+  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
+  if (!m_Dropped)
+  {
+    this->OnFocusChanged();
+    m_Dropped = true;
+  }
 
   int selectedWindow = this->GetSelectedWindowIndex();
   int magnification = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();

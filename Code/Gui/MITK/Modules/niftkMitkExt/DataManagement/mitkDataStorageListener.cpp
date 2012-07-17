@@ -31,8 +31,9 @@ namespace mitk
 DataStorageListener::DataStorageListener()
 : m_DataStorage(NULL)
 , m_InDataStorageChanged(false)
+, m_Block(false)
 {
-
+  m_Filters.clear();
 }
 
 
@@ -56,6 +57,38 @@ DataStorageListener::~DataStorageListener()
 void DataStorageListener::SetDataStorage(const mitk::DataStorage::Pointer dataStorage)
 {
   this->Activate(dataStorage);
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageListener::AddFilter(mitk::DataNodeFilter::Pointer& filter)
+{
+  m_Filters.push_back(filter);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageListener::ClearFilters()
+{
+  m_Filters.clear();
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+bool DataStorageListener::Pass(const mitk::DataNode* node)
+{
+  bool result = true;
+  for (unsigned int i = 0; i < m_Filters.size(); i++)
+  {
+    if (!m_Filters[i]->Pass(node))
+    {
+      result = false;
+      break;
+    }
+  }
+  return result;
 }
 
 
@@ -114,6 +147,7 @@ void DataStorageListener::Deactivate()
     ( this, &DataStorageListener::NodeDeletedProxy ));
 
     m_DataStorage = NULL;
+
     this->Modified();
   }
 }
@@ -123,10 +157,13 @@ void DataStorageListener::Deactivate()
 void DataStorageListener::NodeAddedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeAdded()
-  if(m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Block && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
-    this->NodeAdded(const_cast<mitk::DataNode*>(node));
+    if (this->Pass(node))
+    {
+      this->NodeAdded(const_cast<mitk::DataNode*>(node));
+    }
     m_InDataStorageChanged = false;
   }
 }
@@ -136,10 +173,13 @@ void DataStorageListener::NodeAddedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeChangedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Block && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
-    this->NodeChanged(const_cast<mitk::DataNode*>(node));
+    if (this->Pass(node))
+    {
+      this->NodeChanged(const_cast<mitk::DataNode*>(node));
+    }
     m_InDataStorageChanged = false;
   }
 }
@@ -149,10 +189,13 @@ void DataStorageListener::NodeChangedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeRemovedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Block && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
-    this->NodeRemoved(const_cast<mitk::DataNode*>(node));
+    if (this->Pass(node))
+    {
+      this->NodeRemoved(const_cast<mitk::DataNode*>(node));
+    }
     m_InDataStorageChanged = false;
   }
 }
@@ -162,10 +205,13 @@ void DataStorageListener::NodeRemovedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeDeletedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Block && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
-    this->NodeDeleted(const_cast<mitk::DataNode*>(node));
+    if (this->Pass(node))
+    {
+      this->NodeDeleted(const_cast<mitk::DataNode*>(node));
+    }
     m_InDataStorageChanged = false;
   }
 }
