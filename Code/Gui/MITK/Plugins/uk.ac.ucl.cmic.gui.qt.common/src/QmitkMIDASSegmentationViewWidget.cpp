@@ -12,7 +12,7 @@
  Revision          : $Revision$
  Last modified by  : $Author$
 
- Original author   : a.duttaroy@cs.ucl.ac.uk
+ Original author   : m.clarkson@ucl.ac.uk
 
  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
@@ -58,16 +58,17 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
   m_AxialRadioButton->setChecked(true);
   ChangeLayout(true);
 
-  m_Renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetAxialWindow()->GetVtkRenderWindow()));
-  m_Renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetSagittalWindow()->GetVtkRenderWindow()));
-  m_Renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetCoronalWindow()->GetVtkRenderWindow()));
+  std::vector<mitk::BaseRenderer*> renderers;
+  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetAxialWindow()->GetVtkRenderWindow()));
+  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetSagittalWindow()->GetVtkRenderWindow()));
+  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetCoronalWindow()->GetVtkRenderWindow()));
 
   m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
-  m_NodeAddedSetter->SetRenderers(m_Renderers);
+  m_NodeAddedSetter->SetRenderers(renderers);
   m_NodeAddedSetter->SetVisibility(false);
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
-  m_VisibilityTracker->SetRenderersToUpdate(m_Renderers);
+  m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
   connect(m_TwoViewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnTwoViewStateChanged(int)));
   connect(m_VerticalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnVerticalLayoutStateChanged(int)));
@@ -91,7 +92,6 @@ void QmitkMIDASSegmentationViewWidget::SetDataStorage(mitk::DataStorage* storage
     m_ViewerWidget->SetEnabled(true);
 
     m_NodeAddedSetter->SetDataStorage(storage);
-
     m_VisibilityTracker->SetDataStorage(storage);
   }
 }

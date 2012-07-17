@@ -12,7 +12,7 @@
  Revision          : $Revision$
  Last modified by  : $Author$
 
- Original author   : $Author$
+ Original author   : m.clarkson@ucl.ac.uk
 
  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
@@ -163,8 +163,6 @@ private:
   QmitkRenderWindow* m_MainWindowCoronal;
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
-  std::vector<mitk::BaseRenderer*> m_Renderers;
-
 };
 
 #endif // QMITKMIDASSEGMENTATIONVIEWWIDGET_H
