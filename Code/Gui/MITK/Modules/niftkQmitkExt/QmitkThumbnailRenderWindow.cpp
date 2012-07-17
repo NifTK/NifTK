@@ -75,6 +75,16 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   this->installEventFilter(m_WheelEventEater);
 
   m_BaseRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
+
+  std::vector<mitk::BaseRenderer*> renderers;
+  renderers.push_back(m_BaseRenderer);
+
+  m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
+  m_NodeAddedSetter->SetRenderers(renderers);
+  m_NodeAddedSetter->SetVisibility(false);
+
+  m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
+  m_VisibilityTracker->SetRenderersToUpdate(renderers);
 }
 
 QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
@@ -175,6 +185,9 @@ void QmitkThumbnailRenderWindow::SetDataStorage(mitk::DataStorage::Pointer dataS
 
   mitk::BaseRenderer::Pointer thumbnailWindowRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
   thumbnailWindowRenderer->SetDataStorage(dataStorage);
+
+  m_NodeAddedSetter->SetDataStorage(dataStorage);
+  m_VisibilityTracker->SetDataStorage(dataStorage);
 }
 
 mitk::DataStorage::Pointer QmitkThumbnailRenderWindow::GetDataStorage()
@@ -280,68 +293,6 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
   }
 }
 
-void QmitkThumbnailRenderWindow::UpdateVisibility()
-{
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-
-  if (dataStorage.IsNotNull() && m_TrackedRenderWindow != NULL)
-  {
-    // Intention : This object should display all the data nodes visible in the focused window, and none others.
-    // Assumption: Renderer specific properties override the global ones.
-    // so......    Objects will be visible, unless the the node has a render window specific property that says otherwise.
-
-    mitk::BaseRenderer::Pointer mitkRendererForThumbnail = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
-    mitk::BaseRenderer::Pointer mitkRendererForTrackedWidget = mitk::BaseRenderer::GetInstance(m_TrackedRenderWindow);
-
-    if (mitkRendererForThumbnail.IsNotNull() && mitkRendererForTrackedWidget.IsNotNull())
-    {
-      mitk::DataStorage::SetOfObjects::ConstPointer allNodes = dataStorage->GetAll();
-      mitk::DataStorage::SetOfObjects::const_iterator allNodesIter;
-
-      int counter = 0;
-
-      for (allNodesIter = allNodes->begin(); allNodesIter != allNodes->end(); ++allNodesIter)
-      {
-        bool globalVisible(false);
-        bool foundGlobalVisible(false);
-        foundGlobalVisible = (*allNodesIter)->GetBoolProperty("visible", globalVisible);
-
-        bool trackedWindowVisible(false);
-        bool foundTrackedWindowVisible(false);
-        foundTrackedWindowVisible = (*allNodesIter)->GetBoolProperty("visible", trackedWindowVisible, mitkRendererForTrackedWidget);
-
-        // We default to ON.
-        bool finalVisibility(true);
-
-        // The logic.
-        if ((foundTrackedWindowVisible && !trackedWindowVisible)
-            || (foundGlobalVisible && !globalVisible)
-            )
-        {
-          finalVisibility = false;
-        }
-
-        /*
-        qDebug() << QString("QmitkThumbnailRenderWindow::UpdateVisibility():c=%1, gv=%2, fgv=%3, twv=%4, ftwv=%5, finalVisibility=%6") \
-            .arg(counter) \
-            .arg(globalVisible) \
-            .arg(foundGlobalVisible) \
-            .arg(trackedWindowVisible) \
-            .arg(foundTrackedWindowVisible) \
-            .arg(finalVisibility) \
-            .toLocal8Bit().constData();
-        */
-
-        // Set the final visibility flag
-        (*allNodesIter)->SetBoolProperty("visible", finalVisibility, mitkRendererForThumbnail);
-
-        counter++;
-      } // end for
-    } // end if not null
-
-  } // end if
-}
-
 void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is created in NodeAdded()
@@ -357,7 +308,6 @@ void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
 {
   this->UpdateSliceAndTimeStep();
   this->OnDisplayGeometryChanged();
-  this->UpdateVisibility();
   this->UpdateBoundingBox();
 
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
@@ -379,7 +329,6 @@ void QmitkThumbnailRenderWindow::NodeChanged( const mitk::DataNode* node)
 /*
   this->UpdateSliceAndTimeStep();
   this->OnDisplayGeometryChanged();
-  this->UpdateVisibility();
   this->UpdateBoundingBox();
 */
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
@@ -523,8 +472,11 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
               // This computes the bounding box.
               this->OnDisplayGeometryChanged();
 
-              // Make sure visibility flags are updated
-              this->UpdateVisibility();
+              // Setup the visibility tracker.
+              std::vector<mitk::BaseRenderer*> windowsToTrack;
+              windowsToTrack.push_back(const_cast<mitk::BaseRenderer*>(focusedWindowRenderer.GetPointer()));
+              this->m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
+              this->m_VisibilityTracker->OnPropertyChanged(); // force update
 
               // Finally to get the box to update
               this->UpdateBoundingBox();

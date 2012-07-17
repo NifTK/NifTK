@@ -27,11 +27,13 @@
 
 #include <QColor>
 #include <niftkQmitkExtExports.h>
-#include "QmitkRenderWindow.h"
-#include "mitkDataStorage.h"
-#include "mitkDataNode.h"
-#include "mitkCuboid.h"
-#include "mitkTimeSlicedGeometry.h"
+#include <QmitkRenderWindow.h>
+#include <mitkDataStorage.h>
+#include <mitkDataNode.h>
+#include <mitkCuboid.h>
+#include <mitkTimeSlicedGeometry.h>
+#include "mitkDataStorageVisibilityTracker.h"
+#include "mitkMIDASNodeAddedVisibilitySetter.h"
 
 class QmitkMouseEventEater;
 class QmitkWheelEventEater;
@@ -168,9 +170,6 @@ private:
   // When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void UpdateWorldGeometry(bool fitToDisplay);
 
-  // When any visibility flag changes we recompute which objects are visible in this render window.
-  void UpdateVisibility();
-
   // Updates the bounding box by taking the 4 corners of the focussed render window, by Get3DPoint().
   void UpdateBoundingBox();
 
@@ -233,6 +232,10 @@ private:
 
   // Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
   bool m_InDataStorageChanged;
+
+  // To track visibility changes.
+  mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+  mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
 };
 
