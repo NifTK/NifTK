@@ -358,8 +358,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>556</width>
-            <height>291</height>
+            <width>512</width>
+            <height>84</height>
            </rect>
           </property>
           <attribute name="label">
@@ -445,8 +445,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>556</width>
-            <height>291</height>
+            <width>512</width>
+            <height>180</height>
            </rect>
           </property>
           <attribute name="label">
@@ -573,8 +573,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>556</width>
-            <height>291</height>
+            <width>382</width>
+            <height>56</height>
            </rect>
           </property>
           <attribute name="label">
@@ -638,6 +638,14 @@
           </layout>
          </widget>
          <widget class="QWidget" name="page">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>98</width>
+            <height>28</height>
+           </rect>
+          </property>
           <attribute name="label">
            <string>Reference</string>
           </attribute>
@@ -692,8 +700,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>556</width>
-            <height>175</height>
+            <width>619</width>
+            <height>108</height>
            </rect>
           </property>
           <attribute name="label">
@@ -791,8 +799,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>556</width>
-            <height>175</height>
+            <width>397</width>
+            <height>226</height>
            </rect>
           </property>
           <attribute name="label">
@@ -946,8 +954,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>556</width>
-            <height>175</height>
+            <width>472</width>
+            <height>85</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1059,9 +1067,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-15</y>
-            <width>640</width>
-            <height>243</height>
+            <y>-40</y>
+            <width>604</width>
+            <height>318</height>
            </rect>
           </property>
           <property name="layoutDirection">
@@ -1140,6 +1148,9 @@
              </item>
              <item row="2" column="1">
               <widget class="QDoubleSpinBox" name="m_WeightBendingEnergyDoubleSpinBox">
+               <property name="decimals">
+                <number>3</number>
+               </property>
                <property name="maximum">
                 <double>1.000000000000000</double>
                </property>
@@ -1289,8 +1300,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>422</width>
-            <height>95</height>
+            <width>415</width>
+            <height>122</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1382,7 +1393,7 @@
             <x>0</x>
             <y>0</y>
             <width>491</width>
-            <height>148</height>
+            <height>191</height>
            </rect>
           </property>
           <attribute name="label">
@@ -1517,8 +1528,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>556</width>
-            <height>175</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">
