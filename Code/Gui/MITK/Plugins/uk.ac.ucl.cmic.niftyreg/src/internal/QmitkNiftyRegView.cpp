@@ -174,10 +174,10 @@ void QmitkNiftyRegView::SetDefaultParameters()
 
   // Non-Rigid - Input Image
 
-  m_RegF3dParameters.referenceThresholdUp  = -std::numeric_limits<PrecisionTYPE>::max();
+  m_RegF3dParameters.referenceThresholdUp  = std::numeric_limits<PrecisionTYPE>::max();
   m_RegF3dParameters.referenceThresholdLow = -std::numeric_limits<PrecisionTYPE>::max();
 
-  m_RegF3dParameters.floatingThresholdUp   = -std::numeric_limits<PrecisionTYPE>::max();
+  m_RegF3dParameters.floatingThresholdUp   = std::numeric_limits<PrecisionTYPE>::max();
   m_RegF3dParameters.floatingThresholdLow  = -std::numeric_limits<PrecisionTYPE>::max();
 
   // Non-Rigid - Spline
@@ -211,7 +211,7 @@ void QmitkNiftyRegView::SetDefaultParameters()
   // Non-Rigid - GPU-related options:
   
   m_RegF3dParameters.checkMem = false;
-  m_RegF3dParameters.useGPU = true;
+  m_RegF3dParameters.useGPU = false;
   m_RegF3dParameters.cardNumber = -1;
 
   // Non-Rigid - Advanced
@@ -1311,6 +1311,8 @@ void QmitkNiftyRegView::OnSaveAsPushButtonPressed( void )
 void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 {
 
+  PrintSelf( std::cout );
+
   if ( ! m_Modified )
   {
     //return;
@@ -1890,7 +1892,10 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
   REG->SetReferenceBinNumber( 0, m_RegF3dParameters.referenceBinNumber );
   REG->SetFloatingBinNumber( 0, m_RegF3dParameters.floatingBinNumber );
   
-  REG->SetWarpedPaddingValue( m_RegF3dParameters.warpedPaddingValue );
+  if ( m_RegF3dParameters.warpedPaddingValue == -std::numeric_limits<PrecisionTYPE>::max() )
+    REG->SetWarpedPaddingValue( std::numeric_limits<PrecisionTYPE>::quiet_NaN() );
+  else
+    REG->SetWarpedPaddingValue( m_RegF3dParameters.warpedPaddingValue );
 
   for ( unsigned int s=0; s<3; s++ )
     REG->SetSpacing( s, m_RegF3dParameters.spacing[s] );
