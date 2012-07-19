@@ -83,11 +83,11 @@ GetAsAcquiredOrientation(
 MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::DataNode* node)
 {
   MIDASView view = defaultView;
-  if (view == MIDAS_VIEW_AS_ACQUIRED && node != NULL)
+  if (node != NULL)
   {
     // "As Acquired" means you take the orientation of the XY plane
     // in the original image data, so we switch to ITK to work it out.
-    MIDASOrientation orientation = MIDAS_ORIENTATION_CORONAL;
+    MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
 
     mitk::Image::Pointer image = NULL;
     image = dynamic_cast<mitk::Image*>(node->GetData());
@@ -122,7 +122,7 @@ MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::DataNode* 
     }
     else
     {
-      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped defaulting to view=" << view << std::endl;
+      MITK_ERROR << "GetAsAcquiredView defaulting to view=" << view << std::endl;
     }
   }
   return view;

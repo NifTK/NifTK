@@ -53,6 +53,7 @@ bool mitk::AreDifferent(const mitk::Point3D& a, const mitk::Point3D& b)
     if (fabs(a[i] - b[i]) > 0.01)
     {
       areDifferent = true;
+      break;
     }
   }
 
