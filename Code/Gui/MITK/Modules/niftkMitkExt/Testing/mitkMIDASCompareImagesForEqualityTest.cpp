@@ -33,67 +33,69 @@
 #include <mitkDataStorage.h>
 #include <mitkStandaloneDataStorage.h>
 #include <mitkDataNode.h>
+#include <mitkImageAccessByItk.h>
 
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASImageUtils.h"
 #include "mitkNifTKCoreObjectFactory.h"
+#include "mitkMIDASImageUtils.h"
 
 /**
- * \brief Test class for mitkMIDASImageUtils.
+ * \brief Test class for mitkMIDASCompareImagesForEqualityTest.
  */
-class mitkMIDASAsAcquiredOrientationTestClass
+class mitkMIDASCompareImagesForEqualityTestClass
 {
 
 public:
 
   //-----------------------------------------------------------------------------
-  static void TestAsAcquired(char* argv[])
+  static void TestEquality(char* argv[])
   {
-    MITK_TEST_OUTPUT(<< "Starting TestAsAcquired...");
+    MITK_TEST_OUTPUT(<< "Starting TestEquality...");
 
-    // Assume zero arg is program name, first argument is image name, second argument is integer matching enum MIDASView
     MITK_TEST_OUTPUT(<< "TestAsAcquired...argv[1]=" << argv[1] << ", argv[2]=" << argv[2] << ", argv[3]=" << argv[3]);
 
-    std::string fileName = argv[1];
-    int defaultView = atoi(argv[2]);
-    int expectedView = atoi(argv[3]);
+    std::string fileName1 = argv[1];
+    std::string fileName2 = argv[2];
+    int mode = atoi(argv[3]);
 
     // Need to load images, specifically using MIDAS/DRC object factory.
     RegisterNifTKCoreObjectFactory();
 
     // Need to load image, using MITK utils.
     std::vector<std::string> files;
-    files.push_back(fileName);
+    files.push_back(fileName1);
+    files.push_back(fileName2);
     mitk::StandaloneDataStorage::Pointer localStorage = mitk::StandaloneDataStorage::New();
     mitk::IOUtil::LoadFiles(files, *(localStorage.GetPointer()));
     mitk::DataStorage::SetOfObjects::ConstPointer allImages = localStorage->GetAll();
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 2),".. Testing 2 images loaded.");
 
-    // Get the "As Acquired" view.
-    const mitk::DataNode::Pointer node = (*allImages)[0];
-    bool isImage = mitk::IsImage(node);
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(isImage, true),".. Testing IsImage=true");
+    const mitk::DataNode::Pointer node1 = (*allImages)[0];
+    const mitk::DataNode::Pointer node2 = (*allImages)[1];
 
-    MIDASView view = mitk::GetAsAcquiredView(MIDASView(defaultView), dynamic_cast<mitk::Image*>(node->GetData()));
-    MITK_TEST_OUTPUT(<< "MIDASView default=" << defaultView);
-    MITK_TEST_OUTPUT(<< "MIDASView output=" << view);
-    MITK_TEST_OUTPUT(<< "MIDASView expected=" << expectedView);
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(view, (MIDASView)expectedView),".. Testing expected view");
+    mitk::Image::ConstPointer image1 = dynamic_cast<const mitk::Image*>(node1->GetData());
+    mitk::Image::ConstPointer image2 = dynamic_cast<const mitk::Image*>(node2->GetData());
 
-    MITK_TEST_OUTPUT(<< "Finished TestAsAcquired...");
+    bool result = mitk::ImagesHaveEqualIntensities(image1, image2);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(result, true),".. Testing 2 images equal intensities.");
+
+    if (mode > 0)
+    {
+      result = mitk::ImagesHaveSameSpatialExtent(image1, image2);
+      MITK_TEST_CONDITION_REQUIRED(mitk::Equal(result, true),".. Testing 2 images same spatial extent.");
+    }
+    MITK_TEST_OUTPUT(<< "Finished TestEquality...");
   }
 };
 
 /**
- * \brief Basic test harness for a variety of classes, mainly mitkMIDASImageUtils
- * that works out the orientation of the XY plane.
+ * \brief Basic test harness to make sure we load DRC Analyze the same as Nifti.
  */
-int mitkMIDASAsAcquiredOrientationTest(int argc, char * argv[])
+int mitkMIDASCompareImagesForEqualityTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("mitkMIDASAsAcquiredOrientationTest");
+  MITK_TEST_BEGIN("mitkMIDASCompareImagesForEqualityTest");
 
-  mitkMIDASAsAcquiredOrientationTestClass::TestAsAcquired(argv);
+  mitkMIDASCompareImagesForEqualityTestClass::TestEquality(argv);
 
   MITK_TEST_END();
 }

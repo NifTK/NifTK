@@ -36,4 +36,10 @@ mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-1    mitkMIDASAs
 mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-2    mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 2 1)
 mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-14    mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 14 1)
 
+# Test that analyze images load the same as Nifti images. Here we test intensity values, assuming same size.
+mitkAddCustomModuleTest(mitkMIDASDRCAnalyzeSameIntensitiesAsNiftiTest_01719-a mitkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.img ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii 0)
+mitkAddCustomModuleTest(mitkMIDASDRCAnalyzeSameIntensitiesAsNiftiTest_01719-s mitkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-s.img ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-s.nii 0)
+mitkAddCustomModuleTest(mitkMIDASDRCAnalyzeSameIntensitiesAsNiftiTest_01719-c mitkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.nii 0)
 
+# Test that if we load the same Nifti image twice, the "is equals" checks all do return true.
+mitkAddCustomModuleTest(mitkMIDASTwoNiftiImagesAreEqualTest mitkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii 0)
