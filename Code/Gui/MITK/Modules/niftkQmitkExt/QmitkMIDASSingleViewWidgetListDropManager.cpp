@@ -124,7 +124,7 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
   }
 
   MIDASView defaultView = MIDAS_VIEW_CORONAL;
-  MIDASView view = GetAsAcquiredView(defaultView, nodes[0]);
+  MIDASView view = GetAsAcquiredView(defaultView, dynamic_cast<mitk::Image*>(nodes[0]->GetData()));
 
   for (unsigned int i = 0; i < nodes.size(); i++)
   {
