@@ -195,7 +195,7 @@ class xmlModelGenrator :
     
     
     def setShellElementSet( self, elements, materialType, materialParams, density, thickness ):
-        ''' @param elements: Can either be a numpy array with the nodes or zero (integer assumes only one material within model)
+        ''' @param elements: Can either be a numpy array with the nodes or zero (integer assumes only one shell material within model)
         '''
         
         if isinstance(materialParams, (int,float) ) :
@@ -265,7 +265,7 @@ class xmlModelGenrator :
             strElaParams  = ''
             
             for p in  matSet['elasticParams']:
-                strElaParams = strElaParams + str('%.2f ' % p )
+                strElaParams = strElaParams + str('%f ' % p )
             
             elaParamEntries = doc.createTextNode( strElaParams )
             

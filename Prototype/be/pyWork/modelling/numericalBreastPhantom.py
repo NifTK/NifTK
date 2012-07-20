@@ -432,6 +432,7 @@ class numericalBreastPhantom:
                                  totalTime          = self.totalTime, 
                                  dampingCoefficient = self.damping, 
                                  hgKappa = 0.05, density = 1000 )    
+        
         gen.writeXML( self.outXmlModelFat )
         
         return gen

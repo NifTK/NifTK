@@ -13,6 +13,7 @@ import matplotlib as mpl
 from mayaviPlottingWrap import plotArrayAs3DPoints, plotVectorsAtPoints
 import runSimulation as rS
 import convergenceAnalyser as cA
+from envisage.safeweakref import ref
 
 
 def referenceStatePhantomExperiment( configID ) : 
@@ -42,8 +43,8 @@ def referenceStatePhantomExperiment( configID ) :
     tetgenQ         = 1.5
     
     # system parameters
-    timeStep        = 1e-4
-    totalTime       = 5.0
+    timeStep        = 1e-4 # the critical time step for the 00 mesh resolution is 5e-4
+    totalTime       = 5.0 
     damping         = 25
     
     loadShape = 'POLY345FLAT4'
@@ -93,13 +94,21 @@ def referenceStatePhantomExperiment( configID ) :
     matParamsFat      = [  100, 50000 ]
     matParamsSkin     = [ 1000, 50000 ]
     
+    
     if configID.count( 'AB' ) == 1:
-        matModelFat       = 'AB'
-        matModelSkin      = 'AB'
+        matModelFat     = 'AB'
+        matModelSkin    = 'AB'
         matParamsFat    = [  100, 1.25, 50000 ]
         matParamsSkin   = [ 1000, 1.25, 50000 ]
 
 
+    if configID.count( 'LE' ) == 1:
+        matModelFat   = 'LE'
+        matModelSkin  = 'LE'
+        matParamsFat  = [  299.80, 0.499001 ]
+        matParamsSkin = [ 2980.13, 0.490066 ]
+    
+    
 
     ################
     # Visco elastic 
@@ -401,32 +410,33 @@ def referenceStatePhantomExperiment( configID ) :
 
 
 
+#if __name__ == '__main__' :
+#    
+#    if len( sys.argv ) != 2:
+#        print( 'Usage: Please give one configuration to be executed. Available options are:' )
+#        print(' - 00     -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000] ' )
+#        print(' - 01     -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000]' )
+#        print(' - 02     -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000]' )
+#        print(' - 03     -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000]' )
+#        print(' - 00s    -> coarse mesh        (approx.  22k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 01s    -> medium coarse mesh (approx.  63k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 02s    -> fine mesh          (approx.  86k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 03s    -> very fine mesh     (approx. 166k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 00sAB  -> coarse mesh        (approx.  22k elements), fat+skin, AB [100/1000, 1.25 50000]' )
+#        print(' - 01sAB  -> medium coarse mesh (approx.  63k elements), fat+skin, AB [100/1000, 1.25 50000]' )
+#        print(' - 02sAB  -> fine mesh          (approx.  86k elements), fat+skin, AB [100/1000, 1.25 50000]' )
+#        print(' - 00VE   -> coarse mesh        (approx.  22k elements), fat only, NHV [100, 50000] [1.0 0.2 1.0 1e10]' )
+#        print(' - 00cyl  -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000], cylindrical base' )
+#        print(' - 01cyl  -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000], cylindrical base' )
+#        print(' - 02cyl  -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000], cylindrical base' )
+#        print(' - 03cyl  -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000], cylindrical base' )
+#        sys.exit()
+#    
+#    configID = sys.argv[1] 
+#    referenceStatePhantomExperiment( configID )
+#    
+    
+    
+
 if __name__ == '__main__' :
-    
-    if len( sys.argv ) != 2:
-        print( 'Usage: Please give one configuration to be executed. Available options are:' )
-        print(' - 00     -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000] ' )
-        print(' - 01     -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000]' )
-        print(' - 02     -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000]' )
-        print(' - 03     -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000]' )
-        print(' - 00s    -> coarse mesh        (approx.  22k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 01s    -> medium coarse mesh (approx.  63k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 02s    -> fine mesh          (approx.  86k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 03s    -> very fine mesh     (approx. 166k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 00sAB  -> coarse mesh        (approx.  22k elements), fat+skin, AB [100/1000, 1.25 50000]' )
-        print(' - 01sAB  -> medium coarse mesh (approx.  63k elements), fat+skin, AB [100/1000, 1.25 50000]' )
-        print(' - 02sAB  -> fine mesh          (approx.  86k elements), fat+skin, AB [100/1000, 1.25 50000]' )
-        print(' - 00VE   -> coarse mesh        (approx.  22k elements), fat only, NHV [100, 50000] [1.0 0.2 1.0 1e10]' )
-        print(' - 00cyl  -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000], cylindrical base' )
-        print(' - 01cyl  -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000], cylindrical base' )
-        print(' - 02cyl  -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000], cylindrical base' )
-        print(' - 03cyl  -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000], cylindrical base' )
-        sys.exit()
-    
-    configID = sys.argv[1] 
-    referenceStatePhantomExperiment( configID )
-    
-    
-    
-    
-    
+    referenceStatePhantomExperiment( '00' )

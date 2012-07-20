@@ -22,10 +22,10 @@ class xmlModelParameterSweeper :
         
         for i in range( len( parameterArray ) ) : 
             p    = parameterArray[i]
-            id   = idArray[i]
+            ID   = idArray[i]
             dNew = d[ 0 : pBegin + len( parToChangeOpen ) ] + str( p ) +  d[ pEnd : len( d ) ] 
             
-            outFileNames.append( outDir + os.path.splitext( os.path.split( referenceModelFileName )[1] )[0] + id + '.xml' )
+            outFileNames.append( outDir + os.path.splitext( os.path.split( referenceModelFileName )[1] )[0] + ID + '.xml' )
             out = open(outFileNames[-1], 'w')
             out.write( dNew )
             out.close()
