@@ -70,7 +70,8 @@ class referenceStateEstimation:
            
         self.xmlGenerators[-1].writeXML( self.simulationFiles[-1] )
         
-        retVal = runNiftySim( os.path.split( self.xmlGenerators[-1].xmlFileName )[-1], os.path.split( self.xmlGenerators[-1].xmlFileName )[0] )
+        retVal = runNiftySim( os.path.split( self.xmlGenerators[-1].xmlFileName )[-1], 
+                              os.path.split( self.xmlGenerators[-1].xmlFileName )[0] )
         
         if retVal != 0 :
             return
@@ -110,7 +111,23 @@ class referenceStateEstimation:
                                   os.path.split( self.xmlGenerators[-1].xmlFileName )[ 0] )
             
             if retVal != 0 :
-                return
+                # When the previous simulation was successful try to decrease the update as below...
+                if i > 0:
+                    self.updateFactor = self.updateFactor * 0.7
+                    self.updateFactors.append( self.updateFactor ) 
+                    print('Step not successful, decreased updateFactor to %f' % self.updateFactor )
+                    
+                    # get the values from the last successful step
+                    nodalDistance = self.deformationHandlers[ lastImprovedGuess + 1 ].deformedNodes - self.xmlModelLoaded.nodes
+                    self.referenceSateNodes.append( self.referenceSateNodes[lastImprovedGuess] - self.updateFactor * nodalDistance )
+                    
+                    self.meanNodalDistance.append(np.nan)
+                    self.maxNodalDistance.append(np.nan)
+                    self.deformationHandlers.append(None)
+                    continue
+                    
+                else:
+                    return
             
             # Compare the simulation result with the original (loaded) configuration
             self.deformationHandlers.append( deformHandler.modelDeformationHandler( self.xmlGenerators[-1] ) )
@@ -179,8 +196,9 @@ class referenceStateEstimation:
                 lastImprovedGuess = i
             
         
-        self.maxNodalDistance = np.array( self.maxNodalDistance )
-        bestIteration =  np.nonzero(self.maxNodalDistance == np.min( self.maxNodalDistance ) )[0]    
+        self.maxNodalDistance = np.array( self.maxNodalDistance, dtype=np.float64 )
+        bestIteration =  np.nonzero( self.maxNodalDistance == 
+                                     np.min( self.maxNodalDistance[ np.invert( np.isnan( self.maxNodalDistance ) ) ] ) )[0]    
         
         self.optimalReferenceSateNodes = self.deformationHandlers[bestIteration+1].mdlNodes
         
