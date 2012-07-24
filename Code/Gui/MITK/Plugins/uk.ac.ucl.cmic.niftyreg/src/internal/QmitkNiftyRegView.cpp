@@ -174,10 +174,10 @@ void QmitkNiftyRegView::SetDefaultParameters()
 
   // Non-Rigid - Input Image
 
-  m_RegF3dParameters.referenceThresholdUp  = std::numeric_limits<PrecisionTYPE>::max();
+  m_RegF3dParameters.referenceThresholdUp  = -std::numeric_limits<PrecisionTYPE>::max();
   m_RegF3dParameters.referenceThresholdLow = -std::numeric_limits<PrecisionTYPE>::max();
 
-  m_RegF3dParameters.floatingThresholdUp   = std::numeric_limits<PrecisionTYPE>::max();
+  m_RegF3dParameters.floatingThresholdUp   = -std::numeric_limits<PrecisionTYPE>::max();
   m_RegF3dParameters.floatingThresholdLow  = -std::numeric_limits<PrecisionTYPE>::max();
 
   // Non-Rigid - Spline
@@ -353,8 +353,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   // Aladin Parameters
   // ~~~~~~~~~~~~~~~~~
 
-  m_Controls.m_AladinToolBox->setCurrentIndex( 0 );
-
   // Aladin - Initialisation
 
   m_Controls.m_UseNiftyHeaderCheckBox->setChecked( m_RegAladinParameters.alignCenterFlag );
@@ -398,8 +396,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   // Non-Rigid Parameters
   // ~~~~~~~~~~~~~~~~~~~~
   
-  m_Controls.m_NonRigidToolBox->setCurrentIndex( 0 );
-
   // Non-Rigid - Initialisation
 
   m_Controls.m_NonRigidInputControlPointCheckBox->setChecked( m_RegF3dParameters.
@@ -1883,10 +1879,21 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
   REG->SetReferenceSmoothingSigma( m_TargetSigmaValue );
   REG->SetFloatingSmoothingSigma( m_SourceSigmaValue );
 
-  REG->SetReferenceThresholdUp( 0, m_RegF3dParameters.referenceThresholdUp );
+  // NB: -std::numeric_limits<PrecisionTYPE>::max() is a special value which 
+  // indicates the maximum value for ThresholdUp and the minimum for ThresholdLow.
+
+  if ( m_RegF3dParameters.referenceThresholdUp == -std::numeric_limits<PrecisionTYPE>::max() )
+    REG->SetReferenceThresholdUp( 0, std::numeric_limits<PrecisionTYPE>::max() );
+  else
+    REG->SetReferenceThresholdUp( 0, m_RegF3dParameters.referenceThresholdUp );
+
   REG->SetReferenceThresholdLow( 0, m_RegF3dParameters.referenceThresholdLow );
 
-  REG->SetFloatingThresholdUp( 0, m_RegF3dParameters.floatingThresholdUp );
+  if ( m_RegF3dParameters.floatingThresholdUp == -std::numeric_limits<PrecisionTYPE>::max() )
+    REG->SetFloatingThresholdUp( 0, std::numeric_limits<PrecisionTYPE>::max() );
+  else
+    REG->SetFloatingThresholdUp( 0, m_RegF3dParameters.floatingThresholdUp );
+
   REG->SetFloatingThresholdLow( 0, m_RegF3dParameters.floatingThresholdLow );
 
   REG->SetReferenceBinNumber( 0, m_RegF3dParameters.referenceBinNumber );
