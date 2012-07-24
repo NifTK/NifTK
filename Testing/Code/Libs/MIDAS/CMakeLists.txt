@@ -38,7 +38,7 @@ SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 # Dont forget its:  ADD_TEST(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>
 #--------------------------------------------------------------------------------------
 
-ADD_TEST(LoadRegionTest ${MIDAS_INTEGRATION_TESTS} LoadRegionTest ${INPUT_DATA}/ADNI-AD-098_S_0149-Scr-01728_REG.img ${INPUT_DATA}/ADNI-AD-098_S_0149-Scr-01728_REG 10)
+ADD_TEST(MIDAS-LoadRegionTest ${MIDAS_INTEGRATION_TESTS} LoadRegionTest ${INPUT_DATA}/ADNI-AD-098_S_0149-Scr-01728_REG.img ${INPUT_DATA}/ADNI-AD-098_S_0149-Scr-01728_REG 10)
 
 #################################################################################
 # Build instructions.
