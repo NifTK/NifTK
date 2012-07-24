@@ -1008,7 +1008,8 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       if ( id == 1 )
       {
         // Now geometry is established, set to middle slice.
-        sliceNavigationController->GetSlice()->SetPos( sliceNavigationController->GetSlice()->GetSteps() / 2 );
+        int sliceNumber = (int)((double)(sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
+        sliceNavigationController->GetSlice()->SetPos(sliceNumber);
       }
       // Now geometry is established, get the display geometry to fit the picture to the window.
       baseRenderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);

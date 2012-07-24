@@ -250,9 +250,9 @@ public slots:
 protected slots:
 
   // Qt slots, connected to Qt GUI elements.
-  void OnSliceNumberChanged(int previousSlice, int currentSlice);
-  void OnMagnificationFactorChanged(int previousMagnification, int currentMagnification);
-  void OnTimeChanged(int previousTime, int currentTime);
+  void OnSliceNumberChanged(double sliceNumber);
+  void OnMagnificationFactorChanged(double magnificationFactor);
+  void OnTimeChanged(double timeStep);
   void On1x1ButtonPressed();
   void On1x2ButtonPressed();
   void On1x3ButtonPressed();

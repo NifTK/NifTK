@@ -9,5 +9,4 @@ MITK_CREATE_MODULE(niftkQmitkExt
 
 TARGET_LINK_LIBRARIES(niftkQmitkExt
   niftkITK
-  niftkQt
   )
