@@ -167,7 +167,6 @@ namespace itk
           outputPixelValue = additionsImageIterator.Get();
         }
         
-        // See itk::ExcludeImageFilter
         // Effectively we are using the 3rd input to do connection breaker.
         
         if (outputPixelValue != 0 && connectionBreakerImageIterator.Get() == 0)

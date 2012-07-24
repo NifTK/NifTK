@@ -27,6 +27,8 @@
 /**
  * \class MorphologicalSegmentorPipelineParams
  * \brief The parameters for the MorphologicalSegmentorPipeline, which closely resemble the GUI controls.
+ *
+ * \ingroup midas_morph_editor
  */
 struct MorphologicalSegmentorPipelineParams
 {

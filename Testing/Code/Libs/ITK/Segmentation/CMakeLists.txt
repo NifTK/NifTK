@@ -47,7 +47,6 @@ ADD_TEST(MIDAS-Seg-LargestConnectedComponent ${SEGMENTATION_INTEGRATION_TESTS} i
 ADD_TEST(MIDAS-Seg-DownSampling ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASDownSamplingFilterTest )
 ADD_TEST(MIDAS-Seg-UpSampling ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASUpSamplingFilterTest )
 ADD_TEST(MIDAS-Seg-Rethresholding ${SEGMENTATION_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MIDASRethresholding.nii.gz ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz itkMIDASRethresholdingFilterTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img 400 ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz)
-ADD_TEST(MIDAS-Seg-ExcludeImageFilter ${SEGMENTATION_INTEGRATION_TESTS} itkExcludeImageFilterTest)
 ADD_TEST(MIDAS-Seg-LimitByRegionFunction ${SEGMENTATION_INTEGRATION_TESTS} itkLimitByRegionFunctionTest)
 ADD_TEST(MIDAS-Seg-Upd-CopyRegion ${SEGMENTATION_INTEGRATION_TESTS} itkImageUpdateCopyRegionProcessorTest )
 ADD_TEST(MIDAS-Seg-Upd-ClearRegion ${SEGMENTATION_INTEGRATION_TESTS} itkImageUpdateClearRegionProcessorTest )
@@ -76,7 +75,6 @@ ADD_TEST(MIDAS-Seg-RegionGrowingImageFilter ${SEGMENTATION_INTEGRATION_TESTS} it
 # Build instructions.
 #################################################################################
 SET( SegmentationIntegrationTests_SRCS
-itkExcludeImageFilterTest.cxx
 itkLimitByRegionFunctionTest.cxx
 itkImageUpdateClearRegionProcessorTest.cxx
 itkImageUpdateCopyRegionProcessorTest.cxx

@@ -39,7 +39,6 @@ void RegisterTests()
   REGISTER_TEST(itkMIDASUpSamplingFilterTest);
   REGISTER_TEST(itkMIDASRethresholdingFilterTest);
   REGISTER_TEST(itkMIDASRegionGrowingImageFilterTest2);
-  REGISTER_TEST(itkExcludeImageFilterTest);
   REGISTER_TEST(itkLimitByRegionFunctionTest);
   REGISTER_TEST(itkImageUpdateCopyRegionProcessorTest);
   REGISTER_TEST(itkImageUpdateClearRegionProcessorTest);

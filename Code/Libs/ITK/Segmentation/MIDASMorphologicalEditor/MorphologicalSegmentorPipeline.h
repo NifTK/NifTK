@@ -40,7 +40,7 @@
  * \class MorphologicalSegmentorPipeline
  * \brief Implementation of MorphologicalSegmentorPipelineInterface using ITK filters.
  *
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
+ * \ingroup midas_morph_editor
  */
 template<typename TPixel, unsigned int VImageDimension>
 class MorphologicalSegmentorPipeline : public MorphologicalSegmentorPipelineInterface

@@ -34,6 +34,8 @@ namespace itk
    * \brief Class, developed for MIDAS migration, that outputs an image the same size as the input,
    * but you can specify a region, and that region is kept, and anything outside that region, set
    * to a single background value. Used for Axial Cutoff.
+   *
+   * \ingroup midas_morph_editor
    */
   template <class TInputImage, class TOutputImage>
   class ITK_EXPORT MIDASMaskByRegionImageFilter : public ImageToImageFilter<TInputImage, TOutputImage>

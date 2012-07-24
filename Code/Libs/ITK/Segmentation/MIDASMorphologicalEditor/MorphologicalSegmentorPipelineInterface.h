@@ -31,7 +31,7 @@
  * \class MorphologicalSegmentorPipelineInterface
  * \brief Abstract interface to plug ITK pipeline into MITK framework to represent the MIDAS Morphological Segmentor Pipeline.
  *
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
+ * \ingroup midas_morph_editor
  */
 class MorphologicalSegmentorPipelineInterface
 {

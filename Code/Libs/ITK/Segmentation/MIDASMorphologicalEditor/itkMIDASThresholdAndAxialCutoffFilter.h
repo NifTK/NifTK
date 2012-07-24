@@ -36,6 +36,8 @@ namespace itk
  * \brief Does threshold and axial cutoff.
  * \deprecated See itk::MorphologicalSegmentorPipeline and itk::BinaryThresholdImageFilter
  * and itk::MIDASMaskByRegionImageFilter.
+ *
+ * \ingroup midas_morph_editor
  */
 
   template <class TImage>

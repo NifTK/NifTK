@@ -37,6 +37,8 @@ namespace itk {
 	 * \brief Largest connected component filter.
 	 *
 	 * Returns an image only containing the largest of the foreground components of the input image.
+	 *
+	 * \ingroup midas_morph_editor
 	 */
 	template <class TInputImageType, class TOutputImageType>
 	class MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter : public ImageToImageFilter<TInputImageType, TOutputImageType> {

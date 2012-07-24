@@ -38,6 +38,8 @@ namespace itk
  * From the paper, the parameter n is the number of erosions, which is specified
  * using SetNumberOfIterations(n), and the parameter s_i, which is the upper limit
  * in grey value, above which values are not eroded, which is set using SetUpperThreshold(value).
+ *
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>

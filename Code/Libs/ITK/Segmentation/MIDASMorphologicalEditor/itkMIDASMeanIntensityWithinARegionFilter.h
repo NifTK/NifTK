@@ -39,6 +39,7 @@ namespace itk
  * SetBinaryImageInput and should be a binary mask. The output is
  * a copy of the input binary mask.
  * 
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>
