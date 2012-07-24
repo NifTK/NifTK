@@ -63,7 +63,7 @@ public:
    * \brief Adds a filter.
    * \param filter A subclass of mitk::DataNodeFilter.
    */
-  void AddFilter(mitk::DataNodeFilter::Pointer& filter);
+  void AddFilter(mitk::DataNodeFilter::Pointer filter);
 
   /**
    * \brief Clears all filters.

@@ -46,3 +46,7 @@ mitkAddCustomModuleTest(MIDAS-mitkTwoNiftiImagesAreEqualTest mitkMIDASCompareIma
 
 # Trac 1675 - Paintbrush Tool Crashing. Test single clicks with increasing cursor, scan all image, click out of bounds etc.
 mitkAddCustomModuleTest(MIDAS-mitkPaintbrushToolTest mitkMIDASPaintbrushToolTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)
+
+# Trac 1683 - When nodes created via segmentation tools, the data sets much be visible in viewers
+#             such as the thumbnail viewer, and the segmentation views.
+mitkAddCustomModuleTest(MIDAS-mitkSegmentationNodeAddedVisibilityTest mitkMIDASSegmentationNodeAddedVisibilityTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)

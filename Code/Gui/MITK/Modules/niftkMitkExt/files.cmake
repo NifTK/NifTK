@@ -3,6 +3,7 @@ set(CPP_FILES
   Common/mitkMIDASImageUtils.cpp
   Common/mitkPointUtils.cpp
   DataManagement/mitkDataNodeBoolPropertyFilter.cpp
+  DataManagement/mitkDataNodeStringPropertyFilter.cpp
   DataManagement/mitkDataStorageUtils.cpp
   DataManagement/mitkDataStorageListener.cpp
   DataManagement/mitkDataStoragePropertyListener.cpp
@@ -10,6 +11,7 @@ set(CPP_FILES
   DataManagement/mitkMIDASNodeAddedInterpolationSetter.cpp
   DataManagement/mitkMIDASNodeAddedBlackOpacitySetter.cpp
   DataManagement/mitkMIDASNodeAddedVisibilitySetter.cpp
+  DataManagement/mitkMIDASDataNodeNameStringFilter.cpp
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cpp
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cpp
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cpp

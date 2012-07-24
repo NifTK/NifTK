@@ -235,6 +235,8 @@ private:
 
   // To track visibility changes.
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+
+  // This
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
 };

@@ -120,6 +120,12 @@ void QmitkThumbnailRenderWindow::Activated()
     m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
       ( this, &QmitkThumbnailRenderWindow::NodeChangedProxy ) );
   }
+
+  // Trigger this to get update as soon as activated.
+  if (focusManager != NULL)
+  {
+    this->OnFocusChanged();
+  }
 }
 
 void QmitkThumbnailRenderWindow::Deactivated()

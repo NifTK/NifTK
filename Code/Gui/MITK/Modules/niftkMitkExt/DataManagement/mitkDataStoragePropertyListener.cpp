@@ -31,6 +31,7 @@ namespace mitk
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::DataStoragePropertyListener()
 : m_PropertyName("")
+, m_AutoFire(false)
 {
   m_ObserverToPropertyMap.clear();
 }
@@ -182,8 +183,17 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
 
     }
     this->Modified();
-  }
 
+    // This bit will cause all the newly registered properties to fire a changed signal.
+    if (this->m_AutoFire)
+    {
+      std::map<unsigned long, mitk::BaseProperty::Pointer>::iterator iter;
+      for (iter = m_ObserverToPropertyMap.begin(); iter != m_ObserverToPropertyMap.end(); iter++)
+      {
+        (*iter).second->Modified();
+      }
+    }
+  }
 }
 
 

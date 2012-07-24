@@ -61,7 +61,7 @@ void DataStorageListener::SetDataStorage(const mitk::DataStorage::Pointer dataSt
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::AddFilter(mitk::DataNodeFilter::Pointer& filter)
+void DataStorageListener::AddFilter(mitk::DataNodeFilter::Pointer filter)
 {
   m_Filters.push_back(filter);
   this->Modified();

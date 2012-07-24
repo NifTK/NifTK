@@ -73,6 +73,10 @@ public:
   /// \brief GUI independent message callback.
   Message<> PropertyChanged;
 
+  /// \brief Set/Get the AutoFire property, which triggers automatic property updates each time the list of properties to watch is re-calculated.
+  itkSetMacro(AutoFire, bool);
+  itkGetMacro(AutoFire, bool);
+
 protected:
 
   DataStoragePropertyListener();
@@ -142,6 +146,13 @@ private:
    * \brief We store an optional list of renderers for watching renderer specific changes.
    */
   std::vector<mitk::BaseRenderer*> m_Renderers;
+
+  /**
+   * \brief Set this so that each time this class recalculates the list of properties to
+   * track, we also set each property to modified. Default false.
+   */
+  bool m_AutoFire;
+
 };
 
 } // end namespace

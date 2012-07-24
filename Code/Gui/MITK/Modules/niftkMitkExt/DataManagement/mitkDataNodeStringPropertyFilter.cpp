@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-07-17 12:27:28 +0100 (Tue, 17 Jul 2012) $
+ Revision          : $Revision: 9362 $
+ Last modified by  : $Author: mjc $
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -22,66 +22,68 @@
 
  ============================================================================*/
 
-#include "mitkMIDASNodeAddedVisibilitySetter.h"
-#include <mitkDataNode.h>
-#include <mitkProperties.h>
+#include "mitkDataNodeStringPropertyFilter.h"
+#include <mitkDataStorage.h>
 
 namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedVisibilitySetter::MIDASNodeAddedVisibilitySetter()
-: m_Visibility(false)
-, m_Filter(NULL)
+DataNodeStringPropertyFilter::DataNodeStringPropertyFilter()
 {
-  m_Filter = mitk::MIDASDataNodeNameStringFilter::New();
-  this->AddFilter(m_Filter.GetPointer());
+  m_Strings.clear();
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedVisibilitySetter::MIDASNodeAddedVisibilitySetter(mitk::DataStorage::Pointer dataStorage)
-: DataStorageListener(dataStorage)
+DataNodeStringPropertyFilter::~DataNodeStringPropertyFilter()
 {
+
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedVisibilitySetter::~MIDASNodeAddedVisibilitySetter()
+void DataNodeStringPropertyFilter::ClearList()
 {
+  m_Strings.clear();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
+void DataNodeStringPropertyFilter::AddToList(const std::string& propertyValue)
 {
-  m_Renderers = list;
-  this->Modified();
+  m_Strings.push_back(propertyValue);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASNodeAddedVisibilitySetter::ClearRenderers()
+void DataNodeStringPropertyFilter::AddToList(const std::vector< std::string >& listOfStrings)
 {
-  m_Renderers.clear();
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void MIDASNodeAddedVisibilitySetter::NodeAdded(mitk::DataNode* node)
-{
-  if (m_Renderers.size() > 0)
+  for (unsigned int i = 0; i < listOfStrings.size(); i++)
   {
-    for (unsigned int i = 0; i < m_Renderers.size(); i++)
+    this->AddToList(listOfStrings[i]);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool DataNodeStringPropertyFilter::Pass(const mitk::DataNode* node)
+{
+  bool result = true;
+  std::string propertyValue;
+
+  if (node != NULL && node->GetStringProperty(this->GetPropertyName().c_str(), propertyValue))
+  {
+    for (unsigned int i = 0; i < m_Strings.size(); i++)
     {
-      node->SetBoolProperty("visible", m_Visibility, m_Renderers[i]);
+      if (propertyValue == m_Strings[i])
+      {
+        result = false;
+        break;
+      }
     }
   }
-  else
-  {
-    node->SetBoolProperty("visible", m_Visibility);
-  }
+  return result;
 }
 
 } // end namespace

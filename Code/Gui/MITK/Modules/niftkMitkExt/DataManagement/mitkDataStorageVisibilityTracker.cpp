@@ -34,6 +34,7 @@ void DataStorageVisibilityTracker::Init(const mitk::DataStorage::Pointer dataSto
   m_Listener = mitk::DataStoragePropertyListener::New();
   m_Listener->SetPropertyName("visible");
   m_Listener->SetDataStorage(dataStorage);
+  m_Listener->SetAutoFire(true);
 
   m_RenderersToTrack.clear();
   m_RenderersToUpdate.clear();

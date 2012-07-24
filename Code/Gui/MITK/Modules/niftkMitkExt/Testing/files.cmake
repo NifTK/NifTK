@@ -9,4 +9,5 @@ set(MODULE_CUSTOM_TESTS
   mitkMIDASAsAcquiredOrientationTest.cpp
   mitkMIDASCompareImagesForEqualityTest.cpp
   mitkMIDASPaintbrushToolTest.cpp
+  mitkMIDASSegmentationNodeAddedVisibilityTest.cpp
 )
