@@ -8,7 +8,7 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-10-15 07:06:41 +0100 (Sat, 15 Oct 2011) $
+ Last Changed      : $Date: 2011-09-30 22:53:06 +0100 (Fri, 30 Sep 2011) $
  Revision          : $Revision: 7522 $
  Last modified by  : $Author: mjc $
 
@@ -28,17 +28,17 @@
 #include <memory>
 #include <math.h>
 #include "itkImage.h"
-#include "itkMIDASSegmentationTestUtils.h"
-#include "itkMIDASRetainMarksNoThresholdingProcessor.h"
+#include "../itkMIDASSegmentationTestUtils.h"
 #include "itkMIDASHelper.h"
+#include "itkMIDASWipeMinusProcessor.h"
 
 /**
- * Basic tests for itkMIDASRetailMarksNoThresholdingProcessor
+ * Basic tests for itkMIDASWipeMinusTest
  */
-int itkMIDASRetainMarksNoThresholdingTest(int argc, char * argv[])
+int itkMIDASWipeMinusTest(int argc, char * argv[])
 {
 
-  typedef itk::MIDASRetainMarksNoThresholdingProcessor<unsigned char, 3> ProcessorType;
+  typedef itk::MIDASWipeMinusProcessor<unsigned char, 3> ProcessorType;
   typedef itk::Image<unsigned char, 3> ImageType;
   typedef ImageType::RegionType RegionType;
   typedef ImageType::IndexType IndexType;
@@ -60,38 +60,44 @@ int itkMIDASRetainMarksNoThresholdingTest(int argc, char * argv[])
   image->Allocate();
   image->FillBuffer(1);
 
-  RegionType sourceRegion;
-  size.Fill(1);
-  voxelIndex.Fill(0);
-  sourceRegion.SetSize(size);
-  sourceRegion.SetIndex(voxelIndex);
-
-  RegionType targetRegion;
-  size.Fill(1);
-  voxelIndex.Fill(2);
-  targetRegion.SetSize(size);
-  targetRegion.SetIndex(voxelIndex);
-
-  FillImageRegionWithValue<unsigned char, 3>((unsigned char)2, image, sourceRegion);
-  FillImageRegionWithValue<unsigned char, 3>((unsigned char)3, image, targetRegion);
-  int counter = CountVoxelsAboveValue<unsigned char, 3>(2, image);
-  std::cerr << "Before counter=" << counter << std::endl;
-
   ProcessorType::Pointer processor = ProcessorType::New();
   processor->DebugOn();
-  processor->SetSourceImage(image);
   processor->SetDestinationImage(image);
-  processor->SetSlices(itk::ORIENTATION_AXIAL, 0, 2);
+  processor->SetOrientationAndSlice(itk::ORIENTATION_AXIAL, 1);
   processor->Redo();
 
-  ImageType* outputImage = processor->GetDestinationImage();
-
-  counter = CountVoxelsAboveValue<unsigned char, 3>(2, outputImage);
-  if (counter != 0)
+  unsigned long int count = CountVoxelsAboveValue<unsigned char, 3>(0, processor->GetDestinationImage());
+  if (count != 18)
   {
-    std::cerr << "Expected zero, but got:" << counter << std::endl;
+    std::cerr << "Expected 18, but got:" << count << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // Check that the right side got edited.
+  voxelIndex.Fill(0);
+  unsigned char pixelValue = processor->GetDestinationImage()->GetPixel(voxelIndex);
+  if (pixelValue != 1)
+  {
+    std::cerr << "Expected 1 at:" << voxelIndex << ", but got:" << pixelValue << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  voxelIndex.Fill(2);
+  pixelValue = processor->GetDestinationImage()->GetPixel(voxelIndex);
+  if (pixelValue != 0)
+  {
+    std::cerr << "Expected 0 at:" << voxelIndex << ", but got:" << pixelValue << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  processor->Undo();
+  count = CountVoxelsAboveValue<unsigned char, 3>(0, processor->GetDestinationImage());
+  if (count != 27)
+  {
+    std::cerr << "Expected 27, but got:" << count << std::endl;
     return EXIT_FAILURE;
   }
 
   return EXIT_SUCCESS;
+
 }

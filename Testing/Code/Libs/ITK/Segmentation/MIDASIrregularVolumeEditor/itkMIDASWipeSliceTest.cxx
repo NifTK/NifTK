@@ -28,7 +28,7 @@
 #include <memory>
 #include <math.h>
 #include "itkImage.h"
-#include "itkMIDASSegmentationTestUtils.h"
+#include "../itkMIDASSegmentationTestUtils.h"
 #include "itkMIDASHelper.h"
 #include "itkMIDASWipeSliceProcessor.h"
 

@@ -32,7 +32,7 @@
 #include "itkPointSet.h"
 #include "itkMIDASRegionGrowingProcessor.h"
 #include "itkMIDASRegionOfInterestCalculator.h"
-#include "itkMIDASSegmentationTestUtils.h"
+#include "../itkMIDASSegmentationTestUtils.h"
 
 /**
  * Basic tests for itkMIDASRegionGrowingProcessor.

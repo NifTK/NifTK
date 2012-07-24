@@ -30,19 +30,10 @@
 
 void RegisterTests()
 {
-  REGISTER_TEST(itkMIDASMeanIntensityWithinARegionFilterTest);
-  REGISTER_TEST(itkMIDASThresholdAndAxialCutoffFilterTest);
-  REGISTER_TEST(itkMIDASConditionalErosionFilterTest);
-  REGISTER_TEST(itkMIDASConditionalDilationFilterTest);
-  REGISTER_TEST(itkMIDASLargestConnectedComponentFilterTest);
-  REGISTER_TEST(itkMIDASDownSamplingFilterTest);
-  REGISTER_TEST(itkMIDASUpSamplingFilterTest);
-  REGISTER_TEST(itkMIDASRethresholdingFilterTest);
-  REGISTER_TEST(itkMIDASRegionGrowingImageFilterTest2);
-  REGISTER_TEST(itkLimitByRegionFunctionTest);
   REGISTER_TEST(itkImageUpdateCopyRegionProcessorTest);
   REGISTER_TEST(itkImageUpdateClearRegionProcessorTest);
   REGISTER_TEST(itkImageUpdatePixelWiseSingleValueProcessorTest);
+  REGISTER_TEST(itkMIDASRegionGrowingImageFilterTest2);
   REGISTER_TEST(itkMIDASRegionOfInterestCalculatorTest);
   REGISTER_TEST(itkMIDASWipeSliceTest);
   REGISTER_TEST(itkMIDASWipePlusTest);
@@ -53,7 +44,6 @@ void RegisterTests()
   REGISTER_TEST(itkMIDASRegionGrowingProcessorTest);
   REGISTER_TEST(itkMIDASPropagateUpProcessorTest);
   REGISTER_TEST(itkMIDASPropagateDownProcessorTest);
-  REGISTER_TEST(itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest);
   REGISTER_TEST(itkMIDASRegionOfInterestCalculatorMinimumRegionTest);
   REGISTER_TEST(itkMIDASThresholdApplyProcessorTest);
 }

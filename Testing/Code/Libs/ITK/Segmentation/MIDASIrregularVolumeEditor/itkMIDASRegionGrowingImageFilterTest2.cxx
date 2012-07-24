@@ -32,7 +32,7 @@
 #include "itkPoint.h"
 #include "itkPointSet.h"
 #include "itkMIDASRegionGrowingImageFilter.h"
-#include "itkMIDASSegmentationTestUtils.h"
+#include "../itkMIDASSegmentationTestUtils.h"
 
 /**
  * Basic tests for itkMIDASRegionGrowingImageFilter.

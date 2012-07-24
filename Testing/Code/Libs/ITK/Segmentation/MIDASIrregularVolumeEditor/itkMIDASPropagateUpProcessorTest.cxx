@@ -31,13 +31,13 @@
 #include "itkPointSet.h"
 #include "itkPoint.h"
 #include "itkMIDASHelper.h"
-#include "itkMIDASPropagateDownProcessor.h"
-#include "itkMIDASSegmentationTestUtils.h"
+#include "itkMIDASPropagateUpProcessor.h"
+#include "../itkMIDASSegmentationTestUtils.h"
 
 /**
- * Basic tests for itkMIDASPropagateDownProcessor
+ * Basic tests for itkMIDASPropagateUpProcessor
  */
-int itkMIDASPropagateDownProcessorTest(int argc, char * argv[])
+int itkMIDASPropagateUpProcessorTest(int argc, char * argv[])
 {
   typedef itk::Image<unsigned char, 3> SegmentationImageType;
   typedef itk::Image<short, 3>         GreyScaleImageType;
@@ -57,7 +57,7 @@ int itkMIDASPropagateDownProcessorTest(int argc, char * argv[])
   imageRegion.SetIndex(imageIndex);
 
   PointType seed;
-  seed.Fill(6);
+  seed.Fill(4);
 
   PointSetType::Pointer seeds = PointSetType::New();
   seeds->GetPoints()->InsertElement(0, seed);
@@ -86,11 +86,11 @@ int itkMIDASPropagateDownProcessorTest(int argc, char * argv[])
     }
   }
 
-  typedef itk::MIDASPropagateDownProcessor<unsigned char, short, double, 3> ProcessorType;
+  typedef itk::MIDASPropagateUpProcessor<unsigned char, short, double, 3> ProcessorType;
   ProcessorType::Pointer processor = ProcessorType::New();
 
   itk::ORIENTATION_ENUM orientation = itk::ORIENTATION_AXIAL;
-  int sliceNumber = 6;
+  int sliceNumber = 4;
   GreyPixelType lowerThreshold = 4;
   GreyPixelType upperThreshold = 6;
 
@@ -104,9 +104,9 @@ int itkMIDASPropagateDownProcessorTest(int argc, char * argv[])
 
   destinationImage = processor->GetDestinationImage();
   int count = CountVoxelsAboveValue<unsigned char, 3>(0, destinationImage);
-  if (count != 90)
+  if (count != 120)
   {
-    std::cerr << "Expected 90, but got count=" << count << std::endl;
+    std::cerr << "Expected 120, but got count=" << count << std::endl;
     return EXIT_FAILURE;
   }
 
