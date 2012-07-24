@@ -25,7 +25,6 @@
 #define MIDASMORPHOLOGICALSEGMENTORCONTROLSIMPL_H
 
 #include "ui_MIDASMorphologicalSegmentorViewControls.h"
-#include "MagnificationFactorWidget.h"
 #include "MorphologicalSegmentorPipelineParams.h"
 
 class QAbstractButton;
