@@ -436,7 +436,6 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         this->SetControlsByImageData();
       }
       this->SetControlsByParameterValues();
-      this->SelectNode(newSegmentation);
     }
     catch (std::bad_alloc)
     {

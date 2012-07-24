@@ -479,9 +479,6 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
 
-    // Request select the segmentation node.
-    this->SelectNode(newSegmentation);
-
   } // end if we have a reference image
 
   // And... relax.

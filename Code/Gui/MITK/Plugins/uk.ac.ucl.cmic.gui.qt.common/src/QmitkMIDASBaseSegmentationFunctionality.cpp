@@ -203,12 +203,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 
 }
 
-void QmitkMIDASBaseSegmentationFunctionality::SelectNode(const mitk::DataNode::Pointer node)
-{
-  assert(node);
-  this->FireNodeSelected(node);
-}
-
 void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   // If the plugin is not visible, then we have nothing to do.

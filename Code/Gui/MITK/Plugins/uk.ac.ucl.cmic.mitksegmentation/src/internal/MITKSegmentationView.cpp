@@ -250,9 +250,6 @@ mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
     // Enable any widgets that need enabling.
     this->EnableSegmentationWidgets(true);
 
-    // Request select the segmentation node.
-    this->SelectNode(newSegmentation);
-
   } // end if we have a reference image.
 
   // And... relax.

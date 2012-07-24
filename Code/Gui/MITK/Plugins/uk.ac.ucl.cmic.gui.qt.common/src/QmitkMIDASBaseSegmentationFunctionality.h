@@ -226,9 +226,6 @@ protected:
   /// \brief Propagate BlueBerry selection to ToolManager for manual segmentation.
   virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
 
-  /// \brief Selects a node, which must not be null
-  virtual void SelectNode(const mitk::DataNode::Pointer node);
-
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
