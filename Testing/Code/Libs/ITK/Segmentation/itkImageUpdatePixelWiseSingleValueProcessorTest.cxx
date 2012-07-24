@@ -55,21 +55,12 @@ int itkImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
   image->Allocate();
   image->FillBuffer(2);
 
-  ImageType::RegionType regionOfInterest;
-  ImageType::SizeType roiSize;
-  roiSize.Fill(1);
-  index.Fill(1);
-  regionOfInterest.SetIndex(index);
-  regionOfInterest.SetSize(roiSize);
-
-  // List has 2 voxels, but 1 is outside of region of interest, so only 1 should be updated.
   index.Fill(0);
   processor->AddToList(index);
   index.Fill(1);
   processor->AddToList(index);
 
   processor->SetDestinationImage(image);
-  processor->SetDestinationRegionOfInterest(regionOfInterest);
   processor->SetValue(1);
   processor->SetDebug(true);
 
@@ -87,9 +78,9 @@ int itkImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
     return EXIT_FAILURE;
   }
   index.Fill(0);
-  if (image->GetPixel(index) != 2)
+  if (image->GetPixel(index) != 1)
   {
-    std::cerr << "2. At index=" << index << ", was expecting 2, but got:" << image->GetPixel(index) << std::endl;
+    std::cerr << "2. At index=" << index << ", was expecting 1, but got:" << image->GetPixel(index) << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -127,7 +118,7 @@ int itkImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
     return EXIT_FAILURE;
   }
   index.Fill(0);
-  if (image->GetPixel(index) != 2)
+  if (image->GetPixel(index) != 1)
   {
     std::cerr << "6. At index=" << index << ", was expecting 2, but got:" << image->GetPixel(index) << std::endl;
     return EXIT_FAILURE;

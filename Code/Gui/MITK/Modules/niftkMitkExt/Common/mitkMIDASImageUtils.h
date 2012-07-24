@@ -30,6 +30,7 @@
 #include "itkSpatialOrientationAdapter.h"
 #include "mitkImage.h"
 #include "mitkDataNode.h"
+#include "mitkPositionEvent.h"
 #include "mitkMIDASEnums.h"
 
 /**
@@ -112,6 +113,75 @@ namespace mitk
    * \return true if images have the same spatial extent, and false otherwise.
    */
   NIFTKMITKEXT_EXPORT bool ImagesHaveSameSpatialExtent(const mitk::Image* image1, const mitk::Image* image2);
+
+  /**
+   * \brief ITK method that simply iterates through a whole image, filling it with the specified value which is cast to the appropriate pixel type.
+   * \param image A non NULL MITK image.
+   * \param value A single scalar value that will be cast.
+   */
+  template<typename TPixel, unsigned int VImageDimension>
+  void
+  ITKFillImage(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      float &value
+      );
+
+  /**
+   * \brief Simply iterates through a whole image, filling it with the specified value which is cast to the appropriate pixel type.
+   * \param image A non NULL MITK image.
+   * \param value A single scalar value that will be cast.
+   */
+  NIFTKMITKEXT_EXPORT void FillImage(mitk::Image* image, float value);
+
+
+  /**
+   * \brief Simply iterates through a whole image, counting how many intensity values are >= lower and <= upper.
+   * \param itkImage An ITK image.
+   * \param lower A lower threshold for intensity values
+   * \param upper An upper threshold for intensity values
+   * \return unsigned long int The number of voxels.
+   */
+  template<typename TPixel, unsigned int VImageDimension>
+  void
+  ITKCountBetweenThreshold(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      float &lower,
+      float &upper,
+      unsigned long int &outputCount
+      );
+
+  /**
+   * \brief Simply iterates through a whole image, counting how many intensity values are >= lower and <= upper.
+   * \param image An MITK Image.
+   * \param lower A lower threshold for intensity values
+   * \param upper An upper threshold for intensity values
+   * \return unsigned long int The number of voxels.
+   */
+  NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(mitk::Image* image, float lower, float upper);
+
+  /**
+   * \brief Returns the number of voxels in an image.
+   * \param image An MITK Image.
+   * \return unsigned long int The number of voxels.
+   */
+  NIFTKMITKEXT_EXPORT unsigned long int GetNumberOfVoxels(mitk::Image* image);
+
+  /**
+   * \brief Returns the middle voxel of an image.
+   * \param image An MITK image.
+   * \return If the image has odd numbers of voxels in an axis, the returned voxel is
+   * the middle one, whereas if the image has even number of voxels in an axis, the
+   * returned voxel is <code>(int)(number vox - 1)/2.0</code>
+   */
+  NIFTKMITKEXT_EXPORT mitk::Point3D GetMiddlePointInVoxels(mitk::Image* image);
+
+  /**
+   * \brief Generates a fake position event, (mainly for unit testing), at a given voxel location.
+   * \param image An MITK image.
+   * \param voxelLocation A voxel location.
+   * \return A fake position event, where by "fake" we mean that there is no valid window Id.
+   */
+  NIFTKMITKEXT_EXPORT mitk::PositionEvent GeneratePositionEvent(mitk::BaseRenderer* renderer, mitk::Image* image, mitk::Point3D voxelLocation);
 
 }
 

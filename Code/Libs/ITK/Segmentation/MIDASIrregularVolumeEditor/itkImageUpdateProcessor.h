@@ -28,8 +28,6 @@
 #include "itkObject.h"
 #include "itkObjectFactory.h"
 #include "itkImage.h"
-#include "itkExtractImageFilter.h"
-#include "itkPasteImageFilter.h"
 
 namespace itk
 {
@@ -37,11 +35,12 @@ namespace itk
 /**
  * \class ImageUpdateProcessor
  * \brief Class that takes a pointer to a destination image, and applies changes
- * directly to it, storing the affected sub-region to enable undo/redo. In practice,
- * this may result in large memory overhead, so, if we are using this for undo/redo
- * we should consider using a small undo/redo stack or small regions.
+ * directly to it and enablng undo/redo. In practice, this may result in large
+ * memory overhead, so, if we are using this for undo/redo we should consider
+ * using a small undo/redo stack or small regions.
  *
- * Essentially, this base class takes care of undo/redo within a set region.
+ * At this level of the hierarchy, we basically store a reference to the output
+ * image, and define Undo/Redo methods. Its up to sub-classes to do the rest.
  */
 template <class TPixel, unsigned int VImageDimension>
 class ITK_EXPORT ImageUpdateProcessor : public Object {
@@ -70,52 +69,29 @@ public:
   typedef typename ImageType::IndexType   IndexType;
   typedef typename ImageType::SizeType    SizeType;
   typedef typename ImageType::RegionType  RegionType;
-  typedef itk::ExtractImageFilter<ImageType, ImageType> ExtractImageFilterType;
-  typedef typename ExtractImageFilterType::Pointer      ExtractImageFilterPointer;
-  typedef itk::PasteImageFilter<ImageType, ImageType>   PasteImageFilterType;
-  typedef typename PasteImageFilterType::Pointer        PasteImageFilterPointer;
 
   /** Set the destination image, which is the image actually modified. This is not a filter with separate input/output. */
   itkSetObjectMacro(DestinationImage, ImageType);
   itkGetObjectMacro(DestinationImage, ImageType);
 
-  /** Set the destination region of interest, which controls the region that is copied into m_BeforeImage and m_After image for Undo/Redo purposes. */
-  itkSetMacro(DestinationRegionOfInterest, RegionType);
-  itkGetMacro(DestinationRegionOfInterest, RegionType);
+  /** Sub-classes decide how to implement this. */
+  virtual void Undo() = 0;
 
-  /** Overloaded method to provide simple acess via a std::vector, where we assume the length is 6 corresponding to the first 3 numbers indicating the starting index, and the next 3 numbers indicating the region size. */
-  void SetDestinationRegionOfInterest(std::vector<int> &region);
-
-  /** This will copy the m_BeforeImage into the m_InputImage */
-  void Undo();
-
-  /** This will copy the m_AfterImage into the m_InputImage. This method should also be called to execute the whole process first time round. */
-  void Redo();
+  /** Sub-classes decide how to implement this. */
+  virtual void Redo() = 0;
 
 protected:
   ImageUpdateProcessor();
   void PrintSelf(std::ostream& os, Indent indent) const;
   virtual ~ImageUpdateProcessor() {}
 
-  /** Returns the after image, so derived classes can apply an update. */
-  itkGetObjectMacro(AfterImage, ImageType);
-  itkSetObjectMacro(AfterImage, ImageType);
-
-  /** Derived classes calculate whatever update they like, but can only affect the m_AfterImage, which must be within the destination region of interest. */
-  virtual void ApplyUpdateToAfterImage() = 0;
+  virtual void ValidateInputs();
 
 private:
   ImageUpdateProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  void ValidateInputs();
-  void CopyImageRegionToDestination(ImagePointer sourceImage);
-
-  bool         m_UpdateCalculated;
   ImagePointer m_DestinationImage;
-  RegionType   m_DestinationRegionOfInterest;
-  ImagePointer m_BeforeImage;
-  ImagePointer m_AfterImage;
 
 }; // end class
 

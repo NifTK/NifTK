@@ -8,4 +8,5 @@ SET(MODULE_TESTS
 set(MODULE_CUSTOM_TESTS
   mitkMIDASAsAcquiredOrientationTest.cpp
   mitkMIDASCompareImagesForEqualityTest.cpp
+  mitkMIDASPaintbrushToolTest.cpp
 )

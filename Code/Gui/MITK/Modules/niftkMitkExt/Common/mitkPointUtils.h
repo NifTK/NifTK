@@ -27,6 +27,7 @@
 
 #include "niftkMitkExtExports.h"
 #include "mitkVector.h"
+#include "mitkPositionEvent.h"
 
 /**
  * \file mitkPointUtils.h

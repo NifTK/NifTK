@@ -23,10 +23,14 @@
  ============================================================================*/
 
 #include "mitkMIDASImageUtils.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkITKImageImport.h"
-#include "itkImage.h"
-#include "itkImageRegionConstIterator.h"
+
+#include <mitkImageAccessByItk.h>
+#include <mitkITKImageImport.h>
+#include <itkImage.h>
+#include <itkImageRegionConstIterator.h>
+#include <mitkPositionEvent.h>
+#include <mitkStateEvent.h>
+#include <mitkInteractionConst.h>
 
 namespace mitk
 {
@@ -91,21 +95,14 @@ MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::Image* ima
     // "As Acquired" means you take the orientation of the XY plane
     // in the original image data, so we switch to ITK to work it out.
     MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-
-    if (image->GetDimension() >= 3)
+    int dimensions = image->GetDimension();
+    switch(dimensions)
     {
-      try
-      {
-        AccessFixedDimensionByItk_n(image, ITKGetAsAcquiredOrientation, 3, (orientation));
-      }
-      catch (const mitk::AccessByItkException &e)
-      {
-        MITK_ERROR << "GetAsAcquiredView: AccessFixedDimensionByItk_n failed to work out 'As Acquired' orientation." << e.what() << std::endl;
-      }
-    }
-    else
-    {
-      MITK_ERROR << "GetAsAcquiredView: failed to find an image to work out 'As Acquired' orientation." << std::endl;
+    case 3:
+      AccessFixedDimensionByItk_n(image, ITKGetAsAcquiredOrientation, 3, (orientation));
+      break;
+    default:
+      MITK_ERROR << "During GetAsAcquiredView, unsupported number of dimensions:" << dimensions << std::endl;
     }
 
     if (orientation == MIDAS_ORIENTATION_AXIAL)
@@ -187,11 +184,25 @@ bool ImagesHaveEqualIntensities(const mitk::Image* image1, const mitk::Image* im
   {
     try
     {
-      AccessByItk_n(image1, ITKImagesHaveEqualIntensities, (image2, result));
+      int dimensions = image1->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessFixedDimensionByItk_n(image1, ITKImagesHaveEqualIntensities, 2, (image2, result));
+        break;
+      case 3:
+        AccessFixedDimensionByItk_n(image1, ITKImagesHaveEqualIntensities, 3, (image2, result));
+        break;
+      case 4:
+        AccessFixedDimensionByItk_n(image1, ITKImagesHaveEqualIntensities, 4, (image2, result));
+        break;
+      default:
+        MITK_ERROR << "During ImagesHaveEqualIntensities, unsupported number of dimensions:" << dimensions << std::endl;
+      }
     }
     catch (const mitk::AccessByItkException &e)
     {
-      MITK_ERROR << "ImagesAreEqual: AccessByItk_n failed to check equality due to." << e.what() << std::endl;
+      MITK_ERROR << "ImagesHaveEqualIntensities: AccessFixedDimensionByItk_n failed to check equality due to." << e.what() << std::endl;
     }
   }
 
@@ -255,17 +266,181 @@ bool ImagesHaveSameSpatialExtent(const mitk::Image* image1, const mitk::Image* i
   {
     try
     {
-      AccessByItk_n(image1, ITKImagesHaveSameSpatialExtent, (image2, result));
+      int dimensions = image1->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessFixedDimensionByItk_n(image1, ITKImagesHaveSameSpatialExtent, 2, (image2, result));
+        break;
+      case 3:
+        AccessFixedDimensionByItk_n(image1, ITKImagesHaveSameSpatialExtent, 3, (image2, result));
+        break;
+      case 4:
+        AccessFixedDimensionByItk_n(image1, ITKImagesHaveSameSpatialExtent, 4, (image2, result));
+        break;
+      default:
+        MITK_ERROR << "During ImagesHaveSameSpatialExtent, unsupported number of dimensions:" << dimensions << std::endl;
+      }
     }
     catch (const mitk::AccessByItkException &e)
     {
-      MITK_ERROR << "ImagesAreEqual: AccessByItk_n failed to check equality due to." << e.what() << std::endl;
+      MITK_ERROR << "ImagesHaveSameSpatialExtent: AccessFixedDimensionByItk_n failed to check equality due to." << e.what() << std::endl;
     }
   }
 
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+ITKFillImage(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    float &value
+    )
+{
+  itkImage->FillBuffer((TPixel)value);
+}
+
+
+//-----------------------------------------------------------------------------
+void FillImage(mitk::Image* image, float value)
+{
+  if (image != NULL)
+  {
+    try
+    {
+      int dimensions = image->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessFixedDimensionByItk_n(image, ITKFillImage, 2, (value));
+        break;
+      case 3:
+        AccessFixedDimensionByItk_n(image, ITKFillImage, 3, (value));
+        break;
+      case 4:
+        AccessFixedDimensionByItk_n(image, ITKFillImage, 4, (value));
+        break;
+      default:
+        MITK_ERROR << "During FillImage, unsupported number of dimensions:" << dimensions << std::endl;
+      }
+    }
+    catch (const mitk::AccessByItkException &e)
+    {
+      MITK_ERROR << "FillImage: AccessFixedDimensionByItk_n failed to fill images due to." << e.what() << std::endl;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+ITKCountBetweenThreshold(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    float &lower,
+    float &upper,
+    unsigned long int &outputCount
+    )
+{
+  typedef itk::Image<TPixel, VImageDimension> ImageType;
+  itk::ImageRegionConstIterator<ImageType> iter(itkImage, itkImage->GetLargestPossibleRegion());
+  outputCount = 0;
+  TPixel value;
+  for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter)
+  {
+    value = iter.Get();
+    if (value >= lower && value <= upper)
+    {
+      outputCount++;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+/**
+ * \brief Simply iterates through a whole image, counting how many intensity values are >= lower and <= upper.
+ * \param lower A lower threshold for intensity values
+ * \param upper An upper threshold for intensity values
+ * \return unsigned long int The number of voxels.
+ */
+NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(mitk::Image* image, float lower, float upper)
+{
+  unsigned long int counter = 0;
+
+  if (image != NULL)
+  {
+    try
+    {
+      int dimensions = image->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessFixedDimensionByItk_n(image, ITKCountBetweenThreshold, 2, (lower, upper, counter));
+        break;
+      case 3:
+        AccessFixedDimensionByItk_n(image, ITKCountBetweenThreshold, 3, (lower, upper, counter));
+        break;
+      case 4:
+        AccessFixedDimensionByItk_n(image, ITKCountBetweenThreshold, 4, (lower, upper, counter));
+        break;
+      default:
+        MITK_ERROR << "During CountBetweenThreshold, unsupported number of dimensions:" << dimensions << std::endl;
+      }
+    }
+    catch (const mitk::AccessByItkException &e)
+    {
+      MITK_ERROR << "CountBetweenThreshold: AccessFixedDimensionByItk_n failed to count voxels due to." << e.what() << std::endl;
+    }
+  }
+
+  return counter;
+}
+
+
+//-----------------------------------------------------------------------------
+unsigned long int GetNumberOfVoxels(mitk::Image* image)
+{
+  unsigned long int counter = 0;
+
+  if (image != NULL)
+  {
+    counter = 1;
+    for (unsigned int i = 0; i < image->GetDimension(); i++)
+    {
+      counter *= image->GetDimension(i);
+    }
+  }
+  return counter;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Point3D GetMiddlePointInVoxels(mitk::Image* image)
+{
+  mitk::Point3D voxelIndex;
+  voxelIndex[0] = (int)(image->GetDimension(0)/2.0);
+  voxelIndex[1] = (int)(image->GetDimension(1)/2.0);
+  voxelIndex[2] = (int)(image->GetDimension(2)/2.0);
+  return voxelIndex;
+}
+
+//-----------------------------------------------------------------------------
+mitk::PositionEvent GeneratePositionEvent(mitk::BaseRenderer* renderer, mitk::Image* image, mitk::Point3D voxelLocation)
+{
+  mitk::Point2D point2D;
+  point2D[0] = 0;
+  point2D[1] = 0;
+
+  mitk::Point3D millimetreCoordinate;
+  image->GetGeometry()->IndexToWorld(voxelLocation, millimetreCoordinate);
+
+  mitk::PositionEvent event( renderer, 0, 0, 0, mitk::Key_unknown, point2D, millimetreCoordinate );
+  return event;
+}
 
 } // end namespace
 

@@ -31,8 +31,13 @@ template<class TPixel, unsigned int VImageDimension>
 ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::ImageUpdatePixelWiseSingleValueProcessor()
 : m_Value(0)
+, m_UpdateCalculated(false)
 {
+  m_Indexes.clear();
+  m_Before.clear();
+  m_After.clear();
 }
+
 
 template<class TPixel, unsigned int VImageDimension>
 void 
@@ -41,32 +46,42 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 {
   Superclass::PrintSelf(os,indent);  
   os << indent << "m_Value=" << m_Value << std::endl;
-  os << indent << "m_List, size=" << m_List.size() << std::endl; 
+  os << indent << "m_UpdateCalculated=" << m_UpdateCalculated << std::endl;
+  os << indent << "m_Indexes, size=" << m_Indexes.size() << std::endl; 
+  os << indent << "m_Before, size=" << m_Before.size() << std::endl; 
+  os << indent << "m_After, size=" << m_After.size() << std::endl;
 }
+
 
 template<class TPixel, unsigned int VImageDimension>
 void
 ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::ClearList()
 {
-  m_List.clear();
+  m_Indexes.clear();
+  m_Before.clear();
+  m_After.clear();
+  m_UpdateCalculated = false;
 }
+
 
 template<class TPixel, unsigned int VImageDimension>
 void
 ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::AddToList(IndexType &voxelIndex)
 {
-  m_List.push_back(voxelIndex);
+  m_Indexes.push_back(voxelIndex);
 }
+
 
 template<class TPixel, unsigned int VImageDimension>
 unsigned long int 
 ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::GetNumberOfVoxels()
 {
-  return m_List.size();
+  return m_Indexes.size();
 }
+
 
 template<class TPixel, unsigned int VImageDimension>
 std::vector<int> 
@@ -83,9 +98,9 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
     maxIndex[i] = std::numeric_limits<int>::min();
   }
 
-  for (unsigned int i = 0; i < m_List.size(); i++)
+  for (unsigned int i = 0; i < m_Indexes.size(); i++)
   {
-    voxelIndex = m_List[i];
+    voxelIndex = m_Indexes[i];
     for (int j = 0; j < 3; j++)
     {
       if (voxelIndex[j] < minIndex[j])
@@ -110,40 +125,64 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
   return region;
 }
 
+
+template<class TPixel, unsigned int VImageDimension>
+void 
+ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+::ApplyListToDestinationImage(const DataListType& list)
+{
+  Superclass::ValidateInputs();
+
+  if (list.size() != m_Indexes.size())
+  {
+    itkExceptionMacro(<< "Index list and data list are different sizes which is definitely a programming bug.");
+  }
+    
+  
+  ImagePointer destination = this->GetDestinationImage();
+  for (unsigned long int i = 0; i < m_Indexes.size(); i++)
+  {
+    destination->SetPixel(m_Indexes[i], list[i]);
+  }
+}
+
 template<class TPixel, unsigned int VImageDimension>
 void
 ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension> 
-::ApplyUpdateToAfterImage()
+::Undo()
 {
-  RegionType regionOfInterest = this->GetDestinationRegionOfInterest();
-  ImagePointer targetImage = this->GetAfterImage();
-  
-  if (targetImage.IsNull())
-  {
-    itkExceptionMacro(<< "Target image is NULL");
-  }
-  
-  // The region of interest should match the target image
-  // but in the general case, as long as it is smaller, we are ok.
-  if (!targetImage->GetLargestPossibleRegion().IsInside(regionOfInterest))
-  {
-    itkExceptionMacro("Region of interest=\n" << regionOfInterest << ", is not inside target region=\n" << targetImage->GetLargestPossibleRegion() );
-  }
-  
-  itkDebugMacro(<< "Updating region=\n" << regionOfInterest << ", using value=" << m_Value << ", and list of size=" << m_List.size());
-  
+  this->ApplyListToDestinationImage(m_Before);
+}
+
+
+template<class TPixel, unsigned int VImageDimension>
+void
+ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension> 
+::Redo()
+{
   IndexType voxelIndex;
   
-  for (unsigned long int i = 0; i < m_List.size(); i++)
+  if (!m_UpdateCalculated)
   {
-    voxelIndex = m_List[i];
-    if (regionOfInterest.IsInside(voxelIndex))
-    {
-      targetImage->SetPixel(voxelIndex, m_Value);
-    }
-  }
+
+    Superclass::ValidateInputs();
+    ImagePointer destination = this->GetDestinationImage();
+
+    m_Before.clear();
+    m_After.clear();
     
-  itkDebugMacro(<< "Updating done");
+    // First take a copy of any existing data, so we can Undo.
+    for (unsigned long int i = 0; i < m_Indexes.size(); i++)
+    {
+      voxelIndex = m_Indexes[i];
+      m_Before.push_back(destination->GetPixel(voxelIndex));
+      m_After.push_back(m_Value);
+    }
+    
+    m_UpdateCalculated = true;
+  }
+  
+  this->ApplyListToDestinationImage(m_After);
 }
 
 } // end namespace

@@ -26,7 +26,7 @@
 #define ITKMIDASREGIONPROCESSOR_H
 
 #include "itkObject.h"
-#include "itkImageUpdateProcessor.h"
+#include "itkImageUpdateRegionProcessor.h"
 #include "itkMIDASHelper.h"
 #include "itkMIDASRegionOfInterestCalculator.h"
 
@@ -60,7 +60,7 @@ public:
   /** Additional typedefs */
   typedef TPixel                                                                       SegmentationPixelType;
   typedef Image<SegmentationPixelType, VImageDimension>                                SegmentationImageType;
-  typedef itk::ImageUpdateProcessor<SegmentationPixelType, VImageDimension>            ProcessorType;
+  typedef itk::ImageUpdateRegionProcessor<SegmentationPixelType, VImageDimension>      ProcessorType;
   typedef typename ProcessorType::Pointer                                              ProcessorPointer;
   typedef itk::MIDASRegionOfInterestCalculator<SegmentationPixelType, VImageDimension> CalculatorType;
   typedef typename CalculatorType::Pointer                                             CalculatorPointer;

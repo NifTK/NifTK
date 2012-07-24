@@ -48,12 +48,11 @@ namespace mitk
   * 1.) Writes into 2 images, so ToolManager must have 2 working volume to edit into.
   *     We define Working Image[0] = "additions image", which is added to the main segmentation to add stuff back into the volume.
   *     We define Working Image[1] = "subtractions image", which is subtracted from the main segmentation to do connection breaking.
-  * 2.) Then, given 1, we have:
+  * 2.) Then:
   *     Left mouse = paint into the "additions image".
   *     Middle mouse = paint into the "subtractions image".
   *     Right mouse = subtract from the "subtractions image".
-  * 3.) We derive from SegTool2D to keep things simple, as we just need to
-  *     convert from mm world points to voxel points, and paint.
+  * 3.) We derive from SegTool2D to keep things simple, as we just need to convert from mm world points to voxel points, and paint.
   * 4.) Derives from mitk::OperationActor, so this tool supports undo/redo.
   * </pre>
   *

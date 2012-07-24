@@ -31,10 +31,10 @@ mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_01719-s mitkMIDASAsAc
 mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_01719-c mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img 2 2)
 
 # Test "As Acquired", changing default to make sure we are not needing it, output should always be sagittal.
-mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-0    mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 0 1)
-mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-1    mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 1 1)
-mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-2    mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 2 1)
-mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-14    mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 14 1)
+mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-0  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 0 1)
+mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-1  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 1 1)
+mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-2  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 2 1)
+mitkAddCustomModuleTest(mitkMIDASAsAcquiredOrientationTest_matt-14 mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 14 1)
 
 # Test that analyze images load the same as Nifti images. Here we test intensity values, assuming same size.
 mitkAddCustomModuleTest(mitkMIDASDRCAnalyzeSameIntensitiesAsNiftiTest_01719-a mitkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.img ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii 0)
@@ -43,3 +43,6 @@ mitkAddCustomModuleTest(mitkMIDASDRCAnalyzeSameIntensitiesAsNiftiTest_01719-c mi
 
 # Test that if we load the same Nifti image twice, the "is equals" checks all do return true.
 mitkAddCustomModuleTest(mitkMIDASTwoNiftiImagesAreEqualTest mitkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii 0)
+
+# Trac 1675 - Paintbrush Tool Crashing. Test single clicks with increasing cursor, scan all image, click out of bounds etc.
+mitkAddCustomModuleTest(mitkMIDASPaintbrushToolTest mitkMIDASPaintbrushToolTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)

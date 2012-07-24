@@ -25,7 +25,7 @@
 #ifndef ITKIMAGEUPDATESTATEGYPROCESSOR_H
 #define ITKIMAGEUPDATESTATEGYPROCESSOR_H
 
-#include "itkImageUpdateProcessor.h"
+#include "itkImageUpdateRegionProcessor.h"
 #include "itkImageUpdateStrategyAlgorithm.h"
 #include "itkMIDASRegionOfInterestCalculator.h"
 
@@ -54,15 +54,15 @@ namespace itk
  * \sa ImageUpdateSliceBasedRegionGrowingAlgorithm
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdateStrategyProcessor : public ImageUpdateProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT ImageUpdateStrategyProcessor : public ImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdateStrategyProcessor                  Self;
-  typedef ImageUpdateProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef ImageUpdateStrategyProcessor                        Self;
+  typedef ImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                  Pointer;
+  typedef SmartPointer<const Self>                            ConstPointer;
 
   /** Additional typedefs, as this is the ITK way. */
   typedef itk::ImageUpdateStrategyAlgorithm<TPixel, VImageDimension>          AlgorithmType;
@@ -74,7 +74,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdateStrategyProcessor, ImageUpdateProcessor);
+  itkTypeMacro(ImageUpdateStrategyProcessor, ImageUpdateRegionProcessor);
 
   /** Set/Get the actual algorithm that is executed. */
   itkSetObjectMacro(Algorithm, AlgorithmType);
