@@ -73,10 +73,6 @@ public:
   /// \brief GUI independent message callback.
   Message<> PropertyChanged;
 
-  /// \brief Set/Get the AutoFire property, which triggers automatic property updates each time the list of properties to watch is re-calculated.
-  itkSetMacro(AutoFire, bool);
-  itkGetMacro(AutoFire, bool);
-
 protected:
 
   DataStoragePropertyListener();
@@ -132,10 +128,16 @@ protected:
 private:
 
   /**
-   * We observe all the global properties for each registered node.
+   * Internal method to fire the property changed signal.
    */
-  typedef std::map<unsigned long, mitk::BaseProperty::Pointer> ObserverToPropertyMap;
-  ObserverToPropertyMap m_ObserverToPropertyMap;
+  void OnPropertyChanged();
+
+  /**
+   * We observe all the properties with a given name for each registered node.
+   */
+  typedef std::pair < mitk::BaseProperty*, unsigned long > PropertyToObserver;
+  typedef std::vector< PropertyToObserver > VectorPropertyToObserver;
+  VectorPropertyToObserver m_WatchedNodes;
 
   /**
    * \brief The name of the property we are tracking.

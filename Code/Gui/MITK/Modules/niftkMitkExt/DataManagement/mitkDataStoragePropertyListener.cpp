@@ -31,9 +31,8 @@ namespace mitk
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::DataStoragePropertyListener()
 : m_PropertyName("")
-, m_AutoFire(false)
 {
-  m_ObserverToPropertyMap.clear();
+  m_WatchedNodes.clear();
 }
 
 
@@ -42,7 +41,7 @@ DataStoragePropertyListener::DataStoragePropertyListener(const mitk::DataStorage
 : mitk::DataStorageListener(dataStorage)
 , m_PropertyName("")
 {
-  m_ObserverToPropertyMap.clear();
+  m_WatchedNodes.clear();
 }
 
 
@@ -122,12 +121,13 @@ void DataStoragePropertyListener::NodeDeleted(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::RemoveAllFromObserverToPropertyMap()
 {
-  for( std::map<unsigned long, mitk::BaseProperty::Pointer>::iterator iter = m_ObserverToPropertyMap.begin();
-      iter != m_ObserverToPropertyMap.end(); ++iter )
+  for( VectorPropertyToObserver::iterator iter = m_WatchedNodes.begin();
+      iter != m_WatchedNodes.end(); ++iter )
   {
-    (*iter).second->RemoveObserver((*iter).first);
+    (*iter).first->RemoveObserver((*iter).second);
   }
-  m_ObserverToPropertyMap.clear();
+  m_WatchedNodes.clear();
+
   this->Modified();
 }
 
@@ -169,8 +169,10 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
       = itk::ReceptorMemberCommand<DataStoragePropertyListener>::New();
     command->SetCallbackFunction(this, &DataStoragePropertyListener::OnPropertyChanged);
 
-    m_ObserverToPropertyMap[it->Value()->GetProperty(m_PropertyName.c_str())->AddObserver( itk::ModifiedEvent(), command )]
-                            = it->Value()->GetProperty(m_PropertyName.c_str());
+    mitk::BaseProperty::Pointer property = it->Value()->GetProperty(m_PropertyName.c_str());
+    unsigned long observerId = property->AddObserver(itk::ModifiedEvent(), command);
+    PropertyToObserver tag(property, observerId);
+    m_WatchedNodes.push_back(tag);
 
     for (unsigned int i = 0; i < m_Renderers.size(); i++)
     {
@@ -178,27 +180,27 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
         = itk::ReceptorMemberCommand<DataStoragePropertyListener>::New();
       rendererSpecificCommand->SetCallbackFunction(this, &DataStoragePropertyListener::OnPropertyChanged);
 
-      m_ObserverToPropertyMap[it->Value()->GetProperty(m_PropertyName.c_str(), m_Renderers[i])->AddObserver( itk::ModifiedEvent(), command )]
-                              = it->Value()->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
-
+      mitk::BaseProperty::Pointer rendererSpecificProperty = it->Value()->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+      unsigned long rendererSpecificObserverId = rendererSpecificProperty->AddObserver(itk::ModifiedEvent(), command);
+      PropertyToObserver rendererSpecificTag(rendererSpecificProperty, rendererSpecificObserverId);
+      m_WatchedNodes.push_back(rendererSpecificTag);
     }
+
+    this->OnPropertyChanged();
     this->Modified();
-
-    // This bit will cause all the newly registered properties to fire a changed signal.
-    if (this->m_AutoFire)
-    {
-      std::map<unsigned long, mitk::BaseProperty::Pointer>::iterator iter;
-      for (iter = m_ObserverToPropertyMap.begin(); iter != m_ObserverToPropertyMap.end(); iter++)
-      {
-        (*iter).second->Modified();
-      }
-    }
   }
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::OnPropertyChanged(const itk::EventObject&)
+{
+  this->OnPropertyChanged();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::OnPropertyChanged()
 {
   if (!this->GetBlock())
   {
