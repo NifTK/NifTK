@@ -61,6 +61,8 @@ public:
   mitk::BaseRenderer* m_PreviouslyFocussed2DRenderer;
 };
 
+
+//-----------------------------------------------------------------------------
 QmitkBaseViewPrivate::QmitkBaseViewPrivate()
 {
   m_Parent = NULL;
@@ -71,10 +73,14 @@ QmitkBaseViewPrivate::QmitkBaseViewPrivate()
   m_PreviouslyFocussed2DRenderer = NULL;
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkBaseViewPrivate::~QmitkBaseViewPrivate()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkBaseView::QmitkBaseView()
 : QmitkAbstractView(),
   d_ptr(new QmitkBaseViewPrivate)
@@ -115,6 +121,8 @@ QmitkBaseView::QmitkBaseView()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkBaseView::~QmitkBaseView() {
   Q_D(QmitkBaseView);
 
@@ -142,14 +150,16 @@ QmitkBaseView::~QmitkBaseView() {
   }
 }
 
-bool
-QmitkBaseView::IsExclusiveFunctionality() const
+
+//-----------------------------------------------------------------------------
+bool QmitkBaseView::IsExclusiveFunctionality() const
 {
   return false;
 }
 
-void
-QmitkBaseView::onNodeAddedInternal(const mitk::DataNode* node)
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::onNodeAddedInternal(const mitk::DataNode* node)
 {
   Q_D(QmitkBaseView);
   mitk::BaseProperty* property = node->GetProperty("visible");
@@ -159,8 +169,9 @@ QmitkBaseView::onNodeAddedInternal(const mitk::DataNode* node)
   }
 }
 
-void
-QmitkBaseView::onNodeRemovedInternal(const mitk::DataNode* node)
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::onNodeRemovedInternal(const mitk::DataNode* node)
 {
   Q_D(QmitkBaseView);
   if (d->visibilityObserverTags.contains(node)) {
@@ -172,25 +183,30 @@ QmitkBaseView::onNodeRemovedInternal(const mitk::DataNode* node)
   }
 }
 
-void
-QmitkBaseView::onVisibilityChanged(const mitk::DataNode* /*node*/)
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::onVisibilityChanged(const mitk::DataNode* /*node*/)
 {
 }
 
-QWidget*
-QmitkBaseView::GetParent()
+
+//-----------------------------------------------------------------------------
+QWidget* QmitkBaseView::GetParent()
 {
   Q_D(QmitkBaseView);
   return d->m_Parent;
 }
 
-void
-QmitkBaseView::SetParent(QWidget* parent)
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::SetParent(QWidget* parent)
 {
   Q_D(QmitkBaseView);
   d->m_Parent = parent;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkBaseView::OnFocusChanged()
 {
   Q_D(QmitkBaseView);
@@ -210,28 +226,32 @@ void QmitkBaseView::OnFocusChanged()
   }
 }
 
-mitk::BaseRenderer*
-QmitkBaseView::GetCurrentlyFocussedRenderer()
+
+//-----------------------------------------------------------------------------
+mitk::BaseRenderer* QmitkBaseView::GetCurrentlyFocussedRenderer()
 {
   Q_D(QmitkBaseView);
   return d->m_Focussed2DRenderer;
 }
 
-mitk::BaseRenderer*
-QmitkBaseView::GetPreviouslyFocussedRenderer()
+
+//-----------------------------------------------------------------------------
+mitk::BaseRenderer* QmitkBaseView::GetPreviouslyFocussedRenderer()
 {
   Q_D(QmitkBaseView);
   return d->m_PreviouslyFocussed2DRenderer;
 }
 
-mitk::SliceNavigationController*
-QmitkBaseView::GetSliceNavigationController()
+
+//-----------------------------------------------------------------------------
+mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationController()
 {
   return this->GetSliceNavigationControllerInternal();
 }
 
-mitk::SliceNavigationController*
-QmitkBaseView::GetSliceNavigationControllerInternal()
+
+//-----------------------------------------------------------------------------
+mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInternal()
 {
   mitk::SliceNavigationController::Pointer result = NULL;
 
@@ -256,8 +276,8 @@ QmitkBaseView::GetSliceNavigationControllerInternal()
 }
 
 
-int
-QmitkBaseView::GetSliceNumberFromSliceNavigationController()
+//-----------------------------------------------------------------------------
+int QmitkBaseView::GetSliceNumberFromSliceNavigationController()
 {
   int sliceNumber = -1;
 
@@ -269,44 +289,65 @@ QmitkBaseView::GetSliceNumberFromSliceNavigationController()
   return sliceNumber;
 }
 
-void
-QmitkBaseView::Activated()
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::Activated()
 {
   Q_D(QmitkBaseView);
   d->m_IsActivated = true;
 }
 
-void
-QmitkBaseView::Deactivated()
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::Deactivated()
 {
   Q_D(QmitkBaseView);
   d->m_IsActivated = false;
 }
 
-void
-QmitkBaseView::Visible()
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::Visible()
 {
   Q_D(QmitkBaseView);
   d->m_IsVisible = true;
 }
 
-void
-QmitkBaseView::Hidden()
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::Hidden()
 {
   Q_D(QmitkBaseView);
   d->m_IsVisible = false;
 }
 
-bool
-QmitkBaseView::IsActivated()
+
+//-----------------------------------------------------------------------------
+bool QmitkBaseView::IsActivated()
 {
   Q_D(QmitkBaseView);
   return d->m_IsActivated;
 }
 
-bool
-QmitkBaseView::IsVisible()
+
+//-----------------------------------------------------------------------------
+bool QmitkBaseView::IsVisible()
 {
   Q_D(QmitkBaseView);
   return d->m_IsVisible;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
+{
+  QmitkRenderWindow* window = NULL;
+
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  if (renderWindowPart != NULL)
+  {
+    window = renderWindowPart->GetRenderWindow(id);
+  }
+
+  return window;
 }

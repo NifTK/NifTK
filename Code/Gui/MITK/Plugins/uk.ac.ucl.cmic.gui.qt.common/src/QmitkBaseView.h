@@ -90,6 +90,13 @@ public:
    */
   virtual bool IsVisible();
 
+  /**
+   * \brief Retrieves a RenderWindow from the mitkRenderWindowPart.
+   * \param id The name of the QmitkRenderWindow, such as "axial", "sagittal", "coronal".
+   * \return QmitkRenderWindow* The render window or NULL if it can not be found.
+   */
+  virtual QmitkRenderWindow* GetRenderWindow(QString id);
+
 protected:
 
   /**

@@ -713,16 +713,3 @@ void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
     m_DefaultSegmentationColor = QColor(0, 255, 0);
   }
 }
-
-QmitkRenderWindow* QmitkMIDASBaseSegmentationFunctionality::GetRenderWindow(QString id)
-{
-  QmitkRenderWindow* window = NULL;
-
-  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
-  if (renderWindowPart != NULL)
-  {
-    window = renderWindowPart->GetRenderWindow(id);
-  }
-
-  return window;
-}
