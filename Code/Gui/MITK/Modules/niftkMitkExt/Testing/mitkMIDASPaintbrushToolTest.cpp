@@ -45,9 +45,9 @@
 #include <mitkGlobalInteraction.h>
 
 #include "mitkNifTKCoreObjectFactory.h"
-#include "mitkMIDASImageUtils.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPaintbrushTool.h"
+#include "mitkMIDASImageUtils.h"
 
 /**
  * \brief Test class for mitkMIDASPaintbrushTool.
@@ -72,8 +72,6 @@ public:
 
     // Need to load images, specifically using MIDAS/DRC object factory.
     RegisterNifTKCoreObjectFactory();
-
-    // Try and for this to be created.
     mitk::GlobalInteraction::GetInstance()->Initialize("mitkMIDASPaintbrushToolClass");
 
     m_DataStorage = mitk::StandaloneDataStorage::New();
@@ -130,16 +128,18 @@ public:
     mitk::DataNode::Pointer node = workingData[imageId];
 
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
+
     MITK_TEST_CONDITION( image.IsNotNull(), ".. Testing image present");
 
     mitk::FillImage(image, 0);
-    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(image);
-    unsigned long int voxelCounter = mitk::CountBetweenThreshold(image, -0.01, 0.01);
+    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(constImage);
+    unsigned long int voxelCounter = mitk::CountBetweenThreshold(constImage, -0.01, 0.01);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing image blank");
 
     // Get Middle Voxel, convert to millimetres, make position event.
     mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(image);
-    mitk::PositionEvent event = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, voxelIndex);
+    mitk::PositionEvent event = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Generate Left or Right mouse click event.
     if (imageId == 0)
@@ -158,7 +158,7 @@ public:
     }
 
     // Count voxels that got painted.
-    voxelCounter = mitk::CountBetweenThreshold(image, 0.99, 1.01);
+    voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
 
     // Compare with the expected number of voxels that got painted.
     MITK_TEST_OUTPUT(<<"Resulting voxel size=" << voxelCounter);
@@ -181,18 +181,19 @@ public:
     mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[imageId];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
     mitk::FillImage(image, 0);
 
     // Set tool size
     m_Tool->SetCursorSize(cursorSize);
 
-    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(image);
-    unsigned long int voxelCounter = mitk::CountBetweenThreshold(image, -0.01, 0.01);
+    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(constImage);
+    unsigned long int voxelCounter = mitk::CountBetweenThreshold(constImage, -0.01, 0.01);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing image blank");
 
     // Get Middle Voxel, convert to millimetres, make position event.
-    mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(image);
-    mitk::PositionEvent middlePositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, voxelIndex);
+    mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(constImage);
+    mitk::PositionEvent middlePositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
     mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -200,7 +201,7 @@ public:
     nextVoxelIndex[1] += numberOfVoxelsDifference;
 
     // Create another position event.
-    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, nextVoxelIndex);
+    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
     // Generate Left or Right mouse click events.
     if (imageId == 0)
@@ -229,7 +230,7 @@ public:
     }
 
     // Count voxels that got painted.
-    voxelCounter = mitk::CountBetweenThreshold(image, 0.99, 1.01);
+    voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=" << expectedResult);
     MITK_TEST_CONDITION( voxelCounter == expectedResult, ".. Testing cross size");
 
@@ -246,18 +247,19 @@ public:
     mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[1];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
     mitk::FillImage(image, 1);
 
     // Set tool size
     m_Tool->SetCursorSize(2);
 
-    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(image);
-    unsigned long int voxelCounter = mitk::CountBetweenThreshold(image, 0.99, 1.01);
+    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(constImage);
+    unsigned long int voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing image all filled in");
 
     // Get Middle Voxel, convert to millimetres, make position event.
-    mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(image);
-    mitk::PositionEvent middlePositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, voxelIndex);
+    mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(constImage);
+    mitk::PositionEvent middlePositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
     mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -265,7 +267,7 @@ public:
     nextVoxelIndex[1] += 1;
 
     // Create another position event.
-    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, nextVoxelIndex);
+    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
     // Generate Right mouse click events.
     int eventId = mitk::EIDRIGHTMOUSEBTN;
@@ -279,7 +281,7 @@ public:
     m_Tool->OnRightMouseReleased(NULL, &stateEvent3);
 
     // Count voxels that got painted.
-    voxelCounter = mitk::CountBetweenThreshold(image, 0.99, 1.01);
+    voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
     unsigned int expectedResult = numberOfVoxelsInImage - 8;
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=" << expectedResult);
     MITK_TEST_CONDITION( voxelCounter == expectedResult, ".. Testing cross size");
@@ -297,6 +299,8 @@ public:
     mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[0];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
+
     mitk::FillImage(image, 0);
 
     // Set tool size
@@ -318,7 +322,7 @@ public:
           voxelIndex[1] = y;
           voxelIndex[2] = z;
 
-          mitk::PositionEvent positionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, voxelIndex);
+          mitk::PositionEvent positionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
           // Paint in XY plane, exactly diagonal.
           mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -326,7 +330,7 @@ public:
           nextVoxelIndex[1] += 1;
 
           // Create another position event.
-          mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, nextVoxelIndex);
+          mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
           int eventId = mitk::EIDLEFTMOUSEBTN;
           const mitk::StateEvent stateEvent1(eventId, &positionEvent);
@@ -342,8 +346,8 @@ public:
     }
 
     // Count voxels that got painted.
-    unsigned long int voxelCounter = mitk::CountBetweenThreshold(image, 0.99, 1.01);
-    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(image);
+    unsigned long int voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
+    unsigned long int numberOfVoxelsInImage = mitk::GetNumberOfVoxels(constImage);
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=" << numberOfVoxelsInImage);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing painted all voxels");
 
@@ -359,6 +363,8 @@ public:
     mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[0];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
+
     mitk::FillImage(image, 0);
 
     // Set tool size
@@ -369,7 +375,7 @@ public:
     voxelIndex[1] = y;
     voxelIndex[2] = z;
 
-    mitk::PositionEvent positionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, voxelIndex);
+    mitk::PositionEvent positionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
     mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -377,7 +383,7 @@ public:
     nextVoxelIndex[1] += 1;
 
     // Create another position event.
-    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), image, nextVoxelIndex);
+    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
     int eventId = mitk::EIDLEFTMOUSEBTN;
     const mitk::StateEvent stateEvent1(eventId, &positionEvent);
@@ -390,7 +396,7 @@ public:
     m_Tool->OnLeftMouseReleased(NULL, &stateEvent3);
 
     // Count voxels that got painted, should be zero.
-    unsigned long int voxelCounter = mitk::CountBetweenThreshold(image, 0.99, 1.01);
+    unsigned long int voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=0");
     MITK_TEST_CONDITION( voxelCounter == 0, ".. Testing painted zero voxels");
 
