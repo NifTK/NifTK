@@ -355,11 +355,6 @@ IF(BUILD_GUI)
 
     INCLUDE(${QT_USE_FILE})
   
-    # This is to get NiftyView Help working, which launches the Qt Assistant, and the QtHelp framework needs libQtCLucene.
-    IF(APPLE)
-      LIST(APPEND ALL_LIBRARIES QtCLucene )
-    ENDIF(APPLE)
-    
     IF(BUILD_SUPERBUILD)
       SET(VTK_QT_ARGS
         -DDESIRED_QT_VERSION:STRING=4
