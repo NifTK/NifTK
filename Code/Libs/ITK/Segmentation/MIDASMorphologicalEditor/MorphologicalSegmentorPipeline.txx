@@ -76,8 +76,10 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Start Trac 998, setting region of interest, on all Mask filters, to produce Axial-Cut-off effect.
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   typename SegmentationImageType::RegionType         regionOfInterest;
   typename SegmentationImageType::SizeType           regionOfInterestSize;
   typename SegmentationImageType::IndexType          regionOfInterestIndex;
@@ -121,10 +123,13 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     this->m_DilationMaskFilter->SetRegion(regionOfInterest);
   }
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
   // End Trac 998, setting region of interest, on both Mask filters
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Start Trac 1131, calculate a rough size to help LargestConnectedComponents allocate memory.
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
   unsigned long int expectedSize = 1;
   for (unsigned int i = 0; i < VImageDimension; i++)
   {
@@ -145,8 +150,10 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     this->m_LateConnectedComponentFilter->SetCapacity(expectedSize);
   }
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
   // End Trac 1131.
-
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   if (m_Stage == 0)
   {
     m_ThresholdingFilter->SetLowerThreshold((TPixel)p.m_LowerIntensityThreshold);
@@ -321,22 +328,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 {
   typename SegmentationImageType::Pointer result;
 
-  if (additionsImageBeingEdited || editingImageBeingEdited)
-  {
-    if (m_Stage == 1)
-    {
-      result = m_LateConnectedComponentFilter->GetOutput();
-    }
-    else if (m_Stage == 2)
-    {
-      result = m_DilationMaskFilter->GetOutput();
-    }
-    else if (m_Stage == 3)
-    {
-      result = m_RethresholdingFilter->GetOutput();
-    }
-  }
-  else if (m_Stage == 0)
+  if (m_Stage == 0)
   {
     result = m_EarlyMaskFilter->GetOutput();
   }
@@ -350,7 +342,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else if (m_Stage == 3)
   {
-    result = m_RethresholdingFilter->GetOutput();    
+    result = m_RethresholdingFilter->GetOutput();
   }
   return result;
 }

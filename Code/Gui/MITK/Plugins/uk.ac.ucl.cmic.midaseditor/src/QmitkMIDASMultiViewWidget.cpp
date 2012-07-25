@@ -100,6 +100,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
 , m_Dropped(false)
+, m_InteractorsEnabled(false)
 {
   assert(visibilityManager);
 
@@ -1435,7 +1436,12 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
       }
     }
-    this->EnableInteractors(true);
+    // Only enable the single view widget interactors, if we do not have a top level flag saying otherwise.
+    // Without this, you have segmentation tools turning off interactors, then you click on a different window, and they are re-enabled.
+    if (m_InteractorsEnabled)
+    {
+      this->EnableInteractors(true);
+    }
     this->Update2DCursorVisibility();
     this->RequestUpdateAll();
   }
@@ -1489,8 +1495,9 @@ void QmitkMIDASMultiViewWidget::EnableInteractors(bool enable, const QStringList
   if (interactors.isEmpty() || interactors.contains(mitk::IRenderWindowPart::INTERACTOR_MITK))
   {
 
+    // Here, if enable=true, we enable for currently selected window, and disable all others.
+    //       if enable=false, they are all disabled.
     int selectedWindow = this->GetSelectedWindowIndex();
-
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (enable && (int)i == selectedWindow)
@@ -1502,6 +1509,8 @@ void QmitkMIDASMultiViewWidget::EnableInteractors(bool enable, const QStringList
         m_SingleViewWidgets[i]->EnableInteractors(false);
       }
     }
+
+    m_InteractorsEnabled = enable;
   }
 }
 

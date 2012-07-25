@@ -407,6 +407,7 @@ private:
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
   bool                                           m_Dropped;
+  bool                                           m_InteractorsEnabled;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/
