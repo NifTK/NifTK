@@ -704,66 +704,6 @@ MIDASMorphologicalSegmentorView
   // Set most of the parameters on the pipeline.
   pipeline->SetParam(params);
 
-  // Start Trac 998, setting region of interest, on both Mask filters, to produce Axial-Cut-off effect.
-
-  typename ImageType::RegionType regionOfInterest;
-  typename ImageType::SizeType   regionOfInterestSize;
-  typename ImageType::IndexType  regionOfInterestIndex;
-
-  // 1. Set region to full size of input image
-  regionOfInterestSize = itkImage->GetLargestPossibleRegion().GetSize();
-  regionOfInterestIndex = itkImage->GetLargestPossibleRegion().GetIndex();
-
-  // 2. Get string describing orientation.
-  typename itk::SpatialOrientationAdapter adaptor;
-  typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
-  orientation = adaptor.FromDirectionCosines(itkImage->GetDirection());
-  std::string orientationString = itk::ConvertSpatialOrientationToString(orientation);
-
-  // 3. Get Axis that represents superior/inferior
-  int axialAxis = QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageAxialAxis();
-  if (axialAxis != -1)
-  {
-    // 4. Calculate size of region of interest in that axis
-    regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - params.m_AxialCutoffSlice - 1;
-    if (orientationString[axialAxis] == 'I')
-    {
-      regionOfInterestIndex[axialAxis] = regionOfInterestIndex[axialAxis] + params.m_AxialCutoffSlice;
-    }
-
-    // 5. Set region on both filters
-    regionOfInterest.SetSize(regionOfInterestSize);
-    regionOfInterest.SetIndex(regionOfInterestIndex);
-    pipeline->m_ErosionMaskFilter->SetRegion(regionOfInterest);
-    pipeline->m_DilationMaskFilter->SetRegion(regionOfInterest);
-  }
-
-  // End Trac 998, setting region of interest, on both Mask filters
-
-  // Start Trac 1131, calculate a rough size to help LargestConnectedComponents allocate memory.
-
-  unsigned long int expectedSize = 1;
-  for (unsigned int i = 0; i < VImageDimension; i++)
-  {
-    expectedSize *= regionOfInterestSize[i];
-  }
-  expectedSize /= 8;
-
-  // However, make sure we only update the minimum amount possible.
-  if (params.m_Stage == 0)
-  {
-    pipeline->m_EarlyMaskFilter->SetRegion(regionOfInterest);
-    pipeline->m_EarlyConnectedComponentFilter->SetCapacity(expectedSize);
-  }
-  else
-  {
-    pipeline->m_ErosionMaskFilter->SetRegion(regionOfInterest);
-    pipeline->m_DilationMaskFilter->SetRegion(regionOfInterest);
-    pipeline->m_LateConnectedComponentFilter->SetCapacity(expectedSize);
-  }
-
-  // End Trac 1131.
-
   // Do the update.
   if (isRestarting)
   {

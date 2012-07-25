@@ -23,7 +23,8 @@
  ============================================================================*/
 
 #include "MorphologicalSegmentorPipeline.h"
-
+#include "itkConversionUtils.h"
+#include "itkMIDASHelper.h"
 
 template<typename TPixel, unsigned int VImageDimension>
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -74,6 +75,77 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_Stage = p.m_Stage;
 
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
+
+  // Start Trac 998, setting region of interest, on all Mask filters, to produce Axial-Cut-off effect.
+
+  typename SegmentationImageType::RegionType         regionOfInterest;
+  typename SegmentationImageType::SizeType           regionOfInterestSize;
+  typename SegmentationImageType::IndexType          regionOfInterestIndex;
+  typedef typename GreyScaleImageType::ConstPointer  ImagePointer;
+  
+  ImagePointer input = m_ThresholdingFilter->GetInput();
+  
+  // 1. Set region to full size of input image
+  regionOfInterestSize = input->GetLargestPossibleRegion().GetSize();
+  regionOfInterestIndex = input->GetLargestPossibleRegion().GetIndex();
+
+  // 2. Get string describing orientation.
+  typename itk::SpatialOrientationAdapter adaptor;
+  typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
+  orientation = adaptor.FromDirectionCosines(input->GetDirection());
+  std::string orientationString = itk::ConvertSpatialOrientationToString(orientation);
+
+  // 3. Get Axis that represents superior/inferior
+  int axialAxis = -1;
+  itk::ORIENTATION_ENUM orientationEnum = itk::ORIENTATION_AXIAL; 
+  itk::GetAxisFromITKImage<TPixel, VImageDimension>(input, orientationEnum, axialAxis);
+  
+  if (axialAxis != -1)
+  {
+    // 4. Calculate size of region of interest in that axis
+    regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - p.m_AxialCutoffSlice;
+    if (orientationString[axialAxis] == 'I')
+    {
+      regionOfInterestIndex[axialAxis] = p.m_AxialCutoffSlice;
+    }
+    else
+    {
+      regionOfInterestIndex[axialAxis] = 0;
+    }
+
+    // 5. Set region on both filters
+    regionOfInterest.SetSize(regionOfInterestSize);
+    regionOfInterest.SetIndex(regionOfInterestIndex);
+    
+    this->m_ErosionMaskFilter->SetRegion(regionOfInterest);
+    this->m_DilationMaskFilter->SetRegion(regionOfInterest);
+  }
+
+  // End Trac 998, setting region of interest, on both Mask filters
+
+  // Start Trac 1131, calculate a rough size to help LargestConnectedComponents allocate memory.
+
+  unsigned long int expectedSize = 1;
+  for (unsigned int i = 0; i < VImageDimension; i++)
+  {
+    expectedSize *= regionOfInterestSize[i];
+  }
+  expectedSize /= 8;
+
+  // However, make sure we only update the minimum amount possible.
+  if (p.m_Stage == 0)
+  {
+    this->m_EarlyMaskFilter->SetRegion(regionOfInterest);
+    this->m_EarlyConnectedComponentFilter->SetCapacity(expectedSize);
+  }
+  else
+  {
+    this->m_ErosionMaskFilter->SetRegion(regionOfInterest);
+    this->m_DilationMaskFilter->SetRegion(regionOfInterest);
+    this->m_LateConnectedComponentFilter->SetCapacity(expectedSize);
+  }
+
+  // End Trac 1131.
 
   if (m_Stage == 0)
   {
@@ -231,8 +303,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     }
     else if (m_Stage == 2)
     {
-      m_DilationFilter->Modified();
-      m_DilationFilter->UpdateLargestPossibleRegion();
+      m_DilationMaskFilter->Modified();
+      m_DilationMaskFilter->UpdateLargestPossibleRegion();
     }
     else if (m_Stage == 3)
     {
@@ -274,7 +346,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else if (m_Stage == 2)
   {
-    result = m_DilationFilter->GetOutput();
+    result = m_DilationMaskFilter->GetOutput();
   }
   else if (m_Stage == 3)
   {

@@ -145,7 +145,7 @@ namespace itk
   ITK_EXPORT
   void
   GetAxisFromITKImage(
-    itk::Image<TPixel, VImageDimension>* itkImage,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
     itk::ORIENTATION_ENUM orientation,
     int &outputAxis
     )

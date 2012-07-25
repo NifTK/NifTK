@@ -82,10 +82,10 @@ public:
   typename SegmentationImageType::Pointer GetOutput(bool editingImageBeingEdited, bool additionsImageBeingEdited);
 
   /// \brief The foreground value for the segmentation, equal to 1, set in constructor.
-  mitk::Tool::DefaultSegmentationDataType                      m_ForegroundValue;
+  unsigned char m_ForegroundValue;
 
   /// \brief The background value for the segmentation, equal to 0, set in constructor.
-  mitk::Tool::DefaultSegmentationDataType                      m_BackgroundValue;
+  unsigned char m_BackgroundValue;
 
   int                                                          m_Stage;
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
