@@ -35,7 +35,7 @@
 
 /**
  * \file mitkMIDASImageUtils.h
- * \brief Some useful MIDAS related image utilities, such as working out the As Acquired orientation.
+ * \brief Some useful MIDAS related image utilities, such as working out the As Acquired orientation, volumes etc.
  */
 namespace mitk
 {
@@ -48,7 +48,7 @@ namespace mitk
   template<typename TPixel, unsigned int VImageDimension>
   void
   ITKGetAsAcquiredOrientation(
-    itk::Image<TPixel, VImageDimension>* itkImage,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
     MIDASOrientation &outputOrientation
   );
 
@@ -144,9 +144,9 @@ namespace mitk
   template<typename TPixel, unsigned int VImageDimension>
   void
   ITKCountBetweenThreshold(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      float &lower,
-      float &upper,
+      const itk::Image<TPixel, VImageDimension>* itkImage,
+      const float &lower,
+      const float &upper,
       unsigned long int &outputCount
       );
 
@@ -157,14 +157,14 @@ namespace mitk
    * \param upper An upper threshold for intensity values
    * \return unsigned long int The number of voxels.
    */
-  NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(mitk::Image* image, float lower, float upper);
+  NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(const mitk::Image* image, const float& lower, const float& upper);
 
   /**
    * \brief Returns the number of voxels in an image.
    * \param image An MITK Image.
    * \return unsigned long int The number of voxels.
    */
-  NIFTKMITKEXT_EXPORT unsigned long int GetNumberOfVoxels(mitk::Image* image);
+  NIFTKMITKEXT_EXPORT unsigned long int GetNumberOfVoxels(const mitk::Image* image);
 
   /**
    * \brief Returns the middle voxel of an image.
@@ -173,7 +173,7 @@ namespace mitk
    * the middle one, whereas if the image has even number of voxels in an axis, the
    * returned voxel is <code>(int)(number vox - 1)/2.0</code>
    */
-  NIFTKMITKEXT_EXPORT mitk::Point3D GetMiddlePointInVoxels(mitk::Image* image);
+  NIFTKMITKEXT_EXPORT mitk::Point3D GetMiddlePointInVoxels(const mitk::Image* image);
 
   /**
    * \brief Generates a fake position event, (mainly for unit testing), at a given voxel location.
@@ -181,7 +181,35 @@ namespace mitk
    * \param voxelLocation A voxel location.
    * \return A fake position event, where by "fake" we mean that there is no valid window Id.
    */
-  NIFTKMITKEXT_EXPORT mitk::PositionEvent GeneratePositionEvent(mitk::BaseRenderer* renderer, mitk::Image* image, mitk::Point3D voxelLocation);
+  NIFTKMITKEXT_EXPORT mitk::PositionEvent GeneratePositionEvent(const mitk::BaseRenderer* renderer, const mitk::Image* image, const mitk::Point3D& voxelLocation);
+
+
+  /**
+   * \brief ITK method that returns the volume of non-zero voxels in an image.
+   * \param itkImage An ITK image.
+   * \param imageVolume output volume in millimetres cubed.
+   */
+  template<typename TPixel, unsigned int VImageDimension>
+  void
+  ITKGetVolume(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      double &imageVolume
+      );
+
+  /**
+   * \brief Returns the volume of non-zero voxels in an image.
+   * \param image An MITK image.
+   * \return double The volume in millimetres cubed.
+   */
+  NIFTKMITKEXT_EXPORT double GetVolume(const mitk::Image* image);
+
+
+  /**
+   * \brief Calculates the volume of non-zero voxels in image, and creates a property "midas.volume" on the data node.
+   * \param image An MITK image, not NULL.
+   * \param node An MITK DataNode, not NULL.
+   */
+  NIFTKMITKEXT_EXPORT void UpdateVolumeProperty(const mitk::Image* image, mitk::DataNode* node);
 
 }
 

@@ -33,10 +33,16 @@
 #include <mitkIOUtil.h>
 #include <mitkDataNode.h>
 #include <mitkImageAccessByItk.h>
+#include <mitkBaseRenderer.h>
+#include <mitkRenderingManager.h>
+#include <mitkRenderWindow.h>
+#include <mitkRenderWindowBase.h>
+#include <mitkGlobalInteraction.h>
 
 #include "mitkNifTKCoreObjectFactory.h"
 #include "mitkMIDASImageUtils.h"
 #include "mitkMIDASDataNodeNameStringFilter.h"
+#include "mitkMIDASNodeAddedVisibilitySetter.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPolyTool.h"
 
@@ -48,32 +54,17 @@ class mitkMIDASSegmentationNodeAddedVisibilityTestClass
 
 public:
 
-  mitk::DataStorage::Pointer m_DataStorage;
   mitk::DataNode::Pointer m_DataNode;
 
   //-----------------------------------------------------------------------------
-  void Setup(char* argv[])
+  void Setup()
   {
     MITK_TEST_OUTPUT(<< "Starting Setup...");
 
-    std::string fileName = argv[1];
-
     // Need to load images, specifically using MIDAS/DRC object factory.
     RegisterNifTKCoreObjectFactory();
-
-    // Load them into a local data storage.
-    m_DataStorage = mitk::StandaloneDataStorage::New();
-
-    // Load the image.
-    std::vector<std::string> files;
-    files.push_back(fileName);
-
-    mitk::IOUtil::LoadFiles(files, *(m_DataStorage.GetPointer()));
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = m_DataStorage->GetAll();
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
-
-    m_DataNode = (*allImages)[0];
-    MITK_TEST_CONDITION_REQUIRED(m_DataNode.IsNotNull(),".. Testing get image pointer.");
+    mitk::GlobalInteraction::GetInstance()->Initialize("mitkMIDASPaintbrushToolClass");
+    m_DataNode = mitk::DataNode::New();
 
     MITK_TEST_OUTPUT(<< "Finished Setup...");
   }
@@ -116,6 +107,65 @@ public:
 
     MITK_TEST_OUTPUT(<< "Finished TestFilterFailWithGivenString...");
   }
+
+
+  //-----------------------------------------------------------------------------
+  void TestVisibilitySetter(char* argv[], bool doRendererSpecific)
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestVisibilitySetterGlobal...doRendererSpecific=" << doRendererSpecific);
+
+    mitk::DataStorage::Pointer dataStorage;
+    mitk::DataNode::Pointer dataNode;
+
+    // Create local data storage.
+    dataStorage = mitk::StandaloneDataStorage::New();
+    MITK_TEST_CONDITION_REQUIRED(dataStorage.IsNotNull(),".. Testing created data storage.");
+
+    // Create render window.
+    mitk::RenderingManager::Pointer renderingManager = mitk::RenderingManager::GetInstance();
+    renderingManager->SetDataStorage(dataStorage);
+
+    mitk::RenderWindow::Pointer renderWindow = mitk::RenderWindow::New(NULL, "mitkMIDASPaintbrushToolClass", renderingManager);
+
+    std::vector< mitk::BaseRenderer* > renderers;
+    renderers.push_back(renderWindow->GetRenderer());
+
+    // Create the setter we are testing.
+    mitk::MIDASNodeAddedVisibilitySetter::Pointer setter = mitk::MIDASNodeAddedVisibilitySetter::New();
+    setter->SetVisibility(false);
+    setter->SetDataStorage(dataStorage);
+    if (doRendererSpecific)
+    {
+      setter->SetRenderers(renderers);
+    }
+
+    // Load the image.
+    std::string fileName = argv[1];
+    std::vector<std::string> files;
+    files.push_back(fileName);
+    mitk::IOUtil::LoadFiles(files, *(dataStorage.GetPointer()));
+    mitk::DataStorage::SetOfObjects::ConstPointer allImages = dataStorage->GetAll();
+    dataNode = (*allImages)[0];
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
+    MITK_TEST_CONDITION_REQUIRED(dataNode.IsNotNull(),".. Testing get image pointer.");
+
+    // Check that when the image was loaded it got a global visibility property equal to false.
+    bool visibility = true;
+    bool foundProperty = false;
+    if (doRendererSpecific)
+    {
+      foundProperty = dataNode->GetBoolProperty("visible", visibility, renderers[0]);
+    }
+    else
+    {
+      foundProperty = dataNode->GetBoolProperty("visible", visibility, NULL);
+    }
+    MITK_TEST_CONDITION_REQUIRED(foundProperty, ".. Testing found property=true");
+    MITK_TEST_CONDITION_REQUIRED(!visibility, ".. Testing visibility property=false");
+
+    MITK_TEST_OUTPUT(<< "Finished TestVisibilitySetterGlobal...");
+  }
 };
 
 /**
@@ -129,7 +179,8 @@ int mitkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
   // We are testing specifically with image ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii which is 11x11x11.
 
   mitkMIDASSegmentationNodeAddedVisibilityTestClass *testClass = new mitkMIDASSegmentationNodeAddedVisibilityTestClass();
-  testClass->Setup(argv);
+  testClass->Setup();
+
   testClass->TestCreateFilter();
   testClass->TestFilterPassWithNoPropertiesSet();
   testClass->TestFilterFailWithGivenString("FeedbackContourTool");
@@ -144,6 +195,9 @@ int mitkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   testClass->TestFilterFailWithGivenString("Paintbrush_Node");
+
+  testClass->TestVisibilitySetter(argv, false); // global
+  testClass->TestVisibilitySetter(argv, true); // renderer specific
 
   delete testClass;
   MITK_TEST_END();

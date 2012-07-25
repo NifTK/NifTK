@@ -31,6 +31,7 @@
 #include <mitkPositionEvent.h>
 #include <mitkStateEvent.h>
 #include <mitkInteractionConst.h>
+#include "itkMIDASHelper.h"
 
 namespace mitk
 {
@@ -39,7 +40,7 @@ namespace mitk
 template<typename TPixel, unsigned int VImageDimension>
 void
 ITKGetAsAcquiredOrientation(
-  itk::Image<TPixel, VImageDimension>* itkImage,
+  const itk::Image<TPixel, VImageDimension>* itkImage,
   MIDASOrientation &outputOrientation
 )
 {
@@ -339,9 +340,9 @@ void FillImage(mitk::Image* image, float value)
 template<typename TPixel, unsigned int VImageDimension>
 void
 ITKCountBetweenThreshold(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    float &lower,
-    float &upper,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const float &lower,
+    const float &upper,
     unsigned long int &outputCount
     )
 {
@@ -367,7 +368,7 @@ ITKCountBetweenThreshold(
  * \param upper An upper threshold for intensity values
  * \return unsigned long int The number of voxels.
  */
-NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(mitk::Image* image, float lower, float upper)
+NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(const mitk::Image* image, const float& lower, const float& upper)
 {
   unsigned long int counter = 0;
 
@@ -402,7 +403,7 @@ NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(mitk::Image* image, 
 
 
 //-----------------------------------------------------------------------------
-unsigned long int GetNumberOfVoxels(mitk::Image* image)
+unsigned long int GetNumberOfVoxels(const mitk::Image* image)
 {
   unsigned long int counter = 0;
 
@@ -419,7 +420,7 @@ unsigned long int GetNumberOfVoxels(mitk::Image* image)
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D GetMiddlePointInVoxels(mitk::Image* image)
+mitk::Point3D GetMiddlePointInVoxels(const mitk::Image* image)
 {
   mitk::Point3D voxelIndex;
   voxelIndex[0] = (int)(image->GetDimension(0)/2.0);
@@ -428,8 +429,9 @@ mitk::Point3D GetMiddlePointInVoxels(mitk::Image* image)
   return voxelIndex;
 }
 
+
 //-----------------------------------------------------------------------------
-mitk::PositionEvent GeneratePositionEvent(mitk::BaseRenderer* renderer, mitk::Image* image, mitk::Point3D voxelLocation)
+mitk::PositionEvent GeneratePositionEvent(const mitk::BaseRenderer* renderer, const mitk::Image* image, const mitk::Point3D& voxelLocation)
 {
   mitk::Point2D point2D;
   point2D[0] = 0;
@@ -438,8 +440,66 @@ mitk::PositionEvent GeneratePositionEvent(mitk::BaseRenderer* renderer, mitk::Im
   mitk::Point3D millimetreCoordinate;
   image->GetGeometry()->IndexToWorld(voxelLocation, millimetreCoordinate);
 
-  mitk::PositionEvent event( renderer, 0, 0, 0, mitk::Key_unknown, point2D, millimetreCoordinate );
+  mitk::PositionEvent event( const_cast<mitk::BaseRenderer*>(renderer), 0, 0, 0, mitk::Key_unknown, point2D, millimetreCoordinate );
   return event;
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+ITKGetVolume(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    double &imageVolume
+    )
+{
+  itk::GetVolumeFromITKImage(itkImage, imageVolume);
+}
+
+
+//-----------------------------------------------------------------------------
+double GetVolume(const mitk::Image* image)
+{
+  double volume = 0;
+
+  if (image != NULL)
+  {
+    try
+    {
+      int dimensions = image->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessFixedDimensionByItk_n(image, ITKGetVolume, 2, (volume));
+        break;
+      case 3:
+        AccessFixedDimensionByItk_n(image, ITKGetVolume, 3, (volume));
+        break;
+      case 4:
+        AccessFixedDimensionByItk_n(image, ITKGetVolume, 4, (volume));
+        break;
+      default:
+        MITK_ERROR << "During GetVolume, unsupported number of dimensions:" << dimensions << std::endl;
+      }
+    }
+    catch (const mitk::AccessByItkException &e)
+    {
+      MITK_ERROR << "GetVolume: AccessFixedDimensionByItk_n failed to calculate volume due to." << e.what() << std::endl;
+    }
+  }
+
+  return volume;
+}
+
+
+//-----------------------------------------------------------------------------
+void UpdateVolumeProperty(const mitk::Image* image, mitk::DataNode* node)
+{
+  if (image != NULL && node != NULL)
+  {
+    double volume = GetVolume(image);
+    node->SetFloatProperty("midas.volume", (float)volume);
+  }
 }
 
 } // end namespace

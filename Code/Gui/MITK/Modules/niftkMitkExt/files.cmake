@@ -1,6 +1,7 @@
 set(CPP_FILES
   Algorithms/mitkNifTKCoreObjectFactory.cpp
   Common/mitkMIDASImageUtils.cpp
+  Common/mitkMIDASOrientationUtils.cpp
   Common/mitkPointUtils.cpp
   DataManagement/mitkDataNodeBoolPropertyFilter.cpp
   DataManagement/mitkDataNodeStringPropertyFilter.cpp
