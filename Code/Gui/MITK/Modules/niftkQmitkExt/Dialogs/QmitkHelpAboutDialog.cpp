@@ -79,16 +79,14 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString vtkLocation(NIFTK_VTK_LOCATION);
   QString ctkLocation(NIFTK_CTK_LOCATION);
   QString mitkLocation(NIFTK_MITK_LOCATION);
-  QString niftyRegVersion(NIFTK_NIFTYREG_VERSION);
-  QString niftyRegLocation(NIFTK_NIFTYREG_LOCATION);
-  QString niftySegVersion(NIFTK_NIFTYSEG_VERSION);
-  QString niftySegLocation(NIFTK_NIFTYSEG_LOCATION);
+#ifdef USE_NIFTYREC
   QString niftyRecVersion(NIFTK_NIFTYREC_VERSION);
   QString niftyRecLocation(NIFTK_NIFTYREC_LOCATION);
+#endif
+#ifdef USE_NIFTYSIM
   QString niftySimVersion(NIFTK_NIFTYSIM_VERSION);
   QString niftySimLocation(NIFTK_NIFTYSIM_LOCATION);
-  QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
-  QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
+#endif
 
   // Main titles with application name, release version and copyright statement.
   QString titles = QObject::tr(
@@ -162,18 +160,24 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       ;
 
   #ifdef USE_NIFTYREG
+    QString niftyRegVersion(NIFTK_NIFTYREG_VERSION);
+    QString niftyRegLocation(NIFTK_NIFTYREG_LOCATION);
     QString niftyRegText = QObject::tr(
         "<tr><td><a href=\"http://www0.cs.ucl.ac.uk/staff/M.Modat/Marcs_Page/Software.html\">NiftyReg</a></td><td>%1</td><td><a href=\"http://niftyreg.svn.sourceforge.net/viewvc/niftyreg/trunk/nifty_reg/LICENSE.txt?revision=1&view=markup\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
         ).arg(niftyRegVersion).arg(niftyRegLocation);
   #endif
 
   #ifdef USE_NIFTYSEG
+    QString niftySegVersion(NIFTK_NIFTYSEG_VERSION);
+    QString niftySegLocation(NIFTK_NIFTYSEG_LOCATION);
     QString niftySegText = QObject::tr(
         "<tr><td><a href=\"http://niftyseg.sourceforge.net\">NiftySeg</a></td><td>%1</td><td><a href=\"http://niftyseg.sourceforge.net/Documentation/styled-3/index.html\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
         ).arg(niftySegVersion).arg(niftySegLocation);
   #endif
 
   #ifdef BUILD_IGI
+    QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
+    QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
     QString niftyLinkText = QObject::tr(
       "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html\">NiftyLink</a></td><td>%1</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/NiftyLink/html/NiftyLinkLicense.html\">Not finalised yet</a></td><td><a href=\"%2\">from here</a></td></tr>"
       ).arg(niftyLinkVersion.left(10)).arg(niftyLinkLocation);
