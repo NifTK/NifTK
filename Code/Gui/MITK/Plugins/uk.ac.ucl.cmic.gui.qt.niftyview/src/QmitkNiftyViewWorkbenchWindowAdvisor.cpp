@@ -42,6 +42,7 @@
 #include "mitkProperties.h"
 #include "mitkRenderingManager.h"
 #include "EnvironmentHelper.h"
+#include "NifTKConfigure.h"
 
 QmitkNiftyViewWorkbenchWindowAdvisor::QmitkNiftyViewWorkbenchWindowAdvisor(
     berry::WorkbenchAdvisor* wbAdvisor,
@@ -114,7 +115,9 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
   // It is imagined that at the DRC, they will not want this viewer as much.
   // The unfortunate side effect is that the GUI will not correctly remember which is the ordering of the editors.
   // So, restoring a project from a project file may have the wrong viewer on-top on start-up.
-  if (niftk::BooleanEnvironmentVariableIsOn("NIFTK_MITK_DISPLAY"))
+  if (niftk::BooleanEnvironmentVariableIsOn("NIFTK_MITK_DISPLAY")
+      || std::string(NIFTK_BUILD_IGI)=="ON"
+     )
   {
     berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
     berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
