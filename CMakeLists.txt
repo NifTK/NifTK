@@ -541,6 +541,10 @@ IF(NOT NiftyLink_FOUND)
   SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
 ENDIF()
 
+IF(BUILD_IGI)
+  ADD_DEFINITIONS(-DBUILD_IGI)
+ENDIF(BUILD_IGI)
+
 ######################################################################
 # Find FFTW.
 ######################################################################

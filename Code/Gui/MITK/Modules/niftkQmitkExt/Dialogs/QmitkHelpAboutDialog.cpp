@@ -79,22 +79,16 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString vtkLocation(NIFTK_VTK_LOCATION);
   QString ctkLocation(NIFTK_CTK_LOCATION);
   QString mitkLocation(NIFTK_MITK_LOCATION);
-#ifdef USE_NIFTYREG
   QString niftyRegVersion(NIFTK_NIFTYREG_VERSION);
   QString niftyRegLocation(NIFTK_NIFTYREG_LOCATION);
-#endif
-#ifdef USE_NIFTYSEG
   QString niftySegVersion(NIFTK_NIFTYSEG_VERSION);
   QString niftySegLocation(NIFTK_NIFTYSEG_LOCATION);
-#endif
-#ifdef USE_NIFTYREC
   QString niftyRecVersion(NIFTK_NIFTYREC_VERSION);
   QString niftyRecLocation(NIFTK_NIFTYREC_LOCATION);
-#endif
-#ifdef USE_NIFTYSIM
   QString niftySimVersion(NIFTK_NIFTYSIM_VERSION);
   QString niftySimLocation(NIFTK_NIFTYSIM_LOCATION);
-#endif
+  QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
+  QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
 
   // Main titles with application name, release version and copyright statement.
   QString titles = QObject::tr(
@@ -134,10 +128,10 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 
   // Over time, insert more software packages, as platform expands,
   // (and dependencies get exponentially more frustrating :-).
-  QString versions = QObject::tr(
+  QString versionsStart = QObject::tr(
       "<h3>Software Versions</h3>"
       "<p>"
-      "%1 has been developed using the following libraries."
+      "%1 has been developed using the following core libraries."
       "</p>"
       "<p><table>"
       "<tr><td><a href=\"http://www.boost.org\">Boost</a></td><td>%2</td><td><a href=\"http://www.boost.org/LICENSE_1_0.txt\">Boost software license version 1.0</a></td><td><a href=\"%3\">from here</a></td></tr>"
@@ -148,16 +142,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<tr><td><a href=\"http://www.vtk.org\">VTK</a></td><td>%11</td><td><a href=\"http://www.vtk.org/VTK/project/license.html\">BSD license</a></td><td><a href=\"%12\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.commontk.org\">CTK</a></td><td>%13</td><td><a href=\"http://www.apache.org/licenses/LICENSE-2.0.html\">Apache 2.0 license</a></td><td><a href=\"%14\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.mitk.org\">MITK</a>(Modified)</td><td>%15</td><td><a href=\"http://www.mitk.org/wiki/License\">BSD-style license</a></td><td><a href=\"%16\">from here</a></td></tr>"
-#ifdef USE_NIFTYREG
-      "<tr><td><a href=\"http://www0.cs.ucl.ac.uk/staff/M.Modat/Marcs_Page/Software.html\">NiftyReg</a></td><td>%17</td><td><a href=\"http://www0.cs.ucl.ac.uk/staff/M.Modat/Marcs_Page/Software.html\">BSD license</a></td><td><a href=\"%18\">from here</a></td></tr>"
-#endif
-#ifdef USE_NIFTYSEG
-      "<tr><td><a href=\"http://niftyseg.sourceforge.net\">NiftySeg</a></td><td>%19</td><td><a href=\"http://niftyseg.sourceforge.net/Documentation/styled-3/index.html\">BSD license</a></td><td><a href=\"%20\">from here</a></td></tr>"
-#endif
-      "</table></p>"
-      "<p>"
-      "The licenses can be found online and are additionally included in the installation folder. This version of %21 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%22</a>."
-      "</p>"
       )
       .arg(applicationName)
       .arg(boostVersion)
@@ -175,16 +159,35 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .arg(ctkLocation)
       .arg(mitkVersion.left(10))
       .arg(mitkLocation)
-#ifdef USE_NIFTYREG
-      .arg(niftyRegVersion)
-      .arg(niftyRegLocation)
-#endif
-#ifdef USE_NIFTYSEG
-      .arg(niftySegVersion)
-      .arg(niftySegLocation)
-#endif
-      .arg(applicationName)
-      .arg(svnVersion);
+      ;
+
+  #ifdef USE_NIFTYREG
+    QString niftyRegText = QObject::tr(
+        "<tr><td><a href=\"http://www0.cs.ucl.ac.uk/staff/M.Modat/Marcs_Page/Software.html\">NiftyReg</a></td><td>%1</td><td><a href=\"http://niftyreg.svn.sourceforge.net/viewvc/niftyreg/trunk/nifty_reg/LICENSE.txt?revision=1&view=markup\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        ).arg(niftyRegVersion).arg(niftyRegLocation);
+  #endif
+
+  #ifdef USE_NIFTYSEG
+    QString niftySegText = QObject::tr(
+        "<tr><td><a href=\"http://niftyseg.sourceforge.net\">NiftySeg</a></td><td>%1</td><td><a href=\"http://niftyseg.sourceforge.net/Documentation/styled-3/index.html\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        ).arg(niftySegVersion).arg(niftySegLocation);
+  #endif
+
+  #ifdef BUILD_IGI
+    QString niftyLinkText = QObject::tr(
+      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html\">NiftyLink</a></td><td>%1</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/NiftyLink/html/NiftyLinkLicense.html\">Not finalised yet</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(niftyLinkVersion.left(10)).arg(niftyLinkLocation);
+  #endif
+
+  QString versionsEnd = QObject::tr(
+      "</table></p>"
+      );
+
+  QString licenses = QObject::tr(
+      "<p>"
+      "The licenses can be found online and are additionally included in the installation folder. This version of %1 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%2</a>."
+      "</p>"
+      ).arg(applicationName).arg(svnVersion);
 
   // Over time, insert more platforms that we have tested on,
   // (but these should be backed up with a Dashboard or else it ain't worth diddly-squat).
@@ -223,7 +226,18 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .append(introduction)
       .append(collaborators)
       .append(furtherInformation)
-      .append(versions)
+      .append(versionsStart)
+#ifdef USE_NIFTYREG
+      .append(niftyRegText)
+#endif
+#ifdef USE_NIFTYSEG
+      .append(niftySegText)
+#endif
+#ifdef BUILD_IGI
+      .append(niftyLinkText)
+#endif
+      .append(versionsEnd)
+      .append(licenses)
       .append(testingDetails)
       ;
 
