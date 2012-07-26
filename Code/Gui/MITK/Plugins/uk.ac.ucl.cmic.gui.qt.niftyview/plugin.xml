@@ -26,13 +26,4 @@
     </perspective>
   </extension>
 
-  <extension point="org.blueberry.ui.perspectives">
-    <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftyview.mitkperspective"
-      name="MITK Perspective"
-      class="QmitkNiftyViewMITKPerspective"
-    icon="resources/icon_mitk.xpm">
-    </perspective>
-  </extension>
-  
 </plugin>
