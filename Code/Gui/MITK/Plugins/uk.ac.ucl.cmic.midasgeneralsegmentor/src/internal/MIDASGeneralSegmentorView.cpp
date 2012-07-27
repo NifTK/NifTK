@@ -28,46 +28,47 @@
 #include <QMessageBox>
 #include <QGridLayout>
 
-#include "mitkProperties.h"
-#include "mitkStringProperty.h"
-#include "mitkColorProperty.h"
-#include "mitkExtractImageFilter.h"
-#include "mitkDataNodeObject.h"
-#include "mitkNodePredicateDataType.h"
-#include "mitkNodePredicateProperty.h"
-#include "mitkNodePredicateAnd.h"
-#include "mitkNodePredicateNot.h"
-#include "mitkProperties.h"
-#include "mitkRenderingManager.h"
-#include "mitkSegTool2D.h"
-#include "mitkVtkResliceInterpolationProperty.h"
-#include "mitkPointSet.h"
-#include "mitkGlobalInteraction.h"
-#include "mitkTool.h"
+#include <mitkProperties.h>
+#include <mitkStringProperty.h>
+#include <mitkColorProperty.h>
+#include <mitkExtractImageFilter.h>
+#include <mitkDataNodeObject.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkProperties.h>
+#include <mitkRenderingManager.h>
+#include <mitkSegTool2D.h>
+#include <mitkVtkResliceInterpolationProperty.h>
+#include <mitkPointSet.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkTool.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkPointSet.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkSlicedGeometry3D.h>
+#include <mitkITKImageImport.h>
+#include <mitkGeometry2D.h>
+#include <mitkOperationEvent.h>
+#include <mitkUndoController.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkImageStatisticsHolder.h>
+#include <mitkContourSet.h>
+#include <mitkFocusManager.h>
+#include <mitkSegmentationObjectFactory.h>
+#include <mitkSurface.h>
+#include <itkCommand.h>
+#include <itkContinuousIndex.h>
+
+#include "MIDASGeneralSegmentorViewCommands.h"
+#include "MIDASGeneralSegmentorViewHelper.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPosnTool.h"
 #include "mitkMIDASSeedTool.h"
 #include "mitkMIDASPolyTool.h"
 #include "mitkMIDASDrawTool.h"
-#include "mitkNodePredicateDataType.h"
-#include "mitkPointSet.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkSlicedGeometry3D.h"
-#include "mitkITKImageImport.h"
-#include "mitkGeometry2D.h"
-#include "mitkOperationEvent.h"
-#include "mitkUndoController.h"
-#include "mitkDataStorageUtils.h"
-#include "mitkImageStatisticsHolder.h"
-#include "mitkContourSet.h"
-#include "mitkFocusManager.h"
-#include "mitkUndoController.h"
-#include "mitkSegmentationObjectFactory.h"
-#include "mitkSurface.h"
-#include "MIDASGeneralSegmentorViewCommands.h"
-#include "MIDASGeneralSegmentorViewHelper.h"
-#include "itkCommand.h"
-#include "itkContinuousIndex.h"
+#include "mitkMIDASOrientationUtils.h"
 
 const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
@@ -648,7 +649,6 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  this->UpdateVolumeProperty(segmentationNode);
   this->UpdateSegmentationImageVisibility(true);
   this->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
@@ -1161,7 +1161,8 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
       bool skipUpdate = !(this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
       if (axisNumber != -1 && sliceNumber != -1 && orientation != itk::ORIENTATION_UNKNOWN)
       {
@@ -1272,7 +1273,8 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
       double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
       int direction = this->GetUpDirection();
       if (!isUp)
       {
@@ -1802,7 +1804,8 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
     if (workingNode.IsNotNull() && workingImage.IsNotNull())
     {
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
       if (axisNumber != -1 && beforeSliceNumber != -1 && afterSliceNumber != -1)
       {
@@ -1929,7 +1932,8 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
 
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
       if (axisNumber != -1 && sliceNumber != -1)
       {

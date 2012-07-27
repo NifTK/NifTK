@@ -28,23 +28,25 @@
 #include "ui_MIDASGeneralSegmentorViewControls.h"
 
 #include <QString>
-#include "itkImage.h"
-#include "itkImageRegion.h"
-#include "itkPointSet.h"
-#include "itkIndex.h"
-#include "itkContinuousIndex.h"
-#include "itkExtractImageFilter.h"
-#include "itkConnectedComponentImageFilter.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkOrthogonalContourExtractor2DImageFilter.h"
+#include <itkImage.h>
+#include <itkImageRegion.h>
+#include <itkPointSet.h>
+#include <itkIndex.h>
+#include <itkContinuousIndex.h>
+#include <itkExtractImageFilter.h>
+#include <itkConnectedComponentImageFilter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkOrthogonalContourExtractor2DImageFilter.h>
+#include <itkPolyLineParametricPath.h>
+#include <mitkPointSet.h>
+#include <mitkSurface.h>
+#include <mitkOperationActor.h>
+#include <mitkOperation.h>
+#include <mitkSliceNavigationController.h>
+
+#include "QmitkMIDASBaseSegmentationFunctionality.h"
 #include "itkMIDASHelper.h"
 #include "itkMIDASRegionGrowingImageFilter.h"
-#include "itkPolyLineParametricPath.h"
-#include "mitkPointSet.h"
-#include "mitkSurface.h"
-#include "mitkOperationActor.h"
-#include "mitkOperation.h"
-#include "mitkSliceNavigationController.h"
 #include "mitkMIDASContourTool.h"
 #include "mitkMIDASDrawTool.h"
 #include "mitkMIDASPolyTool.h"
@@ -56,7 +58,6 @@
 #include "MIDASGeneralSegmentorViewHelper.h"
 #include "MIDASGeneralSegmentorViewPreferencePage.h"
 #include "MIDASGeneralSegmentorViewEventInterface.h"
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
 
 class QButtonGroup;
 class QGridLayout;

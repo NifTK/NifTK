@@ -128,18 +128,10 @@ protected:
   int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
-  itk::ORIENTATION_ENUM GetOrientationAsEnum();
+  MIDASOrientation GetOrientationAsEnum();
 
   /// \brief Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2] that corresponds to the given orientation, or -1 if it can't be found.
-  int GetAxisFromReferenceImage(itk::ORIENTATION_ENUM orientation);
-
-  /// \brief Returns the axis (0,1,2) that corresponds to the given orientation, or -1 if it can't be found.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetAxisFromReferenceImageUsingITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      itk::ORIENTATION_ENUM orientation,
-      int &outputAxis
-      );
+  int GetAxisFromReferenceImage(const MIDASOrientation& orientation);
 
   /// \brief Returns the reference image axial axis [0,1,2] or -1 if it can't be found.
   int GetReferenceImageAxialAxis();
@@ -155,24 +147,6 @@ protected:
 
   /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
   int GetUpDirection();
-
-  /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetUpDirectionUsingITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      itk::ORIENTATION_ENUM orientation,
-      int &upDirection
-  );
-
-  /// \brief Calculates the volume using GetVolumeFromITK, and then stores it on a property midas.volume.
-  void UpdateVolumeProperty(mitk::DataNode::Pointer segmentationImageNode);
-
-  /// \brief Calculates the volume of segmentation using ITK. Assumes background = 0, and anything > 0 is foreground.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetVolumeFromITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      double &volume
-      );
 
   /// \brief Makes sure the reference image is the selected one
   void SetReferenceImageSelected();
