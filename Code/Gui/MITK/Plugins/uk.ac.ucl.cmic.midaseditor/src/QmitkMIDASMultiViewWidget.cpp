@@ -1312,7 +1312,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
 
   int windowNumber = this->GetSelectedWindowIndex();
 
-  wnds.insert("axial", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
+  wnds.insert("transversal", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
   wnds.insert("sagittal", m_SingleViewWidgets[windowNumber]->GetSagittalWindow());
   wnds.insert("coronal", m_SingleViewWidgets[windowNumber]->GetCoronalWindow());
   wnds.insert("3d", m_SingleViewWidgets[windowNumber]->Get3DWindow());
@@ -1323,7 +1323,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
     {
       QString id = tr(".%1").arg(i);
 
-      wnds.insert("axial" + id, m_SingleViewWidgets[i]->GetAxialWindow());
+      wnds.insert("transversal" + id, m_SingleViewWidgets[i]->GetAxialWindow());
       wnds.insert("sagittal" + id, m_SingleViewWidgets[i]->GetSagittalWindow());
       wnds.insert("coronal" + id, m_SingleViewWidgets[i]->GetCoronalWindow());
       wnds.insert("3d" + id, m_SingleViewWidgets[i]->Get3DWindow());

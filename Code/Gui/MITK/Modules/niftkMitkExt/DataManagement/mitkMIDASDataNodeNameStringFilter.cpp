@@ -40,8 +40,10 @@ MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
   this->AddToList(mitk::MIDASTool::PRIOR_CONTOURS_NAME);
   this->AddToList(mitk::MIDASTool::NEXT_CONTOURS_NAME);
   this->AddToList(mitk::MIDASTool::NEXT_CONTOURS_NAME);
-  this->AddToList(mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS);
-  this->AddToList(mitk::MIDASTool::MORPH_EDITS_ADDITIONS);
+  this->AddToList(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
+  this->AddToList(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
+  this->AddToList(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
+  this->AddToList(mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   this->AddToList("Paintbrush_Node");

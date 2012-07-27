@@ -45,9 +45,11 @@ namespace mitk
   *
   * Note the following:
   * <pre>
-  * 1.) Writes into 2 images, so ToolManager must have 2 working volume to edit into.
-  *     We define Working Image[0] = "additions image", which is added to the main segmentation to add stuff back into the volume.
-  *     We define Working Image[1] = "subtractions image", which is subtracted from the main segmentation to do connection breaking.
+  * 1.) Writes into 4 images, so ToolManager must have 4 working volume to edit into.
+  *     We define Working Image[0] = "additions image for erosions", which is added to the main segmentation to add stuff back into the volume.
+  *     We define Working Image[1] = "subtractions image for erosions", which is subtracted from the main segmentation to do connection breaking.
+  *     We define Working Image[2] = "additions image for dilations", which is added to the main segmentation to add stuff back into the volume.
+  *     We define Working Image[3] = "subtractions image for dilations", which is subtracted from the main segmentation to do connection breaking.
   * 2.) Then:
   *     Left mouse = paint into the "additions image".
   *     Middle mouse = paint into the "subtractions image".
@@ -83,6 +85,12 @@ public:
 
   /** Set the cursor size, default 1. */
   void SetCursorSize(int current);
+
+  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
+  itkSetMacro(ErosionMode, bool);
+
+  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
+  itkGetMacro(ErosionMode, bool);
 
   /** Used to send messages when the cursor size is changed or should be updated in a GUI. */
   Message1<int> CursorSizeChanged;
@@ -178,6 +186,8 @@ private:
   // Used between MouseDown and MouseMoved events to track movement.
   mitk::Point3D m_MostRecentPointInMillimetres;
   unsigned long int m_NumberOfVoxelsPainted;
+
+  bool m_ErosionMode;
 
 };//class
 

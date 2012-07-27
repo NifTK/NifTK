@@ -134,43 +134,69 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
       col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
 
-      // Create subtractions data node, and store reference to image
-      mitk::DataNode::Pointer segmentationSubtractionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS, col->GetColor());
-      segmentationSubtractionsImageDataNode->SetBoolProperty("helper object", true);
-      segmentationSubtractionsImageDataNode->SetColor(col->GetColor());
-      segmentationSubtractionsImageDataNode->SetProperty("binaryimage.selectedcolor", col);
-
       // Create additions data node, and store reference to image
       float segCol[3];
       newSegmentation->GetColor(segCol);
       mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
 
-      mitk::DataNode::Pointer segmentationAdditionsImageDataNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_ADDITIONS, col->GetColor());
-      segmentationAdditionsImageDataNode->SetBoolProperty("helper object", true);
-      segmentationAdditionsImageDataNode->SetBoolProperty("visible", false);
-      segmentationAdditionsImageDataNode->SetColor(segCol);
-      segmentationAdditionsImageDataNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+      // Create extra data and store with ToolManager
+      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS, col->GetColor());
+      erodeSubtractNode->SetBoolProperty("helper object", true);
+      erodeSubtractNode->SetColor(col->GetColor());
+      erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+
+      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS, col->GetColor());
+      erodeAddNode->SetBoolProperty("helper object", true);
+      erodeAddNode->SetBoolProperty("visible", false);
+      erodeAddNode->SetColor(segCol);
+      erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+
+      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS, col->GetColor());
+      dilateSubtractNode->SetBoolProperty("helper object", true);
+      dilateSubtractNode->SetColor(col->GetColor());
+      dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+
+      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS, col->GetColor());
+      dilateAddNode->SetBoolProperty("helper object", true);
+      dilateAddNode->SetBoolProperty("visible", false);
+      dilateAddNode->SetColor(segCol);
+      dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+
+      this->ApplyDisplayOptions(erodeSubtractNode);
+      this->ApplyDisplayOptions(erodeAddNode);
+      this->ApplyDisplayOptions(dilateSubtractNode);
+      this->ApplyDisplayOptions(dilateAddNode);
 
       // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
-      this->ApplyDisplayOptions(segmentationSubtractionsImageDataNode);
-      this->ApplyDisplayOptions(segmentationAdditionsImageDataNode);
-      this->GetDataStorage()->Add(segmentationSubtractionsImageDataNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
-      this->GetDataStorage()->Add(segmentationAdditionsImageDataNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+      this->GetDataStorage()->Add(erodeSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+      this->GetDataStorage()->Add(erodeAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+      this->GetDataStorage()->Add(dilateSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+      this->GetDataStorage()->Add(dilateAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
 
       // Set working data. Compare with MIDASGeneralSegmentorView.
       // Note the order:
       //
-      // 1. The First image is the "Additions" image, that we can manually add data/voxels to.
-      // 2. The Second image is the "Subtractions" image, that is used for connection breaker.
+      // 1. The First image is the "Additions" image for erosions, that we can manually add data/voxels to.
+      // 2. The Second image is the "Subtractions" image for erosions, that is used for connection breaker.
+      // 3. The Third image is the "Additions" image for dilations, that we can manually add data/voxels to.
+      // 4. The Forth image is the "Subtractions" image for dilations, that is used for connection breaker.
       //
       // This must match the order in:
       //
       // 1. MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
       // 2. mitkMIDASPaintbrushTool.
+      // and unit tests etc. Probably best to search for
+      // MORPH_EDITS_EROSIONS_SUBTRACTIONS
+      // MORPH_EDITS_EROSIONS_ADDITIONS
+      // MORPH_EDITS_DILATIONS_SUBTRACTIONS
+      // MORPH_EDITS_DILATIONS_ADDITIONS
 
       mitk::ToolManager::DataVectorType workingData;
-      workingData.push_back(segmentationAdditionsImageDataNode);
-      workingData.push_back(segmentationSubtractionsImageDataNode);
+      workingData.push_back(erodeAddNode);
+      workingData.push_back(erodeSubtractNode);
+      workingData.push_back(dilateAddNode);
+      workingData.push_back(dilateSubtractNode);
+
       toolManager->SetWorkingData(workingData);
 
       // Set properties, and then the control values to match.
@@ -239,6 +265,25 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
     if (i == 1 || i == 2)
     {
       this->m_ToolSelector->SetEnabled(true);
+
+      mitk::ToolManager::Pointer toolManager = this->GetToolManager();
+      mitk::MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>()));
+
+      mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(1);
+      mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(3);
+
+      if (i == 1)
+      {
+        paintbrushTool->SetErosionMode(true);
+        erodeSubtractNode->SetVisibility(true);
+        dilateSubtractNode->SetVisibility(false);
+      }
+      else
+      {
+        paintbrushTool->SetErosionMode(false);
+        erodeSubtractNode->SetVisibility(true);
+        dilateSubtractNode->SetVisibility(false);
+      }
     }
     else
     {

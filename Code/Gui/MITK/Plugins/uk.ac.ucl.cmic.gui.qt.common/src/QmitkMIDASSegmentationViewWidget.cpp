@@ -89,7 +89,6 @@ void QmitkMIDASSegmentationViewWidget::SetDataStorage(mitk::DataStorage* storage
   if (storage != NULL)
   {
     m_ViewerWidget->SetDataStorage(storage);
-    m_ViewerWidget->SetEnabled(true);
 
     m_NodeAddedSetter->SetDataStorage(storage);
     m_VisibilityTracker->SetDataStorage(storage);
@@ -127,6 +126,7 @@ void QmitkMIDASSegmentationViewWidget::Deactivated()
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
+  this->m_ViewerWidget->SetEnabled(false);
 }
 
 void QmitkMIDASSegmentationViewWidget::SetBlockSignals(bool block)
@@ -345,7 +345,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   }
 
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
+  QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("transversal");
   QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
   QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
 
@@ -393,19 +393,19 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       mitk::Geometry3D::Pointer geom = const_cast<mitk::Geometry3D*>(worldGeom.GetPointer());
       assert(geom);
 
+      this->m_MainWindowAxial = mainWindowAxial;
+      this->m_MainWindowSagittal = mainWindowSagittal;
+      this->m_MainWindowCoronal = mainWindowCoronal;
+
       this->m_ViewerWidget->SetGeometry(geom);
       this->m_ViewerWidget->SetBoundGeometryActive(false);
       this->m_ViewerWidget->SetNavigationControllerEventListening(true);
       this->m_ViewerWidget->SetDisplay2DCursorsLocally(true);
       this->m_ViewerWidget->SetDisplay3DViewInOrthoView(true);
-
-      this->m_MainWindowAxial = mainWindowAxial;
-      this->m_MainWindowSagittal = mainWindowSagittal;
-      this->m_MainWindowCoronal = mainWindowCoronal;
-
-      this->ChangeLayout(true);
-
-      this->m_ViewerWidget->FitToDisplay();
+      if (!this->m_ViewerWidget->IsEnabled())
+      {
+        this->m_ViewerWidget->SetEnabled(true);
+      }
 
       std::vector<mitk::DataNode*> crossHairs = m_ViewerWidget->GetWidgetPlanes();
       std::vector<mitk::BaseRenderer*> windowsToTrack;
@@ -414,6 +414,9 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       this->m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
       this->m_VisibilityTracker->SetNodesToIgnore(crossHairs);
       this->m_VisibilityTracker->OnPropertyChanged(); // force update
+
+      this->m_ViewerWidget->FitToDisplay();
+      this->ChangeLayout(true);
     }
   }
   else if (mainWindowViewChanged)
@@ -463,7 +466,7 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientati
     {
       vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
 
-      QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
+      QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("transversal");
       QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
       QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
 

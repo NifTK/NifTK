@@ -150,11 +150,9 @@ private:
   template<typename TPixel, unsigned int VImageDimension>
   void InvokeITKPipeline(
       itk::Image<TPixel, VImageDimension>* itkImage,
-      mitk::Image::Pointer& edits,
-      mitk::Image::Pointer& additions,
       MorphologicalSegmentorPipelineParams& params,
-      bool editingImageBeingEdited,
-      bool additionsImageBeingEdited,
+      std::vector<mitk::Image*>& workingData,
+      std::vector<bool>& editingFlags,
       bool isRestarting,
       std::vector<int>& editingRegion,
       mitk::Image::Pointer& outputImage

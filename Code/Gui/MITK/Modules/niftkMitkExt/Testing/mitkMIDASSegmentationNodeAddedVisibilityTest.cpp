@@ -190,8 +190,10 @@ int mitkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
   testClass->TestFilterFailWithGivenString(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME);
   testClass->TestFilterFailWithGivenString(mitk::MIDASTool::PRIOR_CONTOURS_NAME);
   testClass->TestFilterFailWithGivenString(mitk::MIDASTool::NEXT_CONTOURS_NAME);
-  testClass->TestFilterFailWithGivenString(mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS);
-  testClass->TestFilterFailWithGivenString(mitk::MIDASTool::MORPH_EDITS_ADDITIONS);
+  testClass->TestFilterFailWithGivenString(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
+  testClass->TestFilterFailWithGivenString(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
+  testClass->TestFilterFailWithGivenString(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
+  testClass->TestFilterFailWithGivenString(mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   testClass->TestFilterFailWithGivenString("Paintbrush_Node");

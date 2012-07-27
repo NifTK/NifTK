@@ -52,6 +52,7 @@ mitk::MIDASPaintbrushTool::MIDASPaintbrushTool() : SegTool2D("MIDASPaintbrushToo
 , m_WorkingImageGeometry(NULL)
 , m_WorkingImage(NULL)
 , m_NumberOfVoxelsPainted(0)
+, m_ErosionMode(true)
 {
   CONNECT_ACTION( 320401, OnLeftMousePressed );
   CONNECT_ACTION( 320402, OnLeftMouseReleased );
@@ -339,6 +340,11 @@ bool mitk::MIDASPaintbrushTool::OnLeftMousePressed (Action* action, const StateE
 
 bool mitk::MIDASPaintbrushTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
 {
+  int imageNumber = 0;
+  if (!m_ErosionMode)
+  {
+    imageNumber = 2;
+  }
   this->DoMouseMoved(action, stateEvent, 0, 1, 0);
   return true;
 }
@@ -356,6 +362,11 @@ bool mitk::MIDASPaintbrushTool::OnMiddleMousePressed (Action* action, const Stat
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
 {
+  int imageNumber = 1;
+  if (!m_ErosionMode)
+  {
+    imageNumber = 3;
+  }
   this->DoMouseMoved(action, stateEvent, 1, 1, 0);
   return true;
 }
@@ -373,6 +384,11 @@ bool mitk::MIDASPaintbrushTool::OnRightMousePressed (Action* action, const State
 
 bool mitk::MIDASPaintbrushTool::OnRightMouseMoved(Action* action, const StateEvent* stateEvent)
 {
+  int imageNumber = 1;
+  if (!m_ErosionMode)
+  {
+    imageNumber = 3;
+  }
   this->DoMouseMoved(action, stateEvent, 1, 0, 1);
   return true;
 }
