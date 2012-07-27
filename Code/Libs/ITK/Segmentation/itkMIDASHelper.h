@@ -30,6 +30,7 @@
 #include "itkConversionUtils.h"
 #include "itkSpatialOrientationAdapter.h"
 #include "itkSpatialOrientation.h"
+#include "itkMatrix.h"
 
 /**
  * \file itkMIDASHelper.h
@@ -58,50 +59,7 @@ namespace itk
   ITK_EXPORT void LimitMaskByRegion(TImage* mask,
                          typename TImage::RegionType &region,
                          typename TImage::PixelType outValue
-                        )
-  {
-    int i;
-    int dimensions = TImage::ImageDimension;
-
-    unsigned long int regionSize = 1;
-    for (i = 0; i < dimensions; i++)
-    {
-      regionSize *= region.GetSize()[i];
-    }
-
-    if (regionSize == 0)
-    {
-      return;
-    }
-
-    typename TImage::PixelType pixel;
-    typename TImage::IndexType pixelIndex;
-    typename TImage::IndexType minimumRegionIndex = region.GetIndex();
-    typename TImage::IndexType maximumRegionIndex = region.GetIndex() + region.GetSize();
-
-    itk::ImageRegionIteratorWithIndex<TImage> iterator(mask, mask->GetLargestPossibleRegion());
-    for (iterator.GoToBegin();
-        !iterator.IsAtEnd();
-        ++iterator)
-    {
-      pixel = iterator.Get();
-
-      if(pixel != outValue)
-      {
-        pixelIndex = iterator.GetIndex();
-
-        for (i = 0; i < dimensions; i++)
-        {
-          if (pixelIndex[i] < minimumRegionIndex[i] || pixelIndex[i] >= maximumRegionIndex[i])
-          {
-            pixel = outValue;
-            iterator.Set(pixel);
-
-          } // end if
-        } // end for
-      } // end if
-    } // end for
-  } // end function
+                         );
 
   /**
    * \brief Returns the volume (number of voxels * voxel volume), of the
@@ -113,116 +71,87 @@ namespace itk
   GetVolumeFromITKImage(
     itk::Image<TPixel, VImageDimension>* itkImage,
     double &imageVolume
-    )
-  {
-    typedef itk::Image<TPixel, VImageDimension> ImageType;
-    typedef typename ImageType::SpacingType SpacingType;
+    );
 
-    SpacingType imageSpacing = itkImage->GetSpacing();
-    double voxelVolume = 1;
-    for ( unsigned int i = 0; i < imageSpacing.Size(); i++)
-    {
-      voxelVolume *= imageSpacing[i];
-    }
-
-    unsigned long int numberOfForegroundVoxels = 0;
-    itk::ImageRegionConstIterator<ImageType> iter(itkImage, itkImage->GetLargestPossibleRegion());
-    for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter)
-    {
-      if (iter.Get() > 0)
-      {
-        numberOfForegroundVoxels++;
-      }
-    }
-
-    imageVolume = numberOfForegroundVoxels * voxelVolume;
-  }
 
   /**
-   * \brief Returns the axis [0=x, 1=y, 2=z, -1=UNKNOWN] corresponding to the specified orientation.
+   * \brief Gets the orientation string from direction cosines, but only works for 3D.
+   */
+  template<unsigned int VImageDimension>
+  ITK_EXPORT
+  void
+  GetOrientationString(
+    const itk::Matrix<double, VImageDimension, VImageDimension>& directionMatrix,
+    std::string &orientationString
+    );
+
+
+  /**
+   * \brief Works out the axis of interest from the orientationString (normally derived from direction cosines), and the requested orientation.
+   */
+  int GetAxisFromOrientationString(const std::string& orientationString, const itk::ORIENTATION_ENUM& orientation);
+
+
+  /**
+   * \brief Returns either +1, or -1 to indicate in which direction you should change the slice number to go "up".
+   * \param orientationString The orientation string such as "RAS", "LPI" etc.
+   * \param axisOfInterest Which axis are we looking at within the orientationString.
+   * \return -1 or +1 telling you to either increase of decrease the slice number or 0 for "unknown".
+   *
+   * So, the MIDAS spec is: Shortcut key A=Up, Z=Down which means:
+   * <pre>
+   * Axial: A=Superior, Z=Inferior
+   * Coronal: A=Anterior, Z=Posterior
+   * Sagittal: A=Right, Z=Left
+   * </pre>
+   */
+  ITK_EXPORT int GetUpDirection(const std::string& orientationString, const int& axisOfInterest);
+
+
+  /**
+   * \brief Gets the orientation string for a 3D image.
+   */
+  template<typename TPixel, unsigned int VImageDimension>
+  ITK_EXPORT
+  void
+  GetOrientationStringFromITKImage(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    std::string &orientationString
+    );
+
+
+  /**
+   * \brief Returns the axis [0=x, 1=y, 2=z, -1=UNKNOWN] corresponding to the specified orientation for the given image.
    */
   template<typename TPixel, unsigned int VImageDimension>
   ITK_EXPORT
   void
   GetAxisFromITKImage(
     const itk::Image<TPixel, VImageDimension>* itkImage,
-    itk::ORIENTATION_ENUM orientation,
+    const itk::ORIENTATION_ENUM orientation,
     int &outputAxis
-    )
-  {
-    outputAxis = -1;
+    );
 
-    typename itk::SpatialOrientationAdapter adaptor;
-    typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationFlag;
-    orientationFlag = adaptor.FromDirectionCosines(itkImage->GetDirection());
-    std::string orientationString = itk::ConvertSpatialOrientationToString(orientationFlag);
-
-    if (orientationString != "UNKNOWN")
-    {
-      for (int i = 0; i < 3; i++)
-      {
-        if (orientation == itk::ORIENTATION_AXIAL && (orientationString[i] == 'S' || orientationString[i] == 'I'))
-        {
-          outputAxis = i;
-          break;
-        }
-
-        if (orientation == itk::ORIENTATION_CORONAL && (orientationString[i] == 'A' || orientationString[i] == 'P'))
-        {
-          outputAxis = i;
-          break;
-        }
-
-        if (orientation == itk::ORIENTATION_SAGITTAL && (orientationString[i] == 'L' || orientationString[i] == 'R'))
-        {
-          outputAxis = i;
-          break;
-        }
-      }
-    }
-  }
 
   /**
    * \brief Returns +1 or -1 (or 0 if unknown) to indicate which way from the centre of the
-   * volume is considered "Up", which means anterior in coronal view, superior in axial view
-   * and right in sagittal view.
+   * volume is considered "Up", which means anterior in coronal view, superior in axial view and right in sagittal view.
    */
   template<typename TPixel, unsigned int VImageDimension>
   ITK_EXPORT
   void
   GetUpDirectionFromITKImage(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      itk::ORIENTATION_ENUM orientation,
+      const itk::Image<TPixel, VImageDimension>* itkImage,
+      const itk::ORIENTATION_ENUM orientation,
       int &upDirection
-      )
-  {
-    upDirection = 0;
+      );
 
-    typename itk::SpatialOrientationAdapter adaptor;
-    typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationFlag;
-    orientationFlag = adaptor.FromDirectionCosines(itkImage->GetDirection());
-    std::string orientationString = itk::ConvertSpatialOrientationToString(orientationFlag);
-
-    int axisOfInterest = -1;
-    GetAxisFromITKImage(itkImage, orientation, axisOfInterest);
-
-    // NOTE: ITK convention is that an image that goes from
-    // Left to Right in X, Posterior to Anterior in Y and Inferior to Superior in Z
-    // is called an LPI, whereas in Nifti speak, that would be RAS.
-    if (orientationString != "UNKNOWN" && axisOfInterest != -1)
-    {
-      char direction = orientationString[axisOfInterest];
-      if (direction == 'A' || direction == 'S' || direction == 'R')
-      {
-        upDirection = -1;
-      }
-      else if (direction == 'P' || direction == 'I' || direction == 'L')
-      {
-        upDirection = 1;
-      }
-    }
-  }
 } // end namespace
+
+
+#ifndef ITK_MANUAL_INSTANTIATION
+#include "itkMIDASHelper.txx"
+#endif
 
 #endif
 

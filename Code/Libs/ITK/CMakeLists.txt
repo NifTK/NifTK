@@ -43,6 +43,7 @@ IO/itkNIFTKTransformIO.cxx
 2D3DToolbox/Commands/itkReconstructionUpdateCommand.cxx
 2D3DToolbox/Commands/itkReconstructionAndRegistrationUpdateCommand.cxx
 2D3DToolbox/Commands/itkSimultaneousReconAndRegnUpdateCommand.cxx
+Segmentation/itkMIDASHelper.cxx
 )
 
 ADD_LIBRARY(niftkITK ${niftkITK_SRCS})

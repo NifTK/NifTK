@@ -446,18 +446,6 @@ mitk::PositionEvent GeneratePositionEvent(const mitk::BaseRenderer* renderer, co
 
 
 //-----------------------------------------------------------------------------
-template<typename TPixel, unsigned int VImageDimension>
-void
-ITKGetVolume(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    double &imageVolume
-    )
-{
-  itk::GetVolumeFromITKImage(itkImage, imageVolume);
-}
-
-
-//-----------------------------------------------------------------------------
 double GetVolume(const mitk::Image* image)
 {
   double volume = 0;
@@ -470,13 +458,13 @@ double GetVolume(const mitk::Image* image)
       switch(dimensions)
       {
       case 2:
-        AccessFixedDimensionByItk_n(image, ITKGetVolume, 2, (volume));
+        AccessFixedDimensionByItk_n(image, itk::GetVolumeFromITKImage, 2, (volume));
         break;
       case 3:
-        AccessFixedDimensionByItk_n(image, ITKGetVolume, 3, (volume));
+        AccessFixedDimensionByItk_n(image, itk::GetVolumeFromITKImage, 3, (volume));
         break;
       case 4:
-        AccessFixedDimensionByItk_n(image, ITKGetVolume, 4, (volume));
+        AccessFixedDimensionByItk_n(image, itk::GetVolumeFromITKImage, 4, (volume));
         break;
       default:
         MITK_ERROR << "During GetVolume, unsupported number of dimensions:" << dimensions << std::endl;

@@ -52,6 +52,7 @@ namespace mitk
     MIDASOrientation &outputOrientation
   );
 
+
   /**
    * \brief Returns the MIDASView corresponding to the XY plane, or else returns the supplied default.
    * \param defaultView A default MIDASView that will be returned if we can't work out the As Acquired view.
@@ -60,6 +61,7 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::Image* image);
 
+
   /**
    * \brief Simply returns true if a node contains an image, and false otherwise.
    * \param node An MITK DataNode.
@@ -67,14 +69,9 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT bool IsImage(const mitk::DataNode* node);
 
+
   /**
-   * \brief ITK method that compares if images have the same intensity values,
-   * and should only be called from ImagesHaveEqualIntensities. Does not check
-   * if the images are actually the same size, so you should check that first.
-   *
-   * \param itkImage an ITK image
-   * \param image2 an MITK image
-   * \param output true if images have the same intensities and false otherwise.
+   * \brief \see ImagesHaveEqualIntensities
    */
   template<typename TPixel, unsigned int VImageDimension>
   void
@@ -84,6 +81,7 @@ namespace mitk
       bool &output
       );
 
+
   /**
    * \brief Utility method that compares if images have the same intensity values.
    * \param image1 an MITK image
@@ -92,11 +90,9 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT bool ImagesHaveEqualIntensities(const mitk::Image* image1, const mitk::Image* image2);
 
+
   /**
-   * \brief ITK method that compares if images are have the same spatial extent (size, spacing, origin, direction).
-   * \param itkImage an ITK image.
-   * \param image2 an MITK image.
-   * \output true if images have the same spatial extent, and false otherwise.
+   * \brief \see ImagesHaveSameSpatialExtent
    */
   template<typename TPixel, unsigned int VImageDimension>
   void
@@ -106,6 +102,7 @@ namespace mitk
       bool &output
       );
 
+
   /**
    * \brief Utility method that compares if images have the same spatial extent.
    * \param image1 an MITK image.
@@ -114,10 +111,9 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT bool ImagesHaveSameSpatialExtent(const mitk::Image* image1, const mitk::Image* image2);
 
+
   /**
-   * \brief ITK method that simply iterates through a whole image, filling it with the specified value which is cast to the appropriate pixel type.
-   * \param image A non NULL MITK image.
-   * \param value A single scalar value that will be cast.
+   * \brief \see FillImage
    */
   template<typename TPixel, unsigned int VImageDimension>
   void
@@ -125,6 +121,7 @@ namespace mitk
       itk::Image<TPixel, VImageDimension>* itkImage,
       float &value
       );
+
 
   /**
    * \brief Simply iterates through a whole image, filling it with the specified value which is cast to the appropriate pixel type.
@@ -135,11 +132,7 @@ namespace mitk
 
 
   /**
-   * \brief Simply iterates through a whole image, counting how many intensity values are >= lower and <= upper.
-   * \param itkImage An ITK image.
-   * \param lower A lower threshold for intensity values
-   * \param upper An upper threshold for intensity values
-   * \return unsigned long int The number of voxels.
+   * \brief \see CountBetweenThreshold
    */
   template<typename TPixel, unsigned int VImageDimension>
   void
@@ -150,6 +143,7 @@ namespace mitk
       unsigned long int &outputCount
       );
 
+
   /**
    * \brief Simply iterates through a whole image, counting how many intensity values are >= lower and <= upper.
    * \param image An MITK Image.
@@ -159,12 +153,14 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT unsigned long int CountBetweenThreshold(const mitk::Image* image, const float& lower, const float& upper);
 
+
   /**
    * \brief Returns the number of voxels in an image.
    * \param image An MITK Image.
    * \return unsigned long int The number of voxels.
    */
   NIFTKMITKEXT_EXPORT unsigned long int GetNumberOfVoxels(const mitk::Image* image);
+
 
   /**
    * \brief Returns the middle voxel of an image.
@@ -175,6 +171,7 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT mitk::Point3D GetMiddlePointInVoxels(const mitk::Image* image);
 
+
   /**
    * \brief Generates a fake position event, (mainly for unit testing), at a given voxel location.
    * \param image An MITK image.
@@ -183,18 +180,6 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT mitk::PositionEvent GeneratePositionEvent(const mitk::BaseRenderer* renderer, const mitk::Image* image, const mitk::Point3D& voxelLocation);
 
-
-  /**
-   * \brief ITK method that returns the volume of non-zero voxels in an image.
-   * \param itkImage An ITK image.
-   * \param imageVolume output volume in millimetres cubed.
-   */
-  template<typename TPixel, unsigned int VImageDimension>
-  void
-  ITKGetVolume(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      double &imageVolume
-      );
 
   /**
    * \brief Returns the volume of non-zero voxels in an image.

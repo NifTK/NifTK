@@ -10,4 +10,6 @@ set(MODULE_CUSTOM_TESTS
   mitkMIDASCompareImagesForEqualityTest.cpp
   mitkMIDASPaintbrushToolTest.cpp
   mitkMIDASSegmentationNodeAddedVisibilityTest.cpp
+  mitkMIDASMorphologicalSegmentorPipelineManagerTest.cpp
+  mitkMIDASOrientationUtilsTest.cpp
 )

@@ -1,5 +1,6 @@
 set(CPP_FILES
   Algorithms/mitkNifTKCoreObjectFactory.cpp
+  Algorithms/mitkMIDASMorphologicalSegmentorPipelineManager.cpp
   Common/mitkMIDASImageUtils.cpp
   Common/mitkMIDASOrientationUtils.cpp
   Common/mitkPointUtils.cpp

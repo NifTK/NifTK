@@ -50,3 +50,13 @@ mitkAddCustomModuleTest(MIDAS-mitkPaintbrushToolTest mitkMIDASPaintbrushToolTest
 # Trac 1683 - When nodes created via segmentation tools, the data sets much be visible in viewers
 #             such as the thumbnail viewer, and the segmentation views.
 mitkAddCustomModuleTest(MIDAS-mitkSegmentationNodeAddedVisibilityTest mitkMIDASSegmentationNodeAddedVisibilityTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)
+
+# Trac 1695 - Main Unit Test for the Whole MIDAS Morphological Segmentor Pipeline
+mitkAddCustomModuleTest(MIDAS-mitkMIDASMorphologicalSegmentorPipelineManagerTest mitkMIDASMorphologicalSegmentorPipelineManagerTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
+
+# Trac 1696 - Unit tests for mitkMIDASOrientationUtils - testing things like, which axis is "up", which direction is "up", as these map to A/Z keys etc.
+mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-a mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.img RAI  1 -1 -1 2 0 1)
+mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-s mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-s.img ASL -1  1 -1 1 2 0)
+mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-c mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img RSP -1 -1  1 1 0 2)
+mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-16856   mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img RSP -1 -1  1 1 0 2)
+mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-matt    mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii AIL 1 1 -1 1 2 0)
