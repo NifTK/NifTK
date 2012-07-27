@@ -348,6 +348,9 @@ private:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
+  /// \brief Used to move either anterior/posterior by a certain number of slices.
+  bool MoveAnteriorPosterior(bool moveAnterior, int slices);
+
   // Layouts
   QHBoxLayout                                   *m_TopLevelLayout;
   QGridLayout                                   *m_LayoutToPutControlsOnTopOfWindows;

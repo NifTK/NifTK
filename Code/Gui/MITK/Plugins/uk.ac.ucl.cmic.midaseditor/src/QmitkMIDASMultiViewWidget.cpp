@@ -41,16 +41,18 @@
 #include <QMessageBox>
 #include <QStackedLayout>
 #include <QButtonGroup>
-#include "mitkFocusManager.h"
-#include "mitkGlobalInteraction.h"
-#include "mitkGeometry3D.h"
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkGeometry3D.h>
+#include <mitkIRenderWindowPart.h>
+#include <QmitkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+#include <ctkPopupWidget.h>
+
 #include "mitkMIDASViewKeyPressResponder.h"
-#include "mitkIRenderWindowPart.h"
-#include "QmitkRenderWindow.h"
 #include "QmitkMIDASSingleViewWidget.h"
-#include "vtkRenderer.h"
-#include "vtkRendererCollection.h"
-#include "ctkPopupWidget.h"
+#include "mitkMIDASOrientationUtils.h"
 
 QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     QmitkMIDASMultiViewVisibilityManager* visibilityManager,
@@ -977,42 +979,44 @@ std::vector<unsigned int> QmitkMIDASMultiViewWidget::GetViewerIndexesToUpdate(bo
 
 bool QmitkMIDASMultiViewWidget::MoveAnterior()
 {
-  bool actuallyDidSomething = false;
-  int selectedWindow = this->GetSelectedWindowIndex();
-
-  MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
-  unsigned int currentSlice = this->m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
-  unsigned int maxSlice = this->m_SingleViewWidgets[selectedWindow]->GetMaxSlice(orientation);
-  unsigned int nextSlice = currentSlice+1;
-
-  if (nextSlice <= maxSlice)
-  {
-    this->SetSelectedWindowSliceNumber(nextSlice);
-    actuallyDidSomething = true;
-  }
-
-  return actuallyDidSomething;
+  return this->MoveAnteriorPosterior(true, 1);
 }
 
 bool QmitkMIDASMultiViewWidget::MovePosterior()
 {
+  return this->MoveAnteriorPosterior(false, 1);
+}
+
+bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int slices)
+{
   bool actuallyDidSomething = false;
   int selectedWindow = this->GetSelectedWindowIndex();
 
-  MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
-  unsigned int currentSlice = this->m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
-  unsigned int minSlice = this->m_SingleViewWidgets[selectedWindow]->GetMinSlice(orientation);
-
-  if (currentSlice > 0)
+  if (selectedWindow != -1)
   {
-    unsigned int nextSlice = currentSlice-1;
-    if (nextSlice >= minSlice)
+    MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
+    unsigned int currentSlice = this->m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
+    unsigned int minSlice = this->m_SingleViewWidgets[selectedWindow]->GetMinSlice(orientation);
+    unsigned int maxSlice = this->m_SingleViewWidgets[selectedWindow]->GetMaxSlice(orientation);
+
+    int upDirection = this->m_SingleViewWidgets[selectedWindow]->GetSliceUpDirection(orientation);
+    int nextSlice = currentSlice;
+
+    if (moveAnterior)
+    {
+      nextSlice = currentSlice + slices*upDirection;
+    }
+    else
+    {
+      nextSlice = currentSlice - slices*upDirection;
+    }
+
+    if (nextSlice >= (int)minSlice && nextSlice <= (int)maxSlice)
     {
       this->SetSelectedWindowSliceNumber(nextSlice);
       actuallyDidSomething = true;
     }
   }
-
   return actuallyDidSomething;
 }
 

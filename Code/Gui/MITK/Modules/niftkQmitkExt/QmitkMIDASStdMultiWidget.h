@@ -163,6 +163,9 @@ public:
   /// \brief Returns the list of all vtkRenderWindow contained herein.
   std::vector<vtkRenderWindow*> GetAllVtkWindows() const;
 
+  /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
+  QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
+
   /// \brief Returns true if this widget contains the provided window and false otherwise.
   bool ContainsWindow(QmitkRenderWindow *window) const;
 
@@ -221,6 +224,11 @@ public:
 
   /// \brief Turn on/off the relevant interactors.
   void EnableInteractors(bool enable);
+
+  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
+  ///
+  /// \see mitkMIDASOrientationUtils.
+  int GetSliceUpDirection(MIDASOrientation orientation) const;
 
 signals:
 

@@ -35,6 +35,7 @@
 #include "itkMatrix.h"
 #include "itkSpatialOrientationAdapter.h"
 #include <cmath>
+#include "mitkMIDASOrientationUtils.h"
 
 /**
  * This class is to notify the SingleViewWidget about the display geometry changes of a render window.
@@ -1534,20 +1535,7 @@ double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
   {
     // Note, that this method should only be called for MIDAS purposes, when the view is a 2D
     // view, so it will either be Axial, Coronal, Sagittal, and not 3D or OthoView.
-
-    QmitkRenderWindow *window = NULL;
-    if (orientation == MIDAS_ORIENTATION_AXIAL)
-    {
-      window = this->GetRenderWindow1();
-    }
-    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
-    {
-      window = this->GetRenderWindow2();
-    }
-    else if (orientation == MIDAS_ORIENTATION_CORONAL)
-    {
-      window = this->GetRenderWindow3();
-    }
+    QmitkRenderWindow *window = this->GetRenderWindow(orientation);
 
     // Given the above comment, this means, we MUST have a window from this choice of 3.
     assert(window);
@@ -1755,4 +1743,32 @@ void QmitkMIDASStdMultiWidget::EnableInteractors(bool enable)
   {
     this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
   }
+}
+
+QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(const MIDASOrientation& orientation) const
+{
+  QmitkRenderWindow *window = NULL;
+  if (orientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    window = this->GetRenderWindow1();
+  }
+  else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+  {
+    window = this->GetRenderWindow2();
+  }
+  else if (orientation == MIDAS_ORIENTATION_CORONAL)
+  {
+    window = this->GetRenderWindow3();
+  }
+  return window;
+}
+
+int QmitkMIDASStdMultiWidget::GetSliceUpDirection(MIDASOrientation orientation) const
+{
+  int result = 0;
+  if (this->m_Geometry != NULL)
+  {
+    result = mitk::GetUpDirection(m_Geometry, orientation);
+  }
+  return result;
 }

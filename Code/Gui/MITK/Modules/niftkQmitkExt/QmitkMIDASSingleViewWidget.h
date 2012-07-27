@@ -265,6 +265,11 @@ public:
   /// \brief Returns pointers to the widget planes.
   std::vector<mitk::DataNode*> GetWidgetPlanes();
 
+  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
+  ///
+  /// \see mitkMIDASOrientationUtils.
+  int GetSliceUpDirection(MIDASOrientation orientation) const;
+
 protected:
 
   virtual void paintEvent(QPaintEvent *event);

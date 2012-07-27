@@ -24,19 +24,22 @@
 
 #include <QStackedLayout>
 #include <QDebug>
-#include "mitkFocusManager.h"
-#include "mitkGlobalInteraction.h"
-#include "mitkPointUtils.h"
-#include "QmitkMIDASSingleViewWidget.h"
-#include "QmitkRenderWindow.h"
-#include "QmitkMIDASStdMultiWidget.h"
-#include "vtkRenderer.h"
-#include "vtkCamera.h"
-#include "vtkMatrix4x4.h"
-#include "vtkSmartPointer.h"
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
+#include <QmitkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkCamera.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+#include <itkMatrix.h>
+#include <itkSpatialOrientationAdapter.h>
+
 #include "itkConversionUtils.h"
-#include "itkMatrix.h"
-#include "itkSpatialOrientationAdapter.h"
+#include "mitkPointUtils.h"
+#include "mitkMIDASOrientationUtils.h"
+#include "QmitkMIDASSingleViewWidget.h"
+#include "QmitkMIDASStdMultiWidget.h"
+
 
 QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(QWidget *parent)
 : QWidget(parent)
@@ -645,4 +648,10 @@ std::vector<mitk::DataNode*> QmitkMIDASSingleViewWidget::GetWidgetPlanes()
   result.push_back(this->m_MultiWidget->GetWidgetPlane2());
   result.push_back(this->m_MultiWidget->GetWidgetPlane3());
   return result;
+}
+
+
+int QmitkMIDASSingleViewWidget::GetSliceUpDirection(MIDASOrientation orientation) const
+{
+  return this->m_MultiWidget->GetSliceUpDirection(orientation);
 }
