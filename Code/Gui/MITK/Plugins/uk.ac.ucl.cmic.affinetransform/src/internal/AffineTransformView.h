@@ -26,15 +26,30 @@
 #define AffineTransformView_h
 
 #include "QmitkAbstractView.h"
+#include <QmitkBaseView.h>
+#include <QmitkRenderWindow.h>
 #include "berryISelectionListener.h"
-#include "vtkMatrix4x4.h"
-#include "vtkSmartPointer.h"
+
 #include "itkImage.h"
 
-#include "ui_AffineTransformViewControls.h"
+#include <vtkRenderWindowInteractor.h>
+#include <vtkInteractorStyle.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
+
 #include "mitkAffineTransformParametersDataNodeProperty.h"
 #include "mitkDataNode.h"
 #include "mitkDataStorage.h"
+#include "mitkGeometry3D.h"
+#include "mitkGlobalInteraction.h"
+#include "mitkWeakPointer.h"
+#include "mitkBoundingObject.h"
+#include "mitkAffineInteractor3D.h"
+
+#include "ui_AffineTransformViewControls.h"
+#include "AffineTransformInteractor3D.h"
+
+
 
 /**
  * \class AffineTransformView
@@ -67,7 +82,7 @@
  *
  * \ingroup uk_ac_ucl_cmic_affinetransform_internal
  */
-class AffineTransformView : public QmitkAbstractView
+class AffineTransformView : public QmitkBaseView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -122,6 +137,21 @@ class AffineTransformView : public QmitkAbstractView
     /** \brief Slot for resampling the current image. */
     void OnResampleTransformPushed();
 
+    /** \brief Slot for switching between interactive and regular transformation editing */
+    void OnInteractiveModeToggled(bool on);
+
+     /** \brief Slot for switching between translation and rotation in interactive editing mode */
+    void OnRotationToggled(bool on);
+
+    /** \brief Slot to update display when the interactive alignment has finished */
+    void OnTransformReady();
+
+    /** \brief Slot for enabling / disabling fixed angle rotation / translations */
+    void OnFixAngleToggled(bool on);
+
+    /** \brief Slot for swithcing the main axis of translation / rotation */
+    void OnAxisChanged(bool on);
+
   protected:
 
     /** \brief Computes a new linear transform (as 4x4 transform matrix) from the parameters set through the UI. */
@@ -162,6 +192,7 @@ class AffineTransformView : public QmitkAbstractView
     /** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
     void _ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode& node);
 
+
     /**
      * \brief Updates the displayed transform with the values from the spin-box controls.
      *
@@ -183,9 +214,34 @@ class AffineTransformView : public QmitkAbstractView
     /** \brief Applies a re-sampling to the current node. */
     void _ApplyResampleToCurrentNode();
 
-    Ui::AffineTransformWidget *m_Controls;
-    double m_CentreOfRotation[3];
-    mitk::DataNode::Pointer msp_DataOwnerNode;
+    //
+    virtual void CreateNewBoundingObject(mitk::DataNode::Pointer);
+
+    virtual void AddBoundingObjectToNode(mitk::DataNode::Pointer, bool fit);
+
+    virtual void RemoveBoundingObjectFromNode();
+
+    bool DisplayLegends(bool legendsON);
+
+private:
+    bool                                    m_inInteractiveMode;
+    bool                                    m_rotationMode;
+    bool                                    m_legendAdded;
+    QWidget                               * m_ParentWidget;
+    //mitk::WeakPointer<mitk::Image>          m_currentImage;
+    mitk::WeakPointer<mitk::BaseData>       m_currentDataObject;
+    mitk::BoundingObject::Pointer           m_boundingObject;
+    mitk::DataNode::Pointer                 m_boundingObjectNode;
+
+    Ui::AffineTransformWidget             * m_Controls;
+    double                                  m_CentreOfRotation[3];
+    mitk::DataNode::Pointer                 msp_DataOwnerNode;
+    
+    AffineTransformInteractor3D::Pointer    m_AffineInteractor3D;
+    //mitk::AffineInteractor3D::Pointer       m_AffineInteractor;
+    vtkLegendScaleActor                   * m_legendActor;
+    vtkAxesActor                          * m_axesActor;
+    CustomVTKAxesActor                    * m_customAxesActor;
 };
 
 #endif // AffineTransformView_h

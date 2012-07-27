@@ -5,6 +5,7 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   AffineTransformViewActivator.cpp
   AffineTransformView.cpp
+  AffineTransformInteractor3D.cpp
 )
 
 set(UI_FILES
@@ -13,6 +14,7 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/AffineTransformViewActivator.h
+  src/internal/AffineTransformInteractor3D.h
   src/internal/AffineTransformView.h
 )
 
@@ -28,7 +30,7 @@ set(CACHED_RESOURCE_FILES
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-
+  resources/AffineTransform.qrc
 )
 
 set(CPP_FILES )
