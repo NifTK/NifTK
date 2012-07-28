@@ -108,6 +108,10 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
 {
+  m_CreatedGeometries[0] = NULL;
+  m_CreatedGeometries[1] = NULL;
+  m_CreatedGeometries[2] = NULL;
+
   if (dataStorage != NULL)
   {
     this->SetDataStorage(dataStorage);
@@ -192,7 +196,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   {
     AddDisplayGeometryModificationObserver(renderWindows[i]);
   }
-
 }
 
 QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
@@ -700,6 +703,8 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
 {
   if (geometry != NULL)
   {
+    m_Geometry = geometry;
+
     // Add these annotations the first time we have a real geometry.
     this->m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
     this->m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
@@ -999,24 +1004,25 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         {
           MITK_DEBUG << "Matt - final geometry i=" << i << ", p=" << createdTimeSlicedGeometry->GetCornerPoint(i) << std::endl;
         }
-
+        m_CreatedGeometries[window] = createdTimeSlicedGeometry;
         sliceNavigationController->SetInputWorldGeometry(createdTimeSlicedGeometry);
         sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
         sliceNavigationController->SetViewDirection(viewDirection);
-      } // if window < 3
 
-      // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
-      if ( id == 1 )
-      {
-        // Now geometry is established, set to middle slice.
-        int sliceNumber = (int)((double)(sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
-        sliceNavigationController->GetSlice()->SetPos(sliceNumber);
-      }
-      // Now geometry is established, get the display geometry to fit the picture to the window.
-      baseRenderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
-      baseRenderer->GetDisplayGeometry()->Fit();
+        // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
+        if ( id == 1 )
+        {
+          // Now geometry is established, set to middle slice.
+          int sliceNumber = (int)((double)(sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
+          sliceNavigationController->GetSlice()->SetPos(sliceNumber);
+        }
+
+        // Now geometry is established, get the display geometry to fit the picture to the window.
+        baseRenderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
+        baseRenderer->GetDisplayGeometry()->Fit();
+
+      } // if window < 3
     }
-    m_Geometry = geometry;
   }
 }
 

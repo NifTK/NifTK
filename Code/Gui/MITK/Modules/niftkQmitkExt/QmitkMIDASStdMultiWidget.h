@@ -296,6 +296,8 @@ private:
   bool m_BlockDisplayGeometryEvents;
 
   friend class DisplayGeometryModificationCommand;
+
+  mitk::Geometry3D::Pointer m_CreatedGeometries[3];
 };
 
 #endif
