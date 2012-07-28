@@ -345,7 +345,7 @@ bool mitk::MIDASPaintbrushTool::OnLeftMouseMoved(Action* action, const StateEven
   {
     imageNumber = 2;
   }
-  this->DoMouseMoved(action, stateEvent, 0, 1, 0);
+  this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
   return true;
 }
 
@@ -367,7 +367,7 @@ bool mitk::MIDASPaintbrushTool::OnMiddleMouseMoved(Action* action, const StateEv
   {
     imageNumber = 3;
   }
-  this->DoMouseMoved(action, stateEvent, 1, 1, 0);
+  this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
   return true;
 }
 
@@ -389,7 +389,7 @@ bool mitk::MIDASPaintbrushTool::OnRightMouseMoved(Action* action, const StateEve
   {
     imageNumber = 3;
   }
-  this->DoMouseMoved(action, stateEvent, 1, 0, 1);
+  this->DoMouseMoved(action, stateEvent, imageNumber, 0, 1);
   return true;
 }
 

@@ -77,24 +77,34 @@ public:
     m_DataStorage = mitk::StandaloneDataStorage::New();
     m_ToolManager = mitk::ToolManager::New(m_DataStorage);
 
-    // We load the same file 2 times, then rename volumes.
+    // We load the same file 4 times, then rename volumes.
     std::vector<std::string> files;
+    files.push_back(fileName);
+    files.push_back(fileName);
     files.push_back(fileName);
     files.push_back(fileName);
 
     mitk::IOUtil::LoadFiles(files, *(m_DataStorage.GetPointer()));
     mitk::DataStorage::SetOfObjects::ConstPointer allImages = m_DataStorage->GetAll();
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 2),".. Testing 2 images loaded.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 4),".. Testing 4 images loaded.");
 
-    const mitk::DataNode::Pointer subtractionsNode = (*allImages)[0];
-    subtractionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_SUBTRACTIONS);
+    const mitk::DataNode::Pointer erodeAdditionsNode = (*allImages)[0];
+    erodeAdditionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
 
-    const mitk::DataNode::Pointer additionsNode = (*allImages)[1];
-    additionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_ADDITIONS);
+    const mitk::DataNode::Pointer erodeSubtractionsNode = (*allImages)[1];
+    erodeSubtractionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
+
+    const mitk::DataNode::Pointer dilateAdditionsNode = (*allImages)[2];
+    dilateAdditionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
+
+    const mitk::DataNode::Pointer dilateSubtractionsNode = (*allImages)[3];
+    dilateSubtractionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
 
     mitk::ToolManager::DataVectorType vector;
-    vector.push_back(additionsNode);
-    vector.push_back(subtractionsNode);
+    vector.push_back(erodeAdditionsNode);
+    vector.push_back(erodeSubtractionsNode);
+    vector.push_back(dilateAdditionsNode);
+    vector.push_back(dilateSubtractionsNode);
 
     m_ToolManager->SetWorkingData(vector);
     m_Tool = dynamic_cast<mitk::MIDASPaintbrushTool*>(m_ToolManager->GetToolById(m_ToolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>()));
@@ -204,7 +214,7 @@ public:
     mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
     // Generate Left or Right mouse click events.
-    if (imageId == 0)
+    if (imageId == 0 || imageId == 2)
     {
       int eventId = mitk::EIDLEFTMOUSEBTN;
       const mitk::StateEvent stateEvent1(eventId, &middlePositionEvent);
@@ -461,7 +471,9 @@ int mitkMIDASPaintbrushToolTest(int argc, char * argv[])
   testClass->TestScan();
   testClass->TestClickJustOutOfBounds();
   testClass->TestClickWayOutOfBounds();
-
+  testClass->m_Tool->SetErosionMode(false);
+  testClass->TestClickDrag(2, 10, 1, 40); // Test hit image 2
+  testClass->TestClickDrag(3, 10, 1, 40); // Test hit image 3
   delete testClass;
   MITK_TEST_END();
 }
