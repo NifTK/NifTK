@@ -42,8 +42,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <QApplication>
 
-class mitk::DataNode;
-
 /**
   * \brief Affine interaction with objects in 3D windows.
   *

@@ -92,18 +92,19 @@ const std::string AffineTransformView::DISPLAYED_TRANSFORM_KEY   = "niftk.displa
 const std::string AffineTransformView::DISPLAYED_PARAMETERS_KEY  = "niftk.displayedtransformparameters";
 
 AffineTransformView::AffineTransformView()
-: m_Controls(NULL)
-, msp_DataOwnerNode(NULL)
-, m_AffineInteractor3D(NULL)
-, m_customAxesActor(NULL)
-, m_legendActor(NULL)
-, m_boundingObject(NULL)
-, m_boundingObjectNode(NULL)
-, m_currentDataObject(NULL)
-, m_inInteractiveMode(false)
-, m_legendAdded(false)
-, m_rotationMode(false)
 {
+  m_Controls = NULL;
+  msp_DataOwnerNode = NULL;
+  m_AffineInteractor3D = NULL;
+  m_customAxesActor = NULL;
+  m_legendActor = NULL;
+  m_boundingObject = NULL;
+  m_boundingObjectNode = NULL;
+  m_currentDataObject = NULL;
+  m_inInteractiveMode = false;
+  m_legendAdded = false;
+  m_rotationMode = false;
+
   QFile xmlDesc;
   xmlDesc.setFileName(":/AffineTransform/AffineTransformInteractorSM.xml");
   //qDebug() <<xmlDesc.exists();
@@ -1150,7 +1151,7 @@ bool AffineTransformView::DisplayLegends(bool legendsON)
   vtkRenderWindow *renderWindow = NULL;
   vtkRenderWindowInteractor *renderWindowInteractor = NULL;
   vtkRenderer *currentVtkRenderer = NULL;
-  vtkCamera *camera = NULL;
+  //vtkCamera *camera = NULL;
 
   if (qRenderWindow != NULL )
   {
@@ -1162,11 +1163,8 @@ bool AffineTransformView::DisplayLegends(bool legendsON)
       {
         currentVtkRenderer = renderWindowInteractor->GetInteractorStyle()->GetCurrentRenderer();
         
-        if ( currentVtkRenderer != NULL )
-        {
-          camera = currentVtkRenderer->GetActiveCamera();
-        }
-        else return false;
+        if (currentVtkRenderer == NULL)
+          return false;
       }
       else return false;
     }
