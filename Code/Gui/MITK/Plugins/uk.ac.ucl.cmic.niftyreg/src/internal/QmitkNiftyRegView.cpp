@@ -1567,7 +1567,7 @@ reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( mi
   if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
   m_FloatingImage  = ConvertMitkImageToNifti( mitkSourceImage );
 
-#if 1
+#if 0
   nifti_set_filenames( m_ReferenceImage,"aladinReference.nii",0,0 );
   nifti_image_write( m_ReferenceImage );
 
@@ -1662,7 +1662,7 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
   if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
   m_FloatingImage = ConvertMitkImageToNifti( mitkSourceImage );
 
-#if 1
+#if 0
   nifti_set_filenames( m_ReferenceImage,"f3dReference.nii",0,0 );
   nifti_image_write( m_ReferenceImage );
 
