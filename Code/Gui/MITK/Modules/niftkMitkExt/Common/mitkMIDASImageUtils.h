@@ -196,6 +196,22 @@ namespace mitk
    */
   NIFTKMITKEXT_EXPORT void UpdateVolumeProperty(const mitk::Image* image, mitk::DataNode* node);
 
+  /**
+   * \brief ITK function to copy image data, performing C-style casting between data types.
+   * \param itkImage1 An ITK image.
+   * \param itkImage2 An ITK image.
+   */
+  template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
+  void ITKCopyIntensityData(itk::Image<TPixel1, VImageDimension1>* itkImage1,
+                        itk::Image<TPixel2, VImageDimension2>* itkImage2
+                       );
+
+  /**
+   * \brief Assumes same size image, and same data type, and copies data from the input image to the output image.
+   * \param input Input MITK image, not NULL.
+   * \param output Output MITK image, not NULL, same size as input.
+   */
+  NIFTKMITKEXT_EXPORT void CopyIntensityData(const mitk::Image* input, mitk::Image* output);
 }
 
 #endif // MITKMIDASIMAGEUTILS_H

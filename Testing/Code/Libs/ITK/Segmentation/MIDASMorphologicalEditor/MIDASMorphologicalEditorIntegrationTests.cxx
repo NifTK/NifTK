@@ -40,4 +40,5 @@ void RegisterTests()
   REGISTER_TEST(itkMIDASUpSamplingFilterTest);
   REGISTER_TEST(itkMIDASRethresholdingFilterTest);
   REGISTER_TEST(itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest);
+  REGISTER_TEST(itkMIDASMaskByRegionFilterTest);
 }

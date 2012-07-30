@@ -60,3 +60,6 @@ mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-s mitkMIDASOri
 mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-c mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img RSP -1 -1  1 1 0 2)
 mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-16856   mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img RSP -1 -1  1 1 0 2)
 mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-matt    mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii AIL 1 1 -1 1 2 0)
+
+# Trac 1706 - Dilations break through connection breaker image.
+mitkAddCustomModuleTest(MIDAS-mitkMIDASImageUtilsTest-16856 mitkMIDASImageUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)

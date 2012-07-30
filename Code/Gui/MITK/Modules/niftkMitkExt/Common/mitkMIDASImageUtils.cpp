@@ -490,5 +490,56 @@ void UpdateVolumeProperty(const mitk::Image* image, mitk::DataNode* node)
   }
 }
 
+
+//-----------------------------------------------------------------------------
+template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
+void ITKCopyIntensityData(itk::Image<TPixel1, VImageDimension1>* input,
+                          itk::Image<TPixel2, VImageDimension2>* output
+                         )
+{
+  typedef typename itk::Image<TPixel1, VImageDimension1> ImageType1;
+  typedef typename itk::Image<TPixel2, VImageDimension2> ImageType2;
+
+  itk::ImageRegionConstIterator<ImageType1> inputIter(input, input->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<ImageType2> outputIter(output, output->GetLargestPossibleRegion());
+
+  for (inputIter.GoToBegin(), outputIter.GoToBegin(); !inputIter.IsAtEnd() && !outputIter.IsAtEnd(); ++inputIter, ++outputIter)
+  {
+    outputIter.Set(inputIter.Get());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CopyIntensityData(const mitk::Image* input, mitk::Image* output)
+{
+  if (input != NULL && output != NULL)
+  {
+    try
+    {
+      int dimensions = input->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessTwoImagesFixedDimensionByItk(input, output, ITKCopyIntensityData, 2);
+        break;
+      case 3:
+        AccessTwoImagesFixedDimensionByItk(input, output, ITKCopyIntensityData, 3);
+        break;
+      case 4:
+        AccessTwoImagesFixedDimensionByItk(input, output, ITKCopyIntensityData, 4);
+        break;
+      default:
+        MITK_ERROR << "During CopyIntensityData, unsupported number of dimensions:" << dimensions << std::endl;
+      }
+    }
+    catch (const mitk::AccessByItkException &e)
+    {
+      MITK_ERROR << "CopyIntensityData: AccessTwoImagesFixedDimensionByItk failed to copy data due to." << e.what() << std::endl;
+    }
+  }
+}
+
+
 } // end namespace
 

@@ -12,4 +12,5 @@ set(MODULE_CUSTOM_TESTS
   mitkMIDASSegmentationNodeAddedVisibilityTest.cpp
   mitkMIDASMorphologicalSegmentorPipelineManagerTest.cpp
   mitkMIDASOrientationUtilsTest.cpp
+  mitkMIDASImageUtilsTest.cpp
 )

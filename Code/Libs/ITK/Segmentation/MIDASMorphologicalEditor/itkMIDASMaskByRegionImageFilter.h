@@ -35,6 +35,22 @@ namespace itk
    * but you can specify a region, and that region is kept, and anything outside that region, set
    * to a single background value. Used for Axial Cutoff.
    *
+   * Within the region, the spec is:
+   * <pre>
+   * Input 0  | Input 1 | Input 2 | Output
+   *       0  |       0 |       0 |      0
+   *       0  |       0 |       1 |      0
+   *       0  |       1 |       0 |      1
+   *       0  |       1 |       1 |      0
+   *       1  |       0 |       0 |      1
+   *       1  |       0 |       1 |      0
+   *       1  |       1 |       0 |      1
+   *       1  |       1 |       1 |      0
+   * </pre>
+   * and input 1 has been called the "additions" image, as if the pixel is on, it has the effect of
+   * adding to the segmentation. The second image is called the "subtractions" image, and is used for
+   * connection breaker, so if the subtractions image pixel is on, the output must be off.
+   *
    * \ingroup midas_morph_editor
    */
   template <class TInputImage, class TOutputImage>

@@ -48,6 +48,7 @@ ADD_TEST(MIDAS-Morph-DownSampling ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASDownS
 ADD_TEST(MIDAS-Morph-UpSampling ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASUpSamplingFilterTest )
 ADD_TEST(MIDAS-Morph-Rethresholding ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MIDASRethresholding.nii.gz ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz itkMIDASRethresholdingFilterTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img 400 ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz)
 ADD_TEST(MIDAS-Morph-LimitByRegionFunction ${MIDAS_MORPH_INTEGRATION_TESTS} itkLimitByRegionFunctionTest)
+ADD_TEST(MIDAS-Morph-MaskByRegion ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASMaskByRegionFilterTest)
 
 # Need a new test, as filter no longer works in 2D
 # ADD_TEST(MIDAS-Morph-MorphLargest ${SEGMENTATION_INTEGRATION_TESTS} itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest ${INPUT_DATA}/centered_2d 2 ${INPUT_DATA}/right_border_grey_2d 2)
@@ -66,6 +67,7 @@ itkMIDASDownSamplingFilterTest.cxx
 itkMIDASUpSamplingFilterTest.cxx
 itkMIDASRethresholdingFilterTest.cxx
 itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest.cxx
+itkMIDASMaskByRegionFilterTest.cxx
 )
 
 ADD_EXECUTABLE(MIDASMorphologicalEditorIntegrationTests MIDASMorphologicalEditorIntegrationTests ${MIDASMorphIntegrationTests_SRCS})
