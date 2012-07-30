@@ -32,6 +32,11 @@
 #include "itkSpatialOrientation.h"
 #include "itkMatrix.h"
 
+#ifdef ITK_EXPORT
+#undef  ITK_EXPORT
+#define ITK_EXPORT __declspec(dllexport)
+#endif
+
 /**
  * \file itkMIDASHelper.h
  * \brief Provides useful utility functions that could be used in multiple ITK filters.
@@ -89,7 +94,7 @@ namespace itk
   /**
    * \brief Works out the axis of interest from the orientationString (normally derived from direction cosines), and the requested orientation.
    */
-  int GetAxisFromOrientationString(const std::string& orientationString, const itk::ORIENTATION_ENUM& orientation);
+  ITK_EXPORT int GetAxisFromOrientationString(const std::string& orientationString, const itk::ORIENTATION_ENUM& orientation);
 
 
   /**
