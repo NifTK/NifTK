@@ -1,7 +1,7 @@
 PROJECT(itkBSITesting)
 
 # Input data.
-SET(INPUTDATA ${NIFTK_DATA_ROOT}/BSIInput)
+SET(INPUTDATA ${NIFTK_DATA_DIR}/BSIInput)
 # Ouput data. 
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
