@@ -217,16 +217,18 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   {
     // Simple case first - no editing.
     
-    if (!editingFlags[0] && !editingFlags[1] && !editingFlags[2] && !editingFlags[2])
+    if (!editingFlags[0] && !editingFlags[1] && !editingFlags[2] && !editingFlags[3])
     {
       if (m_Stage == 1)
       {
+        m_ErosionMaskFilter->GetInput()->Modified();
         m_ErosionMaskFilter->Modified();
         m_ErosionConnectedComponentFilter->Modified();
         m_ErosionConnectedComponentFilter->UpdateLargestPossibleRegion();
       }
       else if (m_Stage == 2)
       {
+        m_DilationMaskFilter->GetInput()->Modified();
         m_DilationMaskFilter->Modified();
         m_DilationConnectedComponentFilter->Modified();
         m_DilationConnectedComponentFilter->UpdateLargestPossibleRegion();

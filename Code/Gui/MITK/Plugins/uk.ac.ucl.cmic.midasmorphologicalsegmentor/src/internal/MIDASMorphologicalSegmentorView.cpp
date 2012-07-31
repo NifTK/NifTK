@@ -49,6 +49,8 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 , m_Layout(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_MorphologicalControls(NULL)
+, m_PipelineManager(NULL)
+, m_TabCounter(-1)
 {
 }
 
@@ -278,11 +280,22 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
         erodeSubtractNode->SetVisibility(true);
         dilateSubtractNode->SetVisibility(false);
       }
-      else
+      else // i==2
       {
         paintbrushTool->SetErosionMode(false);
-        erodeSubtractNode->SetVisibility(true);
-        dilateSubtractNode->SetVisibility(false);
+        erodeSubtractNode->SetVisibility(false);
+        dilateSubtractNode->SetVisibility(true);
+
+        // Only if we are switching from tab 1 to 2.
+        if (m_TabCounter == 1)
+        {
+          mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
+          mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
+          if (erodeSubtractImage != NULL && dilateSubtractImage != NULL)
+          {
+            mitk::CopyIntensityData(erodeSubtractImage, dilateSubtractImage);
+          }
+        }
       }
     }
     else
@@ -295,6 +308,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
     this->m_PipelineManager->UpdateSegmentation();
     this->RequestRenderWindowUpdate();
   }
+  m_TabCounter = i;
 }
 
 

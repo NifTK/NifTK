@@ -62,6 +62,9 @@ namespace mitk
   * using the object factory described in Maleike et. al. doi:10.1016/j.cmpb.2009.04.004.
   *
   * To effectively use this tool, you need a 3 button mouse.
+  *
+  * Trac 1695, 1700, 1701, 1706: Fixing up dilations: We change pipeline so that WorkingData 0,1 are
+  * applied during erosions phase, and WorkingData 2,3 are applied during dilations phase.
   */
 class NIFTKMITKEXT_EXPORT MIDASPaintbrushTool : public SegTool2D
 {
@@ -174,6 +177,9 @@ private:
   // Pointer to interface object, used as callback in Undo/Redo framework
   MIDASPaintbrushToolEventInterface::Pointer m_Interface;
 
+  /// \brief Calculates the current image number.
+  int GetImageNumber(bool isLeftMouseButton);
+
   // Cursor size for editing, and cursor type is currently always a cross.
   int m_CursorSize;
 
@@ -187,6 +193,7 @@ private:
   mitk::Point3D m_MostRecentPointInMillimetres;
   unsigned long int m_NumberOfVoxelsPainted;
 
+  // If m_ErosionMode is true, we update WorkingData 0 and 1, if m_ErosionMode is false, we update WorkingData 2 and 3.
   bool m_ErosionMode;
 
 };//class

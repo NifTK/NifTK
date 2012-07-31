@@ -167,6 +167,9 @@ private:
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
   mitk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+
+  /// \brief Keep local variable to update after the tab has changed.
+  int m_TabCounter;
 };
 
 #endif // _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED

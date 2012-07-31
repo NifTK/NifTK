@@ -333,69 +333,94 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
   return true;
 }
 
+int mitk::MIDASPaintbrushTool::GetImageNumber(bool isLeftMouseButton)
+{
+  int imageNumber = -1;
+
+  if (isLeftMouseButton)
+  {
+    if (this->m_ErosionMode)
+    {
+      imageNumber = 0;
+    }
+    else
+    {
+      imageNumber = 2;
+    }
+  }
+  else
+  {
+    if (this->m_ErosionMode)
+    {
+      imageNumber = 1;
+    }
+    else
+    {
+      imageNumber = 3;
+    }
+  }
+
+  assert(imageNumber >= 0 && imageNumber <=3);
+  return imageNumber;
+}
+
 bool mitk::MIDASPaintbrushTool::OnLeftMousePressed (Action* action, const StateEvent* stateEvent)
 {
-  return this->MarkInitialPosition(0, action, stateEvent);
+  int imageNumber = this->GetImageNumber(true);
+  return this->MarkInitialPosition(imageNumber, action, stateEvent);
 }
 
 bool mitk::MIDASPaintbrushTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  int imageNumber = 0;
-  if (!m_ErosionMode)
-  {
-    imageNumber = 2;
-  }
+  int imageNumber = this->GetImageNumber(true);
   this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnLeftMouseReleased(Action* action, const StateEvent* stateEvent)
 {
-  this->SetInvalidRegion(0);
+  int imageNumber = this->GetImageNumber(true);
+  this->SetInvalidRegion(imageNumber);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMousePressed (Action* action, const StateEvent* stateEvent)
 {
-  return this->MarkInitialPosition(1, action, stateEvent);
+  int imageNumber = this->GetImageNumber(false);
+  return this->MarkInitialPosition(imageNumber, action, stateEvent);
 }
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  int imageNumber = 1;
-  if (!m_ErosionMode)
-  {
-    imageNumber = 3;
-  }
+  int imageNumber = this->GetImageNumber(false);
   this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent)
 {
-  this->SetInvalidRegion(1);
+  int imageNumber = this->GetImageNumber(false);
+  this->SetInvalidRegion(imageNumber);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnRightMousePressed (Action* action, const StateEvent* stateEvent)
 {
-  return this->MarkInitialPosition(1, action, stateEvent);
+  int imageNumber = this->GetImageNumber(false);
+  return this->MarkInitialPosition(imageNumber, action, stateEvent);
 }
 
 bool mitk::MIDASPaintbrushTool::OnRightMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  int imageNumber = 1;
-  if (!m_ErosionMode)
-  {
-    imageNumber = 3;
-  }
+  int imageNumber = this->GetImageNumber(false);
   this->DoMouseMoved(action, stateEvent, imageNumber, 0, 1);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnRightMouseReleased(Action* action, const StateEvent* stateEvent)
 {
-  this->SetInvalidRegion(1);
+  int imageNumber = this->GetImageNumber(false);
+  this->SetInvalidRegion(imageNumber);
   return true;
 }
 
