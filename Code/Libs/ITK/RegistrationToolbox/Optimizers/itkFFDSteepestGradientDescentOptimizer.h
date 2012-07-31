@@ -43,7 +43,7 @@ namespace itk
  * \ingroup Numerics Optimizers
  */  
 template <class TFixedImage, class TMovingImage, class TScalarType, class TDeformationScalar>
-class NIFTKITK_WINEXPORT ITK_EXPORT FFDSteepestGradientDescentOptimizer :
+class ITK_EXPORT FFDSteepestGradientDescentOptimizer :
     public FFDGradientDescentOptimizer<TFixedImage, TMovingImage, TScalarType, TDeformationScalar>
 {
 public:

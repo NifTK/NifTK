@@ -44,7 +44,7 @@ namespace itk
  * \ingroup Numerics Optimizers
  */  
 template <class TFixedImage, class TMovingImage, class TScalarType, class TDeformationScalar>
-class NIFTKITK_WINEXPORT ITK_EXPORT FFDGradientDescentOptimizer :
+class ITK_EXPORT FFDGradientDescentOptimizer :
     public LocalSimilarityMeasureGradientDescentOptimizer<TFixedImage, TMovingImage, TScalarType, TDeformationScalar>
 {
 public:
