@@ -108,8 +108,6 @@ void AffineTransformInteractor3D::SetPrecision( mitk::ScalarType precision )
 // Overwritten since this class can handle it better!
 float AffineTransformInteractor3D::CanHandleEvent(mitk::StateEvent const* stateEvent) const
 {
-  float returnValue = 0.5;
-
   if (stateEvent->GetEvent() == NULL)
     return 0.0;
 
@@ -383,9 +381,6 @@ bool AffineTransformInteractor3D::OnAcInitMove(mitk::Action * action, const mitk
 
 bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::StateEvent * stateEvent)
 {
-  vtkRenderWindowInteractor * renderWindowInteractor = NULL;
-  mitk::BaseRenderer *renderer = NULL;
-   
   if (!UpdateCurrentRendererPointers(stateEvent) || m_DataNode->GetData() == NULL)
     return false;
 
