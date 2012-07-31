@@ -39,7 +39,7 @@ namespace itk
    * \return int the number of dimensions
    * \throws typename itk::ExceptionObject if it fails for any reason.
    */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT int PeekAtImageDimension(std::string filename);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT int PeekAtImageDimension(std::string filename);
 
   /**
    * Take a peek at an image to determine the component type (eg. float, short etc. )
@@ -47,7 +47,7 @@ namespace itk
    * \return IOComponentType
    * \throws typename itk::ExceptionObject if it fails for any reason.
    */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT ImageIOBase::IOComponentType PeekAtComponentType(std::string filename);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT ImageIOBase::IOComponentType PeekAtComponentType(std::string filename);
 
   /**
    * Take a peek at an image to determine the pixel type (scalar, vector etc).
@@ -55,7 +55,7 @@ namespace itk
    * \return IOPixelType
    * \throws typename itk::ExceptionObject if it fails for any reason.
    */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT ImageIOBase::IOPixelType PeekAtPixelType(std::string filename);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT ImageIOBase::IOPixelType PeekAtPixelType(std::string filename);
 
   /**
    * Take a peek at an image to determine the dimension of an image based
@@ -64,10 +64,10 @@ namespace itk
    * \return SizeType
    * \throws typename itk::ExceptionObject if it fails for any reason.
    */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT int PeekAtImageDimensionFromSizeInVoxels(std::string filename);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT int PeekAtImageDimensionFromSizeInVoxels(std::string filename);
 
   /** Helper method called by above. */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT void InitialiseImageIO(std::string filename, ImageIOBase::Pointer& imageIO);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT void InitialiseImageIO(std::string filename, ImageIOBase::Pointer& imageIO);
 
   /**
    * Prints out a reasonable message from an exception, so we can log it, but
@@ -75,7 +75,7 @@ namespace itk
    * \param typename itk::ExceptionObject err the exception
    * \return std::string a formatted exception string
    */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT std::string GetExceptionString(ExceptionObject& err);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT std::string GetExceptionString(ExceptionObject& err);
 
 } // end namespace
 

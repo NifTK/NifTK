@@ -42,7 +42,7 @@ namespace itk
  * the correct parameters. In practice, within our NifTK framework,
  * this may have been done for you.
  */ 
-class NIFTKITK_WINEXPORT   ITK_EXPORT ReconstructionUpdateCommand : public Command
+class NIFTKITK_WINEXPORT ITK_EXPORT ReconstructionUpdateCommand : public Command
 {
 public:
   typedef  ReconstructionUpdateCommand            Self;

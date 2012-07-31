@@ -40,7 +40,7 @@ namespace itk
  * \class INRImageIOFactory
  * \brief Create instances of INRImageIO objects using an object factory.
  */
-class NIFTKITK_WINEXPORT   ITK_EXPORT INRImageIOFactory : public ObjectFactoryBase
+class NIFTKITK_WINEXPORT ITK_EXPORT INRImageIOFactory : public ObjectFactoryBase
 {
 public:  
   /** Standard class typedefs. */

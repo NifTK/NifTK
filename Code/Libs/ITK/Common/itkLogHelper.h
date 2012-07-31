@@ -40,7 +40,7 @@ namespace niftk {
  * \class itkLogHelper
  * \brief This is a class to help with a few logging functions.
  */
-class NIFTKITK_WINEXPORT itkLogHelper : public itk::Object
+class NIFTKITK_WINEXPORT ITK_EXPORT itkLogHelper : public itk::Object
 {
 
   public:

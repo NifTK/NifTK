@@ -35,10 +35,10 @@ namespace itk
 {
 
   /** Converts a SpatialOrientation code into a string. eg. ITK_COORDINATE_ORIENTATION_RAS to RAS. */
-  extern "C++" NIFTKITK_WINEXPORT std::string ConvertSpatialOrientationToString(const SpatialOrientation::ValidCoordinateOrientationFlags &code);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT std::string ConvertSpatialOrientationToString(const SpatialOrientation::ValidCoordinateOrientationFlags &code);
 
   /** Converts a code (3 letters, uppercase, made from L/R, I/S, A/P), into a ValidCoordinateOrientationFlags. */
-  extern "C++" NIFTKITK_WINEXPORT SpatialOrientation::ValidCoordinateOrientationFlags ConvertStringToSpatialOrientation(std::string code);
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT SpatialOrientation::ValidCoordinateOrientationFlags ConvertStringToSpatialOrientation(std::string code);
 
 } // end namespace
 #endif

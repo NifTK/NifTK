@@ -41,7 +41,7 @@ namespace itk
  * \class INRImageIO
  * \brief ITK IO class to load INRIA image format.
  */
-class NIFTKITK_WINEXPORT   ITK_EXPORT INRImageIO : public ImageIOBase
+class NIFTKITK_WINEXPORT ITK_EXPORT INRImageIO : public ImageIOBase
 {
 public:
   /** Standard class typedefs. */
