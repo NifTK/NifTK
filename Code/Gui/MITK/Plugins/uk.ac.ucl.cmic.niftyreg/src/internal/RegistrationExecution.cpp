@@ -124,17 +124,20 @@ void RegistrationExecution::ExecuteRegistration()
 
   if ( userData->m_FlagDoInitialRigidReg ) 
   {
-    reg_aladin<PrecisionTYPE> *regAladin;
 
-    regAladin = userData->CreateAladinRegistrationObject( mitkSourceImage, 
-							  mitkTargetImage, 
-							  mitkTargetMaskImage );
+    userData->m_RegAladin = 
+      userData->CreateAladinRegistrationObject( targetName,
+						sourceName,
+						targetMaskName,
+						mitkSourceImage, 
+						mitkTargetImage, 
+						mitkTargetMaskImage );
   
-    regAladin->SetProgressCallbackFunction( &UpdateProgressBar, userData );
+    userData->m_RegAladin->SetProgressCallbackFunction( &UpdateProgressBar, userData );
 
-    regAladin->Run();
+    userData->m_RegAladin->Run();
 
-    mitkSourceImage = ConvertNiftiImageToMitk( regAladin->GetFinalWarpedImage() );
+    mitkSourceImage = ConvertNiftiImageToMitk( userData->m_RegAladin->GetFinalWarpedImage() );
 
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
@@ -143,7 +146,7 @@ void RegistrationExecution::ExecuteRegistration()
     if ( userData->m_RegAladinParameters.regnType == QmitkNiftyRegView::RIGID_ONLY )
       nameOfResultImage = "rigid registration to ";
     else
-      nameOfResultImage = "affine registration to ";
+      nameOfResultImage = "affine_registration_to_";
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
@@ -151,14 +154,15 @@ void RegistrationExecution::ExecuteRegistration()
 
     userData->GetDataStorage()->Add( resultNode, nodeSource );
 
-    // Deallocate data
-    userData->DeallocateImages();
-    delete regAladin;
-
     UpdateProgressBar( 100., userData );
 
     if ( userData->m_FlagDoNonRigidReg ) 
       userData->m_ProgressBarOffset = 50.;
+
+    userData->m_RegAladinParameters.outputResultName = QString( nameOfResultImage.c_str() ); 
+    userData->m_RegAladinParameters.outputResultFlag = true;
+
+    sourceName = userData->m_RegAladinParameters.outputResultName;
   }
 
 
@@ -166,32 +170,30 @@ void RegistrationExecution::ExecuteRegistration()
 
   if ( userData->m_FlagDoNonRigidReg ) 
   {
-    reg_f3d<PrecisionTYPE> *regNonRigid;
+    
+    userData->m_RegNonRigid = userData->CreateNonRigidRegistrationObject( targetName,
+									  sourceName,
+									  targetMaskName,
+									  mitkSourceImage, 
+									  mitkTargetImage, 
+									  mitkTargetMaskImage );  
 
-    regNonRigid = userData->CreateNonRigidRegistrationObject( mitkSourceImage, 
-							      mitkTargetImage, 
-							      mitkTargetMaskImage );  
+    userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, userData );
 
-    regNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, userData );
+    userData->m_RegNonRigid->Run_f3d();
 
-    regNonRigid->Run_f3d();
-
-    mitkTransformedImage = ConvertNiftiImageToMitk( regNonRigid->GetWarpedImage()[0] );
+    mitkTransformedImage = ConvertNiftiImageToMitk( userData->m_RegNonRigid->GetWarpedImage()[0] );
 
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage( "non-rigid registration to " );
+    std::string nameOfResultImage( "non-rigid_registration_to_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkTransformedImage );
 
     userData->GetDataStorage()->Add( resultNode, nodeSource );
-
-    // Deallocate data
-    userData->DeallocateImages();
-    delete regNonRigid;
 
     UpdateProgressBar( 100., userData );
    }

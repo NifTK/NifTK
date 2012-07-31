@@ -22,4 +22,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 		      _reg_resampling
 		      _reg_ssd
 		      _reg_tools
+		      reg_png
+		      reg_nrrd
+		      _reg_ReadWriteImage
 )

@@ -194,6 +194,7 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     // Execution
 
+
     void OnCancelPushButtonPressed( void );
     void OnResetParametersPushButtonPressed( void );
     void OnSaveAsPushButtonPressed( void );
@@ -228,15 +229,24 @@ class QmitkNiftyRegView : public QmitkAbstractView
     virtual void SetFocus();
 
     /// \brief Create the Aladin registration object
-    reg_aladin<PrecisionTYPE> *CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
+    reg_aladin<PrecisionTYPE> *CreateAladinRegistrationObject( QString &targetName,
+							       QString &sourceName,
+							       QString &targetMaskName,
+							       mitk::Image *mitkSourceImage, 
 							       mitk::Image *mitkTargetImage, 
 							       mitk::Image *mitkTargetMaskImage );
 
     /// \brief Create the Aladin registration object
-    reg_f3d<PrecisionTYPE> *CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
+    reg_f3d<PrecisionTYPE> *CreateNonRigidRegistrationObject( QString &targetName,
+							      QString &sourceName,
+							      QString &targetMaskName,
+							      mitk::Image *mitkSourceImage, 
 							      mitk::Image *mitkTargetImage, 
 							      mitk::Image *mitkTargetMaskImage );
     
+
+    /// \brief Save the registration parameters (as a shell-script command line)
+    void WriteRegistrationParametersToFile( QString &filename );
 
     /// \brief Print the object
     void PrintSelf( std::ostream& os );
@@ -320,6 +330,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     typedef struct {
 
+      QString referenceImageName; // -ref
+      QString floatingImageName; // -flo
+
+      QString referenceMaskName; // -rmask
+
       bool outputResultFlag;
       QString outputResultName; // -res
 
@@ -345,8 +360,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     } RegAladinParametersType;
 
-    /// \brief The 'reg_aladin' parameters
+    /// The 'reg_aladin' parameters
     RegAladinParametersType m_RegAladinParameters;
+
+    /// The 'reg_aladin' registration object
+    reg_aladin<PrecisionTYPE> *m_RegAladin;
 
 
     // ---------------------------------------------------------------------------
@@ -354,6 +372,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
     // ---------------------------------------------------------------------------
 
     typedef struct {
+
+      QString referenceImageName; // -ref
+      QString floatingImageName; // -flo
+
+      QString referenceMaskName; // -rmask
 
       // Initial transformation options:
  
@@ -415,9 +438,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     } RegF3dParametersType;
     
-    /// \brief The 'reg_f3d' parameters
+    /// The 'reg_f3d' parameters
     RegF3dParametersType m_RegF3dParameters;
 
+    /// The 'reg_f3d' registration object
+    reg_f3d<PrecisionTYPE> *m_RegNonRigid;
 
 };
 
