@@ -10,14 +10,14 @@
 
 #include "itkVector.h"
 #include "itkMatrix.h"
-#include "niftkCommonWin32ExportHeader.h"
+#include "niftkITKWin32ExportHeader.h"
 
 /*
  * \brief   Class for performing the pixel based operation
  *
  */
 template<unsigned int Dimension = 3, class VectorComponentType = float>
-class itkDisplacementVectorCoordinateAdaptionPixelAccessor
+class NIFTKITK_WINEXPORT ITK_EXPORT itkDisplacementVectorCoordinateAdaptionPixelAccessor
 {
   public:
 

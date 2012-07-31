@@ -24,6 +24,8 @@
 #ifndef itkMIDASHelper_h
 #define itkMIDASHelper_h
 
+#include "niftkITKWin32ExportHeader.h"
+
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImage.h"
 #include "itkImageRegionConstIterator.h"
@@ -31,11 +33,6 @@
 #include "itkSpatialOrientationAdapter.h"
 #include "itkSpatialOrientation.h"
 #include "itkMatrix.h"
-
-#ifdef ITK_EXPORT
-#undef  ITK_EXPORT
-#define ITK_EXPORT __declspec(dllexport)
-#endif
 
 /**
  * \file itkMIDASHelper.h
@@ -61,7 +58,7 @@ namespace itk
    * within the mask.
    */
   template <class TImage>
-  ITK_EXPORT void LimitMaskByRegion(TImage* mask,
+  NIFTKITK_WINEXPORT void LimitMaskByRegion(TImage* mask,
                          typename TImage::RegionType &region,
                          typename TImage::PixelType outValue
                          );
@@ -71,7 +68,7 @@ namespace itk
    * number of voxels above zero.
    */
   template<typename TPixel, unsigned int VImageDimension>
-  ITK_EXPORT
+  NIFTKITK_WINEXPORT
   void
   GetVolumeFromITKImage(
     itk::Image<TPixel, VImageDimension>* itkImage,
@@ -83,7 +80,7 @@ namespace itk
    * \brief Gets the orientation string from direction cosines, but only works for 3D.
    */
   template<unsigned int VImageDimension>
-  ITK_EXPORT
+  NIFTKITK_WINEXPORT
   void
   GetOrientationString(
     const itk::Matrix<double, VImageDimension, VImageDimension>& directionMatrix,
@@ -94,7 +91,7 @@ namespace itk
   /**
    * \brief Works out the axis of interest from the orientationString (normally derived from direction cosines), and the requested orientation.
    */
-  ITK_EXPORT int GetAxisFromOrientationString(const std::string& orientationString, const itk::ORIENTATION_ENUM& orientation);
+  NIFTKITK_WINEXPORT int GetAxisFromOrientationString(const std::string& orientationString, const itk::ORIENTATION_ENUM& orientation);
 
 
   /**
@@ -110,14 +107,14 @@ namespace itk
    * Sagittal: A=Right, Z=Left
    * </pre>
    */
-  ITK_EXPORT int GetUpDirection(const std::string& orientationString, const int& axisOfInterest);
+  NIFTKITK_WINEXPORT int GetUpDirection(const std::string& orientationString, const int& axisOfInterest);
 
 
   /**
    * \brief Gets the orientation string for a 3D image.
    */
   template<typename TPixel, unsigned int VImageDimension>
-  ITK_EXPORT
+  NIFTKITK_WINEXPORT
   void
   GetOrientationStringFromITKImage(
     const itk::Image<TPixel, VImageDimension>* itkImage,
@@ -129,7 +126,7 @@ namespace itk
    * \brief Returns the axis [0=x, 1=y, 2=z, -1=UNKNOWN] corresponding to the specified orientation for the given image.
    */
   template<typename TPixel, unsigned int VImageDimension>
-  ITK_EXPORT
+  NIFTKITK_WINEXPORT
   void
   GetAxisFromITKImage(
     const itk::Image<TPixel, VImageDimension>* itkImage,
@@ -143,7 +140,7 @@ namespace itk
    * volume is considered "Up", which means anterior in coronal view, superior in axial view and right in sagittal view.
    */
   template<typename TPixel, unsigned int VImageDimension>
-  ITK_EXPORT
+  NIFTKITK_WINEXPORT
   void
   GetUpDirectionFromITKImage(
       const itk::Image<TPixel, VImageDimension>* itkImage,
