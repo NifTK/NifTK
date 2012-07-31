@@ -25,6 +25,7 @@
 #define ITKFFDGRADIENTDESCENTOPTIMIZER_H_
 
 #include "NifTKConfigure.h"
+#include "niftkITKWin32ExportHeader.h" 
 #include "itkLocalSimilarityMeasureGradientDescentOptimizer.h"
 #include "itkImageToImageMetricWithConstraint.h"
 #include "itkBSplineTransform.h"
