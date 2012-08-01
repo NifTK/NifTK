@@ -17,7 +17,7 @@
  *
  */
 template<unsigned int Dimension = 3, class VectorComponentType = float>
-class NIFTKITK_WINEXPORT ITK_EXPORT itkDisplacementVectorCoordinateAdaptionPixelAccessor
+class ITK_EXPORT itkDisplacementVectorCoordinateAdaptionPixelAccessor
 {
   public:
 
@@ -59,6 +59,6 @@ class NIFTKITK_WINEXPORT ITK_EXPORT itkDisplacementVectorCoordinateAdaptionPixel
 	HomogenousMatrixType m_matrix;  /// The internal transformation matrix.
 };
 
-#include "itkDisplacementVectorCoordinateAdaptionPixelAccessor.cxx"
+#include "itkDisplacementVectorCoordinateAdaptionPixelAccessor.txx"
 
 #endif /* ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_H_ */
