@@ -87,6 +87,7 @@ int main( int argc, char * argv [] )
   }
   
   simpleKMeansClusteringImageFilter->SetInitialMeans(initialMeans);
+  simpleKMeansClusteringImageFilter->SetNumberOfClasses(numberOfInitialClasses);  
   simpleKMeansClusteringImageFilter->SetInput(reader->GetOutput());
   simpleKMeansClusteringImageFilter->SetInputMask(maskReader->GetOutput());
   simpleKMeansClusteringImageFilter->Update();
