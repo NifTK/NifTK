@@ -388,9 +388,9 @@ function brain_delineation()
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
   else
     local output_left_hippo_local_region_img=${temp_dir}/region.img
-    local init_1=`echo "${mean_intensity}*0.3" | bc -l`
-    local init_2=`echo "${mean_intensity}*0.7" | bc -l`
-    local init_3=`echo "${mean_intensity}*1.1" | bc -l`
+    local init_1=`echo "${mean_intensity}*0.4" | bc -l`
+    local init_2=`echo "${mean_intensity}*0.9" | bc -l`
+    local init_3=`echo "${mean_intensity}*1.4" | bc -l`
     local threshold_160=`echo "${mean_intensity}*1.60" | bc -l`
     
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 3
@@ -398,10 +398,61 @@ function brain_delineation()
     
     echo "kmeans=${kmeans_output}"
     csf=`echo ${kmeans_output} | awk '{printf $1}'`
+    csf_sd=`echo ${kmeans_output} | awk '{printf $2}'`
     gm=`echo ${kmeans_output} | awk '{printf $3}'`
     gm_sd=`echo ${kmeans_output} | awk '{printf $4}'`
     wm=`echo ${kmeans_output} | awk '{printf $5}'`
     wm_sd=`echo ${kmeans_output} | awk '{printf $6}'`
+    
+# Comments.     
+: <<'COMMENTS'
+    init_1=`echo "${mean_intensity}*0.4" | bc -l`
+    init_2=`echo "${mean_intensity}*0.7" | bc -l`
+    init_3=`echo "${mean_intensity}*0.9" | bc -l`
+    init_4=`echo "${mean_intensity}*1.1" | bc -l`
+    init_5=`echo "${mean_intensity}*1.4" | bc -l`
+    
+    kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 5 ${init_1} ${init_2} ${init_3} ${init_4} ${init_5}`
+    echo "kmeans=${kmeans_output}"
+    csf=`echo ${kmeans_output} | awk '{printf $1}'`
+    csf_sd=`echo ${kmeans_output} | awk '{printf $2}'`
+    gm=`echo ${kmeans_output} | awk '{printf $5}'`
+    gm_sd=`echo ${kmeans_output} | awk '{printf $6}'`
+    wm=`echo ${kmeans_output} | awk '{printf $9}'`
+    wm_sd=`echo ${kmeans_output} | awk '{printf $10}'`
+    
+    gm_csf=`echo ${kmeans_output} | awk '{printf $3}'`
+COMMENTS    
+    
+# Comments.     
+: <<'COMMENTS'
+    if [ ! -f "${output_study_id}-tissues.nii" ]
+    then 
+      /var/NOT_BACKUP/work/NiftHippo-25/bin/bin/seg_EM -in ${subject_image} -mask ${output_left_hippo_local_region_img} -out ${output_study_id}-tissues.nii -nopriors 3 -mrf_beta 0 -v 1
+    fi 
+    /var/NOT_BACKUP/work/UCLToolkitDependencies/crkit-release-1.4-build/./tools/code/crlExtractSmallerImageFromImage -i ${output_study_id}-tissues.nii -a 3 -l 0 -m 1 -o ${output_study_id}-csf.nii
+    niftkConvertImage -i ${output_study_id}-csf.nii -o ${output_study_id}-csf.img
+    /var/NOT_BACKUP/work/UCLToolkitDependencies/crkit-release-1.4-build/./tools/code/crlExtractSmallerImageFromImage -i ${output_study_id}-tissues.nii -a 3 -l 1 -m 2 -o ${output_study_id}-gm.nii
+    niftkConvertImage -i ${output_study_id}-gm.nii -o ${output_study_id}-gm.img
+    /var/NOT_BACKUP/work/UCLToolkitDependencies/crkit-release-1.4-build/./tools/code/crlExtractSmallerImageFromImage -i ${output_study_id}-tissues.nii -a 3 -l 2 -m 3 -o ${output_study_id}-wm.nii
+    niftkConvertImage -i ${output_study_id}-wm.nii -o ${output_study_id}-wm.img
+    #niftkAdd -i gm.img -j wm.img -o gm_wm.img
+    #makemask ${subject_image} ${output_nreg_hippo_region} mask.img -val 1
+    #niftkMultiply -j mask.img -i gm_wm.img -o gm_wm_after_mask.img 
+    #niftkThreshold -i gm_wm_after_mask.img  -o gm_wm_binary.img -l 0.5 -u 999 -in 255 -out 0 
+    #makeroi -img gm_wm_binary.img -out ${output_left_hippo_local_region_threshold} -alt 128
+    niftkThreshold -i ${output_study_id}-csf.img  -o ${output_study_id}-csf_binary.img -l 0.5 -u 999 -in 255 -out 0 
+    makeroi -img ${output_study_id}-csf_binary.img -out ${output_study_id}-csf_binary -alt 128
+    niftkThreshold -i ${output_study_id}-gm.img  -o ${output_study_id}-gm_binary.img -l 0.5 -u 999 -in 255 -out 0 
+    makeroi -img ${output_study_id}-gm_binary.img -out ${output_study_id}-gm_binary -alt 128
+    csf=`imginfo ${subject_image} -av -roi ${output_study_id}-csf_binary`
+    gm=`imginfo ${subject_image} -av -roi ${output_study_id}-gm_binary`
+    csf_sd=`imginfo ${subject_image} -sd -roi ${output_study_id}-csf_binary`
+    gm_sd=`imginfo ${subject_image} -sd -roi ${output_study_id}-gm_binary`
+    echo "csf=${csf}, gm=${gm}, csf_sd=${csf_sd}, gm_sd=${gm_sd}"
+    # k-means is actually not bad, compared to EM.  
+COMMENTS
+    
     #number_of_gm_sd=0.84  # CI=60%
     number_of_gm_sd_70=1.04  # CI=70%
     number_of_gm_sd_80=1.28   # CI=80%
@@ -409,15 +460,37 @@ function brain_delineation()
     number_of_gm_sd_875=1.53   # CI=87.5%
     number_of_gm_sd_90=1.64  # CI=90%
     number_of_gm_sd_95=1.96  # CI=95%
-    lower_threshold_95=`echo "${gm}-${number_of_gm_sd_875}*${gm_sd}" | bc -l`
+    number_of_gm_160_sd=1.7
+    #lower_threshold_95=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
+    
+    distance_csf_gm=`echo "${gm}-${csf}" | bc -l`
+    #distance_factor=0.5
+    distance_factor=`echo "${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
+    lower_threshold_distance=`echo "${gm}-${distance_factor}*${distance_csf_gm}" | bc -l`
+    lower_threshold_sd=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
+    lower_threshold_95=${lower_threshold_distance}
+    #lower_threshold_95=${gm_csf}
+    #lower_threshold_95=${lower_threshold_sd}
+#smaller=`echo "${lower_threshold_sd}<${lower_threshold_distance}" | bc -l`
+#if [ ${smaller} == 1 ] 
+#then 
+#lower_threshold_95=${lower_threshold_distance}
+#fi 
+    echo "gm_csf=${gm_csf}, lower_threshold_distance=${lower_threshold_distance}, lower_threshold_sd=${lower_threshold_sd}, lower_threshold_95=${lower_threshold_95}"
+    
     upper_threshold_95=`echo "${wm}+4.42*${wm_sd}" | bc -l`
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
             -alt ${lower_threshold_95} -aut ${upper_threshold_95}
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} 
+    niftkConnectedComponents ${output_left_hippo_local_region_threshold_img} ${output_left_hippo_local_region_threshold} img -largest
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 0
       
     local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
-    lower_threshold=`echo "${gm}-${number_of_gm_sd_875}*${gm_sd}" | bc -l`
-    upper_threshold=`echo "${wm}+4.42*${wm_sd}" | bc -l`
+#lower_threshold=${lower_threshold_sd}
+#lower_threshold=${lower_threshold_distance}
+    lower_threshold=${lower_threshold_95}
+    upper_threshold=${upper_threshold_95}
     lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
     upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
     threshold_160_percent=`echo "(100*${threshold_160})/${new_mean_intensity}" | bc -l`
@@ -425,7 +498,7 @@ function brain_delineation()
 
     echo "percent=${lower_threshold_percent},${upper_threshold_percent},${threshold_70_percent},${threshold_160_percent}"
       
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
   fi 
   
