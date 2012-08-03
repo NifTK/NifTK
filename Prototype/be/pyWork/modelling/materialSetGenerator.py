@@ -41,7 +41,7 @@ class materialSetGenerator:
         #self.surfEls   = self.surfEls.reshape( self.surfEls.shape[0]/4, 4 )[:,1:]
         
         if labelImageName != None :
-            self.labelImg    = nib.load( labelImageName )
+            self.labelImg = nib.load( labelImageName )
         if skinMaskImage != None :
             self.skinMaskImg = nib.load( skinMaskImage  )
         if chestWallMaskImage != None :

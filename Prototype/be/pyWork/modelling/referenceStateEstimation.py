@@ -11,7 +11,7 @@ import os
 from runSimulation import runNiftySim
 import modelDeformationHandler as deformHandler
 import mayaviPlottingWrap as mpw
-
+import matplotlib.pyplot as plt
 
 
 
@@ -46,6 +46,7 @@ class referenceStateEstimation:
         self.maxIterations       = 20 
 
     
+
     
     def estimateRefenreceState( self ):
         
@@ -196,7 +197,8 @@ class referenceStateEstimation:
                 lastImprovedGuess = i
             
         
-        self.maxNodalDistance = np.array( self.maxNodalDistance, dtype=np.float64 )
+        self.maxNodalDistance  = np.array( self.maxNodalDistance, dtype=np.float64 )
+        self.meanNodalDistance = np.array( self.meanNodalDistance, dtype=np.float64 )
         bestIteration =  np.nonzero( self.maxNodalDistance == 
                                      np.min( self.maxNodalDistance[ np.invert( np.isnan( self.maxNodalDistance ) ) ] ) )[0]    
         
@@ -295,12 +297,60 @@ class referenceStateEstimation:
                                                      self.xmlModelLoaded.shellElementSet[i][ 'MaterialParams'    ], 
                                                      self.xmlModelLoaded.shellElementSet[i][ 'MaterialDensity'   ], 
                                                      self.xmlModelLoaded.shellElementSet[i][ 'MaterialThickness' ])
+
+
                     
 
+    def plotConvergence( self ):
+        
+        plt.rc( 'text', usetex=True )
+        plt.rcParams['font.size']=16
+        
+        xLabel      = '$ M $'
+        yLabel      = '$ D, \, \overline{D}\;\mathrm{[mm]}$'
+        yLabelMax   = '$ D = \max( \| \mathbf{P} - \mathbf{P}^n \| )$'
+        yLabelMean  = '$ \bar{D} = 1/N \sum_i \| \mathbf{P} - \mathbf{P}^n \| $'     
+           
+        fig = plt.figure()
+        plt.hold( True )
+        ax1 = fig.gca()
+        ax1.plot( self.maxNodalDistance  * 1000., 'bx-', label = yLabelMax  )
+        ax1.plot( self.meanNodalDistance * 1000., 'rx-', label = yLabelMean )
+        ax1.set_xlabel( xLabel )
+        ax1.set_ylabel( yLabel )
     
+        plt.legend( (ax1.get_lines()), (yLabelMax, yLabelMean), loc = 'upper right' )
+        plt.grid()
+        
+        self.plotDir = os.path.dirname( self.xmlModelLoaded.xmlFileName ) + '/plot/' 
+
+        if not os.path.exists( self.plotDir ):
+            os.mkdir( self.plotDir)
+        
+        plt.hold( False )
+        
+        fig.savefig( self.plotDir + 'nodalDistance.pdf' )
+        fig.savefig( self.plotDir + 'nodalDistance.png', dpi = 300 )
     
         
     
+    
+    def saveModel( self, outXMLFileName ):
+        
+        self.outXMLFileName = outXMLFileName
+        
+        self.outXMLGenerator = xGen.xmlModelGenrator( self.optimalReferenceSateNodes,  
+                               self.xmlModelLoaded.elements, 
+                               self.xmlModelLoaded.modelObject.Elements.Type )
+        
+        self._setStandardModelParameters( self.outXMLGenerator )
+        
+        self.outXMLGenerator.setGravityConstraint( -self.gravityDirection, 
+                                                    self.gravityMagnitude, 
+                                                    self.outXMLGenerator.allNodesArray, 
+                                                    self.loadShape )
+        
+        
     
     
 if __name__ == '__main__' :

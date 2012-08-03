@@ -140,6 +140,18 @@ INSTALL( TARGETS niftkITKppRigidDofConversion RUNTIME DESTINATION bin COMPONENT 
 
 
 #
+# N Largest Connected Components (extension of niftk application)
+#
+
+ADD_EXECUTABLE( niftkNLargestConnectedComponents
+                  niftkNLargestConnectedComponents.cxx )
+
+TARGET_LINK_LIBRARIES( niftkNLargestConnectedComponents
+                         ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+                         
+INSTALL( TARGETS niftkNLargestConnectedComponents RUNTIME DESTINATION bin COMPONENT applications )    
+
+#
 # deform an image according to a simulation run by niftySim
 # this bit requires niftySim and possibly cuda...
 #
