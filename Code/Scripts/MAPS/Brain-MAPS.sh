@@ -476,7 +476,7 @@ COMMENTS
 #then 
 #lower_threshold_95=${lower_threshold_distance}
 #fi 
-    echo "gm_csf=${gm_csf}, lower_threshold_distance=${lower_threshold_distance}, lower_threshold_sd=${lower_threshold_sd}, lower_threshold_95=${lower_threshold_95}"
+    echo "lower_threshold_distance=${lower_threshold_distance}, lower_threshold_sd=${lower_threshold_sd}, lower_threshold_95=${lower_threshold_95}"
     
     upper_threshold_95=`echo "${wm}+4.42*${wm_sd}" | bc -l`
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16

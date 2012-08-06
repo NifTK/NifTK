@@ -211,7 +211,8 @@ hippo_template_library_original=${template_library}/`echo ${index}| awk -F, '{pr
 watjo_image=${template_library}/`echo ${index}| awk -F, '{printf $4}'`
 watjo_brain_region=${template_library}/`echo ${index}| awk -F, '{printf $5}'`
 
-command_filename=MAPS-generic-`date +"%Y%m%d-%H%M%S"`.txt
+temp_name=MAPS-generic-`date +"%Y%m%d-%H%M%S"`.XXXXXXXXXX
+command_filename=`mktemp ${temp_name}`
 
 # Process each line in the input file. 
 function iterate_through_input_file
