@@ -830,9 +830,21 @@ function brain-delineation-using-staple()
     threshold_70_percent=`echo "(100*${threshold_70})/${new_mean_intensity}" | bc -l`
 
     echo "percent=${lower_threshold_percent},${upper_threshold_percent},${threshold_70_percent},${threshold_160_percent}"
+    
+    if [ "${cd_mode}" == "2" ] 
+    then 
+      makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+      makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    else
+      makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
+      makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
       
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
-    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+      local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
+      lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
+      upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
+      makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
+      makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    fi 
     
     cp ${output_left_hippo_local_region_threshold} ${output_hippo_staple_nreg_thresholded_sba_region}_mm
     rm -rf ${temp_dir}
