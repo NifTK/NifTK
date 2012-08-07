@@ -486,15 +486,23 @@ COMMENTS
     threshold_70_percent=`echo "(100*${threshold_70})/${new_mean_intensity}" | bc -l`
 
     echo "percent=${lower_threshold_percent},${upper_threshold_percent},${threshold_70_percent},${threshold_160_percent}"
-      
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
-    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
     
-    local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
-    lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
-    upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
-    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    if [ "${cd_mode}" == "2" ]
+    then 
+      echo "cd_mode=2"
+      makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+      makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    else
+      echo "cd_mode=${cd_mode}"
+      makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
+      makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+      
+      local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
+      lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
+      upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
+      makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
+      makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    fi 
     
   fi 
   
@@ -905,6 +913,7 @@ use_orientation=${22}
 leaveoneout=${23}
 use_kmeans=${24}
 init_9dof=${25}
+cd_mode=${26}
 
 output_areg_template_brain_series_number=400
 output_left_series_number=665
