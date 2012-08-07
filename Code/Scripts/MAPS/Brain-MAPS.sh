@@ -498,7 +498,7 @@ COMMENTS
 
     echo "percent=${lower_threshold_percent},${upper_threshold_percent},${threshold_70_percent},${threshold_160_percent}"
       
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
   fi 
   
@@ -757,6 +757,106 @@ function brain-delineation-using-staple()
   niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img} img -largest
   makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region} -alt 0
   rm -f ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img}.hdr
+  
+  
+###
+###
+###
+  if [ "${use_kmeans}" == "yes" ]
+  then 
+  
+    temp_dir=`mktemp -d ~/temp/_hippo_mm.XXXXXX`
+    local output_left_hippo_local_region_threshold_img=${temp_dir}/threshold.img
+    local output_left_hippo_local_region_threshold=${temp_dir}/threshold
+    local output_left_hippo_local_region_threshold_cd_img=${temp_dir}/threshold-cd.img
+    local output_left_hippo_local_region_threshold_cd=${temp_dir}/threshold-cd
+    local output_left_hippo_local_region_img=${temp_dir}/region.img
+    
+    mean_intensity=`imginfo ${subject_image} -av -roi ${output_hippo_staple_nreg_thresholded_sba_region}`
+    threshold_70=`echo "${mean_intensity}*0.60" | bc`
+    threshold_160=`echo "${mean_intensity}*1.60" | bc`
+    echo "Manual threshold=${threshold_70},${threshold_160}"
+    
+    
+    local init_1=`echo "${mean_intensity}*0.4" | bc -l`
+    local init_2=`echo "${mean_intensity}*0.9" | bc -l`
+    local init_3=`echo "${mean_intensity}*1.4" | bc -l`
+    local threshold_160=`echo "${mean_intensity}*1.60" | bc -l`
+      
+    makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_left_hippo_local_region_img} -d 3
+    kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}`
+      
+    echo "kmeans=${kmeans_output}"
+    csf=`echo ${kmeans_output} | awk '{printf $1}'`
+    csf_sd=`echo ${kmeans_output} | awk '{printf $2}'`
+    gm=`echo ${kmeans_output} | awk '{printf $3}'`
+    gm_sd=`echo ${kmeans_output} | awk '{printf $4}'`
+    wm=`echo ${kmeans_output} | awk '{printf $5}'`
+    wm_sd=`echo ${kmeans_output} | awk '{printf $6}'`
+
+    number_of_gm_sd_70=1.04  # CI=70%
+    number_of_gm_sd_80=1.28   # CI=80%
+    number_of_gm_sd_85=1.44   # CI=85%
+    number_of_gm_sd_875=1.53   # CI=87.5%
+    number_of_gm_sd_90=1.64  # CI=90%
+    number_of_gm_sd_95=1.96  # CI=95%
+    number_of_gm_160_sd=1.7
+    #lower_threshold_95=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
+    
+    distance_csf_gm=`echo "${gm}-${csf}" | bc -l`
+    #distance_factor=0.5
+    distance_factor=`echo "${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
+    lower_threshold_distance=`echo "${gm}-${distance_factor}*${distance_csf_gm}" | bc -l`
+    lower_threshold_sd=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
+    lower_threshold_95=${lower_threshold_distance}
+    #lower_threshold_95=${gm_csf}
+    #lower_threshold_95=${lower_threshold_sd}
+#smaller=`echo "${lower_threshold_sd}<${lower_threshold_distance}" | bc -l`
+#if [ ${smaller} == 1 ] 
+#then 
+#lower_threshold_95=${lower_threshold_distance}
+#fi 
+    echo "lower_threshold_distance=${lower_threshold_distance}, lower_threshold_sd=${lower_threshold_sd}, lower_threshold_95=${lower_threshold_95}"
+    
+    upper_threshold_95=`echo "${wm}+4.42*${wm_sd}" | bc -l`
+    makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
+            -alt ${lower_threshold_95} -aut ${upper_threshold_95}
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -e 1 
+    niftkConnectedComponents ${output_left_hippo_local_region_threshold_img} ${output_left_hippo_local_region_threshold} img -largest
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 0
+      
+    local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
+#lower_threshold=${lower_threshold_sd}
+#lower_threshold=${lower_threshold_distance}
+    lower_threshold=${lower_threshold_95}
+    upper_threshold=${upper_threshold_95}
+    lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
+    upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
+    threshold_160_percent=`echo "(100*${threshold_160})/${new_mean_intensity}" | bc -l`
+    threshold_70_percent=`echo "(100*${threshold_70})/${new_mean_intensity}" | bc -l`
+
+    echo "percent=${lower_threshold_percent},${upper_threshold_percent},${threshold_70_percent},${threshold_160_percent}"
+      
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    
+    cp ${output_left_hippo_local_region_threshold} ${output_hippo_staple_nreg_thresholded_sba_region}_mm
+    rm -rf ${temp_dir}
+  fi 
+  
+  
+###
+###
+###  
+  
+  
+  
+  
+  
+  
+  
+  
   makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_hippo_staple_nreg_thresholded_sba_img} -d 2
   makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region_dilated} -alt 0
   rm -f ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img}.hdr
