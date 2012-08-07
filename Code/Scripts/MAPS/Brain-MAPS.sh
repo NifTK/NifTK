@@ -453,7 +453,6 @@ COMMENTS
     # k-means is actually not bad, compared to EM.  
 COMMENTS
     
-    #number_of_gm_sd=0.84  # CI=60%
     number_of_gm_sd_70=1.04  # CI=70%
     number_of_gm_sd_80=1.28   # CI=80%
     number_of_gm_sd_85=1.44   # CI=85%
@@ -461,24 +460,16 @@ COMMENTS
     number_of_gm_sd_90=1.64  # CI=90%
     number_of_gm_sd_95=1.96  # CI=95%
     number_of_gm_160_sd=1.7
-    #lower_threshold_95=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
     
     distance_csf_gm=`echo "${gm}-${csf}" | bc -l`
-    #distance_factor=0.5
     distance_factor=`echo "${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
     lower_threshold_distance=`echo "${gm}-${distance_factor}*${distance_csf_gm}" | bc -l`
     lower_threshold_sd=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
     lower_threshold_95=${lower_threshold_distance}
-    #lower_threshold_95=${gm_csf}
-    #lower_threshold_95=${lower_threshold_sd}
-#smaller=`echo "${lower_threshold_sd}<${lower_threshold_distance}" | bc -l`
-#if [ ${smaller} == 1 ] 
-#then 
-#lower_threshold_95=${lower_threshold_distance}
-#fi 
-    echo "lower_threshold_distance=${lower_threshold_distance}, lower_threshold_sd=${lower_threshold_sd}, lower_threshold_95=${lower_threshold_95}"
-    
     upper_threshold_95=`echo "${wm}+4.42*${wm_sd}" | bc -l`
+    
+    echo "lower_threshold_distance=${lower_threshold_distance}, lower_threshold_sd=${lower_threshold_sd}"
+    
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
             -alt ${lower_threshold_95} -aut ${upper_threshold_95}
@@ -487,8 +478,6 @@ COMMENTS
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 0
       
     local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
-#lower_threshold=${lower_threshold_sd}
-#lower_threshold=${lower_threshold_distance}
     lower_threshold=${lower_threshold_95}
     upper_threshold=${upper_threshold_95}
     lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
@@ -498,8 +487,15 @@ COMMENTS
 
     echo "percent=${lower_threshold_percent},${upper_threshold_percent},${threshold_70_percent},${threshold_160_percent}"
       
-    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 2 ${lower_threshold_percent} ${upper_threshold_percent}
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    
+    local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
+    lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
+    upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
+    makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
+    makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+    
   fi 
   
   
@@ -760,7 +756,7 @@ function brain-delineation-using-staple()
   
   
 ###
-###
+### Testing extra erosion and conditional dilation. 
 ###
   if [ "${use_kmeans}" == "yes" ]
   then 
@@ -801,24 +797,15 @@ function brain-delineation-using-staple()
     number_of_gm_sd_90=1.64  # CI=90%
     number_of_gm_sd_95=1.96  # CI=95%
     number_of_gm_160_sd=1.7
-    #lower_threshold_95=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
     
     distance_csf_gm=`echo "${gm}-${csf}" | bc -l`
-    #distance_factor=0.5
     distance_factor=`echo "${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
     lower_threshold_distance=`echo "${gm}-${distance_factor}*${distance_csf_gm}" | bc -l`
     lower_threshold_sd=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
     lower_threshold_95=${lower_threshold_distance}
-    #lower_threshold_95=${gm_csf}
-    #lower_threshold_95=${lower_threshold_sd}
-#smaller=`echo "${lower_threshold_sd}<${lower_threshold_distance}" | bc -l`
-#if [ ${smaller} == 1 ] 
-#then 
-#lower_threshold_95=${lower_threshold_distance}
-#fi 
+    upper_threshold_95=`echo "${wm}+4.42*${wm_sd}" | bc -l`
     echo "lower_threshold_distance=${lower_threshold_distance}, lower_threshold_sd=${lower_threshold_sd}, lower_threshold_95=${lower_threshold_95}"
     
-    upper_threshold_95=`echo "${wm}+4.42*${wm_sd}" | bc -l`
     makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_left_hippo_local_region_threshold_img} -k -bpp 16
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} \
             -alt ${lower_threshold_95} -aut ${upper_threshold_95}
@@ -827,8 +814,6 @@ function brain-delineation-using-staple()
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 0
       
     local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
-#lower_threshold=${lower_threshold_sd}
-#lower_threshold=${lower_threshold_distance}
     lower_threshold=${lower_threshold_95}
     upper_threshold=${upper_threshold_95}
     lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
@@ -849,12 +834,6 @@ function brain-delineation-using-staple()
 ###
 ###
 ###  
-  
-  
-  
-  
-  
-  
   
   
   makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_hippo_staple_nreg_thresholded_sba_img} -d 2
