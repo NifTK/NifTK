@@ -59,6 +59,7 @@ void StartUsage(char *name)
   std::cout << "*** [optional] ***" << std::endl << std::endl;
   std::cout << "  <-nlargest>        Specifiy to only save the n largest components. [-1]  All components are saved by default." << std::endl;
   std::cout << "  <-background>      Specifiy the background value of the output image. [0]" << std::endl;
+  std::cout << "  <-foreground>      Specifiy the foreground value of the output image. Defaults to label value." << std::endl;
   std::cout << "  <-verbose>         More output. No by default" << std::endl;
   std::cout << std::endl;
 }
@@ -90,7 +91,9 @@ int main(int argc, char** argv)
   std::string    outputImageExtName; 
   int            iNLargestComps         = -1;
   //bool           isOnlySaveLargest      = false; 
-  InputPixelType backgroundValue        = 0; 
+  InputPixelType backgroundValue        =    0; 
+  InputPixelType foregroundValue        =  255; 
+  bool           foregroundValueSet     = false;
   bool           isVerbose              = false; 
   bool           isFullyConnected       = false;
 
@@ -134,6 +137,13 @@ int main(int argc, char** argv)
       backgroundValue = atoi(argv[++i]);
       std::cout << "Set -backgroundValue=" << niftk::ConvertToString(backgroundValue)<< std::endl;
     }
+	else if(strcmp(argv[i], "-foreground") == 0)
+    {
+		foregroundValue = atoi(argv[++i]);
+		foregroundValueSet = true;
+        std::cout << "Set -foregroundValue=" << niftk::ConvertToString(backgroundValue)<< std::endl;
+    }
+    
     else if(strcmp(argv[i], "-verbose") == 0)
     {
       isVerbose = true; 
@@ -203,21 +213,24 @@ int main(int argc, char** argv)
 	
 	for (int i = 0;  i < iNLargestComps;  i++)
 	{
-      for (ccIt.GoToBegin(), outputIt.GoToBegin(); 
-           !ccIt.IsAtEnd(); 
-           ++ccIt, ++outputIt)
-      {
-        if ( ccIt.Get() == vComponentSizes[i].first )
-            outputIt.Set( vComponentSizes[i].first ); 
-        else
-          outputIt.Set( backgroundValue ); 
-      }
+        InputPixelType fg = vComponentSizes[i].first;
 
-      writer->SetInput( reader->GetOutput() ); 
-      std::string outputImageName = outputImagePrefixName + niftk::ConvertToString( i ) + "." + outputImageExtName; 
+		if (foregroundValueSet)
+			fg = foregroundValue;
+
+	    for (ccIt.GoToBegin(), outputIt.GoToBegin();  !ccIt.IsAtEnd();  ++ccIt, ++outputIt)
+        {
+			if ( ccIt.Get() == vComponentSizes[i].first )
+				outputIt.Set( fg ); 
+			else
+				outputIt.Set( backgroundValue ); 
+		}
+
+        writer->SetInput( reader->GetOutput() ); 
+        std::string outputImageName = outputImagePrefixName + niftk::ConvertToString( i ) + "." + outputImageExtName; 
       
-	  writer->SetFileName( outputImageName ); 
-      writer->Update(); 
+	    writer->SetFileName( outputImageName ); 
+        writer->Update(); 
     }
   } 
 

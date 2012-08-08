@@ -151,6 +151,35 @@ TARGET_LINK_LIBRARIES( niftkNLargestConnectedComponents
                          
 INSTALL( TARGETS niftkNLargestConnectedComponents RUNTIME DESTINATION bin COMPONENT applications )    
 
+
+#
+# Convex Hull 
+#
+
+ADD_EXECUTABLE( niftkConvexHull
+                  niftkConvexHull.cxx )
+
+TARGET_LINK_LIBRARIES( niftkConvexHull
+                         ${NIFTK_APPLICATION_LINK_LIBRARIES} 
+						 ${VTK_LINK_LIBRARIES})
+                         
+INSTALL( TARGETS niftkConvexHull RUNTIME DESTINATION bin COMPONENT applications )   
+
+
+#
+# Point to angle
+#
+
+ADD_EXECUTABLE( niftkPointToAngle
+                  niftkPointToAngle.cxx )
+
+TARGET_LINK_LIBRARIES( niftkPointToAngle
+                         ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+                         
+INSTALL( TARGETS niftkPointToAngle RUNTIME DESTINATION bin COMPONENT applications )   
+
+
+
 #
 # deform an image according to a simulation run by niftySim
 # this bit requires niftySim and possibly cuda...
