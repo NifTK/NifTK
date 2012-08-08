@@ -148,7 +148,7 @@ mitk::Image::Pointer ConvertNiftiImageToMitkDimension( nifti_image *imageNifti )
 template< typename TPixel, unsigned int VImageDimension >
 mitk::Image::Pointer ConvertNiftiImageToMitkPixel( nifti_image *imageNifti )
 {
-  int i;
+  unsigned int i;
 
   typedef itk::Image<TPixel, VImageDimension> ImageType;
 

@@ -17,9 +17,6 @@ set(UI_FILES
 set(MOC_H_FILES
   src/internal/NiftyRegPluginActivator.h
   src/internal/QmitkNiftyRegView.h
-  src/internal/mitkImageToNifti.h
-  src/internal/niftiImageToMitk.h
-  src/internal/RegistrationExecution.h
 )
 
 # list of resource files which can be used by the plug-in

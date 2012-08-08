@@ -112,7 +112,7 @@ void RegistrationExecution::ExecuteRegistration()
   
   // Ensure the progress bar is scaled appropriately
 
-  if ( userData->m_FlagDoInitialRigidReg && userData->m_FlagDoNonRigidReg ) 
+  if ( userData->m_RegParameters.m_FlagDoInitialRigidReg && userData->m_RegParameters.m_FlagDoNonRigidReg ) 
     userData->m_ProgressBarRange = 50.;
   else
     userData->m_ProgressBarRange = 100.;
@@ -122,7 +122,7 @@ void RegistrationExecution::ExecuteRegistration()
 
   // Create and run the Aladin registration?
 
-  if ( userData->m_FlagDoInitialRigidReg ) 
+  if ( userData->m_RegParameters.m_FlagDoInitialRigidReg ) 
   {
 
     userData->m_RegAladin = 
@@ -143,7 +143,7 @@ void RegistrationExecution::ExecuteRegistration()
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
     std::string nameOfResultImage;
-    if ( userData->m_RegAladinParameters.regnType == QmitkNiftyRegView::RIGID_ONLY )
+    if ( userData->m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
       nameOfResultImage = "rigid registration to ";
     else
       nameOfResultImage = "affine_registration_to_";
@@ -156,29 +156,31 @@ void RegistrationExecution::ExecuteRegistration()
 
     UpdateProgressBar( 100., userData );
 
-    if ( userData->m_FlagDoNonRigidReg ) 
+    if ( userData->m_RegParameters.m_FlagDoNonRigidReg ) 
       userData->m_ProgressBarOffset = 50.;
 
-    userData->m_RegAladinParameters.outputResultName = QString( nameOfResultImage.c_str() ); 
-    userData->m_RegAladinParameters.outputResultFlag = true;
+    userData->m_RegParameters.m_AladinParameters.outputResultName = QString( nameOfResultImage.c_str() ); 
+    userData->m_RegParameters.m_AladinParameters.outputResultFlag = true;
 
-    sourceName = userData->m_RegAladinParameters.outputResultName;
+    sourceName = userData->m_RegParameters.m_AladinParameters.outputResultName;
   }
 
 
   // Create and run the F3D registration
 
-  if ( userData->m_FlagDoNonRigidReg ) 
+  if ( userData->m_RegParameters.m_FlagDoNonRigidReg ) 
   {
     
-    userData->m_RegNonRigid = userData->CreateNonRigidRegistrationObject( targetName,
-									  sourceName,
-									  targetMaskName,
-									  mitkSourceImage, 
-									  mitkTargetImage, 
-									  mitkTargetMaskImage );  
-
-    userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, userData );
+    userData->m_RegNonRigid = 
+      userData->CreateNonRigidRegistrationObject( targetName,
+						  sourceName,
+						  targetMaskName,
+						  mitkSourceImage, 
+						  mitkTargetImage, 
+						  mitkTargetMaskImage );  
+    
+    userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, 
+							  userData );
 
     userData->m_RegNonRigid->Run_f3d();
 
