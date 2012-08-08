@@ -196,9 +196,13 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
 
     void OnCancelPushButtonPressed( void );
+
     void OnResetParametersPushButtonPressed( void );
-    void OnSaveAsPushButtonPressed( void );
+    void OnSaveTransformationPushButtonPressed( void );
     void OnExecutePushButtonPressed( void );
+
+    void OnSaveRegistrationParametersPushButtonPressed( void );
+    void OnLoadRegistrationParametersPushButtonPressed( void );
 
     friend void UpdateProgressBar( float pcntProgress, void *param );
 
@@ -247,6 +251,9 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     /// \brief Save the registration parameters (as a shell-script command line)
     void WriteRegistrationParametersToFile( QString &filename );
+
+    /// \brief Read the registration parameters (as a shell-script command line)
+    void ReadRegistrationParametersFromFile( QString &filename );
 
     /// \brief Print the object
     void PrintSelf( std::ostream& os );

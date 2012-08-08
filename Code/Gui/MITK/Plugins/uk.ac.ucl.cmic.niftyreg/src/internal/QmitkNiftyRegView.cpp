@@ -22,6 +22,8 @@
 
  ============================================================================*/
 
+#include <string>
+
 // Blueberry
 #include <berryISelectionService.h>
 #include <berryIWorkbenchWindow.h>
@@ -922,15 +924,27 @@ void QmitkNiftyRegView::CreateConnections()
 	   this,
 	   SLOT( OnResetParametersPushButtonPressed( void ) ) );
 
-  connect( m_Controls.m_SaveAsPushButton,
+  connect( m_Controls.m_SaveTransformationPushButton,
 	   SIGNAL( pressed( void ) ),
 	   this,
-	   SLOT( OnSaveAsPushButtonPressed( void ) ) );
+	   SLOT( OnSaveTransformationPushButtonPressed( void ) ) );
 
   connect( m_Controls.m_ExecutePushButton,
 	   SIGNAL( pressed( void ) ),
 	   this,
 	   SLOT( OnExecutePushButtonPressed( void ) ) );
+
+
+  connect( m_Controls.m_SaveRegistrationParametersPushButton,
+	   SIGNAL( pressed( void ) ),
+	   this,
+	   SLOT( OnSaveRegistrationParametersPushButtonPressed( void ) ) );
+
+  connect( m_Controls.m_LoadRegistrationParametersPushButton,
+	   SIGNAL( pressed( void ) ),
+	   this,
+	   SLOT( OnLoadRegistrationParametersPushButtonPressed( void ) ) );
+
 }
 
 
@@ -1313,6 +1327,140 @@ void QmitkNiftyRegView::OnResetParametersPushButtonPressed( void )
 
 
 // ---------------------------------------------------------------------------
+// OnSaveTransformationPushButtonPressed();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::OnSaveTransformationPushButtonPressed( void )
+{
+  if ( ! ( m_RegAladin && m_RegNonRigid ) )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No registration data available,"
+		   "\nplease execute a registration.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  QFileDialog dialog( (QWidget *) this->parent(),
+		      tr( "Save transformation") );
+
+  dialog.setFileMode( QFileDialog::AnyFile );
+  dialog.setViewMode( QFileDialog::Detail );
+  dialog.setDirectory( QDir::currentPath() );
+  dialog.setAcceptMode( QFileDialog::AcceptSave );
+  dialog.setLabelText( QFileDialog::FileName, tr( "File selected" ) );
+
+  QStringList filters;
+  filters << "Affine transformation (*.affine)"
+	  << "B-spline control grid (*.nii)";
+
+  if ( ! ( m_RegAladin || m_RegNonRigid ) )
+  {
+    if ( m_RegNonRigid )    
+      dialog.selectNameFilter( filters[1] );
+    else
+      dialog.selectNameFilter( filters[0] );
+  }
+
+  dialog.setNameFilters(filters);
+
+  if ( dialog.exec() )
+  {
+
+    // Find the specific filter used
+
+    int i, iSelectedFilter = -1;
+    QString selectedFilter = dialog.selectedNameFilter();
+
+    for ( i = 0; i < filters.size(); i++ )
+    {
+      if ( filters.at(i) == selectedFilter ) 
+      {
+	iSelectedFilter = i;
+	break;
+      }
+    }
+
+    std::cout << dialog.selectedNameFilter().toStdString().c_str() << ", "
+	      << iSelectedFilter 
+	      << std::endl;
+
+    // Save according to the filter selected
+
+    switch ( iSelectedFilter )
+    {
+      // Affine transformation file
+    case 0:
+      {
+
+	if ( ! m_RegAladin )
+	{
+	  QMessageBox msgBox;
+	  msgBox.setText("No registration data available,"
+			 "\nplease execute an affine registration.");
+	  msgBox.exec();
+	  
+	  return;
+	}
+
+	m_RegAladinParameters.outputAffineName = dialog.selectedFiles()[0];
+
+	std::cout << m_RegAladinParameters.outputAffineName.toStdString().c_str() 
+		  << std::endl;
+
+	reg_tool_WriteAffineFile( m_RegAladin->GetTransformationMatrix(), 
+				  m_RegAladinParameters.outputAffineName.toStdString().c_str() );
+	break;
+      }
+
+      // B-spline control grid 
+    case 1:
+      {
+
+	if ( ! m_RegNonRigid )
+	{
+	  QMessageBox msgBox;
+	  msgBox.setText("No registration data available,"
+			 "\nplease execute a non-rigid registration.");
+	  msgBox.exec();
+	  
+	  return;
+	}
+
+	m_RegF3dParameters.outputControlPointGridName = dialog.selectedFiles()[0];
+
+	std::cout << m_RegF3dParameters.outputControlPointGridName.toStdString().c_str() 
+		  << std::endl;
+
+        nifti_image *outputControlPointGridImage 
+	  = m_RegNonRigid->GetControlPointPositionImage();
+
+        memset( outputControlPointGridImage->descrip, 0, 80 );
+        strcpy ( outputControlPointGridImage->descrip,
+		"Control point position from NiftyReg (reg_f3d)" );
+
+        reg_io_WriteImageFile( outputControlPointGridImage,
+			       m_RegF3dParameters.outputControlPointGridName.toStdString().c_str() );
+
+        nifti_image_free( outputControlPointGridImage );
+
+	break;
+      }
+
+      // Unrecognised filter selected
+    default:
+      {
+	QMessageBox msgBox;
+	msgBox.setText("Algorithm fault: Unrecognised SaveAs filter.");
+	msgBox.exec();
+      }
+    }
+  }
+}
+
+
+// ---------------------------------------------------------------------------
 // WriteRegistrationParametersToFile();
 // --------------------------------------------------------------------------- 
 
@@ -1468,14 +1616,14 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
 
 
 // ---------------------------------------------------------------------------
-// OnSaveAsPushButtonPressed();
+// OnSaveRegistrationParametersPushButtonPressed();
 // --------------------------------------------------------------------------- 
 
-void QmitkNiftyRegView::OnSaveAsPushButtonPressed( void )
+void QmitkNiftyRegView::OnSaveRegistrationParametersPushButtonPressed( void )
 {
 
   QFileDialog dialog( (QWidget *) this->parent(),
-		      tr( "Save as") );
+		      tr( "Save registration parameters") );
 
   dialog.setFileMode( QFileDialog::AnyFile );
   dialog.setViewMode( QFileDialog::Detail );
@@ -1484,111 +1632,439 @@ void QmitkNiftyRegView::OnSaveAsPushButtonPressed( void )
   dialog.setLabelText( QFileDialog::FileName, tr( "File selected" ) );
 
   QStringList filters;
-  filters << "Affine transformation (*.affine)"
-	  << "B-spline control grid (*.nii)"
-	  << "Registration parameters (*.sh)";
+  filters << "Registration parameters (*.sh)";
 
   dialog.setNameFilters(filters);
 
-  if ( dialog.exec() )
+  dialog.exec();
+  
+  WriteRegistrationParametersToFile( dialog.selectedFiles()[0] );
+}
+
+
+// ---------------------------------------------------------------------------
+// ReadRegistrationParametersFromFile();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
+{
+  typedef enum { UNSET, REG_ALADIN, REG_F3D } inParamsEnumType;
+  inParamsEnumType inParametersType = UNSET;
+  std::string inString;
+  
+  int inLevelNumber;
+  int inLevel2Perform;    
+
+  float inTargetSigmaValue;
+  float inSourceSigmaValue;
+
+  bool inFlagDoInitialRigidReg;
+  bool inFlagDoNonRigidReg;
+
+  QString inInputAffineName;
+  bool inFlagInputAffine;
+  bool inFlagFlirtAffine;
+
+  reg_aladin<PrecisionTYPE> inRegAladinParameters;
+  reg_f3d<PrecisionTYPE> inRegF3dParameters;
+
+
+  std::ifstream fin( filename.toStdString().c_str() );
+
+  if ((! fin) || fin.bad()) 
   {
+    QMessageBox msgBox;
+    msgBox.setText( QString( "ERROR: Could not open file: " ) + filename );
+    msgBox.exec();
+    return;
+  }
 
-    // Find the specific filter used
+  while ( ( ! fin.eof() ) && ( inParametersType == UNSET ) ) 
+  {
+    
+    fin >> inString;
+    
+    std::cout << inString << std::endl;
 
-    int i, iSelectedFilter = -1;
-    QString selectedFilter = dialog.selectedNameFilter();
-
-    for ( i = 0; i < filters.size(); i++ )
+    if ( inString.find( std::string( "reg_aladin" ) ) != std::string::npos ) 
     {
-      if ( filters.at(i) == selectedFilter ) 
-      {
-	iSelectedFilter = i;
-	break;
-      }
+      cout << "reg_aladin" << std::endl;
+      inParametersType = REG_ALADIN;
     }
-
-    std::cout << dialog.selectedNameFilter().toStdString().c_str() << ", "
-	      << iSelectedFilter 
-	      << std::endl;
-
-    // Save according to the filter selected
-
-    switch ( iSelectedFilter )
+    else if ( inString.find( std::string( "reg_f3d" ) ) != std::string::npos ) 
     {
-      // Affine transformation file
-    case 0:
-      {
-
-	if ( ! m_RegAladin )
-	{
-	  QMessageBox msgBox;
-	  msgBox.setText("No registration data available,"
-			 "\nplease execute an affine registration.");
-	  msgBox.exec();
-	  
-	  return;
-	}
-
-	m_RegAladinParameters.outputAffineName = dialog.selectedFiles()[0];
-
-	std::cout << m_RegAladinParameters.outputAffineName.toStdString().c_str() 
-		  << std::endl;
-
-	reg_tool_WriteAffineFile( m_RegAladin->GetTransformationMatrix(), 
-				  m_RegAladinParameters.outputAffineName.toStdString().c_str() );
-	break;
-      }
-
-      // B-spline control grid 
-    case 1:
-      {
-
-	if ( ! m_RegNonRigid )
-	{
-	  QMessageBox msgBox;
-	  msgBox.setText("No registration data available,"
-			 "\nplease execute a non-rigid registration.");
-	  msgBox.exec();
-	  
-	  return;
-	}
-
-	m_RegF3dParameters.outputControlPointGridName = dialog.selectedFiles()[0];
-
-	std::cout << m_RegF3dParameters.outputControlPointGridName.toStdString().c_str() 
-		  << std::endl;
-
-        nifti_image *outputControlPointGridImage 
-	  = m_RegNonRigid->GetControlPointPositionImage();
-
-        memset( outputControlPointGridImage->descrip, 0, 80 );
-        strcpy ( outputControlPointGridImage->descrip,
-		"Control point position from NiftyReg (reg_f3d)" );
-
-        reg_io_WriteImageFile( outputControlPointGridImage,
-			       m_RegF3dParameters.outputControlPointGridName.toStdString().c_str() );
-
-        nifti_image_free( outputControlPointGridImage );
-
-	break;
-      }
-
-      // Save the registration parameters (as a shell-script command line)
-    case 2:
-      {
-	WriteRegistrationParametersToFile( dialog.selectedFiles()[0] );
-	break;
-      }
-
-      // Unrecognised filter selected
-    default:
-      {
-	QMessageBox msgBox;
-	msgBox.setText("Algorithm fault: Unrecognised SaveAs filter.");
-	msgBox.exec();
-      }
+      cout << "reg_f3d" << std::endl;
+      inParametersType = REG_F3D;
     }
   }
+
+  
+  if ( inParametersType == UNSET )
+  {
+    QMessageBox msgBox;
+    msgBox.setText( QString( "ERROR: Could not read file: " ) + filename );
+    msgBox.exec();
+    return;    
+  }
+
+  while ( ( ! fin.eof() ) && ( inParametersType == UNSET ) ) 
+  {
+    
+    fin >> inString;
+    
+    std::cout << inString << std::endl;
+
+    if ( inString.find( std::string( "reg_aladin" ) ) != std::string::npos ) 
+    {
+      cout << "reg_aladin" << std::endl;
+      inParametersType = REG_ALADIN;
+    }
+    else if ( inString.find( std::string( "reg_f3d" ) ) != std::string::npos ) 
+    {
+      cout << "reg_f3d" << std::endl;
+      inParametersType = REG_F3D;
+    }
+
+    else if ( inString.find( std::string( "-ref" ) ) != std::string::npos ) 
+    {
+ << "   -ref " << inRegAladinParameters.referenceImageName.toStdString().c_str() 
+	}
+      else if ( inString.find( std::string( "-flo" ) ) != std::string::npos ) 
+    {
+ << "   -flo " << inRegAladinParameters.floatingImageName.toStdString().c_str() 
+}
+
+
+    if ( inRegAladinParameters.outputAffineFlag )
+      else if ( inString.find( std::string( "-aff" ) ) != std::string::npos ) 
+    {
+ << "   -aff " << inRegAladinParameters.outputAffineName.toStdString().c_str()
+	}
+
+    if ( inRegAladinParameters.alignCenterFlag )
+      else if ( inString.find( std::string( "-nac" ) ) != std::string::npos ) 
+    {
+ << "   -nac \\" << endl;
+
+    if ( inRegAladinParameters.regnType == QmitkNiftyRegView::RIGID_ONLY )
+      else if ( inString.find( std::string( "-rigOnly" ) ) != std::string::npos ) 
+    {
+ << "   -rigOnly \\" << endl;
+    else if ( inRegAladinParameters.regnType == QmitkNiftyRegView::DIRECT_AFFINE )
+      else if ( inString.find( std::string( "-affDirect" ) ) != std::string::npos ) 
+    {
+ << "   -affDirect \\" << endl;
+
+    else if ( inString.find( std::string( "-maxit" ) ) != std::string::npos ) 
+    {
+      << "   -maxit " << inRegAladinParameters.maxiterationNumber 
+}
+}
+    }
+    else if ( inString.find( std::string( "-%v" ) ) != std::string::npos ) 
+    {
+	 << "   -%v " << inRegAladinParameters.block_percent_to_use 
+}
+
+    else if ( inString.find( std::string( "-%i" ) ) != std::string::npos ) 
+    {
+	 << "   -%i " << inRegAladinParameters.inlier_lts 
+}
+
+    else if ( inString.find( std::string( "-interp" ) ) != std::string::npos ) 
+    {
+	 << "   -interp " << inRegAladinParameters.interpolation 
+}
+;
+
+    if ( inFlagFlirtAffine )
+      else if ( inString.find( std::string( "-affFlirt" ) ) != std::string::npos ) 
+    {
+ << "   -affFlirt " << inInputAffineName.toStdString().c_str() 
+}
+;
+    else if ( inFlagInputAffine )
+      else if ( inString.find( std::string( "-inaff" ) ) != std::string::npos ) 
+    {
+ << "   -inaff " << inInputAffineName.toStdString().c_str() 
+}
+;
+
+    if ( ! inRegAladinParameters.referenceMaskName.isEmpty() )
+      else if ( inString.find( std::string( "-rmask" ) ) != std::string::npos ) 
+    {
+ << "   -rmask " << inRegAladinParameters.referenceMaskName.toStdString().c_str() 
+}
+;
+
+    if ( inTargetSigmaValue )
+      else if ( inString.find( std::string( "-smooR" ) ) != std::string::npos ) 
+    {
+ << "   -smooR " << inTargetSigmaValue 
+}
+;
+
+    if ( inSourceSigmaValue )
+      else if ( inString.find( std::string( "-smooF" ) ) != std::string::npos ) 
+    {
+ << "   -smooF " << inSourceSigmaValue 
+}
+;
+
+    else if ( inString.find( std::string( "-ln" ) ) != std::string::npos ) 
+    {
+ << "   -ln " << inLevelNumber 
+}
+
+      else if ( inString.find( std::string( " -lp" ) ) != std::string::npos ) 
+    {
+	 << "   -lp " << inLevel2Perform 
+}
+;
+
+    if ( inRegAladinParameters.outputResultFlag ) {
+      else if ( inString.find( std::string( "-res" ) ) != std::string::npos ) 
+    {
+ << "   -res " << inRegAladinParameters.outputResultName.toStdString().c_str() << ".nii" 
+	   << endl << endl;
+    }
+
+
+  if ( inFlagDoNonRigidReg ) 
+  {
+
+
+    else if ( inString.find( std::string( "-ref" ) ) != std::string::npos ) 
+    {
+ << "reg_f3d \\" << endl
+	 << "   -ref " << inRegF3dParameters.referenceImageName.toStdString().c_str() 
+	}
+    else if ( inString.find( std::string( "-flo" ) ) != std::string::npos ) 
+    {
+	 << "   -flo " << inRegF3dParameters.floatingImageName.toStdString().c_str() 
+}
+
+
+    if ( inRegF3dParameters.inputControlPointGridFlag )
+      else if ( inString.find( std::string( "-incpp" ) ) != std::string::npos ) 
+    {
+ << "   -incpp " << inRegF3dParameters.inputControlPointGridName.toStdString().c_str() 
+}
+
+    
+    if ( inFlagFlirtAffine )
+      else if ( inString.find( std::string( "-affFlirt" ) ) != std::string::npos ) 
+    {
+ << "   -affFlirt " << inInputAffineName.toStdString().c_str() 
+}
+;
+    else if ( inFlagInputAffine )
+      else if ( inString.find( std::string( "-inaff" ) ) != std::string::npos ) 
+    {
+ << "   -inaff " << inInputAffineName.toStdString().c_str() 
+}
+;
+    
+    if ( ! inRegF3dParameters.outputControlPointGridName.isEmpty() )
+      else if ( inString.find( std::string( "-cpp" ) ) != std::string::npos ) 
+    {
+ << "   -cpp " << inRegF3dParameters.outputControlPointGridName.toStdString().c_str() 
+}
+;
+    
+    if ( ! inRegF3dParameters.referenceMaskName.isEmpty() )
+      else if ( inString.find( std::string( "-rmask" ) ) != std::string::npos ) 
+    {
+ << "   -rmask " << inRegF3dParameters.referenceMaskName.toStdString().c_str() 
+}
+;
+    
+    if ( inTargetSigmaValue )
+      else if ( inString.find( std::string( "-smooR" ) ) != std::string::npos ) 
+    {
+ << "   -smooR " << inTargetSigmaValue 
+}
+;
+    
+    if ( inSourceSigmaValue )
+      else if ( inString.find( std::string( "-smooF" ) ) != std::string::npos ) 
+    {
+ << "   -smooF " << inSourceSigmaValue 
+}
+;
+    
+    else if ( inString.find( std::string( "-rbn" ) ) != std::string::npos ) 
+    {
+ << "   -rbn " << inRegF3dParameters.referenceBinNumber 
+}
+
+    else if ( inString.find( std::string( "-fbn" ) ) != std::string::npos ) 
+    {
+	 << "   -fbn " << inRegF3dParameters.floatingBinNumber 
+}
+;
+    
+    if ( inRegF3dParameters.referenceThresholdUp != -std::numeric_limits<PrecisionTYPE>::max() )
+      else if ( inString.find( std::string( "-rUpTh" ) ) != std::string::npos ) 
+    {
+ << "   -rUpTh " << inRegF3dParameters.referenceThresholdUp 
+}
+;
+    if ( inRegF3dParameters.referenceThresholdLow != -std::numeric_limits<PrecisionTYPE>::max() )
+      else if ( inString.find( std::string( "-rLwTh" ) ) != std::string::npos ) 
+    {
+ << "   -rLwTh " << inRegF3dParameters.referenceThresholdLow 
+}
+;
+    
+    if ( inRegF3dParameters.floatingThresholdUp != -std::numeric_limits<PrecisionTYPE>::max() )
+      else if ( inString.find( std::string( "-fUpTh" ) ) != std::string::npos ) 
+    {
+ << "   -fUpTh " << inRegF3dParameters.floatingThresholdUp 
+}
+;
+    if ( inRegF3dParameters.floatingThresholdLow != -std::numeric_limits<PrecisionTYPE>::max() )
+      else if ( inString.find( std::string( "-fLwTh" ) ) != std::string::npos ) 
+    {
+ << "   -fLwTh " << inRegF3dParameters.floatingThresholdLow 
+}
+;
+    
+    else if ( inString.find( std::string( " -sx" ) ) != std::string::npos ) 
+    {
+ << "   -sx " << inRegF3dParameters.spacing[0] 
+}
+
+    else if ( inString.find( std::string( " -sy" ) ) != std::string::npos ) 
+    {
+	 << "   -sy " << inRegF3dParameters.spacing[1] 
+}
+
+    else if ( inString.find( std::string( " -sz" ) ) != std::string::npos ) 
+    {
+	 << "   -sz " << inRegF3dParameters.spacing[2] 
+}
+;
+    
+    else if ( inString.find( std::string( "" ) ) != std::string::npos ) 
+    {
+ << "   -be " << inRegF3dParameters.bendingEnergyWeight 
+}
+
+      
+    else if ( inString.find( std::string( "-le" ) ) != std::string::npos ) 
+    {
+	 << "   -le " << inRegF3dParameters.linearEnergyWeight0 
+	 << " " << inRegF3dParameters.linearEnergyWeight0 
+}
+
+      
+    else if ( inString.find( std::string( "" ) ) != std::string::npos ) 
+    {
+	 << "   -jl " << inRegF3dParameters.jacobianLogWeight 
+}
+;
+    
+    if ( ! inRegF3dParameters.jacobianLogApproximation )
+      else if ( inString.find( std::string( "-noAppJL" ) ) != std::string::npos ) 
+    {
+ << "   -noAppJL \\" << endl;
+    
+    if ( ! inRegF3dParameters.useConjugate )
+      else if ( inString.find( std::string( "-noConj" ) ) != std::string::npos ) 
+    {
+ << "   -noConj \\" << endl;
+    
+    if ( inRegF3dParameters.similarity == SSD_SIMILARITY )
+      else if ( inString.find( std::string( "-ssd" ) ) != std::string::npos ) 
+    {
+ << "   -ssd \\" << endl;
+    else if ( inRegF3dParameters.similarity == KLDIV_SIMILARITY )
+      else if ( inString.find( std::string( "-kld" ) ) != std::string::npos ) 
+    {
+ << "   -kld \\" << endl;
+    
+    else if ( inString.find( std::string( "-maxit" ) ) != std::string::npos ) 
+    {
+ << "   -maxit " << inRegF3dParameters.maxiterationNumber 
+}
+;
+    
+    else if ( inString.find( std::string( "-ln" ) ) != std::string::npos ) 
+    {
+ << "   -ln " << inLevelNumber 
+}
+
+    else if ( inString.find( std::string( "-lp" ) ) != std::string::npos ) 
+    {
+	 << "   -lp " << inLevel2Perform 
+}
+;
+    
+    if ( inRegF3dParameters.noPyramid )
+      else if ( inString.find( std::string( "-nopy" ) ) != std::string::npos ) 
+    {
+ << "   -nopy \\" << endl;
+    
+    if ( inRegF3dParameters.gradientSmoothingSigma )
+      else if ( inString.find( std::string( "-smoothGrad" ) ) != std::string::npos ) 
+    {
+ << "   -smoothGrad " << inRegF3dParameters.gradientSmoothingSigma 
+}
+;
+    
+    if ( inRegF3dParameters.warpedPaddingValue != -std::numeric_limits<PrecisionTYPE>::max() )
+      else if ( inString.find( std::string( "-pad " ) ) != std::string::npos ) 
+    {
+ << "   -pad " << inRegF3dParameters.warpedPaddingValue 
+};
+    
+    if ( ! inRegF3dParameters.verbose )
+      else if ( inString.find( std::string( "-voff" ) ) != std::string::npos ) 
+    {
+ << "   -voff \\" << endl;
+    
+    if ( ! inRegF3dParameters.outputWarpedName.isEmpty() )
+      else if ( inString.find( std::string( "-res" ) ) != std::string::npos ) 
+    {
+ << "   -res " << inRegF3dParameters.floatingImageName.toStdString().c_str()
+	   << "_" << inRegF3dParameters.outputWarpedName.toStdString().c_str()
+	}
+    else
+      else if ( inString.find( std::string( "" ) ) != std::string::npos ) 
+    {
+ << "   -res outputNonRigidResult.nii" << endl << endl;    
+  }
+
+
+  fin.close();
+}
+
+
+// ---------------------------------------------------------------------------
+// OnLoadRegistrationParametersPushButtonPressed();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::OnLoadRegistrationParametersPushButtonPressed( void )
+{
+
+  QFileDialog dialog( (QWidget *) this->parent(),
+		      tr( "Load registration parameters") );
+
+  dialog.setFileMode( QFileDialog::AnyFile );
+  dialog.setViewMode( QFileDialog::Detail );
+  dialog.setDirectory( QDir::currentPath() );
+  dialog.setAcceptMode( QFileDialog::AcceptOpen );
+  dialog.setLabelText( QFileDialog::FileName, tr( "File selected" ) );
+
+  QStringList filters;
+  filters << "Registration parameters (*.sh)";
+
+  dialog.setNameFilters(filters);
+
+  dialog.exec();
+  
+  ReadRegistrationParametersFromFile( dialog.selectedFiles()[0] );
 }
 
 
