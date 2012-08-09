@@ -388,15 +388,37 @@ function brain_delineation()
     makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
   else
     local output_left_hippo_local_region_img=${temp_dir}/region.img
-    local init_1=`echo "${mean_intensity}*0.4" | bc -l`
-    local init_2=`echo "${mean_intensity}*0.9" | bc -l`
-    local init_3=`echo "${mean_intensity}*1.4" | bc -l`
-    local threshold_160=`echo "${mean_intensity}*1.60" | bc -l`
+    local output_left_hippo_local_region_d3=${temp_dir}/region_d3
+    local output_left_hippo_local_region_csf=${temp_dir}/region_csf
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} 
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_d3}.img -d 3
+    niftkSubtract -i ${output_left_hippo_local_region_d3}.img -j ${output_left_hippo_local_region_img} -o ${output_left_hippo_local_region_csf}.img
+    makeroi -img ${output_left_hippo_local_region_csf}.img -out ${output_left_hippo_local_region_csf} -alt 0
     
-    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 3
+    local output_left_hippo_local_region_e3=${temp_dir}/region_e3
+    local output_left_hippo_local_region_gm=${temp_dir}/region_gm
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_e3}.img -e 3 
+    niftkSubtract -i ${output_left_hippo_local_region_img} -j ${output_left_hippo_local_region_e3}.img -o ${output_left_hippo_local_region_gm}.img
+    makeroi -img ${output_left_hippo_local_region_gm}.img -out ${output_left_hippo_local_region_gm} -alt 0
+    
+    makeroi -img ${output_left_hippo_local_region_e3}.img -out ${output_left_hippo_local_region_e3} -alt 0
+    
+    
+    local init_1=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_csf}`
+    local init_2=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_gm}`
+    local init_3=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_e3}`
+    echo "init=${init_1}, ${init_2}, ${init_3}"
+    
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 5
     kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}`
-    
     echo "kmeans=${kmeans_output}"
+    
+#makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 4
+#itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}
+    
+#makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 3
+#itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}
+    
     csf=`echo ${kmeans_output} | awk '{printf $1}'`
     csf_sd=`echo ${kmeans_output} | awk '{printf $2}'`
     gm=`echo ${kmeans_output} | awk '{printf $3}'`
@@ -497,11 +519,11 @@ COMMENTS
       makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
       makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
       
-      local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
-      lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
-      upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
-      makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
-      makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
+#local new_mean_intensity=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_threshold}`
+#lower_threshold_percent=`echo "(100*${lower_threshold})/${new_mean_intensity}" | bc -l`
+#upper_threshold_percent=`echo "(100*${upper_threshold})/${new_mean_intensity}" | bc -l`
+#makemask ${subject_image} ${output_left_hippo_local_region_threshold} ${output_left_hippo_local_region_threshold_img} -cd 1 ${lower_threshold_percent} ${upper_threshold_percent}
+#makeroi -img ${output_left_hippo_local_region_threshold_img} -out ${output_left_hippo_local_region_threshold} -alt 128
     fi 
     
   fi 
@@ -781,13 +803,27 @@ function brain-delineation-using-staple()
     threshold_160=`echo "${mean_intensity}*1.60" | bc`
     echo "Manual threshold=${threshold_70},${threshold_160}"
     
+    local output_left_hippo_local_region_d3=${temp_dir}/region_d3
+    local output_left_hippo_local_region_csf=${temp_dir}/region_csf
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} 
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_d3}.img -d 3
+    niftkSubtract -i ${output_left_hippo_local_region_d3}.img -j ${output_left_hippo_local_region_img} -o ${output_left_hippo_local_region_csf}.img
+    makeroi -img ${output_left_hippo_local_region_csf}.img -out ${output_left_hippo_local_region_csf} -alt 0
     
-    local init_1=`echo "${mean_intensity}*0.4" | bc -l`
-    local init_2=`echo "${mean_intensity}*0.9" | bc -l`
-    local init_3=`echo "${mean_intensity}*1.4" | bc -l`
-    local threshold_160=`echo "${mean_intensity}*1.60" | bc -l`
+    local output_left_hippo_local_region_e3=${temp_dir}/region_e3
+    local output_left_hippo_local_region_gm=${temp_dir}/region_gm
+    makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_e3}.img -e 3 
+    niftkSubtract -i ${output_left_hippo_local_region_img} -j ${output_left_hippo_local_region_e3}.img -o ${output_left_hippo_local_region_gm}.img
+    makeroi -img ${output_left_hippo_local_region_gm}.img -out ${output_left_hippo_local_region_gm} -alt 0
+    
+    makeroi -img ${output_left_hippo_local_region_e3}.img -out ${output_left_hippo_local_region_e3} -alt 0
+    
+    local init_1=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_csf}`
+    local init_2=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_gm}`
+    local init_3=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_e3}`
+    echo "init=${init_1}, ${init_2}, ${init_3}"
       
-    makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_left_hippo_local_region_img} -d 3
+    makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_left_hippo_local_region_img} -d 5
     kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}`
       
     echo "kmeans=${kmeans_output}"
