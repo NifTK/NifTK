@@ -40,7 +40,7 @@ meshDir            = 'W:/philipsBreastProneSupine/Meshes/meshMaterials6Supine/'
 breastVolMeshName  = meshDir + 'breastSurf_impro.1.vtk'    # volume mesh    
 xmlFileOut         = meshDir + 'modelSupine.xml'
 chestWallMaskImage = 'W:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi_dilateCW.nii'
-labelImage         = 'W:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland.nii'
+labelImage         = 'W:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi.nii'
 skinMaskImage      = 'W:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi_dilateAir.nii'
 
 
@@ -147,8 +147,8 @@ genFix.writeXML( xmlFileOut )
 #
 # run the simulation and analyse some quantities
 #
-runNiftySim( os.path.basename( xmlFileOut ), meshDir )
-analyser = ca.convergenceAnalyser( xmlFileOut )
+#runNiftySim( os.path.basename( xmlFileOut ), meshDir )
+#analyser = ca.convergenceAnalyser( xmlFileOut )
 
 import sys
 sys.exit()
