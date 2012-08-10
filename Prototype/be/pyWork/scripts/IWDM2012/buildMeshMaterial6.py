@@ -25,7 +25,6 @@ chestWallSurfMeshVTK   = meshDir + 'chestWallSurf.vtk'
 breastSurfMeshSmesh    = meshDir + 'breastSurf.smesh'
 breastSurfMeshVTK      = meshDir + 'breastSurf.vtk'
 
-
 #
 # Parameters used for meshMaterial
 #
