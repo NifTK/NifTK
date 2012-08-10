@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>754</width>
+    <width>706</width>
     <height>658</height>
    </rect>
   </property>
@@ -30,7 +30,7 @@
      </property>
      <widget class="QWidget" name="tabWidgetPage1" native="true">
       <attribute name="title">
-       <string>Input Images</string>
+       <string>Quick Start</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
@@ -72,30 +72,56 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <layout class="QGridLayout" name="gridLayout_2">
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item>
+         <item row="0" column="1">
           <widget class="QRadioButton" name="m_DoBlockMatchingOnlyRadioButton">
            <property name="text">
             <string>Block-Matching Only</string>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="1" column="1">
           <widget class="QRadioButton" name="m_DoNonRigidOnlyRadioButton">
            <property name="text">
             <string>Non-Rigid Only</string>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="2" column="1">
           <widget class="QRadioButton" name="m_DoBlockMatchingThenNonRigidRadioButton">
            <property name="text">
             <string>Block-Matching then Non-Rigid</string>
            </property>
           </widget>
+         </item>
+         <item row="1" column="0">
+          <spacer name="horizontalSpacer_21">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="2">
+          <spacer name="horizontalSpacer_22">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>
