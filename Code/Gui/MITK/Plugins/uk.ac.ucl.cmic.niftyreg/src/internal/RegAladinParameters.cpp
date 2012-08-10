@@ -26,6 +26,8 @@
 
 #include "RegAladinParameters.h"
 
+
+
 // ---------------------------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------------------------
@@ -46,12 +48,18 @@ void RegAladinParameters::SetDefaultParameters()
 {
 
   referenceImageName.clear();
+  referenceImagePath.clear();
+
   floatingImageName.clear();
+  floatingImagePath.clear();
 
   referenceMaskName.clear();
+  referenceMaskPath.clear();
 
   outputResultFlag = false;
+
   outputResultName.clear();
+  outputResultPath.clear();
 
   outputAffineFlag = false;
   outputAffineName.clear();
@@ -96,12 +104,47 @@ void RegAladinParameters::PrintSelf( std::ostream& os )
 
   os << "# Rigid/Affine Aladin Parameters" << std::endl;
 
+  if ( referenceImageName.isEmpty() )
+    os << "Aladin-referenceImageName: UNSET" << std::endl;
+  else
+    os << "Aladin-referenceImageName: " << referenceImageName.toStdString() << std::endl;
+
+  if ( referenceImagePath.isEmpty() )
+    os << "Aladin-referenceImagePath: UNSET" << std::endl;
+  else
+    os << "Aladin-referenceImagePath: " << referenceImagePath.toStdString() << std::endl;
+	                       
+  if ( floatingImageName.isEmpty() )
+    os << "Aladin-floatingImageName: UNSET" << std::endl;
+  else
+    os << "Aladin-floatingImageName: " << floatingImageName.toStdString() << std::endl;
+
+  if ( floatingImagePath.isEmpty() )
+    os << "Aladin-floatingImagePath: UNSET" << std::endl;
+  else
+    os << "Aladin-floatingImagePath: " << floatingImagePath.toStdString() << std::endl;
+	                       
+  if ( referenceMaskName.isEmpty() )
+    os << "Aladin-referenceMaskName: UNSET" << std::endl;
+  else
+    os << "Aladin-referenceMaskName: " << referenceMaskName.toStdString() << std::endl;
+
+  if ( referenceMaskPath.isEmpty() )
+    os << "Aladin-referenceMaskPath: UNSET" << std::endl;
+  else
+    os << "Aladin-referenceMaskPath: " << referenceMaskPath.toStdString() << std::endl;
+	                       
   os << "Aladin-outputResultFlag: " << outputResultFlag << std::endl;
 
   if ( outputResultName.isEmpty() )
     os << "Aladin-outputResultName: UNSET" << std::endl;
   else
     os << "Aladin-outputResultName: " << outputResultName.toStdString() << std::endl;
+	                       
+  if ( outputResultPath.isEmpty() )
+    os << "Aladin-outputResultPath: UNSET" << std::endl;
+  else
+    os << "Aladin-outputResultPath: " << outputResultPath.toStdString() << std::endl;
 	                       
   os << "Aladin-outputAffineFlag: " << outputAffineFlag << std::endl;
 
@@ -144,12 +187,18 @@ RegAladinParameters &RegAladinParameters::operator=(const RegAladinParameters &p
 {
 
   referenceImageName = p.referenceImageName;
+  referenceImagePath = p.referenceImagePath;
+
   floatingImageName = p.floatingImageName;
+  floatingImagePath = p.floatingImagePath;
 
   referenceMaskName = p.referenceMaskName;
+  referenceMaskPath = p.referenceMaskPath;
 
   outputResultFlag = p.outputResultFlag;
+
   outputResultName = p.outputResultName;
+  outputResultPath = p.outputResultPath;
 
   outputAffineFlag = p.outputAffineFlag;
   outputAffineName = p.outputAffineName;

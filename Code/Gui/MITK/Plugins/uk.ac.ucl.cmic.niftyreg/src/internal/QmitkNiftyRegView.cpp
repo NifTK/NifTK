@@ -35,6 +35,10 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+// ITK
+#include <itksys/SystemTools.hxx>
+
+
 #include "mitkDataStorageUtils.h"
 #include "mitkNodePredicateDataType.h"
 #include "mitkImageToNifti.h"
@@ -97,6 +101,31 @@ void QmitkNiftyRegView::DeallocateImages( void )
     nifti_image_free( m_ControlPointGridImage );
     m_ControlPointGridImage = 0;
   }
+}
+
+
+// ---------------------------------------------------------------------------
+// GetDataNode();
+// --------------------------------------------------------------------------- 
+
+mitk::DataNode::Pointer QmitkNiftyRegView::GetDataNode( QString searchName )
+{
+  std::string name;
+
+  mitk::DataStorage::SetOfObjects::ConstPointer nodes = GetNodes();
+
+  if ( nodes && (nodes->size() > 0) )
+  {
+    for (unsigned int i=0; i<nodes->size(); i++) 
+    {
+      (*nodes)[i]->GetStringProperty("name", name);
+      
+      if ( QString(name.c_str()) == searchName )
+	return (*nodes)[i];
+    }
+  }
+
+  return 0;
 }
 
 
@@ -250,6 +279,11 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   m_Controls.m_InitialAffineTransformationGroupBox->setChecked( m_RegParameters.m_FlagInputAffine );
   m_Controls.m_InputFlirtCheckBox->setChecked( m_RegParameters.m_FlagFlirtAffine );
 
+  if ( ! m_RegParameters.m_InputAffineName.isEmpty() )
+    m_Controls.m_InputAffineFileNameLineEdit->setText( m_RegParameters.m_InputAffineName );
+  else
+    m_Controls.m_InputAffineFileNameLineEdit->setText( QString( "" ) );
+
 
   // Aladin Parameters
   // ~~~~~~~~~~~~~~~~~
@@ -301,6 +335,17 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
 
   m_Controls.m_NonRigidInputControlPointCheckBox->setChecked( m_RegParameters.m_F3dParameters.
 							      inputControlPointGridFlag );
+
+  if ( ! m_RegParameters.m_F3dParameters.inputControlPointGridName.isEmpty() )
+    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setText( m_RegParameters.
+								     m_F3dParameters.
+								     inputControlPointGridName );
+  else
+    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setText( QString( "" ) );
+
+  m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setEnabled( m_RegParameters.
+								      m_F3dParameters.
+								      inputControlPointGridFlag );
 
   // Non-Rigid - Input Image
 
@@ -833,11 +878,9 @@ void QmitkNiftyRegView::CreateConnections()
 
 void QmitkNiftyRegView::PrintSelf( std::ostream& os )
 {
-  // Rigid/Affine Aladin Parameters
-  m_RegParameters.m_AladinParameters.PrintSelf( os );
-  
-  // Non-rigid Parameters
-  m_RegParameters.m_F3dParameters.PrintSelf( os );
+
+  m_RegParameters.PrintSelf( os );
+
 }
 
 
@@ -962,13 +1005,167 @@ void QmitkNiftyRegView::OnNodeChanged(const mitk::DataNode* node)
 
 
 // ---------------------------------------------------------------------------
+// OnTargetImageComboBoxChanged();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::OnTargetImageComboBoxChanged(int index)
+{
+  std::string filepath, filename;
+
+  QString sourceName = m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = m_Controls.m_TargetImageComboBox->currentText();
+
+  if ( ! targetName.isEmpty() ) 
+  {
+    mitk::DataNode::Pointer node = GetDataNode( targetName );
+
+    if ( node ) 
+    {
+      node->GetStringProperty( mitk::StringProperty::PATH, filepath );
+      node->GetStringProperty( "name", filename );
+
+      m_RegParameters.m_AladinParameters.referenceImageName = QString( filename.c_str() );
+      m_RegParameters.m_AladinParameters.referenceImagePath = QString( filepath.c_str() );
+
+      m_RegParameters.m_F3dParameters.referenceImageName = QString( filename.c_str() );
+      m_RegParameters.m_F3dParameters.referenceImagePath = QString( filepath.c_str() );
+    }
+  }
+
+  if ( ( ! sourceName.isEmpty() ) &&
+       ( ! targetName.isEmpty() ) )
+  {
+    m_Controls.m_ExecutePushButton->setEnabled( true );
+  }
+  else
+  {
+    m_Controls.m_ExecutePushButton->setEnabled( false );
+  }
+
+  Modified();
+}
+
+
+// ---------------------------------------------------------------------------
+// UpdateAladinResultImageFilename();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::UpdateAladinResultImageFilename()
+{
+  std::string filepath, filename;
+
+  QString sourceName = m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = m_Controls.m_TargetImageComboBox->currentText();
+
+  if ( ! sourceName.isEmpty() ) 
+  {
+    mitk::DataNode::Pointer node = GetDataNode( sourceName );
+
+    if ( node ) 
+    {
+      node->GetStringProperty( mitk::StringProperty::PATH, filepath );
+      node->GetStringProperty( "name", filename );
+
+      std::string nameOfResultImage = filename;
+
+      if ( m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
+	nameOfResultImage.append( "_RigidRegnTo_" );
+      else
+	nameOfResultImage.append( "_AffineRegnTo_" );
+      
+      nameOfResultImage.append( targetName.toStdString() );
+
+      m_RegParameters.m_AladinParameters.outputResultName = QString( nameOfResultImage.c_str() );
+      m_RegParameters.m_AladinParameters.outputResultPath = QString( filepath.c_str() );
+
+      m_RegParameters.m_AladinParameters.outputResultFlag = true;
+
+      // The input to the non-rigid registration might be the output of
+      // the affine regn, so we need to update the non-rigid floating
+      // image name also.
+      
+      if ( m_RegParameters.m_FlagDoInitialRigidReg ) 
+      {
+	m_RegParameters.m_F3dParameters.floatingImageName = QString( nameOfResultImage.c_str() );
+	m_RegParameters.m_F3dParameters.floatingImagePath = QString( filepath.c_str() );
+      }
+      else {
+	m_RegParameters.m_F3dParameters.floatingImageName = QString( filename.c_str() );
+	m_RegParameters.m_F3dParameters.floatingImagePath = QString( filepath.c_str() );
+      } 
+    }
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// UpdateNonRigidResultImageFilename();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::UpdateNonRigidResultImageFilename()
+{
+  std::string filepath, filename;
+
+  QString sourceName = m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = m_Controls.m_TargetImageComboBox->currentText();
+
+  if ( ! sourceName.isEmpty() ) 
+  {
+    mitk::DataNode::Pointer node = GetDataNode( sourceName );
+
+    if ( node ) 
+    {
+      node->GetStringProperty( mitk::StringProperty::PATH, filepath );
+      node->GetStringProperty( "name", filename );
+      
+      std::string nameOfResultImage = filename;
+      
+      if ( m_RegParameters.m_FlagDoInitialRigidReg ) 
+      {
+	if ( m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
+	  nameOfResultImage.append( "_RigidAndNonRigidRegnTo_" );
+	else
+	  nameOfResultImage.append( "_AffineAndNonRigidRegnTo_" );
+      }
+      else
+	nameOfResultImage.append( "_NonRigidRegnTo_" );
+
+      nameOfResultImage.append( targetName.toStdString() );
+
+      m_RegParameters.m_F3dParameters.outputWarpedName = QString( nameOfResultImage.c_str() );
+      m_RegParameters.m_F3dParameters.outputWarpedPath = QString( filepath.c_str() );
+    }
+  }
+}
+
+
+// ---------------------------------------------------------------------------
 // OnSourceImageComboBoxChanged();
 // --------------------------------------------------------------------------- 
 
 void QmitkNiftyRegView::OnSourceImageComboBoxChanged(int index)
 {
+  std::string filepath, filename;
+
   QString sourceName = m_Controls.m_SourceImageComboBox->currentText();
   QString targetName = m_Controls.m_TargetImageComboBox->currentText();
+
+  if ( ! sourceName.isEmpty() ) 
+  {
+    mitk::DataNode::Pointer node = GetDataNode( sourceName );
+
+    if ( node ) 
+    {
+      node->GetStringProperty( mitk::StringProperty::PATH, filepath );
+      node->GetStringProperty( "name", filename );
+
+      m_RegParameters.m_AladinParameters.floatingImageName = QString( filename.c_str() );
+      m_RegParameters.m_AladinParameters.floatingImagePath = QString( filepath.c_str() );
+
+      UpdateAladinResultImageFilename();
+      UpdateNonRigidResultImageFilename();
+    }
+  }
 
   if ( ( ! sourceName.isEmpty() ) &&
        ( ! targetName.isEmpty() ) )
@@ -990,30 +1187,28 @@ void QmitkNiftyRegView::OnSourceImageComboBoxChanged(int index)
 
 void QmitkNiftyRegView::OnTargetMaskImageComboBoxChanged(int index)
 {
-  Modified();
-}
+  std::string filepath, filename;
 
+  QString maskName = m_Controls.m_TargetMaskImageComboBox->currentText();
 
-// ---------------------------------------------------------------------------
-// OnTargetImageComboBoxChanged();
-// --------------------------------------------------------------------------- 
-
-void QmitkNiftyRegView::OnTargetImageComboBoxChanged(int index)
-{
-  QString sourceName = m_Controls.m_SourceImageComboBox->currentText();
-  QString targetName = m_Controls.m_TargetImageComboBox->currentText();
-
-  if ( ( ! sourceName.isEmpty() ) &&
-       ( ! targetName.isEmpty() ) )
+  if ( ! maskName.isEmpty() ) 
   {
-    m_Controls.m_ExecutePushButton->setEnabled( true );
-  }
-  else
-  {
-    m_Controls.m_ExecutePushButton->setEnabled( false );
-  }
+    mitk::DataNode::Pointer node = GetDataNode( maskName );
 
-  Modified();
+    if ( node ) 
+    {
+      node->GetStringProperty( mitk::StringProperty::PATH, filepath );
+      node->GetStringProperty( "name", filename );
+
+      m_RegParameters.m_AladinParameters.referenceMaskName = QString( filename.c_str() );
+      m_RegParameters.m_AladinParameters.referenceMaskPath = QString( filepath.c_str() );
+
+      m_RegParameters.m_F3dParameters.referenceMaskName = QString( filename.c_str() );
+      m_RegParameters.m_F3dParameters.referenceMaskPath = QString( filepath.c_str() );
+
+      Modified();
+    }
+  }
 }
 
 
@@ -1189,16 +1384,39 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
     msgBox.exec();
     return;
   }
-   
+
+
   if ( m_RegParameters.m_FlagDoInitialRigidReg ) 
   {
 
-    fout << "reg_aladin \\" << endl
-	 << "   -ref " << m_RegParameters.m_AladinParameters.referenceImageName.toStdString().c_str() << ".nii \\" << endl
-	 << "   -flo " << m_RegParameters.m_AladinParameters.floatingImageName.toStdString().c_str() << ".nii \\" << endl;
+    fout << "reg_aladin \\" << endl;
+
+    // The reference image filename
+
+    fout << "   -ref " 
+	 << m_RegParameters.m_AladinParameters.referenceImagePath.toStdString().c_str();
+
+    if ( ! m_RegParameters.m_AladinParameters.referenceImagePath.isEmpty() ) 
+      fout << "/";
+
+    fout << m_RegParameters.m_AladinParameters.referenceImageName.toStdString().c_str() 
+	 << ".nii \\" << endl;
+
+    // The floating image filename
+
+    fout << "   -flo " 
+	 << m_RegParameters.m_AladinParameters.floatingImagePath.toStdString().c_str();
+
+    if ( ! m_RegParameters.m_AladinParameters.floatingImagePath.isEmpty() ) 
+      fout << "/";
+
+    fout << m_RegParameters.m_AladinParameters.floatingImageName.toStdString().c_str() 
+	 << ".nii \\" << endl;
 
     if ( m_RegParameters.m_AladinParameters.outputAffineFlag )
-      fout << "   -aff " << m_RegParameters.m_AladinParameters.outputAffineName.toStdString().c_str() << " \\" << endl;
+      fout << "   -aff " 
+	   << m_RegParameters.m_AladinParameters.outputAffineName.toStdString().c_str() 
+	   << " \\" << endl;
 
     if ( m_RegParameters.m_AladinParameters.alignCenterFlag )
       fout << "   -nac \\" << endl;
@@ -1218,8 +1436,18 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
     else if ( m_RegParameters.m_FlagInputAffine )
       fout << "   -inaff " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << endl;
 
-    if ( ! m_RegParameters.m_AladinParameters.referenceMaskName.isEmpty() )
-      fout << "   -rmask " << m_RegParameters.m_AladinParameters.referenceMaskName.toStdString().c_str() << " \\" << endl;
+    // The reference image mask filename
+
+    if ( ! m_RegParameters.m_AladinParameters.referenceMaskName.isEmpty() ) {
+      fout << "   -rmask " 
+	   << m_RegParameters.m_AladinParameters.referenceMaskName.toStdString().c_str();
+
+      if ( ! m_RegParameters.m_AladinParameters.referenceMaskName.isEmpty() ) 
+	fout << "/";
+      
+      fout << m_RegParameters.m_AladinParameters.referenceMaskName.toStdString().c_str() 
+	   << ".nii \\" << endl;
+    }
 
     if ( m_RegParameters.m_TargetSigmaValue )
       fout << "   -smooR " << m_RegParameters.m_TargetSigmaValue << " \\" << endl;
@@ -1231,8 +1459,14 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
 	 << "   -lp " << m_RegParameters.m_Level2Perform << " \\" << endl;
 
     if ( m_RegParameters.m_AladinParameters.outputResultFlag ) {
-      fout << "   -res " << m_RegParameters.m_AladinParameters.outputResultName.toStdString().c_str() << ".nii" 
-	   << endl << endl;
+      fout << "   -res " 
+	   << m_RegParameters.m_AladinParameters.outputResultPath.toStdString().c_str();
+
+      if ( ! m_RegParameters.m_AladinParameters.outputResultPath.isEmpty() ) 
+	fout << "/";
+      
+      fout  << m_RegParameters.m_AladinParameters.outputResultName.toStdString().c_str() 
+	    << ".nii" << endl << endl;
     }
     else
       fout << "   -res outputAffineResult.nii" << endl << endl;
@@ -1241,9 +1475,29 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
 
   if ( m_RegParameters.m_FlagDoNonRigidReg ) 
   {
-    fout << "reg_f3d \\" << endl
-	 << "   -ref " << m_RegParameters.m_F3dParameters.referenceImageName.toStdString().c_str() << ".nii \\" << endl
-	 << "   -flo " << m_RegParameters.m_F3dParameters.floatingImageName.toStdString().c_str() << ".nii \\" << endl;
+    fout << "reg_f3d \\" << endl;
+
+    // The reference image filename
+
+    fout << "   -ref " 
+	 << m_RegParameters.m_F3dParameters.referenceImagePath.toStdString().c_str();
+    
+    if ( ! m_RegParameters.m_F3dParameters.referenceImagePath.isEmpty() ) 
+      fout << "/";
+      
+    fout << m_RegParameters.m_F3dParameters.referenceImageName.toStdString().c_str()
+	 << ".nii \\" << endl;
+
+    // The floating image filename
+
+    fout << "   -flo "
+	 << m_RegParameters.m_F3dParameters.floatingImagePath.toStdString().c_str();
+    
+    if ( ! m_RegParameters.m_F3dParameters.floatingImagePath.isEmpty() ) 
+      fout << "/";
+      
+    fout << m_RegParameters.m_F3dParameters.floatingImageName.toStdString().c_str()
+	 << ".nii \\" << endl;
 
     if ( m_RegParameters.m_F3dParameters.inputControlPointGridFlag )
       fout << "   -incpp " << m_RegParameters.m_F3dParameters.inputControlPointGridName.toStdString().c_str() << ".nii \\" << endl;
@@ -1256,9 +1510,19 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
     if ( ! m_RegParameters.m_F3dParameters.outputControlPointGridName.isEmpty() )
       fout << "   -cpp " << m_RegParameters.m_F3dParameters.outputControlPointGridName.toStdString().c_str() << " \\" << endl;
     
-    if ( ! m_RegParameters.m_F3dParameters.referenceMaskName.isEmpty() )
-      fout << "   -rmask " << m_RegParameters.m_F3dParameters.referenceMaskName.toStdString().c_str() << " \\" << endl;
+    // The reference image mask name
     
+    if ( ! m_RegParameters.m_F3dParameters.referenceMaskName.isEmpty() ) {
+      fout << "   -rmask " 
+	   << m_RegParameters.m_F3dParameters.referenceMaskPath.toStdString().c_str();
+      
+      if ( ! m_RegParameters.m_F3dParameters.referenceMaskPath.isEmpty() ) 
+	fout << "/";
+      
+      fout << m_RegParameters.m_F3dParameters.referenceMaskName.toStdString().c_str() 
+	   << ".nii \\" << endl;
+    }
+
     if ( m_RegParameters.m_TargetSigmaValue )
       fout << "   -smooR " << m_RegParameters.m_TargetSigmaValue << " \\" << endl;
     
@@ -1307,7 +1571,9 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
     
     if ( m_RegParameters.m_F3dParameters.noPyramid )
       fout << "   -nopy \\" << endl;
-    
+   
+    fout << "   -interp " << m_RegParameters.m_F3dParameters.interpolation << " \\" << endl;
+ 
     if ( m_RegParameters.m_F3dParameters.gradientSmoothingSigma )
       fout << "   -smoothGrad " << m_RegParameters.m_F3dParameters.gradientSmoothingSigma << " \\" << endl;
     
@@ -1318,8 +1584,16 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
       fout << "   -voff \\" << endl;
     
     if ( ! m_RegParameters.m_F3dParameters.outputWarpedName.isEmpty() )
-      fout << "   -res " << m_RegParameters.m_F3dParameters.floatingImageName.toStdString().c_str()
-	   << "_" << m_RegParameters.m_F3dParameters.outputWarpedName.toStdString().c_str() << ".nii" << endl << endl;
+    {
+      fout << "   -res " 
+	   << m_RegParameters.m_F3dParameters.outputWarpedPath.toStdString().c_str();
+      
+      if ( ! m_RegParameters.m_F3dParameters.outputWarpedPath.isEmpty() ) 
+	fout << "/";
+      
+      fout << m_RegParameters.m_F3dParameters.outputWarpedName.toStdString().c_str() 
+	   << ".nii" << endl << endl;
+    }
     else
       fout << "   -res outputNonRigidResult.nii" << endl << endl;    
   }
@@ -1350,9 +1624,8 @@ void QmitkNiftyRegView::OnSaveRegistrationParametersPushButtonPressed( void )
 
   dialog.setNameFilters(filters);
 
-  dialog.exec();
-  
-  WriteRegistrationParametersToFile( dialog.selectedFiles()[0] );
+  if ( dialog.exec() )
+    WriteRegistrationParametersToFile( dialog.selectedFiles()[0] );
 }
 
 
@@ -1385,16 +1658,12 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
     
     fin >> inString;
     
-    std::cout << inString << std::endl;
-
-    if ( inString.find( std::string( "reg_aladin" ) ) != std::string::npos ) 
+    if ( inString.compare( std::string( "reg_aladin" ) ) == 0 ) 
     {
-      cout << "reg_aladin" << std::endl;
       inParametersType = REG_ALADIN;
     }
-    else if ( inString.find( std::string( "reg_f3d" ) ) != std::string::npos ) 
+    else if ( inString.compare( std::string( "reg_f3d" ) ) == 0 ) 
     {
-      cout << "reg_f3d" << std::endl;
       inParametersType = REG_F3D;
     }
   }
@@ -1413,77 +1682,78 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
     
     fin >> inString;
     
-    std::cout << inString << std::endl;
-
     // Read the Aladin parameters
 
     if ( inParametersType == REG_ALADIN )
     {
 
-      if ( inString.find( std::string( "reg_aladin" ) ) != std::string::npos ) 
+      if ( inString.compare( std::string( "reg_aladin" ) ) == 0 ) 
       {
-	cout << "reg_aladin" << std::endl;
-
 	QMessageBox msgBox;
 	msgBox.setText( "ERROR: Duplicate 'reg_aladin' string found." );
 	msgBox.exec();
 	return;    
       }
 
-      else if ( inString.find( std::string( "reg_f3d" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "reg_f3d" ) ) == 0 ) 
       {
-	cout << "reg_f3d" << std::endl;
 	inParametersType = REG_F3D;
       }
 
-      else if ( inString.find( std::string( "-ref" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-ref" ) ) == 0 ) 
       {
 	fin >> inString;
-	inRegParameters.m_AladinParameters.referenceImageName = QString( inString.c_str() );
+	inRegParameters.m_AladinParameters.referenceImagePath 
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_AladinParameters.referenceImageName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
-      else if ( inString.find( std::string( "-flo" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-flo" ) ) == 0 ) 
       {
 	fin >> inString;
-	inRegParameters.m_AladinParameters.floatingImageName = QString( inString.c_str() );
+	inRegParameters.m_AladinParameters.floatingImagePath 
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_AladinParameters.floatingImageName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
 
-      else if ( inString.find( std::string( "-aff" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-aff" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_AladinParameters.outputAffineName = QString( inString.c_str() );
 	inRegParameters.m_AladinParameters.outputAffineFlag  = true;
       }
       
-      else if ( inString.find( std::string( "-nac" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-nac" ) ) == 0 ) 
       {
 	inRegParameters.m_AladinParameters.alignCenterFlag = false;
       }
 
-      else if ( inString.find( std::string( "-rigOnly" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-rigOnly" ) ) == 0 ) 
       {
 	inRegParameters.m_AladinParameters.regnType = RIGID_ONLY;
       }
-      else if ( inString.find( std::string( "-affDirect" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-affDirect" ) ) == 0 ) 
       {
 	inRegParameters.m_AladinParameters.regnType = DIRECT_AFFINE;
       }
-      else if ( inString.find( std::string( "-maxit" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-maxit" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_AladinParameters.maxiterationNumber = atoi( inString.c_str() );
       }
-      else if ( inString.find( std::string( "-%v" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-%v" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_AladinParameters.block_percent_to_use = atoi( inString.c_str() );
       }
-      else if ( inString.find( std::string( "-%i" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-%i" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_AladinParameters.inlier_lts = atoi( inString.c_str() );
       }
 
-      else if ( inString.find( std::string( "-interp" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-interp" ) ) == 0 ) 
       {
 	fin >> inString;
 	switch( atoi( inString.c_str() ) )
@@ -1513,58 +1783,65 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
 	}       
       }
 
-      else if ( inString.find( std::string( "-affFlirt" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-affFlirt" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_InputAffineName = QString( inString.c_str() );
 	inRegParameters.m_FlagInputAffine = true;
 	inRegParameters.m_FlagFlirtAffine = true;
       }
-      else if ( inString.find( std::string( "-inaff" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-inaff" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_InputAffineName = QString( inString.c_str() );
 	inRegParameters.m_FlagInputAffine = true;
       }
 
-      else if ( inString.find( std::string( "-rmask" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-rmask" ) ) == 0 ) 
       {
 	fin >> inString;
-	inRegParameters.m_AladinParameters.referenceMaskName = QString( inString.c_str() );
+	inRegParameters.m_AladinParameters.referenceMaskPath
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_AladinParameters.referenceMaskName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
 
-      else if ( inString.find( std::string( "-smooR" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-smooR" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_TargetSigmaValue = atof( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( "-smooF" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-smooF" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_SourceSigmaValue = atof( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( "-ln" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-ln" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_LevelNumber = atoi( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( " -lp" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-lp" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_Level2Perform = atoi( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( "-res" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-res" ) ) == 0 ) 
       {
 	inRegParameters.m_AladinParameters.outputResultFlag = true;
 	fin >> inString;
-	inRegParameters.m_AladinParameters.outputResultName = QString( inString.c_str() );
+	inRegParameters.m_AladinParameters.outputResultPath
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_AladinParameters.outputResultName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
 
-      else {
+      else if ( inString.compare( std::string( "\\" ) ) != 0 ) 
+      {
 	QMessageBox msgBox;
 	msgBox.setText( QString( "ERROR: Unrecognised field " ) + inString.c_str() );
 	msgBox.exec();
@@ -1579,18 +1856,24 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
     {
 
 
-      if ( inString.find( std::string( "-ref" ) ) != std::string::npos ) 
+      if ( inString.compare( std::string( "-ref" ) ) == 0 ) 
       {
 	fin >> inString;
-	inRegParameters.m_F3dParameters.referenceImageName = QString( inString.c_str() );
+	inRegParameters.m_F3dParameters.referenceImagePath 
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_F3dParameters.referenceImageName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
-      else if ( inString.find( std::string( "-flo" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-flo" ) ) == 0 ) 
       {
 	fin >> inString;
-	inRegParameters.m_F3dParameters.floatingImageName = QString( inString.c_str() );
+	inRegParameters.m_F3dParameters.floatingImagePath 
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_F3dParameters.floatingImageName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
 
-      else if ( inString.find( std::string( "-incpp" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-incpp" ) ) == 0 ) 
       {
 	inRegParameters.m_F3dParameters.inputControlPointGridFlag = true;
 	fin >> inString;
@@ -1598,100 +1881,103 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
       }
           
 
-      else if ( inString.find( std::string( "-affFlirt" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-affFlirt" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_InputAffineName = QString( inString.c_str() );
 	inRegParameters.m_FlagInputAffine = true;
 	inRegParameters.m_FlagFlirtAffine = true;
       }
-      else if ( inString.find( std::string( "-inaff" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-inaff" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_InputAffineName = QString( inString.c_str() );
 	inRegParameters.m_FlagInputAffine = true;
       }
       
-      else if ( inString.find( std::string( "-cpp" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-cpp" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.outputControlPointGridName = QString( inString.c_str() );
       }
 
-      else if ( inString.find( std::string( "-rmask" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-rmask" ) ) == 0 ) 
       {
 	fin >> inString;
-	inRegParameters.m_F3dParameters.referenceMaskName = QString( inString.c_str() );
+	inRegParameters.m_F3dParameters.referenceMaskPath
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_F3dParameters.referenceMaskName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
-      else if ( inString.find( std::string( "-smooR" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-smooR" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_TargetSigmaValue = atof( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( "-smooF" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-smooF" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_SourceSigmaValue = atof( inString.c_str() ); 
       }
     
-      else if ( inString.find( std::string( "-rbn" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-rbn" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.referenceBinNumber = atoi( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( "-fbn" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-fbn" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.floatingBinNumber  = atoi( inString.c_str() ); 
       }
     
-      else if ( inString.find( std::string( "-rUpTh" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-rUpTh" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.referenceThresholdUp = atof( inString.c_str() ); 
       }
-      else if ( inString.find( std::string( "-rLwTh" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-rLwTh" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.referenceThresholdLow = atof( inString.c_str() ); 
       }
       
-      else if ( inString.find( std::string( "-fUpTh" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-fUpTh" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.floatingThresholdUp = atof( inString.c_str() ); 
       }
-      else if ( inString.find( std::string( "-fLwTh" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-fLwTh" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.floatingThresholdLow = atof( inString.c_str() ); 
       }
     
-      else if ( inString.find( std::string( " -sx" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-sx" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.spacing[0] = atof( inString.c_str() ); 
       }
-      else if ( inString.find( std::string( " -sy" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-sy" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.spacing[1] = atof( inString.c_str() ); 
       }
-      else if ( inString.find( std::string( " -sz" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-sz" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.spacing[2] = atof( inString.c_str() ); 
       }
     
-      else if ( inString.find( std::string( "-be" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-be" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.bendingEnergyWeight = atof( inString.c_str() ); 
       }
       
-      else if ( inString.find( std::string( "-le" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-le" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.linearEnergyWeight0 = atof( inString.c_str() ); 
@@ -1700,74 +1986,107 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
       }
 
       
-      else if ( inString.find( std::string( "-jl" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-jl" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.jacobianLogWeight = atof( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( "-noAppJL" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-noAppJL" ) ) == 0 ) 
       {
 	inRegParameters.m_F3dParameters.jacobianLogApproximation = false;
       }    
-      else if ( inString.find( std::string( "-noConj" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-noConj" ) ) == 0 ) 
       {
 	inRegParameters.m_F3dParameters.useConjugate = false;
       }
     
-      else if ( inString.find( std::string( "-ssd" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-ssd" ) ) == 0 ) 
       {
 	inRegParameters.m_F3dParameters.similarity = SSD_SIMILARITY;
       }    
-      else if ( inString.find( std::string( "-kld" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-kld" ) ) == 0 ) 
       {
 	inRegParameters.m_F3dParameters.similarity = KLDIV_SIMILARITY;
       }
     
-      else if ( inString.find( std::string( "-maxit" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-maxit" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.maxiterationNumber = atoi( inString.c_str() ); 
       }
     
-     else if ( inString.find( std::string( "-ln" ) ) != std::string::npos ) 
+     else if ( inString.compare( std::string( "-ln" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_LevelNumber = atoi( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( " -lp" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-lp" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_Level2Perform = atoi( inString.c_str() ); 
       }
     
-      else if ( inString.find( std::string( "-nopy" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-nopy" ) ) == 0 ) 
       {
 	inRegParameters.m_F3dParameters.noPyramid = true;
       }
     
-      else if ( inString.find( std::string( "-smoothGrad" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-interp" ) ) == 0 ) 
+      {
+	fin >> inString;
+	switch( atoi( inString.c_str() ) )
+	{
+	case 1: 
+	{
+	  inRegParameters.m_F3dParameters.interpolation = NEAREST_INTERPOLATION;
+	  break;
+	}
+	case 2: 
+	{
+	  inRegParameters.m_F3dParameters.interpolation = LINEAR_INTERPOLATION;
+	  break;
+	}
+	case 3: 
+	{
+	  inRegParameters.m_F3dParameters.interpolation = CUBIC_INTERPOLATION;
+	  break;
+	}
+	default: 
+	{
+	  QMessageBox msgBox;
+	  msgBox.setText( QString( "ERROR: Interpolation method unrecognised" ) );
+	  msgBox.exec();
+	  return;
+	}
+	}       
+      }
+
+      else if ( inString.compare( std::string( "-smoothGrad" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.gradientSmoothingSigma = atof( inString.c_str() ); 
       }
     
-      else if ( inString.find( std::string( "-pad " ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-pad" ) ) == 0 ) 
       {
 	fin >> inString;
 	inRegParameters.m_F3dParameters.warpedPaddingValue =  atof( inString.c_str() ); 
       }
 
-      else if ( inString.find( std::string( "-voff" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-voff" ) ) == 0 ) 
       {
 	inRegParameters.m_F3dParameters.verbose = false;
       }
     
-      else if ( inString.find( std::string( "-res" ) ) != std::string::npos ) 
+      else if ( inString.compare( std::string( "-res" ) ) == 0 ) 
       {
 	fin >> inString;
-	inRegParameters.m_F3dParameters.outputWarpedName = QString( inString.c_str() );
+	inRegParameters.m_F3dParameters.outputWarpedPath 
+	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
+	inRegParameters.m_F3dParameters.outputWarpedName 
+	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
       }
     }
   }
@@ -1800,9 +2119,8 @@ void QmitkNiftyRegView::OnLoadRegistrationParametersPushButtonPressed( void )
 
   dialog.setNameFilters(filters);
 
-  dialog.exec();
-  
-  ReadRegistrationParametersFromFile( dialog.selectedFiles()[0] );
+  if ( dialog.exec() )
+    ReadRegistrationParametersFromFile( dialog.selectedFiles()[0] );
 }
 
 
@@ -1980,10 +2298,7 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
   {
 
     userData->m_RegAladin = 
-      userData->CreateAladinRegistrationObject( targetName,
-						sourceName,
-						targetMaskName,
-						mitkSourceImage, 
+      userData->CreateAladinRegistrationObject( mitkSourceImage, 
 						mitkTargetImage, 
 						mitkTargetMaskImage );
   
@@ -2012,11 +2327,6 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
 
     if ( userData->m_RegParameters.m_FlagDoNonRigidReg ) 
       userData->m_ProgressBarOffset = 50.;
-
-    userData->m_RegParameters.m_AladinParameters.outputResultName = QString( nameOfResultImage.c_str() ); 
-    userData->m_RegParameters.m_AladinParameters.outputResultFlag = true;
-
-    sourceName = userData->m_RegParameters.m_AladinParameters.outputResultName;
   }
 
 
@@ -2026,10 +2336,7 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
   {
 
     userData->m_RegNonRigid = 
-      userData->CreateNonRigidRegistrationObject( targetName,
-						  sourceName,
-						  targetMaskName,
-						  mitkSourceImage, 
+      userData->CreateNonRigidRegistrationObject( mitkSourceImage, 
 						  mitkTargetImage, 
 						  mitkTargetMaskImage );  
 
@@ -2053,7 +2360,6 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
 
     UpdateProgressBar( 100., userData );
 
-    userData->m_RegParameters.m_F3dParameters.outputWarpedName = QString( nameOfResultImage.c_str() ); 
    }
 
 
@@ -2084,10 +2390,7 @@ void UpdateProgressBar( float pcntProgress, void *param )
 // CreateAladinRegistrationObject();
 // --------------------------------------------------------------------------- 
 
-reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( QString &targetName,
-									      QString &sourceName,
-									      QString &targetMaskName,
-									      mitk::Image *mitkSourceImage, 
+reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
 									      mitk::Image *mitkTargetImage, 
 									      mitk::Image *mitkTargetMaskImage )
 {
@@ -2116,9 +2419,6 @@ reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( QS
 
   // Set the reference and floating image
 
-  m_RegParameters.m_AladinParameters.referenceImageName = targetName;
-  m_RegParameters.m_AladinParameters.floatingImageName  = sourceName;
-
   REG->SetInputReference( m_ReferenceImage );
   REG->SetInputFloating( m_FloatingImage );
 
@@ -2126,9 +2426,6 @@ reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( QS
 
   if ( mitkTargetMaskImage ) 
   {
-
-    m_RegParameters.m_AladinParameters.referenceMaskName = targetMaskName;
-
     if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
     m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
 
@@ -2189,10 +2486,7 @@ reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( QS
 // CreateNonRigidRegistrationObject();
 // --------------------------------------------------------------------------- 
 
-reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( QString &targetName,
-									     QString &sourceName,
-									     QString &targetMaskName,
-									     mitk::Image *mitkSourceImage, 
+reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
 									     mitk::Image *mitkTargetImage, 
 									     mitk::Image *mitkTargetMaskImage )
 {
@@ -2221,9 +2515,6 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( QSt
 
   if ( mitkTargetMaskImage )
   {
-
-    m_RegParameters.m_F3dParameters.referenceMaskName = targetMaskName;
-
     if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
     m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
 
@@ -2389,9 +2680,6 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( QSt
   }
 
   // Set the reg_f3d parameters
-
-  m_RegParameters.m_F3dParameters.referenceImageName = targetName;
-  m_RegParameters.m_F3dParameters.floatingImageName  = sourceName;
 
   REG->SetReferenceImage( m_ReferenceImage );
   REG->SetFloatingImage( m_FloatingImage );
@@ -2647,14 +2935,12 @@ void QmitkNiftyRegView::OnInputAffineBrowsePushButtonPressed( void )
   if ( ! m_RegParameters.m_InputAffineName.isEmpty() )
   {
     m_RegParameters.m_FlagInputAffine = true;
-
     m_Controls.m_InputAffineFileNameLineEdit->setText( m_RegParameters.m_InputAffineName );
 
   }
   else
   {
     m_RegParameters.m_FlagInputAffine = false;
-
     m_Controls.m_InputAffineFileNameLineEdit->setText( QString( "" ) );
   }
 
@@ -2710,6 +2996,8 @@ void QmitkNiftyRegView::OnRigidOnlyRadioButtonToggled(bool checked)
   if ( checked )
   {
     m_RegParameters.m_AladinParameters.regnType = RIGID_ONLY;
+    UpdateAladinResultImageFilename();
+    UpdateNonRigidResultImageFilename();
     Modified();
   }
 }
@@ -2724,6 +3012,8 @@ void QmitkNiftyRegView::OnRigidThenAffineRadioButtonToggled(bool checked)
   if ( checked )
   {
     m_RegParameters.m_AladinParameters.regnType = RIGID_THEN_AFFINE;
+    UpdateAladinResultImageFilename();
+    UpdateNonRigidResultImageFilename();
     Modified();
   }
 }
@@ -2738,6 +3028,8 @@ void QmitkNiftyRegView::OnDirectAffineRadioButtonToggled(bool checked)
   if ( checked )
   {
     m_RegParameters.m_AladinParameters.regnType = DIRECT_AFFINE;
+    UpdateAladinResultImageFilename();
+    UpdateNonRigidResultImageFilename();
     Modified();
   }
 }
@@ -2827,11 +3119,14 @@ void QmitkNiftyRegView::OnNonRigidInputControlPointCheckBoxStateChanged( int sta
   if ( state == Qt::Checked )
   {
     m_RegParameters.m_F3dParameters.inputControlPointGridFlag = true;
+    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setEnabled( true );
   }
   else
   {
     m_RegParameters.m_F3dParameters.inputControlPointGridFlag = false;
+    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setEnabled( false );
   }    
+
   Modified();
 }
 
@@ -2852,15 +3147,15 @@ void QmitkNiftyRegView::OnNonRigidInputControlPointBrowsePushButtonPressed( void
   if ( ! m_RegParameters.m_F3dParameters.inputControlPointGridName.isEmpty() )
   {
     m_RegParameters.m_F3dParameters.inputControlPointGridFlag = true;
-
-    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setText( m_RegParameters.m_F3dParameters.
+    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setText( m_RegParameters.
+								     m_F3dParameters.
 								     inputControlPointGridName );
   }
   else
   {
     m_RegParameters.m_F3dParameters.inputControlPointGridFlag = false;
-
-    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setText( m_RegParameters.m_F3dParameters.
+    m_Controls.m_NonRigidInputControlPointFileNameLineEdit->setText( m_RegParameters.
+								     m_F3dParameters.
 								     inputControlPointGridName );
   }
 

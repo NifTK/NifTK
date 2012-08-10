@@ -126,10 +126,7 @@ void RegistrationExecution::ExecuteRegistration()
   {
 
     userData->m_RegAladin = 
-      userData->CreateAladinRegistrationObject( targetName,
-						sourceName,
-						targetMaskName,
-						mitkSourceImage, 
+      userData->CreateAladinRegistrationObject( mitkSourceImage, 
 						mitkTargetImage, 
 						mitkTargetMaskImage );
   
@@ -172,10 +169,7 @@ void RegistrationExecution::ExecuteRegistration()
   {
     
     userData->m_RegNonRigid = 
-      userData->CreateNonRigidRegistrationObject( targetName,
-						  sourceName,
-						  targetMaskName,
-						  mitkSourceImage, 
+      userData->CreateNonRigidRegistrationObject( mitkSourceImage, 
 						  mitkTargetImage, 
 						  mitkTargetMaskImage );  
     

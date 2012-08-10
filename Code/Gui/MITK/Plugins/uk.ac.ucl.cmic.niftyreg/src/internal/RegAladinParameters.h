@@ -55,12 +55,18 @@ class RegAladinParameters
     RegAladinParameters &operator=(const RegAladinParameters &p);
 
     QString referenceImageName; // -ref
+    QString referenceImagePath; // -ref
+
     QString floatingImageName; // -flo
+    QString floatingImagePath; // -flo
 
     QString referenceMaskName; // -rmask
+    QString referenceMaskPath; // -rmask
 
     bool outputResultFlag;
+
     QString outputResultName; // -res
+    QString outputResultPath; // -res
 
     bool outputAffineFlag;
     QString outputAffineName; // -aff
@@ -83,10 +89,6 @@ class RegAladinParameters
     InterpolationType interpolation;
 
 };
-
-#ifndef ITK_MANUAL_INSTANTIATION
-#include "RegAladinParameters.txx"
-#endif
 
 #endif // RegAladinParameters_h
 

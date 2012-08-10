@@ -56,9 +56,13 @@ class RegF3dParameters
     RegF3dParameters<PRECISION_TYPE> &operator=(const RegF3dParameters<PRECISION_TYPE> &p);
 
     QString referenceImageName; // -ref
+    QString referenceImagePath; // -ref
+
     QString floatingImageName; // -flo
+    QString floatingImagePath; // -flo
 
     QString referenceMaskName; // -rmask
+    QString referenceMaskPath; // -rmask
 
     // Initial transformation options:
  
@@ -68,7 +72,9 @@ class RegF3dParameters
     // Output options:
  
     QString outputControlPointGridName; // -cpp
+
     QString outputWarpedName;		// -res
+    QString outputWarpedPath;		// -res
 
     // Input image options:
 
@@ -112,11 +118,11 @@ class RegF3dParameters
 
     // Other options:
 
-    InterpolationType interpolation;
+    InterpolationType interpolation;        // -interp
 
     PRECISION_TYPE gradientSmoothingSigma;  // -smoothGrad
     PRECISION_TYPE warpedPaddingValue;      // -pad
-    bool verbose;                          // -voff
+    bool verbose;                           // -voff
 
 };
 

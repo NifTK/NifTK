@@ -24,7 +24,6 @@
 
 #include <ostream>
 
-#include "RegF3dParameters.h"
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -50,7 +49,13 @@ void RegF3dParameters<PRECISION_TYPE>::SetDefaultParameters()
   // Non-Rigid - Initialisation
  
   referenceImageName.clear();
+  referenceImagePath.clear();
+
   floatingImageName.clear();
+  floatingImagePath.clear();
+
+  referenceMaskName.clear();
+  referenceMaskPath.clear();
 
   inputControlPointGridFlag = false;
   inputControlPointGridName.clear();
@@ -58,7 +63,9 @@ void RegF3dParameters<PRECISION_TYPE>::SetDefaultParameters()
   // Non-Rigid - Output Options
  
   outputControlPointGridName.clear();
+
   outputWarpedName.clear();
+  outputWarpedPath.clear();
 
   // Non-Rigid - Input Image
 
@@ -135,6 +142,36 @@ void RegF3dParameters<PRECISION_TYPE>::PrintSelf( std::ostream& os )
 
   // Initial transformation options (One option will be considered):
  
+  if ( referenceImageName.isEmpty() )
+    os << "F3D-referenceImageName: UNSET" << std::endl;
+  else
+    os << "F3D-referenceImageName: " << referenceImageName.toStdString() << std::endl;
+
+  if ( referenceImagePath.isEmpty() )
+    os << "F3D-referenceImagePath: UNSET" << std::endl;
+  else
+    os << "F3D-referenceImagePath: " << referenceImagePath.toStdString() << std::endl;
+	                       
+  if ( floatingImageName.isEmpty() )
+    os << "F3D-floatingImageName: UNSET" << std::endl;
+  else
+    os << "F3D-floatingImageName: " << floatingImageName.toStdString() << std::endl;
+
+  if ( floatingImagePath.isEmpty() )
+    os << "F3D-floatingImagePath: UNSET" << std::endl;
+  else
+    os << "F3D-floatingImagePath: " << floatingImagePath.toStdString() << std::endl;
+	                       
+  if ( referenceMaskName.isEmpty() )
+    os << "F3D-referenceMaskName: UNSET" << std::endl;
+  else
+    os << "F3D-referenceMaskName: " << referenceMaskName.toStdString() << std::endl;
+
+  if ( referenceMaskPath.isEmpty() )
+    os << "F3D-referenceMaskPath: UNSET" << std::endl;
+  else
+    os << "F3D-referenceMaskPath: " << referenceMaskPath.toStdString() << std::endl;
+	                       
   os << "# Non-Rigid, F3D - Initial transformation options" << std::endl;
 
   os << "F3D-inputControlPointGridFlag: " << inputControlPointGridFlag << std::endl;
@@ -157,6 +194,11 @@ void RegF3dParameters<PRECISION_TYPE>::PrintSelf( std::ostream& os )
     os << "F3D-outputWarpedName: UNSET" << std::endl;
   else
     os << "F3D-outputWarpedName: " << outputWarpedName.toStdString() << std::endl;	    
+
+  if ( outputWarpedPath.isEmpty() )
+    os << "F3D-outputWarpedPath: UNSET" << std::endl;
+  else
+    os << "F3D-outputWarpedPath: " << outputWarpedPath.toStdString() << std::endl;	    
 
   // Input image options:
 
@@ -254,9 +296,13 @@ RegF3dParameters<PRECISION_TYPE>
 {
 
   referenceImageName = p.referenceImageName;
+  referenceImagePath = p.referenceImagePath;
+
   floatingImageName = p.floatingImageName;
+  floatingImagePath = p.floatingImagePath;
 
   referenceMaskName = p.referenceMaskName;
+  referenceMaskPath = p.referenceMaskPath;
 
   // Initial transformation options:
  
@@ -266,7 +312,9 @@ RegF3dParameters<PRECISION_TYPE>
   // Output options:
  
   outputControlPointGridName = p.outputControlPointGridName;
+
   outputWarpedName = p.outputWarpedName;
+  outputWarpedPath = p.outputWarpedPath;
 
   // Input image options:
 

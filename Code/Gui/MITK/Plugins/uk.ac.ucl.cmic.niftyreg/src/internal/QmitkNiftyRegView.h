@@ -216,8 +216,16 @@ class QmitkNiftyRegView : public QmitkAbstractView
     /// Deallocate the nifti images used in the registration
     void DeallocateImages( void );
 
+    /// \brief Get the DataNode with a specific name. If not found return 0.
+    mitk::DataNode::Pointer GetDataNode( QString searchName );
+
     /// \brief Get the list of data nodes from the data manager
     mitk::DataStorage::SetOfObjects::ConstPointer GetNodes();
+    
+    /// \brief Update the Aladin result/transformed image filename
+    void UpdateAladinResultImageFilename();
+    /// \brief Update the non-rigid result/transformed image filename
+    void UpdateNonRigidResultImageFilename();
 
     /// \brief Called by framework, this method creates all the controls for this view
     virtual void CreateQtPartControl(QWidget *parent);
@@ -236,19 +244,13 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     /// \brief Create the Aladin registration object
     reg_aladin<PrecisionTYPE> 
-      *CreateAladinRegistrationObject( QString &targetName,
-				       QString &sourceName,
-				       QString &targetMaskName,
-				       mitk::Image *mitkSourceImage, 
+      *CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
 				       mitk::Image *mitkTargetImage, 
 				       mitk::Image *mitkTargetMaskImage );
 
     /// \brief Create the Aladin registration object
     reg_f3d<PrecisionTYPE> 
-      *CreateNonRigidRegistrationObject( QString &targetName,
-					 QString &sourceName,
-					 QString &targetMaskName,
-					 mitk::Image *mitkSourceImage, 
+      *CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
 					 mitk::Image *mitkTargetImage, 
 					 mitk::Image *mitkTargetMaskImage );
     

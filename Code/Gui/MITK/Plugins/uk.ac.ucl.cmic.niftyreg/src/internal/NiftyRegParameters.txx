@@ -24,7 +24,7 @@
 
 #include <ostream>
 
-#include "NiftyRegParameters.h"
+
 
 // ---------------------------------------------------------------------------
 // Constructor
