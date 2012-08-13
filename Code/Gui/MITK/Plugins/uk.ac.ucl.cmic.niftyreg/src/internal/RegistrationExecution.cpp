@@ -126,9 +126,9 @@ void RegistrationExecution::ExecuteRegistration()
   {
 
     userData->m_RegAladin = 
-      userData->CreateAladinRegistrationObject( mitkSourceImage, 
-						mitkTargetImage, 
-						mitkTargetMaskImage );
+      userData->m_RegParameters.CreateAladinRegistrationObject( mitkSourceImage, 
+								mitkTargetImage, 
+								mitkTargetMaskImage );
   
     userData->m_RegAladin->SetProgressCallbackFunction( &UpdateProgressBar, userData );
 
@@ -164,14 +164,14 @@ void RegistrationExecution::ExecuteRegistration()
 
 
   // Create and run the F3D registration
-
+  
   if ( userData->m_RegParameters.m_FlagDoNonRigidReg ) 
   {
     
     userData->m_RegNonRigid = 
-      userData->CreateNonRigidRegistrationObject( mitkSourceImage, 
-						  mitkTargetImage, 
-						  mitkTargetMaskImage );  
+      userData->m_RegParameters.CreateNonRigidRegistrationObject( mitkSourceImage, 
+								  mitkTargetImage, 
+								  mitkTargetMaskImage );  
     
     userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, 
 							  userData );

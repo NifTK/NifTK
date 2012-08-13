@@ -41,8 +41,6 @@
 
 #include "mitkDataStorageUtils.h"
 #include "mitkNodePredicateDataType.h"
-#include "mitkImageToNifti.h"
-#include "niftiImageToMitk.h"
 
 #include "_reg_ReadWriteImage.h"
 
@@ -59,48 +57,11 @@ const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregvie
 QmitkNiftyRegView::QmitkNiftyRegView()
 {
 
-  m_ReferenceImage = 0;
-  m_FloatingImage = 0;
-  m_ReferenceMaskImage = 0;
-  m_ControlPointGridImage = 0;
-
   m_RegAladin = 0;
   m_RegNonRigid = 0;
 
   SetDefaultParameters();
 
-}
-
-
-// ---------------------------------------------------------------------------
-// DeallocateImages();
-// --------------------------------------------------------------------------- 
-
-void QmitkNiftyRegView::DeallocateImages( void )
-{
-  if ( m_ReferenceImage ) 
-  {
-    nifti_image_free( m_ReferenceImage );
-    m_ReferenceImage = 0;
-  }
-
-  if ( m_FloatingImage ) 
-  {
-    nifti_image_free( m_FloatingImage );
-    m_FloatingImage = 0;
-  }
-    
-  if ( m_ReferenceMaskImage )
-  {
-    nifti_image_free( m_ReferenceMaskImage );
-    m_ReferenceMaskImage = 0;
-  }
-    
-  if ( m_ControlPointGridImage )
-  {
-    nifti_image_free( m_ControlPointGridImage );
-    m_ControlPointGridImage = 0;
-  }
 }
 
 
@@ -154,8 +115,6 @@ void QmitkNiftyRegView::SetDefaultParameters()
 
 QmitkNiftyRegView::~QmitkNiftyRegView()
 {
-  DeallocateImages();
-
   if ( m_RegAladin ) 
     delete m_RegAladin;
 
@@ -2277,7 +2236,7 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
   
   // Delete the previous registrations
   
-  userData->DeallocateImages();
+  userData->m_RegParameters.DeallocateImages();
 
   if ( userData->m_RegAladin ) 
   {
@@ -2298,9 +2257,9 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
   {
 
     userData->m_RegAladin = 
-      userData->CreateAladinRegistrationObject( mitkSourceImage, 
-						mitkTargetImage, 
-						mitkTargetMaskImage );
+      userData->m_RegParameters.CreateAladinRegistrationObject( mitkSourceImage, 
+								mitkTargetImage, 
+								mitkTargetMaskImage );
   
     userData->m_RegAladin->SetProgressCallbackFunction( &UpdateProgressBar, userData );
 
@@ -2336,9 +2295,9 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
   {
 
     userData->m_RegNonRigid = 
-      userData->CreateNonRigidRegistrationObject( mitkSourceImage, 
-						  mitkTargetImage, 
-						  mitkTargetMaskImage );  
+      userData->m_RegParameters.CreateNonRigidRegistrationObject( mitkSourceImage, 
+								  mitkTargetImage, 
+								  mitkTargetMaskImage );  
 
     userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, 
 							  userData );
@@ -2383,409 +2342,6 @@ void UpdateProgressBar( float pcntProgress, void *param )
 
   QCoreApplication::processEvents();
 
-}
-
-
-// ---------------------------------------------------------------------------
-// CreateAladinRegistrationObject();
-// --------------------------------------------------------------------------- 
-
-reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
-									      mitk::Image *mitkTargetImage, 
-									      mitk::Image *mitkTargetMaskImage )
-{
-  reg_aladin<PrecisionTYPE> *REG = new reg_aladin<PrecisionTYPE>;
-  
-  // Get nifti versions of the images
-
-  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
-  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
-
-  if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
-  m_FloatingImage  = ConvertMitkImageToNifti( mitkSourceImage );
-
-#if 0
-  nifti_set_filenames( m_ReferenceImage,"aladinReference.nii",0,0 );
-  nifti_image_write( m_ReferenceImage );
-
-  nifti_set_filenames( m_FloatingImage,"aladinFloating.nii",0,0 );
-  nifti_image_write( m_FloatingImage );
-#endif
-
-  // Check the dimensions of the images
-
-  reg_checkAndCorrectDimension( m_ReferenceImage );
-  reg_checkAndCorrectDimension( m_FloatingImage );
-
-  // Set the reference and floating image
-
-  REG->SetInputReference( m_ReferenceImage );
-  REG->SetInputFloating( m_FloatingImage );
-
-  // Set the reference mask image 
-
-  if ( mitkTargetMaskImage ) 
-  {
-    if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
-    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
-
-    reg_checkAndCorrectDimension(m_ReferenceMaskImage);
-
-    // check the dimensions
-
-    for ( int i=1; i<=m_ReferenceImage->dim[0]; i++ ) {
-    
-      if ( m_ReferenceImage->dim[i] != m_ReferenceMaskImage->dim[i] ) 
-      {
-	fprintf(stderr,"* ERROR The reference image and its mask do not have the same dimension\n");
-	return 0;
-      }
-    }
-    
-    REG->SetInputMask( m_ReferenceMaskImage );
-  }
-
-  // Aladin - Initialisation
-  
-  REG->SetNumberOfLevels( m_RegParameters.m_LevelNumber );
-  REG->SetLevelsToPerform( m_RegParameters.m_Level2Perform );
-  
-  REG->SetReferenceSigma( m_RegParameters.m_TargetSigmaValue );
-  REG->SetFloatingSigma( m_RegParameters.m_SourceSigmaValue );
-  
-  if ( m_RegParameters.m_FlagInputAffine 
-       && ( ! m_RegParameters.m_InputAffineName.isEmpty() ) )
-    
-    REG->SetInputTransform( strdup( m_RegParameters.m_InputAffineName.toStdString().c_str() ), 
-			    m_RegParameters.m_FlagFlirtAffine );
-  
-  REG->SetAlignCentre( m_RegParameters.m_AladinParameters.alignCenterFlag );
-
-  // Aladin - Method
-
-  REG->SetPerformAffine( ( m_RegParameters.m_AladinParameters.regnType == RIGID_THEN_AFFINE )
-			 || ( m_RegParameters.m_AladinParameters.regnType == DIRECT_AFFINE ) );
-
-  REG->SetPerformRigid( ( m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
-			|| ( m_RegParameters.m_AladinParameters.regnType == RIGID_THEN_AFFINE ) );
-
-  REG->SetMaxIterations( m_RegParameters.m_AladinParameters.maxiterationNumber );
-
-  REG->SetBlockPercentage( m_RegParameters.m_AladinParameters.block_percent_to_use );
-  REG->SetInlierLts( m_RegParameters.m_AladinParameters.inlier_lts );
-
-  // Aladin - Advanced
-
-  REG->SetInterpolation( m_RegParameters.m_AladinParameters.interpolation );
-
-  return REG;
-}
-
-
-// ---------------------------------------------------------------------------
-// CreateNonRigidRegistrationObject();
-// --------------------------------------------------------------------------- 
-
-reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
-									     mitk::Image *mitkTargetImage, 
-									     mitk::Image *mitkTargetMaskImage )
-{
-  // Get nifti versions of the images
-
-  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
-  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
-
-  if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
-  m_FloatingImage = ConvertMitkImageToNifti( mitkSourceImage );
-
-#if 0
-  nifti_set_filenames( m_ReferenceImage,"f3dReference.nii",0,0 );
-  nifti_image_write( m_ReferenceImage );
-
-  nifti_set_filenames( m_FloatingImage,"f3dFloating.nii",0,0 );
-  nifti_image_write( m_FloatingImage );
-#endif
-
-  // Check the dimensions of the images
-
-  reg_checkAndCorrectDimension( m_ReferenceImage );
-  reg_checkAndCorrectDimension( m_FloatingImage );
-
-  // Set the reference mask image 
-
-  if ( mitkTargetMaskImage )
-  {
-    if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
-    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
-
-    reg_checkAndCorrectDimension( m_ReferenceMaskImage );
-
-    // check the dimensions
-
-    for ( int i=1; i<=m_ReferenceImage->dim[0]; i++ )
-    {
-    
-      if ( m_ReferenceImage->dim[i] != m_ReferenceMaskImage->dim[i] ) 
-      {
-	fprintf(stderr,"* ERROR The reference image and its mask do not have the same dimension\n");
-	return 0;
-      }
-    }
-  }
-
-  // Read the input control point grid image
-
-  if ( ! m_RegParameters.m_F3dParameters.inputControlPointGridName.isEmpty() ) 
-  {
-
-    if ( m_ControlPointGridImage ) nifti_image_free( m_ControlPointGridImage );
-    m_ControlPointGridImage = nifti_image_read( m_RegParameters.m_F3dParameters.inputControlPointGridName
-					      .toStdString().c_str(), true );
-
-    if ( m_ControlPointGridImage == NULL ) 
-    {
-      fprintf(stderr, 
-	      "Error when reading the input control point grid image %s\n",
-	      m_RegParameters.m_F3dParameters.inputControlPointGridName.toStdString().c_str());
-      return 0;
-    }
-    
-    reg_checkAndCorrectDimension( m_ControlPointGridImage );
-  }
-
-  // Read the affine transformation
-
-  mat44 *affineTransformation = NULL;
-
-  if ( ( ! m_RegParameters.m_FlagDoInitialRigidReg ) &&
-       m_RegParameters.m_FlagInputAffine && 
-       ( ! m_RegParameters.m_InputAffineName.isEmpty() ) ) 
-  {
-    
-    affineTransformation = (mat44 *) malloc( sizeof( mat44 ) );
-    
-    // Check first if the specified affine file exist
-    
-    if ( FILE *aff = fopen( m_RegParameters.m_InputAffineName.toStdString().c_str(), "r") ) 
-    {
-      fclose( aff );
-    }
-    else 
-    {
-      fprintf( stderr, "The specified input affine file (%s) can not be read\n",
-	       m_RegParameters.m_InputAffineName.toStdString().c_str() );
-      return 0;
-    }
-    
-    reg_tool_ReadAffineFile( affineTransformation,
-			     m_ReferenceImage,
-			     m_FloatingImage,
-			     strdup( m_RegParameters.m_InputAffineName.toStdString().c_str() ),
-			     m_RegParameters.m_FlagFlirtAffine );
-  }
-
-  // Create the reg_f3d object
-
-  reg_f3d<PrecisionTYPE> *REG = NULL;
-
-#ifdef _USE_CUDA
-
-  CUdevice dev;
-  CUcontext ctx;
-
-  if ( m_RegParameters.m_F3dParameters.useGPU )
-  {
-
-    if ( m_RegParameters.m_F3dParameters.linearEnergyWeight0 ||
-	 m_RegParameters.m_F3dParameters.linearEnergyWeight1 ) {
-
-      fprintf(stderr,"NiftyReg ERROR CUDA] The linear elasticity has not been implemented with CUDA yet. Exit.\n");
-      exit(0);
-    }
-
-    if ( ( m_ReferenceImage->dim[4] == 1 && 
-	   m_FloatingImage->dim[4]  == 1 ) || 
-	 ( m_ReferenceImage->dim[4] == 2 &&
-	   m_FloatingImage->dim[4]  == 2 ) ) {
-
-      // The CUDA card is setup
-
-      cuInit(0);
-
-      struct cudaDeviceProp deviceProp;     
-      int device_count = 0;      
-
-      cudaGetDeviceCount( &device_count );
-
-      int device = m_RegParameters.m_F3dParameters.cardNumber;
-      
-      if ( m_RegParameters.m_F3dParameters.cardNumber == -1 ) 
-      {
-	
-	// following code is from cutGetMaxGflopsDeviceId()
-	
-	int max_gflops_device = 0;
-	int max_gflops = 0;
-	int current_device = 0;
-
-	while ( current_device < device_count ) 
-	{
-	  cudaGetDeviceProperties( &deviceProp, current_device );
-
-	  int gflops = deviceProp.multiProcessorCount * deviceProp.clockRate;
-
-	  if ( gflops > max_gflops ) 
-	  {
-	    max_gflops = gflops;
-	    max_gflops_device = current_device;
-	  }
-	  ++current_device;
-	}
-	device = max_gflops_device;
-      }
-      
-      NR_CUDA_SAFE_CALL(cudaSetDevice( device ));
-      NR_CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, device ));
-
-      cuDeviceGet(&dev,device);
-      cuCtxCreate(&ctx, 0, dev);
-
-      if ( deviceProp.major < 1 ) 
-      {
-	printf("[NiftyReg ERROR CUDA] The specified graphical card does not exist.\n");
-	return 0;
-      }
-       
-      REG = new reg_f3d_gpu<PrecisionTYPE>(m_ReferenceImage->nt, m_FloatingImage->nt);
-
-    }
-    else
-    {
-      fprintf(stderr,
-	      "[NiftyReg ERROR] The GPU implementation only handles "
-	      "1 to 1 or 2 to 2 image(s) registration\n");
-      exit(1);
-    }
-  }
-  
-  else
-
-#endif // _USE_CUDA
-    
-  {
-    
-    REG = new reg_f3d<PrecisionTYPE>( m_ReferenceImage->nt, 
-				      m_FloatingImage->nt );
-
-  }
-
-  // Set the reg_f3d parameters
-
-  REG->SetReferenceImage( m_ReferenceImage );
-  REG->SetFloatingImage( m_FloatingImage );
-
-  REG->PrintOutInformation();
-
-  if ( mitkTargetMaskImage )
-    REG->SetReferenceMask( m_ReferenceMaskImage );
-
-  if ( m_ControlPointGridImage != NULL )
-    REG->SetControlPointGridImage( m_ControlPointGridImage );
-
-  if ( affineTransformation != NULL )
-    REG->SetAffineTransformation( affineTransformation );
-  
-  REG->SetBendingEnergyWeight( m_RegParameters.m_F3dParameters.bendingEnergyWeight );
-    
-  REG->SetLinearEnergyWeights( m_RegParameters.m_F3dParameters.linearEnergyWeight0,
-			       m_RegParameters.m_F3dParameters.linearEnergyWeight1 );
-  
-  REG->SetJacobianLogWeight( m_RegParameters.m_F3dParameters.jacobianLogWeight );
-  
-  if ( m_RegParameters.m_F3dParameters.jacobianLogApproximation )
-    REG->ApproximateJacobianLog();
-  else 
-    REG->DoNotApproximateJacobianLog();
-
-  REG->ApproximateParzenWindow();
-
-  REG->SetMaximalIterationNumber( m_RegParameters.m_F3dParameters.maxiterationNumber );
-
-  REG->SetReferenceSmoothingSigma( m_RegParameters.m_TargetSigmaValue );
-  REG->SetFloatingSmoothingSigma( m_RegParameters.m_SourceSigmaValue );
-
-  // NB: -std::numeric_limits<PrecisionTYPE>::max() is a special value which 
-  // indicates the maximum value for ThresholdUp and the minimum for ThresholdLow.
-
-  if ( m_RegParameters.m_F3dParameters.referenceThresholdUp == -std::numeric_limits<PrecisionTYPE>::max() )
-    REG->SetReferenceThresholdUp( 0, std::numeric_limits<PrecisionTYPE>::max() );
-  else
-    REG->SetReferenceThresholdUp( 0, m_RegParameters.m_F3dParameters.referenceThresholdUp );
-
-  REG->SetReferenceThresholdLow( 0, m_RegParameters.m_F3dParameters.referenceThresholdLow );
-
-  if ( m_RegParameters.m_F3dParameters.floatingThresholdUp == -std::numeric_limits<PrecisionTYPE>::max() )
-    REG->SetFloatingThresholdUp( 0, std::numeric_limits<PrecisionTYPE>::max() );
-  else
-    REG->SetFloatingThresholdUp( 0, m_RegParameters.m_F3dParameters.floatingThresholdUp );
-
-  REG->SetFloatingThresholdLow( 0, m_RegParameters.m_F3dParameters.floatingThresholdLow );
-
-  REG->SetReferenceBinNumber( 0, m_RegParameters.m_F3dParameters.referenceBinNumber );
-  REG->SetFloatingBinNumber( 0, m_RegParameters.m_F3dParameters.floatingBinNumber );
-  
-  if ( m_RegParameters.m_F3dParameters.warpedPaddingValue == -std::numeric_limits<PrecisionTYPE>::max() )
-    REG->SetWarpedPaddingValue( std::numeric_limits<PrecisionTYPE>::quiet_NaN() );
-  else
-    REG->SetWarpedPaddingValue( m_RegParameters.m_F3dParameters.warpedPaddingValue );
-
-  for ( unsigned int s=0; s<3; s++ )
-    REG->SetSpacing( s, m_RegParameters.m_F3dParameters.spacing[s] );
-
-  REG->SetLevelNumber( m_RegParameters.m_LevelNumber );
-  REG->SetLevelToPerform( m_RegParameters.m_Level2Perform );
-
-  REG->SetGradientSmoothingSigma( m_RegParameters.m_F3dParameters.gradientSmoothingSigma );
-
-  if ( m_RegParameters.m_F3dParameters.similarity == SSD_SIMILARITY )
-    REG->UseSSD();
-  else
-    REG->DoNotUseSSD();
-
-  if ( m_RegParameters.m_F3dParameters.similarity == KLDIV_SIMILARITY )
-    REG->UseKLDivergence();
-  else 
-    REG->DoNotUseKLDivergence();
-
-  if ( m_RegParameters.m_F3dParameters.useConjugate )
-    REG->UseConjugateGradient();
-  else 
-    REG->DoNotUseConjugateGradient();
-
-  if ( m_RegParameters.m_F3dParameters.noPyramid )
-    REG->DoNotUsePyramidalApproach();
-
-  if ( m_RegParameters.m_F3dParameters.interpolation == CUBIC_INTERPOLATION )
-    REG->UseCubicSplineInterpolation();
-  else if ( m_RegParameters.m_F3dParameters.interpolation == LINEAR_INTERPOLATION )
-    REG->UseLinearInterpolation();
-  else if ( m_RegParameters.m_F3dParameters.interpolation == NEAREST_INTERPOLATION )
-    REG->UseNeareatNeighborInterpolation();
-
-
-    // Run the registration
-#ifdef _USE_CUDA
-    if (m_RegParameters.m_F3dParameters.useGPU && m_RegParameters.m_F3dParameters.checkMem) {
-        size_t free, total, requiredMemory = REG->CheckMemoryMB_f3d();
-        cuMemGetInfo(&free, &total);
-        printf("[NiftyReg CUDA] The required memory to run the registration is %lu Mb\n",
-               (unsigned long int)requiredMemory);
-        printf("[NiftyReg CUDA] The GPU card has %lu Mb from which %lu Mb are currenlty free\n",
-               (unsigned long int)total/(1024*1024), (unsigned long int)free/(1024*1024));
-    }
-#endif
-
-    return REG;
 }
 
 

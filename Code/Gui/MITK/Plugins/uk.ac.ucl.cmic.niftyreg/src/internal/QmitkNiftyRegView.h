@@ -213,9 +213,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
   protected:
 
-    /// Deallocate the nifti images used in the registration
-    void DeallocateImages( void );
-
     /// \brief Get the DataNode with a specific name. If not found return 0.
     mitk::DataNode::Pointer GetDataNode( QString searchName );
 
@@ -242,19 +239,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
     /// \brief Called by framework, sets the focus on a specific widget.
     virtual void SetFocus();
 
-    /// \brief Create the Aladin registration object
-    reg_aladin<PrecisionTYPE> 
-      *CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
-				       mitk::Image *mitkTargetImage, 
-				       mitk::Image *mitkTargetMaskImage );
-
-    /// \brief Create the Aladin registration object
-    reg_f3d<PrecisionTYPE> 
-      *CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
-					 mitk::Image *mitkTargetImage, 
-					 mitk::Image *mitkTargetMaskImage );
-    
-
     /// \brief Save the registration parameters (as a shell-script command line)
     void WriteRegistrationParametersToFile( QString &filename );
 
@@ -280,15 +264,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
     /** The current progress bar range (0 < x < 100%) to enable progress to
      * be divided between multiple processes. */
     float m_ProgressBarRange;
-
-    /// The reference/target image
-    nifti_image *m_ReferenceImage;
-    /// The floating/source image
-    nifti_image *m_FloatingImage;
-    /// The reference/target mask image
-    nifti_image *m_ReferenceMaskImage;
-    /// The input control grid image
-    nifti_image *m_ControlPointGridImage;
 
     /// The registration parameters
     NiftyRegParameters<PrecisionTYPE> m_RegParameters;

@@ -29,6 +29,16 @@
 #include "RegF3dParameters.h"
 
 #include <QString>
+#include <mitkImage.h>
+
+#include "_reg_aladin.h"
+#include "_reg_tools.h"
+
+#include "_reg_f3d2.h"
+
+#ifdef _USE_CUDA
+#include "_reg_f3d_gpu.h"
+#endif
 
 
 /**
@@ -55,6 +65,22 @@ class NiftyRegParameters
 
     /// Assignment operator
     NiftyRegParameters<PRECISION_TYPE> &operator=(const NiftyRegParameters<PRECISION_TYPE> &p);
+
+    /// \brief Create the Aladin registration object
+    reg_aladin<PRECISION_TYPE> 
+      *CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
+				       mitk::Image *mitkTargetImage, 
+				       mitk::Image *mitkTargetMaskImage );
+
+    /// \brief Create the non-rigid registration object
+    reg_f3d<PRECISION_TYPE> 
+      *CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
+					 mitk::Image *mitkTargetImage, 
+					 mitk::Image *mitkTargetMaskImage );
+    
+
+   /// Deallocate the nifti images used in the registration
+    void DeallocateImages( void );
 
 
     /// \brief The number of multi-resolution levels
@@ -85,6 +111,19 @@ class NiftyRegParameters
 
     /// The 'reg_f3d' parameters
     RegF3dParameters<PRECISION_TYPE> m_F3dParameters;
+
+  protected:
+
+
+    /// The reference/target image
+    nifti_image *m_ReferenceImage;
+    /// The floating/source image
+    nifti_image *m_FloatingImage;
+    /// The reference/target mask image
+    nifti_image *m_ReferenceMaskImage;
+    /// The input control grid image
+    nifti_image *m_ControlPointGridImage;
+
 
 };
 
