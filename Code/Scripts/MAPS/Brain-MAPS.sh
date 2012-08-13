@@ -484,7 +484,8 @@ COMMENTS
     number_of_gm_160_sd=1.7
     
     distance_csf_gm=`echo "${gm}-${csf}" | bc -l`
-    distance_factor=`echo "${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
+    #distance_factor=`echo "0.9*${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
+    distance_factor=`echo "0.9*${gm_sd}*${gm_sd}/(${gm_sd}*${gm_sd}+${csf_sd}*${csf_sd})" | bc -l`
     lower_threshold_distance=`echo "${gm}-${distance_factor}*${distance_csf_gm}" | bc -l`
     lower_threshold_sd=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
     lower_threshold_95=${lower_threshold_distance}
