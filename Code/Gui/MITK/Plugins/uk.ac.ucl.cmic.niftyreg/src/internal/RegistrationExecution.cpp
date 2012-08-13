@@ -97,13 +97,13 @@ void RegistrationExecution::ExecuteRegistration()
 	  nodeSource = (*nodes)[i];
 	}
 
-	else if ( ( QString(name.c_str()) == targetName ) && ( ! mitkTargetImage ) ) 
+	if ( ( QString(name.c_str()) == targetName ) && ( ! mitkTargetImage ) ) 
 	{
 	  mitkTargetImage = dynamic_cast<mitk::Image*>((*nodes)[i]->GetData());
 	  nodeTarget = (*nodes)[i];
 	}
 
-	else if ( ( QString(name.c_str()) == targetMaskName ) && ( ! mitkTargetMaskImage ) )
+	if ( ( QString(name.c_str()) == targetMaskName ) && ( ! mitkTargetMaskImage ) )
 	  mitkTargetMaskImage = dynamic_cast<mitk::Image*>((*nodes)[i]->GetData());
       }
     }

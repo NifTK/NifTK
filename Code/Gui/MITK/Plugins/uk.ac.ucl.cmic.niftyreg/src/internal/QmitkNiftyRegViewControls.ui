@@ -18,7 +18,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="m_NiftyRegViewTabWidget">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
        <horstretch>0</horstretch>
@@ -28,7 +28,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tabWidgetPage1" native="true">
+     <widget class="QWidget" name="tabWidgetPage1">
       <attribute name="title">
        <string>Quick Start</string>
       </attribute>
@@ -140,7 +140,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabWidgetPage2" native="true">
+     <widget class="QWidget" name="tabWidgetPage2">
       <attribute name="title">
        <string>Common</string>
       </attribute>
@@ -412,7 +412,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabWidgetPage3" native="true">
+     <widget class="QWidget" name="tabWidgetPage3">
       <attribute name="title">
        <string>Rigid/Affine </string>
       </attribute>
@@ -649,7 +649,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabWidgetPage4" native="true">
+     <widget class="QWidget" name="tabWidgetPage4">
       <attribute name="title">
        <string>Non-Rigid</string>
       </attribute>

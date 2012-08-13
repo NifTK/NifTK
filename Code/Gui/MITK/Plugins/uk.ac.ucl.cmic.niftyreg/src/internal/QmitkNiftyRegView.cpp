@@ -171,6 +171,8 @@ void QmitkNiftyRegView::CreateQtPartControl(QWidget *parent)
 void QmitkNiftyRegView::SetGuiToParameterValues()
 {
 
+  m_Controls.m_NiftyRegViewTabWidget->setCurrentIndex( 0 );
+
   // Initialise the source and target image combo box
 
   mitk::DataStorage::SetOfObjects::ConstPointer nodes = GetNodes();
