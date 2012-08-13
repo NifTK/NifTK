@@ -29,7 +29,6 @@ INCLUDE(mitkFunctionGetGccVersion)
 INCLUDE(mitkFunctionGetVersion)
 
 # Retrieve some software versions
-mitkFunctionGetVersion(${CTK_SOURCE_DIR} CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
 mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
 
 # Trac 1627 - this mitkFunctionGetVersion didn't appear to work on Marc's laptop.
@@ -46,15 +45,21 @@ IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.svn)
   endif(Subversion_FOUND)
 ENDIF()
 
-# Print out the versions
-MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+
+IF(BUILD_GUI)
+  MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+  
+  mitkFunctionGetVersion(${CTK_SOURCE_DIR} CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
+  MESSAGE("CTK version=${CTK_REVISION_ID}")
+ENDIF()
+
+# Print out other versions.
 MESSAGE("BOOST version=${NIFTK_VERSION_BOOST}")                 
 MESSAGE("GDCM version=${NIFTK_VERSION_GDCM}")                   
 MESSAGE("DCMTK version=${NIFTK_VERSION_DCMTK}")
 MESSAGE("ITK version=${NIFTK_VERSION_ITK}") 
 MESSAGE("VTK version=${NIFTK_VERSION_VTK}")                     
 MESSAGE("MITK version=${MITK_REVISION_ID}")
-MESSAGE("CTK version=${CTK_REVISION_ID}")
 
 IF(BUILD_IGI)
   mitkFunctionGetVersion(${NiftyLink_SOURCE_DIR} NIFTYLINK)
