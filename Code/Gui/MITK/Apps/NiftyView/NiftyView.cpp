@@ -30,6 +30,13 @@
 
 #include "mitkNifTKCoreObjectFactory.h"
 
+/**
+ * \file NiftyView.cpp
+ * \brief Contains the NiftyView main() function.
+ *
+ * \class QtSafeApplication
+ * \brief Class derived from QtSingleApplication to catch exceptions and implement the notify() function.
+ */
 class QtSafeApplication : public QtSingleApplication
 {
 
@@ -68,7 +75,7 @@ public:
     MITK_ERROR << "NiftyView: Error occured\n" << msg.toLocal8Bit().constData() << std::endl;
 
     QString text("An error occurred. You should save all data and quit the program to "
-                 "prevent possible data loss.\nSee the error log for details.\n\n");
+                 "prevent possible data loss.\nSee the console output for details.\n\n");
     text += msg;
 
     QMessageBox::critical(0, "Error", text);
@@ -77,6 +84,9 @@ public:
 
 };
 
+/**
+ * \brief Main entry point for NiftyView application.
+ */
 int main(int argc, char** argv)
 {
   // Create a QApplication instance first

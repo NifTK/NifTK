@@ -60,14 +60,10 @@ public:
   /// \brief Set the property name, which triggers an update UpdateObserverToPropertyMap.
   void SetPropertyName(const std::string& name);
 
-  /**
-   * \brief Sets the list of renderers to check.
-   */
+  /// \brief Sets the list of renderers to check.
   void SetRenderers(std::vector<mitk::BaseRenderer*>& list);
 
-  /**
-   * \brief Clears all filters.
-   */
+  /// \brief Clears all filters.
   void ClearRenderers();
 
   /// \brief GUI independent message callback.
@@ -82,77 +78,54 @@ protected:
   DataStoragePropertyListener(const DataStoragePropertyListener&); // Purposefully not implemented.
   DataStoragePropertyListener& operator=(const DataStoragePropertyListener&); // Purposefully not implemented.
 
-  /**
-   * \brief Called to register to the data storage.
-   */
+  /// \brief Called to register to the data storage.
   virtual void Activate(const mitk::DataStorage::Pointer storage);
 
-  /**
-   * \brief Called to un-register from the data storage.
-   */
+  /// \brief Called to un-register from the data storage.
   virtual void Deactivate();
 
-  /**
-   * \brief In this class, we do nothing, as subclasses should re-define this.
-   */
+  /// \brief In this class, we do nothing, as subclasses should re-define this.
   virtual void OnPropertyChanged(const itk::EventObject&);
 
-  /**
-   * \brief Will refresh the observers of the named property, and sub-classes should call this at the appropriate time.
-   */
+  /// \brief Will refresh the observers of the named property, and sub-classes should call this at the appropriate time.
   virtual void UpdateObserverToPropertyMap();
 
-  /**
-   * \brief Will remove all observers from the m_ObserverToPropertyMap, and sub-classes should call this at the appropriate time.
-   */
+  /// \brief Will remove all observers from the m_ObserverToPropertyMap, and sub-classes should call this at the appropriate time.
   virtual void RemoveAllFromObserverToPropertyMap();
 
-  /**
-   * \brief Triggers UpdateObserverToPropertyMap.
-   * \see DataStoragePropertyListener::NodeAdded
-   */
+  /// \brief Triggers UpdateObserverToPropertyMap.
+  ///
+  /// \see DataStoragePropertyListener::NodeAdded
   virtual void NodeAdded(mitk::DataNode* node);
 
-  /**
-   * \brief Triggers UpdateObserverToPropertyMap.
-   * \see DataStoragePropertyListener::NodeAdded
-   */
+  /// \brief Triggers UpdateObserverToPropertyMap.
+  ///
+  /// \see DataStoragePropertyListener::NodeAdded
   virtual void NodeRemoved(mitk::DataNode* node);
 
-  /**
-   * \brief Triggers UpdateObserverToPropertyMap.
-   * \see DataStoragePropertyListener::NodeAdded
-   */
+  /// \brief Triggers UpdateObserverToPropertyMap.
+  //
+  /// \see DataStoragePropertyListener::NodeAdded
   virtual void NodeDeleted(mitk::DataNode* node);
 
 private:
 
-  /**
-   * Internal method to fire the property changed signal.
-   */
+  /// \brief Internal method to fire the property changed signal.
   void OnPropertyChanged();
 
-  /**
-   * We observe all the properties with a given name for each registered node.
-   */
+  /// \brief We observe all the properties with a given name for each registered node.
   typedef std::pair < mitk::BaseProperty*, unsigned long > PropertyToObserver;
   typedef std::vector< PropertyToObserver > VectorPropertyToObserver;
   VectorPropertyToObserver m_WatchedNodes;
 
-  /**
-   * \brief The name of the property we are tracking.
-   */
+  /// \brief The name of the property we are tracking.
   std::string m_PropertyName;
 
-  /**
-   * \brief We store an optional list of renderers for watching renderer specific changes.
-   */
+  /// \brief We store an optional list of renderers for watching renderer specific changes.
   std::vector<mitk::BaseRenderer*> m_Renderers;
 
-  /**
-   * \brief Set this so that each time this class recalculates the list of properties to
-   * track, we also set each property to modified. Default false.
-   */
+  /// \brief Set this so that each time this class recalculates the list of properties to
+  /// track, we also set each property to modified. Default false.
   bool m_AutoFire;
 
 };

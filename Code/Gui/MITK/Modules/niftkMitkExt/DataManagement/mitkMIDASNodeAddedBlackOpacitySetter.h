@@ -59,9 +59,7 @@ protected:
   MIDASNodeAddedBlackOpacitySetter(const MIDASNodeAddedBlackOpacitySetter&); // Purposefully not implemented.
   MIDASNodeAddedBlackOpacitySetter& operator=(const MIDASNodeAddedBlackOpacitySetter&); // Purposefully not implemented.
 
-  /**
-   * \see DataStorageListener::NodeAdded
-   */
+  /// \see DataStorageListener::NodeAdded
   virtual void NodeAdded(mitk::DataNode* node);
 
 private:

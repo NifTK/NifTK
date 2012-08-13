@@ -44,11 +44,9 @@ public:
 
   mitkClassMacro(DataNodeFilter, itk::Object);
 
-  /**
-   * \brief Method to decide if the node should be passed.
-   * \param node a candidate node
-   * \return bool true if the node should pass and false otherwise.
-   */
+  /// \brief Method to decide if the node should be passed.
+  /// \param node a candidate node
+  /// \return bool true if the node should pass and false otherwise.
   virtual bool Pass(const mitk::DataNode* node) = 0;
 
 protected:
