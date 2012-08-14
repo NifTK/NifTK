@@ -8,7 +8,7 @@ extern "C" {
 #include "XnatDownloadDialog.h"
 
 class QString;
-class XnatBrowser;
+class XnatBrowserWidget;
 
 
 class XnatDownloadManager : public QObject
@@ -16,7 +16,7 @@ class XnatDownloadManager : public QObject
     Q_OBJECT
 
     public:
-        XnatDownloadManager(XnatBrowser* b);
+        XnatDownloadManager(XnatBrowserWidget* b);
         void downloadFile(const QString& fname);
         void downloadAllFiles();
         void silentlyDownloadFile(const QString& fname, const QString& dir);
@@ -33,7 +33,7 @@ class XnatDownloadManager : public QObject
         void downloadDataBlocking();
 
     private:
-        XnatBrowser* browser;
+        XnatBrowserWidget* browser;
         XnatDownloadDialog* downloadDialog;
 
         QString currDir;

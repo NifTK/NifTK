@@ -1,10 +1,10 @@
 #include <QtGui>
-#include "XnatBrowser.h"
+#include "XnatBrowserWidget.h"
 #include "XnatBrowserSettings.h"
 #include "XnatDownloadManager.h"
 
 
-XnatDownloadManager::XnatDownloadManager(XnatBrowser* b)
+XnatDownloadManager::XnatDownloadManager(XnatBrowserWidget* b)
 : QObject(), browser(b)
 {
 }

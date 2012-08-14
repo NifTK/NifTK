@@ -41,7 +41,7 @@
 
 #include "XnatPluginPreferencePage.h"
 #include "XnatConnectionDialog.h"
-#include <XnatBrowser.h>
+#include "XnatBrowserWidget.h"
 
 const std::string XnatBrowserView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
@@ -78,9 +78,9 @@ void XnatBrowserView::CreateQtPartControl(QWidget *parent)
   {
     // Create UI
     m_Controls = new Ui::XnatBrowserView();
-    XnatBrowser* xnatBrowser = new XnatBrowser(parent);
+    XnatBrowserWidget* xnatBrowserWidget = new XnatBrowserWidget(parent);
     QVBoxLayout* layout = new QVBoxLayout();
-    layout->addWidget(xnatBrowser);
+    layout->addWidget(xnatBrowserWidget);
     parent->setLayout(layout);
 //    m_Controls->setupUi(parent);
 

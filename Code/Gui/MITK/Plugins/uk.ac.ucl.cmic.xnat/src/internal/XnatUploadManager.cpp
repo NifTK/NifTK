@@ -1,10 +1,10 @@
 #include <QtGui>
-#include "XnatBrowser.h"
+#include "XnatBrowserWidget.h"
 #include "XnatBrowserSettings.h"
 #include "XnatUploadManager.h"
 
 
-XnatUploadManager::XnatUploadManager(XnatBrowser* b) : QObject(b), browser(b) {}
+XnatUploadManager::XnatUploadManager(XnatBrowserWidget* b) : QObject(b), browser(b) {}
 
 void XnatUploadManager::uploadFiles()
 {

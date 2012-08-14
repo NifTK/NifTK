@@ -9,7 +9,7 @@ extern "C" {
 
 class QString;
 class QStringList;
-class XnatBrowser;
+class XnatBrowserWidget;
 
 
 class XnatUploadManager : public QObject
@@ -17,7 +17,7 @@ class XnatUploadManager : public QObject
     Q_OBJECT
 
     public:
-        XnatUploadManager(XnatBrowser* b);
+        XnatUploadManager(XnatBrowserWidget* b);
         void uploadSavedData(const QString& dir);
 
     public slots:
@@ -29,7 +29,7 @@ class XnatUploadManager : public QObject
         void uploadData();
 
     private:
-        XnatBrowser* browser;
+        XnatBrowserWidget* browser;
         XnatUploadDialog* uploadDialog;
 
         QString currDir;

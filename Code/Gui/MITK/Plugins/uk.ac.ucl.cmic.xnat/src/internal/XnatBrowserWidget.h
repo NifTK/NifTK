@@ -1,5 +1,5 @@
-#ifndef XNATBROWSER_H
-#define XNATBROWSER_H
+#ifndef XnatBrowserWidget_h
+#define XnatBrowserWidget_h
 
 #include <QWidget>
 
@@ -14,17 +14,17 @@ class QTreeView;
 class QLineEdit;
 class QDialog;
 
-class XnatBrowser : public QWidget
+class XnatBrowserWidget : public QWidget
 {
     Q_OBJECT
 
     public:
-        explicit XnatBrowser(QWidget* parent = 0, Qt::WindowFlags flags = 0)
+        explicit XnatBrowserWidget(QWidget* parent = 0, Qt::WindowFlags flags = 0)
         : QWidget(parent, flags)
         {
           this->constructor();
         }
-        virtual ~XnatBrowser();
+        virtual ~XnatBrowserWidget();
 
         bool startFileUpload(const QString& zipFilename);
         bool startFileDownload(const QString& zipFilename);
@@ -79,7 +79,7 @@ class XnatBrowser : public QWidget
         void constructor();
         void initializeTreeView(XnatNode* rootNode);
 
-        Q_DISABLE_COPY(XnatBrowser);
+        Q_DISABLE_COPY(XnatBrowserWidget);
 };
 
 #endif
