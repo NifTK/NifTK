@@ -110,8 +110,6 @@ void XnatBrowserView::SetFocus()
 
 void XnatBrowserView::on_connectButton_clicked()
 {
-  Q_D(XnatBrowserView);
-
   XnatConnectionDialog* connectionDialog = new XnatConnectionDialog(m_Parent);
 
   if (connectionDialog->exec() == QDialog::Accepted)

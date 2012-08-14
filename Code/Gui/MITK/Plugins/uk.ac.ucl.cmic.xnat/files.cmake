@@ -27,7 +27,6 @@ SET(MOC_H_FILES
   src/internal/XnatBrowserWidget.h
   src/internal/XnatConnectionDialog.h
   src/internal/XnatPluginActivator.h
-  src/internal/XnatBrowserSettings.h
   src/internal/XnatDownloadDialog.h
   src/internal/XnatDownloadManager.h
 #  src/internal/XnatReactionSaveData.h

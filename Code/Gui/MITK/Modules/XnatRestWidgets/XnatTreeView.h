@@ -2,6 +2,9 @@
 #define XnatTreeView_h
 
 #include <QTreeView>
+#include <QModelIndex>
+
+#include "XnatNodeProperties.h"
 
 class XnatModel;
 class XnatNode;
@@ -19,10 +22,14 @@ public:
 
   XnatModel* xnatModel();
 
+  XnatNodeProperties nodeProperties(const QModelIndex& index);
+  XnatNodeProperties currentNodeProperties();
+
 public slots:
   void refreshRows();
   void createNewRow();
-  void deleteRow();
+  void deleteRow(const QModelIndex& index);
+  void deleteCurrentRow();
 
 private:
   /// \brief d pointer of the pimpl pattern

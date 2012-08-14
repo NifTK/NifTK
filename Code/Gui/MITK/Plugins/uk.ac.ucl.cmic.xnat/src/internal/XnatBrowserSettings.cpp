@@ -1,7 +1,11 @@
-#include <QtGui>
+#include "XnatBrowserSettings.h"
+
+#include <QDir>
+#include <QFileInfo>
+#include <QUuid>
+
 //#include "pqSettings.h"
 //#include "pqApplicationCore.h"
-#include "XnatBrowserSettings.h"
 
 
 const QString XnatBrowserSettings::defaultXnatURL( "https://xnat.cbis.jhmi.edu" );
@@ -15,12 +19,14 @@ const QString XnatBrowserSettings::directoryKey( "Directory" );
 const QString XnatBrowserSettings::workDirectoryKey( "WorkDirectory" );
 
 
-XnatBrowserSettings::XnatBrowserSettings() { }
+XnatBrowserSettings::XnatBrowserSettings()
+{
+}
 
 QString XnatBrowserSettings::getDefaultURL()
 {
-    // initialize output XNAT URL
-    QString url;
+  // initialize output XNAT URL
+  QString url;
 
 //    pqSettings* settings = pqApplicationCore::instance()->settings();
 //    if ( settings )
@@ -32,7 +38,7 @@ QString XnatBrowserSettings::getDefaultURL()
 //        settings->endGroup();
 //    }
 
-    return url;
+  return url;
 }
 
 void XnatBrowserSettings::setDefaultURL(const QString& url)
@@ -50,8 +56,8 @@ void XnatBrowserSettings::setDefaultURL(const QString& url)
 
 QString XnatBrowserSettings::getDefaultUserID()
 {
-    // initialize output XNAT user identifier
-    QString userID;
+  // initialize output XNAT user identifier
+  QString userID;
 
 //    pqSettings* settings = pqApplicationCore::instance()->settings();
 //    if ( settings )
@@ -63,7 +69,7 @@ QString XnatBrowserSettings::getDefaultUserID()
 //        settings->endGroup();
 //    }
 
-    return userID;
+  return userID;
 }
 
 void XnatBrowserSettings::setDefaultUserID(const QString& userID)
@@ -81,8 +87,8 @@ void XnatBrowserSettings::setDefaultUserID(const QString& userID)
 
 QString XnatBrowserSettings::getDefaultDirectory()
 {
-    // initialize output directory name
-    QString dir;
+  // initialize output directory name
+  QString dir;
 
 //    pqSettings* settings = pqApplicationCore::instance()->settings();
 //    if ( settings )
@@ -94,7 +100,7 @@ QString XnatBrowserSettings::getDefaultDirectory()
 //        settings->endGroup();
 //    }
 
-    return dir;
+  return dir;
 }
 
 void XnatBrowserSettings::setDefaultDirectory(const QString& dir)
@@ -112,8 +118,8 @@ void XnatBrowserSettings::setDefaultDirectory(const QString& dir)
 
 QString XnatBrowserSettings::getDefaultWorkDirectory()
 {
-    // initialize output work directory name
-    QString workDir;
+  // initialize output work directory name
+  QString workDir;
 
 //    pqSettings* settings = pqApplicationCore::instance()->settings();
 //    if ( settings )
@@ -125,7 +131,7 @@ QString XnatBrowserSettings::getDefaultWorkDirectory()
 //        settings->endGroup();
 //    }
 
-    return workDir;
+  return workDir;
 }
 
 void XnatBrowserSettings::setDefaultWorkDirectory(const QString& workDir)
@@ -143,28 +149,28 @@ void XnatBrowserSettings::setDefaultWorkDirectory(const QString& workDir)
 
 QString XnatBrowserSettings::getWorkSubdirectory()
 {
-    // set work directory name
-    QDir workDir;
-    QString workDirName = getDefaultWorkDirectory();
-    if ( !workDirName.isEmpty() )
-    {
-        workDir = QDir(workDirName);
-    }
+  // set work directory name
+  QDir workDir;
+  QString workDirName = getDefaultWorkDirectory();
+  if ( !workDirName.isEmpty() )
+  {
+    workDir = QDir(workDirName);
+  }
 
-    // generate random name for subdirectory
-    QString subdir = QUuid::createUuid().toString();
+  // generate random name for subdirectory
+  QString subdir = QUuid::createUuid().toString();
 
-    // create subdirectory in work directory
-    bool subdirCreated = workDir.mkdir(subdir);
+  // create subdirectory in work directory
+  bool subdirCreated = workDir.mkdir(subdir);
 
-    // check whether subdirectory was created
-    if ( !subdirCreated )
-    {
-        // display error message
-        return QString();
-    }
+  // check whether subdirectory was created
+  if ( !subdirCreated )
+  {
+    // display error message
+    return QString();
+  }
 
-    // return full path of subdirectory
-    return QFileInfo(workDir, subdir).absoluteFilePath();
+  // return full path of subdirectory
+  return QFileInfo(workDir, subdir).absoluteFilePath();
 }
 

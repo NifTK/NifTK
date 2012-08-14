@@ -5,7 +5,6 @@
 
 
 const int XnatModel::ModifiableChildKind = Qt::UserRole + 1;
-
 const int XnatModel::ModifiableParentName = Qt::UserRole + 2;
 
 XnatModel::XnatModel(XnatNode* rootNode)
@@ -59,6 +58,11 @@ QVariant XnatModel::data(const QModelIndex& index, int role) const
   }
 
   return QVariant();
+}
+
+QString XnatModel::name(const QModelIndex& index) const
+{
+  return data(index, Qt::DisplayRole).toString();
 }
 
 QModelIndex XnatModel::parent(const QModelIndex& child) const

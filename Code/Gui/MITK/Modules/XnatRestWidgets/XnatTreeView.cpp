@@ -65,7 +65,18 @@ XnatModel* XnatTreeView::xnatModel()
   return dynamic_cast<XnatModel*>(model());
 }
 
+XnatNodeProperties XnatTreeView::currentNodeProperties()
+{
+  return nodeProperties(this->selectionModel()->currentIndex());
+}
+
+XnatNodeProperties XnatTreeView::nodeProperties(const QModelIndex& index)
+{
+  return XnatNodeProperties(this->model()->data(index, Qt::UserRole).toBitArray());
+}
+
 void XnatTreeView::refreshRows()
+
 {
   QModelIndex index = this->selectionModel()->currentIndex();
   XnatModel* model = (XnatModel*) this->model();
@@ -120,12 +131,18 @@ void XnatTreeView::createNewRow()
   }
 }
 
-void XnatTreeView::deleteRow()
+void XnatTreeView::deleteCurrentRow()
 {
   // get name in row to be deleted
   QModelIndex index = this->selectionModel()->currentIndex();
+  deleteRow(index);
+}
+
+void XnatTreeView::deleteRow(const QModelIndex& index)
+{
+  // get name in row to be deleted
   XnatModel* model = this->xnatModel();
-  QString name = model->data(index, Qt::DisplayRole).toString();
+  QString name = model->name(index);
 
   // ask user to confirm deletion
   int buttonPressed = QMessageBox::question(this, tr("Confirm Deletion"), tr("Delete %1 ?").arg(name),

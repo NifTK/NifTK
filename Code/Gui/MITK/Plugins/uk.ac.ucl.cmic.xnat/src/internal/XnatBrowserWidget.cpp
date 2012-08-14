@@ -22,6 +22,8 @@
 #include <QMenu>
 #include <QTextBrowser>
 
+#include <QDebug>
+
 // Local includes:
 #include "XnatBrowserSettings.h"
 #include "XnatDownloadManager.h"
@@ -137,7 +139,7 @@ void XnatBrowserWidget::createConnections()
   d->createAction = new QAction(tr("Create New"), this);
   connect(d->createAction, SIGNAL(triggered()), this, SLOT(createNewRow()));
   d->deleteAction = new QAction(tr("Delete"), this);
-  connect(d->deleteAction, SIGNAL(triggered()), this, SLOT(deleteRow()));
+  connect(d->deleteAction, SIGNAL(triggered()), this, SLOT(deleteCurrentRow()));
 
   // create button widgets
   connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
@@ -151,9 +153,9 @@ void XnatBrowserWidget::createConnections()
   connect(ui->saveDataAndUploadButton, SIGNAL(clicked()), d->saveDataAndUploadAction, SLOT(trigger()));
   connect(d->saveDataAndUploadAction, SIGNAL(changed()), this, SLOT(setSaveDataAndUploadButtonEnabled()));
   connect(ui->createButton, SIGNAL(clicked()), this, SLOT(createNewRow()));
-  connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteRow()));
+  connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteCurrentRow()));
 
-  connect(ui->xnatTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(setButtonEnabled(QModelIndex)));
+  connect(ui->xnatTreeView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(setButtonEnabled(const QModelIndex&)));
 
   ui->xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui->xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -187,10 +189,10 @@ void XnatBrowserWidget::loginXnat()
   if (connectDialog->exec())
   {
     // delete old connection
-    if ( d->connection != NULL )
+    if ( d->connection != 0 )
     {
       delete d->connection;
-      d->connection = NULL;
+      d->connection = 0;
     }
     // get connection object
     d->connection = connectDialog->getConnection();
@@ -222,16 +224,16 @@ void XnatBrowserWidget::downloadFile()
   // get name of file to be downloaded
   QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
+  QString xnatFilename = model->name(index);
   if ( xnatFilename.isEmpty() )
   {
     return;
   }
 
   // download file
-  if ( d->downloadManager == NULL )
+  if ( d->downloadManager )
   {
-      d->downloadManager = new XnatDownloadManager(this);
+    d->downloadManager = new XnatDownloadManager(this);
   }
   d->downloadManager->downloadFile(QFileInfo(xnatFilename).fileName());
 }
@@ -243,16 +245,16 @@ void XnatBrowserWidget::downloadAndOpenFile()
   // get name of file to be downloaded
   QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
+  QString xnatFilename = model->name(index);
   if ( xnatFilename.isEmpty() )
   {
     return;
   }
 
   // download file
-  if ( d->downloadManager == NULL )
+  if ( d->downloadManager )
   {
-      d->downloadManager = new XnatDownloadManager(this);
+    d->downloadManager = new XnatDownloadManager(this);
   }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
   QString tempWorkDirectory = XnatBrowserSettings::getWorkSubdirectory();
@@ -369,14 +371,14 @@ void XnatBrowserWidget::downloadAllFiles()
   // get name of file group to be downloaded
   QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-  QString groupname = model->data(index, Qt::DisplayRole).toString();
+  QString groupname = model->name(index);
   if ( groupname.isEmpty() )
   {
     return;
   }
 
   // download files
-  if ( d->downloadManager == NULL )
+  if ( d->downloadManager )
   {
       d->downloadManager = new XnatDownloadManager(this);
   }
@@ -423,9 +425,9 @@ void XnatBrowserWidget::createNewRow()
   ui->xnatTreeView->createNewRow();
 }
 
-void XnatBrowserWidget::deleteRow()
+void XnatBrowserWidget::deleteCurrentRow()
 {
-  ui->xnatTreeView->deleteRow();
+  ui->xnatTreeView->deleteCurrentRow();
 }
 
 void XnatBrowserWidget::help()
@@ -453,7 +455,7 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
 {
   Q_D(XnatBrowserWidget);
 
-  XnatNodeProperties nodeProperties(ui->xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
+  const XnatNodeProperties& nodeProperties = ui->xnatTreeView->nodeProperties(index);
   ui->downloadButton->setEnabled(nodeProperties.isFile());
   ui->downloadAllButton->setEnabled(nodeProperties.holdsFiles());
   ui->downloadAndOpenButton->setEnabled(nodeProperties.isFile());
@@ -467,8 +469,7 @@ void XnatBrowserWidget::setSaveDataAndUploadButtonEnabled()
 {
   Q_D(XnatBrowserWidget);
 
-  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatNodeProperties nodeProperties(ui->xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
+  const XnatNodeProperties& nodeProperties = ui->xnatTreeView->currentNodeProperties();
   ui->saveDataAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveDataAndUploadAction->isEnabled()));
 }
 
@@ -476,10 +477,10 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
 {
   Q_D(XnatBrowserWidget);
 
-  QModelIndex index = ui->xnatTreeView->indexAt(position);
+  const QModelIndex& index = ui->xnatTreeView->indexAt(position);
   if ( index.isValid() )
   {
-    XnatNodeProperties nodeProperties(ui->xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
+    XnatNodeProperties nodeProperties = ui->xnatTreeView->nodeProperties(index);
     QList<QAction*> actions;
     if ( nodeProperties.isFile() )
     {

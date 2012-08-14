@@ -11,7 +11,7 @@ class XnatNode;
 
 class XnatBrowserWidget : public QWidget
 {
-Q_OBJECT
+  Q_OBJECT
 
 public:
   explicit XnatBrowserWidget(QWidget* parent = 0, Qt::WindowFlags flags = 0);
@@ -29,7 +29,7 @@ private slots:
   void downloadAllFiles();
   void downloadAndOpenFile();
   void createNewRow();
-  void deleteRow();
+  void deleteCurrentRow();
   void setButtonEnabled(const QModelIndex& index);
   void setSaveDataAndUploadButtonEnabled();
   void showContextMenu(const QPoint&);

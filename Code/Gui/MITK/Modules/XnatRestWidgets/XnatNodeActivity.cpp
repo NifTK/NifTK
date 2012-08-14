@@ -313,7 +313,7 @@ bool XnatExperimentActivity::isModifiable(int row, XnatNode* node)
   {
     return(result);
   }
-  size_t numChildren = childNode->getNumChildren();
+  int numChildren = childNode->getNumChildren();
   for ( int i = 0 ; i < numChildren ; i++ )
   {
     if ( strcmp(childNode->getChildName(i), CAT_RECONSTRUCTION) == 0 )

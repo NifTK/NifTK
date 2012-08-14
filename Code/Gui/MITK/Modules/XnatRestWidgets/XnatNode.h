@@ -1,10 +1,12 @@
-#ifndef XNATNODE_H
-#define XNATNODE_H
+#ifndef XnatNode_h
+#define XnatNode_h
 
-#include <QString>
+#include <string>
+
 #include <QList>
 
 class XnatNodeActivity;
+
 
 class XnatNode
 {
@@ -44,10 +46,10 @@ private:
   class XnatChild
   {
   public:
-    QString name;
+    std::string name;
     XnatNode* node;
 
-    XnatChild(const char* name, XnatNode* node = 0);
+    XnatChild(const char* name, XnatNode* node = NULL);
     ~XnatChild();
   };
 

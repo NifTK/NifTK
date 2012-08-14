@@ -1,4 +1,5 @@
 #include "XnatNode.h"
+
 #include "XnatNodeActivity.h"
 
 
@@ -9,9 +10,17 @@ XnatNode::XnatNode(XnatNodeActivity& a, int r, XnatNode* p)
 {
 }
 
+XnatNode::~XnatNode()
+{
+  foreach (XnatChild* child, children)
+  {
+    delete child;
+  }
+}
+
 const char* XnatNode::getParentName()
 {
-  return parent ? parent->getChildName(rowInParent) : 0;
+  return ( ( parent != NULL ) ? parent->getChildName(rowInParent) : NULL );
 }
 
 int XnatNode::getRowInParent()
@@ -31,7 +40,7 @@ int XnatNode::getNumChildren()
 
 const char* XnatNode::getChildName(int row)
 {
-  return children[row]->name.toStdString().c_str();
+  return children[row]->name.c_str();
 }
 
 XnatNode* XnatNode::getChildNode(int row)
@@ -49,14 +58,6 @@ void XnatNode::addChildNode(int row, XnatNode* node)
   children[row]->node = node;
 }
 
-XnatNode::~XnatNode()
-{
-  foreach ( XnatChild* child, children )
-  {
-    delete child;
-  }
-}
-
 XnatNode* XnatNode::makeChildNode(int row)
 {
   return nodeActivity.makeChildNode(row, this);
@@ -64,10 +65,10 @@ XnatNode* XnatNode::makeChildNode(int row)
 
 void XnatNode::removeChildNode(int row)
 {
-  if ( children[row]->node != 0 )
+  if ( children[row]->node != NULL )
   {
     delete children[row]->node;
-    children[row]->node = 0;
+    children[row]->node = NULL;
   }
 }
 
@@ -145,9 +146,8 @@ XnatNode::XnatChild::XnatChild(const char* who, XnatNode* ptr)
 XnatNode::XnatChild::~XnatChild()
 {
   // delete child node
-  if ( node != 0 )
+  if ( node != NULL )
   {
     delete node;
   }
 }
-

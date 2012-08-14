@@ -1,5 +1,5 @@
-#ifndef XNATNODEACTIVITY
-#define XNATNODEACTIVITY
+#ifndef XnatNodeActivity_h
+#define XnatNodeActivity_h
 
 #include "XnatNode.h"
 
