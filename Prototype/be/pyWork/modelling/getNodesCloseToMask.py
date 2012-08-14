@@ -17,6 +17,8 @@ def getNodesCloseToMask( maskImgName, imgThreshold, nodePoints, distance, allowe
         @param allowedPoints: Give a list with allowed points, if the fixed nodes should be restricted
     '''
     
+    print('WARNING: If the image data has an offset, then the coordinate transformations are not correct!!! See ToDo!!!')
+    
     maskImg = nib.load( maskImgName )
     
     # the spacing matrix
@@ -26,6 +28,12 @@ def getNodesCloseToMask( maskImgName, imgThreshold, nodePoints, distance, allowe
     # Well there is always sth. wrong... medSurfer only uses spacing and not the origin...
     qMat        = np.abs( qMat )
     qMat[0:3,3] = np.zeros(3)
+    
+    # TODO: Change
+    matImgAffine = maskImg.get_affine()
+    rot90Z       = np.array(([-1,0,0,0],[0,-1,0,0], [0,0,1,0], [0,0,0,1]))           # for itk written images        
+    matXToI      = np.dot( np.linalg.inv( maskImg.get_affine()),    rot90Z )  # matrix which converts the real world coordinate X to the image index I 
+    
     
     img         = maskImg.get_data()
     qMatInv     = linalg.inv(qMat)
@@ -99,17 +107,21 @@ def getNodesWithtinMask( maskImgName, imgThreshold, nodePoints, allowedPoints=No
     maskImg = nib.load( maskImgName )
     
     # the spacing matrix
-    hdr  = maskImg.get_header()
-    qMat = hdr.get_qform()
+    #hdr  = maskImg.get_header()
+    #qMat = hdr.get_qform()
     
     # Well there is always sth. wrong... medSurfer only uses spacing and not the origin...
     # TODO: Find a better way to this solution...
+    #qMat        = np.abs( qMat )
+    #qMat[0:3,3] = np.zeros(3)
     
-    qMat        = np.abs( qMat )
-    qMat[0:3,3] = np.zeros(3)
+    #idxCentre    = np.array( (np.around( np.dot( self.labelXToIMat, np.hstack( ( cdsTetCentre, 1 ) ) ) ) ), dtype=np.int )
+    matImgAffine = maskImg.get_affine()
+    rot90Z       = np.array(([-1,0,0,0],[0,-1,0,0], [0,0,1,0], [0,0,0,1]))           # for itk written images        
+    matXToI      = np.dot( np.linalg.inv( maskImg.get_affine()),    rot90Z )  # matrix which converts the real world coordinate X to the image index I 
     
-    img         = maskImg.get_data()
-    qMatInv     = linalg.inv(qMat)
+    img          = maskImg.get_data()
+    #qMatInv     = linalg.inv(qMat)
     
     
     # Threshold data
@@ -122,7 +134,9 @@ def getNodesWithtinMask( maskImgName, imgThreshold, nodePoints, allowedPoints=No
     
     for i in range( nodePoints.shape[0] ) :
         pRealWorld = nodePoints[i,:]
-        pDiscrete = np.dot( qMatInv[0:3,0:3], pRealWorld ).round()
+        
+        pDiscrete  = np.array( (np.around( np.dot( matXToI, np.hstack( ( pRealWorld, 1 ) ) ) ) ), dtype=np.int ) 
+        #pDiscrete = np.dot( qMatInv[0:3,0:3], pRealWorld ).round()
         
         # sample the mask image at the given discrete point
         curLabel = img[pDiscrete[0], pDiscrete[1], pDiscrete[2]]

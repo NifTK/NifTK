@@ -49,8 +49,9 @@ class materialSetGenerator:
         
         # Transformation from real world coordinate to image index...
         rot90Z               = np.array(([-1,0,0,0],[0,-1,0,0], [0,0,1,0], [0,0,0,1]))           # for itk written images
-        self.labelXToIMat    = np.linalg.inv( np.dot( self.labelImg.get_affine(),    rot90Z ) )
-        self.skinMaskXToIMat = np.linalg.inv( np.dot( self.skinMaskImg.get_affine(), rot90Z ) )
+        #self.labelXToIMat    = np.linalg.inv( np.dot( self.labelImg.get_affine(),    rot90Z ) )  # TODO: Need to change the order!!! First invert, then rotate - does not matter for images without translation
+        self.labelXToIMat    = np.dot( np.linalg.inv( self.labelImg.get_affine() ),    rot90Z )
+        self.skinMaskXToIMat = np.dot( np.linalg.inv( self.skinMaskImg.get_affine() ), rot90Z ) 
         
         self.nodes    = nodeArray
         self.elements = elementArray
