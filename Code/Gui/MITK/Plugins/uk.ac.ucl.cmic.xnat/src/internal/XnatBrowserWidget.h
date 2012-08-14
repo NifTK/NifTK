@@ -21,7 +21,6 @@ public:
   bool startFileDownload(const QString& zipFilename);
   bool startFileGroupDownload(const QString& zipFilename);
 
-public slots:
   void refreshRows();
 
 private slots:

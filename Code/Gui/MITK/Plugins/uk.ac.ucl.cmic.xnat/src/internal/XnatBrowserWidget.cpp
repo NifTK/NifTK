@@ -88,18 +88,6 @@ XnatBrowserWidget::~XnatBrowserWidget()
 {
   Q_D(XnatBrowserWidget);
 
-  // clean up models in tree view
-  XnatModel* oldModel = (XnatModel*) ui->xnatTreeView->model();
-  QItemSelectionModel* oldSelectionModel = ui->xnatTreeView->selectionModel();
-  if (oldModel)
-  {
-    delete oldModel;
-  }
-  if (oldSelectionModel)
-  {
-    delete oldSelectionModel;
-  }
-
   // clean up XNAT connection
   if (d->connection)
   {
@@ -154,7 +142,7 @@ void XnatBrowserWidget::createConnections()
   // create button widgets
   connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
   connect(ui->setDefaultWorkDirectoryButton, SIGNAL(clicked()), this, SLOT(setDefaultWorkDirectory()));
-  connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(refreshRows()));
+  connect(ui->refreshButton, SIGNAL(clicked()), ui->xnatTreeView, SLOT(refreshRows()));
   connect(ui->helpButton, SIGNAL(clicked()), this, SLOT(help()));
   connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
   connect(ui->downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
@@ -206,8 +194,17 @@ void XnatBrowserWidget::loginXnat()
     }
     // get connection object
     d->connection = connectDialog->getConnection();
-    // initialize tree view
-    initializeTreeView(d->connection->getRoot());
+
+    ui->xnatTreeView->initialize(d->connection->getRoot());
+
+    ui->downloadButton->setEnabled(false);
+    ui->downloadAllButton->setEnabled(false);
+    ui->downloadAndOpenButton->setEnabled(false);
+    ui->uploadButton->setEnabled(false);
+    ui->saveDataAndUploadButton->setEnabled(false);
+    ui->createButton->setEnabled(false);
+    ui->deleteButton->setEnabled(false);
+
     ui->refreshButton->setEnabled(true);
   }
   delete connectDialog;
@@ -215,10 +212,7 @@ void XnatBrowserWidget::loginXnat()
 
 void XnatBrowserWidget::refreshRows()
 {
-  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
-  model->removeAllRows(index);
-  model->fetchMore(index);
+  ui->xnatTreeView->refreshRows();
 }
 
 void XnatBrowserWidget::downloadFile()
@@ -427,79 +421,12 @@ bool XnatBrowserWidget::startFileUpload(const QString& zipFilename)
 
 void XnatBrowserWidget::createNewRow()
 {
-  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
-
-  // get kind of new entry, e.g., reconstruction or resource
-  QString childKind = model->data(index, XnatModel::ModifiableChildKind).toString();
-  if ( childKind.isEmpty() )
-  {
-    QMessageBox::warning(this, tr("Create New Error"), tr("Unknown child kind"));
-    return;
-  }
-
-  // get parent name, e.g., experiment name for new reconstruction, or
-  //                        reconstruction name for new resource
-  QString parentName = model->data(index, XnatModel::ModifiableParentName).toString();
-  if ( parentName.isEmpty() )
-  {
-    QMessageBox::warning(this, tr("Create New Error"), tr("Unknown parent name"));
-    return;
-  }
-
-  // get name of new child in parent from user, e.g.,
-  //             name of new reconstruction in experiment, or
-  //             name of new resource in reconstruction
-  XnatNameDialog nameDialog(this, childKind, parentName);
-  if ( nameDialog.exec() )
-  {
-    QString name = nameDialog.getNewName();
-
-    try
-    {
-      // create new child in parent, e.g., new reconstruction in experiment, or
-      //                                   new resource in reconstruction
-      model->addEntry(index, name);
-
-      // refresh display
-      model->removeAllRows(index);
-      model->fetchMore(index);
-    }
-    catch (XnatException& e)
-    {
-      QMessageBox::warning(this, tr("Create New Error"), tr(e.what()));
-    }
-  }
+  ui->xnatTreeView->createNewRow();
 }
 
 void XnatBrowserWidget::deleteRow()
 {
-  // get name in row to be deleted
-  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
-  QString name = model->data(index, Qt::DisplayRole).toString();
-
-  // ask user to confirm deletion
-  int buttonPressed = QMessageBox::question(this, tr("Confirm Deletion"), tr("Delete %1 ?").arg(name),
-                                            QMessageBox::Yes | QMessageBox::No);
-
-  if ( buttonPressed == QMessageBox::Yes )
-  {
-    try
-    {
-      // delete row
-      QModelIndex parent = model->parent(index);
-      model->removeEntry(index);
-
-      // refresh display
-      model->removeAllRows(parent);
-      model->fetchMore(parent);
-    }
-    catch (XnatException& e)
-    {
-      QMessageBox::warning(this, tr("Delete Error"), tr(e.what()));
-    }
-  }
+  ui->xnatTreeView->deleteRow();
 }
 
 void XnatBrowserWidget::help()

@@ -3,7 +3,9 @@
 
 #include <QTreeView>
 
+class XnatModel;
 class XnatNode;
+class XnatTreeViewPrivate;
 
 class XnatTreeView : public QTreeView
 {
@@ -14,6 +16,19 @@ public:
   virtual ~XnatTreeView();
 
   void initialize(XnatNode* rootNode);
+
+  XnatModel* xnatModel();
+
+public slots:
+  void refreshRows();
+  void createNewRow();
+  void deleteRow();
+
+private:
+  /// \brief d pointer of the pimpl pattern
+  QScopedPointer<XnatTreeViewPrivate> d_ptr;
+
+  Q_DECLARE_PRIVATE(XnatTreeView);
 };
 
 #endif /* XnatTreeView_h */
