@@ -24,6 +24,8 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     ui = new Ui::XnatBrowserWidget();
     ui->setupUi(parent);
 
+    ui->middleButtonPanel->setCollapsed(true);
+
     // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
 //    CreateConnections();
   }
@@ -52,23 +54,17 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     // create button widgets
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
     connect(ui->setDefaultWorkDirectoryButton, SIGNAL(clicked()), this, SLOT(setDefaultWorkDirectory()));
-    refreshButton = new QPushButton(tr("Refresh"));
-    refreshButton->setEnabled(false);
-    connect(refreshButton, SIGNAL(clicked()), this, SLOT(refreshRows()));
+    ui->refreshButton->setEnabled(false);
+    connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(refreshRows()));
     connect(ui->helpButton, SIGNAL(clicked()), this, SLOT(help()));
-    downloadButton = new QPushButton(tr("Download"));
-    connect(downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
-    downloadAllButton = new QPushButton(tr("Download All"));
-    connect(downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
+    connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
+    connect(ui->downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
     connect(ui->downloadAndOpenButton, SIGNAL(clicked()), this, SLOT(downloadAndOpenFile()));
-    uploadButton = new QPushButton(tr("Upload"));
-    connect(uploadButton, SIGNAL(clicked()), uploadManager, SLOT(uploadFiles()));
+    connect(ui->uploadButton, SIGNAL(clicked()), uploadManager, SLOT(uploadFiles()));
     connect(ui->saveDataAndUploadButton, SIGNAL(clicked()), saveDataAndUploadAction, SLOT(trigger()));
     connect(saveDataAndUploadAction, SIGNAL(changed()), this, SLOT(setSaveDataAndUploadButtonEnabled()));
-    createButton = new QPushButton(tr("Create New"));
-    connect(createButton, SIGNAL(clicked()), this, SLOT(createNewRow()));
-    deleteButton = new QPushButton(tr("Delete"));
-    connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteRow()));
+    connect(ui->createButton, SIGNAL(clicked()), this, SLOT(createNewRow()));
+    connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteRow()));
 
     // create line edit widget to display work directory
     ui->workDirectoryEdit->setText(QDir::toNativeSeparators(XnatBrowserSettings::getDefaultWorkDirectory()));
@@ -83,45 +79,6 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     ui->xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)),
             this, SLOT(showContextMenu(const QPoint&)));
-
-    // create XNAT browser widget
-//    QGridLayout* topButtonLayout = new QGridLayout;
-//    topButtonLayout->addWidget(ui->loginButton, 0, 0);
-//    topButtonLayout->addWidget(ui->setDefaultWorkDirectoryButton, 0, 1);
-//    topButtonLayout->addWidget(ui->workDirectoryEdit, 0, 2);
-//    topButtonLayout->addWidget(ui->helpButton, 1, 0);
-//    topButtonLayout->addWidget(ui->downloadAndOpenButton, 1, 1);
-//    topButtonLayout->addWidget(ui->saveDataAndUploadButton, 1, 2);
-//    QGroupBox* topButtonPanel = new QGroupBox;
-//    topButtonPanel->setLayout(topButtonLayout);
-
-//    QGridLayout* middleButtonLayout = new QGridLayout;
-//    middleButtonLayout->addWidget(refreshButton, 0, 0);
-//    middleButtonLayout->addWidget(createButton, 0, 1);
-//    middleButtonLayout->addWidget(deleteButton, 0, 2);
-//    middleButtonLayout->addWidget(downloadButton, 1, 0);
-//    middleButtonLayout->addWidget(downloadAllButton, 1, 1);
-//    middleButtonLayout->addWidget(uploadButton, 1, 2);
-//    pqCollapsedGroup* middleButtonPanel = new pqCollapsedGroup;
-//    middleButtonPanel->setTitle(tr("More XNAT Functions"));
-//    middleButtonPanel->setCollapsed(true);
-//    middleButtonPanel->setLayout(middleButtonLayout);
-
-//    QVBoxLayout* browserLayout = new QVBoxLayout;
-//    browserLayout->addWidget(topButtonPanel);
-////    browserLayout->addWidget(middleButtonPanel);
-//    browserLayout->addWidget(xnatTreeView);
-//    QWidget* browserWidget = new QWidget;
-//    browserWidget->setLayout(browserLayout);
-
-    // initialize dock widget and set browser widget
-//    setWindowTitle(tr("XNAT Browser"));
-//    setObjectName(tr("XnatBrowserWidget"));
-//    setAllowedAreas(Qt::RightDockWidgetArea);
-//    setWidget(browserWidget);
-//    QVBoxLayout* layout = new QVBoxLayout;
-//    layout->addWidget(browserWidget);
-//    setLayout(layout);
 }
 
 XnatBrowserWidget::~XnatBrowserWidget()
@@ -178,13 +135,13 @@ void XnatBrowserWidget::initializeTreeView(XnatNode* rootNode)
         delete oldSelectionModel;
     }
     ui->xnatTreeView->setExpanded(QModelIndex(), false);
-    downloadButton->setEnabled(false);
-    downloadAllButton->setEnabled(false);
+    ui->downloadButton->setEnabled(false);
+    ui->downloadAllButton->setEnabled(false);
     ui->downloadAndOpenButton->setEnabled(false);
-    uploadButton->setEnabled(false);
+    ui->uploadButton->setEnabled(false);
     ui->saveDataAndUploadButton->setEnabled(false);
-    createButton->setEnabled(false);
-    deleteButton->setEnabled(false);
+    ui->createButton->setEnabled(false);
+    ui->deleteButton->setEnabled(false);
 }
 
 void XnatBrowserWidget::setDefaultWorkDirectory()
@@ -221,7 +178,7 @@ void XnatBrowserWidget::loginXnat()
         connection = connectDialog->getConnection();
         // initialize tree view
         initializeTreeView(connection->getRoot());
-        refreshButton->setEnabled(true);
+        ui->refreshButton->setEnabled(true);
     }
     delete connectDialog;
 }
@@ -531,13 +488,13 @@ void XnatBrowserWidget::help()
 void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
 {
     XnatNodeProperties nodeProperties(ui->xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
-    downloadButton->setEnabled(nodeProperties.isFile());
-    downloadAllButton->setEnabled(nodeProperties.holdsFiles());
+    ui->downloadButton->setEnabled(nodeProperties.isFile());
+    ui->downloadAllButton->setEnabled(nodeProperties.holdsFiles());
     ui->downloadAndOpenButton->setEnabled(nodeProperties.isFile());
-    uploadButton->setEnabled(nodeProperties.receivesFiles());
+    ui->uploadButton->setEnabled(nodeProperties.receivesFiles());
     ui->saveDataAndUploadButton->setEnabled((nodeProperties.receivesFiles() && saveDataAndUploadAction->isEnabled()));
-    createButton->setEnabled(nodeProperties.isModifiable());
-    deleteButton->setEnabled(nodeProperties.isDeletable());
+    ui->createButton->setEnabled(nodeProperties.isModifiable());
+    ui->deleteButton->setEnabled(nodeProperties.isDeletable());
 }
 
 void XnatBrowserWidget::setSaveDataAndUploadButtonEnabled()

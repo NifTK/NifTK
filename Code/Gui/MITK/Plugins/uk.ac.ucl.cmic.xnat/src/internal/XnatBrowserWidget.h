@@ -59,15 +59,15 @@ class XnatBrowserWidget : public QWidget
 
 //        QPushButton* loginButton;
 //        QPushButton* setDefaultWorkDirectoryButton;
-        QPushButton* refreshButton;
+//        QPushButton* refreshButton;
 //        QPushButton* helpButton;
-        QPushButton* downloadButton;
-        QPushButton* downloadAllButton;
+//        QPushButton* downloadButton;
+//        QPushButton* downloadAllButton;
 //        QPushButton* downloadAndOpenButton;
-        QPushButton* uploadButton;
+//        QPushButton* uploadButton;
 //        QPushButton* saveDataAndUploadButton;
-        QPushButton* createButton;
-        QPushButton* deleteButton;
+//        QPushButton* createButton;
+//        QPushButton* deleteButton;
 
 //        QLineEdit* workDirectoryEdit;
         QDialog* helpDialog;
