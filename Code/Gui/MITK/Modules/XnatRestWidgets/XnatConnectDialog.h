@@ -7,19 +7,26 @@
 
 class QLineEdit;
 class XnatConnection;
+class XnatSettings;
 
 class XnatConnectDialog : public QDialog
 {
   Q_OBJECT
 
 public:
-  XnatConnectDialog(XnatConnectionFactory& factory, QWidget* parent);
+  explicit XnatConnectDialog(XnatConnectionFactory& factory, QWidget* parent);
+  virtual ~XnatConnectDialog();
+
   XnatConnection* getConnection();
+
+  void setSettings(XnatSettings* settings);
 
 private slots:
   void accept();
 
 private:
+  XnatSettings* settings;
+
   XnatConnectionFactory& factory;
   XnatConnection* connection;
 

@@ -3,13 +3,14 @@
 
 #include <QObject>
 
-extern "C" {
+extern "C"
+{
 #include "XnatRest.h"
 }
 
 class QString;
 class XnatBrowserWidget;
-class XnatBrowserSettings;
+class XnatSettings;
 class XnatDownloadDialog;
 
 class XnatDownloadManager : public QObject
@@ -37,7 +38,7 @@ private:
   XnatBrowserWidget* browser;
   XnatDownloadDialog* downloadDialog;
 
-  XnatBrowserSettings* settings;
+  XnatSettings* settings;
 
   QString currDir;
   QString zipFilename;

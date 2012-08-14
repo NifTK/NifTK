@@ -44,11 +44,12 @@
 #include "XnatPluginPreferencePage.h"
 #include "XnatPluginSettings.h"
 
-const std::string XnatBrowserView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
+const std::string XnatBrowserView::VIEW_ID = "uk.ac.ucl.cmic.xnat.browser";
 
 class XnatBrowserViewPrivate
 {
 public:
+  XnatPluginSettings* settings;
 
   QNetworkAccessManager* networkAccessManager;
 };
@@ -64,14 +65,18 @@ XnatBrowserView::XnatBrowserView()
 
 XnatBrowserView::~XnatBrowserView()
 {
+  Q_D(XnatBrowserView);
   if (m_Controls)
   {
+    delete d->settings;
     delete m_Controls;
   }
 }
 
 void XnatBrowserView::CreateQtPartControl(QWidget *parent)
 {
+  Q_D(XnatBrowserView);
+
   // setup the basic GUI of this view
   m_Parent = parent;
 
@@ -80,7 +85,8 @@ void XnatBrowserView::CreateQtPartControl(QWidget *parent)
     // Create UI
 //    m_Controls = new Ui::XnatBrowserView();
     XnatBrowserWidget* xnatBrowserWidget = new XnatBrowserWidget(parent);
-    xnatBrowserWidget->setSettings(new XnatPluginSettings(GetPreferences()));
+    d->settings = new XnatPluginSettings(GetPreferences());
+    xnatBrowserWidget->setSettings(d->settings);
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(xnatBrowserWidget);
     parent->setLayout(layout);

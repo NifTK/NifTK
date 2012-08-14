@@ -7,45 +7,36 @@
 #include "XnatPluginPreferencePage.h"
 
 XnatPluginSettings::XnatPluginSettings(berry::IPreferences::Pointer preferences)
-: XnatBrowserSettings()
+: XnatSettings()
 , preferences(preferences)
 {
 }
 
-QString XnatPluginSettings::getDefaultURL()
+QString XnatPluginSettings::getDefaultURL() const
 {
-  // initialize output XNAT URL
-  QString url;
-
-  // TODO
-
-  return url;
+  std::string server = preferences->Get(XnatPluginPreferencePage::SERVER_NAME, XnatPluginPreferencePage::SERVER_DEFAULT);
+  return QString::fromStdString(server);
 }
 
 void XnatPluginSettings::setDefaultURL(const QString& url)
 {
-  // TODO
+  preferences->Put(XnatPluginPreferencePage::SERVER_NAME, url.toStdString());
 }
 
-QString XnatPluginSettings::getDefaultUserID()
+QString XnatPluginSettings::getDefaultUserID() const
 {
-  // initialize output XNAT user identifier
-  QString userID;
-
-  // TODO
-
-  return userID;
+  std::string user = preferences->Get(XnatPluginPreferencePage::USER_NAME, XnatPluginPreferencePage::USER_DEFAULT);
+  return QString::fromStdString(user);
 }
 
 void XnatPluginSettings::setDefaultUserID(const QString& userID)
 {
-  // TODO
+  preferences->Put(XnatPluginPreferencePage::USER_NAME, userID.toStdString());
 }
 
-QString XnatPluginSettings::getDefaultDirectory()
+QString XnatPluginSettings::getDefaultDirectory() const
 {
   std::string downloadDirectory = preferences->Get(XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME, XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_DEFAULT);
-
   return QString::fromStdString(downloadDirectory);
 }
 
@@ -54,44 +45,13 @@ void XnatPluginSettings::setDefaultDirectory(const QString& downloadDirectory)
   preferences->Put(XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME, downloadDirectory.toStdString());
 }
 
-QString XnatPluginSettings::getDefaultWorkDirectory()
+QString XnatPluginSettings::getDefaultWorkDirectory() const
 {
-  // initialize output work directory name
-  QString workDir;
-
-  // TODO
-
-  return workDir;
+  std::string workDirectory = preferences->Get(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, XnatPluginPreferencePage::WORK_DIRECTORY_DEFAULT);
+  return QString::fromStdString(workDirectory);
 }
 
-void XnatPluginSettings::setDefaultWorkDirectory(const QString& workDir)
+void XnatPluginSettings::setDefaultWorkDirectory(const QString& workDirectory)
 {
-  // TODO
-}
-
-QString XnatPluginSettings::getWorkSubdirectory()
-{
-  // set work directory name
-  QDir workDir;
-  QString workDirName = getDefaultWorkDirectory();
-  if ( !workDirName.isEmpty() )
-  {
-    workDir = QDir(workDirName);
-  }
-
-  // generate random name for subdirectory
-  QString subdir = QUuid::createUuid().toString();
-
-  // create subdirectory in work directory
-  bool subdirCreated = workDir.mkdir(subdir);
-
-  // check whether subdirectory was created
-  if ( !subdirCreated )
-  {
-    // display error message
-    return QString();
-  }
-
-  // return full path of subdirectory
-  return QFileInfo(workDir, subdir).absoluteFilePath();
+  preferences->Put(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, workDirectory.toStdString());
 }

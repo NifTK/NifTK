@@ -5,7 +5,7 @@
     <category 
       id="org.mitk.views.general" 
       name="MITK General"/> 
-    <view id="uk.ac.ucl.cmic.xnatbrowser"
+    <view id="uk.ac.ucl.cmic.xnat.browser"
           name="XNAT Browser"
           category="org.mitk.views.general" 
           class="XnatBrowserView"

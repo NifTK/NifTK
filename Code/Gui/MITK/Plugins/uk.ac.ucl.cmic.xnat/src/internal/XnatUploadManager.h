@@ -11,7 +11,7 @@ extern "C"
 }
 
 class XnatBrowserWidget;
-class XnatBrowserSettings;
+class XnatSettings;
 class XnatUploadDialog;
 
 
@@ -43,7 +43,7 @@ private:
   XnatRestAsynStatus finished;
   unsigned long totalBytes;
 
-  XnatBrowserSettings* settings;
+  XnatSettings* settings;
 };
 
 #endif

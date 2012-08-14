@@ -5,26 +5,24 @@
 
 #include <berryIPreferences.h>
 
-#include <XnatBrowserSettings.h>
+#include <XnatSettings.h>
 
-class XnatPluginSettings : public XnatBrowserSettings
+class XnatPluginSettings : public XnatSettings
 {
 public:
   XnatPluginSettings(berry::IPreferences::Pointer preferences);
 
-  QString getDefaultURL();
-  void setDefaultURL(const QString& url);
+  virtual QString getDefaultURL() const;
+  virtual void setDefaultURL(const QString& url);
 
-  QString getDefaultUserID();
-  void setDefaultUserID(const QString& userID);
+  virtual QString getDefaultUserID() const;
+  virtual void setDefaultUserID(const QString& userID);
 
-  QString getDefaultDirectory();
-  void setDefaultDirectory(const QString& dir);
+  virtual QString getDefaultDirectory() const;
+  virtual void setDefaultDirectory(const QString& dir);
 
-  QString getDefaultWorkDirectory();
-  void setDefaultWorkDirectory(const QString& workDir);
-
-  QString getWorkSubdirectory();
+  virtual QString getDefaultWorkDirectory() const;
+  virtual void setDefaultWorkDirectory(const QString& workDir);
 
 private:
   berry::IPreferences::Pointer preferences;

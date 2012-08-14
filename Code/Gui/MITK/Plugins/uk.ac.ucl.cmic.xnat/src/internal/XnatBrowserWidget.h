@@ -7,7 +7,7 @@
 
 class QModelIndex;
 class XnatBrowserWidgetPrivate;
-class XnatBrowserSettings;
+class XnatSettings;
 class XnatNode;
 
 class XnatBrowserWidget : public QWidget
@@ -18,8 +18,8 @@ public:
   explicit XnatBrowserWidget(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~XnatBrowserWidget();
 
-  XnatBrowserSettings* settings() const;
-  void setSettings(XnatBrowserSettings* settings);
+  XnatSettings* settings() const;
+  void setSettings(XnatSettings* settings);
 
   bool startFileUpload(const QString& zipFilename);
   bool startFileDownload(const QString& zipFilename);

@@ -7,7 +7,8 @@
 #include <QLabel>
 #include <QLineEdit>
 
-XnatFileNameTypeDialog::XnatFileNameTypeDialog(const QString& filters, QWidget* parent) : QDialog(parent)
+XnatFileNameTypeDialog::XnatFileNameTypeDialog(const QString& filters, QWidget* parent)
+: QDialog(parent)
 {
   QLabel* nameLabel = new QLabel(tr("File name:"));
   nameEdit = new QLineEdit;

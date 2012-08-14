@@ -22,7 +22,7 @@
    </property>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <property name="bottomMargin">
+     <property name="margin">
       <number>6</number>
      </property>
      <item row="0" column="0">
@@ -132,6 +132,18 @@
    <header location="global">XnatTreeView.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>loginButton</tabstop>
+  <tabstop>downloadAndOpenButton</tabstop>
+  <tabstop>saveDataAndUploadButton</tabstop>
+  <tabstop>refreshButton</tabstop>
+  <tabstop>createButton</tabstop>
+  <tabstop>deleteButton</tabstop>
+  <tabstop>downloadButton</tabstop>
+  <tabstop>downloadAllButton</tabstop>
+  <tabstop>uploadButton</tabstop>
+  <tabstop>xnatTreeView</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

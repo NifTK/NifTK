@@ -1,5 +1,5 @@
 set(CPP_FILES
-  XnatBrowserSettings.cpp
+  XnatSettings.cpp
   XnatConnectDialog.cpp
   XnatConnection.cpp
   XnatConnectionFactory.cpp

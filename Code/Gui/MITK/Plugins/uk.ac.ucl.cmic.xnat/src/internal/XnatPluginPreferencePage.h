@@ -47,8 +47,14 @@ class XnatPluginPreferencePage : public QObject, public berry::IQtPreferencePage
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
+  static const std::string SERVER_NAME;
+  static const std::string SERVER_DEFAULT;
+  static const std::string USER_NAME;
+  static const std::string USER_DEFAULT;
   static const std::string DOWNLOAD_DIRECTORY_NAME;
   static const std::string DOWNLOAD_DIRECTORY_DEFAULT;
+  static const std::string WORK_DIRECTORY_NAME;
+  static const std::string WORK_DIRECTORY_DEFAULT;
 
   explicit XnatPluginPreferencePage();
   virtual ~XnatPluginPreferencePage();
@@ -80,7 +86,7 @@ private:
 
   bool m_Initializing;
 
-  berry::IPreferences::Pointer m_XnatPluginPreferencesNode;
+  berry::IPreferences::Pointer m_XnatBrowserViewPreferences;
 
   QWidget* m_MainControl;
 

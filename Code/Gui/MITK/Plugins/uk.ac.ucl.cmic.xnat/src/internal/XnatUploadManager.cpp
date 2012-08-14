@@ -7,7 +7,7 @@
 #include <QTimer>
 
 #include "XnatBrowserWidget.h"
-#include "XnatBrowserSettings.h"
+#include "XnatSettings.h"
 #include "XnatUploadDialog.h"
 
 

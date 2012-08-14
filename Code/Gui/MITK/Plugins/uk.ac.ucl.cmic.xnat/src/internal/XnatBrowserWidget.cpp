@@ -22,17 +22,15 @@
 #include <QMenu>
 #include <QTextBrowser>
 
-#include <QDebug>
-
 // Local includes:
-#include "XnatBrowserSettings.h"
+#include "XnatSettings.h"
 #include "XnatDownloadManager.h"
 #include "XnatUploadManager.h"
 
 class XnatBrowserWidgetPrivate
 {
 public:
-  XnatBrowserSettings* settings;
+  XnatSettings* settings;
 
   XnatConnection* connection;
   XnatDownloadManager* downloadManager;
@@ -86,11 +84,6 @@ XnatBrowserWidget::~XnatBrowserWidget()
 {
   Q_D(XnatBrowserWidget);
 
-  if (d->settings)
-  {
-    delete d->settings;
-  }
-
   // clean up XNAT connection
   if (d->connection)
   {
@@ -115,23 +108,18 @@ XnatBrowserWidget::~XnatBrowserWidget()
   }
 }
 
-XnatBrowserSettings* XnatBrowserWidget::settings() const
+XnatSettings* XnatBrowserWidget::settings() const
 {
   Q_D(const XnatBrowserWidget);
 
   return d->settings;
 }
 
-void XnatBrowserWidget::setSettings(XnatBrowserSettings* settings)
+void XnatBrowserWidget::setSettings(XnatSettings* settings)
 {
   Q_D(XnatBrowserWidget);
-  if (d->settings)
-  {
-    delete d->settings;
-  }
   d->settings = settings;
 }
-
 
 void XnatBrowserWidget::createConnections()
 {
@@ -178,6 +166,7 @@ void XnatBrowserWidget::loginXnat()
 
   // show dialog for user to login to XNAT
   XnatConnectDialog* connectDialog = new XnatConnectDialog(XnatConnectionFactory::instance(), this);
+  connectDialog->setSettings(d->settings);
   if (connectDialog->exec())
   {
     // delete old connection
@@ -211,34 +200,25 @@ void XnatBrowserWidget::refreshRows()
 
 void XnatBrowserWidget::downloadFile()
 {
-  qDebug() << "XnatBrowserWidget::downloadFile() 0";
   Q_D(XnatBrowserWidget);
 
   // get name of file to be downloaded
 //  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
   QModelIndex index = ui->xnatTreeView->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-  qDebug() << "XnatBrowserWidget::downloadFile() 20";
-//  QString xnatFilename = model->name(index).toString();
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
-  qDebug() << "XnatBrowserWidget::downloadFile() 25" << xnatFilename;
   if ( xnatFilename.isEmpty() )
   {
     return;
   }
-
-  qDebug() << "XnatBrowserWidget::downloadFile() 30";
 
   // download file
   if ( !d->downloadManager )
   {
     d->downloadManager = new XnatDownloadManager(this);
   }
-  qDebug() << "XnatBrowserWidget::downloadFile() 40 " << xnatFilename;
   QString filename = QFileInfo(xnatFilename).fileName();
-  qDebug() << "XnatBrowserWidget::downloadFile() 43 " << filename;
   d->downloadManager->downloadFile(filename);
-  qDebug() << "XnatBrowserWidget::downloadFile() 50";
 }
 
 void XnatBrowserWidget::downloadAndOpenFile()
@@ -246,10 +226,8 @@ void XnatBrowserWidget::downloadAndOpenFile()
   Q_D(XnatBrowserWidget);
 
   // get name of file to be downloaded
-//  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
   QModelIndex index = ui->xnatTreeView->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-//  QString xnatFilename = model->name(index);
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
   if ( xnatFilename.isEmpty() )
   {
@@ -262,7 +240,7 @@ void XnatBrowserWidget::downloadAndOpenFile()
     d->downloadManager = new XnatDownloadManager(this);
   }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
-  QString tempWorkDirectory = XnatBrowserSettings::instance()->getWorkSubdirectory();
+  QString tempWorkDirectory = d->settings->getWorkSubdirectory();
   d->downloadManager->silentlyDownloadFile(xnatFileNameTemp, tempWorkDirectory);
 
   // create list of files to open in CAWorks

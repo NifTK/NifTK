@@ -6,7 +6,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 
-//#include "XnatBrowserSettings.h"
+#include "XnatSettings.h"
 #include "XnatConnection.h"
 #include "XnatException.h"
 
@@ -18,12 +18,10 @@ XnatConnectDialog::XnatConnectDialog(XnatConnectionFactory& f, QWidget* parent)
 {
   QLabel* urlLabel = new QLabel(tr("&XNAT URL:"));
   urlEdit = new QLineEdit;
-//    urlEdit->setText(XnatBrowserSettings::getDefaultURL());
   urlLabel->setBuddy(urlEdit);
 
   QLabel* userLabel = new QLabel(tr("&User ID:"));
   userEdit = new QLineEdit;
-//    userEdit->setText(XnatBrowserSettings::getDefaultUserID());
   userLabel->setBuddy(userEdit);
 
   QLabel* passwordLabel = new QLabel(tr("&Password:"));
@@ -56,9 +54,20 @@ XnatConnectDialog::XnatConnectDialog(XnatConnectionFactory& f, QWidget* parent)
   inputEdit->setFocus();
 }
 
+XnatConnectDialog::~XnatConnectDialog()
+{
+}
+
 XnatConnection* XnatConnectDialog::getConnection()
 {
   return connection;
+}
+
+void XnatConnectDialog::setSettings(XnatSettings* settings)
+{
+  this->settings = settings;
+  urlEdit->setText(settings->getDefaultURL());
+  userEdit->setText(settings->getDefaultUserID());
 }
 
 void XnatConnectDialog::accept()
@@ -108,8 +117,11 @@ void XnatConnectDialog::accept()
   }
 
   // save XNAT URL and user ID as defaults
-//    XnatBrowserSettings::setDefaultURL(url);
-//    XnatBrowserSettings::setDefaultUserID(user);
+  if (settings)
+  {
+    settings->setDefaultURL(url);
+    settings->setDefaultUserID(user);
+  }
 
   QDialog::accept();
 }
