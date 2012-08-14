@@ -36,12 +36,13 @@ import os
 #    -> intensity value 255
 #
 
-meshDir            = 'W:/philipsBreastProneSupine/Meshes/meshMaterials6Supine/'
+meshDir            = 'Q:/philipsBreastProneSupine/Meshes/meshMaterials6Supine/'
 breastVolMeshName  = meshDir + 'breastSurf_impro.1.vtk'    # volume mesh    
 xmlFileOut         = meshDir + 'modelSupine.xml'
-chestWallMaskImage = 'W:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi_dilateCW.nii'
-labelImage         = 'W:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi.nii'
-skinMaskImage      = 'W:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi_dilateAir.nii'
+chestWallMaskImage = 'Q:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi_dilateCW.nii'
+outsideMaskImage   = 'Q:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi_dilateOut.nii'
+labelImage         = 'Q:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi.nii'
+skinMaskImage      = 'Q:/philipsBreastProneSupine/SegmentationSupine/segmOutChestPectMuscFatGland_voi_dilateAir.nii'
 
 
 ugr = vtk.vtkUnstructuredGridReader()
@@ -84,15 +85,22 @@ print( 'Found %i high y points' % len( highYIdx ) )
 print( 'Found %i low z points'  % len( lowZIdx  ) )
 print( 'Found %i high z points' % len( highZIdx ) )
 
-plotArrayAs3DPoints( lowXPoints,  ( 0, 0, 1.0 ) ) # sternum
-plotArrayAs3DPoints( lowZPoints,  ( 0, 0, 1.0 ) ) # inferior 
-plotArrayAs3DPoints( highZPoints, ( 0, 0, 1.0 ) ) # superior
+#plotArrayAs3DPoints( lowXPoints,  ( 0, 0, 1.0 ) ) # sternum
+#plotArrayAs3DPoints( lowZPoints,  ( 0, 0, 1.0 ) ) # inferior 
+#plotArrayAs3DPoints( highZPoints, ( 0, 0, 1.0 ) ) # superior
 
 #
 # Find the points close to the chest surface
 #
 ( ptsCloseToChest, idxCloseToChest ) = ndProx.getNodesWithtinMask( chestWallMaskImage, 200, boxVolMeshPoints, breastSurfMeshPoints )
 plotArrayAs3DPoints( ptsCloseToChest, (1.0,1.0,1.0) )
+
+#
+# Find the points close to the outside
+#
+( ptsCloseToOutside, idxCloseToOutside) = ndProx.getNodesWithtinMask( outsideMaskImage, 200, boxVolMeshPoints, breastSurfMeshPoints )
+plotArrayAs3DPoints( ptsCloseToOutside, (1.0,1.0,1.0) )
+
 
 
 # This little helper array is used for gravity load and material definition
@@ -103,7 +111,7 @@ allElemenstArray = np.array( range( boxVolMeshCells.shape[0]  ) )
 genFix = xGen.xmlModelGenrator(  boxVolMeshPoints / 1000., boxVolMeshCells[ : , 1:5], 'T4ANP' )
 
 # Fix constraints
-genFix.setFixConstraint( lowXIdx,  0 )         # sternum
+#genFix.setFixConstraint( lowXIdx,  0 )         # sternum
 
 #genFix.setFixConstraint( lowZIdx,  0 )         # inferior breast boundary
 #genFix.setFixConstraint( lowZIdx,  1 )         # inferior breast boundary
@@ -113,12 +121,15 @@ genFix.setFixConstraint( lowZIdx,  2 )         # inferior breast boundary
 #genFix.setFixConstraint( highZIdx, 1 )
 genFix.setFixConstraint( highZIdx, 2 )
 #genFix.setFixConstraint( highYIdx, 0 )         # mid-axillary line
-genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
+#genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
 #genFix.setFixConstraint( highYIdx, 2 )         # mid-axillary line
 genFix.setFixConstraint( idxCloseToChest, 0 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 1 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 2 )  # chest wall
 
+genFix.setFixConstraint( idxCloseToOutside, 0 )  # sternum and mid-axillary line
+genFix.setFixConstraint( idxCloseToOutside, 1 )  # sternum and mid-axillary line
+genFix.setFixConstraint( idxCloseToOutside, 2 )  # sternum and mid-axillary line
 
 #
 # visco elastic parameters
@@ -137,9 +148,9 @@ genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [  600, 50000], matGen.muscleElem
 genFix.setShellElements('T3', matGen.shellElements )
 genFix.setShellElementSet(0, 'NeoHookean', [1000], 1000, 0.005)
 
-genFix.setGravityConstraint( [0., 1., 0. ], 20., allNodesArray, 'POLY345FLAT' )
+genFix.setGravityConstraint( [0.,-1., 0. ], 10., allNodesArray, 'POLY345FLAT' )
 genFix.setOutput( 750, ['U', 'EKinTotal', 'EStrainTotal'] )
-genFix.setSystemParameters( timeStep=4.e-5, totalTime=2.0, dampingCoefficient=25, hgKappa=0.00, density=1000 )    
+genFix.setSystemParameters( timeStep=4.e-5, totalTime=2.0, dampingCoefficient=50, hgKappa=0.00, density=1000 )    
 genFix.writeXML( xmlFileOut )
 
 
