@@ -1,44 +1,49 @@
-#ifndef XNATUPLOADMANAGER_H
-#define XNATUPLOADMANAGER_H
+#ifndef XnatUploadManager_h
+#define XnatUploadManager_h
 
 #include <QObject>
-extern "C" {
+#include <QString>
+#include <QStringList>
+
+extern "C"
+{
 #include "XnatRest.h"
 }
-#include "XnatUploadDialog.h"
 
-class QString;
-class QStringList;
 class XnatBrowserWidget;
+class XnatBrowserSettings;
+class XnatUploadDialog;
 
 
 class XnatUploadManager : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    public:
-        XnatUploadManager(XnatBrowserWidget* b);
-        void uploadSavedData(const QString& dir);
+public:
+  XnatUploadManager(XnatBrowserWidget* b);
+  void uploadSavedData(const QString& dir);
 
-    public slots:
-        void uploadFiles();
+public slots:
+  void uploadFiles();
 
-    private slots:
-        void zipFiles();
-        void startUpload();
-        void uploadData();
+private slots:
+  void zipFiles();
+  void startUpload();
+  void uploadData();
 
-    private:
-        XnatBrowserWidget* browser;
-        XnatUploadDialog* uploadDialog;
+private:
+  bool getFilenames();
 
-        QString currDir;
-        QStringList userFilePaths;
-        QString zipFilename;
-        XnatRestAsynStatus finished;
-        unsigned long totalBytes;
+  XnatBrowserWidget* browser;
+  XnatUploadDialog* uploadDialog;
 
-        bool getFilenames();
+  QString currDir;
+  QStringList userFilePaths;
+  QString zipFilename;
+  XnatRestAsynStatus finished;
+  unsigned long totalBytes;
+
+  XnatBrowserSettings* settings;
 };
 
 #endif

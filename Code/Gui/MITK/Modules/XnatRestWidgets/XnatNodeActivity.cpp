@@ -1,3 +1,5 @@
+#include "XnatNodeActivity.h"
+
 #include <string.h>
 
 extern "C"
@@ -6,7 +8,6 @@ extern "C"
 }
 
 #include "XnatException.h"
-#include "XnatNodeActivity.h"
 
 static const char* CAT_SCAN = "Scan";
 static const char* CAT_RECONSTRUCTION = "Reconstruction";

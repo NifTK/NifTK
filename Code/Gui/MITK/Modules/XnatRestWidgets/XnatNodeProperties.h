@@ -1,9 +1,9 @@
-#ifndef XNATNODEPROPERTIES_H
-#define XNATNODEPROPERTIES_H
+#ifndef XnatNodeProperties_h
+#define XnatNodeProperties_h
 
 #include <QBitArray>
-#include "XnatNode.h"
 
+#include "XnatNode.h"
 
 class XnatNodeProperties
 {

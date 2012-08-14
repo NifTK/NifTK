@@ -95,4 +95,3 @@ QString XnatPluginSettings::getWorkSubdirectory()
   // return full path of subdirectory
   return QFileInfo(workDir, subdir).absoluteFilePath();
 }
-

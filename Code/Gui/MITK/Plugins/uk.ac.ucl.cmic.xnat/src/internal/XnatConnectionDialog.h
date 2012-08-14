@@ -1,7 +1,7 @@
-#ifndef CONNECTIONDIALOG_H
-#define CONNECTIONDIALOG_H
+#ifndef XnatConnectionDialog_h
+#define XnatConnectionDialog_h
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 class XnatConnectionDialogPrivate;
 
@@ -34,4 +34,4 @@ private:
   Q_DISABLE_COPY(XnatConnectionDialog);
 };
 
-#endif // CONNECTIONDIALOG_H
+#endif

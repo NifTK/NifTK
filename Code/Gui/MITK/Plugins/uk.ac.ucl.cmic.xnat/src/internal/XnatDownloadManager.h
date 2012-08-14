@@ -1,49 +1,52 @@
-#ifndef XNATDOWNLOADMANAGER_H
-#define XNATDOWNLOADMANAGER_H
+#ifndef XnatDownloadManager_h
+#define XnatDownloadManager_h
 
 #include <QObject>
+
 extern "C" {
 #include "XnatRest.h"
 }
-#include "XnatDownloadDialog.h"
 
 class QString;
 class XnatBrowserWidget;
-
+class XnatBrowserSettings;
+class XnatDownloadDialog;
 
 class XnatDownloadManager : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    public:
-        XnatDownloadManager(XnatBrowserWidget* b);
-        void downloadFile(const QString& fname);
-        void downloadAllFiles();
-        void silentlyDownloadFile(const QString& fname, const QString& dir);
+public:
+  XnatDownloadManager(XnatBrowserWidget* b);
+  void downloadFile(const QString& fname);
+  void downloadAllFiles();
+  void silentlyDownloadFile(const QString& fname, const QString& dir);
 
-    signals:
-        void done();
+signals:
+  void done();
 
-    private slots:
-        void startDownload();
-        void startGroupDownload();
-        void downloadData();
-        void unzipData();
-        void finishDownload();
-        void downloadDataBlocking();
+private slots:
+  void startDownload();
+  void startGroupDownload();
+  void downloadData();
+  void unzipData();
+  void finishDownload();
+  void downloadDataBlocking();
 
-    private:
-        XnatBrowserWidget* browser;
-        XnatDownloadDialog* downloadDialog;
+private:
+  XnatBrowserWidget* browser;
+  XnatDownloadDialog* downloadDialog;
 
-        QString currDir;
-        QString zipFilename;
-        XnatRestAsynStatus finished;
-        unsigned long totalBytes;
+  XnatBrowserSettings* settings;
 
-        QString xnatFilename;
-        QString outFilename;
-        QString tempFilePath;
+  QString currDir;
+  QString zipFilename;
+  XnatRestAsynStatus finished;
+  unsigned long totalBytes;
+
+  QString xnatFilename;
+  QString outFilename;
+  QString tempFilePath;
 };
 
 #endif

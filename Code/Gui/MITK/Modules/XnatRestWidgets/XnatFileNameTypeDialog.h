@@ -1,5 +1,5 @@
-#ifndef XNATFILENAMETYPEDIALOG_H
-#define XNATFILENAMETYPEDIALOG_H
+#ifndef XnatFileNameTypeDialog_h
+#define XnatFileNameTypeDialog_h
 
 #include <QDialog>
 #include <QObject>

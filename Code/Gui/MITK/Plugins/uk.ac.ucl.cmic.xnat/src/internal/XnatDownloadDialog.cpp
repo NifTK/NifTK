@@ -1,63 +1,73 @@
-#include <QtGui>
 #include "XnatDownloadDialog.h"
 
+#include <QCloseEvent>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
 
-XnatDownloadDialog::XnatDownloadDialog(QWidget* parent) : QDialog(parent), 
-                                                          downloadCanceled(false)
+XnatDownloadDialog::XnatDownloadDialog(QWidget* parent)
+: QDialog(parent)
+, downloadCanceled(false)
 {
-    // delete dialog when dialog has accepted close event
-    setAttribute(Qt::WA_DeleteOnClose);
+  // delete dialog when dialog has accepted close event
+  setAttribute(Qt::WA_DeleteOnClose);
 
-    statusLabel = new QLabel(tr("Connecting..."));
-    statusLabel->setAlignment(Qt::AlignCenter);
+  statusLabel = new QLabel(tr("Connecting..."));
+  statusLabel->setAlignment(Qt::AlignCenter);
 
-    QPushButton* cancelButton = new QPushButton(tr("Cancel Download"));
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelClicked()));
+  QPushButton* cancelButton = new QPushButton(tr("Cancel Download"));
+  connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelClicked()));
 
-    QHBoxLayout* buttonLayout = new QHBoxLayout;
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(cancelButton);
-    buttonLayout->addStretch();
+  QHBoxLayout* buttonLayout = new QHBoxLayout;
+  buttonLayout->addStretch();
+  buttonLayout->addWidget(cancelButton);
+  buttonLayout->addStretch();
 
-    QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(statusLabel);
-    layout->addLayout(buttonLayout);
-    setLayout(layout);
+  QVBoxLayout* layout = new QVBoxLayout;
+  layout->addWidget(statusLabel);
+  layout->addLayout(buttonLayout);
+  setLayout(layout);
 
-    setWindowTitle(tr("Download in Progress"));
-    setFixedHeight(sizeHint().height());
-    setMinimumWidth(300);
-    setModal(true);
-    setAttribute(Qt::WA_DeleteOnClose);
+  setWindowTitle(tr("Download in Progress"));
+  setFixedHeight(sizeHint().height());
+  setMinimumWidth(300);
+  setModal(true);
+  setAttribute(Qt::WA_DeleteOnClose);
+}
+
+bool XnatDownloadDialog::wasDownloadCanceled()
+{
+  return downloadCanceled;
 }
 
 void XnatDownloadDialog::showBytesDownloaded(unsigned long numBytes)
 {
-    statusLabel->setText(tr("%1 bytes downloaded").arg(numBytes));
+  statusLabel->setText(tr("%1 bytes downloaded").arg(numBytes));
 }
 
 void XnatDownloadDialog::showUnzipInProgress()
 {
-    statusLabel->setText(tr("Unzipping downloaded file"));
-    statusLabel->update();
+  statusLabel->setText(tr("Unzipping downloaded file"));
+  statusLabel->update();
 }
 
 void XnatDownloadDialog::cancelClicked()
 {
-    downloadCanceled = true;
+  downloadCanceled = true;
 }
 
 void XnatDownloadDialog::closeEvent(QCloseEvent* event)
 {
-    if ( !downloadCanceled )
-    {
-        event->ignore();
-        downloadCanceled = true;
-    }
+  if ( !downloadCanceled )
+  {
+    event->ignore();
+    downloadCanceled = true;
+  }
 }
 
 bool XnatDownloadDialog::close()
 {
-    downloadCanceled = true;
-    return QWidget::close();
+  downloadCanceled = true;
+  return QWidget::close();
 }

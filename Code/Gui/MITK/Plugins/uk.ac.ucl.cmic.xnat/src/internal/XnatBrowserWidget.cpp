@@ -181,7 +181,7 @@ void XnatBrowserWidget::loginXnat()
   if (connectDialog->exec())
   {
     // delete old connection
-    if ( d->connection != 0 )
+    if ( d->connection )
     {
       delete d->connection;
       d->connection = 0;
@@ -230,7 +230,7 @@ void XnatBrowserWidget::downloadFile()
   qDebug() << "XnatBrowserWidget::downloadFile() 30";
 
   // download file
-  if ( d->downloadManager )
+  if ( !d->downloadManager )
   {
     d->downloadManager = new XnatDownloadManager(this);
   }
@@ -257,7 +257,7 @@ void XnatBrowserWidget::downloadAndOpenFile()
   }
 
   // download file
-  if ( d->downloadManager )
+  if ( !d->downloadManager )
   {
     d->downloadManager = new XnatDownloadManager(this);
   }
@@ -384,7 +384,7 @@ void XnatBrowserWidget::downloadAllFiles()
   }
 
   // download files
-  if ( d->downloadManager )
+  if ( !d->downloadManager )
   {
       d->downloadManager = new XnatDownloadManager(this);
   }

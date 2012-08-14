@@ -1,7 +1,8 @@
-#ifndef XNATMODEL_H
-#define XNATMODEL_H
+#ifndef XnatModel_h
+#define XnatModel_h
 
 #include <QAbstractItemModel>
+
 #include "XnatNode.h"
 
 

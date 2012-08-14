@@ -1,5 +1,5 @@
-#ifndef XNATCONNECTDIALOG_H
-#define XNATCONNECTDIALOG_H
+#ifndef XnatConnectDialog_h
+#define XnatConnectDialog_h
 
 #include <QDialog>
 

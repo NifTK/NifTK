@@ -1,5 +1,5 @@
-#ifndef XNATNAMEDIALOG_H
-#define XNATNAMEDIALOG_H
+#ifndef XnatNameDialog_h
+#define XnatNameDialog_h
 
 #include <QDialog>
 
