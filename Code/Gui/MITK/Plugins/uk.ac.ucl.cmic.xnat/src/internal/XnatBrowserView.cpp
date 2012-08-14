@@ -40,7 +40,6 @@
 #include <QStringBuilder>
 
 #include "XnatBrowserWidget.h"
-#include "XnatConnectionDialog.h"
 #include "XnatPluginPreferencePage.h"
 #include "XnatPluginSettings.h"
 
@@ -87,6 +86,7 @@ void XnatBrowserView::CreateQtPartControl(QWidget *parent)
     XnatBrowserWidget* xnatBrowserWidget = new XnatBrowserWidget(parent);
     d->settings = new XnatPluginSettings(GetPreferences());
     xnatBrowserWidget->setSettings(d->settings);
+    xnatBrowserWidget->setDataStorage(GetDataStorage());
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(xnatBrowserWidget);
     parent->setLayout(layout);
@@ -118,114 +118,114 @@ void XnatBrowserView::SetFocus()
 
 void XnatBrowserView::on_connectButton_clicked()
 {
-  XnatConnectionDialog* connectionDialog = new XnatConnectionDialog(m_Parent);
-
-  if (connectionDialog->exec() == QDialog::Accepted)
-  {
-    QString serverUri = connectionDialog->serverUri();
-    QString username = connectionDialog->username();
-    QString password = connectionDialog->password();
-    MITK_INFO << "server uri: " << serverUri.toStdString();
-    MITK_INFO << "username: " << username.toStdString();
-    MITK_INFO << "password: " << password.toStdString();
-
-    serverUri.append("/data/archive/projects");
-
-    QUrl projectsQuery(serverUri);
-
-    QNetworkRequest request;
-    request.setRawHeader("Authorization", "Basic " +
-        QByteArray(QString("%1:%2").arg(username).arg(password).toAscii()).toBase64());
-    request.setUrl(projectsQuery);
-
-    MITK_INFO << "projectsQuery: " << projectsQuery.toString().toStdString();
-
-//    QNetworkReply* reply = d->networkAccessManager->get(request);
-    // NOTE: Store QNetworkReply pointer (maybe into caller).
-    // When this HTTP request is finished you will receive this same
-    // QNetworkReply as response parameter.
-    // By the QNetworkReply pointer you can identify request and response.
-  }
-
-  delete connectionDialog;
+//  XnatConnectionDialog* connectionDialog = new XnatConnectionDialog(m_Parent);
+//
+//  if (connectionDialog->exec() == QDialog::Accepted)
+//  {
+//    QString serverUri = connectionDialog->serverUri();
+//    QString username = connectionDialog->username();
+//    QString password = connectionDialog->password();
+//    MITK_INFO << "server uri: " << serverUri.toStdString();
+//    MITK_INFO << "username: " << username.toStdString();
+//    MITK_INFO << "password: " << password.toStdString();
+//
+//    serverUri.append("/data/archive/projects");
+//
+//    QUrl projectsQuery(serverUri);
+//
+//    QNetworkRequest request;
+//    request.setRawHeader("Authorization", "Basic " +
+//        QByteArray(QString("%1:%2").arg(username).arg(password).toAscii()).toBase64());
+//    request.setUrl(projectsQuery);
+//
+//    MITK_INFO << "projectsQuery: " << projectsQuery.toString().toStdString();
+//
+////    QNetworkReply* reply = d->networkAccessManager->get(request);
+//    // NOTE: Store QNetworkReply pointer (maybe into caller).
+//    // When this HTTP request is finished you will receive this same
+//    // QNetworkReply as response parameter.
+//    // By the QNetworkReply pointer you can identify request and response.
+//  }
+//
+//  delete connectionDialog;
 }
 
 void XnatBrowserView::onNetworkReply(QNetworkReply* reply)
 {
-  // Reading attributes of the reply
-  // e.g. the HTTP status code
-  QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-  // Or the target URL if it was a redirect:
-  QVariant redirectionTargetUrl = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-  // see CS001432 on how to handle this
-
-  // no error received?
-  if (reply->error() == QNetworkReply::NoError)
-  {
-    // read data from QNetworkReply here
-
-    // Example 1: Creating QImage from the reply
-//    QImageReader imageReader(reply);
-//    QImage pic = imageReader.read();
-
-    // Example 2: Reading bytes form the reply
-    QByteArray bytes = reply->readAll();  // bytes
-
-    QString result = QString::fromUtf8(bytes); // string
-    MITK_INFO << "response: " << result.toStdString();
-    QScriptValue sc;
-    QScriptEngine engine;
-    sc = engine.evaluate(result); // In new versions it may need to look like engine.evaluate("(" + QString(result) + ")");
-
-//    if (sc.property("result").isArray())
-//    {
-//      QStringList items;
-//      qScriptValueToSequence(sc.property("result"), items);
+//  // Reading attributes of the reply
+//  // e.g. the HTTP status code
+//  QVariant statusCodeV = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+//  // Or the target URL if it was a redirect:
+//  QVariant redirectionTargetUrl = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+//  // see CS001432 on how to handle this
 //
-//      foreach (QString str, items)
-//      {
-//        qDebug("value %s",str.toStdString().c_str());
-//      }
-//    }
-  }
-  // Some http error received
-  else
-  {
-    // handle errors here
-    QMessageBox::critical(m_Parent, "Network error", reply->errorString());
-
-  }
-
-  // We receive ownership of the reply object
-  // and therefore need to handle deletion.
-  reply->deleteLater();
+//  // no error received?
+//  if (reply->error() == QNetworkReply::NoError)
+//  {
+//    // read data from QNetworkReply here
+//
+//    // Example 1: Creating QImage from the reply
+////    QImageReader imageReader(reply);
+////    QImage pic = imageReader.read();
+//
+//    // Example 2: Reading bytes form the reply
+//    QByteArray bytes = reply->readAll();  // bytes
+//
+//    QString result = QString::fromUtf8(bytes); // string
+//    MITK_INFO << "response: " << result.toStdString();
+//    QScriptValue sc;
+//    QScriptEngine engine;
+//    sc = engine.evaluate(result); // In new versions it may need to look like engine.evaluate("(" + QString(result) + ")");
+//
+////    if (sc.property("result").isArray())
+////    {
+////      QStringList items;
+////      qScriptValueToSequence(sc.property("result"), items);
+////
+////      foreach (QString str, items)
+////      {
+////        qDebug("value %s",str.toStdString().c_str());
+////      }
+////    }
+//  }
+//  // Some http error received
+//  else
+//  {
+//    // handle errors here
+//    QMessageBox::critical(m_Parent, "Network error", reply->errorString());
+//
+//  }
+//
+//  // We receive ownership of the reply object
+//  // and therefore need to handle deletion.
+//  reply->deleteLater();
 }
 
 void XnatBrowserView::onAuthenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)
 {
-  MITK_INFO << "void XnatBrowserView::onAuthenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)";
-  authenticator->setUser(QString("espakm"));
-  authenticator->setPassword(QString("demo"));
+//  MITK_INFO << "void XnatBrowserView::onAuthenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)";
+//  authenticator->setUser(QString("espakm"));
+//  authenticator->setPassword(QString("demo"));
 }
 
 #ifndef QT_NO_OPENSSL
 void XnatBrowserView::onSslErrors(QNetworkReply* reply, const QList<QSslError>& errors)
 {
-  QString errorString;
-  foreach (const QSslError& error, errors)
-  {
-    if (!errorString.isEmpty())
-    {
-      errorString.append(", ");
-    }
-    errorString.append(error.errorString());
-  }
-
-  if (QMessageBox::warning(m_Parent, tr("HTTP"),
-          tr("One or more SSL errors has occurred: %1").arg(errorString),
-          QMessageBox::Ignore | QMessageBox::Abort) == QMessageBox::Ignore)
-  {
-    reply->ignoreSslErrors();
-  }
+//  QString errorString;
+//  foreach (const QSslError& error, errors)
+//  {
+//    if (!errorString.isEmpty())
+//    {
+//      errorString.append(", ");
+//    }
+//    errorString.append(error.errorString());
+//  }
+//
+//  if (QMessageBox::warning(m_Parent, tr("HTTP"),
+//          tr("One or more SSL errors has occurred: %1").arg(errorString),
+//          QMessageBox::Ignore | QMessageBox::Abort) == QMessageBox::Ignore)
+//  {
+//    reply->ignoreSslErrors();
+//  }
 }
 #endif

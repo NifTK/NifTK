@@ -22,6 +22,8 @@
 #include <QMenu>
 #include <QTextBrowser>
 
+#include <mitkDataNodeFactory.h>
+
 // Local includes:
 #include "XnatSettings.h"
 #include "XnatDownloadManager.h"
@@ -38,11 +40,14 @@ public:
 
   QAction* downloadAction;
   QAction* downloadAllAction;
-  QAction* downloadAndOpenAction;
+  QAction* importAction;
+  QAction* importAllAction;
   QAction* uploadAction;
   QAction* saveDataAndUploadAction;
   QAction* createAction;
   QAction* deleteAction;
+
+  mitk::DataStorage::Pointer dataStorage;
 };
 
 XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
@@ -69,7 +74,8 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     ui->refreshButton->setEnabled(false);
     ui->downloadButton->setEnabled(false);
     ui->downloadAllButton->setEnabled(false);
-    ui->downloadAndOpenButton->setEnabled(false);
+    ui->importButton->setEnabled(false);
+    ui->importAllButton->setEnabled(false);
     ui->uploadButton->setEnabled(false);
     ui->saveDataAndUploadButton->setEnabled(false);
     ui->createButton->setEnabled(false);
@@ -121,6 +127,19 @@ void XnatBrowserWidget::setSettings(XnatSettings* settings)
   d->settings = settings;
 }
 
+mitk::DataStorage::Pointer XnatBrowserWidget::dataStorage() const
+{
+  Q_D(const XnatBrowserWidget);
+
+  return d->dataStorage;
+}
+
+void XnatBrowserWidget::setDataStorage(mitk::DataStorage::Pointer dataStorage)
+{
+  Q_D(XnatBrowserWidget);
+  d->dataStorage = dataStorage;
+}
+
 void XnatBrowserWidget::createConnections()
 {
   Q_D(XnatBrowserWidget);
@@ -130,8 +149,10 @@ void XnatBrowserWidget::createConnections()
   connect(d->downloadAction, SIGNAL(triggered()), this, SLOT(downloadFile()));
   d->downloadAllAction = new QAction(tr("Download All"), this);
   connect(d->downloadAllAction, SIGNAL(triggered()), this, SLOT(downloadAllFiles()));
-  d->downloadAndOpenAction = new QAction(tr("Download And Open"), this);
-  connect(d->downloadAndOpenAction, SIGNAL(triggered()), this, SLOT(downloadAndOpenFile()));
+  d->importAction = new QAction(tr("Import"), this);
+  connect(d->importAction, SIGNAL(triggered()), this, SLOT(importFile()));
+  d->importAllAction = new QAction(tr("Import All"), this);
+  connect(d->importAllAction, SIGNAL(triggered()), this, SLOT(importFiles()));
   d->uploadAction = new QAction(tr("Upload"), this);
   connect(d->uploadAction, SIGNAL(triggered()), d->uploadManager, SLOT(uploadFiles()));
   d->saveDataAndUploadAction = new QAction(tr("Save Data and Upload"), this);
@@ -146,7 +167,8 @@ void XnatBrowserWidget::createConnections()
   connect(ui->refreshButton, SIGNAL(clicked()), ui->xnatTreeView, SLOT(refreshRows()));
   connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
   connect(ui->downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
-  connect(ui->downloadAndOpenButton, SIGNAL(clicked()), this, SLOT(downloadAndOpenFile()));
+  connect(ui->importButton, SIGNAL(clicked()), this, SLOT(importFile()));
+  connect(ui->importAllButton, SIGNAL(clicked()), this, SLOT(importFiles()));
   connect(ui->uploadButton, SIGNAL(clicked()), d->uploadManager, SLOT(uploadFiles()));
   connect(ui->saveDataAndUploadButton, SIGNAL(clicked()), d->saveDataAndUploadAction, SLOT(trigger()));
   connect(d->saveDataAndUploadAction, SIGNAL(changed()), this, SLOT(setSaveDataAndUploadButtonEnabled()));
@@ -182,7 +204,8 @@ void XnatBrowserWidget::loginXnat()
 
     ui->downloadButton->setEnabled(false);
     ui->downloadAllButton->setEnabled(false);
-    ui->downloadAndOpenButton->setEnabled(false);
+    ui->importButton->setEnabled(false);
+    ui->importAllButton->setEnabled(false);
     ui->uploadButton->setEnabled(false);
     ui->saveDataAndUploadButton->setEnabled(false);
     ui->createButton->setEnabled(false);
@@ -221,7 +244,7 @@ void XnatBrowserWidget::downloadFile()
   d->downloadManager->downloadFile(filename);
 }
 
-void XnatBrowserWidget::downloadAndOpenFile()
+void XnatBrowserWidget::importFile()
 {
   Q_D(XnatBrowserWidget);
 
@@ -251,82 +274,116 @@ void XnatBrowserWidget::downloadAndOpenFile()
     return;
   }
 
-//    pqServer* server = pqActiveObjects::instance().activeServer();
-//    if (!server)
+  // for performance, only check if the first file is readable
+  for ( int i = 0 ; i < 1 /*files.size()*/ ; i++ )
+  {
+    if ( !QFileInfo(files[i]).isReadable() )
+    {
+      //qWarning() << "File '" << files[i] << "' cannot be read. Type not recognized";
+      QString tempString("File '");
+      tempString.append(files[i]);
+      tempString.append("' cannot be read. Type not recognized");
+      QMessageBox::warning(this, tr("Download and Open Error"), tempString);
+      return;
+    }
+  }
+
+  try
+  {
+    mitk::DataNodeFactory::Pointer nodeFactory = mitk::DataNodeFactory::New();
+  //  mitk::FileReader::Pointer fileReader = mitk::FileReader::New();
+    // determine reader type based on first file. For now, we are relying
+    // on the user to avoid mixing file types.
+    QString filename = files[0];
+    MITK_INFO << "XnatBrowserWidget::importFile() filename: " << filename.toStdString();
+    MITK_INFO << "XnatBrowserWidget::importFile() xnat filename: " << xnatFilename.toStdString();
+    nodeFactory->SetFileName(filename.toStdString());
+    nodeFactory->Update();
+    mitk::DataNode::Pointer dataNode = nodeFactory->GetOutput();
+    dataNode->SetName(xnatFilename.toStdString());
+    MITK_INFO << "reading the image has succeeded";
+    if (d->dataStorage.IsNotNull())
+    {
+      d->dataStorage->Add(dataNode);
+    }
+  }
+  catch (std::exception& exc)
+  {
+    MITK_INFO << "reading the image has failed";
+  }
+
+
+}
+
+void XnatBrowserWidget::importFiles()
+{
+  Q_D(XnatBrowserWidget);
+
+  // get name of file to be downloaded
+  QModelIndex index = ui->xnatTreeView->currentIndex();
+  XnatModel* model = ui->xnatTreeView->xnatModel();
+  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
+  if ( xnatFilename.isEmpty() )
+  {
+    return;
+  }
+
+  // download file
+  if ( !d->downloadManager )
+  {
+    d->downloadManager = new XnatDownloadManager(this);
+  }
+  QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
+  QString tempWorkDirectory = d->settings->getWorkSubdirectory();
+  d->downloadManager->downloadAllFiles();
+
+//  // create list of files to open in CAWorks
+//  QStringList files;
+//  files.append(QFileInfo(tempWorkDirectory, xnatFileNameTemp).absoluteFilePath());
+//  if ( files.empty() )
+//  {
+//    return;
+//  }
+//
+//  // for performance, only check if the first file is readable
+//  for ( int i = 0 ; i < 1 /*files.size()*/ ; i++ )
+//  {
+//    if ( !QFileInfo(files[i]).isReadable() )
 //    {
-//        //qCritical() << "Cannot create reader without an active server.";
-//        return;
+//      //qWarning() << "File '" << files[i] << "' cannot be read. Type not recognized";
+//      QString tempString("File '");
+//      tempString.append(files[i]);
+//      tempString.append("' cannot be read. Type not recognized");
+//      QMessageBox::warning(this, tr("Download and Open Error"), tempString);
+//      return;
 //    }
+//  }
 //
-//    vtkSMReaderFactory* readerFactory =
-//        vtkSMProxyManager::GetProxyManager()->GetReaderFactory();
-//
-//    // for performance, only check if the first file is readable
-//    for ( int i = 0 ; i < 1 /*files.size()*/ ; i++ )
-//    {
-//        if ( !readerFactory->TestFileReadability(files[i].toAscii().data(), server->GetConnectionID()) )
-//        {
-//            //qWarning() << "File '" << files[i] << "' cannot be read. Type not recognized";
-//            QString tempString("File '");
-//            tempString.append(files[i]);
-//            tempString.append("' cannot be read. Type not recognized");
-//            QMessageBox::warning(this, tr("Download and Open Error"), tempString);
-//            return;
-//        }
-//    }
-//
+//  try
+//  {
+//    mitk::DataNodeFactory::Pointer nodeFactory = mitk::DataNodeFactory::New();
+//  //  mitk::FileReader::Pointer fileReader = mitk::FileReader::New();
 //    // determine reader type based on first file. For now, we are relying
 //    // on the user to avoid mixing file types.
 //    QString filename = files[0];
-//    QString readerType, readerGroup;
-//
-//    if ( readerFactory->CanReadFile(filename.toAscii().data(), server->GetConnectionID()) )
+//    MITK_INFO << "XnatBrowserWidget::importFile() filename: " << filename.toStdString();
+//    MITK_INFO << "XnatBrowserWidget::importFile() xnat filename: " << xnatFilename.toStdString();
+//    nodeFactory->SetFileName(filename.toStdString());
+//    nodeFactory->Update();
+//    mitk::DataNode::Pointer dataNode = nodeFactory->GetOutput();
+//    dataNode->SetName(xnatFilename.toStdString());
+//    MITK_INFO << "reading the image has succeeded";
+//    if (d->dataStorage.IsNotNull())
 //    {
-//        readerType = readerFactory->GetReaderName();
-//        readerGroup = readerFactory->GetReaderGroup();
+//      d->dataStorage->Add(dataNode);
 //    }
-//    else
-//    {
-//        // reader factory could not determine the type of reader to create for the
-//        // file. Ask the user.
-//        pqSelectReaderDialog prompt(filename, server,
-//            readerFactory, pqCoreUtilities::mainWidget());
-//        if ( prompt.exec() == QDialog::Accepted )
-//        {
-//            readerType = prompt.getReader();
-//            readerGroup = prompt.getGroup();
-//        }
-//        else
-//        {
-//            // user didn't choose any reader
-//            return;
-//        }
-//    }
-//
-//    BEGIN_UNDO_SET("Create 'Reader'");
-//    pqObjectBuilder* builder =
-//        pqApplicationCore::instance()->getObjectBuilder();
-//    pqPipelineSource* reader = builder->createReader(readerGroup,
-//        readerType, files, server);
-//
-//    if ( reader )
-//    {
-//        pqApplicationCore* core = pqApplicationCore::instance();
-//
-//        // Add this to the list of recent server resources ...
-//        pqServerResource resource = server->getResource();
-//        resource.setPath(files[0]);
-//        resource.addData("readergroup", reader->getProxy()->GetXMLGroup());
-//        resource.addData("reader", reader->getProxy()->GetXMLName());
-//        resource.addData("extrafilesCount", QString("%1").arg(files.size()-1));
-//        for ( int cc = 1 ; cc < files.size() ; cc++ )
-//        {
-//            resource.addData(QString("file.%1").arg(cc-1), files[cc]);
-//        }
-//        core->serverResources().add(resource);
-//        core->serverResources().save(*core->settings());
-//    }
-//    END_UNDO_SET();
+//  }
+//  catch (std::exception& exc)
+//  {
+//    MITK_INFO << "reading the image has failed";
+//  }
+
+
 }
 
 bool XnatBrowserWidget::startFileDownload(const QString& zipFilename)
@@ -421,7 +478,8 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
   const XnatNodeProperties& nodeProperties = ui->xnatTreeView->nodeProperties(index);
   ui->downloadButton->setEnabled(nodeProperties.isFile());
   ui->downloadAllButton->setEnabled(nodeProperties.holdsFiles());
-  ui->downloadAndOpenButton->setEnabled(nodeProperties.isFile());
+  ui->importButton->setEnabled(nodeProperties.isFile());
+  ui->importAllButton->setEnabled(nodeProperties.holdsFiles());
   ui->uploadButton->setEnabled(nodeProperties.receivesFiles());
   ui->saveDataAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveDataAndUploadAction->isEnabled()));
   ui->createButton->setEnabled(nodeProperties.isModifiable());
@@ -451,11 +509,12 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
     }
     if ( nodeProperties.holdsFiles() )
     {
-      actions.append(d->downloadAllAction);
+        actions.append(d->downloadAllAction);
+        actions.append(d->importAllAction);
     }
     if ( nodeProperties.isFile() )
     {
-      actions.append(d->downloadAndOpenAction);
+      actions.append(d->importAction);
     }
     if ( nodeProperties.receivesFiles() )
     {

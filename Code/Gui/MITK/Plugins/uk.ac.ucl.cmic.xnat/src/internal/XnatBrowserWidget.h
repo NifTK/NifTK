@@ -5,6 +5,8 @@
 
 #include "ui_XnatBrowserWidget.h"
 
+#include <mitkDataStorage.h>
+
 class QModelIndex;
 class XnatBrowserWidgetPrivate;
 class XnatSettings;
@@ -17,6 +19,9 @@ class XnatBrowserWidget : public QWidget
 public:
   explicit XnatBrowserWidget(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~XnatBrowserWidget();
+
+  mitk::DataStorage::Pointer dataStorage() const;
+  void setDataStorage(mitk::DataStorage::Pointer dataStorage);
 
   XnatSettings* settings() const;
   void setSettings(XnatSettings* settings);
@@ -31,7 +36,8 @@ private slots:
   void loginXnat();
   void downloadFile();
   void downloadAllFiles();
-  void downloadAndOpenFile();
+  void importFile();
+  void importFiles();
   void createNewRow();
   void deleteCurrentRow();
   void setButtonEnabled(const QModelIndex& index);
