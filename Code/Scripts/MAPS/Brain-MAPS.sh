@@ -786,6 +786,7 @@ function brain-delineation-using-staple()
   rm -f ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img}.hdr
   
   
+: <<'COMMENTS'
 ###
 ### Testing extra erosion and conditional dilation. 
 ###
@@ -844,7 +845,8 @@ function brain-delineation-using-staple()
     number_of_gm_160_sd=1.7
     
     distance_csf_gm=`echo "${gm}-${csf}" | bc -l`
-    distance_factor=`echo "${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
+    #distance_factor=`echo "${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
+    distance_factor=`echo "0.9*${gm_sd}*${gm_sd}/(${gm_sd}*${gm_sd}+${csf_sd}*${csf_sd})" | bc -l`
     lower_threshold_distance=`echo "${gm}-${distance_factor}*${distance_csf_gm}" | bc -l`
     lower_threshold_sd=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
     lower_threshold_95=${lower_threshold_distance}
@@ -891,7 +893,7 @@ function brain-delineation-using-staple()
 ###
 ###
 ###  
-  
+COMMENTS  
   
   makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_hippo_staple_nreg_thresholded_sba_img} -d 2
   makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region_dilated} -alt 0
