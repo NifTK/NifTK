@@ -420,6 +420,7 @@ VelocityFieldDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeforma
   this->m_MovingImageDeformationField = Superclass::DuplicateDeformableParameters(this->m_DeformationField); 
   
   typename DeformationFieldType::Pointer currentVelcoityField = Superclass::DuplicateDeformableParameters(this->m_VelocityField[0]); 
+  typename DeformationFieldType::Pointer temp; 
   
   for (int i = 0; i < this->m_NumberOfVelocityField; i++)
   {
@@ -430,36 +431,19 @@ VelocityFieldDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeforma
     currentVelcoityField = this->m_FluidPDESolver->GetOutput(); 
     currentVelcoityField->DisconnectPipeline(); 
     
-    // Compose the Jacobian matrix of the moving image transform. 
-    typename DeformationFieldType::Pointer temp = Superclass::DuplicateDeformableParameters(currentVelcoityField);  
-    displacementFieldJacobianFilter->SetInput(temp); 
-    displacementFieldJacobianFilter->Update(); 
-    typename DisplacementFieldJacobianFilterType::OutputImageType::Pointer currentMovingImageJacobian = displacementFieldJacobianFilter->GetOutput(); 
-    currentMovingImageJacobian->DisconnectPipeline(); 
-    typename DisplacementFieldJacobianFilterType::OutputDeterminantImageType::Pointer currentMovingImageJacobianDeterminant = displacementFieldJacobianFilter->GetDeterminant(); 
-    if (movingImageJacobian.IsNull())
-    {
-      movingImageJacobian = currentMovingImageJacobian; 
-      movingImageJacobianDeterminant = currentMovingImageJacobianDeterminant; 
-    }
-    else
-    {
-      multiplyJacobianImageFilter->SetInput1(movingImageJacobian); 
-      multiplyJacobianImageFilter->SetInput2(currentMovingImageJacobian); 
-      multiplyJacobianImageFilter->Update(); 
-      movingImageJacobian = multiplyJacobianImageFilter->GetOutput(); 
-      movingImageJacobian->DisconnectPipeline(); 
-      
-      multiplyJacobianDeterminantImageFilter->SetInput1(currentMovingImageJacobianDeterminant); 
-      multiplyJacobianDeterminantImageFilter->SetInput2(movingImageJacobianDeterminant); 
-      multiplyJacobianDeterminantImageFilter->Update(); 
-      movingImageJacobianDeterminant = multiplyJacobianDeterminantImageFilter->GetOutput(); 
-      movingImageJacobianDeterminant->DisconnectPipeline(); 
-    }
-    
     // Compose the moving image transform by "pulling back". Serious tidying later. 
     temp = Superclass::DuplicateDeformableParameters(currentVelcoityField);  
     UpdateRegriddedDeformationParameters(this->m_MovingImageDeformationField, temp, +1.*this->m_TimeStep[i]); 
+    
+    // Compose the Jacobian matrix of the moving image transform. 
+    displacementFieldJacobianFilter->SetInput(this->m_MovingImageDeformationField); 
+    displacementFieldJacobianFilter->Update(); 
+    movingImageJacobian = displacementFieldJacobianFilter->GetOutput(); 
+    movingImageJacobian->DisconnectPipeline(); 
+    displacementFieldJacobianFilter->SetInput(this->m_MovingImageDeformationField); 
+    displacementFieldJacobianFilter->Update(); 
+    movingImageJacobianDeterminant = displacementFieldJacobianFilter->GetDeterminant(); 
+    movingImageJacobianDeterminant->DisconnectPipeline(); 
     
     // Compose the fixed image transform by "pushing forward". Serious tidying later. 
     temp = Superclass::DuplicateDeformableParameters(this->m_FixedImageDeformationField); 

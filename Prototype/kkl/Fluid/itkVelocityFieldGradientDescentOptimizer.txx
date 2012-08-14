@@ -827,7 +827,7 @@ VelocityFieldGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDefo
   transform->UseFixedImageDeformationField(); 
   //transform->ComputeMinJacobian(); 
   //typename VelocityFieldTransformType::JacobianDeterminantFilterType::OutputImageType::Pointer fixedImageTransformJacobian = transform->GetJacobianImage(); 
-  //fixedImageTransformJacobian->DisconnectPipeline(); 
+  //fixedImageTransformJacobian->DisconnectPipeline(); niftkitkDebugMacro
   fixedImageRegriddingResampler->UpdateLargestPossibleRegion(); 
   
 #if 0
@@ -852,12 +852,10 @@ VelocityFieldGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDefo
   this->m_ForceFilter->SetFixedImageMask(this->m_ImageToImageMetric->GetFixedImageMask()); 
   // this->m_ForceFilter->SetFixedImageTransformJacobian(movingImageTransformJacobian); 
   // this->m_ForceFilter->SetFixedImageTransformJacobian(transform->GetBackwardJacobianImage()); 
-  this->m_ForceFilter->SetMovingImageTransformJacobian(transform->GetForwardJacobianImage()); 
+  // this->m_ForceFilter->SetMovingImageTransformJacobian(transform->GetForwardJacobianImage()); 
   this->m_ForceFilter->UpdateLargestPossibleRegion(); 
-  niftkitkDebugMacro(<< "CalculateNextStep():Updating force");
   this->m_ForceFilter->UpdateLargestPossibleRegion();
   this->m_FluidPDESolver->SetInput(this->m_ForceFilter->GetOutput());
-  niftkitkDebugMacro(<< "CalculateNextStep():Updating solver");
   this->m_FluidPDESolver->UpdateLargestPossibleRegion(); 
   typename DeformableParameterType::Pointer currentVelocityField = this->m_FluidPDESolver->GetOutput(); 
   currentVelocityField->DisconnectPipeline(); 
@@ -893,7 +891,7 @@ VelocityFieldGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDefo
   }
   if (maxCurrentNorm == 0)
     maxCurrentNorm = 1; 
-  niftkitkDebugMacro(<< "CalculateNextStep():maxChange=" << maxChange << ",maxNorm=" << maxNorm << ",maxCurrentNorm=" << maxCurrentNorm );
+  niftkitkInfoMacro(<< "CalculateNextStep():maxChange=" << maxChange << ",maxNorm=" << maxNorm << ",maxCurrentNorm=" << maxCurrentNorm );
   // niftkitkDebugMacro(<< "CalculateNextStep():stepSize=" << this->m_StepSize);
   
   double maxVeclocityChange = 0.; 
@@ -927,14 +925,15 @@ VelocityFieldGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDefo
     
     for (unsigned int j = 0; j < Dimension; j++)
     {
-      value[j] = value[j] + (currentValue[j]-value[j])*maxAllowedFactor;
+      // value[j] = value[j] + (currentValue[j]-value[j])*maxAllowedFactor;
+      value[j] = value[j] + currentValue[j]*maxAllowedFactor;
     }
     
     currentIterator.Set(value); 
     currentVelocityFieldGradientIterator.Set(gradient); 
   }
   
-  niftkitkDebugMacro(<< "CalculateNextStep():maxVeclocityChange=" << maxVeclocityChange);
+  niftkitkInfoMacro(<< "CalculateNextStep():maxVeclocityChange=" << maxVeclocityChange);
   GetMovingImageVelocityFieldDeformableTransform()->SetVelocityField(currentVelocityField, 0); 
   GetMovingImageVelocityFieldDeformableTransform()->SetFluidPDESolver(this->m_FluidPDESolver); 
   GetMovingImageVelocityFieldDeformableTransform()->Shoot(); 
@@ -957,13 +956,13 @@ VelocityFieldGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDefo
   minJacobian = std::min<double>(minJacobian, transform->ComputeMinJacobian()); 
   movingImageRegriddingResampler->UpdateLargestPossibleRegion(); 
   
-  //(const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetFixedImage(this->m_FixedImage);
-  //(const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetMovingImage(movingImageRegriddingResampler->GetOutput());
-  (const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetFixedImage(fixedImageRegriddingResampler->GetOutput());
-  (const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetMovingImage(this->m_MovingImage);
+  (const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetFixedImage(this->m_FixedImage);
+  (const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetMovingImage(movingImageRegriddingResampler->GetOutput());
+  //(const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetFixedImage(fixedImageRegriddingResampler->GetOutput());
+  //(const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetMovingImage(this->m_MovingImage);
   (const_cast<ImageToImageMetricType*>(this->m_ImageToImageMetric))->SetTransform(identityTransform); 
   double similarity = this->m_ImageToImageMetric->GetValue(this->m_DeformableTransform->GetParameters()); 
-  niftkitkDebugMacro(<< "CalculateNextStep():Current similarity=" << similarity);
+  niftkitkInfoMacro(<< "CalculateNextStep():Current similarity=" << similarity);
   
   if (TFixedImage::ImageDimension == 2)
     sprintf(filename, "moving_%d_20.png", this->m_CurrentIteration); 
@@ -1088,11 +1087,11 @@ VelocityFieldGradientDescentOptimizer< TFixedImage, TMovingImage, TScalar, TDefo
     stepSizeFactor = 1.; 
   
   this->m_StepSize = this->m_StepSize*std::min(2., std::max(0.5, stepSizeFactor)); 
-  niftkitkDebugMacro(<< "CalculateNextStep():this->m_StepSize=" << this->m_StepSize);
+  niftkitkInfoMacro(<< "CalculateNextStep():this->m_StepSize=" << this->m_StepSize);
   if (this->m_StepSize > this->m_InitialStepSize)
     this->m_StepSize = this->m_InitialStepSize; 
-  niftkitkDebugMacro(<< "CalculateNextStep():maxDotProduct=" << maxDotProduct << ",minDotProduct=" << minDotProduct << ",meanDotProduct=" << meanDotProduct);
-  niftkitkDebugMacro(<< "CalculateNextStep():this->m_StepSize=" << this->m_StepSize);
+  niftkitkInfoMacro(<< "CalculateNextStep():maxDotProduct=" << maxDotProduct << ",minDotProduct=" << minDotProduct << ",meanDotProduct=" << meanDotProduct);
+  niftkitkInfoMacro(<< "CalculateNextStep():this->m_StepSize=" << this->m_StepSize);
   this->m_PreviousVelocityFieldGradient[0] = currentVelocityFieldGradient; 
   
 #else

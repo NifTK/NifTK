@@ -50,6 +50,8 @@
 #include "itkFluidPDEFilter.h"
 #include "itkFluidVelocityToDeformationFilter.h"
 #include "itkFluidGradientDescentOptimizer.h" 
+#include "itkVelocityFieldGradientDescentOptimizer.h"
+#include "itkVelocityFieldDeformableTransform.h"
 
 const    unsigned int    Dimension = 2;
 //typedef  unsigned char   PixelType;
@@ -59,7 +61,8 @@ typedef itk::Image< PixelType, Dimension >  MovingImageType;
 typedef itk::Image< int, Dimension >  DiffImageType;
 
 
-int itkFluidRegistrationTest( int argc, char *argv[] )
+//int itkFluidRegistrationTest( int argc, char *argv[] )
+int main( int argc, char *argv[] )
 {
   if( argc < 4 )
   {
@@ -75,6 +78,7 @@ int itkFluidRegistrationTest( int argc, char *argv[] )
   GlobalTransformType::Pointer globalTransform = GlobalTransformType::New();
   
   typedef itk::FluidDeformableTransform<FixedImageType, double, Dimension, float > TransformType;
+  //typedef itk::VelocityFieldDeformableTransform<FixedImageType, double, Dimension, float > TransformType;
   TransformType::Pointer transform = TransformType::New();
   
   typedef itk::LinearInterpolateImageFunction< MovingImageType, double> LinearInterpolatorType;
@@ -114,6 +118,7 @@ int itkFluidRegistrationTest( int argc, char *argv[] )
   SincInterpolatorType::Pointer sincInterpolator  = SincInterpolatorType::New();
 
   typedef itk::FluidGradientDescentOptimizer<FixedImageType, MovingImageType, double, float> OptimizerType;
+  //typedef itk::VelocityFieldGradientDescentOptimizer<FixedImageType, FixedImageType, double, float> OptimizerType;
   OptimizerType::Pointer optimizer = OptimizerType::New();
 
   typedef itk::IterationUpdateCommand CommandType;
@@ -154,6 +159,9 @@ int itkFluidRegistrationTest( int argc, char *argv[] )
   optimizer->SetMaximumNumberOfIterations(atoi(argv[8]));
   optimizer->SetStepSize(atof(argv[7]));
   optimizer->SetMinimumJacobianThreshold(0.5); 
+  //optimizer->SetFixedImageInterpolator(registrationInterpolator); 
+  //optimizer->SetMovingImageInterpolator(registrationInterpolator); 
+  optimizer->SetComposeTransformation(true); 
 
   // for itkFluidGradientDescentOptimizer
   int force = atoi(argv[14]); 
@@ -167,8 +175,8 @@ int itkFluidRegistrationTest( int argc, char *argv[] )
     optimizer->SetForceFilter(ccForceFilter); 
   }
   optimizer->SetFluidPDESolver(fluidPDEFilter);
-  optimizer->SetFluidVelocityToDeformationFilter(fluidAddVelocityFilter);
-  optimizer->SetCheckSimilarityMeasure(true);
+  //optimizer->SetFluidVelocityToDeformationFilter(fluidAddVelocityFilter);
+  optimizer->SetCheckSimilarityMeasure(false);
   optimizer->SetMinimumDeformationMagnitudeThreshold(atof(argv[12]));
   optimizer->SetRegriddingStepSizeReductionFactor(1.0);
   optimizer->SetMinimumStepSize(1.0e-20);
