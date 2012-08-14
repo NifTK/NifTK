@@ -63,9 +63,10 @@ NB needs a fixed itkNonUniformBSpline to work correctly
 #define LEFT1ST 1
 #define RIGHT1ST 2
 
-#define FACECONTROLRATIO 30
-//#define FACECONTROLRATIO 15
-#define INITSTEP 5
+//#define FACECONTROLRATIO 30
+#define FACECONTROLRATIO 15
+//#define INITSTEP 5
+#define INITSTEP 2
 
 double lowerstepsize = 0.05; // empirically, 0.09 seems to be the cutoff below
                              // which updates run down to zero.
@@ -73,7 +74,7 @@ double lowerstepsize = 0.05; // empirically, 0.09 seems to be the cutoff below
 bool freesurfercheat = 0;
 bool peredgecost=0;
 bool repaintateachupdate = true;
-const int dropcyclicsize = 6; // Drop hexagonal cycles.
+const int dropcyclicsize = 14; // Drop hexagonal cycles.
 bool edgescoremode = false;
 bool pprofilemode = false; //alternative is ssd point cost
 
@@ -81,7 +82,7 @@ typedef itk::NonUniformBSpline<3> NonUniformBSpline;
 
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    ucltk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Update parcellation. This registers the surface image to the mean label image." << std::endl;
     std::cout << "  " << std::endl;
@@ -816,7 +817,9 @@ void getConnectedVertices(vtkPolyData *mesh, vtkIdType seed,
       vtkCell *cell;
       cell = mesh->GetCell(cellIdList[ii]);
 
-      if(cell->GetNumberOfEdges() <= 0)
+      // modified
+      if(cell->GetNumberOfEdges() <= 0 ||
+	 cell->GetCellType() != VTK_TRIANGLE )
 	{
 	  continue;
 	}
@@ -1190,6 +1193,61 @@ vtkPolyData* extractBoundaryModel(vtkPolyData *polyData)
     
     return outputPolyData;
   }
+
+
+
+void cleanLabels(vtkPolyData *polyData)
+  {
+    vtkDataArray *scalarData = polyData->GetPointData()->GetScalars();
+    vtkPoints *points = polyData->GetPoints();
+    vtkIdType numberOfPoints = polyData->GetNumberOfPoints();
+
+    std::cout << "Clean labels" << std::endl;
+    // For each point, test neighbours to see if it is an isolated label,
+    // if it is then take a vote on what it should be. In ties go for the
+    // lowest number (arbitrary, but otherwise we get into curvature and things
+    vtkSmartPointer<vtkIdList> neighbours = 
+      vtkSmartPointer<vtkIdList>::New();
+    for (vtkIdType point=0 ; point<numberOfPoints; point++) {
+      vtkIdType thisLabel = scalarData->GetTuple1(point);
+      neighbours->Reset();
+      getConnectedVertices(polyData, point, neighbours);
+      std::map<vtkIdType,unsigned> labels;
+      for (unsigned n_neigh=0; n_neigh < neighbours->GetNumberOfIds();
+	   n_neigh++){
+	vtkIdType neighbour = neighbours->GetId(n_neigh);
+	vtkIdType n_label = scalarData->GetTuple1(neighbour);
+	if ( labels.find(n_label) != labels.end() ) {
+	  labels[n_label] += 1;
+	} else {
+	  labels[n_label] = 1;
+	}
+	if (n_label == thisLabel) {
+	  // Wont need to keep counting for vote,
+	  break;
+	}
+      }
+      if ( labels.find(thisLabel) == labels.end() ) {
+	unsigned highestcount=0;
+	vtkIdType highestlabel=-1;
+	std::map<vtkIdType,unsigned>::iterator n_label;
+	for ( n_label = labels.begin(); n_label != labels.end(); n_label++) {
+	  if ( highestcount < n_label->second ) {
+	    highestcount = n_label->second;
+	    highestlabel = n_label->first;
+	  }
+	}
+	std::cout << "Replacing label, point " << point;
+	if ( highestlabel > -1 ) {
+	  scalarData->SetTuple1(point, highestlabel);
+	  std::cout << " new label " << highestlabel;
+	}
+	std::cout <<std::endl;
+      }
+    }
+    return;
+  }
+
 
 
 NonUniformBSpline::Pointer derivativeOfSpline( NonUniformBSpline::Pointer splinein ) {
@@ -1728,6 +1786,7 @@ sortedBoundariesT sortUnsortedBoundaries(vtkPolyData *polyData, unsortedBoundari
 	    printf("Failed to close boundary loop\n");
 	  }
 	  if (buildEdge.size() > dropcyclicsize) {
+	    std::cout << "cyclic" << std::endl;
 	    sortedBoundaries.addEdge(buildEdge, polyData,
 				     structuredPairBoundaryT::cyclic,
 				     iilabel, jjlabel);
@@ -1764,6 +1823,7 @@ void saveBoundaryPolyData (vtkPolyData *polyData, sortedBoundariesT sortedBounda
     unsigned labelCyclic = 5;
     unsigned labelJunction = 10;
 
+    std::cout << "all points" <<std::endl;
     for (vtkIdType pointNumber = 0; pointNumber < numberOfPoints;
 	 pointNumber++) {
       points->GetPoint(pointNumber, point);
@@ -1772,14 +1832,20 @@ void saveBoundaryPolyData (vtkPolyData *polyData, sortedBoundariesT sortedBounda
       outputLabels->SetValue(pointNumber, 0); // zero for region, 1 for edge
                                               // 2 for junction
     }
+    std::cout << "through boundaries" <<std::endl;
+    unsigned boundcount=0;
+    unsigned boundlen=sortedBoundaries.structuredBoundaries.size();
     for ( sortedBoundariesT::iterator thisBound = sortedBoundaries.begin();
 	  thisBound != sortedBoundaries.end() ; thisBound++) {
+      boundcount++;
       std::vector<vtkIdType> faceList = thisBound->faceList;
       std::vector<vtkIdType> jnpts;
       structuredPairBoundaryT::boundaryT type = thisBound->boundaryType;
       for (unsigned face=0 ; face < faceList.size() ; face++ ) {
+	// !face catches faceList.size == 1 and divide by zero here.
+	// Not that that should happen...
 	int junction = (type==structuredPairBoundaryT::noncyclic) &&
-	  !(face%(faceList.size()-1));
+	  (!face || !(face%(faceList.size()-1)));
 	int label =  type==structuredPairBoundaryT::noncyclic ? labelNonCyclic
 	  : labelCyclic;
 	polyData->GetCellPoints(faceList[face],
@@ -1800,6 +1866,8 @@ void saveBoundaryPolyData (vtkPolyData *polyData, sortedBoundariesT sortedBounda
 	}
       }
     }
+    std::cout << "newpoly data" <<std::endl;
+
     vtkPolyData *outputPolyData = vtkPolyData::New();
     outputPolyData->SetPoints(outputPoints);
     outputPolyData->GetPointData()->SetScalars(outputLabels);
@@ -1808,10 +1876,14 @@ void saveBoundaryPolyData (vtkPolyData *polyData, sortedBoundariesT sortedBounda
     outputPolyData->BuildCells();
     outputPolyData->BuildLinks();
     
+    std::cout << "deleting support" <<std::endl;
+
     outputPoints->Delete();
     outputLabels->Delete();
     outputLines->Delete();
     outputVectors->Delete();
+
+    std::cout << "writing" <<std::endl;
     
     vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
     writer->SetFileName("testnewboundarymodel.vtk");
@@ -1819,6 +1891,9 @@ void saveBoundaryPolyData (vtkPolyData *polyData, sortedBoundariesT sortedBounda
     writer->Write();
     writer->Delete();
     outputPolyData->Delete();
+
+    std::cout << "writerfinished" <<std::endl;
+
     return;
 }
 
@@ -2123,6 +2198,20 @@ bool updateStructuredBoundaryFaces ( vtkPolyData *polyData,
       result = false;
     }
     t = tnext;
+    // Now reset any loops back over the same edge:
+    if ( newFaceList.size()>2 &&
+	 newFaceList[newFaceList.size()-1] ==
+	 newFaceList[newFaceList.size()-3] ) {
+      std::cout << "Culling re-cross " << newFaceList[newFaceList.size()-3] <<
+	" " << newFaceList[newFaceList.size()-2] << " "
+		<<newFaceList[newFaceList.size()-3] << std::endl;
+      newFaceList.pop_back();
+      newFaceList.pop_back();
+      newTList.pop_back();
+      newTList.pop_back();
+      newEdges.pop_back();
+      newEdges.pop_back();
+    }
   }
 
   if (result) {
@@ -2159,6 +2248,7 @@ void paintSortedBoundariesToPolyData ( vtkPolyData *polyData,
 			      sortedBoundariesT sortedBoundaries,
                               std::vector<vtkIdType> paintlabels) {
   std::map<vtkIdType,vtkIdType> nextPts;
+  paintlabels.resize(0); // Disable selective redraw, still suspect.
   vtkDataArray *labels = polyData->GetPointData()->GetScalars();
 
   // If given paintlabels to redo we limit our points (and bounds) involved
@@ -2177,11 +2267,13 @@ void paintSortedBoundariesToPolyData ( vtkPolyData *polyData,
       for (unsigned whichlabel=0; whichlabel < paintlabels.size() ;
 	   whichlabel++) {
 	if (paintlabels[whichlabel] == label) {
+	  std::cout << whichlabel << " " << label << std::endl;
 	  unlabelledPts.insert(ii);
 	}
       }
     }
   }
+  //  std::cout << "unlabelledPts.size " << unlabelledPts.size() << std::endl;
 
   // First paint the edges on
 
@@ -2277,7 +2369,7 @@ void paintSortedBoundariesToPolyData ( vtkPolyData *polyData,
 	    else {
 	      std::vector<vtkIdType> stepbackEdgeLeftRight = 
 		getEdgePointLeftRight(faceminus2, faceminus1, polyData);
-	      bool foundcommonpoint=0;
+	      int foundcommonpoint=0;
 	      vtkIdType commonpoint=-1;
 	      for (unsigned iilastedge=0; !foundcommonpoint &&
 		     iilastedge<2; iilastedge++) {
@@ -2285,16 +2377,21 @@ void paintSortedBoundariesToPolyData ( vtkPolyData *polyData,
 		       iiedge<2; iiedge++) {
 		  if ( stepbackEdgeLeftRight[iilastedge] == 
 		       edgeLeftRight[iiedge] ) {
-		    foundcommonpoint=1;
+		    foundcommonpoint+=1;
 		    commonpoint=edgeLeftRight[iiedge];
 		  }
 		}
 	      }
-	      if ( foundcommonpoint ) {
+	      if ( foundcommonpoint > 1 ) std::cout << "common point dupl." << std::endl;
+	      if ( 0 && foundcommonpoint ) { // Try without
+		std::cout << "common point " << commonpoint << ": label " <<
+		  nextPts[commonpoint] << std::endl;
 		nextPts[edgeLeftRight[0]]=nextPts[commonpoint];
 		nextPts[edgeLeftRight[1]]=nextPts[commonpoint];
 	      } else {
-		std::cout << "Painting error, re-crossed edge didn't find outside point" << std::endl;
+		if ( ! foundcommonpoint ) {
+		  std::cout << "Painting error, re-crossed edge didn't find outside point" << std::endl;
+		}
 	      }
 	    }
 	  }
@@ -2884,6 +2981,7 @@ double updateBoundaryInternalCPs ( vtkPolyData *polyData,
 			      profileRight);
   } else {
     paintSortedBoundariesToPolyData(polyData, splineModel, bound.labels);
+    //paintSortedBoundariesToPolyData(polyData, splineModel);
     double testLabelImageArray[labelImageSize];
     startscore = computeSSDOfLines(labelImageSize, labelImageXSize, testLabelImageArray, labelImageArray, scalarData, lines, neighbours, cutoffthreshold);
   }
@@ -2960,8 +3058,10 @@ double updateBoundaryInternalCPs ( vtkPolyData *polyData,
 			      profileRight);
     } else {
       paintSortedBoundariesToPolyData(polyData, splineModel, bound.labels);
+      //paintSortedBoundariesToPolyData(polyData, splineModel);
 
       double testLabelImageArray[labelImageSize];
+
       vtkDataArray *newscalarData = polyData->GetPointData()->GetScalars();
       endscore = computeSSDOfLines(labelImageSize, labelImageXSize, testLabelImageArray, labelImageArray, newscalarData, lines, neighbours, cutoffthreshold);
       //      newscalarData->Delete();
@@ -2985,11 +3085,17 @@ double updateBoundaryInternalCPs ( vtkPolyData *polyData,
 	      << " End " << endscore << "(" <<endscoreperedge<<")"
 	      << " step " << stepsize;
   if (!doupdate) {
+    std::cout << "reset cps" <<std::endl;
     bound.spline->SetControlPoints(cplist);
+    std::cout << "update faces" <<std::endl;
     updateStructuredBoundaryFaces( polyData, bound );
     if (!edgescoremode) {
       // Need to return to vanilla boundary.
+      std::cout << "repaint bound" <<std::endl;
+
       paintSortedBoundariesToPolyData(polyData, splineModel, bound.labels);
+      std::cout << "okay" <<std::endl;
+      //paintSortedBoundariesToPolyData(polyData, splineModel);
     }
     std::cout << " didn't update";
   }
@@ -3028,7 +3134,7 @@ regularisejncps(NonUniformBSpline::ControlPointType oldjunction,
   step.Fill(0);
 
   NonUniformBSpline::ControlPointType midjunction;
-  bool stepadjust=0;
+  bool stepadjust=1;
 
   if ( stepadjust ) {
     //Using oldjunction as the midpoint doesn't work as the centring needs more
@@ -3267,6 +3373,7 @@ double updateBoundaryJunctionCPs ( vtkPolyData *polyData,
 
   if (!edgescoremode) {
     paintSortedBoundariesToPolyData(polyData, bounds, jnlabels);
+    //paintSortedBoundariesToPolyData(polyData, bounds);
     double testLabelImageArray[labelImageSize];
     startscore = computeSSDOfLines(labelImageSize, labelImageXSize, testLabelImageArray, labelImageArray, scalarData, lines, neighbours, cutoffthreshold);
   }
@@ -3379,6 +3486,7 @@ double updateBoundaryJunctionCPs ( vtkPolyData *polyData,
       }
     } else {
       paintSortedBoundariesToPolyData(polyData, bounds, jnlabels);
+      //paintSortedBoundariesToPolyData(polyData, bounds);
       double testLabelImageArray[labelImageSize];
       vtkDataArray *newscalarData = polyData->GetPointData()->GetScalars();
       endscore = computeSSDOfLines(labelImageSize, labelImageXSize, testLabelImageArray, labelImageArray, newscalarData, lines, neighbours, cutoffthreshold);
@@ -3397,7 +3505,7 @@ double updateBoundaryJunctionCPs ( vtkPolyData *polyData,
   }
 
   // Regularise the junction to stop folding.
-  bool regularise=1;
+  bool regularise=0;
   if(regularise) {
     std::cout << "Points before reg" << std::endl;
     std::cout << cplistlist[0][endcps[0][0]]  << std::endl
@@ -3413,6 +3521,8 @@ double updateBoundaryJunctionCPs ( vtkPolyData *polyData,
 				  newcplistlist[1][endcps[1][1]],
 				  newcplistlist[2][endcps[2][1]]);
     
+    endscore=0;
+    endscoreperedge=0;
     for (unsigned ii=0; ii<boundaries.size(); ii++) {
       vtkIdType boundnum = boundaries[ii];
       structuredPairBoundaryT &bound = bounds.structuredBoundaries[boundnum];
@@ -3428,7 +3538,31 @@ double updateBoundaryJunctionCPs ( vtkPolyData *polyData,
       
       bound.spline->SetControlPoints(newcplistlist[ii]);    
       updateStructuredBoundaryFaces( polyData, bound );
+      if (edgescoremode) {
+	double thisscore;
+	thisscore = boundaryScore(bound.edges,
+				  pointProfile,
+				  profileForLabel[labelsleftright[ii][0]],
+				  profileForLabel[labelsleftright[ii][1]]
+				  );
+	endscore += thisscore;
+	endscoreperedge += thisscore/edgesTs[ii].size();
+      }
     }
+    if (!edgescoremode) {
+      paintSortedBoundariesToPolyData(polyData, bounds, jnlabels);
+      //paintSortedBoundariesToPolyData(polyData, bounds);
+      double testLabelImageArray[labelImageSize];
+      vtkDataArray *newscalarData = polyData->GetPointData()->GetScalars();
+      endscore = computeSSDOfLines(labelImageSize, labelImageXSize, testLabelImageArray, labelImageArray, newscalarData, lines, neighbours, cutoffthreshold);
+      //      newscalarData->Delete();
+      std::cout << "After repaint start " << startscore << " end "
+		<< endscore <<std::endl;
+    }
+
+    scorechange = endscore - startscore;
+    scorechangeperedge = endscoreperedge - startscoreperedge;
+    doupdate = peredgecost ? scorechangeperedge < 0 : scorechange < 0;
     std::cout << "Points after reg" << std::endl;
     std::cout << cplistlist[0][endcps[0][0]]  << std::endl
 	      << newcplistlist[0][endcps[0][0]] << std::endl
@@ -3442,7 +3576,7 @@ double updateBoundaryJunctionCPs ( vtkPolyData *polyData,
   scorechangeperedge = endscoreperedge - startscoreperedge;
   doupdate = peredgecost ? scorechangeperedge < 0 : scorechange < 0;
 
-  std::cout << "CP update Start " << startscore <<"("<<startscoreperedge<<")"
+  std::cout << "JNCP update Start " << startscore <<"("<<startscoreperedge<<")"
 	    << " End " << endscore <<"("<<endscoreperedge<<")"
 	    << " step " << stepsize;
   if (!doupdate) {
@@ -3452,6 +3586,7 @@ double updateBoundaryJunctionCPs ( vtkPolyData *polyData,
       bound.spline->SetControlPoints(cplistlist[ii]);
       updateStructuredBoundaryFaces( polyData, bound );
       if (!edgescoremode) {
+	//paintSortedBoundariesToPolyData(polyData, bounds);
 	paintSortedBoundariesToPolyData(polyData, bounds, jnlabels);
       }
     }
@@ -3570,46 +3705,46 @@ int main(int argc, char** argv)
     }   
     else if(strcmp(argv[i], "-nl") == 0){
       args.numberOfLabels=atoi(argv[++i]);
-      std::cout << "Set -nl=" >> niftk::ConvertToString(args.numberOfLabels);
+      std::cout << "Set -nl=" >> ucltk::ConvertToString(args.numberOfLabels);
     }
     else if(strcmp(argv[i], "-ni") == 0){
       args.numberOfIterations=atoi(argv[++i]);
-      std::cout << "Set -ni=" >> niftk::ConvertToString(args.numberOfIterations);
+      std::cout << "Set -ni=" >> ucltk::ConvertToString(args.numberOfIterations);
     }        
     else if(strcmp(argv[i], "-si") == 0){
       args.numberOfSmoothingIterations=atoi(argv[++i]);
-      std::cout << "Set -si=" >> niftk::ConvertToString(args.numberOfIterations);
+      std::cout << "Set -si=" >> ucltk::ConvertToString(args.numberOfIterations);
     }        
     else if(strcmp(argv[i], "-ga") == 0){
       args.gamma=atof(argv[++i]);
-      std::cout << "Set -ga=" >> niftk::ConvertToString(args.gamma);
+      std::cout << "Set -ga=" >> ucltk::ConvertToString(args.gamma);
     }
     else if(strcmp(argv[i], "-ss") == 0){
       args.stepSize=atof(argv[++i]);
-      std::cout << "Set -ss=" >> niftk::ConvertToString(args.stepSize);
+      std::cout << "Set -ss=" >> ucltk::ConvertToString(args.stepSize);
     }
     else if(strcmp(argv[i], "-averageVec") == 0){
       args.useVectorAveraging=true;
-      std::cout << "Set -averageVec=" >> niftk::ConvertToString(args.useVectorAveraging);
+      std::cout << "Set -averageVec=" >> ucltk::ConvertToString(args.useVectorAveraging);
     }
     else if(strcmp(argv[i], "-forceNoConnections") == 0){
       args.forceNoConnections=true;
-      std::cout << "Set -forceNoConnections=" >> niftk::ConvertToString(args.forceNoConnections);
+      std::cout << "Set -forceNoConnections=" >> ucltk::ConvertToString(args.forceNoConnections);
     }
     else if(strcmp(argv[i], "-forceBoundary") == 0){
       args.forceBoundary=true;
-      std::cout << "Set -forceBoundary=" >> niftk::ConvertToString(args.forceBoundary);
+      std::cout << "Set -forceBoundary=" >> ucltk::ConvertToString(args.forceBoundary);
     }
     else if(strcmp(argv[i], "-testLabel") == 0){
       args.testLabel=atoi(argv[++i]);
       allLabels = false;
-      std::cout << "Set -testLabel=" >> niftk::ConvertToString(args.testLabel);
+      std::cout << "Set -testLabel=" >> ucltk::ConvertToString(args.testLabel);
     }
     else if(strcmp(argv[i], "-smooth") == 0){
       args.smooth=true;
       char *argopt = argv[++i];
       double argoptf;
-      std::cout << "Set -smooth=" >> niftk::ConvertToString(argopt);
+      std::cout << "Set -smooth=" >> ucltk::ConvertToString(argopt);
       if ( sscanf(argopt,"%lf",&argoptf) != 1 ) {
 	std::cerr << argv[0] << ":\tParameter " << argopt << " not allowed." << std::endl;
 	return -1;
@@ -3635,7 +3770,7 @@ int main(int argc, char** argv)
     }
 
   // Load poly data containing surface and connections.
-  vtkPolyDataReader *surfaceReader = vtkPolyDataReader::New();
+  vtkSmartPointer<vtkPolyDataReader> surfaceReader = vtkPolyDataReader::New();
   surfaceReader->SetFileName(args.surfaceDataFile.c_str());
   surfaceReader->Update();
 
@@ -3701,6 +3836,7 @@ int main(int argc, char** argv)
   std::vector<LabelPairType> nextLabels;
   LabelImageType::IndexType index;
   std::vector<LabelUpdateInfoType> updateLabels;
+  std::cout << "Declare map" << std::endl;
   MapType map;
   vtkIdType iterationNumber = 0;
   vtkIdType pointNumber = 0;
@@ -3712,6 +3848,7 @@ int main(int argc, char** argv)
   vtkIdType *listOfPointIds;
   vtkIdType neighbourPoints[100];
   vtkPolyData *boundaryModel = NULL;
+  std::cout << "Declare writer" << std::endl;
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
   unsigned long int numberOfCellsChanged = 0;
   short unsigned int numberOfCellsUsingCurrentPoint = 0;
@@ -3728,11 +3865,16 @@ int main(int argc, char** argv)
   double normalizedVector[3];
   int labelThatWeAreMoving = 0;
   
-  // Build cells and links for quick lookup.
+  // Build cells and links for quick lookup
+  std::cout<<"Getting lines" << std::endl;
   vtkCellArray *lines = polyData->GetLines();
-  polyData->BuildCells();
+   std::cout << "Build cells" << std::endl;
+   polyData->BuildCells();
+   std::cout << "Build links2" << std::endl;
   polyData->BuildLinks();
 
+  std::cout << "New arrays" << std::endl;
+ 
   // Create a mean label image and a test label image
   double* meanLabelImageArray = new double[arraySize];
   double* testLabelImageArray = new double[arraySize];
@@ -3743,6 +3885,7 @@ int main(int argc, char** argv)
   vtkIdType bestPointNumber = 0;
   
   // Copy mean image into its array, and initialize testLabelImageArray.
+  std::cout << "Loading mean image" << std::endl;
   double totalInMeanArray=0;
   for (unsigned int y = 0; y < meanLabelImageSize[1]; y++)
     {
@@ -3757,7 +3900,8 @@ int main(int argc, char** argv)
         }
     }
 
-  // Work out total number of label values.
+  // Work out total number of label values
+  std::cout << "Count labels in vtk" << std::endl;
   std::set<int> labelNumbers;
   for (vtkIdType pointNumber = 0; pointNumber < numberOfPoints; pointNumber++)
     {
@@ -3822,6 +3966,8 @@ int main(int argc, char** argv)
       connectivitymap = buildPointConnectivity(polyData, lines, neighbours,
 					       cutoffthreshold);
       
+      cleanLabels(polyData);
+
       sortedBoundariesT splineModel =  buildBoundarySplineModel(polyData);
       paintSortedBoundariesToPolyData(polyData, splineModel);
       saveAnyPolyData(polyData,"repaint1.vtk");
@@ -3862,6 +4008,14 @@ int main(int argc, char** argv)
 	if(repaintateachupdate) {
 	  paintSortedBoundariesToPolyData(polyData, splineModel);
 	}
+      {
+	std::cout << "Trying point 89646" << std::endl;
+	vtkIdType *listOfPointIds;
+	vtkIdType numberOfPointsInCurrentCell;
+	polyData->GetCellPoints(89646,
+				numberOfPointsInCurrentCell, listOfPointIds);
+	std::cout << "got " << numberOfPointsInCurrentCell << std::endl;
+      }
       }
       //      for (sortedBoundariesT::iterator bound = splineModel.begin();
       //	   bound != splineModel.end() ; bound++ ) {
@@ -3877,22 +4031,49 @@ int main(int argc, char** argv)
 				      lines,
 				      neighbours,
 				      cutoffthreshold);
+	std::cout << "Doing repaint" << std::endl;
 	if(repaintateachupdate) {
 	  paintSortedBoundariesToPolyData(polyData, splineModel);
 	}
+	std::cout << "CP update repaint done" << std::endl;
+      {
+	std::cout << "Trying point 89646" << std::endl;
+	vtkIdType *listOfPointIds;
+	vtkIdType numberOfPointsInCurrentCell;
+	polyData->GetCellPoints(89646,
+				numberOfPointsInCurrentCell, listOfPointIds);
+	std::cout << "got " << numberOfPointsInCurrentCell << std::endl;
       }
-      for (unsigned ii=0; ii< splineModel.structuredBoundaries.size(); ii++) {
+      }
+      bool smoothcpchange = 1;
+      std::cout << "Starting smooth" << std::endl;
+      for (unsigned ii=0; smoothcpchange &&
+	     ii< splineModel.structuredBoundaries.size(); ii++) {
+	std::cout << "smooth " << ii+1 << "/" << splineModel.structuredBoundaries.size() << std::endl;
 	smoothBoundaryCPChange ( origSplineModel.structuredBoundaries[ii],
 				 splineModel.structuredBoundaries[ii]);
+      {
+	std::cout << "Trying point 89646" << std::endl;
+	vtkIdType *listOfPointIds;
+	vtkIdType numberOfPointsInCurrentCell;
+	polyData->GetCellPoints(89646,
+				numberOfPointsInCurrentCell, listOfPointIds);
+	std::cout << "got " << numberOfPointsInCurrentCell << std::endl;
       }
-      
+      }
+      std::cout << "Smooth done" << std::endl;
+
       paintSortedBoundariesToPolyData(polyData, splineModel);
 
+      std::cout << "saving boundaries" << std::endl;
       if (saveupdatedboundaries) saveBoundaryPolyData(polyData, splineModel);
+      std::cout << "saving repainted" << std::endl;
       if(saverepainted) saveAnyPolyData(polyData,"repainted.vtk");
       bool savesplines=1;
+      std::cout << "saving boundary splines" << std::endl;
       if (savesplines) saveSplinePolyData(polyData, splineModel, "testnewboundarymodel-splines-update.vtk", 1);
 
+      std::cout << "computing ssd" << std::endl;
       currentScore = computeSSDOfLines(arraySize, meanLabelImageSize[0], testLabelImageArray, meanLabelImageArray, scalarData, lines, neighbours, cutoffthreshold);
       std::cout << "[" << iterationNumber << "]:After update score =" << currentScore << std::endl;
       iterationNumber++;
