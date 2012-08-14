@@ -77,7 +77,7 @@ void XnatBrowserView::CreateQtPartControl(QWidget *parent)
   if (!m_Controls)
   {
     // Create UI
-    m_Controls = new Ui::XnatBrowserView();
+//    m_Controls = new Ui::XnatBrowserView();
     XnatBrowserWidget* xnatBrowserWidget = new XnatBrowserWidget(parent);
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(xnatBrowserWidget);
