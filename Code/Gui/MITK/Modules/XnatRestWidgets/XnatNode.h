@@ -6,7 +6,6 @@
 
 class XnatNodeActivity;
 
-
 class XnatNode
 {
 public:

@@ -118,22 +118,22 @@ bool XnatNode::isFile()
 
 bool XnatNode::holdsFiles()
 {
-    return nodeActivity.holdsFiles();
+  return nodeActivity.holdsFiles();
 }
 
 bool XnatNode::receivesFiles()
 {
-    return nodeActivity.receivesFiles();
+  return nodeActivity.receivesFiles();
 }
 
 bool XnatNode::isModifiable(int row)
 {
-    return nodeActivity.isModifiable(row, this);
+  return nodeActivity.isModifiable(row, this);
 }
 
 bool XnatNode::isDeletable()
 {
-    return nodeActivity.isDeletable();
+  return nodeActivity.isDeletable();
 }
 
 XnatNode::XnatChild::XnatChild(const char* who, XnatNode* ptr)

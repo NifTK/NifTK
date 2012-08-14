@@ -1,8 +1,7 @@
-#include <QtGui>
+#include "XnatModel.h"
 
 #include "XnatException.h"
 #include "XnatNodeProperties.h"
-#include "XnatModel.h"
 
 
 const int XnatModel::ModifiableChildKind = Qt::UserRole + 1;
@@ -280,4 +279,3 @@ void XnatModel::removeEntry(const QModelIndex& index)
   XnatNode* node = (XnatNode*) index.internalPointer();
   node->remove(index.row());
 }
-

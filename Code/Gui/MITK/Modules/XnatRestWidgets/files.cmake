@@ -1,6 +1,7 @@
 set(CPP_FILES
   XnatConnectDialog.cpp
   XnatConnection.cpp
+  XnatConnectionFactory.cpp
   XnatFileNameTypeDialog.cpp
   XnatModel.cpp
   XnatNameDialog.cpp

@@ -221,7 +221,7 @@ void XnatBrowserWidget::downloadFile()
 
   // get name of file to be downloaded
   QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
+  XnatModel* model = ui->xnatTreeView->xnatModel();
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
   if ( xnatFilename.isEmpty() )
   {
@@ -242,7 +242,7 @@ void XnatBrowserWidget::downloadAndOpenFile()
 
   // get name of file to be downloaded
   QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
+  XnatModel* model = ui->xnatTreeView->xnatModel();
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
   if ( xnatFilename.isEmpty() )
   {
@@ -350,7 +350,7 @@ bool XnatBrowserWidget::startFileDownload(const QString& zipFilename)
   try
   {
     QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-    XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
+    XnatModel* model = ui->xnatTreeView->xnatModel();
     model->downloadFile(index, zipFilename);
   }
   catch (XnatException& e)
@@ -368,7 +368,7 @@ void XnatBrowserWidget::downloadAllFiles()
 
   // get name of file group to be downloaded
   QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
+  XnatModel* model = ui->xnatTreeView->xnatModel();
   QString groupname = model->data(index, Qt::DisplayRole).toString();
   if ( groupname.isEmpty() )
   {
@@ -389,8 +389,7 @@ bool XnatBrowserWidget::startFileGroupDownload(const QString& zipFilename)
   try
   {
     QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-    XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
-    model->downloadFileGroup(index, zipFilename);
+    ui->xnatTreeView->xnatModel()->downloadFileGroup(index, zipFilename);
   }
   catch (XnatException& e)
   {
@@ -407,7 +406,7 @@ bool XnatBrowserWidget::startFileUpload(const QString& zipFilename)
   try
   {
     QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-    XnatModel* model = (XnatModel*) ui->xnatTreeView->model();
+    XnatModel* model = ui->xnatTreeView->xnatModel();
     model->uploadFile(index, zipFilename);
   }
   catch (XnatException& e)

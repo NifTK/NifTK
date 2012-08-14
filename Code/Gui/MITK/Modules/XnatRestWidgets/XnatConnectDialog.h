@@ -2,33 +2,30 @@
 #define XNATCONNECTDIALOG_H
 
 #include <QDialog>
-#include <QObject>
-#include "XnatConnection.h"
+
+#include "XnatConnectionFactory.h"
 
 class QLineEdit;
-
+class XnatConnection;
 
 class XnatConnectDialog : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    public:
-        XnatConnectDialog(XnatConnectionFactory& factory, QWidget* parent);
-        XnatConnection* getConnection();
+public:
+  XnatConnectDialog(XnatConnectionFactory& factory, QWidget* parent);
+  XnatConnection* getConnection();
 
-    private slots:
-        void accept();
+private slots:
+  void accept();
 
-    private:
-        XnatConnectionFactory& factory;
-        XnatConnection* connection;
+private:
+  XnatConnectionFactory& factory;
+  XnatConnection* connection;
 
-        QLineEdit* urlEdit;
-        QLineEdit* userEdit;
-        QLineEdit* passwordEdit;
+  QLineEdit* urlEdit;
+  QLineEdit* userEdit;
+  QLineEdit* passwordEdit;
 };
-
-
-inline XnatConnection* XnatConnectDialog::getConnection() { return connection; }
 
 #endif
