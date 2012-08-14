@@ -527,25 +527,22 @@ ENDIF (BUILD_MESHING)
 ######################################################################
 # Find NiftyLink
 ######################################################################
-FIND_PACKAGE(NiftyLink)
-IF(NiftyLink_FOUND)
-  MESSAGE("Found NiftyLink")    
-  INCLUDE(${NiftyLink_USE_FILE})
-ENDIF(NiftyLink_FOUND)
-
-IF(BUILD_IGI AND NOT NiftyLink_FOUND)
-  MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
-  SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
-ENDIF()
-
-IF(BUILD_IGI)
-  ADD_DEFINITIONS(-DBUILD_IGI)
-  MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
-  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
-ELSE(BUILD_IGI)
+IF (BUILD_IGI)
+  FIND_PACKAGE(NiftyLink)
+  IF (NiftyLink_FOUND)
+    MESSAGE("Found NiftyLink")
+    INCLUDE(${NiftyLink_USE_FILE})
+    ADD_DEFINITIONS(-DBUILD_IGI)
+    MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
+    SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
+  ELSE (NOT NiftyLink_FOUND)
+    MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
+    SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
+  ENDIF(NiftyLink_FOUND)
+ELSE (BUILD_IGI)
   MESSAGE("BUILD_IGI=OFF, so turning surgical guidance plugin OFF.")
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
-ENDIF(BUILD_IGI)
+ENDIF (BUILD_IGI)
 
 ######################################################################
 # Find FFTW.
