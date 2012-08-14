@@ -82,11 +82,11 @@ ENDIF()
 SET(EXTERNAL_PROJECTS
   BOOST
   VTK
-  GDCM       
+  GDCM
   ITK
   DCMTK
   CTK
-  NIFTYLINK
+  NiftyLink
   MITK
   CGAL
   NiftySim
@@ -94,6 +94,7 @@ SET(EXTERNAL_PROJECTS
   NiftyRec
   NiftySeg
   NifTKData
+  curl
 )
 
 FOREACH(p ${EXTERNAL_PROJECTS})
