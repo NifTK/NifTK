@@ -26,6 +26,7 @@ SET(MODULE_DIRS
   niftkMitkExt
   niftkQmitkExt
   XnatRest
+  XnatRestWidgets
 )
 
 FOREACH(MODULE_DIR ${MODULE_DIRS})
