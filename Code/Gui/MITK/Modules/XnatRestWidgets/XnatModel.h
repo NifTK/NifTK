@@ -23,7 +23,10 @@ public:
   void fetchMore(const QModelIndex& parent);
   bool removeAllRows(const QModelIndex& parent);
 
-  QString name(const QModelIndex& index) const;
+//  inline QVariant name(const QModelIndex& index) const
+//  {
+//    return data(index, Qt::DisplayRole);
+//  }
 
   void downloadFile(const QModelIndex& index, const QString& zipFilename);
   void downloadFileGroup(const QModelIndex& index, const QString& zipFilename);

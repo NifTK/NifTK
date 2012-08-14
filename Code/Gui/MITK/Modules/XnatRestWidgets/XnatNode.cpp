@@ -12,9 +12,13 @@ XnatNode::XnatNode(XnatNodeActivity& a, int r, XnatNode* p)
 
 XnatNode::~XnatNode()
 {
-  foreach (XnatChild* child, children)
+//  foreach (XnatChild* child, children)
+//  {
+//    delete child;
+//  }
+  for (unsigned i = 0; i < children.size(); ++i)
   {
-    delete child;
+    delete children[i];
   }
 }
 

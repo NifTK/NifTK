@@ -25,26 +25,28 @@
 #include "XnatPluginPreferencePage.h"
 
 #include <QWidget>
+#include <QDebug>
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-XnatPluginPreferencePage::XnatPluginPreferencePage()
-: m_MainControl(0)
-, m_Initializing(false)
-{
-}
+const std::string XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME("download directory");
+const std::string XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_DEFAULT(".");
 
-XnatPluginPreferencePage::XnatPluginPreferencePage(const XnatPluginPreferencePage& other)
-: berry::Object(), QObject()
+XnatPluginPreferencePage::XnatPluginPreferencePage()
+: m_Initializing(false)
+, m_MainControl(0)
+, m_Controls(0)
 {
-  Q_UNUSED(other)
-  throw std::runtime_error("Copy constructor not implemented");
 }
 
 XnatPluginPreferencePage::~XnatPluginPreferencePage()
 {
-
+  if (m_Controls)
+  {
+    delete m_MainControl;
+    delete m_Controls;
+  }
 }
 
 void XnatPluginPreferencePage::Init(berry::IWorkbench::Pointer )
@@ -55,13 +57,19 @@ void XnatPluginPreferencePage::Init(berry::IWorkbench::Pointer )
 void XnatPluginPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
-  berry::IPreferencesService::Pointer prefService 
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService::Pointer prefService =
+      berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
   m_XnatPluginPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.xnat");
 
-  m_MainControl = new QWidget(parent);
+  if (!m_Controls)
+  {
+    m_MainControl = new QWidget(parent);
+
+    // Create UI
+    m_Controls = new Ui::XnatPluginPreferencePage();
+    m_Controls->setupUi(m_MainControl);
+  }
 
   this->Update();
 
@@ -75,6 +83,10 @@ QWidget* XnatPluginPreferencePage::GetQtControl() const
 
 bool XnatPluginPreferencePage::PerformOk()
 {
+  QString downloadDirectory = m_Controls->dirBtnDownloadDirectory->directory();
+
+  m_XnatPluginPreferencesNode->Put(DOWNLOAD_DIRECTORY_NAME, downloadDirectory.toStdString());
+
   return true;
 }
 
@@ -84,4 +96,6 @@ void XnatPluginPreferencePage::PerformCancel()
 
 void XnatPluginPreferencePage::Update()
 {
+  std::string downloadDirectory = m_XnatPluginPreferencesNode->Get(DOWNLOAD_DIRECTORY_NAME, DOWNLOAD_DIRECTORY_DEFAULT);
+  m_Controls->dirBtnDownloadDirectory->setDirectory(QString::fromStdString(downloadDirectory));
 }

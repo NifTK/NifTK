@@ -7,6 +7,7 @@
 
 class QModelIndex;
 class XnatBrowserWidgetPrivate;
+class XnatBrowserSettings;
 class XnatNode;
 
 class XnatBrowserWidget : public QWidget
@@ -16,6 +17,9 @@ class XnatBrowserWidget : public QWidget
 public:
   explicit XnatBrowserWidget(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   virtual ~XnatBrowserWidget();
+
+  XnatBrowserSettings* settings() const;
+  void setSettings(XnatBrowserSettings* settings);
 
   bool startFileUpload(const QString& zipFilename);
   bool startFileDownload(const QString& zipFilename);
@@ -33,8 +37,6 @@ private slots:
   void setButtonEnabled(const QModelIndex& index);
   void setSaveDataAndUploadButtonEnabled();
   void showContextMenu(const QPoint&);
-  void setDefaultWorkDirectory();
-  void help();
 
 private:
   void createConnections();

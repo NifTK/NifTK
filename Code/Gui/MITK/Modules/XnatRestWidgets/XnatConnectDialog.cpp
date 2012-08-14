@@ -58,7 +58,7 @@ XnatConnectDialog::XnatConnectDialog(XnatConnectionFactory& f, QWidget* parent)
 
 XnatConnection* XnatConnectDialog::getConnection()
 {
-return connection;
+  return connection;
 }
 
 void XnatConnectDialog::accept()
@@ -113,4 +113,3 @@ void XnatConnectDialog::accept()
 
   QDialog::accept();
 }
-

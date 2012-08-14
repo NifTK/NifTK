@@ -32,6 +32,8 @@
 class XnatBrowserWidgetPrivate
 {
 public:
+  XnatBrowserSettings* settings;
+
   XnatConnection* connection;
   XnatDownloadManager* downloadManager;
   XnatUploadManager* uploadManager;
@@ -43,8 +45,6 @@ public:
   QAction* saveDataAndUploadAction;
   QAction* createAction;
   QAction* deleteAction;
-
-  QDialog* helpDialog;
 };
 
 XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
@@ -55,10 +55,10 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
   Q_D(XnatBrowserWidget);
 
   // initialize data members
+  d->settings = 0;
   d->connection = 0;
   d->downloadManager = 0;
   d->uploadManager = new XnatUploadManager(this);
-  d->helpDialog = 0;
 
   if (!ui)
   {
@@ -67,10 +67,6 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     ui->setupUi(parent);
 
     ui->middleButtonPanel->setCollapsed(true);
-
-    // create line edit widget to display work directory
-    ui->workDirectoryEdit->setText(QDir::toNativeSeparators(XnatBrowserSettings::getDefaultWorkDirectory()));
-    ui->workDirectoryEdit->setReadOnly(true);
 
     ui->refreshButton->setEnabled(false);
     ui->downloadButton->setEnabled(false);
@@ -90,6 +86,11 @@ XnatBrowserWidget::~XnatBrowserWidget()
 {
   Q_D(XnatBrowserWidget);
 
+  if (d->settings)
+  {
+    delete d->settings;
+  }
+
   // clean up XNAT connection
   if (d->connection)
   {
@@ -108,18 +109,29 @@ XnatBrowserWidget::~XnatBrowserWidget()
   delete d->uploadManager;
   d->uploadManager = 0;
 
-  // delete help browser dialog
-  if (d->helpDialog)
-  {
-    delete d->helpDialog;
-    d->helpDialog = 0;
-  }
-
   if (ui)
   {
     delete ui;
   }
 }
+
+XnatBrowserSettings* XnatBrowserWidget::settings() const
+{
+  Q_D(const XnatBrowserWidget);
+
+  return d->settings;
+}
+
+void XnatBrowserWidget::setSettings(XnatBrowserSettings* settings)
+{
+  Q_D(XnatBrowserWidget);
+  if (d->settings)
+  {
+    delete d->settings;
+  }
+  d->settings = settings;
+}
+
 
 void XnatBrowserWidget::createConnections()
 {
@@ -143,9 +155,7 @@ void XnatBrowserWidget::createConnections()
 
   // create button widgets
   connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
-  connect(ui->setDefaultWorkDirectoryButton, SIGNAL(clicked()), this, SLOT(setDefaultWorkDirectory()));
   connect(ui->refreshButton, SIGNAL(clicked()), ui->xnatTreeView, SLOT(refreshRows()));
-  connect(ui->helpButton, SIGNAL(clicked()), this, SLOT(help()));
   connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
   connect(ui->downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
   connect(ui->downloadAndOpenButton, SIGNAL(clicked()), this, SLOT(downloadAndOpenFile()));
@@ -160,24 +170,6 @@ void XnatBrowserWidget::createConnections()
   ui->xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui->xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(showContextMenu(const QPoint&)));
-}
-
-void XnatBrowserWidget::setDefaultWorkDirectory()
-{
-  QFileDialog fileDialog(this, QString("Set Work Directory"),
-                          XnatBrowserSettings::getDefaultWorkDirectory());
-
-  fileDialog.setFileMode(QFileDialog::Directory);
-  // fileDialog.setOption(pqFileDialog::ShowDirsOnly, true);
-
-  if( fileDialog.exec() == QDialog::Accepted )
-  {
-    QString dirPath = fileDialog.selectedFiles()[0];
-
-    ui->workDirectoryEdit->setText(QDir::toNativeSeparators(dirPath));
-
-    XnatBrowserSettings::setDefaultWorkDirectory(dirPath);
-  }
 }
 
 void XnatBrowserWidget::loginXnat()
@@ -219,23 +211,34 @@ void XnatBrowserWidget::refreshRows()
 
 void XnatBrowserWidget::downloadFile()
 {
+  qDebug() << "XnatBrowserWidget::downloadFile() 0";
   Q_D(XnatBrowserWidget);
 
   // get name of file to be downloaded
-  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
+//  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
+  QModelIndex index = ui->xnatTreeView->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-  QString xnatFilename = model->name(index);
+  qDebug() << "XnatBrowserWidget::downloadFile() 20";
+//  QString xnatFilename = model->name(index).toString();
+  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
+  qDebug() << "XnatBrowserWidget::downloadFile() 25" << xnatFilename;
   if ( xnatFilename.isEmpty() )
   {
     return;
   }
+
+  qDebug() << "XnatBrowserWidget::downloadFile() 30";
 
   // download file
   if ( d->downloadManager )
   {
     d->downloadManager = new XnatDownloadManager(this);
   }
-  d->downloadManager->downloadFile(QFileInfo(xnatFilename).fileName());
+  qDebug() << "XnatBrowserWidget::downloadFile() 40 " << xnatFilename;
+  QString filename = QFileInfo(xnatFilename).fileName();
+  qDebug() << "XnatBrowserWidget::downloadFile() 43 " << filename;
+  d->downloadManager->downloadFile(filename);
+  qDebug() << "XnatBrowserWidget::downloadFile() 50";
 }
 
 void XnatBrowserWidget::downloadAndOpenFile()
@@ -243,9 +246,11 @@ void XnatBrowserWidget::downloadAndOpenFile()
   Q_D(XnatBrowserWidget);
 
   // get name of file to be downloaded
-  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
+//  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
+  QModelIndex index = ui->xnatTreeView->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-  QString xnatFilename = model->name(index);
+//  QString xnatFilename = model->name(index);
+  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
   if ( xnatFilename.isEmpty() )
   {
     return;
@@ -257,7 +262,7 @@ void XnatBrowserWidget::downloadAndOpenFile()
     d->downloadManager = new XnatDownloadManager(this);
   }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
-  QString tempWorkDirectory = XnatBrowserSettings::getWorkSubdirectory();
+  QString tempWorkDirectory = XnatBrowserSettings::instance()->getWorkSubdirectory();
   d->downloadManager->silentlyDownloadFile(xnatFileNameTemp, tempWorkDirectory);
 
   // create list of files to open in CAWorks
@@ -371,7 +376,8 @@ void XnatBrowserWidget::downloadAllFiles()
   // get name of file group to be downloaded
   QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
-  QString groupname = model->name(index);
+//  QString groupname = model->name(index);
+  QString groupname = model->data(index, Qt::DisplayRole).toString();
   if ( groupname.isEmpty() )
   {
     return;
@@ -428,27 +434,6 @@ void XnatBrowserWidget::createNewRow()
 void XnatBrowserWidget::deleteCurrentRow()
 {
   ui->xnatTreeView->deleteCurrentRow();
-}
-
-void XnatBrowserWidget::help()
-{
-  Q_D(XnatBrowserWidget);
-
-  if ( !d->helpDialog )
-  {
-    QTextBrowser* helpBrowser = new QTextBrowser;
-    helpBrowser->setSearchPaths(QStringList() << ":/XnatHelp");
-    helpBrowser->setSource(QString("index.html"));
-    QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(helpBrowser);
-
-    d->helpDialog = new QDialog(this);
-    d->helpDialog->setLayout(layout);
-    d->helpDialog->setWindowTitle(tr("XNAT Browser Help"));
-    d->helpDialog->resize(700, 480);
-  }
-
-  d->helpDialog->show();
 }
 
 void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)

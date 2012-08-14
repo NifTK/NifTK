@@ -33,30 +33,13 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QPushButton" name="setDefaultWorkDirectoryButton">
-       <property name="text">
-        <string>Set Work Directory</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QLineEdit" name="workDirectoryEdit"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QPushButton" name="helpButton">
-       <property name="text">
-        <string>Help</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
       <widget class="QPushButton" name="downloadAndOpenButton">
        <property name="text">
         <string>Download and Open</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="0" column="2">
       <widget class="QPushButton" name="saveDataAndUploadButton">
        <property name="text">
         <string>Save Data and Upload</string>

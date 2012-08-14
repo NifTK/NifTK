@@ -11,53 +11,54 @@ XnatDownloadManager::XnatDownloadManager(XnatBrowserWidget* b)
 
 void XnatDownloadManager::downloadFile(const QString& fname)
 {
-    // initialize download variables
-    xnatFilename = fname;
-    //currDir = XnatBrowserSettings::getDefaultDirectory();
+  // initialize download variables
+  xnatFilename = fname;
+  currDir = XnatBrowserSettings::instance()->getDefaultDirectory();
 
-    QWidget* parent = browser;
-    QString caption = tr("Save Downloaded File");
-    QString dir = QFileInfo(currDir, xnatFilename).absoluteFilePath();
-    // get output directory and filename from user
-    QString userFilePath = QFileDialog::getSaveFileName(parent, caption, dir);
-    if ( userFilePath.isEmpty() )
+  QWidget* parent = browser;
+  QString caption = tr("Save Downloaded File");
+  QString dir = QFileInfo(currDir, xnatFilename).absoluteFilePath();
+  // get output directory and filename from user
+  QString userFilePath = QFileDialog::getSaveFileName(parent, caption, dir);
+  if ( userFilePath.isEmpty() )
+  {
+    return;
+  }
+  currDir = QFileInfo(userFilePath).absolutePath();
+  outFilename = QFileInfo(userFilePath).fileName();
+
+  // reset name of current directory to last directory viewed by user
+  XnatBrowserSettings::instance()->setDefaultDirectory(currDir);
+
+  // check if file exists with same name as file in XNAT
+  tempFilePath = QString();
+  if ( outFilename != xnatFilename )
+  {
+    QString xnatFilePath = QFileInfo(currDir, xnatFilename).absoluteFilePath();
+    if ( QFile::exists(xnatFilePath) )
     {
+      int i = 1;
+      do
+      {
+        QString ver;
+        ver.setNum(i++);
+        tempFilePath = xnatFilePath;
+        tempFilePath.append(".").append(ver);
+      } while ( QFile::exists(tempFilePath) );
+
+      if ( !QFile::rename(xnatFilePath, tempFilePath) )
+      {
+        QMessageBox::warning(parent, tr("Downloaded File Error"), tr("Cannot rename existing file"));
         return;
+      }
     }
-    currDir = QFileInfo(userFilePath).absolutePath();
-    outFilename = QFileInfo(userFilePath).fileName();
+  }
 
-    // reset name of current directory to last directory viewed by user
-    //XnatBrowserSettings::setDefaultDirectory(currDir);
+  // display download dialog
+  downloadDialog = new XnatDownloadDialog(parent);
+  downloadDialog->show();
 
-    // check if file exists with same name as file in XNAT
-    tempFilePath = QString();
-    if ( outFilename != xnatFilename )
-    {
-        QString xnatFilePath = QFileInfo(currDir, xnatFilename).absoluteFilePath();
-        if ( QFile::exists(xnatFilePath) )
-        {
-            int i = 1;
-            do
-            {
-                QString ver;
-                ver.setNum(i++);
-                tempFilePath = xnatFilePath;
-                tempFilePath.append(".").append(ver);
-            } while ( QFile::exists(tempFilePath) );
-            if ( !QFile::rename(xnatFilePath, tempFilePath) )
-            {
-                QMessageBox::warning(parent, tr("Downloaded File Error"), tr("Cannot rename existing file"));
-                return;
-            }
-        }
-    }
-
-    // display download dialog
-    downloadDialog = new XnatDownloadDialog(parent);
-    downloadDialog->show();
-
-    QTimer::singleShot(0, this, SLOT(startDownload()));
+  QTimer::singleShot(0, this, SLOT(startDownload()));
 }
 
 void XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QString& dir)
@@ -133,7 +134,7 @@ void XnatDownloadManager::startDownload()
 void XnatDownloadManager::downloadAllFiles()
 {
     // initialize current directory
-    //currDir = XnatBrowserSettings::getDefaultDirectory();
+    currDir = XnatBrowserSettings::instance()->getDefaultDirectory();
 
     // get output directory from user
     QString outputDir = QFileDialog::getExistingDirectory(browser, tr("Save Downloaded Files"), currDir);
@@ -144,7 +145,7 @@ void XnatDownloadManager::downloadAllFiles()
     currDir = outputDir;
 
     // reset name of current directory to last directory viewed by user
-    //XnatBrowserSettings::setDefaultDirectory(currDir);
+    XnatBrowserSettings::instance()->setDefaultDirectory(currDir);
 
     // display download dialog
     downloadDialog = new XnatDownloadDialog(browser);

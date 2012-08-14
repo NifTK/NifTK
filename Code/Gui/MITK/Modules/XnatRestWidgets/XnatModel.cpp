@@ -60,10 +60,12 @@ QVariant XnatModel::data(const QModelIndex& index, int role) const
   return QVariant();
 }
 
-QString XnatModel::name(const QModelIndex& index) const
-{
-  return data(index, Qt::DisplayRole).toString();
-}
+//QString XnatModel::name(const QModelIndex& index) const
+//{
+//  QVariant v = data(index, Qt::DisplayRole);
+//  QString s = v.toString();
+//  return data(index, Qt::DisplayRole).toString();
+//}
 
 QModelIndex XnatModel::parent(const QModelIndex& child) const
 {

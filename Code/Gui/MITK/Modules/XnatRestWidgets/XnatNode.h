@@ -4,6 +4,7 @@
 #include <string>
 
 #include <QList>
+#include <vector>
 
 class XnatNodeActivity;
 
@@ -56,7 +57,7 @@ private:
   XnatNodeActivity& nodeActivity;
   int rowInParent;
   XnatNode* parent;
-  QList<XnatChild*> children;
+  std::vector<XnatChild*> children;
 };
 
 #endif

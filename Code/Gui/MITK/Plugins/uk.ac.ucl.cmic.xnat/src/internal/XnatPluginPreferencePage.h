@@ -22,8 +22,10 @@
 
  ============================================================================*/
 
-#ifndef _XNATPLUGINPREFERENCE_PAGE_H_INCLUDED
-#define _XNATPLUGINPREFERENCE_PAGE_H_INCLUDED
+#ifndef XnatPluginPreferencePage_h
+#define XnatPluginPreferencePage_h
+
+#include "ui_XnatPluginPreferencePage.h"
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -45,10 +47,11 @@ class XnatPluginPreferencePage : public QObject, public berry::IQtPreferencePage
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
+  static const std::string DOWNLOAD_DIRECTORY_NAME;
+  static const std::string DOWNLOAD_DIRECTORY_DEFAULT;
 
-  XnatPluginPreferencePage();
-  XnatPluginPreferencePage(const XnatPluginPreferencePage& other);
-  ~XnatPluginPreferencePage();
+  explicit XnatPluginPreferencePage();
+  virtual ~XnatPluginPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -73,13 +76,18 @@ public:
 
 protected slots:
 
-protected:
-
-  QWidget* m_MainControl;
+private:
 
   bool m_Initializing;
 
   berry::IPreferences::Pointer m_XnatPluginPreferencesNode;
+
+  QWidget* m_MainControl;
+
+  /// \brief All the controls for the main view part.
+  Ui::XnatPluginPreferencePage* m_Controls;
+
+  Q_DISABLE_COPY(XnatPluginPreferencePage);
 };
 
-#endif /* _XNATPLUGINPREFERENCE_PAGE_H_INCLUDED */
+#endif

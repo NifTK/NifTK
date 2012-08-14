@@ -142,7 +142,8 @@ void XnatTreeView::deleteRow(const QModelIndex& index)
 {
   // get name in row to be deleted
   XnatModel* model = this->xnatModel();
-  QString name = model->name(index);
+//  QString name = model->name(index);
+  QString name = model->data(index, Qt::DisplayRole).toString();
 
   // ask user to confirm deletion
   int buttonPressed = QMessageBox::question(this, tr("Confirm Deletion"), tr("Delete %1 ?").arg(name),

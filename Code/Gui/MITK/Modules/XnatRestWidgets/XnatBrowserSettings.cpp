@@ -4,23 +4,24 @@
 #include <QFileInfo>
 #include <QUuid>
 
-//#include "pqSettings.h"
-//#include "pqApplicationCore.h"
-
-
-const QString XnatBrowserSettings::defaultXnatURL( "https://xnat.cbis.jhmi.edu" );
-const QString XnatBrowserSettings::defaultXnatUserID( "" );
-const QString XnatBrowserSettings::defaultDirectory = QDir::currentPath();
-const QString XnatBrowserSettings::defaultWorkDirectory = QDir::currentPath();
-const QString XnatBrowserSettings::xnatBrowserGroup( "XnatBrowser" );
-const QString XnatBrowserSettings::xnatUrlKey( "URL" );
-const QString XnatBrowserSettings::xnatUserIdKey( "UserID" );
-const QString XnatBrowserSettings::directoryKey( "Directory" );
-const QString XnatBrowserSettings::workDirectoryKey( "WorkDirectory" );
-
+XnatBrowserSettings XnatBrowserSettings::_instance_;
 
 XnatBrowserSettings::XnatBrowserSettings()
+: defaultXnatURL( "https://xnat.cbis.jhmi.edu" )
+, defaultXnatUserID("")
+, defaultDirectory(QDir::currentPath())
+, defaultWorkDirectory(QDir::currentPath())
+, xnatBrowserGroup("XnatBrowser")
+, xnatUrlKey("URL")
+, xnatUserIdKey("UserID")
+, directoryKey("Directory")
+, workDirectoryKey("WorkDirectory")
 {
+}
+
+XnatBrowserSettings* XnatBrowserSettings::instance()
+{
+  return &_instance_;
 }
 
 QString XnatBrowserSettings::getDefaultURL()

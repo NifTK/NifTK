@@ -89,7 +89,7 @@ void XnatConnectionFactory::testConnection(XnatConnection* conn)
   {
     if (rootNode != NULL)
     {
-        delete rootNode;
+      delete rootNode;
     }
     throw;
   }

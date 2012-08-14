@@ -41,7 +41,7 @@ void XnatUploadManager::uploadSavedData(const QString& dir)
 bool XnatUploadManager::getFilenames()
 {
     // get current directory
-    currDir = XnatBrowserSettings::getDefaultDirectory();
+    currDir = XnatBrowserSettings::instance()->getDefaultDirectory();
 
     // display file dialog to get names of files to be uploaded
     QFileDialog fileNameDialog(browser, tr("Select File to Upload"), currDir);
@@ -66,7 +66,7 @@ bool XnatUploadManager::getFilenames()
 
     // reset name of current directory to last directory viewed by user
     currDir = fileNameDialog.directory().absolutePath();
-    XnatBrowserSettings::setDefaultDirectory(currDir);
+    XnatBrowserSettings::instance()->setDefaultDirectory(currDir);
 
     return true;
 }
