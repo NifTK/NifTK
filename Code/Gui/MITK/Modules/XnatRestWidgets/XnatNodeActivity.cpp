@@ -295,17 +295,25 @@ const char* XnatExperimentActivity::getModifiableParentName(int row, XnatNode* n
 
 bool XnatExperimentActivity::isModifiable(int row, XnatNode* node)
 {
+	bool result = false;
+
+	if(node == NULL){
+		return(result);
+	}
     XnatNode* childNode = node->getChildNode(row);
-    int numChildren = childNode->getNumChildren();
+	if(childNode == NULL){
+		return(result);
+	}
+    size_t numChildren = childNode->getNumChildren();
     for ( int i = 0 ; i < numChildren ; i++ )
     {
         if ( strcmp(childNode->getChildName(i), CAT_RECONSTRUCTION) == 0 )
         {
-            return false;
+            return(result);
         }
     }
-
-    return true;
+	result = true;
+    return(result);
 }
 
 
@@ -1028,4 +1036,3 @@ bool XnatReconRsrcFileActivity::isDeletable()
 {
     return true;
 }
-

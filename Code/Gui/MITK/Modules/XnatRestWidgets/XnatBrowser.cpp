@@ -1,6 +1,5 @@
 #include <QtGui>
-extern "C"
-{
+extern "C" {
 #include "XnatRest.h"
 }
 #include "XnatBrowserSettings.h"
@@ -30,298 +29,266 @@ extern "C"
 
 #include <QDir>
 
-void
-XnatBrowser::constructor()
+void XnatBrowser::constructor()
 {
-  // initialize data members
-  connection = NULL;
-  downloadManager = NULL;
-  uploadManager = new XnatUploadManager(this);
-  helpDialog = NULL;
+    // initialize data members
+    connection = NULL;
+    downloadManager = NULL;
+    uploadManager = new XnatUploadManager(this);
+    helpDialog = NULL;
 
-  // create actions for popup menus
-  downloadAction = new QAction(tr("Download"), this);
-  connect(downloadAction, SIGNAL(triggered()), this, SLOT(downloadFile()));
-  downloadAllAction = new QAction(tr("Download All"), this);
-  connect(downloadAllAction, SIGNAL(triggered()), this,
-      SLOT(downloadAllFiles()));
-  downloadAndOpenAction = new QAction(tr("Download And Open"), this);
-  connect(downloadAndOpenAction, SIGNAL(triggered()), this,
-      SLOT(downloadAndOpenFile()));
-  uploadAction = new QAction(tr("Upload"), this);
-  connect(uploadAction, SIGNAL(triggered()), uploadManager,
-      SLOT(uploadFiles()));
-  saveDataAndUploadAction = new QAction(tr("Save Data and Upload"), this);
-  //new XnatReactionSaveData(saveDataAndUploadAction, uploadManager, this);
-  createAction = new QAction(tr("Create New"), this);
-  connect(createAction, SIGNAL(triggered()), this, SLOT(createNewRow()));
-  deleteAction = new QAction(tr("Delete"), this);
-  connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteRow()));
+    // create actions for popup menus
+    downloadAction = new QAction(tr("Download"), this);
+    connect(downloadAction, SIGNAL(triggered()), this, SLOT(downloadFile()));
+    downloadAllAction = new QAction(tr("Download All"), this);
+    connect(downloadAllAction, SIGNAL(triggered()), this, SLOT(downloadAllFiles()));
+    downloadAndOpenAction = new QAction(tr("Download And Open"), this);
+    connect(downloadAndOpenAction, SIGNAL(triggered()), this, SLOT(downloadAndOpenFile()));
+    uploadAction = new QAction(tr("Upload"), this);
+    connect(uploadAction, SIGNAL(triggered()), uploadManager, SLOT(uploadFiles()));
+    saveDataAndUploadAction = new QAction(tr("Save Data and Upload"), this);
+//    new XnatReactionSaveData(saveDataAndUploadAction, uploadManager, this);
+    createAction = new QAction(tr("Create New"), this);
+    connect(createAction, SIGNAL(triggered()), this, SLOT(createNewRow()));
+    deleteAction = new QAction(tr("Delete"), this);
+    connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteRow()));
 
-  // create button widgets
-  loginButton = new QPushButton(tr("Login"));
-  connect(loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
-  setDefaultWorkDirectoryButton = new QPushButton(tr("Set Work Directory"));
-  connect(setDefaultWorkDirectoryButton, SIGNAL(clicked()), this,
-      SLOT(setDefaultWorkDirectory()));
-  refreshButton = new QPushButton(tr("Refresh"));
-  refreshButton->setEnabled(false);
-  connect(refreshButton, SIGNAL(clicked()), this, SLOT(refreshRows()));
-  helpButton = new QPushButton(tr("Help"));
-  connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
-  downloadButton = new QPushButton(tr("Download"));
-  connect(downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
-  downloadAllButton = new QPushButton(tr("Download All"));
-  connect(downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
-  downloadAndOpenButton = new QPushButton(tr("Download and Open"));
-  connect(downloadAndOpenButton, SIGNAL(clicked()), this,
-      SLOT(downloadAndOpenFile()));
-  uploadButton = new QPushButton(tr("Upload"));
-  connect(uploadButton, SIGNAL(clicked()), uploadManager, SLOT(uploadFiles()));
-  saveDataAndUploadButton = new QPushButton(tr("Save Data and Upload"));
-  connect(saveDataAndUploadButton, SIGNAL(clicked()), saveDataAndUploadAction,
-      SLOT(trigger()));
-  connect(saveDataAndUploadAction, SIGNAL(changed()), this,
-      SLOT(setSaveDataAndUploadButtonEnabled()));
-  createButton = new QPushButton(tr("Create New"));
-  connect(createButton, SIGNAL(clicked()), this, SLOT(createNewRow()));
-  deleteButton = new QPushButton(tr("Delete"));
-  connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteRow()));
+    // create button widgets
+    loginButton = new QPushButton(tr("Login"));
+    connect(loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
+    setDefaultWorkDirectoryButton = new QPushButton(tr("Set Work Directory"));
+    connect(setDefaultWorkDirectoryButton, SIGNAL(clicked()), this, SLOT(setDefaultWorkDirectory()));
+    refreshButton = new QPushButton(tr("Refresh"));
+    refreshButton->setEnabled(false);
+    connect(refreshButton, SIGNAL(clicked()), this, SLOT(refreshRows()));
+    helpButton = new QPushButton(tr("Help"));
+    connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
+    downloadButton = new QPushButton(tr("Download"));
+    connect(downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
+    downloadAllButton = new QPushButton(tr("Download All"));
+    connect(downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
+    downloadAndOpenButton = new QPushButton(tr("Download and Open"));
+    connect(downloadAndOpenButton, SIGNAL(clicked()), this, SLOT(downloadAndOpenFile()));
+    uploadButton = new QPushButton(tr("Upload"));
+    connect(uploadButton, SIGNAL(clicked()), uploadManager, SLOT(uploadFiles()));
+    saveDataAndUploadButton = new QPushButton(tr("Save Data and Upload"));
+    connect(saveDataAndUploadButton, SIGNAL(clicked()), saveDataAndUploadAction, SLOT(trigger()));
+    connect(saveDataAndUploadAction, SIGNAL(changed()), this, SLOT(setSaveDataAndUploadButtonEnabled()));
+    createButton = new QPushButton(tr("Create New"));
+    connect(createButton, SIGNAL(clicked()), this, SLOT(createNewRow()));
+    deleteButton = new QPushButton(tr("Delete"));
+    connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteRow()));
 
-  // create line edit widget to display work directory
-  workDirectoryEdit = new QLineEdit(
-      QDir::toNativeSeparators(XnatBrowserSettings::getDefaultWorkDirectory()));
-  workDirectoryEdit->setReadOnly(true);
+    // create line edit widget to display work directory
+    workDirectoryEdit = new QLineEdit(QDir::toNativeSeparators(XnatBrowserSettings::getDefaultWorkDirectory()));
+    workDirectoryEdit->setReadOnly(true);
 
-  // create XNAT tree view
-  xnatTreeView = new QTreeView;
-  xnatTreeView->setSelectionBehavior(QTreeView::SelectItems);
-  xnatTreeView->setUniformRowHeights(true);
-  xnatTreeView->setHeaderHidden(true);
-  initializeTreeView(new XnatNode(XnatEmptyNodeActivity::instance()));
-  connect(xnatTreeView, SIGNAL(clicked(QModelIndex)), this,
-      SLOT(setButtonEnabled(QModelIndex)));
-  xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)), this,
-      SLOT(showContextMenu(const QPoint&)));
+    // create XNAT tree view
+    xnatTreeView = new QTreeView;
+    xnatTreeView->setSelectionBehavior(QTreeView::SelectItems);
+    xnatTreeView->setUniformRowHeights(true);
+    xnatTreeView->setHeaderHidden(true);
+    initializeTreeView(new XnatNode(XnatEmptyNodeActivity::instance()));
+    connect(xnatTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(setButtonEnabled(QModelIndex)));
+    xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)), 
+            this, SLOT(showContextMenu(const QPoint&)));
 
-  // create XNAT browser widget
-  QGridLayout* topButtonLayout = new QGridLayout;
-  topButtonLayout->addWidget(loginButton, 0, 0);
-  topButtonLayout->addWidget(setDefaultWorkDirectoryButton, 0, 1);
-  topButtonLayout->addWidget(workDirectoryEdit, 0, 2);
-  topButtonLayout->addWidget(helpButton, 1, 0);
-  topButtonLayout->addWidget(downloadAndOpenButton, 1, 1);
-  topButtonLayout->addWidget(saveDataAndUploadButton, 1, 2);
-  QGroupBox* topButtonPanel = new QGroupBox;
-  topButtonPanel->setLayout(topButtonLayout);
+    // create XNAT browser widget
+    QGridLayout* topButtonLayout = new QGridLayout;
+    topButtonLayout->addWidget(loginButton, 0, 0);
+    topButtonLayout->addWidget(setDefaultWorkDirectoryButton, 0, 1);
+    topButtonLayout->addWidget(workDirectoryEdit, 0, 2);
+    topButtonLayout->addWidget(helpButton, 1, 0);
+    topButtonLayout->addWidget(downloadAndOpenButton, 1, 1);
+    topButtonLayout->addWidget(saveDataAndUploadButton, 1, 2);
+    QGroupBox* topButtonPanel = new QGroupBox;
+    topButtonPanel->setLayout(topButtonLayout);
 
-  QGridLayout* middleButtonLayout = new QGridLayout;
-  middleButtonLayout->addWidget(refreshButton, 0, 0);
-  middleButtonLayout->addWidget(createButton, 0, 1);
-  middleButtonLayout->addWidget(deleteButton, 0, 2);
-  middleButtonLayout->addWidget(downloadButton, 1, 0);
-  middleButtonLayout->addWidget(downloadAllButton, 1, 1);
-  middleButtonLayout->addWidget(uploadButton, 1, 2);
+    QGridLayout* middleButtonLayout = new QGridLayout;
+    middleButtonLayout->addWidget(refreshButton, 0, 0);
+    middleButtonLayout->addWidget(createButton, 0, 1);
+    middleButtonLayout->addWidget(deleteButton, 0, 2);
+    middleButtonLayout->addWidget(downloadButton, 1, 0);
+    middleButtonLayout->addWidget(downloadAllButton, 1, 1);
+    middleButtonLayout->addWidget(uploadButton, 1, 2);
 //    pqCollapsedGroup* middleButtonPanel = new pqCollapsedGroup;
 //    middleButtonPanel->setTitle(tr("More XNAT Functions"));
 //    middleButtonPanel->setCollapsed(true);
 //    middleButtonPanel->setLayout(middleButtonLayout);
 
-  QVBoxLayout* browserLayout = new QVBoxLayout;
-  browserLayout->addWidget(topButtonPanel);
+    QVBoxLayout* browserLayout = new QVBoxLayout;
+    browserLayout->addWidget(topButtonPanel);
 //    browserLayout->addWidget(middleButtonPanel);
-  browserLayout->addWidget(xnatTreeView);
-  QWidget* browserWidget = new QWidget;
-  browserWidget->setLayout(browserLayout);
+    browserLayout->addWidget(xnatTreeView);
+    QWidget* browserWidget = new QWidget;
+    browserWidget->setLayout(browserLayout);
 
-  // initialize dock widget and set browser widget
-  setWindowTitle(tr("XNAT Browser"));
-  setObjectName(tr("XnatBrowser"));
+    // initialize dock widget and set browser widget
+    setWindowTitle(tr("XNAT Browser"));
+    setObjectName(tr("XnatBrowser"));
 //    setAllowedAreas(Qt::RightDockWidgetArea);
 //    setWidget(browserWidget);
-
-  QLayout* layout = new QHBoxLayout();
-  layout->addWidget(browserWidget);
-  this->setLayout(layout);
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->addWidget(browserWidget);
+    setLayout(layout);
 }
 
 XnatBrowser::~XnatBrowser()
 {
-  // clean up models in tree view
-  XnatModel* oldModel = (XnatModel*) xnatTreeView->model();
-  QItemSelectionModel* oldSelectionModel = xnatTreeView->selectionModel();
-  if (oldModel != NULL)
+    // clean up models in tree view
+    XnatModel* oldModel = (XnatModel*) xnatTreeView->model();
+    QItemSelectionModel* oldSelectionModel = xnatTreeView->selectionModel();
+    if ( oldModel != NULL )
     {
-      delete oldModel;
+        delete oldModel;
     }
-  if (oldSelectionModel != NULL)
+    if ( oldSelectionModel != NULL )
     {
-      delete oldSelectionModel;
-    }
-
-  // clean up XNAT connection
-  if (connection != NULL)
-    {
-      delete connection;
-      connection = NULL;
+        delete oldSelectionModel;
     }
 
-  // clean up download manager
-  if (downloadManager != NULL)
+    // clean up XNAT connection
+    if ( connection != NULL )
     {
-      delete downloadManager;
-      downloadManager = NULL;
+        delete connection;
+        connection = NULL;
     }
 
-  // clean up upload manager
-  delete uploadManager;
-  uploadManager = NULL;
-
-  // delete help browser dialog
-  if (helpDialog != NULL)
+    // clean up download manager
+    if ( downloadManager != NULL )
     {
-      delete helpDialog;
-      helpDialog = NULL;
+        delete downloadManager;
+        downloadManager = NULL;
     }
-}
 
-void
-XnatBrowser::initializeTreeView(XnatNode* rootNode)
-{
-  XnatModel* oldModel = (XnatModel*) xnatTreeView->model();
-  QItemSelectionModel* oldSelectionModel = xnatTreeView->selectionModel();
-  xnatTreeView->setModel(new XnatModel(rootNode));
-  if (oldModel != NULL)
+    // clean up upload manager
+    delete uploadManager;
+    uploadManager = NULL;
+
+    // delete help browser dialog
+    if ( helpDialog != NULL )
     {
-      delete oldModel;
-    }
-  if (oldSelectionModel != NULL)
-    {
-      delete oldSelectionModel;
-    }
-  xnatTreeView->setExpanded(QModelIndex(), false);
-  downloadButton->setEnabled(false);
-  downloadAllButton->setEnabled(false);
-  downloadAndOpenButton->setEnabled(false);
-  uploadButton->setEnabled(false);
-  saveDataAndUploadButton->setEnabled(false);
-  createButton->setEnabled(false);
-  deleteButton->setEnabled(false);
-}
-
-void
-XnatBrowser::setDefaultWorkDirectory()
-{
-  QFileDialog fileDialog(this, QString("Set Work Directory"),
-      XnatBrowserSettings::getDefaultWorkDirectory());
-
-  fileDialog.setFileMode(QFileDialog::Directory);
-  // fileDialog.setOption(pqFileDialog::ShowDirsOnly, true);
-
-  if (fileDialog.exec() == QDialog::Accepted)
-    {
-      QString dirPath = fileDialog.getOpenFileNames()[0];
-
-      workDirectoryEdit->setText(QDir::toNativeSeparators(dirPath));
-
-      XnatBrowserSettings::setDefaultWorkDirectory(dirPath);
+        delete helpDialog;
+        helpDialog = NULL;
     }
 }
 
-void
-XnatBrowser::loginXnat()
+void XnatBrowser::initializeTreeView(XnatNode* rootNode)
 {
-  // show dialog for user to login to XNAT
-  XnatConnectDialog* connectDialog = new XnatConnectDialog(
-      XnatConnectionFactory::instance(), this);
-  if (connectDialog->exec())
+    XnatModel* oldModel = (XnatModel*) xnatTreeView->model();
+    QItemSelectionModel* oldSelectionModel = xnatTreeView->selectionModel();
+    xnatTreeView->setModel(new XnatModel(rootNode));
+    if ( oldModel != NULL )
     {
-      // delete old connection
-      if (connection != NULL)
+        delete oldModel;
+    }
+    if ( oldSelectionModel != NULL )
+    {
+        delete oldSelectionModel;
+    }
+    xnatTreeView->setExpanded(QModelIndex(), false);
+    downloadButton->setEnabled(false);
+    downloadAllButton->setEnabled(false);
+    downloadAndOpenButton->setEnabled(false);
+    uploadButton->setEnabled(false);
+    saveDataAndUploadButton->setEnabled(false);
+    createButton->setEnabled(false);
+    deleteButton->setEnabled(false);
+}
+
+void XnatBrowser::setDefaultWorkDirectory()
+{
+    QFileDialog fileDialog(this, QString("Set Work Directory"),
+                            XnatBrowserSettings::getDefaultWorkDirectory());
+
+    fileDialog.setFileMode(QFileDialog::Directory);
+    // fileDialog.setOption(pqFileDialog::ShowDirsOnly, true);
+
+    if( fileDialog.exec() == QDialog::Accepted )
+    {
+        QString dirPath = fileDialog.selectedFiles()[0];
+
+        workDirectoryEdit->setText(QDir::toNativeSeparators(dirPath));
+
+        XnatBrowserSettings::setDefaultWorkDirectory(dirPath);
+    }
+}
+
+void XnatBrowser::loginXnat()
+{
+    // show dialog for user to login to XNAT
+    XnatConnectDialog* connectDialog = new XnatConnectDialog(XnatConnectionFactory::instance(), this);
+    if (connectDialog->exec())
+    {
+        // delete old connection
+        if ( connection != NULL )
         {
-          delete connection;
-          connection = NULL;
+            delete connection;
+            connection = NULL;
         }
-      // get connection object
-      connection = connectDialog->getConnection();
-      // initialize tree view
-      initializeTreeView(connection->getRoot());
-      refreshButton->setEnabled(true);
+        // get connection object
+        connection = connectDialog->getConnection();
+        // initialize tree view
+        initializeTreeView(connection->getRoot());
+        refreshButton->setEnabled(true);
     }
-  delete connectDialog;
+    delete connectDialog;
 }
 
-void
-XnatBrowser::refreshRows()
+void XnatBrowser::refreshRows()
 {
-  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) xnatTreeView->model();
-  model->removeAllRows(index);
-  model->fetchMore(index);
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatModel* model = (XnatModel*) xnatTreeView->model();
+    model->removeAllRows(index);
+    model->fetchMore(index);
 }
 
-void
-XnatBrowser::downloadFile()
+void XnatBrowser::downloadFile()
 {
-  // get name of file to be downloaded
-  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) xnatTreeView->model();
-  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
-  if (xnatFilename.isEmpty())
+    // get name of file to be downloaded
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatModel* model = (XnatModel*) xnatTreeView->model();
+    QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
+    if ( xnatFilename.isEmpty() )
     {
-      return;
+        return;
     }
 
-  // download file
-  if (downloadManager == NULL)
+    // download file
+    if ( downloadManager == NULL )
     {
-      downloadManager = new XnatDownloadManager(this);
+        downloadManager = new XnatDownloadManager(this);
     }
-  downloadManager->downloadFile(QFileInfo(xnatFilename).fileName());
+    downloadManager->downloadFile(QFileInfo(xnatFilename).fileName());
 }
 
-void
-XnatBrowser::downloadAndOpenFile()
+void XnatBrowser::downloadAndOpenFile()
 {
-  QFileDialog fileDialog(NULL, QString("Generic"), QString(), "All Files (*)");
-
-  QString* separatorName = new QString(QDir::separator());
-
-  // get name of file to be downloaded
-  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) xnatTreeView->model();
-  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
-  if (xnatFilename.isEmpty())
+    // get name of file to be downloaded
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatModel* model = (XnatModel*) xnatTreeView->model();
+    QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
+    if ( xnatFilename.isEmpty() )
     {
-      return;
+        return;
     }
 
-  // download file
-  if (downloadManager == NULL)
+    // download file
+    if ( downloadManager == NULL )
     {
-      downloadManager = new XnatDownloadManager(this);
+        downloadManager = new XnatDownloadManager(this);
     }
-  QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
+    QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
+    QString tempWorkDirectory = XnatBrowserSettings::getWorkSubdirectory();
+    downloadManager->silentlyDownloadFile(xnatFileNameTemp, tempWorkDirectory);
 
-  QString tempWorkDirectory = XnatBrowserSettings::getWorkSubdirectory();
-
-  downloadManager->silentlyDownloadFile(xnatFileNameTemp, tempWorkDirectory);
-
-  QString * fileNamePath = new QString("");
-  fileNamePath->append(tempWorkDirectory);
-  fileNamePath->append(separatorName);
-  fileNamePath->append(xnatFileNameTemp);
-
-  //open file
-  QStringList files;
-
-  //files.append(xnatFileNameTemp);
-  files.append(*fileNamePath);
-
-  if (files.empty())
+    // create list of files to open in CAWorks
+    QStringList files;
+    files.append(QFileInfo(tempWorkDirectory, xnatFileNameTemp).absoluteFilePath());
+    if ( files.empty() )
     {
-      return;
+        return;
     }
 
 //    pqServer* server = pqActiveObjects::instance().activeServer();
@@ -340,10 +307,10 @@ XnatBrowser::downloadAndOpenFile()
 //        if ( !readerFactory->TestFileReadability(files[i].toAscii().data(), server->GetConnectionID()) )
 //        {
 //            //qWarning() << "File '" << files[i] << "' cannot be read. Type not recognized";
-//            QString * tempString = new QString("File '");
-//            tempString->append(files[i]);
-//            tempString->append("' cannot be read. Type not recognized");
-//            QMessageBox::warning(this, tr("Download and Open Error"), *tempString);
+//            QString tempString("File '");
+//            tempString.append(files[i]);
+//            tempString.append("' cannot be read. Type not recognized");
+//            QMessageBox::warning(this, tr("Download and Open Error"), tempString);
 //            return;
 //        }
 //    }
@@ -402,253 +369,233 @@ XnatBrowser::downloadAndOpenFile()
 //    END_UNDO_SET();
 }
 
-bool
-XnatBrowser::startFileDownload(const QString& zipFilename)
+bool XnatBrowser::startFileDownload(const QString& zipFilename)
 {
-  // start download of zip file
-  try
+    // start download of zip file
+    try
     {
-      QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-      XnatModel* model = (XnatModel*) xnatTreeView->model();
-      model->downloadFile(index, zipFilename);
+        QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+        XnatModel* model = (XnatModel*) xnatTreeView->model();
+        model->downloadFile(index, zipFilename);
     }
-  catch (XnatException& e)
+    catch (XnatException& e)
     {
-      QMessageBox::warning(this, tr("Downloaded File Error"), tr(e.what()));
-      return false;
+        QMessageBox::warning(this, tr("Downloaded File Error"), tr(e.what()));
+        return false;
     }
 
-  return true;
+    return true;
 }
 
-void
-XnatBrowser::downloadAllFiles()
+void XnatBrowser::downloadAllFiles()
 {
-  // get name of file group to be downloaded
-  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) xnatTreeView->model();
-  QString groupname = model->data(index, Qt::DisplayRole).toString();
-  if (groupname.isEmpty())
+    // get name of file group to be downloaded
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatModel* model = (XnatModel*) xnatTreeView->model();
+    QString groupname = model->data(index, Qt::DisplayRole).toString();
+    if ( groupname.isEmpty() )
     {
-      return;
+        return;
     }
 
-  // download files
-  if (downloadManager == NULL)
+    // download files
+    if ( downloadManager == NULL )
     {
-      downloadManager = new XnatDownloadManager(this);
+        downloadManager = new XnatDownloadManager(this);
     }
-  downloadManager->downloadAllFiles();
+    downloadManager->downloadAllFiles();
 }
 
-bool
-XnatBrowser::startFileGroupDownload(const QString& zipFilename)
+bool XnatBrowser::startFileGroupDownload(const QString& zipFilename)
 {
-  // start download of zip file containing selected file group
-  try
+    // start download of zip file containing selected file group
+    try
     {
-      QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-      XnatModel* model = (XnatModel*) xnatTreeView->model();
-      model->downloadFileGroup(index, zipFilename);
+        QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+        XnatModel* model = (XnatModel*) xnatTreeView->model();
+        model->downloadFileGroup(index, zipFilename);
     }
-  catch (XnatException& e)
+    catch (XnatException& e)
     {
-      QMessageBox::warning(this, tr("Download File Group Error"), tr(e.what()));
-      return false;
+        QMessageBox::warning(this, tr("Download File Group Error"), tr(e.what()));
+        return false;
     }
 
-  return true;
+    return true;
 }
 
-bool
-XnatBrowser::startFileUpload(const QString& zipFilename)
+bool XnatBrowser::startFileUpload(const QString& zipFilename)
 {
-  // start upload of zip file
-  try
+    // start upload of zip file
+    try
     {
-      QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-      XnatModel* model = (XnatModel*) xnatTreeView->model();
-      model->uploadFile(index, zipFilename);
+        QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+        XnatModel* model = (XnatModel*) xnatTreeView->model();
+        model->uploadFile(index, zipFilename);
     }
-  catch (XnatException& e)
+    catch (XnatException& e)
     {
-      QMessageBox::warning(this, tr("Upload Files Error"), tr(e.what()));
-      return false;
+        QMessageBox::warning(this, tr("Upload Files Error"), tr(e.what()));
+        return false;
     }
 
-  return true;
+    return true;
 }
 
-void
-XnatBrowser::createNewRow()
+void XnatBrowser::createNewRow()
 {
-  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) xnatTreeView->model();
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatModel* model = (XnatModel*) xnatTreeView->model();
 
-  // get kind of new entry, e.g., reconstruction or resource
-  QString childKind =
-      model->data(index, XnatModel::ModifiableChildKind).toString();
-  if (childKind.isEmpty())
+    // get kind of new entry, e.g., reconstruction or resource
+    QString childKind = model->data(index, XnatModel::ModifiableChildKind).toString();
+    if ( childKind.isEmpty() )
     {
-      QMessageBox::warning(this, tr("Create New Error"),
-          tr("Unknown child kind"));
-      return;
+        QMessageBox::warning(this, tr("Create New Error"), tr("Unknown child kind"));
+        return;
     }
 
-  // get parent name, e.g., experiment name for new reconstruction, or
-  //                        reconstruction name for new resource
-  QString parentName =
-      model->data(index, XnatModel::ModifiableParentName).toString();
-  if (parentName.isEmpty())
+    // get parent name, e.g., experiment name for new reconstruction, or 
+    //                        reconstruction name for new resource
+    QString parentName = model->data(index, XnatModel::ModifiableParentName).toString();
+    if ( parentName.isEmpty() )
     {
-      QMessageBox::warning(this, tr("Create New Error"),
-          tr("Unknown parent name"));
-      return;
+        QMessageBox::warning(this, tr("Create New Error"), tr("Unknown parent name"));
+        return;
     }
 
-  // get name of new child in parent from user, e.g.,
-  //             name of new reconstruction in experiment, or
-  //             name of new resource in reconstruction
-  XnatNameDialog nameDialog(this, childKind, parentName);
-  if (nameDialog.exec())
+    // get name of new child in parent from user, e.g.,
+    //             name of new reconstruction in experiment, or
+    //             name of new resource in reconstruction
+    XnatNameDialog nameDialog(this, childKind, parentName);
+    if ( nameDialog.exec() )
     {
-      QString name = nameDialog.getNewName();
+        QString name = nameDialog.getNewName();
 
-      try
+        try
         {
-          // create new child in parent, e.g., new reconstruction in experiment, or
-          //                                   new resource in reconstruction
-          model->addEntry(index, name);
+            // create new child in parent, e.g., new reconstruction in experiment, or
+            //                                   new resource in reconstruction
+            model->addEntry(index, name);
 
-          // refresh display
-          model->removeAllRows(index);
-          model->fetchMore(index);
+            // refresh display
+            model->removeAllRows(index);
+            model->fetchMore(index);
         }
-      catch (XnatException& e)
+        catch (XnatException& e)
         {
-          QMessageBox::warning(this, tr("Create New Error"), tr(e.what()));
+            QMessageBox::warning(this, tr("Create New Error"), tr(e.what()));
         }
     }
 }
 
-void
-XnatBrowser::deleteRow()
+void XnatBrowser::deleteRow()
 {
-  // get name in row to be deleted
-  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) xnatTreeView->model();
-  QString name = model->data(index, Qt::DisplayRole).toString();
+    // get name in row to be deleted
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatModel* model = (XnatModel*) xnatTreeView->model();
+    QString name = model->data(index, Qt::DisplayRole).toString();
 
-  // ask user to confirm deletion
-  int buttonPressed = QMessageBox::question(this, tr("Confirm Deletion"),
-      tr("Delete %1 ?").arg(name), QMessageBox::Yes | QMessageBox::No);
+    // ask user to confirm deletion
+    int buttonPressed = QMessageBox::question(this, tr("Confirm Deletion"), tr("Delete %1 ?").arg(name),
+                                              QMessageBox::Yes | QMessageBox::No);
 
-  if (buttonPressed == QMessageBox::Yes)
+    if ( buttonPressed == QMessageBox::Yes )
     {
-      try
+        try
         {
-          // delete row
-          QModelIndex parent = model->parent(index);
-          model->removeEntry(index);
+            // delete row
+            QModelIndex parent = model->parent(index);
+            model->removeEntry(index);
 
-          // refresh display
-          model->removeAllRows(parent);
-          model->fetchMore(parent);
+            // refresh display
+            model->removeAllRows(parent);
+            model->fetchMore(parent);
         }
-      catch (XnatException& e)
+        catch (XnatException& e)
         {
-          QMessageBox::warning(this, tr("Delete Error"), tr(e.what()));
+            QMessageBox::warning(this, tr("Delete Error"), tr(e.what()));
         }
     }
 }
 
-void
-XnatBrowser::help()
+void XnatBrowser::help()
 {
-  if (!helpDialog)
+    if ( !helpDialog )
     {
-      QTextBrowser* helpBrowser = new QTextBrowser;
-      helpBrowser->setSearchPaths(QStringList() << ":/XnatHelp");
-      helpBrowser->setSource(QString("index.html"));
-      QVBoxLayout* layout = new QVBoxLayout;
-      layout->addWidget(helpBrowser);
+        QTextBrowser* helpBrowser = new QTextBrowser;
+        helpBrowser->setSearchPaths(QStringList() << ":/XnatHelp");
+        helpBrowser->setSource(QString("index.html"));
+        QVBoxLayout* layout = new QVBoxLayout;
+        layout->addWidget(helpBrowser);
 
-      helpDialog = new QDialog(this);
-      helpDialog->setLayout(layout);
-      helpDialog->setWindowTitle(tr("XNAT Browser Help"));
-      helpDialog->resize(700, 480);
+        helpDialog = new QDialog(this);
+        helpDialog->setLayout(layout);
+        helpDialog->setWindowTitle(tr("XNAT Browser Help"));
+        helpDialog->resize(700, 480);
     }
 
-  helpDialog->show();
+    helpDialog->show();
 }
 
-void
-XnatBrowser::setButtonEnabled(const QModelIndex& index)
+void XnatBrowser::setButtonEnabled(const QModelIndex& index)
 {
-  XnatNodeProperties nodeProperties(
-      xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
-  downloadButton->setEnabled(nodeProperties.isFile());
-  downloadAllButton->setEnabled(nodeProperties.holdsFiles());
-  downloadAndOpenButton->setEnabled(nodeProperties.isFile());
-  uploadButton->setEnabled(nodeProperties.receivesFiles());
-  saveDataAndUploadButton->setEnabled(
-      (nodeProperties.receivesFiles() && saveDataAndUploadAction->isEnabled()));
-  createButton->setEnabled(nodeProperties.isModifiable());
-  deleteButton->setEnabled(nodeProperties.isDeletable());
+    XnatNodeProperties nodeProperties(xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
+    downloadButton->setEnabled(nodeProperties.isFile());
+    downloadAllButton->setEnabled(nodeProperties.holdsFiles());
+    downloadAndOpenButton->setEnabled(nodeProperties.isFile());
+    uploadButton->setEnabled(nodeProperties.receivesFiles());
+    saveDataAndUploadButton->setEnabled((nodeProperties.receivesFiles() && saveDataAndUploadAction->isEnabled()));
+    createButton->setEnabled(nodeProperties.isModifiable());
+    deleteButton->setEnabled(nodeProperties.isDeletable());
 }
 
-void
-XnatBrowser::setSaveDataAndUploadButtonEnabled()
+void XnatBrowser::setSaveDataAndUploadButtonEnabled()
 {
-  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-  XnatNodeProperties nodeProperties(
-      xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
-  saveDataAndUploadButton->setEnabled(
-      (nodeProperties.receivesFiles() && saveDataAndUploadAction->isEnabled()));
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatNodeProperties nodeProperties(xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
+    saveDataAndUploadButton->setEnabled((nodeProperties.receivesFiles() && saveDataAndUploadAction->isEnabled()));
 }
 
-void
-XnatBrowser::showContextMenu(const QPoint& position)
+void XnatBrowser::showContextMenu(const QPoint& position)
 {
-  QModelIndex index = xnatTreeView->indexAt(position);
-  if (index.isValid())
+    QModelIndex index = xnatTreeView->indexAt(position);
+    if ( index.isValid() )
     {
-      XnatNodeProperties nodeProperties(
-          xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
-      QList<QAction*> actions;
-      if (nodeProperties.isFile())
+        XnatNodeProperties nodeProperties(xnatTreeView->model()->data(index, Qt::UserRole).toBitArray());
+        QList<QAction*> actions;
+        if ( nodeProperties.isFile() )
         {
-          actions.append(downloadAction);
+            actions.append(downloadAction);
         }
-      if (nodeProperties.holdsFiles())
+        if ( nodeProperties.holdsFiles() )
         {
-          actions.append(downloadAllAction);
+            actions.append(downloadAllAction);
         }
-      if (nodeProperties.isFile())
+        if ( nodeProperties.isFile() )
         {
-          actions.append(downloadAndOpenAction);
+            actions.append(downloadAndOpenAction);
         }
-      if (nodeProperties.receivesFiles())
+        if ( nodeProperties.receivesFiles() )
         {
-          actions.append(uploadAction);
+            actions.append(uploadAction);
 
-          if (saveDataAndUploadAction->isEnabled())
+            if ( saveDataAndUploadAction->isEnabled() )
             {
-              actions.append(saveDataAndUploadAction);
+                actions.append(saveDataAndUploadAction);
             }
         }
-      if (nodeProperties.isModifiable())
+        if ( nodeProperties.isModifiable() )
         {
-          actions.append(createAction);
+            actions.append(createAction);
         }
-      if (nodeProperties.isDeletable())
+        if ( nodeProperties.isDeletable() )
         {
-          actions.append(deleteAction);
+            actions.append(deleteAction);
         }
-      if (actions.count() > 0)
+        if ( actions.count() > 0 )
         {
-          QMenu::exec(actions, xnatTreeView->mapToGlobal(position));
+            QMenu::exec(actions, xnatTreeView->mapToGlobal(position));
         }
     }
 }
-
