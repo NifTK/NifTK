@@ -1062,8 +1062,10 @@ IF (BUILD_PROTOTYPE)
   IF (NOT EXISTS ${PROTOTYPE_DIR})
     FIND_PACKAGE(Subversion)
     IF (Subversion_FOUND)
+      MESSAGE("Found Subversion")
+      MESSAGE("Retrieving NiftyPrototype...")
       EXECUTE_PROCESS(
-        COMMAND "${Subversion_SVN_EXECUTABLE} checkout ${NIFTK_LOCATION_PROTOTYPE} Prototype"
+        COMMAND "${Subversion_SVN_EXECUTABLE}" checkout "${NIFTK_LOCATION_PROTOTYPE}" Prototype
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
     ELSE()
