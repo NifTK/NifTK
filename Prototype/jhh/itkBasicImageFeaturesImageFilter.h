@@ -37,6 +37,15 @@ namespace itk {
  * \brief 2D image filter class to compute basic image features (BIFs)
  * on an image. 
  *
+ * The categories are:
+ * 0 = flat 
+ * 1 = slope
+ * 2 = minimum
+ * 3 = maximum
+ * 4 = light line
+ * 5 = dark line
+ * 6 = saddle
+ *
  */
 
 template<class TInputImage, class TOutputImage>
@@ -95,12 +104,17 @@ public:
       Here we prefer float in order to save memory.  */
 
   typedef float InternalRealType;
-  typedef Image< InternalRealType, ::itk::GetImageDimension<TInputImage>::ImageDimension > RealImageType;
+
+  typedef Image< InternalRealType, 
+                 ::itk::GetImageDimension<TInputImage>::ImageDimension > RealImageType;
+
   typedef typename RealImageType::Pointer RealImagePointer;
 
   /**  Derivative filter type, it will be the first in the pipeline  */
-  typedef LewisGriffinRecursiveGaussianImageFilter< InputImageType, RealImageType > DerivativeFilterTypeX;
-  typedef LewisGriffinRecursiveGaussianImageFilter< RealImageType,  RealImageType > DerivativeFilterTypeY;
+  typedef LewisGriffinRecursiveGaussianImageFilter < InputImageType, 
+                                                     RealImageType > DerivativeFilterTypeX;
+  typedef LewisGriffinRecursiveGaussianImageFilter < RealImageType,  
+                                                     RealImageType > DerivativeFilterTypeY;
 
   /**  Pointer to a derivative filter.  */
   typedef typename DerivativeFilterTypeX::OrderEnumType  DerivativeFilterOrderEnumTypeX;
@@ -120,8 +134,8 @@ public:
   /// Turn on calculation of orientated BIFs
   void CalculateOrientatedBIFs(void) {m_FlagCalculateOrientatedBIFs = true;}
 
-  /// Only report linear structures
-  void LinesOnly(void) {m_FlagLinesOnly = true;}
+  /// Ignore slopes, so classify only as second order
+  void SecondOrderOnly(void) {m_FlagSecondOrderOnly = true;}
 
   /// Set the noise suppression parameter
   itkSetMacro( Epsilon, InternalRealType );
@@ -180,8 +194,7 @@ public:
   itkGetObjectMacro( ResponseLightLine, RealImageType ); ///< Get a pointer to the light line response
   itkGetObjectMacro( ResponseSaddle, RealImageType );    ///< Get a pointer to the saddle like response
 
-  itkGetObjectMacro( FirstOrderOrientation, RealImageType );    ///< Get a pointer to the first order structure orientation
-  itkGetObjectMacro( SecondOrderOrientation, RealImageType );    ///< Get a pointer to the second order structure orientation
+  itkGetObjectMacro( Orientation, RealImageType );    ///< Get a pointer to the structure orientation
 
   /// Write one of the derivatives to a file ( 0 < n < 6 )
   void WriteDerivativeToFile( int n, std::string filename );
@@ -272,11 +285,12 @@ protected:
   bool m_NormalizeAcrossScale; 
   
   /// Only report linear structures
-  bool m_FlagLinesOnly;
+  bool m_FlagSecondOrderOnly;
 
-  /** Noise suppression parameter */
+  /// Noise suppression parameter
   InternalRealType m_Epsilon; 
-  /** Scale */
+
+  /// Scale 
   InternalRealType m_Sigma; 
 
   /// Flag indicating whether the orgin has been set
@@ -312,8 +326,7 @@ protected:
   RealImagePointer m_ResponseLightLine;	///< LightLine region response
   RealImagePointer m_ResponseSaddle;	///< Saddle region response
 
-  RealImagePointer m_FirstOrderOrientation;	///< Orientation of first order structure
-  RealImagePointer m_SecondOrderOrientation;	///< Orientation of second order structure
+  RealImagePointer m_Orientation;	///< Orientation of the structure
 
 private:
   BasicImageFeaturesImageFilter(const Self&); //purposely not implemented

@@ -23,6 +23,15 @@
 
  ============================================================================*/
 
+#include <sys/stat.h>	
+#include <unistd.h>
+#include <time.h>
+
+#include <list>
+#include <fstream>
+
+#include <boost/filesystem.hpp>
+
 #include "ConversionUtils.h"
 #include "CommandLineParser.h"
 
@@ -40,13 +49,11 @@
 #include "gdcmGlobal.h"
 
 
-#include <list>
-#include <fstream>
-
-
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "verbose", NULL, "Output verbose debugging info"},
+
+  {OPT_SWITCH, "update", NULL, "Only generate the image if the output is out-of-date"},
 
   {OPT_SWITCH, "patient", NULL, "Include the patient name in the filename"},
   {OPT_SWITCH, "bodypart", NULL, "Include the body part imaged in the filename"},
@@ -78,6 +85,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 enum {
 
   O_VERBOSE,
+
+  O_UPDATE,
 
   O_PATIENT_NAME,
   O_BODY_PART,
@@ -152,6 +161,7 @@ void AppendTag( std::string &fileOutputFilename, const DictionaryType &dictionar
 int main( int argc, char * argv[] )
 {
   bool flgVerbose;
+  bool flgUpdate;
   bool flgPatientName;
   bool flgBodyPart;
   bool flgLaterality;
@@ -198,6 +208,8 @@ int main( int argc, char * argv[] )
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
 
   CommandLineOptions.GetArgument( O_VERBOSE, flgVerbose );
+
+  CommandLineOptions.GetArgument( O_UPDATE, flgUpdate );
 
   CommandLineOptions.GetArgument( O_PATIENT_NAME, flgPatientName );
   CommandLineOptions.GetArgument( O_BODY_PART, flgBodyPart );
@@ -261,6 +273,7 @@ int main( int argc, char * argv[] )
     std::cerr << e << std::endl;
     return EXIT_FAILURE;
     }
+
 
   // Now that the image has been read, we obtain the Meta data dictionary from
   // the ImageIO object using the GetMetaDataDictionary() method.
@@ -374,6 +387,84 @@ int main( int argc, char * argv[] )
 
   if (fileOutputFileSuffix.length() > 0)
     fileOutputFilename += fileOutputFileSuffix;
+
+  std::cout << "Output filename: " << fileOutputFilename << std::endl;
+
+
+  // Is the output file up-to-date?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if (flgUpdate) {
+
+    boost::filesystem::path pathOutputFilename( fileOutputFilename );
+
+    if ( boost::filesystem::exists( pathOutputFilename ) ) {
+	
+#if 0
+
+      struct tm *tmInput, *tmOutput;
+      
+      struct stat attribInput, attribOutput;
+      
+      stat(fileInputImage.c_str(), &attribInput);
+      stat(fileOutputFilename.c_str(), &attribOutput);
+      
+      tmInput  = gmtime( &(attribInput.st_mtime) );
+
+      std::cout << "Input image modification time: " 
+		<< 1900 + tmInput->tm_year << " "
+		<< tmInput->tm_mon + 1 << " "
+		<< tmInput->tm_mday << " "
+		<< tmInput->tm_hour << ":"
+		<< tmInput->tm_min << ":"
+		<< tmInput->tm_sec << std::endl;
+
+      tmOutput = gmtime( &(attribOutput.st_mtime) );
+
+      std::cout << "Output image modification time: " 
+		<< 1900 + tmOutput->tm_year << " "
+		<< tmOutput->tm_mon + 1 << " "
+		<< tmOutput->tm_mday << " "
+		<< tmOutput->tm_hour << ":"
+		<< tmOutput->tm_min << ":"
+		<< tmOutput->tm_sec << std::endl;
+#else
+
+      boost::filesystem::path pathInputImage( fileInputImage );
+
+      std::time_t timeInput = boost::filesystem::last_write_time( pathInputImage );
+      std::time_t timeOutput = boost::filesystem::last_write_time( pathOutputFilename );
+
+      struct tm *tmInput = localtime( &timeInput );
+
+      std::cout << "Input image modification time: " 
+		<< 1900 + tmInput->tm_year << " "
+		<< tmInput->tm_mon + 1 << " "
+		<< tmInput->tm_mday << " "
+		<< tmInput->tm_hour << ":"
+		<< tmInput->tm_min << ":"
+		<< tmInput->tm_sec << std::endl;
+
+      struct tm *tmOutput = localtime( &timeOutput );
+
+      std::cout << "Output image modification time: " 
+		<< 1900 + tmOutput->tm_year << " "
+		<< tmOutput->tm_mon + 1 << " "
+		<< tmOutput->tm_mday << " "
+		<< tmOutput->tm_hour << ":"
+		<< tmOutput->tm_min << ":"
+		<< tmOutput->tm_sec << std::endl;
+
+      if ( std::difftime( timeOutput, timeInput ) > 0. ) {
+	std::cout << "Output image is up-to-date" << std::endl;
+	return EXIT_SUCCESS;
+      }
+      else
+	std::cout << "Output image is not up-to-date" << std::endl;
+#endif
+
+    }
+  }
 
 
   // Write the image

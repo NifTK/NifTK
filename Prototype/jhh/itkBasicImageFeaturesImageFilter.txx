@@ -52,11 +52,13 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   // Multi-threaded execution is enabled by default
   m_FlagMultiThreadedExecution = true;
 
+  m_Sigma = 1.;
+
   m_Epsilon = 1.0e-05;
   m_NormalizeAcrossScale = false;
   m_FlagCalculateOrientatedBIFs = false;
   m_FlagLocalOrientationSet = false;
-  m_FlagLinesOnly = false;
+  m_FlagSecondOrderOnly = false;
 
   m_NumberOfOrientations = 8;
 
@@ -96,7 +98,6 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 ::SetSigma( RealType sigma )
 {
   m_Sigma = sigma;
-
   this->Modified();
 }
 
@@ -126,10 +127,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 {
   TOutputImage *out = dynamic_cast<TOutputImage*>(output);
 
-  if (out)
-    {
+  if (out) 
     out->SetRequestedRegion( out->GetLargestPossibleRegion() );
-    }
 }
 
 
@@ -231,8 +230,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   m_ResponseDarkLine  = RealImageType::New();
   m_ResponseLightLine = RealImageType::New();
   m_ResponseSaddle    = RealImageType::New();
-  m_FirstOrderOrientation     = RealImageType::New();
-  m_SecondOrderOrientation    = RealImageType::New();
+
+  m_Orientation       = RealImageType::New();
 
   typename RealImageType::RegionType region = this->GetInput()->GetLargestPossibleRegion();
 
@@ -243,8 +242,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   m_ResponseDarkLine->SetRegions( region );
   m_ResponseLightLine->SetRegions( region );
   m_ResponseSaddle->SetRegions( region );
-  m_FirstOrderOrientation->SetRegions( region );
-  m_SecondOrderOrientation->SetRegions( region );
+
+  m_Orientation->SetRegions( region );
 
   m_ResponseFlat->SetSpacing( this->GetInput()->GetSpacing() );
   m_ResponseSlope->SetSpacing( this->GetInput()->GetSpacing() );
@@ -253,8 +252,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   m_ResponseDarkLine->SetSpacing( this->GetInput()->GetSpacing() );
   m_ResponseLightLine->SetSpacing( this->GetInput()->GetSpacing() );
   m_ResponseSaddle->SetSpacing( this->GetInput()->GetSpacing() );
-  m_FirstOrderOrientation->SetSpacing( this->GetInput()->GetSpacing() );
-  m_SecondOrderOrientation->SetSpacing( this->GetInput()->GetSpacing() );
+
+  m_Orientation->SetSpacing( this->GetInput()->GetSpacing() );
 
   m_ResponseFlat->SetOrigin( this->GetInput()->GetOrigin() );
   m_ResponseSlope->SetOrigin( this->GetInput()->GetOrigin() );
@@ -263,8 +262,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   m_ResponseDarkLine->SetOrigin( this->GetInput()->GetOrigin() );
   m_ResponseLightLine->SetOrigin( this->GetInput()->GetOrigin() );
   m_ResponseSaddle->SetOrigin( this->GetInput()->GetOrigin() );
-  m_FirstOrderOrientation->SetOrigin( this->GetInput()->GetOrigin() );
-  m_SecondOrderOrientation->SetOrigin( this->GetInput()->GetOrigin() );
+
+  m_Orientation->SetOrigin( this->GetInput()->GetOrigin() );
 
   m_ResponseFlat->Allocate( );
   m_ResponseSlope->Allocate( );
@@ -273,8 +272,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   m_ResponseDarkLine->Allocate( );
   m_ResponseLightLine->Allocate( );
   m_ResponseSaddle->Allocate( );
-  m_FirstOrderOrientation->Allocate( );
-  m_SecondOrderOrientation->Allocate( );
+
+  m_Orientation->Allocate( );
 
   m_ResponseFlat->FillBuffer( 0. );
   m_ResponseSlope->FillBuffer( 0. );
@@ -283,8 +282,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   m_ResponseDarkLine->FillBuffer( 0. );
   m_ResponseLightLine->FillBuffer( 0. );
   m_ResponseSaddle->FillBuffer( 0. );
-  m_FirstOrderOrientation->FillBuffer( 0. );
-  m_SecondOrderOrientation->FillBuffer( 0. );
+
+  m_Orientation->FillBuffer( 0. );
 }
 
 
@@ -346,11 +345,11 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 {
   unsigned int *adjust = 0;
   unsigned int *reorder = 0;
-  vnl_double_2 *dirn = 0;		///< The list of vector orientations
-  vnl_double_2 *orient = 0;		///< The list of vector orientations for the current pixel (eg. wrt. to origin)
+  vnl_double_2 *dirn = 0;		// The list of vector orientations
+  vnl_double_2 *orient = 0;		// Vector orientations for the current pixel (eg. wrt. to origin)
 
 
-  // Array to ensure oriented BIFs are corectly ordered
+  // Array to ensure oriented BIFs are correctly ordered
 
   if (! adjust) {
     adjust = new unsigned int[7];
@@ -385,7 +384,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   if ( ! orient )
     orient = new vnl_double_2[m_NumberOfOrientations];
 
-  unsigned int k;
+  unsigned int k, kStart;
   double theta;
   vnl_double_2x2 R;
 
@@ -457,10 +456,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   ImageRegionIterator< RealImageType > itSaddle
     = ImageRegionIterator< RealImageType >( m_ResponseSaddle, outputRegionForThread );
 
-  ImageRegionIterator< RealImageType > itFirstOrderOrientation
-    = ImageRegionIterator< RealImageType >( m_FirstOrderOrientation, outputRegionForThread );
-  ImageRegionIterator< RealImageType > itSecondOrderOrientation
-    = ImageRegionIterator< RealImageType >( m_SecondOrderOrientation, outputRegionForThread );
+  ImageRegionIterator< RealImageType > itOrientation
+    = ImageRegionIterator< RealImageType >( m_Orientation, outputRegionForThread );
 
 
   outputIterator.GoToBegin();
@@ -480,8 +477,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   itLightLine.GoToBegin();
   itSaddle.GoToBegin();
 
-  itFirstOrderOrientation.GoToBegin();
-  itSecondOrderOrientation.GoToBegin();
+  itOrientation.GoToBegin();
 
   InputImageSpacingType spacing = inImage->GetSpacing();
 
@@ -551,7 +547,12 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 		  << std::endl;
 #endif
 
-    for (k=1; k<7; k++) {
+    if ( m_FlagSecondOrderOnly )
+      kStart = 2;
+    else
+      kStart = 1;
+
+    for (k=kStart; k<7; k++) {
       tmp = opts[k];
       
       if (tmp >= maximum) {
@@ -560,8 +561,109 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
       }
     }
 
-    if ( m_FlagLinesOnly && (idx != 4) && (idx != 5) )
-      idx = 0;
+    
+    // Calculate the orientation
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    if ( (idx == 1) || (idx == 4) || (idx == 5) || (idx == 6) ) {
+	
+      bool flgIsSecondOrder;
+      double theta;
+      OutputImagePointType vReference;    
+      vnl_double_2 vStructure;
+	
+      // Slope
+	
+      if ( idx == 1 ) {
+	flgIsSecondOrder = false;
+	vStructure( 0 ) = itS10.Get();
+	vStructure( 1 ) = itS01.Get();
+      }
+    
+      // Lines or saddles
+    
+      else if ((idx == 4) || (idx == 5) || (idx == 6)) {
+	flgIsSecondOrder = true;
+      
+	double S20 = itS20.Get(); 
+	double S11 = itS11.Get(); 
+	double S02 = itS02.Get();
+
+	double lambda1 = ((S20 + S02) + sqrt((S20 + S02)*(S20 + S02) - 4*(S20*S02 - S11*S11)))/2.;
+	double lambda2 = ((S20 + S02) - sqrt((S20 + S02)*(S20 + S02) - 4*(S20*S02 - S11*S11)))/2.;
+
+	if ( fabs( lambda1 ) > fabs( lambda2 ) ) {
+	  vStructure( 0 ) = S20 - lambda1;;
+	  vStructure( 1 ) = S11;
+	}
+	else {
+	  vStructure( 0 ) = S20 - lambda2;
+	  vStructure( 1 ) = S11;
+	}
+
+	double mag = sqrt( vStructure( 0 )*vStructure( 0 ) + vStructure( 1 )*vStructure( 1 ) );
+
+	vStructure( 0 ) /= mag;
+	vStructure( 1 ) /= mag;
+      }
+
+  
+      // Has a reference orientation been specified
+
+      if (m_FlagLocalOrientationSet) {
+
+	index = outputIterator.GetIndex();
+	outImage->TransformIndexToPhysicalPoint( index, vReference );
+
+	typename RealImageType::IndexType orientIndex;
+	typename RealImageType::PointType orientPoint;
+
+	orientPoint = vReference;
+	
+	if ( m_OrientationInX->TransformPhysicalPointToIndex( orientPoint, orientIndex ) ) {
+		 
+	  vReference[0] = m_OrientationInX->GetPixel( orientIndex );
+	  vReference[1] = m_OrientationInY->GetPixel( orientIndex );
+	}
+      
+	theta = atan2(vReference[1], vReference[0]) - atan2(vStructure(0), vStructure(1));
+      }
+
+      // Or are we interested in the orientation w.r.t. the origin
+
+      else if ( m_FlagOriginSet ) {
+
+	index = outputIterator.GetIndex();
+
+	outImage->TransformIndexToPhysicalPoint( index, vReference );
+	vReference[0] -= m_Origin[0];
+	vReference[1] -= m_Origin[1];
+      
+	theta = atan2(vReference[1], vReference[0]) - atan2(vStructure(0), vStructure(1));
+      }
+    
+      // Otherwise use absolute orientation
+
+      else 
+	theta = atan2(vStructure(0), vStructure(1));
+
+
+      // Ensure angle is between -pi and +pi for first order or between
+      // 0 and pi for second order
+      
+      if ( theta > M_PI )
+	theta = theta - 2.*M_PI;
+      
+      else if ( theta < -M_PI )
+	theta = 2.*M_PI + theta;
+
+      if ( flgIsSecondOrder && ( theta < 0 ) )
+	theta = -theta;  
+
+      itOrientation.Set( theta );
+    }
+    else
+      itOrientation.Set( 0. );
 
 
     // Calculate orientated BIFs?
@@ -720,8 +822,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
     ++itLightLine;
     ++itSaddle;
 
-    ++itFirstOrderOrientation;
-    ++itSecondOrderOrientation;
+    ++itOrientation;
   }
 
   if (adjust)  delete[] adjust;
@@ -804,7 +905,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   else 
     derivsWriter->SetInput( inputImage );
 
-  std::cout << "Writing: " << filename;
+  std::cout << "Writing: " << filename << std::endl;
   derivsWriter->SetFileName( filename.c_str() );
 
   try
@@ -868,7 +969,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   else 
     responseWriter->SetInput( inputImage );
 
-  std::cout << "Writing: " << filename;
+  std::cout << "Writing: " << filename << std::endl;
   responseWriter->SetFileName( filename.c_str() );
 
   try

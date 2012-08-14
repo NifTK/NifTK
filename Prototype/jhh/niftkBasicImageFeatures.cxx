@@ -41,11 +41,16 @@
 #include "itkScalarToRGBBIFPixelFunctor.h"
 #include "itkScalarToRGBOBIFPixelFunctor.h"
 #include "itkMaskImageFilter.h"
+#include "itkResampleImageFilter.h"
+#include "itkLinearInterpolateImageFunction.h"
+#include "itkIdentityTransform.h"
 
+#include <boost/filesystem.hpp>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "st", NULL, "Perform single threaded execution [multi-threaded]."},
+  {OPT_SWITCH, "resample", NULL, "Speed up the execution by resampling the image."},
 
   {OPT_SWITCH, "orientate", NULL, "Calculate orientated BIFs [no]."},
   {OPT_SWITCH, "n72", NULL, "Calculate orientations in one degree increments [45degs]."},
@@ -53,11 +58,14 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH, "vflip", NULL, "Flip the orientation vertically (e.g. for PA vs AP views)."},
   {OPT_SWITCH, "hflip", NULL, "Flip the orientation horizontally (e.g. for ML vs LM views)."},
 
-  {OPT_SWITCH, "lines", NULL, "Only include linear information in the colour image."},
+  {OPT_SWITCH, "noSlope", NULL, "Ignore slopes, i.e. only classify as 2nd order."},
 
   {OPT_DOUBLEx2, "origin", "ox,oy", "Orientate relative to this origin in mm (0,0 = corner of the image)."},
 
   {OPT_FLOAT, "sigma", "value", "The Guassian std. dev. in mm at which to compute the BIFs [1.0]."},
+  {OPT_INT,   "nscales", "n",   "The number of scales to process [1]."},
+  {OPT_FLOAT, "fscales", "value", "The multiplicative factor between scales [2.0]."},
+
   {OPT_FLOAT, "e", "epsilon", "The noise suppression parameter [1e-05]."},
 
   {OPT_STRING, "u2D", "filename", "Local reference orientation in 'x'."},
@@ -80,6 +88,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "oLightLine", "filename", "Save the light line response to a file."},
   {OPT_STRING, "oSaddle", "filename", "Save the saddlelike response to a file."},
 
+  {OPT_STRING, "oOrient", "filename", "Save the continuous orientation image to a file."},
   {OPT_STRING, "oVar", "filename", "Save the BIF response variance image to a file."},
 
   {OPT_STRING, "oh",   "filename", "Write the histogram of BIFs to a file.."},
@@ -96,6 +105,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
 enum {
   O_SINGLE_THREADED,
+  O_RESAMPLE_IMAGES,
 
   O_ORIENTATE,
   O_72_ORIENTATIONS,
@@ -103,11 +113,14 @@ enum {
   O_FLIP_VERTICALLY,
   O_FLIP_HORIZONTALLY,
   
-  O_DISPLAY_LINES_ONLY,
+  O_SECOND_ORDER_ONLY,
 
   O_ORIGIN,
 
   O_SIGMA_IN_MM,
+  O_NUMBER_OF_SCALES,
+  O_SCALE_FACTOR,
+
   O_EPSILON,
 
   O_ORIENTATION_INX,
@@ -130,6 +143,7 @@ enum {
   O_OUTPUT_LIGHT_LINE,
   O_OUTPUT_SADDLE,    
 
+  O_OUTPUT_ORIENTATION,
   O_OUTPUT_VARIANCE,
 
   O_OUTPUT_HISTOGRAM,
@@ -140,19 +154,79 @@ enum {
 };
 
 
+std::string AddScaleSuffix( std::string filename, float scale, int nScales ) 
+{
+  if ( nScales > 1 ) {
+
+    char strScale[128];
+
+    boost::filesystem::path pathname( filename );
+    boost::filesystem::path ofilename;
+
+    std::string extension = pathname.extension().string();
+    std::string stem = pathname.stem().string();
+
+    if ( extension == std::string( ".gz" ) ) {
+
+      extension = pathname.stem().extension().string() + extension;
+      stem = pathname.stem().stem().string();
+    }
+
+    sprintf(strScale, "_%03gmm", scale);
+
+    ofilename = pathname.parent_path() /
+      boost::filesystem::path( stem + std::string( strScale ) + extension );
+    
+    return ofilename.string();
+  }
+  else 
+    return filename;
+}
+
+
+std::string AddSuffix( std::string filename, std::string suffix ) 
+{
+  boost::filesystem::path pathname( filename );
+  boost::filesystem::path ofilename;
+
+  std::string extension = pathname.extension().string();
+  std::string stem = pathname.stem().string();
+
+  if ( extension == std::string( ".gz" ) ) {
+    
+    extension = pathname.stem().extension().string() + extension;
+    stem = pathname.stem().stem().string();
+  }
+
+  ofilename = pathname.parent_path() /
+    boost::filesystem::path( stem + suffix + extension );
+    
+  return ofilename.string();
+}
+
+
 int main( int argc, char *argv[] )
 {
   bool flgSingleThreaded;
   bool flgOrientate;
+  bool flgResampleImages;
 
   bool flgFlipVertically;
   bool flgFlipHorizontally;
 
   bool flgN72;
 
-  bool flgDisplayLinesOnly;
+  bool flgSecondOrderOnly;
+
+  unsigned int iDim;
+
+  int iScale;
+  int nScales = 1;
 
   float sigmaInMM = 1;
+  float scaleFactor = 2.;
+  float scaleFactorRelativeToInput = 1.;
+
   float epsilon = 1.0e-05;
 
   double *origin = 0;
@@ -177,6 +251,7 @@ int main( int argc, char *argv[] )
   std::string fileOutputLightLine;
   std::string fileOutputSaddle;   
 
+  std::string fileOutputOrientation;
   std::string fileOutputVariance;
 
   std::string fileOutputHistogram;
@@ -193,6 +268,7 @@ int main( int argc, char *argv[] )
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
 
   CommandLineOptions.GetArgument( O_SINGLE_THREADED, flgSingleThreaded );
+  CommandLineOptions.GetArgument( O_RESAMPLE_IMAGES, flgResampleImages );
 
   CommandLineOptions.GetArgument( O_ORIENTATE, flgOrientate );
 
@@ -201,11 +277,14 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_FLIP_VERTICALLY,   flgFlipVertically );
   CommandLineOptions.GetArgument( O_FLIP_HORIZONTALLY, flgFlipHorizontally );
 
-  CommandLineOptions.GetArgument( O_DISPLAY_LINES_ONLY, flgDisplayLinesOnly);
+  CommandLineOptions.GetArgument( O_SECOND_ORDER_ONLY, flgSecondOrderOnly);
 
   CommandLineOptions.GetArgument( O_ORIGIN, origin );
 
   CommandLineOptions.GetArgument( O_SIGMA_IN_MM, sigmaInMM );
+  CommandLineOptions.GetArgument( O_NUMBER_OF_SCALES, nScales );
+  CommandLineOptions.GetArgument( O_SCALE_FACTOR, scaleFactor );
+
   CommandLineOptions.GetArgument( O_EPSILON, epsilon );
 
   CommandLineOptions.GetArgument( O_ORIENTATION_INX, fileOrientationInX );
@@ -241,7 +320,9 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_LIGHT_LINE, fileOutputLightLine );
   CommandLineOptions.GetArgument( O_OUTPUT_SADDLE,     fileOutputSaddle );
 
+  CommandLineOptions.GetArgument( O_OUTPUT_ORIENTATION, fileOutputOrientation );
   CommandLineOptions.GetArgument( O_OUTPUT_VARIANCE, fileOutputVariance );
+
   CommandLineOptions.GetArgument( O_OUTPUT_HISTOGRAM, fileOutputHistogram );
   CommandLineOptions.GetArgument( O_OUTPUT_COLOUR_IMAGE, fileOutputColourImage );
   CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, fileOutputImage );
@@ -277,7 +358,7 @@ int main( int argc, char *argv[] )
 
   try
   { 
-    std::cout << "Reading the input image";
+    std::cout << "Reading the input image" << std::endl;
     imageReader->Update();
   }
   catch (itk::ExceptionObject &ex)
@@ -285,6 +366,78 @@ int main( int argc, char *argv[] )
     std::cout << ex << std::endl;
     return EXIT_FAILURE;
   }
+
+  InputImageType::SizeType    nPixelsInput;
+  InputImageType::SpacingType resnInput;
+  InputImageType::PointType   originInput;
+
+  nPixelsInput = imageReader->GetOutput()->GetLargestPossibleRegion().GetSize();
+  resnInput    = imageReader->GetOutput()->GetSpacing();
+  originInput  = imageReader->GetOutput()->GetOrigin();
+
+
+  // Set up the image resampler
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  InputImageType::SizeType    nPixelsResampled;
+  InputImageType::SpacingType resnResampled;
+  InputImageType::PointType   originResampled;
+
+  InputImageType::Pointer pInputImage;
+  
+  typedef itk::ResampleImageFilter< InputImageType, InputImageType > ResampleFilterType;
+  ResampleFilterType::Pointer resampleInputFilter = 0;
+
+  typedef itk::IdentityTransform< double, ImageDimension > IdentityTransformType;
+  IdentityTransformType::Pointer resampleIdentityTransform = 0;
+
+  typedef itk::LinearInterpolateImageFunction< InputImageType, double > ResampleInterpolatorType;
+  ResampleInterpolatorType::Pointer resampleInterpolator = 0;
+
+  if ( flgResampleImages ) {
+
+    for ( iDim=0; iDim<ImageDimension; iDim++) {
+      
+      nPixelsResampled[iDim] = nPixelsInput[iDim];
+      resnResampled[iDim]    = resnInput[iDim];
+      originResampled[iDim]  = originInput[iDim];
+    }
+
+    resampleInputFilter = ResampleFilterType::New();
+
+    resampleIdentityTransform = IdentityTransformType::New();
+    resampleInterpolator      = ResampleInterpolatorType::New();
+
+    resampleInputFilter->SetInput( imageReader->GetOutput() );
+    resampleInputFilter->SetOutputSpacing( resnResampled );
+    resampleInputFilter->SetOutputOrigin( originResampled );
+    resampleInputFilter->SetSize( nPixelsResampled );
+
+    resampleInputFilter->SetTransform( resampleIdentityTransform );
+    resampleInputFilter->SetInterpolator( resampleInterpolator );
+
+    resampleInputFilter->SetDefaultPixelValue( 0 );
+
+    InputImageType::DirectionType direction;
+    direction.SetIdentity();
+    resampleInputFilter->SetOutputDirection( direction );
+
+    try
+      { 
+	std::cout << "Resampling the input image" << std::endl;
+	resampleInputFilter->Update();
+      }
+    catch (itk::ExceptionObject &ex)
+      { 
+	std::cout << ex << std::endl;
+	return EXIT_FAILURE;
+      }
+
+    pInputImage = resampleInputFilter->GetOutput();
+
+  }
+  else 
+    pInputImage = imageReader->GetOutput();
 
 
   // Read the local orientation images
@@ -302,7 +455,7 @@ int main( int argc, char *argv[] )
 
     try
       { 
-	std::cout << "Reading the local orientation in 'x'";
+	std::cout << "Reading the local orientation in 'x'" << std::endl;
 	xOrientReader->Update();
       }
     catch (itk::ExceptionObject &ex)
@@ -317,7 +470,7 @@ int main( int argc, char *argv[] )
 
     try
       { 
-	std::cout << "Reading the local orientation in 'y'";
+	std::cout << "Reading the local orientation in 'y'" << std::endl;
 	yOrientReader->Update();
       }
     catch (itk::ExceptionObject &ex)
@@ -341,7 +494,7 @@ int main( int argc, char *argv[] )
 
     try
       { 
-	std::cout << "Reading the mask image";
+	std::cout << "Reading the mask image" << std::endl;
 	maskReader->Update();
       }
     catch (itk::ExceptionObject &ex)
@@ -360,7 +513,6 @@ int main( int argc, char *argv[] )
   if (flgSingleThreaded)
     BIFsFilter->SetSingleThreadedExecution();
 
-  BIFsFilter->SetSigma( sigmaInMM );
   BIFsFilter->SetEpsilon( epsilon );
 
   if (flgOrientate) {
@@ -373,7 +525,7 @@ int main( int argc, char *argv[] )
   if ( flgFlipVertically )   BIFsFilter->SetFlipVertically();
   if ( flgFlipHorizontally ) BIFsFilter->SetFlipHorizontally();
 
-  if ( flgDisplayLinesOnly ) BIFsFilter->LinesOnly();
+  if ( flgSecondOrderOnly ) BIFsFilter->SecondOrderOnly();
 
   if (origin) {
     BasicImageFeaturesFilterType::OriginType bifOrigin;
@@ -391,265 +543,393 @@ int main( int argc, char *argv[] )
   if ( maskReader ) 
     BIFsFilter->SetMask( maskReader->GetOutput() );
 
-  BIFsFilter->SetInput( imageReader->GetOutput() );
+  BIFsFilter->SetInput( pInputImage );
   
-  try
-  {
-    std::cout << "Computing basic image features";
-    BIFsFilter->Update();
-  }
-  catch (itk::ExceptionObject &e)
-  {
-    std::cerr << e << std::endl;
-  }
-  
-  
-  // Compute a histogram of the BIFs
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( fileOutputHistogram.length() > 0 ) {
+  // Run the filter at each scale
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    unsigned int iBin;
-    unsigned int nBins;
-
-    float nPixels = 0;
-    float *histogram;
-
-    OutputPixelType pixel;
-
-    OutputImageType::Pointer bifs = BIFsFilter->GetOutput();
-
-    if (flgOrientate) {
-      if ( flgN72 )
-	nBins = 183;
-      else
-	nBins = 23;
-    }
-    else
-      nBins = 7;
-
-    histogram = new float[nBins];
-
-    for (iBin=0; iBin<nBins; iBin++) 
-      histogram[ iBin ] = 0.;
-  
-    if ( maskReader ) {
-
-      typedef itk::ImageRegionConstIterator< MaskImageType > MaskIteratorType;
-  
-      MaskImageType::Pointer mask = maskReader->GetOutput();
-
-      MaskIteratorType itMask( mask, mask->GetLargestPossibleRegion() );
+  for (iScale=0; iScale<nScales; iScale++) {
     
-      MaskImageType::IndexType index;
+    BIFsFilter->SetSigma( sigmaInMM );
 
-      itMask.GoToBegin();
 
-      while (! itMask.IsAtEnd() ) {
+    try
+      {
+	std::cout << "Computing basic image features";
+	BIFsFilter->Update();
+      }
+    catch (itk::ExceptionObject &e)
+      {
+	std::cerr << e << std::endl;
+      }
+  
+  
+    // Compute a histogram of the BIFs
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    if ( fileOutputHistogram.length() > 0 ) {
+
+      unsigned int iBin;
+      unsigned int nBins;
+
+      float nPixels = 0;
+      float *histogram;
+
+      OutputPixelType pixel;
+
+      OutputImageType::Pointer bifs = BIFsFilter->GetOutput();
+
+      if (flgOrientate) {
+	if ( flgN72 )
+	  nBins = 183;
+	else
+	  nBins = 23;
+      }
+      else
+	nBins = 7;
+
+      histogram = new float[nBins];
+
+      for (iBin=0; iBin<nBins; iBin++) 
+	histogram[ iBin ] = 0.;
+  
+      if ( maskReader ) {
+
+	typedef itk::ImageRegionConstIterator< MaskImageType > MaskIteratorType;
+  
+	MaskImageType::Pointer mask = maskReader->GetOutput();
+
+	MaskIteratorType itMask( mask, mask->GetLargestPossibleRegion() );
+    
+	MaskImageType::IndexType index;
+
+	itMask.GoToBegin();
+
+	while (! itMask.IsAtEnd() ) {
       
-	index = itMask.GetIndex();	
+	  index = itMask.GetIndex();	
 
-	if ( itMask.Get() > 0 ) {	// if inside the mask
+	  if ( itMask.Get() > 0 ) {	// if inside the mask
 
-	  pixel = bifs->GetPixel( index );
+	    pixel = bifs->GetPixel( index );
+
+	    if ( (pixel < 0) || (pixel >= nBins) )
+	      std::cerr << "BIF value ("
+			<< niftk::ConvertToString(pixel)
+			<< ") exceeds histogram range (0 to "
+			<< niftk::ConvertToString(nBins - 1) << ".";
+
+	    else {
+	      nPixels++;
+	      histogram[ (unsigned int) pixel ]++;
+	    }
+	  }
+
+	  ++itMask;
+	}
+      }
+      else {
+	typedef itk::ImageRegionConstIterator< OutputImageType > IteratorType;
+  
+	IteratorType itBIFs( bifs, bifs->GetLargestPossibleRegion() );
+    
+	itBIFs.GoToBegin();
+
+	while (! itBIFs.IsAtEnd() ) {
+      
+	  pixel = itBIFs.Get();
 
 	  if ( (pixel < 0) || (pixel >= nBins) )
-	    std::cerr << "BIFF value ("
-					   << niftk::ConvertToString(pixel)
-					   << ") exceeds histogram range (0 to "
-					   << niftk::ConvertToString(nBins - 1) << ".";
-
+	    std::cerr <<std::string("BIF value (")
+		      << niftk::ConvertToString(pixel)
+		      << ") exceeds histogram range (0 to "
+		      << niftk::ConvertToString(nBins - 1) + ".";
+      
 	  else {
 	    nPixels++;
 	    histogram[ (unsigned int) pixel ]++;
 	  }
+
+	  ++itBIFs;
 	}
 
-	++itMask;
-      }
-    }
-    else {
-      typedef itk::ImageRegionConstIterator< OutputImageType > IteratorType;
-  
-      IteratorType itBIFs( bifs, bifs->GetLargestPossibleRegion() );
-    
-      itBIFs.GoToBegin();
-
-      while (! itBIFs.IsAtEnd() ) {
-      
-	pixel = itBIFs.Get();
-
-	if ( (pixel < 0) || (pixel >= nBins) )
-	  std::cerr <<std::string("BIFF value (")
-					 << niftk::ConvertToString(pixel)
-					 << ") exceeds histogram range (0 to "
-					 << niftk::ConvertToString(nBins - 1) + ".";
-      
-	else {
-	  nPixels++;
-	  histogram[ (unsigned int) pixel ]++;
-	}
-
-	++itBIFs;
       }
 
-    }
+      std::fstream fout;
+      fout.open( AddScaleSuffix( fileOutputHistogram, sigmaInMM, nScales ).c_str(), std::ios::out );
 
-    std::fstream fout;
-    fout.open( fileOutputHistogram.c_str(), std::ios::out );
-
-    if ((! fout) || fout.bad()) {
-      std::cerr << "Failed to open file: "
-				     << fileOutputHistogram.c_str();
-      exit(1);
-    }
+      if ((! fout) || fout.bad()) {
+	std::cerr << "Failed to open file: "
+		  << AddScaleSuffix( fileOutputHistogram, sigmaInMM, nScales ) << std::endl;
+	exit(1);
+      }
   
-    for (iBin=0; iBin<nBins; iBin++) 
+      std::cout << "Writing: " 
+		<< AddScaleSuffix( fileOutputHistogram, sigmaInMM, nScales ) << std::endl;
+      
+      for (iBin=0; iBin<nBins; iBin++) 
 
-      fout << std::setw(6) << iBin << " "
-	   << histogram[ iBin ]/nPixels << std::endl;
+	fout << std::setw(6) << iBin << " "
+	     << histogram[ iBin ]/nPixels << std::endl;
   
-    delete histogram;
-    fout.close();
-  }
+      delete histogram;
+      fout.close();    
+    }
 	
 
-  // Write the derivatives?
-  // ~~~~~~~~~~~~~~~~~~~~~~
+    // Write the derivatives?
+    // ~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( fileOutputS00.length() != 0 ) BIFsFilter->WriteDerivativeToFile( 0, fileOutputS00 );
-  if ( fileOutputS10.length() != 0 ) BIFsFilter->WriteDerivativeToFile( 1, fileOutputS10 );
-  if ( fileOutputS01.length() != 0 ) BIFsFilter->WriteDerivativeToFile( 2, fileOutputS01 );
-  if ( fileOutputS11.length() != 0 ) BIFsFilter->WriteDerivativeToFile( 3, fileOutputS11 );
-  if ( fileOutputS20.length() != 0 ) BIFsFilter->WriteDerivativeToFile( 4, fileOutputS20 );
-  if ( fileOutputS02.length() != 0 ) BIFsFilter->WriteDerivativeToFile( 5, fileOutputS02 );
+    if ( fileOutputS00.length() != 0 ) 
+      BIFsFilter->WriteDerivativeToFile( 0, AddScaleSuffix( fileOutputS00, 
+							    sigmaInMM, nScales ) );
+    if ( fileOutputS10.length() != 0 ) 
+      BIFsFilter->WriteDerivativeToFile( 1, AddScaleSuffix( fileOutputS10, 
+							    sigmaInMM, nScales ) );
+    if ( fileOutputS01.length() != 0 ) 
+      BIFsFilter->WriteDerivativeToFile( 2, AddScaleSuffix( fileOutputS01, 
+							    sigmaInMM, nScales ) );
+    if ( fileOutputS11.length() != 0 ) 
+      BIFsFilter->WriteDerivativeToFile( 3, AddScaleSuffix( fileOutputS11, 
+							    sigmaInMM, nScales ) );
+    if ( fileOutputS20.length() != 0 ) 
+      BIFsFilter->WriteDerivativeToFile( 4, AddScaleSuffix( fileOutputS20, 
+							    sigmaInMM, nScales ) );
+    if ( fileOutputS02.length() != 0 ) 
+      BIFsFilter->WriteDerivativeToFile( 5, AddScaleSuffix( fileOutputS02, 
+							    sigmaInMM, nScales ) );
 
 
-  // Write the filter responses?
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Write the filter responses?
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( fileOutputFlat.length()      != 0 ) BIFsFilter->WriteFilterResponseToFile( 0, fileOutputFlat      );
-  if ( fileOutputSlope.length()     != 0 ) BIFsFilter->WriteFilterResponseToFile( 1, fileOutputSlope     );
-  if ( fileOutputDarkBlob.length()  != 0 ) BIFsFilter->WriteFilterResponseToFile( 2, fileOutputDarkBlob  );
-  if ( fileOutputLightBlob.length() != 0 ) BIFsFilter->WriteFilterResponseToFile( 3, fileOutputLightBlob );
-  if ( fileOutputDarkLine.length()  != 0 ) BIFsFilter->WriteFilterResponseToFile( 4, fileOutputDarkLine  );
-  if ( fileOutputLightLine.length() != 0 ) BIFsFilter->WriteFilterResponseToFile( 5, fileOutputLightLine );
-  if ( fileOutputSaddle.length()    != 0 ) BIFsFilter->WriteFilterResponseToFile( 6, fileOutputSaddle    );
+    if ( fileOutputFlat.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 0, AddScaleSuffix( fileOutputFlat, 
+								sigmaInMM, nScales ) );
+
+    if ( fileOutputSlope.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 1, AddScaleSuffix( fileOutputSlope, 
+								sigmaInMM, nScales ) );
+
+    if ( fileOutputDarkBlob.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 2, AddScaleSuffix( fileOutputDarkBlob, 
+								sigmaInMM, nScales ) );
+
+    if ( fileOutputLightBlob.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 3, AddScaleSuffix( fileOutputLightBlob, 
+								sigmaInMM, nScales ) );
+
+    if ( fileOutputDarkLine.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 4, AddScaleSuffix( fileOutputDarkLine, 
+								sigmaInMM, nScales ) );
+
+    if ( fileOutputLightLine.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 5, AddScaleSuffix( fileOutputLightLine, 
+								sigmaInMM, nScales ) );
+
+    if ( fileOutputSaddle.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 6, AddScaleSuffix( fileOutputSaddle, 
+								sigmaInMM, nScales ) );
 
 
-  // Write the BIF image?
-  // ~~~~~~~~~~~~~~~~~~~~
+    // Write the BIF image?
+    // ~~~~~~~~~~~~~~~~~~~~
 
-  if (fileOutputImage.length() != 0) {
+    if (fileOutputImage.length() != 0) {
 
-    typedef itk::ImageFileWriter< OutputImageType > FileWriterType;
+      typedef itk::ImageFileWriter< OutputImageType > FileWriterType;
 
-    FileWriterType::Pointer writer = FileWriterType::New();
+      FileWriterType::Pointer writer = FileWriterType::New();
 
-    writer->SetFileName( fileOutputImage );
-    writer->SetInput( BIFsFilter->GetOutput() );
+      writer->SetFileName( AddScaleSuffix( fileOutputImage, sigmaInMM, nScales ) );
+      writer->SetInput( BIFsFilter->GetOutput() );
 
-    try
-      {
-	std::cout << "Writing the BIF output image.";
-	writer->Update();
-      }
-    catch (itk::ExceptionObject &e)
-      {
-	std::cerr << e << std::endl;
-      }
-  }
+      try
+	{
+	  std::cout << "Writing: "
+		    << AddScaleSuffix( fileOutputImage, sigmaInMM, nScales ) << std::endl;
+	  writer->Update();
+	}
+      catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e << std::endl;
+	}
+    }
 
-  if (fileOutputColourImage.length() != 0) {
+    if (fileOutputColourImage.length() != 0) {
 
-    typedef itk::RGBPixel<unsigned char> RGBPixelType;
-    typedef itk::Image<RGBPixelType, 2> RGBImageType;
+      typedef itk::RGBPixel<unsigned char> RGBPixelType;
+      typedef itk::Image<RGBPixelType, 2> RGBImageType;
 
-    typedef itk::ImageFileWriter< RGBImageType > FileWriterType;
+      typedef itk::ImageFileWriter< RGBImageType > FileWriterType;
 
-    FileWriterType::Pointer writer = FileWriterType::New();
-    writer->SetFileName( fileOutputColourImage );
+      FileWriterType::Pointer writer = FileWriterType::New();
+      writer->SetFileName( AddScaleSuffix( fileOutputColourImage, sigmaInMM, nScales ) );
 
-    if (flgOrientate) {
-      if ( flgN72 ) {
-	typedef itk::Functor::ScalarToRGBOBIFPixelFunctor<OutputPixelType, 72> ColorMapFunctorType;
-	typedef itk::UnaryFunctorImageFilter<OutputImageType, RGBImageType, ColorMapFunctorType> ColorMapFilterType;
+      if (flgOrientate) {
+	if ( flgN72 ) {
+	  typedef itk::Functor::ScalarToRGBOBIFPixelFunctor<OutputPixelType, 72> ColorMapFunctorType;
+	  typedef itk::UnaryFunctorImageFilter<OutputImageType, RGBImageType, ColorMapFunctorType> ColorMapFilterType;
       
-	ColorMapFilterType::Pointer colormapper = ColorMapFilterType::New();
-	colormapper->SetInput(BIFsFilter->GetOutput());
-	colormapper->UpdateLargestPossibleRegion();
+	  ColorMapFilterType::Pointer colormapper = ColorMapFilterType::New();
+	  colormapper->SetInput(BIFsFilter->GetOutput());
+	  colormapper->UpdateLargestPossibleRegion();
 	  
-	writer->SetInput(colormapper->GetOutput());
+	  writer->SetInput(colormapper->GetOutput());
+	}
+	else {
+	  typedef itk::Functor::ScalarToRGBOBIFPixelFunctor<OutputPixelType, 8> ColorMapFunctorType;
+	  typedef itk::UnaryFunctorImageFilter<OutputImageType, RGBImageType, ColorMapFunctorType> ColorMapFilterType;
+	
+	  ColorMapFilterType::Pointer colormapper = ColorMapFilterType::New();
+	  colormapper->SetInput(BIFsFilter->GetOutput());
+	  colormapper->UpdateLargestPossibleRegion();
+	  
+	  writer->SetInput(colormapper->GetOutput());
+	}
       }
       else {
-	typedef itk::Functor::ScalarToRGBOBIFPixelFunctor<OutputPixelType, 8> ColorMapFunctorType;
+	typedef itk::Functor::ScalarToRGBBIFPixelFunctor<OutputPixelType> ColorMapFunctorType;
 	typedef itk::UnaryFunctorImageFilter<OutputImageType, RGBImageType, ColorMapFunctorType> ColorMapFilterType;
-	
+      
 	ColorMapFilterType::Pointer colormapper = ColorMapFilterType::New();
 	colormapper->SetInput(BIFsFilter->GetOutput());
 	colormapper->UpdateLargestPossibleRegion();
-	  
+
 	writer->SetInput(colormapper->GetOutput());
       }
+
+      try
+	{
+	  std::cout << "Writing: " 
+		    << AddScaleSuffix( fileOutputColourImage, sigmaInMM, nScales ) << std::endl;
+	  writer->Update();
+	}
+      catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e << std::endl;
+	}
     }
-    else {
-      typedef itk::Functor::ScalarToRGBBIFPixelFunctor<OutputPixelType> ColorMapFunctorType;
-      typedef itk::UnaryFunctorImageFilter<OutputImageType, RGBImageType, ColorMapFunctorType> ColorMapFilterType;
-      
-      ColorMapFilterType::Pointer colormapper = ColorMapFilterType::New();
-      colormapper->SetInput(BIFsFilter->GetOutput());
-      colormapper->UpdateLargestPossibleRegion();
 
-      writer->SetInput(colormapper->GetOutput());
-    }
 
-    try
-      {
-	std::cout << "Writing the BIF colour output image.";
-	writer->Update();
-      }
-    catch (itk::ExceptionObject &e)
-      {
-	std::cerr << e << std::endl;
-      }
-  }
-
-  
-  // Calculate the BIF response variance image
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  if ( fileOutputVariance.length() > 0 ) {
-
-    float mean, variance, S00;
-    float rFlat, rSlope, rDarkBlob, rLightBlob, rDarkLine, rLightLine, rSaddle;
-
-    OutputImageType::Pointer imVariance = OutputImageType::New();
-    OutputImageType::RegionType region = imageReader->GetOutput()->GetLargestPossibleRegion();
-
-    imVariance->SetRegions( region );
-    imVariance->SetSpacing( imageReader->GetOutput()->GetSpacing() );
-    imVariance->SetOrigin( imageReader->GetOutput()->GetOrigin() );
-
-    imVariance->Allocate( );
-    imVariance->FillBuffer( 0. );
-
-    if ( maskReader ) {
-
-      typedef itk::ImageRegionConstIterator< MaskImageType > MaskIteratorType;
-  
-      MaskImageType::Pointer mask = maskReader->GetOutput();
-
-      MaskIteratorType itMask( mask, mask->GetLargestPossibleRegion() );
+    // Output the orientation image
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-      MaskImageType::IndexType index;
-
-      itMask.GoToBegin();
-
-      while (! itMask.IsAtEnd() ) {
+    if ( fileOutputOrientation.length() > 0 ) {
       
-	index = itMask.GetIndex();	
+      typedef itk::ImageFileWriter< OutputImageType > FileWriterType;
+      
+      FileWriterType::Pointer writer = FileWriterType::New();
+      writer->SetFileName( AddScaleSuffix( fileOutputOrientation, sigmaInMM, nScales ) );
 
-	if ( itMask.Get() > 0 ) {	// if inside the mask
+      typedef itk::MaskImageFilter< OutputImageType, MaskImageType, OutputImageType > 
+	MaskFilterType;
+
+
+      if ( maskReader ) {
+	MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+
+	maskFilter->SetInput1( BIFsFilter->GetOrientation() );
+	maskFilter->SetInput2( maskReader->GetOutput() );
+
+	maskFilter->Update();
+
+	writer->SetInput( maskFilter->GetOutput() );
+      }
+      else
+	writer->SetInput( BIFsFilter->GetOrientation() );
+      
+      try
+	{
+	  std::cout << "Writing: "
+		    << AddScaleSuffix( fileOutputOrientation, sigmaInMM, nScales ) << std::endl;
+	  writer->Update();
+	}
+      catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e << std::endl;
+	}
+    }
+
+  
+    // Calculate the BIF response variance image
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    if ( fileOutputVariance.length() > 0 ) {
+
+      float mean, variance, S00;
+      float rFlat, rSlope, rDarkBlob, rLightBlob, rDarkLine, rLightLine, rSaddle;
+
+      OutputImageType::Pointer imVariance = OutputImageType::New();
+      OutputImageType::RegionType region = pInputImage->GetLargestPossibleRegion();
+
+      imVariance->SetRegions( region );
+      imVariance->SetSpacing( pInputImage->GetSpacing() );
+      imVariance->SetOrigin( pInputImage->GetOrigin() );
+
+      imVariance->Allocate( );
+      imVariance->FillBuffer( 0. );
+
+      if ( maskReader ) {
+
+	typedef itk::ImageRegionConstIterator< MaskImageType > MaskIteratorType;
+  
+	MaskImageType::Pointer mask = maskReader->GetOutput();
+
+	MaskIteratorType itMask( mask, mask->GetLargestPossibleRegion() );
+    
+	MaskImageType::IndexType index;
+
+	itMask.GoToBegin();
+
+	while (! itMask.IsAtEnd() ) {
+      
+	  index = itMask.GetIndex();	
+
+	  if ( itMask.Get() > 0 ) {	// if inside the mask
+
+	    S00 = BIFsFilter->GetS00()->GetPixel( index );
+
+	    rFlat      = BIFsFilter->GetResponseFlat(     )->GetPixel( index );
+	    rSlope     = BIFsFilter->GetResponseSlope(    )->GetPixel( index );
+	    rDarkBlob  = BIFsFilter->GetResponseDarkBlob( )->GetPixel( index );
+	    rLightBlob = BIFsFilter->GetResponseLightBlob()->GetPixel( index );
+	    rDarkLine  = BIFsFilter->GetResponseDarkLine( )->GetPixel( index );
+	    rLightLine = BIFsFilter->GetResponseLightLine()->GetPixel( index );
+	    rSaddle    = BIFsFilter->GetResponseSaddle(   )->GetPixel( index );
+
+	    mean = ( rFlat + rSlope + rDarkBlob + rLightBlob + rDarkLine + rLightLine + rSaddle )/7.;
+
+	    variance = ( (rFlat      - mean)*(rFlat      - mean) + 
+			 (rSlope     - mean)*(rSlope     - mean) + 
+			 (rDarkBlob  - mean)*(rDarkBlob  - mean) + 
+			 (rLightBlob - mean)*(rLightBlob - mean) + 
+			 (rDarkLine  - mean)*(rDarkLine  - mean) + 
+			 (rLightLine - mean)*(rLightLine - mean) + 
+			 (rSaddle    - mean)*(rSaddle    - mean) )/7.;
+
+	    if ( S00 )
+	      imVariance->SetPixel( index, variance/S00 );
+	    else
+	      imVariance->SetPixel( index, 0.);
+	  }
+
+	  ++itMask;
+	}
+      }
+      else {
+	typedef itk::ImageRegionConstIterator< OutputImageType > IteratorType;
+  
+	IteratorType itVar( imVariance, imVariance->GetLargestPossibleRegion() );
+
+	OutputImageType::IndexType index;
+    
+	itVar.GoToBegin();
+      
+	while (! itVar.IsAtEnd() ) {
+	
+	  index = itVar.GetIndex();	
 
 	  S00 = BIFsFilter->GetS00()->GetPixel( index );
 
@@ -670,74 +950,77 @@ int main( int argc, char *argv[] )
 		       (rDarkLine  - mean)*(rDarkLine  - mean) + 
 		       (rLightLine - mean)*(rLightLine - mean) + 
 		       (rSaddle    - mean)*(rSaddle    - mean) )/7.;
-
+	
 	  if ( S00 )
 	    imVariance->SetPixel( index, variance/S00 );
 	  else
 	    imVariance->SetPixel( index, 0.);
+	
+	  ++itVar;
 	}
-
-	++itMask;
       }
-    }
-    else {
-      typedef itk::ImageRegionConstIterator< OutputImageType > IteratorType;
-  
-      IteratorType itVar( imVariance, imVariance->GetLargestPossibleRegion() );
 
-      OutputImageType::IndexType index;
+      typedef itk::ImageFileWriter< OutputImageType > FileWriterType;
+
+      FileWriterType::Pointer writer = FileWriterType::New();
+
+      writer->SetFileName( AddScaleSuffix( fileOutputVariance, sigmaInMM, nScales ) );
+      writer->SetInput( imVariance );
+
+      try
+	{
+	  std::cout << "Writing: " 
+		    << AddScaleSuffix( fileOutputVariance, sigmaInMM, nScales ) << std::endl;
+	  writer->Update();
+	}
+      catch (itk::ExceptionObject &e)
+	{
+	  std::cerr << e << std::endl;
+	}
+    }
+
+    // Increase the scale used
+    // ~~~~~~~~~~~~~~~~~~~~~~~
+
+    sigmaInMM *= scaleFactor;    
+    scaleFactorRelativeToInput *= scaleFactor;  
+
     
-      itVar.GoToBegin();
-      
-      while (! itVar.IsAtEnd() ) {
+    // Update the resampling?
+    // ~~~~~~~~~~~~~~~~~~~~~~
+
+    if ( flgResampleImages ) {
+      float actualSamplingFactor;
+
+      for ( iDim=0; iDim<ImageDimension; iDim++) {
 	
-	index = itVar.GetIndex();	
+	nPixelsResampled[iDim] = ceil( ((float) nPixelsInput[iDim])
+				       / scaleFactorRelativeToInput );
 
-	S00 = BIFsFilter->GetS00()->GetPixel( index );
+	actualSamplingFactor = ((float) nPixelsInput[iDim]) / ((float) nPixelsResampled[iDim] );
 
-	rFlat      = BIFsFilter->GetResponseFlat(     )->GetPixel( index );
-	rSlope     = BIFsFilter->GetResponseSlope(    )->GetPixel( index );
-	rDarkBlob  = BIFsFilter->GetResponseDarkBlob( )->GetPixel( index );
-	rLightBlob = BIFsFilter->GetResponseLightBlob()->GetPixel( index );
-	rDarkLine  = BIFsFilter->GetResponseDarkLine( )->GetPixel( index );
-	rLightLine = BIFsFilter->GetResponseLightLine()->GetPixel( index );
-	rSaddle    = BIFsFilter->GetResponseSaddle(   )->GetPixel( index );
+	resnResampled[iDim]    = resnInput[iDim] * actualSamplingFactor;
 
-	mean = ( rFlat + rSlope + rDarkBlob + rLightBlob + rDarkLine + rLightLine + rSaddle )/7.;
-
-	variance = ( (rFlat      - mean)*(rFlat      - mean) + 
-		     (rSlope     - mean)*(rSlope     - mean) + 
-		     (rDarkBlob  - mean)*(rDarkBlob  - mean) + 
-		     (rLightBlob - mean)*(rLightBlob - mean) + 
-		     (rDarkLine  - mean)*(rDarkLine  - mean) + 
-		     (rLightLine - mean)*(rLightLine - mean) + 
-		     (rSaddle    - mean)*(rSaddle    - mean) )/7.;
-	
-	  if ( S00 )
-	    imVariance->SetPixel( index, variance/S00 );
-	  else
-	    imVariance->SetPixel( index, 0.);
-	
-	++itVar;
+	originResampled[iDim]  = originInput[iDim] + resnResampled[iDim]/2. - resnInput[iDim]/2.;
       }
-    }
 
-    typedef itk::ImageFileWriter< OutputImageType > FileWriterType;
+      resampleInputFilter->SetOutputSpacing( resnResampled );
+      resampleInputFilter->SetOutputOrigin( originResampled );
+      resampleInputFilter->SetSize( nPixelsResampled );
 
-    FileWriterType::Pointer writer = FileWriterType::New();
+      resampleInputFilter->SetInput( BIFsFilter->GetS00() );
 
-    writer->SetFileName( fileOutputVariance );
-    writer->SetInput( imVariance );
-
-    try
-      {
-	std::cout << "Writing the BIF variance output image.";
-	writer->Update();
-      }
-    catch (itk::ExceptionObject &e)
-      {
-	std::cerr << e << std::endl;
-      }
+      try
+	{ 
+	  std::cout << "Resampling the input image by: " << actualSamplingFactor << std::endl;
+	  resampleInputFilter->UpdateLargestPossibleRegion();
+	}
+      catch (itk::ExceptionObject &ex)
+	{ 
+	  std::cout << ex << std::endl;
+	  return EXIT_FAILURE;
+	}
+    }    
+    
   }
-
 }
