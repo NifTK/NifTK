@@ -8,6 +8,7 @@
 #include <XnatNameDialog.h>
 #include <XnatNodeActivity.h>
 #include <XnatNodeProperties.h>
+#include <XnatTreeView.h>
 
 // VTK includes
 //#include <vtkStdString.h>
@@ -70,14 +71,13 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     ui->workDirectoryEdit->setReadOnly(true);
 
     ui->refreshButton->setEnabled(false);
-
-    // create XNAT tree view
-    ui->xnatTreeView->setSelectionBehavior(QTreeView::SelectItems);
-    ui->xnatTreeView->setUniformRowHeights(true);
-    ui->xnatTreeView->setHeaderHidden(true);
-    initializeTreeView(new XnatNode(XnatEmptyNodeActivity::instance()));
-
-    ui->xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->downloadButton->setEnabled(false);
+    ui->downloadAllButton->setEnabled(false);
+    ui->downloadAndOpenButton->setEnabled(false);
+    ui->uploadButton->setEnabled(false);
+    ui->saveDataAndUploadButton->setEnabled(false);
+    ui->createButton->setEnabled(false);
+    ui->deleteButton->setEnabled(false);
 
     // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
     createConnections();
@@ -166,31 +166,10 @@ void XnatBrowserWidget::createConnections()
   connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteRow()));
 
   connect(ui->xnatTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(setButtonEnabled(QModelIndex)));
+
+  ui->xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui->xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(showContextMenu(const QPoint&)));
-}
-
-void XnatBrowserWidget::initializeTreeView(XnatNode* rootNode)
-{
-  XnatModel* oldModel = (XnatModel*) ui->xnatTreeView->model();
-  QItemSelectionModel* oldSelectionModel = ui->xnatTreeView->selectionModel();
-  ui->xnatTreeView->setModel(new XnatModel(rootNode));
-  if ( oldModel != NULL )
-  {
-    delete oldModel;
-  }
-  if ( oldSelectionModel != NULL )
-  {
-    delete oldSelectionModel;
-  }
-  ui->xnatTreeView->setExpanded(QModelIndex(), false);
-  ui->downloadButton->setEnabled(false);
-  ui->downloadAllButton->setEnabled(false);
-  ui->downloadAndOpenButton->setEnabled(false);
-  ui->uploadButton->setEnabled(false);
-  ui->saveDataAndUploadButton->setEnabled(false);
-  ui->createButton->setEnabled(false);
-  ui->deleteButton->setEnabled(false);
 }
 
 void XnatBrowserWidget::setDefaultWorkDirectory()

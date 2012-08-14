@@ -8,6 +8,7 @@ set(CPP_FILES
   XnatNode.cpp
   XnatNodeProperties.cpp
 #  XnatReactionSaveData.cpp
+  XnatTreeView.cpp
 )
 
 set(UI_FILES
@@ -19,6 +20,7 @@ set(MOC_H_FILES
   XnatModel.h
   XnatNameDialog.h
 #  XnatReactionSaveData.h
+  XnatTreeView.h
 )
 
 set(QRC_FILES

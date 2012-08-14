@@ -123,7 +123,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeView" name="xnatTreeView"/>
+    <widget class="XnatTreeView" name="xnatTreeView"/>
    </item>
   </layout>
  </widget>
@@ -133,6 +133,11 @@
    <extends>QGroupBox</extends>
    <header location="global">ctkCollapsibleGroupBox.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>XnatTreeView</class>
+   <extends>QTreeView</extends>
+   <header location="global">XnatTreeView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
