@@ -22,6 +22,7 @@ public:
   void downloadFile(const QString& fname);
   void downloadAllFiles();
   void silentlyDownloadFile(const QString& fname, const QString& dir);
+  void silentlyDownloadAllFiles(const QString& dir);
 
 signals:
   void done();

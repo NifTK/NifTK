@@ -335,55 +335,52 @@ void XnatBrowserWidget::importFiles()
   }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
   QString tempWorkDirectory = d->settings->getWorkSubdirectory();
-  d->downloadManager->downloadAllFiles();
+  d->downloadManager->silentlyDownloadAllFiles(tempWorkDirectory);
 
-//  // create list of files to open in CAWorks
-//  QStringList files;
-//  files.append(QFileInfo(tempWorkDirectory, xnatFileNameTemp).absoluteFilePath());
-//  if ( files.empty() )
-//  {
-//    return;
-//  }
-//
-//  // for performance, only check if the first file is readable
-//  for ( int i = 0 ; i < 1 /*files.size()*/ ; i++ )
-//  {
-//    if ( !QFileInfo(files[i]).isReadable() )
-//    {
-//      //qWarning() << "File '" << files[i] << "' cannot be read. Type not recognized";
-//      QString tempString("File '");
-//      tempString.append(files[i]);
-//      tempString.append("' cannot be read. Type not recognized");
-//      QMessageBox::warning(this, tr("Download and Open Error"), tempString);
-//      return;
-//    }
-//  }
-//
-//  try
-//  {
-//    mitk::DataNodeFactory::Pointer nodeFactory = mitk::DataNodeFactory::New();
-//  //  mitk::FileReader::Pointer fileReader = mitk::FileReader::New();
-//    // determine reader type based on first file. For now, we are relying
-//    // on the user to avoid mixing file types.
-//    QString filename = files[0];
-//    MITK_INFO << "XnatBrowserWidget::importFile() filename: " << filename.toStdString();
-//    MITK_INFO << "XnatBrowserWidget::importFile() xnat filename: " << xnatFilename.toStdString();
-//    nodeFactory->SetFileName(filename.toStdString());
-//    nodeFactory->Update();
-//    mitk::DataNode::Pointer dataNode = nodeFactory->GetOutput();
-//    dataNode->SetName(xnatFilename.toStdString());
-//    MITK_INFO << "reading the image has succeeded";
-//    if (d->dataStorage.IsNotNull())
-//    {
-//      d->dataStorage->Add(dataNode);
-//    }
-//  }
-//  catch (std::exception& exc)
-//  {
-//    MITK_INFO << "reading the image has failed";
-//  }
+  // create list of files to open in CAWorks
+  QStringList files;
+  collectImageFiles(tempWorkDirectory, files);
+  MITK_INFO << "after collectImageFiles(): file number " << files.size();
 
+  if (d->dataStorage.IsNull())
+  {
+    return;
+  }
 
+  try
+  {
+    mitk::DataNodeFactory::Pointer nodeFactory = mitk::DataNodeFactory::New();
+  //  mitk::FileReader::Pointer fileReader = mitk::FileReader::New();
+    // determine reader type based on first file. For now, we are relying
+    // on the user to avoid mixing file types.
+    foreach (QString filename, files) {
+      nodeFactory->SetFileName(filename.toStdString());
+      nodeFactory->Update();
+      mitk::DataNode::Pointer dataNode = nodeFactory->GetOutput();
+      dataNode->SetName(xnatFilename.toStdString());
+      d->dataStorage->Add(dataNode);
+    }
+  }
+  catch (std::exception& exc)
+  {
+    MITK_INFO << "reading the image has failed";
+  }
+}
+
+void XnatBrowserWidget::collectImageFiles(const QDir& tempWorkDirectory, QStringList& fileList)
+{
+  QFileInfoList files = tempWorkDirectory.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot, QDir::Name);
+  bool first = true;
+  foreach (QFileInfo file, files) {
+    if (file.isDir()) {
+      collectImageFiles(QDir(file.absoluteFilePath()), fileList);
+    }
+    else if (first)
+    {
+      fileList.push_back(file.filePath());
+      first = false;
+    }
+  }
 }
 
 bool XnatBrowserWidget::startFileDownload(const QString& zipFilename)

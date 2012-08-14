@@ -103,6 +103,7 @@ void XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QStri
   // display download dialog
   downloadDialog = new XnatDownloadDialog(parent);
   downloadDialog->show();
+  MITK_INFO << "XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QString& dir): downloadDialog->show();";
 
   // start download of ZIP file
   zipFilename = QFileInfo(currDir, tr("xnat.file.zip")).absoluteFilePath();
@@ -159,6 +160,35 @@ void XnatDownloadManager::downloadAllFiles()
   downloadDialog->show();
 
   QTimer::singleShot(0, this, SLOT(startGroupDownload()));
+}
+
+void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
+{
+  // initialize download variables
+//  xnatFilename = fname;
+//  outFilename = fname;
+  currDir = dir;
+
+  // display download dialog
+  downloadDialog = new XnatDownloadDialog(browser);
+  downloadDialog->show();
+
+//  QTimer::singleShot(0, this, SLOT(startGroupDownload()));
+  // start download of ZIP file
+  zipFilename = QFileInfo(currDir, tr("xnat.file.zip")).absoluteFilePath();
+  MITK_INFO << "XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir): zipFilename: " << zipFilename.toStdString();
+  if ( !browser->startFileGroupDownload(zipFilename) )
+  {
+    downloadDialog->close();
+    return;
+  }
+
+  // initialize download variables
+  finished = XNATRESTASYN_NOTDONE;
+  totalBytes = 0;
+  connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
+
+  downloadDataBlocking();
 }
 
 void XnatDownloadManager::startGroupDownload()

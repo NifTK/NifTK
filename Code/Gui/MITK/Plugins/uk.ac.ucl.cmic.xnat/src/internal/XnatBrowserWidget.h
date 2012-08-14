@@ -1,6 +1,8 @@
 #ifndef XnatBrowserWidget_h
 #define XnatBrowserWidget_h
 
+#include <QDir>
+#include <QStringList>
 #include <QWidget>
 
 #include "ui_XnatBrowserWidget.h"
@@ -47,6 +49,7 @@ private slots:
 private:
   void createConnections();
   void initializeTreeView(XnatNode* rootNode);
+  void collectImageFiles(const QDir& tempWorkDirectory, QStringList& fileList);
 
   /// \brief All the controls for the main view part.
   Ui::XnatBrowserWidget* ui;
