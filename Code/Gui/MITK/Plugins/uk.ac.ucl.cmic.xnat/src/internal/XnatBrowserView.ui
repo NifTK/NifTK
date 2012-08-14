@@ -2,13 +2,21 @@
 <ui version="4.0">
  <class>XnatBrowserView</class>
  <widget class="QWidget" name="XnatBrowserView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>425</width>
+    <height>402</height>
+   </rect>
+  </property>
   <property name="mouseTracking">
    <bool>false</bool>
   </property>
   <property name="windowTitle">
    <string>Form1</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -20,8 +28,30 @@
      </item>
     </layout>
    </item>
+   <item>
+    <widget class="XnatBrowserWidget" name="widget" native="true"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="btnImport">
+       <property name="text">
+        <string>Import images</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>XnatBrowserWidget</class>
+   <extends>QWidget</extends>
+   <header>XnatBrowserWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

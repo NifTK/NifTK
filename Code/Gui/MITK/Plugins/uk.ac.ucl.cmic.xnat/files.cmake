@@ -16,6 +16,7 @@ SET(INTERNAL_CPP_FILES
 
 SET(UI_FILES
   src/internal/XnatBrowserView.ui
+  src/internal/XnatBrowserWidget.ui
   src/internal/XnatConnectionDialog.ui
 )
 

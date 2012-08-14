@@ -8,6 +8,8 @@
 #include "XnatUploadManager.h"
 #include "vtkStdString.h"
 
+#include "ui_XnatBrowserWidget.h"
+
 class QPushButton;
 class QModelIndex;
 class QTreeView;
@@ -19,11 +21,7 @@ class XnatBrowserWidget : public QWidget
     Q_OBJECT
 
     public:
-        explicit XnatBrowserWidget(QWidget* parent = 0, Qt::WindowFlags flags = 0)
-        : QWidget(parent, flags)
-        {
-          this->constructor();
-        }
+        explicit XnatBrowserWidget(QWidget* parent = 0, Qt::WindowFlags flags = 0);
         virtual ~XnatBrowserWidget();
 
         bool startFileUpload(const QString& zipFilename);
@@ -59,25 +57,27 @@ class XnatBrowserWidget : public QWidget
         QAction* createAction;
         QAction* deleteAction;
 
-        QPushButton* loginButton;
-        QPushButton* setDefaultWorkDirectoryButton;
+//        QPushButton* loginButton;
+//        QPushButton* setDefaultWorkDirectoryButton;
         QPushButton* refreshButton;
-        QPushButton* helpButton;
+//        QPushButton* helpButton;
         QPushButton* downloadButton;
         QPushButton* downloadAllButton;
-        QPushButton* downloadAndOpenButton;
+//        QPushButton* downloadAndOpenButton;
         QPushButton* uploadButton;
-        QPushButton* saveDataAndUploadButton;
+//        QPushButton* saveDataAndUploadButton;
         QPushButton* createButton;
         QPushButton* deleteButton;
 
-        QLineEdit* workDirectoryEdit;
+//        QLineEdit* workDirectoryEdit;
         QDialog* helpDialog;
 
-        QTreeView* xnatTreeView;
+//        QTreeView* xnatTreeView;
 
-        void constructor();
         void initializeTreeView(XnatNode* rootNode);
+
+        /// \brief All the controls for the main view part.
+        Ui::XnatBrowserWidget* ui;
 
         Q_DISABLE_COPY(XnatBrowserWidget);
 };
