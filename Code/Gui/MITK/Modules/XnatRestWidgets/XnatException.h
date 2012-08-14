@@ -1,23 +1,19 @@
-#ifndef XNATEXCEPTION_H
-#define XNATEXCEPTION_H
+#ifndef XnatException_h
+#define XnatException_h
 
-extern "C" {
-#include "XnatRest.h"
-}
+#include <exception>
 
+#include <XnatRestStatus.h>
 
-class XnatException
+class XnatException : public std::exception
 {
-    public:
-        XnatException(XnatRestStatus status);
-        const char* what();
+public:
+  XnatException(const XnatRestStatus& status);
 
-    private:
-        const char *message;
+  virtual const char* what() const throw();
+
+private:
+  const char* message;
 };
-
-inline XnatException::XnatException(XnatRestStatus status) : message(getXnatRestStatusMsg(status)) {}
-
-inline const char* XnatException::what() { return message; }
 
 #endif

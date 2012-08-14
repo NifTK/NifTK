@@ -10,6 +10,7 @@ SET(INTERNAL_CPP_FILES
   XnatBrowserSettings.cpp
   XnatDownloadDialog.cpp
   XnatDownloadManager.cpp
+#  XnatReactionSaveData.cpp
   XnatUploadDialog.cpp
   XnatUploadManager.cpp
 )
@@ -29,6 +30,7 @@ SET(MOC_H_FILES
   src/internal/XnatBrowserSettings.h
   src/internal/XnatDownloadDialog.h
   src/internal/XnatDownloadManager.h
+#  src/internal/XnatReactionSaveData.h
   src/internal/XnatUploadDialog.h
   src/internal/XnatUploadManager.h
 )

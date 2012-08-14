@@ -2,13 +2,13 @@ set(CPP_FILES
   XnatConnectDialog.cpp
   XnatConnection.cpp
   XnatConnectionFactory.cpp
+  XnatException.cpp
   XnatFileNameTypeDialog.cpp
   XnatModel.cpp
   XnatNameDialog.cpp
   XnatNodeActivity.cpp
   XnatNode.cpp
   XnatNodeProperties.cpp
-#  XnatReactionSaveData.cpp
   XnatTreeView.cpp
 )
 
@@ -20,7 +20,6 @@ set(MOC_H_FILES
   XnatFileNameTypeDialog.h
   XnatModel.h
   XnatNameDialog.h
-#  XnatReactionSaveData.h
   XnatTreeView.h
 )
 
