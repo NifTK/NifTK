@@ -1,6 +1,6 @@
 #include <QtGui>
 #include "XnatException.h"
-#include "XnatBrowserSettings.h"
+//#include "XnatBrowserSettings.h"
 #include "XnatConnectDialog.h"
 
 
@@ -9,12 +9,12 @@ XnatConnectDialog::XnatConnectDialog(XnatConnectionFactory& f, QWidget* parent) 
 {
     QLabel* urlLabel = new QLabel(tr("&XNAT URL:"));
     urlEdit = new QLineEdit;
-    urlEdit->setText(XnatBrowserSettings::getDefaultURL());
+//    urlEdit->setText(XnatBrowserSettings::getDefaultURL());
     urlLabel->setBuddy(urlEdit);
 
     QLabel* userLabel = new QLabel(tr("&User ID:"));
     userEdit = new QLineEdit;
-    userEdit->setText(XnatBrowserSettings::getDefaultUserID());
+//    userEdit->setText(XnatBrowserSettings::getDefaultUserID());
     userLabel->setBuddy(userEdit);
 
     QLabel* passwordLabel = new QLabel(tr("&Password:"));
@@ -94,8 +94,8 @@ void XnatConnectDialog::accept()
     }
 
     // save XNAT URL and user ID as defaults
-    XnatBrowserSettings::setDefaultURL(url);
-    XnatBrowserSettings::setDefaultUserID(user);
+//    XnatBrowserSettings::setDefaultURL(url);
+//    XnatBrowserSettings::setDefaultUserID(user);
 
     QDialog::accept();
 }
