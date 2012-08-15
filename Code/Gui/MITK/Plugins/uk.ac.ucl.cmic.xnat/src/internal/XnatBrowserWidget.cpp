@@ -2,7 +2,7 @@
 
 // XnatRestWidgets module includes
 #include <XnatConnection.h>
-#include <XnatConnectDialog.h>
+#include <XnatLoginDialog.h>
 #include <XnatException.h>
 #include <XnatModel.h>
 #include <XnatNameDialog.h>
@@ -187,9 +187,10 @@ void XnatBrowserWidget::loginXnat()
   Q_D(XnatBrowserWidget);
 
   // show dialog for user to login to XNAT
-  XnatConnectDialog* connectDialog = new XnatConnectDialog(XnatConnectionFactory::instance(), this);
-  connectDialog->setSettings(d->settings);
-  if (connectDialog->exec())
+//  XnatConnectDialog* connectDialog = new XnatConnectDialog(XnatConnectionFactory::instance(), this);
+  XnatLoginDialog* loginDialog = new XnatLoginDialog(XnatConnectionFactory::instance(), this);
+  loginDialog->setSettings(d->settings);
+  if (loginDialog->exec())
   {
     // delete old connection
     if ( d->connection )
@@ -198,7 +199,7 @@ void XnatBrowserWidget::loginXnat()
       d->connection = 0;
     }
     // get connection object
-    d->connection = connectDialog->getConnection();
+    d->connection = loginDialog->getConnection();
 
     ui->xnatTreeView->initialize(d->connection->getRoot());
 
@@ -213,7 +214,7 @@ void XnatBrowserWidget::loginXnat()
 
     ui->refreshButton->setEnabled(true);
   }
-  delete connectDialog;
+  delete loginDialog;
 }
 
 void XnatBrowserWidget::refreshRows()

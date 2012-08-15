@@ -1,10 +1,10 @@
 set(CPP_FILES
   XnatSettings.cpp
-  XnatConnectDialog.cpp
   XnatConnection.cpp
   XnatConnectionFactory.cpp
   XnatException.cpp
   XnatFileNameTypeDialog.cpp
+  XnatLoginDialog.cpp
   XnatModel.cpp
   XnatNameDialog.cpp
   XnatNodeActivity.cpp
@@ -14,11 +14,12 @@ set(CPP_FILES
 )
 
 set(UI_FILES
+  XnatLoginDialog.ui
 )
 
 set(MOC_H_FILES
-  XnatConnectDialog.h
   XnatFileNameTypeDialog.h
+  XnatLoginDialog.h
   XnatModel.h
   XnatNameDialog.h
   XnatTreeView.h
