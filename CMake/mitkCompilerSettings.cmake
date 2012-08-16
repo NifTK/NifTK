@@ -31,20 +31,7 @@ INCLUDE(mitkFunctionGetVersion)
 # Retrieve some software versions
 mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
 
-# Trac 1627 - this mitkFunctionGetVersion didn't appear to work on Marc's laptop.
-# We can switch back to mitkFunctionGetVersion when the project is in git.
-# In the meantime we can use the following code, borrowed from NiftyReg.
-# mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK_SVN)
-
-SET (NIFTK_SVN_REVISION_ID "Unknown")
-IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.svn)
-  FIND_PACKAGE(Subversion)
-  IF(Subversion_FOUND)
-      Subversion_WC_INFO(${CMAKE_SOURCE_DIR} NifTK)
-      SET(NIFTK_SVN_REVISION_ID ${NifTK_WC_REVISION})
-  endif(Subversion_FOUND)
-ENDIF()
-
+mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK)
 
 IF(BUILD_GUI)
   MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
@@ -66,7 +53,7 @@ IF(BUILD_IGI)
   MESSAGE("NiftyLink version=${NIFTYLINK_REVISION_ID}")
 ENDIF(BUILD_IGI)
 
-MESSAGE("NIFTK version=${NIFTK_SVN_REVISION_ID}")
+MESSAGE("NIFTK version=${NIFTK_REVISION_ID}")
 
 # MinGW does not export all symbols automatically, so no need to set flags
 IF(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)

@@ -71,7 +71,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString vtkVersion(NIFTK_VTK_VERSION);
   QString ctkVersion(NIFTK_CTK_VERSION);
   QString mitkVersion(NIFTK_MITK_VERSION);
-  QString svnVersion(NIFTK_SVN_VERSION);
+  QString niftkVersion(NIFTK_VERSION);
   QString boostLocation(NIFTK_BOOST_LOCATION);
   QString gdcmLocation(NIFTK_GDCM_LOCATION);
   QString dcmtkLocation(NIFTK_DCMTK_LOCATION);
@@ -189,9 +189,9 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 
   QString licenses = QObject::tr(
       "<p>"
-      "The licenses can be found online and are additionally included in the installation folder. This version of %1 was built with our subversion revision <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/trunk/NifTK\">%2</a>."
+      "The licenses can be found online and are additionally included in the installation folder. This version of %1 was built with our git hash <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/niftk\">%2</a>."
       "</p>"
-      ).arg(applicationName).arg(svnVersion);
+      ).arg(applicationName).arg(niftkVersion);
 
   // Over time, insert more platforms that we have tested on,
   // (but these should be backed up with a Dashboard or else it ain't worth diddly-squat).
