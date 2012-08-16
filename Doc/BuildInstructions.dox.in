@@ -82,7 +82,7 @@ You must also have an up to date svn client, and git client.
 \section BuildInstructionsDownload 5. Download the code
 
 \verbatim
-svn co https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTK
+git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 \endverbatim
 
 \section BuildInstructionsCMake 6. CMake
