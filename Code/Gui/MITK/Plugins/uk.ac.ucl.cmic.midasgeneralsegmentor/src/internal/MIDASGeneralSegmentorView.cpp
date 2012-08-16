@@ -444,7 +444,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetBoolProperty("show distant points", false);
     pointSetNode->SetBoolProperty("show distances", false);
     pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
-    pointSetNode->SetColor( 1.0, 0.75, 0.8 );
+    pointSetNode->SetColor( 1.0, 0, 0 );
     this->GetDataStorage()->Add(pointSetNode, newSegmentation);
 
     // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate",
