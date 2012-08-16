@@ -9,7 +9,6 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
   Plugins/uk.ac.ucl.cmic.mitksegmentation:ON
   Plugins/uk.ac.ucl.cmic.gui.qt.niftyview:ON
-  Plugins/uk.ac.ucl.cmic.midasnavigation:OFF              # Deprecated.
   Plugins/uk.ac.ucl.cmic.niftyreg:OFF                     # Not ready yet.
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
   Plugins/uk.ac.ucl.cmic.affinetransform:ON

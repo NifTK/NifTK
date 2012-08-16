@@ -39,7 +39,8 @@ use_dbc=0
 kernel_size=5
 dbc_mode=1
 
-command_file="compute_symmetric_transform_"`date +"%Y%m%d-%H%M%S"`"_commands.txt"
+command_file_tmp="compute_symmetric_transform_"`date +"%Y%m%d-%H%M%S"`.XXXXXXXXXX
+command_file=`mktemp ${command_file_tmp}`
 
 script_dir=`dirname $0`
 

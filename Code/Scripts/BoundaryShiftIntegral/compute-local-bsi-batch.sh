@@ -47,6 +47,7 @@ dbc=""
 use_kn=""
 use_sym=""
 min_window="-min_window -1"
+dof="-dof 6 6"
 
 function Usage()
 {
@@ -76,6 +77,7 @@ Mandatory Arguments:
 Options:
 
   -use_dw           : Use double intensity window. 
+  -dbc              : Use dbc. 
   -cost_func x      : AIR local registration cost function 
                       1. standard deviation of ratio image (default)
                       2. least squares
@@ -91,6 +93,8 @@ Options:
   -use_sym : use NifTK symmetric registration and transformation. 
   
   -min_window : Min. GM-WM window to be used only in double-window KN-BSI. 
+  
+  -dof : Specify brain-brain dof and local-local dof [default: 6 6]
                       
 EOF
 exit 127
@@ -159,7 +163,8 @@ function IterateThroughFile()
       echo "compute-local-bsi.sh $baseline_image $baseline_region ${repeat_image_copy} $repeat_region \
                                  ${baseline_local_region} ${repeat_local_region} \"${sub_roi}\" \
                                  ${output} ${output_study_id} ${output_series_number} ${output_echo_number} ${weight_file} \
-                                 ${use_dw} ${cost_func} ${reg_dil} ${prealign_brain} ${just_bsi} ${dbc} ${use_kn} ${use_sym} ${min_window}" >> $command_file 
+                                 ${use_dw} ${cost_func} ${reg_dil} ${prealign_brain} ${just_bsi} ${dbc} ${use_kn} ${use_sym} \
+                                 ${min_window} ${dof}" >> $command_file 
     fi
 
   done
@@ -212,6 +217,13 @@ do
         shift
         min_window="-min_window $1"
       ;;
+    -dof)
+        dof="-dof "
+        shift
+        dof="${dof} $1"
+        shift 
+        dof="${dof} $1"
+      ;; 
     -*)
       Usage
       exitprog "Error: option $1 not recognised" 1

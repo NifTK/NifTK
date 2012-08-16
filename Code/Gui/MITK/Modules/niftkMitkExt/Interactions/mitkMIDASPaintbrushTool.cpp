@@ -52,6 +52,7 @@ mitk::MIDASPaintbrushTool::MIDASPaintbrushTool() : SegTool2D("MIDASPaintbrushToo
 , m_WorkingImageGeometry(NULL)
 , m_WorkingImage(NULL)
 , m_NumberOfVoxelsPainted(0)
+, m_ErosionMode(true)
 {
   CONNECT_ACTION( 320401, OnLeftMousePressed );
   CONNECT_ACTION( 320402, OnLeftMouseReleased );
@@ -145,8 +146,12 @@ void mitk::MIDASPaintbrushTool::GetListOfAffectedVoxels(
   mitk::Point3D mostRecentPoint = previousPoint;
   mitk::Point3D vectorDifference;
   mitk::Point3D projectedPointIn3DVoxels;
+  mitk::Point3D previousProjectedPointIn3DVoxels;
   mitk::Point3D cursorPointIn3DVoxels;
   mitk::Index3D affectedVoxel;
+
+//  dont forget to set projectedPointIn3DVoxels equal invalid value, then track
+//  all new points and only add to processor list if different to previous.
 
   mitk::GetDifference(currentPoint, mostRecentPoint, vectorDifference);
   double length = mitk::GetSquaredDistanceBetweenPoints(currentPoint, mostRecentPoint);
@@ -163,6 +168,10 @@ void mitk::MIDASPaintbrushTool::GetListOfAffectedVoxels(
     // to step along vector (otherwise infinite loop later).
     if (steps > 0)
     {
+      previousProjectedPointIn3DVoxels[0] = std::numeric_limits<float>::max();
+      previousProjectedPointIn3DVoxels[1] = std::numeric_limits<float>::max();
+      previousProjectedPointIn3DVoxels[2] = std::numeric_limits<float>::max();
+
       // Normalise the vector difference to make it a direction vector for stepping along the line.
       for (int i = 0; i < 3; i++)
       {
@@ -184,40 +193,60 @@ void mitk::MIDASPaintbrushTool::GetListOfAffectedVoxels(
           projectedPointIn3DVoxels[i] = (int)(projectedPointIn3DVoxels[i] + 0.5);
         }
 
-        for (int dimension = 0; dimension < 2; dimension++)
+        // We only add this point to the list if it is different to previous.
+        if (projectedPointIn3DVoxels != previousProjectedPointIn3DVoxels)
         {
-          cursorPointIn3DVoxels = projectedPointIn3DVoxels;
-
-          int actualCursorSize = m_CursorSize - 1;
-
-          for (int offset = -actualCursorSize; offset <= actualCursorSize; offset++)
+          // Check we are not outside image before adding any index.
+          // This means if the stroke of the mouse, or the size of
+          // the cross is outside of the image, we will not crash.
+          if (m_WorkingImageGeometry->IsIndexInside(projectedPointIn3DVoxels))
           {
-            cursorPointIn3DVoxels[whichTwoAxesInVoxelSpace[dimension]] = projectedPointIn3DVoxels[whichTwoAxesInVoxelSpace[dimension]] + offset;
-
             for (int i = 0; i < 3; i++)
             {
-              affectedVoxel[i] = (long int)cursorPointIn3DVoxels[i];
+              affectedVoxel[i] = (long int)projectedPointIn3DVoxels[i];
             }
+            processor.AddToList(affectedVoxel);
+          }
 
-            // Check we are not outside image
-            if (m_WorkingImageGeometry->IsIndexInside(affectedVoxel))
+          int actualCursorSize = m_CursorSize - 1;
+          if (actualCursorSize > 0)
+          {
+            for (int dimension = 0; dimension < 2; dimension++)
             {
-              processor.AddToList(affectedVoxel);
+              cursorPointIn3DVoxels = projectedPointIn3DVoxels;
+
+              // Now draw a cross centred at projectedPointIn3DVoxels, but don't do centre, as it is done above.
+              for (int offset = -actualCursorSize; offset <= actualCursorSize; offset++)
+              {
+                if (offset != 0)
+                {
+                  cursorPointIn3DVoxels[whichTwoAxesInVoxelSpace[dimension]] = projectedPointIn3DVoxels[whichTwoAxesInVoxelSpace[dimension]] + offset;
+
+                  for (int i = 0; i < 3; i++)
+                  {
+                    affectedVoxel[i] = (long int)cursorPointIn3DVoxels[i];
+                  }
+
+                  // Check we are not outside image before adding any index.
+                  // This means if the stroke of the mouse, or the size of
+                  // the cross is outside of the image, we will not crash.
+                  if (m_WorkingImageGeometry->IsIndexInside(affectedVoxel))
+                  {
+                    processor.AddToList(affectedVoxel);
+                  }
+                }
+              }
             }
           }
-        }
+          previousProjectedPointIn3DVoxels = projectedPointIn3DVoxels;
+        } // end if projected point != previous projected point
       } // end for k, foreach step
     } // end if steps > 0
   } // end if length > 0
-}
+} // end function
 
 bool mitk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int imageNumber, Action* action, const StateEvent* stateEvent)
 {
-  if (!SegTool2D::OnMousePressed(action, stateEvent))
-  {
-    return false;
-  }
-
   DataNode* workingNode( m_ToolManager->GetWorkingData(imageNumber) );
   if (!workingNode)
   {
@@ -249,11 +278,6 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
 
     )
 {
-  if (!SegTool2D::OnMouseMoved( action, stateEvent ))
-  {
-    return false;
-  }
-
   if (m_WorkingImage == NULL || m_WorkingImageGeometry == NULL)
   {
     return false;
@@ -309,54 +333,94 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
   return true;
 }
 
+int mitk::MIDASPaintbrushTool::GetImageNumber(bool isLeftMouseButton)
+{
+  int imageNumber = -1;
+
+  if (isLeftMouseButton)
+  {
+    if (this->m_ErosionMode)
+    {
+      imageNumber = 0;
+    }
+    else
+    {
+      imageNumber = 2;
+    }
+  }
+  else
+  {
+    if (this->m_ErosionMode)
+    {
+      imageNumber = 1;
+    }
+    else
+    {
+      imageNumber = 3;
+    }
+  }
+
+  assert(imageNumber >= 0 && imageNumber <=3);
+  return imageNumber;
+}
+
 bool mitk::MIDASPaintbrushTool::OnLeftMousePressed (Action* action, const StateEvent* stateEvent)
 {
-  return this->MarkInitialPosition(0, action, stateEvent);
+  int imageNumber = this->GetImageNumber(true);
+  return this->MarkInitialPosition(imageNumber, action, stateEvent);
 }
 
 bool mitk::MIDASPaintbrushTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  this->DoMouseMoved(action, stateEvent, 0, 1, 0);
+  int imageNumber = this->GetImageNumber(true);
+  this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnLeftMouseReleased(Action* action, const StateEvent* stateEvent)
 {
-  this->SetInvalidRegion(0);
+  int imageNumber = this->GetImageNumber(true);
+  this->SetInvalidRegion(imageNumber);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMousePressed (Action* action, const StateEvent* stateEvent)
 {
-  return this->MarkInitialPosition(1, action, stateEvent);
+  int imageNumber = this->GetImageNumber(false);
+  return this->MarkInitialPosition(imageNumber, action, stateEvent);
 }
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  this->DoMouseMoved(action, stateEvent, 1, 1, 0);
+  int imageNumber = this->GetImageNumber(false);
+  this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent)
 {
-  this->SetInvalidRegion(1);
+  int imageNumber = this->GetImageNumber(false);
+  this->SetInvalidRegion(imageNumber);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnRightMousePressed (Action* action, const StateEvent* stateEvent)
 {
-  return this->MarkInitialPosition(1, action, stateEvent);
+  int imageNumber = this->GetImageNumber(false);
+  return this->MarkInitialPosition(imageNumber, action, stateEvent);
 }
 
 bool mitk::MIDASPaintbrushTool::OnRightMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  this->DoMouseMoved(action, stateEvent, 1, 0, 1);
+  int imageNumber = this->GetImageNumber(false);
+  this->DoMouseMoved(action, stateEvent, imageNumber, 0, 1);
   return true;
 }
 
 bool mitk::MIDASPaintbrushTool::OnRightMouseReleased(Action* action, const StateEvent* stateEvent)
 {
-  this->SetInvalidRegion(1);
+  int imageNumber = this->GetImageNumber(false);
+  this->SetInvalidRegion(imageNumber);
   return true;
 }
 
@@ -429,29 +493,7 @@ void mitk::MIDASPaintbrushTool::RunITKProcessor(
     unsigned char valueToWrite
     )
 {
-  typedef itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::RegionType RegionType;
-  typedef typename ImageType::IndexType  IndexType;
-  typedef typename ImageType::SizeType   SizeType;
-
-  std::vector<int> boundingBox = processor->ComputeMinimalBoundingBox();
-
-  IndexType regionIndex;
-  regionIndex[0] = boundingBox[0];
-  regionIndex[1] = boundingBox[1];
-  regionIndex[2] = boundingBox[2];
-
-  SizeType regionSize;
-  regionSize[0] = boundingBox[3];
-  regionSize[1] = boundingBox[4];
-  regionSize[2] = boundingBox[5];
-
-  RegionType roi;
-  roi.SetIndex(regionIndex);
-  roi.SetSize(regionSize);
-
   processor->SetDestinationImage(itkImage);
-  processor->SetDestinationRegionOfInterest(roi);
   processor->SetValue(valueToWrite);
 
   if (redo)

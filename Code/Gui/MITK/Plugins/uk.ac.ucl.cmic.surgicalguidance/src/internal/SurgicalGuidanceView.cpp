@@ -347,8 +347,6 @@ void SurgicalGuidanceView::clientDisconnected()
       pix.fill(QColor(Qt::lightGray));
       tItem->setIcon(pix);
 
-      int rowNum = tItem->row();
-
       tItem = m_Controls.tableWidget->item(i, 1);
       tItem->setText(QString("Listening"));
 

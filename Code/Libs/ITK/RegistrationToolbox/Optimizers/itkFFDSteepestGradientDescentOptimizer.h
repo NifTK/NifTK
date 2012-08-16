@@ -25,6 +25,7 @@
 #define ITKFFDSTEEPESTGRADIENTDESCENTOPTIMIZER_H_
 
 #include "NifTKConfigure.h"
+#include "niftkITKWin32ExportHeader.h" 
 #include "itkFFDGradientDescentOptimizer.h"
 #include "itkImageToImageMetricWithConstraint.h"
 #include "itkBSplineTransform.h"

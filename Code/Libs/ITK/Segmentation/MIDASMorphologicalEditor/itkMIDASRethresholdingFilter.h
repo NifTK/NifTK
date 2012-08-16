@@ -49,6 +49,8 @@ namespace itk
  *
  * The net effect is that the interior region has holes filled. This filter is implemented as a composite
  * filter to hide the memory management of different size images and the use of multiple filters.
+ *
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>

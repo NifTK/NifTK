@@ -48,7 +48,7 @@ namespace itk
  * 
  * \ingroup Numerics Optimizers
  */
-class NIFTKITK_WINEXPORT   ITK_EXPORT UCLRegularStepGradientDescentOptimizer :
+class NIFTKITK_WINEXPORT ITK_EXPORT UCLRegularStepGradientDescentOptimizer :
   public SingleValuedNonLinearOptimizer
 {
 public:

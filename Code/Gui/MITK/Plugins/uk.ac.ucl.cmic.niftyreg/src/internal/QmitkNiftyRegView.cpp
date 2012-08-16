@@ -38,9 +38,13 @@
 #include "mitkImageToNifti.h"
 #include "niftiImageToMitk.h"
 
+#include "_reg_ReadWriteImage.h"
+
+#include "RegistrationExecution.h"
 
 const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregview";
 
+#define USE_QT_THREADING
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -49,8 +53,48 @@ const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregvie
 QmitkNiftyRegView::QmitkNiftyRegView()
 {
 
+  m_ReferenceImage = 0;
+  m_FloatingImage = 0;
+  m_ReferenceMaskImage = 0;
+  m_ControlPointGridImage = 0;
+
+  m_RegAladin = 0;
+  m_RegNonRigid = 0;
+
   SetDefaultParameters();
 
+}
+
+
+// ---------------------------------------------------------------------------
+// DeallocateImages();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::DeallocateImages( void )
+{
+  if ( m_ReferenceImage ) 
+  {
+    nifti_image_free( m_ReferenceImage );
+    m_ReferenceImage = 0;
+  }
+
+  if ( m_FloatingImage ) 
+  {
+    nifti_image_free( m_FloatingImage );
+    m_FloatingImage = 0;
+  }
+    
+  if ( m_ReferenceMaskImage )
+  {
+    nifti_image_free( m_ReferenceMaskImage );
+    m_ReferenceMaskImage = 0;
+  }
+    
+  if ( m_ControlPointGridImage )
+  {
+    nifti_image_free( m_ControlPointGridImage );
+    m_ControlPointGridImage = 0;
+  }
 }
 
 
@@ -80,16 +124,26 @@ void QmitkNiftyRegView::SetDefaultParameters()
   m_FlagDoNonRigidReg = true;
 
 
-  /// Initial affine transformation
+  // Initial affine transformation
  
   m_FlagInputAffine = false;
   m_FlagFlirtAffine = false;
 
   m_InputAffineName.clear();
 
+  
+  // Progress bar parameters
+  m_ProgressBarOffset = 0.;
+  m_ProgressBarRange = 100.;
+
 
   // Initialise the 'reg_aladin' parameters
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  m_RegAladinParameters.referenceImageName.clear();
+  m_RegAladinParameters.floatingImageName.clear();
+
+  m_RegAladinParameters.referenceMaskName.clear();
 
   m_RegAladinParameters.outputResultFlag = false;
   m_RegAladinParameters.outputResultName.clear();
@@ -120,6 +174,9 @@ void QmitkNiftyRegView::SetDefaultParameters()
 
   // Non-Rigid - Initialisation
  
+  m_RegF3dParameters.referenceImageName.clear();
+  m_RegF3dParameters.floatingImageName.clear();
+
   m_RegF3dParameters.inputControlPointGridFlag = false;
   m_RegF3dParameters.inputControlPointGridName.clear();
 
@@ -151,7 +208,6 @@ void QmitkNiftyRegView::SetDefaultParameters()
 
   m_RegF3dParameters.linearEnergyWeight0 = 0.;
   m_RegF3dParameters.linearEnergyWeight1 = 0.;
-  m_RegF3dParameters.linearEnergyWeight2 = 0.;
 
   m_RegF3dParameters.jacobianLogWeight = 0.;
 
@@ -168,7 +224,7 @@ void QmitkNiftyRegView::SetDefaultParameters()
   // Non-Rigid - GPU-related options:
   
   m_RegF3dParameters.checkMem = false;
-  m_RegF3dParameters.useGPU = true;
+  m_RegF3dParameters.useGPU = false;
   m_RegF3dParameters.cardNumber = -1;
 
   // Non-Rigid - Advanced
@@ -188,6 +244,13 @@ void QmitkNiftyRegView::SetDefaultParameters()
 
 QmitkNiftyRegView::~QmitkNiftyRegView()
 {
+  DeallocateImages();
+
+  if ( m_RegAladin ) 
+    delete m_RegAladin;
+
+  if ( m_RegNonRigid )
+    delete m_RegNonRigid;
 }
 
 
@@ -243,6 +306,9 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
 
   mitk::DataStorage::SetOfObjects::ConstPointer nodes = GetNodes();
 
+  m_Controls.m_SourceImageComboBox->clear();
+  m_Controls.m_TargetImageComboBox->clear();
+
   if ( nodes ) 
   {    
     for (unsigned int i = 0; i < nodes->size(); i++) 
@@ -262,7 +328,7 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
     m_Controls.m_SourceImageComboBox->setCurrentIndex( 1 );
   }
        
-
+  m_Controls.m_TargetMaskImageComboBox->clear();
   m_Controls.m_TargetMaskImageComboBox->insertItem(0, QString("no mask"));
 
 
@@ -307,8 +373,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   // Aladin Parameters
   // ~~~~~~~~~~~~~~~~~
 
-  m_Controls.m_AladinToolBox->setCurrentIndex( 0 );
-
   // Aladin - Initialisation
 
   m_Controls.m_UseNiftyHeaderCheckBox->setChecked( m_RegAladinParameters.alignCenterFlag );
@@ -352,8 +416,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   // Non-Rigid Parameters
   // ~~~~~~~~~~~~~~~~~~~~
   
-  m_Controls.m_NonRigidToolBox->setCurrentIndex( 0 );
-
   // Non-Rigid - Initialisation
 
   m_Controls.m_NonRigidInputControlPointCheckBox->setChecked( m_RegF3dParameters.
@@ -459,11 +521,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   m_Controls.m_LinearEnergyWeightsDoubleSpinBox_2->setValue( m_RegF3dParameters.
 							     linearEnergyWeight1 );
 
-  m_Controls.m_LinearEnergyWeightsDoubleSpinBox_3->setMinimum( 0 );
-  m_Controls.m_LinearEnergyWeightsDoubleSpinBox_3->setMaximum( 100 );
-  m_Controls.m_LinearEnergyWeightsDoubleSpinBox_3->setValue( m_RegF3dParameters.
-							     linearEnergyWeight2 );
-
   m_Controls.m_ApproxJacobianLogCheckBox->setChecked( m_RegF3dParameters.
 						      jacobianLogApproximation );
 
@@ -509,10 +566,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   m_Controls.m_NonRigidCubicInterpolationRadioButton->setChecked( m_RegF3dParameters.
 								  interpolation 
 								   == CUBIC_INTERPOLATION );
-    
-  // Execute button
-
-  //m_Controls.m_ExecutePushButton->setEnabled( false );
 }
 
 
@@ -578,6 +631,11 @@ void QmitkNiftyRegView::CreateConnections()
 	   SIGNAL( valueChanged( double ) ),
 	   this,
 	   SLOT( OnSmoothTargetImageDoubleSpinBoxValueChanged( double ) ) );
+
+  connect( m_Controls.m_NoSmoothingPushButton,
+	   SIGNAL( pressed( void ) ),
+	   this,
+	   SLOT( OnNoSmoothingPushButtonPressed( void ) ) );
 
 
   // Flag indicating whether to do an initial rigid registration etc.
@@ -779,11 +837,6 @@ void QmitkNiftyRegView::CreateConnections()
 	   this,
 	   SLOT( OnLinearEnergyWeightsDoubleSpinBox_2ValueChanged( double ) ) );
 
-  connect( m_Controls.m_LinearEnergyWeightsDoubleSpinBox_3,
-	   SIGNAL( valueChanged( double ) ),
-	   this,
-	   SLOT( OnLinearEnergyWeightsDoubleSpinBox_3ValueChanged( double ) ) );
-
   connect( m_Controls.m_ApproxJacobianLogCheckBox,
 	   SIGNAL( stateChanged( int ) ),
 	   this,
@@ -857,10 +910,17 @@ void QmitkNiftyRegView::CreateConnections()
 
   // Execution etc.
 
+#if 0
   connect( m_Controls.m_CancelPushButton,
 	   SIGNAL( pressed( void ) ),
 	   this,
 	   SLOT( OnCancelPushButtonPressed( void ) ) );
+#endif
+
+  connect( m_Controls.m_ResetParametersPushButton,
+	   SIGNAL( pressed( void ) ),
+	   this,
+	   SLOT( OnResetParametersPushButtonPressed( void ) ) );
 
   connect( m_Controls.m_SaveAsPushButton,
 	   SIGNAL( pressed( void ) ),
@@ -1012,7 +1072,6 @@ void QmitkNiftyRegView::PrintSelf( std::ostream& os )
 	                        
   os << "F3D-linearEnergyWeight0: " << m_RegF3dParameters.linearEnergyWeight0 << std::endl;
   os << "F3D-linearEnergyWeight1: " << m_RegF3dParameters.linearEnergyWeight1 << std::endl;
-  os << "F3D-linearEnergyWeight2: " << m_RegF3dParameters.linearEnergyWeight2 << std::endl;
 
   os << "F3D-jacobianLogWeight: " << m_RegF3dParameters.jacobianLogWeight << std::endl;  
 
@@ -1060,6 +1119,10 @@ void QmitkNiftyRegView::PrintSelf( std::ostream& os )
 
 void QmitkNiftyRegView::Modified()
 {
+  m_Controls.m_ExecutePushButton->setEnabled( true );
+
+  m_Controls.m_ProgressBar->reset();
+
   m_Modified = true;
 }
 
@@ -1180,16 +1243,13 @@ void QmitkNiftyRegView::OnSourceImageComboBoxChanged(int index)
   QString targetName = m_Controls.m_TargetImageComboBox->currentText();
 
   if ( ( ! sourceName.isEmpty() ) &&
-       ( ! targetName.isEmpty() ) && 
-       ( sourceName != targetName ) )
+       ( ! targetName.isEmpty() ) )
   {
     m_Controls.m_ExecutePushButton->setEnabled( true );
-    std::cout << "OnSourceImageComboBoxChanged() enabled" << std::endl;
   }
   else
   {
     m_Controls.m_ExecutePushButton->setEnabled( false );
-    std::cout << "OnSourceImageComboBoxChanged() disabled" << std::endl;
   }
 
   Modified();
@@ -1216,16 +1276,13 @@ void QmitkNiftyRegView::OnTargetImageComboBoxChanged(int index)
   QString targetName = m_Controls.m_TargetImageComboBox->currentText();
 
   if ( ( ! sourceName.isEmpty() ) &&
-       ( ! targetName.isEmpty() ) && 
-       ( sourceName != targetName ) )
+       ( ! targetName.isEmpty() ) )
   {
     m_Controls.m_ExecutePushButton->setEnabled( true );
-    std::cout << "OnTargetImageComboBoxChanged() enabled" << std::endl;
   }
   else
   {
     m_Controls.m_ExecutePushButton->setEnabled( false );
-    std::cout << "OnTargetImageComboBoxChanged() disabled" << std::endl;
   }
 
   Modified();
@@ -1243,12 +1300,295 @@ void QmitkNiftyRegView::OnCancelPushButtonPressed( void )
 
 
 // ---------------------------------------------------------------------------
+// OnResetParametersPushButtonPressed();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::OnResetParametersPushButtonPressed( void )
+{
+  SetDefaultParameters();
+  SetGuiToParameterValues();
+
+  Modified();
+}
+
+
+// ---------------------------------------------------------------------------
+// WriteRegistrationParametersToFile();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
+{
+  
+  std::ofstream fout( filename.toStdString().c_str() );
+
+  if ((! fout) || fout.bad()) {
+    QMessageBox msgBox;
+    msgBox.setText( QString( "ERROR: Could not open file: " ) + filename );
+    msgBox.exec();
+    return;
+  }
+   
+  if ( m_FlagDoInitialRigidReg ) 
+  {
+
+    fout << "reg_aladin \\" << endl
+	 << "   -ref " << m_RegAladinParameters.referenceImageName.toStdString().c_str() << ".nii \\" << endl
+	 << "   -flo " << m_RegAladinParameters.floatingImageName.toStdString().c_str() << ".nii \\" << endl;
+
+    if ( m_RegAladinParameters.outputAffineFlag )
+      fout << "   -aff " << m_RegAladinParameters.outputAffineName.toStdString().c_str() << " \\" << endl;
+
+    if ( m_RegAladinParameters.alignCenterFlag )
+      fout << "   -nac \\" << endl;
+
+    if ( m_RegAladinParameters.regnType == QmitkNiftyRegView::RIGID_ONLY )
+      fout << "   -rigOnly \\" << endl;
+    else if ( m_RegAladinParameters.regnType == QmitkNiftyRegView::DIRECT_AFFINE )
+      fout << "   -affDirect \\" << endl;
+
+    fout << "   -maxit " << m_RegAladinParameters.maxiterationNumber << " \\" << endl
+	 << "   -%v " << m_RegAladinParameters.block_percent_to_use << " \\" << endl
+	 << "   -%i " << m_RegAladinParameters.inlier_lts << " \\" << endl
+	 << "   -interp " << m_RegAladinParameters.interpolation << " \\" << endl;
+
+    if ( m_FlagFlirtAffine )
+      fout << "   -affFlirt " << m_InputAffineName.toStdString().c_str() << " \\" << endl;
+    else if ( m_FlagInputAffine )
+      fout << "   -inaff " << m_InputAffineName.toStdString().c_str() << " \\" << endl;
+
+    if ( ! m_RegAladinParameters.referenceMaskName.isEmpty() )
+      fout << "   -rmask " << m_RegAladinParameters.referenceMaskName.toStdString().c_str() << " \\" << endl;
+
+    if ( m_TargetSigmaValue )
+      fout << "   -smooR " << m_TargetSigmaValue << " \\" << endl;
+
+    if ( m_SourceSigmaValue )
+      fout << "   -smooF " << m_SourceSigmaValue << " \\" << endl;
+
+    fout << "   -ln " << m_LevelNumber << " \\" << endl
+	 << "   -lp " << m_Level2Perform << " \\" << endl;
+
+    if ( m_RegAladinParameters.outputResultFlag ) {
+      fout << "   -res " << m_RegAladinParameters.outputResultName.toStdString().c_str() << ".nii" 
+	   << endl << endl;
+    }
+    else
+      fout << "   -res outputAffineResult.nii" << endl << endl;
+  }
+
+
+  if ( m_FlagDoNonRigidReg ) 
+  {
+    fout << "reg_f3d \\" << endl
+	 << "   -ref " << m_RegF3dParameters.referenceImageName.toStdString().c_str() << ".nii \\" << endl
+	 << "   -flo " << m_RegF3dParameters.floatingImageName.toStdString().c_str() << ".nii \\" << endl;
+
+    if ( m_RegF3dParameters.inputControlPointGridFlag )
+      fout << "   -incpp " << m_RegF3dParameters.inputControlPointGridName.toStdString().c_str() << ".nii \\" << endl;
+    
+    if ( m_FlagFlirtAffine )
+      fout << "   -affFlirt " << m_InputAffineName.toStdString().c_str() << " \\" << endl;
+    else if ( m_FlagInputAffine )
+      fout << "   -inaff " << m_InputAffineName.toStdString().c_str() << " \\" << endl;
+    
+    if ( ! m_RegF3dParameters.outputControlPointGridName.isEmpty() )
+      fout << "   -cpp " << m_RegF3dParameters.outputControlPointGridName.toStdString().c_str() << " \\" << endl;
+    
+    if ( ! m_RegF3dParameters.referenceMaskName.isEmpty() )
+      fout << "   -rmask " << m_RegF3dParameters.referenceMaskName.toStdString().c_str() << " \\" << endl;
+    
+    if ( m_TargetSigmaValue )
+      fout << "   -smooR " << m_TargetSigmaValue << " \\" << endl;
+    
+    if ( m_SourceSigmaValue )
+      fout << "   -smooF " << m_SourceSigmaValue << " \\" << endl;
+    
+    fout << "   -rbn " << m_RegF3dParameters.referenceBinNumber << " \\" << endl
+	 << "   -fbn " << m_RegF3dParameters.floatingBinNumber << " \\" << endl;
+    
+    if ( m_RegF3dParameters.referenceThresholdUp != -std::numeric_limits<PrecisionTYPE>::max() )
+      fout << "   -rUpTh " << m_RegF3dParameters.referenceThresholdUp << " \\" << endl;
+    if ( m_RegF3dParameters.referenceThresholdLow != -std::numeric_limits<PrecisionTYPE>::max() )
+      fout << "   -rLwTh " << m_RegF3dParameters.referenceThresholdLow << " \\" << endl;
+    
+    if ( m_RegF3dParameters.floatingThresholdUp != -std::numeric_limits<PrecisionTYPE>::max() )
+      fout << "   -fUpTh " << m_RegF3dParameters.floatingThresholdUp << " \\" << endl;
+    if ( m_RegF3dParameters.floatingThresholdLow != -std::numeric_limits<PrecisionTYPE>::max() )
+      fout << "   -fLwTh " << m_RegF3dParameters.floatingThresholdLow << " \\" << endl;
+    
+    fout << "   -sx " << m_RegF3dParameters.spacing[0] << " \\" << endl
+	 << "   -sy " << m_RegF3dParameters.spacing[1] << " \\" << endl
+	 << "   -sz " << m_RegF3dParameters.spacing[2] << " \\" << endl;
+    
+    fout << "   -be " << m_RegF3dParameters.bendingEnergyWeight << " \\" << endl
+      
+	 << "   -le " << m_RegF3dParameters.linearEnergyWeight0 
+	 << " " << m_RegF3dParameters.linearEnergyWeight0 << " \\" << endl
+      
+	 << "   -jl " << m_RegF3dParameters.jacobianLogWeight << " \\" << endl;
+    
+    if ( ! m_RegF3dParameters.jacobianLogApproximation )
+      fout << "   -noAppJL \\" << endl;
+    
+    if ( ! m_RegF3dParameters.useConjugate )
+      fout << "   -noConj \\" << endl;
+    
+    if ( m_RegF3dParameters.similarity == SSD_SIMILARITY )
+      fout << "   -ssd \\" << endl;
+    else if ( m_RegF3dParameters.similarity == KLDIV_SIMILARITY )
+      fout << "   -kld \\" << endl;
+    
+    fout << "   -maxit " << m_RegF3dParameters.maxiterationNumber << " \\" << endl;
+    
+    fout << "   -ln " << m_LevelNumber << " \\" << endl
+	 << "   -lp " << m_Level2Perform << " \\" << endl;
+    
+    if ( m_RegF3dParameters.noPyramid )
+      fout << "   -nopy \\" << endl;
+    
+    if ( m_RegF3dParameters.gradientSmoothingSigma )
+      fout << "   -smoothGrad " << m_RegF3dParameters.gradientSmoothingSigma << " \\" << endl;
+    
+    if ( m_RegF3dParameters.warpedPaddingValue != -std::numeric_limits<PrecisionTYPE>::max() )
+      fout << "   -pad " << m_RegF3dParameters.warpedPaddingValue << " \\" << endl;
+    
+    if ( ! m_RegF3dParameters.verbose )
+      fout << "   -voff \\" << endl;
+    
+    if ( ! m_RegF3dParameters.outputWarpedName.isEmpty() )
+      fout << "   -res " << m_RegF3dParameters.floatingImageName.toStdString().c_str()
+	   << "_" << m_RegF3dParameters.outputWarpedName.toStdString().c_str() << ".nii" << endl << endl;
+    else
+      fout << "   -res outputNonRigidResult.nii" << endl << endl;    
+  }
+
+ 
+  fout.close();
+}
+
+
+// ---------------------------------------------------------------------------
 // OnSaveAsPushButtonPressed();
 // --------------------------------------------------------------------------- 
 
 void QmitkNiftyRegView::OnSaveAsPushButtonPressed( void )
 {
-  PrintSelf( std::cout );
+
+  QFileDialog dialog( (QWidget *) this->parent(),
+		      tr( "Save as") );
+
+  dialog.setFileMode( QFileDialog::AnyFile );
+  dialog.setViewMode( QFileDialog::Detail );
+  dialog.setDirectory( QDir::currentPath() );
+  dialog.setAcceptMode( QFileDialog::AcceptSave );
+  dialog.setLabelText( QFileDialog::FileName, tr( "File selected" ) );
+
+  QStringList filters;
+  filters << "Affine transformation (*.affine)"
+	  << "B-spline control grid (*.nii)"
+	  << "Registration parameters (*.sh)";
+
+  dialog.setNameFilters(filters);
+
+  if ( dialog.exec() )
+  {
+
+    // Find the specific filter used
+
+    int i, iSelectedFilter = -1;
+    QString selectedFilter = dialog.selectedNameFilter();
+
+    for ( i = 0; i < filters.size(); i++ )
+    {
+      if ( filters.at(i) == selectedFilter ) 
+      {
+	iSelectedFilter = i;
+	break;
+      }
+    }
+
+    std::cout << dialog.selectedNameFilter().toStdString().c_str() << ", "
+	      << iSelectedFilter 
+	      << std::endl;
+
+    // Save according to the filter selected
+
+    switch ( iSelectedFilter )
+    {
+      // Affine transformation file
+    case 0:
+      {
+
+	if ( ! m_RegAladin )
+	{
+	  QMessageBox msgBox;
+	  msgBox.setText("No registration data available,"
+			 "\nplease execute an affine registration.");
+	  msgBox.exec();
+	  
+	  return;
+	}
+
+	m_RegAladinParameters.outputAffineName = dialog.selectedFiles()[0];
+
+	std::cout << m_RegAladinParameters.outputAffineName.toStdString().c_str() 
+		  << std::endl;
+
+	reg_tool_WriteAffineFile( m_RegAladin->GetTransformationMatrix(), 
+				  m_RegAladinParameters.outputAffineName.toStdString().c_str() );
+	break;
+      }
+
+      // B-spline control grid 
+    case 1:
+      {
+
+	if ( ! m_RegNonRigid )
+	{
+	  QMessageBox msgBox;
+	  msgBox.setText("No registration data available,"
+			 "\nplease execute a non-rigid registration.");
+	  msgBox.exec();
+	  
+	  return;
+	}
+
+	m_RegF3dParameters.outputControlPointGridName = dialog.selectedFiles()[0];
+
+	std::cout << m_RegF3dParameters.outputControlPointGridName.toStdString().c_str() 
+		  << std::endl;
+
+        nifti_image *outputControlPointGridImage 
+	  = m_RegNonRigid->GetControlPointPositionImage();
+
+        memset( outputControlPointGridImage->descrip, 0, 80 );
+        strcpy ( outputControlPointGridImage->descrip,
+		"Control point position from NiftyReg (reg_f3d)" );
+
+        reg_io_WriteImageFile( outputControlPointGridImage,
+			       m_RegF3dParameters.outputControlPointGridName.toStdString().c_str() );
+
+        nifti_image_free( outputControlPointGridImage );
+
+	break;
+      }
+
+      // Save the registration parameters (as a shell-script command line)
+    case 2:
+      {
+	WriteRegistrationParametersToFile( dialog.selectedFiles()[0] );
+	break;
+      }
+
+      // Unrecognised filter selected
+    default:
+      {
+	QMessageBox msgBox;
+	msgBox.setText("Algorithm fault: Unrecognised SaveAs filter.");
+	msgBox.exec();
+      }
+    }
+  }
 }
 
 
@@ -1258,12 +1598,8 @@ void QmitkNiftyRegView::OnSaveAsPushButtonPressed( void )
 
 void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 {
-#ifdef _USE_CUDA
-  std::cout << "USING CUDA" << std::endl;
-#else
-  std::cout << "NOT USING CUDA" << std::endl;
-#endif
 
+  PrintSelf( std::cout );
 
   if ( ! m_Modified )
   {
@@ -1271,17 +1607,93 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
   }
 
 
+#ifdef USE_THREADING
+
+  itk::MultiThreader::Pointer threader = itk::MultiThreader::New();
+
+  itk::ThreadFunctionType pointer = &ExecuteRegistration;
+  threader->SpawnThread( pointer, this );
+
+#else
+#ifdef USE_QT_THREADING
+
+  QEventLoop q;
+  RegistrationExecution regExecutionThread( this );
+
+#if 0
+  // The cancel button terminates the registration
+  connect( m_Controls.m_CancelPushButton, SIGNAL( pressed( ) ), 
+	   &regExecutionThread, SLOT( quit( ) ) );
+#endif
+
+  // The event loop 'q' terminates when the registration finishes (or is terminated)
+  connect( &regExecutionThread, SIGNAL( finished( ) ), 
+	   &q, SLOT( quit( ) ) );
+
+  regExecutionThread.start();
+  q.exec();
+
+#else
+
+  ExecuteRegistration( this );
+
+#endif
+#endif
+
+}
+
+
+// ---------------------------------------------------------------------------
+// ExecuteRegistration();
+// --------------------------------------------------------------------------- 
+
+ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
+{
+#ifdef _USE_CUDA
+  std::cout << "USING CUDA" << std::endl;
+#else
+  std::cout << "NOT USING CUDA" << std::endl;
+#endif
+
+#ifdef USE_THREADING
+
+  std::cout<<"Getting thread info data... ";
+  itk::MultiThreader::ThreadInfoStruct* threadInfo;
+  threadInfo = static_cast<itk::MultiThreader::ThreadInfoStruct*>(param);
+
+  if (!threadInfo) 
+  {
+    std::cout<<"[FAILED]"<<std::endl;
+    exit(EXIT_FAILURE);
+  }
+  std::cout<<"[PASSED]"<<std::endl;
+
+  
+  std::cout<<"Getting user data from thread... ";
+  QmitkNiftyRegView* userData = static_cast<QmitkNiftyRegView*>(threadInfo->UserData);
+
+  if (!userData) 
+  {
+    std::cout<<"[FAILED]"<<std::endl;
+    exit(EXIT_FAILURE);
+  }
+  std::cout<<"[PASSED]"<<std::endl;
+
+#else
+
+  QmitkNiftyRegView* userData = static_cast<QmitkNiftyRegView*>( param );
+
+#endif
+
   // Get the source and target MITK images from the data manager
 
   std::string name;
 
-  QString sourceName = m_Controls.m_SourceImageComboBox->currentText();
-  QString targetName = m_Controls.m_TargetImageComboBox->currentText();
+  QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
 
-  QString targetMaskName = m_Controls.m_TargetMaskImageComboBox->currentText();
+  QString targetMaskName = userData->m_Controls.m_TargetMaskImageComboBox->currentText();
 
-  std::cout << "OnExecutePushButtonPressed() Source name: " << sourceName.toStdString() << std::endl
-	    << "OnExecutePushButtonPressed() Target name: " << targetName.toStdString() << std::endl;
   mitk::Image::Pointer mitkSourceImage = 0;
   mitk::Image::Pointer mitkTransformedImage = 0;
   mitk::Image::Pointer mitkTargetImage = 0;
@@ -1289,7 +1701,7 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
   mitk::Image::Pointer mitkTargetMaskImage = 0;
 
 
-  mitk::DataStorage::SetOfObjects::ConstPointer nodes = GetNodes();
+  mitk::DataStorage::SetOfObjects::ConstPointer nodes = userData->GetNodes();
 
   mitk::DataNode::Pointer nodeSource = 0;
   mitk::DataNode::Pointer nodeTarget = 0;
@@ -1320,58 +1732,137 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
     }
   }
 
+  
+  // Ensure the progress bar is scaled appropriately
+
+  if ( userData->m_FlagDoInitialRigidReg && userData->m_FlagDoNonRigidReg ) 
+    userData->m_ProgressBarRange = 50.;
+  else
+    userData->m_ProgressBarRange = 100.;
+
+  userData->m_ProgressBarOffset = 0.;
+
+  
+  // Delete the previous registrations
+  
+  userData->DeallocateImages();
+
+  if ( userData->m_RegAladin ) 
+  {
+    delete userData->m_RegAladin;
+    userData->m_RegAladin = 0;
+  }
+
+  if ( userData->m_RegNonRigid )
+  {
+    delete userData->m_RegNonRigid;
+    userData->m_RegNonRigid = 0;
+  }
+
+
   // Create and run the Aladin registration?
 
-  if ( m_FlagDoInitialRigidReg ) 
+  if ( userData->m_FlagDoInitialRigidReg ) 
   {
 
-    reg_aladin<PrecisionTYPE> *regAladin = CreateAladinRegistrationObject( mitkSourceImage, 
-									   mitkTargetImage, 
-									   mitkTargetMaskImage );
+    userData->m_RegAladin = 
+      userData->CreateAladinRegistrationObject( targetName,
+						sourceName,
+						targetMaskName,
+						mitkSourceImage, 
+						mitkTargetImage, 
+						mitkTargetMaskImage );
   
-    regAladin->Run();
+    userData->m_RegAladin->SetProgressCallbackFunction( &UpdateProgressBar, userData );
 
-    mitkSourceImage = ConvertNiftiImageToMitk( regAladin->GetFinalWarpedImage() );
+    userData->m_RegAladin->Run();
+
+    mitkSourceImage = ConvertNiftiImageToMitk( userData->m_RegAladin->GetFinalWarpedImage() );
 
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage( "Affine registration to " );
+    std::string nameOfResultImage;
+    if ( userData->m_RegAladinParameters.regnType == QmitkNiftyRegView::RIGID_ONLY )
+      nameOfResultImage = "rigid registration to ";
+    else
+      nameOfResultImage = "affine registration to ";
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkSourceImage );
 
-    this->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode, nodeSource );
+
+    UpdateProgressBar( 100., userData );
+
+    if ( userData->m_FlagDoNonRigidReg ) 
+      userData->m_ProgressBarOffset = 50.;
+
+    userData->m_RegAladinParameters.outputResultName = QString( nameOfResultImage.c_str() ); 
+    userData->m_RegAladinParameters.outputResultFlag = true;
+
+    sourceName = userData->m_RegAladinParameters.outputResultName;
   }
 
 
   // Create and run the F3D registration
 
-  if ( m_FlagDoNonRigidReg ) 
+  if ( userData->m_FlagDoNonRigidReg ) 
   {
 
-    reg_f3d<PrecisionTYPE> *regNonRigid = CreateNonRigidRegistrationObject( mitkSourceImage, 
-									    mitkTargetImage, 
-									    mitkTargetMaskImage );  
-    regNonRigid->Run_f3d();
+    userData->m_RegNonRigid = 
+      userData->CreateNonRigidRegistrationObject( targetName,
+						  sourceName,
+						  targetMaskName,
+						  mitkSourceImage, 
+						  mitkTargetImage, 
+						  mitkTargetMaskImage );  
 
-    mitkTransformedImage = ConvertNiftiImageToMitk( regNonRigid->GetWarpedImage()[0] );
+    userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, 
+							  userData );
+
+    userData->m_RegNonRigid->Run_f3d();
+
+    mitkTransformedImage = ConvertNiftiImageToMitk( userData->m_RegNonRigid->GetWarpedImage()[0] );
 
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage( "Non-rigid registration to " );
+    std::string nameOfResultImage( "non-rigid registration to " );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkTransformedImage );
 
-    this->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode, nodeSource );
+
+    UpdateProgressBar( 100., userData );
+
+    userData->m_RegF3dParameters.outputWarpedName = QString( nameOfResultImage.c_str() ); 
    }
 
 
-  m_Modified = false;
+  userData->m_Modified = false;
+  userData->m_Controls.m_ExecutePushButton->setEnabled( false );
+
+  return ITK_THREAD_RETURN_VALUE;
+}
+
+
+// ---------------------------------------------------------------------------
+// UpdateProgressBar();
+// --------------------------------------------------------------------------- 
+
+void UpdateProgressBar( float pcntProgress, void *param )
+{
+  QmitkNiftyRegView* userData = static_cast<QmitkNiftyRegView*>( param );
+  
+  userData->m_Controls.m_ProgressBar->setValue( (int) (userData->m_ProgressBarOffset 
+						       + userData->m_ProgressBarRange*pcntProgress/100.) );
+
+  QCoreApplication::processEvents();
+
 }
 
 
@@ -1379,7 +1870,10 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 // CreateAladinRegistrationObject();
 // --------------------------------------------------------------------------- 
 
-reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
+reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( QString &targetName,
+									      QString &sourceName,
+									      QString &targetMaskName,
+									      mitk::Image *mitkSourceImage, 
 									      mitk::Image *mitkTargetImage, 
 									      mitk::Image *mitkTargetMaskImage )
 {
@@ -1387,48 +1881,57 @@ reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( mi
   
   // Get nifti versions of the images
 
-  nifti_image *referenceImage = ConvertMitkImageToNifti( mitkTargetImage );
-  nifti_image *floatingImage  = ConvertMitkImageToNifti( mitkSourceImage );
+  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
+  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
 
-  nifti_set_filenames(referenceImage,"reference.nii",0,0);
-  nifti_image_write(referenceImage);
+  if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
+  m_FloatingImage  = ConvertMitkImageToNifti( mitkSourceImage );
 
-  nifti_set_filenames(floatingImage,"floating.nii",0,0);
-  nifti_image_write(floatingImage);
+#if 0
+  nifti_set_filenames( m_ReferenceImage,"aladinReference.nii",0,0 );
+  nifti_image_write( m_ReferenceImage );
+
+  nifti_set_filenames( m_FloatingImage,"aladinFloating.nii",0,0 );
+  nifti_image_write( m_FloatingImage );
+#endif
 
   // Check the dimensions of the images
 
-  reg_checkAndCorrectDimension( referenceImage );
-  reg_checkAndCorrectDimension( floatingImage );
+  reg_checkAndCorrectDimension( m_ReferenceImage );
+  reg_checkAndCorrectDimension( m_FloatingImage );
 
   // Set the reference and floating image
 
-  REG->SetInputReference( referenceImage );
-  REG->SetInputFloating( floatingImage );
+  m_RegAladinParameters.referenceImageName = targetName;
+  m_RegAladinParameters.floatingImageName  = sourceName;
+
+  REG->SetInputReference( m_ReferenceImage );
+  REG->SetInputFloating( m_FloatingImage );
 
   // Set the reference mask image 
-
-  nifti_image *referenceMaskImage = 0;
 
   if ( mitkTargetMaskImage ) 
   {
 
-    referenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+    m_RegAladinParameters.referenceMaskName = targetMaskName;
 
-    reg_checkAndCorrectDimension(referenceMaskImage);
+    if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
+    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+
+    reg_checkAndCorrectDimension(m_ReferenceMaskImage);
 
     // check the dimensions
 
-    for ( int i=1; i<=referenceImage->dim[0]; i++ ) {
+    for ( int i=1; i<=m_ReferenceImage->dim[0]; i++ ) {
     
-      if ( referenceImage->dim[i] != referenceMaskImage->dim[i] ) 
+      if ( m_ReferenceImage->dim[i] != m_ReferenceMaskImage->dim[i] ) 
       {
 	fprintf(stderr,"* ERROR The reference image and its mask do not have the same dimension\n");
 	return 0;
       }
     }
     
-    REG->SetInputMask( referenceMaskImage );
+    REG->SetInputMask( m_ReferenceMaskImage );
   }
 
   // Aladin - Initialisation
@@ -1472,37 +1975,52 @@ reg_aladin<PrecisionTYPE> *QmitkNiftyRegView::CreateAladinRegistrationObject( mi
 // CreateNonRigidRegistrationObject();
 // --------------------------------------------------------------------------- 
 
-reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
-										mitk::Image *mitkTargetImage, 
-										mitk::Image *mitkTargetMaskImage )
+reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( QString &targetName,
+									     QString &sourceName,
+									     QString &targetMaskName,
+									     mitk::Image *mitkSourceImage, 
+									     mitk::Image *mitkTargetImage, 
+									     mitk::Image *mitkTargetMaskImage )
 {
   // Get nifti versions of the images
 
-  nifti_image *referenceImage = ConvertMitkImageToNifti( mitkTargetImage );
-  nifti_image *floatingImage = ConvertMitkImageToNifti( mitkSourceImage );
+  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
+  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
+
+  if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
+  m_FloatingImage = ConvertMitkImageToNifti( mitkSourceImage );
+
+#if 0
+  nifti_set_filenames( m_ReferenceImage,"f3dReference.nii",0,0 );
+  nifti_image_write( m_ReferenceImage );
+
+  nifti_set_filenames( m_FloatingImage,"f3dFloating.nii",0,0 );
+  nifti_image_write( m_FloatingImage );
+#endif
 
   // Check the dimensions of the images
 
-  reg_checkAndCorrectDimension( referenceImage );
-  reg_checkAndCorrectDimension( floatingImage );
+  reg_checkAndCorrectDimension( m_ReferenceImage );
+  reg_checkAndCorrectDimension( m_FloatingImage );
 
   // Set the reference mask image 
-
-  nifti_image *referenceMaskImage = 0;
 
   if ( mitkTargetMaskImage )
   {
 
-    referenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+    m_RegF3dParameters.referenceMaskName = targetMaskName;
 
-    reg_checkAndCorrectDimension( referenceMaskImage );
+    if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
+    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+
+    reg_checkAndCorrectDimension( m_ReferenceMaskImage );
 
     // check the dimensions
 
-    for ( int i=1; i<=referenceImage->dim[0]; i++ )
+    for ( int i=1; i<=m_ReferenceImage->dim[0]; i++ )
     {
     
-      if ( referenceImage->dim[i] != referenceMaskImage->dim[i] ) 
+      if ( m_ReferenceImage->dim[i] != m_ReferenceMaskImage->dim[i] ) 
       {
 	fprintf(stderr,"* ERROR The reference image and its mask do not have the same dimension\n");
 	return 0;
@@ -1512,15 +2030,14 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
 
   // Read the input control point grid image
 
-  nifti_image *controlPointGridImage = NULL;
-  
   if ( ! m_RegF3dParameters.inputControlPointGridName.isEmpty() ) 
   {
 
-    controlPointGridImage = nifti_image_read( m_RegF3dParameters.inputControlPointGridName
+    if ( m_ControlPointGridImage ) nifti_image_free( m_ControlPointGridImage );
+    m_ControlPointGridImage = nifti_image_read( m_RegF3dParameters.inputControlPointGridName
 					      .toStdString().c_str(), true );
 
-    if ( controlPointGridImage == NULL ) 
+    if ( m_ControlPointGridImage == NULL ) 
     {
       fprintf(stderr, 
 	      "Error when reading the input control point grid image %s\n",
@@ -1528,7 +2045,7 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
       return 0;
     }
     
-    reg_checkAndCorrectDimension( controlPointGridImage );
+    reg_checkAndCorrectDimension( m_ControlPointGridImage );
   }
 
   // Read the affine transformation
@@ -1556,8 +2073,8 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
     }
     
     reg_tool_ReadAffineFile( affineTransformation,
-			     referenceImage,
-			     floatingImage,
+			     m_ReferenceImage,
+			     m_FloatingImage,
 			     strdup( m_InputAffineName.toStdString().c_str() ),
 			     m_FlagFlirtAffine );
   }
@@ -1575,17 +2092,16 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
   {
 
     if ( m_RegF3dParameters.linearEnergyWeight0 ||
-	 m_RegF3dParameters.linearEnergyWeight1 ||
-	 m_RegF3dParameters.linearEnergyWeight2 ) {
+	 m_RegF3dParameters.linearEnergyWeight1 ) {
 
       fprintf(stderr,"NiftyReg ERROR CUDA] The linear elasticity has not been implemented with CUDA yet. Exit.\n");
       exit(0);
     }
 
-    if ( ( referenceImage->dim[4] == 1 && 
-	   floatingImage->dim[4]  == 1 ) || 
-	 ( referenceImage->dim[4] == 2 &&
-	   floatingImage->dim[4]  == 2 ) ) {
+    if ( ( m_ReferenceImage->dim[4] == 1 && 
+	   m_FloatingImage->dim[4]  == 1 ) || 
+	 ( m_ReferenceImage->dim[4] == 2 &&
+	   m_FloatingImage->dim[4]  == 2 ) ) {
 
       // The CUDA card is setup
 
@@ -1635,7 +2151,7 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
 	return 0;
       }
        
-      REG = new reg_f3d_gpu<PrecisionTYPE>(referenceImage->nt, floatingImage->nt);
+      REG = new reg_f3d_gpu<PrecisionTYPE>(m_ReferenceImage->nt, m_FloatingImage->nt);
 
     }
     else
@@ -1653,23 +2169,26 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
     
   {
     
-    REG = new reg_f3d<PrecisionTYPE>( referenceImage->nt, 
-				      floatingImage->nt );
+    REG = new reg_f3d<PrecisionTYPE>( m_ReferenceImage->nt, 
+				      m_FloatingImage->nt );
 
   }
 
   // Set the reg_f3d parameters
 
-  REG->SetReferenceImage( referenceImage );
-  REG->SetFloatingImage( floatingImage );
+  m_RegF3dParameters.referenceImageName = targetName;
+  m_RegF3dParameters.floatingImageName  = sourceName;
+
+  REG->SetReferenceImage( m_ReferenceImage );
+  REG->SetFloatingImage( m_FloatingImage );
 
   REG->PrintOutInformation();
 
   if ( mitkTargetMaskImage )
-    REG->SetReferenceMask( referenceMaskImage );
+    REG->SetReferenceMask( m_ReferenceMaskImage );
 
-  if ( controlPointGridImage != NULL )
-    REG->SetControlPointGridImage( controlPointGridImage );
+  if ( m_ControlPointGridImage != NULL )
+    REG->SetControlPointGridImage( m_ControlPointGridImage );
 
   if ( affineTransformation != NULL )
     REG->SetAffineTransformation( affineTransformation );
@@ -1677,8 +2196,7 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
   REG->SetBendingEnergyWeight( m_RegF3dParameters.bendingEnergyWeight );
     
   REG->SetLinearEnergyWeights( m_RegF3dParameters.linearEnergyWeight0,
-			       m_RegF3dParameters.linearEnergyWeight1,
-			       m_RegF3dParameters.linearEnergyWeight2 );
+			       m_RegF3dParameters.linearEnergyWeight1 );
   
   REG->SetJacobianLogWeight( m_RegF3dParameters.jacobianLogWeight );
   
@@ -1694,16 +2212,30 @@ reg_f3d<PrecisionTYPE> *QmitkNiftyRegView::CreateNonRigidRegistrationObject( mit
   REG->SetReferenceSmoothingSigma( m_TargetSigmaValue );
   REG->SetFloatingSmoothingSigma( m_SourceSigmaValue );
 
-  REG->SetReferenceThresholdUp( 0, m_RegF3dParameters.referenceThresholdUp );
+  // NB: -std::numeric_limits<PrecisionTYPE>::max() is a special value which 
+  // indicates the maximum value for ThresholdUp and the minimum for ThresholdLow.
+
+  if ( m_RegF3dParameters.referenceThresholdUp == -std::numeric_limits<PrecisionTYPE>::max() )
+    REG->SetReferenceThresholdUp( 0, std::numeric_limits<PrecisionTYPE>::max() );
+  else
+    REG->SetReferenceThresholdUp( 0, m_RegF3dParameters.referenceThresholdUp );
+
   REG->SetReferenceThresholdLow( 0, m_RegF3dParameters.referenceThresholdLow );
 
-  REG->SetFloatingThresholdUp( 0, m_RegF3dParameters.floatingThresholdUp );
+  if ( m_RegF3dParameters.floatingThresholdUp == -std::numeric_limits<PrecisionTYPE>::max() )
+    REG->SetFloatingThresholdUp( 0, std::numeric_limits<PrecisionTYPE>::max() );
+  else
+    REG->SetFloatingThresholdUp( 0, m_RegF3dParameters.floatingThresholdUp );
+
   REG->SetFloatingThresholdLow( 0, m_RegF3dParameters.floatingThresholdLow );
 
   REG->SetReferenceBinNumber( 0, m_RegF3dParameters.referenceBinNumber );
   REG->SetFloatingBinNumber( 0, m_RegF3dParameters.floatingBinNumber );
   
-  REG->SetWarpedPaddingValue( m_RegF3dParameters.warpedPaddingValue );
+  if ( m_RegF3dParameters.warpedPaddingValue == -std::numeric_limits<PrecisionTYPE>::max() )
+    REG->SetWarpedPaddingValue( std::numeric_limits<PrecisionTYPE>::quiet_NaN() );
+  else
+    REG->SetWarpedPaddingValue( m_RegF3dParameters.warpedPaddingValue );
 
   for ( unsigned int s=0; s<3; s++ )
     REG->SetSpacing( s, m_RegF3dParameters.spacing[s] );
@@ -1809,6 +2341,22 @@ void QmitkNiftyRegView::OnSmoothSourceImageDoubleSpinBoxValueChanged(double valu
 void QmitkNiftyRegView::OnSmoothTargetImageDoubleSpinBoxValueChanged(double value)
 {
   m_TargetSigmaValue = value;
+  Modified();
+}
+
+
+// ---------------------------------------------------------------------------
+// OnNoSmoothingPushButtonPressed();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::OnNoSmoothingPushButtonPressed( void )
+{
+  m_SourceSigmaValue = 0.;
+  m_Controls.m_SmoothSourceImageDoubleSpinBox->setValue( m_SourceSigmaValue );
+
+  m_TargetSigmaValue = 0.;
+  m_Controls.m_SmoothTargetImageDoubleSpinBox->setValue( m_TargetSigmaValue );
+
   Modified();
 }
 
@@ -2352,17 +2900,6 @@ void QmitkNiftyRegView::OnLinearEnergyWeightsDoubleSpinBox_1ValueChanged(double 
 void QmitkNiftyRegView::OnLinearEnergyWeightsDoubleSpinBox_2ValueChanged(double value)
 {
   m_RegF3dParameters.linearEnergyWeight1 = value;
-  Modified();
-}
-
-
-// ---------------------------------------------------------------------------
-// OnLinearEnergyWeightsDoubleSpinBox_3ValueChanged();
-// --------------------------------------------------------------------------- 
-
-void QmitkNiftyRegView::OnLinearEnergyWeightsDoubleSpinBox_3ValueChanged(double value)
-{
-  m_RegF3dParameters.linearEnergyWeight2 = value;
   Modified();
 }
 

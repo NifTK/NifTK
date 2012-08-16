@@ -30,6 +30,9 @@
 #include "berryISelectionListener.h"
 #include "QmitkAbstractView.h"
 
+// ITK
+#include <itkMultiThreader.h>
+
 
 #include "_reg_aladin.h"
 #include "_reg_tools.h"
@@ -61,6 +64,8 @@ class QmitkNiftyRegView : public QmitkAbstractView
   // (everything that derives from QObject and wants to have signal/slots)
   Q_OBJECT
   
+  friend class RegistrationExecution;
+
   public:  
 
     static const std::string VIEW_ID;
@@ -92,6 +97,7 @@ class QmitkNiftyRegView : public QmitkAbstractView
     
     void OnSmoothSourceImageDoubleSpinBoxValueChanged( double value );
     void OnSmoothTargetImageDoubleSpinBoxValueChanged( double value );
+    void OnNoSmoothingPushButtonPressed( void );
 
     void OnDoBlockMatchingOnlyRadioButtonToggled( bool checked );
     void OnDoNonRigidOnlyRadioButtonToggled( bool checked );
@@ -162,7 +168,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     void OnLinearEnergyWeightsDoubleSpinBox_1ValueChanged( double value );
     void OnLinearEnergyWeightsDoubleSpinBox_2ValueChanged( double value );
-    void OnLinearEnergyWeightsDoubleSpinBox_3ValueChanged( double value );
 
     void OnApproxJacobianLogCheckBoxStateChanged( int state );
 
@@ -189,11 +194,21 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     // Execution
 
+
     void OnCancelPushButtonPressed( void );
+    void OnResetParametersPushButtonPressed( void );
     void OnSaveAsPushButtonPressed( void );
     void OnExecutePushButtonPressed( void );
 
+    friend void UpdateProgressBar( float pcntProgress, void *param );
+
+    friend ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param );
+
+
   protected:
+
+    /// Deallocate the nifti images used in the registration
+    void DeallocateImages( void );
 
     /// \brief Get the list of data nodes from the data manager
     mitk::DataStorage::SetOfObjects::ConstPointer GetNodes();
@@ -214,15 +229,24 @@ class QmitkNiftyRegView : public QmitkAbstractView
     virtual void SetFocus();
 
     /// \brief Create the Aladin registration object
-    reg_aladin<PrecisionTYPE> *CreateAladinRegistrationObject( mitk::Image *mitkSourceImage, 
+    reg_aladin<PrecisionTYPE> *CreateAladinRegistrationObject( QString &targetName,
+							       QString &sourceName,
+							       QString &targetMaskName,
+							       mitk::Image *mitkSourceImage, 
 							       mitk::Image *mitkTargetImage, 
 							       mitk::Image *mitkTargetMaskImage );
 
     /// \brief Create the Aladin registration object
-    reg_f3d<PrecisionTYPE> *CreateNonRigidRegistrationObject( mitk::Image *mitkSourceImage, 
+    reg_f3d<PrecisionTYPE> *CreateNonRigidRegistrationObject( QString &targetName,
+							      QString &sourceName,
+							      QString &targetMaskName,
+							      mitk::Image *mitkSourceImage, 
 							      mitk::Image *mitkTargetImage, 
 							      mitk::Image *mitkTargetMaskImage );
     
+
+    /// \brief Save the registration parameters (as a shell-script command line)
+    void WriteRegistrationParametersToFile( QString &filename );
 
     /// \brief Print the object
     void PrintSelf( std::ostream& os );
@@ -260,6 +284,13 @@ class QmitkNiftyRegView : public QmitkAbstractView
     bool m_FlagFlirtAffine;   // -affFlirt
 
 
+    /** The current progress bar offset (0 < x < 100%) to enable progress to
+     * be divided between multiple processes. */
+    float m_ProgressBarOffset;
+    /** The current progress bar range (0 < x < 100%) to enable progress to
+     * be divided between multiple processes. */
+    float m_ProgressBarRange;
+
     /// Codes for interpolation type
     typedef enum {
       UNSET_INTERPOLATION = 0,
@@ -284,12 +315,25 @@ class QmitkNiftyRegView : public QmitkAbstractView
       DIRECT_AFFINE = 3
     } AffineRegistrationType;
 
+    /// The reference/target image
+    nifti_image *m_ReferenceImage;
+    /// The floating/source image
+    nifti_image *m_FloatingImage;
+    /// The reference/target mask image
+    nifti_image *m_ReferenceMaskImage;
+    /// The input control grid image
+    nifti_image *m_ControlPointGridImage;
 
     // ---------------------------------------------------------------------------
     // Rigid/Affine Aladin Parameters
     // ---------------------------------------------------------------------------
 
     typedef struct {
+
+      QString referenceImageName; // -ref
+      QString floatingImageName; // -flo
+
+      QString referenceMaskName; // -rmask
 
       bool outputResultFlag;
       QString outputResultName; // -res
@@ -316,8 +360,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     } RegAladinParametersType;
 
-    /// \brief The 'reg_aladin' parameters
+    /// The 'reg_aladin' parameters
     RegAladinParametersType m_RegAladinParameters;
+
+    /// The 'reg_aladin' registration object
+    reg_aladin<PrecisionTYPE> *m_RegAladin;
 
 
     // ---------------------------------------------------------------------------
@@ -325,6 +372,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
     // ---------------------------------------------------------------------------
 
     typedef struct {
+
+      QString referenceImageName; // -ref
+      QString floatingImageName; // -flo
+
+      QString referenceMaskName; // -rmask
 
       // Initial transformation options:
  
@@ -357,7 +409,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
       PrecisionTYPE linearEnergyWeight0;   // -le 
       PrecisionTYPE linearEnergyWeight1;   // -le 
-      PrecisionTYPE linearEnergyWeight2;   // -le 
 
       PrecisionTYPE jacobianLogWeight;     // -jl 
 
@@ -387,11 +438,17 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
     } RegF3dParametersType;
     
-    /// \brief The 'reg_f3d' parameters
+    /// The 'reg_f3d' parameters
     RegF3dParametersType m_RegF3dParameters;
 
+    /// The 'reg_f3d' registration object
+    reg_f3d<PrecisionTYPE> *m_RegNonRigid;
 
 };
+
+
+void UpdateProgressBar( float pcntProgress, void *param );
+ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param );
 
 #endif // QmitkNiftyRegView_h
 

@@ -38,7 +38,7 @@ namespace itk
  *
  * \ingroup Numerics Optimizers
  */
-class NIFTKITK_WINEXPORT   ITK_EXPORT UCLSimplexOptimizer : public AmoebaOptimizer
+class NIFTKITK_WINEXPORT ITK_EXPORT UCLSimplexOptimizer : public AmoebaOptimizer
 {
 public:
   /** Standard "Self" typedef. */

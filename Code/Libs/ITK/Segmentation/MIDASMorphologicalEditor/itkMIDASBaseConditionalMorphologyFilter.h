@@ -34,6 +34,7 @@ namespace itk
 /**
  * \class MIDASBaseConditionalMorphologyFilter
  * \brief Base class for MIDASConditionalErosionFilter and MIDASConditionalDilationFilter.
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>

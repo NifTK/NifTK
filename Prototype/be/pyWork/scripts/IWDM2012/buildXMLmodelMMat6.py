@@ -39,7 +39,7 @@ import os
 meshDir            = 'W:/philipsBreastProneSupine/Meshes/meshMaterials6/'
 breastVolMeshName  = meshDir + 'breastSurf_impro.1.vtk'    # volume mesh
 breastSurfMeshName = meshDir + 'breastSurf_impro.stl'    
-xmlFileOut         = meshDir + 'model.xml'
+xmlFileOut         = meshDir + 'modelShell.xml'
 chestWallMaskImage = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-CWThresh-dilateR2I4.nii'
 labelImage         = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM2_Crp2-pad.nii'
 skinMaskImage      = 'W:/philipsBreastProneSupine/ManualSegmentation/CombinedMasks_CwAGFM_Crp2-pad-AirThresh-dilateR2I4.nii'
@@ -107,30 +107,42 @@ genFix = xGen.xmlModelGenrator(  boxVolMeshPoints / 1000., boxVolMeshCells[ : , 
 
 # Fix constraints
 genFix.setFixConstraint( lowXIdx,  0 )         # sternum
+
 #genFix.setFixConstraint( lowZIdx,  0 )         # inferior breast boundary
 #genFix.setFixConstraint( lowZIdx,  1 )         # inferior breast boundary
-#genFix.setFixConstraint( lowZIdx,  2 )         # inferior breast boundary
+genFix.setFixConstraint( lowZIdx,  2 )         # inferior breast boundary
+
 #genFix.setFixConstraint( highZIdx, 0 )         # superior breast boundary
 #genFix.setFixConstraint( highZIdx, 1 )
-#genFix.setFixConstraint( highZIdx, 2 )
+genFix.setFixConstraint( highZIdx, 2 )
 #genFix.setFixConstraint( highYIdx, 0 )         # mid-axillary line
-#genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
+genFix.setFixConstraint( highYIdx, 1 )         # mid-axillary line
 #genFix.setFixConstraint( highYIdx, 2 )         # mid-axillary line
 genFix.setFixConstraint( idxCloseToChest, 0 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 1 )  # chest wall
 genFix.setFixConstraint( idxCloseToChest, 2 )  # chest wall
 
 
-genFix.setMaterialElementSet( 'NHV', 'FAT',     [  250, 50000], np.union1d( matGen.fatElements, matGen.skinElements), 1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NHV', 'GLAND',   [  500, 50000], matGen.glandElements,  1, 0, [1.0, 0.2] )
-genFix.setMaterialElementSet( 'NHV', 'MUSCLE',  [ 1000, 50000], matGen.muscleElements, 1, 0, [1.0, 0.2] )
+#
+# visco elastic parameters
+#
+#genFix.setMaterialElementSet( 'NHV', 'FAT',     [  200, 50000], np.union1d( matGen.fatElements, matGen.skinElements), 1, 0, [1.0, 0.4] )
+#genFix.setMaterialElementSet( 'NHV', 'GLAND',   [  400, 50000], matGen.glandElements,  1, 0, [1.0, 0.4] )
+#genFix.setMaterialElementSet( 'NHV', 'MUSCLE',  [  800, 50000], matGen.muscleElements, 1, 0, [1.0, 0.4] )
 
-#genFix.setShellElements('T3', matGen.shellElements )
-#genFix.setShellElementSet(0, 'NeoHookean', [800], 1000, 0.005)
+#
+# elastic parameters
+#
+genFix.setMaterialElementSet( 'NH', 'FAT',     [  150, 50000], np.union1d( matGen.fatElements, matGen.skinElements) )
+genFix.setMaterialElementSet( 'NH', 'GLAND',   [  300, 50000], matGen.glandElements )
+genFix.setMaterialElementSet( 'NH', 'MUSCLE',  [  600, 50000], matGen.muscleElements )
 
-genFix.setGravityConstraint( [0., 1, 0 ], 20, allNodesArray, 'POLY345FLAT4' )
+genFix.setShellElements('T3', matGen.shellElements )
+genFix.setShellElementSet(0, 'NeoHookean', [1000], 1000, 0.005)
+
+genFix.setGravityConstraint( [0., 1., 0. ], 20., allNodesArray, 'POLY345FLAT' )
 genFix.setOutput( 750, ['U', 'EKinTotal', 'EStrainTotal'] )
-genFix.setSystemParameters( timeStep=1.e-5, totalTime=5.0, dampingCoefficient=150, hgKappa=0.00, density=1000 )    
+genFix.setSystemParameters( timeStep=4.e-5, totalTime=2.0, dampingCoefficient=25, hgKappa=0.00, density=1000 )    
 genFix.writeXML( xmlFileOut )
 
 

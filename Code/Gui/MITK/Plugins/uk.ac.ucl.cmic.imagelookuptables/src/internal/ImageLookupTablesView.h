@@ -148,6 +148,7 @@ private:
   mitk::Image::Pointer m_CurrentImage;
   mitk::LevelWindow m_CurrentLevelWindow;
   bool m_InUpdate;
+  int m_ThresholdForIntegerBehaviour;
 
   // Store a reference to the parent widget of this view.
   QWidget *m_Parent;

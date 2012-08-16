@@ -102,28 +102,16 @@ we see
 \code
   MODULE_DEPENDENCIES CTK QmitkExt niftkMitkExt niftkQmitkExt
 )
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
-                      niftkQt
-                      niftkITK
-)
 \endcode
-which immediately reveals that the plugin is dependent on the MITK based modules CTK QmitkExt, and the NifTK modules
-niftkMitkExt and niftkQmitkExt which are MITK based modules within this project. In addition, extra link libraries 
-have been added to link back to niftkQt and niftkITK which are built from the 
-\verbatim
-NifTK/Code/Libs/Qt
-\endverbatim
-and
-\verbatim
-NifTK/Code/Libs/ITK
-\endverbatim
+which immediately reveals that the plugin is dependent on CTK and QmitkExt, and the NifTK modules
+niftkMitkExt and niftkQmitkExt which are MITK based modules within this project.
 In addition, the top level manifest_headers.cmake we see
 \code
 set(Require-Plugin uk.ac.ucl.cmic.gui.qt.common )
 \endcode
-Each plugin can define plugins that it depends on at both compile time and run time. So the above line is used when
-generating the plugin, and in this case will set up correct include paths for compilation.
+Each plugin can define plugins that it depends on at both compile time and run time. So the above 
+line is used when generating the plugin, and in this case will set up correct include paths 
+for compilation.
 
 So, with this in mind, it is important to keep the number of dependencies to a minimum. Don't include extra libraries
 in the CMakeLists.txt by just cutting and pasting and don't make your plugin's manifest_headers.cmake depend

@@ -40,7 +40,7 @@
  * \class MorphologicalSegmentorPipeline
  * \brief Implementation of MorphologicalSegmentorPipelineInterface using ITK filters.
  *
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
+ * \ingroup midas_morph_editor
  */
 template<typename TPixel, unsigned int VImageDimension>
 class MorphologicalSegmentorPipeline : public MorphologicalSegmentorPipelineInterface
@@ -68,35 +68,33 @@ public:
   ///
   /// \brief Update the pipeline
   ///
-  /// \param editingImageBeingEdited if true, means we were actively editing the "subtractions" image, or connection breaker image (working volume 0).
-  /// \param additionsImageBeingEdited if true, means we were actively editing the "additions" image.
-  /// \param editingRegion a vector of 6 integers containing the size[0-2], and index[3-5] of the affected regio.
-  void Update(bool editingImageBeingEdited, bool additionsImageBeingEdited, std::vector<int>& editingRegion);
+  /// \param editingFlags array of 4 booleans to say which images are being editted.
+  /// \param editingRegion a vector of 6 integers containing the size[0-2], and index[3-5] of the affected region.
+  void Update(std::vector<bool>& editingFlags, std::vector<int>& editingRegion);
 
   /// \brief Gets the output image from the pipeline, used to copy back into MITK world.
   ///
   /// The parameters editingImageBeingEdited and additionsImageBeingEdited should be the same as when Update was called.
-  ///
-  /// \param editingImageBeingEdited if true, means we were actively editing the "subtractions" image, or connection breaker image (working volume 0).
-  /// \param additionsImageBeingEdited if true, means we were actively editing the "additions" image.
-  typename SegmentationImageType::Pointer GetOutput(bool editingImageBeingEdited, bool additionsImageBeingEdited);
+  /// \param editingFlags array of 4 booleans to say which images are being editted.
+  typename SegmentationImageType::Pointer GetOutput(std::vector<bool>& editingFlags);
 
   /// \brief The foreground value for the segmentation, equal to 1, set in constructor.
-  mitk::Tool::DefaultSegmentationDataType                      m_ForegroundValue;
+  unsigned char m_ForegroundValue;
 
   /// \brief The background value for the segmentation, equal to 0, set in constructor.
-  mitk::Tool::DefaultSegmentationDataType                      m_BackgroundValue;
+  unsigned char m_BackgroundValue;
 
   int                                                          m_Stage;
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
-  typename MaskByRegionFilterType::Pointer                     m_EarlyMaskFilter;
-  typename LargestConnectedComponentFilterType::Pointer        m_EarlyConnectedComponentFilter;
+  typename MaskByRegionFilterType::Pointer                     m_ThresholdingMaskFilter;
+  typename LargestConnectedComponentFilterType::Pointer        m_ThresholdingConnectedComponentFilter;
   typename ErosionFilterType::Pointer                          m_ErosionFilter;
   typename MaskByRegionFilterType::Pointer                     m_ErosionMaskFilter;
+  typename LargestConnectedComponentFilterType::Pointer        m_ErosionConnectedComponentFilter;
   typename DilationFilterType::Pointer                         m_DilationFilter;
   typename MaskByRegionFilterType::Pointer                     m_DilationMaskFilter;
+  typename LargestConnectedComponentFilterType::Pointer        m_DilationConnectedComponentFilter;
   typename RethresholdingFilterType::Pointer                   m_RethresholdingFilter;
-  typename LargestConnectedComponentFilterType::Pointer        m_LateConnectedComponentFilter;
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION

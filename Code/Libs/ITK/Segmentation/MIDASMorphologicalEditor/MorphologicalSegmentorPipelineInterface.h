@@ -31,7 +31,7 @@
  * \class MorphologicalSegmentorPipelineInterface
  * \brief Abstract interface to plug ITK pipeline into MITK framework to represent the MIDAS Morphological Segmentor Pipeline.
  *
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
+ * \ingroup midas_morph_editor
  */
 class MorphologicalSegmentorPipelineInterface
 {
@@ -48,10 +48,9 @@ public:
 
   /// \brief Update the pipeline.
   ///
-  /// \param editingImageBeingEdited if true, indicates that we are editing the "editingImage" so only update part of the pipeline.
-  /// \param additionsImageBeingEdited if true, indicates that we are editing the "additions" image, so only update part of the pipeline.
+  /// \param editingFlags array of 4 booleans to say which images are being editted.
   /// \param editingRegion pass in an array of 6 integers containing size[0-2], and index[3-5] for the region being edited.
-  virtual void Update(bool editingImageBeingEdited, bool additionsImageBeingEdited, std::vector<int>& editingRegion) = 0;
+  virtual void Update(std::vector<bool>& editingFlags, std::vector<int>& editingRegion) = 0;
 };
 
 #endif

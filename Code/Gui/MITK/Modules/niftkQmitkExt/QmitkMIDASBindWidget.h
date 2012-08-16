@@ -26,7 +26,7 @@
 #define QMITKMIDASBINDWIDGET_H
 
 #include "ui_QmitkMIDASBindWidget.h"
-#include "QmitkMIDASViewEnums.h"
+#include "mitkMIDASEnums.h"
 #include <niftkQmitkExtExports.h>
 
 /**

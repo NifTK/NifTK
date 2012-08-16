@@ -30,14 +30,15 @@
 #include "mitkDataNode.h"
 #include "mitkSliceNavigationController.h"
 #include "mitkGeometry3D.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkStdMultiWidget.h"
-#include "QmitkMIDASViewEnums.h"
 #include "vtkCamera.h"
 #include "itkConversionUtils.h"
 #include <niftkQmitkExtExports.h>
 
 class QGridLayout;
 class QStackedLayout;
+class DisplayGeometryModificationCommand;
 
 /**
  * \class QmitkMIDASStdMultiWidget
@@ -77,8 +78,11 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
 
 public:
 
-  /// \brief Constructor, where renderingManager and dataStorage must be non-NULL.
-  QmitkMIDASStdMultiWidget(mitk::RenderingManager* renderingManager, mitk::DataStorage* dataStorage, QWidget* parent = 0, Qt::WindowFlags f = 0);
+  /// \brief Constructor.
+  QmitkMIDASStdMultiWidget(QWidget* parent = 0,
+                           Qt::WindowFlags f = 0,
+                           mitk::RenderingManager* renderingManager = 0,
+                           mitk::DataStorage* dataStorage = 0);
 
   /// \brief Destructor.
   virtual ~QmitkMIDASStdMultiWidget();
@@ -159,6 +163,9 @@ public:
   /// \brief Returns the list of all vtkRenderWindow contained herein.
   std::vector<vtkRenderWindow*> GetAllVtkWindows() const;
 
+  /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
+  QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
+
   /// \brief Returns true if this widget contains the provided window and false otherwise.
   bool ContainsWindow(QmitkRenderWindow *window) const;
 
@@ -190,13 +197,15 @@ public:
   void SetTime(unsigned int timeSlice);
 
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  int GetMagnificationFactor() const;
+  double GetMagnificationFactor() const;
 
   /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  void SetMagnificationFactor(int magnificationFactor);
+  void SetMagnificationFactor(double magnificationFactor);
+  double ComputeScaleFactor(QmitkRenderWindow* window, double magnificationFactor);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
-  int FitMagnificationFactor();
+  double FitMagnificationFactor();
+  double ComputeMagnificationFactor(QmitkRenderWindow* window);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -216,11 +225,17 @@ public:
   /// \brief Turn on/off the relevant interactors.
   void EnableInteractors(bool enable);
 
+  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
+  ///
+  /// \see mitkMIDASOrientationUtils.
+  int GetSliceUpDirection(MIDASOrientation orientation) const;
+
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *thisWindow, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void MagnificationFactorChanged(QmitkRenderWindow *window, double magnificationFactor);
 
 protected slots:
 
@@ -256,6 +271,11 @@ private:
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *window, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
+  void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+  void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+
+  void OnScaleFactorChanged(QmitkRenderWindow *window);
+
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
   unsigned int          m_AxialSliceTag;
@@ -267,10 +287,17 @@ private:
   bool                  m_Display2DCursorsGlobally;
   bool                  m_Display3DViewInOrthoView;
   MIDASView             m_View;
-  int                   m_MagnificationFactor;
+  double                m_MagnificationFactor;
   vtkCamera*            m_Cameras[4];
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
+
+  std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
+  bool m_BlockDisplayGeometryEvents;
+
+  friend class DisplayGeometryModificationCommand;
+
+  mitk::Geometry3D::Pointer m_CreatedGeometries[3];
 };
 
 #endif

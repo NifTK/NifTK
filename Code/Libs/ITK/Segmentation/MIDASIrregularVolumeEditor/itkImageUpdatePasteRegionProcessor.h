@@ -25,7 +25,7 @@
 #ifndef ITKIMAGEUPDATEPASTEREGIONPROCESSOR_H
 #define ITKIMAGEUPDATEPASTEREGIONPROCESSOR_H
 
-#include "itkImageUpdateProcessor.h"
+#include "itkImageUpdateRegionProcessor.h"
 
 namespace itk
 {
@@ -36,21 +36,21 @@ namespace itk
  * where we take non-zero pixels in the source image, and write them to the destination image.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdatePasteRegionProcessor : public ImageUpdateProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT ImageUpdatePasteRegionProcessor : public ImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdatePasteRegionProcessor               Self;
-  typedef ImageUpdateProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef ImageUpdatePasteRegionProcessor                     Self;
+  typedef ImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                  Pointer;
+  typedef SmartPointer<const Self>                            ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdatePasteRegionProcessor, ImageUpdateProcessor);
+  itkTypeMacro(ImageUpdatePasteRegionProcessor, ImageUpdateRegionProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;

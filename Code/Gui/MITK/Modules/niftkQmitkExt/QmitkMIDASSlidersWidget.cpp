@@ -37,32 +37,27 @@ QmitkMIDASSlidersWidget::~QmitkMIDASSlidersWidget()
 void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
 {
   Ui_QmitkMIDASSlidersWidget::setupUi(parent);
-  m_MagnificationFactorWidget->setToolTip("changes the magnification of the currently selected view.");
-  m_SliceSelectionWidget->setToolTip("changes the slice number of the currently selected view.");
-  m_TimeSelectionWidget->SetText("time");
-  m_TimeSelectionWidget->setToolTip("changes the time step number of the currently selected view.");
-}
-
-void QmitkMIDASSlidersWidget::SetSliceSliderInverted(bool inverted)
-{
-  m_SliceSelectionWidget->SetInverse(inverted);
-}
-
-void QmitkMIDASSlidersWidget::SetSliceSliderOffset(int offset)
-{
-  m_SliceSelectionWidget->SetOffset(offset);
+  m_SliceSelectionWidget->setDecimals(0);
+  m_SliceSelectionWidget->setTickInterval(1);
+  m_SliceSelectionWidget->setSingleStep(1);
+  m_MagnificationFactorWidget->setDecimals(0);
+  m_MagnificationFactorWidget->setTickInterval(1);
+  m_MagnificationFactorWidget->setSingleStep(1);
+  m_TimeSelectionWidget->setDecimals(0);
+  m_TimeSelectionWidget->setTickInterval(1);
+  m_TimeSelectionWidget->setSingleStep(1);
 }
 
 void QmitkMIDASSlidersWidget::SetBlockSignals(bool block)
 {
-  m_MagnificationFactorWidget->SetBlockSignals(block);
-  m_SliceSelectionWidget->SetBlockSignals(block);
-  m_TimeSelectionWidget->SetBlockSignals(block);
+  m_MagnificationFactorWidget->blockSignals(block);
+  m_SliceSelectionWidget->blockSignals(block);
+  m_TimeSelectionWidget->blockSignals(block);
 }
 
 void QmitkMIDASSlidersWidget::SetEnabled(bool enabled)
 {
-  m_MagnificationFactorWidget->SetEnabled(enabled);
-  m_SliceSelectionWidget->SetEnabled(enabled);
-  m_TimeSelectionWidget->SetEnabled(enabled);
+  m_MagnificationFactorWidget->setEnabled(enabled);
+  m_SliceSelectionWidget->setEnabled(enabled);
+  m_TimeSelectionWidget->setEnabled(enabled);
 }

@@ -44,7 +44,7 @@
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
-#include "QmitkMIDASViewEnums.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkMIDASMultiViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include "mitkMIDASViewKeyPressStateMachine.h"

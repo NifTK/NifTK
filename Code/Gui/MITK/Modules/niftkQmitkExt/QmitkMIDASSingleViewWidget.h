@@ -29,10 +29,10 @@
 #include <QWidget>
 #include <QColor>
 #include "mitkDataStorage.h"
-#include "mitkTimeSlicedGeometry.h"
+#include "mitkGeometry3D.h"
 #include "mitkRenderingManager.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkRenderWindow.h"
-#include "QmitkMIDASViewEnums.h"
 #include "QmitkMIDASStdMultiWidget.h"
 #include <niftkQmitkExtExports.h>
 
@@ -80,12 +80,16 @@ class NIFTKQMITKEXT_EXPORT QmitkMIDASSingleViewWidget : public QWidget {
 
 public:
 
-  QmitkMIDASSingleViewWidget(QWidget *parent,
-                             QString windowName,
-                             int minimumMagnification,
-                             int maximumMagnification,
-                             mitk::DataStorage* dataStorage,
-                             mitk::RenderingManager* renderingManager
+  friend class QmitkMIDASSegmentationViewWidget;
+
+  QmitkMIDASSingleViewWidget(QWidget *parent);
+
+  QmitkMIDASSingleViewWidget(QString windowName,
+                             double minimumMagnification,
+                             double maximumMagnification,
+                             QWidget *parent = 0,
+                             mitk::RenderingManager* renderingManager = 0,
+                             mitk::DataStorage* dataStorage = 0
                              );
   ~QmitkMIDASSingleViewWidget();
 
@@ -184,10 +188,10 @@ public:
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
   /// \brief Returns the minimum allowed magnification, which is passed in as constructor arg, and held constant.
-  int GetMinMagnification() const;
+  double GetMinMagnification() const;
 
   /// \brief Returns the maximum allowed magnification, which is passed in as constructor arg, and held constant.
-  int GetMaxMagnification() const;
+  double GetMaxMagnification() const;
 
   /// \brief Returns the data storage or NULL if widget is not fully created, or datastorage has not been set.
   mitk::DataStorage::Pointer GetDataStorage() const;
@@ -199,13 +203,13 @@ public:
   void RequestUpdate();
 
   /// \brief Sets the world geometry that we are sampling.
-  void SetGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
+  void SetGeometry(mitk::Geometry3D::Pointer geometry);
 
   /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
-  mitk::TimeSlicedGeometry::Pointer GetGeometry();
+  mitk::Geometry3D::Pointer GetGeometry();
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
-  void SetBoundGeometry(mitk::TimeSlicedGeometry::Pointer geometry);
+  void SetBoundGeometry(mitk::Geometry3D::Pointer geometry);
 
   /// \brief If we tell the widget to be in bound mode, it uses the bound geometries.
   void SetBoundGeometryActive(bool isBound);
@@ -228,14 +232,17 @@ public:
   /// \brief Get the view ID.
   MIDASView GetView() const;
 
-  /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho.
+  /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
   void SetView(MIDASView view, bool fitToDisplay);
 
+  /// \brief In contrast to SetView this method does as little as possible, to be analagous to just switching the orientation.
+  void SwitchView(MIDASView view);
+
   /// \brief Set the current magnification factor.
-  void SetMagnificationFactor(int magnificationFactor);
+  void SetMagnificationFactor(double magnificationFactor);
 
   /// \brief Get the current magnification factor.
-  int GetMagnificationFactor() const;
+  double GetMagnificationFactor() const;
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -255,6 +262,14 @@ public:
   /// \brief Turn on/off the relevant interactors.
   void EnableInteractors(bool enable);
 
+  /// \brief Returns pointers to the widget planes.
+  std::vector<mitk::DataNode*> GetWidgetPlanes();
+
+  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
+  ///
+  /// \see mitkMIDASOrientationUtils.
+  int GetSliceUpDirection(MIDASOrientation orientation) const;
+
 protected:
 
   virtual void paintEvent(QPaintEvent *event);
@@ -264,14 +279,28 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
 
 protected slots:
 
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   virtual void OnPositionChanged(QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  virtual void OnMagnificationFactorChanged(QmitkRenderWindow* window, double magnificationFactor);
 
 private:
+
+
+  /// \brief Provided here to provide access to the QmitkStdMultiWidget::InitializeStandardViews for friend classes only.
+  void InitializeStandardViews(const mitk::Geometry3D * geometry );
+
+  /// \brief This method is called from both constructors to do the construction.
+  void Initialize(QString windowName,
+                  double minimumMagnification,
+                  double maximumMagnification,
+                  mitk::RenderingManager* renderingManager = 0,
+                  mitk::DataStorage* dataStorage = 0
+                 );
 
   void SetActiveGeometry();
   unsigned int GetBoundUnboundOffset() const;
@@ -287,22 +316,22 @@ private:
   QmitkMIDASStdMultiWidget                         *m_MultiWidget;
 
   bool                                              m_IsBound;
-  mitk::TimeSlicedGeometry::Pointer                 m_UnBoundTimeSlicedGeometry;    // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::TimeSlicedGeometry::Pointer                 m_BoundTimeSlicedGeometry;      // Passed in, when we do "bind", so shared amongst multiple windows.
-  mitk::TimeSlicedGeometry::Pointer                 m_ActiveTimeSlicedGeometry;     // The one we actually use, which points to either of the two above.
+  mitk::Geometry3D::Pointer                         m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::Geometry3D::Pointer                         m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
+  mitk::Geometry3D::Pointer                         m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
 
-  int                                               m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
-  int                                               m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                                            m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                                            m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
 
   std::vector<int>                                  m_CurrentSliceNumbers;          // length 2, one for unbound, then for bound.
   std::vector<int>                                  m_CurrentTimeSliceNumbers;      // length 2, one for unbound, then for bound.
-  std::vector<int>                                  m_CurrentMagnificationFactors;  // length 2, one for unbound, then for bound.
+  std::vector<double>                               m_CurrentMagnificationFactors;  // length 2, one for unbound, then for bound.
   std::vector<MIDASOrientation>                     m_CurrentOrientations;          // length 2, one for unbound, then for bound.
   std::vector<MIDASView>                            m_CurrentViews;                 // length 2, one for unbound, then for bound.
 
   std::vector<int>                                  m_PreviousSliceNumbers;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<int>                                  m_PreviousTimeSliceNumbers;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<int>                                  m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  std::vector<double>                               m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<MIDASOrientation>                     m_PreviousOrientations;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
   std::vector<MIDASView>                            m_PreviousViews;                // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
 

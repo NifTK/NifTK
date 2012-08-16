@@ -28,46 +28,47 @@
 #include <QMessageBox>
 #include <QGridLayout>
 
-#include "mitkProperties.h"
-#include "mitkStringProperty.h"
-#include "mitkColorProperty.h"
-#include "mitkExtractImageFilter.h"
-#include "mitkDataNodeObject.h"
-#include "mitkNodePredicateDataType.h"
-#include "mitkNodePredicateProperty.h"
-#include "mitkNodePredicateAnd.h"
-#include "mitkNodePredicateNot.h"
-#include "mitkProperties.h"
-#include "mitkRenderingManager.h"
-#include "mitkSegTool2D.h"
-#include "mitkVtkResliceInterpolationProperty.h"
-#include "mitkPointSet.h"
-#include "mitkGlobalInteraction.h"
-#include "mitkTool.h"
+#include <mitkProperties.h>
+#include <mitkStringProperty.h>
+#include <mitkColorProperty.h>
+#include <mitkExtractImageFilter.h>
+#include <mitkDataNodeObject.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkProperties.h>
+#include <mitkRenderingManager.h>
+#include <mitkSegTool2D.h>
+#include <mitkVtkResliceInterpolationProperty.h>
+#include <mitkPointSet.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkTool.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkPointSet.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkSlicedGeometry3D.h>
+#include <mitkITKImageImport.h>
+#include <mitkGeometry2D.h>
+#include <mitkOperationEvent.h>
+#include <mitkUndoController.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkImageStatisticsHolder.h>
+#include <mitkContourSet.h>
+#include <mitkFocusManager.h>
+#include <mitkSegmentationObjectFactory.h>
+#include <mitkSurface.h>
+#include <itkCommand.h>
+#include <itkContinuousIndex.h>
+
+#include "MIDASGeneralSegmentorViewCommands.h"
+#include "MIDASGeneralSegmentorViewHelper.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPosnTool.h"
 #include "mitkMIDASSeedTool.h"
 #include "mitkMIDASPolyTool.h"
 #include "mitkMIDASDrawTool.h"
-#include "mitkNodePredicateDataType.h"
-#include "mitkPointSet.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkSlicedGeometry3D.h"
-#include "mitkITKImageImport.h"
-#include "mitkGeometry2D.h"
-#include "mitkOperationEvent.h"
-#include "mitkUndoController.h"
-#include "mitkDataStorageUtils.h"
-#include "mitkImageStatisticsHolder.h"
-#include "mitkContourSet.h"
-#include "mitkFocusManager.h"
-#include "mitkUndoController.h"
-#include "mitkSegmentationObjectFactory.h"
-#include "mitkSurface.h"
-#include "MIDASGeneralSegmentorViewCommands.h"
-#include "MIDASGeneralSegmentorViewHelper.h"
-#include "itkCommand.h"
-#include "itkContinuousIndex.h"
+#include "mitkMIDASOrientationUtils.h"
 
 const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
@@ -83,8 +84,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
 , m_Layout(NULL)
-, m_ContainerForSelectorWidget(NULL)
-, m_ContainerForToolWidget(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_SliceNavigationController(NULL)
 , m_SliceNavigationControllerObserverTag(0)
@@ -151,24 +150,29 @@ std::string MIDASGeneralSegmentorView::GetViewID() const
 
 void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
-  m_Parent = parent;
+  this->SetParent(parent);
 
   if (!m_GeneralControls)
   {
     m_Layout = new QGridLayout(parent);
+    m_Layout->setContentsMargins(0,0,0,0);
+    m_Layout->setSpacing(0);
+    m_Layout->setRowStretch(0, 0);
+    m_Layout->setRowStretch(1, 10);
+    m_Layout->setRowStretch(2, 0);
+    m_Layout->setRowStretch(3, 0);
 
-    m_ContainerForSelectorWidget = new QWidget(parent);
-    m_ContainerForToolWidget = new QWidget(parent);
     m_ContainerForControlsWidget = new QWidget(parent);
 
     m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget();
     m_GeneralControls->setupUi(m_ContainerForControlsWidget);
 
-    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(m_ContainerForSelectorWidget, m_ContainerForToolWidget);
+    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
-    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget,     1, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
+    m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
+    m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget,             2, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget,         3, 0);
 
     m_GeneralControls->SetEnableThresholdingWidgets(false);
     m_GeneralControls->SetEnableThresholdingCheckbox(false);
@@ -262,20 +266,20 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
   {
     mitk::DataNode::Pointer segmentationNode = nodes[0];
 
-    if (this->m_PreviouslyFocussed2DRenderer != NULL)
+    if (this->GetPreviouslyFocussedRenderer() != NULL)
     {
-      mitk::PropertyList* list = segmentationNode->GetPropertyList(m_PreviouslyFocussed2DRenderer);
+      mitk::PropertyList* list = segmentationNode->GetPropertyList(this->GetPreviouslyFocussedRenderer());
       if (list != NULL)
       {
         list->DeleteProperty("visible");
       }
     }
 
-    if (this->m_Focussed2DRenderer != NULL)
+    if (this->GetCurrentlyFocussedRenderer() != NULL)
     {
       if (overrideToGlobal)
       {
-        mitk::PropertyList* list = segmentationNode->GetPropertyList(m_Focussed2DRenderer);
+        mitk::PropertyList* list = segmentationNode->GetPropertyList(GetCurrentlyFocussedRenderer());
         if (list != NULL)
         {
           list->DeleteProperty("visible");
@@ -283,7 +287,7 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
       }
       else
       {
-        segmentationNode->SetVisibility(false, this->m_Focussed2DRenderer);
+        segmentationNode->SetVisibility(false, this->GetCurrentlyFocussedRenderer());
       }
     }
   }
@@ -291,10 +295,10 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
 
 void MIDASGeneralSegmentorView::OnFocusChanged()
 {
-  mitk::BaseRenderer* currentFocussedRendered = m_Focussed2DRenderer;
-  QmitkMIDASBaseFunctionality::OnFocusChanged();
+  mitk::BaseRenderer* currentFocussedRendered = this->GetCurrentlyFocussedRenderer();
+  QmitkBaseView::OnFocusChanged();
 
-  if (m_Focussed2DRenderer != NULL && m_Focussed2DRenderer != currentFocussedRendered)
+  if (this->GetCurrentlyFocussedRenderer() != NULL && this->GetCurrentlyFocussedRenderer() != currentFocussedRendered)
   {
     // For every new window we get the new windows slice navigation controller.
     if (m_SliceNavigationController.IsNotNull() && m_SliceNavigationController->GetCommand(m_SliceNavigationControllerObserverTag) != NULL)
@@ -476,9 +480,6 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
 
-    // Request select the segmentation node.
-    this->SelectNode(newSegmentation);
-
   } // end if we have a reference image
 
   // And... relax.
@@ -648,7 +649,6 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  this->UpdateVolumeProperty(segmentationNode);
   this->UpdateSegmentationImageVisibility(true);
   this->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
@@ -1161,7 +1161,8 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
       bool skipUpdate = !(this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
       if (axisNumber != -1 && sliceNumber != -1 && orientation != itk::ORIENTATION_UNKNOWN)
       {
@@ -1240,7 +1241,7 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
       message = "All slices anterior to present will be cleared";
     }
 
-    int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+    int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                      tr("%1.\n"
                                                         "Are you sure?").arg(message),
                                                      QMessageBox::Yes | QMessageBox::No);
@@ -1272,7 +1273,8 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
       double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
       int direction = this->GetUpDirection();
       if (!isUp)
       {
@@ -1364,7 +1366,7 @@ void MIDASGeneralSegmentorView::OnWipeButtonPressed()
 void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 {
 
-  int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                    tr("All slices anterior to present will be cleared.\n"
                                                       "Are you sure?"),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -1379,7 +1381,7 @@ void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 
 void MIDASGeneralSegmentorView::OnWipeMinusButtonPressed()
 {
-  int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                    tr("All slices posterior to present will be cleared.\n"
                                                       "Are you sure?"),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -1479,7 +1481,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
   bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds();
   if (hasUnEnclosedPoints)
   {
-    int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+    int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                      tr("There are unenclosed points - slice will be wiped\n"
                                                         "Are you sure?"),
                                                      QMessageBox::Yes | QMessageBox::No);
@@ -1802,7 +1804,8 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
     if (workingNode.IsNotNull() && workingImage.IsNotNull())
     {
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
       if (axisNumber != -1 && beforeSliceNumber != -1 && afterSliceNumber != -1)
       {
@@ -1851,7 +1854,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
             {
               if (!sliceIsEmpty)
               {
-                int returnValue = QMessageBox::warning(m_Parent, tr("NiftyView"),
+                int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                                  tr("The new slice is not empty - retain marks will overwrite slice.\n"
                                                                     "Are you sure?"),
                                                                  QMessageBox::Yes | QMessageBox::No);
@@ -1929,7 +1932,8 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
 
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-      itk::ORIENTATION_ENUM orientation = this->GetOrientationAsEnum();
+      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
       if (axisNumber != -1 && sliceNumber != -1)
       {

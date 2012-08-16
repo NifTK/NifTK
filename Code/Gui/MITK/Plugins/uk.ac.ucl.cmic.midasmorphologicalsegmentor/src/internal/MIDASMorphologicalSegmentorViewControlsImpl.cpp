@@ -26,6 +26,7 @@
 
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
 #include <iostream>
+#include <cmath>
 
 MIDASMorphologicalSegmentorViewControlsImpl::MIDASMorphologicalSegmentorViewControlsImpl()
 {
@@ -196,9 +197,14 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
 {
   this->blockSignals(true);
 
-  double stepSize = (highestValue-lowestValue)/100.0;
-  double pageSize = (highestValue-lowestValue)/10.0;
+  double stepSize = 1;
+  double pageSize = 10;
 
+  if (fabs((double)(highestValue - lowestValue)) < 50)
+  {
+    stepSize = (highestValue-lowestValue)/100.0;
+    pageSize = (highestValue-lowestValue)/10.0;
+  }
   m_ThresholdingLowerThresholdSlider->setMinimum(lowestValue);
   m_ThresholdingLowerThresholdSlider->setMaximum(highestValue);
   m_ThresholdingLowerThresholdSlider->setSingleStep(stepSize);
@@ -209,10 +215,10 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
   m_ThresholdingUpperThresholdSlider->setValue(lowestValue); // Intentionally set to lowest values, as this is what MIDAS does.
   m_ThresholdingUpperThresholdSlider->setSingleStep(stepSize);
   m_ThresholdingUpperThresholdSlider->setPageStep(pageSize);
-  m_ThresholdingAxialCutoffSlider->setMinimum(1);
-  m_ThresholdingAxialCutoffSlider->setMaximum(numberAxialSlices);
-  m_ThresholdingAxialCutoffSpinBox->setMinimum(1);
-  m_ThresholdingAxialCutoffSpinBox->setMaximum(numberAxialSlices);
+  m_ThresholdingAxialCutoffSlider->setMinimum(0);
+  m_ThresholdingAxialCutoffSlider->setMaximum(numberAxialSlices-1);
+  m_ThresholdingAxialCutoffSpinBox->setMinimum(0);
+  m_ThresholdingAxialCutoffSpinBox->setMaximum(numberAxialSlices-1);
 
   m_ErosionsUpperThresholdSlider->setSingleStep(stepSize);
   m_ErosionsUpperThresholdSlider->setPageStep(pageSize);

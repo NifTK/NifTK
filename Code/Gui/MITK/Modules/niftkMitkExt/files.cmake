@@ -1,5 +1,23 @@
 set(CPP_FILES
-  Interactions/mitkPointUtils.cpp
+  Algorithms/mitkNifTKCoreObjectFactory.cpp
+  Algorithms/mitkMIDASMorphologicalSegmentorPipelineManager.cpp
+  Common/mitkMIDASImageUtils.cpp
+  Common/mitkMIDASOrientationUtils.cpp
+  Common/mitkPointUtils.cpp
+  DataManagement/mitkDataNodeBoolPropertyFilter.cpp
+  DataManagement/mitkDataNodeStringPropertyFilter.cpp
+  DataManagement/mitkDataStorageUtils.cpp
+  DataManagement/mitkDataStorageListener.cpp
+  DataManagement/mitkDataStoragePropertyListener.cpp
+  DataManagement/mitkDataStorageVisibilityTracker.cpp
+  DataManagement/mitkMIDASNodeAddedInterpolationSetter.cpp
+  DataManagement/mitkMIDASNodeAddedBlackOpacitySetter.cpp
+  DataManagement/mitkMIDASNodeAddedVisibilitySetter.cpp
+  DataManagement/mitkMIDASDataNodeNameStringFilter.cpp
+  DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cpp
+  DataNodeProperties/mitkAffineTransformDataNodeProperty.cpp
+  DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cpp
+  DataNodeProperties/mitkNamedLookupTableProperty.cpp
   Interactions/mitkMIDASTool.cpp
   Interactions/mitkMIDASContourToolEventInterface.cpp
   Interactions/mitkMIDASContourToolOpAccumulateContour.cpp
@@ -19,14 +37,9 @@ set(CPP_FILES
   Interactions/mitkMIDASPaintbrushTool.cpp
   Interactions/mitkMIDASViewKeyPressStateMachine.cpp
   Interactions/mitkMIDASToolKeyPressStateMachine.cpp
-  DataManagement/mitkDataStorageUtils.cpp
-  DataManagement/mitkAffineTransformParametersDataNodeProperty.cpp
-  DataManagement/mitkAffineTransformDataNodeProperty.cpp
-  DataManagement/mitkITKRegionParametersDataNodeProperty.cpp
   IO/itkAnalyzeImageIO3160.cpp
   IO/itkDRCAnalyzeImageIO3160.cpp
   IO/itkNiftiImageIO3201.cpp
   IO/mitkNifTKItkImageFileReader.cpp
   IO/mitkNifTKItkImageFileIOFactory.cpp
-  Algorithms/mitkNifTKCoreObjectFactory.cpp
 )

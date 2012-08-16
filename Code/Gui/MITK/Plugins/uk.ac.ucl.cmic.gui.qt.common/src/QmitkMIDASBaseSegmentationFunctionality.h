@@ -27,33 +27,40 @@
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 
-// CTK for event handling
-#include "service/event/ctkEventHandler.h"
-#include "service/event/ctkEventAdmin.h"
+// CTK for event handling.
+#include <service/event/ctkEventHandler.h>
+#include <service/event/ctkEventAdmin.h>
 
-#include "QmitkMIDASBaseFunctionality.h"
+// Berry stuff for application framework.
+#include <berryIPreferences.h>
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
+
+// Qmitk for Qt/MITK stuff.
+#include "QmitkBaseView.h"
 #include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
 #include "QmitkMIDASToolSelectorWidget.h"
-#include "berryIPreferences.h"
-#include "berryIPreferencesService.h"
-#include "berryIBerryPreferences.h"
-#include "mitkToolManager.h"
-#include "itkImage.h"
+#include "QmitkMIDASSegmentationViewWidget.h"
+
+// Miscellaneous.
+#include <mitkToolManager.h>
+#include <itkImage.h>
 #include "itkMIDASHelper.h"
 
 class QmitkRenderWindow;
 
 /**
  * \class QmitkMIDASBaseSegmentationFunctionality
- * \brief Base view component for both MIDASMorphologicalSegmentorView and MIDASGeneralSegmentorView,
- * and in future any other segmentation plugin that could be considered MIDAS like.
+ * \brief Base view component for MIDAS Segmentation widgets.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  *
+ * \sa QmitkBaseView
  * \sa MIDASMorphologicalSegmentorView
  * \sa MIDASGeneralSegmentorView
+ * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMON QmitkMIDASBaseSegmentationFunctionality : public QmitkMIDASBaseFunctionality
+class CMIC_QT_COMMON QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView
 {
 
   Q_OBJECT
@@ -64,23 +71,37 @@ public:
   QmitkMIDASBaseSegmentationFunctionality(const QmitkMIDASBaseSegmentationFunctionality& other);
   virtual ~QmitkMIDASBaseSegmentationFunctionality();
 
-  /// \brief Stores the preference name of the default outline colour (defaults to pure green).
+  /**
+   * \brief Stores the preference name of the default outline colour (defaults to pure green).
+   */
   static const std::string DEFAULT_COLOUR;
 
-  /// \brief Stores the preference name of the default outline colour style sheet (defaults to pure green).
+  /**
+   * \brief Stores the preference name of the default outline colour style sheet (defaults to pure green).
+   */
   static const std::string DEFAULT_COLOUR_STYLE_SHEET;
 
-  /// \brief Called when the user hits the button "New segmentation".
+  /**
+   * \brief Creates from derived classes when the the user hits the "New segmentation", producing a dialog box,
+   * and on successful completion of the dialog box, will create a new segmentation image.
+   *
+   * \param defaultColor The default colour to pass to the new segmentation dialog box.
+   * \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
+   */
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed(QColor &defaultColor);
 
 signals:
 
-  /// \brief Signal emmitted when we need to broadcast a request to turn interactors on/off.
+  /**
+   * \brief Signal emmitted when we need to broadcast a request to turn interactors on/off.
+   */
   void InteractorRequest(const ctkDictionary&);
 
 protected slots:
 
-  /// \brief Called from QmitkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
+  /**
+   * \brief Called from QmitkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
+   */
   virtual void OnToolSelected(int);
 
 protected:
@@ -107,18 +128,10 @@ protected:
   int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
-  itk::ORIENTATION_ENUM GetOrientationAsEnum();
+  MIDASOrientation GetOrientationAsEnum();
 
   /// \brief Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2] that corresponds to the given orientation, or -1 if it can't be found.
-  int GetAxisFromReferenceImage(itk::ORIENTATION_ENUM orientation);
-
-  /// \brief Returns the axis (0,1,2) that corresponds to the given orientation, or -1 if it can't be found.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetAxisFromReferenceImageUsingITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      itk::ORIENTATION_ENUM orientation,
-      int &outputAxis
-      );
+  int GetAxisFromReferenceImage(const MIDASOrientation& orientation);
 
   /// \brief Returns the reference image axial axis [0,1,2] or -1 if it can't be found.
   int GetReferenceImageAxialAxis();
@@ -134,24 +147,6 @@ protected:
 
   /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
   int GetUpDirection();
-
-  /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetUpDirectionUsingITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      itk::ORIENTATION_ENUM orientation,
-      int &upDirection
-  );
-
-  /// \brief Calculates the volume using GetVolumeFromITK, and then stores it on a property midas.volume.
-  void UpdateVolumeProperty(mitk::DataNode::Pointer segmentationImageNode);
-
-  /// \brief Calculates the volume of segmentation using ITK. Assumes background = 0, and anything > 0 is foreground.
-  template<typename TPixel, unsigned int VImageDimension>
-  void GetVolumeFromITK(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      double &volume
-      );
 
   /// \brief Makes sure the reference image is the selected one
   void SetReferenceImageSelected();
@@ -187,7 +182,7 @@ protected:
   virtual void SetEnableManualToolSelectionBox(bool enabled);
 
   /// \brief Creates the GUI parts.
-  virtual void CreateQtPartControl(QWidget *parentForSelectorWidget, QWidget *parentForToolWidget);
+  virtual void CreateQtPartControl(QWidget *parent);
 
   /// \brief Creates the QT connections.
   virtual void CreateConnections();
@@ -197,9 +192,6 @@ protected:
 
   /// \brief Propagate BlueBerry selection to ToolManager for manual segmentation.
   virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
-
-  /// \brief Selects a node, which must not be null
-  virtual void SelectNode(const mitk::DataNode::Pointer node);
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
@@ -225,18 +217,30 @@ protected:
   /// \brief Common widget, enabling selection of a segmentation tool.
   QmitkMIDASToolSelectorWidget *m_ToolSelector;
 
+  /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
+  QmitkMIDASSegmentationViewWidget *m_SegmentationView;
+
+  /// \brief Container for Selector Widget.
+  QWidget *m_ContainerForSelectorWidget;
+
+  /// \brief Container for Tool Widget.
+  QWidget *m_ContainerForToolWidget;
+
+  /// \brief Container for Segmentation view widget.
+  QWidget *m_ContainerForSegmentationViewWidget;
+
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;
 
 private:
 
-  // For Event Admin, we store a reference to the CTK plugin context
+  /// \brief For Event Admin, we store a reference to the CTK plugin context
   ctkPluginContext* m_Context;
 
-  // For Event Admin, we store a reference to the CTK event admin service
+  /// \brief For Event Admin, we store a reference to the CTK event admin service
   ctkServiceReference m_EventAdminRef;
 
-  // For Event Admin, we store a pointer to the actual CTK event admin implementation.
+  /// \brief For Event Admin, we store a pointer to the actual CTK event admin implementation.
   ctkEventAdmin* m_EventAdmin;
 
 };

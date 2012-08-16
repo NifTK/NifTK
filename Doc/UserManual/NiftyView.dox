@@ -23,4 +23,13 @@ plugins is shown below, and these exact pages are available in the NiftyView GUI
 \li \subpage uk.ac.ucl.cmic.surfaceextractor
 \li \subpage uk.ac.ucl.cmic.surgicalguidance
 \li \subpage uk.ac.ucl.cmic.thumbnail
+
+\section UserManualEnvVariables Environment Variables
+
+Environment variables are used to control the following:
+
+\li NIFTK_MITK_DISPLAY=[ON|OFF] to specify whether the MITK Display tab is shown at startup. Defaults to OFF. If ON, it will also be infront of the
+Drag and Drop Display.
+\li NIFTK_DRC_ANALYZE=[ON|OFF] to specifiy whether the Analyze file format reader should adopt DRC conventions (ON), or whether to default to
+the standard ITK Analyze file format reader (OFF). Defaults to OFF.
 */

@@ -133,12 +133,14 @@ namespace itk
      
 
     // If input 1 and input 2 are specified, we are additionally using 2 input images to mask.    
-    typename TInputImage::Pointer additionsImage = static_cast<TInputImage*>(this->ProcessObject::GetInput(1));
-    typename TInputImage::Pointer connectionBreakerImage = static_cast<TInputImage*>(this->ProcessObject::GetInput(2));
+    typename TInputImage::Pointer additionsImage = dynamic_cast<TInputImage*>(this->ProcessObject::GetInput(1));
+    typename TInputImage::Pointer connectionBreakerImage = dynamic_cast<TInputImage*>(this->ProcessObject::GetInput(2));
     
     if (additionsImage.IsNotNull() && connectionBreakerImage.IsNotNull())
     {
       InputPixelType  inputPixelValue;
+      InputPixelType  additionsPixelValue;
+      InputPixelType  subtractionsPixelValue;
       OutputPixelType outputPixelValue;
       ImageRegionConstIteratorWithIndex<TInputImage> additionsImageIterator(additionsImage, actualRegion);
       ImageRegionConstIteratorWithIndex<TInputImage> connectionBreakerImageIterator(connectionBreakerImage, actualRegion);
@@ -154,31 +156,18 @@ namespace itk
            ++outputIt)
       {
         inputPixelValue = inputIt.Get();
+        additionsPixelValue = additionsImageIterator.Get();
+        subtractionsPixelValue = connectionBreakerImageIterator.Get();
         
-        // See itk::InjectSourceImageGreaterThanZeroIntoTargetImageFilter
-        // Effectively we are adding manual edits to the output volume (left mouse click, drag in MIDAS).
-        
-        if (inputPixelValue != 0)
-        {
-          outputPixelValue = inputPixelValue;
-        }
-        else
-        {
-          outputPixelValue = additionsImageIterator.Get();
-        }
-        
-        // See itk::ExcludeImageFilter
-        // Effectively we are using the 3rd input to do connection breaker.
-        
-        if (outputPixelValue != 0 && connectionBreakerImageIterator.Get() == 0)
+        // See header file for spec.
+        if ((inputPixelValue != 0 || additionsPixelValue != 0) &&  subtractionsPixelValue == 0)
         {
           outputPixelValue = 1;
-        }
+        }            
         else
         {
           outputPixelValue = 0;
-        }
-         
+        }        
         outputIt.Set(outputPixelValue);
       }
     } 

@@ -11,8 +11,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from mayaviPlottingWrap import plotArrayAs3DPoints, plotVectorsAtPoints
-
-
+import runSimulation as rS
+import convergenceAnalyser as cA
+from envisage.safeweakref import ref
 
 
 def referenceStatePhantomExperiment( configID ) : 
@@ -42,9 +43,14 @@ def referenceStatePhantomExperiment( configID ) :
     tetgenQ         = 1.5
     
     # system parameters
-    timeStep        = 1e-4
-    totalTime       = 5.0
-    damping         = 100
+    timeStep        = 1e-4 # the critical time step for the 00 mesh resolution is 5e-4
+    totalTime       = 5.0 
+    damping         = 25
+    
+    loadShape = 'POLY345FLAT4'
+    
+    numOutputs = 200
+    outputFreq = int( np.ceil( totalTime / timeStep / numOutputs ) )
 
 
     ##############################
@@ -88,13 +94,21 @@ def referenceStatePhantomExperiment( configID ) :
     matParamsFat      = [  100, 50000 ]
     matParamsSkin     = [ 1000, 50000 ]
     
+    
     if configID.count( 'AB' ) == 1:
-        matModelFat       = 'AB'
-        matModelSkin      = 'AB'
+        matModelFat     = 'AB'
+        matModelSkin    = 'AB'
         matParamsFat    = [  100, 1.25, 50000 ]
         matParamsSkin   = [ 1000, 1.25, 50000 ]
 
 
+    if configID.count( 'LE' ) == 1:
+        matModelFat   = 'LE'
+        matModelSkin  = 'LE'
+        matParamsFat  = [  299.80, 0.499001 ]
+        matParamsSkin = [ 2980.13, 0.490066 ]
+    
+    
 
     ################
     # Visco elastic 
@@ -206,10 +220,10 @@ def referenceStatePhantomExperiment( configID ) :
         s1G   = '_supine1G'        + str( '_phi%02i' % phi )
         p1s2G = '_prone1Gsupine2G' + str( '_phi%02i' % phi )
         
-        deformFileName      = experimentDir + 'U.txt'
-        deformFileNameP1G   = experimentDir + 'U' + p1G    + '.txt'
-        deformFileNameP1S2G = experimentDir + 'U' + p1s2G  + '.txt'
-        deformFileNameS1G   = experimentDir + 'U' + s1G    + '.txt'
+        #deformFileName      = experimentDir + 'U.txt'
+        #deformFileNameP1G   = experimentDir + 'U' + p1G    + '.txt'
+        #deformFileNameP1S2G = experimentDir + 'U' + p1s2G  + '.txt'
+        #deformFileNameS1G   = experimentDir + 'U' + s1G    + '.txt'
         
         dZ = np.cos( phi * np.pi / 180. )
         dY = np.sin( phi * np.pi / 180. )
@@ -220,63 +234,76 @@ def referenceStatePhantomExperiment( configID ) :
         #
         # 1) prone simulation
         #
-        xmlGenP1G = phantom.generateXMLmodel( gravProne, 10, p1G, skin=simSkin, gravityLoadShape='RAMPFLAT4')
+        xmlGenP1G = phantom.generateXMLmodel( gravityVector=gravProne, 
+                                              gravityMagnitude=10, 
+                                              fileIdentifier=p1G, 
+                                              skin=simSkin, 
+                                              gravityLoadShape=loadShape, 
+                                              outputFrequency=outputFreq )
         aXmlGenP1G.append(xmlGenP1G)
         
-        niftySimCmd    = 'niftySim'
-        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport -export ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
+        simulationReturn = rS.runNiftySim( os.path.split( phantom.outXmlModelFat )[1] , os.path.split( phantom.outXmlModelFat )[0] )
         
-        if cmdEx.runCommand( niftySimCmd, niftySimParams ) != 0 :
+        if simulationReturn != 0 :
             print('Simulation diverged.')
             break
-        
-        
-        
-        # rename the deformation file 
-        if os.path.exists( deformFileNameP1G ) :
-            os.remove(deformFileNameP1G)
-        
-        os.rename( deformFileName, deformFileNameP1G )
-        deformP1G = mdh.modelDeformationHandler( xmlGenP1G, deformFileNameP1G.split('/')[-1] )
+
+        cA.convergenceAnalyser( phantom.outXmlModelFat )
+        plt.close('all')
+
+        deformP1G = mdh.modelDeformationHandler( xmlGenP1G )
         aDeformP1G.append( deformP1G )
+        
         #
         # 2) build model from loaded states with
         # 3) inversed and doubled gravity
         #
-        xmlGenP1S2G = phantom.generateXMLmodel( gravSupine, 20, p1s2G, deformP1G.deformedNodes * 1000., skin=simSkin, gravityLoadShape='RAMPFLAT4' )
+        xmlGenP1S2G = phantom.generateXMLmodel( gravityVector=gravSupine, 
+                                                gravityMagnitude=20, 
+                                                fileIdentifier=p1s2G, 
+                                                extMeshNodes=deformP1G.deformedNodes * 1000., 
+                                                skin=simSkin, 
+                                                gravityLoadShape=loadShape,
+                                                outputFrequency=outputFreq )
+        
         aXmlGenP1S2G.append( xmlGenP1S2G )
          
-        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport -export ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
+        #niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport -export ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
     
-        if cmdEx.runCommand( niftySimCmd, niftySimParams ) != 0 :
+        simulationReturn = rS.runNiftySim(  os.path.split( phantom.outXmlModelFat )[1] , os.path.split( phantom.outXmlModelFat )[0] )
+    
+        if simulationReturn != 0 :
             print('Simulation diverged.')
             break
+
+        cA.convergenceAnalyser( phantom.outXmlModelFat )
+        plt.close('all')
         
         # rename...
-        if os.path.exists( deformFileNameP1S2G ) : 
-            os.remove( deformFileNameP1S2G )
-        os.rename( deformFileName, deformFileNameP1S2G )
-        deformP1S2G = mdh.modelDeformationHandler( xmlGenP1S2G, deformFileNameP1S2G.split('/')[-1] )
+        deformP1S2G = mdh.modelDeformationHandler( xmlGenP1S2G )
         aDeformP1S2G.append( deformP1S2G )
         
         #
         # Now run the supine simulation from the reference state
         #
-        xmlGenS1G = phantom.generateXMLmodel( gravSupine, 10, s1G, skin=simSkin, gravityLoadShape='RAMPFLAT4' )
+        xmlGenS1G = phantom.generateXMLmodel( gravityVector=gravSupine, 
+                                              gravityMagnitude=10, 
+                                              fileIdentifier=s1G, 
+                                              skin=simSkin, 
+                                              gravityLoadShape=loadShape, 
+                                              outputFrequency=outputFreq )
         aXmlGenS1G.append( xmlGenS1G )
         
-        niftySimParams = ' -x ' + phantom.outXmlModelFat + ' -v -sport ' + phantom.outXmlModelFat.split('.xml')[0] + '.vtk'
+        simulationReturn = rS.runNiftySim( os.path.split( phantom.outXmlModelFat )[1] , os.path.split( phantom.outXmlModelFat )[0] )
         
-        if cmdEx.runCommand( niftySimCmd, niftySimParams ) != 0 :
+        if simulationReturn != 0 :
             print('Simulation diverged.')
             break
+
+        cA.convergenceAnalyser( phantom.outXmlModelFat )
+        plt.close('all')
         
-        # rename...
-        if os.path.exists( deformFileNameS1G ):
-            os.remove( deformFileNameS1G ) 
-            
-        os.rename( deformFileName, deformFileNameS1G )
-        deformS1G = mdh.modelDeformationHandler( xmlGenS1G, deformFileNameS1G.split('/')[-1] )
+        deformS1G = mdh.modelDeformationHandler( xmlGenS1G )
         aDeformS1G.append( deformS1G )
         
         #
@@ -290,14 +317,14 @@ def referenceStatePhantomExperiment( configID ) :
         
         # Plot as a nice latex-syle pdf/png
         mpl.rc( 'text', usetex=True )
+        f = plt.figure()
         plt.hist( errorDists, 150) #, range=(0.0, 30.0) )
         
-        pl.ylabel( '$N( \| e \| )$' )
-        pl.xlabel( '$\| e \|$' )
-        pl.title( '$\phi=%i$' %phi )
+        pl.ylabel( '$N( \| \mathbf{e} \| )$' )
+        pl.xlabel( '$\| \mathbf{e} \| \; \mathrm{[mm]}$' )
+        pl.title( '$\phi=%i ^\circ$' %phi )
         pl.grid()
         
-        f = plt.gcf()
         f.savefig( plotDir + str( 'errorHist_phi%02i.pdf' % phi ) )
         f.savefig( plotDir + str( 'errorHist_phi%02i.png' % phi ), dpi=150 )
         f.clf()
@@ -315,9 +342,9 @@ def referenceStatePhantomExperiment( configID ) :
         
         plt.hist( errorDists[looseNodeNums], 200)#, range=(0.0, 30.0) )
         
-        pl.ylabel( '$N( \| e \| )$' )
-        pl.xlabel( '$\| e \|$' )
-        pl.title( '$\phi=%i$' %phi )
+        pl.ylabel( '$N( \| \mathbf{e} \| )$' )
+        pl.xlabel( '$\| \mathbf{e} \| \; \mathrm{[mm]}$' )
+        pl.title( '$\phi=%i ^\circ$' %phi )
         #pl.ylim( (0,500) )
         pl.grid()
         
@@ -383,32 +410,33 @@ def referenceStatePhantomExperiment( configID ) :
 
 
 
+#if __name__ == '__main__' :
+#    
+#    if len( sys.argv ) != 2:
+#        print( 'Usage: Please give one configuration to be executed. Available options are:' )
+#        print(' - 00     -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000] ' )
+#        print(' - 01     -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000]' )
+#        print(' - 02     -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000]' )
+#        print(' - 03     -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000]' )
+#        print(' - 00s    -> coarse mesh        (approx.  22k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 01s    -> medium coarse mesh (approx.  63k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 02s    -> fine mesh          (approx.  86k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 03s    -> very fine mesh     (approx. 166k elements), fat+skin, NH [100/1000, 50000]' )
+#        print(' - 00sAB  -> coarse mesh        (approx.  22k elements), fat+skin, AB [100/1000, 1.25 50000]' )
+#        print(' - 01sAB  -> medium coarse mesh (approx.  63k elements), fat+skin, AB [100/1000, 1.25 50000]' )
+#        print(' - 02sAB  -> fine mesh          (approx.  86k elements), fat+skin, AB [100/1000, 1.25 50000]' )
+#        print(' - 00VE   -> coarse mesh        (approx.  22k elements), fat only, NHV [100, 50000] [1.0 0.2 1.0 1e10]' )
+#        print(' - 00cyl  -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000], cylindrical base' )
+#        print(' - 01cyl  -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000], cylindrical base' )
+#        print(' - 02cyl  -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000], cylindrical base' )
+#        print(' - 03cyl  -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000], cylindrical base' )
+#        sys.exit()
+#    
+#    configID = sys.argv[1] 
+#    referenceStatePhantomExperiment( configID )
+#    
+    
+    
+
 if __name__ == '__main__' :
-    
-    if len( sys.argv ) != 2:
-        print( 'Usage: Please give one configuration to be executed. Available options are:' )
-        print(' - 00     -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000] ' )
-        print(' - 01     -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000]' )
-        print(' - 02     -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000]' )
-        print(' - 03     -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000]' )
-        print(' - 00s    -> coarse mesh        (approx.  22k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 01s    -> medium coarse mesh (approx.  63k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 02s    -> fine mesh          (approx.  86k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 03s    -> very fine mesh     (approx. 166k elements), fat+skin, NH [100/1000, 50000]' )
-        print(' - 00sAB  -> coarse mesh        (approx.  22k elements), fat+skin, AB [100/1000, 1.25 50000]' )
-        print(' - 01sAB  -> medium coarse mesh (approx.  63k elements), fat+skin, AB [100/1000, 1.25 50000]' )
-        print(' - 02sAB  -> fine mesh          (approx.  86k elements), fat+skin, AB [100/1000, 1.25 50000]' )
-        print(' - 00VE   -> coarse mesh        (approx.  22k elements), fat only, NHV [100, 50000] [1.0 0.2 1.0 1e10]' )
-        print(' - 00cyl  -> coarse mesh        (approx.  22k elements), fat only, NH [100, 50000], cylindrical base' )
-        print(' - 01cyl  -> medium coarse mesh (approx.  63k elements), fat only, NH [100, 50000], cylindrical base' )
-        print(' - 02cyl  -> fine mesh          (approx.  86k elements), fat only, NH [100, 50000], cylindrical base' )
-        print(' - 03cyl  -> very fine mesh     (approx. 166k elements), fat only, NH [100, 50000], cylindrical base' )
-        sys.exit()
-    
-    configID = sys.argv[1] 
-    referenceStatePhantomExperiment( configID )
-    
-    
-    
-    
-    
+    referenceStatePhantomExperiment( '00' )

@@ -54,7 +54,8 @@ similarity=$6
 ajc=$7
 pptol=$8
 region=${9}
-starting_arg=10
+large_local_region_search=${10}
+starting_arg=11
 
 if [ "${MY_TEMP}" == "" ]
 then
@@ -190,6 +191,13 @@ do
         -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 2 -wsim 2 -pptol ${pptol}
     fi 
     
+    if [ "${large_local_region_search}" == "yes" ]
+    then 
+      local_region_search_options="-ln 2 -rmax 1 -d 7"
+    else
+      local_region_search_options="-ln 1 -rmax 0.5 -d 5"
+    fi 
+    
     # ROI 1 local registration. 
     if [ ! -f "${output}_affine_second_roi1.dof" ] && [ -f "${fixed_roi1}" ] && [ -f "${moving_roi1}" ]
     then 
@@ -213,7 +221,7 @@ do
         -sm ${moving_roi1_img} \
         -ot ${output}_affine_second_roi1.dof \
         -it ${output}_affine_second.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 5 -wsim 2 -pptol ${pptol}
+        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -rmin 0.001 ${local_region_search_options} ${symmetric_flag} -wsim 2 -pptol ${pptol}
     fi 
     
     # ROI 2 local registration. 
@@ -239,7 +247,7 @@ do
         -sm ${moving_roi2_img} \
         -ot ${output}_affine_second_roi2.dof \
         -it ${output}_affine_second.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 5 -wsim 2 -pptol ${pptol}
+        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -rmin 0.001 ${local_region_search_options} ${symmetric_flag} -wsim 2 -pptol ${pptol}
     fi 
     
     fi 

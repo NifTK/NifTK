@@ -25,7 +25,7 @@
 #ifndef ITKIMAGEUPDATECLEARREGIONPROCESSOR_H
 #define ITKIMAGEUPDATECLEARREGIONPROCESSOR_H
 
-#include "itkImageUpdateProcessor.h"
+#include "itkImageUpdateRegionProcessor.h"
 
 namespace itk
 {
@@ -35,21 +35,21 @@ namespace itk
  * \brief Class to support undo/redo of a clear operation (set value to zero), within a given region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdateClearRegionProcessor : public ImageUpdateProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT ImageUpdateClearRegionProcessor : public ImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdateClearRegionProcessor               Self;
-  typedef ImageUpdateProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef ImageUpdateClearRegionProcessor                     Self;
+  typedef ImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                  Pointer;
+  typedef SmartPointer<const Self>                            ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdateClearRegionProcessor, ImageUpdateProcessor);
+  itkTypeMacro(ImageUpdateClearRegionProcessor, ImageUpdateRegionProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;

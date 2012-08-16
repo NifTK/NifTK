@@ -62,7 +62,8 @@ public:
   typedef typename ImageType::IndexType   IndexType;
   typedef typename ImageType::SizeType    SizeType;
   typedef typename ImageType::RegionType  RegionType;
-  typedef std::vector<IndexType>          ListType;
+  typedef std::vector<IndexType>          IndexListType;
+  typedef std::vector<TPixel>             DataListType;
 
   /** Set/Get the pixel value to update. */
   itkSetMacro(Value, PixelType);
@@ -80,20 +81,28 @@ public:
   /** Returns the minimal bounding box of the contained voxels. */
   std::vector<int> ComputeMinimalBoundingBox();
 
+  /** \see ImageUpdateProcessor::Undo() */
+  virtual void Undo();
+
+  /** \see ImageUpdateProcessor::Redo() */
+  virtual void Redo();
+
 protected:
   ImageUpdatePixelWiseSingleValueProcessor();
   void PrintSelf(std::ostream& os, Indent indent) const;
   virtual ~ImageUpdatePixelWiseSingleValueProcessor() {}
 
-  // This class, simply clears the image using value m_WipeValue.
-  virtual void ApplyUpdateToAfterImage();
-
 private:
   ImageUpdatePixelWiseSingleValueProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
+  void ApplyListToDestinationImage(const DataListType& list);
+
   PixelType m_Value;
-  ListType m_List; // This class contains its own list, so when this object disappears, so does the list.
+  bool m_UpdateCalculated;
+  IndexListType m_Indexes;
+  DataListType m_Before;
+  DataListType m_After;
 };
 
 } // end namespace

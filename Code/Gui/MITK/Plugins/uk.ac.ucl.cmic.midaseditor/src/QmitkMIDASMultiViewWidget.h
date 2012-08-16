@@ -32,13 +32,12 @@
 #include "mitkBaseProperty.h"
 #include "mitkMIDASViewKeyPressResponder.h"
 #include "mitkRenderingManager.h"
-#include "QmitkMIDASViewEnums.h"
+#include "mitkMIDASEnums.h"
 #include "QmitkMIDASSingleViewWidget.h"
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include "QmitkMIDASOrientationWidget.h"
 #include "QmitkMIDASBindWidget.h"
 #include "QmitkMIDASSlidersWidget.h"
-#include "UpdateMIDASViewingControlsInfo.h"
 
 class QSpinBox;
 class QGridLayout;
@@ -246,17 +245,14 @@ public:
 
 signals:
 
-  /// \brief Emmitted when an image is dropped and the window selection is changed, so the controls must update, or when mouse wheels cause slice scrolling events.
-  void UpdateMIDASViewingControlsValues(UpdateMIDASViewingControlsInfo info);
-
 public slots:
 
 protected slots:
 
   // Qt slots, connected to Qt GUI elements.
-  void OnSliceNumberChanged(int previousSlice, int currentSlice);
-  void OnMagnificationFactorChanged(int previousMagnification, int currentMagnification);
-  void OnTimeChanged(int previousTime, int currentTime);
+  void OnSliceNumberChanged(double sliceNumber);
+  void OnMagnificationFactorChanged(double magnificationFactor);
+  void OnTimeChanged(double timeStep);
   void On1x1ButtonPressed();
   void On1x2ButtonPressed();
   void On1x3ButtonPressed();
@@ -275,6 +271,8 @@ protected slots:
 
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+
+  void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
 
 protected:
 
@@ -350,6 +348,9 @@ private:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
+  /// \brief Used to move either anterior/posterior by a certain number of slices.
+  bool MoveAnteriorPosterior(bool moveAnterior, int slices);
+
   // Layouts
   QHBoxLayout                                   *m_TopLevelLayout;
   QGridLayout                                   *m_LayoutToPutControlsOnTopOfWindows;
@@ -409,6 +410,7 @@ private:
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
   bool                                           m_Dropped;
+  bool                                           m_InteractorsEnabled;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

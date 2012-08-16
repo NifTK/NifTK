@@ -31,13 +31,13 @@
 /*!
  * \file niftkTestImage.cxx
  * \page niftkTestImage
- * \section niftkTestImageSummary Generates a test image, either a binary cuboid, binary ellipsoid, grid, or test card type pattern.
+ * \section niftkTestImageSummary Generates a 3D test image, either a binary cuboid, binary ellipsoid, grid, or test card type pattern.
  */
 void Usage(char *exec)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Generates a test image, either a binary cuboid, binary ellipsoid, grid, or test card type pattern." << std::endl;
+    std::cout << "  Generates a 3D test image, either a binary cuboid, binary ellipsoid, grid, or test card type pattern." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " <mandatory> [options]" << std::endl;
     std::cout << "  " << std::endl;

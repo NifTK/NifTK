@@ -1,0 +1,82 @@
+  <stateMachine NAME="AffineTransformInteractor">
+    <!-- STATE 1 - CHECK THE MOUSE POSITION IF IT IS OVER AN OBJECT OR NOT -->
+    <state NAME="Start" ID="1" START_STATE="TRUE" X_POS="65" Y_POS="267" WIDTH="100" HEIGHT="50">
+      <!-- EIDMOUSEMOVE = 520 / AcCHECKOBJECT = 31 -->
+      <transition NAME="name" EVENT_ID="520" NEXT_STATE_ID="2">
+        <action ID="31" />
+      </transition>
+    </state>
+    <!-- STATE 2 - EVALUATE RESULTS OF STATE1 AND CONTINUE ACCORDINGLY  -->
+    <state NAME="IsOverObject" ID="2" X_POS="352" Y_POS="267" WIDTH="100" HEIGHT="50">
+      <!-- EIDNO = 1003 / AcDESELECTOBJECT = 70 -->
+      <transition NAME="name" EVENT_ID="1003" NEXT_STATE_ID="1">
+        <action ID="70" />
+      </transition>
+      <!-- EIDYES = 1004 / AcSELECTPICKEDOBJECT = 60 -->
+      <transition NAME="name" EVENT_ID="1004" NEXT_STATE_ID="3">
+        <action ID="60" />
+      </transition>
+      <!-- EIDMOUSEWHEEL = 9 / AcMODIFY = 49014 -->
+      <transition NAME="name" EVENT_ID="9" NEXT_STATE_ID="2">
+        <action ID="49014" />
+      </transition>
+    </state>
+    <!-- STATE 3 - CHECK FOR LEFT MOUSECLICK TO INIT INTERACTION  -->
+    <state NAME="ObjectSelected" ID="3" X_POS="719" Y_POS="268" WIDTH="100" HEIGHT="50">
+      <!-- EIDMOUSEMOVE = 520 / AcCHECKOBJECT = 31 -->
+      <transition NAME="name" EVENT_ID="520" NEXT_STATE_ID="2">
+        <action ID="31" />
+      </transition>
+      <!-- EIDALTANDLEFTMOUSEBTN = 600 / AcINITMOVE = 9 -->
+      <transition NAME="name" EVENT_ID="600" NEXT_STATE_ID="4">
+        <action ID="9" />
+      </transition>
+      <!-- EIDMOUSEWHEEL = 9 / AcMODIFY = 49014 -->
+      <transition NAME="name" EVENT_ID="9" NEXT_STATE_ID="3">
+        <action ID="49014" />
+      </transition>
+    </state>
+    <!-- STATE 4 - CHECK FOR LEFT MOUSECLICK TO INIT INTERACTION  -->
+    <state NAME="ObjectInteraction" ID="4" X_POS="598" Y_POS="629" WIDTH="100" HEIGHT="50">
+      <!-- EIDALTANDLEFTMOUSEBTNANDMOUSEMOVE = 610 / AcMOVE = 92 -->
+      <transition NAME="name" EVENT_ID="610" NEXT_STATE_ID="4">
+        <action ID="92" />
+      </transition>
+      <!-- EIDALTANDLEFTMOUSERELEASE = 620 / AcACCEPT = 49011 -->
+      <transition NAME="name" EVENT_ID="620" NEXT_STATE_ID="5">
+        <action ID="49011" />
+      </transition>
+      <!-- EIDLEFTMOUSERELEASE = 505 / AcACCEPT = 49011 -->
+      <transition NAME="name" EVENT_ID="505" NEXT_STATE_ID="5">
+        <action ID="49011" />
+      </transition>
+      <!-- EIDLEFTMOUSERELEASE = 505 / AcACCEPT = 49011 -->
+      <transition NAME="name" EVENT_ID="505" NEXT_STATE_ID="5">
+        <action ID="49011" />
+      </transition>
+      <!-- EIDMOUSEMOVE = 520 / AcACCEPT = 49011 -->
+      <transition NAME="name" EVENT_ID="520" NEXT_STATE_ID="5">
+        <action ID="49011" />
+      </transition>
+      <!-- EIDLEFTMOUSEBTNANDMOUSEWHEEL = 521 / AcMODIFY = 49014 / AcMOVE = 92  -->
+      <transition NAME="name" EVENT_ID="521" NEXT_STATE_ID="4">
+        <action ID="49014" />
+        <action ID="92" />
+      </transition>
+    </state>
+    <!-- STATE 5 - STORE CURRENT TRANSFORMATION  -->
+    <state NAME="StoreTransformation" ID="5" X_POS="598" Y_POS="629" WIDTH="100" HEIGHT="50">
+      <!-- EIDNO = 1003 / AcCHECKOBJECT = 31 -->
+      <transition NAME="name" EVENT_ID="1003" NEXT_STATE_ID="2">
+        <action ID="31" />
+      </transition>
+      <!-- EIDYES = 1004 / AcCHECKOBJECT = 31 -->
+      <transition NAME="name" EVENT_ID="1004" NEXT_STATE_ID="2">
+        <action ID="31" />
+      </transition>
+      <!-- EIDMOUSEWHEEL = 9 / AcMODIFY = 49014  -->
+      <transition NAME="name" EVENT_ID="9" NEXT_STATE_ID="5">
+        <action ID="49014" />
+      </transition>
+    </state>
+  </stateMachine>

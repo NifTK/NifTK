@@ -28,7 +28,7 @@
 # Also, Trac 1592, version number MUST change if CTK changes.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 06 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 07 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -171,7 +171,7 @@ SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM")
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK")
 SET(NIFTK_VERSION_ITK "3.20.1" CACHE STRING "Version of ITK")
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
-SET(NIFTK_VERSION_NIFTYREG "272" CACHE STRING "Version of NiftyReg")
+SET(NIFTK_VERSION_NIFTYREG "309" CACHE STRING "Version of NiftyReg")
 SET(NIFTK_VERSION_NIFTYSEG "88" CACHE STRING "Version of NiftySeg")
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec")
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim")
@@ -220,6 +220,10 @@ MARK_AS_ADVANCED(NIFTK_VERSION_GDCM)
 MARK_AS_ADVANCED(NIFTK_VERSION_DCMTK)
 MARK_AS_ADVANCED(NIFTK_VERSION_ITK)
 MARK_AS_ADVANCED(NIFTK_VERSION_VTK)
+MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREG)
+MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSEG)
+MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREC)
+MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_BOOST)
 MARK_AS_ADVANCED(NIFTK_LOCATION_GDCM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DCMTK)
@@ -228,6 +232,10 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_VTK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CTK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_MITK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA)
+MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREG)
+MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSEG)
+MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREC)
+MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
 MARK_AS_ADVANCED(NIFTK_USE_GIT_PROTOCOL)
@@ -347,11 +355,6 @@ IF(BUILD_GUI)
 
     INCLUDE(${QT_USE_FILE})
   
-    # This is to get NiftyView Help working, which launches the Qt Assistant, and the QtHelp framework needs libQtCLucene.
-    IF(APPLE)
-      LIST(APPEND ALL_LIBRARIES QtCLucene )
-    ENDIF(APPLE)
-    
     IF(BUILD_SUPERBUILD)
       SET(VTK_QT_ARGS
         -DDESIRED_QT_VERSION:STRING=4
@@ -524,19 +527,25 @@ ENDIF (BUILD_MESHING)
 ######################################################################
 # Find NiftyLink
 ######################################################################
-IF(BUILD_IGI)
-  FIND_PACKAGE(NiftyLink REQUIRED)
-  IF(NiftyLink_FOUND)
-    MESSAGE("Found NiftyLink")    
-    INCLUDE(${NiftyLink_USE_FILE})
-  ENDIF(NiftyLink_FOUND)
-ENDIF(BUILD_IGI)
+FIND_PACKAGE(NiftyLink)
+IF(NiftyLink_FOUND)
+  MESSAGE("Found NiftyLink")    
+  INCLUDE(${NiftyLink_USE_FILE})
+ENDIF(NiftyLink_FOUND)
 
-IF(NOT NiftyLink_FOUND)
-  MESSAGE("No NiftyLink found, so turning off Surgical Guidance Plugin, and setting BUILD_IGI to false.")
-  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
+IF(BUILD_IGI AND NOT NiftyLink_FOUND)
+  MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
   SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
 ENDIF()
+
+IF(BUILD_IGI)
+  ADD_DEFINITIONS(-DBUILD_IGI)
+  MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
+ELSE(BUILD_IGI)
+  MESSAGE("BUILD_IGI=OFF, so turning surgical guidance plugin OFF.")
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
+ENDIF(BUILD_IGI)
 
 ######################################################################
 # Find FFTW.

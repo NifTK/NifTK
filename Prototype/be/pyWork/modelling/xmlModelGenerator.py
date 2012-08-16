@@ -13,7 +13,7 @@ import vtk
 
 class xmlModelGenrator :
 
-    def __init__ ( self, nodes, elements, elementType = 'T4ANP' ):
+    def __init__ ( self, nodes, elements, elementType = 'T4' ):
         ''' @param nodes: Expected to be a 2D numpy array of type 'float' representing the coordinates. 
             @param elements: Expected to be a 2D numpy array of type 'int'.
         '''
@@ -45,7 +45,7 @@ class xmlModelGenrator :
 
 
     
-    def setSystemParameters( self, timeStep, totalTime, dampingCoefficient, hgKappa, density ):
+    def setSystemParameters( self, timeStep, totalTime, dampingCoefficient, hgKappa=0.075, density=1000 ):
         ''' @summary: simply collect the parameters needed
         '''
         
@@ -195,7 +195,7 @@ class xmlModelGenrator :
     
     
     def setShellElementSet( self, elements, materialType, materialParams, density, thickness ):
-        ''' @param elements: Can either be a numpy array with the nodes or zero (integer assumes only one material within model)
+        ''' @param elements: Can either be a numpy array with the nodes or zero (integer assumes only one shell material within model)
         '''
         
         if isinstance(materialParams, (int,float) ) :
@@ -265,7 +265,7 @@ class xmlModelGenrator :
             strElaParams  = ''
             
             for p in  matSet['elasticParams']:
-                strElaParams = strElaParams + str('%.2f ' % p )
+                strElaParams = strElaParams + str('%f ' % p )
             
             elaParamEntries = doc.createTextNode( strElaParams )
             

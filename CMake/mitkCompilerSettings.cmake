@@ -31,7 +31,20 @@ INCLUDE(mitkFunctionGetVersion)
 # Retrieve some software versions
 mitkFunctionGetVersion(${CTK_SOURCE_DIR} CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
 mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
-mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK_SVN)
+
+# Trac 1627 - this mitkFunctionGetVersion didn't appear to work on Marc's laptop.
+# We can switch back to mitkFunctionGetVersion when the project is in git.
+# In the meantime we can use the following code, borrowed from NiftyReg.
+# mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK_SVN)
+
+SET (NIFTK_SVN_REVISION_ID "Unknown")
+IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.svn)
+  FIND_PACKAGE(Subversion)
+  IF(Subversion_FOUND)
+      Subversion_WC_INFO(${CMAKE_SOURCE_DIR} NifTK)
+      SET(NIFTK_SVN_REVISION_ID ${NifTK_WC_REVISION})
+  endif(Subversion_FOUND)
+ENDIF()
 
 # Print out the versions
 MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")

@@ -43,6 +43,8 @@ namespace itk
  *
  * Both input and output types should be integer types, and the
  * output type is binary, so probably should be unsigned char.
+ *
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage, class TOutputImage>

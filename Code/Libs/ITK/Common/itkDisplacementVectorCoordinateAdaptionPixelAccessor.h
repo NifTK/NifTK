@@ -10,14 +10,14 @@
 
 #include "itkVector.h"
 #include "itkMatrix.h"
-#include "niftkCommonWin32ExportHeader.h"
+#include "niftkITKWin32ExportHeader.h"
 
 /*
  * \brief   Class for performing the pixel based operation
  *
  */
 template<unsigned int Dimension = 3, class VectorComponentType = float>
-class itkDisplacementVectorCoordinateAdaptionPixelAccessor
+class ITK_EXPORT itkDisplacementVectorCoordinateAdaptionPixelAccessor
 {
   public:
 
@@ -59,6 +59,6 @@ class itkDisplacementVectorCoordinateAdaptionPixelAccessor
 	HomogenousMatrixType m_matrix;  /// The internal transformation matrix.
 };
 
-#include "itkDisplacementVectorCoordinateAdaptionPixelAccessor.cxx"
+#include "itkDisplacementVectorCoordinateAdaptionPixelAccessor.txx"
 
 #endif /* ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_H_ */

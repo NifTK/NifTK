@@ -1,6 +1,12 @@
 SET(CPP_FILES
+  LookupTables/LookupTableContainer.cpp
+  LookupTables/LookupTableSaxHandler.cpp
+  LookupTables/LookupTableManager.cpp
   Dialogs/QmitkHelpAboutDialog.cpp
   Dialogs/QmitkMIDASNewSegmentationDialog.cpp
+  QmitkThumbnailRenderWindow.cpp
+  QmitkMIDASToolSelectorWidget.cpp
+  QmitkMIDASImageAndSegmentationSelectorWidget.cpp  
   QmitkMIDASDrawToolGUI.cpp
   QmitkMIDASPaintbrushToolGUI.cpp
   QmitkMIDASBindWidget.cpp
@@ -9,12 +15,20 @@ SET(CPP_FILES
   QmitkMIDASStdMultiWidget.cpp
   QmitkMIDASSingleViewWidget.cpp
   QmitkMIDASMultiViewVisibilityManager.cpp
+  QmitkMIDASSingleViewWidgetListManager.cpp
+  QmitkMIDASSingleViewWidgetListVisibilityManager.cpp
+  QmitkMIDASSingleViewWidgetListDropManager.cpp
 )
 
 SET(MOC_H_FILES 
   Events/QmitkPaintEventEater.h
+  Events/QmitkWheelEventEater.h
+  Events/QmitkMouseEventEater.h
   Dialogs/QmitkHelpAboutDialog.h
   Dialogs/QmitkMIDASNewSegmentationDialog.h
+  QmitkThumbnailRenderWindow.h
+  QmitkMIDASToolSelectorWidget.h
+  QmitkMIDASImageAndSegmentationSelectorWidget.h
   QmitkMIDASDrawToolGUI.h
   QmitkMIDASPaintbrushToolGUI.h
   QmitkMIDASBindWidget.h
@@ -27,6 +41,8 @@ SET(MOC_H_FILES
 
 SET(UI_FILES
   Resources/UI/QmitkHelpAboutDialog.ui
+  Resources/UI/QmitkMIDASImageAndSegmentationSelector.ui
+  Resources/UI/QmitkMIDASToolSelector.ui
   Resources/UI/QmitkMIDASBindWidget.ui
   Resources/UI/QmitkMIDASOrientationWidget.ui
   Resources/UI/QmitkMIDASSlidersWidget.ui

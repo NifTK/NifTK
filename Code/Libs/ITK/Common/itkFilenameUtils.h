@@ -34,10 +34,10 @@ namespace itk
 {
 
   /** Modifies the suffix (taking into account .Z or .gz) */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT std::string ModifyFilenameSuffix( std::string filename, std::string suffix );
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT std::string ModifyFilenameSuffix( std::string filename, std::string suffix );
 
   /** Extract and return the suffix (taking into account .Z or .gz) */
-  extern "C++" NIFTKITK_WINEXPORT   ITK_EXPORT std::string ExtractSuffix( std::string filename, std::string suffix );
+  extern "C++" NIFTKITK_WINEXPORT ITK_EXPORT std::string ExtractSuffix( std::string filename, std::string suffix );
 
 } // end namespace
 

@@ -23,3 +23,5 @@
 #=================================================================================*/
 
 ADD_SUBDIRECTORY(Libs)
+ADD_SUBDIRECTORY(Applications)
+

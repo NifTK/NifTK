@@ -40,10 +40,10 @@
 #include "mitkNodePredicateProperty.h"
 #include "mitkNodePredicateAnd.h"
 #include "mitkNodePredicateNot.h"
+#include "mitkNamedLookupTableProperty.h"
 #include "QmitkImageLookupTablesPreferencePage.h"
 #include "berryIPreferencesService.h"
 #include "berryIBerryPreferences.h"
-#include "NamedLookupTableProperty.h"
 #include "itkStatisticsImageFilter.h"
 #include "itkImage.h"
 
@@ -66,6 +66,7 @@ ImageLookupTablesView::ImageLookupTablesView()
 , m_CurrentNode(NULL)
 , m_CurrentImage(NULL)
 , m_InUpdate(false)
+, m_ThresholdForIntegerBehaviour(50)
 , m_Parent(NULL)
 {
   m_LookupTableManager = new LookupTableManager();
@@ -317,6 +318,13 @@ void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, m
       << ", windowMin=" << windowMin \
       << ", windowMax=" << windowMax << std::endl;
 
+  // Round up the current min and max.
+  if (fabs(maxDataLimit - minDataLimit) > m_ThresholdForIntegerBehaviour)
+  {
+    windowMin = (int)(windowMin +0.5);
+    windowMax = (int)(windowMax +0.5);
+  }
+
   // Propagate to min/max controls and back to m_LevelWindowManager
   m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
   m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
@@ -401,14 +409,37 @@ void ImageLookupTablesView::OnRangeChanged()
   double rangeMin = levelWindow.GetRangeMin();
   double rangeMax = levelWindow.GetRangeMax();
   double range = levelWindow.GetRange();
-  double singleStep = range / 100.0;
+
+  // Trac 1680 - don't forget, MIDAS generally deals with integer images
+  // so the user requirements are such that they must be able to change
+  // intensity ranges in steps of 1. If however, we are using float images
+  // we will need to be able to change intensity values in much smaller stepps.
+  double singleStep;
+  double pageStep;
+
+  if (fabs(rangeMin - rangeMax) > m_ThresholdForIntegerBehaviour)
+  {
+    // i.e. we have a large enough range to use integer page step and single step.
+    singleStep = 1;
+    pageStep = 10;
+  }
+  else
+  {
+    // i.e. in this case, use fractions.
+    singleStep = range / 100.0;
+    pageStep = range / 10.0;
+  }
 
   m_Controls->m_MinSlider->setMinimum(rangeMin);
   m_Controls->m_MinSlider->setMaximum(rangeMax);
   m_Controls->m_MaxSlider->setMinimum(rangeMin);
   m_Controls->m_MaxSlider->setMaximum(rangeMax);
   m_Controls->m_MinSlider->setSingleStep(singleStep);
+  m_Controls->m_MinSlider->setTickInterval(singleStep);
+  m_Controls->m_MinSlider->setPageStep(pageStep);
   m_Controls->m_MaxSlider->setSingleStep(singleStep);
+  m_Controls->m_MaxSlider->setTickInterval(singleStep);
+  m_Controls->m_MaxSlider->setPageStep(pageStep);
   m_Controls->m_WindowSlider->setMinimum(0);
   m_Controls->m_WindowSlider->setMaximum(range);
   m_Controls->m_WindowSlider->setSingleStep(singleStep);
@@ -531,7 +562,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
     mitkLUT->SetVtkLookupTable(const_cast<vtkLookupTable*>(vtkLUT));
     const std::string& lutName = lutContainer->GetDisplayName().toStdString();
-    NamedLookupTableProperty::Pointer mitkLUTProperty = NamedLookupTableProperty::New(lutName, mitkLUT);
+    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New(lutName, mitkLUT);
     m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
     m_CurrentNode->SetBoolProperty("use color", false);
     m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);

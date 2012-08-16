@@ -34,6 +34,8 @@ namespace itk
  * \brief Performs the down sampling described in step 5 of
  * "Interactive Algorithms for the segmentation and quantification of 3-D MRI scans"
  * Freeborough et. al. CMPB 53 (1997) 15-25.
+ *
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage, class TOutputImage>

@@ -1,9 +1,8 @@
 SET(SRC_CPP_FILES
-  QmitkMIDASBaseView.cpp
-  QmitkMIDASBaseFunctionality.cpp
+  QmitkBaseView.cpp
+  QmitkBaseLegacyView.cpp
   QmitkMIDASBaseSegmentationFunctionality.cpp
-  QmitkMIDASToolSelectorWidget.cpp
-  QmitkMIDASImageAndSegmentationSelectorWidget.cpp
+  QmitkMIDASSegmentationViewWidget.cpp
 )
 
 SET(INTERNAL_CPP_FILES
@@ -13,17 +12,15 @@ SET(INTERNAL_CPP_FILES
 )
 
 SET(UI_FILES
-  src/QmitkMIDASImageAndSegmentationSelector.ui
-  src/QmitkMIDASToolSelector.ui
+  src/QmitkMIDASSegmentationViewWidget.ui
 )
 
 SET(MOC_H_FILES
   src/internal/CommonActivator.h
-  src/QmitkMIDASBaseView.h
-  src/QmitkMIDASBaseFunctionality.h
+  src/QmitkBaseView.h
+  src/QmitkBaseLegacyView.h
   src/QmitkMIDASBaseSegmentationFunctionality.h
-  src/QmitkMIDASToolSelectorWidget.h
-  src/QmitkMIDASImageAndSegmentationSelectorWidget.h
+  src/QmitkMIDASSegmentationViewWidget.h
 )
 
 SET(CACHED_RESOURCE_FILES

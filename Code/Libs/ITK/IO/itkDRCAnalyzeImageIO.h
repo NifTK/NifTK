@@ -37,7 +37,7 @@ namespace itk {
  * which is incorrectly flipped. If you call this->SetDRCMode(true), is will do DRC specific
  * functionality, and if you call SetDRCMode(false), it will revert to standard ITK functionality.
  */
-class NIFTKITK_WINEXPORT   ITK_EXPORT DRCAnalyzeImageIO: public AnalyzeImageIO {
+class NIFTKITK_WINEXPORT ITK_EXPORT DRCAnalyzeImageIO: public AnalyzeImageIO {
 
 public:
 

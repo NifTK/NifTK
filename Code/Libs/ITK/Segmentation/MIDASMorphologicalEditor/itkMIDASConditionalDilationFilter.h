@@ -40,6 +40,8 @@ namespace itk
  * the method SetNumberOfIterations(m), and also the lower (p_lo) and upper (p_high)
  * threshold percentage values, which are percentages of the mean grey intensity,
  * set using SetLowerThreshold and SetUpperThreshold respectively.
+ *
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>

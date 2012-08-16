@@ -75,7 +75,8 @@ def runNiftySim( xmlModelFile, workDir, exportVTK=True, verbose=True, gpu=True, 
         os.rename( 'EStrainTotal.txt', 'EStrainTotal_' + fBase + '.txt' )
     
     os.chdir( origDir ) 
-
+    
+    return ret
 
 
 

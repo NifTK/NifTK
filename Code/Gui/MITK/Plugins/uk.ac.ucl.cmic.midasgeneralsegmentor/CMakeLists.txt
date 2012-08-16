@@ -7,6 +7,5 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
 )
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
-                      niftkQt
                       niftkITK
 )

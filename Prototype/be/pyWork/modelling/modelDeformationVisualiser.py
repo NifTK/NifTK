@@ -38,7 +38,7 @@ class modelDeformationVisualiser :
         if deformationFileName != None :
             self.deformationFileName = deformationFileName
         else :
-            self.deformationFileName = 'U.txt'
+            self.deformationFileName = os.path.dirname( self.xmlGenerator.xmlFileName ) + '/U_' + os.path.splitext( os.path.basename(self.xmlGenerator.xmlFileName) )[0] + '.txt' 
         
         self._readDeformationFile()
         self._generateDeformedModels()
@@ -100,13 +100,19 @@ class modelDeformationVisualiser :
     
 
     
-    def animateDeformation( self ) :
+    def animateDeformation( self, scaleFactor = 1., stepSize = 1 ) :
         
-        self.plot = plotWrap.plotArrayAs3DPoints( self.mdlNodes * 1000 )
+        self.plot = plotWrap.plotArrayAs3DPoints( self.mdlNodes * 1000 * scaleFactor )
         ms = self.plot.mlab_source
         
-        for i in range( len( self.deformedNodes ) ) :
-            ms.reset( points = self.deformedNodes[i] * 1000 )
+        iMax = len( self.deformedNodes )
+        
+        for i in range( 0, iMax, stepSize ) :
+            
+            if np.mod( i, 10 ) == 0:
+                print ('%i of %i ' %( i, iMax ))
+
+            ms.reset( points = self.deformedNodes[i] * 1000 * scaleFactor )
         
         
         

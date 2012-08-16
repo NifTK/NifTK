@@ -6,51 +6,89 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>443</width>
-    <height>296</height>
+    <width>553</width>
+    <height>320</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1000,0,0">
-   <property name="spacing">
-    <number>2</number>
-   </property>
-   <property name="sizeConstraint">
-    <enum>QLayout::SetDefaultConstraint</enum>
-   </property>
-   <property name="margin">
-    <number>0</number>
-   </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="SliceSelectWidget" name="m_SliceSelectionWidget" native="true"/>
-   </item>
-   <item>
-    <widget class="MagnificationFactorWidget" name="m_MagnificationFactorWidget" native="true"/>
-   </item>
-   <item>
-    <widget class="IntegerSpinBoxAndSliderWidget" name="m_TimeSelectionWidget" native="true"/>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="m_SliceLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>slice</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="ctkSliderWidget" name="m_SliceSelectionWidget" native="true">
+       <property name="toolTip">
+        <string>changes the slice number of the currently selected view</string>
+       </property>
+       <zorder>m_MagnificationFactorWidget</zorder>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="m_MagnificationLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>magnification</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="ctkSliderWidget" name="m_MagnificationFactorWidget" native="true">
+       <property name="toolTip">
+        <string>changes the magnification of the currently selected view</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="m_TimeLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>time</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="ctkSliderWidget" name="m_TimeSelectionWidget" native="true">
+       <property name="toolTip">
+        <string>changes the time step of the currently selected view</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SliceSelectWidget</class>
+   <class>ctkSliderWidget</class>
    <extends>QWidget</extends>
-   <header>SliceSelectWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>MagnificationFactorWidget</class>
-   <extends>QWidget</extends>
-   <header>MagnificationFactorWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>IntegerSpinBoxAndSliderWidget</class>
-   <extends>QWidget</extends>
-   <header>IntegerSpinBoxAndSliderWidget.h</header>
+   <header>ctkSliderWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

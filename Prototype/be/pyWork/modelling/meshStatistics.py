@@ -3,8 +3,6 @@
 
 
 import numpy as np
-import vtkMeshFileReader as vmr
-import matplotlib.pyplot as plt
 import vtk
 from vtk.util import numpy_support as VN
 
@@ -19,28 +17,40 @@ class meshStatistics:
         self.nodes    = nodes
         self.elements = elements
         
+        if not isinstance(self.elements, np.ndarray):
+            print ( 'Elements must be a numpy array!' )
+            return 
+        
+        if not isinstance(self.nodes, np.ndarray):
+            print ( 'Nodes must be a numpy array!' )
+            return
+        
         self.qualityMeasures = {}
         
-        self._buildVTKMesh()
-        self._calcQualityMeasures()
-        self._calcBasicStatistics()
-        pass
+        # Calculate statistics for tetrahedra
+        if self.elements.shape[1] == 4 :
+            self._buildVTKMeshTet()
+            self._calcQualityMeasuresTet()
+
+        # Calculate statistics for hexahedra
+        if self.elements.shape[1] == 8 :
+            self._buildVTKMeshHex()
+            self._calcQualityMeasuresHex()
+        
+        
     
     
-    
-    
-    def _buildVTKMesh( self ):
+    def _buildVTKMeshTet( self ):
         
         
         self.unstructuredGrid = vtk.vtkUnstructuredGrid()
         pts = vtk.vtkPoints()
         pts.SetData( VN.numpy_to_vtk(self.nodes, deep=True) )
         self.unstructuredGrid.SetPoints( pts )
-        
+    
         #
         # generate cells
         #
-        
         for i in range( self.elements.shape[0] ):
             tet = vtk.vtkTetra()
             tet.GetPointIds().SetId(0, self.elements[ i, 0 ])
@@ -51,9 +61,34 @@ class meshStatistics:
         
         
         
+
+    def _buildVTKMeshHex( self ):
+        
+        self.unstructuredGrid = vtk.vtkUnstructuredGrid()
+        pts = vtk.vtkPoints()
+        pts.SetData( VN.numpy_to_vtk(self.nodes, deep=True) )
+        self.unstructuredGrid.SetPoints( pts )
+    
+        #
+        # generate cells
+        #
+        for i in range( self.elements.shape[0] ):
+            hexa = vtk.vtkHexahedron()
+            hexa.GetPointIds().SetId(0, self.elements[ i, 0 ])
+            hexa.GetPointIds().SetId(1, self.elements[ i, 1 ])
+            hexa.GetPointIds().SetId(2, self.elements[ i, 2 ])    
+            hexa.GetPointIds().SetId(3, self.elements[ i, 3 ])
+            hexa.GetPointIds().SetId(4, self.elements[ i, 4 ])
+            hexa.GetPointIds().SetId(5, self.elements[ i, 5 ])
+            hexa.GetPointIds().SetId(6, self.elements[ i, 6 ])
+            hexa.GetPointIds().SetId(7, self.elements[ i, 7 ])
+            self.unstructuredGrid.InsertNextCell(hexa.GetCellType(), hexa.GetPointIds())
+        
+        pass
+    
         
         
-    def _calcQualityMeasures( self ):
+    def _calcQualityMeasuresTet( self ):
         
         
         #
@@ -256,62 +291,261 @@ class meshStatistics:
         self.qualityMeasures['Volume'] = np.array( qualityMeasure, copy=True )
         
         
-        
-        
-    
-    def _calcBasicStatistics( self ):
-        ''' Calculate the statistics for each element and  
-        '''
-        
-        xPts = self.nodes[:,0]
-        yPts = self.nodes[:,1]
-        zPts = self.nodes[:,2]
-        
-        # big Matrix with coordinate positions. 
-        M = np.array( ( xPts[self.elements[:,0]], yPts[self.elements[:,0]], zPts[self.elements[:,0]], 
-                        xPts[self.elements[:,1]], yPts[self.elements[:,1]], zPts[self.elements[:,1]],
-                        xPts[self.elements[:,2]], yPts[self.elements[:,2]], zPts[self.elements[:,2]],
-                        xPts[self.elements[:,3]], yPts[self.elements[:,3]], zPts[self.elements[:,3]] ) ).T
-        
-        # Vectors within each element...
-        a = M[:,0:3] - M[:,3: 6]
-        b = M[:,0:3] - M[:,6: 9]
-        c = M[:,0:3] - M[:,9:12]
-        d = M[:,3:6] - M[:,6: 9]
-        e = M[:,3:6] - M[:,9:12]
-        f = M[:,6:9] - M[:,9:12]
+    def _calcQualityMeasuresHex( self ):
         
         #
-        # Calculate lengths
+        # iterate through all the different mesh quality measures and store these in the 
+        # dictionary self.qualityMeasures
         #
-        self.Lengths = np.array( np.sqrt( ( np.sum(a * a, 1 ), 
-                                            np.sum(b * b, 1 ),
-                                            np.sum(c * c, 1 ),
-                                            np.sum(d * d, 1 ),
-                                            np.sum(e * e, 1 ),
-                                            np.sum(f * f, 1 ) ) ) ).T
-                        
-        #plt.hist( self.Lengths[:], bins=120 )
+        self.meshQualityFilter = vtk.vtkMeshQuality()
+        self.meshQualityFilter.SetInput( self.unstructuredGrid )
+        
         
         #
-        # Calculate volumes:
-        # 
-        #      | a.(b x c) |
-        # V = ---------------
-        #            6
-         
-        self.Vols = np.abs( a[:,0] *(  b[:,1] * c[:,2] - b[:,2] * c[:,1] ) + 
-                            a[:,1] *(  b[:,2] * c[:,0] - b[:,0] * c[:,2] ) + 
-                            a[:,2] *(  b[:,0] * c[:,1] - b[:,1] * c[:,0] ) ) / 6.0  
+        # Condition
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToCondition()
+        self.meshQualityFilter.Update()
         
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
         
+        self.qualityMeasures['Condition'] = np.array( qualityMeasure, copy=True )
+
+        
+        #
+        # Diagonal
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToDiagonal()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Diagonal'] = np.array( qualityMeasure, copy=True )
+
+        
+        #
+        # Dimension
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToDimension()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Dimension'] = np.array( qualityMeasure, copy=True )
+
+        
+        #
+        # Distortion
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToDistortion()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Distortion'] = np.array( qualityMeasure, copy=True )
+
+        
+        #
+        # EdgeRatio
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToEdgeRatio()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['EdgeRatio'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # Jacobian
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToJacobian()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Jacobian'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # MaxAspectFrobenius
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToMaxAspectFrobenius()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['MaxAspectFrobenius'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # MaxEdgeRatios
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToMaxEdgeRatios()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['MaxEdgeRatios'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # MedAspectFrobenius
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToMedAspectFrobenius()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['MedAspectFrobenius'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # Oddy
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToOddy()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Oddy'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # RelativeSizeSquared
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToRelativeSizeSquared()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['RelativeSizeSquared'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # ScaledJacobian
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToScaledJacobian()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['ScaledJacobian'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # Shape
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToShape()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Shape'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # ShapeAndSize
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToShapeAndSize()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['ShapeAndSize'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # Shear
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToShear()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Shear'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # ShearAndSize
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToShearAndSize()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['ShearAndSize'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # Skew
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToSkew()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Skew'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # Stretch
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToStretch()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Stretch'] = np.array( qualityMeasure, copy=True )
+
+
+        #
+        # Taper
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToTaper()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Taper'] = np.array( qualityMeasure, copy=True )
+        
+        #
+        # Volume
+        #        
+        self.meshQualityFilter.SetHexQualityMeasureToVolume()
+        self.meshQualityFilter.Update()
+        
+        mqCellData = self.meshQualityFilter.GetOutput().GetCellData()
+        qualityMeasure = VN.vtk_to_numpy( mqCellData.GetArray(0) )
+        
+        self.qualityMeasures['Volume'] = np.array( qualityMeasure, copy=True )
+
         
         
         
     def showMesh( self ):
         
-        if not hasattr( self, 'unstructuredGrid' ):
-            self._buildVTKMesh()
+        #if not hasattr( self, 'unstructuredGrid' ):
+        #    self._buildVTKMesh()
         
         aTetraMapper = vtk.vtkDataSetMapper()
         aTetraMapper.SetInput( self.unstructuredGrid )
@@ -347,11 +581,13 @@ class meshStatistics:
     
     
 if __name__ == '__main__' :
-
+    import nodesAndElementsFromVTKFile as ndsAndEls
     vtkMeshName = 'Q:/philipsBreastProneSupine/referenceState/00/referenceState/surfMeshImpro.1.vtk'
-    mesh = vmr.vtkMeshFileReader( vtkMeshName )
+    vtkMeshName = 'W:/philipsBreastProneSupine/referenceState/00/referenceState/surfMesh_VMesh-7_mod.vtk'
     
-    stat = meshStatistics( mesh.points, mesh.cells[:,1:] )
+    N = ndsAndEls.nodesAndElementsFromVTKFile( vtkMeshName )
+    
+    stat = meshStatistics( N.meshPoints, N.meshCells )
     stat.showMesh()
 
 

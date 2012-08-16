@@ -11,7 +11,6 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
 )
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
-                      niftkQt
                       niftkITK
 		      _reg_KLdivergence
 		      _reg_blockMatching
@@ -23,4 +22,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 		      _reg_resampling
 		      _reg_ssd
 		      _reg_tools
+		      reg_png
+		      reg_nrrd
+		      _reg_ReadWriteImage
 )

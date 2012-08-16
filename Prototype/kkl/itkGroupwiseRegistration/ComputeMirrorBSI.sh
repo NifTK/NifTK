@@ -88,7 +88,7 @@ regchange ${hippo_r_region} ${hippo_r_region_flip} ${dims} -flipx
 echo "${image} ${brain_region} ${hippo_l_region} ${hippo_r_region} ${image_flip} ${brain_region_flip} ${hippo_r_region_flip} ${hippo_l_region_flip}" > ${output_dir}/input_${id}_reg.txt
 
 export SKIP_SGE=1
-ComputePairwiseRegistrationBatch.sh ${output_dir}/input_${id}_reg.txt ${output_dir} -symmetric sym_midway -dof 2 -similarity 4 -dilation 10 -pptol 0.001
+ComputePairwiseRegistrationBatch.sh ${output_dir}/input_${id}_reg.txt ${output_dir} -symmetric sym_midway -dof 2 -similarity 4 -dilation 10 -pptol 0.001 -local_region_search yes
 
 identity_dof=${tmpdir}/identity.dof
 niftkCreateTransformation -type 3 -ot ${identity_dof}  0 0 0 0 0 0 1 1 1 0 0 0

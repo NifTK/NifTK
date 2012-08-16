@@ -32,7 +32,7 @@ class modelDeformationHandler :
         if deformationFileName != None :
             self.deformationFileName = deformationFileName
         else :
-            self.deformationFileName = 'U.txt'
+            self.deformationFileName = 'U_'+ os.path.splitext( os.path.split( self.xmlGenerator.xmlFileName )[1] )[0]   +'.txt'
         
         self._readDeformationFile()
         self._generateDeformedModel()

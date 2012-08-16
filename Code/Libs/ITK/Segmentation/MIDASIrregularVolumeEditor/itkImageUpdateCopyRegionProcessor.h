@@ -25,7 +25,7 @@
 #ifndef ITKIMAGEUPDATECOPYREGIONPROCESSOR_H
 #define ITKIMAGEUPDATECOPYREGIONPROCESSOR_H
 
-#include "itkImageUpdateProcessor.h"
+#include "itkImageUpdateRegionProcessor.h"
 #include "itkPasteImageFilter.h"
 
 namespace itk
@@ -36,21 +36,21 @@ namespace itk
  * \brief Class to support undo/redo of a copy operation, within a given region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdateCopyRegionProcessor : public ImageUpdateProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT ImageUpdateCopyRegionProcessor : public ImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdateCopyRegionProcessor                Self;
-  typedef ImageUpdateProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef ImageUpdateCopyRegionProcessor                      Self;
+  typedef ImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                  Pointer;
+  typedef SmartPointer<const Self>                            ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdateCopyRegionProcessor, ImageUpdateProcessor);
+  itkTypeMacro(ImageUpdateCopyRegionProcessor, ImageUpdateRegionProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;

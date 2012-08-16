@@ -26,7 +26,7 @@
 #define QMITKMIDASORIENTATIONWIDGET_H
 
 #include "ui_QmitkMIDASOrientationWidget.h"
-#include "QmitkMIDASViewEnums.h"
+#include "mitkMIDASEnums.h"
 #include <niftkQmitkExtExports.h>
 
 class QButtonGroup;

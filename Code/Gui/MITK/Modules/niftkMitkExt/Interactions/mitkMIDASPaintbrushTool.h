@@ -45,15 +45,16 @@ namespace mitk
   *
   * Note the following:
   * <pre>
-  * 1.) Writes into 2 images, so ToolManager must have 2 working volume to edit into.
-  *     We define Working Image[0] = "additions image", which is added to the main segmentation to add stuff back into the volume.
-  *     We define Working Image[1] = "subtractions image", which is subtracted from the main segmentation to do connection breaking.
-  * 2.) Then, given 1, we have:
+  * 1.) Writes into 4 images, so ToolManager must have 4 working volume to edit into.
+  *     We define Working Image[0] = "additions image for erosions", which is added to the main segmentation to add stuff back into the volume.
+  *     We define Working Image[1] = "subtractions image for erosions", which is subtracted from the main segmentation to do connection breaking.
+  *     We define Working Image[2] = "additions image for dilations", which is added to the main segmentation to add stuff back into the volume.
+  *     We define Working Image[3] = "subtractions image for dilations", which is subtracted from the main segmentation to do connection breaking.
+  * 2.) Then:
   *     Left mouse = paint into the "additions image".
   *     Middle mouse = paint into the "subtractions image".
   *     Right mouse = subtract from the "subtractions image".
-  * 3.) We derive from SegTool2D to keep things simple, as we just need to
-  *     convert from mm world points to voxel points, and paint.
+  * 3.) We derive from SegTool2D to keep things simple, as we just need to convert from mm world points to voxel points, and paint.
   * 4.) Derives from mitk::OperationActor, so this tool supports undo/redo.
   * </pre>
   *
@@ -61,6 +62,9 @@ namespace mitk
   * using the object factory described in Maleike et. al. doi:10.1016/j.cmpb.2009.04.004.
   *
   * To effectively use this tool, you need a 3 button mouse.
+  *
+  * Trac 1695, 1700, 1701, 1706: Fixing up dilations: We change pipeline so that WorkingData 0,1 are
+  * applied during erosions phase, and WorkingData 2,3 are applied during dilations phase.
   */
 class NIFTKMITKEXT_EXPORT MIDASPaintbrushTool : public SegTool2D
 {
@@ -84,6 +88,12 @@ public:
 
   /** Set the cursor size, default 1. */
   void SetCursorSize(int current);
+
+  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
+  itkSetMacro(ErosionMode, bool);
+
+  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
+  itkGetMacro(ErosionMode, bool);
 
   /** Used to send messages when the cursor size is changed or should be updated in a GUI. */
   Message1<int> CursorSizeChanged;
@@ -167,6 +177,9 @@ private:
   // Pointer to interface object, used as callback in Undo/Redo framework
   MIDASPaintbrushToolEventInterface::Pointer m_Interface;
 
+  /// \brief Calculates the current image number.
+  int GetImageNumber(bool isLeftMouseButton);
+
   // Cursor size for editing, and cursor type is currently always a cross.
   int m_CursorSize;
 
@@ -179,6 +192,9 @@ private:
   // Used between MouseDown and MouseMoved events to track movement.
   mitk::Point3D m_MostRecentPointInMillimetres;
   unsigned long int m_NumberOfVoxelsPainted;
+
+  // If m_ErosionMode is true, we update WorkingData 0 and 1, if m_ErosionMode is false, we update WorkingData 2 and 3.
+  bool m_ErosionMode;
 
 };//class
 

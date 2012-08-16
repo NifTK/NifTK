@@ -40,6 +40,8 @@ namespace itk
  *   0. The down sized image that is to be upsampled to match the original sized image.
  *   1. The original sized image
  * </pre>
+ *
+ * \ingroup midas_morph_editor
  */
 
   template <class TInputImage, class TOutputImage>

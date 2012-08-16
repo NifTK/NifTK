@@ -27,7 +27,6 @@ Common/itkConversionUtils.cxx
 Common/itkCommandLineHelper.cxx
 Common/itkFilenameUtils.cxx
 Common/itkLogHelper.cxx
-Common/itkDisplacementVectorCoordinateAdaptionPixelAccessor.cxx
 RegistrationToolbox/Optimizers/itkUCLSimplexOptimizer.cxx
 RegistrationToolbox/Optimizers/itkUCLRegularStepGradientDescentOptimizer.cxx
 RegistrationToolbox/Optimizers/itkUCLRegularStepOptimizer.cxx
@@ -43,6 +42,7 @@ IO/itkNIFTKTransformIO.cxx
 2D3DToolbox/Commands/itkReconstructionUpdateCommand.cxx
 2D3DToolbox/Commands/itkReconstructionAndRegistrationUpdateCommand.cxx
 2D3DToolbox/Commands/itkSimultaneousReconAndRegnUpdateCommand.cxx
+Segmentation/itkMIDASHelper.cxx
 )
 
 ADD_LIBRARY(niftkITK ${niftkITK_SRCS})
