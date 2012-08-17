@@ -95,7 +95,7 @@ else
   BUILD_COMMAND="make clean ; ctest -D Nightly"
 fi  
 
-run_command "git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK NifTK"
+run_command "git clone git://cmicdev.cs.ucl.ac.uk/NifTK NifTK"
 run_command "cd NifTK"
 run_command "git checkout -b dev origin/dev"
 run_command "cd .."
