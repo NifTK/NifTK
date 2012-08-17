@@ -39,8 +39,10 @@ IF(BUILD_IGI)
   
   IF(NOT DEFINED NiftyLink_DIR)
   
+    MESSAGE("Pulling NiftyLink from ${NIFTK_LOCATION_NIFTYLINK}")
+    
     ExternalProject_Add(${proj}
-       GIT_REPOSITORY git:${NIFTK_LOCATION_NIFTYLINK}
+       GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK}
        BINARY_DIR ${proj}-build
        INSTALL_COMMAND ""
        CMAKE_GENERATOR ${GEN}
