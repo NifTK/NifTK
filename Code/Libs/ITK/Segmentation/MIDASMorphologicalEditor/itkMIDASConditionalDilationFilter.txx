@@ -53,6 +53,16 @@ namespace itk
   
   
   template <class TInputImage1, class TInputImage2, class TOutputImage>
+  void 
+  MIDASConditionalDilationFilter<TInputImage1,TInputImage2, TOutputImage>
+  ::SetConnectionBreakerImage(const TInputImage2 *input)
+  {
+    // Process object is not const-correct so the const_cast is required here
+    this->ProcessObject::SetNthInput(1, const_cast< TInputImage2 * >( input ) );
+  }
+  
+  
+  template <class TInputImage1, class TInputImage2, class TOutputImage>
   bool 
   MIDASConditionalDilationFilter<TInputImage1, TInputImage2, TOutputImage>
   ::IsNextToObject(OutputImageIndexType &voxelIndex, OutputImageType* inMask)
@@ -99,6 +109,8 @@ namespace itk
     
     niftkitkDebugMacro(<< "DoFilter():Dilating mean=" << mean);
     
+    typename InputMaskImageType::Pointer connectionBreakerImage = dynamic_cast<InputMaskImageType*>(this->ProcessObject::GetInput(1));
+    
     /**  ITERATORS */
     ImageRegionConstIterator<InputMainImageType>       inputMainImageIter(inGrey, inGrey->GetLargestPossibleRegion());
     ImageRegionConstIteratorWithIndex<OutputImageType> inputMaskImageIter(inMask, inMask->GetLargestPossibleRegion());
@@ -124,7 +136,10 @@ namespace itk
       if (  !this->IsOnBoundaryOfImage(voxelIndex, size)
           && this->IsNextToObject(voxelIndex, inMask)
           && inGrey->GetPixel(voxelIndex) > actualLowerThreshold 
-          && inGrey->GetPixel(voxelIndex) < actualUpperThreshold)
+          && inGrey->GetPixel(voxelIndex) < actualUpperThreshold
+          && (connectionBreakerImage.IsNull()
+              || (connectionBreakerImage.IsNotNull() && connectionBreakerImage->GetPixel(voxelIndex) == this->GetOutValue()))
+          )
       {
         outputMaskImageIter.Set(this->GetInValue());
       }
