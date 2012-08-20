@@ -629,6 +629,7 @@ MIDASMorphologicalSegmentorPipelineManager
     pipeline->m_ErosionMaskFilter->SetInput(2, erosionEditsToItk->GetOutput());
     pipeline->m_DilationMaskFilter->SetInput(1, dilationsAditionsToItk->GetOutput());
     pipeline->m_DilationMaskFilter->SetInput(2, dilationsEditsToItk->GetOutput());
+    pipeline->m_DilationFilter->SetConnectionBreakerImage(dilationsEditsToItk->GetOutput());
   }
   else
   {

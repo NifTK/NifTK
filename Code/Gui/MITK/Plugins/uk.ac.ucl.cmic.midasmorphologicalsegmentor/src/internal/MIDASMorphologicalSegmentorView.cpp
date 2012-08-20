@@ -296,6 +296,17 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
         paintbrushTool->SetErosionMode(true);
         erodeSubtractNode->SetVisibility(true);
         dilateSubtractNode->SetVisibility(false);
+
+        // Only if we are switching from tab 2 to 1.
+        if (m_TabCounter == 2)
+        {
+          mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
+          mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
+          if (dilateSubtractImage != NULL && erodeSubtractImage != NULL)
+          {
+            mitk::CopyIntensityData(dilateSubtractImage, erodeSubtractImage);
+          }
+        }
       }
       else // i==2
       {
@@ -488,6 +499,16 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeFromWorkingN
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool b)
 {
+  int tabNumber = this->m_MorphologicalControls->GetTabNumber();
+  if (b && (tabNumber == 1 || tabNumber == 2))
+  {
+    this->m_ToolSelector->SetEnabled(true);
+  }
+  else
+  {
+    this->m_ToolSelector->SetEnabled(false);
+  }
+
   this->m_MorphologicalControls->EnableControls(b);
 }
 
