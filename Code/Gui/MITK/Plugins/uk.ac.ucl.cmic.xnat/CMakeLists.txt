@@ -1,7 +1,8 @@
 PROJECT(uk_ac_ucl_cmic_xnat)
 
 # These should be included automatically but it is not.
-include(${CMAKE_SOURCE_DIR}/CMake/PackageDepends/MITK_curl_Config.cmake)
+#include(${CMAKE_SOURCE_DIR}/CMake/PackageDepends/MITK_curl_Config.cmake)
+#include(${CMAKE_SOURCE_DIR}/CMake/PackageDepends/MITK_zlib_Config.cmake)
 
 set(QT_USE_QTNETWORK TRUE)
 
