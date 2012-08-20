@@ -38,6 +38,7 @@
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "mitkMIDASPaintbrushToolEventInterface.h"
 #include "mitkPointUtils.h"
+#include "sys/time.h"
 
 const std::string mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType mitk::MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
@@ -51,7 +52,6 @@ mitk::MIDASPaintbrushTool::MIDASPaintbrushTool() : SegTool2D("MIDASPaintbrushToo
 , m_CursorSize(1)
 , m_WorkingImageGeometry(NULL)
 , m_WorkingImage(NULL)
-, m_NumberOfVoxelsPainted(0)
 , m_ErosionMode(true)
 {
   CONNECT_ACTION( 320401, OnLeftMousePressed );
@@ -266,7 +266,6 @@ bool mitk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int imageNumber, Ac
 
   // Set reference data, but we don't draw anything at this stage
   m_MostRecentPointInMillimetres = positionEvent->GetWorldPosition();
-  m_NumberOfVoxelsPainted = 0;
   return true;
 }
 
@@ -311,6 +310,7 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
     try
     {
       std::vector<int> boundingBox = processor->ComputeMinimalBoundingBox();
+      this->SetValidRegion(imageNumber, boundingBox);
 
       MIDASPaintbrushToolOpEditImage *doOp = new MIDASPaintbrushToolOpEditImage(MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE, true, imageNumber, valueForRedo, imageToWriteTo, workingNode, processor);
       MIDASPaintbrushToolOpEditImage *undoOp = new MIDASPaintbrushToolOpEditImage(MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE, false, imageNumber, valueForUndo, imageToWriteTo, workingNode, processor);
@@ -319,8 +319,6 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
 
       ExecuteOperation(doOp);
 
-      this->SetValidRegion(imageNumber, boundingBox);
-      m_NumberOfVoxelsPainted += processor->GetNumberOfVoxels();
     }
     catch( itk::ExceptionObject & err )
     {
@@ -367,7 +365,8 @@ int mitk::MIDASPaintbrushTool::GetImageNumber(bool isLeftMouseButton)
 bool mitk::MIDASPaintbrushTool::OnLeftMousePressed (Action* action, const StateEvent* stateEvent)
 {
   int imageNumber = this->GetImageNumber(true);
-  return this->MarkInitialPosition(imageNumber, action, stateEvent);
+  bool result = this->MarkInitialPosition(imageNumber, action, stateEvent);
+  return result;
 }
 
 bool mitk::MIDASPaintbrushTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
@@ -424,33 +423,37 @@ bool mitk::MIDASPaintbrushTool::OnRightMouseReleased(Action* action, const State
   return true;
 }
 
-void mitk::MIDASPaintbrushTool::SetInvalidRegion(unsigned int imageNumber)
+void mitk::MIDASPaintbrushTool::SetRegion(unsigned int imageNumber, bool valid, std::vector<int>& boundingBox)
 {
   mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(imageNumber) );
   assert(workingNode);
 
-  mitk::ITKRegionParametersDataNodeProperty::Pointer prop = mitk::ITKRegionParametersDataNodeProperty::New();
+  // This property should always exist, as we create it when the volume is created.
+  mitk::BaseProperty* baseProperty = workingNode->GetProperty(REGION_PROPERTY_NAME.c_str());
+  mitk::ITKRegionParametersDataNodeProperty::Pointer prop = dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(baseProperty);
 
-  if (m_NumberOfVoxelsPainted > 0)
+  if (valid)
+  {
+    prop->SetITKRegionParameters(boundingBox);
+    prop->SetValid(true);
+  }
+  else
   {
     // Put some fake volume in there. Doesn't matter what the volume is, as it is marked as Invalid anyway.
     prop->SetSize(1,1,1);
+    prop->SetValid(false);
   }
-  prop->SetValid(false);
+}
 
-  workingNode->ReplaceProperty(REGION_PROPERTY_NAME.c_str(), prop);
+void mitk::MIDASPaintbrushTool::SetInvalidRegion(unsigned int imageNumber)
+{
+  std::vector<int> dummy;
+  this->SetRegion(imageNumber, false, dummy);
 }
 
 void mitk::MIDASPaintbrushTool::SetValidRegion(unsigned int imageNumber, std::vector<int>& boundingBox)
 {
-  mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(imageNumber) );
-  assert(workingNode);
-
-  mitk::ITKRegionParametersDataNodeProperty::Pointer prop = mitk::ITKRegionParametersDataNodeProperty::New();
-  prop->SetITKRegionParameters(boundingBox);
-  prop->SetValid(true);
-
-  workingNode->ReplaceProperty(REGION_PROPERTY_NAME.c_str(), prop);
+  this->SetRegion(imageNumber, true, boundingBox);
 }
 
 void mitk::MIDASPaintbrushTool::ExecuteOperation(Operation* operation)
@@ -474,8 +477,6 @@ void mitk::MIDASPaintbrushTool::ExecuteOperation(Operation* operation)
       imageToEditToItk->Update();
 
       RunITKProcessor<mitk::Tool::DefaultSegmentationDataType, 3>(imageToEditToItk->GetOutput(), processor, redo, valueToWrite);
-
-      imageToEdit->Modified();
       nodeToEdit->Modified();
 
       mitk::RenderingManager::GetInstance()->RequestUpdateAll();

@@ -141,28 +141,45 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       newSegmentation->GetColor(segCol);
       mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
 
+
       // Create extra data and store with ToolManager
+      mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+      erodeSubtractEditingProp->SetSize(1,1,1);
+      erodeSubtractEditingProp->SetValid(false);
       mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS, col->GetColor());
       erodeSubtractNode->SetBoolProperty("helper object", true);
       erodeSubtractNode->SetColor(col->GetColor());
       erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+      erodeSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
 
+      mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+      erodeAddEditingProp->SetSize(1,1,1);
+      erodeAddEditingProp->SetValid(false);
       mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS, col->GetColor());
       erodeAddNode->SetBoolProperty("helper object", true);
       erodeAddNode->SetBoolProperty("visible", false);
       erodeAddNode->SetColor(segCol);
       erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+      erodeAddNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
 
+      mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+      dilateSubtractEditingProp->SetSize(1,1,1);
+      dilateSubtractEditingProp->SetValid(false);
       mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS, col->GetColor());
       dilateSubtractNode->SetBoolProperty("helper object", true);
       dilateSubtractNode->SetColor(col->GetColor());
       dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+      dilateSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
 
+      mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+      dilateAddEditingProp->SetSize(1,1,1);
+      dilateAddEditingProp->SetValid(false);
       mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS, col->GetColor());
       dilateAddNode->SetBoolProperty("helper object", true);
       dilateAddNode->SetBoolProperty("visible", false);
       dilateAddNode->SetColor(segCol);
       dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+      dilateAddNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
 
       this->ApplyDisplayOptions(erodeSubtractNode);
       this->ApplyDisplayOptions(erodeAddNode);

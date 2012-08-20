@@ -435,6 +435,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     for (unsigned int i = 0; i < workingData.size(); i++)
     {
       bool isEditing = false;
+
       mitk::ITKRegionParametersDataNodeProperty::Pointer editingProperty
         = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(
             workingData[i]->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
@@ -480,7 +481,6 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     }
 
     outputImage->Modified();
-    referenceNode->Modified();
   }
 }
 

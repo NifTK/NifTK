@@ -157,6 +157,9 @@ private:
   /// \brief Sets a valid region property, taken from the bounding box of edited voxels, indicating that we are editing the given image number.
   void SetValidRegion(unsigned int imageNumber, std::vector<int>& boundingBox);
 
+  /// \brief Method that actually sets the region property on a working image.
+  void SetRegion(unsigned int imageNumber, bool valid, std::vector<int>& boundingBox);
+
   /// \brief Does the main functionality when the mouse moves.
   bool DoMouseMoved(Action* action,
       const StateEvent* stateEvent,
@@ -191,7 +194,6 @@ private:
 
   // Used between MouseDown and MouseMoved events to track movement.
   mitk::Point3D m_MostRecentPointInMillimetres;
-  unsigned long int m_NumberOfVoxelsPainted;
 
   // If m_ErosionMode is true, we update WorkingData 0 and 1, if m_ErosionMode is false, we update WorkingData 2 and 3.
   bool m_ErosionMode;
