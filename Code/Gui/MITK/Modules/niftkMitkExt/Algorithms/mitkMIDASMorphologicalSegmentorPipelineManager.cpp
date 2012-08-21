@@ -264,7 +264,7 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const 
       mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true);
       for (unsigned int i = 0; i < 4; i++)
       {
-        (*children)[0]->GetStringProperty("name", name);
+        (*children)[i]->GetStringProperty("name", name);
         set.insert(name);
       }
       if (set.size() == 4
