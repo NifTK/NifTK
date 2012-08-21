@@ -33,7 +33,7 @@ SET(MOC_H_FILES
 )
 
 SET(CACHED_RESOURCE_FILES
-  resources/XNAT.png
+  resources/xnat-icon.png
   plugin.xml
 # list of resource files which can be used by the plug-in
 # system without loading the plug-ins shared library,

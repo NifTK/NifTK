@@ -9,7 +9,7 @@
           name="XNAT Browser"
           category="org.mitk.views.general" 
           class="XnatBrowserView"
-          icon="resources/XNAT.png" />
+          icon="resources/xnat-icon.png" />
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
