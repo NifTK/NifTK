@@ -1,9 +1,12 @@
 #include "XnatLoginDialog.h"
 
+#include <QMap>
 #include <QMessageBox>
+#include <QStringListModel>
 
 #include "XnatConnection.h"
 #include "XnatException.h"
+#include "XnatLoginProfile.h"
 #include "XnatSettings.h"
 
 class XnatLoginDialogPrivate
@@ -18,6 +21,11 @@ public:
 
   XnatConnectionFactory& factory;
   XnatConnection* connection;
+
+  QMap<QString, XnatLoginProfile*> profiles;
+
+  QStringListModel model;
+  QStringList profileNames;
 };
 
 XnatLoginDialog::XnatLoginDialog(XnatConnectionFactory& f, QWidget* parent, Qt::WindowFlags flags)
@@ -37,6 +45,8 @@ XnatLoginDialog::XnatLoginDialog(XnatConnectionFactory& f, QWidget* parent, Qt::
     ui = new Ui::XnatLoginDialog();
     ui->setupUi(this);
 
+    ui->lstProfiles->setModel(&d->model);
+
     // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
     createConnections();
   }
@@ -44,8 +54,6 @@ XnatLoginDialog::XnatLoginDialog(XnatConnectionFactory& f, QWidget* parent, Qt::
 
 XnatLoginDialog::~XnatLoginDialog()
 {
-  Q_D(XnatLoginDialog);
-
   if (ui)
   {
     delete ui;
@@ -67,6 +75,10 @@ void XnatLoginDialog::setSettings(XnatSettings* settings)
 {
   Q_D(XnatLoginDialog);
   d->settings = settings;
+  d->profiles = d->settings->getLoginProfiles();
+
+  d->profileNames = d->profiles.keys();
+
   ui->edtServerUri->setText(settings->getDefaultURL());
   ui->edtUserName->setText(settings->getDefaultUserID());
 }
@@ -133,4 +145,55 @@ void XnatLoginDialog::accept()
   }
 
   QDialog::accept();
+}
+
+void XnatLoginDialog::on_lstProfiles_clicked(const QModelIndex& index)
+{
+  Q_D(XnatLoginDialog);
+  QString profileName = d->model.data(index, 0).toString();
+  XnatLoginProfile* profile = d->profiles[profileName];
+  ui->edtProfileName->setText(profile->name());
+  ui->edtServerUri->setText(profile->serverUri());
+  ui->edtUserName->setText(profile->userName());
+  ui->edtPassword->setText(profile->password());
+}
+
+void XnatLoginDialog::on_btnSave_clicked()
+{
+  Q_D(XnatLoginDialog);
+
+  QString profileName = ui->edtProfileName->text();
+  QString serverUri = ui->edtServerUri->text();
+  QString userName = ui->edtUserName->text();
+  QString password = ui->edtPassword->text();
+
+  XnatLoginProfile* profile = d->profiles[profileName];
+  if (!profile)
+  {
+	profile = new XnatLoginProfile();
+	d->profiles[profileName] = profile;
+  }
+  profile->setName(profileName);
+  profile->setServerUri(serverUri);
+  profile->setUserName(userName);
+  profile->setPassword(password);
+
+  d->settings->setLoginProfiles(d->profiles);
+
+  d->profileNames.push_back(profileName);
+  d->model.setStringList(d->profileNames);
+}
+
+void XnatLoginDialog::on_btnDelete_clicked()
+{
+  Q_D(XnatLoginDialog);
+
+  QString profileName = ui->edtProfileName->text();
+
+  d->profileNames.removeOne(profileName);
+  d->model.setStringList(d->profileNames);
+
+  d->profiles.remove(profileName);
+
+  d->settings->setLoginProfiles(d->profiles);
 }

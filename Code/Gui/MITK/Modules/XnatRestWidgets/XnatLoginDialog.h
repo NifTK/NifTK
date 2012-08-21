@@ -26,6 +26,12 @@ public:
 
   virtual void accept();
 
+private slots:
+
+  void on_btnSave_clicked();
+  void on_btnDelete_clicked();
+  void on_lstProfiles_clicked(const QModelIndex& index);
+
 private:
   void createConnections();
 

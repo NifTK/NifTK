@@ -1,8 +1,10 @@
 #ifndef XnatSettings_h
 #define XnatSettings_h
 
+#include <QMap>
 #include <QString>
 
+class XnatLoginProfile;
 
 class XnatSettings
 {
@@ -20,6 +22,12 @@ public:
   virtual void setDefaultWorkDirectory(const QString& workDir) = 0;
 
   virtual QString getWorkSubdirectory() const;
+
+  virtual QMap<QString, XnatLoginProfile*> getLoginProfiles() const = 0;
+  virtual void setLoginProfiles(QMap<QString, XnatLoginProfile*> loginProfiles) = 0;
+
+  virtual XnatLoginProfile* getLoginProfile(QString profileName) const = 0;
+  virtual void setLoginProfile(QString profileName, XnatLoginProfile*) = 0;
 
 protected:
   explicit XnatSettings();

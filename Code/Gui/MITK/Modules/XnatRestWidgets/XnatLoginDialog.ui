@@ -32,15 +32,15 @@
          <item>
           <widget class="QLabel" name="lblProfiles">
            <property name="text">
-            <string>Saved login profiles:</string>
+            <string>Profiles:</string>
            </property>
            <property name="buddy">
-            <cstring>listView</cstring>
+            <cstring>lstProfiles</cstring>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QListView" name="listView">
+          <widget class="QListView" name="lstProfiles">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -176,7 +176,7 @@
   <tabstop>bbxDialog</tabstop>
   <tabstop>btnSave</tabstop>
   <tabstop>btnDelete</tabstop>
-  <tabstop>listView</tabstop>
+  <tabstop>lstProfiles</tabstop>
  </tabstops>
  <resources/>
  <connections>

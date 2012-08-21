@@ -1,5 +1,7 @@
 #include "XnatPluginSettings.h"
 
+#include <mitkLogMacros.h>
+
 #include <QDir>
 #include <QFileInfo>
 #include <QUuid>
@@ -54,4 +56,27 @@ QString XnatPluginSettings::getDefaultWorkDirectory() const
 void XnatPluginSettings::setDefaultWorkDirectory(const QString& workDirectory)
 {
   preferences->Put(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, workDirectory.toStdString());
+}
+
+QMap<QString, XnatLoginProfile*> XnatPluginSettings::getLoginProfiles() const
+{
+  MITK_INFO << "XnatPluginSettings::getLoginProfiles() const";
+  QMap<QString, XnatLoginProfile*> result;
+  return result;
+}
+
+void XnatPluginSettings::setLoginProfiles(QMap<QString, XnatLoginProfile*> loginProfiles)
+{
+  MITK_INFO << "setLoginProfiles(QMap<QString, XnatLoginProfile*> loginProfiles)";
+}
+
+XnatLoginProfile* XnatPluginSettings::getLoginProfile(QString profileName) const
+{
+  MITK_INFO << "XnatPluginSettings::getLoginProfile(QString profileName) const";
+  return 0;
+}
+
+void XnatPluginSettings::setLoginProfile(QString profileName, XnatLoginProfile*)
+{
+  MITK_INFO << "XnatPluginSettings::setLoginProfile(QString profileName, XnatLoginProfile*)";
 }
