@@ -1,9 +1,11 @@
 #ifndef XnatConnectionFactory_h
 #define XnatConnectionFactory_h
 
+#include "XnatRestWidgetsExports.h"
+
 class XnatConnection;
 
-class XnatConnectionFactory
+class XnatRestWidgets_EXPORT XnatConnectionFactory
 {
 public:
   static XnatConnectionFactory& instance();

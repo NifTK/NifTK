@@ -1,10 +1,12 @@
 #ifndef XnatConnection_h
 #define XnatConnection_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include "XnatNode.h"
 
 
-class XnatConnection
+class XnatRestWidgets_EXPORT XnatConnection
 {
 public:
   XnatNode* getRoot();

@@ -1,11 +1,13 @@
 #ifndef XnatException_h
 #define XnatException_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <exception>
 
 #include <XnatRestStatus.h>
 
-class XnatException : public std::exception
+class XnatRestWidgets_EXPORT XnatException : public std::exception
 {
 public:
   XnatException(const XnatRestStatus& status);

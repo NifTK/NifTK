@@ -1,6 +1,8 @@
 #ifndef XnatFileNameTypeDialog_h
 #define XnatFileNameTypeDialog_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QDialog>
 #include <QObject>
 
@@ -8,7 +10,7 @@ class QLineEdit;
 class QComboBox;
 
 
-class XnatFileNameTypeDialog : public QDialog
+class XnatRestWidgets_EXPORT XnatFileNameTypeDialog : public QDialog
 {
   Q_OBJECT
 

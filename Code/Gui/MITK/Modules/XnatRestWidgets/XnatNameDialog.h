@@ -1,11 +1,13 @@
 #ifndef XnatNameDialog_h
 #define XnatNameDialog_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QDialog>
 
 class QLineEdit;
 
-class XnatNameDialog : public QDialog
+class XnatRestWidgets_EXPORT XnatNameDialog : public QDialog
 {
   Q_OBJECT
 
