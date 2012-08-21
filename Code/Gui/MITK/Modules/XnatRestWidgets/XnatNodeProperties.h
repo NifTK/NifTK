@@ -1,11 +1,13 @@
 #ifndef XnatNodeProperties_h
 #define XnatNodeProperties_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QBitArray>
 
 #include "XnatNode.h"
 
-class XnatNodeProperties
+class XnatRestWidgets_EXPORT XnatNodeProperties
 {
 public:
   XnatNodeProperties(int row, XnatNode* node);
