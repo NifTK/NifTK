@@ -1,10 +1,12 @@
 #ifndef XnatSettings_h
 #define XnatSettings_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QString>
 
 
-class XnatSettings
+class XnatRestWidgets_EXPORT XnatSettings
 {
 public:
   virtual QString getDefaultURL() const = 0;
