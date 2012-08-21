@@ -81,7 +81,7 @@ uLong filetime(const char *filename, tm_zip *tmzip, uLong *dt)
     FindClose(hFind);
     ret = 1;
   }
-#elifdef unix
+#else
   struct stat s;        /* results of stat() */
   struct tm* filedate;
   time_t tm_t=0;
