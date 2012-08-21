@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
  <qresource prefix="/XNAT">
-     <file>XNAT.png</file>
+     <file>xnat-icon.png</file>
  </qresource>
  </RCC>
