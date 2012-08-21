@@ -39,8 +39,7 @@ if(NOT DEFINED curl_DIR)
 
   ExternalProject_Add(${proj}
     BINARY_DIR ${proj}-build
-#    GIT_REPOSITORY git://github.com/bagder/curl.git
-    URL http://curl.haxx.se/download/curl-7.26.0.tar.gz
+    URL ${NIFTK_LOCATION_curl}
     UPDATE_COMMAND ""
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}

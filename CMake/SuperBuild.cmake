@@ -95,7 +95,6 @@ SET(EXTERNAL_PROJECTS
   NiftySeg
   NifTKData
   curl
-  zlib
 )
 
 FOREACH(p ${EXTERNAL_PROJECTS})
