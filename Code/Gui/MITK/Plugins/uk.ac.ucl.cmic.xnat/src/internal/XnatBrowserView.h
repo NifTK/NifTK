@@ -33,9 +33,6 @@
 #include <mitkDataNode.h>
 
 class QWidget;
-class QNetworkReply;
-class QSslError;
-class QAuthenticator;
 
 class XnatBrowserViewPrivate;
 
@@ -66,21 +63,7 @@ protected:
   /// \brief Called by framework, sets the focus on a specific widget.
   virtual void SetFocus();
 
-  void BuildPythonQt(QWidget *parent);
-
-private slots:
-
-  void on_connectButton_clicked();
-  void onNetworkReply(QNetworkReply* reply);
-  void onAuthenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator);
-#ifndef QT_NO_OPENSSL
-  void onSslErrors(QNetworkReply* reply, const QList<QSslError>& errors);
-#endif
-
 private:
-
-  /// \brief Creation of the connections of widgets to slots.
-  void CreateConnections();
 
   /// \brief All the controls for the main view part.
   Ui::XnatBrowserView* m_Controls;
