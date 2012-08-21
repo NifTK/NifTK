@@ -38,7 +38,6 @@
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "mitkMIDASPaintbrushToolEventInterface.h"
 #include "mitkPointUtils.h"
-#include "sys/time.h"
 
 const std::string mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType mitk::MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
