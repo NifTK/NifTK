@@ -21,11 +21,15 @@ public:
   QString password() const;
   void setPassword(const QString& password);
 
+  bool isDefault() const;
+  void setDefault(const bool& default_);
+
 private:
   QString m_name;
   QString m_serverUri;
   QString m_userName;
   QString m_password;
+  bool m_default;
 };
 
 #endif

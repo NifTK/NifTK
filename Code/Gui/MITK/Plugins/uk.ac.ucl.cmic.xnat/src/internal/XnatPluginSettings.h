@@ -31,6 +31,8 @@ public:
   virtual XnatLoginProfile* getLoginProfile(QString profileName) const;
   virtual void setLoginProfile(QString profileName, XnatLoginProfile*);
 
+  XnatLoginProfile* getDefaultLoginProfile() const;
+
 private:
   berry::IPreferences::Pointer preferences;
 };

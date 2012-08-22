@@ -47,3 +47,13 @@ void XnatLoginProfile::setPassword(const QString& password)
 {
   m_password = password;
 }
+
+bool XnatLoginProfile::isDefault() const
+{
+  return m_default;
+}
+
+void XnatLoginProfile::setDefault(const bool& default_)
+{
+  m_default = default_;
+}

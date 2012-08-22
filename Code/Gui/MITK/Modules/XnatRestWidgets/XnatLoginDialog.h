@@ -31,9 +31,13 @@ private slots:
   void on_btnSave_clicked();
   void on_btnDelete_clicked();
   void on_lstProfiles_clicked(const QModelIndex& index);
+  void on_cbxDefaultProfile_toggled(bool checked);
+  void onCurrentProfileChanged(const QModelIndex& current, const QModelIndex& previous);
 
 private:
   void createConnections();
+
+  void askConfirmationToSaveProfile();
 
   /// \brief All the controls for the main view part.
   Ui::XnatLoginDialog* ui;
