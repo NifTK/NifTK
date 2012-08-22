@@ -1,5 +1,6 @@
 
 MITK_CREATE_MODULE(XnatRest
+  EXPORT_DEFINE XnatRest_EXPORT
   PACKAGE_DEPENDS curl zlib
 )
 
