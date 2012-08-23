@@ -1,6 +1,8 @@
 #ifndef XnatNode_h
 #define XnatNode_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <string>
 
 #include <QList>
@@ -9,7 +11,7 @@
 class XnatNodeActivity;
 
 
-class XnatNode
+class XnatRestWidgets_EXPORT XnatNode
 {
 public:
   XnatNode(XnatNodeActivity& activity, int row = -1, XnatNode* parent = NULL);

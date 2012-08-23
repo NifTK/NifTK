@@ -1,10 +1,12 @@
 #ifndef XnatNodeActivity_h
 #define XnatNodeActivity_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include "XnatNode.h"
 
 
-class XnatNodeActivity  // abstract base class
+class XnatRestWidgets_EXPORT XnatNodeActivity  // abstract base class
 {
 public:
   virtual XnatNode* makeChildNode(int row, XnatNode* parent) = 0;
@@ -27,7 +29,7 @@ public:
 };
 
 
-class XnatEmptyNodeActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatEmptyNodeActivity : public XnatNodeActivity
 {
 public:
   static XnatEmptyNodeActivity& instance();
@@ -41,7 +43,7 @@ private:
 };
 
 
-class XnatRootActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatRootActivity : public XnatNodeActivity
 {
 public:
   static XnatRootActivity& instance();
@@ -55,7 +57,7 @@ private:
 };
 
 
-class XnatProjectActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatProjectActivity : public XnatNodeActivity
 {
 public:
   static XnatProjectActivity& instance();
@@ -71,7 +73,7 @@ private:
 };
 
 
-class XnatSubjectActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatSubjectActivity : public XnatNodeActivity
 {
 public:
   static XnatSubjectActivity& instance();
@@ -87,7 +89,7 @@ private:
 };
 
 
-class XnatExperimentActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatExperimentActivity : public XnatNodeActivity
 {
 public:
   static XnatExperimentActivity& instance();
@@ -108,7 +110,7 @@ private:
 };
 
 
-class XnatCategoryActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatCategoryActivity : public XnatNodeActivity
 {
 public:
   static XnatCategoryActivity& instance();
@@ -130,7 +132,7 @@ private:
 };
 
 
-class XnatScanCategoryActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatScanCategoryActivity : public XnatNodeActivity
 {
 public:
   static XnatScanCategoryActivity& instance();
@@ -145,7 +147,7 @@ private:
 };
 
 
-class XnatScanActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatScanActivity : public XnatNodeActivity
 {
 public:
   static XnatScanActivity& instance();
@@ -163,7 +165,7 @@ private:
 };
 
 
-class XnatScanResourceActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatScanResourceActivity : public XnatNodeActivity
 {
 public:
   static XnatScanResourceActivity& instance();
@@ -181,7 +183,7 @@ private:
 };
 
 
-class XnatScanRsrcFileActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatScanRsrcFileActivity : public XnatNodeActivity
 {
 public:
   static XnatScanRsrcFileActivity& instance();
@@ -198,7 +200,7 @@ private:
 };
 
 
-class XnatReconCategoryActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatReconCategoryActivity : public XnatNodeActivity
 {
 public:
   static XnatReconCategoryActivity& instance();
@@ -214,7 +216,7 @@ private:
 };
 
 
-class XnatReconstructionActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatReconstructionActivity : public XnatNodeActivity
 {
 public:
   static XnatReconstructionActivity& instance();
@@ -239,7 +241,7 @@ private:
 };
 
 
-class XnatReconResourceActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatReconResourceActivity : public XnatNodeActivity
 {
 public:
   static XnatReconResourceActivity& instance();
@@ -261,7 +263,7 @@ private:
 };
 
 
-class XnatReconRsrcFileActivity : public XnatNodeActivity
+class XnatRestWidgets_EXPORT XnatReconRsrcFileActivity : public XnatNodeActivity
 {
 public:
   static XnatReconRsrcFileActivity& instance();

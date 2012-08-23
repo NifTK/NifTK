@@ -1,0 +1,10 @@
+*.h      text
+*.cpp    text
+*.cxx    text
+*.txx    text
+*.qrc    text
+*.ui     text
+*.txt    text
+*.cmake  text
+*.bat    text
+*.bat.in text

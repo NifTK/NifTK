@@ -1,6 +1,8 @@
 #if !defined(XNATREST_H)
 #define XNATREST_H
 
+#include "XnatRestExports.h"
+
 #include "XnatRestStatus.h"
 
 #define DICOM_RESOURCE "DICOM"
@@ -19,42 +21,42 @@ typedef enum XnatRestAsynStatusCodes XnatRestAsynStatus;
 /* initialize XnatRest -- call this function ONCE at beginning of program */
 /* assumption: single-threaded program */
 /* returns: XnatRest status */
-XnatRestStatus initXnatRest( void );
+XnatRest_EXPORT XnatRestStatus initXnatRest( void );
 
 /* clean up XnatRest -- call this function ONCE at end of program */
 /* assumption: single-threaded program */
-void cleanupXnatRest( void );
+XnatRest_EXPORT void cleanupXnatRest( void );
 
 /* set URL address of XNAT web site */
 /* input: XNAT web site URL */
 /* returns: XnatRest status */
-XnatRestStatus setXnatRestUrl( const char *url );
+XnatRest_EXPORT XnatRestStatus setXnatRestUrl( const char *url );
 
 /* set user and password for XNAT web site */
 /* input: user ID and password */
 /* returns: XnatRest status */
-XnatRestStatus setXnatRestUser( const char *user, const char *password );
+XnatRest_EXPORT XnatRestStatus setXnatRestUser( const char *user, const char *password );
 
 /* free dynamically allocated memory for string array */
 /* input: number of strings */
 /* input/output: array of strings */
-void freeXnatRestArray( const int numStrings, char **strings );
+XnatRest_EXPORT void freeXnatRestArray( const int numStrings, char **strings );
 
 /* get message for XnatRest status */
 /* input: XnatRest status */
 /* returns: XnatRest status message */
-const char *getXnatRestStatusMsg( const XnatRestStatus status );
+XnatRest_EXPORT const char *getXnatRestStatusMsg( const XnatRestStatus status );
 
 /* ======== ASYNCHRONOUS TRANSFER FUNCTIONS  ======== */ 
 
 /* transfer data between XNAT and local file */
 /* output: number of bytes transferred, transfer status */
 /* returns: XnatRest status */
-XnatRestStatus moveXnatRestAsynData( unsigned long *numBytes, XnatRestAsynStatus *finished );
+XnatRest_EXPORT XnatRestStatus moveXnatRestAsynData( unsigned long *numBytes, XnatRestAsynStatus *finished );
 
 /* cancel transfer of data between XNAT and local file */
 /* returns: XnatRest status */
-XnatRestStatus cancelXnatRestAsynTransfer( void );
+XnatRest_EXPORT XnatRestStatus cancelXnatRestAsynTransfer( void );
 
 /* ======== ZIP FILE UTILITY FUNCTIONS  ======== */
 
@@ -62,19 +64,19 @@ XnatRestStatus cancelXnatRestAsynTransfer( void );
 /* input: zip filename and name of existing directory where */
 /*        files extracted from zip file will be put */
 /* returns: XnatRest status */
-XnatRestStatus unzipXnatRestFile( const char *zipFilename, const char *outputDirectory );
+XnatRest_EXPORT XnatRestStatus unzipXnatRestFile( const char *zipFilename, const char *outputDirectory );
 
 /* unzip downloaded files; ignore directories included with filenames in zip file */
 /* input: zip filename and name of existing directory where */
 /*        files extracted from zip file will be put */
 /* returns: XnatRest status */
-XnatRestStatus unzipXnatRestFileNoDirs( const char *zipFilename, const char *outputDirectory );
+XnatRest_EXPORT XnatRestStatus unzipXnatRestFileNoDirs( const char *zipFilename, const char *outputDirectory );
 
 /* zip files for upload */
 /* input: zip filename, name of existing directory containing files to be zipped, */
 /*        number of files to be zipped, and array of names of files to be zipped */
 /* returns: XnatRest status */
-XnatRestStatus zipXnatRestFile( const char *zipFilename, const char *inputDirectory,
+XnatRest_EXPORT XnatRestStatus zipXnatRestFile( const char *zipFilename, const char *inputDirectory,
                                 int numFilenames, char const * const *filenames );
 
 /* ======== PROJECT, SUBJECT, AND EXPERIMENT FUNCTIONS ======== */
@@ -82,19 +84,19 @@ XnatRestStatus zipXnatRestFile( const char *zipFilename, const char *inputDirect
 /* get names of projects in XNAT */
 /* output: number of projects and array of project names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestProjects( int *numProjects, char ***projects );
+XnatRest_EXPORT XnatRestStatus getXnatRestProjects( int *numProjects, char ***projects );
 
 /* get names of subjects for project */
 /* input: XNAT project name */
 /* output: number of subjects and array of subject names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestSubjects( const char *project, int *numSubjects, char ***subjects );
+XnatRest_EXPORT XnatRestStatus getXnatRestSubjects( const char *project, int *numSubjects, char ***subjects );
 
 /* get names of experiments for subject in project */
 /* input: XNAT project name and subject name */
 /* output: number of experiments and array of experiment names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestExperiments( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestExperiments( const char *project, const char *subject, 
                                        int *numExperiments, char ***experiments );
 
 /* ======== PRIMARY SCAN FUNCTIONS ======== */
@@ -103,14 +105,14 @@ XnatRestStatus getXnatRestExperiments( const char *project, const char *subject,
 /* input: XNAT project name, subject name, and experiment name */
 /* output: number of scans and array of scan names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestScans( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestScans( const char *project, const char *subject, 
                                  const char *experiment, int *numScans, char ***scans );
 
 /* get names of resources in scan for experiment for subject in project */
 /* input: XNAT project name, subject name, experiment name, and scan name */
 /* output: number of resources and array of resource names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestScanResources( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestScanResources( const char *project, const char *subject, 
                                          const char *experiment, const char *scan,
                                          int *numResources, char ***resources );
 
@@ -118,7 +120,7 @@ XnatRestStatus getXnatRestScanResources( const char *project, const char *subjec
 /* input: XNAT project name, subject name, experiment name, scan name, and resource name */
 /* output: number of filenames and array of filenames */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestScanRsrcFilenames( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestScanRsrcFilenames( const char *project, const char *subject, 
                                              const char *experiment, const char *scan,
                                              const char *resource, int *numFilenames, 
                                              char ***filenames );
@@ -128,7 +130,7 @@ XnatRestStatus getXnatRestScanRsrcFilenames( const char *project, const char *su
 /* input: XNAT project name, subject name, experiment name, scan name, resource name, */
 /*        name of file to download, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestScanRsrcFile( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestScanRsrcFile( const char *project, const char *subject,
                                         const char *experiment, const char *scan,
                                         const char *resource, const char *filename, 
                                         const char *outputZipFilename );
@@ -138,7 +140,7 @@ XnatRestStatus getXnatRestScanRsrcFile( const char *project, const char *subject
 /* input: XNAT project name, subject name, experiment name, scan name, resource name, */
 /*        name of file to download, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynScanRsrcFile( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynScanRsrcFile( const char *project, const char *subject,
                                             const char *experiment, const char *scan,
                                             const char *resource, const char *filename, 
                                             const char *outputZipFilename );
@@ -148,7 +150,7 @@ XnatRestStatus getXnatRestAsynScanRsrcFile( const char *project, const char *sub
 /* input: XNAT project name, subject name, experiment name, scan name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllFilesInScanRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllFilesInScanRsrc( const char *project, const char *subject,
                                               const char *experiment, const char *scan,
                                               const char *resource, const char *outputZipFilename );
 
@@ -157,7 +159,7 @@ XnatRestStatus getXnatRestAllFilesInScanRsrc( const char *project, const char *s
 /* input: XNAT project name, subject name, experiment name, scan name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllFilesInScanRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllFilesInScanRsrc( const char *project, const char *subject,
                                                   const char *experiment, const char *scan,
                                                   const char *resource, const char *outputZipFilename );
 
@@ -168,7 +170,7 @@ XnatRestStatus getXnatRestAsynAllFilesInScanRsrc( const char *project, const cha
 /* input: XNAT project name, subject name, experiment name, scan name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllFilesInScan( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllFilesInScan( const char *project, const char *subject,
                                           const char *experiment, const char *scan,
                                           const char *outputZipFilename );
 
@@ -177,7 +179,7 @@ XnatRestStatus getXnatRestAllFilesInScan( const char *project, const char *subje
 /* input: XNAT project name, subject name, experiment name, scan name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllFilesInScan( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllFilesInScan( const char *project, const char *subject,
                                               const char *experiment, const char *scan,
                                               const char *outputZipFilename );
 
@@ -185,7 +187,7 @@ XnatRestStatus getXnatRestAsynAllFilesInScan( const char *project, const char *s
 /* input: XNAT project name, subject name, and experiment name */
 /* output: number of resources and array of resource names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestExprScanResources( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestExprScanResources( const char *project, const char *subject, 
                                              const char *experiment, 
                                              int *numResources, char ***resources );
 
@@ -194,7 +196,7 @@ XnatRestStatus getXnatRestExprScanResources( const char *project, const char *su
 /* input: XNAT project name, subject name, experiment name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllScanFilesInExprRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllScanFilesInExprRsrc( const char *project, const char *subject,
                                               const char *experiment, const char *resource,
                                               const char *outputZipFilename );
 
@@ -203,7 +205,7 @@ XnatRestStatus getXnatRestAllScanFilesInExprRsrc( const char *project, const cha
 /* input: XNAT project name, subject name, experiment name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllScanFilesInExprRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllScanFilesInExprRsrc( const char *project, const char *subject,
                                                       const char *experiment, const char *resource,
                                                       const char *outputZipFilename );
 
@@ -211,7 +213,7 @@ XnatRestStatus getXnatRestAsynAllScanFilesInExprRsrc( const char *project, const
 /* NOTE: function blocks until ZIP file download is finished */
 /* input: XNAT project name, subject name, experiment name, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllScanFilesInExperiment( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllScanFilesInExperiment( const char *project, const char *subject,
                                                     const char *experiment, 
                                                     const char *outputZipFilename );
 
@@ -219,7 +221,7 @@ XnatRestStatus getXnatRestAllScanFilesInExperiment( const char *project, const c
 /* NOTE: function initializes asynchronous (non-blocking) download of ZIP file and returns */
 /* input: XNAT project name, subject name, experiment name, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllScanFilesInExperiment( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllScanFilesInExperiment( const char *project, const char *subject,
                                                         const char *experiment, 
                                                         const char *outputZipFilename );
 
@@ -229,7 +231,7 @@ XnatRestStatus getXnatRestAsynAllScanFilesInExperiment( const char *project, con
 /* input: XNAT project name, subject name, and experiment name */
 /* output: number of reconstructions and array of reconstruction names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestReconstructions( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestReconstructions( const char *project, const char *subject, 
                                            const char *experiment, int *numReconstructions, 
                                            char ***reconstructions );
 
@@ -237,7 +239,7 @@ XnatRestStatus getXnatRestReconstructions( const char *project, const char *subj
 /* input: XNAT project name, subject name, experiment name, and reconstruction name */
 /* output: number of resources and array of resource names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestReconResources( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestReconResources( const char *project, const char *subject, 
                                           const char *experiment, const char *reconstruction,
                                           int *numResources, char ***resources );
 
@@ -245,7 +247,7 @@ XnatRestStatus getXnatRestReconResources( const char *project, const char *subje
 /* input: XNAT project name, subject name, experiment name, reconstruction name, and resource name */
 /* output: number of filenames and array of filenames */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestReconRsrcFilenames( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestReconRsrcFilenames( const char *project, const char *subject, 
                                               const char *experiment, const char *reconstruction,
                                               const char *resource, int *numFilenames, 
                                               char ***filenames );
@@ -255,7 +257,7 @@ XnatRestStatus getXnatRestReconRsrcFilenames( const char *project, const char *s
 /* input: XNAT project name, subject name, experiment name, reconstruction name, resource name, */
 /*        name of file to download, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestReconRsrcFile( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestReconRsrcFile( const char *project, const char *subject,
                                          const char *experiment, const char *reconstruction,
                                          const char *resource, const char *filename, 
                                          const char *outputZipFilename );
@@ -265,7 +267,7 @@ XnatRestStatus getXnatRestReconRsrcFile( const char *project, const char *subjec
 /* input: XNAT project name, subject name, experiment name, reconstruction name, resource name, */
 /*        name of file to download, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynReconRsrcFile( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynReconRsrcFile( const char *project, const char *subject,
                                              const char *experiment, const char *reconstruction,
                                              const char *resource, const char *filename, 
                                              const char *outputZipFilename );
@@ -275,7 +277,7 @@ XnatRestStatus getXnatRestAsynReconRsrcFile( const char *project, const char *su
 /* input: XNAT project name, subject name, experiment name, reconstruction name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllFilesInReconRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllFilesInReconRsrc( const char *project, const char *subject,
                                                const char *experiment, const char *reconstruction,
                                                const char *resource, const char *outputZipFilename );
 
@@ -284,7 +286,7 @@ XnatRestStatus getXnatRestAllFilesInReconRsrc( const char *project, const char *
 /* input: XNAT project name, subject name, experiment name, reconstruction name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllFilesInReconRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllFilesInReconRsrc( const char *project, const char *subject,
                                                    const char *experiment, const char *reconstruction,
                                                    const char *resource, const char *outputZipFilename );
 
@@ -293,13 +295,13 @@ XnatRestStatus getXnatRestAsynAllFilesInReconRsrc( const char *project, const ch
 /* create reconstruction in experiment for subject in project */
 /* input: XNAT project name, subject name, experiment name, and reconstruction name */
 /* returns: XnatRest status */
-XnatRestStatus putXnatRestReconstruction( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus putXnatRestReconstruction( const char *project, const char *subject, 
                                           const char *experiment, const char *reconstruction );
 
 /* create resource for reconstruction in experiment for subject in project */
 /* input: XNAT project name, subject name, experiment name, reconstruction name, and resource name */
 /* returns: XnatRest status */
-XnatRestStatus putXnatRestReconResource( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus putXnatRestReconResource( const char *project, const char *subject, 
                                          const char *experiment, const char *reconstruction,
                                          const char *resource );
 
@@ -308,7 +310,7 @@ XnatRestStatus putXnatRestReconResource( const char *project, const char *subjec
 /* input: XNAT project name, subject name, experiment name, reconstruction name, resource name, */
 /*        and input zip filename */
 /* returns: XnatRest status */
-XnatRestStatus putXnatRestReconRsrcFiles( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus putXnatRestReconRsrcFiles( const char *project, const char *subject,
                                           const char *experiment, const char *reconstruction,
                                           const char *resource, const char *inputZipFilename );
 
@@ -317,7 +319,7 @@ XnatRestStatus putXnatRestReconRsrcFiles( const char *project, const char *subje
 /* input: XNAT project name, subject name, experiment name, reconstruction name, resource name, */
 /*        and input zip filename */
 /* returns: XnatRest status */
-XnatRestStatus putXnatRestAsynReconRsrcFiles( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus putXnatRestAsynReconRsrcFiles( const char *project, const char *subject,
                                               const char *experiment, const char *reconstruction,
                                               const char *resource, const char *inputZipFilename );
 
@@ -327,21 +329,21 @@ XnatRestStatus putXnatRestAsynReconRsrcFiles( const char *project, const char *s
 /* NOTE: all resources and files within the reconstruction are also deleted */
 /* input: XNAT project name, subject name, experiment name, and reconstruction name */
 /* returns: XnatRest status */
-XnatRestStatus deleteXnatRestReconstruction( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus deleteXnatRestReconstruction( const char *project, const char *subject, 
                                              const char *experiment, const char *reconstruction );
 
 /* delete resource for reconstruction in experiment for subject in project */
 /* NOTE: all files within the resource are also deleted */
 /* input: XNAT project name, subject name, experiment name, reconstruction name, and resource name */
 /* returns: XnatRest status */
-XnatRestStatus deleteXnatRestReconResource( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus deleteXnatRestReconResource( const char *project, const char *subject, 
                                             const char *experiment, const char *reconstruction,
                                             const char *resource );
 
 /* delete file in resource for reconstruction in experiment for subject in project */
 /* input: XNAT project name, subject name, experiment name, reconstruction name, resource name, and filename */
 /* returns: XnatRest status */
-XnatRestStatus deleteXnatRestReconRsrcFile( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus deleteXnatRestReconRsrcFile( const char *project, const char *subject, 
                                             const char *experiment, const char *reconstruction,
                                             const char *resource, const char *filename );
 
@@ -352,7 +354,7 @@ XnatRestStatus deleteXnatRestReconRsrcFile( const char *project, const char *sub
 /* input: XNAT project name, subject name, experiment name, reconstruction name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllFilesInReconstruction( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllFilesInReconstruction( const char *project, const char *subject,
                                                     const char *experiment, const char *resconstruction,
                                                     const char *outputZipFilename );
 
@@ -361,7 +363,7 @@ XnatRestStatus getXnatRestAllFilesInReconstruction( const char *project, const c
 /* input: XNAT project name, subject name, experiment name, reconstruction name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllFilesInReconstruction( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllFilesInReconstruction( const char *project, const char *subject,
                                                         const char *experiment, const char *resconstruction,
                                                         const char *outputZipFilename );
 
@@ -369,7 +371,7 @@ XnatRestStatus getXnatRestAsynAllFilesInReconstruction( const char *project, con
 /* input: XNAT project name, subject name, and experiment name */
 /* output: number of resources and array of resource names */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestExprReconResources( const char *project, const char *subject, 
+XnatRest_EXPORT XnatRestStatus getXnatRestExprReconResources( const char *project, const char *subject, 
                                               const char *experiment, 
                                               int *numResources, char ***resources );
 
@@ -378,7 +380,7 @@ XnatRestStatus getXnatRestExprReconResources( const char *project, const char *s
 /* input: XNAT project name, subject name, experiment name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllReconFilesInExprRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllReconFilesInExprRsrc( const char *project, const char *subject,
                                                    const char *experiment, const char *resource,
                                                    const char *outputZipFilename );
 
@@ -387,7 +389,7 @@ XnatRestStatus getXnatRestAllReconFilesInExprRsrc( const char *project, const ch
 /* input: XNAT project name, subject name, experiment name, resource name, */
 /*        and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllReconFilesInExprRsrc( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllReconFilesInExprRsrc( const char *project, const char *subject,
                                                        const char *experiment, const char *resource,
                                                        const char *outputZipFilename );
 
@@ -395,7 +397,7 @@ XnatRestStatus getXnatRestAsynAllReconFilesInExprRsrc( const char *project, cons
 /* NOTE: function blocks until ZIP file download is finished */
 /* input: XNAT project name, subject name, experiment name, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAllReconFilesInExperiment( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAllReconFilesInExperiment( const char *project, const char *subject,
                                                      const char *experiment, 
                                                      const char *outputZipFilename );
 
@@ -403,7 +405,7 @@ XnatRestStatus getXnatRestAllReconFilesInExperiment( const char *project, const 
 /* NOTE: function initializes asynchronous (non-blocking) download of ZIP file and returns */
 /* input: XNAT project name, subject name, experiment name, and output zip filename */
 /* returns: XnatRest status */
-XnatRestStatus getXnatRestAsynAllReconFilesInExperiment( const char *project, const char *subject,
+XnatRest_EXPORT XnatRestStatus getXnatRestAsynAllReconFilesInExperiment( const char *project, const char *subject,
                                                          const char *experiment, 
                                                          const char *outputZipFilename );
 

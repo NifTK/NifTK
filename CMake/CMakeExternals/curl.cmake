@@ -37,6 +37,12 @@ set(curl_DEPENDS ${proj})
 
 if(NOT DEFINED curl_DIR)
 
+  if (WIN32)
+    set(CURL_STATICLIB ON)
+  else ()
+    set(CURL_STATICLIB OFF)
+  endif ()
+
   ExternalProject_Add(${proj}
     BINARY_DIR ${proj}-build
     URL ${NIFTK_LOCATION_curl}
@@ -49,7 +55,7 @@ if(NOT DEFINED curl_DIR)
       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DBUILD_CURL_EXE:BOOL=OFF
       -DBUILD_CURL_TESTS:BOOL=OFF
-      -DCURL_STATICLIB:BOOL=ON
+      -DCURL_STATICLIB:BOOL=${CURL_STATICLIB}
     DEPENDS ${proj_DEPENDENCIES}
   )
 

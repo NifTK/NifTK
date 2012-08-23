@@ -1,6 +1,8 @@
 #ifndef XnatTreeView_h
 #define XnatTreeView_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QTreeView>
 #include <QModelIndex>
 
@@ -10,7 +12,7 @@ class XnatModel;
 class XnatNode;
 class XnatTreeViewPrivate;
 
-class XnatTreeView : public QTreeView
+class XnatRestWidgets_EXPORT XnatTreeView : public QTreeView
 {
   Q_OBJECT
 
