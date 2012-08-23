@@ -62,8 +62,6 @@ QmitkMIDASMultiViewWidget* QmitkBaseLegacyView::GetActiveMIDASMultiViewWidget()
     QmitkMIDASMultiViewWidget* activeMIDASMultiViewWidget = 0;
 
     berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->GetActiveEditor();
-    assert(editor);
-
     if (editor.Cast<QmitkMIDASMultiViewEditor>().IsNull())
     {
       // This has the side-effect of switching editors when we don't want to.
@@ -89,8 +87,6 @@ QmitkStdMultiWidget* QmitkBaseLegacyView::GetActiveStdMultiWidget()
     QmitkStdMultiWidget *activeMultiWidget = 0;
 
     berry::IEditorPart::Pointer editor = this->GetSite()->GetPage()->GetActiveEditor();
-    assert(editor);
-
     if (editor.Cast<QmitkStdMultiWidgetEditor>().IsNull())
     {
       // This has the side-effect of switching editors when we don't want to.
