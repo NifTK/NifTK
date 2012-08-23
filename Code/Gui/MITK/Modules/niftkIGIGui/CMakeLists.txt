@@ -5,3 +5,9 @@ MITK_CREATE_MODULE(niftkIGIGui
   PACKAGE_DEPENDS QT QVTK CTK
   QT_MODULE 
 )
+
+TARGET_LINK_LIBRARIES(niftkIGIGui
+                      igtlutil
+                      niftylink
+                      OpenIGTLink
+)
