@@ -101,7 +101,8 @@ void XnatPluginSettings::setLoginProfiles(QMap<QString, XnatLoginProfile*> login
     berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
     profileNode->Put("serverUri", profile->serverUri().toStdString());
     profileNode->Put("userName", profile->userName().toStdString());
-    profileNode->Put("password", profile->password().toStdString());
+    // Saving passwords is disabled.
+//    profileNode->Put("password", profile->password().toStdString());
     profileNode->PutBool("default", profile->isDefault());
     ++itProfiles;
   }
@@ -109,13 +110,35 @@ void XnatPluginSettings::setLoginProfiles(QMap<QString, XnatLoginProfile*> login
 
 XnatLoginProfile* XnatPluginSettings::getLoginProfile(QString profileName) const
 {
-  MITK_INFO << "XnatPluginSettings::getLoginProfile(QString profileName) const";
-  return 0;
+  berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
+  berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
+  XnatLoginProfile* profile = new XnatLoginProfile();
+  profile->setName(profileName);
+  profile->setServerUri(QString::fromStdString(profileNode->Get("serverUri", "")));
+  profile->setUserName(QString::fromStdString(profileNode->Get("userName", "")));
+  profile->setPassword(QString::fromStdString(profileNode->Get("password", "")));
+  profile->setDefault(profileNode->GetBool("default", false));
+
+  return profile;
 }
 
-void XnatPluginSettings::setLoginProfile(QString profileName, XnatLoginProfile*)
+void XnatPluginSettings::setLoginProfile(QString profileName, XnatLoginProfile* profile)
 {
-  MITK_INFO << "XnatPluginSettings::setLoginProfile(QString profileName, XnatLoginProfile*)";
+  berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
+  berry::IPreferences::Pointer profileNode = profilesNode->Node(profile->name().toStdString());
+  profileNode->Put("serverUri", profile->serverUri().toStdString());
+  profileNode->Put("userName", profile->userName().toStdString());
+
+  // Saving passwords is disabled.
+//  profileNode->Put("password", profile->password().toStdString());
+  profileNode->PutBool("default", profile->isDefault());
+}
+
+void XnatPluginSettings::removeLoginProfile(QString profileName)
+{
+  berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
+  berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
+  profileNode->RemoveNode();
 }
 
 XnatLoginProfile* XnatPluginSettings::getDefaultLoginProfile() const

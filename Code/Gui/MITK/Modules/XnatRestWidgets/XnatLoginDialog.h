@@ -30,14 +30,16 @@ private slots:
 
   void on_btnSave_clicked();
   void on_btnDelete_clicked();
-  void on_lstProfiles_clicked(const QModelIndex& index);
-  void on_cbxDefaultProfile_toggled(bool checked);
+  void on_edtProfileName_textChanged(const QString& text);
   void onCurrentProfileChanged(const QModelIndex& current, const QModelIndex& previous);
+  void onFieldChanged();
 
 private:
   void createConnections();
+  void blockSignalsOfFields(bool value);
 
-  void askConfirmationToSaveProfile();
+  void saveProfile(const QString& profileName);
+  bool askToSaveProfile(const QString& profileName);
 
   /// \brief All the controls for the main view part.
   Ui::XnatLoginDialog* ui;

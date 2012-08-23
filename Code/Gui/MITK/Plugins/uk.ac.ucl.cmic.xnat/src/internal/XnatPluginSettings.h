@@ -31,6 +31,8 @@ public:
   virtual XnatLoginProfile* getLoginProfile(QString profileName) const;
   virtual void setLoginProfile(QString profileName, XnatLoginProfile*);
 
+  virtual void removeLoginProfile(QString profileName);
+
   XnatLoginProfile* getDefaultLoginProfile() const;
 
 private:
