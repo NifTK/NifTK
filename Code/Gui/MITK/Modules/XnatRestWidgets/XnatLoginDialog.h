@@ -1,6 +1,8 @@
 #ifndef XnatLoginDialog_h
 #define XnatLoginDialog_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QDialog>
 
 #include "ui_XnatLoginDialog.h"
@@ -11,7 +13,7 @@ class XnatConnection;
 class XnatLoginDialogPrivate;
 class XnatSettings;
 
-class XnatLoginDialog : public QDialog
+class XnatRestWidgets_EXPORT XnatLoginDialog : public QDialog
 {
   Q_OBJECT
 

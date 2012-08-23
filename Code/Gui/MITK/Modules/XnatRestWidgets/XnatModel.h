@@ -1,12 +1,14 @@
 #ifndef XnatModel_h
 #define XnatModel_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QAbstractItemModel>
 
 #include "XnatNode.h"
 
 
-class XnatModel : public QAbstractItemModel
+class XnatRestWidgets_EXPORT XnatModel : public QAbstractItemModel
 {
   Q_OBJECT
 
