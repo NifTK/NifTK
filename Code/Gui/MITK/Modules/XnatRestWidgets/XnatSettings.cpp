@@ -4,6 +4,8 @@
 #include <QFileInfo>
 #include <QUuid>
 
+#include "XnatLoginProfile.h"
+
 XnatSettings::XnatSettings()
 {
 }

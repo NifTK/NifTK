@@ -296,13 +296,10 @@ void XnatBrowserWidget::importFile()
     // determine reader type based on first file. For now, we are relying
     // on the user to avoid mixing file types.
     QString filename = files[0];
-    MITK_INFO << "XnatBrowserWidget::importFile() filename: " << filename.toStdString();
-    MITK_INFO << "XnatBrowserWidget::importFile() xnat filename: " << xnatFilename.toStdString();
     nodeFactory->SetFileName(filename.toStdString());
     nodeFactory->Update();
     mitk::DataNode::Pointer dataNode = nodeFactory->GetOutput();
     dataNode->SetName(xnatFilename.toStdString());
-    MITK_INFO << "reading the image has succeeded";
     if (d->dataStorage.IsNotNull())
     {
       d->dataStorage->Add(dataNode);
@@ -341,7 +338,6 @@ void XnatBrowserWidget::importFiles()
   // create list of files to open in CAWorks
   QStringList files;
   collectImageFiles(tempWorkDirectory, files);
-  MITK_INFO << "after collectImageFiles(): file number " << files.size();
 
   if (d->dataStorage.IsNull())
   {

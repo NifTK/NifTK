@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2012-06-28 11:43:10 +0100 (Thu, 28 Jun 2012) $
- Revision          : $Revision: 9264 $
- Last modified by  : $Author: jhh $
+ Last Changed      : $Date: $
+ Revision          : $Revision: $
+ Last modified by  : $Author:  $
 
  Original author   : j.hipwell@ucl.ac.uk
 
@@ -22,20 +22,25 @@
 
  ============================================================================*/
 
+#include "NiftyRegCommon.h"
 
-#ifndef NIFTIIMAGETOMITK_HEADER_INCLUDED
-#define NIFTIIMAGETOMITK_HEADER_INCLUDED
+// ---------------------------------------------------------------------------
+// mat44_transpose()
+// ---------------------------------------------------------------------------
 
-#include "mitkImage.h"
-#include "mitkImageDataItem.h"
+mat44 mat44_transpose(mat44 in)
+{
+  mat44 out;
+  for(unsigned int i = 0; i < 4; i++)
+    {
+    for(unsigned int j = 0; j < 4; j++)
+      {
+      out.m[i][j] = in.m[j][i];
+      }
+    }
+  return out;
+}
 
-#include "nifti1_io.h"
 
 
-/// Create an mitk::Image from a Nifti image
-
-mitk::Image::Pointer ConvertNiftiImageToMitk( nifti_image *niftiImage );
-
-
-#endif // NIFTIIMAGETOMITK_HEADER_INCLUDED
 

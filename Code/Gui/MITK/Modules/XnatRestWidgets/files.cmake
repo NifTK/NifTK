@@ -5,6 +5,7 @@ set(CPP_FILES
   XnatException.cpp
   XnatFileNameTypeDialog.cpp
   XnatLoginDialog.cpp
+  XnatLoginProfile.cpp
   XnatModel.cpp
   XnatNameDialog.cpp
   XnatNodeActivity.cpp

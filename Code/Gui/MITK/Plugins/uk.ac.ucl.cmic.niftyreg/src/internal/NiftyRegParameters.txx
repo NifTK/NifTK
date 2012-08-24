@@ -141,14 +141,14 @@ template <class PRECISION_TYPE>
 void NiftyRegParameters<PRECISION_TYPE>::PrintSelf( std::ostream& os )
 {
 
-  os << "Number of multi-resolution levels: " <<  m_LevelNumber;
-  os << "Number of (coarse to fine) multi-resolution levels: " << m_Level2Perform;    
+  os << "NiftyReg-Number of multi-resolution levels: " <<  m_LevelNumber << std::endl;
+  os << "NiftyReg-Number of (coarse to fine) multi-resolution levels: " << m_Level2Perform << std::endl;    
 
-  os << "Target image smoothing sigma (mm): " << m_TargetSigmaValue << std::endl;
-  os << "Source image smoothing sigma (mm): " << m_SourceSigmaValue << std::endl;
+  os << "NiftyReg-Target image smoothing sigma (mm): " << m_TargetSigmaValue << std::endl;
+  os << "NiftyReg-Source image smoothing sigma (mm): " << m_SourceSigmaValue << std::endl;
 
-  os << "Initial rigid registration flag: " << m_FlagDoInitialRigidReg << std::endl;
-  os << "Non-rigid registration flag: " << m_FlagDoNonRigidReg << std::endl;
+  os << "NiftyReg-Initial rigid registration flag: " << m_FlagDoInitialRigidReg << std::endl;
+  os << "NiftyReg-Non-rigid registration flag: " << m_FlagDoNonRigidReg << std::endl;
 
 
   // Initial affine transformation
@@ -156,12 +156,12 @@ void NiftyRegParameters<PRECISION_TYPE>::PrintSelf( std::ostream& os )
   os << "# Initial affine transformation" << std::endl;
 
   if ( m_InputAffineName.isEmpty() )
-    os << "InputAffineName: UNSET" << std::endl;
+    os << "NiftyReg-InputAffineName: UNSET" << std::endl;
   else
-    os << "InputAffineName: " << m_InputAffineName.toStdString() << std::endl;
+    os << "NiftyReg-InputAffineName: " << m_InputAffineName.toStdString() << std::endl;
 
-  os << "InputAffineFlag: " << m_FlagInputAffine << std::endl;
-  os << "FlirtAffineFlag: " << m_FlagFlirtAffine << std::endl;
+  os << "NiftyReg-InputAffineFlag: " << m_FlagInputAffine << std::endl;
+  os << "NiftyReg-FlirtAffineFlag: " << m_FlagFlirtAffine << std::endl;
 
   		               
   m_AladinParameters.PrintSelf( os );
@@ -214,19 +214,11 @@ reg_aladin<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
   
   // Get nifti versions of the images
 
-  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
-  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
-
   if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
-  m_FloatingImage  = ConvertMitkImageToNifti( mitkSourceImage );
+  m_FloatingImage  = ConvertMitkImageToNifti<PRECISION_TYPE>( mitkSourceImage );
 
-#if 0
-  nifti_set_filenames( m_ReferenceImage,"aladinReference.nii",0,0 );
-  nifti_image_write( m_ReferenceImage );
-
-  nifti_set_filenames( m_FloatingImage,"aladinFloating.nii",0,0 );
-  nifti_image_write( m_FloatingImage );
-#endif
+  if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
+  m_ReferenceImage = ConvertMitkImageToNifti<PRECISION_TYPE>( mitkTargetImage );
 
   // Check the dimensions of the images
 
@@ -243,7 +235,7 @@ reg_aladin<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
   if ( mitkTargetMaskImage ) 
   {
     if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
-    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+    m_ReferenceMaskImage = ConvertMitkImageToNifti<PRECISION_TYPE>( mitkTargetMaskImage );
 
     reg_checkAndCorrectDimension(m_ReferenceMaskImage);
 
@@ -311,10 +303,10 @@ reg_f3d<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
   // Get nifti versions of the images
 
   if ( m_ReferenceImage ) nifti_image_free( m_ReferenceImage );
-  m_ReferenceImage = ConvertMitkImageToNifti( mitkTargetImage );
+  m_ReferenceImage = ConvertMitkImageToNifti<PRECISION_TYPE>( mitkTargetImage );
 
   if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
-  m_FloatingImage = ConvertMitkImageToNifti( mitkSourceImage );
+  m_FloatingImage = ConvertMitkImageToNifti<PRECISION_TYPE>( mitkSourceImage );
 
 #if 0
   nifti_set_filenames( m_ReferenceImage,"f3dReference.nii",0,0 );
@@ -334,7 +326,7 @@ reg_f3d<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
   if ( mitkTargetMaskImage )
   {
     if ( m_ReferenceMaskImage ) nifti_image_free( m_ReferenceMaskImage );
-    m_ReferenceMaskImage = ConvertMitkImageToNifti( mitkTargetMaskImage );
+    m_ReferenceMaskImage = ConvertMitkImageToNifti<PRECISION_TYPE>( mitkTargetMaskImage );
 
     reg_checkAndCorrectDimension( m_ReferenceMaskImage );
 

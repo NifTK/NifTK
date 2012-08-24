@@ -2,6 +2,7 @@
 #define XnatPluginSettings_h
 
 #include <QString>
+#include <QMap>
 
 #include <berryIPreferences.h>
 
@@ -23,6 +24,16 @@ public:
 
   virtual QString getDefaultWorkDirectory() const;
   virtual void setDefaultWorkDirectory(const QString& workDir);
+
+  virtual QMap<QString, XnatLoginProfile*> getLoginProfiles() const;
+  virtual void setLoginProfiles(QMap<QString, XnatLoginProfile*> loginProfiles);
+
+  virtual XnatLoginProfile* getLoginProfile(QString profileName) const;
+  virtual void setLoginProfile(QString profileName, XnatLoginProfile*);
+
+  virtual void removeLoginProfile(QString profileName);
+
+  XnatLoginProfile* getDefaultLoginProfile() const;
 
 private:
   berry::IPreferences::Pointer preferences;
