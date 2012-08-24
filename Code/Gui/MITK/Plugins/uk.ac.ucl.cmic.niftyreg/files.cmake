@@ -4,10 +4,10 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   NiftyRegPluginActivator.cpp
   QmitkNiftyRegView.cpp
-  mitkImageToNifti.cpp
   niftiImageToMitk.cpp
   RegistrationExecution.cpp
   RegAladinParameters.cpp
+  NiftyRegCommon.cpp
 )
 
 set(UI_FILES
