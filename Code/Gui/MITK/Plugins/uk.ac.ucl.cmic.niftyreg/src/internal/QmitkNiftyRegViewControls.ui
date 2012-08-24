@@ -79,21 +79,14 @@
          <item row="0" column="1">
           <widget class="QRadioButton" name="m_DoBlockMatchingOnlyRadioButton">
            <property name="text">
-            <string>Block-Matching Only</string>
+            <string>Rigid or affine only</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
           <widget class="QRadioButton" name="m_DoNonRigidOnlyRadioButton">
            <property name="text">
-            <string>Non-Rigid Only</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QRadioButton" name="m_DoBlockMatchingThenNonRigidRadioButton">
-           <property name="text">
-            <string>Block-Matching then Non-Rigid</string>
+            <string>Non-rigid only</string>
            </property>
           </widget>
          </item>
@@ -122,6 +115,13 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item row="2" column="1">
+          <widget class="QRadioButton" name="m_DoBlockMatchingThenNonRigidRadioButton">
+           <property name="text">
+            <string>Rigid or affine followed by non-rigid</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

@@ -25,6 +25,8 @@
 #ifndef NiftyRegCommon_h
 #define NiftyRegCommon_h
 
+#include "nifti1_io.h"
+
 
 /// Codes for interpolation type
 typedef enum {
@@ -49,6 +51,9 @@ typedef enum {
   RIGID_THEN_AFFINE = 2,
   DIRECT_AFFINE = 3
 } AffineRegistrationType;
+
+
+mat44 mat44_transpose(mat44 in);
 
 
 #endif // NiftyRegCommon_h
