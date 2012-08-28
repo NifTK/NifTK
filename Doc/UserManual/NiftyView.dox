@@ -19,6 +19,7 @@ plugins is shown below, and these exact pages are available in the NiftyView GUI
 \li \subpage uk.ac.ucl.cmic.midasgeneralsegmentor
 \li \subpage uk.ac.ucl.cmic.midasmorphologicalsegmentor
 \li \subpage uk.ac.ucl.cmic.mitksegmentation
+\li \subpage uk.ac.ucl.cmic.niftyreg
 \li \subpage uk.ac.ucl.cmic.snapshot
 \li \subpage uk.ac.ucl.cmic.surfaceextractor
 \li \subpage uk.ac.ucl.cmic.surgicalguidance

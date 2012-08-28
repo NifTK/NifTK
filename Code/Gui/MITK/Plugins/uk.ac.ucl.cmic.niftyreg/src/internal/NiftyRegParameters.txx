@@ -28,6 +28,7 @@
 #include "niftiImageToMitk.h"
 
 
+
 // ---------------------------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------------------------
@@ -403,15 +404,10 @@ reg_f3d<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
   CUdevice dev;
   CUcontext ctx;
 
-  if ( m_F3dParameters.useGPU )
+  if ( m_F3dParameters.useGPU 
+       && ( ! ( m_F3dParameters.linearEnergyWeight0 ||
+		m_F3dParameters.linearEnergyWeight1 ) ) )
   {
-
-    if ( m_F3dParameters.linearEnergyWeight0 ||
-	 m_F3dParameters.linearEnergyWeight1 ) {
-
-      fprintf(stderr,"NiftyReg ERROR CUDA] The linear elasticity has not been implemented with CUDA yet. Exit.\n");
-      exit(0);
-    }
 
     if ( ( m_ReferenceImage->dim[4] == 1 && 
 	   m_FloatingImage->dim[4]  == 1 ) || 

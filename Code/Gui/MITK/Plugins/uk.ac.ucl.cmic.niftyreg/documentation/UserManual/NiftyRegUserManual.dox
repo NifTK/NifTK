@@ -6,19 +6,31 @@
 \section NiftyRegIntroduction Introduction
 
 The NiftyReg plugin to NiftyView allows the user to perform rigid,
-affine and non-linear registrations of 3D images.
+affine and non-linear registrations of 3D images. It is selected via
+the logo shown above or by selecting 'Window', 'Show View',
+'NiftyRegistration' from the menu bar.
 
-The rigid and affine registration are performed using an algorithm presented by
-Ourselin et al.[1, 2]; whereas the non-rigid registration is based on the work
-of Modat et al.[3].
+The rigid and affine registration are performed using an algorithm
+presented by Ourselin et al.[1, 2]; whereas the non-rigid registration
+is based on the work of Modat et al.[3]. If you are planning to use
+any of our research, we would be grateful if you would be kind enough
+to cite reference(s) [1], [2] (rigid or affine) and/or [3]
+(non-rigid).
 
-If you are planning to use any of our research, we would be grateful if you
-would be kind enough to cite reference(s) [1], [2] (rigid or affine) and/or
-[3] (non-rigid).
 
-\image html MainScreen.png "Figure 1. The Main Screen contains a central Editor, surrounded by Plugins."
+\section NiftyRegQuickStart Quick Start
 
-\section NiftyRegPlugin The NigftyReg Plugin
+When the NiftyReg plugin is first opened, the first 'Quick Start' tab is displayed by default. This contains the minimum set of information that must be entered to run a registration. 
+
+\image html NiftyReg_QuickStartDialog.png "Figure 1. The 'Quick Start' NiftyReg plugin dialog."
+
+
+
+
+\image html NiftyReg_CommonDialog.png "Figure 2. "
+\image html NiftyReg_RigidAffineDialog.png "Figure 3. "
+\image html NiftyReg_NonRigidDialog.png "Figure 4. "
+\image html NiftyReg_AdvancedNonRigidDialog.png "Figure 5. "
 
 \li Filename of a mask image in the reference space
 \li Filename of a mask image in the floating space. Only used when symmetric turned on
