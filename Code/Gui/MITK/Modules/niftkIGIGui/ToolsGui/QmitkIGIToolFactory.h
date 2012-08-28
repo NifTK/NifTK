@@ -46,14 +46,24 @@ public:
   itkNewMacro(QmitkIGIToolFactory);
 
   /**
-   * \brief Instantiates a tool based on the client descriptor.
+   * \brief Starting from the most basic (i.e. simple) type descriptor,
+   * typically parsed from the XML itself, we create the correct client
+   * descriptor, which the calling client then owns, and is responsible for
+   * deleting.
    */
-  virtual QmitkIGITool::Pointer CreateTool(ClientDescriptorXMLBuilder& descriptor);
+  virtual ClientDescriptorXMLBuilder* CreateClientDescriptor(const QString& type);
 
   /**
-   * \brief Instantiates a tool GUI based on the tool, and the specified prefix and postfix.
+   * \brief Instantiates a tool based on the client descriptor,
+   * which the calling client then owns, and is responsible for deleting.
    */
-  virtual QmitkIGIToolGui::Pointer CreateGUI(QmitkIGITool* tool, const QString& prefix, const QString& postfix);
+  virtual QmitkIGITool::Pointer CreateTool(const ClientDescriptorXMLBuilder& descriptor);
+
+  /**
+   * \brief Instantiates a tool GUI based on the tool, and the specified prefix and postfix
+   * which the calling client then owns, and is responsible for deleting.
+   */
+  virtual QmitkIGIToolGui::Pointer CreateGUI(const QmitkIGITool& tool, const QString& prefix, const QString& postfix);
 
 protected:
 

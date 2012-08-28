@@ -298,7 +298,7 @@ void QmitkIGIToolManager::OnCellDoubleClicked(int r, int c)
 
   // Use factory to create GUI.
   // A GUI can connect to tool, but not the other way round.
-  QmitkIGIToolGui::Pointer toolGui = m_ToolFactory->CreateGUI(tool, "", "Gui");
+  QmitkIGIToolGui::Pointer toolGui = m_ToolFactory->CreateGUI((*tool.GetPointer()), "", "Gui");
   toolGui->SetStdMultiWidget(m_StdMultiWidget);
   toolGui->SetTool(tool);
   toolGui->Initialize(NULL, clientInfo); // Initialize must be called after SetTool.
@@ -325,18 +325,13 @@ void QmitkIGIToolManager::InterpretMessage(OIGTLMessage::Pointer msg)
     {
       ClientConnected();
 
-      // ToDo: This is like a factory pattern, where we need to instantiate
-      // the correct object based on a set of data.
-
-      ClientDescriptorXMLBuilder *clientInfo = NULL;
-      QmitkIGITool::Pointer tool = NULL;
-
-      if (type == QString("TrackerClientDescriptor"))
+      ClientDescriptorXMLBuilder *clientInfo = m_ToolFactory->CreateClientDescriptor(type);
+      if (clientInfo == NULL)
       {
-        clientInfo = new TrackerClientDescriptor();
-        tool = QmitkIGITrackerTool::New();
+        return;
       }
-      else // type == ultrasonix etc.
+      QmitkIGITool::Pointer tool = m_ToolFactory->CreateTool(*clientInfo);
+      if (tool.IsNull())
       {
         return;
       }

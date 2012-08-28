@@ -24,7 +24,9 @@
 
 #include "QmitkIGIToolFactory.h"
 #include "QmitkIGITrackerTool.h"
+#include "QmitkIGIUltrasonixTool.h"
 #include "QmitkIGIToolGui.h"
+#include <Common/NiftyLinkXMLBuilder.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIToolFactory::QmitkIGIToolFactory()
@@ -39,10 +41,30 @@ QmitkIGIToolFactory::~QmitkIGIToolFactory()
 
 }
 
-QmitkIGITool::Pointer QmitkIGIToolFactory::CreateTool(ClientDescriptorXMLBuilder& descriptor)
+
+//-----------------------------------------------------------------------------
+ClientDescriptorXMLBuilder* QmitkIGIToolFactory::CreateClientDescriptor(const QString& type)
+{
+  ClientDescriptorXMLBuilder* clientInfo = NULL;
+
+  if (type == QString("TrackerClientDescriptor"))
+  {
+    clientInfo = new TrackerClientDescriptor();
+  }
+  else
+  {
+    qDebug() << "Matt, type=" << type;
+  }
+  return clientInfo;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGITool::Pointer QmitkIGIToolFactory::CreateTool(const ClientDescriptorXMLBuilder& descriptor)
 {
   QmitkIGITool::Pointer tool = NULL;
-  const QString deviceType = descriptor.getDeviceType();
+  ClientDescriptorXMLBuilder* desc = const_cast<ClientDescriptorXMLBuilder*>(&descriptor);
+  QString deviceType = desc->getDeviceType();
 
   if (deviceType == QString("Tracker"))
   {
@@ -50,18 +72,19 @@ QmitkIGITool::Pointer QmitkIGIToolFactory::CreateTool(ClientDescriptorXMLBuilder
   }
   else
   {
-    // ToDo: Ultrasonix etc.
+    qDebug() << "Matt, deviceType, creating an ultrasonix tool regardless =" << deviceType;
+    tool = QmitkIGIUltrasonixTool::New();
   }
 
   return tool;
 }
 
 //-----------------------------------------------------------------------------
-QmitkIGIToolGui::Pointer QmitkIGIToolFactory::CreateGUI(QmitkIGITool* tool, const QString& prefix, const QString& postfix)
+QmitkIGIToolGui::Pointer QmitkIGIToolFactory::CreateGUI(const QmitkIGITool& tool, const QString& prefix, const QString& postfix)
 {
   QmitkIGIToolGui* toolGui = NULL;
 
-  std::string classname = tool->GetNameOfClass();
+  const std::string classname = tool.GetNameOfClass();
   std::string guiClassname = prefix.toStdString() + classname + postfix.toStdString();
 
   std::list<itk::LightObject::Pointer> allGUIs = itk::ObjectFactoryBase::CreateAllInstance(guiClassname.c_str());
