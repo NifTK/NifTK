@@ -353,7 +353,7 @@ void QmitkIGIToolManager::InterpretMessage(OIGTLMessage::Pointer msg)
       tool->SetSocket(m_Sockets[portNum]);
       tool->Initialize();
 
-      connect(m_Sockets[portNum], SIGNAL(messageReceived(OIGTLMessage::Pointer )), tool, SLOT(InterpretMessage(OIGTLMessage::Pointer )), Qt::QueuedConnection);
+      connect(m_Sockets[portNum], SIGNAL(messageReceived(OIGTLMessage::Pointer )), m_Tools[portNum], SLOT(InterpretMessage(OIGTLMessage::Pointer )), Qt::QueuedConnection);
 
       // Update the appropriate row on the UI with the client's details
       for (int i = 0; i < this->m_TableWidget->rowCount(); i++)
