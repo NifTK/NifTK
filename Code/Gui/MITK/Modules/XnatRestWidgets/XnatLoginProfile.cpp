@@ -2,6 +2,7 @@
 
 XnatLoginProfile::XnatLoginProfile()
 {
+  m_default = false;
 }
 
 XnatLoginProfile::~XnatLoginProfile()
