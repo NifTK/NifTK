@@ -51,6 +51,7 @@ public slots:
 signals:
 
   void StatusUpdate(QString statusUpdateMessage);
+  void UpdatePreviewImage(OIGTLMessage::Pointer msg);
 
 protected:
 
@@ -61,6 +62,8 @@ protected:
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
 
 private:
+
+  void HandleImageData(OIGTLMessage::Pointer msg);
 
 }; // end class
 

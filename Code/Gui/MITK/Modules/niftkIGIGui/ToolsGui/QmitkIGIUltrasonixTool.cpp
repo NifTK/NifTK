@@ -23,6 +23,7 @@
  ============================================================================*/
 
 #include "QmitkIGIUltrasonixTool.h"
+#include <QImage>
 
 NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
@@ -41,5 +42,23 @@ QmitkIGIUltrasonixTool::~QmitkIGIUltrasonixTool()
 //-----------------------------------------------------------------------------
 void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
 {
-  std::cerr << "Matt, QmitkIGIUltrasonixTool::InterpretMessage" << std::endl;
+  if (msg.data() != NULL &&
+      (msg->getMessageType() == QString("IMAGE"))
+     )
+  {
+    this->HandleImageData(msg);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
+{
+  OIGTLImageMessage::Pointer imageMsg;
+  imageMsg = static_cast<OIGTLImageMessage::Pointer>(msg);
+
+  if (imageMsg.data() != NULL)
+  {
+    emit UpdatePreviewImage(imageMsg);
+  }
 }

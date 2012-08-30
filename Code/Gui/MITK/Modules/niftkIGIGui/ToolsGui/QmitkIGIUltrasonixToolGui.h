@@ -31,6 +31,8 @@
 
 class QmitkIGIUltrasonixTool;
 class ClientDescriptorXMLBuilder;
+class QImage;
+class QLabel;
 
 /**
  * \class QmitkIGITrackerToolGui
@@ -62,10 +64,12 @@ protected:
 private slots:
 
   void OnStatusUpdate(QString message);
+  void OnUpdatePreviewImage(OIGTLMessage::Pointer msg);
 
 private:
 
   QmitkIGIUltrasonixTool* GetQmitkIGIUltrasonixTool() const;
+  QLabel *m_PixmapLabel;
 
 }; // end class
 

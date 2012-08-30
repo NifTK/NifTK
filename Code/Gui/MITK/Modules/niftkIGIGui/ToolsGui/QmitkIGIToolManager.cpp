@@ -330,14 +330,15 @@ void QmitkIGIToolManager::InterpretMessage(OIGTLMessage::Pointer msg)
       {
         return;
       }
-      QmitkIGITool::Pointer tool = m_ToolFactory->CreateTool(*clientInfo);
-      if (tool.IsNull())
+
+      clientInfo->setXMLString(str);
+      if (!clientInfo->isMessageValid())
       {
         return;
       }
 
-      clientInfo->setXMLString(str);
-      if (!clientInfo->isMessageValid())
+      QmitkIGITool::Pointer tool = m_ToolFactory->CreateTool(*clientInfo);
+      if (tool.IsNull())
       {
         return;
       }

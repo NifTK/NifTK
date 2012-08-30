@@ -53,7 +53,7 @@ ClientDescriptorXMLBuilder* QmitkIGIToolFactory::CreateClientDescriptor(const QS
   }
   else
   {
-    qDebug() << "Matt, type=" << type;
+    clientInfo = new ClientDescriptorXMLBuilder();
   }
   return clientInfo;
 }
@@ -65,15 +65,19 @@ QmitkIGITool::Pointer QmitkIGIToolFactory::CreateTool(const ClientDescriptorXMLB
   QmitkIGITool::Pointer tool = NULL;
   ClientDescriptorXMLBuilder* desc = const_cast<ClientDescriptorXMLBuilder*>(&descriptor);
   QString deviceType = desc->getDeviceType();
+  QString deviceName = desc->getDeviceName();
 
   if (deviceType == QString("Tracker"))
   {
     tool = QmitkIGITrackerTool::New();
   }
+  else if (deviceType == QString("Imager") && deviceName == QString("Ultrasonix"))
+  {
+    tool = QmitkIGIUltrasonixTool::New();
+  }
   else
   {
-    qDebug() << "Matt, deviceType, creating an ultrasonix tool regardless =" << deviceType;
-    tool = QmitkIGIUltrasonixTool::New();
+    qDebug() << "QmitkIGIToolFactory::CreateTool: Unrecognised deviceType=" <<  deviceType << ", deviceName=" << deviceName;
   }
 
   return tool;

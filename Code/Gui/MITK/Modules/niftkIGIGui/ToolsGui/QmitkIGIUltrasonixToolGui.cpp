@@ -25,11 +25,15 @@
 #include "QmitkIGIUltrasonixToolGui.h"
 #include <Common/NiftyLinkXMLBuilder.h>
 #include "QmitkIGIUltrasonixTool.h"
+#include <QImage>
+#include <QPixmap>
+#include <QLabel>
 
 NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultrasonix Tool Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()
+: m_PixmapLabel(NULL)
 {
 
 }
@@ -60,11 +64,19 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget *parent, ClientDescriptorXMLB
 {
   setupUi(this);
 
+  if (m_PixmapLabel != NULL)
+  {
+    delete m_PixmapLabel;
+  }
+  m_PixmapLabel = new QLabel(this);
+  m_ScrollArea->setWidget(m_PixmapLabel);
+
   // Connect to signals from the tool.
   QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
   if (tool != NULL)
   {
     connect (tool, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
+    connect (tool, SIGNAL(UpdatePreviewImage(OIGTLMessage::Pointer)), this, SLOT(OnUpdatePreviewImage(OIGTLMessage::Pointer)));
   }
 }
 
@@ -73,4 +85,18 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget *parent, ClientDescriptorXMLB
 void QmitkIGIUltrasonixToolGui::OnStatusUpdate(QString message)
 {
   qDebug() << "QmitkIGIUltrasonixToolGui::OnStatusUpdate: received" << message;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
+{
+  OIGTLImageMessage::Pointer imageMsg;
+  imageMsg = static_cast<OIGTLImageMessage::Pointer>(msg);
+
+  if (imageMsg.data() != NULL)
+  {
+    QImage image = imageMsg->getQImage();
+    m_PixmapLabel->setPixmap(QPixmap::fromImage(image));
+  }
 }
