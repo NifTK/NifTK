@@ -8,11 +8,11 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $LastChangedDate$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
+ Revision          : $Revision: 9401 $
+ Last modified by  : $Author: mjc $
 
- Original author   : $Author$
+ Original author   : m.clarkson@ucl.ac.uk
 
  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
@@ -22,42 +22,43 @@
 
  ============================================================================*/
 
-// Qmitk
-#include "SurgicalGuidanceView.h"
-
-const std::string SurgicalGuidanceView::VIEW_ID = "uk.ac.ucl.cmic.surgicalguidance";
+#include "QmitkIGITool.h"
+#include <itkObjectFactory.h>
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceView::SurgicalGuidanceView()
+QmitkIGITool::QmitkIGITool()
+: m_DataStorage(NULL)
+, m_Socket(NULL)
+, m_ClientDescriptor(NULL)
 {
+
 }
 
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceView::~SurgicalGuidanceView()
+QmitkIGITool::~QmitkIGITool()
 {
+  // We don't own the data storage, socket, or client descriptor, so don't delete them.
 }
 
 
 //-----------------------------------------------------------------------------
-std::string SurgicalGuidanceView::GetViewID() const
+int QmitkIGITool::GetPort() const
 {
-  return VIEW_ID;
+  int result = -1;
+  if (m_Socket != NULL)
+  {
+    result = m_Socket->getPort();
+  }
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
+void QmitkIGITool::SendMessage(OIGTLMessage::Pointer msg)
 {
-  m_ToolManager = QmitkIGIToolManager::New();
-  m_ToolManager->setupUi(parent);
-  m_ToolManager->SetStdMultiWidget(this->GetActiveStdMultiWidget());
-  m_ToolManager->SetDataStorage(this->GetDataStorage());
-}
-
-
-//-----------------------------------------------------------------------------
-void SurgicalGuidanceView::SetFocus()
-{
-  m_ToolManager->setFocus();
+  if (m_Socket != NULL)
+  {
+    m_Socket->sendMessage(msg);
+  }
 }

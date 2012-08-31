@@ -8,11 +8,11 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $LastChangedDate$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
+ Revision          : $Revision: 9401 $
+ Last modified by  : $Author: mjc $
 
- Original author   : $Author$
+ Original author   : m.clarkson@ucl.ac.uk
 
  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
@@ -22,42 +22,51 @@
 
  ============================================================================*/
 
-// Qmitk
-#include "SurgicalGuidanceView.h"
-
-const std::string SurgicalGuidanceView::VIEW_ID = "uk.ac.ucl.cmic.surgicalguidance";
+#include "QmitkIGIToolGui.h"
+#include <iostream>
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceView::SurgicalGuidanceView()
+QmitkIGIToolGui::QmitkIGIToolGui()
 {
+
 }
 
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceView::~SurgicalGuidanceView()
+QmitkIGIToolGui::~QmitkIGIToolGui()
 {
+  m_ReferenceCountLock.Lock();
+  m_ReferenceCount = 0; // otherwise ITK will complain in LightObject's destructor
+  m_ReferenceCountLock.Unlock();
+
+  // We don't own m_Tool or m_StdMultiWidget, so don't delete them.
 }
 
 
 //-----------------------------------------------------------------------------
-std::string SurgicalGuidanceView::GetViewID() const
+void QmitkIGIToolGui::Register() const
 {
-  return VIEW_ID;
+  // empty on purpose, just don't let ITK handle calls to Register()
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
+void QmitkIGIToolGui::UnRegister() const
 {
-  m_ToolManager = QmitkIGIToolManager::New();
-  m_ToolManager->setupUi(parent);
-  m_ToolManager->SetStdMultiWidget(this->GetActiveStdMultiWidget());
-  m_ToolManager->SetDataStorage(this->GetDataStorage());
+  // empty on purpose, just don't let ITK handle calls to UnRegister()
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::SetFocus()
+void QmitkIGIToolGui::SetReferenceCount(int)
 {
-  m_ToolManager->setFocus();
+  // empty on purpose, just don't let ITK handle calls to SetReferenceCount()
 }
+
+//-----------------------------------------------------------------------------
+void QmitkIGIToolGui::SetTool( QmitkIGITool* tool )
+{
+  m_Tool = tool;
+  emit NewToolAssociated(m_Tool);
+}
+
