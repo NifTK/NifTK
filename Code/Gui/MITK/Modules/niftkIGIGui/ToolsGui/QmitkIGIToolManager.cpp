@@ -85,7 +85,15 @@ void QmitkIGIToolManager::setupUi(QWidget* parent)
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
   m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
+
   m_Frame->setContentsMargins(0, 0, 0, 0);
+
+  m_TopLevelGridLayout->setContentsMargins(0,0,0,0);
+  m_TopLevelGridLayout->setSpacing(0);
+  m_TopLevelGridLayout->setRowStretch(0, 1);
+  m_TopLevelGridLayout->setRowStretch(1, 1);
+  m_TopLevelGridLayout->setRowStretch(2, 1);
+  m_TopLevelGridLayout->setRowStretch(3, 10);
 
   connect(m_OpenPortPushButton, SIGNAL(clicked()), this, SLOT(OnAddListeningPort()) );
   connect(m_ClosePortPushButton, SIGNAL(clicked()), this, SLOT(OnRemoveListeningPort()) );
