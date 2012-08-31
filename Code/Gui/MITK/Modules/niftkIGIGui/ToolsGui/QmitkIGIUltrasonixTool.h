@@ -26,7 +26,10 @@
 #define QMITKIGIULTRASONIXTOOL_H
 
 #include "niftkIGIGuiExports.h"
+#include "QmitkQImageToMitkImageFilter.h"
 #include "QmitkIGITool.h"
+#include "mitkDataNode.h"
+#include "mitkImage.h"
 
 /**
  * \class QmitkIGIUltrasonixTool
@@ -40,6 +43,8 @@ public:
 
   mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGITool);
   itkNewMacro(QmitkIGIUltrasonixTool);
+
+  static const std::string ULTRASONIX_TOOL_2D_IMAGE_NAME;
 
 public slots:
 
@@ -64,6 +69,10 @@ protected:
 private:
 
   void HandleImageData(OIGTLMessage::Pointer msg);
+
+  mitk::Image::Pointer m_Image;
+  mitk::DataNode::Pointer m_ImageNode;
+  QmitkQImageToMitkImageFilter::Pointer m_Filter;
 
 }; // end class
 

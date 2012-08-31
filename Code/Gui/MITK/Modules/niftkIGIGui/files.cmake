@@ -1,5 +1,6 @@
 SET(CPP_FILES
   Common/QmitkIGIUtils.cpp
+  DataManagement/QmitkQImageToMitkImageFilter.cpp
   ToolsGui/TrackerControlsWidget.cpp
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.cpp
   ToolsGui/QmitkIGITool.cpp

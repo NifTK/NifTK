@@ -24,12 +24,24 @@
 
 #include "QmitkIGIUltrasonixTool.h"
 #include <QImage>
+#include "mitkRenderingManager.h"
 
 NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
+const std::string QmitkIGIUltrasonixTool::ULTRASONIX_TOOL_2D_IMAGE_NAME = std::string("QmitkIGIUltrasonixTool image");
+
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
+: m_Image(NULL)
+, m_ImageNode(NULL)
+, m_Filter(NULL)
 {
+  m_Filter = QmitkQImageToMitkImageFilter::New();
+
+  m_ImageNode = mitk::DataNode::New();
+  m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
+  m_ImageNode->SetVisibility(true);
+  m_ImageNode->SetOpacity(1);
 }
 
 
@@ -60,5 +72,18 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
   if (imageMsg.data() != NULL)
   {
     emit UpdatePreviewImage(imageMsg);
+
+    QImage image = imageMsg->getQImage();
+    m_Filter->SetQImage(&image);
+    m_Filter->Update();
+    m_Image = m_Filter->GetOutput();
+    m_ImageNode->SetData(m_Image);
+
+    if (!this->GetDataStorage()->Exists(m_ImageNode))
+    {
+      this->GetDataStorage()->Add(m_ImageNode);
+    }
+
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   }
 }
