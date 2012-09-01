@@ -261,49 +261,50 @@ void XnatDownloadManager::downloadDataBlocking()
   unsigned long numBytes;
   XnatRestStatus status;
 
-  // check if user has canceled download
-  if ( downloadDialog->wasDownloadCanceled() )
+  while (true)
   {
-    downloadDialog->close();
-    status = cancelXnatRestAsynTransfer();
+    // check if user has canceled download
+    if ( downloadDialog->wasDownloadCanceled() )
+    {
+      downloadDialog->close();
+      status = cancelXnatRestAsynTransfer();
+      if ( status != XNATREST_OK )
+      {
+        QMessageBox::warning(browser, tr("Cancel File Download Error"), tr(getXnatRestStatusMsg(status)));
+      }
+      else if ( !QFile::remove(zipFilename) )
+      {
+        QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+      }
+      emit done();
+      break;
+    }
+
+    // check if download is finished
+    if ( finished == XNATRESTASYN_DONE )
+    {
+      downloadDialog->showUnzipInProgress();
+      unzipData();
+      break;
+    }
+
+    // download more data from XNAT
+    status = moveXnatRestAsynData(&numBytes, &finished);
     if ( status != XNATREST_OK )
     {
-      QMessageBox::warning(browser, tr("Cancel File Download Error"), tr(getXnatRestStatusMsg(status)));
+      downloadDialog->close();
+      QMessageBox::warning(browser, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
+      emit done();
+      break;
     }
-    else if ( !QFile::remove(zipFilename) )
+
+    // update number of bytes downloaded
+    if ( numBytes > 0 )
     {
-      QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+      totalBytes += numBytes;
+      downloadDialog->showBytesDownloaded(totalBytes);
     }
-    emit done();
-    return;
   }
-
-  // check if download is finished
-  if ( finished == XNATRESTASYN_DONE )
-  {
-    downloadDialog->showUnzipInProgress();
-    unzipData();
-    return;
-  }
-
-  // download more data from XNAT
-  status = moveXnatRestAsynData(&numBytes, &finished);
-  if ( status != XNATREST_OK )
-  {
-    downloadDialog->close();
-    QMessageBox::warning(browser, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
-    emit done();
-    return;
-  }
-
-  // update number of bytes downloaded
-  if ( numBytes > 0 )
-  {
-    totalBytes += numBytes;
-    downloadDialog->showBytesDownloaded(totalBytes);
-  }
-
-  downloadDataBlocking();
 }
 
 void XnatDownloadManager::unzipData()
@@ -359,4 +360,3 @@ void XnatDownloadManager::finishDownload()
     }
   }
 }
-
