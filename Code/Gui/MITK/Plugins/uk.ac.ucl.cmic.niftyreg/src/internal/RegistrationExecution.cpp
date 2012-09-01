@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-08-13 13:00:32 +0100 (Mon, 13 Aug 2012) $
+ Revision          : $Revision: 9470 $
+ Last modified by  : $Author: jhh $
 
  Original author   : j.hipwell@ucl.ac.uk
 
@@ -109,17 +109,18 @@ void RegistrationExecution::ExecuteRegistration()
     }
   }
 
-  
+
   // Ensure the progress bar is scaled appropriately
 
-  if ( userData->m_RegParameters.m_FlagDoInitialRigidReg && userData->m_RegParameters.m_FlagDoNonRigidReg ) 
+  if (    userData->m_RegParameters.m_FlagDoInitialRigidReg 
+       && userData->m_RegParameters.m_FlagDoNonRigidReg ) 
     userData->m_ProgressBarRange = 50.;
   else
     userData->m_ProgressBarRange = 100.;
 
   userData->m_ProgressBarOffset = 0.;
 
-
+  
   // Create and run the Aladin registration?
 
   if ( userData->m_RegParameters.m_FlagDoInitialRigidReg ) 
@@ -134,9 +135,52 @@ void RegistrationExecution::ExecuteRegistration()
 
     userData->m_RegAladin->Run();
 
-    mitkSourceImage = ConvertNiftiImageToMitk( userData->m_RegAladin->GetFinalWarpedImage() );
+    // Transform the source image...
+
+#if 0
+
+    nifti_image *transformedFloatingImage = 
+      nifti_copy_nim_info( userData->m_RegParameters.m_FloatingImage );
+
+    transformedFloatingImage->data = (void *) malloc( transformedFloatingImage->nvox 
+						      * transformedFloatingImage->nbyper );
+
+    memcpy( transformedFloatingImage->data, userData->m_RegParameters.m_FloatingImage->data,
+	    transformedFloatingImage->nvox * transformedFloatingImage->nbyper );
+
+    mat44 *affineTransformation = userData->m_RegAladin->GetTransformationMatrix();
+    mat44 invAffineTransformation = nifti_mat44_inverse( *affineTransformation );
+
+    // ...by updating the sform matrix
+
+    if ( transformedFloatingImage->sform_code > 0 )
+    {
+      transformedFloatingImage->sto_xyz = reg_mat44_mul( &invAffineTransformation, 
+							 &(transformedFloatingImage->sto_xyz) );
+    }
+    else
+    {
+      transformedFloatingImage->sform_code = 1;
+      transformedFloatingImage->sto_xyz = reg_mat44_mul( &invAffineTransformation, 
+							 &(transformedFloatingImage->qto_xyz) );
+    }
+     
+    transformedFloatingImage->sto_ijk = nifti_mat44_inverse( transformedFloatingImage->sto_xyz );
+
+#else
+
+    // ...or getting the resampled volume.
+
+    nifti_image *transformedFloatingImage = userData->m_RegAladin->GetFinalWarpedImage();
+
+#endif
+
+    mitkSourceImage = ConvertNiftiImageToMitk( transformedFloatingImage );
+    nifti_image_free( transformedFloatingImage );
+
 
     // Add this result to the data manager
+
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
     std::string nameOfResultImage;

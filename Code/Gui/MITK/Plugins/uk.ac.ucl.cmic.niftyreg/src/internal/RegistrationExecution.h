@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-07-07 07:38:36 +0100 (Sat, 07 Jul 2012) $
+ Revision          : $Revision: 9321 $
+ Last modified by  : $Author: jhh $
 
  Original author   : j.hipwell@ucl.ac.uk
 

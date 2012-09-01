@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-06-28 11:43:10 +0100 (Thu, 28 Jun 2012) $
+ Revision          : $Revision: 9264 $
+ Last modified by  : $Author: jhh $
 
  Original author   : j.hipwell@ucl.ac.uk
 
@@ -36,11 +36,6 @@
 
 mitk::Image::Pointer ConvertNiftiImageToMitk( nifti_image *niftiImage );
 
-template< unsigned int VImageDimension >
-mitk::Image::Pointer ConvertNiftiImageToMitkDimension( nifti_image *imageNifti );
-
-template< typename TPixel, unsigned int VImageDimension >
-mitk::Image::Pointer ConvertNiftiImageToMitkPixel( nifti_image *imageNifti );
 
 #endif // NIFTIIMAGETOMITK_HEADER_INCLUDED
 

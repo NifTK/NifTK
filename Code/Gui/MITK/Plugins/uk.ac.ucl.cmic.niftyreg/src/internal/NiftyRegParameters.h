@@ -112,8 +112,6 @@ class NiftyRegParameters
     /// The 'reg_f3d' parameters
     RegF3dParameters<PRECISION_TYPE> m_F3dParameters;
 
-  protected:
-
 
     /// The reference/target image
     nifti_image *m_ReferenceImage;

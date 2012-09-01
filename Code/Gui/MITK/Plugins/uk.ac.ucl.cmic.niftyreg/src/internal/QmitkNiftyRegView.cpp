@@ -886,6 +886,7 @@ void QmitkNiftyRegView::OnNodeAdded(const mitk::DataNode* node)
     m_Controls.m_SourceImageComboBox->setCurrentIndex( 1 );
     m_Controls.m_TargetImageComboBox->setCurrentIndex( 0 );
   }
+
 }
 
 
@@ -1202,7 +1203,7 @@ void QmitkNiftyRegView::OnResetParametersPushButtonPressed( void )
 
 void QmitkNiftyRegView::OnSaveTransformationPushButtonPressed( void )
 {
-  if ( ! ( m_RegAladin && m_RegNonRigid ) )
+  if ( ! ( m_RegAladin || m_RegNonRigid ) )
   {
     QMessageBox msgBox;
     msgBox.setText("No registration data available,"
@@ -1222,15 +1223,24 @@ void QmitkNiftyRegView::OnSaveTransformationPushButtonPressed( void )
   dialog.setLabelText( QFileDialog::FileName, tr( "File selected" ) );
 
   QStringList filters;
-  filters << "Affine transformation (*.affine)"
-	  << "B-spline control grid (*.nii)";
 
-  if ( ! ( m_RegAladin || m_RegNonRigid ) )
+  if ( ! ( m_RegAladin && m_RegNonRigid ) )
   {
     if ( m_RegNonRigid )    
+    {
+      filters << "B-spline control grid (*.nii)";      
       dialog.selectNameFilter( filters[1] );
+    }
     else
+    {
+      filters << "Affine transformation (*.affine)";
       dialog.selectNameFilter( filters[0] );
+    }
+  }
+  else {
+    filters << "Affine transformation (*.affine)"
+	    << "B-spline control grid (*.nii)";
+    dialog.selectNameFilter( filters[0] );
   }
 
   dialog.setNameFilters(filters);
@@ -2091,6 +2101,45 @@ void QmitkNiftyRegView::OnLoadRegistrationParametersPushButtonPressed( void )
 
 void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 {
+
+#if 0
+
+  // This is to test the image conversion from MITK to nifti and back
+
+  mitk::DataStorage::SetOfObjects::ConstPointer nodes = GetNodes();
+
+  if ( ( nodes ) && ( nodes->size() >= 1 ) )
+  {
+
+    mitk::Image::Pointer mitkSourceImage = dynamic_cast<mitk::Image*>( (*nodes)[0]->GetData() );
+
+    cout << "Creating nifti image" << endl;
+    nifti_image *niftiSourceImage  = ConvertMitkImageToNifti( mitkSourceImage );
+
+    nifti_set_filenames( niftiSourceImage,
+			 "/scratch0/NOT_BACKED_UP/JamiesAffineRegnHeaderTestData/testNiftiFromItk.nii",0,0 );
+    nifti_image_write( niftiSourceImage );
+
+    cout << "Creating mitk image" << endl;
+    mitkSourceImage = ConvertNiftiImageToMitk( niftiSourceImage );
+    
+    nifti_image_free( niftiSourceImage );
+
+    cout << "Adding mitk image to data storage" << endl;
+    mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
+    resultNode->SetProperty("name", mitk::StringProperty::New( "test" ) );
+    resultNode->SetData( mitkSourceImage );
+
+    GetDataStorage()->Add( resultNode );
+
+    cout << "Done" << endl;
+  }
+
+  return;
+
+#endif
+
+
 
   PrintSelf( std::cout );
 

@@ -33,6 +33,7 @@ segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Prog
 \li \subpage ArchitectureDragAndDropDisplay
 \li \subpage ArchitectureMIDASMorphEditor
 \li \subpage ArchitectureMIDASGeneralEditor
+\li \subpage ArchitectureSurgicalGuidanceView
 \li \subpage UnderstandingFileIO
 \li \subpage UnderstandingGeometry
 \li \subpage HowToContributeToThePlatform

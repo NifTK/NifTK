@@ -25,6 +25,8 @@
 SET(MODULE_DIRS
   niftkMitkExt
   niftkQmitkExt
+  niftkIGI
+  niftkIGIGui
   XnatRest
   XnatRestWidgets
 )
