@@ -32,9 +32,9 @@ private slots:
   void on_btnSave_clicked();
   void on_btnDelete_clicked();
   void on_edtProfileName_textChanged(const QString& text);
-//  void on_lstProfiles_clicked(const QModelIndex& current);
   void onFieldChanged();
   void onCurrentProfileChanged(const QModelIndex& current);
+  void resetLstProfilesCurrentIndex();
 
 private:
   void createConnections();
