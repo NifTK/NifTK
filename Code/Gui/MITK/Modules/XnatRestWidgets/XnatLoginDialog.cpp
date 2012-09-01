@@ -2,10 +2,11 @@
 
 #include <mitkLogMacros.h>
 
+#include <QListView>
 #include <QMap>
 #include <QMessageBox>
 #include <QStringListModel>
-#include <QListView>
+#include <QTimer>
 
 #include "XnatConnection.h"
 #include "XnatException.h"
@@ -51,8 +52,11 @@ XnatLoginDialog::XnatLoginDialog(XnatConnectionFactory& f, QWidget* parent, Qt::
     ui = new Ui::XnatLoginDialog();
     ui->setupUi(this);
 
+    QItemSelectionModel* oldSelectionModel = ui->lstProfiles->selectionModel();
     ui->lstProfiles->setModel(&d->model);
+    delete oldSelectionModel;
     ui->lstProfiles->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->lstProfiles->setSelectionRectVisible(false);
     ui->lstProfiles->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->btnSave->setEnabled(false);
 
@@ -78,13 +82,14 @@ XnatLoginDialog::~XnatLoginDialog()
 
 void XnatLoginDialog::createConnections()
 {
-  connect(ui->lstProfiles->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)),
-          this, SLOT(onCurrentProfileChanged(const QModelIndex&, const QModelIndex&)));
   connect(ui->edtProfileName, SIGNAL(textChanged(const QString&)), this, SLOT(onFieldChanged()));
   connect(ui->edtServerUri, SIGNAL(textChanged(const QString&)), this, SLOT(onFieldChanged()));
   connect(ui->edtUserName, SIGNAL(textChanged(const QString&)), this, SLOT(onFieldChanged()));
-  connect(ui->edtPassword, SIGNAL(textChanged(const QString&)), this, SLOT(onFieldChanged()));
+  // Password change is not listened to.
+//  connect(ui->edtPassword, SIGNAL(textChanged(const QString&)), this, SLOT(onFieldChanged()));
   connect(ui->cbxDefaultProfile, SIGNAL(toggled(bool)), this, SLOT(onFieldChanged()));
+  connect(ui->lstProfiles->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)),
+      this, SLOT(onCurrentProfileChanged(const QModelIndex&)));
 }
 
 XnatSettings* XnatLoginDialog::settings() const
@@ -103,7 +108,7 @@ void XnatLoginDialog::setSettings(XnatSettings* settings)
   d->profileNames = d->profiles.keys();
   d->profileNames.sort();
   d->model.setStringList(d->profileNames);
-
+  
   XnatLoginProfile* defaultProfile = d->settings->getDefaultLoginProfile();
 
   if (defaultProfile)
@@ -174,50 +179,51 @@ void XnatLoginDialog::accept()
   QDialog::accept();
 }
 
-void XnatLoginDialog::onCurrentProfileChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
+void XnatLoginDialog::onCurrentProfileChanged(const QModelIndex& currentIndex)
 {
   Q_D(XnatLoginDialog);
-  QModelIndex oldIndex = currentIndex;
-  QString newProfileName = d->profileNames[currentIndex.row()];
 
+  if (!currentIndex.isValid())
+  {
+    loadProfile();
+    return;
+  }
+
+  int originalIndexRow = currentIndex.row();
+  QString newProfileName = d->profileNames[currentIndex.row()];
+  XnatLoginProfile* profile = d->profiles[newProfileName];
+
+  bool newProfileSaved = false;
   if (d->dirty)
   {
     QString profileName = ui->edtProfileName->text();
     if (askToSaveProfile(profileName))
     {
       saveProfile(profileName);
+      newProfileSaved = true;
     }
   }
 
-  if (!currentIndex.isValid())
+  loadProfile(*profile);
+
+  d->dirty = false;
+  ui->btnSave->setEnabled(false);
+  ui->btnDelete->setEnabled(true);
+
+  // Ugly hack. If the current index has changed because of saving the edited element
+  // then we have to select it again, but a bit later. If we select it right here then
+  // both the original index and the new index are selected. (Even if single selection
+  // is set.)
+  if (newProfileSaved && originalIndexRow != currentIndex.row())
   {
-    MITK_INFO << "XnatLoginDialog::onCurrentProfileChanged(const QModelIndex& current, const QModelIndex& previous) invalid index! ";
-    return;
+    QTimer::singleShot(0, this, SLOT(resetLstProfilesCurrentIndex()));
   }
+}
 
-  XnatLoginProfile* profile = d->profiles[newProfileName];
-  if (profile)
-  {
-    blockSignalsOfFields(true);
-
-    ui->edtProfileName->setText(profile->name());
-    ui->edtServerUri->setText(profile->serverUri());
-    ui->edtUserName->setText(profile->userName());
-    ui->edtPassword->setText(profile->password());
-    ui->cbxDefaultProfile->setChecked(profile->isDefault());
-
-    blockSignalsOfFields(false);
-
-    d->dirty = false;
-    ui->btnSave->setEnabled(false);
-    ui->btnDelete->setEnabled(true);
-
-    // The profile index has changed if a profile was saved a few lines above.
-    // Does not deselect the old line!
-    ui->lstProfiles->selectionModel()->select(oldIndex, QItemSelectionModel::Clear);
-    ui->lstProfiles->selectionModel()->select(oldIndex, QItemSelectionModel::Deselect);
-    ui->lstProfiles->setCurrentIndex(currentIndex);
-  }
+void XnatLoginDialog::resetLstProfilesCurrentIndex()
+{
+  // Yes, this is really needed. See the comment above.
+  ui->lstProfiles->setCurrentIndex(ui->lstProfiles->currentIndex());
 }
 
 bool XnatLoginDialog::askToSaveProfile(const QString& profileName)
@@ -234,18 +240,15 @@ bool XnatLoginDialog::askToSaveProfile(const QString& profileName)
 void XnatLoginDialog::saveProfile(const QString& profileName)
 {
   Q_D(XnatLoginDialog);
-  QString serverUri = ui->edtServerUri->text();
-  QString userName = ui->edtUserName->text();
-  QString password = ui->edtPassword->text();
-  bool default_ = ui->cbxDefaultProfile->isChecked();
-
+  
   XnatLoginProfile* profile = d->profiles[profileName];
+  bool oldProfileWasDefault = profile && profile->isDefault();
   if (!profile)
   {
     profile = new XnatLoginProfile();
     d->profiles[profileName] = profile;
     int profileNumber = d->profileNames.size();
-
+    
     // Insertion into the profile name list and the listView (ascending order)
     int idx = 0;
     while (idx < profileNumber && QString::localeAwareCompare(profileName, d->profileNames[idx]) > 0)
@@ -256,10 +259,12 @@ void XnatLoginDialog::saveProfile(const QString& profileName)
     d->model.insertRow(idx);
     d->model.setData(d->model.index(idx), profileName);
   }
-
+  
+  storeProfile(*profile);
+  
   // If the profile is to be default then remove the default flag from the other profiles.
   // This code assumes that the newly created profiles are not default.
-  if (default_ && !profile->isDefault())
+  if (profile->isDefault() && !oldProfileWasDefault)
   {
     foreach (XnatLoginProfile* otherProfile, d->profiles.values())
     {
@@ -271,13 +276,7 @@ void XnatLoginDialog::saveProfile(const QString& profileName)
       }
     }
   }
-
-  profile->setName(profileName);
-  profile->setServerUri(serverUri);
-  profile->setUserName(userName);
-  profile->setPassword(password);
-  profile->setDefault(default_);
-
+  
   d->settings->setLoginProfile(profileName, profile);
   d->dirty = false;
   ui->btnSave->setEnabled(false);
@@ -288,13 +287,21 @@ void XnatLoginDialog::on_btnSave_clicked()
   Q_D(XnatLoginDialog);
   QString editedProfileName = ui->edtProfileName->text();
 
+  bool selectSavedProfile = true;
+  
   QModelIndex currentIndex = ui->lstProfiles->currentIndex();
-  int selectedProfileNumber = currentIndex.row();
-  QString selectedProfileName = d->profileNames[selectedProfileNumber];
+  if (currentIndex.isValid())
+  {
+    QString selectedProfileName = d->profileNames[currentIndex.row()];
+    if (editedProfileName == selectedProfileName)
+    {
+      selectSavedProfile = false;
+    }
+  }
 
   saveProfile(editedProfileName);
 
-  if (editedProfileName != selectedProfileName)
+  if (selectSavedProfile)
   {
     int editedProfileNumber = d->profileNames.indexOf(editedProfileName);
     QModelIndex editedProfileIndex = d->model.index(editedProfileNumber, 0);
@@ -311,34 +318,44 @@ void XnatLoginDialog::blockSignalsOfFields(bool value)
   ui->cbxDefaultProfile->blockSignals(value);
 }
 
+void XnatLoginDialog::loadProfile(const XnatLoginProfile& profile)
+{
+  blockSignalsOfFields(true);
+
+  ui->edtProfileName->setText(profile.name());
+  ui->edtServerUri->setText(profile.serverUri());
+  ui->edtUserName->setText(profile.userName());
+  ui->edtPassword->setText(profile.password());
+  ui->cbxDefaultProfile->setChecked(profile.isDefault());
+
+  blockSignalsOfFields(false);
+}
+
+void XnatLoginDialog::storeProfile(XnatLoginProfile& profile)
+{
+  profile.setName(ui->edtProfileName->text());
+  profile.setServerUri(ui->edtServerUri->text());
+  profile.setUserName(ui->edtUserName->text());
+  profile.setPassword(ui->edtPassword->text());
+  profile.setDefault(ui->cbxDefaultProfile->isChecked());
+}
+
 void XnatLoginDialog::on_btnDelete_clicked()
 {
   Q_D(XnatLoginDialog);
 
-
   QString profileName = ui->edtProfileName->text();
 
   int idx = d->profileNames.indexOf(profileName);
-  d->profileNames.removeAt(idx);
   d->model.removeRow(idx);
-//  d->model.setData(d->model.index(idx), profileName);
-//  d->model.setStringList(d->profileNames);
-
+  d->profileNames.removeAt(idx);
   delete d->profiles.take(profileName);
 
-  ui->lstProfiles->selectionModel()->select(d->model.index(idx), QItemSelectionModel::Deselect);
-  ui->btnDelete->setEnabled(false);
-
-  blockSignalsOfFields(true);
-
-  ui->edtProfileName->setText("");
-  ui->edtServerUri->setText("");
-  ui->edtUserName->setText("");
-  ui->edtPassword->setText("");
-  ui->cbxDefaultProfile->setChecked(false);
-
-  blockSignalsOfFields(false);
-
+  if (d->profiles.empty())
+  {
+    ui->btnDelete->setEnabled(false);
+  }
+  
   d->settings->removeLoginProfile(profileName);
 }
 

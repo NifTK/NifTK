@@ -187,10 +187,10 @@
   <tabstop>edtUserName</tabstop>
   <tabstop>edtPassword</tabstop>
   <tabstop>cbxDefaultProfile</tabstop>
-  <tabstop>bbxDialog</tabstop>
   <tabstop>btnSave</tabstop>
   <tabstop>btnDelete</tabstop>
   <tabstop>lstProfiles</tabstop>
+  <tabstop>bbxDialog</tabstop>
  </tabstops>
  <resources/>
  <connections>

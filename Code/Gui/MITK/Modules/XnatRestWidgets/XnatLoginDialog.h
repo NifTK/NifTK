@@ -8,6 +8,7 @@
 #include "ui_XnatLoginDialog.h"
 
 #include "XnatConnectionFactory.h"
+#include "XnatLoginProfile.h"
 
 class XnatConnection;
 class XnatLoginDialogPrivate;
@@ -33,8 +34,9 @@ private slots:
   void on_btnSave_clicked();
   void on_btnDelete_clicked();
   void on_edtProfileName_textChanged(const QString& text);
-  void onCurrentProfileChanged(const QModelIndex& current, const QModelIndex& previous);
   void onFieldChanged();
+  void onCurrentProfileChanged(const QModelIndex& current);
+  void resetLstProfilesCurrentIndex();
 
 private:
   void createConnections();
@@ -42,6 +44,8 @@ private:
 
   void saveProfile(const QString& profileName);
   bool askToSaveProfile(const QString& profileName);
+  void loadProfile(const XnatLoginProfile& profile = XnatLoginProfile());
+  void storeProfile(XnatLoginProfile& profile);
 
   /// \brief All the controls for the main view part.
   Ui::XnatLoginDialog* ui;
