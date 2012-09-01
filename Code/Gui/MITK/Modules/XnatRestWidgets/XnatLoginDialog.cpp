@@ -354,6 +354,7 @@ void XnatLoginDialog::on_btnDelete_clicked()
   if (d->profiles.empty())
   {
     ui->btnDelete->setEnabled(false);
+    ui->edtProfileName->setFocus();
   }
   
   d->settings->removeLoginProfile(profileName);
