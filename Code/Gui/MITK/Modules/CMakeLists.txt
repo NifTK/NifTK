@@ -25,11 +25,17 @@
 SET(MODULE_DIRS
   niftkMitkExt
   niftkQmitkExt
-  niftkIGI
-  niftkIGIGui
   XnatRest
   XnatRestWidgets
 )
+
+IF(BUILD_IGI)
+  SET(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkIGI
+    niftkIGIGui    
+  )
+ENDIF()
 
 FOREACH(MODULE_DIR ${MODULE_DIRS})
   ADD_SUBDIRECTORY(${MODULE_DIR})
