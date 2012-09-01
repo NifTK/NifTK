@@ -43,7 +43,7 @@ private slots:
   void createNewRow();
   void deleteCurrentRow();
   void setButtonEnabled(const QModelIndex& index);
-  void setSaveDataAndUploadButtonEnabled();
+  void setSaveAndUploadButtonEnabled();
   void showContextMenu(const QPoint&);
 
 private:

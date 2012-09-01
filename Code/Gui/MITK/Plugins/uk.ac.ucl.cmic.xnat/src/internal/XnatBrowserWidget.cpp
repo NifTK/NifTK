@@ -43,7 +43,7 @@ public:
   QAction* importAction;
   QAction* importAllAction;
   QAction* uploadAction;
-  QAction* saveDataAndUploadAction;
+  QAction* saveAndUploadAction;
   QAction* createAction;
   QAction* deleteAction;
 
@@ -77,10 +77,15 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     ui->importButton->setEnabled(false);
     ui->importAllButton->setEnabled(false);
     ui->uploadButton->setEnabled(false);
-    ui->saveDataAndUploadButton->setEnabled(false);
+    ui->saveAndUploadButton->setEnabled(false);
     ui->createButton->setEnabled(false);
     ui->deleteButton->setEnabled(false);
-
+    // Hide these buttons until thorougly tested:
+    ui->uploadButton->setVisible(false);
+    ui->saveAndUploadButton->setVisible(false);
+    ui->createButton->setVisible(false);
+    ui->deleteButton->setVisible(false);
+	  
     // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
     createConnections();
   }
@@ -155,8 +160,8 @@ void XnatBrowserWidget::createConnections()
   connect(d->importAllAction, SIGNAL(triggered()), this, SLOT(importFiles()));
   d->uploadAction = new QAction(tr("Upload"), this);
   connect(d->uploadAction, SIGNAL(triggered()), d->uploadManager, SLOT(uploadFiles()));
-  d->saveDataAndUploadAction = new QAction(tr("Save Data and Upload"), this);
-//    new XnatReactionSaveData(saveDataAndUploadAction, uploadManager, this);
+  d->saveAndUploadAction = new QAction(tr("Save Data and Upload"), this);
+//    new XnatReactionSaveData(saveAndUploadAction, uploadManager, this);
   d->createAction = new QAction(tr("Create New"), this);
   connect(d->createAction, SIGNAL(triggered()), this, SLOT(createNewRow()));
   d->deleteAction = new QAction(tr("Delete"), this);
@@ -170,8 +175,8 @@ void XnatBrowserWidget::createConnections()
   connect(ui->importButton, SIGNAL(clicked()), this, SLOT(importFile()));
   connect(ui->importAllButton, SIGNAL(clicked()), this, SLOT(importFiles()));
   connect(ui->uploadButton, SIGNAL(clicked()), d->uploadManager, SLOT(uploadFiles()));
-  connect(ui->saveDataAndUploadButton, SIGNAL(clicked()), d->saveDataAndUploadAction, SLOT(trigger()));
-  connect(d->saveDataAndUploadAction, SIGNAL(changed()), this, SLOT(setSaveDataAndUploadButtonEnabled()));
+  connect(ui->saveAndUploadButton, SIGNAL(clicked()), d->saveAndUploadAction, SLOT(trigger()));
+  connect(d->saveAndUploadAction, SIGNAL(changed()), this, SLOT(setSaveAndUploadButtonEnabled()));
   connect(ui->createButton, SIGNAL(clicked()), this, SLOT(createNewRow()));
   connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteCurrentRow()));
 
@@ -187,7 +192,6 @@ void XnatBrowserWidget::loginXnat()
   Q_D(XnatBrowserWidget);
 
   // show dialog for user to login to XNAT
-//  XnatConnectDialog* connectDialog = new XnatConnectDialog(XnatConnectionFactory::instance(), this);
   XnatLoginDialog* loginDialog = new XnatLoginDialog(XnatConnectionFactory::instance(), this);
   loginDialog->setSettings(d->settings);
   if (loginDialog->exec())
@@ -208,7 +212,7 @@ void XnatBrowserWidget::loginXnat()
     ui->importButton->setEnabled(false);
     ui->importAllButton->setEnabled(false);
     ui->uploadButton->setEnabled(false);
-    ui->saveDataAndUploadButton->setEnabled(false);
+    ui->saveAndUploadButton->setEnabled(false);
     ui->createButton->setEnabled(false);
     ui->deleteButton->setEnabled(false);
 
@@ -227,7 +231,6 @@ void XnatBrowserWidget::downloadFile()
   Q_D(XnatBrowserWidget);
 
   // get name of file to be downloaded
-//  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
   QModelIndex index = ui->xnatTreeView->currentIndex();
   XnatModel* model = ui->xnatTreeView->xnatModel();
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
@@ -475,17 +478,17 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
   ui->importButton->setEnabled(nodeProperties.isFile());
   ui->importAllButton->setEnabled(nodeProperties.holdsFiles());
   ui->uploadButton->setEnabled(nodeProperties.receivesFiles());
-  ui->saveDataAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveDataAndUploadAction->isEnabled()));
+  ui->saveAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveAndUploadAction->isEnabled()));
   ui->createButton->setEnabled(nodeProperties.isModifiable());
   ui->deleteButton->setEnabled(nodeProperties.isDeletable());
 }
 
-void XnatBrowserWidget::setSaveDataAndUploadButtonEnabled()
+void XnatBrowserWidget::setSaveAndUploadButtonEnabled()
 {
   Q_D(XnatBrowserWidget);
 
   const XnatNodeProperties& nodeProperties = ui->xnatTreeView->currentNodeProperties();
-  ui->saveDataAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveDataAndUploadAction->isEnabled()));
+  ui->saveAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveAndUploadAction->isEnabled()));
 }
 
 void XnatBrowserWidget::showContextMenu(const QPoint& position)
@@ -514,9 +517,9 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
     {
       actions.append(d->uploadAction);
 
-      if ( d->saveDataAndUploadAction->isEnabled() )
+      if ( d->saveAndUploadAction->isEnabled() )
       {
-        actions.append(d->saveDataAndUploadAction);
+        actions.append(d->saveAndUploadAction);
       }
     }
     if ( nodeProperties.isModifiable() )
