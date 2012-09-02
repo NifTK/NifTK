@@ -35,8 +35,8 @@ function run_command()
 
 if [ $# -ne 8 ]; then
   echo "Simple bash script to run a full automated build. "
-  echo "Assumes svn, git, qt, cmake, svn credentials, valgrind, in fact everything are already present and valid in the current shell."  
-  echo "Does a two pass checkout. It checks out NifTK at the time you run it, then does a svn update with proper revision ID etc. to run unit tests, which means the dashboard shows the wrong number of updates."
+  echo "Assumes git, qt, cmake, authentication credentials, valgrind, in fact everything are already present and valid in the current shell."  
+  echo "Does a two pass checkout. It checks out NifTK at the time you run this script, then does an update to the correct time to run unit tests, which means the dashboard shows the wrong number of updates."
   echo "Usage: NifTKUnixBuild.sh [Debug|Release] <number_of_threads> [cov|nocov to control coverage] [val|noval to control valgrind] [opencv|noopencv to build OpenCV] [gcc44|nogcc44 to use gcc4] [igi|noigi for IGI] [http|git for git to use http or git protocol]"
   exit -1
 fi
@@ -95,7 +95,10 @@ else
   BUILD_COMMAND="make clean ; ctest -D Nightly"
 fi  
 
-run_command "svn co https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTK --non-interactive"
+run_command "git clone git://cmicdev.cs.ucl.ac.uk/NifTK NifTK"
+run_command "cd NifTK"
+run_command "git checkout -b dev origin/dev"
+run_command "cd .."
 run_command "mkdir ${FOLDER}"
 run_command "cd ${FOLDER}"
 run_command "cmake ../NifTK ${COVERAGE_ARG} ${OPENCV_ARG} ${GCC4_ARG} ${IGI_ARG} ${GIT_ARG} -DCMAKE_BUILD_TYPE=${TYPE} -DBUILD_GUI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON"

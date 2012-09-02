@@ -55,21 +55,17 @@ public:
   /// \brief Gets the property name used for filtering.
   itkGetMacro(PropertyName, std::string);
 
-  /**
-   * \brief Method to decide if the node should be passed.
-   * \param node a candidate node
-   * \return bool true if the node should pass and false otherwise.
-   */
+  ///
+  /// \brief Method to decide if the node should be passed.
+  ///
+  /// \param node a candidate node
+  /// \return bool true if the node should pass and false otherwise.
   virtual bool Pass(const mitk::DataNode* node);
 
-  /**
-   * \brief Sets the list of renderers to check.
-   */
+  /// \brief Sets the list of renderers to check.
   void SetRenderers(std::vector<mitk::BaseRenderer*>& list);
 
-  /**
-   * \brief Sets the DataStorage against which to check.
-   */
+  /// \brief Sets the DataStorage against which to check.
   void SetDataStorage(mitk::DataStorage::Pointer storage);
 
 protected:

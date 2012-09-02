@@ -1,0 +1,39 @@
+#ifndef XnatFileNameTypeDialog_h
+#define XnatFileNameTypeDialog_h
+
+#include "XnatRestWidgetsExports.h"
+
+#include <QDialog>
+#include <QObject>
+
+class QLineEdit;
+class QComboBox;
+
+
+class XnatRestWidgets_EXPORT XnatFileNameTypeDialog : public QDialog
+{
+  Q_OBJECT
+
+public:
+  XnatFileNameTypeDialog (const QString& filters, QWidget* parent);
+  QString getFilename();
+
+private slots:
+  void accept();
+
+private:
+  QString inputFname;
+  QStringList filterList;
+
+  QLineEdit* nameEdit;
+  QComboBox* typeComboBox;
+
+  QStringList makeFilterList(const QString& filters);
+  QStringList getWildCardListFromFilter(const QString& filter);
+  QString fixFilePathExtension(const QString& filePath, const QString& filter);
+};
+
+
+inline QString XnatFileNameTypeDialog::getFilename() { return inputFname; }
+
+#endif

@@ -18,4 +18,5 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.snapshot:ON
   Plugins/uk.ac.ucl.cmic.surgicalguidance:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
+  Plugins/uk.ac.ucl.cmic.xnat:ON
 )

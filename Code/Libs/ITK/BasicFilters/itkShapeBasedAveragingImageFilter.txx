@@ -30,7 +30,7 @@
 #include "itkImageFileWriter.h"
 #include "itkImageRegionConstIterator.h"
 #include <map>
-#include "../../../Prototype/kkl/STAPLE/itkSegmentationReliabilityCalculator.h"
+// #include "../../../Prototype/kkl/STAPLE/itkSegmentationReliabilityCalculator.h"
 
 namespace itk 
 {
@@ -60,7 +60,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     std::cerr << "Warning: forcing to simple mean mode when the number of input is less than 4." << std::endl; 
   }
   
-  this->m_SegmentationReliability.resize(numberOfInputs, 1.0); 
+  // this->m_SegmentationReliability.resize(numberOfInputs, 1.0); 
   
   // Look for different labels in the input images. 
   LabelMapType labelMap; 
@@ -201,7 +201,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
 }
 
 
-
+#if 0
 template<class TInputImage, class TOutputImage>
 void 
 ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
@@ -232,8 +232,10 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   std::cout << std::endl;
   
 }
+#endif
 
 
+#if 0
 template<class TInputImage, class TOutputImage>
 double 
 ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
@@ -310,7 +312,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   
   return totalVariance; 
 }
-
+#endif
 
 }
 

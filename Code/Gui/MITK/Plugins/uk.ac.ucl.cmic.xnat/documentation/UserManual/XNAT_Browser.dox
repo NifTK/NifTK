@@ -1,0 +1,13 @@
+/**
+
+\bundlemainpage{uk.ac.ucl.cmic.xnat} The XNAT Browser View
+
+\image html XNAT.png "The Icon for XNAT Browser"
+
+\addindex XNAT Browser
+
+\section Introduction
+
+The XNAT Browser plugin provides the ability to browse XNAT databases.
+
+*/

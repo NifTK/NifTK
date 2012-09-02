@@ -35,22 +35,34 @@
  */
 namespace mitk {
 
-/// \brief Given a double[3] of x,y,z voxel spacing, calculates a step size along a ray, as 1/3 of the smallest voxel dimension.
+/**
+ * \brief Given a double[3] of x,y,z voxel spacing, calculates a step size along a ray, as 1/3 of the smallest voxel dimension.
+ */
 NIFTKMITKEXT_EXPORT double CalculateStepSize(double *spacing);
 
-/// \brief Returns true if a and b are different (up to a given tolerance, currently 0.01), and false otherwise.
+/**
+ * \brief Returns true if a and b are different (up to a given tolerance, currently 0.01), and false otherwise.
+ */
 NIFTKMITKEXT_EXPORT bool AreDifferent(const mitk::Point3D& a, const mitk::Point3D& b);
 
-/// \brief Returns the squared Euclidean distance between a and b.
+/**
+ * \brief Returns the squared Euclidean distance between a and b.
+ */
 NIFTKMITKEXT_EXPORT float GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3D& b);
 
-/// \brief Returns as output the vector difference of a-b.
+/**
+ * \brief Returns as output the vector difference of a-b.
+ */
 NIFTKMITKEXT_EXPORT void GetDifference(const mitk::Point3D& a, const mitk::Point3D& b, mitk::Point3D& output);
 
-/// \brief Given a vector, will calculate the length.
+/**
+ * \brief Given a vector, will calculate the length.
+ */
 NIFTKMITKEXT_EXPORT double Length(mitk::Point3D& vector);
 
-/// \brief Given a vector, will normalise it to unit length.
+/**
+ * \brief Given a vector, will normalise it to unit length.
+ */
 NIFTKMITKEXT_EXPORT void Normalise(mitk::Point3D& vector);
 
 } // end namespace mitk

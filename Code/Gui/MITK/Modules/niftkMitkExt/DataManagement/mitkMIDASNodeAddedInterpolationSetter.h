@@ -60,9 +60,7 @@ protected:
   MIDASNodeAddedInterpolationSetter(const MIDASNodeAddedInterpolationSetter&); // Purposefully not implemented.
   MIDASNodeAddedInterpolationSetter& operator=(const MIDASNodeAddedInterpolationSetter&); // Purposefully not implemented.
 
-  /**
-   * \see DataStorageListener::NodeAdded
-   */
+  /// \see DataStorageListener::NodeAdded
   virtual void NodeAdded(mitk::DataNode* node);
 
 private:

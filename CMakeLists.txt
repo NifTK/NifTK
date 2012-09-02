@@ -28,7 +28,7 @@
 # Also, Trac 1592, version number MUST change if CTK changes.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 07 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 08 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -171,6 +171,7 @@ SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM")
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK")
 SET(NIFTK_VERSION_ITK "3.20.1" CACHE STRING "Version of ITK")
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
+SET(NIFTK_VERSION_curl "7.27.0" CACHE STRING "Version of curl")
 SET(NIFTK_VERSION_NIFTYREG "309" CACHE STRING "Version of NiftyReg")
 SET(NIFTK_VERSION_NIFTYSEG "88" CACHE STRING "Version of NiftySeg")
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec")
@@ -180,10 +181,12 @@ SET(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${N
 SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK")
 SET(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK")
 SET(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK")
+SET(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.tar.gz" CACHE STRING "Location of curl")
 SET(NIFTK_LOCATION_CTK "//github.com/commontk/CTK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_MITK "//github.com/MattClarkson/MITK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
-SET(NIFTK_LOCATION_NIFTYLINK "//cmicdev.cs.ucl.ac.uk/NiftyLink" CACHE STRING "Location of NiftyLink - see also NIFTK_USE_GIT_PROTOCOL.")
+SET(NIFTK_LOCATION_NIFTYLINK "git://cmicdev.cs.ucl.ac.uk/NiftyLink" CACHE STRING "Location of NiftyLink - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_DATA "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING  "Location of NifTK unit test data.")
+SET(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only).")
 SET(NIFTK_LOCATION_NIFTYREG "https://niftyreg.svn.sourceforge.net/svnroot/niftyreg/trunk/nifty_reg/" CACHE STRING  "Location of NiftyReg.")
 SET(NIFTK_LOCATION_NIFTYSEG "https://niftyseg.svn.sourceforge.net/svnroot/niftyseg" CACHE STRING  "Location of NiftySEG.")
 SET(NIFTK_LOCATION_NIFTYREC "https://niftyrec.svn.sourceforge.net/svnroot/niftyrec/" CACHE STRING  "Location of NiftyRec.")
@@ -527,25 +530,22 @@ ENDIF (BUILD_MESHING)
 ######################################################################
 # Find NiftyLink
 ######################################################################
-FIND_PACKAGE(NiftyLink)
-IF(NiftyLink_FOUND)
-  MESSAGE("Found NiftyLink")    
-  INCLUDE(${NiftyLink_USE_FILE})
-ENDIF(NiftyLink_FOUND)
-
-IF(BUILD_IGI AND NOT NiftyLink_FOUND)
-  MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
-  SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
-ENDIF()
-
-IF(BUILD_IGI)
-  ADD_DEFINITIONS(-DBUILD_IGI)
-  MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
-  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
-ELSE(BUILD_IGI)
+IF (BUILD_IGI)
+  FIND_PACKAGE(NiftyLink)
+  IF (NiftyLink_FOUND)
+    MESSAGE("Found NiftyLink")
+    INCLUDE(${NiftyLink_USE_FILE})
+    ADD_DEFINITIONS(-DBUILD_IGI)
+    MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
+    SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
+  ELSE (NOT NiftyLink_FOUND)
+    MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
+    SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
+  ENDIF(NiftyLink_FOUND)
+ELSE (BUILD_IGI)
   MESSAGE("BUILD_IGI=OFF, so turning surgical guidance plugin OFF.")
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
-ENDIF(BUILD_IGI)
+ENDIF (BUILD_IGI)
 
 ######################################################################
 # Find FFTW.
@@ -1058,23 +1058,41 @@ IF(BUILD_TESTING)
   SUBDIRS(Testing)
 ENDIF(BUILD_TESTING)   
 
-IF(EXISTS "${CMAKE_SOURCE_DIR}/Prototype" AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/Prototype" AND BUILD_PROTOTYPE) 
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/CUDA)
-  
-  # Note that for these Insight Journal extensions, we dont compile the subpackage,
-  # but by adding them to the include path, you can use any templated classes easily.
-  # You may however have to recompile your ITK using ITK_USE_REVIEW=ON and ITK_USE_OPTIMIZED_REGISTRATION_METHODS=ON
-  # depending on which classes you use.
+IF (BUILD_PROTOTYPE)
+  SET(PROTOTYPE_DIR ${CMAKE_SOURCE_DIR}/Prototype)
 
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/Filters)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_181_ITKbinaryThinningImageFilter3D/Source)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_120_ITKSkeleton)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_644_ITKLogDomainDemonsRegistration/LogDomainDemonsRegistration-0.0.4-Source/Code)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshFieldSmoothingFilters/Source)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshRigidRegistration/Source)
+  IF (NOT EXISTS ${PROTOTYPE_DIR})
+    FIND_PACKAGE(Subversion)
+    IF (Subversion_FOUND)
+      MESSAGE("Found Subversion")
+      MESSAGE("Retrieving NiftyPrototype...")
+      EXECUTE_PROCESS(
+        COMMAND "${Subversion_SVN_EXECUTABLE}" checkout "${NIFTK_LOCATION_PROTOTYPE}" Prototype
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+    ELSE()
+      MESSAGE("Subversion not found. The Prototype project will not be built.")
+    ENDIF()
+  ENDIF()
 
-  SUBDIRS(Prototype)
-ENDIF()   
+  IF (EXISTS ${PROTOTYPE_DIR} AND IS_DIRECTORY ${PROTOTYPE_DIR})
+    INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Prototype/CUDA)
+
+    # Note that for these Insight Journal extensions, we dont compile the subpackage,
+    # but by adding them to the include path, you can use any templated classes easily.
+    # You may however have to recompile your ITK using ITK_USE_REVIEW=ON and ITK_USE_OPTIMIZED_REGISTRATION_METHODS=ON
+    # depending on which classes you use.
+
+    INCLUDE_DIRECTORIES(${PROTOTYPE_DIR}/InsightJournal/Filters)
+    INCLUDE_DIRECTORIES(${PROTOTYPE_DIR}/InsightJournal/IJ_181_ITKbinaryThinningImageFilter3D/Source)
+    INCLUDE_DIRECTORIES(${PROTOTYPE_DIR}/InsightJournal/IJ_120_ITKSkeleton)
+    INCLUDE_DIRECTORIES(${PROTOTYPE_DIR}/InsightJournal/IJ_644_ITKLogDomainDemonsRegistration/LogDomainDemonsRegistration-0.0.4-Source/Code)
+    INCLUDE_DIRECTORIES(${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshFieldSmoothingFilters/Source)
+    INCLUDE_DIRECTORIES(${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshRigidRegistration/Source)
+
+    ADD_SUBDIRECTORY(Prototype)
+  ENDIF()
+ENDIF()
 
 ######################################################################
 # Packaging code.
@@ -1131,5 +1149,4 @@ IF(WIN32)
     
   ENDIF(MITK_FOUND)
 ENDIF(WIN32)
-
 

@@ -62,19 +62,13 @@ public:
   itkNewMacro(MIDASNodeAddedVisibilitySetter);
   mitkNewMacro1Param(MIDASNodeAddedVisibilitySetter, const mitk::DataStorage::Pointer);
 
-  /**
-   * \brief Sets the list of renderers to update.
-   */
+  /// \brief Sets the list of renderers to update.
   void SetRenderers(std::vector<mitk::BaseRenderer*>& list);
 
-  /**
-   * \brief Clears all filters.
-   */
+  /// \brief Clears all filters.
   void ClearRenderers();
 
-  /**
-   * \brief Set/Get the Visibility, which defaults to false.
-   */
+  /// \brief Set/Get the Visibility, which defaults to false.
   itkSetMacro(Visibility, bool);
   itkGetMacro(Visibility, bool);
 
@@ -87,9 +81,7 @@ protected:
   MIDASNodeAddedVisibilitySetter(const MIDASNodeAddedVisibilitySetter&); // Purposefully not implemented.
   MIDASNodeAddedVisibilitySetter& operator=(const MIDASNodeAddedVisibilitySetter&); // Purposefully not implemented.
 
-  /**
-   * \see DataStorageListener::NodeAdded
-   */
+  /// \see DataStorageListener::NodeAdded
   virtual void NodeAdded(mitk::DataNode* node);
 
 private:

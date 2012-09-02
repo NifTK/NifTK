@@ -35,6 +35,7 @@
 
 #include "itkObjectFactory.h"
 
+//-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
 :CoreObjectFactoryBase()
 {
@@ -72,6 +73,8 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
 
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
 {
   mitk::Mapper::Pointer newMapper = NULL;
@@ -88,6 +91,8 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
   return newMapper;
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 {
 
@@ -106,6 +111,8 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 {
   // Nothing to do. We don't need the following, if the file extensions are already in mitkCoreObjectFactory.cpp.
@@ -118,16 +125,22 @@ void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
   */
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::MultimapType mitk::NifTKCoreObjectFactory::GetFileExtensionsMap()
 {
   return m_FileExtensionsMap;
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::MultimapType mitk::NifTKCoreObjectFactory::GetSaveFileExtensionsMap()
 {
   return m_SaveFileExtensionsMap;
 }
 
+
+//-----------------------------------------------------------------------------
 const char* mitk::NifTKCoreObjectFactory::GetFileExtensions()
 {
   std::string fileExtension;
@@ -135,6 +148,8 @@ const char* mitk::NifTKCoreObjectFactory::GetFileExtensions()
   return fileExtension.c_str();
 };
 
+
+//-----------------------------------------------------------------------------
 const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
 {
   std::string fileExtension;
@@ -142,6 +157,8 @@ const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
   return fileExtension.c_str();
 }
 
+
+//-----------------------------------------------------------------------------
 void RegisterNifTKCoreObjectFactory()
 {
   static bool oneNifTKCoreObjectFactoryRegistered = false;

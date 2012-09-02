@@ -45,12 +45,25 @@ class NIFTKMITKEXT_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
   public:
     mitkClassMacro(NifTKCoreObjectFactory,CoreObjectFactoryBase);
     itkNewMacro(NifTKCoreObjectFactory);
+
+    /// \see CoreObjectFactoryBase::CreateMapper
     virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
+
+    /// \see CoreObjectFactoryBase::SetDefaultProperties
     virtual void SetDefaultProperties(mitk::DataNode* node);
+
+    /// \see CoreObjectFactoryBase::GetFileExtensions
     virtual const char* GetFileExtensions();
+
+    /// \see CoreObjectFactoryBase::GetFileExtensionsMap
     virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap();
+
+    /// \see CoreObjectFactoryBase::GetSaveFileExtensions
     virtual const char* GetSaveFileExtensions();
+
+    /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
     virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
+
   protected:
     NifTKCoreObjectFactory(bool registerSelf = true);
     void CreateFileExtensionsMap();
@@ -58,7 +71,8 @@ class NIFTKMITKEXT_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
     MultimapType m_SaveFileExtensionsMap;
 };
 
-}
+} // end namespace
+
 // global declaration for simple call by applications
 void NIFTKMITKEXT_EXPORT RegisterNifTKCoreObjectFactory();
 

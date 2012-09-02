@@ -29,39 +29,31 @@ INCLUDE(mitkFunctionGetGccVersion)
 INCLUDE(mitkFunctionGetVersion)
 
 # Retrieve some software versions
-mitkFunctionGetVersion(${CTK_SOURCE_DIR} CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
 mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
 
-# Trac 1627 - this mitkFunctionGetVersion didn't appear to work on Marc's laptop.
-# We can switch back to mitkFunctionGetVersion when the project is in git.
-# In the meantime we can use the following code, borrowed from NiftyReg.
-# mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK_SVN)
+mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK)
 
-SET (NIFTK_SVN_REVISION_ID "Unknown")
-IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.svn)
-  FIND_PACKAGE(Subversion)
-  IF(Subversion_FOUND)
-      Subversion_WC_INFO(${CMAKE_SOURCE_DIR} NifTK)
-      SET(NIFTK_SVN_REVISION_ID ${NifTK_WC_REVISION})
-  endif(Subversion_FOUND)
+IF(BUILD_GUI)
+  MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+  
+  mitkFunctionGetVersion(${CTK_SOURCE_DIR} CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
+  MESSAGE("CTK version=${CTK_REVISION_ID}")
 ENDIF()
 
-# Print out the versions
-MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+# Print out other versions.
 MESSAGE("BOOST version=${NIFTK_VERSION_BOOST}")                 
 MESSAGE("GDCM version=${NIFTK_VERSION_GDCM}")                   
 MESSAGE("DCMTK version=${NIFTK_VERSION_DCMTK}")
 MESSAGE("ITK version=${NIFTK_VERSION_ITK}") 
 MESSAGE("VTK version=${NIFTK_VERSION_VTK}")                     
 MESSAGE("MITK version=${MITK_REVISION_ID}")
-MESSAGE("CTK version=${CTK_REVISION_ID}")
 
 IF(BUILD_IGI)
   mitkFunctionGetVersion(${NiftyLink_SOURCE_DIR} NIFTYLINK)
   MESSAGE("NiftyLink version=${NIFTYLINK_REVISION_ID}")
 ENDIF(BUILD_IGI)
 
-MESSAGE("NIFTK version=${NIFTK_SVN_REVISION_ID}")
+MESSAGE("NIFTK version=${NIFTK_REVISION_ID}")
 
 # MinGW does not export all symbols automatically, so no need to set flags
 IF(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
@@ -117,3 +109,6 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NIFTK_MITK_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NIFTK_MITK_CXX_FLAGS}")
+
+set(${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR "${PROJECT_SOURCE_DIR}/CMake/PackageDepends")
+list(APPEND MODULES_PACKAGE_DEPENDS_DIRS ${${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR})

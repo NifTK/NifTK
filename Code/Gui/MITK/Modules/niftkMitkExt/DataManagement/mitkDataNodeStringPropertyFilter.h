@@ -54,28 +54,23 @@ public:
   /// \brief Gets the property name used for filtering.
   itkGetMacro(PropertyName, std::string);
 
-  /**
-   * \brief Method to decide if the node should be passed.
-   * \param node a candidate node
-   * \return bool true if the node should pass and false otherwise.
-   */
+  /// \brief Method to decide if the node should be passed.
+  ///
+  /// \param node a candidate node
+  /// \return bool true if the node should pass and false otherwise.
   virtual bool Pass(const mitk::DataNode* node);
 
-  /**
-   * \brief Clears the list of strings to match against.
-   */
+  /// \brief Clears the list of strings to match against.
   virtual void ClearList();
 
-  /**
-   * \brief Add the supplied string to the list of strings to check against.
-   * \param proprtyValue a string
-   */
+  /// \brief Add the supplied string to the list of strings to check against.
+  ///
+  /// \param proprtyValue a string
   virtual void AddToList(const std::string& propertyValue);
 
-  /**
-   * \brief Adds a list of strings to the list of strings to check againts.
-   * \param listOfStrings a list of strings
-   */
+  /// \brief Adds a list of strings to the list of strings to check againts.
+  ///
+  /// \param listOfStrings a list of strings
   virtual void AddToList(const std::vector< std::string >& listOfStrings);
 
 protected:

@@ -61,25 +61,44 @@ public:
   mitkClassMacro(MIDASMorphologicalSegmentorPipelineManager, itk::Object);
   itkNewMacro(MIDASMorphologicalSegmentorPipelineManager);
 
+  /// \brief Sets the mitk::DataStorage on this object.
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
+
+  /// \brief Gets the DataStorage pointer from this object.
   mitk::DataStorage::Pointer GetDataStorage() const;
 
+  /// \brief Sets the mitk::ToolManager on this object.
   void SetToolManager(mitk::ToolManager::Pointer toolManager);
+
+  /// \brief Gets the mitk::ToolManager from this object.
   mitk::ToolManager::Pointer GetToolManager() const;
 
-  /// Some static strings, to avoid repetition.
+  /// A static string, (to avoid code duplication), to hold the name of the property that determines if a morphological segmentation is finished.
   static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
 
   /// \brief Sets the thresholding parameters.
-  void OnThresholdingValuesChanged(const double& lowerThreshold, const double& upperThreshold, const int& axialSlicerNumber);
+  ///
+  /// \param lowerThreshold the lowest intensity value included in the segmentation
+  /// \param upperThreshold the upper intensity value included in the segmentation
+  /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
+  void OnThresholdingValuesChanged(const double& lowerThreshold, const double& upperThreshold, const int& axialSliceNumber);
 
-  /// \brief Sets the erosion parameters.
+  /// \brief Sets the conditional erosion parameters.
+  ///
+  /// \param upperThreshold the highest greyscale intensity value, above which the binary volume is not eroded
+  /// \param numberOfErosions the number of erosion iterations to perform
   void OnErosionsValuesChanged(const double& upperThreshold, const int& numberOfErosions);
 
-  /// \brief Sets the dilation parameters.
+  /// \brief Sets the conditional dilation parameters.
+  ///
+  /// \param lowerPercentage the lower percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
+  /// \param upperPercentage the upper percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
+  /// \param numberOfDilations the number of dilation iterations to perform
   void OnDilationValuesChanged(const double& lowerPercentage, const double& upperPercentage, const int& numberOfDilations);
 
   /// \brief Sets the re-thresholding parameters.
+  ///
+  /// \param boxSize the size of the re-thresholding box (see paper).
   void OnRethresholdingValuesChanged(const int& boxSize);
 
   /// \brief Called when a node changed.

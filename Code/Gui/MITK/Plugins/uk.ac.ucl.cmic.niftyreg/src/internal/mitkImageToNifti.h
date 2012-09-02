@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-06-28 11:43:10 +0100 (Thu, 28 Jun 2012) $
+ Revision          : $Revision: 9264 $
+ Last modified by  : $Author: jhh $
 
  Original author   : j.hipwell@ucl.ac.uk
 
@@ -33,12 +33,13 @@
 
 
 /// Create a Nifti image from an mitk::Image
-
+template<typename NIFTI_PRECISION_TYPE>
 nifti_image *ConvertMitkImageToNifti( mitk::Image::Pointer mitkImage );
 
-template< typename TPixel, unsigned int VImageDimension >
-void ConvertMitkImageToNiftiMethod( itk::Image< TPixel, VImageDimension > *itkImage, 
-				    nifti_image *niftiImage );
+#ifndef ITK_MANUAL_INSTANTIATION
+#include "mitkImageToNifti.txx"
+#endif
+
 
 #endif // MITKIMAGETONIFTI_HEADER_INCLUDED
 

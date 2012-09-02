@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+ Last Changed      : $Date: 2012-08-13 13:00:32 +0100 (Mon, 13 Aug 2012) $
+ Revision          : $Revision: 9470 $
+ Last modified by  : $Author: jhh $
 
  Original author   : j.hipwell@ucl.ac.uk
 
@@ -97,53 +97,94 @@ void RegistrationExecution::ExecuteRegistration()
 	  nodeSource = (*nodes)[i];
 	}
 
-	else if ( ( QString(name.c_str()) == targetName ) && ( ! mitkTargetImage ) ) 
+	if ( ( QString(name.c_str()) == targetName ) && ( ! mitkTargetImage ) ) 
 	{
 	  mitkTargetImage = dynamic_cast<mitk::Image*>((*nodes)[i]->GetData());
 	  nodeTarget = (*nodes)[i];
 	}
 
-	else if ( ( QString(name.c_str()) == targetMaskName ) && ( ! mitkTargetMaskImage ) )
+	if ( ( QString(name.c_str()) == targetMaskName ) && ( ! mitkTargetMaskImage ) )
 	  mitkTargetMaskImage = dynamic_cast<mitk::Image*>((*nodes)[i]->GetData());
       }
     }
   }
 
-  
+
   // Ensure the progress bar is scaled appropriately
 
-  if ( userData->m_FlagDoInitialRigidReg && userData->m_FlagDoNonRigidReg ) 
+  if (    userData->m_RegParameters.m_FlagDoInitialRigidReg 
+       && userData->m_RegParameters.m_FlagDoNonRigidReg ) 
     userData->m_ProgressBarRange = 50.;
   else
     userData->m_ProgressBarRange = 100.;
 
   userData->m_ProgressBarOffset = 0.;
 
-
+  
   // Create and run the Aladin registration?
 
-  if ( userData->m_FlagDoInitialRigidReg ) 
+  if ( userData->m_RegParameters.m_FlagDoInitialRigidReg ) 
   {
 
     userData->m_RegAladin = 
-      userData->CreateAladinRegistrationObject( targetName,
-						sourceName,
-						targetMaskName,
-						mitkSourceImage, 
-						mitkTargetImage, 
-						mitkTargetMaskImage );
+      userData->m_RegParameters.CreateAladinRegistrationObject( mitkSourceImage, 
+								mitkTargetImage, 
+								mitkTargetMaskImage );
   
     userData->m_RegAladin->SetProgressCallbackFunction( &UpdateProgressBar, userData );
 
     userData->m_RegAladin->Run();
 
-    mitkSourceImage = ConvertNiftiImageToMitk( userData->m_RegAladin->GetFinalWarpedImage() );
+    // Transform the source image...
+
+#if 0
+
+    nifti_image *transformedFloatingImage = 
+      nifti_copy_nim_info( userData->m_RegParameters.m_FloatingImage );
+
+    transformedFloatingImage->data = (void *) malloc( transformedFloatingImage->nvox 
+						      * transformedFloatingImage->nbyper );
+
+    memcpy( transformedFloatingImage->data, userData->m_RegParameters.m_FloatingImage->data,
+	    transformedFloatingImage->nvox * transformedFloatingImage->nbyper );
+
+    mat44 *affineTransformation = userData->m_RegAladin->GetTransformationMatrix();
+    mat44 invAffineTransformation = nifti_mat44_inverse( *affineTransformation );
+
+    // ...by updating the sform matrix
+
+    if ( transformedFloatingImage->sform_code > 0 )
+    {
+      transformedFloatingImage->sto_xyz = reg_mat44_mul( &invAffineTransformation, 
+							 &(transformedFloatingImage->sto_xyz) );
+    }
+    else
+    {
+      transformedFloatingImage->sform_code = 1;
+      transformedFloatingImage->sto_xyz = reg_mat44_mul( &invAffineTransformation, 
+							 &(transformedFloatingImage->qto_xyz) );
+    }
+     
+    transformedFloatingImage->sto_ijk = nifti_mat44_inverse( transformedFloatingImage->sto_xyz );
+
+#else
+
+    // ...or getting the resampled volume.
+
+    nifti_image *transformedFloatingImage = userData->m_RegAladin->GetFinalWarpedImage();
+
+#endif
+
+    mitkSourceImage = ConvertNiftiImageToMitk( transformedFloatingImage );
+    nifti_image_free( transformedFloatingImage );
+
 
     // Add this result to the data manager
+
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
     std::string nameOfResultImage;
-    if ( userData->m_RegAladinParameters.regnType == QmitkNiftyRegView::RIGID_ONLY )
+    if ( userData->m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
       nameOfResultImage = "rigid registration to ";
     else
       nameOfResultImage = "affine_registration_to_";
@@ -156,29 +197,28 @@ void RegistrationExecution::ExecuteRegistration()
 
     UpdateProgressBar( 100., userData );
 
-    if ( userData->m_FlagDoNonRigidReg ) 
+    if ( userData->m_RegParameters.m_FlagDoNonRigidReg ) 
       userData->m_ProgressBarOffset = 50.;
 
-    userData->m_RegAladinParameters.outputResultName = QString( nameOfResultImage.c_str() ); 
-    userData->m_RegAladinParameters.outputResultFlag = true;
+    userData->m_RegParameters.m_AladinParameters.outputResultName = QString( nameOfResultImage.c_str() ); 
+    userData->m_RegParameters.m_AladinParameters.outputResultFlag = true;
 
-    sourceName = userData->m_RegAladinParameters.outputResultName;
+    sourceName = userData->m_RegParameters.m_AladinParameters.outputResultName;
   }
 
 
   // Create and run the F3D registration
-
-  if ( userData->m_FlagDoNonRigidReg ) 
+  
+  if ( userData->m_RegParameters.m_FlagDoNonRigidReg ) 
   {
     
-    userData->m_RegNonRigid = userData->CreateNonRigidRegistrationObject( targetName,
-									  sourceName,
-									  targetMaskName,
-									  mitkSourceImage, 
-									  mitkTargetImage, 
-									  mitkTargetMaskImage );  
-
-    userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, userData );
+    userData->m_RegNonRigid = 
+      userData->m_RegParameters.CreateNonRigidRegistrationObject( mitkSourceImage, 
+								  mitkTargetImage, 
+								  mitkTargetMaskImage );  
+    
+    userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, 
+							  userData );
 
     userData->m_RegNonRigid->Run_f3d();
 

@@ -55,30 +55,21 @@ public:
   itkNewMacro(DataStorageVisibilityTracker);
   mitkNewMacro1Param(DataStorageVisibilityTracker, const mitk::DataStorage::Pointer);
 
-  /**
-   * \brief The main Update method.
-   */
+  /// \brief The main Update method.
   void OnPropertyChanged();
 
-  /**
-   * \brief Sets the list of renderers to propagate visibility properties onto.
-   */
+  /// \brief Sets the list of renderers to propagate visibility properties onto.
   void SetRenderersToUpdate(std::vector<mitk::BaseRenderer*>& list);
 
-  /**
-   * \brief Sets the renderers we are tracking.
-   */
+  /// \brief Sets the renderers we are tracking.
   void SetRenderersToTrack(std::vector<mitk::BaseRenderer*>& list);
 
-  /**
-   * \brief Set the data storage, passing it onto the contained DataStoragePropertyListener.
-   * \see DataStorageListener::SetDataStorage
-   */
+  /// \brief Set the data storage, passing it onto the contained DataStoragePropertyListener.
+  ///
+  /// \see DataStorageListener::SetDataStorage
   void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
 
-  /**
-   * \brief We provide facility to ignore nodes, and not adjust their visibility, which is useful for cross hairs.
-   */
+  /// \brief We provide facility to ignore nodes, and not adjust their visibility, which is useful for cross hairs.
   void SetNodesToIgnore(std::vector<mitk::DataNode*>& nodes);
 
 protected:

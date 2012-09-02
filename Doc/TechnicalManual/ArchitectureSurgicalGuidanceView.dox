@@ -1,0 +1,69 @@
+/**
+
+\page ArchitectureSurgicalGuidanceView Architecture - Surgical Guidance View - A Brief Guide
+
+The Surgical Guidance View is based around remote tools connecting to NiftyView. At runtime, NiftyView 
+does not know who will be connecting, so the instantiation of tools, and their GUI controls must be dynamic.
+
+The SurgicalGuidanceView Plugin has a GUI created in the widget QmitkIGIToolManager.
+
+\code
+
+class SurgicalGuidanceView : public QmitkBaseLegacyView
+{  
+
+<snip>
+  
+private:
+
+  QmitkIGIToolManager::Pointer  m_ToolManager;
+};
+
+\endcode
+ 
+At runtime, the QmitkIGIToolManager enables you to create a new entry in the top QTableWidget, specifying that we are expecting
+input on a certain port.  A remote client can then connect using the NiftyLink established methods, based on OpenIGTLink.
+
+So, the remote client sends a message telling what type of messaging client is connecting.
+In QmitkIGIToolManager::InterpretMessage we see
+
+\code
+      // i.e. Create the tool using a Factory Pattern, based on the type of the client descriptor.
+      ClientDescriptorXMLBuilder *clientInfo = m_ToolFactory->CreateClientDescriptor(type);
+<snip>
+      // i.e. Create the tool using a Factory Pattern, based on the entire client descriptor.
+      QmitkIGITool::Pointer tool = m_ToolFactory->CreateTool(*clientInfo);
+<snip>
+      // i.e. Configure the tool.
+      tool->SetDataStorage(this->GetDataStorage());
+      tool->SetClientDescriptor(clientInfo);
+      tool->SetSocket(m_Sockets[portNum]);
+      tool->Initialize();
+\endcode
+
+Each tool is created, and setup by the QmitkIGIToolManager, and has a reference to the MITK DataStorage and
+the corresponding socket. Each tool runs independently of whether it has any GUI representation on the screen. 
+This architecture should provide various options for message queuing and threading
+options later, subject to requirements. This also means that the  QmitkIGIToolManager can have any number of tools,
+listening to any number of sockets, all running independently.  
+
+When the user clicks on the QTableWidget, this triggers a request to display the GUI for that selected tool. This means
+that a tools GUI must be able to connect to the tool, set the state of the GUI, and then pass user button clicks and request
+to the tool. So the GUI can have a pointer to the tool, and connects the signals of the GUI to the slots of the tool,
+but the tool must not know about the GUI.
+
+So, in QmitkIGIToolManager::OnCellDoubleClicked we see:
+
+\code
+  QmitkIGIToolGui::Pointer toolGui = m_ToolFactory->CreateGUI((*tool.GetPointer()), "", "Gui");
+  toolGui->SetStdMultiWidget(m_StdMultiWidget);
+  toolGui->SetTool(tool);
+  toolGui->Initialize(NULL, clientInfo); // Initialize must be called after SetTool.
+\endcode
+
+The QmitkIGIToolFactory creates a GUI dynamically based on the name of the tool. The name of the tools corresponding
+GUI must be <toolname>Gui. So, QmitkIGIUltrasonixTool, must have a GUI called QmitkIGIUltrasonixToolGui.
+
+In terms of inheritance, each tool derives from QmitkIGITool, and each tool GUI derives from QmitkIGIToolGui.
+
+*/

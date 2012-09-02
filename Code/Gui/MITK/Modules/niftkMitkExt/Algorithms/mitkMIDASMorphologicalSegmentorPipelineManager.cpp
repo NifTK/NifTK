@@ -264,7 +264,7 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const 
       mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true);
       for (unsigned int i = 0; i < 4; i++)
       {
-        (*children)[0]->GetStringProperty("name", name);
+        (*children)[i]->GetStringProperty("name", name);
         set.insert(name);
       }
       if (set.size() == 4
@@ -435,6 +435,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     for (unsigned int i = 0; i < workingData.size(); i++)
     {
       bool isEditing = false;
+
       mitk::ITKRegionParametersDataNodeProperty::Pointer editingProperty
         = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(
             workingData[i]->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
@@ -480,7 +481,6 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     }
 
     outputImage->Modified();
-    referenceNode->Modified();
   }
 }
 
@@ -629,6 +629,7 @@ MIDASMorphologicalSegmentorPipelineManager
     pipeline->m_ErosionMaskFilter->SetInput(2, erosionEditsToItk->GetOutput());
     pipeline->m_DilationMaskFilter->SetInput(1, dilationsAditionsToItk->GetOutput());
     pipeline->m_DilationMaskFilter->SetInput(2, dilationsEditsToItk->GetOutput());
+    pipeline->m_DilationFilter->SetConnectionBreakerImage(dilationsEditsToItk->GetOutput());
   }
   else
   {

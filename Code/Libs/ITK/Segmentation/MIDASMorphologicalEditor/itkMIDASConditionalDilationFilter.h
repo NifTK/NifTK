@@ -97,6 +97,9 @@ namespace itk
     itkSetMacro(UpperThreshold, unsigned int);
     itkGetConstMacro(UpperThreshold, unsigned int);
 
+    /** Sets the connection breaker image, so it can be applied at each iteration. */
+    void SetConnectionBreakerImage(const InputMaskImageType* image);
+
   protected:
     MIDASConditionalDilationFilter();
     virtual ~MIDASConditionalDilationFilter() {};

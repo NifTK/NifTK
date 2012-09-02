@@ -21,10 +21,11 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
+
 #ifndef QmitkNiftyRegView_h
 #define QmitkNiftyRegView_h
 
-#undef _USE_CUDA
+//#undef _USE_CUDA
 
 #include "ui_QmitkNiftyRegViewControls.h"
 #include "berryISelectionListener.h"
@@ -33,6 +34,7 @@
 // ITK
 #include <itkMultiThreader.h>
 
+#include "NiftyRegParameters.h"
 
 #include "_reg_aladin.h"
 #include "_reg_tools.h"
@@ -196,9 +198,13 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
 
     void OnCancelPushButtonPressed( void );
+
     void OnResetParametersPushButtonPressed( void );
-    void OnSaveAsPushButtonPressed( void );
+    void OnSaveTransformationPushButtonPressed( void );
     void OnExecutePushButtonPressed( void );
+
+    void OnSaveRegistrationParametersPushButtonPressed( void );
+    void OnLoadRegistrationParametersPushButtonPressed( void );
 
     friend void UpdateProgressBar( float pcntProgress, void *param );
 
@@ -207,11 +213,16 @@ class QmitkNiftyRegView : public QmitkAbstractView
 
   protected:
 
-    /// Deallocate the nifti images used in the registration
-    void DeallocateImages( void );
+    /// \brief Get the DataNode with a specific name. If not found return 0.
+    mitk::DataNode::Pointer GetDataNode( QString searchName );
 
     /// \brief Get the list of data nodes from the data manager
     mitk::DataStorage::SetOfObjects::ConstPointer GetNodes();
+    
+    /// \brief Update the Aladin result/transformed image filename
+    void UpdateAladinResultImageFilename();
+    /// \brief Update the non-rigid result/transformed image filename
+    void UpdateNonRigidResultImageFilename();
 
     /// \brief Called by framework, this method creates all the controls for this view
     virtual void CreateQtPartControl(QWidget *parent);
@@ -228,25 +239,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
     /// \brief Called by framework, sets the focus on a specific widget.
     virtual void SetFocus();
 
-    /// \brief Create the Aladin registration object
-    reg_aladin<PrecisionTYPE> *CreateAladinRegistrationObject( QString &targetName,
-							       QString &sourceName,
-							       QString &targetMaskName,
-							       mitk::Image *mitkSourceImage, 
-							       mitk::Image *mitkTargetImage, 
-							       mitk::Image *mitkTargetMaskImage );
-
-    /// \brief Create the Aladin registration object
-    reg_f3d<PrecisionTYPE> *CreateNonRigidRegistrationObject( QString &targetName,
-							      QString &sourceName,
-							      QString &targetMaskName,
-							      mitk::Image *mitkSourceImage, 
-							      mitk::Image *mitkTargetImage, 
-							      mitk::Image *mitkTargetMaskImage );
-    
-
     /// \brief Save the registration parameters (as a shell-script command line)
     void WriteRegistrationParametersToFile( QString &filename );
+
+    /// \brief Read the registration parameters (as a shell-script command line)
+    void ReadRegistrationParametersFromFile( QString &filename );
 
     /// \brief Print the object
     void PrintSelf( std::ostream& os );
@@ -261,29 +258,6 @@ class QmitkNiftyRegView : public QmitkAbstractView
     bool m_Modified;
 
 
-    /// \brief The number of multi-resolution levels
-    int m_LevelNumber;
-    /// \brief The number of (coarse to fine) multi-resolution levels to use 
-    int m_Level2Perform;    
-
-    // Smooth the target image using the specified sigma (mm) 
-    float m_TargetSigmaValue;
-    // Smooth the source image using the specified sigma (mm)
-    float m_SourceSigmaValue;
-
-    /// Flag indicating whether to do an initial rigid registration
-    bool m_FlagDoInitialRigidReg;
-    /// Flag indicating whether to do the non-rigid registration
-    bool m_FlagDoNonRigidReg;
-
-    /// The filename of the initial affine transformation
-    QString m_InputAffineName;  // -inaff
-    /// Flag indicating whether an initial affine transformation is specified
-    bool m_FlagInputAffine;
-    /// Flag indicating whether the initial affine transformation is FLIRT
-    bool m_FlagFlirtAffine;   // -affFlirt
-
-
     /** The current progress bar offset (0 < x < 100%) to enable progress to
      * be divided between multiple processes. */
     float m_ProgressBarOffset;
@@ -291,155 +265,11 @@ class QmitkNiftyRegView : public QmitkAbstractView
      * be divided between multiple processes. */
     float m_ProgressBarRange;
 
-    /// Codes for interpolation type
-    typedef enum {
-      UNSET_INTERPOLATION = 0,
-      NEAREST_INTERPOLATION = 1,
-      LINEAR_INTERPOLATION = 2,
-      CUBIC_INTERPOLATION = 3
-    } InterpolationType;
-
-    /// Codes for similarity measure type
-    typedef enum {
-      UNSET_SIMILARITY = 0,
-      NMI_SIMILARITY = 1,
-      SSD_SIMILARITY = 2,
-      KLDIV_SIMILARITY = 3
-    } SimilarityType;
-
-    /// Codes for affine registration type
-    typedef enum {
-      UNSET_TRANSFORMATION = 0,
-      RIGID_ONLY = 1,
-      RIGID_THEN_AFFINE = 2,
-      DIRECT_AFFINE = 3
-    } AffineRegistrationType;
-
-    /// The reference/target image
-    nifti_image *m_ReferenceImage;
-    /// The floating/source image
-    nifti_image *m_FloatingImage;
-    /// The reference/target mask image
-    nifti_image *m_ReferenceMaskImage;
-    /// The input control grid image
-    nifti_image *m_ControlPointGridImage;
-
-    // ---------------------------------------------------------------------------
-    // Rigid/Affine Aladin Parameters
-    // ---------------------------------------------------------------------------
-
-    typedef struct {
-
-      QString referenceImageName; // -ref
-      QString floatingImageName; // -flo
-
-      QString referenceMaskName; // -rmask
-
-      bool outputResultFlag;
-      QString outputResultName; // -res
-
-      bool outputAffineFlag;
-      QString outputAffineName; // -aff
-
-      // Aladin - Initialisation
-
-      bool alignCenterFlag;        // -nac
-
-      // Aladin - Method
-
-      AffineRegistrationType regnType; // -rigOnly, -affDirect
-
-      int maxiterationNumber;		// -maxit
-
-      int block_percent_to_use; // -%v
-      int inlier_lts;		// -%i
-
-      // Aladin - Advanced
-
-      InterpolationType interpolation;
-
-    } RegAladinParametersType;
-
-    /// The 'reg_aladin' parameters
-    RegAladinParametersType m_RegAladinParameters;
+    /// The registration parameters
+    NiftyRegParameters<PrecisionTYPE> m_RegParameters;
 
     /// The 'reg_aladin' registration object
     reg_aladin<PrecisionTYPE> *m_RegAladin;
-
-
-    // ---------------------------------------------------------------------------
-    // Non-rigid Parameters
-    // ---------------------------------------------------------------------------
-
-    typedef struct {
-
-      QString referenceImageName; // -ref
-      QString floatingImageName; // -flo
-
-      QString referenceMaskName; // -rmask
-
-      // Initial transformation options:
- 
-      bool inputControlPointGridFlag;
-      QString inputControlPointGridName;// -incpp
-
-      // Output options:
- 
-      QString outputControlPointGridName; // -cpp
-      QString outputWarpedName;		// -res
-
-      // Input image options:
-
-      PrecisionTYPE referenceThresholdUp;  // -rLwTh
-      PrecisionTYPE referenceThresholdLow; // -rUpTh 
-
-      PrecisionTYPE floatingThresholdUp;   // -fLwTh
-      PrecisionTYPE floatingThresholdLow;  // -fUpTh
-
-      // Spline options:
- 
-      PrecisionTYPE spacing[3];   // -sx, -sy, -sz
-
-      // Objective function options:
- 
-      unsigned int referenceBinNumber;   // -rbn
-      unsigned int floatingBinNumber;    // -fbn
-
-      PrecisionTYPE bendingEnergyWeight;   // -be
-
-      PrecisionTYPE linearEnergyWeight0;   // -le 
-      PrecisionTYPE linearEnergyWeight1;   // -le 
-
-      PrecisionTYPE jacobianLogWeight;     // -jl 
-
-      bool jacobianLogApproximation;       // -noAppJL
-
-      SimilarityType similarity;           // -ssd, -kld 
-
-      // Optimisation options:
- 
-      bool useConjugate;                   // -noConj
-      int maxiterationNumber;              // -maxit
-      bool noPyramid;                      // -nopy
-
-      // GPU-related options:
-
-      bool checkMem;   // -mem
-      bool useGPU;     // -gpu
-      int cardNumber;  // -card
-
-      // Other options:
-
-      InterpolationType interpolation;
-
-      PrecisionTYPE gradientSmoothingSigma;  // -smoothGrad
-      PrecisionTYPE warpedPaddingValue;      // -pad
-      bool verbose;                          // -voff
-
-    } RegF3dParametersType;
-    
-    /// The 'reg_f3d' parameters
-    RegF3dParametersType m_RegF3dParameters;
 
     /// The 'reg_f3d' registration object
     reg_f3d<PrecisionTYPE> *m_RegNonRigid;
