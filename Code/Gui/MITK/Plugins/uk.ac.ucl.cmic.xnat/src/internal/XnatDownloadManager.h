@@ -9,16 +9,17 @@ extern "C"
 }
 
 class QString;
+class QWidget;
 class XnatBrowserWidget;
-class XnatSettings;
 class XnatDownloadDialog;
+class XnatSettings;
 
 class XnatDownloadManager : public QObject
 {
   Q_OBJECT
 
 public:
-  XnatDownloadManager(XnatBrowserWidget* b);
+  XnatDownloadManager(XnatBrowserWidget* b, XnatSettings* settings);
   void downloadFile(const QString& fname);
   void downloadAllFiles();
   void silentlyDownloadFile(const QString& fname, const QString& dir);
@@ -36,7 +37,8 @@ private slots:
   void downloadDataBlocking();
 
 private:
-  XnatBrowserWidget* browser;
+  QWidget* parent;
+//  XnatBrowserWidget* browser;
   XnatDownloadDialog* downloadDialog;
 
   XnatSettings* settings;

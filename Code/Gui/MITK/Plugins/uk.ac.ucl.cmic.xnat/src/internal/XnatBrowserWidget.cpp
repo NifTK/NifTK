@@ -161,7 +161,6 @@ void XnatBrowserWidget::createConnections()
   d->uploadAction = new QAction(tr("Upload"), this);
   connect(d->uploadAction, SIGNAL(triggered()), d->uploadManager, SLOT(uploadFiles()));
   d->saveAndUploadAction = new QAction(tr("Save Data and Upload"), this);
-//    new XnatReactionSaveData(saveAndUploadAction, uploadManager, this);
   d->createAction = new QAction(tr("Create New"), this);
   connect(d->createAction, SIGNAL(triggered()), this, SLOT(createNewRow()));
   d->deleteAction = new QAction(tr("Delete"), this);
@@ -242,7 +241,7 @@ void XnatBrowserWidget::downloadFile()
   // download file
   if ( !d->downloadManager )
   {
-    d->downloadManager = new XnatDownloadManager(this);
+    d->downloadManager = new XnatDownloadManager(this, d->settings);
   }
   QString filename = QFileInfo(xnatFilename).fileName();
   d->downloadManager->downloadFile(filename);
@@ -264,7 +263,7 @@ void XnatBrowserWidget::importFile()
   // download file
   if ( !d->downloadManager )
   {
-    d->downloadManager = new XnatDownloadManager(this);
+    d->downloadManager = new XnatDownloadManager(this, d->settings);
   }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
   QString tempWorkDirectory = d->settings->getWorkSubdirectory();
@@ -332,7 +331,7 @@ void XnatBrowserWidget::importFiles()
   // download file
   if ( !d->downloadManager )
   {
-    d->downloadManager = new XnatDownloadManager(this);
+    d->downloadManager = new XnatDownloadManager(this, d->settings);
   }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
   QString tempWorkDirectory = d->settings->getWorkSubdirectory();
@@ -418,7 +417,7 @@ void XnatBrowserWidget::downloadAllFiles()
   // download files
   if ( !d->downloadManager )
   {
-      d->downloadManager = new XnatDownloadManager(this);
+      d->downloadManager = new XnatDownloadManager(this, d->settings);
   }
   d->downloadManager->downloadAllFiles();
 }

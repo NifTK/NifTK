@@ -1,19 +1,22 @@
 #include "XnatDownloadManager.h"
 
 #include <QFile>
-#include <QFileInfo>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QTimer>
+#include <QWidget>
 
 #include "XnatBrowserWidget.h"
 #include "XnatDownloadDialog.h"
 #include "XnatPluginSettings.h"
 
-XnatDownloadManager::XnatDownloadManager(XnatBrowserWidget* b)
-: QObject(), browser(b)
+XnatDownloadManager::XnatDownloadManager(XnatBrowserWidget* browser, XnatSettings* settings)
+: QObject()
+//, browser(browser)
+, settings(settings)
 {
-  settings = browser->settings();
+  parent = browser;
 }
 
 void XnatDownloadManager::downloadFile(const QString& fname)
@@ -22,7 +25,6 @@ void XnatDownloadManager::downloadFile(const QString& fname)
   xnatFilename = fname;
   currDir = settings->getDefaultDirectory();
 
-  QWidget* parent = browser;
   QString caption = tr("Save Downloaded File");
   QString dir = QFileInfo(currDir, xnatFilename).absoluteFilePath();
   // get output directory and filename from user
@@ -70,8 +72,6 @@ void XnatDownloadManager::downloadFile(const QString& fname)
 
 void XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QString& dir)
 {
-  QWidget* parent = browser;
-
   // initialize download variables
   xnatFilename = fname;
   outFilename = fname;
@@ -144,7 +144,7 @@ void XnatDownloadManager::downloadAllFiles()
   currDir = settings->getDefaultDirectory();
 
   // get output directory from user
-  QString outputDir = QFileDialog::getExistingDirectory(browser, tr("Save Downloaded Files"), currDir);
+  QString outputDir = QFileDialog::getExistingDirectory(parent, tr("Save Downloaded Files"), currDir);
   if ( outputDir.isEmpty() )
   {
     return;
@@ -155,7 +155,7 @@ void XnatDownloadManager::downloadAllFiles()
   settings->setDefaultDirectory(currDir);
 
   // display download dialog
-  downloadDialog = new XnatDownloadDialog(browser);
+  downloadDialog = new XnatDownloadDialog(parent);
   downloadDialog->show();
 
   QTimer::singleShot(0, this, SLOT(startGroupDownload()));
@@ -169,7 +169,7 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
   currDir = dir;
 
   // display download dialog
-  downloadDialog = new XnatDownloadDialog(browser);
+  downloadDialog = new XnatDownloadDialog(parent);
   downloadDialog->show();
 
 //  QTimer::singleShot(0, this, SLOT(startGroupDownload()));
@@ -218,11 +218,11 @@ void XnatDownloadManager::downloadData()
     status = cancelXnatRestAsynTransfer();
     if ( status != XNATREST_OK )
     {
-      QMessageBox::warning(browser, tr("Cancel File Download Error"), tr(getXnatRestStatusMsg(status)));
+      QMessageBox::warning(parent, tr("Cancel File Download Error"), tr(getXnatRestStatusMsg(status)));
     }
     else if ( !QFile::remove(zipFilename) )
     {
-      QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+      QMessageBox::warning(parent, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
     }
     emit done();
     return;
@@ -241,7 +241,7 @@ void XnatDownloadManager::downloadData()
   if ( status != XNATREST_OK )
   {
     downloadDialog->close();
-    QMessageBox::warning(browser, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
+    QMessageBox::warning(parent, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
     emit done();
     return;
   }
@@ -270,11 +270,11 @@ void XnatDownloadManager::downloadDataBlocking()
       status = cancelXnatRestAsynTransfer();
       if ( status != XNATREST_OK )
       {
-        QMessageBox::warning(browser, tr("Cancel File Download Error"), tr(getXnatRestStatusMsg(status)));
+        QMessageBox::warning(parent, tr("Cancel File Download Error"), tr(getXnatRestStatusMsg(status)));
       }
       else if ( !QFile::remove(zipFilename) )
       {
-        QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+        QMessageBox::warning(parent, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
       }
       emit done();
       break;
@@ -293,7 +293,7 @@ void XnatDownloadManager::downloadDataBlocking()
     if ( status != XNATREST_OK )
     {
       downloadDialog->close();
-      QMessageBox::warning(browser, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
+      QMessageBox::warning(parent, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
       emit done();
       break;
     }
@@ -315,7 +315,7 @@ void XnatDownloadManager::unzipData()
     downloadDialog->close();
     if ( !QFile::remove(zipFilename) )
     {
-      QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+      QMessageBox::warning(parent, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
     }
     emit done();
     return;
@@ -329,11 +329,11 @@ void XnatDownloadManager::unzipData()
 
   if ( status != XNATREST_OK )    // check unzip status
   {
-    QMessageBox::warning(browser, tr("Unzip Downloaded File Error"), tr(getXnatRestStatusMsg(status)));
+    QMessageBox::warning(parent, tr("Unzip Downloaded File Error"), tr(getXnatRestStatusMsg(status)));
   }
   else if ( !QFile::remove(zipFilename) )    // delete zip file
   {
-    QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+    QMessageBox::warning(parent, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
   }
   emit done();
 }
@@ -348,14 +348,14 @@ void XnatDownloadManager::finishDownload()
     QString xnatFilePath = QFileInfo(currDir, xnatFilename).absoluteFilePath();
     if ( !QFile::rename(xnatFilePath, QFileInfo(currDir, outFilename).absoluteFilePath()) )
     {
-      QMessageBox::warning(browser, tr("Rename File Error"), tr("Cannot rename downloaded file"));
+      QMessageBox::warning(parent, tr("Rename File Error"), tr("Cannot rename downloaded file"));
       return;
     }
     if ( !tempFilePath.isEmpty() )
     {
       if ( !QFile::rename(tempFilePath, xnatFilePath) )
       {
-        QMessageBox::warning(browser, tr("Rename File Error"), tr("Cannot rename existing file"));
+        QMessageBox::warning(parent, tr("Rename File Error"), tr("Cannot rename existing file"));
       }
     }
   }
