@@ -9,7 +9,6 @@ SET(INTERNAL_CPP_FILES
   XnatPluginActivator.cpp
   XnatPluginPreferencePage.cpp
   XnatPluginSettings.cpp
-#  XnatReactionSaveData.cpp
   XnatUploadDialog.cpp
   XnatUploadManager.cpp
 )
@@ -27,7 +26,6 @@ SET(MOC_H_FILES
   src/internal/XnatDownloadManager.h
   src/internal/XnatPluginActivator.h
   src/internal/XnatPluginPreferencePage.h
-#  src/internal/XnatReactionSaveData.h
   src/internal/XnatUploadDialog.h
   src/internal/XnatUploadManager.h
 )
