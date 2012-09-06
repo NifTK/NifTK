@@ -1,9 +1,11 @@
 #ifndef XnatLoginProfile_h
 #define XnatLoginProfile_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QString>
 
-class XnatLoginProfile
+class XnatRestWidgets_EXPORT XnatLoginProfile
 {
 public:
   explicit XnatLoginProfile();
