@@ -46,7 +46,7 @@ IF(QT_FOUND)
       # Note: If the CTK version changes, then you either clear the plugin 
       # cache or change the deploy path by changing the patch level.
       #####################################################################
-      SET(revision_tag 96bb84d8)
+      SET(revision_tag 6ef9e424)
       IF(${proj}_REVISION_TAG)
         SET(revision_tag ${${proj}_REVISION_TAG})
       ENDIF()

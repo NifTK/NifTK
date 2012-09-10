@@ -155,9 +155,15 @@ IF(NOT DEFINED MITK_DIR)
     #     So, the current code base is:
     #       MITK c855dedda4 + Trac 853, 1256, + MITK 12302, 12303, 12427 and 12431 (not yet merged into MITK master).
     #       This results in niftk brach commit 6f6ff4eeb2
+    #
+    # 13. Trac 1757 - MITK upgrade
+    #     A minor change is committed to the branch for MITK 12302 and merged back into the niftk branch.
+    #     It was needed because of a change in the CTK API.
+    #       This results in niftk branch commit 9df515e9ef
+    #
     #########################################################
     
-    SET(revision_tag 6f6ff4eeb2)
+    SET(revision_tag 9df515e9ef)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
