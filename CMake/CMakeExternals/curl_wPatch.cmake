@@ -65,7 +65,7 @@ if( CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC )
 else()  
   ExternalProject_Add(${proj}
     BINARY_DIR ${proj}-build
-    URL ${NIFTK_LOCATION_curl}
+    #URL ${NIFTK_LOCATION_curl}
     UPDATE_COMMAND ""
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
