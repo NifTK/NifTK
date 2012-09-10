@@ -42,27 +42,6 @@ if(NOT DEFINED curl_DIR)
   
   message("SuperBuild loading curl from ${curl_DIR}")
 
-if( CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC ) 
-
-  set(_PATCH_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/curl_patch.cmake" )
-  message("\n ********* Adding patch to: ${_PATCH_FILE} ********* \n" )  
-  
-  ExternalProject_Add(${proj}
-    BINARY_DIR ${proj}-build
-    URL ${NIFTK_LOCATION_curl}
-	PATCH_COMMAND "${CMAKE_COMMAND};-P;${_PATCH_FILE}"
-    UPDATE_COMMAND ""
-    INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
-    CMAKE_ARGS
-      ${EP_COMMON_ARGS}
-      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DBUILD_CURL_EXE:BOOL=OFF
-      -DBUILD_CURL_TESTS:BOOL=OFF
-      -DCURL_STATICLIB:BOOL=OFF
-    DEPENDS ${proj_DEPENDENCIES}
-  )
-else()  
   ExternalProject_Add(${proj}
     BINARY_DIR ${proj}-build
     URL ${NIFTK_LOCATION_curl}
@@ -77,9 +56,6 @@ else()
       -DCURL_STATICLIB:BOOL=OFF
     DEPENDS ${proj_DEPENDENCIES}
   )
-endif()  
-
-
 
 else(NOT DEFINED curl_DIR)
 

@@ -27,8 +27,8 @@
 	
 	message("\n ********* Specifying machine type: /machine:x64 ********* \n" )
 	list( APPEND _DATA "set_target_properties(libcurl PROPERTIES STATIC_LIBRARY_FLAGS \"/MACHINE:x64\")\n" )
-	list( APPEND _DATA "set(CURL_SIZEOF_CURL_SOCKLEN_T 4)\n" )
-	list( APPEND _DATA "set(HAVE_CURL_SIZEOF_CURL_SOCKLEN_T TRUE)\n" )
+	#list( APPEND _DATA "set(CURL_SIZEOF_CURL_SOCKLEN_T 4)\n" )
+	#list( APPEND _DATA "set(HAVE_CURL_SIZEOF_CURL_SOCKLEN_T TRUE)\n" )
 	
 	
    #endif()
