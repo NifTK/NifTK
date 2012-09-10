@@ -39,15 +39,23 @@ IF(BUILD_IGI)
   
   IF(NOT DEFINED NiftyLink_DIR)
   
+    SET(revision_tag 0ade68b60630d46a08e49597b86a3c8728aca891)
+
+    IF(${proj}_REVISION_TAG)
+      SET(revision_tag ${${proj}_REVISION_TAG})
+    ENDIF()
+
     MESSAGE("Pulling NiftyLink from ${NIFTK_LOCATION_NIFTYLINK}")
     
     ExternalProject_Add(${proj}
        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK}
+       GIT_TAG ${revision_tag}
        BINARY_DIR ${proj}-build
        INSTALL_COMMAND ""
        CMAKE_GENERATOR ${GEN}
        CMAKE_ARGS
          ${EP_COMMON_ARGS}
+         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
          -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
          -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
        DEPENDS ${proj_DEPENDENCIES}
