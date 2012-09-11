@@ -33,11 +33,12 @@ function run_command()
   fi
 }
 
-if [ $# -ne 8 ]; then
+if [ $# -ne 8 ] && [ $# -ne 9 ]
+then
   echo "Simple bash script to run a full automated build. "
   echo "Assumes git, qt, cmake, authentication credentials, valgrind, in fact everything are already present and valid in the current shell."  
   echo "Does a two pass checkout. It checks out NifTK at the time you run this script, then does an update to the correct time to run unit tests, which means the dashboard shows the wrong number of updates."
-  echo "Usage: NifTKUnixBuild.sh [Debug|Release] <number_of_threads> [cov|nocov to control coverage] [val|noval to control valgrind] [opencv|noopencv to build OpenCV] [gcc44|nogcc44 to use gcc4] [igi|noigi for IGI] [http|git for git to use http or git protocol]"
+  echo "Usage: NifTKUnixBuild.sh [Debug|Release] <number_of_threads> [cov|nocov to control coverage] [val|noval to control valgrind] [opencv|noopencv to build OpenCV] [gcc44|nogcc44 to use gcc4] [igi|noigi for IGI] [http|git for git to use http or git protocol] [branch]"
   exit -1
 fi
 
@@ -49,6 +50,12 @@ OPENCV=$5
 GCC4=$6
 IGI=$7
 GITHTTP=$8
+if [ $# -eq 8 ]
+then
+  BRANCH=dev
+else
+  BRANCH=$9
+fi
 
 if [ "${TYPE}" != "Debug" -a "${TYPE}" != "Release" ]; then
   echo "First argument after NifTKUnixBuild.sh must be either Debug or Release."
@@ -97,7 +104,7 @@ fi
 
 run_command "git clone git://cmicdev.cs.ucl.ac.uk/NifTK NifTK"
 run_command "cd NifTK"
-run_command "git checkout -b dev origin/dev"
+run_command "git checkout -b $BRANCH origin/$BRANCH"
 run_command "cd .."
 run_command "mkdir ${FOLDER}"
 run_command "cd ${FOLDER}"
