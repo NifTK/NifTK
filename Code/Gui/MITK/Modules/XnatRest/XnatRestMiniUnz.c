@@ -107,9 +107,7 @@ static int mymkdir( const char *dirname )
 #ifdef _WIN32
   status = _mkdir( dirname );
 #else
-#ifdef unix
   status = mkdir( dirname, 0775 );
-#endif
 #endif
 
   return status;
