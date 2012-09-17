@@ -107,8 +107,6 @@ bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* 
 */
 bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  if (!FeedbackContourTool::OnMouseMoved( action, stateEvent )) return false;
-
   if (m_WorkingImage == NULL || m_WorkingImageGeometry == NULL) return false;
 
   const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
