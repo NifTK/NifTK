@@ -462,7 +462,7 @@ reg_f3d<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
 	return 0;
       }
        
-      REG = new reg_f3d_gpu<PRECISION_TYPE>(m_ReferenceImage->nt, m_FloatingImage->nt);
+      REG = new reg_f3d_gpu(m_ReferenceImage->nt, m_FloatingImage->nt);
 
     }
     else
