@@ -260,17 +260,17 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
 
 // -------------------  mitk::IRenderWindowPart  ----------------------
 
-QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveRenderWindow() const
+QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveQmitkRenderWindow() const
 {
   return d->m_MIDASMultiViewWidget->GetActiveRenderWindow();
 }
 
-QHash<QString, QmitkRenderWindow *> QmitkMIDASMultiViewEditor::GetRenderWindows() const
+QHash<QString, QmitkRenderWindow *> QmitkMIDASMultiViewEditor::GetQmitkRenderWindows() const
 {
   return d->m_MIDASMultiViewWidget->GetRenderWindows();
 }
 
-QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetRenderWindow(const QString &id) const
+QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetQmitkRenderWindow(const QString &id) const
 {
   return d->m_MIDASMultiViewWidget->GetRenderWindow(id);
 }

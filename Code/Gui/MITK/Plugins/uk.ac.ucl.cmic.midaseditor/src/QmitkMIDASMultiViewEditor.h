@@ -91,17 +91,17 @@ public:
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow()
    */
-  virtual QmitkRenderWindow* GetActiveRenderWindow() const;
+  virtual QmitkRenderWindow* GetActiveQmitkRenderWindow() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetRenderWindows()
    */
-  virtual QHash<QString,QmitkRenderWindow*> GetRenderWindows() const;
+  virtual QHash<QString,QmitkRenderWindow*> GetQmitkRenderWindows() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetRenderWindow(QString)
    */
-  virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
+  virtual QmitkRenderWindow* GetQmitkRenderWindow(const QString& id) const;
 
   /**
    * \see mitk::IRenderWindowPart::GetSelectionPosition()
