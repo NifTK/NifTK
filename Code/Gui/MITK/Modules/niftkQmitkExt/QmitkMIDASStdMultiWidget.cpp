@@ -228,8 +228,6 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
   {
     RemoveDisplayGeometryModificationObserver(renderWindows[i]);
   }
-
-  m_RenderingManager->SetTimeNavigationController(NULL);
 }
 
 void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
