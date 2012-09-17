@@ -915,7 +915,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
           isFlipped = true;
           break;
         default:
-          // Default = Transversal.
+          // Default = Transverse.
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
           originOfSlice[0] = originMillimetres[0] + permutedBoundingBox[0]*permutedSpacing[0]*permutedMatrix[0][1] - voxelOffset*permutedSpacing[0];

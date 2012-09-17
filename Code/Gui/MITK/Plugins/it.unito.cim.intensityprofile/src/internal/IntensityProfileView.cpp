@@ -765,7 +765,7 @@ IntensityProfileView::onCrosshairPositionEventDelayed()
   Q_D(IntensityProfileView);
   d->pendingCrosshairPositionEvent = false;
 //  if (d->display && d->showCrosshairProfile) {
-//    d->display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
+//    d->display->GetRenderWindow("transverse")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
 //    d->display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
 //    d->display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
 //  }
@@ -1051,7 +1051,7 @@ IntensityProfileView::on_storeCrosshairButton_clicked()
   mitk::IRenderWindowPart* display = GetRenderWindowPart();
   if (display != d->display) {
     if (d->display && d->showCrosshairProfile) {
-      d->display->GetRenderWindow("transversal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
+      d->display->GetRenderWindow("transverse")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
       d->display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
       d->display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
     }
