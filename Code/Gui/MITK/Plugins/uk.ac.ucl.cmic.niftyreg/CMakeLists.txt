@@ -23,9 +23,9 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 		      _reg_ssd
 		      _reg_tools
 		      reg_png
-              png
+		      png
 		      reg_nrrd
-              reg_NrrdIO
+		      reg_NrrdIO
 		      _reg_ReadWriteImage
 )
 
