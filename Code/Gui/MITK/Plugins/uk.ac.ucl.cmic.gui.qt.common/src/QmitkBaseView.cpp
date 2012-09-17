@@ -265,7 +265,7 @@ mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInte
     mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
     if (renderWindowPart != NULL)
     {
-      QmitkRenderWindow *renderWindow = renderWindowPart->GetActiveRenderWindow();
+      QmitkRenderWindow *renderWindow = renderWindowPart->GetActiveQmitkRenderWindow();
       if (renderWindow != NULL)
       {
         result = renderWindow->GetSliceNavigationController();
@@ -346,7 +346,7 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
   if (renderWindowPart != NULL)
   {
-    window = renderWindowPart->GetRenderWindow(id);
+    window = renderWindowPart->GetQmitkRenderWindow(id);
   }
 
   return window;
