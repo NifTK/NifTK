@@ -587,7 +587,7 @@ MIDASOrientation QmitkMIDASBaseSegmentationFunctionality::GetOrientationAsEnum()
   {
     mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
 
-    if (viewDirection == mitk::SliceNavigationController::Transversal)
+    if (viewDirection == mitk::SliceNavigationController::Axial)
     {
       orientation = MIDAS_ORIENTATION_AXIAL;
     }
