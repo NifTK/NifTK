@@ -125,34 +125,42 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
     mitk::SegTool2D* mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::AddContourTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::SubtractContourTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::DrawPaintbrushTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::ErasePaintbrushTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::RegionGrowingTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::CorrectorTool2D>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::FillRegionTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::EraseRegionTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     // Make sure these are up to date when view first shown.
     this->RetrievePreferenceValues();
