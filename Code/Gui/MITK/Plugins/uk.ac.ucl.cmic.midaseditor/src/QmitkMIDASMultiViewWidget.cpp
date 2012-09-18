@@ -1305,14 +1305,14 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
   // See org.mitk.gui.qt.imagenavigator plugin.
   //
   // The assumption is that a QmitkStdMultiWidget has windows called
-  // transverse, sagittal, coronal, 3d.
+  // axial, sagittal, coronal, 3d.
   //
   // So, if we take the currently selected widget, and name these render windows
   // accordingly, then the MITK imagenavigator can be used to update it.
 
   int windowNumber = this->GetSelectedWindowIndex();
 
-  wnds.insert("transverse", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
+  wnds.insert("axial", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
   wnds.insert("sagittal", m_SingleViewWidgets[windowNumber]->GetSagittalWindow());
   wnds.insert("coronal", m_SingleViewWidgets[windowNumber]->GetCoronalWindow());
   wnds.insert("3d", m_SingleViewWidgets[windowNumber]->Get3DWindow());
@@ -1323,7 +1323,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
     {
       QString id = tr(".%1").arg(i);
 
-      wnds.insert("transverse" + id, m_SingleViewWidgets[i]->GetAxialWindow());
+      wnds.insert("axial" + id, m_SingleViewWidgets[i]->GetAxialWindow());
       wnds.insert("sagittal" + id, m_SingleViewWidgets[i]->GetSagittalWindow());
       wnds.insert("coronal" + id, m_SingleViewWidgets[i]->GetCoronalWindow());
       wnds.insert("3d" + id, m_SingleViewWidgets[i]->Get3DWindow());

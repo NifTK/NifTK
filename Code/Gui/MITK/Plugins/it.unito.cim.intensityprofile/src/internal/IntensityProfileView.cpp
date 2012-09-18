@@ -765,7 +765,7 @@ IntensityProfileView::onCrosshairPositionEventDelayed()
   Q_D(IntensityProfileView);
   d->pendingCrosshairPositionEvent = false;
 //  if (d->display && d->showCrosshairProfile) {
-//    d->display->GetRenderWindow("transverse")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
+//    d->display->GetRenderWindow("axial")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
 //    d->display->GetRenderWindow("sagittal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
 //    d->display->GetRenderWindow("coronal")->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
 //  }
