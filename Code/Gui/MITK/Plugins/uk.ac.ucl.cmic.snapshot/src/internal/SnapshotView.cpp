@@ -92,7 +92,7 @@ void SnapshotView::OnTakeSnapshotButtonPressed()
   mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart();
   if (renderWindowPart != NULL)
   {
-    QmitkRenderWindow *window = renderWindowPart->GetActiveRenderWindow();
+    QmitkRenderWindow *window = renderWindowPart->GetActiveQmitkRenderWindow();
     if (window != NULL)
     {
       vtkRenderer *renderer = window->GetRenderer()->GetVtkRenderer();

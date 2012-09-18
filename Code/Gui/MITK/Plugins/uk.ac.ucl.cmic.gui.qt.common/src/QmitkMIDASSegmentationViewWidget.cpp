@@ -345,7 +345,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   }
 
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("transversal");
+  QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
   QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
   QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
 
@@ -466,7 +466,7 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientati
     {
       vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
 
-      QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("transversal");
+      QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
       QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
       QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
 

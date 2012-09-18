@@ -92,6 +92,31 @@ void mitk::MIDASPaintbrushTool::Deactivated()
   mitk::Tool::Deactivated();
 }
 
+float mitk::MIDASPaintbrushTool::CanHandleEvent(const StateEvent *event) const
+{
+  // See StateMachine.xml for event Ids.
+  if (event != NULL
+      && event->GetEvent() != NULL
+      && (   event->GetId() == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
+          || event->GetId() == 505 // left mouse up
+          || event->GetId() == 530 // left mouse down and move
+          || event->GetId() == 4   // middle mouse down
+          || event->GetId() == 506 // middle mouse up
+          || event->GetId() == 533 // middle mouse down and move
+          || event->GetId() == 2   // right mouse down
+          || event->GetId() == 507 // right mouse up
+          || event->GetId() == 531 // right mouse down and move
+          )
+      )
+  {
+    return 1;
+  }
+  else
+  {
+    return mitk::StateMachine::CanHandleEvent(event);
+  }
+}
+
 void mitk::MIDASPaintbrushTool::SetCursorSize(int current)
 {
   m_CursorSize = current;

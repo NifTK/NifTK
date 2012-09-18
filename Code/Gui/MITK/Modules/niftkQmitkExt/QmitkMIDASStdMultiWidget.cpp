@@ -153,9 +153,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     m_Cameras[i] = vtkCamera::New();
   }
 
-  // Turn off all interactors in base class, until we want them to be enabled.
-  this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
-
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
   this->m_CornerAnnotaions[0].cornerText->SetText(0, "");
   this->m_CornerAnnotaions[1].cornerText->SetText(0, "");
@@ -228,8 +225,6 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
   {
     RemoveDisplayGeometryModificationObserver(renderWindows[i]);
   }
-
-  m_RenderingManager->SetTimeNavigationController(NULL);
 }
 
 void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
@@ -915,7 +910,6 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
           isFlipped = true;
           break;
         default:
-          // Default = Transversal.
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
           originOfSlice[0] = originMillimetres[0] + permutedBoundingBox[0]*permutedSpacing[0]*permutedMatrix[0][1] - voxelOffset*permutedSpacing[0];
@@ -1737,18 +1731,6 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
     camera->SetFocalPoint(this->m_Cameras[i]->GetFocalPoint());
     camera->SetViewUp(this->m_Cameras[i]->GetViewUp());
     camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
-  }
-}
-
-void QmitkMIDASStdMultiWidget::EnableInteractors(bool enable)
-{
-  if (enable)
-  {
-    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
-  }
-  else
-  {
-    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
   }
 }
 

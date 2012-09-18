@@ -260,17 +260,17 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
 
 // -------------------  mitk::IRenderWindowPart  ----------------------
 
-QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveRenderWindow() const
+QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveQmitkRenderWindow() const
 {
   return d->m_MIDASMultiViewWidget->GetActiveRenderWindow();
 }
 
-QHash<QString, QmitkRenderWindow *> QmitkMIDASMultiViewEditor::GetRenderWindows() const
+QHash<QString, QmitkRenderWindow *> QmitkMIDASMultiViewEditor::GetQmitkRenderWindows() const
 {
   return d->m_MIDASMultiViewWidget->GetRenderWindows();
 }
 
-QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetRenderWindow(const QString &id) const
+QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetQmitkRenderWindow(const QString &id) const
 {
   return d->m_MIDASMultiViewWidget->GetRenderWindow(id);
 }
@@ -306,21 +306,6 @@ QStringList QmitkMIDASMultiViewEditor::GetDecorations() const
 mitk::IRenderingManager* QmitkMIDASMultiViewEditor::GetRenderingManager() const
 {
   return mitk::MakeRenderingManagerInterface(d->m_RenderingManager);
-}
-
-void QmitkMIDASMultiViewEditor::EnableInteractors(bool enable, const QStringList& interactors)
-{
-  d->m_MIDASMultiViewWidget->EnableInteractors(enable, interactors);
-}
-
-bool QmitkMIDASMultiViewEditor::IsInteractorEnabled(const QString& interactor) const
-{
-  return d->m_MIDASMultiViewWidget->IsInteractorEnabled(interactor);
-}
-
-QStringList QmitkMIDASMultiViewEditor::GetInteractors() const
-{
-  return d->m_MIDASMultiViewWidget->GetInteractors();
 }
 
 mitk::SlicesRotator* QmitkMIDASMultiViewEditor::GetSlicesRotator() const

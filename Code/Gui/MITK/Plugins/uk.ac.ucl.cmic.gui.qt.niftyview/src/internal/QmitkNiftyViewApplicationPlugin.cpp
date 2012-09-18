@@ -300,9 +300,8 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   berry::Platform::GetServiceRegistry()
     .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
-  Poco::Path logoPath(berry::Platform::GetInstancePath(), "Blank.png");
-  berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("DepartmentLogo");
-  logoPref->Put("DepartmentLogo", logoPath.toString().c_str());
+  berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("org.mitk.editors.stdmultiwidget");
+  logoPref->Put("DepartmentLogo", "");
 }
 
 ctkPluginContext* QmitkNiftyViewApplicationPlugin::GetPluginContext() const

@@ -164,8 +164,6 @@ void mitk::MIDASContourTool::SetFeedbackContourVisible(bool b)
 
 bool mitk::MIDASContourTool::OnMousePressed (Action* action, const StateEvent* stateEvent)
 {
-  if (!FeedbackContourTool::OnMousePressed( action, stateEvent )) return false;
-
   DataNode* referenceNode( m_ToolManager->GetReferenceData(0) );
   if (!referenceNode) return false;
 
