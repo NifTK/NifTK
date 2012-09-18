@@ -174,31 +174,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
   mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart(QmitkAbstractView::OPEN);
   if (renderWindowPart != NULL)
   {
-    // If toolID > 0, we have a tool, so must DISABLE interaction.
-
-    // This if/else for if we want to only influence the current window.
-    if (toolID >= 0)
-    {
-      renderWindowPart->EnableInteractors(false);
-    }
-    else
-    {
-      renderWindowPart->EnableInteractors(true);
-    }
-
-    // This if/else for if we want to broadcast an event using ctkEventAdmin.
-    /*
-    bool enabled = true;
-    if (toolID >= 0)
-    {
-      enabled = false;
-    }
-    ctkDictionary properties;
-    properties["enabled"] = enabled;
-
-    emit InteractorRequest(properties);
-    */
-
     mitk::ILinkedRenderWindowPart *linkedRenderWindowPart = dynamic_cast<mitk::ILinkedRenderWindowPart*>(renderWindowPart);
     if (linkedRenderWindowPart != NULL)
     {
@@ -212,8 +187,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
       }
     }
   }
-
-
 }
 
 

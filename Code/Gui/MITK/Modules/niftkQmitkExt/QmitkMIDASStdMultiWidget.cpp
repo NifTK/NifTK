@@ -153,9 +153,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     m_Cameras[i] = vtkCamera::New();
   }
 
-  // Turn off all interactors in base class, until we want them to be enabled.
-  this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
-
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
   this->m_CornerAnnotaions[0].cornerText->SetText(0, "");
   this->m_CornerAnnotaions[1].cornerText->SetText(0, "");
@@ -1735,18 +1732,6 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
     camera->SetFocalPoint(this->m_Cameras[i]->GetFocalPoint());
     camera->SetViewUp(this->m_Cameras[i]->GetViewUp());
     camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
-  }
-}
-
-void QmitkMIDASStdMultiWidget::EnableInteractors(bool enable)
-{
-  if (enable)
-  {
-    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
-  }
-  else
-  {
-    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
   }
 }
 

@@ -136,21 +136,6 @@ public:
    */
   virtual mitk::IRenderingManager* GetRenderingManager() const;
 
-  /**
-   * \see mitk::IRenderWindowPart::EnableInteractors().
-   */
-  void EnableInteractors(bool enable, const QStringList& interactors = QStringList());
-
-  /**
-   * \see mitk::IRenderWindowPart::IsInteractorEnabled().
-   */
-  bool IsInteractorEnabled(const QString& interactor) const;
-
-  /**
-   * \see mitk::IRenderWindowPart::GetInteractors().
-   */
-  QStringList GetInteractors() const;
-
   // -------------------  mitk::ILinkedRenderWindowPart  ----------------------
 
   /**

@@ -308,21 +308,6 @@ mitk::IRenderingManager* QmitkMIDASMultiViewEditor::GetRenderingManager() const
   return mitk::MakeRenderingManagerInterface(d->m_RenderingManager);
 }
 
-void QmitkMIDASMultiViewEditor::EnableInteractors(bool enable, const QStringList& interactors)
-{
-  d->m_MIDASMultiViewWidget->EnableInteractors(enable, interactors);
-}
-
-bool QmitkMIDASMultiViewEditor::IsInteractorEnabled(const QString& interactor) const
-{
-  return d->m_MIDASMultiViewWidget->IsInteractorEnabled(interactor);
-}
-
-QStringList QmitkMIDASMultiViewEditor::GetInteractors() const
-{
-  return d->m_MIDASMultiViewWidget->GetInteractors();
-}
-
 mitk::SlicesRotator* QmitkMIDASMultiViewEditor::GetSlicesRotator() const
 {
   // Deliberately return nothing. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
