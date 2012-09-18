@@ -42,6 +42,7 @@
 #include <mitkPointSet.h>
 #include <mitkToolManager.h>
 #include <mitkGlobalInteraction.h>
+#include <mitkStateMachine.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkColorProperty.h>
 #include <mitkProperties.h>
@@ -171,21 +172,17 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
-  mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart(QmitkAbstractView::OPEN);
-  if (renderWindowPart != NULL)
+  // See http://bugs.mitk.org/show_bug.cgi?id=12302 - new interaction concept.
+  if (toolID >= 0)
   {
-    mitk::ILinkedRenderWindowPart *linkedRenderWindowPart = dynamic_cast<mitk::ILinkedRenderWindowPart*>(renderWindowPart);
-    if (linkedRenderWindowPart != NULL)
-    {
-      if (toolID >= 0)
-      {
-        linkedRenderWindowPart->EnableLinkedNavigation(false);
-      }
-      else
-      {
-        linkedRenderWindowPart->EnableLinkedNavigation(true);
-      }
-    }
+    // Enabling a tool - so just the tool receives the event,
+    // so tool must return a high value from mitk::CanHandleEvent
+    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_ONE);
+  }
+  else
+  {
+    // Disabling a tool - revert to default behaviour.
+    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_MULTIPLE);
   }
 }
 
