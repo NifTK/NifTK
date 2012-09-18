@@ -51,7 +51,7 @@ IF(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_APP_mitkDiffusion OFF CACHE BOOL \"Build the MITK Diffusion application. This should be OFF, as NifTK has it's own application NiftyView. \")      
       set(MITK_BUILD_org.mitk.gui.qt.application ON CACHE BOOL \"Build the MITK application plugin. This should be ON, as it contains support classes we need for NiftyView. \")
       set(MITK_BUILD_org.mitk.gui.qt.ext ON CACHE BOOL \"Build the MITK ext plugin. This should be ON, as it contains support classes we need for NiftyView. \")
-      set(MITK_BUILD_org.mitk.gui.qt.extapplication OFF CACHE BOOL \"Build the MITK ExtApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")
+      set(MITK_BUILD_org.mitk.gui.qt.extapplication OFF CACHE BOOL \"Build the MITK ExtApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")      
       set(MITK_BUILD_org.mitk.gui.qt.coreapplication OFF CACHE BOOL \"Build the MITK CoreApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")      
       set(MITK_BUILD_org.mitk.gui.qt.imagecropper OFF CACHE BOOL \"Build the MITK image cropper plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.measurement OFF CACHE BOOL \"Build the MITK measurement plugin\")
@@ -59,6 +59,7 @@ IF(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_org.mitk.gui.qt.volumevisualization ON CACHE BOOL \"Build the MITK volume visualization plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.stdmultiwidgeteditor ON CACHE BOOL \"Build the MITK ortho-viewer plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.segmentation OFF CACHE BOOL \"Build the MITK segmentation plugin\")
+      set(MITK_BUILD_org.mitk.gui.qt.cli ON CACHE BOOL \"Build the Slicer Command Line Interface plugin. \")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
@@ -177,9 +178,24 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
     #
     #     Giving 5d26e4b046 on the niftk branch
+    #
+    # 15. Trac 1588 - Merge in MITK plugin for Slicer Command Line Modules
+    #     
+    #     Current MITK code base (i.e. if we had to recreate from scratch) is in effect:
+    #       MITK d2581aea00 - Sep 14 2012
+    #       + Trac 853,  MITK 10174 = https://github.com/MattClarkson/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/MattClarkson/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1584, MITK 12303 = https://github.com/MattClarkson/MITK/commit/c9f7b430ea615efe0303afa37824d276486eb442 (Axial instead of Transversal)
+    #       + Trac 1628, MITK 12431 = https://github.com/MattClarkson/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
+    #       + Trac 1469, MITK 12003 = https://github.com/MattClarkson/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
+    #       + Trac 1588, MITK 12506 = https://github.com/MattClarkson/MITK/commit/576f66720701045b914a3337870353744268094f (Slicer Command Line Modules)
+    #
+    #     Giving db37592aa3 on the niftk branch
+    #
     #########################################################
     
-    SET(revision_tag 5d26e4b0460b4f7f0e0fad0a393bd948ee4c80fb)
+    SET(revision_tag db37592aa3)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
