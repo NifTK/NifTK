@@ -783,9 +783,6 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
-IF(NOT APPLE)
-  FILE(COPY ${CMAKE_SOURCE_DIR}/Doc/Images/Blank.png DESTINATION ${EXECUTABLE_OUTPUT_PATH} )
-ENDIF(NOT APPLE)
 
 #############################################################################################
 # These represent the libraries that the apps, libraries and unit tests actually link against
@@ -799,7 +796,6 @@ SET(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 # Install commands for things like README, licenses etc.
 ######################################################################
 
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Images/Blank.png DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
