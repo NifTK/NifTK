@@ -54,7 +54,8 @@ in that order.  The GUI classes created in QmitkMIDASBaseSegmentationFunctionali
 in the MIDASGeneralSegmentorView, providing common functionality, look and feel for both plugins.
 
 The GUI components use Qt signals and slots to call methods on MIDASMorphologicalSegmentorView.
-MIDASMorphologicalSegmentorView contains a MorphologicalSegmentorPipelineInterface
+MIDASMorphologicalSegmentorView contains a MIDASMorphologicalSegmentorPipelineManager
+which itself contains a MorphologicalSegmentorPipelineInterface
 which is implemented by MorphologicalSegmentorPipeline using ITK.  The whole plugin is essentially 
 a Qt GUI, calling methods in MIDASMorphologicalSegmentorView which sets parameters on the ITK pipeline, 
 which updates, and produces an output, which can be visualised using MITK and hence VTK as a binary image.
@@ -73,36 +74,27 @@ This workflow is directly mirrored by the ITK pipeline. Figure 4 shows the the I
 When the GUI is displaying the Thresholding tab, the pipeline is only updating itk::BinaryThresholdImageFilter and itk::MIDASMaskByRegionImageFilter.
 When the GUI is displaying the next 3 tabs, additional filters are added to the pipeline:
 
-\li Erosions tab = itk::MIDASConditionalErosionFilter then itk::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter
-\li Dilations tab = itk::MIDASConditionalDilationFilter then itk::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter
-\li Rethresholding tab = itk::MIDASRethresholdingFilter then itk::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter
-
-If the Additions image and Edits image are blank (empty), then the itk::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter just performs a largest connected component filter.
-
 \section ArchitectureMIDASMorphEditorEdits Pipeline Editing (Connection Breaker)
 
-When the Erosions and Dilations tab are active, the user can edit the image.
+When the Erosions and Dilations tab are active, the user can edit the segmentation.
 
-\li Left mouse button = add to the segmentation
-\li Middle mouse button = break connections - this is highlighted in orange
-\li Right mouse buttons = remove from the orange region used for connection breaking
+\li Left mouse button = add to the segmentation - i.e. paint voxels in the Erosions Additions image or the Dilations Additions image
+which are added to the output in the corresponding itk::MIDASMaskByRegionImageFilter. 
+\li Middle mouse button = break connections - this is highlighted in orange. This is achieved by painting voxels 
+in the Erosions Edits or the Dilations Edits image, which are then used to subtract voxels out of the output of 
+the corresponding itk::MIDASMaskByRegionImageFilter. 
+\li Right mouse buttons = remove from the orange region used for connection breaking. This is achieved by painting voxels
+in the Erosions Edits or Dilations Edits image with a zero value, thereby erasing them. In effect this is an undo 
+operation for the middle mouse button, leading to connections being un-broken.
 
-This is implemented using the Additions image and the Edits image, and the
+The editing is implemented using the 
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>. 
 The mitk::ToolManager can manage a number of tools that can be used to edit segmentations. In the case of the 
-MIDAS Morphological Editor, the mitk::ToolManager registers two working data images, these are the Additions 
-image and the Edits image. This is slightly different to how the framework normally operates. The framework 
-normally operates with a single working data, and the output image that the user is interested in is that single working data. 
-In our case, the working data are two intermediate image that are used to influence the output of the ITK pipeline. 
-So to satisfy the functional specification, mitk::MIDASPaintbrushTool was developed that:
-
-\li Left mouse button - paint into the Additions image (working data item 0), which is a helper image, with visibility set to false (invisible).
-\li Middle mouse button - paint into the Edits image (working data item 1), which is a helper image, with visibility set to true (visible), and a higher VTK rendering layer than the segmentation image, so it appears on top.
-\li Right mouse button - remove voxels from the Edits image.
-
-The itk::MIDASMorphologicalSegmentorLargestConnectedComponentFilter then combines these outputs to produce the final result. The output is equivalent to
-taking the output from either the Erosions, Dilations, or Rethresholding filters, using the Edits image to subtract data (break connections), and the additions image
-to add data, and then doing largest connected component analysis.  This was originally 3 separate filters, but was merged into 1 filter for performance reasons.
+MIDAS Morphological Editor, the mitk::ToolManager registers 4 working data images, these are the Additions 
+image and the Edits image for both Erosions and Dilations. This is slightly different to how the framework normally operates. 
+The framework normally operates with a single working data, and the output image that the user is interested in is that 
+single working data. In our case, the working data are 4 intermediate image that are used to influence the output of the 
+ITK pipeline. 
 
 Furthermore, the <a href="http://docs.mitk.org/nightly-qt4/InteractionPage.html">MITK undo/redo framework</a> 
 is used so that the mitk::MIDASPaintbrushTool can undo and redo the edits.
