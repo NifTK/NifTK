@@ -262,6 +262,8 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   m_Controls.m_DirectAffineRadioButton->setChecked( m_RegParameters.m_AladinParameters.regnType 
 						    == DIRECT_AFFINE );
 
+  m_Controls.m_AladinUseSymmetricAlgorithmCheckBox->setChecked( m_RegParameters.m_AladinParameters.symFlag );
+
   m_Controls.m_AladinIterationsMaxSpinBox->setKeyboardTracking ( false );
   m_Controls.m_AladinIterationsMaxSpinBox->setMaximum( 1000 );
   m_Controls.m_AladinIterationsMaxSpinBox->setMinimum( 1 );
@@ -584,6 +586,13 @@ void QmitkNiftyRegView::CreateConnections()
 	   SIGNAL( toggled( bool ) ),
 	   this,
 	   SLOT( OnDirectAffineRadioButtonToggled( bool ) ) );
+
+
+  connect( m_Controls.m_AladinUseSymmetricAlgorithmCheckBox,
+	   SIGNAL( stateChanged( int ) ),
+	   this,
+	   SLOT( OnAladinUseSymmetricAlgorithmCheckBoxStateChanged( int ) ) );
+
 
   connect( m_Controls.m_AladinIterationsMaxSpinBox,
 	   SIGNAL( valueChanged( int ) ),
@@ -1384,6 +1393,9 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
     fout << m_RegParameters.m_AladinParameters.floatingImageName.toStdString().c_str() 
 	 << ".nii \\" << endl;
 
+    if ( m_RegParameters.m_AladinParameters.symFlag )
+      fout << "   -sym \\" << endl;
+
     if ( m_RegParameters.m_AladinParameters.outputAffineFlag )
       fout << "   -aff " 
 	   << m_RegParameters.m_AladinParameters.outputAffineName.toStdString().c_str() 
@@ -1613,6 +1625,10 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
   
   NiftyRegParameters<PrecisionTYPE> inRegParameters;
 
+  // Although 'symFlag=true' is the default for the GUI, option '-sym'
+  // sets the flag to be true so we initialise it here to be false.
+  inRegParameters.m_AladinParameters.symFlag = false;
+
 
   std::ifstream fin( filename.toStdString().c_str() );
 
@@ -1686,6 +1702,11 @@ void QmitkNiftyRegView::ReadRegistrationParametersFromFile( QString &filename )
 	  = QString( itksys::SystemTools::GetParentDirectory( inString.c_str() ).c_str() );
 	inRegParameters.m_AladinParameters.floatingImageName 
 	  = QString( itksys::SystemTools::GetFilenameName( inString ).c_str() );
+      }
+      
+      else if ( inString.compare( std::string( "-sym" ) ) == 0 ) 
+      {
+	inRegParameters.m_AladinParameters.symFlag = true;
       }
 
       else if ( inString.compare( std::string( "-aff" ) ) == 0 ) 
@@ -2639,6 +2660,24 @@ void QmitkNiftyRegView::OnDirectAffineRadioButtonToggled(bool checked)
     UpdateNonRigidResultImageFilename();
     Modified();
   }
+}
+
+
+// ---------------------------------------------------------------------------
+// OnAladinUseSymmetricAlgorithmCheckBoxStateChanged();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::OnAladinUseSymmetricAlgorithmCheckBoxStateChanged( int state )
+{
+  if ( state == Qt::Checked )
+  {
+    m_RegParameters.m_AladinParameters.symFlag = true;
+  }
+  else
+  {
+    m_RegParameters.m_AladinParameters.symFlag = false;
+  }
+  Modified();
 }
 
 

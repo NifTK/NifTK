@@ -23,6 +23,26 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 		      _reg_ssd
 		      _reg_tools
 		      reg_png
+		      png
 		      reg_nrrd
+		      reg_NrrdIO
 		      _reg_ReadWriteImage
 )
+
+
+if(USE_CUDA)
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
+                        cuda
+			cudart
+			_reg_aladin
+			_reg_f3d
+			_reg_thinPlateSpline
+			_reg_blockMatching_gpu
+                        _reg_resampling_gpu 
+			_reg_localTransformation_gpu
+                        _reg_globalTransformation_gpu 
+                        _reg_mutualinformation_gpu 
+                        _reg_tools_gpu 
+                        _reg_cudaCommon)
+endif(USE_CUDA)
+

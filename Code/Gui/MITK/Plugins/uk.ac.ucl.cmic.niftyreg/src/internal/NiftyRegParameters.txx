@@ -28,6 +28,7 @@
 #include "niftiImageToMitk.h"
 
 
+
 // ---------------------------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------------------------
@@ -210,8 +211,21 @@ reg_aladin<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
 				  mitk::Image *mitkTargetImage, 
 				  mitk::Image *mitkTargetMaskImage )
 {
-  reg_aladin<PRECISION_TYPE> *REG = new reg_aladin<PRECISION_TYPE>;
+  reg_aladin<PRECISION_TYPE> *REG;
+
+  if ( m_AladinParameters.symFlag )
+  {
+    REG = new reg_aladin_sym<PRECISION_TYPE>;
+
+    if ( mitkTargetMaskImage )
+      std::cerr << "[NiftyReg Warning] You have a target image mask specified." << std::endl
+		<< "[NiftyReg Warning] As no source image mask is specified," << std::endl
+		<< "[NiftyReg Warning] the degree of symmetry will be limited." << std::endl;
+  }
+  else
+    REG = new reg_aladin<PRECISION_TYPE>;
   
+
   // Get nifti versions of the images
 
   if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );
@@ -403,15 +417,10 @@ reg_f3d<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
   CUdevice dev;
   CUcontext ctx;
 
-  if ( m_F3dParameters.useGPU )
+  if ( m_F3dParameters.useGPU 
+       && ( ! ( m_F3dParameters.linearEnergyWeight0 ||
+		m_F3dParameters.linearEnergyWeight1 ) ) )
   {
-
-    if ( m_F3dParameters.linearEnergyWeight0 ||
-	 m_F3dParameters.linearEnergyWeight1 ) {
-
-      fprintf(stderr,"NiftyReg ERROR CUDA] The linear elasticity has not been implemented with CUDA yet. Exit.\n");
-      exit(0);
-    }
 
     if ( ( m_ReferenceImage->dim[4] == 1 && 
 	   m_FloatingImage->dim[4]  == 1 ) || 
@@ -466,7 +475,7 @@ reg_f3d<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
 	return 0;
       }
        
-      REG = new reg_f3d_gpu<PRECISION_TYPE>(m_ReferenceImage->nt, m_FloatingImage->nt);
+      REG = new reg_f3d_gpu(m_ReferenceImage->nt, m_FloatingImage->nt);
 
     }
     else
