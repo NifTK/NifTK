@@ -97,7 +97,8 @@ namespace itk
     {                
       voxelIndex = inputMaskImageIter.GetIndex();
       
-      if (  !this->IsOnBoundaryOfImage(voxelIndex, size) 
+      if (  !this->IsOnBoundaryOfImage(voxelIndex, size)
+          && !(this->m_UserSetRegion && this->IsOnBoundaryOfRegion(voxelIndex, this->m_Region)) 
           && this->IsOnBoundaryOfObject(voxelIndex, inMask) 
           && inGrey->GetPixel(voxelIndex) < m_UpperThreshold)
       {

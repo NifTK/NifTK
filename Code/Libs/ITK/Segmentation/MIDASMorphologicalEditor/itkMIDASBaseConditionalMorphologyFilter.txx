@@ -107,6 +107,22 @@ namespace itk
     return false;
   }
   
+  template <class TInputImage1, class TInputImage2, class TOutputImage>
+  bool
+  MIDASBaseConditionalMorphologyFilter<TInputImage1, TInputImage2, TOutputImage> 
+  ::IsOnBoundaryOfRegion(OutputImageIndexType &voxelIndex, OutputImageRegionType& region)
+  {
+    for (int i = 0; i < TInputImage1::ImageDimension; i++)
+    {
+      if((int)voxelIndex[i] == (int)(region.GetIndex()[i]) 
+      || (int)voxelIndex[i] == (int)(region.GetIndex()[i] + region.GetSize()[i]-1)
+        )
+      {
+        return true;
+      }
+    }
+    return false;
+  }
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   void 

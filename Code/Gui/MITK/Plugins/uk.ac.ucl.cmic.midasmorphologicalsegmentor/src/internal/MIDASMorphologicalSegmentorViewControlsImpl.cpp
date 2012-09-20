@@ -42,6 +42,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 {
   Ui_MIDASMorphologicalSegmentorViewControls::setupUi(parent);
 
+  m_ErosionsUpperThresholdSlider->setTracking(false);
   m_ErosionsNumberOfErosionsSlider->setValue(0);
   m_ErosionsNumberOfErosionsLineEdit->setText(QString::number(0));
   m_DilationsLowerThresholdSlider->setMinimum(0);
@@ -64,6 +65,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   connect(m_ThresholdingAxialCutoffSlider, SIGNAL(valueChanged(int)), this, SLOT(OnAxialCuttoffSliderChanged(int)));
   connect(m_ThresholdingAxialCutoffSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAxialCuttoffSpinBoxChanged(int)));
   connect(m_ThresholdingAcceptButton, SIGNAL(pressed()), this, SLOT(OnThresholdAcceptButtonClicked()));
+  connect(m_ErosionsUpperThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnErosionsUpperThresholdChanged(double)));
   connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(sliderMoved(int)), this, SLOT(OnErosionsSliderMoved(int)));
   connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(valueChanged(int)), this, SLOT(OnErosionsSliderChanged(int)));
   connect(m_ErosionsResetButton, SIGNAL(pressed()), this, SLOT(OnErosionsResetButtonClicked()));
@@ -362,6 +364,11 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsSliderChanged(int i)
   this->m_ErosionsNumberOfErosionsLineEdit->blockSignals(true);
   this->m_ErosionsNumberOfErosionsLineEdit->setText(QString::number(i));
   this->m_ErosionsNumberOfErosionsLineEdit->blockSignals(false);
+  this->EmitErosionValues();
+}
+
+void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsUpperThresholdChanged(double)
+{
   this->EmitErosionValues();
 }
 

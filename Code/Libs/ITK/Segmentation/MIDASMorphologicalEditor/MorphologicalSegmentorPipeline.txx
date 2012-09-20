@@ -130,7 +130,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     }
 
     if (regionOfInterest != this->m_ErosionMaskFilter->GetRegion())
-    {    
+    { 
+      this->m_ErosionFilter->SetRegion(regionOfInterest);
       this->m_ErosionMaskFilter->SetRegion(regionOfInterest);
     }
     
