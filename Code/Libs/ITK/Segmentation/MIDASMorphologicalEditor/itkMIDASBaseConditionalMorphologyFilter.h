@@ -79,6 +79,10 @@ namespace itk
     typedef typename itk::ImageDuplicator<OutputImageType> MaskImageDuplicatorType;
     typedef typename MaskImageDuplicatorType::Pointer MaskImageDuplicatorPointer;
 
+    /** Set/Get methods to set the region to keep. */
+    void SetRegion(InputMaskImageRegionType region) { this->m_Region = region; this->m_UserSetRegion = true; this->Modified(); }
+    InputMaskImageRegionType GetRegion() const { return this->m_Region; }
+
     /** Set/Get methods to set the number of iterations, which in subclasses could be erosions or dilations. Default 0. */
     itkSetMacro(NumberOfIterations, unsigned int);
     itkGetConstMacro(NumberOfIterations, unsigned int);
@@ -122,15 +126,19 @@ namespace itk
 
     void CopyImageData(OutputImageType* in, OutputImageType *out);
     bool IsOnBoundaryOfImage(OutputImageIndexType &voxelIndex, OutputImageSizeType &size);
+    bool IsOnBoundaryOfRegion(OutputImageIndexType &voxelIndex, OutputImageRegionType& region);
+
+    InputMaskImageRegionType m_Region;
+    bool                     m_UserSetRegion;
 
   private:
     MIDASBaseConditionalMorphologyFilter(const Self&); //purposely not implemented
     void operator=(const Self&); //purposely not implemented
     void DoOneIterationOfFilter(InputMainImageType* inGrey, OutputImageType* inMask, OutputImageType *out);
 
-    PixelType2            m_InValue;
-    PixelType2            m_OutValue;
-    unsigned int          m_NumberOfIterations;
+    PixelType2               m_InValue;
+    PixelType2               m_OutValue;
+    unsigned int             m_NumberOfIterations;
 
     // This is a member variable, so we don't repeatedly create/destroy the memory if the main filter is called repeatedly.
     MaskImageDuplicatorPointer m_TempImage;
