@@ -211,8 +211,21 @@ reg_aladin<PRECISION_TYPE> *NiftyRegParameters<PRECISION_TYPE>
 				  mitk::Image *mitkTargetImage, 
 				  mitk::Image *mitkTargetMaskImage )
 {
-  reg_aladin<PRECISION_TYPE> *REG = new reg_aladin<PRECISION_TYPE>;
+  reg_aladin<PRECISION_TYPE> *REG;
+
+  if ( m_AladinParameters.symFlag )
+  {
+    REG = new reg_aladin_sym<PRECISION_TYPE>;
+
+    if ( mitkTargetMaskImage )
+      std::cerr << "[NiftyReg Warning] You have a target image mask specified." << std::endl
+		<< "[NiftyReg Warning] As no source image mask is specified," << std::endl
+		<< "[NiftyReg Warning] the degree of symmetry will be limited." << std::endl;
+  }
+  else
+    REG = new reg_aladin<PRECISION_TYPE>;
   
+
   // Get nifti versions of the images
 
   if ( m_FloatingImage ) nifti_image_free( m_FloatingImage );

@@ -73,6 +73,8 @@ void RegAladinParameters::SetDefaultParameters()
   regnType = RIGID_THEN_AFFINE;    
 
   maxiterationNumber = 5;
+  
+  symFlag = true;
 
   block_percent_to_use = 50;
   inlier_lts = 50;
@@ -167,6 +169,8 @@ void RegAladinParameters::PrintSelf( std::ostream& os )
   
   os << "Aladin-maxiterationNumber: " << maxiterationNumber << std::endl;
   
+  os << "Aladin-symFlag: " << symFlag << std::endl;
+  
   os << "Aladin-block_percent_to_use: " << block_percent_to_use << std::endl;
   os << "Aladin-inlier_lts: " << inlier_lts << std::endl;
   
@@ -212,6 +216,8 @@ RegAladinParameters &RegAladinParameters::operator=(const RegAladinParameters &p
   regnType = p.regnType;
 
   maxiterationNumber = p.maxiterationNumber;
+
+  symFlag = p.symFlag;
 
   block_percent_to_use = p.block_percent_to_use;
   inlier_lts = p.inlier_lts;
