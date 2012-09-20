@@ -222,9 +222,6 @@ public:
   /// \brief Reverts the camera position back to the stored camera position.
   void RestoreCameras();
 
-  /// \brief Turn on/off the relevant interactors.
-  void EnableInteractors(bool enable);
-
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
   ///
   /// \see mitkMIDASOrientationUtils.

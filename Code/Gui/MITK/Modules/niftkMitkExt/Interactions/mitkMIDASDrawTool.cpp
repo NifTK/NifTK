@@ -71,6 +71,28 @@ const char** mitk::MIDASDrawTool::GetXPM() const
   return mitkMIDASDrawTool_xpm;
 }
 
+float mitk::MIDASDrawTool::CanHandleEvent(const StateEvent *event) const
+{
+  // See StateMachine.xml for event Ids.
+  if (event != NULL
+      && event->GetEvent() != NULL
+      && (   event->GetId() == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
+          || event->GetId() == 505 // left mouse up
+          || event->GetId() == 530 // left mouse down and move
+          || event->GetId() == 4   // middle mouse down
+          || event->GetId() == 506 // middle mouse up
+          || event->GetId() == 533 // middle mouse down and move
+          )
+      )
+  {
+    return 1;
+  }
+  else
+  {
+    return mitk::StateMachine::CanHandleEvent(event);
+  }
+}
+
 /**
  To start a contour, we initialise the "FeedbackCountour", which is the "Current" contour,
  and also store the current point, at which the mouse was pressed down. It's the next
@@ -107,8 +129,6 @@ bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* 
 */
 bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  if (!FeedbackContourTool::OnMouseMoved( action, stateEvent )) return false;
-
   if (m_WorkingImage == NULL || m_WorkingImageGeometry == NULL) return false;
 
   const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());

@@ -219,21 +219,6 @@ public:
   virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
 
   /**
-   * \see mitk::IRenderWindowPart::EnableInteractors()
-   */
-  virtual void EnableInteractors(bool enable, const QStringList& interactors = QStringList());
-
-  /**
-   * \see mitk::IRenderWindowPart::IsInteractorEnabled()
-   */
-  virtual bool IsInteractorEnabled(const QString& interactor) const;
-
-  /**
-   * \see mitk::IRenderWindowPart::GetInteractors()
-   */
-  virtual QStringList GetInteractors() const;
-
-  /**
    * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
    */
   virtual void EnableLinkedNavigation(bool enable);

@@ -52,6 +52,9 @@ namespace mitk {
     mitkClassMacro(MIDASDrawTool, MIDASContourTool);
     itkNewMacro(MIDASDrawTool);
 
+    /// \see mitk::StateMachine::CanHandleEvent
+    float CanHandleEvent(const StateEvent *) const;
+
     /// \brief Method to enable this class to interact with the Undo/Redo framework.
     virtual void ExecuteOperation(Operation* operation);
 

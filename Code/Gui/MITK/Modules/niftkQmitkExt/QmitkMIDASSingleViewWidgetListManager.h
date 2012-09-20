@@ -25,7 +25,6 @@
 #ifndef QMITKMIDASSINGLEVIEWWIDGETLISTMANAGER_H_
 #define QMITKMIDASSINGLEVIEWWIDGETLISTMANAGER_H_
 
-#include <niftkQmitkExtExports.h>
 #include <vector>
 #include <set>
 
@@ -50,7 +49,7 @@ class QmitkMIDASSingleViewWidget;
  * So, in this class, "registering" means simply adding a window or node to the right list.
  * "De-registering" means simply removing it. Subclasses should provide additional functionality.
  */
-class NIFTKQMITKEXT_EXPORT QmitkMIDASSingleViewWidgetListManager
+class QmitkMIDASSingleViewWidgetListManager
 {
 
 public:
