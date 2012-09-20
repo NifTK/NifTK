@@ -122,8 +122,8 @@ namespace itk
     niftkitkDebugMacro(<< "DoFilter():Dilating size=" << size);
     
     /** Convert the percentage thresholds to actual intensity values. */
-    PixelType1 actualLowerThreshold = (PixelType1)(mean * (m_LowerThreshold/(double)100.0));
-    PixelType1 actualUpperThreshold = (PixelType1)(mean * (m_UpperThreshold/(double)100.0));
+    double actualLowerThreshold = (mean * (m_LowerThreshold/(double)100.0));
+    double actualUpperThreshold = (mean * (m_UpperThreshold/(double)100.0));
     
     niftkitkDebugMacro(<< "DoFilter():mean=" << mean << ", %=[" << m_LowerThreshold << ", " << m_UpperThreshold << "], val=[" << actualLowerThreshold << ", " << actualUpperThreshold << "]");
     
