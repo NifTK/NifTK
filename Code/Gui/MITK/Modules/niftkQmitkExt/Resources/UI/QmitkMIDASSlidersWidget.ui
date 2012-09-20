@@ -34,7 +34,6 @@
        <property name="toolTip">
         <string>changes the slice number of the currently selected view</string>
        </property>
-       <zorder>m_MagnificationFactorWidget</zorder>
       </widget>
      </item>
      <item row="1" column="0">
