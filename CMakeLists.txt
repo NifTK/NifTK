@@ -294,6 +294,9 @@ INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckIncludeFiles.cmake)
 CHECK_FUNCTION_EXISTS(mkstemps HAVE_MKSTEMPS) 
 CHECK_INCLUDE_FILES("sys/socket.h" HAVE_SYS_SOCKET_H)
+IF(HAVE_SYS_SOCKET_H)
+  ADD_DEFINITIONS("-DHAVE_SYS_SOCKET_H")
+ENDIF()
 
 ###########################################################################
 # Set these compiler flags early, so it can be applied to all dependencies.

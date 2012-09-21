@@ -5,8 +5,6 @@
 
 #include "XnatRestStatus.h"
 
-#include "NifTKConfigure.h"
-
 #define DICOM_RESOURCE "DICOM"
 
 enum XnatRestAsynStatusCodes
