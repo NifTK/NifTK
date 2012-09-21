@@ -20,20 +20,150 @@ to cite reference(s) [1], [2] (rigid or affine) and/or [3]
 
 \section NiftyRegQuickStart Quick Start
 
-When the NiftyReg plugin is first opened, the first 'Quick Start' tab is displayed by default. This contains the minimum set of information that must be entered to run a registration. 
+When the NiftyReg plugin is first opened, the 'Quick Start' tab is
+displayed by default (Figure 1). This contains the minimum set of information
+that must be entered to run a registration, specifically:
+ 
+\image html NiftyReg_QuickStartDialog.png "Figure 1. The 'Quick Start'
+NiftyReg plugin dialog contains the minimum set of information that
+must be entered to run a registration."
 
-\image html NiftyReg_QuickStartDialog.png "Figure 1. The 'Quick Start' NiftyReg plugin dialog."
+<ul>
+<li> <b>source image</b> This is the 'moving' or 'floating' image which
+will be registered to, and hence transformed into the space of, the
+'target' image. The drop down menu enables any of the images currently
+loaded into the 'Data Manager' to be selected.</li>
+
+<li> <b>target image</b> This is the 'fixed' or 'reference' image to
+which the 'source' image is registered and again the drop down menu
+enables any of the images currently loaded into the 'Data Manager' to
+be selected.</li>
+
+<li> The radio buttons below the source and target image menus
+determine whether the registration will be:</li>
+
+<ul>
+<li><b>Rigid or affine only</b> in which a non-rigid registration is
+not performed (NB. the default behaviour in this case is to perform an initial
+rigid registration followed by an affine registration).</li>
+
+<li><b>Non-rigid only</b> in which the non-rigid registration isn't
+initialised by an affine registration but is computed directly from the
+input images.</li>
+
+<li><b>Rigid or affine followed by non-rigid.</b> This is the default
+behaviour which uses the initial rigid or affine registration to
+eliminate the global displacement between the images and the non-rigid
+registration to subsequently bring local regions of the images into alignment.</li>
+</ul> 
+
+</ul> 
+
+At the bottom of the NiftyReg plugin window is a progress bar which
+gives an indication of how long the registration will take to complete
+and five buttons. The buttons have the following functions: 
+
+<ul>
+<li><b>Execute</b> This button starts the registration</li>
+
+<li><b>Default Params</b> This button restores the registration
+parameters to their default values.</li>
+
+<li><b>Save Transformation</b> When a registration has been completed
+this button enables the affine and/or non-rigid transformations to be
+written to files.</li>
+
+<li><b>Save Registration Parameters</b> This button enables the
+registration parameters to be saved to a file which can then be
+reloaded at a later date using the 'Load Registration Parameters'
+button. The file format used is a shell script that could be executed
+on a Linux or MacOS command line or, after slight modification, via
+the DOS command line on Windows.</li>
+
+<li><b>Load Registration Parameters</b> This button enables the
+parameters save via the 'Save Registration Parameters' button to be
+reloaded into the plugin.</li>
+</ul> 
 
 
+\section Common
+
+This tab contains the parameters that are common to both the
+rigid/affine and non-rigid registrations (Figure 2).
+
+\image html NiftyReg_CommonDialog.png "Figure 2. The 'Common' tab
+contains the parameters that are common to both the
+rigid/affine and non-rigid registrations."
+
+These parameters are:
+
+<ul>
+<li><b>Masking</b> </li>
+
+<ul>
+<li>target mask image<b></b> This is a mask image which contains
+non-zero voxels in regions of the target image which will be used in
+the registration. This is commonly used to eliminate regions of the
+'target' image that do not appear in the 'source' image, such as a
+tumour or the scanner couch. Even though these regions aren't used in
+the registration the 'source' image will be transformed such that every
+voxel in the 'target' image space is included in the transformed image
+calculation. </li>
+</ul> 
+
+<li><b>Multi-Scale Options</b> </li>
+
+<ul>
+<li><b>number of levels</b> This is the number of levels used to
+create the 'source' and 'target' image pyramids. The base of the each
+pyramid comprises the corresponding input image at it's original
+resolution. The second level comprises the image resampled to
+half its resolution (ie. half the number of voxels along each
+axis). At the third level the resolution is halved again and so on
+for the number of levels specified using this spin box. The default
+number of levels is three.</li>
+
+<li><b>levels to use</b> This is the number of levels in the 'source'
+and 'target' image pyramids that will actually be used in the
+registration. This number must be less than or equal to the number of
+levels specified above. In general all the levels in the image
+pyramids are most commonly used, that is, the registration is first
+performed at the coarsest resolution (the top of the pyramid) and
+subsequently refined by using images at progressively finer
+resolutions lower down the pyramid. Specifying fewer than the maximum
+number of levels in the pyramid will therefore result in a coarser
+resolution but faster registration.</li>
+</ul> 
+
+<li><b>Input Image Blurring (sigma mm)</b> </li>
+
+<ul>
+<li><b></b> </li>
+</ul> 
+
+<li><b>Initial Affine Transformation</b> </li>
+
+<ul>
+<li><b></b> </li>
+</ul> 
+
+<li><b></b> </li>
+
+<ul>
+<li><b></b> </li>
+</ul> 
+
+<li><b></b> </li>
+
+<li><b></b> </li>
+
+</ul> 
+</ul> 
 
 
-\image html NiftyReg_CommonDialog.png "Figure 2. "
 \image html NiftyReg_RigidAffineDialog.png "Figure 3. "
 \image html NiftyReg_NonRigidDialog.png "Figure 4. "
 \image html NiftyReg_AdvancedNonRigidDialog.png "Figure 5. "
-
-\li Filename of a mask image in the reference space
-\li Filename of a mask image in the floating space. Only used when symmetric turned on
 
 \li Number of iteration per level [5]
 \li Number of level to perform [3]
