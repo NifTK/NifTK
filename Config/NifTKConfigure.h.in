@@ -82,6 +82,8 @@
 #define NIFTKSTATIC
 #endif
 
+#cmakedefine HAVE_SYS_SOCKET_H
+
 #cmakedefine CMAKE_NO_STD_NAMESPACE
 #cmakedefine CMAKE_NO_ANSI_STREAM_HEADERS
 #cmakedefine CMAKE_NO_ANSI_STRING_STREAM
