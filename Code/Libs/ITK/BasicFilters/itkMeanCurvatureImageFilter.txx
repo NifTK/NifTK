@@ -78,15 +78,15 @@ MeanCurvatureImageFilter<TInputImage, TOutputImage>
     
     // Equation reference: Level Sets and Fast Marching Methods, J.A.Sethian, p70
     
-    PixelType dx = d(0, voxelIndex, inputImage);
-    PixelType dy = d(1, voxelIndex, inputImage);
-    PixelType dz = d(2, voxelIndex, inputImage);
-    PixelType ddxx = dd(0, voxelIndex, inputImage);  
-    PixelType ddyy = dd(1, voxelIndex, inputImage);
-    PixelType ddzz = dd(2, voxelIndex, inputImage);
-    PixelType ddxy = dd(0, 1, voxelIndex, inputImage);
-    PixelType ddxz = dd(0, 2, voxelIndex, inputImage);
-    PixelType ddyz = dd(1, 2, voxelIndex, inputImage);
+    PixelType dx = this->d(0, voxelIndex, inputImage);
+    PixelType dy = this->d(1, voxelIndex, inputImage);
+    PixelType dz = this->d(2, voxelIndex, inputImage);
+    PixelType ddxx = this->dd(0, voxelIndex, inputImage);  
+    PixelType ddyy = this->dd(1, voxelIndex, inputImage);
+    PixelType ddzz = this->dd(2, voxelIndex, inputImage);
+    PixelType ddxy = this->dd(0, 1, voxelIndex, inputImage);
+    PixelType ddxz = this->dd(0, 2, voxelIndex, inputImage);
+    PixelType ddyz = this->dd(1, 2, voxelIndex, inputImage);
     
     meanCurvature = (ddyy + ddzz) * pow(dx,2) + (ddxx + ddzz) * pow(dy,2) + (ddxx + ddyy) * pow(dz,2);
     meanCurvature += - (2 * dx * dy * ddxy) - (2 * dx * dz * ddxz) - (2 * dy * dz * ddyz);

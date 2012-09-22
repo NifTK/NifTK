@@ -78,15 +78,15 @@ GaussianCurvatureImageFilter<TInputImage, TOutputImage>
     // At the moment im simply writing the first derivative in y,
     // so this should be swapped for a real Gaussian curvature calculation.
     
-    PixelType dx = d(0, voxelIndex, inputImage);
-    PixelType dy = d(1, voxelIndex, inputImage);
-    PixelType dz = d(2, voxelIndex, inputImage);
-    PixelType ddxx = dd(0, voxelIndex, inputImage);  
-    PixelType ddyy = dd(1, voxelIndex, inputImage);
-    PixelType ddzz = dd(2, voxelIndex, inputImage);
-    PixelType ddxy = dd(0, 1, voxelIndex, inputImage);
-    PixelType ddxz = dd(0, 2, voxelIndex, inputImage);
-    PixelType ddyz = dd(1, 2, voxelIndex, inputImage);
+    PixelType dx = this->d(0, voxelIndex, inputImage);
+    PixelType dy = this->d(1, voxelIndex, inputImage);
+    PixelType dz = this->d(2, voxelIndex, inputImage);
+    PixelType ddxx = this->dd(0, voxelIndex, inputImage);  
+    PixelType ddyy = this->dd(1, voxelIndex, inputImage);
+    PixelType ddzz = this->dd(2, voxelIndex, inputImage);
+    PixelType ddxy = this->dd(0, 1, voxelIndex, inputImage);
+    PixelType ddxz = this->dd(0, 2, voxelIndex, inputImage);
+    PixelType ddyz = this->dd(1, 2, voxelIndex, inputImage);
     
     gaussianCurvature = pow((double)dx,2.0) * ( ddyy * ddzz - pow((double)ddyz,2) );
     gaussianCurvature += pow((double)dy,2.0) * ( ddxx * ddzz - pow((double)ddxz,2) );
