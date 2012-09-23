@@ -10,6 +10,19 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   MODULE_DEPENDENCIES CTK QmitkExt niftkMitkExt niftkQmitkExt
 )
 
+if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    # OpenMP is disable when the compiler is based on Clang
+    find_package(OpenMP)
+    if(OPENMP_FOUND)
+        option(USE_OPENMP "To use openMP for multi-CPU processing" ON)
+    endif(OPENMP_FOUND)
+endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+
+if(USE_OPENMP)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif(USE_OPENMP)
+
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
                       niftkITK
 		      _reg_KLdivergence
