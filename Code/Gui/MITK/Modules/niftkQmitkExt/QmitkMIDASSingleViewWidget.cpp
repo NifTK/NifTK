@@ -631,11 +631,6 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
   }
 }
 
-void QmitkMIDASSingleViewWidget::EnableInteractors(bool enable)
-{
-  this->m_MultiWidget->EnableInteractors(enable);
-}
-
 void QmitkMIDASSingleViewWidget::InitializeStandardViews(const mitk::Geometry3D * geometry )
 {
   this->m_MultiWidget->InitializeStandardViews(geometry);

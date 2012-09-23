@@ -1305,14 +1305,14 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
   // See org.mitk.gui.qt.imagenavigator plugin.
   //
   // The assumption is that a QmitkStdMultiWidget has windows called
-  // transversal, sagittal, coronal, 3d.
+  // axial, sagittal, coronal, 3d.
   //
   // So, if we take the currently selected widget, and name these render windows
   // accordingly, then the MITK imagenavigator can be used to update it.
 
   int windowNumber = this->GetSelectedWindowIndex();
 
-  wnds.insert("transversal", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
+  wnds.insert("axial", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
   wnds.insert("sagittal", m_SingleViewWidgets[windowNumber]->GetSagittalWindow());
   wnds.insert("coronal", m_SingleViewWidgets[windowNumber]->GetCoronalWindow());
   wnds.insert("3d", m_SingleViewWidgets[windowNumber]->Get3DWindow());
@@ -1323,7 +1323,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
     {
       QString id = tr(".%1").arg(i);
 
-      wnds.insert("transversal" + id, m_SingleViewWidgets[i]->GetAxialWindow());
+      wnds.insert("axial" + id, m_SingleViewWidgets[i]->GetAxialWindow());
       wnds.insert("sagittal" + id, m_SingleViewWidgets[i]->GetSagittalWindow());
       wnds.insert("coronal" + id, m_SingleViewWidgets[i]->GetCoronalWindow());
       wnds.insert("3d" + id, m_SingleViewWidgets[i]->Get3DWindow());
@@ -1364,7 +1364,6 @@ void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, co
 void QmitkMIDASMultiViewWidget::Activated()
 {
   this->setEnabled(true);
-  this->EnableInteractors(true);
   this->EnableLinkedNavigation(true);
 }
 
@@ -1372,7 +1371,6 @@ void QmitkMIDASMultiViewWidget::Activated()
 void QmitkMIDASMultiViewWidget::Deactivated()
 {
   this->setEnabled(false);
-  this->EnableInteractors(false);
   this->EnableLinkedNavigation(false);
 }
 
@@ -1440,12 +1438,6 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
       }
     }
-    // Only enable the single view widget interactors, if we do not have a top level flag saying otherwise.
-    // Without this, you have segmentation tools turning off interactors, then you click on a different window, and they are re-enabled.
-    if (m_InteractorsEnabled)
-    {
-      this->EnableInteractors(true);
-    }
     this->Update2DCursorVisibility();
     this->RequestUpdateAll();
   }
@@ -1492,51 +1484,3 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 
   this->Update2DCursorVisibility();
 }
-
-
-void QmitkMIDASMultiViewWidget::EnableInteractors(bool enable, const QStringList& interactors)
-{
-  if (interactors.isEmpty() || interactors.contains(mitk::IRenderWindowPart::INTERACTOR_MITK))
-  {
-
-    // Here, if enable=true, we enable for currently selected window, and disable all others.
-    //       if enable=false, they are all disabled.
-    int selectedWindow = this->GetSelectedWindowIndex();
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
-    {
-      if (enable && (int)i == selectedWindow)
-      {
-        m_SingleViewWidgets[i]->EnableInteractors(true);
-      }
-      else
-      {
-        m_SingleViewWidgets[i]->EnableInteractors(false);
-      }
-    }
-
-    m_InteractorsEnabled = enable;
-  }
-}
-
-
-bool QmitkMIDASMultiViewWidget::IsInteractorEnabled(const QString& interactor) const
-{
-  // This widget will always have at least 1 viewer, and that viewer MUST have
-  // an interactor enabled, and so if the input == INTERACTOR_MITK, then we say yes.
-  bool result = false;
-  if (interactor == mitk::IRenderWindowPart::INTERACTOR_MITK)
-  {
-    result = true;
-  }
-  return false;
-}
-
-
-QStringList QmitkMIDASMultiViewWidget::GetInteractors() const
-{
-  // This widget only supports the default MITK movement.
-  QStringList interactors;
-  interactors << mitk::IRenderWindowPart::INTERACTOR_MITK;
-  return interactors;
-}
-

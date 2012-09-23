@@ -22,18 +22,8 @@
 #
 #=================================================================================*/
 
-ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(Freesurfer)
-ADD_SUBDIRECTORY(Fluid)
-ADD_SUBDIRECTORY(Registration)
-ADD_SUBDIRECTORY(SIENA)
-ADD_SUBDIRECTORY(GradwarpCorrection)
-ADD_SUBDIRECTORY(BoundaryShiftIntegral)
-ADD_SUBDIRECTORY(TBSS)
-ADD_SUBDIRECTORY(Utilities)
-ADD_SUBDIRECTORY(Segmentation)
-ADD_SUBDIRECTORY(CorticalThickness)
-ADD_SUBDIRECTORY(Parcellation)
-ADD_SUBDIRECTORY(MAPS)
-ADD_SUBDIRECTORY(Applications)
-ADD_SUBDIRECTORY(Slicer)
+#--------------------------
+# Install the shell scripts
+#--------------------------
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/niftkBET.sh.in ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkBET.sh @ONLY )
+INSTALL(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkBET.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR}/cli-modules COMPONENT scripts)

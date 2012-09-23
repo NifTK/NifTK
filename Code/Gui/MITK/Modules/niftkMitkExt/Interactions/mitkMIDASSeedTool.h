@@ -67,6 +67,9 @@ namespace mitk {
     /// \brief When called, we unregister the mitkPointSetInteractor.
     virtual void Deactivated();
 
+    /// \see mitk::StateMachine::CanHandleEvent
+    float CanHandleEvent(const StateEvent *) const;
+
   protected:
 
     MIDASSeedTool();

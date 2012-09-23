@@ -1147,7 +1147,7 @@ void AffineTransformView::OnTransformReady()
 bool AffineTransformView::DisplayLegends(bool legendsON)
 {
   //mitk::BaseRenderer::GetInstance( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")))
-  QmitkRenderWindow * qRenderWindow = this->GetRenderWindowPart()->GetRenderWindow("3d");
+  QmitkRenderWindow * qRenderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("3d");
   vtkRenderWindow *renderWindow = NULL;
   vtkRenderWindowInteractor *renderWindowInteractor = NULL;
   vtkRenderer *currentVtkRenderer = NULL;

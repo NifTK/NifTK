@@ -101,6 +101,9 @@ public:
   /** Method to enable this class to interact with the Undo/Redo framework. */
   virtual void ExecuteOperation(Operation* operation);
 
+  /** \see mitk::StateMachine::CanHandleEvent */
+  float CanHandleEvent(const StateEvent *) const;
+
   /** Process all mouse events. */
   virtual bool OnLeftMousePressed   (Action* action, const StateEvent* stateEvent);
   virtual bool OnLeftMouseMoved     (Action* action, const StateEvent* stateEvent);
