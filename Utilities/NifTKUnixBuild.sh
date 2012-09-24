@@ -74,7 +74,7 @@ if [ -d "${FOLDER}" ]; then
 fi
 
 DATE=`date -u +%F`
-if [ "${COVERAGE}" = "ON" ]; then
+if [ "${COVERAGE}" = "cov" ]; then
   COVERAGE_ARG="-DNIFTK_CHECK_COVERAGE=ON"
 fi
 
