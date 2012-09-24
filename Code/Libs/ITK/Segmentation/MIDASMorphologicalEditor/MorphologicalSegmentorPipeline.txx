@@ -198,6 +198,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   {
     m_RethresholdingFilter->SetBinaryImageInput(m_DilationConnectedComponentFilter->GetOutput());
     m_RethresholdingFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
+    m_RethresholdingFilter->SetThresholdedImageInput(m_ThresholdingMaskFilter->GetOutput());
     m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
     m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
     m_RethresholdingFilter->SetHighPercentageThreshold((int)(p.m_UpperPercentageThresholdForDilations));

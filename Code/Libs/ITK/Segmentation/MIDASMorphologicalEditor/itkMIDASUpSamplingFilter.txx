@@ -65,13 +65,19 @@ namespace itk
       niftkitkDebugMacro(<< "There should be two input images for MIDASUpSamplingFilter. ");
     }
     
-    //Check input image is set.
+    // Check input image is set.
     InputImageType *inputImage = static_cast<InputImageType*>(this->ProcessObject::GetInput(0));
     if(!inputImage)
     {
       niftkitkDebugMacro(<< "Input downsized image is not set!");
     }
-    
+
+    InputImageType *inputFullSizeImage = static_cast<InputImageType*>(this->ProcessObject::GetInput(1));
+    if(!inputFullSizeImage)
+    {
+      niftkitkDebugMacro(<< "Input full-size image is not set!");
+    }
+
     OutputImagePointer outputImagePtr = this->GetOutput();
     if (outputImagePtr.IsNull())
     {
@@ -88,18 +94,23 @@ namespace itk
       niftkitkDebugMacro(<< "Unsupported image dimension. This filter only does 2D or 3D images");
     }
 
-    //Define an iterator that will walk the input image
+    // Define an iterator that will walk the down sized input image.
     typedef ImageRegionIteratorWithIndex<InputImageType> InputImageIterator;
-    InputImageIterator  inputImageIter(inputImage, inputImage->GetLargestPossibleRegion());
+    InputImageIterator inputImageIter(inputImage, inputImage->GetLargestPossibleRegion());
 
-    //Define an iterator that will walk the output image
+    // Define an iterator that will walk the full sized input image.
+    InputImageIterator inputFullSizeImageIter(inputFullSizeImage, inputFullSizeImage->GetLargestPossibleRegion());
+
+    // Define an iterator that will walk the output image
     typedef ImageRegionIterator<OutputImageType> OutputImageIterator;
     OutputImageIterator outputImageIter(outputImagePtr, outputImagePtr->GetLargestPossibleRegion());
 
-    //set all the pixel values of the output image to the out value first (normally zero).
-    for(outputImageIter.GoToBegin(); !outputImageIter.IsAtEnd(); ++outputImageIter)
+    // Set all the pixel values of the output image to the out value first (normally zero).
+    for(outputImageIter.GoToBegin(); 
+        !outputImageIter.IsAtEnd(); 
+        ++outputImageIter)
     {
-      outputImageIter.Set(m_OutValue);  
+      outputImageIter.Set(0);  
     }
 
     OutputImageSizeType outputImageSize = outputImagePtr->GetLargestPossibleRegion().GetSize();
@@ -109,7 +120,8 @@ namespace itk
     inputImageIndex.Fill(0);
     outputImageIndex.Fill(0);    
     outputImageIter.GoToBegin();
-
+    inputFullSizeImageIter.GoToBegin();
+    
     if (TInputImage::ImageDimension == 3)
     {
       // Iterating through the input image, z dimension = index 2.
@@ -122,10 +134,18 @@ namespace itk
           for(inputImageIndex[0] = 0, outputImageIndex[0] = 0; outputImageIndex[0] < (int)outputImageSize[0]; outputImageIndex[0]++, inputImageIndex[0] += ((outputImageIndex[0] % m_UpSamplingFactor) == 0 ? 1 : 0))
           {
             inputImageIter.SetIndex(inputImageIndex);
+            inputFullSizeImageIter.SetIndex(outputImageIndex);
             
-            if (inputImageIter.Get() != m_OutValue)
+            if (inputImageIter.Get() == m_InValue) // Equivalent to morph.c, line 2895. If down sampled image (input) pixel is on.
             {
-              outputImageIter.Set(m_InValue);
+              if (inputFullSizeImageIter.Get() == m_InValue)
+              {
+                outputImageIter.Set(m_InValue);
+              }
+              else
+              {
+                outputImageIter.Set(m_OutValue);
+              }
             }
             ++outputImageIter;
           }
