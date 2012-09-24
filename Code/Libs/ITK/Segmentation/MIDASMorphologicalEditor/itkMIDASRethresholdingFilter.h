@@ -25,8 +25,10 @@
 #define itkMIDASRethresholdingFilter_h
 
 #include "itkImageToImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
 #include "itkMIDASDownSamplingFilter.h"
 #include "itkMIDASUpSamplingFilter.h"
+#include "itkPasteImageFilter.h"
 #include "itkMIDASMeanIntensityWithinARegionFilter.h"
 #include "itkBinaryCrossStructuringElement.h"
 #include "itkBinaryErodeImageFilter.h"
@@ -93,14 +95,21 @@ namespace itk
     typedef typename OutputImageType::SizeType        OutputImageSizeType;
     typedef typename OutputImageType::IndexType       OutputImageIndexType;
 
+    typedef typename itk::RegionOfInterestImageFilter<InputMaskImageType, InputMaskImageType> ROIImageFilterType;
+    typedef typename ROIImageFilterType::Pointer ROIImageFilterPointer;
+
     typedef typename itk::MIDASDownSamplingFilter<InputMaskImageType, InputMaskImageType> DownSamplingFilterType;
     typedef typename DownSamplingFilterType::Pointer DownSamplingFilterPointer;
-    typedef typename itk::MIDASUpSamplingFilter<InputMaskImageType, InputMaskImageType> UpSamplingFilterType;
-    typedef typename UpSamplingFilterType::Pointer UpSamplingFilterPointer;
 
     typedef typename itk::BinaryCrossStructuringElement<typename InputMaskImageType::PixelType, InputMaskImageType::ImageDimension > StructuringElementType;
     typedef typename itk::BinaryErodeImageFilter<InputMaskImageType, InputMaskImageType, StructuringElementType> ErosionFilterType;
     typedef typename ErosionFilterType::Pointer ErosionFilterPointer;
+
+    typedef typename itk::MIDASUpSamplingFilter<InputMaskImageType, InputMaskImageType> UpSamplingFilterType;
+    typedef typename UpSamplingFilterType::Pointer UpSamplingFilterPointer;
+
+    typedef typename itk::PasteImageFilter<InputMaskImageType, InputMaskImageType> PasteImageFilterType;
+    typedef typename PasteImageFilterType::Pointer PasteImageFilterPointer;
 
     typedef typename itk::MIDASMeanIntensityWithinARegionFilter<InputMainImageType, InputMaskImageType, OutputImageType> MeanFilterType;
     typedef typename MeanFilterType::Pointer MeanFilterPointer;
@@ -119,6 +128,9 @@ namespace itk
 
     /** Set the second input, which is the binary mask, that will be down sampled, eroded and up-sampled. */
     void SetBinaryImageInput(const InputMaskImageType* image);
+
+    /** Sets the output of the thresholding stage onto this filter, as it provides a basis for the down/up sampling. */
+    void SetThresholdedImageInput(const InputMaskImageType* image);
 
     /** Set/Get methods to set the output value for inside the region. Default 1. */
     itkSetMacro(InValue, PixelType2);
@@ -144,9 +156,9 @@ namespace itk
     itkSetMacro(HighPercentageThreshold, unsigned int);
     itkGetConstMacro(HighPercentageThreshold, unsigned int);
 
-    /** Set/Get methods to set a flag indicating whether we skip the intersection with the thresholded mean image (y_m in equation 3). Default false. */
-    itkSetMacro(SkipIntersectionWithMeanMask, bool);
-    itkGetConstMacro(SkipIntersectionWithMeanMask, bool);
+    /** Set/Get methods to set a flag indicating whether we do formula 3 in the paper. Default false. */
+    itkSetMacro(DoFormulaThree, bool);
+    itkGetConstMacro(DoFormulaThree, bool);
 
   protected:
     MIDASRethresholdingFilter();
@@ -169,12 +181,15 @@ namespace itk
     unsigned int m_HighPercentageThreshold;
     PixelType2 m_InValue;
     PixelType2 m_OutValue;
-    bool m_SkipIntersectionWithMeanMask;
+    bool m_DoFormulaThree;
 
     /** Additional filters to implement composite filter pattern. */
+    ROIImageFilterPointer     m_ROIImageFilter;
     DownSamplingFilterPointer m_DownSamplingFilter;
-    ErosionFilterPointer      m_ErosionFilter;
+    ErosionFilterPointer      m_ErosionFilter1;
+    ErosionFilterPointer      m_ErosionFilter2;
     UpSamplingFilterPointer   m_UpSamplingFilter;
+    PasteImageFilterPointer   m_PasteImageFilter;
     MeanFilterPointer         m_MeanFilter;
     ThresholdFilterPointer    m_ThresholdFilter;
     AndFilterPointer          m_AndFilter;
