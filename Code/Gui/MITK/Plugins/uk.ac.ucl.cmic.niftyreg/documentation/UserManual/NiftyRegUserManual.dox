@@ -100,18 +100,22 @@ These parameters are:
 <ul>
 <li><b>Masking</b> </li>
 
-<ul>
-<li>target mask image<b></b> This is a mask image which contains
-non-zero voxels in regions of the target image which will be used in
-the registration. This is commonly used to eliminate regions of the
+A mask is commonly used to eliminate regions of the
 'target' image that do not appear in the 'source' image, such as a
 tumour or the scanner couch. Even though these regions aren't used in
 the registration the 'source' image will be transformed such that every
-voxel in the 'target' image space is included in the transformed image
-calculation. </li>
+voxel in the 'target' image space is included when the transformed image
+is calculated.
+
+<ul>
+<li>target mask image<b></b> The mask image which contains
+non-zero voxels in regions of the target image which will be used in
+the registration.  </li>
 </ul> 
 
 <li><b>Multi-Scale Options</b> </li>
+
+Performing a registration at multiple scales ensures that coarse or large scale features are aligned first with progressively finer structures being registered during later iterations of the algorithms. This approach should ensure that the registration optimisation does not become caught in local minima. It may also make the registration faster by reducing the amount data used in the earlier iterations.
 
 <ul>
 <li><b>number of levels</b> This is the number of levels used to
@@ -125,43 +129,110 @@ number of levels is three.</li>
 
 <li><b>levels to use</b> This is the number of levels in the 'source'
 and 'target' image pyramids that will actually be used in the
-registration. This number must be less than or equal to the number of
-levels specified above. In general all the levels in the image
+registration. This number must be less than or equal to the 'number of
+levels' specified above. In general all the levels in the image
 pyramids are most commonly used, that is, the registration is first
 performed at the coarsest resolution (the top of the pyramid) and
 subsequently refined by using images at progressively finer
-resolutions lower down the pyramid. Specifying fewer than the maximum
-number of levels in the pyramid will therefore result in a coarser
-resolution but faster registration.</li>
+resolutions (lower down the pyramid). Specifying fewer than the maximum
+number of levels in the pyramid will therefore result in a coarser but faster registration.</li>
 </ul> 
 
 <li><b>Input Image Blurring (sigma mm)</b> </li>
 
-<ul>
-<li><b></b> </li>
-</ul> 
+These spin
+boxes allow the user to blur the input images prior to running the
+registration. Blurring can be used to reduce the likelihood of the registration erroneously aligning fine structure in the images which does not correspond anatomically.
+
+<ul> 
+<li><b>source image</b> and <b>target image</b> </li>  The width (standard deviation) of the Gaussian kernel used to perform the smoothing in millimeters. If zero is specified (the default) then no smoothing will be performed.
+<li><b>None</b> </li>Reset both values to zero and therefore turn off input image blurring.
+</ul>
 
 <li><b>Initial Affine Transformation</b> </li>
 
-<ul>
-<li><b></b> </li>
-</ul> 
-
-<li><b></b> </li>
+A previously computed affine transformation can be used to initialise the registration by bringing the images into approximate alignment prior to executing the registration. The check box enables this transformation to be switched on (assuming a file has been selected) or off.
 
 <ul>
+<li><b>is FLIRT</b> The affine transformation is in FLIRT format. </li>
+<li><b>filename</b> The name of the transformation file. This can be typed directly into the input dialog or the browse button can be used to bring up a file browser dialog.</li>
+</ul> 
+
+</ul> 
+
+\section Rigid/Affine
+
+Ourselin et al.[1, 2] presented an algorithm called Aladin, which is based on
+a block-matching approach and a Trimmed Least Square (TLS) scheme. Firstly,
+the block matching provides a set of corresponding points between a 'target' and
+a 'source' image. Secondly, using this set of corresponding points, the best
+rigid or affine transformation is evaluated. This two-step loop is repeated
+until convergence to the best transformation.
+
+In the implementation employed here, normalised cross-correlation is
+calculated between the target and source blocks to extract the best
+correspondence. The block width is constant and has been set to 4
+voxels. A coarse-to-fine approach is used, where the registration is
+first performed on down-sampled images (using a Gaussian filter to
+resample images) and finally performed on full resolution images. 
+
+This tab (Figure 3) enables the user to modify the rigid or affine registration parameters.
+
+\image html NiftyReg_RigidAffineDialog.png "Figure 3. The rigid/affine registration parameters."
+
+<ul> 
+<li><b>Initialisation</b> </li>
+
+<ul>
+<li><b>use nifti header to initialise translation</b> The nifti image format contains two affine transformation matrices (the 'q form' or 's form' matrices), one or other of which can be used to translate the image prior to registration. This behaviour (which is also the default) can be used to bring the images into appropoximate alignment by ensuring that the image axes and origins are approximately aligned. The nifti format is the native image format used by both the affine and non-rigid registrations. The 'source' and 'target' images are automatically converted into this format when the registration is executed and the header matrices are set according to the image position and orientation data of the corresponding images in the 'Data Manager'.
+</ul> 
+
+
+<li><b>Method</b> </li>
+
+<ul> <li><b>rigid only</b>, <b>rigid then affine</b> and <b>direct
+affine</b> </li> These radio buttons can be used to specify whether a
+rigid (translation and rotation only) or a fully affine (also
+incoporating scale and shear) transformation is computed. The default
+behaviour is to compute a rigid transformation first and follow this
+with calculation of the affine parameters. This approach contrains the
+registration initially to try and limit any scale and shear distortion
+which is assumed to be less probable than translation and rotation.
+
+<li><b>max number of iterations</b> This parameter specifies the
+number of rigid or affine (or both) iterations to perform. After each
+iteration the 'source' image is transformed with the current estimate
+of the transformation which should ensure that, as the registration
+becomes more accurate, the next block matching iteration will achieve
+a better match between features in the two images. The default number of
+iterations to perform is five.</li>
+
+<li><b>percent of blocks to use</b> At the start of the rigid/affine
+registration the target image is divided into blocks of size four
+voxels in each dimension. This determines the total number of blocks
+that could be used in the registration. For each of these blocks the
+variance of the underlying voxel intensities is computed and a sorted
+list of these block variances is created. Blocks with a high variance
+will correspond to corners or edges in the images which can be
+localised more accurately than flat image blocks with low
+variance. This parameter therefore enables the user to specify that
+only a certain percentage of blocks with the highest variances will be
+used in the registration. The default value of this paramater
+specifies that 50% of the blocks will be used.</li>
+
 <li><b></b> </li>
 </ul> 
 
-<li><b></b> </li>
 
+<li><b>Advanced</b> </li>
+
+<ul> 
 <li><b></b> </li>
+</ul> 
 
 </ul> 
-</ul> 
 
 
-\image html NiftyReg_RigidAffineDialog.png "Figure 3. "
 \image html NiftyReg_NonRigidDialog.png "Figure 4. "
 \image html NiftyReg_AdvancedNonRigidDialog.png "Figure 5. "
 
@@ -174,20 +245,6 @@ resolution but faster registration.</li>
 
 
 \section NiftyRegAffine Rigid and Affine Registration
-
-Ourselin et al.[1, 2] presented an algorithm called Aladin, which is based on
-a block-matching approach and a Trimmed Least Square (TLS) scheme. Firstly,
-the block matching provides a set of corresponding points between a target and
-a source image. Secondly, using this set of corresponding points, the best
-rigid or affine transformation is evaluated. This two-step loop is repeated
-until convergence to the best transformation.
-
-In the implementation employed here, normalised cross-correlation is
-calculated between the target and source blocks to extract the best
-correspondence. The block width is constant and has been set to 4
-voxels. A coarse-to-fine approach is used, where the registration is
-first performed on down-sampled images (using a Gaussian filter to
-resample images) and finally performed on full resolution images. 
 
 \subsection NiftyRegAffineInitialisation Initialisation
 
