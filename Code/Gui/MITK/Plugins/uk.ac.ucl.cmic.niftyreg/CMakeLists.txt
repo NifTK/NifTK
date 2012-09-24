@@ -30,10 +30,14 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 )
 
 
-if(USE_CUDA)
+if(NIFTK_USE_CUDA)
+
+  FIND_PACKAGE(CUDA)
+  IF(CUDA_FOUND)
+    ADD_DEFINITIONS(-D_USE_CUDA)
+  ENDIF(CUDA_FOUND)
+  
   TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
-                        cuda
-			cudart
 			_reg_aladin
 			_reg_f3d
 			_reg_thinPlateSpline
@@ -44,5 +48,5 @@ if(USE_CUDA)
                         _reg_mutualinformation_gpu 
                         _reg_tools_gpu 
                         _reg_cudaCommon)
-endif(USE_CUDA)
+endif(NIFTK_USE_CUDA)
 
