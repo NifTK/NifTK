@@ -3,7 +3,6 @@ set(CPP_FILES
   XnatConnection.cpp
   XnatConnectionFactory.cpp
   XnatException.cpp
-  XnatFileNameTypeDialog.cpp
   XnatLoginDialog.cpp
   XnatLoginProfile.cpp
   XnatModel.cpp
@@ -19,7 +18,6 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  XnatFileNameTypeDialog.h
   XnatLoginDialog.h
   XnatModel.h
   XnatNameDialog.h
