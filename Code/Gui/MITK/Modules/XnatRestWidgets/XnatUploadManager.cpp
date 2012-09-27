@@ -1,15 +1,15 @@
 #include "XnatUploadManager.h"
 
 #include <QFile>
-#include <QFileInfo>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QTimer>
 
-#include <XnatException.h>
-#include <XnatModel.h>
-#include "XnatTreeView.h"
+#include "XnatException.h"
+#include "XnatModel.h"
 #include "XnatSettings.h"
+#include "XnatTreeView.h"
 #include "XnatUploadDialog.h"
 
 

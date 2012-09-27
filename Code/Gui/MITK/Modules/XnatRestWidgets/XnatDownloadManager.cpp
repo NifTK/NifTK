@@ -7,11 +7,11 @@
 #include <QTimer>
 #include <QWidget>
 
-#include <XnatTreeView.h>
-#include <XnatModel.h>
-#include <XnatException.h>
 #include "XnatDownloadDialog.h"
-#include "XnatPluginSettings.h"
+#include "XnatException.h"
+#include "XnatModel.h"
+#include "XnatSettings.h"
+#include "XnatTreeView.h"
 
 XnatDownloadManager::XnatDownloadManager(XnatTreeView* xnatTreeView)
 : QObject(xnatTreeView)

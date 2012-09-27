@@ -2,13 +2,16 @@
 
 // XnatRestWidgets module includes
 #include <XnatConnection.h>
-#include <XnatLoginDialog.h>
+#include <XnatDownloadManager.h>
 #include <XnatException.h>
+#include <XnatLoginDialog.h>
 #include <XnatModel.h>
 #include <XnatNameDialog.h>
 #include <XnatNodeActivity.h>
 #include <XnatNodeProperties.h>
+#include <XnatSettings.h>
 #include <XnatTreeView.h>
+#include <XnatUploadManager.h>
 
 // Qt includes
 #include <QAction>
@@ -20,11 +23,6 @@
 #include <QTextBrowser>
 
 #include <mitkDataNodeFactory.h>
-
-// Local includes:
-#include "XnatSettings.h"
-#include "XnatDownloadManager.h"
-#include "XnatUploadManager.h"
 
 class XnatBrowserWidgetPrivate
 {

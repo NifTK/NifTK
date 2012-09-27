@@ -1,6 +1,8 @@
 #ifndef XnatUploadManager_h
 #define XnatUploadManager_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -15,7 +17,7 @@ class XnatTreeView;
 class XnatUploadDialog;
 
 
-class XnatUploadManager : public QObject
+class XnatRestWidgets_EXPORT XnatUploadManager : public QObject
 {
   Q_OBJECT
 

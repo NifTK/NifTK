@@ -1,6 +1,8 @@
 #ifndef XnatDownloadManager_h
 #define XnatDownloadManager_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QObject>
 
 extern "C"
@@ -14,7 +16,7 @@ class XnatDownloadDialog;
 class XnatSettings;
 class XnatTreeView;
 
-class XnatDownloadManager : public QObject
+class XnatRestWidgets_EXPORT XnatDownloadManager : public QObject
 {
   Q_OBJECT
 
