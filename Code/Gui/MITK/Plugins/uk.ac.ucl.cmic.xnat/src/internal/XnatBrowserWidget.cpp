@@ -10,9 +10,6 @@
 #include <XnatNodeProperties.h>
 #include <XnatTreeView.h>
 
-// VTK includes
-//#include <vtkStdString.h>
-
 // Qt includes
 #include <QAction>
 #include <QDialog>
@@ -61,13 +58,15 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
   d->settings = 0;
   d->connection = 0;
   d->downloadManager = 0;
-  d->uploadManager = new XnatUploadManager(this);
 
   if (!ui)
   {
     // Create UI
     ui = new Ui::XnatBrowserWidget();
     ui->setupUi(parent);
+
+    d->uploadManager = new XnatUploadManager(ui->xnatTreeView);
+    d->downloadManager = new XnatDownloadManager(ui->xnatTreeView);
 
     ui->middleButtonPanel->setCollapsed(true);
 
@@ -102,19 +101,10 @@ XnatBrowserWidget::~XnatBrowserWidget()
     d->connection = 0;
   }
 
-  // clean up download manager
-  if (d->downloadManager)
-  {
-    delete d->downloadManager;
-    d->downloadManager = 0;
-  }
-
-  // clean up upload manager
-  delete d->uploadManager;
-  d->uploadManager = 0;
-
   if (ui)
   {
+    delete d->downloadManager;
+    delete d->uploadManager;
     delete ui;
   }
 }
@@ -130,6 +120,8 @@ void XnatBrowserWidget::setSettings(XnatSettings* settings)
 {
   Q_D(XnatBrowserWidget);
   d->settings = settings;
+  d->downloadManager->setSettings(settings);
+  d->uploadManager->setSettings(settings);
 }
 
 mitk::DataStorage::Pointer XnatBrowserWidget::dataStorage() const
@@ -220,11 +212,6 @@ void XnatBrowserWidget::loginXnat()
   delete loginDialog;
 }
 
-void XnatBrowserWidget::refreshRows()
-{
-  ui->xnatTreeView->refreshRows();
-}
-
 void XnatBrowserWidget::downloadFile()
 {
   Q_D(XnatBrowserWidget);
@@ -239,10 +226,6 @@ void XnatBrowserWidget::downloadFile()
   }
 
   // download file
-  if ( !d->downloadManager )
-  {
-    d->downloadManager = new XnatDownloadManager(this, d->settings);
-  }
   QString filename = QFileInfo(xnatFilename).fileName();
   d->downloadManager->downloadFile(filename);
 }
@@ -261,15 +244,11 @@ void XnatBrowserWidget::importFile()
   }
 
   // download file
-  if ( !d->downloadManager )
-  {
-    d->downloadManager = new XnatDownloadManager(this, d->settings);
-  }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
   QString tempWorkDirectory = d->settings->getWorkSubdirectory();
   d->downloadManager->silentlyDownloadFile(xnatFileNameTemp, tempWorkDirectory);
 
-  // create list of files to open in CAWorks
+  // create list of files to open
   QStringList files;
   files.append(QFileInfo(tempWorkDirectory, xnatFileNameTemp).absoluteFilePath());
   if ( files.empty() )
@@ -329,15 +308,11 @@ void XnatBrowserWidget::importFiles()
   }
 
   // download file
-  if ( !d->downloadManager )
-  {
-    d->downloadManager = new XnatDownloadManager(this, d->settings);
-  }
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
   QString tempWorkDirectory = d->settings->getWorkSubdirectory();
   d->downloadManager->silentlyDownloadAllFiles(tempWorkDirectory);
 
-  // create list of files to open in CAWorks
+  // create list of files to open
   QStringList files;
   collectImageFiles(tempWorkDirectory, files);
 
@@ -382,24 +357,6 @@ void XnatBrowserWidget::collectImageFiles(const QDir& tempWorkDirectory, QString
   }
 }
 
-bool XnatBrowserWidget::startFileDownload(const QString& zipFilename)
-{
-  // start download of zip file
-  try
-  {
-    QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-    XnatModel* model = ui->xnatTreeView->xnatModel();
-    model->downloadFile(index, zipFilename);
-  }
-  catch (XnatException& e)
-  {
-    QMessageBox::warning(this, tr("Downloaded File Error"), tr(e.what()));
-    return false;
-  }
-
-  return true;
-}
-
 void XnatBrowserWidget::downloadAllFiles()
 {
   Q_D(XnatBrowserWidget);
@@ -415,46 +372,7 @@ void XnatBrowserWidget::downloadAllFiles()
   }
 
   // download files
-  if ( !d->downloadManager )
-  {
-      d->downloadManager = new XnatDownloadManager(this, d->settings);
-  }
   d->downloadManager->downloadAllFiles();
-}
-
-bool XnatBrowserWidget::startFileGroupDownload(const QString& zipFilename)
-{
-  // start download of zip file containing selected file group
-  try
-  {
-    QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-    ui->xnatTreeView->xnatModel()->downloadFileGroup(index, zipFilename);
-  }
-  catch (XnatException& e)
-  {
-    QMessageBox::warning(this, tr("Download File Group Error"), tr(e.what()));
-    return false;
-  }
-
-  return true;
-}
-
-bool XnatBrowserWidget::startFileUpload(const QString& zipFilename)
-{
-  // start upload of zip file
-  try
-  {
-    QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-    XnatModel* model = ui->xnatTreeView->xnatModel();
-    model->uploadFile(index, zipFilename);
-  }
-  catch (XnatException& e)
-  {
-    QMessageBox::warning(this, tr("Upload Files Error"), tr(e.what()));
-    return false;
-  }
-
-  return true;
 }
 
 void XnatBrowserWidget::createNewRow()
