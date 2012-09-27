@@ -141,9 +141,9 @@ void XnatBrowserWidget::createConnections()
 
   // create actions for popup menus
   d->downloadAction = new QAction(tr("Download"), this);
-  connect(d->downloadAction, SIGNAL(triggered()), this, SLOT(downloadFile()));
+  connect(d->downloadAction, SIGNAL(triggered()), d->downloadManager, SLOT(downloadFile()));
   d->downloadAllAction = new QAction(tr("Download All"), this);
-  connect(d->downloadAllAction, SIGNAL(triggered()), this, SLOT(downloadAllFiles()));
+  connect(d->downloadAllAction, SIGNAL(triggered()), d->downloadManager, SLOT(downloadAllFiles()));
   d->importAction = new QAction(tr("Import"), this);
   connect(d->importAction, SIGNAL(triggered()), this, SLOT(importFile()));
   d->importAllAction = new QAction(tr("Import All"), this);
@@ -152,22 +152,22 @@ void XnatBrowserWidget::createConnections()
   connect(d->uploadAction, SIGNAL(triggered()), d->uploadManager, SLOT(uploadFiles()));
   d->saveAndUploadAction = new QAction(tr("Save Data and Upload"), this);
   d->createAction = new QAction(tr("Create New"), this);
-  connect(d->createAction, SIGNAL(triggered()), this, SLOT(createNewRow()));
+  connect(d->createAction, SIGNAL(triggered()), ui->xnatTreeView, SLOT(createNewRow()));
   d->deleteAction = new QAction(tr("Delete"), this);
-  connect(d->deleteAction, SIGNAL(triggered()), this, SLOT(deleteCurrentRow()));
+  connect(d->deleteAction, SIGNAL(triggered()), ui->xnatTreeView, SLOT(deleteCurrentRow()));
 
   // create button widgets
   connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
   connect(ui->refreshButton, SIGNAL(clicked()), ui->xnatTreeView, SLOT(refreshRows()));
-  connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
-  connect(ui->downloadAllButton, SIGNAL(clicked()), this, SLOT(downloadAllFiles()));
+  connect(ui->downloadButton, SIGNAL(clicked()), d->downloadManager, SLOT(downloadFile()));
+  connect(ui->downloadAllButton, SIGNAL(clicked()), d->downloadManager, SLOT(downloadAllFiles()));
   connect(ui->importButton, SIGNAL(clicked()), this, SLOT(importFile()));
   connect(ui->importAllButton, SIGNAL(clicked()), this, SLOT(importFiles()));
   connect(ui->uploadButton, SIGNAL(clicked()), d->uploadManager, SLOT(uploadFiles()));
   connect(ui->saveAndUploadButton, SIGNAL(clicked()), d->saveAndUploadAction, SLOT(trigger()));
   connect(d->saveAndUploadAction, SIGNAL(changed()), this, SLOT(setSaveAndUploadButtonEnabled()));
-  connect(ui->createButton, SIGNAL(clicked()), this, SLOT(createNewRow()));
-  connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteCurrentRow()));
+  connect(ui->createButton, SIGNAL(clicked()), ui->xnatTreeView, SLOT(createNewRow()));
+  connect(ui->deleteButton, SIGNAL(clicked()), ui->xnatTreeView, SLOT(deleteCurrentRow()));
 
   connect(ui->xnatTreeView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(setButtonEnabled(const QModelIndex&)));
 
@@ -208,24 +208,6 @@ void XnatBrowserWidget::loginXnat()
     ui->refreshButton->setEnabled(true);
   }
   delete loginDialog;
-}
-
-void XnatBrowserWidget::downloadFile()
-{
-  Q_D(XnatBrowserWidget);
-
-  // get name of file to be downloaded
-  QModelIndex index = ui->xnatTreeView->currentIndex();
-  XnatModel* model = ui->xnatTreeView->xnatModel();
-  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
-  if ( xnatFilename.isEmpty() )
-  {
-    return;
-  }
-
-  // download file
-  QString filename = QFileInfo(xnatFilename).fileName();
-  d->downloadManager->downloadFile(filename);
 }
 
 void XnatBrowserWidget::importFile()
@@ -353,34 +335,6 @@ void XnatBrowserWidget::collectImageFiles(const QDir& tempWorkDirectory, QString
       first = false;
     }
   }
-}
-
-void XnatBrowserWidget::downloadAllFiles()
-{
-  Q_D(XnatBrowserWidget);
-
-  // get name of file group to be downloaded
-  QModelIndex index = ui->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = ui->xnatTreeView->xnatModel();
-//  QString groupname = model->name(index);
-  QString groupname = model->data(index, Qt::DisplayRole).toString();
-  if ( groupname.isEmpty() )
-  {
-    return;
-  }
-
-  // download files
-  d->downloadManager->downloadAllFiles();
-}
-
-void XnatBrowserWidget::createNewRow()
-{
-  ui->xnatTreeView->createNewRow();
-}
-
-void XnatBrowserWidget::deleteCurrentRow()
-{
-  ui->xnatTreeView->deleteCurrentRow();
 }
 
 void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)

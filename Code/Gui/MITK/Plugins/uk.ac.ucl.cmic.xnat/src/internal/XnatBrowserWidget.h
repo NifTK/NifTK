@@ -30,12 +30,8 @@ public:
 
 private slots:
   void loginXnat();
-  void downloadFile();
-  void downloadAllFiles();
   void importFile();
   void importFiles();
-  void createNewRow();
-  void deleteCurrentRow();
   void setButtonEnabled(const QModelIndex& index);
   void setSaveAndUploadButtonEnabled();
   void showContextMenu(const QPoint&);

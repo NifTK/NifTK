@@ -24,6 +24,22 @@ void XnatDownloadManager::setSettings(XnatSettings* settings)
   this->settings = settings;
 }
 
+void XnatDownloadManager::downloadFile()
+{
+  // get name of file to be downloaded
+  QModelIndex index = xnatTreeView->currentIndex();
+  XnatModel* model = xnatTreeView->xnatModel();
+  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
+  if ( xnatFilename.isEmpty() )
+  {
+    return;
+  }
+
+  // download file
+  QString filename = QFileInfo(xnatFilename).fileName();
+  this->downloadFile(filename);
+}
+
 void XnatDownloadManager::downloadFile(const QString& fname)
 {
   // initialize download variables
@@ -145,6 +161,18 @@ void XnatDownloadManager::startDownload()
 
 void XnatDownloadManager::downloadAllFiles()
 {
+  // get name of file group to be downloaded
+  QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+  XnatModel* model = xnatTreeView->xnatModel();
+//  QString groupname = model->name(index);
+  QString groupname = model->data(index, Qt::DisplayRole).toString();
+  if ( groupname.isEmpty() )
+  {
+    return;
+  }
+
+  // download files
+
   // initialize current directory
   currDir = settings->getDefaultDirectory();
 

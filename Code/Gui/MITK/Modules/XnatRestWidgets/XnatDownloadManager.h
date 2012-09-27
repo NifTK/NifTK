@@ -26,12 +26,15 @@ public:
   void setSettings(XnatSettings* settings);
 
   void downloadFile(const QString& fname);
-  void downloadAllFiles();
   void silentlyDownloadFile(const QString& fname, const QString& dir);
   void silentlyDownloadAllFiles(const QString& dir);
 
 signals:
   void done();
+
+public slots:
+  void downloadFile();
+  void downloadAllFiles();
 
 private slots:
   bool startFileDownload(const QString& zipFilename);
