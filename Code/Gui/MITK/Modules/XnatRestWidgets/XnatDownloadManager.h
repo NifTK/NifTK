@@ -25,7 +25,6 @@ public:
 
   void setSettings(XnatSettings* settings);
 
-  void downloadFile(const QString& fname);
   void silentlyDownloadFile(const QString& fname, const QString& dir);
   void silentlyDownloadAllFiles(const QString& dir);
 

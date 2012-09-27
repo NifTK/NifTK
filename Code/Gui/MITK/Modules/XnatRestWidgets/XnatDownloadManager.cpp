@@ -29,21 +29,14 @@ void XnatDownloadManager::downloadFile()
   // get name of file to be downloaded
   QModelIndex index = xnatTreeView->currentIndex();
   XnatModel* model = xnatTreeView->xnatModel();
-  QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
-  if ( xnatFilename.isEmpty() )
+  QString filename = model->data(index, Qt::DisplayRole).toString();
+  if ( filename.isEmpty() )
   {
     return;
   }
 
-  // download file
-  QString filename = QFileInfo(xnatFilename).fileName();
-  this->downloadFile(filename);
-}
+  xnatFilename = QFileInfo(filename).fileName();
 
-void XnatDownloadManager::downloadFile(const QString& fname)
-{
-  // initialize download variables
-  xnatFilename = fname;
   currDir = settings->getDefaultDirectory();
 
   QString caption = tr("Save Downloaded File");
