@@ -1,6 +1,8 @@
 #ifndef XnatDownloadManager_h
 #define XnatDownloadManager_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QObject>
 
 extern "C"
@@ -9,25 +11,33 @@ extern "C"
 }
 
 class QString;
-class XnatBrowserWidget;
-class XnatSettings;
+class QWidget;
 class XnatDownloadDialog;
+class XnatSettings;
+class XnatTreeView;
 
-class XnatDownloadManager : public QObject
+class XnatRestWidgets_EXPORT XnatDownloadManager : public QObject
 {
   Q_OBJECT
 
 public:
-  XnatDownloadManager(XnatBrowserWidget* b);
-  void downloadFile(const QString& fname);
-  void downloadAllFiles();
+  XnatDownloadManager(XnatTreeView* xnatTreeView);
+
+  void setSettings(XnatSettings* settings);
+
   void silentlyDownloadFile(const QString& fname, const QString& dir);
   void silentlyDownloadAllFiles(const QString& dir);
 
 signals:
   void done();
 
+public slots:
+  void downloadFile();
+  void downloadAllFiles();
+
 private slots:
+  bool startFileDownload(const QString& zipFilename);
+  bool startFileGroupDownload(const QString& zipFilename);
   void startDownload();
   void startGroupDownload();
   void downloadData();
@@ -36,7 +46,7 @@ private slots:
   void downloadDataBlocking();
 
 private:
-  XnatBrowserWidget* browser;
+  XnatTreeView* xnatTreeView;
   XnatDownloadDialog* downloadDialog;
 
   XnatSettings* settings;

@@ -4,14 +4,9 @@ SET(SRC_CPP_FILES
 SET(INTERNAL_CPP_FILES
   XnatBrowserView.cpp
   XnatBrowserWidget.cpp
-  XnatDownloadDialog.cpp
-  XnatDownloadManager.cpp
   XnatPluginActivator.cpp
   XnatPluginPreferencePage.cpp
   XnatPluginSettings.cpp
-#  XnatReactionSaveData.cpp
-  XnatUploadDialog.cpp
-  XnatUploadManager.cpp
 )
 
 SET(UI_FILES
@@ -23,13 +18,8 @@ SET(UI_FILES
 SET(MOC_H_FILES
   src/internal/XnatBrowserView.h
   src/internal/XnatBrowserWidget.h
-  src/internal/XnatDownloadDialog.h
-  src/internal/XnatDownloadManager.h
   src/internal/XnatPluginActivator.h
   src/internal/XnatPluginPreferencePage.h
-#  src/internal/XnatReactionSaveData.h
-  src/internal/XnatUploadDialog.h
-  src/internal/XnatUploadManager.h
 )
 
 SET(CACHED_RESOURCE_FILES

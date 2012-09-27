@@ -28,20 +28,10 @@ public:
   XnatSettings* settings() const;
   void setSettings(XnatSettings* settings);
 
-  bool startFileUpload(const QString& zipFilename);
-  bool startFileDownload(const QString& zipFilename);
-  bool startFileGroupDownload(const QString& zipFilename);
-
-  void refreshRows();
-
 private slots:
   void loginXnat();
-  void downloadFile();
-  void downloadAllFiles();
   void importFile();
   void importFiles();
-  void createNewRow();
-  void deleteCurrentRow();
   void setButtonEnabled(const QModelIndex& index);
   void setSaveAndUploadButtonEnabled();
   void showContextMenu(const QPoint&);
