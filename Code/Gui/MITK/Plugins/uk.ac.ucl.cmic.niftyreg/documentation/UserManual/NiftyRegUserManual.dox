@@ -1,5 +1,5 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.niftyreg} The NiftyReg Registration View
+/bundlemainpage{uk.ac.ucl.cmic.niftyreg} The NiftyReg Registration View
 
 \image html NiftyRegLogo.png "The Icon for NiftyReg"
 
@@ -24,9 +24,7 @@ When the NiftyReg plugin is first opened, the 'Quick Start' tab is
 displayed by default (Figure 1). This contains the minimum set of information
 that must be entered to run a registration, specifically:
  
-\image html NiftyReg_QuickStartDialog.png "Figure 1. The 'Quick Start'
-NiftyReg plugin dialog contains the minimum set of information that
-must be entered to run a registration."
+\image html NiftyReg_QuickStartDialog.png "Figure 1. The 'Quick Start' NiftyReg plugin dialog contains the minimum set of information that must be entered to run a registration."
 
 <ul>
 <li> <b>source image</b> This is the 'moving' or 'floating' image which
@@ -86,18 +84,16 @@ reloaded into the plugin.</li>
 </ul> 
 
 
-\section Common
+\section NiftyRegCommon Common
 
 This tab contains the parameters that are common to both the
 rigid/affine and non-rigid registrations (Figure 2).
 
-\image html NiftyReg_CommonDialog.png "Figure 2. The 'Common' tab
-contains the parameters that are common to both the
-rigid/affine and non-rigid registrations."
+\image html NiftyReg_CommonDialog.png "Figure 2. The 'Common' tab contains the parameters that are common to both the rigid/affine and non-rigid registrations."
 
 These parameters are:
 
-\subsection Masking
+\subsection NiftyRegCommonMasking Masking
 
 A mask is commonly used to eliminate regions of the
 'target' image that do not appear in the 'source' image, such as a
@@ -107,12 +103,12 @@ voxel in the 'target' image space is included when the transformed image
 is calculated.
 
 <ul>
-<li>target mask image<b></b> The mask image which contains
+<li><b>target mask image</b> The mask image which contains
 non-zero voxels in regions of the target image which will be used in
 the registration.  </li>
 </ul> 
 
-\subsection Multi-Scale Options
+\subsection NiftyRegCommonMultiScale Multi-Scale Options
 
 Performing a registration at multiple scales ensures that coarse or large scale features are aligned first with progressively finer structures being registered during later iterations of the algorithms. This approach should ensure that the registration optimisation does not become caught in local minima. It may also make the registration faster by reducing the amount data used in the earlier iterations.
 
@@ -137,7 +133,7 @@ resolutions (lower down the pyramid). Specifying fewer than the maximum
 number of levels in the pyramid will therefore result in a coarser but faster registration.</li>
 </ul> 
 
-\subsection Input Image Blurring (sigma mm)
+\subsection NiftyRegCommonBlurring Input Image Blurring (sigma mm)
 
 These spin
 boxes allow the user to blur the input images prior to running the
@@ -148,7 +144,7 @@ registration. Blurring can be used to reduce the likelihood of the registration 
 <li><b>None</b> </li>Reset both values to zero and therefore turn off input image blurring.
 </ul>
 
-\subsection Initial Affine Transformation
+\subsection NiftyRegCommonInitialAffineTransformation Affine Transformation
 
 A previously computed affine transformation can be used to initialise the registration by bringing the images into approximate alignment prior to executing the registration. The check box enables this transformation to be switched on (assuming a file has been selected) or off.
 
@@ -158,7 +154,7 @@ A previously computed affine transformation can be used to initialise the regist
 </ul> 
 
 
-\section Rigid/Affine
+\section NiftyRegRigidAffine Rigid/Affine
 
 Ourselin et al.[1, 2] presented an algorithm called Aladin, which is based on
 a block-matching approach and a Trimmed Least Square (TLS) scheme. Firstly,
@@ -178,23 +174,44 @@ This tab (Figure 3) enables the user to modify the rigid or affine registration 
 
 \image html NiftyReg_RigidAffineDialog.png "Figure 3. The rigid/affine registration parameters."
 
-\subsection Initialisation
+\subsection NiftyRegRigidAffineInitialisation Initialisation
 
 <ul>
-<li><b>use nifti header to initialise translation</b> The nifti image format contains two affine transformation matrices (the 'q form' or 's form' matrices), one or other of which can be used to translate the image prior to registration. This behaviour (which is also the default) can be used to bring the images into appropoximate alignment by ensuring that the image axes and origins are approximately aligned. The nifti format is the native image format used by both the affine and non-rigid registrations. The 'source' and 'target' images are automatically converted into this format when the registration is executed and the header matrices are set according to the image position and orientation data of the corresponding images in the 'Data Manager'.
+<li><b>use nifti header to initialise translation</b> The nifti image
+format contains two affine transformation matrices (the 'q form' or 's
+form' matrices), one or other of which can be used to translate the
+image prior to registration. This behaviour (which is also the
+default) can be used to bring the images into appropoximate alignment
+by ensuring that the image axes and origins are approximately
+aligned. The nifti format is the native image format used by both the
+affine and non-rigid registrations. The 'source' and 'target' images
+are automatically converted into this format when the registration is
+executed and the header matrices are set according to the image
+position and orientation data of the corresponding images in the 'Data
+Manager'. 
 </ul> 
 
 
-\subsection Method
+\subsection NiftyRegRigidAffineMethod Method
 
-<ul> <li><b>rigid only</b>, <b>rigid then affine</b> and <b>direct
-affine</b> </li> These radio buttons can be used to specify whether a
+<ul> 
+
+<li><b>rigid only</b>, <b>rigid then affine</b> and <b>direct
+affine</b> These radio buttons can be used to specify whether a
 rigid (translation and rotation only) or a fully affine (also
 incoporating scale and shear) transformation is computed. The default
 behaviour is to compute a rigid transformation first and follow this
 with calculation of the affine parameters. This approach contrains the
 registration initially to try and limit any scale and shear distortion
-which is assumed to be less probable than translation and rotation.
+which is assumed to be less probable than translation and rotation.</li> 
+
+<li><b>use symmetric algorithm</b> In a symmetric registration
+block matching is performed in both the forward ('target'
+image blocks matched in the 'source' image) and backward ('source'
+image blocks matched in the 'target' image) directions. The affine
+matrices are then averaged and this average is used to initialise the
+next iteration of the algorithm. This appears to give more robust
+results. The symmetric registration option is selected by default.</li> 
 
 <li><b>max number of iterations</b> This parameter specifies the
 number of rigid or affine (or both) iterations to perform. After each
@@ -217,16 +234,26 @@ only a certain percentage of blocks with the highest variances will be
 used in the registration. The default value of this paramater
 specifies that 50% of the blocks will be used.</li>
 
-<li><b>percent of inliers to use</b> Once the number of blocks to use in the registration has been established by the above calculation, the best match for each of these 'target' image blocks in the 'source' image is calculated by cross-correlation. A least-squares fit of a rigid or affine transformation to the resulting set of paired correspondences is then computed. A proportion of these matches are assumed to be erroneous or inaccurate, i.e. outliers, as defined by their least squared error following the fit. Therefore only the percentage of 'inliers' defined by this parameter are used to recompute the rigid or affine transformation which is used in the next iteration of the algorithm. The default value of this parameter is 50%.</li>
-</ul> 
+<li><b>percent of inliers to use</b> Once the number of blocks to use
+in the registration has been established by the above calculation, the
+best match for each of these 'target' image blocks in the 'source'
+image is calculated by cross-correlation. A least-squares fit of a
+rigid or affine transformation to the resulting set of paired
+correspondences is then computed. A proportion of these matches are
+assumed to be erroneous or inaccurate, i.e. outliers, as defined by
+their least squared error following the fit. Therefore only the
+percentage of 'inliers' defined by this parameter are used to
+recompute the rigid or affine transformation which is used in the next
+iteration of the algorithm. The default value of this parameter is
+50%.</li>
+
+</ul>
 
 
-\subsection Advanced
+\subsection NiftyRegRigidAffineAdvanced Advanced
 
 <ul> 
 <li><b>internal interpolation:</b> <b>nearest</b>, <b>linear</b> or <b>cubic</b> This parameter determines the interpolation scheme used to transform the 'source' image at each iteration of the registration. A cubic interpolation should be the most accurate but it is also the most computationally intensive. Conversely a nearest neighbour interpolation is quick to compute but generally produces a poor result. The default, linear interpolation is therefore usually a good compromise between computation time and the accuracy of the transformed image. </li>
-</ul> 
-
 </ul> 
 
 
@@ -244,50 +271,106 @@ the Bending-Energy (BE) is used. The objective function value is optimised
 using the analytical derivative of both the NMI and the BE within a conjugate
 gradient scheme.
 
-
-\image html NiftyReg_NonRigidDialog.png "Figure 4. "
+\image html NiftyReg_NonRigidDialog.png "Figure 4. The Non-Rigid registration parameters."
 
 
 \subsection NiftyRegNonRigidInitialisation Initial Control Point Grid
 
 <ul>
-\li<b>use control point grid<\b>, <b>browse<\b>, <b>filename<\b> The registration can be initialised using a control point grid stored in the file specified by these options. If the 'use control point grid' check box is not set then a previously loaded grid can be removed from the initialisation of a subsequent registration. 
+
+<li><b>use control point grid</b>, <b>browse</b>, <b>filename</b> The
+registration can be initialised using a control point grid stored in
+the file specified by these options. This can be used to refine a
+previous registration. The control point grid can be written to a file
+using the 'Save Transformation' button at the bottom of the window. If
+the 'use control point grid' check box is unchecked then a previously
+loaded grid can be removed from the initialisation of a subsequent
+registration.
+
 </ul>
 
 \subsection NiftyRegNonRigidInputImage Input Images
 
-\li Lower threshold to apply to the reference image intensities [none]*
-\li Upper threshold to apply to the reference image intensities [none]*
-\li Lower threshold to apply to the floating image intensities [none]* 
-\li Upper threshold to apply to the floating image intensities [none]* 
-* The scl_slope and scl_inter from the nifti header are taken into account for the thresholds      
+The similarity metric between the 'target' and transformed 'source'
+images, which is optimised during the registration, is computed using
+a 2D histogram. Specifying the following thresholds will increase the
+influence of a specific range of intensities by spreading their values
+over a greater number of bins. This might be desirable if much of the
+useful information in the image(s) occupies a limited range and there
+are a small number of high or low intensity outliers. The default
+behaviour is to use the full range of intensities.
+
+<ul>
+<li> <b>upper threshold for target image</b></li>
+<li> <b>lower threshold for target image</b></li>
+<li> <b>upper threshold for source image</b></li>
+<li> <b>lower threshold for source image</b></li>
+</ul>
 
 \subsection NiftyRegNonRigidSpline Spline
 
-\li Final grid spacing along the x axis in mm (in voxels if negative value) [5 voxels]
-\li Final grid spacing along the y axis in mm (in voxels if negative value) [sx value]
-\li Final grid spacing along the z axis in mm (in voxels if negative value) [sx value]
+This option specifies the control point spacing for the free-form
+(b-spline) deformation. A finer control point spacing enables a more
+complex deformation to be captured, whereas a large control point
+spacing will produce a smoother deformation. Choosing an appropriate
+control point spcing is key to ensuring that a representative
+deformation is computed.
+
+<ul>
+<li> <b>control point spacing (mm or voxels if negative)</b></li>
+<li> <b>x</b></li>
+<li> <b>y</b></li>
+<li> <b>z</b></li>
+</ul>
 
 
-\section NiftyRegNonRigid Advanced Non-Rigid Registration
+\section NiftyRegNonRigidAdvanced Advanced Non-Rigid Registration
 
-\image html NiftyReg_AdvancedNonRigidDialog.png "Figure 5. "
+\image html NiftyReg_AdvancedNonRigidDialog.png "Figure 5.  The advanced Non-Rigid registration parameters."
 
-\subsection NiftyRegNonRigidObjectiveFunction Objective Function
+\subsection NiftyRegNonRigidAdvancedObjectiveFunction Objective Function
 
-\li Number of bin to use for the joint histogram [64]            
-\li Number of bin to use for the joint histogram [64]            
+The number of histogram bins determines the intensity resolution of
+the 2D histogram used to compute the image similarity metric. The
+number of bins should be chosen such that any given bin will capture
+the intensities of corresponding 'target' and 'source' image tissue
+classes. Typical values are 32, 64 or 128. The default value is 64.
 
-\li Weight of log of the Jacobian determinant penalty term [0.0]   
-\li Weight of the bending energy penalty term [0.005]
-\li To not approximate the JL value only at the control point position
-\li Do not use a pyramidal approach            
-\li To not use the conjuage gradient optimisation but a simple gradient ascent
-\li To use the SSD as the similiarity measure (NMI by default)                
+<ul>
+<li> <b>number of source histogram bins</b></li>
+<li> <b>number of target histogram bins</b></li>
+</ul>
 
-\subsection NiftyRegNonRigidOthers Others
+<ul>
+<li> <b>weight of the bending energy</b> Specifying a non-zero bending energy, incorporates this constraint into the optimised cost function (with the similarity metric) and smooths the deformation field. A similar (more computationally efficient) approach is to reduce the control point spacing since the b-spline deformation is, by definition, smoothly continuous.</li>
+<li> <b>weight of log of the jacobian determinant</b> Specifying a non-zero log of the jacobian weight introduces a global volume preserving constraint which can be useful if the volume of the object being registered is known to be (at least approximately) conserved.</li>
+<li> <b>linear energy weights</b></li>
+</ul>
 
-\li To smooth the metric derivative (in mm) [0]
+<ul>
+<li> <b>approximate jacobian log only at control points</b> The default operation of the algorithm is to approximate the log of the jacobian only at the control points reducing computation time.</li>
+</ul>
+
+<ul>
+<li> <b>similarity measure</b> These radio buttons are used to select between normalised mutual information (NMI - the default), sum of squared differences (SSD) and Kullback-Leibler divergence (KL div).</li>             
+</ul>
+
+
+\subsection NiftyRegNonRigidAdvancedOptimisation Optimisation
+
+<ul>
+<li> <b>use gradient ascent instead of conjugate gradient</b> This parameter specifies the optimisation scheme to use (conjugate gradient is the default).</li>
+<li> <b>max number of iterations</b> This is the maximum number of iterations to perform at each level of the registration and defaults to 100).</li>
+<li> <b>use pyramidal approach</b> The multi-scale image pyramid method can be turned off by unchecking this box. This might be appropriate if the images are already of quite a coarse resolution.</li>
+</ul>
+
+\subsection NiftyRegNonRigidAdvanced Advanced
+
+<ul>
+<li> <b>smoothing for the metric derivative (sigma mm)</b> The metric derivative can be smoothed at a specific resolution in mm (the default is no smoothing).</li>
+<li> <b>padding value</b> If a 'padding' value is specified then voxels which are transformed from outside of the undeformed image will be assigned this intensity.</li>
+<li><b>internal interpolation:</b> <b>nearest</b>, <b>linear</b> or <b>cubic</b> This parameter determines the interpolation scheme used to transform the 'source' image at each iteration of the registration. A cubic interpolation should be the most accurate but it is also the most computationally intensive. Conversely a nearest neighbour interpolation is quick to compute but generally produces a poor result. The default, linear interpolation, is therefore usually a good compromise between computation time and the accuracy of the transformed image. </li>
+</ul>
 
 \section NiftyRegReferences References
 
@@ -306,5 +389,5 @@ Prog Bio, accepted.
 [4] D. Rueckert, L.I. Sonoda, C. Hayes, D.L.G. Hill, M.O. Leach, and D.J. 
 Hawkes. Nonrigid Registration Using Free-Form Deformations: Application 
 to Breast MR Images. IEEE Trans. Med. Imag., 18:712–721, 1999.
- 
+
 */
