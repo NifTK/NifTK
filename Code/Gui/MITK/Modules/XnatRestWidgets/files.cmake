@@ -2,8 +2,9 @@ set(CPP_FILES
   XnatSettings.cpp
   XnatConnection.cpp
   XnatConnectionFactory.cpp
+  XnatDownloadDialog.cpp
+  XnatDownloadManager.cpp
   XnatException.cpp
-  XnatFileNameTypeDialog.cpp
   XnatLoginDialog.cpp
   XnatLoginProfile.cpp
   XnatModel.cpp
@@ -12,6 +13,8 @@ set(CPP_FILES
   XnatNode.cpp
   XnatNodeProperties.cpp
   XnatTreeView.cpp
+  XnatUploadDialog.cpp
+  XnatUploadManager.cpp
 )
 
 set(UI_FILES
@@ -19,11 +22,14 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  XnatFileNameTypeDialog.h
+  XnatDownloadDialog.h
+  XnatDownloadManager.h
   XnatLoginDialog.h
   XnatModel.h
   XnatNameDialog.h
   XnatTreeView.h
+  XnatUploadDialog.h
+  XnatUploadManager.h
 )
 
 set(QRC_FILES

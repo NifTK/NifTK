@@ -1,21 +1,27 @@
 #include "XnatUploadManager.h"
 
 #include <QFile>
-#include <QFileInfo>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QTimer>
 
-#include "XnatBrowserWidget.h"
+#include "XnatException.h"
+#include "XnatModel.h"
 #include "XnatSettings.h"
+#include "XnatTreeView.h"
 #include "XnatUploadDialog.h"
 
 
-XnatUploadManager::XnatUploadManager(XnatBrowserWidget* b)
-: QObject(b)
-, browser(b)
+XnatUploadManager::XnatUploadManager(XnatTreeView* xnatTreeView)
+: QObject(xnatTreeView)
+, xnatTreeView(xnatTreeView)
 {
-  settings = browser->settings();
+}
+
+void XnatUploadManager::setSettings(XnatSettings* settings)
+{
+  this->settings = settings;
 }
 
 void XnatUploadManager::uploadFiles()
@@ -27,7 +33,7 @@ void XnatUploadManager::uploadFiles()
   }
 
   // display upload dialog
-  uploadDialog = new XnatUploadDialog(browser);
+  uploadDialog = new XnatUploadDialog(xnatTreeView);
   uploadDialog->show();
 
   // zip files for upload
@@ -43,7 +49,7 @@ void XnatUploadManager::uploadSavedData(const QString& dir)
   userFilePaths = QDir(dir).entryList(QDir::Files);
 
   // display upload dialog
-  uploadDialog = new XnatUploadDialog(browser);
+  uploadDialog = new XnatUploadDialog(xnatTreeView);
   uploadDialog->show();
 
   // zip files for upload
@@ -56,7 +62,7 @@ bool XnatUploadManager::getFilenames()
   currDir = settings->getDefaultDirectory();
 
   // display file dialog to get names of files to be uploaded
-  QFileDialog fileNameDialog(browser, tr("Select File to Upload"), currDir);
+  QFileDialog fileNameDialog(xnatTreeView, tr("Select File to Upload"), currDir);
   fileNameDialog.setFileMode(QFileDialog::ExistingFiles);
   // handle multiple filenames in multiple subdirectories
 
@@ -72,7 +78,7 @@ bool XnatUploadManager::getFilenames()
 
   if ( userFilePaths.size() == 0 )
   {
-    QMessageBox::warning(browser, tr("File to Upload"), tr("No file selected"));
+    QMessageBox::warning(xnatTreeView, tr("File to Upload"), tr("No file selected"));
     return false;
   }
 
@@ -107,7 +113,7 @@ void XnatUploadManager::zipFiles()
   if ( status != XNATREST_OK )
   {
     uploadDialog->close();
-    QMessageBox::warning(browser, tr("Zip Upload File Error"), tr(getXnatRestStatusMsg(status)));
+    QMessageBox::warning(xnatTreeView, tr("Zip Upload File Error"), tr(getXnatRestStatusMsg(status)));
     return;
   }
 
@@ -117,7 +123,7 @@ void XnatUploadManager::zipFiles()
     uploadDialog->close();
     if ( !QFile::remove(zipFilename) )
     {
-      QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+      QMessageBox::warning(xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
     }
     return;
   }
@@ -129,7 +135,7 @@ void XnatUploadManager::zipFiles()
 void XnatUploadManager::startUpload()
 {
   // start upload of ZIP file
-  if ( !browser->startFileUpload(zipFilename) )
+  if ( !this->startFileUpload(zipFilename) )
   {
     uploadDialog->close();
     return;
@@ -154,11 +160,11 @@ void XnatUploadManager::uploadData()
     status = cancelXnatRestAsynTransfer();
     if ( status != XNATREST_OK )
     {
-      QMessageBox::warning(browser, tr("Cancel File Upload Error"), tr(getXnatRestStatusMsg(status)));
+      QMessageBox::warning(xnatTreeView, tr("Cancel File Upload Error"), tr(getXnatRestStatusMsg(status)));
     }
     else if ( !QFile::remove(zipFilename) )
     {
-      QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+      QMessageBox::warning(xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
     }
     return;
   }
@@ -168,7 +174,7 @@ void XnatUploadManager::uploadData()
   if ( status != XNATREST_OK )
   {
     uploadDialog->close();
-    QMessageBox::warning(browser, tr("Upload File Error"), tr(getXnatRestStatusMsg(status)));
+    QMessageBox::warning(xnatTreeView, tr("Upload File Error"), tr(getXnatRestStatusMsg(status)));
     return;
   }
 
@@ -178,9 +184,9 @@ void XnatUploadManager::uploadData()
     uploadDialog->close();
     if ( !QFile::remove(zipFilename) )
     {
-      QMessageBox::warning(browser, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+      QMessageBox::warning(xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
     }
-    browser->refreshRows();
+    xnatTreeView->refreshRows();
     return;
   }
 
@@ -192,4 +198,27 @@ void XnatUploadManager::uploadData()
   }
 
   QTimer::singleShot(0, this, SLOT(uploadData()));
+}
+
+bool XnatUploadManager::startFileUpload(const QString& zipFilename)
+{
+  // start upload of zip file
+  try
+  {
+    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
+    XnatModel* model = xnatTreeView->xnatModel();
+    model->uploadFile(index, zipFilename);
+  }
+  catch (XnatException& e)
+  {
+    QMessageBox::warning(xnatTreeView, tr("Upload Files Error"), tr(e.what()));
+    return false;
+  }
+
+  return true;
+}
+
+void XnatUploadManager::refreshRows()
+{
+  xnatTreeView->refreshRows();
 }

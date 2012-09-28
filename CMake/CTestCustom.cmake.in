@@ -140,4 +140,8 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   # Trac #1639
   ".*itkBlockMatchingMethod.txx.*"
   ".*itkBSplineTransform.txx.*"
+  
+  # Trac 1720 - fix warnings from doxygen
+  ".*ignoring unsupported tag.*doygen.conf"
+
   )

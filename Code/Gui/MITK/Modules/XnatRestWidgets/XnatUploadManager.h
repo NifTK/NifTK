@@ -1,6 +1,8 @@
 #ifndef XnatUploadManager_h
 #define XnatUploadManager_h
 
+#include "XnatRestWidgetsExports.h"
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -10,17 +12,20 @@ extern "C"
 #include "XnatRest.h"
 }
 
-class XnatBrowserWidget;
 class XnatSettings;
+class XnatTreeView;
 class XnatUploadDialog;
 
 
-class XnatUploadManager : public QObject
+class XnatRestWidgets_EXPORT XnatUploadManager : public QObject
 {
   Q_OBJECT
 
 public:
-  XnatUploadManager(XnatBrowserWidget* b);
+  XnatUploadManager(XnatTreeView* xnatTreeView);
+
+  void setSettings(XnatSettings* settings);
+
   void uploadSavedData(const QString& dir);
 
 public slots:
@@ -33,8 +38,9 @@ private slots:
 
 private:
   bool getFilenames();
+  bool startFileUpload(const QString& zipFilename);
+  void refreshRows();
 
-  XnatBrowserWidget* browser;
   XnatUploadDialog* uploadDialog;
 
   QString currDir;
@@ -43,6 +49,7 @@ private:
   XnatRestAsynStatus finished;
   unsigned long totalBytes;
 
+  XnatTreeView* xnatTreeView;
   XnatSettings* settings;
 };
 
