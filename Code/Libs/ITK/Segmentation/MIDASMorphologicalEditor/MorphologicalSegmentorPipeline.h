@@ -65,6 +65,12 @@ public:
   /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
   void SetParam(MorphologicalSegmentorPipelineParams& p);
 
+  /// \brief Sets the value to use throughout the binary pipeline for foreground (defaults to 1).
+  void SetForegroundValue(unsigned char foregroundValue);
+
+  /// \brief Sets the value to use throughout the binary pipeline for background (defaults to 0).
+  void SetBackgroundValue(unsigned char backgroundValue);
+
   ///
   /// \brief Update the pipeline
   ///
@@ -78,12 +84,6 @@ public:
   /// \param editingFlags array of 4 booleans to say which images are being editted.
   typename SegmentationImageType::Pointer GetOutput(std::vector<bool>& editingFlags);
 
-  /// \brief The foreground value for the segmentation, equal to 1, set in constructor.
-  unsigned char m_ForegroundValue;
-
-  /// \brief The background value for the segmentation, equal to 0, set in constructor.
-  unsigned char m_BackgroundValue;
-
   int                                                          m_Stage;
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
   typename MaskByRegionFilterType::Pointer                     m_ThresholdingMaskFilter;
@@ -95,6 +95,20 @@ public:
   typename MaskByRegionFilterType::Pointer                     m_DilationMaskFilter;
   typename LargestConnectedComponentFilterType::Pointer        m_DilationConnectedComponentFilter;
   typename RethresholdingFilterType::Pointer                   m_RethresholdingFilter;
+
+private:
+
+  /// \brief Sets the foreground value on all filters.
+  void UpdateForegroundValues();
+
+  /// \brief Sets the background value on all filters.
+  void UpdateBackgroundValues();
+
+  /// \brief The foreground value for the segmentation, equal to 1, set in constructor.
+  unsigned char m_ForegroundValue;
+
+  /// \brief The background value for the segmentation, equal to 0, set in constructor.
+  unsigned char m_BackgroundValue;
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION
