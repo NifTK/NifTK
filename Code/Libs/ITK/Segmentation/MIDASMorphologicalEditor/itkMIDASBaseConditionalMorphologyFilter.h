@@ -50,25 +50,25 @@ namespace itk
     /** Run-time type information (and related methods) */
     itkTypeMacro(MIDASBaseConditionalMorphologyFilter, ImageToImageFilter);
 
-    /** Typedef to describe the type of pixel for the first image, which should be the grey scale image. */
+    /** Typedef to describe the type of pixel for the first image, which should be the binary mask image. */
     typedef typename TInputImage1::PixelType PixelType1;
 
-    /** Typedef to describe the type of pixel for the second image, which should be a binary mask image. */
+    /** Typedef to describe the type of pixel for the second image, which should be a grey scale image. */
     typedef typename TInputImage2::PixelType PixelType2;
 
     /** Some additional typedefs */
-    typedef TInputImage1                              InputMainImageType;
-    typedef typename InputMainImageType::Pointer      InputMainImagePointer;
-    typedef typename InputMainImageType::SizeType     InputMainImageSizeType;
-    typedef typename InputMainImageType::RegionType   InputMainImageRegionType;
-
-    typedef TInputImage2                              InputMaskImageType;
+    typedef TInputImage1                              InputMaskImageType;
     typedef typename InputMaskImageType::Pointer      InputMaskImagePointer;
     typedef typename InputMaskImageType::SizeType     InputMaskImageSizeType;
     typedef typename InputMaskImageType::RegionType   InputMaskImageRegionType;
     typedef typename InputMaskImageType::IndexType    InputMaskImageIndexType;
 
-    typedef TInputImage2                              OutputImageType;
+    typedef TInputImage2                              InputMainImageType;
+    typedef typename InputMainImageType::Pointer      InputMainImagePointer;
+    typedef typename InputMainImageType::SizeType     InputMainImageSizeType;
+    typedef typename InputMainImageType::RegionType   InputMainImageRegionType;
+
+    typedef TOutputImage                              OutputImageType;
     typedef typename OutputImageType::Pointer         OutputImagePointer;
     typedef typename OutputImageType::RegionType      OutputImageRegionType;
     typedef typename OutputImageType::SizeType        OutputImageSizeType;
@@ -88,18 +88,18 @@ namespace itk
     itkGetConstMacro(NumberOfIterations, unsigned int);
 
     /** Set/Get methods to set the output value for inside the region. Default 1. */
-    itkSetMacro(InValue, PixelType2);
-    itkGetConstMacro(InValue, PixelType2);
+    itkSetMacro(InValue, PixelType1);
+    itkGetConstMacro(InValue, PixelType1);
 
     /** Set/Get methods to set the output value for inside the region. Default 0. */
-    itkSetMacro(OutValue, PixelType2);
-    itkGetConstMacro(OutValue, PixelType2);
+    itkSetMacro(OutValue, PixelType1);
+    itkGetConstMacro(OutValue, PixelType1);
 
-    /** Set the first input, for the grey scale image. */
-    void SetGreyScaleImageInput(const InputMainImageType* image);
-
-    /** Set the second input, which is the binary mask, that will be eroded/dilated. */
+    /** Set the first input, which is the binary mask, that will be eroded/dilated. */
     void SetBinaryImageInput(const InputMaskImageType* image);
+
+    /** Set the second input, for the grey scale image. */
+    void SetGreyScaleImageInput(const InputMainImageType* image);
 
   protected:
     MIDASBaseConditionalMorphologyFilter();
@@ -136,13 +136,12 @@ namespace itk
     void operator=(const Self&); //purposely not implemented
     void DoOneIterationOfFilter(InputMainImageType* inGrey, OutputImageType* inMask, OutputImageType *out);
 
-    PixelType2               m_InValue;
-    PixelType2               m_OutValue;
+    PixelType1               m_InValue;
+    PixelType1               m_OutValue;
     unsigned int             m_NumberOfIterations;
 
     // This is a member variable, so we don't repeatedly create/destroy the memory if the main filter is called repeatedly.
     MaskImageDuplicatorPointer m_TempImage;
-
   };
 
 } //end namespace itk
