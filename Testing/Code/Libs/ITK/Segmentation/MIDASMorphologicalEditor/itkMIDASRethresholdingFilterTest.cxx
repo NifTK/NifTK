@@ -74,6 +74,7 @@ int itkMIDASRethresholdingFilterTest(int argc, char * argv[])
   RethresholdingFilterType::Pointer rethresholdingFilter = RethresholdingFilterType::New();
   rethresholdingFilter->SetGreyScaleImageInput(reader->GetOutput());
   rethresholdingFilter->SetBinaryImageInput(thresholdingFilter->GetOutput());
+  rethresholdingFilter->SetThresholdedImageInput(thresholdingFilter->GetOutput());
   rethresholdingFilter->SetDownSamplingFactor(4);
 
   ImageFileWriterType::Pointer writer = ImageFileWriterType::New();

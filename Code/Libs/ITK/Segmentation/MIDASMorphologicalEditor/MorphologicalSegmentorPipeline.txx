@@ -47,28 +47,60 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_DilationConnectedComponentFilter->SetCapacity(capacity);
   m_RethresholdingFilter = RethresholdingFilterType::New();
 
-  // Making sure that these are only called once in constructor.
-  m_ForegroundValue = 1;
-  m_BackgroundValue = 0;
+  this->SetForegroundValue((unsigned char)1);
+  this->SetBackgroundValue((unsigned char)0);
+}
+
+template<typename TPixel, unsigned int VImageDimension>
+void 
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetForegroundValue(unsigned char foregroundValue)
+{
+  m_ForegroundValue = foregroundValue;
+  this->UpdateForegroundValues();
+}
+
+
+template<typename TPixel, unsigned int VImageDimension>
+void 
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetBackgroundValue(unsigned char backgroundValue)
+{
+  m_BackgroundValue = backgroundValue;
+  this->UpdateBackgroundValues();
+}
+
+template<typename TPixel, unsigned int VImageDimension>
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension> 
+::UpdateForegroundValues()
+{
   m_ThresholdingFilter->SetInsideValue(m_ForegroundValue);
+  m_ThresholdingConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
+  m_ErosionFilter->SetInValue(m_ForegroundValue);
+  m_ErosionConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);  
+  m_DilationFilter->SetInValue(m_ForegroundValue);
+  m_DilationConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
+  m_RethresholdingFilter->SetInValue(m_ForegroundValue);
+}
+
+template<typename TPixel, unsigned int VImageDimension>  
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>  
+::UpdateBackgroundValues()
+{
   m_ThresholdingFilter->SetOutsideValue(m_BackgroundValue);
   m_ThresholdingMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
   m_ThresholdingConnectedComponentFilter->SetInputBackgroundValue(m_BackgroundValue);
   m_ThresholdingConnectedComponentFilter->SetOutputBackgroundValue(m_BackgroundValue);
-  m_ThresholdingConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
-  m_ErosionFilter->SetInValue(m_ForegroundValue);
   m_ErosionFilter->SetOutValue(m_BackgroundValue);
   m_ErosionMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
   m_ErosionConnectedComponentFilter->SetInputBackgroundValue(m_BackgroundValue);
   m_ErosionConnectedComponentFilter->SetOutputBackgroundValue(m_BackgroundValue);
-  m_ErosionConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);  
-  m_DilationFilter->SetInValue(m_ForegroundValue);
   m_DilationFilter->SetOutValue(m_BackgroundValue);
   m_DilationMaskFilter->SetOutputBackgroundValue(m_BackgroundValue);
   m_DilationConnectedComponentFilter->SetInputBackgroundValue(m_BackgroundValue);
-  m_DilationConnectedComponentFilter->SetOutputBackgroundValue(m_BackgroundValue);
-  m_DilationConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
-  m_RethresholdingFilter->SetInValue(m_ForegroundValue);
+  m_DilationConnectedComponentFilter->SetOutputBackgroundValue(m_BackgroundValue);;
   m_RethresholdingFilter->SetOutValue(m_BackgroundValue);
 }
 
@@ -130,7 +162,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     }
 
     if (regionOfInterest != this->m_ErosionMaskFilter->GetRegion())
-    {    
+    { 
+      this->m_ErosionFilter->SetRegion(regionOfInterest);
       this->m_ErosionMaskFilter->SetRegion(regionOfInterest);
     }
     
@@ -197,6 +230,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   {
     m_RethresholdingFilter->SetBinaryImageInput(m_DilationConnectedComponentFilter->GetOutput());
     m_RethresholdingFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
+    m_RethresholdingFilter->SetThresholdedImageInput(m_ThresholdingMaskFilter->GetOutput());
     m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
     m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
     m_RethresholdingFilter->SetHighPercentageThreshold((int)(p.m_UpperPercentageThresholdForDilations));

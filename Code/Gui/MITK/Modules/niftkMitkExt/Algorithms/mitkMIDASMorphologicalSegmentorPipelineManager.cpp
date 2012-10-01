@@ -184,7 +184,7 @@ void MIDASMorphologicalSegmentorPipelineManager::OnRethresholdingValuesChanged(c
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
   {
-    segmentationNode->SetIntProperty("midas.morph.rethresholing.box", boxSize);
+    segmentationNode->SetIntProperty("midas.morph.rethresholding.box", boxSize);
     this->UpdateSegmentation();
   }
 }
