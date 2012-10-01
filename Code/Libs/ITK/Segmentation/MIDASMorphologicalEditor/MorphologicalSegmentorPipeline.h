@@ -52,8 +52,8 @@ public:
   typedef itk::BinaryThresholdImageFilter<GreyScaleImageType, SegmentationImageType> ThresholdingFilterType;
   typedef itk::MIDASMaskByRegionImageFilter<SegmentationImageType, SegmentationImageType> MaskByRegionFilterType;
   typedef itk::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<SegmentationImageType, SegmentationImageType> LargestConnectedComponentFilterType;
-  typedef itk::MIDASConditionalErosionFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> ErosionFilterType;
-  typedef itk::MIDASConditionalDilationFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> DilationFilterType;
+  typedef itk::MIDASConditionalErosionFilter<SegmentationImageType, GreyScaleImageType, SegmentationImageType> ErosionFilterType;
+  typedef itk::MIDASConditionalDilationFilter<SegmentationImageType, GreyScaleImageType, SegmentationImageType> DilationFilterType;
   typedef itk::MIDASRethresholdingFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> RethresholdingFilterType;
 
   /// \brief Default constructor, creating all pipeline elements, where filters are held with smart pointers for automatic destruction.
