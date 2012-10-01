@@ -36,6 +36,7 @@ namespace itk
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   MIDASBaseConditionalMorphologyFilter<TInputImage1, TInputImage2, TOutputImage>::MIDASBaseConditionalMorphologyFilter()
   {
+    this->SetNumberOfRequiredInputs(1); // second input is optional
     this->SetNumberOfRequiredOutputs(1);
     m_InValue = 1;
     m_OutValue = 0;
@@ -61,7 +62,7 @@ namespace itk
   ::SetGreyScaleImageInput(const InputMainImageType *input)
   {
     // Process object is not const-correct so the const_cast is required here
-    this->ProcessObject::SetNthInput(0, const_cast< InputMainImageType * >( input ) );
+    this->ProcessObject::SetNthInput(1, const_cast< InputMainImageType * >( input ) );
   }
   
   template <class TInputImage1, class TInputImage2, class TOutputImage>
@@ -70,7 +71,7 @@ namespace itk
   ::SetBinaryImageInput(const InputMaskImageType *input)
   {
     // Process object is not const-correct so the const_cast is required here
-    this->ProcessObject::SetNthInput(1, const_cast< InputMaskImageType * >( input ) );
+    this->ProcessObject::SetNthInput(0, const_cast< InputMaskImageType * >( input ) );
                                      
     m_TempImage->SetInputImage(input);
     m_TempImage->Update();                        
@@ -137,40 +138,22 @@ namespace itk
   
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   void MIDASBaseConditionalMorphologyFilter<TInputImage1, TInputImage2, TOutputImage>::GenerateData()
-  {   
-    const unsigned int numberOfInputImages = this->GetNumberOfInputs(); 
+  {    
     this->AllocateOutputs();
-    
-    if(numberOfInputImages != 2)
-    {
-      itkExceptionMacro(<< "There should be two input images for subclasses of MIDASBaseConditionalMorphologyFilter. ");
-    }
-    
-    //Check input image is set.
-    InputMainImageType *inputMainImage = static_cast<InputMainImageType*>(this->ProcessObject::GetInput(0));
-    if(!inputMainImage)
-    {
-      itkExceptionMacro(<< "Input greyscale image is not set!");
-    }
-    
-    //Check input binary mask is set.
-    InputMaskImageType *inputMaskImage = static_cast<InputMaskImageType*>(this->ProcessObject::GetInput(1));
+
+    // Check input binary mask is set.
+    InputMaskImageType *inputMaskImage = static_cast<InputMaskImageType*>(this->ProcessObject::GetInput(0));
     if(!inputMaskImage)
     {
       itkExceptionMacro(<< "Input binary mask is not set!");
-    }
-
-    if( (inputMainImage->GetLargestPossibleRegion().GetSize()) != (inputMaskImage->GetLargestPossibleRegion().GetSize()) )
-    { 
-      itkExceptionMacro(<< "Input greyscale and binary images don't match in size!");
     }
     
     // Give subclasses chance to set things up before we call main filter body.
     this->BeforeFilter();
     
     // Get inputs and outputs once, before we start looping
-    InputMainImagePointer  inputMainImagePtr = static_cast<InputMainImageType*>(this->ProcessObject::GetInput(0));
-    InputMaskImagePointer  inputMaskImagePtr = static_cast<InputMaskImageType*>(this->ProcessObject::GetInput(1));
+    InputMaskImagePointer  inputMaskImagePtr = static_cast<InputMaskImageType*>(this->ProcessObject::GetInput(0));
+    InputMainImagePointer  inputMainImagePtr = static_cast<InputMainImageType*>(this->ProcessObject::GetInput(1));
     OutputImagePointer     outputImagePtr = this->GetOutput();
     
     // If we have zero iterations, we can copy the input mask to output, and exit.    

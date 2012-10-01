@@ -58,25 +58,25 @@ namespace itk
     /** Run-time type information (and related methods) */
     itkTypeMacro(MIDASConditionalErosionFilter, MIDASBaseConditionalMorphologyFilter);
 
-    /** Typedef to describe the type of pixel for the first image, which should be the grey scale image. */
+    /** Typedef to describe the type of pixel for the first image, which should be the binary mask image. */
     typedef typename TInputImage1::PixelType PixelType1;
 
-    /** Typedef to describe the type of pixel for the second image, which should be a binary mask image. */
+    /** Typedef to describe the type of pixel for the second image, which should be a grey scale image. */
     typedef typename TInputImage2::PixelType PixelType2;
 
     /** Some additional typedefs */
-    typedef TInputImage1                              InputMainImageType;
-    typedef typename InputMainImageType::Pointer      InputMainImagePointer;
-    typedef typename InputMainImageType::SizeType     InputMainImageSizeType;
-    typedef typename InputMainImageType::RegionType   InputMainImageRegionType;
-
-    typedef TInputImage2                              InputMaskImageType;
+    typedef TInputImage1                              InputMaskImageType;
     typedef typename InputMaskImageType::Pointer      InputMaskImagePointer;
     typedef typename InputMaskImageType::SizeType     InputMaskImageSizeType;
     typedef typename InputMaskImageType::RegionType   InputMaskImageRegionType;
     typedef typename InputMaskImageType::IndexType    InputMaskImageIndexType;
 
-    typedef TInputImage2                              OutputImageType;
+    typedef TInputImage2                              InputMainImageType;
+    typedef typename InputMainImageType::Pointer      InputMainImagePointer;
+    typedef typename InputMainImageType::SizeType     InputMainImageSizeType;
+    typedef typename InputMainImageType::RegionType   InputMainImageRegionType;
+
+    typedef TOutputImage                              OutputImageType;
     typedef typename OutputImageType::Pointer         OutputImagePointer;
     typedef typename OutputImageType::RegionType      OutputImageRegionType;
     typedef typename OutputImageType::SizeType        OutputImageSizeType;
@@ -84,8 +84,8 @@ namespace itk
     typedef typename itk::ConstNeighborhoodIterator<OutputImageType>::RadiusType  OutputImageRadiusType;
 
     /** Set/Get the upper threshold. Pixels are only eroded if the grey value is below this threshold. */
-    itkSetMacro(UpperThreshold, PixelType1);
-    itkGetConstMacro(UpperThreshold, PixelType1);
+    itkSetMacro(UpperThreshold, PixelType2);
+    itkGetConstMacro(UpperThreshold, PixelType2);
 
   protected:
     MIDASConditionalErosionFilter();
@@ -103,7 +103,7 @@ namespace itk
     bool IsOnBoundaryOfObject(OutputImageIndexType &voxelIndex, OutputImageType* inMask);
 
     /** The upper threshold, below which, pixels are not eroded. */
-    PixelType1 m_UpperThreshold;
+    PixelType2 m_UpperThreshold;
   };
 
 } //end namespace itk

@@ -83,24 +83,26 @@ namespace itk
   ::DoFilter(InputMainImageType* inGrey, OutputImageType* inMask, OutputImageType *out)
   {
   
+    /** NOTE: inGrey may be NULL as it is an optional image. */
+    
     /**  ITERATORS */
-    ImageRegionConstIterator<InputMainImageType>       inputMainImageIter(inGrey, inGrey->GetLargestPossibleRegion());
     ImageRegionConstIteratorWithIndex<OutputImageType> inputMaskImageIter(inMask, inMask->GetLargestPossibleRegion());
     ImageRegionIterator<OutputImageType>               outputMaskImageIter(out, out->GetLargestPossibleRegion());
-    
-    InputMainImageSizeType size = inMask->GetLargestPossibleRegion().GetSize();
+
+    InputMaskImageSizeType size = inMask->GetLargestPossibleRegion().GetSize();
     OutputImageIndexType voxelIndex;
     
-    for(inputMainImageIter.GoToBegin(), inputMaskImageIter.GoToBegin(), outputMaskImageIter.GoToBegin();
-        !inputMainImageIter.IsAtEnd();  // images are all the same size, so we only check one of them
-        ++inputMainImageIter, ++inputMaskImageIter, ++outputMaskImageIter)
+    for(inputMaskImageIter.GoToBegin(), outputMaskImageIter.GoToBegin();
+        !inputMaskImageIter.IsAtEnd();  
+        ++inputMaskImageIter, ++outputMaskImageIter)
     {                
       voxelIndex = inputMaskImageIter.GetIndex();
       
-      if (  !this->IsOnBoundaryOfImage(voxelIndex, size)
-          && !(this->m_UserSetRegion && this->IsOnBoundaryOfRegion(voxelIndex, this->m_Region)) 
-          && this->IsOnBoundaryOfObject(voxelIndex, inMask) 
-          && inGrey->GetPixel(voxelIndex) < m_UpperThreshold)
+      if (   !this->IsOnBoundaryOfImage(voxelIndex, size)
+          && (!this->m_UserSetRegion || (this->m_UserSetRegion && !this->IsOnBoundaryOfRegion(voxelIndex, this->m_Region)))
+          && this->IsOnBoundaryOfObject(voxelIndex, inMask)
+          && (inGrey == NULL || (inGrey->GetPixel(voxelIndex) < m_UpperThreshold))           
+         )
       {
         outputMaskImageIter.Set(this->GetOutValue());
       }
