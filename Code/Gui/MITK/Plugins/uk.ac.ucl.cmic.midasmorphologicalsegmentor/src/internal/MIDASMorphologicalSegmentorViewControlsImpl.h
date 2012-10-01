@@ -83,6 +83,7 @@ protected slots:
   void OnAxialCuttoffSliderChanged(int);
   void OnAxialCuttoffSpinBoxChanged(int);
   void OnThresholdAcceptButtonClicked();
+  void OnErosionsUpperThresholdChanged(double);
   void OnErosionsSliderChanged(int);
   void OnErosionsSliderMoved(int);
   void OnErosionsAcceptButtonClicked();

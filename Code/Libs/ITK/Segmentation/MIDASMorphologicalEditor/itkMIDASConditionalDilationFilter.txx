@@ -55,10 +55,10 @@ namespace itk
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   void 
   MIDASConditionalDilationFilter<TInputImage1,TInputImage2, TOutputImage>
-  ::SetConnectionBreakerImage(const TInputImage2 *input)
+  ::SetConnectionBreakerImage(const TInputImage1 *input)
   {
     // Process object is not const-correct so the const_cast is required here
-    this->ProcessObject::SetNthInput(1, const_cast< TInputImage2 * >( input ) );
+    this->ProcessObject::SetNthInput(2, const_cast< TInputImage1 * >( input ) );
   }
   
   
@@ -98,45 +98,51 @@ namespace itk
   MIDASConditionalDilationFilter<TInputImage1, TInputImage2, TOutputImage>
   ::DoFilter(InputMainImageType* inGrey, OutputImageType* inMask, OutputImageType *out)
   {
-    niftkitkDebugMacro(<< "DoFilter():Dilating using greyInput=" << &inGrey << ", maskInput=" << &inMask << ", maskOut=" << &out);
-    
-    /** See MIDAS paper, the mean value is calculated for each iteration. */
-    m_MeanFilter->SetGreyScaleImageInput(inGrey);
-    m_MeanFilter->SetBinaryImageInput(inMask);
-    m_MeanFilter->SetInValue(this->GetInValue());
-    m_MeanFilter->UpdateLargestPossibleRegion();
-    double mean = m_MeanFilter->GetMeanIntensityMainImage();
-    
-    niftkitkDebugMacro(<< "DoFilter():Dilating mean=" << mean);
-    
-    typename InputMaskImageType::Pointer connectionBreakerImage = dynamic_cast<InputMaskImageType*>(this->ProcessObject::GetInput(1));
-    
-    /**  ITERATORS */
-    ImageRegionConstIterator<InputMainImageType>       inputMainImageIter(inGrey, inGrey->GetLargestPossibleRegion());
-    ImageRegionConstIteratorWithIndex<OutputImageType> inputMaskImageIter(inMask, inMask->GetLargestPossibleRegion());
-    ImageRegionIterator<OutputImageType>               outputMaskImageIter(out, out->GetLargestPossibleRegion());
-    
+
+    double mean = 0;
+    double actualLowerThreshold = 0;
+    double actualUpperThreshold = 0;
+
     InputMainImageSizeType size = inMask->GetLargestPossibleRegion().GetSize();
     OutputImageIndexType voxelIndex;
     
     niftkitkDebugMacro(<< "DoFilter():Dilating size=" << size);
+        
+    if (inGrey != NULL)
+    {
+        
+      /** See MIDAS paper, the mean value is calculated for each iteration. */
+      m_MeanFilter->SetGreyScaleImageInput(inGrey);
+      m_MeanFilter->SetBinaryImageInput(inMask);
+      m_MeanFilter->SetInValue(this->GetInValue());
+      m_MeanFilter->UpdateLargestPossibleRegion();
+      mean = m_MeanFilter->GetMeanIntensityMainImage();
     
-    /** Convert the percentage thresholds to actual intensity values. */
-    PixelType1 actualLowerThreshold = (PixelType1)(mean * (m_LowerThreshold/(double)100.0));
-    PixelType1 actualUpperThreshold = (PixelType1)(mean * (m_UpperThreshold/(double)100.0));
+      niftkitkDebugMacro(<< "DoFilter():Dilating mean=" << mean);
+
+      /** Convert the percentage thresholds to actual intensity values. */
+      actualLowerThreshold = (mean * (m_LowerThreshold/(double)100.0));
+      actualUpperThreshold = (mean * (m_UpperThreshold/(double)100.0));
+
+      niftkitkDebugMacro(<< "DoFilter():mean=" << mean << ", %=[" << m_LowerThreshold << ", " << m_UpperThreshold << "], val=[" << actualLowerThreshold << ", " << actualUpperThreshold << "]");
+      
+    }
     
-    niftkitkDebugMacro(<< "DoFilter():mean=" << mean << ", %=[" << m_LowerThreshold << ", " << m_UpperThreshold << "], val=[" << actualLowerThreshold << ", " << actualUpperThreshold << "]");
+    typename InputMaskImageType::Pointer connectionBreakerImage = dynamic_cast<InputMaskImageType*>(this->ProcessObject::GetInput(2));
     
-    for(inputMainImageIter.GoToBegin(), inputMaskImageIter.GoToBegin(), outputMaskImageIter.GoToBegin();
-        !inputMainImageIter.IsAtEnd();  // images are all the same size, so we only check one of them
-        ++inputMainImageIter, ++inputMaskImageIter, ++outputMaskImageIter)
+    /**  ITERATORS */
+    ImageRegionConstIteratorWithIndex<InputMaskImageType> inputMaskImageIter(inMask, inMask->GetLargestPossibleRegion());
+    ImageRegionIterator<OutputImageType> outputMaskImageIter(out, out->GetLargestPossibleRegion());
+    
+    for(inputMaskImageIter.GoToBegin(), outputMaskImageIter.GoToBegin();
+        !inputMaskImageIter.IsAtEnd();
+        ++inputMaskImageIter, ++outputMaskImageIter)
     {                
       voxelIndex = inputMaskImageIter.GetIndex();
       
-      if (  !this->IsOnBoundaryOfImage(voxelIndex, size)
+      if (   !this->IsOnBoundaryOfImage(voxelIndex, size)
           && this->IsNextToObject(voxelIndex, inMask)
-          && inGrey->GetPixel(voxelIndex) > actualLowerThreshold 
-          && inGrey->GetPixel(voxelIndex) < actualUpperThreshold
+          && (inGrey == NULL || (inGrey->GetPixel(voxelIndex) > actualLowerThreshold && inGrey->GetPixel(voxelIndex) < actualUpperThreshold))
           && (connectionBreakerImage.IsNull()
               || (connectionBreakerImage.IsNotNull() && connectionBreakerImage->GetPixel(voxelIndex) == this->GetOutValue()))
           )

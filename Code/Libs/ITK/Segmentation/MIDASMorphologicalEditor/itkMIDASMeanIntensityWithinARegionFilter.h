@@ -90,6 +90,9 @@ namespace itk
     /** Method that retrieves the region mean, which is only valid after a successful Update() has been called. */
     double GetMeanIntensityMainImage();
 
+    /** Method that retrieves the number of pixels that contributed to the mean, which is only valid after a successful Update() has been called. */
+    unsigned long int GetCount();
+
     /** Set/Get the mask value that is considered 'inside' the region. Masks are normally [0,1], or [0,255], where 1 or 255 are considered within the region. */
     itkSetMacro(InValue, InputMaskImagePixelType);
     itkGetConstMacro(InValue, InputMaskImagePixelType);
@@ -115,10 +118,11 @@ namespace itk
     MIDASMeanIntensityWithinARegionFilter(const Self&); //purposely not implemented
     void operator=(const Self&); //purposely not implemented
    
-    double                m_MeanIntensityMainImage;
-    std::vector<double>   m_TotalIntensityVector;
-    std::vector<int>      m_CountPixelsVector;
-    InputMaskImagePixelType m_InValue;
+    double                         m_MeanIntensityMainImage;
+    unsigned long int              m_Counter;
+    std::vector<double>            m_TotalIntensityVector;
+    std::vector<unsigned long int> m_CountPixelsVector;
+    InputMaskImagePixelType        m_InValue;
 
   };
 
