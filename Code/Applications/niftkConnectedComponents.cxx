@@ -183,8 +183,11 @@ int main(int argc, char** argv)
     if (isOnlySaveLargest)
     {
       startIterator = componentSizes.find(largestSizeLabel); 
-      endIterator = startIterator; 
-      endIterator++; 
+      if (startIterator != endIterator)
+      {
+        endIterator = startIterator; 
+        endIterator++; 
+      }
     }
       
     // Save each component. Write over the reader. 
