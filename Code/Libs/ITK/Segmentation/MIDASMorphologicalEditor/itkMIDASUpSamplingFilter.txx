@@ -72,12 +72,6 @@ namespace itk
       niftkitkDebugMacro(<< "Input downsized image is not set!");
     }
 
-    InputImageType *inputFullSizeImage = static_cast<InputImageType*>(this->ProcessObject::GetInput(1));
-    if(!inputFullSizeImage)
-    {
-      niftkitkDebugMacro(<< "Input full-size image is not set!");
-    }
-
     OutputImagePointer outputImagePtr = this->GetOutput();
     if (outputImagePtr.IsNull())
     {
@@ -98,20 +92,11 @@ namespace itk
     typedef ImageRegionIteratorWithIndex<InputImageType> InputImageIterator;
     InputImageIterator inputImageIter(inputImage, inputImage->GetLargestPossibleRegion());
 
-    // Define an iterator that will walk the full sized input image.
-    InputImageIterator inputFullSizeImageIter(inputFullSizeImage, inputFullSizeImage->GetLargestPossibleRegion());
-
     // Define an iterator that will walk the output image
     typedef ImageRegionIterator<OutputImageType> OutputImageIterator;
     OutputImageIterator outputImageIter(outputImagePtr, outputImagePtr->GetLargestPossibleRegion());
 
-    // Set all the pixel values of the output image to the out value first (normally zero).
-    for(outputImageIter.GoToBegin(); 
-        !outputImageIter.IsAtEnd(); 
-        ++outputImageIter)
-    {
-      outputImageIter.Set(0);  
-    }
+    outputImagePtr->FillBuffer(m_OutValue);
 
     OutputImageSizeType outputImageSize = outputImagePtr->GetLargestPossibleRegion().GetSize();
     InputImageIndexType inputImageIndex;
@@ -120,8 +105,7 @@ namespace itk
     inputImageIndex.Fill(0);
     outputImageIndex.Fill(0);    
     outputImageIter.GoToBegin();
-    inputFullSizeImageIter.GoToBegin();
-    
+   
     if (TInputImage::ImageDimension == 3)
     {
       // Iterating through the input image, z dimension = index 2.
@@ -134,18 +118,10 @@ namespace itk
           for(inputImageIndex[0] = 0, outputImageIndex[0] = 0; outputImageIndex[0] < (int)outputImageSize[0]; outputImageIndex[0]++, inputImageIndex[0] += ((outputImageIndex[0] % m_UpSamplingFactor) == 0 ? 1 : 0))
           {
             inputImageIter.SetIndex(inputImageIndex);
-            inputFullSizeImageIter.SetIndex(outputImageIndex);
             
-            if (inputImageIter.Get() == m_InValue) // Equivalent to morph.c, line 2895. If down sampled image (input) pixel is on.
+            if (inputImageIter.Get() != m_OutValue)
             {
-              if (inputFullSizeImageIter.Get() == m_InValue)
-              {
-                outputImageIter.Set(m_InValue);
-              }
-              else
-              {
-                outputImageIter.Set(m_OutValue);
-              }
+              outputImageIter.Set(m_InValue);
             }
             ++outputImageIter;
           }
@@ -171,7 +147,6 @@ namespace itk
         }
       }
     }
-        
   }//end of generatedata method
   
 
