@@ -148,6 +148,16 @@ public:
    * Returns true if we are currently equal to Identity transform. 
    */
   virtual bool IsIdentity();
+  
+  /**
+   * Invert using gradient descent. 
+   */
+  void InvertUsingGradientDescent(typename Self::Pointer invertedTransform, unsigned int maxIteration, double tol); 
+  
+  /**
+   * 
+   */
+  void ComputeSquareRoot(typename Self::Pointer sqrtTransform, unsigned int maxIteration, double tol); 
 
 protected:
 

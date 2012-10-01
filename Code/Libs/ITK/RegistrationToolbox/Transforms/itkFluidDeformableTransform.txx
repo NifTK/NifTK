@@ -33,6 +33,7 @@
 #include "itkVectorImageToImageAdaptor.h"
 #include "itkBSplineInterpolateImageFunction.h"
 #include "itkLinearInterpolateImageFunction.h"
+#include "itkDisplacementFieldJacobianVectorFilter.h"
 #include <limits>
 #include "itkLogHelper.h"
 
@@ -201,6 +202,7 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
   {
     typename DeformationFieldType::IndexType index = iterator.GetIndex(); 
     
+#if 1  
     // Skip the boundary. 
     bool isBoundary = false; 
     for (unsigned int i = 0; i < NDimensions; i++)
@@ -213,6 +215,7 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
     }
     if (isBoundary)
       continue; 
+#endif    
     
     // Follow the current position. 
     DeformationOutputPointType physicalPoint; 
@@ -306,34 +309,228 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
   return true; 
 }
 
+template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
+void 
+FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+::InvertUsingGradientDescent(typename Self::Pointer invertedTransform, unsigned int maxIteration, double tol)
+{
+  // Create the necesssary filters. 
+  const unsigned int NJDimensions = NDimensions*NDimensions; 
+  typedef DisplacementFieldJacobianVectorFilter<TDeformationScalar, TDeformationScalar, NDimensions, NJDimensions> DisplacementFieldJacobianVectorFilterType; 
+  typename DisplacementFieldJacobianVectorFilterType::Pointer displacementFieldJacobianVectorFilter = DisplacementFieldJacobianVectorFilterType::New(); 
+  typedef VectorResampleImageFilter<typename DisplacementFieldJacobianVectorFilterType::OutputImageType, 
+                                    typename DisplacementFieldJacobianVectorFilterType::OutputImageType, 
+                                    double> VectorResampleImageFilterType; 
+  typename VectorResampleImageFilterType::Pointer vectorResampleImageFilter = VectorResampleImageFilterType::New(); 
+  typedef VectorLinearInterpolateImageFunction< typename DisplacementFieldJacobianVectorFilterType::OutputImageType, double >  InterpolatorType;
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New(); 
+  
+  // Save a copy of the original deformation field. 
+  DeformableParameterPointerType originalParameters = DuplicateDeformableParameters(this->m_DeformationField); 
+  
+  // Compute the Jacobian. 
+  displacementFieldJacobianVectorFilter->SetInput(this->m_DeformationField); 
+  displacementFieldJacobianVectorFilter->Update(); 
+  
+  // Initialise inverse transform. 
+  ImageRegionIterator< DeformationFieldType > inverseIterator(invertedTransform->GetDeformableParameters(), invertedTransform->GetDeformableParameters()->GetLargestPossibleRegion());  
+  ImageRegionIterator< DeformationFieldType > originalIterator(originalParameters, originalParameters->GetLargestPossibleRegion());  
+
+  for (inverseIterator.GoToBegin(), originalIterator.GoToBegin(); 
+       !inverseIterator.IsAtEnd(); 
+       ++inverseIterator, ++originalIterator)
+  {
+    inverseIterator.Set(-originalIterator.Get()); 
+  }
+  
+  bool stop = false; 
+  unsigned int iteration = 0; 
+  while (!stop && iteration < maxIteration)
+  {
+    DeformableParameterPointerType duplicateInvertParameters = DuplicateDeformableParameters(invertedTransform->GetDeformableParameters()); 
+    DeformableParameterPointerType originalCopyParameters = DuplicateDeformableParameters(originalParameters); 
+    UpdateRegriddedDeformationParameters(originalCopyParameters, duplicateInvertParameters, 1.); 
+    
+    ImageRegionIterator< DeformationFieldType > currentIterator(originalCopyParameters, originalCopyParameters->GetLargestPossibleRegion());  
+    
+    // Resample the Jacobian according to the current inverse transform.                                 
+    vectorResampleImageFilter->SetInput(displacementFieldJacobianVectorFilter->GetOutput()); 
+    vectorResampleImageFilter->SetInterpolator(interpolator);
+    vectorResampleImageFilter->SetTransform(invertedTransform); 
+    vectorResampleImageFilter->SetOutputDirection(displacementFieldJacobianVectorFilter->GetOutput()->GetDirection());
+    vectorResampleImageFilter->SetOutputOrigin(displacementFieldJacobianVectorFilter->GetOutput()->GetOrigin());
+    vectorResampleImageFilter->SetOutputSpacing(displacementFieldJacobianVectorFilter->GetOutput()->GetSpacing());
+    vectorResampleImageFilter->SetSize(displacementFieldJacobianVectorFilter->GetOutput()->GetLargestPossibleRegion().GetSize());
+    vectorResampleImageFilter->Update(); 
+    
+    ImageRegionIterator< typename VectorResampleImageFilterType::OutputImageType > jacobianIterator(vectorResampleImageFilter->GetOutput(), vectorResampleImageFilter->GetOutput()->GetLargestPossibleRegion());  
+    
+    stop = true; 
+    for (currentIterator.GoToBegin(), jacobianIterator.GoToBegin(), inverseIterator.GoToBegin(); 
+         !currentIterator.IsAtEnd(); 
+         ++currentIterator, ++jacobianIterator, ++inverseIterator)
+    {
+      double norm = currentIterator.Get().GetNorm(); 
+      if (norm > tol)
+        stop = false; 
+      
+      Matrix<float, NDimensions, NDimensions> matrix; 
+      
+      for (unsigned int i = 0; i < NDimensions; i++)
+      {
+        for (unsigned int j = 0; j < NDimensions; j++)
+        {
+          unsigned int index = j + i*NDimensions; 
+          //matrix(i, j) = jacobianIterator.Get()[index]; 
+          // Get the transpose. 
+          matrix(j, i) = jacobianIterator.Get()[index]; 
+        }
+      }
+      
+      Vector<float, NDimensions> gradient = matrix*currentIterator.Get(); 
+      
+      inverseIterator.Set(inverseIterator.Get() - gradient*0.08); 
+    }
+    invertedTransform->Modified(); 
+    
+    iteration++; 
+  }    
+  this->SetDeformableParameters(originalParameters); 
+  
+  std::cout << "iteration=" << iteration << std::endl; 
+    
+}
+
+
+
+
+template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
+void
+FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+::ComputeSquareRoot(typename Self::Pointer sqrtTransform, unsigned int maxIteration, double tol)
+{
+  // Create the necesssary filters. 
+  const unsigned int NJDimensions = NDimensions*NDimensions; 
+  typedef DisplacementFieldJacobianVectorFilter<TDeformationScalar, TDeformationScalar, NDimensions, NJDimensions> DisplacementFieldJacobianVectorFilterType; 
+  typename DisplacementFieldJacobianVectorFilterType::Pointer displacementFieldJacobianVectorFilter = DisplacementFieldJacobianVectorFilterType::New(); 
+  typedef VectorResampleImageFilter<typename DisplacementFieldJacobianVectorFilterType::OutputImageType, 
+                                    typename DisplacementFieldJacobianVectorFilterType::OutputImageType, 
+                                    double> VectorResampleImageFilterType; 
+  typename VectorResampleImageFilterType::Pointer vectorResampleImageFilter = VectorResampleImageFilterType::New(); 
+  typedef VectorLinearInterpolateImageFunction< typename DisplacementFieldJacobianVectorFilterType::OutputImageType, double >  InterpolatorType;
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New(); 
+  
+  // Save a copy of the original deformation field. 
+  DeformableParameterPointerType originalParameters = DuplicateDeformableParameters(this->m_DeformationField); 
+  
+  // Initialise sqrt transform. 
+  ImageRegionIterator< DeformationFieldType > originalIterator(originalParameters, originalParameters->GetLargestPossibleRegion());  
+  ImageRegionIterator<DeformationFieldType> sqrtIterator(sqrtTransform->GetDeformationField(), sqrtTransform->GetDeformationField()->GetLargestPossibleRegion()); 
+
+  for (sqrtIterator.GoToBegin(), originalIterator.GoToBegin(); 
+       !sqrtIterator.IsAtEnd(); 
+       ++sqrtIterator, ++originalIterator)
+  {
+    sqrtIterator.Set(originalIterator.Get()/2.); 
+  }
+  
+  
+  bool stop = false; 
+  unsigned int iteration = 0; 
+  while (!stop && iteration < maxIteration)
+  {
+    // Compute the Jacobian. 
+    displacementFieldJacobianVectorFilter->SetInput(sqrtTransform->GetDeformationField()); 
+    displacementFieldJacobianVectorFilter->Update(); 
+  
+    // Resample the Jacobian according to the current sqrt transform.                                 
+    vectorResampleImageFilter->SetInput(displacementFieldJacobianVectorFilter->GetOutput()); 
+    vectorResampleImageFilter->SetInterpolator(interpolator);
+    vectorResampleImageFilter->SetTransform(sqrtTransform); 
+    vectorResampleImageFilter->SetOutputDirection(displacementFieldJacobianVectorFilter->GetOutput()->GetDirection());
+    vectorResampleImageFilter->SetOutputOrigin(displacementFieldJacobianVectorFilter->GetOutput()->GetOrigin());
+    vectorResampleImageFilter->SetOutputSpacing(displacementFieldJacobianVectorFilter->GetOutput()->GetSpacing());
+    vectorResampleImageFilter->SetSize(displacementFieldJacobianVectorFilter->GetOutput()->GetLargestPossibleRegion().GetSize());
+    vectorResampleImageFilter->Update(); 
+    
+    // Compose the sqrt transform with itself. 
+    DeformableParameterPointerType duplicateSqrtParameters = DuplicateDeformableParameters(sqrtTransform->GetDeformableParameters()); 
+    DeformableParameterPointerType composedSqrtParameters = DuplicateDeformableParameters(sqrtTransform->GetDeformableParameters()); 
+    UpdateRegriddedDeformationParameters(composedSqrtParameters, duplicateSqrtParameters, 1.); 
+    
+    
+    // Get the inverse. 
+    typename Self::Pointer inverseTransform = Self::New();
+    inverseTransform->SetDeformableParameters(duplicateSqrtParameters); 
+    sqrtTransform->InvertUsingGradientDescent(inverseTransform.GetPointer(), 200, tol); 
+    
+    // Calculate the determinant of the Jacobian of the inverse transform. 
+    inverseTransform->ComputeMaxJacobian(); 
+    
+    // Compose original deformation field with inverse sqrt deformation field. 
+    DeformableParameterPointerType duplicateOriginalParameters = DuplicateDeformableParameters(originalParameters); 
+    DeformableParameterPointerType duplicateInverseParameters = DuplicateDeformableParameters(inverseTransform->GetDeformableParameters()); 
+    UpdateRegriddedDeformationParameters(duplicateOriginalParameters, duplicateInverseParameters, 1.); 
+    
+    // Calculate the gradient. 
+    ImageRegionIterator<typename VectorResampleImageFilterType::OutputImageType > jacobianIterator(vectorResampleImageFilter->GetOutput(), vectorResampleImageFilter->GetOutput()->GetLargestPossibleRegion());  
+    ImageRegionIterator<DeformationFieldType> composedTTIterator(composedSqrtParameters, composedSqrtParameters->GetLargestPossibleRegion()); 
+    ImageRegionIterator<DeformationFieldType> originalIterator(originalParameters, originalParameters->GetLargestPossibleRegion()); 
+    ImageRegionIterator<DeformationFieldType> composedOTIterator(duplicateOriginalParameters, duplicateOriginalParameters->GetLargestPossibleRegion()); 
+    ImageRegionIterator<typename Superclass::JacobianDeterminantFilterType::OutputImageType> determinantIterator(this->m_JacobianFilter->GetOutput(), this->m_JacobianFilter->GetOutput()->GetLargestPossibleRegion()); 
+            
+    stop = true; 
+    double maxDiff = 0.; 
+    double maxGradient = 0.; 
+    for (sqrtIterator.GoToBegin(), jacobianIterator.GoToBegin(), originalIterator.GoToBegin(), composedTTIterator.GoToBegin(), composedOTIterator.GoToBegin(), determinantIterator.GoToBegin(); 
+         !sqrtIterator.IsAtEnd(); 
+         ++sqrtIterator, ++jacobianIterator, ++originalIterator, ++composedTTIterator, ++composedOTIterator, ++determinantIterator)
+    {
+      Matrix<float, NDimensions, NDimensions> matrix; 
+      
+      for (unsigned int i = 0; i < NDimensions; i++)
+      {
+        for (unsigned int j = 0; j < NDimensions; j++)
+        {
+          unsigned int index = j + i*NDimensions; 
+          //matrix(i, j) = jacobianIterator.Get()[index]; 
+          // Get the transpose. 
+          matrix(j, i) = jacobianIterator.Get()[index]; 
+        }
+      }
+      
+      Vector<float, NDimensions> diff = composedTTIterator.Get()-originalIterator.Get(); 
+      Vector<float, NDimensions> gradient = matrix*diff + determinantIterator.Get()*(sqrtIterator.Get() - composedOTIterator.Get()); 
+      
+      if (diff.GetNorm() > tol)                                            
+      {
+        stop = false;
+      }
+      sqrtIterator.Set(sqrtIterator.Get() - gradient*0.1); 
+      
+      if (diff.GetNorm() > maxDiff)
+        maxDiff = diff.GetNorm(); 
+      if (gradient.GetNorm() > maxGradient)
+        maxGradient = gradient.GetNorm(); 
+      
+    }
+    sqrtTransform->Modified(); 
+    iteration++;
+     
+    std::cout << "maxDiff=" << maxDiff << ", maxGradient=" << maxGradient << std::endl; 
+  }
+  
+  
+  this->SetDeformableParameters(originalParameters); 
+  
+}
+
+
 
 
 } // namespace itk.
 
 #endif /*ITKFLUIDDEFORMABLETRANSFORM_TXX_*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
