@@ -259,6 +259,9 @@ protected slots:
 
   void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
 
+  /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
+  void OnPopupOpened(bool opened);
+
 protected:
 
 private:
