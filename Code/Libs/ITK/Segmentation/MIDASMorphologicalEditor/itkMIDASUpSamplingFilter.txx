@@ -65,13 +65,13 @@ namespace itk
       niftkitkDebugMacro(<< "There should be two input images for MIDASUpSamplingFilter. ");
     }
     
-    //Check input image is set.
+    // Check input image is set.
     InputImageType *inputImage = static_cast<InputImageType*>(this->ProcessObject::GetInput(0));
     if(!inputImage)
     {
       niftkitkDebugMacro(<< "Input downsized image is not set!");
     }
-    
+
     OutputImagePointer outputImagePtr = this->GetOutput();
     if (outputImagePtr.IsNull())
     {
@@ -88,19 +88,15 @@ namespace itk
       niftkitkDebugMacro(<< "Unsupported image dimension. This filter only does 2D or 3D images");
     }
 
-    //Define an iterator that will walk the input image
+    // Define an iterator that will walk the down sized input image.
     typedef ImageRegionIteratorWithIndex<InputImageType> InputImageIterator;
-    InputImageIterator  inputImageIter(inputImage, inputImage->GetLargestPossibleRegion());
+    InputImageIterator inputImageIter(inputImage, inputImage->GetLargestPossibleRegion());
 
-    //Define an iterator that will walk the output image
+    // Define an iterator that will walk the output image
     typedef ImageRegionIterator<OutputImageType> OutputImageIterator;
     OutputImageIterator outputImageIter(outputImagePtr, outputImagePtr->GetLargestPossibleRegion());
 
-    //set all the pixel values of the output image to the out value first (normally zero).
-    for(outputImageIter.GoToBegin(); !outputImageIter.IsAtEnd(); ++outputImageIter)
-    {
-      outputImageIter.Set(m_OutValue);  
-    }
+    outputImagePtr->FillBuffer(m_OutValue);
 
     OutputImageSizeType outputImageSize = outputImagePtr->GetLargestPossibleRegion().GetSize();
     InputImageIndexType inputImageIndex;
@@ -109,7 +105,7 @@ namespace itk
     inputImageIndex.Fill(0);
     outputImageIndex.Fill(0);    
     outputImageIter.GoToBegin();
-
+   
     if (TInputImage::ImageDimension == 3)
     {
       // Iterating through the input image, z dimension = index 2.
@@ -151,7 +147,6 @@ namespace itk
         }
       }
     }
-        
   }//end of generatedata method
   
 

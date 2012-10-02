@@ -129,6 +129,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PopupWidget->setVerticalDirection(ctkBasePopupWidget::TopToBottom);
   m_PopupWidget->setAutoShow(true);
   m_PopupWidget->setAutoHide(true);
+  m_PopupWidget->setEffectDuration(100);
   m_PopupWidget->setContentsMargins(0,0,0,0);
   m_PopupWidget->setLineWidth(0);
 
@@ -306,6 +307,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_DropThumbnailRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropThumbnailRadioButtonToggled(bool)));
   connect(m_DropAccumulateCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnDropAccumulateStateChanged(int)));
   connect(m_MIDASBindWidget, SIGNAL(BindTypeChanged(MIDASBindType)), this, SLOT(OnBindModeSelected(MIDASBindType)));
+  connect(m_PopupWidget, SIGNAL(popupOpened(bool)), this, SLOT(OnPopupOpened(bool)));
 
   // We listen to FocusManager to detect when things have changed focus, and hence to highlight the "current window".
   itk::SimpleMemberCommand<QmitkMIDASMultiViewWidget>::Pointer onFocusChangedCommand =
@@ -1483,4 +1485,17 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
   }
 
   this->Update2DCursorVisibility();
+}
+
+void QmitkMIDASMultiViewWidget::OnPopupOpened(bool opened)
+{
+  if (!opened)
+  {
+    std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(false);
+    for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+    {
+      unsigned int viewerIndex = viewersToUpdate[i];
+      m_SingleViewWidgets[viewerIndex]->repaint();
+    } // end for each viewer
+  }
 }
