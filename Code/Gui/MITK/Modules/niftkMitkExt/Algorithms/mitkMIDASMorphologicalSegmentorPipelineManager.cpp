@@ -262,7 +262,7 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const 
     {
       // Should also have 4 children (see mitk::MIDASTool)
       mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true);
-      for (unsigned int i = 0; i < 4; i++)
+      for (unsigned int i = 0; i < children->size(); i++)
       {
         (*children)[i]->GetStringProperty("name", name);
         set.insert(name);
