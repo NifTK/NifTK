@@ -2,12 +2,48 @@
 
 \bundlemainpage{uk.ac.ucl.cmic.xnat} The XNAT Browser View
 
-\image html XNAT.png "The Icon for XNAT Browser"
+\image html xnat-icon.png "The Icon for XNAT Browser"
 
 \addindex XNAT Browser
 
-\section Introduction
+\section Usage
 
-The XNAT Browser plugin provides the ability to browse XNAT databases.
+The plugin provides a simple view for browsing XNAT databases and importing images into NiftyView (Figure 1).
+
+\image html xnat-initial_view.png "Figure 1. The XNAT Browser view"
+
+You can connect to an XNAT server by pressing the 'Login' button. This opens the Login Profiles dialog window (Figure 2) where
+you can specify the parameters of the connection. You can save this information to a profile by filling the 'Profile name'
+field and clicking on 'Save'. For security reasons only the server URI and the user name is saved with the profile, 
+the password is not. 
+
+You can mark a profile as default, so that its parameters will be loaded if you open
+the dialog window next time.
+
+\image html xnat-login_profiles.png "Figure 2. Login profiles"
+
+If you are connected to the server, you can browse its data by expanding the items of the tree (Figure 3). At the outermost level
+you will see the projects, below that the subjects then the sessions. The sessions can contain scans and reconstructions
+can contain the actual image files categorised by their type (typically DICOM or NIFTI).
+
+You can import an image file by selecting its tree item and pushing the 'Import' button. If the selected file is a DICOM
+file then only that file will be imported, not the whole DICOM series. If you want to import the whole volume instead of
+a single slice then select the 'DICOM' item and click on 'Import All'. 
+
+The imported image will be added to the Data Manager.
+
+\image html xnat-import.png "Figure 3. Import images to the Data Manager"
+
+A few more functions are available if you click on 'More XNAT functions' (Figure 4). The 'Refresh' button updates the 
+tree contents. If you want to download images from XNAT to your file system without adding them to the Data Manager, 
+you can press the 'Download' or 'Download All' button, respectively. After clicking on them a dialog will pop up for 
+choosing the download directory.
+
+\image html xnat-more_functions.png "Figure 4. More XNAT functions"
+
+You can set the default download directory on the preferences page of the plugin (Figure 5). The plugin also uses a
+work directory for storing temporary files on the file system.
+
+\image html xnat-preferences.png "Figure 5. Preferences"
 
 */
