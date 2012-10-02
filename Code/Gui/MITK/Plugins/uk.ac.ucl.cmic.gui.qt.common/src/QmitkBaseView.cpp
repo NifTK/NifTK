@@ -144,7 +144,7 @@ QmitkBaseView::~QmitkBaseView() {
   }
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL && d->m_FocusManagerObserverTag != 0)
+  if (focusManager != NULL)
   {
     focusManager->RemoveObserver(d->m_FocusManagerObserverTag);
   }
