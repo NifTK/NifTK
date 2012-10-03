@@ -937,7 +937,26 @@ void MIDASGeneralSegmentorView::InitialiseSeedsForWholeVolume()
   mitk::PointSet *seeds = this->GetSeeds();
   assert(seeds);
 
+  mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
+  mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
 
+  if (workingImage.IsNotNull() && workingNode.IsNotNull())
+  {
+    try
+    {
+      AccessFixedDimensionByItk_n(workingImage,
+          ITKInitialiseSeedsForVolume, 3,
+          (*seeds,
+           axis
+          )
+        );
+    }
+    catch(const mitk::AccessByItkException& e)
+    {
+      MITK_ERROR << "Caught exception during ITKInitialiseSeedsForVolume, so have not initialised seeds correctly, caused by:" << e.what();
+    }
+
+  }
 }
 
 
@@ -3815,7 +3834,7 @@ void
 MIDASGeneralSegmentorView
 ::ITKInitialiseSeedsForVolume(
     itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet* seeds,
+    mitk::PointSet& seeds,
     int axis
     )
 {

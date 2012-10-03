@@ -755,7 +755,7 @@ private:
   template<typename TPixel, unsigned int VImageDimension>
   void ITKInitialiseSeedsForVolume(
       itk::Image<TPixel, VImageDimension> *itkImage,
-      mitk::PointSet* seeds,
+      mitk::PointSet& seeds,
       int axis
       );
 
