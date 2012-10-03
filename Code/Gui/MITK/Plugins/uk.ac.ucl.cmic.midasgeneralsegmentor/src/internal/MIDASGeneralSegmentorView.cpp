@@ -3838,7 +3838,18 @@ MIDASGeneralSegmentorView
     int axis
     )
 {
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
 
+  RegionType region = itkImage->GetLargestPossibleRegion();
+
+  this->ITKAddNewSeedsToPointSet(
+      itkImage,
+      region,
+      0,
+      axis,
+      seeds
+      );
 }
 
 /**************************************************************
