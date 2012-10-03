@@ -1261,7 +1261,10 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
   if (!this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
   {
     mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-    workingNodes[3]->SetVisibility(false);
+    if (workingNodes.size() >=4)
+    {
+      workingNodes[3]->SetVisibility(false);
+    }
     return;
   }
 
@@ -1952,7 +1955,6 @@ void MIDASGeneralSegmentorView::OnSliceChanged(const itk::EventObject & geometry
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int afterSliceNumber)
 {
-
   if (abs(beforeSliceNumber - afterSliceNumber) != 1)
   {
     m_PreviousSliceNumber = afterSliceNumber;
