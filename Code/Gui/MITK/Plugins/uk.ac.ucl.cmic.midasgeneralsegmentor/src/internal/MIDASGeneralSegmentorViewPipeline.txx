@@ -160,6 +160,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     // 7. Paste it back into output image. This will crash if m_OutputImage is not set.
     if (m_UseOutput && m_OutputImage != NULL)
     {
+      m_OutputImage->FillBuffer(0);
+      
       itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_RegionGrowingFilter->GetOutput(), region3D);
       itk::ImageRegionIterator<SegmentationImageType> outputIter(m_OutputImage, region3D);
       for (regionGrowingIter.GoToBegin(), outputIter.GoToBegin(); !regionGrowingIter.IsAtEnd(); ++regionGrowingIter, ++outputIter)

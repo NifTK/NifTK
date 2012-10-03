@@ -1260,6 +1260,8 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
 
   if (!this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
   {
+    mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
+    workingNodes[3]->SetVisibility(false);
     return;
   }
 
