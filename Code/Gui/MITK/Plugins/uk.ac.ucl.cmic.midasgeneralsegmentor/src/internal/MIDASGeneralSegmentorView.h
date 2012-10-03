@@ -385,12 +385,14 @@ private:
   /// \brief Used to create an image used for the region growing, see class intro.
   mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
 
-  /// \brief Used to create a contour set, used for the current, prior and next contours,
-  /// see class intro.
+  /// \brief Used to create a contour set, used for the current, prior and next contours, see class intro.
   mitk::DataNode::Pointer CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer);
 
   /// \brief Looks for the Seeds registered as WorkingData[1] with the ToolManager.
   mitk::PointSet* GetSeeds();
+
+  /// \brief Used when restarting a volume, to initialize all seeds for an existing segmentation.
+  void InitialiseSeedsForWholeVolume();
 
   /// \brief Retrieves the min and max of the image (cached), and sets the thresholding
   /// intensity sliders range accordingly.
@@ -748,6 +750,14 @@ private:
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
+
+  /// \brief Called from InitialiseSeedsForVolume to create a seed for every distinct region on each slice.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKInitialiseSeedsForVolume(
+      itk::Image<TPixel, VImageDimension> *itkImage,
+      mitk::PointSet* seeds,
+      int axis
+      );
 
   /**************************************************************
    * End of ITK stuff.

@@ -517,6 +517,11 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     workingData.push_back(seeNextNode);
     toolManager->SetWorkingData(workingData);
 
+    if (isRestarting)
+    {
+      this->InitialiseSeedsForWholeVolume();
+    }
+
     // Setup GUI.
     this->m_GeneralControls->SetEnableAllWidgets(true);
     this->m_GeneralControls->SetEnableThresholdingWidgets(false);
@@ -911,6 +916,30 @@ bool MIDASGeneralSegmentorView::SelectViewMode()
 /**************************************************************
  * End of: Functions for simply tool toggling
  *************************************************************/
+
+/**************************************************************
+ * Start of: The main MIDAS business logic.
+ *************************************************************/
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::InitialiseSeedsForWholeVolume()
+{
+  MIDASOrientation orientation = this->GetOrientationAsEnum();
+  if (orientation == MIDAS_ORIENTATION_UNKNOWN)
+  {
+    orientation = MIDAS_ORIENTATION_CORONAL;
+  }
+  int axis = this->GetAxisFromReferenceImage(orientation);
+  if (axis == -1)
+  {
+    axis = 0;
+  }
+  mitk::PointSet *seeds = this->GetSeeds();
+  assert(seeds);
+
+
+}
+
 
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnFocusChanged()
@@ -2159,6 +2188,9 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
   }
 }
 
+/**************************************************************
+ * End of: The main MIDAS business logic.
+ *************************************************************/
 
 /******************************************************************
  * Start of ExecuteOperation - main method in Undo/Redo framework.
@@ -3774,6 +3806,20 @@ MIDASGeneralSegmentorView
     MITK_ERROR << "MIDASGeneralSegmentorView::DestroyITKPipeline(..), failed to delete pipeline, as it was already NULL????" << std::endl;
   }
   m_TypeToPipelineMap.clear();
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MIDASGeneralSegmentorView
+::ITKInitialiseSeedsForVolume(
+    itk::Image<TPixel, VImageDimension> *itkImage,
+    mitk::PointSet* seeds,
+    int axis
+    )
+{
+
 }
 
 /**************************************************************
