@@ -430,6 +430,8 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
 //-----------------------------------------------------------------------------
 mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
+  this->WaitCursorOn();
+
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
   bool isRestarting = false;
@@ -475,7 +477,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     // Create all the contours.
     mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, mitk::MIDASTool::NEXT_CONTOURS_NAME, false, 96);
     mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 1,0,1, mitk::MIDASTool::PRIOR_CONTOURS_NAME, false, 97);
-    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 98);
+    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 1,0,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 98);
 
     // This creates the point set for the seeds.
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
@@ -533,6 +535,9 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
 
   } // end if we have a reference image
 
+  this->RequestRenderWindowUpdate();
+  this->WaitCursorOff();
+
   // And... relax.
   return newSegmentation;
 }
@@ -540,41 +545,6 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
 /**************************************************************
  * End of: Functions to create reference data (hidden nodes)
  *************************************************************/
-
-//-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideToGlobal)
-{
-  mitk::ToolManager::DataVectorType nodes = GetWorkingNodesFromToolManager();
-  if (nodes.size() > 0 && nodes[0] != NULL)
-  {
-    mitk::DataNode::Pointer segmentationNode = nodes[0];
-
-    if (this->GetPreviouslyFocussedRenderer() != NULL)
-    {
-      mitk::PropertyList* list = segmentationNode->GetPropertyList(this->GetPreviouslyFocussedRenderer());
-      if (list != NULL)
-      {
-        list->DeleteProperty("visible");
-      }
-    }
-
-    if (this->GetCurrentlyFocussedRenderer() != NULL)
-    {
-      if (overrideToGlobal)
-      {
-        mitk::PropertyList* list = segmentationNode->GetPropertyList(GetCurrentlyFocussedRenderer());
-        if (list != NULL)
-        {
-          list->DeleteProperty("visible");
-        }
-      }
-      else
-      {
-        segmentationNode->SetVisibility(false, this->GetCurrentlyFocussedRenderer());
-      }
-    }
-  }
-}
 
 
 /**************************************************************
@@ -662,6 +632,52 @@ void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet::Pointer inputPoi
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideToGlobal)
+{
+  mitk::ToolManager::DataVectorType nodes = GetWorkingNodesFromToolManager();
+  if (nodes.size() > 0 && nodes[0] != NULL)
+  {
+
+    /*
+     * Work in progress.
+     *
+     * I'm removing this because:
+     *   If we are using the MIDAS editor, then we have renderer specific visibility flags.
+     *   If we are using the MITK editor, then we only bother with global flags.
+     *   So, at this stage, test with a red outline, leaving the current segmentation as a
+     *   green outline and don't mess around with the visibility.
+     */
+//
+//    mitk::DataNode::Pointer segmentationNode = nodes[0];
+//
+//    if (this->GetPreviouslyFocussedRenderer() != NULL)
+//    {
+//      mitk::PropertyList* list = segmentationNode->GetPropertyList(this->GetPreviouslyFocussedRenderer());
+//      if (list != NULL)
+//      {
+//        list->DeleteProperty("visible");
+//      }
+//    }
+//
+//    if (this->GetCurrentlyFocussedRenderer() != NULL)
+//    {
+//      if (overrideToGlobal)
+//      {
+//        mitk::PropertyList* list = segmentationNode->GetPropertyList(GetCurrentlyFocussedRenderer());
+//        if (list != NULL)
+//        {
+//          list->DeleteProperty("visible");
+//        }
+//      }
+//      else
+//      {
+//        segmentationNode->SetVisibility(false, this->GetCurrentlyFocussedRenderer());
+//      }
+//    }
+  }
+}
 
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
@@ -963,13 +979,13 @@ void MIDASGeneralSegmentorView::InitialiseSeedsForWholeVolume()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnFocusChanged()
 {
-  mitk::BaseRenderer* currentFocussedRendered = this->GetCurrentlyFocussedRenderer();
   QmitkBaseView::OnFocusChanged();
+  mitk::BaseRenderer* currentFocussedRenderer = this->GetCurrentlyFocussedRenderer();
 
-  if (this->GetCurrentlyFocussedRenderer() != NULL && this->GetCurrentlyFocussedRenderer() != currentFocussedRendered)
+  if (currentFocussedRenderer != NULL)
   {
     // For every new window we get the new windows slice navigation controller.
-    if (m_SliceNavigationController.IsNotNull() && m_SliceNavigationController->GetCommand(m_SliceNavigationControllerObserverTag) != NULL)
+    if (m_SliceNavigationController.IsNotNull())
     {
       m_SliceNavigationController->RemoveObserver(m_SliceNavigationControllerObserverTag);
     }
