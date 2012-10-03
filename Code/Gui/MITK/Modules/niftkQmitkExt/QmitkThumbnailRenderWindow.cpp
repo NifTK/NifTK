@@ -131,7 +131,7 @@ void QmitkThumbnailRenderWindow::Activated()
 void QmitkThumbnailRenderWindow::Deactivated()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL && m_FocusManagerObserverTag != 0)
+  if (focusManager != NULL)
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
