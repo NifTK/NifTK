@@ -72,7 +72,6 @@ void QmitkNiftyViewWorkbenchWindowAdvisor::PreWindowOpen()
   viewExcludeList.push_back("org.blueberry.views.helpcontents");
   viewExcludeList.push_back("org.blueberry.views.helpindex");
   viewExcludeList.push_back("org.blueberry.views.helpsearch");
-  viewExcludeList.push_back("org.mitk.views.propertylistview");
   this->SetViewExcludeList(viewExcludeList);
 }
 
