@@ -1009,6 +1009,7 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
     this->UpdateSegmentationImageVisibility(false);
     this->UpdateCurrentSliceContours();
     this->UpdatePriorAndNext();
+    this->UpdateRegionGrowing();
     this->OnThresholdCheckBoxToggled(false);
     this->RequestRenderWindowUpdate();
   }
