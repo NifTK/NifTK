@@ -1240,6 +1240,7 @@ void MIDASGeneralSegmentorView::OnThresholdCheckBoxToggled(bool b)
     {
       this->RecalculateMinAndMaxOfImage();
       this->RecalculateMinAndMaxOfSeedValues();
+      this->UpdateCurrentSliceContours();
       this->UpdateRegionGrowing();
     }
   }
@@ -1334,6 +1335,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
               ITKUpdateRegionGrowing, 3,
               (skipUpdate,
+               *workingImage,
                *seeds,
                *greenContours,
                *yellowContours,
@@ -2170,6 +2172,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
               AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
                   ITKUpdateRegionGrowing, 3,
                   (false,
+                   *workingImage,
                    *seeds,
                    *greenContours,
                    *yellowContours,
@@ -2188,6 +2191,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
               AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
                   ITKUpdateRegionGrowing, 3,
                   (false,
+                   *workingImage,
                    *seeds,
                    *greenContours,
                    *yellowContours,
@@ -2787,6 +2791,7 @@ MIDASGeneralSegmentorView
 ::ITKUpdateRegionGrowing(
     itk::Image<TPixel, VImageDimension>* itkImage,  // Grey scale image (read only).
     bool skipUpdate,
+    mitk::Image &workingImage,
     mitk::PointSet &seeds,
     mitk::ContourSet &greenContours,
     mitk::ContourSet &yellowContours,
@@ -2803,6 +2808,14 @@ MIDASGeneralSegmentorView
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
+  typename ImageToItkType::Pointer regionGrowingToItk = ImageToItkType::New();
+  regionGrowingToItk->SetInput(outputRegionGrowingImage);
+  regionGrowingToItk->Update();
+
+  typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
+  workingImageToItk->SetInput(&workingImage);
+  workingImageToItk->Update();
+
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
 
@@ -2817,17 +2830,14 @@ MIDASGeneralSegmentorView
     pipeline = new GeneralSegmentorPipeline<TPixel, VImageDimension>();
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
-    pipeline->m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+    pipeline->m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
+    pipeline->m_ExtractBinaryRegionOfInterestFilter->SetInput(workingImageToItk->GetOutput());
   }
   else
   {
     myPipeline = iter->second;
     pipeline = static_cast<GeneralSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
   }
-
-  typename ImageToItkType::Pointer regionGrowingToItk = ImageToItkType::New();
-  regionGrowingToItk->SetInput(outputRegionGrowingImage);
-  regionGrowingToItk->Update();
 
   GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = sliceNumber;
@@ -3550,7 +3560,7 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  pipeline.m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+  pipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
   pipeline.SetParam(params);
   pipeline.Update(params);
 
@@ -3620,7 +3630,7 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> greenPipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   greenPipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  greenPipeline.m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+  greenPipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
   greenPipeline.SetParam(greenParams);
   greenPipeline.Update(greenParams);
 
@@ -3636,7 +3646,7 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> bluePipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   bluePipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  bluePipeline.m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+  bluePipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
   bluePipeline.SetParam(blueParams);
   bluePipeline.Update(blueParams);
 
