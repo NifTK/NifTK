@@ -115,8 +115,11 @@ private:
 
   /// \brief We observe all the properties with a given name for each registered node.
   typedef std::pair < mitk::BaseProperty*, unsigned long > PropertyToObserver;
+  typedef std::pair < mitk::BaseProperty*, mitk::DataNode* > PropertyToNode;
   typedef std::vector< PropertyToObserver > VectorPropertyToObserver;
-  VectorPropertyToObserver m_WatchedNodes;
+  typedef std::vector< PropertyToNode > VectorPropertyToNode;
+  VectorPropertyToObserver m_WatchedObservers;
+  VectorPropertyToNode m_WatchedNodes;
 
   /// \brief The name of the property we are tracking.
   std::string m_PropertyName;
