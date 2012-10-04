@@ -430,8 +430,6 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
 //-----------------------------------------------------------------------------
 mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
-  this->WaitCursorOn();
-
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
   bool isRestarting = false;
@@ -462,6 +460,8 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
         return NULL;
       }
     }
+
+    this->WaitCursorOn();
 
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
@@ -533,10 +533,11 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
 
+    this->WaitCursorOff();
+
   } // end if we have a reference image
 
   this->RequestRenderWindowUpdate();
-  this->WaitCursorOff();
 
   // And... relax.
   return newSegmentation;
@@ -1276,6 +1277,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
     if (workingNodes.size() >=4)
     {
       workingNodes[3]->SetVisibility(false);
+      this->RequestRenderWindowUpdate();
     }
     return;
   }
