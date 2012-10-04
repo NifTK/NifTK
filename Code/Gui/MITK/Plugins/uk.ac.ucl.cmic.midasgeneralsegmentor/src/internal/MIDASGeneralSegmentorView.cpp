@@ -837,7 +837,6 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
   this->UpdateRegionGrowing();
   this->UpdatePriorAndNext();
   this->UpdateCurrentSliceContours();
-
   this->RequestRenderWindowUpdate();
 }
 
@@ -1010,6 +1009,7 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
     this->UpdateCurrentSliceContours();
     this->UpdatePriorAndNext();
     this->OnThresholdCheckBoxToggled(false);
+    this->RequestRenderWindowUpdate();
   }
 }
 
@@ -1146,6 +1146,7 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool justImage)
     mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
     assert(polyTool);
     polyTool->SetFeedbackContourVisible(!justImage);
+    this->RequestRenderWindowUpdate();
   }
 }
 
@@ -1155,7 +1156,6 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
 {
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
   int axisNumber = this->GetViewAxis();
-  bool updated = false;
 
   mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
   if (workingImage.IsNotNull())
@@ -1170,7 +1170,6 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
       if (contourSet->GetNumberOfContours() > 0)
       {
         workingNodes[4]->Modified();
-        updated = true;
       }
     }
 
@@ -1182,13 +1181,8 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
       if (contourSet->GetNumberOfContours() > 0)
       {
         workingNodes[5]->Modified();
-        updated = true;
       }
     }
-  }
-  if (updated)
-  {
-    this->RequestRenderWindowUpdate();
   }
 } // end function
 
@@ -2084,6 +2078,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
         this->UpdateRegionGrowing();
         this->UpdatePriorAndNext();
         this->UpdateCurrentSliceContours();
+        this->RequestRenderWindowUpdate();
 
       } // end if, slice number, axis ok.
     } // end have working image
