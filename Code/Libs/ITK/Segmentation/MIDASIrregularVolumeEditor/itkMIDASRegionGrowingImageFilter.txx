@@ -56,6 +56,9 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
           || (this->GetContourImage()->GetPixel(nextImgIdx) == GetForegroundValue()
               && this->GetContourImage()->GetPixel(currentImgIdx) == GetBackgroundValue()
              )
+          || (this->GetContourImage()->GetPixel(nextImgIdx) == GetForegroundValue()
+              && this->GetContourImage()->GetPixel(currentImgIdx) == GetForegroundValue()
+             )             
          )
      ) 
   {

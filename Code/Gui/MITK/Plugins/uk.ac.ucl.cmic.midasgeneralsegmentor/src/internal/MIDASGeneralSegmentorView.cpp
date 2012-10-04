@@ -430,8 +430,6 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
 //-----------------------------------------------------------------------------
 mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
-  this->WaitCursorOn();
-
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
   bool isRestarting = false;
@@ -462,6 +460,8 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
         return NULL;
       }
     }
+
+    this->WaitCursorOn();
 
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
@@ -533,10 +533,11 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
 
+    this->WaitCursorOff();
+
   } // end if we have a reference image
 
   this->RequestRenderWindowUpdate();
-  this->WaitCursorOff();
 
   // And... relax.
   return newSegmentation;
@@ -837,7 +838,6 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
   this->UpdateRegionGrowing();
   this->UpdatePriorAndNext();
   this->UpdateCurrentSliceContours();
-
   this->RequestRenderWindowUpdate();
 }
 
@@ -1009,7 +1009,9 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
     this->UpdateSegmentationImageVisibility(false);
     this->UpdateCurrentSliceContours();
     this->UpdatePriorAndNext();
+    this->UpdateRegionGrowing();
     this->OnThresholdCheckBoxToggled(false);
+    this->RequestRenderWindowUpdate();
   }
 }
 
@@ -1146,6 +1148,7 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool justImage)
     mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
     assert(polyTool);
     polyTool->SetFeedbackContourVisible(!justImage);
+    this->RequestRenderWindowUpdate();
   }
 }
 
@@ -1155,7 +1158,6 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
 {
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
   int axisNumber = this->GetViewAxis();
-  bool updated = false;
 
   mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
   if (workingImage.IsNotNull())
@@ -1170,7 +1172,6 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
       if (contourSet->GetNumberOfContours() > 0)
       {
         workingNodes[4]->Modified();
-        updated = true;
       }
     }
 
@@ -1182,13 +1183,8 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
       if (contourSet->GetNumberOfContours() > 0)
       {
         workingNodes[5]->Modified();
-        updated = true;
       }
     }
-  }
-  if (updated)
-  {
-    this->RequestRenderWindowUpdate();
   }
 } // end function
 
@@ -1245,6 +1241,7 @@ void MIDASGeneralSegmentorView::OnThresholdCheckBoxToggled(bool b)
     {
       this->RecalculateMinAndMaxOfImage();
       this->RecalculateMinAndMaxOfSeedValues();
+      this->UpdateCurrentSliceContours();
       this->UpdateRegionGrowing();
     }
   }
@@ -1282,6 +1279,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
     if (workingNodes.size() >=4)
     {
       workingNodes[3]->SetVisibility(false);
+      this->RequestRenderWindowUpdate();
     }
     return;
   }
@@ -1338,6 +1336,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
               ITKUpdateRegionGrowing, 3,
               (skipUpdate,
+               *workingImage,
                *seeds,
                *greenContours,
                *yellowContours,
@@ -2084,6 +2083,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
         this->UpdateRegionGrowing();
         this->UpdatePriorAndNext();
         this->UpdateCurrentSliceContours();
+        this->RequestRenderWindowUpdate();
 
       } // end if, slice number, axis ok.
     } // end have working image
@@ -2173,6 +2173,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
               AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
                   ITKUpdateRegionGrowing, 3,
                   (false,
+                   *workingImage,
                    *seeds,
                    *greenContours,
                    *yellowContours,
@@ -2191,6 +2192,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
               AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
                   ITKUpdateRegionGrowing, 3,
                   (false,
+                   *workingImage,
                    *seeds,
                    *greenContours,
                    *yellowContours,
@@ -2790,6 +2792,7 @@ MIDASGeneralSegmentorView
 ::ITKUpdateRegionGrowing(
     itk::Image<TPixel, VImageDimension>* itkImage,  // Grey scale image (read only).
     bool skipUpdate,
+    mitk::Image &workingImage,
     mitk::PointSet &seeds,
     mitk::ContourSet &greenContours,
     mitk::ContourSet &yellowContours,
@@ -2806,6 +2809,14 @@ MIDASGeneralSegmentorView
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
+  typename ImageToItkType::Pointer regionGrowingToItk = ImageToItkType::New();
+  regionGrowingToItk->SetInput(outputRegionGrowingImage);
+  regionGrowingToItk->Update();
+
+  typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
+  workingImageToItk->SetInput(&workingImage);
+  workingImageToItk->Update();
+
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
 
@@ -2820,17 +2831,14 @@ MIDASGeneralSegmentorView
     pipeline = new GeneralSegmentorPipeline<TPixel, VImageDimension>();
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
-    pipeline->m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+    pipeline->m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
+    pipeline->m_ExtractBinaryRegionOfInterestFilter->SetInput(workingImageToItk->GetOutput());
   }
   else
   {
     myPipeline = iter->second;
     pipeline = static_cast<GeneralSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
   }
-
-  typename ImageToItkType::Pointer regionGrowingToItk = ImageToItkType::New();
-  regionGrowingToItk->SetInput(outputRegionGrowingImage);
-  regionGrowingToItk->Update();
 
   GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = sliceNumber;
@@ -3553,7 +3561,7 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  pipeline.m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+  pipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
   pipeline.SetParam(params);
   pipeline.Update(params);
 
@@ -3623,7 +3631,7 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> greenPipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   greenPipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  greenPipeline.m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+  greenPipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
   greenPipeline.SetParam(greenParams);
   greenPipeline.Update(greenParams);
 
@@ -3639,7 +3647,7 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> bluePipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   bluePipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  bluePipeline.m_ExtractRegionOfInterestFilter->SetInput(itkImage);
+  bluePipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
   bluePipeline.SetParam(blueParams);
   bluePipeline.Update(blueParams);
 

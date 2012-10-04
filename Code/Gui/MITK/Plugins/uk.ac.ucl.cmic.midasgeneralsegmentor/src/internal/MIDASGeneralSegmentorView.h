@@ -574,6 +574,7 @@ private:
   void ITKUpdateRegionGrowing(
       itk::Image<TPixel, VImageDimension> *itkImage,
       bool skipUpdate,
+      mitk::Image &workingImage,
       mitk::PointSet &seeds,
       mitk::ContourSet &greenContours,
       mitk::ContourSet &yellowContours,

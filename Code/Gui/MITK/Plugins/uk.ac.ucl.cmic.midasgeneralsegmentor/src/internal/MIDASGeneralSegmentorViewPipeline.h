@@ -69,6 +69,10 @@ public:
   typedef typename GreyScaleImageType::PointType                          PointType;
   typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType> ExtractGreySliceFromGreyImageFilterType;
   typedef typename ExtractGreySliceFromGreyImageFilterType::Pointer       ExtractGreySliceFromGreyImageFilterPointer;
+  typedef itk::ExtractImageFilter<SegmentationImageType,
+                                  SegmentationImageType>                  ExtractBinarySliceFromBinaryImageFilterType;
+  typedef typename ExtractBinarySliceFromBinaryImageFilterType::Pointer   ExtractBinarySliceFromBinaryImageFilterPointer;
+
   typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType> CastGreySliceToSegmentationSliceFilterType;
   typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer    CastGreySliceToSegmentationSliceFilterPointer;
   typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType,
@@ -93,10 +97,11 @@ public:
   bool m_UseOutput;
 
   // The main filters.
-  ExtractGreySliceFromGreyImageFilterPointer    m_ExtractRegionOfInterestFilter;
-  CastGreySliceToSegmentationSliceFilterPointer m_CastToBinaryFilter;
-  MIDASRegionGrowingFilterPointer               m_RegionGrowingFilter;
-  SegmentationImageType*                        m_OutputImage;
+  ExtractGreySliceFromGreyImageFilterPointer     m_ExtractGreyRegionOfInterestFilter;
+  ExtractBinarySliceFromBinaryImageFilterPointer m_ExtractBinaryRegionOfInterestFilter;
+  CastGreySliceToSegmentationSliceFilterPointer  m_CastToBinaryFilter;
+  MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
+  SegmentationImageType*                         m_OutputImage;
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION
