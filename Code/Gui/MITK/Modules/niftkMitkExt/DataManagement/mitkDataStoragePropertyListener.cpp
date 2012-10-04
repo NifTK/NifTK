@@ -32,7 +32,6 @@ namespace mitk
 DataStoragePropertyListener::DataStoragePropertyListener()
 : m_PropertyName("")
 {
-  m_WatchedNodes.clear();
 }
 
 
@@ -41,7 +40,6 @@ DataStoragePropertyListener::DataStoragePropertyListener(const mitk::DataStorage
 : mitk::DataStorageListener(dataStorage)
 , m_PropertyName("")
 {
-  m_WatchedNodes.clear();
 }
 
 
@@ -121,11 +119,31 @@ void DataStoragePropertyListener::NodeDeleted(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::RemoveAllFromObserverToPropertyMap()
 {
-  for( VectorPropertyToObserver::iterator iter = m_WatchedNodes.begin();
-      iter != m_WatchedNodes.end(); ++iter )
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  VectorPropertyToObserver::iterator observerIter = m_WatchedObservers.begin();
+  VectorPropertyToNode::iterator nodeIter = m_WatchedNodes.begin();
+  for(;
+      observerIter != m_WatchedObservers.end();
+      ++observerIter,
+      ++nodeIter
+      )
   {
-    (*iter).first->RemoveObserver((*iter).second);
+    // This is bad, as we scan the whole data-storage for each object in our list.
+    // I really wanted to do: if (dataStorage->Exists((*nodeIter).second)
+    // but if you want to check for whether the node exists, and you pass an invalid pointer,
+    // then the Exists method does a std::vector::find, which create a SmartPointer and the Register
+    // function crashes, as it appears you cannot create a smart pointer to something that does not exist.
+    mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+    {
+      if (it->Value() == (*nodeIter).second)
+      {
+        (*observerIter).first->RemoveObserver((*observerIter).second);
+      }
+    }
   }
+  m_WatchedObservers.clear();
   m_WatchedNodes.clear();
 
   this->Modified();
@@ -172,7 +190,10 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
     mitk::BaseProperty::Pointer property = it->Value()->GetProperty(m_PropertyName.c_str());
     unsigned long observerId = property->AddObserver(itk::ModifiedEvent(), command);
     PropertyToObserver tag(property, observerId);
-    m_WatchedNodes.push_back(tag);
+    PropertyToNode node(property, it->Value());
+
+    m_WatchedObservers.push_back(tag);
+    m_WatchedNodes.push_back(node);
 
     for (unsigned int i = 0; i < m_Renderers.size(); i++)
     {
@@ -182,8 +203,12 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
 
       mitk::BaseProperty::Pointer rendererSpecificProperty = it->Value()->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
       unsigned long rendererSpecificObserverId = rendererSpecificProperty->AddObserver(itk::ModifiedEvent(), command);
+
       PropertyToObserver rendererSpecificTag(rendererSpecificProperty, rendererSpecificObserverId);
-      m_WatchedNodes.push_back(rendererSpecificTag);
+      m_WatchedObservers.push_back(rendererSpecificTag);
+
+      PropertyToNode rendererSpecificNode(rendererSpecificProperty, it->Value());
+      m_WatchedNodes.push_back(rendererSpecificNode);
     }
 
     this->OnPropertyChanged();
