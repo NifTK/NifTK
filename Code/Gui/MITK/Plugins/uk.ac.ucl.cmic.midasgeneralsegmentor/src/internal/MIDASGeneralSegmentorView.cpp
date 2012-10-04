@@ -1107,6 +1107,7 @@ void MIDASGeneralSegmentorView::OnSeePriorCheckBoxToggled(bool b)
       this->UpdatePriorAndNext();
     }
     workingNodes[4]->SetVisibility(b);
+    this->RequestRenderWindowUpdate();
   }
 }
 
@@ -1122,6 +1123,7 @@ void MIDASGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool b)
       this->UpdatePriorAndNext();
     }
     workingNodes[5]->SetVisibility(b);
+    this->RequestRenderWindowUpdate();
   }
 }
 
