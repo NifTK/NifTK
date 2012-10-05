@@ -4,7 +4,9 @@
 
 \section InstallationInstructionsIntroduction Introduction
 
-This @NIFTK_PLATFORM@ package installs a suite of software, and extra steps are needed to setup your system 
+The instructions are for if you have downloaded a binary package.
+
+Each @NIFTK_PLATFORM@ binary package installs a suite of software, and extra steps are needed to setup your system 
 after the installer runs. These steps are important. Without these steps you will have 
 either fewer programs available, or programs that do not run correctly.
 Please see the instructions below.
