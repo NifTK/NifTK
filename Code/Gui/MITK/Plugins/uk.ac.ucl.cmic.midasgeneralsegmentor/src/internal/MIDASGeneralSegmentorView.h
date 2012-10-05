@@ -74,11 +74,12 @@ class QGridLayout;
  *   0. mitk::Image = the image being segmented, i.e. The Output.
  *   1. mitk::PointSet = the seeds for region growing.
  *   2. mitk::ContourSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS.
- *   3. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.
+ *   3. mitk::ContourSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS.
  *   4. mitk::ContourSet = a set of contours for the prior slice, i.e. whiteish lines in MIDAS.
  *   5. mitk::ContourSet = a set of contours for the next slice, i.e. turquoise blue lines in MIDAS.
+ *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.*
  * </pre>
- * and more specifically, items 1-5 are set up in the mitk::DataManager as hidden children of item 0.
+ * and more specifically, items 1-6 are set up in the mitk::DataManager as hidden children of item 0.
  * Additional, significant bits of functionality include:
  *
  * <h2>Recalculation of Seed Position</h2>
@@ -576,8 +577,9 @@ private:
       bool skipUpdate,
       mitk::Image &workingImage,
       mitk::PointSet &seeds,
-      mitk::ContourSet &greenContours,
-      mitk::ContourSet &yellowContours,
+      mitk::ContourSet &segmentationContours,
+      mitk::ContourSet &drawContours,
+      mitk::ContourSet &polyContours,
       itk::ORIENTATION_ENUM orientation,
       int sliceNumber,
       int axis,

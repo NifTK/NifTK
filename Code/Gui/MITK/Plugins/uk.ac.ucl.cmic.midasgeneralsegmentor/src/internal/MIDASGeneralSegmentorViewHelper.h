@@ -54,8 +54,9 @@ struct GeneralSegmentorPipelineParams
   double m_LowerThreshold;
   double m_UpperThreshold;
   mitk::PointSet *m_Seeds;
-  mitk::ContourSet *m_GreenContours;
-  mitk::ContourSet *m_YellowContours;
+  mitk::ContourSet *m_SegmentationContours;
+  mitk::ContourSet *m_DrawContours;
+  mitk::ContourSet *m_PolyContours;
 
 };
 

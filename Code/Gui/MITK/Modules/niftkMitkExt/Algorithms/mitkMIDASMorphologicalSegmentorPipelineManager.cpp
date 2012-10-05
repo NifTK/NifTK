@@ -505,8 +505,9 @@ void MIDASMorphologicalSegmentorPipelineManager::FinalizeSegmentation()
       {
         MITK_ERROR << "Caught exception, so finalize pipeline" << e.what();
       }
-      this->RemoveWorkingData();
+      this->ClearWorkingData();
       this->DestroyPipeline();
+      this->RemoveWorkingData();
 
       parent->SetData( outputImage );
       parent->ReplaceProperty(MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(true));

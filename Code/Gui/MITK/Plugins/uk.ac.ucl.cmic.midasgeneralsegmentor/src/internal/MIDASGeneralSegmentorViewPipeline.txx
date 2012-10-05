@@ -39,12 +39,12 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_LowerThreshold = 0;
   m_UpperThreshold = 0;
   m_AllSeeds = PointSetType::New();
-  m_AllContours.clear(); // STL vector of smart pointers to contours.
   m_UseOutput = true;
   m_OutputImage = NULL;
   m_ExtractGreyRegionOfInterestFilter = ExtractGreySliceFromGreyImageFilterType::New();
   m_ExtractBinaryRegionOfInterestFilter = ExtractBinarySliceFromBinaryImageFilterType::New();
-  m_CastToBinaryFilter = CastGreySliceToSegmentationSliceFilterType::New();
+  m_CastToSegmentationContourFilter = CastGreySliceToSegmentationSliceFilterType::New();
+  m_CastToManualContourFilter = CastGreySliceToSegmentationSliceFilterType::New();
   m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
   m_RegionGrowingFilter->SetForegroundValue(1);
@@ -81,24 +81,28 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
     // 2. Clear internal point/contour buffers.
     m_AllSeeds->GetPoints()->Initialize();
-    m_AllContours.clear();
-
-    // 3. Convert seeds to ITK PointSets and contours to ITK PolyLineParametricPaths.
-    //  - this pipeline uses 2D slices, so we never need to have seeds outside region.
-    ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);  // This copies MITK seeds to ITK seeds, but there should not be too many of them.
-    ConvertMITKContoursAndAppendToITKContours(params, m_AllContours); // This copies pointers to contours, so should not be too slow.
-
+    m_SegmentationContours.clear();
+    m_ManualContours.clear();
+    
+    // 3. Convert seeds / contours.
+    ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);  
+    ConvertMITKContoursAndAppendToITKContours(params, m_ManualContours); 
+    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours);
+     
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
-    m_ExtractGreyRegionOfInterestFilter->UpdateLargestPossibleRegion();    
-    m_CastToBinaryFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
-    m_CastToBinaryFilter->UpdateLargestPossibleRegion();
+    m_ExtractGreyRegionOfInterestFilter->UpdateLargestPossibleRegion();
+
     m_ExtractBinaryRegionOfInterestFilter->SetExtractionRegion(region3D);
     m_ExtractBinaryRegionOfInterestFilter->UpdateLargestPossibleRegion();   
-
-    // 5. Render the contours into the contours image.
-    m_CastToBinaryFilter->GetOutput()->FillBuffer(0);
+        
+    m_CastToSegmentationContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
+    m_CastToSegmentationContourFilter->UpdateLargestPossibleRegion();
     
+    m_CastToManualContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
+    m_CastToManualContourFilter->UpdateLargestPossibleRegion();
+
+    // 5. Declare some variables.
     IndexType voxelIndex;
     ContinuousIndexType continuousIndex;
     ParametricPathVertexType vertex;
@@ -110,17 +114,23 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         
     RegionType paintingRegion;
     paintingRegion.SetSize(paintingRegionSize);
-                            
-    if (m_AllContours.size() > 0)
+                              
+    unsigned char segImageInside = 0;
+    unsigned char segImageBorder = 1;
+    unsigned char segImageOutside = 2;
+    unsigned char manualImageNonBorder = 0;
+    unsigned char manualImageBorder = 1;
+        
+    // 6. Blank the contour images.
+    m_CastToSegmentationContourFilter->GetOutput()->FillBuffer(segImageInside);
+    m_CastToManualContourFilter->GetOutput()->FillBuffer(manualImageNonBorder);
+
+    // 7. Render the segmentation contours into the segmentation contour image.    
+    if (m_SegmentationContours.size() > 0)
     {
-      // Basically, we need to draw all contours into image.
-      // Each contour is a set of points that run "between" voxels.
-      // (i.e. at exactly the half way point between voxels).
-      // We only want to paint "inside" the existing boundary of the input binary image.
-      
-      for (unsigned int j = 0; j < m_AllContours.size(); j++)
+      for (unsigned int j = 0; j < m_SegmentationContours.size(); j++)
       {
-        ParametricPathPointer path = m_AllContours[j];
+        ParametricPathPointer path = m_SegmentationContours[j];
         const ParametricPathVertexListType* list = path->GetVertexList();
 
         // NOTE: Intentionally ignoring first and last point.
@@ -129,7 +139,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
           for (unsigned int k = 1; k < list->Size() - 1; k++)
           {
             vertex = list->ElementAt(k);            
-            m_CastToBinaryFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
+            m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
               
             for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
             {
@@ -141,7 +151,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   
             if (region3D.IsInside(paintingRegion))
             {
-              itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToBinaryFilter->GetOutput(), paintingRegion);
+              itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToSegmentationContourFilter->GetOutput(), paintingRegion);
               itk::ImageRegionIterator<SegmentationImageType> segmentationImageIterator(m_ExtractBinaryRegionOfInterestFilter->GetOutput(), paintingRegion);
               
               for (countourImageIterator.GoToBegin(),
@@ -153,8 +163,53 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
               {
                 if (segmentationImageIterator.Get())
                 {
-                  countourImageIterator.Set(1);
+                  countourImageIterator.Set(segImageBorder);
                 }
+                else
+                {
+                  countourImageIterator.Set(segImageOutside);
+                }
+              }
+            }
+          } // end for k         
+        } // end if size of line at least 3.
+      } // end for j
+    } // end if we have some contours.
+
+    // 8. Render the manual contours into the manual contour image.    
+    if (m_ManualContours.size() > 0)
+    {
+      for (unsigned int j = 0; j < m_ManualContours.size(); j++)
+      {
+        ParametricPathPointer path = m_ManualContours[j];
+        const ParametricPathVertexListType* list = path->GetVertexList();
+
+        // NOTE: Intentionally ignoring first and last point.
+        if (list != NULL && list->Size() >= 3)
+        {
+          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          {
+            vertex = list->ElementAt(k);            
+            m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
+              
+            for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
+            {
+              voxelIndex[a] = continuousIndex[a];
+            }
+              
+            paintingRegionIndex = voxelIndex;
+            paintingRegion.SetIndex(paintingRegionIndex);
+  
+            if (region3D.IsInside(paintingRegion))
+            {
+              itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToManualContourFilter->GetOutput(), paintingRegion);
+              
+              for (countourImageIterator.GoToBegin(); 
+                   !countourImageIterator.IsAtEnd(); 
+                   ++countourImageIterator
+                   )
+              {
+                countourImageIterator.Set(manualImageBorder);
               }
             }
           } // end for k         
@@ -169,7 +224,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetUseRegionOfInterest(true);
     m_RegionGrowingFilter->SetProjectSeedsIntoRegion(false);
     m_RegionGrowingFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
-    m_RegionGrowingFilter->SetContourImage(m_CastToBinaryFilter->GetOutput());
+    m_RegionGrowingFilter->SetSegmentationContourImage(m_CastToSegmentationContourFilter->GetOutput());
+    m_RegionGrowingFilter->SetManualContourImage(m_CastToManualContourFilter->GetOutput());
+    m_RegionGrowingFilter->SetSegmentationContourImageInsideValue(segImageInside);
+    m_RegionGrowingFilter->SetSegmentationContourImageBorderValue(segImageBorder);
+    m_RegionGrowingFilter->SetSegmentationContourImageOutsideValue(segImageOutside);
+    m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
+    m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
     m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
     m_RegionGrowingFilter->UpdateLargestPossibleRegion();
     
@@ -185,6 +246,17 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         outputIter.Set(regionGrowingIter.Get());
       }
     }
+
+    typename itk::ImageFileWriter<SegmentationImageType>::Pointer segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
+    segWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
+    segWriter->SetFileName("tmp.matt.segmentationcontours.nii");
+    segWriter->Update();
+
+    segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
+    segWriter->SetInput(m_CastToManualContourFilter->GetOutput());
+    segWriter->SetFileName("tmp.matt.manualcontours.nii");
+    segWriter->Update();
+    
   }
   catch( itk::ExceptionObject & err )
   {

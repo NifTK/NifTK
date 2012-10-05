@@ -91,7 +91,8 @@ public:
   TPixel m_LowerThreshold;
   TPixel m_UpperThreshold;
   PointSetPointer m_AllSeeds;
-  ParametricPathVectorType m_AllContours;
+  ParametricPathVectorType m_SegmentationContours;
+  ParametricPathVectorType m_ManualContours;
 
   // Controls whether we write to output. Default = true. If false, we can directly look at m_RegionGrowingFilter->GetOutput().
   bool m_UseOutput;
@@ -99,7 +100,8 @@ public:
   // The main filters.
   ExtractGreySliceFromGreyImageFilterPointer     m_ExtractGreyRegionOfInterestFilter;
   ExtractBinarySliceFromBinaryImageFilterPointer m_ExtractBinaryRegionOfInterestFilter;
-  CastGreySliceToSegmentationSliceFilterPointer  m_CastToBinaryFilter;
+  CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
+  CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
   MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
   SegmentationImageType*                         m_OutputImage;
 };
