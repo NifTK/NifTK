@@ -142,7 +142,21 @@ called NifTK-build, where you should use the batch file startNiftyView_Debug.bat
 to launch Visual Studio, and the BUILD task. NiftyView can be run directly within Visual Studio by 
 setting it as the startup project.
 
-\section BuildInstructionsTroubleShooting 9. Trouble shooting
+\section BuildInstructionsInstall 9. Installing (Unix, Windows)
+
+A developer can run all the applications from the build directory. Indeed, the test-code-compile-test cycle 
+will mean that the developer is constantly running the compiled output, either through a development environment
+such as Eclipse, Qt Creator, or Visual Studio or via the command line. However, the developer may also wish to 
+install the code to some installation folder for safe keeping. During the initial configuration, the CMAKE_INSTALL_PREFIX
+is set to be the installation folder. The software can be "installed" by typing
+
+\verbatim
+make install
+\endverbatim
+
+for Linux/Mac or by running the INSTALL task in Visual Studio on Windows.
+ 
+\section BuildInstructionsTroubleShooting 10. Trouble shooting
 
 <ul>
 <li> On Windows, If you get errors when running CMake related to 'git', ensure that the CMake variable GIT_EXECUTABLE is correctly set. </li>
@@ -150,10 +164,17 @@ setting it as the startup project.
 <li> On Windows, sometimes building the dependencies can be tricky. Open the Visual Studio project file at the Superbuild level, and build the CLEAN, BOOST, GDCM, VTK, ITK, CTK, MITK one at a time, in that order. </li>
 </ul>
 
-\section BuildInstructionsFinalInstallation 10. Final Installation 
+\section BuildInstructionsFinalInstallation 11. Final Installation 
 
-In addition, to make use of the NifTK scripts, and NifTK command line programs, 
-the following <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> should be followed.
+In addition, there are some additional steps, that could be considered as optional.
+When an end-user downloads compiled binaries, there are some steps to enable the use
+of some scripts and command line programs. These can be found on the 
+<a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> page.
+A developer can either install their software as described in section 9, and then
+adapt these <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a>
+to run the command line scripts from their installation folder, or they can adapt
+the <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> to run
+scripts from the build folder.
  
 */
 
