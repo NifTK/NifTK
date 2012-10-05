@@ -143,15 +143,6 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
 
 
       // Create extra data and store with ToolManager
-      mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
-      erodeSubtractEditingProp->SetSize(1,1,1);
-      erodeSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS, col->GetColor());
-      erodeSubtractNode->SetBoolProperty("helper object", true);
-      erodeSubtractNode->SetColor(col->GetColor());
-      erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      erodeSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
-
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeAddEditingProp->SetSize(1,1,1);
       erodeAddEditingProp->SetValid(false);
@@ -162,14 +153,15 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
       erodeAddNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
 
-      mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
-      dilateSubtractEditingProp->SetSize(1,1,1);
-      dilateSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS, col->GetColor());
-      dilateSubtractNode->SetBoolProperty("helper object", true);
-      dilateSubtractNode->SetColor(col->GetColor());
-      dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      dilateSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
+      mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+      erodeSubtractEditingProp->SetSize(1,1,1);
+      erodeSubtractEditingProp->SetValid(false);
+      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS, col->GetColor());
+      erodeSubtractNode->SetBoolProperty("helper object", true);
+      erodeSubtractNode->SetBoolProperty("visible", false);
+      erodeSubtractNode->SetColor(col->GetColor());
+      erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+      erodeSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       dilateAddEditingProp->SetSize(1,1,1);
@@ -181,16 +173,26 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
       dilateAddNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
 
-      this->ApplyDisplayOptions(erodeSubtractNode);
+      mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+      dilateSubtractEditingProp->SetSize(1,1,1);
+      dilateSubtractEditingProp->SetValid(false);
+      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS, col->GetColor());
+      dilateSubtractNode->SetBoolProperty("helper object", true);
+      dilateSubtractNode->SetBoolProperty("visible", false);
+      dilateSubtractNode->SetColor(col->GetColor());
+      dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+      dilateSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
+
       this->ApplyDisplayOptions(erodeAddNode);
-      this->ApplyDisplayOptions(dilateSubtractNode);
+      this->ApplyDisplayOptions(erodeSubtractNode);
       this->ApplyDisplayOptions(dilateAddNode);
+      this->ApplyDisplayOptions(dilateSubtractNode);
 
       // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
-      this->GetDataStorage()->Add(erodeSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
       this->GetDataStorage()->Add(erodeAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
-      this->GetDataStorage()->Add(dilateSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+      this->GetDataStorage()->Add(erodeSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
       this->GetDataStorage()->Add(dilateAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+      this->GetDataStorage()->Add(dilateSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
 
       // Set working data. Compare with MIDASGeneralSegmentorView.
       // Note the order:
