@@ -269,7 +269,7 @@ MIDASRegionGrowingProcessor<TInputImage, TOutputImage, TPointSet>
       m_RegionGrowingBySliceFilter->SetForegroundValue(foreground);
       m_RegionGrowingBySliceFilter->SetBackgroundValue(background);
       m_RegionGrowingBySliceFilter->SetSeedPoints(*(propagatedSeeds.GetPointer()));
-      m_RegionGrowingBySliceFilter->SetContourImage(contoursImage);
+      m_RegionGrowingBySliceFilter->SetSegmentationContourImage(contoursImage);
       m_RegionGrowingBySliceFilter->SetInput(m_ExtractGreySliceFromReferenceImageFilter->GetOutput());
       m_RegionGrowingBySliceFilter->UpdateLargestPossibleRegion();
      
