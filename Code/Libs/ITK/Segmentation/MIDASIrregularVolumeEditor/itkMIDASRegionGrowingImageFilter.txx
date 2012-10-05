@@ -25,16 +25,19 @@
 template<class TInputImage, class TOutputImage, class TPointSet>
 MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 ::MIDASRegionGrowingImageFilter() 
-:
-  m_LowerThreshold(0)
+: m_LowerThreshold(0)
 , m_UpperThreshold(0)
-, m_ForegroundValue(0)
+, m_ForegroundValue(1)
 , m_BackgroundValue(0)
 , m_UseRegionOfInterest(false)
 , m_ProjectSeedsIntoRegion(false)
 , m_MaximumSeedProjectionDistanceInVoxels(1)
+, m_SegmentationContourImageInsideValue(0)
+, m_SegmentationContourImageBorderValue(1)
+, m_SegmentationContourImageOutsideValue(2)
+, m_ManualContourImageBorderValue(1)
+, m_ManualContourImageNonBorderValue(0)
 {
-  this->SetNumberOfThreads(0);
 }
 
 template<class TInputImage, class TOutputImage, class TPointSet>
@@ -46,24 +49,25 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
 	if (   (   this->m_UseRegionOfInterest == false
 	        || (this->m_UseRegionOfInterest == true && m_RegionOfInterest.IsInside(nextImgIdx))
 	        )
-	    && this->GetInput()->GetPixel(nextImgIdx) >= GetLowerThreshold()
-			&& this->GetInput()->GetPixel(nextImgIdx) <= GetUpperThreshold()
-			&& this->GetOutput()->GetPixel(nextImgIdx) == GetBackgroundValue()
-			&& (   this->GetContourImage() == NULL
-          || (this->GetContourImage()->GetPixel(currentImgIdx) == GetBackgroundValue()
-              && this->GetContourImage()->GetPixel(nextImgIdx) == GetBackgroundValue()
-             )
-          || (this->GetContourImage()->GetPixel(nextImgIdx) == GetForegroundValue()
-              && this->GetContourImage()->GetPixel(currentImgIdx) == GetBackgroundValue()
-             )
-          || (this->GetContourImage()->GetPixel(nextImgIdx) == GetForegroundValue()
-              && this->GetContourImage()->GetPixel(currentImgIdx) == GetForegroundValue()
-             )             
+	    && this->GetOutput()->GetPixel(nextImgIdx) == m_BackgroundValue
+	    && this->GetInput()->GetPixel(nextImgIdx) >= m_LowerThreshold
+			&& this->GetInput()->GetPixel(nextImgIdx) <= m_UpperThreshold
+			&& (   this->GetSegmentationContourImage() == NULL
+          || this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageInsideValue
+          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageBorderValue
+              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageBorderValue
+             ) 
+          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageBorderValue
+              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageInsideValue
+             )            
+         )
+      && (   this->GetManualContourImage() == NULL
+          || this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageNonBorderValue
          )
      ) 
   {
     r_stack.push(nextImgIdx);
-    this->GetOutput()->SetPixel(nextImgIdx, GetForegroundValue());
+    this->GetOutput()->SetPixel(nextImgIdx, m_ForegroundValue);
 	}
 }
 
@@ -77,13 +81,23 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	std::stack<__IndexType> nextPixelsStack;
 	OutputImagePointerType sp_output;
 
-  if (this->GetInput() != NULL && this->GetContourImage() != NULL)
+  if (this->GetInput() != NULL && this->GetSegmentationContourImage() != NULL)
   {
-    if (GetContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize() 
-     || GetContourImage()->GetOrigin() != this->GetInput()->GetOrigin() 
-     || GetContourImage()->GetSpacing() != this->GetInput()->GetSpacing()) 
+    if (GetSegmentationContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize() 
+     || GetSegmentationContourImage()->GetOrigin() != this->GetInput()->GetOrigin() 
+     || GetSegmentationContourImage()->GetSpacing() != this->GetInput()->GetSpacing()) 
     {
-      itkExceptionMacro(<< "Invalid input: Grey-scale and contour image have inconsistent spatial definitions.");
+      itkExceptionMacro(<< "Invalid input: Grey-scale and segmentation contour image have inconsistent spatial definitions.");
+    }
+  }
+
+  if (this->GetInput() != NULL && this->GetManualContourImage() != NULL)
+  {
+    if (GetManualContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize() 
+     || GetManualContourImage()->GetOrigin() != this->GetInput()->GetOrigin() 
+     || GetManualContourImage()->GetSpacing() != this->GetInput()->GetSpacing()) 
+    {
+      itkExceptionMacro(<< "Invalid input: Grey-scale and manual contour image have inconsistent spatial definitions.");
     }
   }
   

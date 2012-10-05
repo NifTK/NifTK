@@ -179,7 +179,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
 
   /** When the mouse is released, we need to add the contour to the cumulative one. */
   mitk::Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  this->AccumulateContourInWorkingData(*feedbackContour, 2);
+  this->AccumulateContourInWorkingData(*feedbackContour, 3);
 
   // Re-initialize contours to zero length.
   this->ClearData();
@@ -222,7 +222,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(Action* action, const StateEvent* st
 
   // Retrieve the correct contour set.
   assert(m_ToolManager);
-  mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(2);
+  mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(3);
 
   if (contourNode.IsNull())
   {
