@@ -1078,6 +1078,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds()
 
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
+/*
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
@@ -1094,7 +1095,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds()
       {
         yellowContours->AddContour(0, polyToolContour);
       }
-/*
+
       // These contours, stored with the ToolManager represent all the green lines in MIDAS,
       // and come from DrawTool and the current segmentation. When PolyTool is deselected
       // it copies the PolyTool contours (yellow), into this data set, so they appear green.
@@ -1702,7 +1703,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
 
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
-
+/*
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
@@ -1719,7 +1720,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
       {
         yellowContours->AddContour(0, polyToolContour);
       }
-/*
+
       mitk::ContourSet* greenContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
       assert(greenContours);
 
@@ -2132,7 +2133,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
 
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
-
+/*
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
       MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
@@ -2148,7 +2149,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
 
         if (numberOfSeeds > 0)
         {
-/*
+
           mitk::ContourSet* greenContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
           assert(greenContours);
 
@@ -2234,7 +2235,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
           {
             MITK_ERROR << "Could not update slice: Caught itk::ExceptionObject:" << err.what() << std::endl;
           }
-*/
+
         } // end if number seeds > 0
 
         // Make sure we are rendering the latest.
@@ -2246,6 +2247,7 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
       {
         MITK_ERROR << "Could not do UpdateCurrentSlice: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << std::endl;
       }
+*/
     }
   }
 }
