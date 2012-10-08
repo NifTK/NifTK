@@ -403,6 +403,7 @@ void MIDASMorphologicalSegmentorPipelineManager::SetDefaultParameterValuesFromRe
 void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
 {
   mitk::DataNode::Pointer referenceNode = this->GetToolManager()->GetReferenceData(0);
+  mitk::DataNode::Pointer outputNode = this->GetSegmentationNodeFromToolManager();
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager(0);  // The grey scale image.
   mitk::Image::Pointer outputImage = this->GetSegmentationImageUsingToolManager(); // The output image.
   mitk::Image::Pointer erodeAdd   = this->GetWorkingImageFromToolManager(0);
@@ -411,6 +412,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
   mitk::Image::Pointer dilSubtr   = this->GetWorkingImageFromToolManager(3);
 
   if (referenceNode.IsNotNull()
+      && outputNode.IsNotNull()
       && referenceImage.IsNotNull()
       && outputImage.IsNotNull()
       && erodeAdd.IsNotNull()
@@ -456,7 +458,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     this->GetParameterValuesFromSegmentationNode(params);
 
     bool isRestarting(false);
-    bool foundRestartingFlag = referenceNode->GetBoolProperty("midas.morph.restarting", isRestarting);
+    bool foundRestartingFlag = outputNode->GetBoolProperty("midas.morph.restarting", isRestarting);
 
     try
     {
@@ -505,7 +507,6 @@ void MIDASMorphologicalSegmentorPipelineManager::FinalizeSegmentation()
       {
         MITK_ERROR << "Caught exception, so finalize pipeline" << e.what();
       }
-      this->ClearWorkingData();
       this->RemoveWorkingData();
       this->DestroyPipeline();
 
