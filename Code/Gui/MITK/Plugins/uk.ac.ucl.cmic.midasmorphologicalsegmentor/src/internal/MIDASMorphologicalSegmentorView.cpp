@@ -231,6 +231,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         this->SetControlsByImageData();
       }
       this->SetControlsByParameterValues();
+      this->m_PipelineManager->UpdateSegmentation();
       this->RequestRenderWindowUpdate();
     }
     catch (std::bad_alloc)
@@ -389,9 +390,8 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
     this->m_MorphologicalControls->m_TabWidget->blockSignals(true);
     this->m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
     this->m_MorphologicalControls->m_TabWidget->blockSignals(false);
-    this->m_PipelineManager->ClearWorkingData();
-    this->m_PipelineManager->DestroyPipeline();
     this->m_PipelineManager->RemoveWorkingData();
+    this->m_PipelineManager->DestroyPipeline();
     this->GetDataStorage()->Remove(segmentationNode);
     this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
