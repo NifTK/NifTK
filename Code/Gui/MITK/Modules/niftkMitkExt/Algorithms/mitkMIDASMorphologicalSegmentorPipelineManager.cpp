@@ -506,8 +506,8 @@ void MIDASMorphologicalSegmentorPipelineManager::FinalizeSegmentation()
         MITK_ERROR << "Caught exception, so finalize pipeline" << e.what();
       }
       this->ClearWorkingData();
-      this->DestroyPipeline();
       this->RemoveWorkingData();
+      this->DestroyPipeline();
 
       parent->SetData( outputImage );
       parent->ReplaceProperty(MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(true));
@@ -547,13 +547,16 @@ void MIDASMorphologicalSegmentorPipelineManager::ClearWorkingData()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::RemoveWorkingData()
 {
-  for (unsigned int i = 0; i < 4; i++)
+  mitk::ToolManager* toolManager = this->GetToolManager();
+
+  mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
+
+  for (unsigned int i = 0; i < workingData.size(); i++)
   {
-    mitk::DataNode::Pointer node = this->GetToolManager()->GetWorkingData(i);
+    mitk::DataNode* node = workingData[i];
     this->GetDataStorage()->Remove(node);
   }
 
-  mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType emptyWorkingDataArray;
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
