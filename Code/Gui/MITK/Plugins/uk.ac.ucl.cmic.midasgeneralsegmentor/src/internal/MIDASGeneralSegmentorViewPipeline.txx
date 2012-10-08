@@ -107,7 +107,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     ContinuousIndexType continuousIndex;
     ParametricPathVertexType vertex;
     
-    IndexType  paintingRegionIndex;
     SizeType   paintingRegionSize;
     paintingRegionSize.Fill(2);
     paintingRegionSize[m_AxisNumber] = 1;
@@ -140,17 +139,16 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
           {
             vertex = list->ElementAt(k);            
             m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
-              
             for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
             {
               voxelIndex[a] = continuousIndex[a];
             }
-              
-            paintingRegionIndex = voxelIndex;
-            paintingRegion.SetIndex(paintingRegionIndex);
-  
+            voxelIndex[m_AxisNumber] = m_SliceNumber;
+            paintingRegion.SetIndex(voxelIndex);
+
             if (region3D.IsInside(paintingRegion))
             {
+            
               itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToSegmentationContourFilter->GetOutput(), paintingRegion);
               itk::ImageRegionIterator<SegmentationImageType> segmentationImageIterator(m_ExtractBinaryRegionOfInterestFilter->GetOutput(), paintingRegion);
               
@@ -161,13 +159,16 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
                    ++segmentationImageIterator
                    )
               {
-                if (segmentationImageIterator.Get())
+                if (countourImageIterator.Get() == segImageInside)
                 {
-                  countourImageIterator.Set(segImageBorder);
-                }
-                else
-                {
-                  countourImageIterator.Set(segImageOutside);
+                  if (segmentationImageIterator.Get())
+                  {
+                    countourImageIterator.Set(segImageBorder);
+                  }
+                  else
+                  {
+                    countourImageIterator.Set(segImageOutside);
+                  }
                 }
               }
             }
@@ -196,9 +197,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
             {
               voxelIndex[a] = continuousIndex[a];
             }
-              
-            paintingRegionIndex = voxelIndex;
-            paintingRegion.SetIndex(paintingRegionIndex);
+            voxelIndex[m_AxisNumber] = m_SliceNumber;
+            paintingRegion.SetIndex(voxelIndex);
   
             if (region3D.IsInside(paintingRegion))
             {
@@ -246,7 +246,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         outputIter.Set(regionGrowingIter.Get());
       }
     }
-
+/*
     typename itk::ImageFileWriter<SegmentationImageType>::Pointer segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
     segWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
     segWriter->SetFileName("tmp.matt.segmentationcontours.nii");
@@ -256,7 +256,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     segWriter->SetInput(m_CastToManualContourFilter->GetOutput());
     segWriter->SetFileName("tmp.matt.manualcontours.nii");
     segWriter->Update();
-    
+*/   
   }
   catch( itk::ExceptionObject & err )
   {
