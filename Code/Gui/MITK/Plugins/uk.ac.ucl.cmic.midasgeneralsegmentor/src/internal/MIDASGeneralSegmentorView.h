@@ -219,6 +219,12 @@ public:
 
 protected slots:
  
+  /// \see mitk::ILifecycleAwarePart::PartActivated
+  virtual void Activated();
+
+  /// \see mitk::ILifecycleAwarePart::PartDeactivated
+  virtual void Deactivated();
+
   /// \brief Qt slot called when the user hits the button "New segmentation",
   /// creating new working data such as a region growing image, a contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
