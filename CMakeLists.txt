@@ -261,6 +261,19 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 
 ######################################################################
+# Set GIT protocol, as dependencies need it
+######################################################################
+FIND_PACKAGE(Git REQUIRED)
+SET(GIT_PROTOCOL "git")
+IF(NOT NIFTK_USE_GIT_PROTOCOL)
+  SET(GIT_PROTOCOL "http")
+ENDIF()
+
+IF (WIN32)
+  SET(GITCOMMAND ${GIT_EXECUTABLE})
+ENDIF()
+
+######################################################################
 # Configure Dart testing support.  This should be done before any
 # MESSAGE(FATAL_ERROR ...) commands are invoked.
 ######################################################################
@@ -299,15 +312,6 @@ SET(NIFTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags")
 MARK_AS_ADVANCED(NIFTK_ADDITIONAL_C_FLAGS)
 SET(NIFTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags")
 MARK_AS_ADVANCED(NIFTK_ADDITIONAL_CXX_FLAGS)
-
-######################################################################
-# Set GIT protocol, as dependencies need it
-######################################################################
-FIND_PACKAGE(Git REQUIRED)
-SET(GIT_PROTOCOL "git")
-IF(NOT NIFTK_USE_GIT_PROTOCOL)
-  SET(GIT_PROTOCOL "http")
-ENDIF()
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
