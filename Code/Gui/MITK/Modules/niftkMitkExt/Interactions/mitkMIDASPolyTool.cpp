@@ -103,6 +103,26 @@ const char** mitk::MIDASPolyTool::GetXPM() const
   return mitkMIDASPolyTool_xpm;
 }
 
+float mitk::MIDASPolyTool::CanHandleEvent(const StateEvent *event) const
+{
+  // See StateMachine.xml for event Ids.
+  if (event != NULL
+      && event->GetEvent() != NULL
+      && (   event->GetId() == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
+          || event->GetId() == 4   // middle mouse down
+          || event->GetId() == 506 // middle mouse up
+          || event->GetId() == 533 // middle mouse down and move
+          )
+      )
+  {
+    return 1;
+  }
+  else
+  {
+    return mitk::StateMachine::CanHandleEvent(event);
+  }
+}
+
 void mitk::MIDASPolyTool::Disable3dRenderingOfPreviousContour()
 {
   this->Disable3dRenderingOfNode(m_PreviousContourNode);
@@ -318,8 +338,6 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
         &contourReferencePointsInput,
         &planeGeometry
         );
-
-    std::cerr << "Matt, index=" << m_DraggedPointIndex << ", new=" << closestCornerPoint << ", previous=" << m_PreviousContour->GetPoints()->GetElement(m_DraggedPointIndex) << std::endl;
 
     mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Update PolyLine");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );

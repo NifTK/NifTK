@@ -39,6 +39,7 @@ namespace itk
     this->SetNumberOfRequiredOutputs(1);
     m_MeanIntensityMainImage = 0.0;
     m_InValue = 1;
+    m_Counter = 0;
   }
 
 
@@ -47,6 +48,7 @@ namespace itk
   {
     SuperClass::PrintSelf(os, indent);
     os << indent << "m_MeanIntensityMainImage=" << m_MeanIntensityMainImage << std::endl;
+    os << indent << "m_Counter=" << m_Counter << std::endl;
     os << indent << "m_InValue=" << m_InValue << std::endl;
   }
 
@@ -171,17 +173,17 @@ namespace itk
   void MIDASMeanIntensityWithinARegionFilter<TInputImage1, TInputImage2, TOutputImage>::AfterThreadedGenerateData()
   {   
     double totalIntensity = 0.0;
-    unsigned long int countPixels = 0;
     unsigned int numberOfThreads = this->GetNumberOfThreads();
+    
+    m_Counter = 0;
     
     for(unsigned int i = 0; i < numberOfThreads; i++)
     { 
       totalIntensity += m_TotalIntensityVector[i];
-      countPixels += m_CountPixelsVector[i];
+      m_Counter += m_CountPixelsVector[i];
     }
     
-    m_MeanIntensityMainImage = totalIntensity / (double) countPixels;
-    
+    m_MeanIntensityMainImage = totalIntensity / (double) m_Counter;
   }
 
   
@@ -191,6 +193,11 @@ namespace itk
     return m_MeanIntensityMainImage;   
   }
 
+  template <class TInputImage1, class TInputImage2, class TOutputImage>
+  unsigned long int MIDASMeanIntensityWithinARegionFilter<TInputImage1, TInputImage2, TOutputImage>::GetCount()
+  {
+    return m_Counter;   
+  }
 
 }//end namespace itk
 

@@ -46,7 +46,7 @@ IF(QT_FOUND)
       # Note: If the CTK version changes, then you either clear the plugin 
       # cache or change the deploy path by changing the patch level.
       #####################################################################
-      SET(revision_tag 96bb84d8)
+      SET(revision_tag 12cc05735a)
       IF(${proj}_REVISION_TAG)
         SET(revision_tag ${${proj}_REVISION_TAG})
       ENDIF()
@@ -66,6 +66,8 @@ IF(QT_FOUND)
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
+        -DCTK_LIB_CommandLineModules/Backend/LocalProcess:BOOL=ON
+        -DCTK_LIB_CommandLineModules/Frontend/QtGui:BOOL=ON
         -DCTK_LIB_PluginFramework:BOOL=ON
         -DCTK_LIB_DICOM/Widgets:BOOL=ON
         -DCTK_LIB_DICOM/Core:BOOL=OFF

@@ -3,9 +3,9 @@
   \ingroup CMICPlugins
 
   \brief Provides a view for browsing XNAT databases.
-  
+
   Written by Miklos Espak (m.espak@ucl.ac.uk).
-   
+
 */
 
 /**

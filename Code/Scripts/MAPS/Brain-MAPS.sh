@@ -409,6 +409,16 @@ function brain_delineation()
     local init_3=`imginfo ${subject_image} -av -roi ${output_left_hippo_local_region_e3}`
     echo "init=${init_1}, ${init_2}, ${init_3}"
     
+    local comp_1_2=`echo "${init_1} > ${init_2}" | bc -l`
+    local comp_2_3=`echo "${init_2} > ${init_3}" | bc -l`
+    if [ ${comp_1_2} == 1 ] || [ ${comp_2_3} == 1 ]
+    then 
+      local init_1=`echo "${mean_intensity}*0.4" | bc -l`
+      local init_2=`echo "${mean_intensity}*0.9" | bc -l`
+      local init_3=`echo "${mean_intensity}*1.4" | bc -l`
+      echo "init=${init_1}, ${init_2}, ${init_3}"
+    fi 
+    
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 5
     kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}`
     echo "kmeans=${kmeans_output}"
@@ -484,8 +494,9 @@ COMMENTS
     number_of_gm_160_sd=1.7
     
     distance_csf_gm=`echo "${gm}-${csf}" | bc -l`
-    #distance_factor=`echo "0.9*${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
-    distance_factor=`echo "0.9*${gm_sd}*${gm_sd}/(${gm_sd}*${gm_sd}+${csf_sd}*${csf_sd})" | bc -l`
+    # ratio of SD is preferred by human raters. 
+    distance_factor=`echo "0.9*${gm_sd}/(${gm_sd}+${csf_sd})" | bc -l`
+    #distance_factor=`echo "0.9*${gm_sd}*${gm_sd}/(${gm_sd}*${gm_sd}+${csf_sd}*${csf_sd})" | bc -l`
     lower_threshold_distance=`echo "${gm}-${distance_factor}*${distance_csf_gm}" | bc -l`
     lower_threshold_sd=`echo "${gm}-${number_of_gm_160_sd}*${gm_sd}" | bc -l`
     lower_threshold_95=${lower_threshold_distance}

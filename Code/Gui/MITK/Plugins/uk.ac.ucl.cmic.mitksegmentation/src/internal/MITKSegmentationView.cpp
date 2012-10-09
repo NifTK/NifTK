@@ -109,9 +109,17 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
-    m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget,             2, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget,         3, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget,             1, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget,         2, 0);
+    m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 3, 0);
+
+    // Ideally we would want this, but there is a geometry problem at the moment.
+    // When the user views stuff in the MITK viewer, this widget has the wrong geometry.
+    // This is most likely to happen for people who are not using MIDAS, and so will
+    // be using the MITK display, and this MITK segmentation widget. So for the time
+    // being we remove this viewer.
+    m_ContainerForSegmentationViewWidget->setVisible(false);
+    m_SegmentationView->setVisible(false);
 
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(2);
     m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
@@ -125,42 +133,42 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
     mitk::SegTool2D* mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::AddContourTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::SubtractContourTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::DrawPaintbrushTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::ErasePaintbrushTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::RegionGrowingTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::CorrectorTool2D>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::FillRegionTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     mitkTool = dynamic_cast<mitk::SegTool2D*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::EraseRegionTool>()));
     assert(mitkTool);
     mitkTool->SetShowMarkerNodes(false);
-    mitkTool->Enable3DInterpolation(false);
+    mitkTool->SetEnable3DInterpolation(false);
 
     // Make sure these are up to date when view first shown.
     this->RetrievePreferenceValues();

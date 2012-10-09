@@ -153,9 +153,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     m_Cameras[i] = vtkCamera::New();
   }
 
-  // Turn off all interactors in base class, until we want them to be enabled.
-  this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
-
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
   this->m_CornerAnnotaions[0].cornerText->SetText(0, "");
   this->m_CornerAnnotaions[1].cornerText->SetText(0, "");
@@ -228,8 +225,6 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
   {
     RemoveDisplayGeometryModificationObserver(renderWindows[i]);
   }
-
-  m_RenderingManager->SetTimeNavigationController(NULL);
 }
 
 void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
@@ -915,7 +910,6 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
           isFlipped = true;
           break;
         default:
-          // Default = Transversal.
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
           originOfSlice[0] = originMillimetres[0] + permutedBoundingBox[0]*permutedSpacing[0]*permutedMatrix[0][1] - voxelOffset*permutedSpacing[0];
@@ -1572,8 +1566,6 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
 
   if (window != NULL)
   {
-    const mitk::Geometry3D *geometry = window->GetSliceNavigationController()->GetInputWorldGeometry();
-
     mitk::SliceNavigationController* sliceNavigationController = window->GetSliceNavigationController();
     assert(sliceNavigationController);
 
@@ -1583,86 +1575,90 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
     mitk::DisplayGeometry::Pointer displayGeometry = baseRenderer->GetDisplayGeometry();
     assert(displayGeometry);
 
-    mitk::Point3D cornerPointsInImage[8];
-    cornerPointsInImage[0] = geometry->GetCornerPoint(true, true, true);
-    cornerPointsInImage[1] = geometry->GetCornerPoint(true, true, false);
-    cornerPointsInImage[2] = geometry->GetCornerPoint(true, false, true);
-    cornerPointsInImage[3] = geometry->GetCornerPoint(true, false, false);
-    cornerPointsInImage[4] = geometry->GetCornerPoint(false, true, true);
-    cornerPointsInImage[5] = geometry->GetCornerPoint(false, true, false);
-    cornerPointsInImage[6] = geometry->GetCornerPoint(false, false, true);
-    cornerPointsInImage[7] = geometry->GetCornerPoint(false, false, false);
-
-    scaleFactorPixPerVoxel[0] = std::numeric_limits<float>::max();
-    scaleFactorPixPerVoxel[1] = std::numeric_limits<float>::max();
-
-    // Take every combination of pairs of 3D corner points taken from the 8 corners of the geometry.
-    for (unsigned int i = 0; i < 8; i++)
+    const mitk::Geometry3D *geometry = window->GetSliceNavigationController()->GetInputWorldGeometry();
+    if (geometry != NULL && geometry->GetBoundingBox() != NULL)
     {
-      mitk::Point3D pointsInVoxels[2];
+      mitk::Point3D cornerPointsInImage[8];
+      cornerPointsInImage[0] = geometry->GetCornerPoint(true, true, true);
+      cornerPointsInImage[1] = geometry->GetCornerPoint(true, true, false);
+      cornerPointsInImage[2] = geometry->GetCornerPoint(true, false, true);
+      cornerPointsInImage[3] = geometry->GetCornerPoint(true, false, false);
+      cornerPointsInImage[4] = geometry->GetCornerPoint(false, true, true);
+      cornerPointsInImage[5] = geometry->GetCornerPoint(false, true, false);
+      cornerPointsInImage[6] = geometry->GetCornerPoint(false, false, true);
+      cornerPointsInImage[7] = geometry->GetCornerPoint(false, false, false);
 
-      for (unsigned int j = 1; j < 8; j++)
+      scaleFactorPixPerVoxel[0] = std::numeric_limits<float>::max();
+      scaleFactorPixPerVoxel[1] = std::numeric_limits<float>::max();
+
+      // Take every combination of pairs of 3D corner points taken from the 8 corners of the geometry.
+      for (unsigned int i = 0; i < 8; i++)
       {
-        geometry->WorldToIndex(cornerPointsInImage[i], pointsInVoxels[0]);
-        geometry->WorldToIndex(cornerPointsInImage[j], pointsInVoxels[1]);
+        mitk::Point3D pointsInVoxels[2];
 
-        // We only want to pick pairs of points where the points are different
-        // and also differ in 3D space along exactly one axis (i.e. no diagonals).
-        unsigned int differentVoxelIndexesCounter=0;
-
-        for (unsigned int k = 0; k < 3; k++)
+        for (unsigned int j = 1; j < 8; j++)
         {
-          if (fabs(pointsInVoxels[1][k] - pointsInVoxels[0][k]) > 0.1)
+          geometry->WorldToIndex(cornerPointsInImage[i], pointsInVoxels[0]);
+          geometry->WorldToIndex(cornerPointsInImage[j], pointsInVoxels[1]);
+
+          // We only want to pick pairs of points where the points are different
+          // and also differ in 3D space along exactly one axis (i.e. no diagonals).
+          unsigned int differentVoxelIndexesCounter=0;
+
+          for (unsigned int k = 0; k < 3; k++)
           {
-            differentVoxelIndexesCounter++;
-          }
-        }
-        if (differentVoxelIndexesCounter == 1)
-        {
-          // So, for this pair (i,j) of points, project to 2D
-          mitk::Point2D displayPointInMillimetreCoordinates[2];
-          mitk::Point2D displayPointInPixelCoordinates[2];
-
-          displayGeometry->Map(cornerPointsInImage[i], displayPointInMillimetreCoordinates[0]);
-          displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[0], displayPointInPixelCoordinates[0]);
-
-          displayGeometry->Map(cornerPointsInImage[j], displayPointInMillimetreCoordinates[1]);
-          displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[1], displayPointInPixelCoordinates[1]);
-
-          // Similarly, we only want to pick pairs of points where the projected 2D points
-          // differ in 2D display coordinates along exactly one axis.
-          unsigned int differentDisplayIndexesCounter=0;
-          int differentDisplayAxis = -1;
-
-          for (unsigned int k = 0; k < 2; k++)
-          {
-            if (fabs(displayPointInPixelCoordinates[1][k] - displayPointInPixelCoordinates[0][k]) > 0.1)
+            if (fabs(pointsInVoxels[1][k] - pointsInVoxels[0][k]) > 0.1)
             {
-              differentDisplayIndexesCounter++;
-              differentDisplayAxis = k;
+              differentVoxelIndexesCounter++;
             }
           }
-          if (differentDisplayIndexesCounter == 1)
+          if (differentVoxelIndexesCounter == 1)
           {
-            // We now have i,j corresponding to a pair of points that are different in
-            // 1 axis in voxel space, and different in one axis in diplay space, we can
-            // use them to calculate scale factors.
+            // So, for this pair (i,j) of points, project to 2D
+            mitk::Point2D displayPointInMillimetreCoordinates[2];
+            mitk::Point2D displayPointInPixelCoordinates[2];
 
-            double distanceInMillimetres = cornerPointsInImage[i].EuclideanDistanceTo(cornerPointsInImage[j]);
-            double distanceInVoxels = pointsInVoxels[0].EuclideanDistanceTo(pointsInVoxels[1]);
-            double distanceInPixels = displayPointInPixelCoordinates[0].EuclideanDistanceTo(displayPointInPixelCoordinates[1]);
-            double scaleFactorInDisplayPixelsPerImageVoxel = distanceInPixels / distanceInVoxels;
-            double scaleFactorInDisplayPixelsPerMillimetres = distanceInPixels / distanceInMillimetres;
+            displayGeometry->Map(cornerPointsInImage[i], displayPointInMillimetreCoordinates[0]);
+            displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[0], displayPointInPixelCoordinates[0]);
 
-            if (scaleFactorInDisplayPixelsPerImageVoxel < scaleFactorPixPerVoxel[differentDisplayAxis])
+            displayGeometry->Map(cornerPointsInImage[j], displayPointInMillimetreCoordinates[1]);
+            displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[1], displayPointInPixelCoordinates[1]);
+
+            // Similarly, we only want to pick pairs of points where the projected 2D points
+            // differ in 2D display coordinates along exactly one axis.
+            unsigned int differentDisplayIndexesCounter=0;
+            int differentDisplayAxis = -1;
+
+            for (unsigned int k = 0; k < 2; k++)
             {
-              scaleFactorPixPerVoxel[differentDisplayAxis] = scaleFactorInDisplayPixelsPerImageVoxel;
-              scaleFactorPixPerMillimetres[differentDisplayAxis] = scaleFactorInDisplayPixelsPerMillimetres;
+              if (fabs(displayPointInPixelCoordinates[1][k] - displayPointInPixelCoordinates[0][k]) > 0.1)
+              {
+                differentDisplayIndexesCounter++;
+                differentDisplayAxis = k;
+              }
+            }
+            if (differentDisplayIndexesCounter == 1)
+            {
+              // We now have i,j corresponding to a pair of points that are different in
+              // 1 axis in voxel space, and different in one axis in diplay space, we can
+              // use them to calculate scale factors.
+
+              double distanceInMillimetres = cornerPointsInImage[i].EuclideanDistanceTo(cornerPointsInImage[j]);
+              double distanceInVoxels = pointsInVoxels[0].EuclideanDistanceTo(pointsInVoxels[1]);
+              double distanceInPixels = displayPointInPixelCoordinates[0].EuclideanDistanceTo(displayPointInPixelCoordinates[1]);
+              double scaleFactorInDisplayPixelsPerImageVoxel = distanceInPixels / distanceInVoxels;
+              double scaleFactorInDisplayPixelsPerMillimetres = distanceInPixels / distanceInMillimetres;
+
+              if (scaleFactorInDisplayPixelsPerImageVoxel < scaleFactorPixPerVoxel[differentDisplayAxis])
+              {
+                scaleFactorPixPerVoxel[differentDisplayAxis] = scaleFactorInDisplayPixelsPerImageVoxel;
+                scaleFactorPixPerMillimetres[differentDisplayAxis] = scaleFactorInDisplayPixelsPerMillimetres;
+              }
             }
           }
         }
       }
-    }
+    } // end geometry and bounding box != NULL
   } // end window != NULL
 }
 
@@ -1737,18 +1733,6 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
     camera->SetFocalPoint(this->m_Cameras[i]->GetFocalPoint());
     camera->SetViewUp(this->m_Cameras[i]->GetViewUp());
     camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
-  }
-}
-
-void QmitkMIDASStdMultiWidget::EnableInteractors(bool enable)
-{
-  if (enable)
-  {
-    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::MITK);
-  }
-  else
-  {
-    this->GetMouseModeSwitcher()->SetInteractionScheme(mitk::MouseModeSwitcher::OFF);
   }
 }
 

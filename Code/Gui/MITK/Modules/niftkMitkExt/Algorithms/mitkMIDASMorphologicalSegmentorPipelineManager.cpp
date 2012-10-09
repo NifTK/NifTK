@@ -184,7 +184,7 @@ void MIDASMorphologicalSegmentorPipelineManager::OnRethresholdingValuesChanged(c
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
   {
-    segmentationNode->SetIntProperty("midas.morph.rethresholing.box", boxSize);
+    segmentationNode->SetIntProperty("midas.morph.rethresholding.box", boxSize);
     this->UpdateSegmentation();
   }
 }
@@ -262,7 +262,7 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const 
     {
       // Should also have 4 children (see mitk::MIDASTool)
       mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true);
-      for (unsigned int i = 0; i < 4; i++)
+      for (unsigned int i = 0; i < children->size(); i++)
       {
         (*children)[i]->GetStringProperty("name", name);
         set.insert(name);
@@ -403,6 +403,7 @@ void MIDASMorphologicalSegmentorPipelineManager::SetDefaultParameterValuesFromRe
 void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
 {
   mitk::DataNode::Pointer referenceNode = this->GetToolManager()->GetReferenceData(0);
+  mitk::DataNode::Pointer outputNode = this->GetSegmentationNodeFromToolManager();
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager(0);  // The grey scale image.
   mitk::Image::Pointer outputImage = this->GetSegmentationImageUsingToolManager(); // The output image.
   mitk::Image::Pointer erodeAdd   = this->GetWorkingImageFromToolManager(0);
@@ -411,6 +412,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
   mitk::Image::Pointer dilSubtr   = this->GetWorkingImageFromToolManager(3);
 
   if (referenceNode.IsNotNull()
+      && outputNode.IsNotNull()
       && referenceImage.IsNotNull()
       && outputImage.IsNotNull()
       && erodeAdd.IsNotNull()
@@ -456,7 +458,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     this->GetParameterValuesFromSegmentationNode(params);
 
     bool isRestarting(false);
-    bool foundRestartingFlag = referenceNode->GetBoolProperty("midas.morph.restarting", isRestarting);
+    bool foundRestartingFlag = outputNode->GetBoolProperty("midas.morph.restarting", isRestarting);
 
     try
     {
@@ -546,13 +548,16 @@ void MIDASMorphologicalSegmentorPipelineManager::ClearWorkingData()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::RemoveWorkingData()
 {
-  for (unsigned int i = 0; i < 4; i++)
+  mitk::ToolManager* toolManager = this->GetToolManager();
+
+  mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
+
+  for (unsigned int i = 0; i < workingData.size(); i++)
   {
-    mitk::DataNode::Pointer node = this->GetToolManager()->GetWorkingData(i);
+    mitk::DataNode* node = workingData[i];
     this->GetDataStorage()->Remove(node);
   }
 
-  mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType emptyWorkingDataArray;
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);

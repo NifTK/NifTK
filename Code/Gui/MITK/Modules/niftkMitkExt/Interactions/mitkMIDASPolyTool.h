@@ -76,6 +76,9 @@ namespace mitk {
     /// \brief When called, add the current poly line to the node specified by mitk::MIDASTool::CURRENT_CONTOURS_NAME.
     virtual void Deactivated();
 
+    /// \see mitk::StateMachine::CanHandleEvent
+    float CanHandleEvent(const StateEvent *) const;
+
     /// \brief When called, we incrementally build up a poly line.
     virtual bool OnLeftMousePressed(Action* action, const StateEvent* stateEvent);
 

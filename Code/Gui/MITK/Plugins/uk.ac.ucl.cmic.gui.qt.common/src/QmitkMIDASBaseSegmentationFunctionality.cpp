@@ -42,6 +42,7 @@
 #include <mitkPointSet.h>
 #include <mitkToolManager.h>
 #include <mitkGlobalInteraction.h>
+#include <mitkStateMachine.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkColorProperty.h>
 #include <mitkProperties.h>
@@ -171,49 +172,18 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
-  mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart(QmitkAbstractView::OPEN);
-  if (renderWindowPart != NULL)
+  // See http://bugs.mitk.org/show_bug.cgi?id=12302 - new interaction concept.
+  if (toolID >= 0)
   {
-    // If toolID > 0, we have a tool, so must DISABLE interaction.
-
-    // This if/else for if we want to only influence the current window.
-    if (toolID >= 0)
-    {
-      renderWindowPart->EnableInteractors(false);
-    }
-    else
-    {
-      renderWindowPart->EnableInteractors(true);
-    }
-
-    // This if/else for if we want to broadcast an event using ctkEventAdmin.
-    /*
-    bool enabled = true;
-    if (toolID >= 0)
-    {
-      enabled = false;
-    }
-    ctkDictionary properties;
-    properties["enabled"] = enabled;
-
-    emit InteractorRequest(properties);
-    */
-
-    mitk::ILinkedRenderWindowPart *linkedRenderWindowPart = dynamic_cast<mitk::ILinkedRenderWindowPart*>(renderWindowPart);
-    if (linkedRenderWindowPart != NULL)
-    {
-      if (toolID >= 0)
-      {
-        linkedRenderWindowPart->EnableLinkedNavigation(false);
-      }
-      else
-      {
-        linkedRenderWindowPart->EnableLinkedNavigation(true);
-      }
-    }
+    // Enabling a tool - so just the tool receives the event,
+    // so tool must return a high value from mitk::CanHandleEvent
+    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_ONE);
   }
-
-
+  else
+  {
+    // Disabling a tool - revert to default behaviour.
+    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_MULTIPLE);
+  }
 }
 
 
@@ -587,7 +557,7 @@ MIDASOrientation QmitkMIDASBaseSegmentationFunctionality::GetOrientationAsEnum()
   {
     mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
 
-    if (viewDirection == mitk::SliceNavigationController::Transversal)
+    if (viewDirection == mitk::SliceNavigationController::Axial)
     {
       orientation = MIDAS_ORIENTATION_AXIAL;
     }

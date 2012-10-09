@@ -100,7 +100,7 @@ public:
 protected:
 
   /**
-   * \see mitk::ILifecycleAwarePart::Activated
+   * \see mitk::ILifecycleAwarePart::PartActivated
    */
   virtual void Activated();
 

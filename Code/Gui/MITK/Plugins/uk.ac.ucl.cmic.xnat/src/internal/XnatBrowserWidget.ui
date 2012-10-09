@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>455</width>
+    <width>456</width>
     <height>402</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
-      <number>12</number>
+      <number>6</number>
      </property>
      <property name="margin">
       <number>6</number>
@@ -86,20 +86,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="downloadButton">
-        <property name="text">
-         <string>Download</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="downloadAllButton">
-        <property name="text">
-         <string>Download All</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="3">
        <widget class="QPushButton" name="saveAndUploadButton">
         <property name="text">
@@ -107,17 +93,31 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="refreshButton">
-        <property name="text">
-         <string>Refresh</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="2">
        <widget class="QPushButton" name="uploadButton">
         <property name="text">
          <string>Upload</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="downloadAllButton">
+        <property name="text">
+         <string>Download All</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="downloadButton">
+        <property name="text">
+         <string>Download</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="refreshButton">
+        <property name="text">
+         <string>Refresh</string>
         </property>
        </widget>
       </item>

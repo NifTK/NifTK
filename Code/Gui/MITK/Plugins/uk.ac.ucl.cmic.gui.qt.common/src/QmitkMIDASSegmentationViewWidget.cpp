@@ -38,6 +38,7 @@
 #include <mitkBaseRenderer.h>
 #include <itkCommand.h>
 
+//-----------------------------------------------------------------------------
 QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *parent)
 : m_ContainingFunctionality(NULL)
 , m_FocusManagerObserverTag(0)
@@ -46,6 +47,8 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
 , m_MainWindowAxial(NULL)
 , m_MainWindowSagittal(NULL)
 , m_MainWindowCoronal(NULL)
+, m_MainWindow3d(NULL)
+, m_CurrentRenderer(NULL)
 , m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
 {
@@ -78,12 +81,16 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
   connect(m_OrthoRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrthoToggled(bool)));
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
 {
   // m_NodeAddedSetter deleted by smart pointer.
   // m_VisibilityTracker deleted by smart pointer.
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::SetDataStorage(mitk::DataStorage* storage)
 {
   if (storage != NULL)
@@ -95,11 +102,15 @@ void QmitkMIDASSegmentationViewWidget::SetDataStorage(mitk::DataStorage* storage
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality)
 {
   m_ContainingFunctionality = functionality;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::Activated()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -119,16 +130,20 @@ void QmitkMIDASSegmentationViewWidget::Activated()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::Deactivated()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL && m_FocusManagerObserverTag != 0)
+  if (focusManager != NULL)
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
   this->m_ViewerWidget->SetEnabled(false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::SetBlockSignals(bool block)
 {
   m_AxialRadioButton->blockSignals(block);
@@ -139,6 +154,8 @@ void QmitkMIDASSegmentationViewWidget::SetBlockSignals(bool block)
   m_VerticalCheckBox->blockSignals(block);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::SetEnabled(bool enabled)
 {
   this->EnableOrientationWidgets(enabled);
@@ -146,6 +163,8 @@ void QmitkMIDASSegmentationViewWidget::SetEnabled(bool enabled)
   m_VerticalCheckBox->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::EnableOrientationWidgets(bool enabled)
 {
   this->m_AxialRadioButton->setEnabled(enabled);
@@ -154,16 +173,22 @@ void QmitkMIDASSegmentationViewWidget::EnableOrientationWidgets(bool enabled)
   this->m_OrthoRadioButton->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnTwoViewStateChanged(int state)
 {
   this->ChangeLayout();
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnVerticalLayoutStateChanged(int state)
 {
   this->ChangeLayout();
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnAxialToggled(bool)
 {
   if (this->m_AxialRadioButton->isChecked())
@@ -172,6 +197,8 @@ void QmitkMIDASSegmentationViewWidget::OnAxialToggled(bool)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnCoronalToggled(bool)
 {
   if (this->m_CoronalRadioButton->isChecked())
@@ -180,6 +207,8 @@ void QmitkMIDASSegmentationViewWidget::OnCoronalToggled(bool)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnSagittalToggled(bool)
 {
   if (this->m_SagittalRadioButton->isChecked())
@@ -188,6 +217,8 @@ void QmitkMIDASSegmentationViewWidget::OnSagittalToggled(bool)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnOrthoToggled(bool)
 {
   if (this->m_OrthoRadioButton->isChecked())
@@ -196,6 +227,8 @@ void QmitkMIDASSegmentationViewWidget::OnOrthoToggled(bool)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
 {
   MIDASView nextView = MIDAS_VIEW_UNKNOWN;
@@ -305,6 +338,8 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::EnableWidgets()
 {
   if (m_TwoViewCheckBox->isChecked())
@@ -336,6 +371,8 @@ void QmitkMIDASSegmentationViewWidget::EnableWidgets()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 {
   // If the newly focussed window is this widget, nothing to update. Stop early.
@@ -345,15 +382,17 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   }
 
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("transversal");
+  QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
   QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
   QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
+  QmitkRenderWindow *mainWindow3d = m_ContainingFunctionality->GetRenderWindow("3d");
 
   // Main windows could be NULL if main window not initialised,
   // or no valid QmitkRenderer returned from mitkIRenderWindowPart.
-  if (mainWindowAxial == NULL
+  if (   mainWindowAxial == NULL
       || mainWindowSagittal == NULL
       || mainWindowCoronal == NULL
+      || mainWindow3d == NULL
       )
   {
     return;
@@ -366,6 +405,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   if (   mainWindowAxial    != m_MainWindowAxial
       || mainWindowSagittal != m_MainWindowSagittal
       || mainWindowCoronal  != m_MainWindowCoronal
+      || mainWindow3d       != m_MainWindow3d
       )
   {
     mainWindowChanged = true;
@@ -382,7 +422,9 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     this->m_MainWindowView = mainWindowView;
   }
 
-  if (mainWindowChanged)
+  mitk::BaseRenderer* currentlyFocussedRenderer = this->GetCurrentlyFocussedRenderer();
+
+  if (mainWindowChanged || m_CurrentRenderer == NULL)
   {
     mitk::SliceNavigationController::Pointer snc = mainWindowAxial->GetSliceNavigationController();
     assert(snc);
@@ -396,6 +438,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       this->m_MainWindowAxial = mainWindowAxial;
       this->m_MainWindowSagittal = mainWindowSagittal;
       this->m_MainWindowCoronal = mainWindowCoronal;
+      this->m_MainWindow3d = mainWindow3d;
 
       this->m_ViewerWidget->SetGeometry(geom);
       this->m_ViewerWidget->SetBoundGeometryActive(false);
@@ -423,29 +466,39 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   {
     this->ChangeLayout(false);
   }
+  this->m_CurrentRenderer = currentlyFocussedRenderer;
   this->m_ViewerWidget->RequestUpdate();
 }
 
-bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocussedWindowInThisWidget()
+
+//-----------------------------------------------------------------------------
+mitk::BaseRenderer* QmitkMIDASSegmentationViewWidget::GetCurrentlyFocussedRenderer() const
 {
-  bool result = false;
+  mitk::BaseRenderer* result = NULL;
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager != NULL)
   {
-    mitk::BaseRenderer::ConstPointer focusedWindowRenderer = focusManager->GetFocused();
-    if (focusedWindowRenderer.IsNotNull())
+    result = focusManager->GetFocused();
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocussedWindowInThisWidget()
+{
+  bool result = false;
+
+  mitk::BaseRenderer* focussedRenderer = this->GetCurrentlyFocussedRenderer();
+  if (focussedRenderer != NULL)
+  {
+    vtkRenderWindow* focusedWindowRenderWindow = focussedRenderer->GetRenderWindow();
+
+    std::vector<vtkRenderWindow*> windowsInThisWidget = m_ViewerWidget->GetAllVtkWindows();
+    for (unsigned int i = 0; i < windowsInThisWidget.size(); i++)
     {
-      vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
-
-      QmitkRenderWindow *thisWidgetAxial = this->m_ViewerWidget->GetAxialWindow();
-      QmitkRenderWindow *thisWidgetSagittal = this->m_ViewerWidget->GetSagittalWindow();
-      QmitkRenderWindow *thisWidgetCoronal = this->m_ViewerWidget->GetCoronalWindow();
-
-      if (focusedWindowRenderWindow == thisWidgetAxial->GetVtkRenderWindow()
-          || focusedWindowRenderWindow == thisWidgetSagittal->GetVtkRenderWindow()
-          || focusedWindowRenderWindow == thisWidgetCoronal->GetVtkRenderWindow()
-          )
+      if (windowsInThisWidget[i] == focusedWindowRenderWindow)
       {
         result = true;
       }
@@ -454,49 +507,48 @@ bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocussedWindowInThisWidget()
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientation()
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
 
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  mitk::BaseRenderer* focussedRenderer = this->GetCurrentlyFocussedRenderer();
+  if (focussedRenderer != NULL)
   {
-    mitk::BaseRenderer::ConstPointer focusedWindowRenderer = focusManager->GetFocused();
-    if (focusedWindowRenderer.IsNotNull())
+    vtkRenderWindow* focusedWindowRenderWindow = focussedRenderer->GetRenderWindow();
+
+    QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
+    QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
+    QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
+
+    if (focusedWindowRenderWindow != NULL
+        && mainWindowAxial != NULL
+        && mainWindowSagittal != NULL
+        && mainWindowCoronal != NULL
+        )
     {
-      vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
-
-      QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("transversal");
-      QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
-      QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
-
-      if (focusedWindowRenderWindow != NULL
-          && mainWindowAxial != NULL
-          && mainWindowSagittal != NULL
-          && mainWindowCoronal != NULL
-          )
+      if (focusedWindowRenderWindow == mainWindowAxial->GetVtkRenderWindow())
       {
-        if (focusedWindowRenderWindow == mainWindowAxial->GetVtkRenderWindow())
-        {
-          orientation = MIDAS_ORIENTATION_AXIAL;
-        }
-        else
-        if (focusedWindowRenderWindow == mainWindowSagittal->GetVtkRenderWindow())
-        {
-          orientation = MIDAS_ORIENTATION_SAGITTAL;
-        }
-        else
-        if (focusedWindowRenderWindow == mainWindowCoronal->GetVtkRenderWindow())
-        {
-          orientation = MIDAS_ORIENTATION_CORONAL;
-        }
+        orientation = MIDAS_ORIENTATION_AXIAL;
+      }
+      else
+      if (focusedWindowRenderWindow == mainWindowSagittal->GetVtkRenderWindow())
+      {
+        orientation = MIDAS_ORIENTATION_SAGITTAL;
+      }
+      else
+      if (focusedWindowRenderWindow == mainWindowCoronal->GetVtkRenderWindow())
+      {
+        orientation = MIDAS_ORIENTATION_CORONAL;
       }
     }
   }
-
   return orientation;
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASView QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowView()
 {
   MIDASView mainWindowView = MIDAS_VIEW_UNKNOWN;

@@ -32,6 +32,7 @@
 #include <mitkImage.h>
 
 #include "_reg_aladin.h"
+#include "_reg_aladin_sym.h"
 #include "_reg_tools.h"
 
 #include "_reg_f3d2.h"

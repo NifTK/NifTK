@@ -91,17 +91,17 @@ public:
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow()
    */
-  virtual QmitkRenderWindow* GetActiveRenderWindow() const;
+  virtual QmitkRenderWindow* GetActiveQmitkRenderWindow() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetRenderWindows()
    */
-  virtual QHash<QString,QmitkRenderWindow*> GetRenderWindows() const;
+  virtual QHash<QString,QmitkRenderWindow*> GetQmitkRenderWindows() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetRenderWindow(QString)
    */
-  virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
+  virtual QmitkRenderWindow* GetQmitkRenderWindow(const QString& id) const;
 
   /**
    * \see mitk::IRenderWindowPart::GetSelectionPosition()
@@ -135,21 +135,6 @@ public:
    * \see mitk::IRenderWindowPart::GetRenderingManager
    */
   virtual mitk::IRenderingManager* GetRenderingManager() const;
-
-  /**
-   * \see mitk::IRenderWindowPart::EnableInteractors().
-   */
-  void EnableInteractors(bool enable, const QStringList& interactors = QStringList());
-
-  /**
-   * \see mitk::IRenderWindowPart::IsInteractorEnabled().
-   */
-  bool IsInteractorEnabled(const QString& interactor) const;
-
-  /**
-   * \see mitk::IRenderWindowPart::GetInteractors().
-   */
-  QStringList GetInteractors() const;
 
   // -------------------  mitk::ILinkedRenderWindowPart  ----------------------
 

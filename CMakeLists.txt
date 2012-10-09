@@ -28,7 +28,7 @@
 # Also, Trac 1592, version number MUST change if CTK changes.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 08 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 09 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -114,18 +114,11 @@ OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scri
 OPTION(BUILD_GUI "Build GUI in NifTK/Code/Gui." OFF)
 OPTION(BUILD_IGI "Build CMIC IGI platform." OFF)
 OPTION(BUILD_MESHING "Build meshing?" OFF)
-OPTION(BUILD_NIFTYREG "Build NiftyReg." OFF)
+OPTION(BUILD_NIFTYREG "Build NiftyReg." ON)
 OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
 OPTION(BUILD_NIFTYSEG "Build NiftySeg." OFF)
 OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
-OPTION(BUILD_PROTOTYPE_BE "Build prototype code in NifTK/Prototype/be." OFF)
-OPTION(BUILD_PROTOTYPE_GY "Build prototype code in NifTK/Prototype/gy." OFF)
-OPTION(BUILD_PROTOTYPE_IM "Build prototype code in NifTK/Prototype/im." OFF)
-OPTION(BUILD_PROTOTYPE_JHH "Build prototype code in NifTK/Prototype/jhh." OFF)
-OPTION(BUILD_PROTOTYPE_KKL "Build prototype code in NifTK/Prototype/kkl." OFF)
-OPTION(BUILD_PROTOTYPE_MJC "Build prototype code in NifTK/Prototype/mjc." OFF)
-OPTION(BUILD_PROTOTYPE_TM "Build prototype code in NifTK/Prototype/tm." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code." OFF)
 OPTION(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
@@ -164,15 +157,15 @@ ENDIF(WIN32)
 SET(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}" CACHE STRING "String to describe fully named version" FORCE)
 SET(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
-SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/html/BuildInstructions.html" CACHE STRING "Build instructions")
-SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/html/BuildInstructions.html" CACHE STRING "Installation instructions")
+SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
+SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 SET(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost")
 SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM")
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK")
-SET(NIFTK_VERSION_ITK "3.20.1" CACHE STRING "Version of ITK")
+SET(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK")
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
-SET(NIFTK_VERSION_curl "7.27.0" CACHE STRING "Version of curl")
-SET(NIFTK_VERSION_NIFTYREG "309" CACHE STRING "Version of NiftyReg")
+SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl")
+SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg")
 SET(NIFTK_VERSION_NIFTYSEG "88" CACHE STRING "Version of NiftySeg")
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec")
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim")
@@ -181,7 +174,7 @@ SET(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${N
 SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK")
 SET(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK")
 SET(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK")
-SET(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.tar.gz" CACHE STRING "Location of curl")
+SET(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.zip" CACHE STRING "Location of curl")
 SET(NIFTK_LOCATION_CTK "//github.com/commontk/CTK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_MITK "//github.com/MattClarkson/MITK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
 SET(NIFTK_LOCATION_NIFTYLINK "git://cmicdev.cs.ucl.ac.uk/NiftyLink" CACHE STRING "Location of NiftyLink - see also NIFTK_USE_GIT_PROTOCOL.")
@@ -268,6 +261,19 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 
 ######################################################################
+# Set GIT protocol, as dependencies need it
+######################################################################
+FIND_PACKAGE(Git REQUIRED)
+SET(GIT_PROTOCOL "git")
+IF(NOT NIFTK_USE_GIT_PROTOCOL)
+  SET(GIT_PROTOCOL "http")
+ENDIF()
+
+IF (WIN32)
+  SET(GITCOMMAND ${GIT_EXECUTABLE})
+ENDIF()
+
+######################################################################
 # Configure Dart testing support.  This should be done before any
 # MESSAGE(FATAL_ERROR ...) commands are invoked.
 ######################################################################
@@ -291,7 +297,12 @@ ENDIF(BUILD_TESTING)
 # Check availability of some standard API functions
 ######################################################################
 INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
+INCLUDE(${CMAKE_ROOT}/Modules/CheckIncludeFiles.cmake)
 CHECK_FUNCTION_EXISTS(mkstemps HAVE_MKSTEMPS) 
+CHECK_INCLUDE_FILES("sys/socket.h" HAVE_SYS_SOCKET_H)
+IF(HAVE_SYS_SOCKET_H)
+  ADD_DEFINITIONS("-DHAVE_SYS_SOCKET_H")
+ENDIF()
 
 ###########################################################################
 # Set these compiler flags early, so it can be applied to all dependencies.
@@ -301,15 +312,6 @@ SET(NIFTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags")
 MARK_AS_ADVANCED(NIFTK_ADDITIONAL_C_FLAGS)
 SET(NIFTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags")
 MARK_AS_ADVANCED(NIFTK_ADDITIONAL_CXX_FLAGS)
-
-######################################################################
-# Set GIT protocol, as dependencies need it
-######################################################################
-FIND_PACKAGE(Git REQUIRED)
-SET(GIT_PROTOCOL "git")
-IF(NOT NIFTK_USE_GIT_PROTOCOL)
-  SET(GIT_PROTOCOL "http")
-ENDIF()
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -693,6 +695,7 @@ ENDIF (BUILD_MESHING)
 ######################################################################
 
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+SET(SLICER_EXECUTABLE_OUTPUTPATH ${EXECUTABLE_OUTPUT_PATH}/cli-modules)
 SET(CXX_TEST_PATH ${EXECUTABLE_OUTPUT_PATH})              # Used to control, where to put unit test binaries.
 
 FOREACH(type LIBRARY RUNTIME ARCHIVE)
@@ -783,9 +786,6 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
-IF(NOT APPLE)
-  FILE(COPY ${CMAKE_SOURCE_DIR}/Doc/Images/Blank.png DESTINATION ${EXECUTABLE_OUTPUT_PATH} )
-ENDIF(NOT APPLE)
 
 #############################################################################################
 # These represent the libraries that the apps, libraries and unit tests actually link against
@@ -799,7 +799,6 @@ SET(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 # Install commands for things like README, licenses etc.
 ######################################################################
 
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Images/Blank.png DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
@@ -824,35 +823,38 @@ INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/CONTRIBUTORS.txt DESTINATION ${NIFTK_INSTAL
 ##########################################################################
 
 # NiftyReg
-IF(BUILD_NIFTYREG AND NIFTYREG_FOUND)
-  FILE(GLOB NIFTY_REG_LIB_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/lib/*.so)
+IF(BUILD_NIFTYREG AND NIFTYREG_FOUND) 
+  FILE(GLOB NIFTY_REG_LIB_FILES 
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/lib/*.so
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/lib/*.dylib
+       )
   INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
 
   FILE(GLOB NIFTY_REG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/bin/*)
   INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES} DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-
-  FILE(GLOB NIFTY_REG_INCL_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/include/*)
-  INSTALL(PROGRAMS ${NIFTY_REG_INCL_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/include COMPONENT applications)
 ENDIF(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
 # NiftySeg
-IF(BUILD_NIFTYSEG)
-  FILE(GLOB NIFTY_SEG_LIB_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/lib/*.so)
+IF(BUILD_NIFTYSEG) 
+  FILE(GLOB NIFTY_SEG_LIB_FILES 
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/lib/*.so
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/lib/*.dylib
+       )
   INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
 
   FILE(GLOB NIFTY_SEG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/bin/*)
   INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES} DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-
-  FILE(GLOB NIFTY_SEG_INCL_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/include/*)
-  INSTALL(PROGRAMS ${NIFTY_SEG_INCL_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/include COMPONENT applications)
 
   FILE(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/priors/*)
   INSTALL(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
 ENDIF(BUILD_NIFTYSEG)
 
 # NiftyRec
-IF(BUILD_NIFTYREC AND NIFTYREC_FOUND)
-  FILE(GLOB NIFTY_REC_LIB_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/lib/*)
+IF(BUILD_NIFTYREC AND NIFTYREC_FOUND) 
+  FILE(GLOB NIFTY_REC_LIB_FILES 
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/lib/*.so
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/lib/*.dylib
+       )
   INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
 
   FILE(GLOB NIFTY_REC_INCL_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/include/*)
@@ -860,15 +862,15 @@ IF(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 ENDIF(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 
 # NiftySim
-IF(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
-  FILE(GLOB NIFTY_SIM_LIB_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/lib/*)
+IF(BUILD_NIFTYSIM AND NIFTYSIM_FOUND) 
+  FILE(GLOB NIFTY_SIM_LIB_FILES 
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/lib/*.so
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/lib/*.dylib
+       )
   INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
 
   FILE(GLOB NIFTY_SIM_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/bin/*)
   INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES} DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-
-  FILE(GLOB NIFTY_SIM_INCL_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/include/*)
-  INSTALL(PROGRAMS ${NIFTY_SIM_INCL_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/include COMPONENT applications)
 ENDIF(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 
 #########################################################################

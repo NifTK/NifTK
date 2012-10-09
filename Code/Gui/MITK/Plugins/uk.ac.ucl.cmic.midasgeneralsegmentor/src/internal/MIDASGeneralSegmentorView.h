@@ -74,11 +74,12 @@ class QGridLayout;
  *   0. mitk::Image = the image being segmented, i.e. The Output.
  *   1. mitk::PointSet = the seeds for region growing.
  *   2. mitk::ContourSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS.
- *   3. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.
+ *   3. mitk::ContourSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS.
  *   4. mitk::ContourSet = a set of contours for the prior slice, i.e. whiteish lines in MIDAS.
  *   5. mitk::ContourSet = a set of contours for the next slice, i.e. turquoise blue lines in MIDAS.
+ *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.*
  * </pre>
- * and more specifically, items 1-5 are set up in the mitk::DataManager as hidden children of item 0.
+ * and more specifically, items 1-6 are set up in the mitk::DataManager as hidden children of item 0.
  * Additional, significant bits of functionality include:
  *
  * <h2>Recalculation of Seed Position</h2>
@@ -218,6 +219,12 @@ public:
 
 protected slots:
  
+  /// \see mitk::ILifecycleAwarePart::PartActivated
+  virtual void Activated();
+
+  /// \see mitk::ILifecycleAwarePart::PartDeactivated
+  virtual void Deactivated();
+
   /// \brief Qt slot called when the user hits the button "New segmentation",
   /// creating new working data such as a region growing image, a contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
@@ -385,12 +392,14 @@ private:
   /// \brief Used to create an image used for the region growing, see class intro.
   mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
 
-  /// \brief Used to create a contour set, used for the current, prior and next contours,
-  /// see class intro.
+  /// \brief Used to create a contour set, used for the current, prior and next contours, see class intro.
   mitk::DataNode::Pointer CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer);
 
   /// \brief Looks for the Seeds registered as WorkingData[1] with the ToolManager.
   mitk::PointSet* GetSeeds();
+
+  /// \brief Used when restarting a volume, to initialize all seeds for an existing segmentation.
+  void InitialiseSeedsForWholeVolume();
 
   /// \brief Retrieves the min and max of the image (cached), and sets the thresholding
   /// intensity sliders range accordingly.
@@ -572,9 +581,11 @@ private:
   void ITKUpdateRegionGrowing(
       itk::Image<TPixel, VImageDimension> *itkImage,
       bool skipUpdate,
+      mitk::Image &workingImage,
       mitk::PointSet &seeds,
-      mitk::ContourSet &greenContours,
-      mitk::ContourSet &yellowContours,
+      mitk::ContourSet &segmentationContours,
+      mitk::ContourSet &drawContours,
+      mitk::ContourSet &polyContours,
       itk::ORIENTATION_ENUM orientation,
       int sliceNumber,
       int axis,
@@ -748,6 +759,14 @@ private:
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
+
+  /// \brief Called from InitialiseSeedsForVolume to create a seed for every distinct region on each slice.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKInitialiseSeedsForVolume(
+      itk::Image<TPixel, VImageDimension> *itkImage,
+      mitk::PointSet& seeds,
+      int axis
+      );
 
   /**************************************************************
    * End of ITK stuff.

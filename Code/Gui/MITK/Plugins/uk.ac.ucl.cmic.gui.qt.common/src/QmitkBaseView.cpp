@@ -144,7 +144,7 @@ QmitkBaseView::~QmitkBaseView() {
   }
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL && d->m_FocusManagerObserverTag != 0)
+  if (focusManager != NULL)
   {
     focusManager->RemoveObserver(d->m_FocusManagerObserverTag);
   }
@@ -265,7 +265,7 @@ mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInte
     mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
     if (renderWindowPart != NULL)
     {
-      QmitkRenderWindow *renderWindow = renderWindowPart->GetActiveRenderWindow();
+      QmitkRenderWindow *renderWindow = renderWindowPart->GetActiveQmitkRenderWindow();
       if (renderWindow != NULL)
       {
         result = renderWindow->GetSliceNavigationController();
@@ -346,7 +346,7 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
   if (renderWindowPart != NULL)
   {
-    window = renderWindowPart->GetRenderWindow(id);
+    window = renderWindowPart->GetQmitkRenderWindow(id);
   }
 
   return window;

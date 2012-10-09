@@ -219,21 +219,6 @@ public:
   virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
 
   /**
-   * \see mitk::IRenderWindowPart::EnableInteractors()
-   */
-  virtual void EnableInteractors(bool enable, const QStringList& interactors = QStringList());
-
-  /**
-   * \see mitk::IRenderWindowPart::IsInteractorEnabled()
-   */
-  virtual bool IsInteractorEnabled(const QString& interactor) const;
-
-  /**
-   * \see mitk::IRenderWindowPart::GetInteractors()
-   */
-  virtual QStringList GetInteractors() const;
-
-  /**
    * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
    */
   virtual void EnableLinkedNavigation(bool enable);
@@ -273,6 +258,9 @@ protected slots:
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
   void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
+
+  /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
+  void OnPopupOpened(bool opened);
 
 protected:
 

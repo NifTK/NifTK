@@ -33,7 +33,6 @@ XnatDownloadDialog::XnatDownloadDialog(QWidget* parent)
   setFixedHeight(sizeHint().height());
   setMinimumWidth(300);
   setModal(true);
-  setAttribute(Qt::WA_DeleteOnClose);
 }
 
 bool XnatDownloadDialog::wasDownloadCanceled()

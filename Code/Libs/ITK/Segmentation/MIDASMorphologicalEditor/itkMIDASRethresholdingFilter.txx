@@ -28,6 +28,7 @@
 #include "itkImageFileWriter.h"
 #include "itkMIDASHelper.h"
 #include "itkLogHelper.h"
+#include "itkImageRegionConstIteratorWithIndex.h"
 
 namespace itk
 {
@@ -39,17 +40,14 @@ namespace itk
     m_DownSamplingFactor = 1;
     m_InValue = 1;
     m_OutValue = 0;
-    m_StructuringElementRadius = 2;
     m_LowPercentageThreshold = 50;
     m_HighPercentageThreshold = 150;
-    m_SkipIntersectionWithMeanMask = false;
+    m_ROIImageFilter = ROIImageFilterType::New();
     m_DownSamplingFilter = DownSamplingFilterType::New();
-    m_ErosionFilter = ErosionFilterType::New();
+    m_ErosionFilter1 = ErosionFilterType::New();
+    m_ErosionFilter2 = ErosionFilterType::New();
     m_UpSamplingFilter = UpSamplingFilterType::New();
-    m_MeanFilter = MeanFilterType::New();
-    m_ThresholdFilter = ThresholdFilterType::New();
-    m_AndFilter = AndFilterType::New();
-    m_OrFilter = OrFilterType::New();    
+    m_PasteImageFilter = PasteImageFilterType::New();
   }
 
 
@@ -60,10 +58,8 @@ namespace itk
     os << indent << "m_DownSamplingFactor=" << m_DownSamplingFactor << std::endl;
     os << indent << "m_InValue=" << m_InValue << std::endl;
     os << indent << "m_OutValue=" << m_OutValue << std::endl;
-    os << indent << "m_StructuringElementRadius=" << m_StructuringElementRadius << std::endl;
     os << indent << "m_LowPercentageThreshold=" << m_LowPercentageThreshold << std::endl;
     os << indent << "m_HighPercentageThreshold=" << m_HighPercentageThreshold << std::endl;
-    os << indent << "m_SkipIntersectionWithMeanMask=" << m_SkipIntersectionWithMeanMask << std::endl;
   }
   
   
@@ -83,6 +79,15 @@ namespace itk
   {
     // Process object is not const-correct so the const_cast is required here
     this->ProcessObject::SetNthInput(1, const_cast< InputMaskImageType * >( input ) );
+  }
+
+  template <class TInputImage1, class TInputImage2, class TOutputImage>
+  void
+  MIDASRethresholdingFilter<TInputImage1,TInputImage2, TOutputImage> 
+  ::SetThresholdedImageInput(const InputMaskImageType* image)
+  {
+    // Process object is not const-correct so the const_cast is required here
+    this->ProcessObject::SetNthInput(2, const_cast< InputMaskImageType * >( image ) );  
   }
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>
@@ -117,29 +122,38 @@ namespace itk
   {
     const unsigned int numberOfInputImages = this->GetNumberOfInputs();    
      
-    if(numberOfInputImages != 2)
+    if(numberOfInputImages != 3)
     {
-      niftkitkDebugMacro(<< "There should be two input images for MIDASRethresholdingFilter. ");
+      itkExceptionMacro(<< "There should be three input images for MIDASRethresholdingFilter. ");
     }
     
     // Check input image is set.
     InputMainImageType *inputMainImage = static_cast<InputMainImageType*>(this->ProcessObject::GetInput(0));
     if(!inputMainImage)
     {
-      niftkitkDebugMacro(<< "Input image is not set!");
+      itkExceptionMacro(<< "Input image is not set!");
     }
     
     // Check input binary mask is set.
     InputMaskImageType *inputMaskImage = static_cast<InputMaskImageType*>(this->ProcessObject::GetInput(1));
     if(!inputMaskImage)
     {
-      niftkitkDebugMacro(<< "Input mask is not set!");
+      itkExceptionMacro(<< "Input mask is not set!");
+    }
+
+    // Check input thresholded mask is set.
+    InputMaskImageType *inputThresholdImage = static_cast<InputMaskImageType*>(this->ProcessObject::GetInput(2));
+    if(!inputThresholdImage)
+    {
+      itkExceptionMacro(<< "Input threshold image is not set!");
     }
 
     // Check the sizes match.
-    if( (inputMainImage->GetLargestPossibleRegion().GetSize()) != (inputMaskImage->GetLargestPossibleRegion().GetSize()) )
+    if(    (inputMainImage->GetLargestPossibleRegion().GetSize()) != (inputMaskImage->GetLargestPossibleRegion().GetSize())
+        || (inputMainImage->GetLargestPossibleRegion().GetSize()) != (inputThresholdImage->GetLargestPossibleRegion().GetSize())
+      )
     { 
-      niftkitkDebugMacro(<< "Input images don't match in size!");
+      itkExceptionMacro(<< "Input images don't match in size!");
     }
   
     this->AllocateOutputs();
@@ -150,98 +164,160 @@ namespace itk
       return;
     }
     
-    StructuringElementType element;
-    element.SetRadius(m_StructuringElementRadius);
-    element.CreateStructuringElement();
-        
-    m_DownSamplingFilter->SetInput(inputMaskImage);
+    /** Calculate the size of the region surrounding the current object (eg. brain). */
+    InputMaskImageIndexType minIndex;
+    InputMaskImageIndexType maxIndex;
+    InputMaskImageIndexType currentIndex;
+    InputMaskImageRegionType imageRegion;    
+    InputMaskImageSizeType  imageSize;
+    InputMaskImageRegionType scanRegion;
+    
+    imageRegion = inputThresholdImage->GetLargestPossibleRegion();
+    imageSize = imageRegion.GetSize();
+
+    minIndex[0] = imageSize[0]-1;
+    minIndex[1] = imageSize[1]-1;
+    minIndex[2] = imageSize[2]-1;
+    
+    ImageRegionConstIteratorWithIndex<InputMaskImageType> forwardIterator(inputThresholdImage, imageRegion);   
+    for (forwardIterator.GoToBegin(); !forwardIterator.IsAtEnd(); ++forwardIterator)
+    {
+      if (forwardIterator.Get() != m_OutValue)
+      {
+        currentIndex = forwardIterator.GetIndex();
+        for (int i = 0; i < 3; i++)
+        { 
+          if (currentIndex[i] < minIndex[i]) minIndex[i] = currentIndex[i];
+        }
+      }
+    }
+
+    maxIndex.Fill(0);
+
+    ImageRegionConstIteratorWithIndex<InputMaskImageType> backwardIterator(inputThresholdImage, imageRegion);   
+    for (backwardIterator.GoToReverseBegin(); !backwardIterator.IsAtReverseEnd(); --backwardIterator)
+    {
+      if (backwardIterator.Get() != m_OutValue)
+      {
+        currentIndex = backwardIterator.GetIndex();
+        for (int i = 0; i < 3; i++)
+        { 
+          if (currentIndex[i] > maxIndex[i]) maxIndex[i] = currentIndex[i];
+        }
+      }
+    }
+    
+    InputMaskImageSizeType regionOfInterestSize;
+    regionOfInterestSize[0] = maxIndex[0] - minIndex[0] + 1;
+    regionOfInterestSize[1] = maxIndex[1] - minIndex[1] + 1;
+    regionOfInterestSize[2] = maxIndex[2] - minIndex[2] + 1;
+    
+    InputMaskImageRegionType regionOfInterest;
+    regionOfInterest.SetSize(regionOfInterestSize);
+    regionOfInterest.SetIndex(minIndex);
+    
+    // The region of interest is the output of the first tab - the size of the thresholded brain
+    // before we do any erosions and dilations and edits. See MorphologicalSegmentorPipeline::SetParam
+     
+    m_ROIImageFilter->SetInput(inputMaskImage);
+    m_ROIImageFilter->SetRegionOfInterest(regionOfInterest);
+    m_ROIImageFilter->UpdateLargestPossibleRegion();
+
+    m_DownSamplingFilter->SetInput(m_ROIImageFilter->GetOutput());
     m_DownSamplingFilter->SetDownSamplingFactor(m_DownSamplingFactor);
     m_DownSamplingFilter->SetInValue(m_InValue);
     m_DownSamplingFilter->SetOutValue(m_OutValue);
+    m_DownSamplingFilter->UpdateLargestPossibleRegion();
+
+    StructuringElementType element;
+    element.SetRadius(1);
+    element.CreateStructuringElement();
     
-    m_ErosionFilter->SetInput(m_DownSamplingFilter->GetOutput());
-    m_ErosionFilter->SetKernel(element);
-    m_ErosionFilter->SetErodeValue(m_InValue);
-    m_ErosionFilter->SetBackgroundValue(m_OutValue);
-    m_ErosionFilter->SetBoundaryToForeground(false);
-    m_ErosionFilter->Update();
-    
-    m_UpSamplingFilter->SetInput(0, m_ErosionFilter->GetOutput());
-    m_UpSamplingFilter->SetInput(1, inputMaskImage);
+    m_ErosionFilter1->SetInput(m_DownSamplingFilter->GetOutput());
+    m_ErosionFilter1->SetKernel(element);
+    m_ErosionFilter1->SetErodeValue(m_InValue);
+    m_ErosionFilter1->SetBackgroundValue(m_OutValue);
+    m_ErosionFilter1->UpdateLargestPossibleRegion();
+
+    m_ErosionFilter2->SetInput(m_ErosionFilter1->GetOutput());
+    m_ErosionFilter2->SetKernel(element);
+    m_ErosionFilter2->SetErodeValue(m_InValue);
+    m_ErosionFilter2->SetBackgroundValue(m_OutValue);
+    m_ErosionFilter2->UpdateLargestPossibleRegion();
+
+    m_UpSamplingFilter->SetInput(0, m_ErosionFilter2->GetOutput()); // this is the one we upsample.
+    m_UpSamplingFilter->SetInput(1, m_ROIImageFilter->GetOutput()); // this is the one used to set the size, i.e. before we downsampled.
     m_UpSamplingFilter->SetInValue(m_InValue);
     m_UpSamplingFilter->SetOutValue(m_OutValue);
     m_UpSamplingFilter->SetUpSamplingFactor(m_DownSamplingFactor);
-    m_UpSamplingFilter->Update();
+    m_UpSamplingFilter->UpdateLargestPossibleRegion();
 
-    m_OrFilter->SetInput(0, inputMaskImage);
-    m_OrFilter->SetInput(1, m_UpSamplingFilter->GetOutput());
-    m_OrFilter->Update();
+    m_PasteImageFilter->SetInput(inputMaskImage);
+    m_PasteImageFilter->SetSourceImage(m_UpSamplingFilter->GetOutput());
+    m_PasteImageFilter->SetSourceRegion(m_UpSamplingFilter->GetOutput()->GetLargestPossibleRegion());
+    m_PasteImageFilter->SetDestinationIndex(minIndex);
+    m_PasteImageFilter->UpdateLargestPossibleRegion();
 
-    if (!m_SkipIntersectionWithMeanMask)
-    {
-      m_MeanFilter->SetGreyScaleImageInput(inputMainImage);
-      m_MeanFilter->SetBinaryImageInput(inputMaskImage);
-      m_MeanFilter->SetInValue(m_InValue);
-      m_MeanFilter->Update();
-      
-      double mean = m_MeanFilter->GetMeanIntensityMainImage();
-      double actualLow = mean * (m_LowPercentageThreshold/100.0);
-      double actualHigh = mean * (m_HighPercentageThreshold/100.0);
-      
-      niftkitkDebugMacro(<< "GenerateData(): mean=" << mean << ", percentages=[" << m_LowPercentageThreshold << ", " << m_HighPercentageThreshold << "], actual=[" << actualLow << ", " << actualHigh << "]" );
-  
-      m_ThresholdFilter->SetInput(inputMainImage);
-      m_ThresholdFilter->SetInsideValue(m_InValue);
-      m_ThresholdFilter->SetOutsideValue(m_OutValue);
-      m_ThresholdFilter->SetLowerThreshold((typename TInputImage1::PixelType)(actualLow));
-      m_ThresholdFilter->SetUpperThreshold((typename TInputImage1::PixelType)(actualHigh));
-      m_ThresholdFilter->Update();    
-      
-      m_AndFilter->SetInput(0, m_OrFilter->GetOutput());
-      m_AndFilter->SetInput(1, m_ThresholdFilter->GetOutput());
-      m_AndFilter->Update();
-    }
+    // Calculate mean, and percentages using original grey scale image, 
+    // and current segmentation (output of dilations tab).
+    // Not using itkMIDASMeanIntensityWithinARegionFilter to save memory.
     
-    if (!m_SkipIntersectionWithMeanMask)
+    float mean = 0;                     // These are deliberately float, because MIDAS is float.
+    float actualLow = 0;
+    float actualHigh = 0;
+    unsigned long int counter = 0;
+        
+    ImageRegionConstIterator<InputMainImageType> inputImageIterator(inputMainImage, inputMainImage->GetLargestPossibleRegion());
+    ImageRegionConstIterator<InputMaskImageType> inputImageMaskIterator(inputMaskImage, inputMaskImage->GetLargestPossibleRegion());
+    for (inputImageIterator.GoToBegin(), inputImageMaskIterator.GoToBegin();
+         !inputImageIterator.IsAtEnd();
+         ++inputImageIterator, ++inputImageMaskIterator)
+      {
+        if (inputImageMaskIterator.Get() != m_OutValue)
+        {
+          counter++;
+          mean += inputImageIterator.Get();
+        }
+      }
+    if (counter != 0)
     {
-      this->CopyImageToOutput(m_AndFilter->GetOutput());
-    }
-    else
-    {
-      this->CopyImageToOutput(m_OrFilter->GetOutput());
-    }
+      mean /= (double)counter;
+    }    
+    actualLow = mean * (m_LowPercentageThreshold/100.0);
+    actualHigh = mean * (m_HighPercentageThreshold/100.0);
+
+    OutputImagePointer outputImagePtr = this->GetOutput();
     
-    if (0)
-    {
-      typename itk::ImageFileWriter<InputMaskImageType>::Pointer maskWriter = itk::ImageFileWriter<InputMaskImageType>::New();
-      maskWriter->SetInput(inputMaskImage);
-      maskWriter->SetFileName("tmp.original.nii");
-      maskWriter->Update();
-      
-      maskWriter->SetInput(m_DownSamplingFilter->GetOutput());
-      maskWriter->SetFileName("tmp.down.nii");
-      maskWriter->Update();
-
-      maskWriter->SetInput(m_ErosionFilter->GetOutput());
-      maskWriter->SetFileName("tmp.eroded.nii");
-      maskWriter->Update();
-
-      maskWriter->SetInput(m_UpSamplingFilter->GetOutput());
-      maskWriter->SetFileName("tmp.up.nii");
-      maskWriter->Update();
-
-      maskWriter->SetInput(m_ThresholdFilter->GetOutput());
-      maskWriter->SetFileName("tmp.thresh.nii");
-      maskWriter->Update();
-
-      maskWriter->SetInput(m_OrFilter->GetOutput());
-      maskWriter->SetFileName("tmp.or.nii");
-      maskWriter->Update();
-
-      maskWriter->SetInput(m_AndFilter->GetOutput());
-      maskWriter->SetFileName("tmp.and.nii");
-      maskWriter->Update();
-    } 
+    ImageRegionConstIterator<OutputImageType> pasteImageIterator(m_PasteImageFilter->GetOutput(), m_PasteImageFilter->GetOutput()->GetLargestPossibleRegion());
+    ImageRegionIterator<OutputImageType> outputImageIterator(outputImagePtr, outputImagePtr->GetLargestPossibleRegion());
+    
+    for (inputImageIterator.GoToBegin(),
+         inputImageMaskIterator.GoToBegin(),
+         pasteImageIterator.GoToBegin(),         
+         outputImageIterator.GoToBegin();
+         !inputImageIterator.IsAtEnd();
+         ++inputImageIterator,
+         ++inputImageMaskIterator,
+         ++pasteImageIterator,
+         ++outputImageIterator
+         )
+      {
+        if (pasteImageIterator.Get() != m_OutValue)
+        {
+          if (inputImageIterator.Get() > actualLow && inputImageIterator.Get() < actualHigh)
+          {
+            outputImageIterator.Set(m_InValue);
+          }
+          else
+          {
+            outputImageIterator.Set(m_OutValue);
+          }
+        }
+        else
+        {
+          outputImageIterator.Set(inputImageMaskIterator.Get());
+        }
+      }
   }
   
 }//end namespace itk

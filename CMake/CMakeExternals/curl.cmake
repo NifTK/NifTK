@@ -37,12 +37,32 @@ set(curl_DEPENDS ${proj})
 
 if(NOT DEFINED curl_DIR)
 
-  if (WIN32)
-    set(CURL_STATICLIB ON)
-  else ()
-    set(CURL_STATICLIB OFF)
-  endif ()
+  set(curl_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/curl-build)
+  set(curl_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/curl)
+  
+  message("SuperBuild loading curl from ${curl_DIR}")
 
+if( CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC ) 
+
+  set(_PATCH_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/curl_patch.cmake" )
+  message("\n ********* Adding patch to: ${_PATCH_FILE} ********* \n" )  
+  
+  ExternalProject_Add(${proj}
+    BINARY_DIR ${proj}-build
+    URL ${NIFTK_LOCATION_curl}
+	PATCH_COMMAND "${CMAKE_COMMAND};-P;${_PATCH_FILE}"
+    UPDATE_COMMAND ""
+    INSTALL_COMMAND ""
+    CMAKE_GENERATOR ${GEN}
+    CMAKE_ARGS
+      ${EP_COMMON_ARGS}
+      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
+      -DBUILD_CURL_EXE:BOOL=OFF
+      -DBUILD_CURL_TESTS:BOOL=OFF
+      -DCURL_STATICLIB:BOOL=OFF
+    DEPENDS ${proj_DEPENDENCIES}
+  )
+else()  
   ExternalProject_Add(${proj}
     BINARY_DIR ${proj}-build
     URL ${NIFTK_LOCATION_curl}
@@ -52,16 +72,14 @@ if(NOT DEFINED curl_DIR)
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DBUILD_CURL_EXE:BOOL=OFF
       -DBUILD_CURL_TESTS:BOOL=OFF
-      -DCURL_STATICLIB:BOOL=${CURL_STATICLIB}
+      -DCURL_STATICLIB:BOOL=OFF
     DEPENDS ${proj_DEPENDENCIES}
   )
+endif()  
 
-  set(curl_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/curl-build)
-  set(curl_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/curl)
-  message("SuperBuild loading curl from ${curl_DIR}")
+
 
 else(NOT DEFINED curl_DIR)
 

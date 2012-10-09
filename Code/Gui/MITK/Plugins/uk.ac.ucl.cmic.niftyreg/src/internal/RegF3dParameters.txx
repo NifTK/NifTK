@@ -105,9 +105,14 @@ void RegF3dParameters<PRECISION_TYPE>::SetDefaultParameters()
 
   // Non-Rigid - GPU-related options:
   
-  checkMem = false;
+#ifdef _USE_CUDA
+  useGPU = true;
+#else
   useGPU = false;
+#endif
+
   cardNumber = -1;
+  checkMem = false;
 
   // Non-Rigid - Advanced
 

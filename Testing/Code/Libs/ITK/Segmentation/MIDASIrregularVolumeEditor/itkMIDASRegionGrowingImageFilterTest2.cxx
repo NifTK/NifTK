@@ -85,7 +85,7 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   filter->SetUseRegionOfInterest(false);
   filter->SetProjectSeedsIntoRegion(false);
   filter->SetSeedPoints(*(points));
-  filter->SetContourImage(contourImage);
+  filter->SetManualContourImage(contourImage);
   filter->SetInput(greyImage);
   filter->Update();
 
@@ -178,7 +178,7 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
     return EXIT_FAILURE;
   }
 
-  filter->SetContourImage(contourImage);
+  filter->SetManualContourImage(contourImage);
   filter->Modified();
   filter->Update();
 
@@ -194,7 +194,7 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   regionIndex[0] = 3;
   regionIndex[1] = 1;
   contourImage->SetPixel(regionIndex, 0);
-  filter->SetContourImage(contourImage);
+  filter->SetManualContourImage(contourImage);
   filter->Modified();
   filter->Update();
 
@@ -207,19 +207,15 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
 
   // Test 8. Draw a line across the contour image like when doing editing in MIDAS.
   contourImage->FillBuffer(0);
-  regionIndex[0] = 1; regionIndex[1] = 0; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 2; regionIndex[1] = 0; contourImage->SetPixel(regionIndex, 255);
   regionIndex[0] = 3; regionIndex[1] = 0; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 0; regionIndex[1] = 1; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 1; regionIndex[1] = 1; contourImage->SetPixel(regionIndex, 255);
   regionIndex[0] = 2; regionIndex[1] = 1; contourImage->SetPixel(regionIndex, 255);
   regionIndex[0] = 3; regionIndex[1] = 1; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 0; regionIndex[1] = 2; contourImage->SetPixel(regionIndex, 255);
   regionIndex[0] = 1; regionIndex[1] = 2; contourImage->SetPixel(regionIndex, 255);
   regionIndex[0] = 2; regionIndex[1] = 2; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 0; regionIndex[1] = 3; contourImage->SetPixel(regionIndex, 255);
   regionIndex[0] = 1; regionIndex[1] = 3; contourImage->SetPixel(regionIndex, 255);
-  filter->SetContourImage(contourImage);
+  regionIndex[0] = 0; regionIndex[1] = 4; contourImage->SetPixel(regionIndex, 255);
+  regionIndex[0] = 1; regionIndex[1] = 4; contourImage->SetPixel(regionIndex, 255);
+  filter->SetManualContourImage(contourImage);
   filter->SetLowerThreshold(1);
   filter->SetUpperThreshold(2);
   filter->Modified();

@@ -47,17 +47,19 @@ IF(NOT DEFINED MITK_DIR)
     set(MITK_INITIAL_CACHE_FILE "${CMAKE_CURRENT_BINARY_DIR}/mitk_initial_cache.txt")
     file(WRITE "${MITK_INITIAL_CACHE_FILE}" "
       set(MITK_BUILD_APP_CoreApp OFF CACHE BOOL \"Build the MITK CoreApp application. This should be OFF, as NifTK has it's own application NiftyView. \")
-      set(MITK_BUILD_APP_ExtApp OFF CACHE BOOL \"Build the MITK ExtApp application. This should be OFF, as NifTK has it's own application NiftyView. \")
-      set(MITK_BUILD_org.mitk.gui.qt.extapplication OFF CACHE BOOL \"Build the MITK ExtApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")
-      set(MITK_BUILD_org.mitk.gui.qt.coreapplication OFF CACHE BOOL \"Build the MITK CoreApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")
+      set(MITK_BUILD_APP_mitkWorkbench OFF CACHE BOOL \"Build the MITK Workbench application. This should be OFF, as NifTK has it's own application NiftyView. \")
+      set(MITK_BUILD_APP_mitkDiffusion OFF CACHE BOOL \"Build the MITK Diffusion application. This should be OFF, as NifTK has it's own application NiftyView. \")      
       set(MITK_BUILD_org.mitk.gui.qt.application ON CACHE BOOL \"Build the MITK application plugin. This should be ON, as it contains support classes we need for NiftyView. \")
       set(MITK_BUILD_org.mitk.gui.qt.ext ON CACHE BOOL \"Build the MITK ext plugin. This should be ON, as it contains support classes we need for NiftyView. \")
+      set(MITK_BUILD_org.mitk.gui.qt.extapplication OFF CACHE BOOL \"Build the MITK ExtApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")      
+      set(MITK_BUILD_org.mitk.gui.qt.coreapplication OFF CACHE BOOL \"Build the MITK CoreApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")      
       set(MITK_BUILD_org.mitk.gui.qt.imagecropper OFF CACHE BOOL \"Build the MITK image cropper plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.measurement OFF CACHE BOOL \"Build the MITK measurement plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.pointsetinteraction OFF CACHE BOOL \"Build the MITK point set interaction plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.volumevisualization ON CACHE BOOL \"Build the MITK volume visualization plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.stdmultiwidgeteditor ON CACHE BOOL \"Build the MITK ortho-viewer plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.segmentation OFF CACHE BOOL \"Build the MITK segmentation plugin\")
+      set(MITK_BUILD_org.mitk.gui.qt.cmdlinemodules ON CACHE BOOL \"Build the Command Line Modules plugin. \")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
@@ -155,9 +157,74 @@ IF(NOT DEFINED MITK_DIR)
     #     So, the current code base is:
     #       MITK c855dedda4 + Trac 853, 1256, + MITK 12302, 12303, 12427 and 12431 (not yet merged into MITK master).
     #       This results in niftk brach commit 6f6ff4eeb2
+    #
+    # 13. Trac 1757 - MITK upgrade
+    #     A minor change is committed to the branch for MITK 12302 and merged back into the niftk branch.
+    #     It was needed because of a change in the CTK API.
+    #       This results in niftk branch commit 9df515e9ef
+    #  
+    # 14. Trac 1757 - New MITK version to pick up latest changes as we head for 12.09 release.
+    #               - MITK bug 12427 now in MITK master
+    #               - MITK bug 12302 changes mean that our changes to turn interactors off/in need to be backed out
+    #                 and re-worked on the NifTK side, as the whole interaction pattern has changed.
+    #
+    #     Current MITK code base (i.e. if we had to recreate from scratch) is in effect:
+    #       MITK d2581aea00 - Sep 14 2012
+    #       + Trac 853,  MITK 10174 = https://github.com/MattClarkson/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/MattClarkson/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1584, MITK 12303 = https://github.com/MattClarkson/MITK/commit/c9f7b430ea615efe0303afa37824d276486eb442 (Axial instead of Transversal)
+    #       + Trac 1628, MITK 12431 = https://github.com/MattClarkson/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
+    #       + Trac 1469, MITK 12003 = https://github.com/MattClarkson/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
+    #
+    #     Giving 5d26e4b046 on the niftk branch
+    #
+    # 15. Trac 1588 - Merge in MITK plugin for Slicer Command Line Modules
+    #     
+    #     Current MITK code base (i.e. if we had to recreate from scratch) is in effect:
+    #       MITK d2581aea00 - Sep 14 2012
+    #       + Trac 853,  MITK 10174 = https://github.com/MattClarkson/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/MattClarkson/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1584, MITK 12303 = https://github.com/MattClarkson/MITK/commit/c9f7b430ea615efe0303afa37824d276486eb442 (Axial instead of Transversal)
+    #       + Trac 1628, MITK 12431 = https://github.com/MattClarkson/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
+    #       + Trac 1469, MITK 12003 = https://github.com/MattClarkson/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
+    #       + Trac 1588, MITK 12506 = https://github.com/MattClarkson/MITK/commit/576f66720701045b914a3337870353744268094f (Slicer Command Line Modules)
+    #
+    #     Giving db37592aa3 on the niftk branch
+    #
+    # 16. Trac 1784 - Merge latest MITK 2012.09.0 release and latest Slicer Command Line Module work, plus new bugfix 11627.
+    #               - MITK 12303 is now in MITK master
+    #               - MITK 13113 is now in MITK master, but it is after the release hashtag below, so will disappear from this list at the next update.
+    #
+    #     Current MITK code base (i.e. if we had to recreate from scratch) is in effect:
+    #       MITK b6cfb353a9 - Sep 19 2012 = 2012.09.0 release
+    #       + Trac 853,  MITK 10174 = https://github.com/MattClarkson/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/MattClarkson/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/MattClarkson/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
+    #       + Trac 1469, MITK 12003 = https://github.com/MattClarkson/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
+    #       + Trac 1588, MITK 12506 = https://github.com/MattClarkson/MITK/commit/576f66720701045b914a3337870353744268094f (Slicer Command Line Modules)
+    #       + Trac 1791, MITK 11627 = https://github.com/MattClarkson/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)
+    # 
+    #     Giving 875bde5a2b on the niftk branch
+    #
+    # 17. Trac 1821 - Merge Latest Slicer Command Line Module work from:
+    #       https://github.com/MattClarkson/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0
+    #     Results in change to niftk branch, with no other MITK change.
+    #
+    #     Current MITK code base (i.e. if we had to recreate from scratch) is in effect:
+    #       MITK b6cfb353a9 - Sep 19 2012 = 2012.09.0 release
+    #       + Trac 853,  MITK 10174 = https://github.com/MattClarkson/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/MattClarkson/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/MattClarkson/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
+    #       + Trac 1469, MITK 12003 = https://github.com/MattClarkson/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
+    #       + Trac 1588, MITK 12506 = https://github.com/MattClarkson/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0 (Slicer Command Line Modules)
+    #       + Trac 1791, MITK 11627 = https://github.com/MattClarkson/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)    
     #########################################################
     
-    SET(revision_tag 6f6ff4eeb2)
+    SET(revision_tag 6bca0b2907)
     
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})

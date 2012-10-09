@@ -121,6 +121,8 @@ class QmitkNiftyRegView : public QmitkAbstractView
     void OnRigidOnlyRadioButtonToggled( bool checked );
     void OnRigidThenAffineRadioButtonToggled( bool checked );
     void OnDirectAffineRadioButtonToggled( bool checked );
+
+    void OnAladinUseSymmetricAlgorithmCheckBoxStateChanged( int state );
     
     void OnAladinIterationsMaxSpinBoxValueChanged( int value );
     void OnPercentBlockSpinBoxValueChanged( int value );

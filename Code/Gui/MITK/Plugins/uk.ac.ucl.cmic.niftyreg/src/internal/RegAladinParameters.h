@@ -81,6 +81,8 @@ class RegAladinParameters
 
     int maxiterationNumber;		// -maxit
 
+    bool symFlag;		// -sym
+
     int block_percent_to_use; // -%v
     int inlier_lts;		// -%i
 

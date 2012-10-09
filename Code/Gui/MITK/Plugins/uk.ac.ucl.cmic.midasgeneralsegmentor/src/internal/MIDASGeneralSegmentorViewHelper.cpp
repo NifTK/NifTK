@@ -47,8 +47,8 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 
 void ConvertMITKContoursAndAppendToITKContours(GeneralSegmentorPipelineParams &params, ParametricPathVectorType& contours)
 {
-  ConvertMITKContoursAndAppendToITKContours(params.m_GreenContours, contours);
-  ConvertMITKContoursAndAppendToITKContours(params.m_YellowContours, contours);
+  ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, contours);
+  ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, contours);
 }
 
 void ConvertMITKContoursAndAppendToITKContours(mitk::ContourSet *mitkContourSet, ParametricPathVectorType& itkContourVector)

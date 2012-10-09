@@ -154,6 +154,9 @@ private:
   /// \brief Returns true if the currently focussed window is in this widget.
   bool IsCurrentlyFocussedWindowInThisWidget();
 
+  /// \brief Returns the currently focussed window.
+  mitk::BaseRenderer* GetCurrentlyFocussedRenderer() const;
+
   QmitkMIDASBaseSegmentationFunctionality *m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
   MIDASView m_View;
@@ -161,6 +164,8 @@ private:
   QmitkRenderWindow* m_MainWindowAxial;
   QmitkRenderWindow* m_MainWindowSagittal;
   QmitkRenderWindow* m_MainWindowCoronal;
+  QmitkRenderWindow* m_MainWindow3d;
+  mitk::BaseRenderer* m_CurrentRenderer;
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 };
