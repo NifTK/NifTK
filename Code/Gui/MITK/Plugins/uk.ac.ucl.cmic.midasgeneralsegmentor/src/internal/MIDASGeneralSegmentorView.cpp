@@ -115,8 +115,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView(
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorView::~MIDASGeneralSegmentorView()
 {
-  this->Deactivated();
-
   if (m_GeneralControls != NULL)
   {
     delete m_GeneralControls;
@@ -162,7 +160,6 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
 
     this->CreateConnections();
-    this->Activated();
   }
 }
 
@@ -198,21 +195,11 @@ void MIDASGeneralSegmentorView::CreateConnections()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::Activated()
+void MIDASGeneralSegmentorView::Visible()
 {
-  QmitkBaseView::Activated();
+  QmitkMIDASBaseSegmentationFunctionality::Visible();
 
   mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    itk::SimpleMemberCommand<MIDASGeneralSegmentorView>::Pointer onFocusChangedCommand =
-      itk::SimpleMemberCommand<MIDASGeneralSegmentorView>::New();
-    onFocusChangedCommand->SetCallbackFunction( this, &MIDASGeneralSegmentorView::OnFocusChanged );
-
-    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-  }
 
   // Connect registered tools back to here, so we can do seed processing logic here.
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
@@ -240,15 +227,9 @@ void MIDASGeneralSegmentorView::Activated()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::Deactivated()
+void MIDASGeneralSegmentorView::Hidden()
 {
-  QmitkBaseView::Deactivated();
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-  }
+  QmitkMIDASBaseSegmentationFunctionality::Hidden();
 
   if (m_SliceNavigationController.IsNotNull())
   {
@@ -1014,6 +995,7 @@ void MIDASGeneralSegmentorView::InitialiseSeedsForWholeVolume()
 void MIDASGeneralSegmentorView::OnFocusChanged()
 {
   QmitkBaseView::OnFocusChanged();
+
   mitk::BaseRenderer* currentFocussedRenderer = this->GetCurrentlyFocussedRenderer();
 
   if (currentFocussedRenderer != NULL)
