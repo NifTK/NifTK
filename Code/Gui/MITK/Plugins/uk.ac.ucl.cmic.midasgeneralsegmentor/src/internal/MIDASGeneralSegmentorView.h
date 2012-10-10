@@ -64,7 +64,8 @@ class QGridLayout;
 
 /**
  * \class MIDASGeneralSegmentorView
- * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia Research Centre UCL.
+ * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia
+ * Research Centre UCL.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
  * This class uses the mitk::ToolManager described in this paper on the
@@ -81,6 +82,16 @@ class QGridLayout;
  * </pre>
  * and more specifically, items 1-6 are set up in the mitk::DataManager as hidden children of item 0.
  * Additional, significant bits of functionality include:
+ *
+ * <h2>Retain Marks</h2>
+ *
+ * The "retain marks" functionality only has an impact if we change slices. When the "retain marks"
+ * checkbox is ticked, and we change slices we:
+ * <pre>
+ * 1. Check if the new slice is empty.
+ * 2. If not empty we warn.
+ * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
+ * </pre>
  *
  * <h2>Recalculation of Seed Position</h2>
  *
@@ -134,16 +145,6 @@ class QGridLayout;
  * region, or whole posterior region, including all segmentation and seeds. The threshold controls
  * are not changed. So, if it was on before, it will be on afterwards.
  *
- * <h2>Retain Marks</h2>
- *
- * The "retain marks" functionality only has an impact if we change slices. When the "retain marks"
- * checkbox is ticked, and we change slices we:
- * <pre>
- * 1. Check if the new slice is empty.
- * 2. If not empty we warn.
- * 3. If the user elects to overwrite the new slice, we simply copy all
- * seeds and all image data to the new slice.
- * </pre>
  * \sa QmitkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorView
  */
@@ -679,6 +680,7 @@ private:
       int sliceNumber,
       int axis,
       int newSliceNumber,
+      bool newSliceIsEmpty,
       mitk::PointSet &outputCopyOfInputSeeds,
       mitk::PointSet &outputNewSeeds,
       std::vector<int> &outputRegion
