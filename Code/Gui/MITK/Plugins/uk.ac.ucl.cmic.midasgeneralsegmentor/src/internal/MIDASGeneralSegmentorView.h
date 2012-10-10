@@ -384,6 +384,9 @@ private:
   static const mitk::OperationType OP_CHANGE_SLICE;
   static const mitk::OperationType OP_RETAIN_MARKS;
 
+  /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
+  bool HaveInitialisedWorkingData();
+
   /// \brief Callback for when the window focus changes, where we update this view
   /// to be listening to the right window, and make sure ITK pipelines know we have
   /// changed orientation.
