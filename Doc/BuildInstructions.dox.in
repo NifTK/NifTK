@@ -41,7 +41,8 @@ machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for t
 \section BuildInstructionsDownloadCMake 2. Install CMake 2.8.4 or greater
 
 <ul>
-<li> On Window, download and install the latest binary. </li>
+<li> On Windows always use our patched version of CMake, available here: <a href="https://github.com/NifTK/CMake.git">NifTK/CMake</a>. You'll need to build it from source for your platform (64bit / 32bit).<br> 
+After building CMake install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.9-git\bin\" )</li>
 <li> On Mac machines, download and install the latest binary. The ccmake binary must be visible on your PATH. </li>
 <li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. The ccmake binary must be visible on your PATH. </li>
 <li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. The ccmake binary must be visible on your PATH. </li>
@@ -52,7 +53,7 @@ machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for t
 
 <ul>
 <li> If you intend to simply build and develop you can install a pre-compiled Qt version. 
-Go to <a href="http://qt.nokia.com/downloads">here</a>, selecting the full SDK and the 
+Go to <a href="http://qt-project.org/downloads">here</a>, selecting the full SDK and the 
 LGPL open-source version.  It is essential, that once installed the program qmake is available 
 on the command line, and the correct version. i.e. run qmake --version on the command line. </li>
 <li> If you want to make standalone binary packages for distribution you must download 
@@ -63,7 +64,54 @@ On Linux/Mac try
 ./configure -prefix /somewhere/to/install/qt-4.7.4 -release -shared -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
-<li> For Windows, a description of building a 64bit version of QT can be found here: <a href="http://blog.shadowgears.com/2008/10/making-qt4-dance-with-msvc-2008.html">Windows QT 64 bit build</a>. </li>
+
+<li> On Windows follow the instructions below to build Qt:<br>
+
+First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2008 or 2010 Professional version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues.
+You might also want to have the Qt intergation pack installed for VS: <a href="http://qt-project.org/downloads#qt-other">Qt VS Integration</a>
+
+On Win32 you can download a pre-compiled Qt version from <a href="http://qt-project.org/downloads">_here_</a>. The suitable versions are:
+- Qt libraries 4.X.X for Windows (VS 2008, 234 MB) or 
+- Qt libraries 4.X.X for Windows (VS 2010, 235 MB) <br>
+where XXXX is the Visual Studio version you'd like to use.
+
+On 64bit Windows (or if you are an adventurous Win32 user) you have to build Qt from source. 
+
+The first step is to obtain the source: The latest source code is available <a href="http://qt-project.org/downloads#qt-lib">here</a> as a zip (261 MB) or a tar.gz (223 MB). Or visit the repository at qt.gitorious.org/qt.<br><br>
+Uncompress the files into the directory you want Qt installed; e.g. C:\Qt\4.8.2. <br>Note: The install path must not contain any spaces or Windows specific file system characters.
+
+The compilation is done from the Visual Studio command prompt. On 64bit Windows make sure that you use the "Visual Studio x64 Win64 Command Prompt"!
+
+To open the command prompt launch:
+- 32bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio Command Prompt
+- 64bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio x64 Win64 Command Prompt <br>
+where XXXX is the Visual Studio version you'd like to use.
+
+The next step is to configure Qt for the build:
+\verbatim
+cd /D C:\Qt\4.8.2
+configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -debug-and-release -opensource -mp -platform win32-msvc2008 
+\endverbatim 
+
+The last parameter (-platform win32-msvcXXXX) has to be changed to match the desired Visual Studio version (e.g. -platform win32-msvc2008 or -platform win32-msvc2010). <br>Note when you use x64 command prompt Qt is compiled to x64, despite win32-msvc2010 setting.  <br><br>If you later need to reconfigure and rebuild Qt from the same location, ensure that all traces of the previous configuration are removed by entering the build directory and typing nmake distclean before running configure again.
+
+The next step is to compile and build Qt, so type:
+\verbatim
+nmake
+\endverbatim 
+
+The build process can easily take more an hour. After it's finished type:
+\verbatim
+nmake install
+nmake clean
+\endverbatim 
+
+This will remove all the temporary files used during build-time. 
+
+The last step is to add the bin directory to your system path. For newer versions of Windows, PATH can be extended through the Control Panel|System|Advanced|Environment variables menu. Look for 'PATH' and add c:\Qt\4.8.2\bin; to the FRONT of the path string.
+You'll have to log off / log on for the changes to make effect.
+</li>
+
 </ul>
 
 \section BuildInstructionsVersioning 4. Version Control
@@ -71,7 +119,12 @@ On Linux/Mac try
 You must also have an up to date svn client, and git client.
 
 <ul>
-<li> On Windows, use <a href="http://tortoisesvn.tigris.org">TortoiseSVN</a> and <a href="http://code.google.com/p/tortoisegit">TortoiseGIT</a>.</li>
+<li> On Windows, you'll need <a href="http://www.sliksvn.com/en/download">SlickSVN</a> and <a href="http://code.google.com/p/msysgit/downloads/list?q=full+installer+official+git">Git for Windows</a>.<br>
+These are the essential command line tools. After their installation please make sure that both svn and git are added to your system path. 
+
+If you require an additional graphical interface please install <a href="http://tortoisesvn.tigris.org">TortoiseSVN</a> and <a href="http://code.google.com/p/tortoisegit">TortoiseGIT</a>. <br>
+
+</li>
 <li> On Linux these are widely available, and probably up to date enough, EXCEPT git at the DRC. At the DRC use 
 \verbatim
 /var/drc/software/32bit/git
@@ -79,13 +132,19 @@ You must also have an up to date svn client, and git client.
 <li> On Mac, available if you installed the XCode tools.</li>
 </ul>
 
-\section BuildInstructionsDownload 5. Download the code
+\section BuildInstructionsDoxygen 5. Doxygen
+<li> 
+In order to compile the documentation you'll need to have Doxygen installed. Please download Doxygen for you platform from <a href="ftp://ftp.stack.nl/pub/users/dimitri/">_this_</a> site (via ftp).<br><br>
+Please note that there are issues with the latest versions, so make sure you install a version no newer than 1.8.0!
+
+</li>
+\section BuildInstructionsDownload 6. Download the code
 
 \verbatim
 git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 \endverbatim
 
-\section BuildInstructionsCMake 6. CMake
+\section BuildInstructionsCMake 7. CMake
 
 <ol>
 <li> Using CMake, select the source and a different build directory
@@ -117,7 +176,7 @@ The most important variable is whether you want BUILD_GUI (for NiftyView) to be 
 </li>
 <li> Press the generate button to generate the make files. </li>
 
-\section BuildInstructionsUnix 7. Building (Unix)
+\section BuildInstructionsUnix 8. Building (Unix)
 
 At the command prompt, in the build directory
 \verbatim
@@ -132,17 +191,17 @@ ctest -R <whatever>
 etc.
 \endverbatim
 
-\section BuildInstructionsWindows 8. Building (Windows)
+\section BuildInstructionsWindows 9. Building (Windows)
 
 Open the Visual Studio .sln file in the build directory (NifTK-SuperBuildRelease in this example), 
-and execute the BUILD task. Once successfully completed, exit Visual Studio.
+and execute the BUILD task. Note that Visual Studio defaults to a Debug build, so if you wish to build a Release version you'll have to manually change the build configuration to Release, regardless what was set in CMake. Once successfully completed, exit Visual Studio.
 
 The repeated cycle of code, compile, test should be done within the subdirectory 
 called NifTK-build, where you should use the batch file startNiftyView_Debug.bat or startNiftyView_Release.bat
-to launch Visual Studio, and the BUILD task. NiftyView can be run directly within Visual Studio by 
-setting it as the startup project.
+to launch Visual Studio, and the BUILD task. Please ALWAYS use these bat files to start VS! <br> 
+NiftyView can be run directly within Visual Studio by setting it as the startup project.
 
-\section BuildInstructionsInstall 9. Installing (Unix, Windows)
+\section BuildInstructionsInstall 10. Installing (Unix, Windows)
 
 A developer can run all the applications from the build directory. Indeed, the test-code-compile-test cycle 
 will mean that the developer is constantly running the compiled output, either through a development environment
@@ -156,15 +215,18 @@ make install
 
 for Linux/Mac or by running the INSTALL task in Visual Studio on Windows.
  
-\section BuildInstructionsTroubleShooting 10. Trouble shooting
+\section BuildInstructionsTroubleShooting 11. Trouble shooting
 
 <ul>
 <li> On Windows, If you get errors when running CMake related to 'git', ensure that the CMake variable GIT_EXECUTABLE is correctly set. </li>
 <li> On Windows, we only recommend and regularly test Windows 64 bit. While the build is known to work on 32bit Windows 7 and XP, it is less frequently tested. </li>
 <li> On Windows, sometimes building the dependencies can be tricky. Open the Visual Studio project file at the Superbuild level, and build the CLEAN, BOOST, GDCM, VTK, ITK, CTK, MITK one at a time, in that order. </li>
+<li> On Windows, the multi-threaded Visual Studio builds are found to be unreliable. Sometimes the build of VTK or ITK are failing randomly, which libraries has been reliably built hundreds of times. <br>
+If you are experiencing "unpredicatble" problems with your VS build please turn off the multi-threaded build feature.<br>
+Go to Tools > Options > Projects and Solutions > Build and Run, and set the "Maximum number of parallel project builds" variable to 1.
 </ul>
 
-\section BuildInstructionsFinalInstallation 11. Final Installation 
+\section BuildInstructionsFinalInstallation 12. Final Installation 
 
 In addition, there are some additional steps, that could be considered as optional.
 When an end-user downloads compiled binaries, there are some steps to enable the use
