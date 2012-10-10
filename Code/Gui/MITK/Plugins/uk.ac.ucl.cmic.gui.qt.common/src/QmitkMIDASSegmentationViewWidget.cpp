@@ -424,7 +424,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
   mitk::BaseRenderer* currentlyFocussedRenderer = this->GetCurrentlyFocussedRenderer();
 
-  if (mainWindowChanged || m_CurrentRenderer == NULL)
+  if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowView != MIDAS_VIEW_UNKNOWN && this->m_View == MIDAS_VIEW_UNKNOWN))
   {
     mitk::SliceNavigationController::Pointer snc = mainWindowAxial->GetSliceNavigationController();
     assert(snc);
