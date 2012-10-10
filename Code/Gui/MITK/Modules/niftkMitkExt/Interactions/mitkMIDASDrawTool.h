@@ -91,6 +91,9 @@ namespace mitk {
     /// \brief Finish editing.
     virtual bool OnMiddleMouseReleased (Action* action, const StateEvent* stateEvent);
 
+    /// \brief Different to MIDASContourTool::ClearData which clears the Feedback contour, this one finds the working data node, and erases all contours.
+    virtual void ClearWorkingData();
+
   protected:
 
     MIDASDrawTool(); // purposely hidden

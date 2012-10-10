@@ -64,8 +64,7 @@ class QGridLayout;
 
 /**
  * \class MIDASGeneralSegmentorView
- * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia
- * Research Centre UCL.
+ * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia Research Centre UCL.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
  * This class uses the mitk::ToolManager described in this paper on the
@@ -436,9 +435,12 @@ private:
   /// adding of any given contour, then you can simply recompute the current slice.
   void DoUpdateCurrentSlice();
 
-  /// \brief Given the current threshold values on the upper and lower slider,
-  /// and all the seeds and contours, will recalculate the thresholded region in the current slice.
+  /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
   void UpdateRegionGrowing();
+
+  /// \brief Given the two thresholds, and all seeds and contours, will recalculate the thresholded region in the current slice.
+  /// \param isVisible whether the region growing volume should be visible.
+  void UpdateRegionGrowing(bool isVisible, double lowerThreshold, double upperThreshold, bool skipUpdate);
 
   /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
   void UpdatePriorAndNext();
