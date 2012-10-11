@@ -36,7 +36,7 @@ People should add any preconditions or caveats here as they find them.
 <li> On CMIC Scientific Linux machines, the compiler version is more up to date, as is Qt. 
 So if you are currently running a CMIC Centos machine, you are strongly advised to upgrade your 
 machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for the new Scientific Linux build. </li>
-<li> On Windows please "tidy up" your system before attempting to build NifTK. If you happen to have multiple old versions of Qt, Boost, Dcmtk etc. scattered all around the disk it is very likely that CMake might pick up one, and your build will fail in a spectacular fashion.<br>
+<li> On Windows please "tidy up" your system before attempting to build NifTK. If you happen to have multiple old versions of Qt, Boost, Dcmtk etc. scattered all around the disk it is very likely that CMake might pick up one, and your build will fail in a spectacular fashion.
 Do check your system path, if it has Boost, old Qt, random installation of ITK or VTK then please clear them off. </li>
 </ul>
 
@@ -44,7 +44,13 @@ Do check your system path, if it has Boost, old Qt, random installation of ITK o
 
 <ul>
 <li> On Windows always use our patched version of CMake, available here: <a href="https://github.com/NifTK/CMake.git">NifTK/CMake</a>. You'll need to build it from source for your platform (64bit / 32bit).<br> 
-After building CMake install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.9-git\bin\" )</li>
+After building CMake install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.9-git\bin\" )<br>
+
+Binary versions of the patched CMake 2.8.9 can be found here:
+\verbatim
+/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/platform/dependencies
+\endverbatim
+</li>
 <li> On Mac machines, download and install the latest binary. The ccmake binary must be visible on your PATH. </li>
 <li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. The ccmake binary must be visible on your PATH. </li>
 <li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. The ccmake binary must be visible on your PATH. </li>
@@ -200,8 +206,7 @@ and execute the BUILD task. Note that Visual Studio defaults to a Debug build, s
 
 The repeated cycle of code, compile, test should be done within the subdirectory 
 called NifTK-build, where you should use the batch file startNiftyView_Debug.bat or startNiftyView_Release.bat
-to launch Visual Studio, and the BUILD task. Please ALWAYS use these bat files to start VS! <br> 
-NiftyView can be run directly within Visual Studio by setting it as the startup project.
+to launch Visual Studio, and the BUILD task. Please ALWAYS use these bat files to start VS! NiftyView can be run directly within Visual Studio by setting it as the startup project.
 
 \section BuildInstructionsInstall 10. Installing (Unix, Windows)
 
@@ -223,7 +228,7 @@ for Linux/Mac or by running the INSTALL task in Visual Studio on Windows.
 <li> On Windows, If you get errors when running CMake related to 'git', ensure that the CMake variable GIT_EXECUTABLE is correctly set. </li>
 <li> On Windows, we only recommend and regularly test Windows 64 bit. While the build is known to work on 32bit Windows 7 and XP, it is less frequently tested. </li>
 <li> On Windows, sometimes building the dependencies can be tricky. Open the Visual Studio project file at the Superbuild level, and build the CLEAN, BOOST, GDCM, VTK, ITK, CTK, MITK one at a time, in that order. </li>
-<li> On Windows, the multi-threaded Visual Studio builds are found to be unreliable. Sometimes the build of VTK or ITK are failing randomly, which libraries has been reliably built hundreds of times. <br>
+<li> On Windows, the multi-threaded Visual Studio builds are found to be unreliable. Sometimes the build of VTK or ITK are failing randomly, which libraries has been reliably built hundreds of times. <br><br>
 If you are experiencing "unpredicatble" problems with your VS build please turn off the multi-threaded build feature.<br>
 Go to Tools > Options > Projects and Solutions > Build and Run, and set the "Maximum number of parallel project builds" variable to 1.
 </ul>
