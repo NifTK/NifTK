@@ -3309,6 +3309,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void MIDASGeneralSegmentorView
 ::ITKGetLargestMinimumDistanceSeedLocation(
   itk::Image<TPixel, VImageDimension>* itkImage,
+  TPixel& foregroundPixelValue,
   typename itk::Image<TPixel, VImageDimension>::IndexType &outputSeedIndex,
   int &outputDistance)
 {
@@ -3350,7 +3351,7 @@ void MIDASGeneralSegmentorView
   {
     // Check that the current pixel is not background.
     currentPixel = imageIterator.Get();
-    if (currentPixel != 0)
+    if (currentPixel == foregroundPixelValue)
     {
       currentIndex = imageIterator.GetIndex();
       minimumDistance = distanceLimitInVoxels;
@@ -3381,11 +3382,17 @@ void MIDASGeneralSegmentorView
               workingIndex[i] = currentIndex[i] + j*workingDistance;
 
             } // And check we are still in the image on non-background.
-            while (imageRegion.IsInside(workingIndex)
-                   && itkImage->GetPixel(workingIndex) > 0
-                   && workingDistance < minimumDistance);
+            while (workingDistance < minimumDistance
+                   && imageRegion.IsInside(workingIndex)
+                   && itkImage->GetPixel(workingIndex) == foregroundPixelValue
+                   );
 
             minimumDistance = workingDistance;
+
+            if (minimumDistance < bestDistance)
+            {
+              break;
+            }
           } // end for j
         } // end if image size > 1.
       } // end for i
@@ -3416,13 +3423,13 @@ MIDASGeneralSegmentorView
     mitk::PointSet &outputNewSeeds
     )
 {
+  // Note, although templated over TPixel, input should only ever be unsigned char binary images.
   typedef typename itk::Image<TPixel, VImageDimension>        BinaryImageType;
   typedef typename BinaryImageType::PointType                 BinaryPointType;
   typedef typename BinaryImageType::IndexType                 BinaryIndexType;
   typedef typename itk::Image<unsigned int, VImageDimension>  IntegerImageType;
   typedef typename itk::ExtractImageFilter<BinaryImageType, BinaryImageType> ExtractImageFilterType;
   typedef typename itk::ConnectedComponentImageFilter<BinaryImageType, IntegerImageType> ConnectedComponentFilterType;
-  typedef typename itk::BinaryThresholdImageFilter<IntegerImageType, BinaryImageType> BinaryThresholdFilterType;
 
   // Some working data.
   typename IntegerImageType::PixelType voxelValue = 0;
@@ -3440,31 +3447,25 @@ MIDASGeneralSegmentorView
   connectedComponentsFilter->SetBackgroundValue(0);
   connectedComponentsFilter->SetFullyConnected(false);
 
-  typename BinaryThresholdFilterType::Pointer binaryThresholdFilter = BinaryThresholdFilterType::New();
-  binaryThresholdFilter->SetInput(connectedComponentsFilter->GetOutput());
-  binaryThresholdFilter->SetInsideValue(1);
-  binaryThresholdFilter->SetOutsideValue(0);
+  typename BinaryImageType::RegionType perSliceRegion;
+  typename BinaryImageType::SizeType   perSliceRegionSize;
+  typename BinaryImageType::IndexType  perSliceRegionStartIndex;
+
+  perSliceRegionSize = regionSize;
+  perSliceRegionStartIndex = regionIndex;
+  perSliceRegionSize[axisNumber] = 1;
+  perSliceRegion.SetSize(perSliceRegionSize);
 
   for (unsigned int i = 0; i < regionSize[axisNumber]; i++)
   {
-    typename BinaryImageType::RegionType perSliceRegion;
-    typename BinaryImageType::SizeType   perSliceRegionSize;
-    typename BinaryImageType::IndexType  perSliceRegionStartIndex;
-
-    perSliceRegionSize = regionSize;
-    perSliceRegionStartIndex = regionIndex;
-
-    perSliceRegionSize[axisNumber] = 1;
     perSliceRegionStartIndex[axisNumber] = regionIndex[axisNumber] + i;
-
-    perSliceRegion.SetSize(perSliceRegionSize);
     perSliceRegion.SetIndex(perSliceRegionStartIndex);
 
     // Extract slice, and get connected components.
     extractSliceFilter->SetExtractionRegion(perSliceRegion);
     connectedComponentsFilter->UpdateLargestPossibleRegion();
 
-    // For each distinct region in 2D, we calculate a new seed.
+    // For each distinct region, on each 2D slice, we calculate a new seed.
     typename IntegerImageType::Pointer ccImage = connectedComponentsFilter->GetOutput();
     typename itk::ImageRegionConstIteratorWithIndex<IntegerImageType> ccImageIterator(ccImage, ccImage->GetLargestPossibleRegion());
     std::set<typename IntegerImageType::PixelType> setOfLabels;
@@ -3481,13 +3482,8 @@ MIDASGeneralSegmentorView
       {
         setOfLabels.insert(voxelValue);
 
-        // Use the threshold filter to extract just the current label.
-        binaryThresholdFilter->SetLowerThreshold(voxelValue);
-        binaryThresholdFilter->SetUpperThreshold(voxelValue);
-        binaryThresholdFilter->UpdateLargestPossibleRegion();
-
-        // Now, with that binary image, calculate a new seed position.
-        this->ITKGetLargestMinimumDistanceSeedLocation(binaryThresholdFilter->GetOutput(), voxelIndex, notUsed);
+        // Work out the best seed position.
+        this->ITKGetLargestMinimumDistanceSeedLocation<typename IntegerImageType::PixelType, VImageDimension>(connectedComponentsFilter->GetOutput(), voxelValue, voxelIndex, notUsed);
 
         // And convert that seed position to a 3D point.
         itkImage->TransformIndexToPhysicalPoint(voxelIndex, point);

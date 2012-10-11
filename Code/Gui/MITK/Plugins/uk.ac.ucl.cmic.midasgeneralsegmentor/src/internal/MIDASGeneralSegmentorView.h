@@ -642,14 +642,14 @@ private:
       mitk::ContourSet::Pointer contourSet
       );
 
-  /// \brief Works out the largest minimum distance to the edge of the image data.
+  /// \brief Works out the largest minimum distance to the edge of the image data, filtered on a given foregroundPixelValue.
   ///
-  /// More specifically. Each non-zero voxel is deemed to be foreground.
   /// For each foreground voxel, search along the +/- x,y, (z if 3D) direction to find the minimum
   /// distance to the edge. Returns the largest minimum distance over the whole of the foreground region.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKGetLargestMinimumDistanceSeedLocation(
     itk::Image<TPixel, VImageDimension>* itkImage,
+    TPixel& foregroundPixelValue,
     typename itk::Image<TPixel, VImageDimension>::IndexType &outputSeedIndex,
     int &outputDistance);
 
