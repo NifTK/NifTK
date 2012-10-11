@@ -38,8 +38,9 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 		      _reg_ReadWriteImage
 )
 
-
-if(NIFTK_USE_CUDA)
+# The NiftyReg plugin currently can't use the CUDA version of NiftyReg
+# because of problems compiling the gpu code as shared libraries
+if(FALSE AND NIFTK_USE_CUDA)
 
   FIND_PACKAGE(CUDA)
   IF(CUDA_FOUND)
@@ -57,5 +58,6 @@ if(NIFTK_USE_CUDA)
                         _reg_mutualinformation_gpu 
                         _reg_tools_gpu 
                         _reg_cudaCommon)
-endif(NIFTK_USE_CUDA)
+endif(FALSE AND NIFTK_USE_CUDA)
+
 
