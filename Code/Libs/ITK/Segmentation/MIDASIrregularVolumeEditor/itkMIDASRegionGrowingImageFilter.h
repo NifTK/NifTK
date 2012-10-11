@@ -87,6 +87,7 @@ private:
 	typename OutputImageType::ConstPointer m_ManualContourImage;
 	OutputPixelType                        m_ManualContourImageBorderValue;
 	OutputPixelType                        m_ManualContourImageNonBorderValue;
+	bool                                   m_EraseFullSlice;
 public:
 
 	itkSetMacro(LowerThreshold, InputPixelType);
@@ -127,6 +128,9 @@ public:
 
   itkSetMacro(ManualContourImageNonBorderValue, OutputPixelType);
   itkGetConstMacro(ManualContourImageNonBorderValue, OutputPixelType);
+
+  itkSetMacro(EraseFullSlice, bool);
+  itkGetConstMacro(EraseFullSlice, bool);
 
 	const PointSetType& GetSeedPoints(void) const {
 		return *mspc_SeedPoints;
