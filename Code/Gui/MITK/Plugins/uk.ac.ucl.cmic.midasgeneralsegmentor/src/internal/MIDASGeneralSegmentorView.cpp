@@ -538,6 +538,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     if (isRestarting)
     {
       this->InitialiseSeedsForWholeVolume();
+      this->UpdateCurrentSliceContours();
     }
 
     // Setup GUI.
@@ -2026,6 +2027,7 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(int oldSliceNumber, int newSlic
           // Successful outcome.
           updateWasApplied = true;
           drawTool->ClearWorkingData();
+          this->m_GeneralControls->SetEnableThresholdingWidgets(leaveThresholdingOn);
         }
         catch(const mitk::AccessByItkException& e)
         {
@@ -2151,7 +2153,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 )
               );
 
-            // Do retain marks, which copies slice from beforeSliceNumber to afterSliceNumber
+            // Do retain marks, which copies slice from beforeSliceNumber to afterSliceNumber, and copies seeds.
             mitk::OpRetainMarks::ProcessorPointer processor = mitk::OpRetainMarks::ProcessorType::New();
             mitk::OpRetainMarks *doOp = new mitk::OpRetainMarks(OP_RETAIN_MARKS, true, beforeSliceNumber, afterSliceNumber, axisNumber, orientation, outputRegion, propagatedSeeds, processor);
             mitk::OpRetainMarks *undoOp = new mitk::OpRetainMarks(OP_RETAIN_MARKS, false, beforeSliceNumber, afterSliceNumber, axisNumber, orientation, outputRegion, copyOfCurrentSeeds, processor);
