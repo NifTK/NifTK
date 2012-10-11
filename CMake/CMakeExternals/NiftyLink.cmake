@@ -39,7 +39,7 @@ IF(BUILD_IGI)
   
   IF(NOT DEFINED NiftyLink_DIR)
   
-    SET(revision_tag 0ade68b60630d46a08e49597b86a3c8728aca891)
+    SET(revision_tag "development")
 
     IF(${proj}_REVISION_TAG)
       SET(revision_tag ${${proj}_REVISION_TAG})
