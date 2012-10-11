@@ -96,6 +96,7 @@ public:
 
   // Controls whether we write to output. Default = true. If false, we can directly look at m_RegionGrowingFilter->GetOutput().
   bool m_UseOutput;
+  bool m_EraseFullSlice;
 
   // The main filters.
   ExtractGreySliceFromGreyImageFilterPointer     m_ExtractGreyRegionOfInterestFilter;

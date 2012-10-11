@@ -40,6 +40,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_UpperThreshold = 0;
   m_AllSeeds = PointSetType::New();
   m_UseOutput = true;
+  m_EraseFullSlice = false;
   m_OutputImage = NULL;
   m_ExtractGreyRegionOfInterestFilter = ExtractGreySliceFromGreyImageFilterType::New();
   m_ExtractBinaryRegionOfInterestFilter = ExtractBinarySliceFromBinaryImageFilterType::New();
@@ -59,6 +60,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_AxisNumber = p.m_AxisNumber;
   m_LowerThreshold = p.m_LowerThreshold;
   m_UpperThreshold = p.m_UpperThreshold;
+  m_EraseFullSlice = p.m_EraseFullSlice;
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -219,10 +221,10 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
      
     // 6. Update Region growing.
     m_RegionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
-    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);     
+    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);
+    m_RegionGrowingFilter->SetEraseFullSlice(m_EraseFullSlice);         
     m_RegionGrowingFilter->SetRegionOfInterest(region3D);
     m_RegionGrowingFilter->SetUseRegionOfInterest(true);
-    m_RegionGrowingFilter->SetEraseFullSlice(true);
     m_RegionGrowingFilter->SetProjectSeedsIntoRegion(false);
     m_RegionGrowingFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_RegionGrowingFilter->SetSegmentationContourImage(m_CastToSegmentationContourFilter->GetOutput());
@@ -247,17 +249,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         outputIter.Set(regionGrowingIter.Get());
       }
     }
-/*
-    typename itk::ImageFileWriter<SegmentationImageType>::Pointer segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
-    segWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
-    segWriter->SetFileName("tmp.matt.segmentationcontours.nii");
-    segWriter->Update();
-
-    segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
-    segWriter->SetInput(m_CastToManualContourFilter->GetOutput());
-    segWriter->SetFileName("tmp.matt.manualcontours.nii");
-    segWriter->Update();
-*/   
   }
   catch( itk::ExceptionObject & err )
   {
