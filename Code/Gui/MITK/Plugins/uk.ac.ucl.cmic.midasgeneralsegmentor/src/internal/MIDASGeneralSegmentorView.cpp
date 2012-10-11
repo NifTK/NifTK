@@ -60,6 +60,7 @@
 #include <mitkSurface.h>
 #include <itkCommand.h>
 #include <itkContinuousIndex.h>
+#include <itkImageFileWriter.h>
 
 #include "MIDASGeneralSegmentorViewCommands.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
@@ -683,6 +684,7 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
    *   So, at this stage, test with a red outline, leaving the current segmentation as a
    *   green outline and don't mess around with the visibility.
    */
+
 /*
   mitk::DataNode::Pointer segmentationNode = nodes[0];
 
@@ -1063,10 +1065,8 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
     }
 
     this->UpdateSegmentationImageVisibility(false);
-    this->UpdateCurrentSliceContours();
     this->UpdatePriorAndNext();
-    this->UpdateRegionGrowing();
-    this->OnThresholdCheckBoxToggled(false);
+    this->OnThresholdCheckBoxToggled(this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
     this->RequestRenderWindowUpdate();
   }
 }
@@ -1109,7 +1109,7 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds()
+bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
 {
   bool sliceDoesHaveUnenclosedSeeds = false;
 
@@ -1118,67 +1118,58 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds()
     return sliceDoesHaveUnenclosedSeeds;
   }
 
-  // Compare this method with UpdateRegionGrowing. We use region growing without
-  // threshold limits to work out if a seed can connect to the edge of the image.
-
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-
   mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
   mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
 
-  /*
-        mitk::PointSet* seeds = this->GetSeeds();
-        assert(seeds);
+  mitk::PointSet* seeds = this->GetSeeds();
+  assert(seeds);
 
-        mitk::ToolManager *toolManager = this->GetToolManager();
-        assert(toolManager);
+  mitk::ToolManager *toolManager = this->GetToolManager();
+  assert(toolManager);
 
-        mitk::MIDASPolyTool *polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-        assert(polyTool);
+  mitk::MIDASPolyTool *polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
+  assert(polyTool);
 
-        mitk::ContourSet::Pointer yellowContours = mitk::ContourSet::New();
+  mitk::ContourSet::Pointer polyToolContours = mitk::ContourSet::New();
+  mitk::Contour* polyToolContour = polyTool->GetContour();
+  if (polyToolContour != NULL && polyToolContour->GetPoints()->Size() > 0)
+  {
+    polyToolContours->AddContour(0, polyToolContour);
+  }
 
-        mitk::Contour* polyToolContour = polyTool->GetContour();
-        if (polyToolContour != NULL && polyToolContour->GetPoints()->Size() > 0)
-        {
-          yellowContours->AddContour(0, polyToolContour);
-        }
+  mitk::ContourSet* segmentationContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
+  mitk::ContourSet* drawToolContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[3])->GetData());
 
-        // These contours, stored with the ToolManager represent all the green lines in MIDAS,
-        // and come from DrawTool and the current segmentation. When PolyTool is deselected
-        // it copies the PolyTool contours (yellow), into this data set, so they appear green.
-        mitk::ContourSet* greenContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
+  double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
+  double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
+  int axisNumber = this->GetViewAxis();
 
-        double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
-        double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
-        int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-        int axisNumber = this->GetViewAxis();
-
-        if (axisNumber != -1 && sliceNumber != -1)
-        {
-          try
-          {
-            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-                ITKSliceDoesHaveUnEnclosedSeeds, 3,
-                (*seeds,
-                 *greenContours,
-                 *yellowContours,
-                 lowerThreshold,
-                 upperThreshold,
-                 this->m_GeneralControls->m_ThresholdCheckBox->isChecked(),
-                 axisNumber,
-                 sliceNumber,
-                 sliceDoesHaveUnenclosedSeeds
-                )
-              );
-          }
-          catch(const mitk::AccessByItkException& e)
-          {
-            MITK_ERROR << "Caught exception during ITKSliceDoesHaveUnEnclosedSeeds, so will return false, caused by:" << e.what();
-          }
-        }
-  */
-
+  if (axisNumber != -1 && sliceNumber != -1)
+  {
+    try
+    {
+      AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+        ITKSliceDoesHaveUnEnclosedSeeds, 3,
+          (*seeds,
+           *segmentationContours,
+           *polyToolContours,
+           *drawToolContours,
+           *workingImage,
+            lowerThreshold,
+            upperThreshold,
+            this->m_GeneralControls->m_ThresholdCheckBox->isChecked(),
+            axisNumber,
+            sliceNumber,
+            sliceDoesHaveUnenclosedSeeds
+          )
+      );
+    }
+    catch(const mitk::AccessByItkException& e)
+    {
+      MITK_ERROR << "Caught exception during ITKSliceDoesHaveUnEnclosedSeeds, so will return false, caused by:" << e.what();
+    }
+  }
   return sliceDoesHaveUnenclosedSeeds;
 }
 
@@ -1373,7 +1364,6 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
 
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
-
       mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
       workingNodes[6]->SetVisibility(isVisible);
 
@@ -1749,7 +1739,9 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
     return;
   }
 
-  bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds();
+  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
+  bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds(sliceNumber);
+
   if (hasUnEnclosedPoints)
   {
     int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
@@ -1944,12 +1936,12 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 void MIDASGeneralSegmentorView::OnThresholdApplyButtonPressed()
 {
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  this->DoThresholdApply(sliceNumber, sliceNumber);
+  this->DoThresholdApply(sliceNumber, sliceNumber, true, false);
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoThresholdApply(int oldSliceNumber, int newSliceNumber)
+bool MIDASGeneralSegmentorView::DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty)
 {
   if (!this->HaveInitialisedWorkingData())
   {
@@ -2000,22 +1992,23 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(int oldSliceNumber, int newSlic
                oldSliceNumber,
                axisNumber,
                newSliceNumber,
-               false,
+               optimiseSeeds,
+               newSliceEmpty,
                *(copyOfInputSeeds.GetPointer()),
                *(outputSeeds.GetPointer()),
                outputRegion
               )
             );
 
-          mitk::UndoStackItem::IncCurrObjectEventId();
-          mitk::UndoStackItem::IncCurrGroupEventId();
-          mitk::UndoStackItem::ExecuteIncrement();
-
           bool leaveThresholdingOn(false);
           if (newSliceNumber != oldSliceNumber)
           {
             leaveThresholdingOn = true;
           }
+
+          mitk::UndoStackItem::IncCurrObjectEventId();
+          mitk::UndoStackItem::IncCurrGroupEventId();
+          mitk::UndoStackItem::ExecuteIncrement();
 
           mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
           mitk::OpThresholdApply *doOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, oldSliceNumber, axisNumber, outputRegion, outputSeeds, processor, false, leaveThresholdingOn, newSliceNumber);
@@ -2025,9 +2018,9 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(int oldSliceNumber, int newSlic
           ExecuteOperation(doOp);
 
           // Successful outcome.
+
           updateWasApplied = true;
           drawTool->ClearWorkingData();
-          this->m_GeneralControls->SetEnableThresholdingWidgets(leaveThresholdingOn);
         }
         catch(const mitk::AccessByItkException& e)
         {
@@ -2113,7 +2106,6 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
         std::vector<int> outputRegion;
         mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
         mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
-
         mitk::PointSet* seeds = this->GetSeeds();
         bool sliceIsEmpty(true);
         m_IsUpdating = true;
@@ -2146,7 +2138,8 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                  beforeSliceNumber,
                  axisNumber,
                  afterSliceNumber,
-                 false, // We propagate seeds at current position, so regardless of whether the new slice is empty.
+                 false, // We propagate seeds at current position, so no optimisation
+                 sliceIsEmpty,
                  *(copyOfCurrentSeeds.GetPointer()),
                  *(propagatedSeeds.GetPointer()),
                  outputRegion
@@ -2161,10 +2154,11 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
             ExecuteOperation(doOp);
 
-            // In addition, if the threshold check box was on, we do a "Apply Threshold" on the slice we are moving away from.
+            // In addition, if the threshold check box was on, we do a "Apply Threshold"
+            // on the slice we are moving away from.
             if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
             {
-              this->DoThresholdApply(beforeSliceNumber, beforeSliceNumber);
+              this->DoThresholdApply(beforeSliceNumber, beforeSliceNumber, true, false);
             }
           }
           else // not propagating marks
@@ -2186,6 +2180,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                  beforeSliceNumber,
                  axisNumber,
                  afterSliceNumber,
+                 true, // do optimisation
                  sliceIsEmpty,
                  *(copyOfCurrentSeeds.GetPointer()),
                  *(propagatedSeeds.GetPointer()),
@@ -2193,21 +2188,24 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 )
               );
 
-            // We also need to know if we currently have un-enclosed seeds.
-            bool sliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds();
-
             if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
             {
-              this->DoThresholdApply(beforeSliceNumber, afterSliceNumber);
+              this->DoThresholdApply(beforeSliceNumber, afterSliceNumber, true, sliceIsEmpty);
             }
-            else if (sliceHasUnenclosedSeeds)
+            else
             {
-              this->DoWipe(0);
-            }
-            else if (!sliceHasUnenclosedSeeds)
-            {
-              this->UpdateRegionGrowing(false, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), false);
-              this->DoThresholdApply(beforeSliceNumber, afterSliceNumber);
+              bool sliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(beforeSliceNumber);
+
+              if (sliceHasUnenclosedSeeds)
+              {
+                this->DoWipe(0);
+              }
+              else if (!sliceHasUnenclosedSeeds)
+              {
+                this->UpdateRegionGrowing(false, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), false);
+                this->DoThresholdApply(beforeSliceNumber, afterSliceNumber, true, sliceIsEmpty);
+              }
+
             }
 
             // Propagate seeds to new slice, according to whether we optimise or just copy.
@@ -2469,7 +2467,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         this->m_GeneralControls->m_ThresholdCheckBox->blockSignals(true);
         this->m_GeneralControls->m_ThresholdCheckBox->setChecked(op->GetThresholdFlag());
         this->m_GeneralControls->m_ThresholdCheckBox->blockSignals(false);
-
+        this->m_GeneralControls->SetEnableThresholdingWidgets(op->GetThresholdFlag());
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -3012,6 +3010,7 @@ MIDASGeneralSegmentorView
   params.m_SegmentationContours = &segmentationContours;
   params.m_DrawContours = &drawContours;
   params.m_PolyContours = &polyContours;
+  params.m_EraseFullSlice = true;
 
   // Update pipeline.
   if (!skipUpdate)
@@ -3507,6 +3506,7 @@ MIDASGeneralSegmentorView
     int sliceNumber,
     int axisNumber,
     int newSliceNumber,
+    bool optimiseSeedPosition,
     bool newSliceIsEmpty,
     mitk::PointSet &outputCopyOfInputSeeds,
     mitk::PointSet &outputNewSeeds,
@@ -3515,69 +3515,103 @@ MIDASGeneralSegmentorView
 {
   typedef typename itk::Image<TPixel, VImageDimension> BinaryImageType;
 
-  // Work out the region of interest that will be affected.
-  // In contrast to PropagateToRegionGrowingImageUsingITK, this is JUST the current slice.
+  // Work out the region of the current slice.
+
   typename BinaryImageType::RegionType region = itkImage->GetLargestPossibleRegion();
   typename BinaryImageType::SizeType regionSize = region.GetSize();
   typename BinaryImageType::IndexType regionIndex = region.GetIndex();
+
   regionSize[axisNumber] = 1;
   regionIndex[axisNumber] = sliceNumber;
+
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
+
+  // If we are moving to new slice
+  if (sliceNumber != newSliceNumber)
+  {
+    if (newSliceIsEmpty)
+    {
+      // Copy all input seeds, as we are moving to an empty slice.
+      this->CopySeeds(
+          &inputSeeds,
+          &outputCopyOfInputSeeds
+          );
+
+      // Take all seeds on the current slice number, and propagate to new slice.
+      this->ITKPropagateSeedsToNewSlice(
+          itkImage,
+          &inputSeeds,
+          &outputNewSeeds,
+          axisNumber,
+          sliceNumber,
+          newSliceNumber
+          );
+    }
+    else // new slice is not empty.
+    {
+      if (optimiseSeedPosition) // if this is false, we do nothing - i.e. leave existing seeds AS IS.
+      {
+        regionSize = region.GetSize();
+        regionIndex = region.GetIndex();
+
+        regionSize[axisNumber] = 1;
+        regionIndex[axisNumber] = newSliceNumber;
+
+        region.SetSize(regionSize);
+        region.SetIndex(regionIndex);
+
+        // We copy all seeds except those on the new slice.
+        this->ITKFilterInputPointSetToExcludeRegionOfInterest(
+            itkImage,
+            region,
+            inputSeeds,
+            outputCopyOfInputSeeds,
+            outputNewSeeds
+            );
+
+        // We then re-generate a new set of seeds for the new slice.
+        this->ITKAddNewSeedsToPointSet(
+            itkImage,
+            region,
+            newSliceNumber,
+            axisNumber,
+            outputNewSeeds
+            );
+      } // end if (optimiseSeedPosition)
+    } // end if (newSliceIsEmpty)
+  }
+  else // We are not moving slice
+  {
+
+    if (optimiseSeedPosition)
+    {
+      // We copy all seeds except those on the current slice.
+      this->ITKFilterInputPointSetToExcludeRegionOfInterest(
+          itkImage,
+          region,
+          inputSeeds,
+          outputCopyOfInputSeeds,
+          outputNewSeeds
+          );
+
+      // Here we calculate new seeds based on the connected component analysis - i.e. 1 seed per region.
+      this->ITKAddNewSeedsToPointSet(
+          itkImage,
+          region,
+          sliceNumber,
+          axisNumber,
+          outputNewSeeds
+          );
+    } // end if (optimiseSeedPosition)
+  } // end if (sliceNumber != newSliceNumber)
+
   outputRegion.push_back(regionIndex[0]);
   outputRegion.push_back(regionIndex[1]);
   outputRegion.push_back(regionIndex[2]);
   outputRegion.push_back(regionSize[0]);
   outputRegion.push_back(regionSize[1]);
   outputRegion.push_back(regionSize[2]);
-
-  if (sliceNumber != newSliceNumber)
-  {
-
-    // If newSliceNumber != sliceNumber we are moving to a new slice.
-    //
-    // If that is the case, we propagate seeds forward, without calculating
-    // new seed positions using connected components. i.e. they change slice,
-    // and don't jump to a new position that looks like the centre of mass.
-
-    this->CopySeeds(
-        &inputSeeds,
-        &outputCopyOfInputSeeds
-        );
-
-    this->ITKPropagateSeedsToNewSlice(
-        itkImage,
-        &inputSeeds,
-        &outputNewSeeds,
-        axisNumber,
-        sliceNumber,
-        newSliceNumber
-        );
-  }
-  else
-  {
-    // This is the default "Threshold Apply".
-
-    // We take a complete copy of the input seeds, and copy any seeds not in the current slice
-    // as these seeds in the current slice will be overwritten in AddNewSeedsToPointSet.
-    this->ITKFilterInputPointSetToExcludeRegionOfInterest(
-        itkImage,
-        region,
-        inputSeeds,
-        outputCopyOfInputSeeds,
-        outputNewSeeds
-        );
-
-    // Here we calculate new seeds based on the connected component analysis - i.e. 1 seed per region.
-    this->ITKAddNewSeedsToPointSet(
-        itkImage,
-        region,
-        sliceNumber,
-        axisNumber,
-        outputNewSeeds
-        );
-
-  }
 }
 
 
@@ -3692,6 +3726,8 @@ void MIDASGeneralSegmentorView
     mitk::PointSet &seeds,
     mitk::ContourSet &segmentationContours,
     mitk::ContourSet &polyToolContours,
+    mitk::ContourSet &drawToolContours,
+    mitk::Image &workingImage,
     double lowerThreshold,
     double upperThreshold,
     bool doRegionGrowing,
@@ -3705,6 +3741,11 @@ void MIDASGeneralSegmentorView
   // Note input image should be 3D grey scale.
   typedef itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, VImageDimension> BinaryImageType;
+  typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
+
+  typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
+  workingImageToItk->SetInput(&workingImage);
+  workingImageToItk->Update();
 
   // Filter seeds to only use ones on current slice.
   mitk::PointSet::Pointer seedsForThisSlice = mitk::PointSet::New();
@@ -3719,10 +3760,13 @@ void MIDASGeneralSegmentorView
   params.m_Seeds = seedsForThisSlice;
   params.m_SegmentationContours = &segmentationContours;
   params.m_PolyContours = &polyToolContours;
+  params.m_DrawContours = &drawToolContours;
+  params.m_EraseFullSlice = false;
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
   pipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
+  pipeline.m_ExtractBinaryRegionOfInterestFilter->SetInput(workingImageToItk->GetOutput());
   pipeline.SetParam(params);
   pipeline.Update(params);
 

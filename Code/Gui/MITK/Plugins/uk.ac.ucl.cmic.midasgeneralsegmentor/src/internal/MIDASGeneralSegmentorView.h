@@ -426,7 +426,7 @@ private:
 
   /// \brief Method that actually does the threshold apply, so we can call it from the
   /// threshold apply button and not change slice, or when we change slice.
-  bool DoThresholdApply(int oldSliceNumber, int newSliceNumber);
+  bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty);
 
   /// \brief When the user draws on the slice, and puts seeds down, we may need to simply
   /// update the slice immediately.
@@ -479,7 +479,7 @@ private:
   void CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds();
+  bool DoesSliceHaveUnenclosedSeeds(int sliceNumber);
 
   /**************************************************************
    * Start of ITK stuff.
@@ -682,6 +682,7 @@ private:
       int sliceNumber,
       int axis,
       int newSliceNumber,
+      bool optimiseSeedPosition,
       bool newSliceIsEmpty,
       mitk::PointSet &outputCopyOfInputSeeds,
       mitk::PointSet &outputNewSeeds,
@@ -721,8 +722,10 @@ private:
   void ITKSliceDoesHaveUnEnclosedSeeds(
       itk::Image<TPixel, VImageDimension> *itkImage,
       mitk::PointSet &seeds,
-      mitk::ContourSet &greenContours,
-      mitk::ContourSet &yellowContours,
+      mitk::ContourSet &segmentationContours,
+      mitk::ContourSet &polyToolContours,
+      mitk::ContourSet &drawToolContours,
+      mitk::Image &workingImage,
       double lowerThreshold,
       double upperThreshold,
       bool doRegionGrowing,
