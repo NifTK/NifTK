@@ -110,17 +110,24 @@ namespace itk
       }
     }
 
-    ImageRegionIteratorType outIt(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion());
-    for (ccIt.GoToBegin(), outIt.GoToBegin(); !ccIt.IsAtEnd(); ++ccIt, ++outIt)
+    if (largestSizeLabel == m_InputBackgroundValue)
     {
-      if (ccIt.Get() == largestSizeLabel)
+      this->GetOutput()->FillBuffer(m_OutputBackgroundValue);
+    }
+    else
+    {
+      ImageRegionIteratorType outIt(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion());
+      for (ccIt.GoToBegin(), outIt.GoToBegin(); !ccIt.IsAtEnd(); ++ccIt, ++outIt)
       {
-        outIt.Set(m_OutputForegroundValue);
-      }
-      else
-      {
-        outIt.Set(m_OutputBackgroundValue);
-      }
+        if (ccIt.Get() == largestSizeLabel)
+        {
+          outIt.Set(m_OutputForegroundValue);
+        }
+        else
+        {
+          outIt.Set(m_OutputBackgroundValue);
+        }
+      }    
     }
   }//end of generatedata method
 
