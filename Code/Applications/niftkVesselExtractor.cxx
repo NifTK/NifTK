@@ -39,7 +39,7 @@
  */
 
 
-char xml_vesselextractor[]=
+std::string xml_vesselextractor=
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 "<executable>\n"
 "   <category>Segmentation</category>\n"
@@ -50,13 +50,13 @@ char xml_vesselextractor[]=
 "   <license>BSD</license>\n"
 "   <contributor>Maria A. Zuluaga (UCL)</contributor>\n"
 "   <parameters advanced=\"false\">\n"
-"      <label>Input image (mandatory) and scales</label>\n"
-"      <description>Image to be filtered and scale generation configuration</description\n"
-"      <file fileExtensions=\".nii,.nii.gz,.mhd\">\n"
+"      <label>Input image and scales (mandatory)</label>\n"
+"      <description>Image to be filtered and scale generation configuration</description>\n"
+"      <file fileExtensions=\"*.nii,*.nii.gz,*.mhd\">\n"
 "          <name>inputImageName</name>\n"
 "          <label>Input Image</label>\n"
 "          <default>required</default>\n"
-"          <longflag>i</longflag>\n"
+"          <flag>i</flag>\n"
 "          <channel>input</channel>\n"
 "      </file>\n"
 "     <integer>\n"
@@ -64,19 +64,19 @@ char xml_vesselextractor[]=
 "         <description>Number of scales in which the filter will be evaluated</description>\n"
 "         <label>Number of scales</label>\n"
 "         <default>required</default>\n"
-"         <longflag>ns</longflag>\n"
+"         <flag>ns</flag>\n"
 "         <channel>input</channel>\n"
 "     </integer>\n"
 "   </parameters>\n"
 "   <parameters advanced=\"true\">\n"
 "      <label>Filter parameters</label>\n"
-"      <description>Vesselness filter configuration parameters</description\n"
+"      <description>Vesselness filter configuration parameters</description>\n"
 "     <integer-enumeration>\n"
 "         <name>mode</name>\n"
 "         <description>Scale generation method: linear (0) or exponential (1)</description>\n"
 "         <label>Mode</label>\n"
 "         <default>0</default>\n"
-"         <longflag>mod</longflag>\n"
+"         <flag>mod</flag>\n"
 "         <channel>input</channel>\n"
 "	  <element>0</element>\n"
 "         <element>1</element>\n"
@@ -86,7 +86,7 @@ char xml_vesselextractor[]=
 "         <description>Alpha 1 parameter from Sato's filter</description>\n"
 "         <label>Alpha one</label>\n"
 "         <default>0.5</default>\n"
-"         <longflag>aone</longflag>\n"
+"         <flag>aone</flag>\n"
 "         <channel>input</channel>\n"
 "      </float>\n"
 "      <float>\n"
@@ -94,7 +94,7 @@ char xml_vesselextractor[]=
 "         <description>Alpha 2 parameter from Sato's filter</description>\n"
 "         <label>Alpha two</label>\n"
 "         <default>2</default>\n"
-"         <longflag>atwo</longflag>\n"
+"         <flag>atwo</flag>\n"
 "         <channel>input</channel>\n"
 "      </float>\n"
 "      <float>\n"
@@ -102,18 +102,18 @@ char xml_vesselextractor[]=
 "         <description>maximum desired scale when using exponential generator</description>\n"
 "         <label>Maximum Scale</label>\n"
 "         <default>10</default>\n"
-"         <longflag>maxs</longflag>\n"
+"         <flag>max</flag>\n"
 "         <channel>input</channel>\n"
 "      </float>\n"
 "   </parameters>\n"
 "   <parameters advanced=\"false\">\n"
 "      <label>Output image (mandatory)</label>\n"
-"      <description>Output image filename</description\n"
-"      <file fileExtensions=\".nii,.nii.gz,.mhd\">\n"
+"      <description>Output image filename</description>\n"
+"      <file fileExtensions=\"*.nii,*.nii.gz,*.mhd\">\n"
 "          <name>outputImageName</name>\n"
 "          <label>Output Image</label>\n"
 "          <default>required</default>\n"
-"          <longflag>o</longflag>\n"
+"          <flag>o</flag>\n"
 "          <channel>output</channel>\n"
 "      </file>\n"
 "   </parameters>\n"
@@ -185,7 +185,7 @@ int main( int argc, char *argv[] )
 	    std::cout << "Set -max=" << niftk::ConvertToString(max) << std::endl;
 	}
 	else if(strcmp(argv[i], "--xml") == 0){
-	    std::cout << xml_vesselextractor << std::endl;
+	    std::cout << xml_vesselextractor;
 	    return EXIT_SUCCESS;
 	}
 	else {
@@ -321,12 +321,12 @@ int main( int argc, char *argv[] )
 
     itk::Index<TempDim> index;
     itk::Index<Dimension> ind;
-    for (index[0] = 0,  ind[0] = 0; index[0] < size[0]; index[0]++, ind[0]++)
-	 for (index[1] = 0, ind[1] = 0; index[1] < size[1]; index[1]++, ind[1]++)
-	      for (index[2] = 0, ind[2] = 0; index[2] < size[2]; index[2]++, ind[2]++)
+    for (index[0] = 0,  ind[0] = 0; ((unsigned int)index[0]) < size[0]; index[0]++, ind[0]++)
+	 for (index[1] = 0, ind[1] = 0; ((unsigned int)index[1]) < size[1]; index[1]++, ind[1]++)
+	      for (index[2] = 0, ind[2] = 0; ((unsigned int) index[2]) < size[2]; index[2]++, ind[2]++)
 	      {
 		  float max_val = 0.0, value = 0;
-		   for (index[3] = 0; index[3] < size[3]; index[3]++)
+		   for (index[3] = 0; ((unsigned int)index[3]) < size[3]; index[3]++)
 		   {
 		       value = higher_img->GetPixel(index);
 		       if (max_val < value)
