@@ -70,6 +70,7 @@
 #include "mitkMIDASPolyTool.h"
 #include "mitkMIDASDrawTool.h"
 #include "mitkMIDASOrientationUtils.h"
+#include "mitkMIDASImageUtils.h"
 
 const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
@@ -494,7 +495,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetColor( 1.0, 0, 0 );
 
     // Create all the contours.
-    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 1,0,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 97);
+    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 1,0.65,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 97);
     mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 1,0.65,0, mitk::MIDASTool::DRAW_CONTOURS_NAME, true, 98);
     mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, mitk::MIDASTool::NEXT_CONTOURS_NAME, false, 95);
     mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, mitk::MIDASTool::PRIOR_CONTOURS_NAME, false, 96);
@@ -1331,17 +1332,19 @@ void MIDASGeneralSegmentorView::OnUpperThresholdValueChanged(double d)
 void MIDASGeneralSegmentorView::UpdateRegionGrowing()
 {
   bool isVisible = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
+  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
   double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
   double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
   bool skipUpdate = !isVisible;
 
-  this->UpdateRegionGrowing(isVisible, lowerThreshold, upperThreshold, skipUpdate);
+  this->UpdateRegionGrowing(isVisible, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::UpdateRegionGrowing(
     bool isVisible,
+    int sliceNumber,
     double lowerThreshold,
     double upperThreshold,
     bool skipUpdate
@@ -1363,11 +1366,6 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
 
       mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
       workingNodes[6]->SetVisibility(isVisible);
-
-      if (!isVisible)
-      {
-        return;
-      }
 
       m_IsUpdating = true;
 
@@ -1397,7 +1395,6 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       mitk::ContourSet* segmentationContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
       mitk::ContourSet* drawToolContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[3])->GetData());
 
-      int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
       MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
       itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
@@ -1948,12 +1945,17 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 void MIDASGeneralSegmentorView::OnThresholdApplyButtonPressed()
 {
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  this->DoThresholdApply(sliceNumber, sliceNumber, true, false);
+  this->DoThresholdApply(sliceNumber, sliceNumber, true, false, false);
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty)
+bool MIDASGeneralSegmentorView::DoThresholdApply(
+    int oldSliceNumber,
+    int newSliceNumber,
+    bool optimiseSeeds,
+    bool newSliceEmpty,
+    bool newCheckboxStatus)
 {
   if (!this->HaveInitialisedWorkingData())
   {
@@ -2012,25 +2014,20 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(int oldSliceNumber, int newSlic
               )
             );
 
-          bool leaveThresholdingOn(false);
-          if (newSliceNumber != oldSliceNumber)
-          {
-            leaveThresholdingOn = true;
-          }
+          bool currentCheckboxStatus = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
 
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
           mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
-          mitk::OpThresholdApply *doOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, oldSliceNumber, axisNumber, outputRegion, outputSeeds, processor, false, leaveThresholdingOn, newSliceNumber);
-          mitk::OpThresholdApply *undoOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, oldSliceNumber, axisNumber, outputRegion, copyOfInputSeeds, processor, false, true, oldSliceNumber);
+          mitk::OpThresholdApply *doOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, oldSliceNumber, axisNumber, outputRegion, outputSeeds, processor, false, newCheckboxStatus, newSliceNumber);
+          mitk::OpThresholdApply *undoOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, oldSliceNumber, axisNumber, outputRegion, copyOfInputSeeds, processor, false, currentCheckboxStatus, oldSliceNumber);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Apply threshold");
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           ExecuteOperation(doOp);
 
           // Successful outcome.
-
           updateWasApplied = true;
           drawTool->ClearWorkingData();
         }
@@ -2106,6 +2103,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
   {
     mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
     mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
+    mitk::Image::Pointer regionGrowingImage = this->GetWorkingImageFromToolManager(6);
 
     if (workingNode.IsNotNull() && workingImage.IsNotNull())
     {
@@ -2170,7 +2168,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
             // on the slice we are moving away from.
             if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
             {
-              this->DoThresholdApply(beforeSliceNumber, beforeSliceNumber, true, false);
+              this->DoThresholdApply(beforeSliceNumber, beforeSliceNumber, true, false, true);
             }
           }
           else // not propagating marks
@@ -2185,24 +2183,13 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 )
               );
 
-            // Calculate new seed positions depending on if new slice is empty or not.
-            AccessFixedDimensionByItk_n(workingImage,
-                ITKPreProcessingOfSeedsForChangingSlice, 3,
-                (*seeds,
-                 beforeSliceNumber,
-                 axisNumber,
-                 afterSliceNumber,
-                 true, // do optimisation
-                 sliceIsEmpty,
-                 *(copyOfCurrentSeeds.GetPointer()),
-                 *(propagatedSeeds.GetPointer()),
-                 outputRegion
-                )
-              );
-
             if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
             {
-              this->DoThresholdApply(beforeSliceNumber, afterSliceNumber, true, sliceIsEmpty);
+              this->DoThresholdApply(beforeSliceNumber,
+                                     afterSliceNumber,
+                                     true,  // do optimise seeds
+                                     sliceIsEmpty,
+                                     this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
             }
             else
             {
@@ -2214,20 +2201,48 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
               }
               else if (!sliceHasUnenclosedSeeds)
               {
-                this->UpdateRegionGrowing(false, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), false);
-                this->DoThresholdApply(beforeSliceNumber, afterSliceNumber, true, sliceIsEmpty);
+                // Calculate new seed positions depending on if new slice is empty or not.
+                AccessFixedDimensionByItk_n(workingImage,
+                    ITKPreProcessingOfSeedsForChangingSlice, 3,
+                    (*seeds,
+                     beforeSliceNumber,
+                     axisNumber,
+                     afterSliceNumber,
+                     true, // do optimisation
+                     sliceIsEmpty,
+                     *(copyOfCurrentSeeds.GetPointer()),
+                     *(propagatedSeeds.GetPointer()),
+                     outputRegion
+                    )
+                  );
+
+                // There may be the case where the user has simply drawn a region, and put a seed in the middle.
+                // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
+                this->UpdateRegionGrowing(false,
+                                          beforeSliceNumber,
+                                          referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
+                                          referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
+                                          false);
+
+                // Then we propagate this region growing.
+                mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
+                mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, beforeSliceNumber, axisNumber, outputRegion, propagatedSeeds, processor, false, false, afterSliceNumber);
+                mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, beforeSliceNumber, axisNumber, outputRegion, copyOfCurrentSeeds, processor, false, false, beforeSliceNumber);
+                mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
+                ExecuteOperation(doApplyOp);
+
+/*
+                // Propagate seeds to new slice, according to whether we optimise or just copy.
+                mitk::OpPropagateSeeds *doPropOp = new mitk::OpPropagateSeeds(OP_CHANGE_SLICE, true, afterSliceNumber, axisNumber, propagatedSeeds);
+                mitk::OpPropagateSeeds *undoPropOp = new mitk::OpPropagateSeeds(OP_CHANGE_SLICE, false, beforeSliceNumber, axisNumber, copyOfCurrentSeeds);
+                mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent( m_Interface, doPropOp, undoPropOp, "Propagate seeds.");
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
+                ExecuteOperation(doPropOp);
+*/
               }
-
-            }
-
-            // Propagate seeds to new slice, according to whether we optimise or just copy.
-            mitk::OpPropagateSeeds *doOp = new mitk::OpPropagateSeeds(OP_CHANGE_SLICE, true, afterSliceNumber, axisNumber, propagatedSeeds);
-            mitk::OpPropagateSeeds *undoOp = new mitk::OpPropagateSeeds(OP_CHANGE_SLICE, false, beforeSliceNumber, axisNumber, copyOfCurrentSeeds);
-            mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Change slice, propagate seeds.");
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-            ExecuteOperation(doOp);
-          }
-
+            } // end else thresholding not checked
+          } // end else not propagating marks
         }
         catch(const mitk::AccessByItkException& e)
         {
@@ -3016,8 +3031,8 @@ MIDASGeneralSegmentorView
   GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = sliceNumber;
   params.m_AxisNumber = axisNumber;
-  params.m_LowerThreshold = (TPixel)lowerThreshold;
-  params.m_UpperThreshold = (TPixel)upperThreshold;
+  params.m_LowerThreshold = lowerThreshold;
+  params.m_UpperThreshold = upperThreshold;
   params.m_Seeds = &seeds;
   params.m_SegmentationContours = &segmentationContours;
   params.m_DrawContours = &drawContours;
@@ -3138,7 +3153,7 @@ MIDASGeneralSegmentorView
 
   for (outputIter.GoToBegin(), regionGrowingIter.GoToBegin(); !outputIter.IsAtEnd(); ++outputIter, ++regionGrowingIter)
   {
-    outputIter.Set(regionGrowingIter.Get());
+   // outputIter.Set(regionGrowingIter.Get());
   }
 }
 

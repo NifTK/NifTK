@@ -426,7 +426,7 @@ private:
 
   /// \brief Method that actually does the threshold apply, so we can call it from the
   /// threshold apply button and not change slice, or when we change slice.
-  bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty);
+  bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
 
   /// \brief When the user draws on the slice, and puts seeds down, we may need to simply
   /// update the slice immediately.
@@ -440,7 +440,7 @@ private:
 
   /// \brief Given the two thresholds, and all seeds and contours, will recalculate the thresholded region in the current slice.
   /// \param isVisible whether the region growing volume should be visible.
-  void UpdateRegionGrowing(bool isVisible, double lowerThreshold, double upperThreshold, bool skipUpdate);
+  void UpdateRegionGrowing(bool isVisible, int sliceNumber, double lowerThreshold, double upperThreshold, bool skipUpdate);
 
   /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
   void UpdatePriorAndNext();
