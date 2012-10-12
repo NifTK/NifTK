@@ -49,6 +49,10 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
   m_RegionGrowingFilter->SetForegroundValue(1);
+  m_ConnectedComponentFilter = MIDASConnectedComponentFilterType::New();
+  m_ConnectedComponentFilter->SetInputBackgroundValue(0);
+  m_ConnectedComponentFilter->SetOutputBackgroundValue(0);
+  m_ConnectedComponentFilter->SetOutputForegroundValue(1);
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -235,20 +239,22 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
     m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
     m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
-    m_RegionGrowingFilter->UpdateLargestPossibleRegion();
+
+    m_ConnectedComponentFilter->SetInput(m_RegionGrowingFilter->GetOutput());
+    m_ConnectedComponentFilter->UpdateLargestPossibleRegion();
     
     // 7. Paste it back into output image. 
     if (m_UseOutput && m_OutputImage != NULL)
     {
       m_OutputImage->FillBuffer(0);
       
-      itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_RegionGrowingFilter->GetOutput(), region3D);
+      itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_ConnectedComponentFilter->GetOutput(), region3D);
       itk::ImageRegionIterator<SegmentationImageType> outputIter(m_OutputImage, region3D);
       for (regionGrowingIter.GoToBegin(), outputIter.GoToBegin(); !regionGrowingIter.IsAtEnd(); ++regionGrowingIter, ++outputIter)
       {
         outputIter.Set(regionGrowingIter.Get());
       }
-    }
+    }  
   }
   catch( itk::ExceptionObject & err )
   {
