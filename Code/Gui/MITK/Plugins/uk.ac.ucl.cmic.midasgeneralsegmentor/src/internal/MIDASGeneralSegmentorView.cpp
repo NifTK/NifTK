@@ -905,7 +905,7 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
 void MIDASGeneralSegmentorView::OnToolSelected(int id)
 {
   QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
-  this->UpdateRegionGrowing();
+
 }
 
 
@@ -1300,20 +1300,16 @@ void MIDASGeneralSegmentorView::OnThresholdCheckBoxToggled(bool b)
     return;
   }
 
-  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-  workingNodes[6]->SetVisibility(b);
+  this->RecalculateMinAndMaxOfImage();
+  this->RecalculateMinAndMaxOfSeedValues();
 
   this->m_GeneralControls->SetEnableThresholdingWidgets(b);
 
   if (b)
   {
-    this->RecalculateMinAndMaxOfImage();
-    this->RecalculateMinAndMaxOfSeedValues();
     this->UpdateCurrentSliceContours();
     this->UpdateRegionGrowing();
   }
-
-  this->RequestRenderWindowUpdate();
 }
 
 
@@ -1364,8 +1360,16 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
 
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
+
       mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
       workingNodes[6]->SetVisibility(isVisible);
+
+      if (!isVisible)
+      {
+        return;
+      }
+
+      m_IsUpdating = true;
 
       mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
       assert(regionGrowingNode);
@@ -1432,6 +1436,8 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       {
         MITK_ERROR << "Could not do region growing: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << ", orientation=" << orientation << std::endl;
       }
+
+      m_IsUpdating = false;
 
       this->RequestRenderWindowUpdate();
 
@@ -1881,16 +1887,19 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodesFromToolManager();
   if (workingNodes.size() > 0)
   {
-    bool relevantNodesWereChanged(false);
-    for (unsigned int i = 0; i < workingNodes.size(); i++)
+    bool seedsChanged(false);
+    bool drawContoursChanged(false);
+
+    if (workingNodes[1] != NULL && workingNodes[1] == node)
     {
-      if (workingNodes[i] != NULL && workingNodes[i] == node)
-      {
-        relevantNodesWereChanged = true;
-        break;
-      }
+      seedsChanged = true;
     }
-    if (!relevantNodesWereChanged)
+    if (workingNodes[3] != NULL && workingNodes[3] == node)
+    {
+      drawContoursChanged = true;
+    }
+
+    if (!seedsChanged && !drawContoursChanged)
     {
       return;
     }
@@ -1919,10 +1928,13 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 
           mitk::Contour* polyToolContour = polyTool->GetContour();
 
-          if (relevantNodesWereChanged || polyToolContour->GetPoints()->Size() > 0)
+          if (seedsChanged)
           {
             this->RecalculateMinAndMaxOfSeedValues();
-            this->RecalculateMinAndMaxOfImage();
+          }
+
+          if (seedsChanged || drawContoursChanged || polyToolContour->GetPoints()->Size() > 0)
+          {
             this->UpdateRegionGrowing();
           }
         }
