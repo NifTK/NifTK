@@ -46,10 +46,12 @@ IF(BUILD_IGI)
     ENDIF()
 
     MESSAGE("Pulling NiftyLink from ${NIFTK_LOCATION_NIFTYLINK}")
-    
+
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK})
+
     ExternalProject_Add(${proj}
-       GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK}
-       GIT_TAG ${revision_tag}
+       URL ${NIFTK_LOCATION_NIFTYLINK}
+       URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
        BINARY_DIR ${proj}-build
        INSTALL_COMMAND ""
        CMAKE_GENERATOR ${GEN}
