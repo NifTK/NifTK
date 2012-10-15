@@ -43,13 +43,13 @@ Do check your system path, if it has Boost, old Qt, random installation of ITK o
 \section BuildInstructionsDownloadCMake 2. Install CMake 2.8.4 or greater
 
 <ul>
-<li> On Windows always use our patched version of CMake, available here: <a href="https://github.com/NifTK/CMake.git">NifTK/CMake</a>. You'll need to build it from source for your platform (64bit / 32bit).<br> 
-After building CMake install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.9-git\bin\" )<br>
-
-Binary versions of the patched CMake 2.8.9 can be found here:
+<li> On Windows always use our patched version of CMake, available here: <a href="https://github.com/NifTK/CMake.git">NifTK/CMake</a>. You can build it from source or download the pre-compiled binaries for your platform (64bit / 32bit):<br> 
 \verbatim
 /cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/platform/dependencies
 \endverbatim
+
+Once you have obtained a binary version of the patched CMake please install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.9-git\bin\" )<br>
+
 </li>
 <li> On Mac machines, download and install the latest binary. The ccmake binary must be visible on your PATH. </li>
 <li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. The ccmake binary must be visible on your PATH. </li>
@@ -220,7 +220,9 @@ is set to be the installation folder. The software can be "installed" by typing
 make install
 \endverbatim
 
-for Linux/Mac or by running the INSTALL task in Visual Studio on Windows.
+for Linux/Mac or by running the INSTALL task in Visual Studio on Windows, which will copy the files to the destination directory. On Windows please double check if you have write permissions to the installation folder. 
+If you would like to have an "official" NifTK installation (with uninstall task, icons and so on) you'll have to install <a href="http://nsis.sourceforge.net/Download>NSIS</a> first. Once NSIS is installed you can run the PACKAGE task in Visual Studio.
+The PACKAGE task will generate an installer within the NifTK-build subfolder.
  
 \section BuildInstructionsTroubleShooting 11. Trouble shooting
 
