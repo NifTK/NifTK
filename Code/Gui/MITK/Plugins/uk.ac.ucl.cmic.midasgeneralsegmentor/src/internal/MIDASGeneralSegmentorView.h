@@ -742,13 +742,17 @@ private:
   template<typename TPixel, unsigned int VImageDimension>
   void ITKFilterContours(
       itk::Image<TPixel, VImageDimension> *itkImage,
+      mitk::Image &workingImage,
       mitk::PointSet &seeds,
-      mitk::ContourSet &greenContours,
-      mitk::ContourSet &yellowContours,
+      mitk::ContourSet &segmentationContours,
+      mitk::ContourSet &drawContours,
+      mitk::ContourSet &polyContours,
       int axis,
       int slice,
       double lowerThreshold,
       double upperThreshold,
+      bool isThresholding,
+      mitk::ContourSet &outputCopyOfInputContours,
       mitk::ContourSet &outputContours
   );
 
