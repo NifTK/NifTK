@@ -86,7 +86,7 @@ where XXXX is the Visual Studio version you'd like to use.
 On 64bit Windows (or if you are an adventurous Win32 user) you have to build Qt from source. 
 
 The first step is to obtain the source: The latest source code is available <a href="http://qt-project.org/downloads#qt-lib">here</a> as a zip (261 MB) or a tar.gz (223 MB). Or visit the repository at qt.gitorious.org/qt.<br><br>
-Uncompress the files into the directory you want Qt installed; e.g. C:\Qt\4.8.2. <br>Note: The install path must not contain any spaces or Windows specific file system characters.
+Uncompress the files into a build directory of your choice (e. g. "C:\Qt\4.8.2-build"), and create a directory where you want Qt installed (e.g. "C:\Qt\4.8.2"). <br>Note: The install path must not contain any spaces or Windows specific file system characters.
 
 The compilation is done from the Visual Studio command prompt. On 64bit Windows make sure that you use the "Visual Studio x64 Win64 Command Prompt"!
 
@@ -97,11 +97,13 @@ where XXXX is the Visual Studio version you'd like to use.
 
 The next step is to configure Qt for the build:
 \verbatim
-cd /D C:\Qt\4.8.2
-configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -debug-and-release -opensource -mp -platform win32-msvc2008 
+cd /D C:\Qt\4.8.2-build
+configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -debug-and-release -opensource -confirm-license -mp -platform win32-msvcXXXX -prefix c:\Qt\4.8.2
 \endverbatim 
 
-The last parameter (-platform win32-msvcXXXX) has to be changed to match the desired Visual Studio version (e.g. -platform win32-msvc2008 or -platform win32-msvc2010). <br>Note when you use x64 command prompt Qt is compiled to x64, despite win32-msvc2010 setting.  <br><br>If you later need to reconfigure and rebuild Qt from the same location, ensure that all traces of the previous configuration are removed by entering the build directory and typing nmake distclean before running configure again.
+The last two paramters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2008 or -platform win32-msvc2010). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.<br><br>
+Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.2").  
+<br><br>If you later need to reconfigure and rebuild Qt from the same location, ensure that all traces of the previous configuration are removed by entering the build directory and typing "nmake distclean" before running configure again.<br>
 
 The next step is to compile and build Qt, so type:
 \verbatim
@@ -116,7 +118,7 @@ nmake clean
 
 This will remove all the temporary files used during build-time. 
 
-The last step is to add the bin directory to your system path. For newer versions of Windows, PATH can be extended through the Control Panel|System|Advanced|Environment variables menu. Look for 'PATH' and add c:\Qt\4.8.2\bin; to the FRONT of the path string.
+The last step is to add the bin directory to your system path. For newer versions of Windows, PATH can be extended through the Control Panel|System|Advanced|Environment variables menu. Look for 'PATH' and add "c:\Qt\4.8.2\bin;" to the FRONT of the path string.
 You'll have to log off / log on for the changes to make effect.
 </li>
 
@@ -127,7 +129,7 @@ You'll have to log off / log on for the changes to make effect.
 You must also have an up to date svn client, and git client.
 
 <ul>
-<li> On Windows, you'll need <a href="http://www.sliksvn.com/en/download">SlickSVN</a> and <a href="http://code.google.com/p/msysgit/downloads/list?q=full+installer+official+git">Git for Windows</a>.<br>
+<li> On Windows, you'll need <a href="http://www.sliksvn.com/en/download">SlikSVN</a> and <a href="http://code.google.com/p/msysgit/downloads/list?q=full+installer+official+git">Git for Windows</a>.<br>
 These are the essential command line tools. After their installation please make sure that both svn and git are added to your system path. 
 
 If you require an additional graphical interface please install <a href="http://tortoisesvn.tigris.org">TortoiseSVN</a> and <a href="http://code.google.com/p/tortoisegit">TortoiseGIT</a>. <br>
@@ -150,7 +152,7 @@ Please note that there are issues with the latest versions, so make sure you ins
 \section BuildInstructionsNSIS 5.5 NSIS - Windows Only!
 <li> 
 If you would like to have an "official" NifTK installation (that appears under Programs, can be uninstalled, have icons and shortcuts and so on) you'll have to create an installer. 
-On Windows we use NSIS for this task, which can be downloaded from <a href="http://nsis.sourceforge.net/Download">_here_</a>.<br>.
+On Windows we use NSIS for this task, which can be downloaded from <a href="http://nsis.sourceforge.net/Download">_here_</a>.<br><br>
 Please install NSIS and make sure that it is added to your system path. For further instructions about the installation please refer to Section 10.
 </li>
 
@@ -230,9 +232,9 @@ make install
 
 for Linux/Mac.
 
-On Windows, you can run the INSTALL task of the NifTK project (not the Superbuild) in Visual Studio, which will copy the files to the destination directory. Please double check if you have write permissions to the installation folder! <br>
+On Windows, you can run the INSTALL task of the NifTK project (not the Superbuild) in Visual Studio, which will copy the files to the destination directory (defined by CMAKE_INSTALL_PREFIX). Please double check if you have write permissions to the installation folder! <br>
 
-If you have NSIS installed (and added to the system path!!) you can run the PACKAGE task of the NifTK project (not the Superbuild)in Visual Studio.
+If you have NSIS installed (and added to the system path!!) you can run the PACKAGE task of the NifTK project (not the Superbuild) in Visual Studio.
 This task will run CPack on NifTK, which will generate an NSIS script, which will get eventually processed by NSIS to generate an executable NifTK installer bundle.
 This executable will be placed within the NifTK-build subfolder, once the PACKAGE task finished you can run it to install NifTK onto your system (will appear in Start Menu, can be uninstalled, etc).
  
