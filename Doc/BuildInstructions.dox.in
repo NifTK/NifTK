@@ -146,6 +146,14 @@ In order to compile the documentation you'll need to have Doxygen installed. Ple
 Please note that there are issues with the latest versions, so make sure you install a version no newer than 1.8.0!
 
 </li>
+
+\section BuildInstructionsNSIS 5.5 NSIS - Windows Only!
+<li> 
+If you would like to have an "official" NifTK installation (that appears under Programs, can be uninstalled, have icons and shortcuts and so on) you'll have to create an installer. 
+On Windows we use NSIS for this task, which can be downloaded from <a href="http://nsis.sourceforge.net/Download">_here_</a>.<br>.
+Please install NSIS and make sure that it is added to your system path. For further instructions about the installation please refer to Section 10.
+</li>
+
 \section BuildInstructionsDownload 6. Download the code
 
 \verbatim
@@ -220,9 +228,13 @@ is set to be the installation folder. The software can be "installed" by typing
 make install
 \endverbatim
 
-for Linux/Mac or by running the INSTALL task in Visual Studio on Windows, which will copy the files to the destination directory. On Windows please double check if you have write permissions to the installation folder. 
-If you would like to have an "official" NifTK installation (with uninstall task, icons and so on) you'll have to install <a href="http://nsis.sourceforge.net/Download>NSIS</a> first. Once NSIS is installed you can run the PACKAGE task in Visual Studio.
-The PACKAGE task will generate an installer within the NifTK-build subfolder.
+for Linux/Mac.
+
+On Windows, you can run the INSTALL task of the NifTK project (not the Superbuild) in Visual Studio, which will copy the files to the destination directory. Please double check if you have write permissions to the installation folder! <br>
+
+If you have NSIS installed (and added to the system path!!) you can run the PACKAGE task of the NifTK project (not the Superbuild)in Visual Studio.
+This task will run CPack on NifTK, which will generate an NSIS script, which will get eventually processed by NSIS to generate an executable NifTK installer bundle.
+This executable will be placed within the NifTK-build subfolder, once the PACKAGE task finished you can run it to install NifTK onto your system (will appear in Start Menu, can be uninstalled, etc).
  
 \section BuildInstructionsTroubleShooting 11. Trouble shooting
 
@@ -241,7 +253,7 @@ In addition, there are some additional steps, that could be considered as option
 When an end-user downloads compiled binaries, there are some steps to enable the use
 of some scripts and command line programs. These can be found on the 
 <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> page.
-A developer can either install their software as described in section 9, and then
+A developer can either install their software as described in section 10, and then
 adapt these <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a>
 to run the command line scripts from their installation folder, or they can adapt
 the <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> to run
