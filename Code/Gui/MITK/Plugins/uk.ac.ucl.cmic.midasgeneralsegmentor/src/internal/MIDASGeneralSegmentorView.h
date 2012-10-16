@@ -67,7 +67,7 @@ class QGridLayout;
  * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia Research Centre UCL.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
- * This class uses the mitk::ToolManager described in this paper on the
+ * This class uses the mitk::ToolManager and associated framework described in this paper on the
  * <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation framework</a>.
  * The mitk::ToolManager has the following data sets registered in this order.
  * <pre>
@@ -80,6 +80,11 @@ class QGridLayout;
  *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.*
  * </pre>
  * and more specifically, items 1-6 are set up in the mitk::DataManager as hidden children of item 0.
+ *
+ * Useful notes towards helping the understanding of this class
+ * <ul>
+ *   <li>Region growing is 2D on the currently selected slice, except when doing propagate up or propagate down.</li>
+ * </ul>
  * Additional, significant bits of functionality include:
  *
  * <h2>Retain Marks</h2>
@@ -377,11 +382,12 @@ protected:
 private:
 
   // Operation constants, used in Undo/Redo framework
+  static const mitk::OperationType OP_CHANGE_SLICE;
+  static const mitk::OperationType OP_PROPAGATE_SEEDS;
   static const mitk::OperationType OP_PROPAGATE;
   static const mitk::OperationType OP_THRESHOLD_APPLY;
   static const mitk::OperationType OP_WIPE;
   static const mitk::OperationType OP_CLEAN;
-  static const mitk::OperationType OP_CHANGE_SLICE;
   static const mitk::OperationType OP_RETAIN_MARKS;
 
   /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
@@ -621,15 +627,13 @@ private:
       );
 
   /// \brief Called from the ExecuteOperate (i.e. undo/redo framework) to
-  /// actually apply the calculated propagated region to the current segmentation,
-  /// and update the seeds accordingly.
+  /// actually apply the calculated propagated region to the current segmentation.
   template <typename TGreyScalePixel, unsigned int VImageDimension>
   void ITKPropagateToSegmentationImage(
       itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
       mitk::Image* segmentedImage,
       mitk::Image* regionGrowingImage,
-      mitk::PointSet* currentSeeds,
-      mitk::OpPropagate *op);
+      mitk::OpThresholdApply *op);
 
   /// \brief Called to extract a contour set from a binary image, as might be used
   /// for "See Prior", "See Next", or the outlining a binary segmentation.
@@ -808,14 +812,22 @@ private:
   /// \brief Each time the window changes, we register to the current slice navigation controller.
   unsigned long m_SliceNavigationControllerObserverTag;
 
-  /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
-  int m_PreviousSliceNumber;
-
   /// \brief Used for the mitkFocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Flag to stop re-entering code.
   bool m_IsUpdating;
 
+  /// \brief Additional flag to stop re-entering code, specifically to block
+  /// slice change commands from the slice navigation controller.
+  bool m_IsChangingSlice;
+
+  /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
+  int m_PreviousSliceNumber;
+
+  /// \brief We also need to keep track of the focus point, as depending on geometry,
+  /// we cannot rely on slice navigation controller slice number.
+  mitk::Point3D m_PreviousFocusPoint;
+  mitk::Point3D m_CurrentFocusPoint;
 };
 #endif // _MIDASGENERALSEGMENTORVIEW_H_INCLUDED
