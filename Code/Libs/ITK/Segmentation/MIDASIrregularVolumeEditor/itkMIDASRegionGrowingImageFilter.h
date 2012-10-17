@@ -89,6 +89,7 @@ private:
 	OutputPixelType                        m_ManualContourImageNonBorderValue;
 	bool                                   m_EraseFullSlice;
 	OutputImageIndexType                   m_PropMask;
+	bool                                   m_UsePropMaskMode;
 
 public:
 
@@ -136,6 +137,9 @@ public:
 
   itkSetMacro(PropMask, OutputImageIndexType);
   itkGetConstMacro(PropMask, OutputImageIndexType);
+
+  itkSetMacro(UsePropMaskMode, bool);
+  itkGetConstMacro(UsePropMaskMode, bool);
 
 	const PointSetType& GetSeedPoints(void) const {
 		return *mspc_SeedPoints;
