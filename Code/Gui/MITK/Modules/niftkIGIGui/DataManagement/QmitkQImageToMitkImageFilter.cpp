@@ -78,8 +78,13 @@ void QmitkQImageToMitkImageFilter::GenerateData()
   }
   else
   {
-    QImage tmpImage = m_QImage->convertToFormat(QImage::Format_RGB888);
-    m_Image = ConvertQImageToMitkImage< UCRGBPixelType, 2>( &tmpImage );
+		if ( m_QImage->format() == QImage::Format_Indexed_8 )
+      m_image = ConvertQImageToMitkImage < UCPixelType, 2>(m_QImage);
+		else
+		{
+			QImage tmpImage = m_QImage->convertToFormat(QImage::Format_RGB888);
+      m_Image = ConvertQImageToMitkImage< UCRGBPixelType, 2>( &tmpImage );
+		}
   }
 }
 
@@ -130,14 +135,34 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
 
   importFilter->SetImportPointer( localBuffer, numberOfPixels, false);
   importFilter->Update();
+/*	if ( image.format() == QImage::Indexed_8)
+	{
+		QVector<QRgb> colors=QVector<QRgb> (256);
+		for ( int i = 0 ; i < 256 ; i ++)
+		  colors[i] = qRgb(i,i,i);
+			image.setColorTable(colors);
+	}*/
 
-  typename itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::Pointer converter = itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::New();
-  converter->SetInput(importFilter->GetOutput());
-  converter->Update();
+	if (m_QImage->format() == QImage::Format_RGB888)
+	{
 
-  typename OutputItkImage::Pointer output = converter->GetOutput();
-  output->DisconnectPipeline();
+    typename itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::Pointer converter = itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::New();
+    converter->SetInput(importFilter->GetOutput());
+    converter->Update();
 
-  mitkImage = mitk::ImportItkImage( output );
+    typename OutputItkImage::Pointer output = converter->GetOutput();
+    output->DisconnectPipeline();
+
+    mitkImage = mitk::ImportItkImage( output );
+	}
+	else
+	{
+		typename OutputItkImage::Pointer output = importFilter->GetOutput();
+    output->DisconnectPipeline();
+
+		mitkImage = mitk::ImportItkImage( output );
+	}
+
+
   return mitkImage;
 }
