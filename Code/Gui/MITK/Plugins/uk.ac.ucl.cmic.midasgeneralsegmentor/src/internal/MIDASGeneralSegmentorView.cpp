@@ -1100,15 +1100,19 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours()
 
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
   mitk::ContourSet::Pointer contourSet = static_cast<mitk::ContourSet*>(workingNodes[2]->GetData());
+  assert(contourSet);
 
-  this->GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
-
-  if (contourSet->GetNumberOfContours() > 0)
+  if (sliceNumber >= 0 && axisNumber >= 0)
   {
-    workingNodes[2]->Modified();
-    this->RequestRenderWindowUpdate();
-  }
+    this->GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
 
+    if (contourSet->GetNumberOfContours() > 0)
+    {
+      workingNodes[2]->Modified();
+      this->RequestRenderWindowUpdate();
+    }
+
+  }
 } // end function
 
 
@@ -1602,9 +1606,20 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
   if (  !this->HaveInitialisedWorkingData()
       || m_IsUpdating
       || m_IsChangingSlice
-      || abs(beforeSliceNumber - afterSliceNumber) != 1
+      || beforeSliceNumber == -1
+      || beforeSliceNumber == -1
       )
   {
+    // i.e. early exit due to invalid data, so do as little as possible.
+    m_PreviousSliceNumber = afterSliceNumber;
+    m_PreviousFocusPoint = m_CurrentFocusPoint;
+    return;
+  }
+
+  if (abs(beforeSliceNumber - afterSliceNumber) != 1)
+  {
+    // User appears to be skipping slices, which is a possibility,
+    // but is not a valid use case for the rest of this method.
     m_PreviousSliceNumber = afterSliceNumber;
     m_PreviousFocusPoint = m_CurrentFocusPoint;
     this->UpdatePriorAndNext();
