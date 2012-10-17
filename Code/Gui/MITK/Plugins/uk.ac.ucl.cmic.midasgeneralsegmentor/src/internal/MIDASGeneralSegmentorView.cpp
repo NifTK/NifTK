@@ -2045,10 +2045,31 @@ void MIDASGeneralSegmentorView::OnWipeButtonPressed()
 void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 {
 
+  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
+
+  QString orientationText;
+  QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
+
+  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    orientationText = "superior to";
+  }
+  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+  {
+    orientationText = "right of";
+  }
+  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+  {
+    orientationText = "anterior to";
+  }
+  else
+  {
+    orientationText = "up from";
+  }
+
   int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                   tr("All slices anterior to present will be cleared.\n"
-                                                      "Are you sure?"),
-                                                   QMessageBox::Yes | QMessageBox::No);
+                                                            tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
+                                                            QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
   {
     return;
@@ -2061,10 +2082,31 @@ void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnWipeMinusButtonPressed()
 {
+  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
+
+  QString orientationText;
+  QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
+
+  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    orientationText = "inferior to";
+  }
+  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+  {
+    orientationText = "left of";
+  }
+  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+  {
+    orientationText = "posterior to";
+  }
+  else
+  {
+    orientationText = "down from";
+  }
+
   int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                   tr("All slices posterior to present will be cleared.\n"
-                                                      "Are you sure?"),
-                                                   QMessageBox::Yes | QMessageBox::No);
+                                                            tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
+                                                            QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
   {
     return;
@@ -2092,12 +2134,17 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
     mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
-
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
+      int upDirection = this->GetUpDirection();
+
+      if (direction != 0) // zero means, current slice.
+      {
+        direction = direction*upDirection;
+      }
 
       mitk::PointSet::Pointer copyOfInputSeeds = mitk::PointSet::New();
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
