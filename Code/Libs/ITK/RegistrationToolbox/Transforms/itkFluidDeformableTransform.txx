@@ -181,7 +181,7 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
   SetDeformableParameters(currentPosition); 
   
   // 2. Compose the new regridded paramters using the linearly interpolated the regridded deformation. 
-  // typedef BSplineInterpolateImageFunction< typename Superclass::DeformationFieldComponentImageType, double > InterpolatorType; 
+  //typedef BSplineInterpolateImageFunction< typename Superclass::DeformationFieldComponentImageType, double > InterpolatorType; 
   typedef LinearInterpolateImageFunction< typename Superclass::DeformationFieldComponentImageType, double > InterpolatorType; 
   typename InterpolatorType::Pointer interpolator[NDimensions]; 
   for (unsigned int i = 0; i < NDimensions; i++)
@@ -202,7 +202,7 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
   {
     typename DeformationFieldType::IndexType index = iterator.GetIndex(); 
     
-#if 1  
+#if 0
     // Skip the boundary. 
     bool isBoundary = false; 
     for (unsigned int i = 0; i < NDimensions; i++)
@@ -239,6 +239,10 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
       if (interpolator[j]->IsInsideBuffer(deformedPhysicalPoint))
       {
         composedDeformation[j] = factor*imageDeformation[j] + interpolator[j]->Evaluate(deformedPhysicalPoint); 
+      }
+      else
+      {
+        composedDeformation[j] = 0.; 
       }
     }
     iterator.Set(composedDeformation);
@@ -327,6 +331,9 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
   
   // Save a copy of the original deformation field. 
   DeformableParameterPointerType originalParameters = DuplicateDeformableParameters(this->m_DeformationField); 
+  DeformableParameterPointerType tempParameters = this->m_DeformationField; 
+  this->m_DeformationField = originalParameters; 
+  originalParameters = tempParameters; 
   
   // Compute the Jacobian. 
   displacementFieldJacobianVectorFilter->SetInput(this->m_DeformationField); 
@@ -342,8 +349,10 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
   {
     inverseIterator.Set(-originalIterator.Get()); 
   }
+  invertedTransform->Modified(); 
   
   bool stop = false; 
+  double maxDiff = 0.;
   unsigned int iteration = 0; 
   while (!stop && iteration < maxIteration)
   {
@@ -366,13 +375,18 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
     ImageRegionIterator< typename VectorResampleImageFilterType::OutputImageType > jacobianIterator(vectorResampleImageFilter->GetOutput(), vectorResampleImageFilter->GetOutput()->GetLargestPossibleRegion());  
     
     stop = true; 
-    for (currentIterator.GoToBegin(), jacobianIterator.GoToBegin(), inverseIterator.GoToBegin(); 
+    maxDiff = 0.;
+    double totalDiff = 0.; 
+    int totalNumber = 0;     
+    for (currentIterator.GoToBegin(), jacobianIterator.GoToBegin(), inverseIterator.GoToBegin(), originalIterator.GoToBegin(); 
          !currentIterator.IsAtEnd(); 
-         ++currentIterator, ++jacobianIterator, ++inverseIterator)
+         ++currentIterator, ++jacobianIterator, ++inverseIterator, ++originalIterator)
     {
       double norm = currentIterator.Get().GetNorm(); 
       if (norm > tol)
         stop = false; 
+      if (norm > maxDiff)
+        maxDiff = norm; 
       
       Matrix<float, NDimensions, NDimensions> matrix; 
       
@@ -389,15 +403,24 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
       
       Vector<float, NDimensions> gradient = matrix*currentIterator.Get(); 
       
-      inverseIterator.Set(inverseIterator.Get() - gradient*0.08); 
+      inverseIterator.Set(inverseIterator.Get() - gradient*0.5); 
+      
+      if (originalIterator.Get().GetNorm() > 1.e-7)
+      {
+        totalDiff += norm/originalIterator.Get().GetNorm(); 
+        totalNumber++; 
+      }
     }
-    invertedTransform->Modified(); 
     
+    invertedTransform->Modified(); 
     iteration++; 
+    std::cout << "iteration=" << iteration << ", maxDiff=" << maxDiff << ", averageDiff=" << totalDiff/totalNumber << std::endl; 
+    
+    // std::cout << "maxInverseDiff=" << maxInverseDiff << std::endl; 
   }    
   this->SetDeformableParameters(originalParameters); 
   
-  std::cout << "iteration=" << iteration << std::endl; 
+  //std::cout << "iteration=" << iteration << ", maxDiff=" << maxDiff << std::endl; 
     
 }
 
@@ -407,7 +430,7 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
 FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
-::ComputeSquareRoot(typename Self::Pointer sqrtTransform, unsigned int maxIteration, double tol)
+::ComputeSquareRoot(typename Self::Pointer sqrtTransform, unsigned int maxInverseIteration, unsigned int maxIteration, double tol)
 {
   // Create the necesssary filters. 
   const unsigned int NJDimensions = NDimensions*NDimensions; 
@@ -421,11 +444,12 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
   typename InterpolatorType::Pointer interpolator = InterpolatorType::New(); 
   
   // Save a copy of the original deformation field. 
-  DeformableParameterPointerType originalParameters = DuplicateDeformableParameters(this->m_DeformationField); 
+  DeformableParameterPointerType originalParameters = this->m_DeformationField; 
+  this->m_DeformationField = DuplicateDeformableParameters(this->m_DeformationField); 
   
   // Initialise sqrt transform. 
-  ImageRegionIterator< DeformationFieldType > originalIterator(originalParameters, originalParameters->GetLargestPossibleRegion());  
-  ImageRegionIterator<DeformationFieldType> sqrtIterator(sqrtTransform->GetDeformationField(), sqrtTransform->GetDeformationField()->GetLargestPossibleRegion()); 
+  ImageRegionIterator<DeformationFieldType> originalIterator(originalParameters, originalParameters->GetLargestPossibleRegion());  
+  ImageRegionIteratorWithIndex<DeformationFieldType> sqrtIterator(sqrtTransform->GetDeformationField(), sqrtTransform->GetDeformationField()->GetLargestPossibleRegion()); 
 
   for (sqrtIterator.GoToBegin(), originalIterator.GoToBegin(); 
        !sqrtIterator.IsAtEnd(); 
@@ -433,7 +457,7 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
   {
     sqrtIterator.Set(originalIterator.Get()/2.); 
   }
-  
+  sqrtTransform->Modified(); 
   
   bool stop = false; 
   unsigned int iteration = 0; 
@@ -458,11 +482,28 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
     DeformableParameterPointerType composedSqrtParameters = DuplicateDeformableParameters(sqrtTransform->GetDeformableParameters()); 
     UpdateRegriddedDeformationParameters(composedSqrtParameters, duplicateSqrtParameters, 1.); 
     
-    
     // Get the inverse. 
     typename Self::Pointer inverseTransform = Self::New();
-    inverseTransform->SetDeformableParameters(duplicateSqrtParameters); 
-    sqrtTransform->InvertUsingGradientDescent(inverseTransform.GetPointer(), 200, tol); 
+    DeformableParameterPointerType inverseParameters = DuplicateDeformableParameters(sqrtTransform->GetDeformableParameters()); 
+    inverseTransform->SetDeformableParameters(inverseParameters); 
+    sqrtTransform->InvertUsingGradientDescent(inverseTransform.GetPointer(), maxInverseIteration, tol); 
+    
+#if 0    
+    // Test.     
+    DeformableParameterPointerType test1 = DuplicateDeformableParameters(inverseTransform->GetDeformableParameters()); 
+    DeformableParameterPointerType test2 = DuplicateDeformableParameters(composedSqrtParameters); 
+    DeformableParameterPointerType test3 = DuplicateDeformableParameters(sqrtTransform->GetDeformableParameters()); 
+    
+    typename DeformationFieldType::IndexType index; 
+    index[0] = 254;  
+    index[1] = 254; 
+    
+    std::cout << "test1=" << test1->GetPixel(index) << ", test2=" << test2->GetPixel(index) << ",test3=" << test3->GetPixel(index) << std::endl; 
+    
+    UpdateRegriddedDeformationParameters(test3, test1, 1.); 
+    std::cout << "test1=" << test1->GetPixel(index) << ", test2=" << test2->GetPixel(index) << ",test3=" << test3->GetPixel(index) << std::endl; 
+    std::cout << "inverseParameters=" << inverseParameters->GetPixel(index) << ", sqrtTransform=" << sqrtTransform->GetDeformableParameters()->GetPixel(index) << std::endl; 
+#endif                     
     
     // Calculate the determinant of the Jacobian of the inverse transform. 
     inverseTransform->ComputeMaxJacobian(); 
@@ -470,18 +511,23 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
     // Compose original deformation field with inverse sqrt deformation field. 
     DeformableParameterPointerType duplicateOriginalParameters = DuplicateDeformableParameters(originalParameters); 
     DeformableParameterPointerType duplicateInverseParameters = DuplicateDeformableParameters(inverseTransform->GetDeformableParameters()); 
+    
+    //std::cout << "1 duplicateOriginalParameters=" << duplicateOriginalParameters->GetPixel(index) << ", duplicateInverseParameters=" << duplicateInverseParameters->GetPixel(index) << ", sqrtTransform=" << sqrtTransform->GetDeformableParameters()->GetPixel(index) << std::endl; 
     UpdateRegriddedDeformationParameters(duplicateOriginalParameters, duplicateInverseParameters, 1.); 
+    //std::cout << "2 duplicateOriginalParameters=" << duplicateOriginalParameters->GetPixel(index) << ", duplicateInverseParameters=" << duplicateInverseParameters->GetPixel(index) << std::endl; 
     
     // Calculate the gradient. 
     ImageRegionIterator<typename VectorResampleImageFilterType::OutputImageType > jacobianIterator(vectorResampleImageFilter->GetOutput(), vectorResampleImageFilter->GetOutput()->GetLargestPossibleRegion());  
     ImageRegionIterator<DeformationFieldType> composedTTIterator(composedSqrtParameters, composedSqrtParameters->GetLargestPossibleRegion()); 
-    ImageRegionIterator<DeformationFieldType> originalIterator(originalParameters, originalParameters->GetLargestPossibleRegion()); 
     ImageRegionIterator<DeformationFieldType> composedOTIterator(duplicateOriginalParameters, duplicateOriginalParameters->GetLargestPossibleRegion()); 
-    ImageRegionIterator<typename Superclass::JacobianDeterminantFilterType::OutputImageType> determinantIterator(this->m_JacobianFilter->GetOutput(), this->m_JacobianFilter->GetOutput()->GetLargestPossibleRegion()); 
+    ImageRegionIterator<typename Superclass::JacobianDeterminantFilterType::OutputImageType> determinantIterator(inverseTransform->m_JacobianFilter->GetOutput(), inverseTransform->m_JacobianFilter->GetOutput()->GetLargestPossibleRegion()); 
             
     stop = true; 
+    double factor = 1.; 
     double maxDiff = 0.; 
     double maxGradient = 0.; 
+    double maxInverseDiff = 0.; 
+    
     for (sqrtIterator.GoToBegin(), jacobianIterator.GoToBegin(), originalIterator.GoToBegin(), composedTTIterator.GoToBegin(), composedOTIterator.GoToBegin(), determinantIterator.GoToBegin(); 
          !sqrtIterator.IsAtEnd(); 
          ++sqrtIterator, ++jacobianIterator, ++originalIterator, ++composedTTIterator, ++composedOTIterator, ++determinantIterator)
@@ -500,24 +546,77 @@ FluidDeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScala
       }
       
       Vector<float, NDimensions> diff = composedTTIterator.Get()-originalIterator.Get(); 
-      Vector<float, NDimensions> gradient = matrix*diff + determinantIterator.Get()*(sqrtIterator.Get() - composedOTIterator.Get()); 
+      Vector<float, NDimensions> inverseDiff = sqrtIterator.Get()-composedOTIterator.Get(); 
+      Vector<float, NDimensions> gradient = matrix*diff; //  + inverseDiff*determinantIterator.Get(); 
+      
+      if (gradient.GetNorm() > maxGradient)
+        maxGradient = gradient.GetNorm(); 
+    }
+    
+    factor = 1.; 
+#if 0    
+    if (maxGradient > 0.25)
+      factor = 0.25/maxGradient; 
+    factor = std::min<double>(factor, 0.25); 
+#else
+    if (maxGradient > 0.5)
+      factor = 0.5/maxGradient; 
+    factor = std::min<double>(factor, 0.5); 
+#endif    
+    std::cout << "factor=" << factor << std::endl; 
+    
+    double totalDiff = 0.; 
+    double totalInverseDiff = 0.; 
+    int totalNumber = 0; 
+    for (sqrtIterator.GoToBegin(), jacobianIterator.GoToBegin(), originalIterator.GoToBegin(), composedTTIterator.GoToBegin(), composedOTIterator.GoToBegin(), determinantIterator.GoToBegin(); 
+         !sqrtIterator.IsAtEnd(); 
+         ++sqrtIterator, ++jacobianIterator, ++originalIterator, ++composedTTIterator, ++composedOTIterator, ++determinantIterator)
+    {
+      Matrix<float, NDimensions, NDimensions> matrix; 
+      
+      for (unsigned int i = 0; i < NDimensions; i++)
+      {
+        for (unsigned int j = 0; j < NDimensions; j++)
+        {
+          unsigned int index = j + i*NDimensions; 
+          //matrix(i, j) = jacobianIterator.Get()[index]; 
+          // Get the transpose. 
+          matrix(j, i) = jacobianIterator.Get()[index]; 
+        }
+      }
+      
+      Vector<float, NDimensions> diff = composedTTIterator.Get()-originalIterator.Get(); 
+      Vector<float, NDimensions> inverseDiff = sqrtIterator.Get()-composedOTIterator.Get(); 
+      Vector<float, NDimensions> gradient = matrix*diff; //  + inverseDiff*determinantIterator.Get(); 
       
       if (diff.GetNorm() > tol)                                            
       {
         stop = false;
       }
-      sqrtIterator.Set(sqrtIterator.Get() - gradient*0.1); 
+      sqrtIterator.Set(sqrtIterator.Get() - gradient*factor); 
       
       if (diff.GetNorm() > maxDiff)
+      {
         maxDiff = diff.GetNorm(); 
+        //std::cout << "index=" << sqrtIterator.GetIndex() << ",sqrt=" << sqrtIterator.Get() << ", maxDiff=" << maxDiff << "," << composedTTIterator.Get() << "," << originalIterator.Get() <<  std::endl; 
+      }
       if (gradient.GetNorm() > maxGradient)
         maxGradient = gradient.GetNorm(); 
+      if (inverseDiff.GetNorm() > maxInverseDiff)
+        maxInverseDiff = inverseDiff.GetNorm(); 
       
+      if (originalIterator.Get().GetNorm() > 1.e-7)
+      {
+        totalDiff += diff.GetNorm()/originalIterator.Get().GetNorm(); 
+        totalInverseDiff += inverseDiff.GetNorm()/originalIterator.Get().GetNorm(); 
+        totalNumber++; 
+      }
     }
     sqrtTransform->Modified(); 
     iteration++;
-     
-    std::cout << "maxDiff=" << maxDiff << ", maxGradient=" << maxGradient << std::endl; 
+    
+    std::cout << "maxDiff=" << maxDiff << ", maxGradient=" << maxGradient << ", maxInverseDiff=" << maxInverseDiff << std::endl; 
+    std::cout << "averageDiff=" << totalDiff/totalNumber << ", averageInverseDiff=" << totalInverseDiff/totalNumber  << std::endl; 
   }
   
   

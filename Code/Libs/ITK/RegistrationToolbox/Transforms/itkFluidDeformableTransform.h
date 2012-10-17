@@ -155,9 +155,9 @@ public:
   void InvertUsingGradientDescent(typename Self::Pointer invertedTransform, unsigned int maxIteration, double tol); 
   
   /**
-   * 
+   * Compute the square root of the deformation. 
    */
-  void ComputeSquareRoot(typename Self::Pointer sqrtTransform, unsigned int maxIteration, double tol); 
+  void ComputeSquareRoot(typename Self::Pointer sqrtTransform, unsigned int maxInverseIteration, unsigned int maxIteration, double tol); 
 
 protected:
 
