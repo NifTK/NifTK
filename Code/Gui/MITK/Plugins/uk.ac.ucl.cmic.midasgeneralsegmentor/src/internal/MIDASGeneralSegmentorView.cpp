@@ -76,11 +76,11 @@ const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgene
 
 const mitk::OperationType MIDASGeneralSegmentorView::OP_CHANGE_SLICE = 9320411;
 const mitk::OperationType MIDASGeneralSegmentorView::OP_PROPAGATE_SEEDS = 9320412;
-const mitk::OperationType MIDASGeneralSegmentorView::OP_THRESHOLD_APPLY = 9320413;
-const mitk::OperationType MIDASGeneralSegmentorView::OP_CLEAN = 9320414;
-const mitk::OperationType MIDASGeneralSegmentorView::OP_WIPE = 9320415;
-const mitk::OperationType MIDASGeneralSegmentorView::OP_PROPAGATE = 9320416;
-const mitk::OperationType MIDASGeneralSegmentorView::OP_RETAIN_MARKS = 9320417;
+const mitk::OperationType MIDASGeneralSegmentorView::OP_RETAIN_MARKS = 9320413;
+const mitk::OperationType MIDASGeneralSegmentorView::OP_THRESHOLD_APPLY = 9320414;
+const mitk::OperationType MIDASGeneralSegmentorView::OP_CLEAN = 9320415;
+const mitk::OperationType MIDASGeneralSegmentorView::OP_WIPE = 9320416;
+const mitk::OperationType MIDASGeneralSegmentorView::OP_PROPAGATE = 9320417;
 
 /**************************************************************
  * Start of Constructing/Destructing the View stuff.
@@ -684,11 +684,15 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
    * I'm removing this because:
    *   If we are using the MIDAS editor, then we have renderer specific visibility flags.
    *   If we are using the MITK editor, then we only bother with global flags.
-   *   So, at this stage, test with a red outline, leaving the current segmentation as a
+   *   So, at this stage, test with an orange outline, leaving the current segmentation as a
    *   green outline and don't mess around with the visibility.
    */
 
 /*
+ * This bit is wrong, as it does not set the visibility to "true" at any point.
+ * So, successive clicks on different windows means eventually, the contours
+ * are invisible in all windows.
+ *
   mitk::DataNode::Pointer segmentationNode = nodes[0];
 
   if (this->GetPreviouslyFocussedRenderer() != NULL)
@@ -2161,58 +2165,95 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnPropagate3DButtonPressed()
 {
-  bool didPropagation = this->DoPropagate(true, true, true);
-  if (didPropagation)
-  {
-    this->DoPropagate(false, false, true);
-  }
+  this->DoPropagate(false, true);
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnPropagateUpButtonPressed()
 {
-  this->DoPropagate(true, true, false);
+  this->DoPropagate(true, false);
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnPropagateDownButtonPressed()
 {
-  this->DoPropagate(true, false, false);
+  this->DoPropagate(false, false);
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is3D)
+void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 {
-  bool propagationWasPerformed = false;
-
   if (!this->HaveInitialisedWorkingData())
   {
-    return propagationWasPerformed;
+    return;
   }
 
-  if (showWarning)
+  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
+  itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(midasOrientation);
+
+  QString message;
+
+  if (is3D)
   {
-    QString message("All slices posterior to present will be cleared");
-    if (is3D)
+    message = "All slices will be over-written";
+  }
+  else
+  {
+    QString orientationText;
+    QString messageWithOrientation = "All slices %1 the present will be over-written";
+
+    if (isUp)
     {
-      message = "All slices will be cleared";
+      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+      {
+        orientationText = "superior to";
+      }
+      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+      {
+        orientationText = "right of";
+      }
+      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+      {
+        orientationText = "anterior to";
+      }
+      else
+      {
+        orientationText = "up from";
+      }
     }
-    else if (isUp)
+    else if (!isUp)
     {
-      message = "All slices anterior to present will be cleared";
+      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+      {
+        orientationText = "inferior to";
+      }
+      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+      {
+        orientationText = "left of";
+      }
+      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+      {
+        orientationText = "posterior to";
+      }
+      else
+      {
+        orientationText = "up from";
+      }
     }
 
-    int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                     tr("%1.\n"
-                                                        "Are you sure?").arg(message),
-                                                     QMessageBox::Yes | QMessageBox::No);
-    if (returnValue == QMessageBox::No)
-    {
-      return propagationWasPerformed;
-    }
+    message = tr(messageWithOrientation.toStdString().c_str()).arg(orientationText);
+  }
+
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+                                                   tr("%1.\n"
+                                                      "Are you sure?").arg(message),
+                                                   QMessageBox::Yes | QMessageBox::No);
+  if (returnValue == QMessageBox::No)
+  {
+    return;
   }
 
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
@@ -2221,6 +2262,7 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
 
     mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
     mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
+
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
 
@@ -2233,16 +2275,24 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
+      mitk::ToolManager *toolManager = this->GetToolManager();
+      assert(toolManager);
+
+      mitk::MIDASDrawTool *drawTool = static_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
+      assert(drawTool);
+
       double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
       double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
-      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
-      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
       int direction = this->GetUpDirection();
-      if (!isUp)
+      if (!is3D && !isUp)
       {
         direction *= -1;
+      }
+      else if (is3D)
+      {
+        direction = 0;
       }
 
       mitk::PointSet::Pointer copyOfInputSeeds = mitk::PointSet::New();
@@ -2259,7 +2309,6 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
               ITKPropagateToRegionGrowingImage, 3,
               (*seeds,
-               orientation,
                sliceNumber,
                axisNumber,
                direction,
@@ -2273,26 +2322,26 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
               )
             );
 
-          // The output of ITKPropagate is a copy of the seeds and an updated region growing image.
-          // We need to make the propagation undo-able. This involves adding data to a command, then
-          // executing the command in the ExecuteOperationMethod.
+          mitk::UndoStackItem::IncCurrObjectEventId();
+          mitk::UndoStackItem::IncCurrGroupEventId();
+          mitk::UndoStackItem::ExecuteIncrement();
 
-          if (!is3D || (is3D && isUp))
-          {
-            mitk::UndoStackItem::IncCurrObjectEventId();
-            mitk::UndoStackItem::IncCurrGroupEventId();
-            mitk::UndoStackItem::ExecuteIncrement();
-          }
-
+          QString message = tr("Propagate: copy region growing");
           mitk::OpPropagate::ProcessorPointer processor = mitk::OpPropagate::ProcessorType::New();
-          mitk::OpPropagate *doOp = new mitk::OpPropagate(OP_PROPAGATE, true, sliceNumber, axisNumber, outputRegion, outputSeeds, processor, true);
-          mitk::OpPropagate *undoOp = new mitk::OpPropagate(OP_PROPAGATE, false, sliceNumber, axisNumber, outputRegion, copyOfInputSeeds, processor, true);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Propagate region growing");
+          mitk::OpPropagate *doPropOp = new mitk::OpPropagate(OP_PROPAGATE, true, outputRegion, processor);
+          mitk::OpPropagate *undoPropOp = new mitk::OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
+          mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          ExecuteOperation(doOp);
+          ExecuteOperation(doPropOp);
 
-          // Successful outcome.
-          propagationWasPerformed = true;
+          message = tr("Propagate: copy seeds");
+          mitk::OpPropagateSeeds *doPropSeedsOp = new mitk::OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceNumber, axisNumber, outputSeeds);
+          mitk::OpPropagateSeeds *undoPropSeedsOp = new mitk::OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceNumber, axisNumber, copyOfInputSeeds);
+          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent( m_Interface, doPropSeedsOp, undoPropSeedsOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
+          ExecuteOperation(doPropOp);
+
+          drawTool->ClearWorkingData();
         }
         catch(const mitk::AccessByItkException& e)
         {
@@ -2312,11 +2361,7 @@ bool MIDASGeneralSegmentorView::DoPropagate(bool showWarning, bool isUp, bool is
     }
   }
 
-  if (propagationWasPerformed)
-  {
-    this->RequestRenderWindowUpdate();
-  }
-  return propagationWasPerformed;
+  this->RequestRenderWindowUpdate();
 }
 
 
@@ -2740,34 +2785,6 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
       }
       break;
     }
-  case OP_PROPAGATE:
-    {/*
-      mitk::OpPropagate *op = dynamic_cast<mitk::OpPropagate*>(operation);
-      assert(op);
-
-      try
-      {
-        AccessFixedDimensionByItk_n(referenceImage, ITKPropagateToSegmentationImage, 3,
-              (
-                segmentedImage,
-                regionGrowingImage,
-                op
-              )
-            );
-      }
-      catch(const mitk::AccessByItkException& e)
-      {
-        MITK_ERROR << "Could not do propagation: Caught mitk::AccessByItkException:" << e.what() << std::endl;
-        return;
-      }
-      catch( itk::ExceptionObject &err )
-      {
-        MITK_ERROR << "Could not do propagation: Caught itk::ExceptionObject:" << err.what() << std::endl;
-        return;
-      }
-*/
-      break;
-    }
   case OP_WIPE:
     {
       mitk::OpWipe *op = dynamic_cast<mitk::OpWipe*>(operation);
@@ -2793,6 +2810,33 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
       catch( itk::ExceptionObject &err )
       {
         MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        return;
+      }
+      break;
+    }
+  case OP_PROPAGATE:
+    {
+      mitk::OpPropagate *op = dynamic_cast<mitk::OpPropagate*>(operation);
+      assert(op);
+
+      try
+      {
+        AccessFixedDimensionByItk_n(referenceImage, ITKPropagateToSegmentationImage, 3,
+              (
+                segmentedImage,
+                regionGrowingImage,
+                op
+              )
+            );
+      }
+      catch(const mitk::AccessByItkException& e)
+      {
+        MITK_ERROR << "Could not do propagation: Caught mitk::AccessByItkException:" << e.what() << std::endl;
+        return;
+      }
+      catch( itk::ExceptionObject &err )
+      {
+        MITK_ERROR << "Could not do propagation: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
       break;
@@ -3235,7 +3279,6 @@ MIDASGeneralSegmentorView
 ::ITKPropagateToRegionGrowingImage
  (itk::Image<TPixel, VImageDimension>* itkImage,
   mitk::PointSet& inputSeeds,
-  itk::ORIENTATION_ENUM orientation,
   int sliceNumber,
   int axisNumber,
   int direction,
@@ -3250,86 +3293,149 @@ MIDASGeneralSegmentorView
 {
   typedef typename itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
-  typedef typename BinaryImageType::PointType BinaryPointType;
-  typedef typename itk::Image<unsigned int, VImageDimension>  IntegerImageType;
+
+  // First take a copy of input seeds, as we need to store them for Undo/Redo purposes.
+  this->CopySeeds(&inputSeeds, &outputCopyOfInputSeeds);
+
+  // Work out the output region of interest that will be affected.
+  // We want the region upstream/downstream/both of the slice of interest
+  // which also includes the slice of interest.
+
+  typename GreyScaleImageType::RegionType outputITKRegion = itkImage->GetLargestPossibleRegion();
+  typename GreyScaleImageType::SizeType outputRegionSize = outputITKRegion.GetSize();
+  typename GreyScaleImageType::IndexType outputRegionIndex = outputITKRegion.GetIndex();
+
+  if (direction == 1)
+  {
+    outputRegionSize[axisNumber] = outputRegionSize[axisNumber] - sliceNumber;
+    outputRegionIndex[axisNumber] = sliceNumber;
+  }
+  else if (direction == -1)
+  {
+    outputRegionSize[axisNumber] = sliceNumber + 1;
+    outputRegionIndex[axisNumber] = 0;
+  }
+  outputITKRegion.SetSize(outputRegionSize);
+  outputITKRegion.SetIndex(outputRegionIndex);
+
+  outputRegion.push_back(outputRegionIndex[0]);
+  outputRegion.push_back(outputRegionIndex[1]);
+  outputRegion.push_back(outputRegionIndex[2]);
+  outputRegion.push_back(outputRegionSize[0]);
+  outputRegion.push_back(outputRegionSize[1]);
+  outputRegion.push_back(outputRegionSize[2]);
+
+  mitk::PointSet::Pointer temporaryPointSet = mitk::PointSet::New();
+  this->ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axisNumber, sliceNumber, *(temporaryPointSet.GetPointer()));
+
+  if (direction == 1 || direction == -1)
+  {
+    this->ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, direction, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+  }
+  else if (direction == 0)
+  {
+    this->ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, 1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    this->ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, -1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+  }
+
+  // Get hold of ITK version of MITK image.
+
+  typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
+  typename ImageToItkType::Pointer outputToItk = ImageToItkType::New();
+  outputToItk->SetInput(outputRegionGrowingImage);
+  outputToItk->UpdateLargestPossibleRegion();
+
+  // For each slice in the region growing output, calculate new seeds on a per slice basis.
+  this->ITKAddNewSeedsToPointSet(
+      outputToItk->GetOutput(),
+      outputITKRegion,
+      sliceNumber,
+      axisNumber,
+      outputNewSeeds
+      );
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MIDASGeneralSegmentorView
+::ITKPropagateUpOrDown(
+    itk::Image<TPixel, VImageDimension> *itkImage,
+    mitk::PointSet &seeds,
+    int sliceNumber,
+    int axis,
+    int direction,
+    double lowerThreshold,
+    double upperThreshold,
+    mitk::DataNode::Pointer &outputRegionGrowingNode,
+    mitk::Image::Pointer &outputRegionGrowingImage
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> GreyScaleImageType;
+  typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
   typedef typename itk::MIDASRegionGrowingImageFilter<GreyScaleImageType, BinaryImageType, PointSetType> RegionGrowingFilterType;
 
-  // Work out the region of interest that will be affected.
-  // We want the region upstream/downstream of the slice of interest.
+  // Convert MITK seeds to ITK seeds.
+  PointSetPointer itkSeeds = PointSetType::New();
+  ConvertMITKSeedsAndAppendToITKSeeds(&seeds, itkSeeds);
+
+  // This mask is used to control the propagation in the region growing filter.
+  typename GreyScaleImageType::IndexType propagationMask;
+  propagationMask.Fill(0);
+  propagationMask[axis] = direction;
+
+  // Calculate the appropriate region
   typename GreyScaleImageType::RegionType region = itkImage->GetLargestPossibleRegion();
   typename GreyScaleImageType::SizeType regionSize = region.GetSize();
   typename GreyScaleImageType::IndexType regionIndex = region.GetIndex();
 
   if (direction == 1)
   {
-    regionSize[axisNumber] = regionSize[axisNumber] - sliceNumber - 1;
-    regionIndex[axisNumber] = sliceNumber + 1;
+    regionSize[axis] = regionSize[axis] - sliceNumber;
+    regionIndex[axis] = sliceNumber;
   }
   else if (direction == -1)
   {
-    regionSize[axisNumber] = sliceNumber;
-    regionIndex[axisNumber] = 0;
+    regionSize[axis] = sliceNumber + 1;
+    regionIndex[axis] = 0;
   }
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
-
-  outputRegion.push_back(regionIndex[0]);
-  outputRegion.push_back(regionIndex[1]);
-  outputRegion.push_back(regionIndex[2]);
-  outputRegion.push_back(regionSize[0]);
-  outputRegion.push_back(regionSize[1]);
-  outputRegion.push_back(regionSize[2]);
-
-  // This copies all inputSeeds to outputCopyOfInputSeeds
-  // and copies inputSeeds to outputNewSeeds if they are not in region.
-  this->ITKFilterInputPointSetToExcludeRegionOfInterest(
-      itkImage,
-      region,
-      inputSeeds,
-      outputCopyOfInputSeeds,
-      outputNewSeeds
-      );
-
-  // Copy MITK seeds to ITK seeds for region growing.
-  // Use outputNewSeeds as this list is smaller.
-  PointSetPointer itkSeeds = PointSetType::New();
-  ConvertMITKSeedsAndAppendToITKSeeds(&outputNewSeeds, itkSeeds);
 
   // Perform 3D region growing.
   typename RegionGrowingFilterType::Pointer regionGrowingFilter = RegionGrowingFilterType::New();
   regionGrowingFilter->SetInput(itkImage);
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
-  regionGrowingFilter->SetProjectSeedsIntoRegion(true);
+  regionGrowingFilter->SetProjectSeedsIntoRegion(false);
+  regionGrowingFilter->SetEraseFullSlice(false);
   regionGrowingFilter->SetForegroundValue(1);
   regionGrowingFilter->SetBackgroundValue(0);
+  regionGrowingFilter->SetSegmentationContourImageInsideValue(0);
+  regionGrowingFilter->SetSegmentationContourImageBorderValue(1);
+  regionGrowingFilter->SetSegmentationContourImageOutsideValue(2);
+  regionGrowingFilter->SetManualContourImageNonBorderValue(0);
+  regionGrowingFilter->SetManualContourImageBorderValue(1);
   regionGrowingFilter->SetLowerThreshold(lowerThreshold);
   regionGrowingFilter->SetUpperThreshold(upperThreshold);
   regionGrowingFilter->SetSeedPoints(*(itkSeeds.GetPointer()));
+  regionGrowingFilter->SetPropMask(propagationMask);
   regionGrowingFilter->Update();
 
-  // For each slice in the region growing output, this will calculate
-  // new seeds on a per slice basis.
-  this->ITKAddNewSeedsToPointSet(
-      regionGrowingFilter->GetOutput(),
-      region,
-      sliceNumber,
-      axisNumber,
-      outputNewSeeds
-      );
+  // Write output of region growing filter directly back to the supplied region growing image
 
-  // Write output of region growing directly back to the region growing image
   typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
   typename ImageToItkType::Pointer outputToItk = ImageToItkType::New();
   outputToItk->SetInput(outputRegionGrowingImage);
-  outputToItk->Update();
+  outputToItk->UpdateLargestPossibleRegion();
 
   typename itk::ImageRegionIterator< BinaryImageType > outputIter(outputToItk->GetOutput(), region);
-  typename itk::ImageRegionConstIterator< BinaryImageType > regionGrowingIter(regionGrowingFilter->GetOutput(), region);
+  typename itk::ImageRegionConstIterator< BinaryImageType > regionIter(regionGrowingFilter->GetOutput(), region);
 
-  for (outputIter.GoToBegin(), regionGrowingIter.GoToBegin(); !outputIter.IsAtEnd(); ++outputIter, ++regionGrowingIter)
+  for (outputIter.GoToBegin(), regionIter.GoToBegin(); !outputIter.IsAtEnd(); ++outputIter, ++regionIter)
   {
-   // outputIter.Set(regionGrowingIter.Get());
+    outputIter.Set(regionIter.Get());
   }
 }
 
@@ -3342,7 +3448,7 @@ MIDASGeneralSegmentorView
     itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
     mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
-    mitk::OpThresholdApply *op)
+    mitk::OpPropagate *op)
 {
   typedef typename itk::Image<TGreyScalePixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;

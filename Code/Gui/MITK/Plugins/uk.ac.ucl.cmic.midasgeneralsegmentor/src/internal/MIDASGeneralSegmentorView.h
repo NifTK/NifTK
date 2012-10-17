@@ -419,12 +419,8 @@ private:
   /// at that location, and updates the min and max labels on the GUI thresholding panel.
   void RecalculateMinAndMaxOfSeedValues();
 
-  /// \brief Does propagate up/down, returning true if the propagation was performed and false
-  /// otherwise.
-  ///
-  /// The return value is just used so that propagate3D can call the same method twice without
-  /// displaying two warning messages.
-  bool DoPropagate(bool showWarning, bool isUp, bool is3D);
+  /// \brief Does propagate up/down/3D.
+  void DoPropagate(bool isUp, bool is3D);
 
   /// \brief Does wipe, where if direction=0, wipes current slice, if direction=1, wipes anterior,
   /// and if direction=-1, wipes posterior.
@@ -608,12 +604,11 @@ private:
       );
 
   /// \brief Method takes all the input, and calculates the 3D propagated
-  /// region (up or down), and stores it in the region growing node.
+  /// region (up or down or 3D), and stores it in the region growing node.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKPropagateToRegionGrowingImage(
       itk::Image<TPixel, VImageDimension> *itkImage,
       mitk::PointSet &inputSeeds,
-      itk::ORIENTATION_ENUM orientation,
       int sliceNumber,
       int axis,
       int direction,
@@ -626,6 +621,20 @@ private:
       mitk::Image::Pointer &outputRegionGrowingImage
       );
 
+  /// \brief Called from ITKPropagateToRegionGrowingImage to propagate up or down.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKPropagateUpOrDown(
+      itk::Image<TPixel, VImageDimension> *itkImage,
+      mitk::PointSet &seeds,
+      int sliceNumber,
+      int axis,
+      int direction,
+      double lowerThreshold,
+      double upperThreshold,
+      mitk::DataNode::Pointer &outputRegionGrowingNode,
+      mitk::Image::Pointer &outputRegionGrowingImage
+      );
+
   /// \brief Called from the ExecuteOperate (i.e. undo/redo framework) to
   /// actually apply the calculated propagated region to the current segmentation.
   template <typename TGreyScalePixel, unsigned int VImageDimension>
@@ -633,7 +642,7 @@ private:
       itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
       mitk::Image* segmentedImage,
       mitk::Image* regionGrowingImage,
-      mitk::OpThresholdApply *op);
+      mitk::OpPropagate *op);
 
   /// \brief Called to extract a contour set from a binary image, as might be used
   /// for "See Prior", "See Next", or the outlining a binary segmentation.
