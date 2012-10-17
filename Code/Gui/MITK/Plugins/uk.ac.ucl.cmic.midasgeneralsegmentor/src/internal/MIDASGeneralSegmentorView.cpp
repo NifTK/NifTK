@@ -1528,7 +1528,10 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(
 
           bool currentCheckboxStatus = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
 
-          toolManager->ActivateTool(-1);
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+          {
+            toolManager->ActivateTool(-1);
+          }
 
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
@@ -1663,6 +1666,11 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
         bool thisSliceIsEmpty(false);
 
         m_IsUpdating = true;
+
+        if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+        {
+          toolManager->ActivateTool(-1);
+        }
 
         try
         {
@@ -2385,6 +2393,11 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
                regionGrowingImage  // This is the image we are writing to.
               )
             );
+
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+          {
+            toolManager->ActivateTool(-1);
+          }
 
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
@@ -3472,6 +3485,8 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetInput(itkImage);
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
+  regionGrowingFilter->SetPropMask(propagationMask);
+  regionGrowingFilter->SetUsePropMaskMode(true);
   regionGrowingFilter->SetProjectSeedsIntoRegion(false);
   regionGrowingFilter->SetEraseFullSlice(false);
   regionGrowingFilter->SetForegroundValue(1);
@@ -3484,7 +3499,6 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetLowerThreshold(lowerThreshold);
   regionGrowingFilter->SetUpperThreshold(upperThreshold);
   regionGrowingFilter->SetSeedPoints(*(itkSeeds.GetPointer()));
-  regionGrowingFilter->SetPropMask(propagationMask);
   regionGrowingFilter->Update();
 
   // Write output of region growing filter directly back to the supplied region growing image
