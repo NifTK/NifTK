@@ -174,3 +174,22 @@ void mitk::MIDASTool::OnSeedsModified()
     }
   }
 }
+
+float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
+{
+  // See StateMachine.xml for event Ids.
+
+  if (event != NULL
+      && event->GetEvent() != NULL
+      && (event->GetId() == 2   // right mouse down
+          )
+      )
+  {
+    return 1;
+  }
+  else
+  {
+    return mitk::FeedbackContourTool::CanHandleEvent(event);
+  }
+}
+
