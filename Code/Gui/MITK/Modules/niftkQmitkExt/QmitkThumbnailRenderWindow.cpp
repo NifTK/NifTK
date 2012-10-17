@@ -129,14 +129,6 @@ void QmitkThumbnailRenderWindow::Activated()
     m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
       ( this, &QmitkThumbnailRenderWindow::NodeChangedProxy ) );
   }
-
-  // Trigger this to get update as soon as activated.
-  /*
-  if (focusManager != NULL)
-  {
-    this->OnFocusChanged();
-  }
-  */
 }
 
 
@@ -320,6 +312,9 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
 
     // We shouldn't need this every time, but without it you don't seem to get all the updates.
     this->setBoundingBoxVisible(true);
+
+    // Request a single update at the end of the method.
+    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
   }
 }
 
