@@ -78,8 +78,8 @@ void QmitkQImageToMitkImageFilter::GenerateData()
   }
   else
   {
-		if ( m_QImage->format() == QImage::Format_Indexed_8 )
-      m_image = ConvertQImageToMitkImage < UCPixelType, 2>(m_QImage);
+		if ( m_QImage->format() == QImage::Format_Indexed8 )
+          m_Image = ConvertQImageToMitkImage < unsigned char, 2>(m_QImage);
 		else
 		{
 			QImage tmpImage = m_QImage->convertToFormat(QImage::Format_RGB888);
