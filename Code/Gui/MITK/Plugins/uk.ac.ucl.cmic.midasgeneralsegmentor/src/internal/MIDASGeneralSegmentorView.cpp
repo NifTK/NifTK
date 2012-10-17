@@ -1528,6 +1528,8 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(
 
           bool currentCheckboxStatus = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
 
+          toolManager->ActivateTool(-1);
+
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
@@ -2511,7 +2513,7 @@ void MIDASGeneralSegmentorView::OnNumberOfSeedsChanged(int numberOfSeeds)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnContoursChanged()
 {
-// this->DoUpdateCurrentSlice();
+  this->UpdateRegionGrowing();
 }
 
 
