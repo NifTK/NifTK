@@ -68,7 +68,7 @@ public:
   /**
    * \brief Called when the window focus changes, and tracks the current and previous mitk::BaseRenderer*.
    */
-  void OnFocusChanged();
+  virtual void OnFocusChanged();
 
   /**
    * \brief Returns whether this functionality should be exclusive, or in other words, the only active plugin.

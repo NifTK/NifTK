@@ -49,6 +49,7 @@ typedef ParametricPathType::VertexType     ParametricPathVertexType;
  */
 struct GeneralSegmentorPipelineParams
 {
+  bool m_EraseFullSlice;
   int m_SliceNumber;
   int m_AxisNumber;
   double m_LowerThreshold;

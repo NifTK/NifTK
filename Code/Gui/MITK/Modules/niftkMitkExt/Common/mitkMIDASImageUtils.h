@@ -212,6 +212,23 @@ namespace mitk
    * \param output Output MITK image, not NULL, same size as input.
    */
   NIFTKMITKEXT_EXPORT void CopyIntensityData(const mitk::Image* input, mitk::Image* output);
+
+
+  /**
+   * \brief Writes the image to file.
+   */
+  template<typename TPixel, unsigned int VImageDimension>
+  void
+  ITKDumpImage(
+      const itk::Image<TPixel, VImageDimension>* itkImage,
+      const std::string& filename
+      );
+
+  /**
+   * \brief Writes the image to file.
+   */
+  NIFTKMITKEXT_EXPORT void DumpImage(const mitk::Image *input, const std::string& fileName);
+
 }
 
 #endif // MITKMIDASIMAGEUTILS_H

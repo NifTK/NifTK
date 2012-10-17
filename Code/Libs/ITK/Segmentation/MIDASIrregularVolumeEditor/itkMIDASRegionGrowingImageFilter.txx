@@ -37,6 +37,7 @@ MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 , m_SegmentationContourImageOutsideValue(2)
 , m_ManualContourImageBorderValue(1)
 , m_ManualContourImageNonBorderValue(0)
+, m_EraseFullSlice(false)
 {
 }
 
@@ -207,5 +208,23 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
         }
       }
 		}
+	}
+	
+	if (m_EraseFullSlice)
+	{
+	  // If the whole slice is filled, and m_EraseFullSlice, we reset to zero.
+	  unsigned long int numberOfFilledVoxels = 0;
+	  typename itk::ImageRegionConstIteratorWithIndex<OutputImageType> outputIterator(sp_output, sp_output->GetLargestPossibleRegion());
+	  for (outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator)
+	  {
+	    if (outputIterator.Get() == m_ForegroundValue)
+	    {
+	      numberOfFilledVoxels++;
+	    }
+	  }
+	  if (numberOfFilledVoxels == outputRegion.GetNumberOfPixels())
+	  {
+	    sp_output->FillBuffer(GetBackgroundValue());
+	  }
 	}
 }

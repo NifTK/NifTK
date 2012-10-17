@@ -39,10 +39,11 @@ namespace itk
  * \class MIDASLargestConnectedComponentFilter
  * \brief Does connected component analysis and outputs a
  * binary volume of the largest connected component.
- * \deprecated Use itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter as it is faster.
+ *
+ * Alternatively, use itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter as it is faster.
  *
  * Both input and output types should be integer types, and the
- * output type is binary, so probably should be unsigned char.
+ * output type is binary, so should be unsigned char.
  *
  * \ingroup midas_morph_editor
  */

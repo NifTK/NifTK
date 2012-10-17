@@ -33,6 +33,7 @@
 #include "itkPasteImageFilter.h"
 #include "itkMIDASHelper.h"
 #include "itkMIDASRegionGrowingImageFilter.h"
+#include "itkMIDASLargestConnectedComponentFilter.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
 
 /**
@@ -59,26 +60,29 @@ class GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
 {
 public:
 
-  typedef itk::Index<VImageDimension>                                     IndexType;
-  typedef itk::ContinuousIndex<double, VImageDimension>                   ContinuousIndexType;
-  typedef itk::Image<TPixel, VImageDimension>                             GreyScaleImageType;
+  typedef itk::Index<VImageDimension>                                      IndexType;
+  typedef itk::ContinuousIndex<double, VImageDimension>                    ContinuousIndexType;
+  typedef itk::Image<TPixel, VImageDimension>                              GreyScaleImageType;
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType,
-                     VImageDimension>                                     SegmentationImageType;
-  typedef typename GreyScaleImageType::RegionType                         RegionType;
-  typedef typename GreyScaleImageType::SizeType                           SizeType;
-  typedef typename GreyScaleImageType::PointType                          PointType;
-  typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType> ExtractGreySliceFromGreyImageFilterType;
-  typedef typename ExtractGreySliceFromGreyImageFilterType::Pointer       ExtractGreySliceFromGreyImageFilterPointer;
+                     VImageDimension>                                      SegmentationImageType;
+  typedef typename GreyScaleImageType::RegionType                          RegionType;
+  typedef typename GreyScaleImageType::SizeType                            SizeType;
+  typedef typename GreyScaleImageType::PointType                           PointType;
+  typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType>  ExtractGreySliceFromGreyImageFilterType;
+  typedef typename ExtractGreySliceFromGreyImageFilterType::Pointer        ExtractGreySliceFromGreyImageFilterPointer;
   typedef itk::ExtractImageFilter<SegmentationImageType,
-                                  SegmentationImageType>                  ExtractBinarySliceFromBinaryImageFilterType;
-  typedef typename ExtractBinarySliceFromBinaryImageFilterType::Pointer   ExtractBinarySliceFromBinaryImageFilterPointer;
+                                  SegmentationImageType>                   ExtractBinarySliceFromBinaryImageFilterType;
+  typedef typename ExtractBinarySliceFromBinaryImageFilterType::Pointer    ExtractBinarySliceFromBinaryImageFilterPointer;
 
-  typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType> CastGreySliceToSegmentationSliceFilterType;
-  typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer    CastGreySliceToSegmentationSliceFilterPointer;
+  typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType>  CastGreySliceToSegmentationSliceFilterType;
+  typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer     CastGreySliceToSegmentationSliceFilterPointer;
   typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType,
                                              SegmentationImageType,
-                                             PointSetType>                MIDASRegionGrowingFilterType;
-  typedef typename MIDASRegionGrowingFilterType::Pointer                  MIDASRegionGrowingFilterPointer;
+                                             PointSetType>                 MIDASRegionGrowingFilterType;
+  typedef typename MIDASRegionGrowingFilterType::Pointer                   MIDASRegionGrowingFilterPointer;
+  typedef itk::MIDASLargestConnectedComponentFilter<SegmentationImageType,
+                                                    SegmentationImageType> MIDASConnectedComponentFilterType;
+  typedef typename MIDASConnectedComponentFilterType::Pointer              MIDASConnectedComponentFilterPointer;
 
   // Methods
   GeneralSegmentorPipeline();
@@ -96,6 +100,7 @@ public:
 
   // Controls whether we write to output. Default = true. If false, we can directly look at m_RegionGrowingFilter->GetOutput().
   bool m_UseOutput;
+  bool m_EraseFullSlice;
 
   // The main filters.
   ExtractGreySliceFromGreyImageFilterPointer     m_ExtractGreyRegionOfInterestFilter;
@@ -103,6 +108,7 @@ public:
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
   MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
+  MIDASConnectedComponentFilterPointer           m_ConnectedComponentFilter;
   SegmentationImageType*                         m_OutputImage;
 };
 

@@ -40,6 +40,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_UpperThreshold = 0;
   m_AllSeeds = PointSetType::New();
   m_UseOutput = true;
+  m_EraseFullSlice = false;
   m_OutputImage = NULL;
   m_ExtractGreyRegionOfInterestFilter = ExtractGreySliceFromGreyImageFilterType::New();
   m_ExtractBinaryRegionOfInterestFilter = ExtractBinarySliceFromBinaryImageFilterType::New();
@@ -48,6 +49,10 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
   m_RegionGrowingFilter->SetForegroundValue(1);
+  m_ConnectedComponentFilter = MIDASConnectedComponentFilterType::New();
+  m_ConnectedComponentFilter->SetInputBackgroundValue(0);
+  m_ConnectedComponentFilter->SetOutputBackgroundValue(0);
+  m_ConnectedComponentFilter->SetOutputForegroundValue(1);
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -59,6 +64,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_AxisNumber = p.m_AxisNumber;
   m_LowerThreshold = p.m_LowerThreshold;
   m_UpperThreshold = p.m_UpperThreshold;
+  m_EraseFullSlice = p.m_EraseFullSlice;
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -219,7 +225,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
      
     // 6. Update Region growing.
     m_RegionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
-    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);     
+    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);
+    m_RegionGrowingFilter->SetEraseFullSlice(m_EraseFullSlice);         
     m_RegionGrowingFilter->SetRegionOfInterest(region3D);
     m_RegionGrowingFilter->SetUseRegionOfInterest(true);
     m_RegionGrowingFilter->SetProjectSeedsIntoRegion(false);
@@ -232,31 +239,20 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
     m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
     m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
-    m_RegionGrowingFilter->UpdateLargestPossibleRegion();
+
+    m_ConnectedComponentFilter->SetInput(m_RegionGrowingFilter->GetOutput());
+    m_ConnectedComponentFilter->UpdateLargestPossibleRegion();
     
     // 7. Paste it back into output image. 
     if (m_UseOutput && m_OutputImage != NULL)
     {
-      m_OutputImage->FillBuffer(0);
-      
-      itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_RegionGrowingFilter->GetOutput(), region3D);
+      itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_ConnectedComponentFilter->GetOutput(), region3D);
       itk::ImageRegionIterator<SegmentationImageType> outputIter(m_OutputImage, region3D);
       for (regionGrowingIter.GoToBegin(), outputIter.GoToBegin(); !regionGrowingIter.IsAtEnd(); ++regionGrowingIter, ++outputIter)
       {
         outputIter.Set(regionGrowingIter.Get());
       }
-    }
-/*
-    typename itk::ImageFileWriter<SegmentationImageType>::Pointer segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
-    segWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
-    segWriter->SetFileName("tmp.matt.segmentationcontours.nii");
-    segWriter->Update();
-
-    segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
-    segWriter->SetInput(m_CastToManualContourFilter->GetOutput());
-    segWriter->SetFileName("tmp.matt.manualcontours.nii");
-    segWriter->Update();
-*/   
+    }  
   }
   catch( itk::ExceptionObject & err )
   {
