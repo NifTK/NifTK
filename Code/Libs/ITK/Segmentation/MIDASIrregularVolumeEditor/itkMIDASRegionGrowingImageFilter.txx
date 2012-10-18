@@ -322,7 +322,6 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	  }	  
 	  if (numberOfFilledVoxels == outputRegion.GetNumberOfPixels())
 	  {
-	    std::cerr << "Matt, setting to zero" << std::endl;
 	    sp_output->FillBuffer(m_BackgroundValue);
 	  }
 	}
