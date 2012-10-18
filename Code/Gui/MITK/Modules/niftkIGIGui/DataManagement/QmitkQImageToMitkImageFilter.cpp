@@ -79,7 +79,7 @@ void QmitkQImageToMitkImageFilter::GenerateData()
   else
   {
 		if ( m_QImage->format() == QImage::Format_Indexed8 )
-          m_Image = ConvertQImageToMitkImage < unsigned char, 2>(m_QImage);
+      m_Image = Convert8BitQImageToMitkImage < unsigned char, 2>(m_QImage);
 		else
 		{
 			QImage tmpImage = m_QImage->convertToFormat(QImage::Format_RGB888);
@@ -135,6 +135,66 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
 
   importFilter->SetImportPointer( localBuffer, numberOfPixels, false);
   importFilter->Update();
+
+
+  typename itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::Pointer converter = itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::New();
+  converter->SetInput(importFilter->GetOutput());
+  converter->Update();
+
+  typename OutputItkImage::Pointer output = converter->GetOutput();
+  output->DisconnectPipeline();
+
+  mitkImage = mitk::ImportItkImage( output );
+
+
+  return mitkImage;
+}
+	
+template <typename TPixel, unsigned int VImageDimension>
+mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage( const QImage* input)
+{
+
+  typedef itk::Image< TPixel, VImageDimension > ItkImage;
+  typedef itk::Image <unsigned char, VImageDimension> OutputItkImage;
+  typedef itk::ImportImageFilter< TPixel, VImageDimension >  ImportFilterType;
+
+  mitk::Image::Pointer mitkImage = mitk::Image::New();
+
+  typename ImportFilterType::Pointer importFilter = ImportFilterType::New();
+  typename ImportFilterType::SizeType  size;
+
+  size[0]  = input->width();
+  size[1]  = input->height();
+
+  typename ImportFilterType::IndexType start;
+  start.Fill( 0 );
+
+  typename ImportFilterType::RegionType region;
+  region.SetIndex( start );
+  region.SetSize(  size  );
+
+  importFilter->SetRegion( region );
+
+  double origin[ VImageDimension ];
+  origin[0] = 0.0;    // X coordinate
+  origin[1] = 0.0;    // Y coordinate
+
+  importFilter->SetOrigin( origin );
+
+  double spacing[ VImageDimension ];
+  spacing[0] = 1.0;    // along X direction
+  spacing[1] = 1.0;    // along Y direction
+
+  importFilter->SetSpacing( spacing );
+
+  const unsigned int numberOfPixels = size[0] * size[1];
+  const unsigned int numberOfBytes = numberOfPixels * sizeof( TPixel );
+
+  TPixel * localBuffer = new TPixel[numberOfPixels];
+  memcpy(localBuffer, input->bits(), numberOfBytes);
+
+  importFilter->SetImportPointer( localBuffer, numberOfPixels, false);
+  importFilter->Update();
 /*	if ( image.format() == QImage::Indexed_8)
 	{
 		QVector<QRgb> colors=QVector<QRgb> (256);
@@ -143,26 +203,12 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
 			image.setColorTable(colors);
 	}*/
 
-	if (m_QImage->format() == QImage::Format_RGB888)
-	{
+  typename OutputItkImage::Pointer output = importFilter->GetOutput();
+  output->DisconnectPipeline();
 
-    typename itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::Pointer converter = itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::New();
-    converter->SetInput(importFilter->GetOutput());
-    converter->Update();
-
-    typename OutputItkImage::Pointer output = converter->GetOutput();
-    output->DisconnectPipeline();
-
-    mitkImage = mitk::ImportItkImage( output );
-	}
-	else
-	{
-		typename OutputItkImage::Pointer output = importFilter->GetOutput();
-    output->DisconnectPipeline();
-
-		mitkImage = mitk::ImportItkImage( output );
-	}
-
-
+	mitkImage = mitk::ImportItkImage( output );
+	
   return mitkImage;
 }
+
+

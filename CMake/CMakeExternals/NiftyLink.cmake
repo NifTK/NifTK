@@ -44,7 +44,7 @@ IF(BUILD_IGI)
     if (NIFTK_LOCATION_NIFTYLINK_DEV)
       set(NiftyLink_location_options
         GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG development
+        GIT_TAG ${revision_tag}
       )
     else ()
       niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
