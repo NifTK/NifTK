@@ -172,7 +172,13 @@ private:
 	void ConditionalAddPixel(
 	    std::stack<typename OutputImageType::IndexType> &r_stack,
 	    const typename OutputImageType::IndexType &currentImgIdx,
-	    const typename OutputImageType::IndexType &nextImgIdx
+	    const typename OutputImageType::IndexType &nextImgIdx,
+	    const bool &isFullyConnected
+	    );
+
+	bool IsFullyConnected(
+	    const typename OutputImageType::IndexType &index1,
+	    const typename OutputImageType::IndexType &index2
 	    );
 
 protected:
