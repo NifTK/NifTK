@@ -22,6 +22,7 @@
 
  ============================================================================*/
 
+//-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
 MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 ::MIDASRegionGrowingImageFilter() 
@@ -43,11 +44,22 @@ MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
   m_PropMask.Fill(0);
 }
 
+//-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
-bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::IsFullyConnected(
-      const typename OutputImageType::IndexType &index1,
-      const typename OutputImageType::IndexType &index2
-      )
+void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
+::SetManualContours(ParametricPathVectorType* contours)
+{
+  m_ManualContours = contours;
+  this->Modified();
+}
+
+//-----------------------------------------------------------------------------
+template<class TInputImage, class TOutputImage, class TPointSet>
+bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
+::IsFullyConnected(
+  const typename OutputImageType::IndexType &index1,
+  const typename OutputImageType::IndexType &index2
+)
 {
   typedef typename InputImageType::RegionType::SizeType __ImageSizeType;
   
@@ -65,6 +77,68 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::IsFull
 }      
 
 
+//-----------------------------------------------------------------------------
+template<class TInputImage, class TOutputImage, class TPointSet>
+bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
+::IsCrossingLine(
+  const typename OutputImageType::IndexType &index1,
+  const typename OutputImageType::IndexType &index2
+)
+{
+
+  bool result = false;
+  
+  if (m_ManualContours != NULL && m_ManualContours->size() > 0)
+  {
+    for (unsigned long int contourCounter = 0; contourCounter < m_ManualContours->size(); contourCounter++)
+    {
+      ParametricPathPointer path = (*m_ManualContours)[contourCounter];
+      const ParametricPathVertexListType* list = path->GetVertexList();
+      
+      if (list != NULL && list->Size() > 1)
+      {
+        ParametricPathVertexType previousVertex;
+        ParametricPathVertexType currentVertex;
+        ContinuousIndexType previousVertexInVoxelCoordinates;
+        ContinuousIndexType currentVertexInVoxelCoordinates;
+        ContinuousIndexType halfwayBetweenContourPoints;
+        ContinuousIndexType halfwayBetweenIndexPoints;
+        double distance = 0;
+        
+        previousVertex = list->ElementAt(0);
+                    
+        for (unsigned long int k = 1; k < list->Size() - 1; k++)
+        {
+          currentVertex = list->ElementAt(k);
+          
+          this->GetManualContourImage()->TransformPhysicalPointToContinuousIndex(previousVertex, previousVertexInVoxelCoordinates);
+          this->GetManualContourImage()->TransformPhysicalPointToContinuousIndex(currentVertex, currentVertexInVoxelCoordinates);
+                    
+          for (int j = 0; j < TInputImage::ImageDimension; j++)
+          {
+            halfwayBetweenContourPoints[j] = (previousVertexInVoxelCoordinates[j] + currentVertexInVoxelCoordinates[j])/2.0;
+            halfwayBetweenIndexPoints[j] = (index2[j] + index1[j])/2.0;            
+          }          
+          
+          distance = halfwayBetweenContourPoints.EuclideanDistanceTo(halfwayBetweenIndexPoints);
+    
+          if (distance < 0.01)
+          {
+            result = true;
+          }                    
+          
+          previousVertex = currentVertex;
+        }
+      }
+    }
+    
+  }
+  
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
 void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::ConditionalAddPixel(
 		std::stack<typename OutputImageType::IndexType> &r_stack,
@@ -100,13 +174,11 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
              )                                      
          )
       && (   this->GetManualContourImage() == NULL
-          || (    this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageNonBorderValue
-               && isFullyConnected
+          || (this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageNonBorderValue
              ) 
-          || (
-                  this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageNonBorderValue
-               && this->GetManualContourImage()->GetPixel(nextImgIdx) == m_ManualContourImageBorderValue
-               && !isFullyConnected
+          || (this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageBorderValue
+              && isFullyConnected
+              && !this->IsCrossingLine(currentImgIdx, nextImgIdx)
              )
          )
      ) 
@@ -116,6 +188,8 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
 	}
 }
 
+
+//-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
 void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::GenerateData() 
 {
