@@ -396,8 +396,7 @@ mitk::ToolManager::DataVectorType MIDASGeneralSegmentorView::GetWorkingNodesFrom
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-  col->SetColor(r, g, b);
+  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r,g,b);
 
   mitk::ContourSet::Pointer contourSet = mitk::ContourSet::New();
   mitk::DataNode::Pointer contourSetNode = mitk::DataNode::New();
@@ -422,8 +421,8 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
   mitk::Tool* drawTool = toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>());
   assert(drawTool);
 
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-  col->SetColor(r, g, b);
+  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
+
   mitk::DataNode::Pointer helperImageNode = drawTool->CreateEmptySegmentationNode( referenceImage, name, col->GetColor());
   helperImageNode->SetColor(col->GetColor());
   helperImageNode->SetProperty("binaryimage.selectedcolor", col);
@@ -826,7 +825,10 @@ void MIDASGeneralSegmentorView::ClearWorkingData()
     seeds->Clear();
 
     // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
-    m_SliceNavigationController->SendSlice();
+    if (m_SliceNavigationController)
+    {
+      m_SliceNavigationController->SendSlice();
+    }
   }
   catch(const mitk::AccessByItkException& e)
   {
@@ -888,6 +890,14 @@ void MIDASGeneralSegmentorView::OnCancelButtonPressed()
 void MIDASGeneralSegmentorView::OnResetButtonPressed()
 {
   if (!this->HaveInitialisedWorkingData())
+  {
+    return;
+  }
+
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+                                                            tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
+                                                            QMessageBox::Yes | QMessageBox::No);
+  if (returnValue == QMessageBox::No)
   {
     return;
   }
