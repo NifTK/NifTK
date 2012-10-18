@@ -230,6 +230,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetRegionOfInterest(region3D);
     m_RegionGrowingFilter->SetUseRegionOfInterest(true);
     m_RegionGrowingFilter->SetProjectSeedsIntoRegion(false);
+    m_RegionGrowingFilter->SetUsePropMaskMode(false);
     m_RegionGrowingFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_RegionGrowingFilter->SetSegmentationContourImage(m_CastToSegmentationContourFilter->GetOutput());
     m_RegionGrowingFilter->SetManualContourImage(m_CastToManualContourFilter->GetOutput());
