@@ -65,6 +65,7 @@ public:
   typedef itk::Image<TPixel, VImageDimension>                              GreyScaleImageType;
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType,
                      VImageDimension>                                      SegmentationImageType;
+  typedef typename SegmentationImageType::PixelType                        SegmentationImagePixelType;
   typedef typename GreyScaleImageType::RegionType                          RegionType;
   typedef typename GreyScaleImageType::SizeType                            SizeType;
   typedef typename GreyScaleImageType::PointType                           PointType;
