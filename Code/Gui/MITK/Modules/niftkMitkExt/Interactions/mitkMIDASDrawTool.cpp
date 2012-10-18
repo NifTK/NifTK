@@ -347,7 +347,7 @@ void mitk::MIDASDrawTool::ExecuteOperation(Operation* operation)
       {
         assert(m_ToolManager);
 
-        mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(2);
+        mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(3);
         assert(contourNode);
 
         mitk::ContourSet* contoursToReplace = static_cast<mitk::ContourSet*>(contourNode->GetData());
