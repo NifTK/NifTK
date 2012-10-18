@@ -2192,6 +2192,18 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
 
         try
         {
+
+          mitk::ToolManager *toolManager = this->GetToolManager();
+          assert(toolManager);
+
+          mitk::MIDASDrawTool *drawTool = static_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
+          assert(drawTool);
+
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+          {
+            toolManager->ActivateTool(-1);
+          }
+
           AccessFixedDimensionByItk_n(workingImage, // The binary image = current segmentation
               ITKPreProcessingForWipe, 3,
               (*seeds,
@@ -2214,6 +2226,8 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Wipe command");
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           ExecuteOperation(doOp);
+
+          drawTool->ClearWorkingData();
 
           // Successful outcome.
           wipeWasPerformed = true;
