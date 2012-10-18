@@ -93,6 +93,18 @@ float mitk::MIDASDrawTool::CanHandleEvent(const StateEvent *event) const
   }
 }
 
+void mitk::MIDASDrawTool::ClearWorkingData()
+{
+  assert(m_ToolManager);
+
+  // Retrieve the correct contour set.
+  mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(3);
+  mitk::ContourSet* contours = static_cast<mitk::ContourSet*>(contourNode->GetData());
+
+  // Delete all contours.
+  contours->Initialize();
+}
+
 /**
  To start a contour, we initialise the "FeedbackCountour", which is the "Current" contour,
  and also store the current point, at which the mouse was pressed down. It's the next
@@ -179,7 +191,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
 
   /** When the mouse is released, we need to add the contour to the cumulative one. */
   mitk::Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  this->AccumulateContourInWorkingData(*feedbackContour, 2);
+  this->AccumulateContourInWorkingData(*feedbackContour, 3);
 
   // Re-initialize contours to zero length.
   this->ClearData();
@@ -222,7 +234,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(Action* action, const StateEvent* st
 
   // Retrieve the correct contour set.
   assert(m_ToolManager);
-  mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(2);
+  mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(3);
 
   if (contourNode.IsNull())
   {

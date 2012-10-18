@@ -32,42 +32,42 @@ ENDIF(NOT NIFTYSIM_DIR)
 
 IF(CUDA_FOUND)
 
-FIND_PATH(NIFTYSIM_INCLUDE_DIR
-  tledSolverGPU.h
-  ${NIFTYSIM_DIR}/include
-  ${NIFTYSIM_DIR}-1.0/include
-  @NIFTK_LINK_PREFIX@/include
-  /usr/local/include
-  /usr/include
+  FIND_PATH(NIFTYSIM_INCLUDE_DIR
+    tledSolverGPU.h
+    ${NIFTYSIM_DIR}/include
+    ${NIFTYSIM_DIR}-1.0/include
+    @NIFTK_LINK_PREFIX@/include
+    /usr/local/include
+    /usr/include
   )
-
-FIND_LIBRARY(NIFTYSIM_LIBRARIES
-  tled
-  ${NIFTYSIM_DIR}/lib
-  NIFTYSIM_DIR  ${NIFTYSIM_DIR}-1.0/lib
-  @NIFTK_LINK_PREFIX@/lib
-  /usr/local/lib
-  /usr/lib
+  
+  FIND_LIBRARY(NIFTYSIM_LIBRARIES
+    tled
+    ${NIFTYSIM_DIR}/lib
+    NIFTYSIM_DIR  ${NIFTYSIM_DIR}-1.0/lib
+    @NIFTK_LINK_PREFIX@/lib
+    /usr/local/lib
+    /usr/lib
   )
 
 ELSE(CUDA_FOUND)
 
-FIND_PATH(NIFTYSIM_INCLUDE_DIR
-  tledSolverCPU.h
-  ${NIFTYSIM_DIR}/include
-  ${NIFTYSIM_DIR}-1.0/include
-  @NIFTK_LINK_PREFIX@/include
-  /usr/local/include
-  /usr/include
+  FIND_PATH(NIFTYSIM_INCLUDE_DIR
+    tledSolverCPU.h
+    ${NIFTYSIM_DIR}/include
+    ${NIFTYSIM_DIR}-1.0/include
+    @NIFTK_LINK_PREFIX@/include
+    /usr/local/include
+    /usr/include
   )
 
-FIND_LIBRARY(NIFTYSIM_LIBRARIES
-  tled
-  ${NIFTYSIM_DIR}/lib
-  ${NIFTYSIM_DIR}-1.0/lib
-  @NIFTK_LINK_PREFIX@/lib
-  /usr/local/lib
-  /usr/lib
+  FIND_LIBRARY(NIFTYSIM_LIBRARIES
+    tled
+    ${NIFTYSIM_DIR}/lib
+    ${NIFTYSIM_DIR}-1.0/lib
+    @NIFTK_LINK_PREFIX@/lib
+    /usr/local/lib
+    /usr/lib
   )
 
 ENDIF(CUDA_FOUND)

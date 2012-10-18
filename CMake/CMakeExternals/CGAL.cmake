@@ -26,6 +26,8 @@
 # CGAL
 #-----------------------------------------------------------------------------
 
+SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-3.8.tar.gz")
+
 IF(BUILD_MESHING)
 
   SET(proj CGAL)
@@ -46,8 +48,11 @@ IF(BUILD_MESHING)
       SET(BUILD_SHARED ON)
     ENDIF (WIN32)
 
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_CGAL ${NIFTK_LOCATION_CGAL})
+
     ExternalProject_Add(${proj}
-      URL http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-3.8.tar.gz
+      URL ${NIFTK_LOCATION_CGAL}
+      URL_MD5 ${NIFTK_CHECKSUM_CGAL}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -72,5 +77,5 @@ IF(BUILD_MESHING)
   ENDIF()
 
   MESSAGE("SuperBuild loading CGAL from ${CGAL_DIR}")
-  
+
 ENDIF(BUILD_MESHING)

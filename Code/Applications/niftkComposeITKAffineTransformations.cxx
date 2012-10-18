@@ -104,12 +104,14 @@ int DoMain(arguments args)
     iterTransforms = transforms->begin();
   
     inputTransform1 = dynamic_cast<AffineTransformType*>( (*iterTransforms).GetPointer() );
+    std::cout << std::endl << "Transform 1: " << std::endl;
     inputTransform1->Print( std::cout );
 
     matrix1 = inputTransform1->GetMatrix();
     std::cout << matrix1 << std::endl;     
   
     inputTransform2 = dynamic_cast<AffineTransformType*>( (*(++iterTransforms)).GetPointer() );
+    std::cout << std::endl << "Transform 2: " << std::endl;
     inputTransform2->Print( std::cout );
 
     matrix2 = inputTransform2->GetMatrix();
@@ -121,6 +123,7 @@ int DoMain(arguments args)
     bool preCompose = false;
     inputTransform1->Compose( inputTransform2, preCompose );
 
+    std::cout << std::endl << "Composed Transformation: " << std::endl;
     inputTransform1->Print( std::cout );
 
 

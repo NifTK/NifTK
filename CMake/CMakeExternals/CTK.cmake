@@ -39,29 +39,22 @@ IF(QT_FOUND)
   SET(proj CTK)
   SET(proj_DEPENDENCIES VTK ITK DCMTK)
   SET(CTK_DEPENDS ${proj})
-  
+
   IF(NOT DEFINED CTK_DIR)
-  
-      #####################################################################
-      # Note: If the CTK version changes, then you either clear the plugin 
-      # cache or change the deploy path by changing the patch level.
-      #####################################################################
-      SET(revision_tag 12cc05735a)
-      IF(${proj}_REVISION_TAG)
-        SET(revision_tag ${${proj}_REVISION_TAG})
-      ENDIF()
-      
-      ExternalProject_Add(${proj}
+
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_CTK ${NIFTK_LOCATION_CTK})
+
+    ExternalProject_Add(${proj}
       SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
       BINARY_DIR ${proj}-build
       PREFIX ${proj}-cmake
-      GIT_REPOSITORY ${GIT_PROTOCOL}:${NIFTK_LOCATION_CTK}
-      GIT_TAG ${revision_tag}
+      URL ${NIFTK_LOCATION_CTK}
+      URL_MD5 ${NIFTK_CHECKSUM_CTK}
       UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
-        ${EP_COMMON_ARGS}       
+        ${EP_COMMON_ARGS}
         -DDESIRED_QT_VERSION:STRING=4
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
@@ -83,15 +76,15 @@ IF(QT_FOUND)
         -DDCMTK_URL:STRING=http://cmic.cs.ucl.ac.uk/platform/dependencies/CTK_DCMTK_085525e6.tar.gz 
       DEPENDS ${proj_DEPENDENCIES}
     )
-  SET(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-  SET(CTK_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src)
+    SET(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+    SET(CTK_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src)
 
-  MESSAGE("SuperBuild loading CTK from ${CTK_DIR}")
-  
+    MESSAGE("SuperBuild loading CTK from ${CTK_DIR}")
+
   ELSE()
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   ENDIF()
 
 ENDIF(QT_FOUND)

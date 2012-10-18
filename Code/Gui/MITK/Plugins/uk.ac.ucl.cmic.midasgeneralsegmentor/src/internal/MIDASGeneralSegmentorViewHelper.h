@@ -49,13 +49,15 @@ typedef ParametricPathType::VertexType     ParametricPathVertexType;
  */
 struct GeneralSegmentorPipelineParams
 {
+  bool m_EraseFullSlice;
   int m_SliceNumber;
   int m_AxisNumber;
   double m_LowerThreshold;
   double m_UpperThreshold;
   mitk::PointSet *m_Seeds;
-  mitk::ContourSet *m_GreenContours;
-  mitk::ContourSet *m_YellowContours;
+  mitk::ContourSet *m_SegmentationContours;
+  mitk::ContourSet *m_DrawContours;
+  mitk::ContourSet *m_PolyContours;
 
 };
 

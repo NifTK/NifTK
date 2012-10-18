@@ -25,16 +25,22 @@
 template<class TInputImage, class TOutputImage, class TPointSet>
 MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 ::MIDASRegionGrowingImageFilter() 
-:
-  m_LowerThreshold(0)
+: m_LowerThreshold(0)
 , m_UpperThreshold(0)
-, m_ForegroundValue(0)
+, m_ForegroundValue(1)
 , m_BackgroundValue(0)
 , m_UseRegionOfInterest(false)
 , m_ProjectSeedsIntoRegion(false)
 , m_MaximumSeedProjectionDistanceInVoxels(1)
+, m_SegmentationContourImageInsideValue(0)
+, m_SegmentationContourImageBorderValue(1)
+, m_SegmentationContourImageOutsideValue(2)
+, m_ManualContourImageBorderValue(1)
+, m_ManualContourImageNonBorderValue(0)
+, m_EraseFullSlice(false)
+, m_UsePropMaskMode(false)
 {
-  this->SetNumberOfThreads(0);
+  m_PropMask.Fill(0);
 }
 
 template<class TInputImage, class TOutputImage, class TPointSet>
@@ -46,24 +52,25 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
 	if (   (   this->m_UseRegionOfInterest == false
 	        || (this->m_UseRegionOfInterest == true && m_RegionOfInterest.IsInside(nextImgIdx))
 	        )
-	    && this->GetInput()->GetPixel(nextImgIdx) >= GetLowerThreshold()
-			&& this->GetInput()->GetPixel(nextImgIdx) <= GetUpperThreshold()
-			&& this->GetOutput()->GetPixel(nextImgIdx) == GetBackgroundValue()
-			&& (   this->GetContourImage() == NULL
-          || (this->GetContourImage()->GetPixel(currentImgIdx) == GetBackgroundValue()
-              && this->GetContourImage()->GetPixel(nextImgIdx) == GetBackgroundValue()
-             )
-          || (this->GetContourImage()->GetPixel(nextImgIdx) == GetForegroundValue()
-              && this->GetContourImage()->GetPixel(currentImgIdx) == GetBackgroundValue()
-             )
-          || (this->GetContourImage()->GetPixel(nextImgIdx) == GetForegroundValue()
-              && this->GetContourImage()->GetPixel(currentImgIdx) == GetForegroundValue()
-             )             
+	    && this->GetOutput()->GetPixel(nextImgIdx) == m_BackgroundValue
+	    && this->GetInput()->GetPixel(nextImgIdx) >= m_LowerThreshold
+			&& this->GetInput()->GetPixel(nextImgIdx) <= m_UpperThreshold
+			&& (   this->GetSegmentationContourImage() == NULL
+          || this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageInsideValue
+          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageBorderValue
+              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageBorderValue
+             ) 
+          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageBorderValue
+              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageInsideValue
+             )            
+         )
+      && (   this->GetManualContourImage() == NULL
+          || this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageNonBorderValue
          )
      ) 
   {
     r_stack.push(nextImgIdx);
-    this->GetOutput()->SetPixel(nextImgIdx, GetForegroundValue());
+    this->GetOutput()->SetPixel(nextImgIdx, m_ForegroundValue);
 	}
 }
 
@@ -74,16 +81,27 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	typedef typename OutputImageType::RegionType __RegionType;
 	typedef typename InputImageType::RegionType::SizeType __ImageSizeType;
 
+  __IndexType             nextImgIndex;
 	std::stack<__IndexType> nextPixelsStack;
-	OutputImagePointerType sp_output;
+	OutputImagePointerType  sp_output;
 
-  if (this->GetInput() != NULL && this->GetContourImage() != NULL)
+  if (this->GetInput() != NULL && this->GetSegmentationContourImage() != NULL)
   {
-    if (GetContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize() 
-     || GetContourImage()->GetOrigin() != this->GetInput()->GetOrigin() 
-     || GetContourImage()->GetSpacing() != this->GetInput()->GetSpacing()) 
+    if (GetSegmentationContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize() 
+     || GetSegmentationContourImage()->GetOrigin() != this->GetInput()->GetOrigin() 
+     || GetSegmentationContourImage()->GetSpacing() != this->GetInput()->GetSpacing()) 
     {
-      itkExceptionMacro(<< "Invalid input: Grey-scale and contour image have inconsistent spatial definitions.");
+      itkExceptionMacro(<< "Invalid input: Grey-scale and segmentation contour image have inconsistent spatial definitions.");
+    }
+  }
+
+  if (this->GetInput() != NULL && this->GetManualContourImage() != NULL)
+  {
+    if (GetManualContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize() 
+     || GetManualContourImage()->GetOrigin() != this->GetInput()->GetOrigin() 
+     || GetManualContourImage()->GetSpacing() != this->GetInput()->GetSpacing()) 
+    {
+      itkExceptionMacro(<< "Invalid input: Grey-scale and manual contour image have inconsistent spatial definitions.");
     }
   }
   
@@ -149,40 +167,86 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 		}
 	}
 
-  // Now grow those seeds conditionally. We iterate over the 9 (27) connected neighborhood.
-	{
-		while (nextPixelsStack.size() > 0) {
-			const __IndexType currImgIndex = nextPixelsStack.top();
+ 
+  int             axisIndex;
+  int             offsetDirection;
+  int             dimension = __ImageSizeType::GetSizeDimension();
+  __RegionType    neighborhoodRegion;
+  __IndexType     neighborhoodRegionStartingIndex;
+  __ImageSizeType neighborhoodRegionSize;
+  
+  neighborhoodRegionSize.Fill(3);
+  for (int axis = 0; axis < (int)__ImageSizeType::GetSizeDimension(); axis++)
+  {
+    if (outputRegion.GetSize()[axis] < 3)
+    {
+      neighborhoodRegionSize[axis] = 1;
+    }
+  }
+  neighborhoodRegion.SetSize(neighborhoodRegionSize);
+  
+  // Now grow those seeds conditionally.
+  while (nextPixelsStack.size() > 0) {
+		
+	  const __IndexType currImgIndex = nextPixelsStack.top();
 
-			__IndexType nextImgIndex;
-
-			/*
-			 * Data structure is LIFO -> better caching performance if inner most image index is push last (assume x)
-			 */
-			nextPixelsStack.pop();
-			assert(sp_output->GetPixel(currImgIndex) == GetForegroundValue());
-
-      __RegionType    neighborhoodRegion;
-      __IndexType     neighborhoodRegionStartingIndex;
-      __ImageSizeType neighborhoodRegionSize;
+	  /*
+		 * Data structure is LIFO -> better caching performance if inner most image index is push last (assume x)
+		 */
+		nextPixelsStack.pop();
+		assert(sp_output->GetPixel(currImgIndex) == m_ForegroundValue);
       
+    if (m_UsePropMaskMode)
+    {
+      /*
+       * This mode iterates in a 4 (2D), or 6 (3D) connected neighbourhood, and is
+       * used for the MIDAS Propagate up/down/3D functionality.
+       * Axes can be masked so that you don't propagate down that axis.
+       */
+      for (axisIndex = 0; axisIndex < dimension; axisIndex++)
+      {
+        for (offsetDirection = -1; offsetDirection <= 1; offsetDirection += 2)
+        {
+          nextImgIndex = currImgIndex;
+          
+          // Note: m_PropMask is assumed to contain:
+          // -1 meaning "only use the negative direction"
+          // +1 meaning "only use the positive direction"
+          //  0 meaning "use both directions"
+          
+          if (   m_PropMask[axisIndex] == 0 
+              || m_PropMask[axisIndex] == offsetDirection
+             )
+          {
+            nextImgIndex[axisIndex] += offsetDirection;
+  
+            if (outputRegion.IsInside(nextImgIndex))
+            {
+              ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex);
+            }
+          }
+        }
+      }    
+    }
+    else
+    {
+      /*
+       * This mode iterates in a 8 (2D), or 26 (3D) connected neighbourhood, and is
+       * used for the MIDAS region growing algorithm, where you grow up to and
+       * including the lines drawn by the mitkMIDASDrawTool and mitkMIDASPolyTool.
+       */
+    
       neighborhoodRegionStartingIndex = currImgIndex;
-      neighborhoodRegionSize.Fill(3);
-      for (int axis = 0; axis < (int)__ImageSizeType::GetSizeDimension(); axis++)
+      
+      for (int axis = 0; axis < dimension; axis++)
       {
         if (outputRegion.GetSize()[axis] >= 3)
         {
           neighborhoodRegionStartingIndex[axis] -= 1;
         }
-        else
-        {
-          neighborhoodRegionSize[axis] = 1;
-        }
       }
-      
-      neighborhoodRegion.SetSize(neighborhoodRegionSize);
       neighborhoodRegion.SetIndex(neighborhoodRegionStartingIndex);
-       
+
       typename itk::ImageRegionConstIteratorWithIndex<OutputImageType> outputIterator(sp_output, neighborhoodRegion);
       for (outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator)
       {
@@ -192,6 +256,28 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
           ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex);
         }
       }
-		}
+    }    
+  } // end while
+	
+	// Post processing.
+	
+	if (m_EraseFullSlice)
+	{
+	  // If the whole region is filled, and m_EraseFullSlice is true, we reset the whole region to zero.
+	  
+	  unsigned long int numberOfFilledVoxels = 0;
+	  
+	  typename itk::ImageRegionConstIteratorWithIndex<OutputImageType> outputIterator(sp_output, outputRegion);
+	  for (outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator)
+	  {
+	    if (outputIterator.Get() == m_ForegroundValue)
+	    {
+	      numberOfFilledVoxels++;
+	    }
+	  }
+	  if (numberOfFilledVoxels == outputRegion.GetNumberOfPixels())
+	  {
+	    sp_output->FillBuffer(m_BackgroundValue);
+	  }
 	}
 }
