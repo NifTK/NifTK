@@ -106,6 +106,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 {
   assert(visibilityManager);
 
+  this->setFocusPolicy(Qt::StrongFocus);
+
   /************************************
    * Create stuff.
    ************************************/
