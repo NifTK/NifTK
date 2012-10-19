@@ -922,7 +922,6 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
 void MIDASGeneralSegmentorView::OnToolSelected(int id)
 {
   QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
-
 }
 
 
@@ -1622,7 +1621,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
       || m_IsUpdating
       || m_IsChangingSlice
       || beforeSliceNumber == -1
-      || beforeSliceNumber == -1
+      || afterSliceNumber == -1
       )
   {
     // i.e. early exit due to invalid data, so do as little as possible.
@@ -1676,11 +1675,6 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
         bool thisSliceIsEmpty(false);
 
         m_IsUpdating = true;
-
-        if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
-        {
-          toolManager->ActivateTool(-1);
-        }
 
         try
         {
@@ -1879,6 +1873,11 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
         }
 
         m_IsUpdating = false;
+
+        if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+        {
+          toolManager->ActivateTool(-1);
+        }
 
         this->UpdatePriorAndNext();
         this->UpdateRegionGrowing();
