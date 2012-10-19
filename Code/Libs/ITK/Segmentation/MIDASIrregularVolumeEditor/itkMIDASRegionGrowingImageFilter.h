@@ -57,12 +57,15 @@ public:
 	typedef typename OutputImageType::ConstPointer        OutputImageConstPointerType;
 	typedef typename OutputImageType::PixelType           OutputPixelType;
 	typedef TPointSet                                     PointSetType;
-	typedef itk::PolyLineParametricPath<3>                ParametricPathType;
-	typedef ParametricPathType::Pointer                   ParametricPathPointer;
+
+	typedef itk::ContinuousIndex<double,TInputImage::ImageDimension> ContinuousIndexType;
+	typedef itk::PolyLineParametricPath<TInputImage::ImageDimension> ParametricPathType;
+
+	typedef typename ParametricPathType::Pointer          ParametricPathPointer;
 	typedef std::vector<ParametricPathPointer>            ParametricPathVectorType;
-	typedef ParametricPathType::VertexListType            ParametricPathVertexListType;
-	typedef ParametricPathType::VertexType                ParametricPathVertexType;
-  typedef itk::ContinuousIndex<double, TInputImage::ImageDimension> ContinuousIndexType;
+	typedef typename ParametricPathType::VertexListType   ParametricPathVertexListType;
+	typedef typename ParametricPathType::VertexType       ParametricPathVertexType;
+
 
 	/** @} */
 
