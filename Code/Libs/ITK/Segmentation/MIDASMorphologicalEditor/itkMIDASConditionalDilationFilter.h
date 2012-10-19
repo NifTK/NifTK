@@ -112,9 +112,6 @@ namespace itk
     MIDASConditionalDilationFilter(const Self&); //purposely not implemented
     void operator=(const Self&); //purposely not implemented
 
-    /** A pixel is next to a region/object if it's value is 0, and at least one of the 6 connected (in 3D) neighbourhood is a 1. */
-    bool IsNextToObject(OutputImageIndexType &voxelIndex, OutputImageType* inMask);
-
     /** Calculates the mean value of the input. */
     MeanFilterPointer m_MeanFilter;
 

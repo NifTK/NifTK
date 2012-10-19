@@ -125,8 +125,8 @@ namespace itk
     virtual void AfterIteration() {};
 
     void CopyImageData(OutputImageType* in, OutputImageType *out);
-    bool IsOnBoundaryOfImage(OutputImageIndexType &voxelIndex, OutputImageSizeType &size);
-    bool IsOnBoundaryOfRegion(OutputImageIndexType &voxelIndex, OutputImageRegionType& region);
+    bool IsOnBoundaryOfImage(const OutputImageIndexType &voxelIndex, const OutputImageSizeType &size);
+    bool IsOnBoundaryOfRegion(const OutputImageIndexType &voxelIndex, const OutputImageRegionType& region);
 
     InputMaskImageRegionType m_Region;
     bool                     m_UserSetRegion;
