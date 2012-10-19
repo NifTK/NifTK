@@ -38,6 +38,25 @@ So if you are currently running a CMIC Centos machine, you are strongly advised 
 machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for the new Scientific Linux build. </li>
 <li> On Windows please "tidy up" your system before attempting to build NifTK. If you happen to have multiple old versions of Qt, Boost, Dcmtk etc. scattered all around the disk it is very likely that CMake might pick up one, and your build will fail in a spectacular fashion.
 Do check your system path, if it has Boost, old Qt, random installation of ITK or VTK then please clear them off. </li>
+<li> If you would like to compile NifTK using Visual Studio 2010 please also install the VS Redistributable packages for your system. 
+
+<br> 32 bit Windows:
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=3387">Microsoft Visual C++ 2005 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=5638">Microsoft Visual C++ 2005 SP1 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=29">Microsoft Visual C++ 2008 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=5582">Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=5555">Microsoft Visual C++ 2010 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=8328">Microsoft Visual C++ 2010 SP1 Redistributable Package (x86)</a><br>
+
+<br> 64 bit Windows:
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=21254">Microsoft Visual C++ 2005 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=18471">Microsoft Visual C++ 2005 SP1 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=15336">Microsoft Visual C++ 2008 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=2092">Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=14632">Microsoft Visual C++ 2010 Redistributable Package (x86)</a><br>
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=13523">Microsoft Visual C++ 2010 SP1 Redistributable Package (x86)</a><br>
+
+</li>
 </ul>
 
 \section BuildInstructionsDownloadCMake 2. Install CMake 2.8.4 or greater
@@ -140,6 +159,10 @@ If you require an additional graphical interface please install <a href="http://
 /var/drc/software/32bit/git
 \endverbatim
 <li> On Mac, available if you installed the XCode tools.</li>
+
+<br>
+Please do remember to configure your git and svn before attempting to build NifTK!!! For svn to work correctly all you need to do is to check out something from cmicdev, and accept the certificate permanently. For git, please follow the <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/Git%20at%20CMIC">Git Instructions</a>. 
+
 </ul>
 
 \section BuildInstructionsDoxygen 5. Doxygen
