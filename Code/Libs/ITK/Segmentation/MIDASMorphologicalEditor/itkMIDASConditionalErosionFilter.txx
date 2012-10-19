@@ -49,29 +49,34 @@ namespace itk
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   bool 
   MIDASConditionalErosionFilter<TInputImage1, TInputImage2, TOutputImage>
-  ::IsOnBoundaryOfObject(OutputImageIndexType &voxelIndex, OutputImageType* inMask)
+  ::IsOnBoundaryOfObject(const OutputImageIndexType &voxelIndex, const OutputImageType* inMask)
   {
     bool result = false;
+
+    OutputImageIndexType indexPlus;
+    OutputImageIndexType indexMinus;
+    PixelType1 inValue = this->GetInValue();
+
+    indexPlus = voxelIndex;
+    indexMinus = voxelIndex;
+    
+    for (int i = 0; i < TInputImage1::ImageDimension; i++)
+    {      
+      indexPlus[i] += 1;
+      indexMinus[i] -= 1;
+
+      if (inMask->GetPixel(indexPlus) != inValue || inMask->GetPixel(indexMinus) != inValue)
+      {
+        result = true;
+        break;
+      }  
+      
+      indexPlus[i] -= 1;
+      indexMinus[i] += 1;          
+    }
     
     if (inMask->GetPixel(voxelIndex) == this->GetInValue())
     {
-      OutputImageIndexType indexPlus;
-      OutputImageIndexType indexMinus;
-      
-      for (int i = 0; i < TInputImage1::ImageDimension; i++)
-      {
-        indexPlus = voxelIndex;
-        indexMinus = voxelIndex;
-        
-        indexPlus[i] += 1;
-        indexMinus[i] -= 1;
-
-        if (inMask->GetPixel(indexPlus) != this->GetInValue() || inMask->GetPixel(indexMinus) != this->GetInValue())
-        {
-          result = true;
-          break;
-        }      
-      }
     }
     return result;
   }
@@ -85,33 +90,59 @@ namespace itk
   
     /** NOTE: inGrey may be NULL as it is an optional image. */
     
+    /** Precalculate the region size, so we don't have to check it each time */
+    InputMaskImageRegionType region = inMask->GetLargestPossibleRegion();
+    InputMaskImageSizeType   regionSize = region.GetSize();
+    InputMaskImageIndexType  regionIndex = region.GetIndex();
+    
+    for (int i = 0; i < TInputImage1::ImageDimension; i++)
+    {
+      regionIndex[i] += 1; // start 1 from the edge.
+      regionSize[i] -= 2;  // taking 1 of each end of the volume.
+    }
+    region.SetSize(regionSize);
+    region.SetIndex(regionIndex);
+    
     /**  ITERATORS */
-    ImageRegionConstIteratorWithIndex<OutputImageType> inputMaskImageIter(inMask, inMask->GetLargestPossibleRegion());
-    ImageRegionIterator<OutputImageType>               outputMaskImageIter(out, out->GetLargestPossibleRegion());
+    ImageRegionConstIteratorWithIndex<OutputImageType> inputMaskImageIter(inMask, region);
+    ImageRegionIterator<OutputImageType>               outputMaskImageIter(out, region);
 
-    InputMaskImageSizeType size = inMask->GetLargestPossibleRegion().GetSize();
     OutputImageIndexType voxelIndex;
+    PixelType1 outValue = this->GetOutValue();
+    PixelType1 inValue = this->GetInValue();
     
     for(inputMaskImageIter.GoToBegin(), outputMaskImageIter.GoToBegin();
         !inputMaskImageIter.IsAtEnd();  
         ++inputMaskImageIter, ++outputMaskImageIter)
-    {                
-      voxelIndex = inputMaskImageIter.GetIndex();
-      
-      if (   !this->IsOnBoundaryOfImage(voxelIndex, size)
-          && (!this->m_UserSetRegion || (this->m_UserSetRegion && !this->IsOnBoundaryOfRegion(voxelIndex, this->m_Region)))
-          && this->IsOnBoundaryOfObject(voxelIndex, inMask)
-          && (inGrey == NULL || (inGrey->GetPixel(voxelIndex) < m_UpperThreshold))           
-         )
+    { 
+      if (inputMaskImageIter.Get() == inValue)
       {
-        outputMaskImageIter.Set(this->GetOutValue());
+        voxelIndex = inputMaskImageIter.GetIndex();
+        
+        if (this->IsOnBoundaryOfObject(voxelIndex, inMask))
+        {
+          if (    (!this->m_UserSetRegion || (!this->IsOnBoundaryOfRegion(voxelIndex, this->m_Region)))
+               && (inGrey == NULL || (inGrey->GetPixel(voxelIndex) < m_UpperThreshold))           
+             )
+          {
+            outputMaskImageIter.Set(outValue); // i.e. do the erosion
+          }
+          else
+          {
+            outputMaskImageIter.Set(inputMaskImageIter.Get()); // i.e. don't do the erosion
+          }
+        }
+        else
+        {
+          outputMaskImageIter.Set(inputMaskImageIter.Get()); // i.e. don't do the erosion
+        }
       }
       else
       {
-        outputMaskImageIter.Set(inputMaskImageIter.Get());
+        outputMaskImageIter.Set(inputMaskImageIter.Get()); // i.e. don't do the erosion
       }
-    }
-  }
+    } // end for each voxel
+  } // end DoFilter function
   
 }//end namespace itk
 
