@@ -173,7 +173,7 @@ int itkMIDASConditionalDilationFilterTest(int argc, char * argv[])
   {
     pixelValue = outputImageIter.Get();
 
-    std::cerr << "Expected=" << outValueVector[index] << ", actual=" << pixelValue << std::endl;
+    std::cerr << "Index=" << index << ", Expected=" << outValueVector[index] << ", actual=" << pixelValue << std::endl;
 
     if(outputImageIter.Get() != outValueVector[index])
     {
