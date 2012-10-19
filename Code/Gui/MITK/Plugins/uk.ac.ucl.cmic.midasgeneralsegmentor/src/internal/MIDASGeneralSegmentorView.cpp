@@ -1126,7 +1126,16 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
+bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const int& sliceNumber)
+{
+  mitk::PointSet* seeds = this->GetSeeds();
+  assert(seeds);
+
+  return this->DoesSliceHaveUnenclosedSeeds(sliceNumber, *seeds);
+}
+
+//-----------------------------------------------------------------------------
+bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const int& sliceNumber, mitk::PointSet& seeds)
 {
   bool sliceDoesHaveUnenclosedSeeds = false;
 
@@ -1138,9 +1147,6 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
   mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
-
-  mitk::PointSet* seeds = this->GetSeeds();
-  assert(seeds);
 
   mitk::ToolManager *toolManager = this->GetToolManager();
   assert(toolManager);
@@ -1168,7 +1174,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
     {
       AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
         ITKSliceDoesHaveUnEnclosedSeeds, 3,
-          (*seeds,
+          (seeds,
            *segmentationContours,
            *polyToolContours,
            *drawToolContours,
@@ -1899,27 +1905,26 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
   }
 
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds(sliceNumber);
 
-  if (hasUnEnclosedPoints)
+  if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
   {
-    int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                     tr("There are unenclosed points - slice will be wiped\n"
-                                                        "Are you sure?"),
-                                                     QMessageBox::Yes | QMessageBox::No);
-    if (returnValue == QMessageBox::Yes)
+    bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds(sliceNumber);
+
+    if (hasUnEnclosedPoints)
     {
-      this->DoWipe(0);
+      int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+                                                       tr("There are unenclosed points - slice will be wiped\n"
+                                                          "Are you sure?"),
+                                                       QMessageBox::Yes | QMessageBox::No);
+      if (returnValue == QMessageBox::Yes)
+      {
+        this->DoWipe(0);
+      }
+      return;
     }
-    return;
   }
 
   bool cleanWasPerformed = false;
-
-  // If not wiping slice, we are doing proper clean.
-  // Take all seeds, region grow without intensity limits = binary image of current regions.
-  // If thresholding on = region growing with intensity limits
-  // Take red contours, and filter by comparing contours with the output of above two pipelines.
 
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
@@ -1972,8 +1977,12 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
           std::vector<int> outputRegion;
           mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
           mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
+          mitk::PointSet::Pointer currentSliceSeeds = mitk::PointSet::New();
+          mitk::PointSet::Pointer oneSeedAtATime = mitk::PointSet::New();
+          mitk::PointSet::Pointer seedsWithoutUnenclosedSeeds = mitk::PointSet::New();
 
-          // First work out region, and valid seeds.
+          // Basically, as we are not changing slice, and we are not optimising seeds
+          // this function is used to copy input seeds to output.
           AccessFixedDimensionByItk_n(workingImage,
               ITKPreProcessingOfSeedsForChangingSlice, 3,
               (*seeds,
@@ -1981,19 +1990,48 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
                axisNumber,
                sliceNumber,
                false, // optimise seed position on current slice.
-               false,
+               false, // new slice is empty.
                *(copyOfCurrentSeeds.GetPointer()),
                *(propagatedSeeds.GetPointer()),
                outputRegion
               )
             );
 
+          // However, we also need to extract the current number of seeds for the current slice.
+          AccessFixedDimensionByItk_n(workingImage,
+              ITKFilterSeedsToCurrentSlice, 3,
+              (*seeds,
+               axisNumber,
+               sliceNumber,
+               *(currentSliceSeeds.GetPointer())
+              )
+            );
+
+          // We then need to further reduce this list of seeds to those that are un-enclosed.
+          oneSeedAtATime->Initialize();
+          seedsWithoutUnenclosedSeeds->Initialize();
+
+          int filteredSeedsCounter = 0;
+          for (int i = 0; i < currentSliceSeeds->GetSize(); i++)
+          {
+            mitk::PointSet::PointType singleSeed = currentSliceSeeds->GetPoint(i);
+            oneSeedAtATime->Initialize();
+            oneSeedAtATime->InsertPoint(0, singleSeed);
+
+            bool unenclosed = this->DoesSliceHaveUnenclosedSeeds(sliceNumber, *(oneSeedAtATime.GetPointer()));
+            if (!unenclosed)
+            {
+              seedsWithoutUnenclosedSeeds->InsertPoint(filteredSeedsCounter, singleSeed);
+              ++filteredSeedsCounter;
+            }
+          }
+
           // Then create filtered contours
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
               ITKFilterContours, 3,
               (
                *workingImage,
-               *seeds,
+               *seedsWithoutUnenclosedSeeds,
                *segmentationContours,
                *drawToolContours,
                *polyToolContours,
@@ -2019,12 +2057,14 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
 
           // Now, with the new set of contours, we calculate a new region, we know there are NOT un-enclosed seeds,
           // so we can threshold without using region growing limits
+/*
           this->UpdateRegionGrowing(false,
                                     sliceNumber,
                                     referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
                                     referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
                                     false);
-
+*/
+/*
           // Then we "apply" this region growing.
           mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
           mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
@@ -2035,10 +2075,12 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
 
           workingImage->Modified();
           workingNode->Modified();
+*/
 
           drawTool->ClearWorkingData();
+/*
           this->UpdateCurrentSliceContours();
-
+*/
           cleanWasPerformed = true;
 
         }
@@ -4243,6 +4285,7 @@ void MIDASGeneralSegmentorView
   typedef typename BinaryImageType::PointType PointType;
 
   // Copy draw tool contours into segmentation contours.
+  // This is only really for undo purposes.
   mitk::MIDASContourTool::CopyContourSet(segmentationContours, outputCopyOfInputContours, true);
   mitk::MIDASContourTool::CopyContourSet(drawToolContours, outputCopyOfInputContours, false);
 

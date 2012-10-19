@@ -481,7 +481,10 @@ private:
   void CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(int sliceNumber);
+  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber);
+
+  /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
+  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber, mitk::PointSet& seeds);
 
   /**************************************************************
    * Start of ITK stuff.
