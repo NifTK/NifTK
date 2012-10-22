@@ -480,15 +480,10 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
       mitk::BaseRenderer::ConstPointer focusedWindowRenderer = focusManager->GetFocused();
       if (focusedWindowRenderer.IsNotNull())
       {
-        vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
+        if (focusedWindowRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
+        {
+          vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
 
-        if (focusedWindowRenderer->GetMapperID() == mitk::BaseRenderer::Standard3D)
-        {
-          // Remove any existing geometry observers
-          this->RemoveObserversFromTrackedObjects();
-        }
-        else if (focusedWindowRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
-        {
           if (!(focusedWindowRenderWindow == this->GetVtkRenderWindow()))
           {
             // Remove any existing geometry observers
