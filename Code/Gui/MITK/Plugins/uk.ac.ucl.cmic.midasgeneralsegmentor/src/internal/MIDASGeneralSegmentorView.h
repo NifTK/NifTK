@@ -87,22 +87,12 @@ class QGridLayout;
  * </ul>
  * Additional, significant bits of functionality include:
  *
- * <h2>Retain Marks</h2>
- *
- * The "retain marks" functionality only has an impact if we change slices. When the "retain marks"
- * checkbox is ticked, and we change slices we:
- * <pre>
- * 1. Check if the new slice is empty.
- * 2. If not empty we warn.
- * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
- * </pre>
- *
  * <h2>Recalculation of Seed Position</h2>
  *
  * The number of seeds for a slice often needs re-computing.  This is often because a slice
  * has been automatically propagated, and hence we need new seeds for each slice because
  * as you scroll through slices, regions without a seed would be wiped. For a given slice, the seeds
- * are set so that each disjoint (i.e. not-connected) region will have its own seed at the
+ * are set so that each disjoint (i.e. not 4-connected) region will have its own seed at the
  * largest minimum distance from the edge, scanning only in a vertical or horizontal direction.
  * In other words, for an image containing a single region:
  * <pre>
@@ -114,16 +104,20 @@ class QGridLayout;
  *     best voxel location = current voxel location
  *     best distance = minimum distance
  * </pre>
- * The result is the largest minimum distance, or the largest distance to an edge, noting
+ * The result is the largest minimum distance, or the largest minimum distance to an edge, noting
  * that we are not scanning diagonally.
  *
  * <h2>Propagate Up/Down/3D</h2>
  *
  * Propagate runs a 3D region propagation from the current slice up/down, writing the
  * output to the current segmentation volume, overwriting anything already there.
- * The current slice is not affected. So, you can leave the threshold tick box either on or off.
+ * The current slice is always affected. So, you can leave the threshold tick box either on or off.
  * For each subsequent slice in the up/down direction, the number of seeds is recomputed (as above).
  * 3D propagation is exactly equivalent to clicking "prop up" followed by "prop down".
+ * Here, note that in 3D, you would normally do region growing in a 6-connected neighbourhood.
+ * Here, we are doing a 5D connected neighbourhood, as you always propagate forwards in one
+ * direction. i.e. in a coronal slice, and selecting "propagate up", which means propagate anterior,
+ * then you cannot do region growing in the posterior direction. So its a 5D region growing.
  *
  * <h2>Threshold Apply</h2>
  *
@@ -148,6 +142,16 @@ class QGridLayout;
  * All three pieces of functionality appear similar, wiping the whole slice, whole anterior
  * region, or whole posterior region, including all segmentation and seeds. The threshold controls
  * are not changed. So, if it was on before, it will be on afterwards.
+ *
+ * <h2>Retain Marks</h2>
+ *
+ * The "retain marks" functionality only has an impact if we change slices. When the "retain marks"
+ * checkbox is ticked, and we change slices we:
+ * <pre>
+ * 1. Check if the new slice is empty.
+ * 2. If not empty we warn.
+ * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
+ * </pre>
  *
  * \sa QmitkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorView
