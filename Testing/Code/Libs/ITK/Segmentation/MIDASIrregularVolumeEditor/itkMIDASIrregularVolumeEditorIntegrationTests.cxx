@@ -8,9 +8,9 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-10-06 10:55:39 +0100 (Thu, 06 Oct 2011) $
- Revision          : $Revision: 7447 $
- Last modified by  : $Author: mjc $
+ Last Changed      : $Date: 2011-10-17 11:52:07 +0100 (Mon, 17 Oct 2011) $
+ Revision          : $Revision: 7531 $
+ Last modified by  : $Author: sj $
 
  Original author   : m.clarkson@ucl.ac.uk
 
@@ -26,18 +26,17 @@
 #endif
 
 #include <iostream>
-#include "itkTestMain.h" 
+#include "itkTestMain.h"
 
 void RegisterTests()
 {
-  REGISTER_TEST(BoundaryValueRescaleIntensityImageFilterTest);
-  REGISTER_TEST(SetOutputVectorToCurrentPositionFilterTest);
-  REGISTER_TEST(VectorMagnitudeImageFilterTest);
-  REGISTER_TEST(VectorVPlusLambdaUImageFilterTest);
-  REGISTER_TEST(ShapeBasedAveragingImageFilterTest); 
-  REGISTER_TEST(ExtractEdgeImageTest);
-  REGISTER_TEST(MeanCurvatureImageFilterTest);
-  REGISTER_TEST(GaussianCurvatureImageFilterTest);
-  REGISTER_TEST(itkExcludeImageFilterTest);
-  REGISTER_TEST(itkLargestConnectedComponentFilterTest);
+  REGISTER_TEST(itkMIDASImageUpdateCopyRegionProcessorTest);
+  REGISTER_TEST(itkMIDASImageUpdateClearRegionProcessorTest);
+  REGISTER_TEST(itkMIDASImageUpdatePixelWiseSingleValueProcessorTest);
+  REGISTER_TEST(itkMIDASRegionGrowingImageFilterTest2);
+  REGISTER_TEST(itkMIDASRegionOfInterestCalculatorTest);
+  REGISTER_TEST(itkMIDASRegionOfInterestCalculatorBySlicesTest);
+  REGISTER_TEST(itkMIDASRetainMarksNoThresholdingTest);
+  REGISTER_TEST(itkMIDASRegionOfInterestCalculatorSplitExistingRegionTest);
+  REGISTER_TEST(itkMIDASRegionOfInterestCalculatorMinimumRegionTest);
 }

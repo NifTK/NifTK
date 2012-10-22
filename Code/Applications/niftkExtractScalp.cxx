@@ -33,7 +33,7 @@
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
 #include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
-#include "itkMIDASLargestConnectedComponentFilter.h"
+#include "itkLargestConnectedComponentFilter.h"
 #include "itkMIDASDownSamplingFilter.h"
 #include "itkMIDASUpSamplingFilter.h"
 
@@ -108,7 +108,7 @@ int DoMain(arguments args)
   typedef typename itk::BinaryErodeImageFilter<InputImageType, InputImageType, CrossStructuringElementType> ErodeByCrossImageFilterType;
   typedef typename itk::BinaryErodeImageFilter<InputImageType, InputImageType, BallStructuringElementType> ErodeByBallImageFilterType;
   typedef typename itk::VotingBinaryIterativeHoleFillingImageFilter<InputImageType> HoleFillingFilterType;
-  typedef typename itk::MIDASLargestConnectedComponentFilter<InputImageType, InputImageType> LargestConnectedComponentType;
+  typedef typename itk::LargestConnectedComponentFilter<InputImageType, InputImageType> LargestConnectedComponentType;
   typedef typename itk::MIDASDownSamplingFilter<InputImageType, InputImageType> DownSamplingFilterType;
   typedef typename itk::MIDASUpSamplingFilter<InputImageType, InputImageType> UpSamplingFilterType;
 
