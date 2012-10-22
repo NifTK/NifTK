@@ -35,7 +35,6 @@ void RegisterTests()
   REGISTER_TEST(itkMIDASThresholdAndAxialCutoffFilterTest);
   REGISTER_TEST(itkMIDASConditionalErosionFilterTest);
   REGISTER_TEST(itkMIDASConditionalDilationFilterTest);
-  REGISTER_TEST(itkMIDASLargestConnectedComponentFilterTest);
   REGISTER_TEST(itkMIDASDownSamplingFilterTest);
   REGISTER_TEST(itkMIDASUpSamplingFilterTest);
   REGISTER_TEST(itkMIDASRethresholdingFilterTest);

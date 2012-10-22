@@ -43,7 +43,6 @@ ADD_TEST(MIDAS-Morph-MeanIntensityWithinARegion ${MIDAS_MORPH_INTEGRATION_TESTS}
 ADD_TEST(MIDAS-Morph-ThresholdAndAxialCutoff ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASThresholdAndAxialCutoffFilterTest )
 ADD_TEST(MIDAS-Morph-ConditionalErosion ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASConditionalErosionFilterTest )
 ADD_TEST(MIDAS-Morph-ConditionalDilation ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASConditionalDilationFilterTest )
-ADD_TEST(MIDAS-Morph-LargestConnectedComponent ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASLargestConnectedComponentFilterTest )
 ADD_TEST(MIDAS-Morph-DownSampling ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASDownSamplingFilterTest )
 ADD_TEST(MIDAS-Morph-UpSampling ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASUpSamplingFilterTest )
 ADD_TEST(MIDAS-Morph-Rethresholding ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MIDASRethresholding.nii.gz ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz itkMIDASRethresholdingFilterTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img 400 ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz)
@@ -71,7 +70,6 @@ itkMIDASMeanIntensityWithinARegionFilterTest.cxx
 itkMIDASThresholdAndAxialCutoffFilterTest.cxx
 itkMIDASConditionalErosionFilterTest.cxx
 itkMIDASConditionalDilationFilterTest.cxx
-itkMIDASLargestConnectedComponentFilterTest.cxx
 itkMIDASDownSamplingFilterTest.cxx
 itkMIDASUpSamplingFilterTest.cxx
 itkMIDASRethresholdingFilterTest.cxx

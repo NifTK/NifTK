@@ -21,13 +21,13 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-#ifndef itkMIDASLargestConnectedComponentFilter_txx
-#define itkMIDASLargestConnectedComponentFilter_txx
+#ifndef itkLargestConnectedComponentFilter_txx
+#define itkLargestConnectedComponentFilter_txx
 
 #include <map>
 #include <algorithm>
 
-#include "itkMIDASLargestConnectedComponentFilter.h"
+#include "itkLargestConnectedComponentFilter.h"
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
 #include "itkImageFileWriter.h"
@@ -38,7 +38,7 @@ namespace itk
 {
   //Constructor
   template <class TInputImage, class TOutputImage>
-  MIDASLargestConnectedComponentFilter<TInputImage, TOutputImage>::MIDASLargestConnectedComponentFilter()
+  LargestConnectedComponentFilter<TInputImage, TOutputImage>::LargestConnectedComponentFilter()
   {
     this->SetNumberOfRequiredOutputs(1);
     m_InputBackgroundValue = 0;
@@ -50,7 +50,7 @@ namespace itk
 
 
   template <class TInputImage, class TOutputImage>
-  void MIDASLargestConnectedComponentFilter<TInputImage, TOutputImage>::PrintSelf(std::ostream &os, itk::Indent indent) const
+  void LargestConnectedComponentFilter<TInputImage, TOutputImage>::PrintSelf(std::ostream &os, itk::Indent indent) const
   {
     SuperClass::PrintSelf(os, indent);
     os << indent << "m_InputBackgroundValue=" << m_InputBackgroundValue << std::endl;
@@ -60,7 +60,7 @@ namespace itk
 
 
   template <class TInputImage, class TOutputImage>
-  void MIDASLargestConnectedComponentFilter<TInputImage, TOutputImage>::GenerateData()
+  void LargestConnectedComponentFilter<TInputImage, TOutputImage>::GenerateData()
   { 
     this->AllocateOutputs();
 
@@ -68,7 +68,7 @@ namespace itk
     const unsigned int numberOfInputImages = this->GetNumberOfInputs();
     if(numberOfInputImages != 1)
     {
-      itkExceptionMacro(<< "There should be one input image for MIDASLargestConnectedComponentFilter. ");
+      itkExceptionMacro(<< "There should be one input image for LargestConnectedComponentFilter. ");
     }
     
     // Check input image is set.
@@ -95,7 +95,7 @@ namespace itk
     ImageRegionConstIteratorType ccIt(m_ConnectedFilter->GetOutput(), m_ConnectedFilter->GetOutput()->GetLargestPossibleRegion());
     for (ccIt.GoToBegin(); !ccIt.IsAtEnd(); ++ccIt)
     {
-      if (ccIt.Get() != m_InputBackgroundValue)
+      if (ccIt.Get() != (int)m_InputBackgroundValue)
       {
         componentSizes[ccIt.Get()]++;
       }
@@ -110,7 +110,7 @@ namespace itk
       }
     }
 
-    if (largestSizeLabel == m_InputBackgroundValue)
+    if (largestSizeLabel == (int)m_InputBackgroundValue)
     {
       this->GetOutput()->FillBuffer(m_OutputBackgroundValue);
     }

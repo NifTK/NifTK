@@ -21,8 +21,8 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-#ifndef itkMIDASLargestConnectedComponentFilter_h
-#define itkMIDASLargestConnectedComponentFilter_h
+#ifndef itkLargestConnectedComponentFilter_h
+#define itkLargestConnectedComponentFilter_h
 
 #include "itkImageToImageFilter.h"
 #include "itkCastImageFilter.h"
@@ -36,7 +36,7 @@ namespace itk
 {
 
 /**
- * \class MIDASLargestConnectedComponentFilter
+ * \class LargestConnectedComponentFilter
  * \brief Does connected component analysis and outputs a
  * binary volume of the largest connected component.
  *
@@ -45,15 +45,14 @@ namespace itk
  * Both input and output types should be integer types, and the
  * output type is binary, so should be unsigned char.
  *
- * \ingroup midas_morph_editor
  */
 
   template <class TInputImage, class TOutputImage>
-  class ITK_EXPORT MIDASLargestConnectedComponentFilter : public ImageToImageFilter<TInputImage, TOutputImage>
+  class ITK_EXPORT LargestConnectedComponentFilter : public ImageToImageFilter<TInputImage, TOutputImage>
   {
   public:
     /** Standard class typedefs */
-    typedef MIDASLargestConnectedComponentFilter          Self;
+    typedef LargestConnectedComponentFilter          Self;
     typedef ImageToImageFilter<TInputImage, TOutputImage> SuperClass;
     typedef SmartPointer<Self>                            Pointer;
     typedef SmartPointer<const Self>                      ConstPointer;
@@ -62,7 +61,7 @@ namespace itk
     itkNewMacro(Self);
 
     /** Run-time type information (and related methods) */
-    itkTypeMacro(MIDASLargestConnectedComponentFilter, ImageToImageFilter);
+    itkTypeMacro(LargestConnectedComponentFilter, ImageToImageFilter);
 
     /** Some additional typedefs */
     typedef TInputImage                               InputImageType;
@@ -98,8 +97,8 @@ namespace itk
     itkGetConstMacro(OutputForegroundValue, OutputImagePixelType);
 
   protected:
-    MIDASLargestConnectedComponentFilter();
-    virtual ~MIDASLargestConnectedComponentFilter() {};
+    LargestConnectedComponentFilter();
+    virtual ~LargestConnectedComponentFilter() {};
     void PrintSelf(std::ostream& os, Indent indent) const;
 
     /** The main method to implement the connected component labeling in this single-threaded class */
@@ -109,7 +108,7 @@ namespace itk
     typedef typename itk::ConnectedComponentImageFilter<InternalImageType, InternalImageType> ConnectedComponentFilterType;
 
   private:
-    MIDASLargestConnectedComponentFilter(const Self&); //purposely not implemented
+    LargestConnectedComponentFilter(const Self&); //purposely not implemented
     void operator=(const Self&); //purposely not implemented
 
     InputImagePixelType  m_InputBackgroundValue;
@@ -123,7 +122,7 @@ namespace itk
 } //end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkMIDASLargestConnectedComponentFilter.txx"
+#include "itkLargestConnectedComponentFilter.txx"
 #endif
 
 #endif

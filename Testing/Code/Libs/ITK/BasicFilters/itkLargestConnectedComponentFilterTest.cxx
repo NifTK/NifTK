@@ -28,19 +28,19 @@
 #include <memory>
 #include <math.h>
 #include "itkImage.h"
-#include "itkMIDASLargestConnectedComponentFilter.h"
+#include "itkLargestConnectedComponentFilter.h"
 #include "itkImageRegionConstIterator.h"
 
 /**
- * Basic tests for MIDASLargestConnectedComponentFilterTest
+ * Basic tests for LargestConnectedComponentFilterTest
  */
-int itkMIDASLargestConnectedComponentFilterTest(int argc, char * argv[])
+int itkLargestConnectedComponentFilterTest(int argc, char * argv[])
 {
   // Declare the types of the images
   const unsigned int Dimension = 2;
   typedef int PixelType;
   typedef itk::Image<PixelType, Dimension>                         ImageType;
-  typedef itk::MIDASLargestConnectedComponentFilter<ImageType, ImageType> LargestConnectedComponentFilterType;
+  typedef itk::LargestConnectedComponentFilter<ImageType, ImageType> LargestConnectedComponentFilterType;
 
   // Create the first image.
   ImageType::Pointer inputImage  = ImageType::New();

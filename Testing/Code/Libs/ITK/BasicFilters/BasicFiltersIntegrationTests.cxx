@@ -39,4 +39,5 @@ void RegisterTests()
   REGISTER_TEST(MeanCurvatureImageFilterTest);
   REGISTER_TEST(GaussianCurvatureImageFilterTest);
   REGISTER_TEST(itkExcludeImageFilterTest);
+  REGISTER_TEST(itkLargestConnectedComponentFilterTest);
 }
