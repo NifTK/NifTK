@@ -29,7 +29,7 @@ SET(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES
   )
 
 # This is the name of the actual executable that gets run.  
-SET(MIDAS_IRREG_INTEGRATION_TESTS ${CXX_TEST_PATH}/MIDASIrregularVolumeEditorIntegrationTests)
+SET(MIDAS_IRREG_INTEGRATION_TESTS ${CXX_TEST_PATH}/itkMIDASIrregularVolumeEditorIntegrationTests)
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
 #----------------------------------
@@ -39,9 +39,9 @@ SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 #################################################################################
 # First we test the transformations, as this is purely coordinate/geometry based.
 #################################################################################
-ADD_TEST(MIDAS-Irreg-Upd-CopyRegion ${MIDAS_IRREG_INTEGRATION_TESTS} itkImageUpdateCopyRegionProcessorTest )
-ADD_TEST(MIDAS-Irreg-Upd-ClearRegion ${MIDAS_IRREG_INTEGRATION_TESTS} itkImageUpdateClearRegionProcessorTest )
-ADD_TEST(MIDAS-Irreg-Upd-PixelWise ${MIDAS_IRREG_INTEGRATION_TESTS} itkImageUpdatePixelWiseSingleValueProcessorTest )
+ADD_TEST(MIDAS-Irreg-Upd-CopyRegion ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASImageUpdateCopyRegionProcessorTest )
+ADD_TEST(MIDAS-Irreg-Upd-ClearRegion ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASImageUpdateClearRegionProcessorTest )
+ADD_TEST(MIDAS-Irreg-Upd-PixelWise ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASImageUpdatePixelWiseSingleValueProcessorTest )
 ADD_TEST(MIDAS-Irreg-RoiCalulator ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorTest )
 ADD_TEST(MIDAS-Irreg-SliceRoiCalulator ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorBySlicesTest )
 ADD_TEST(MIDAS-Irreg-RetainMarksNoThresh ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRetainMarksNoThresholdingTest )
@@ -53,9 +53,9 @@ ADD_TEST(MIDAS-Irreg-RegionGrowingImageFilter ${MIDAS_IRREG_INTEGRATION_TESTS} i
 # Build instructions.
 #################################################################################
 SET( MIDASIrregIntegrationTests_SRCS
-itkImageUpdateClearRegionProcessorTest.cxx
-itkImageUpdateCopyRegionProcessorTest.cxx
-itkImageUpdatePixelWiseSingleValueProcessorTest.cxx
+itkMIDASImageUpdateClearRegionProcessorTest.cxx
+itkMIDASImageUpdateCopyRegionProcessorTest.cxx
+itkMIDASImageUpdatePixelWiseSingleValueProcessorTest.cxx
 itkMIDASRegionOfInterestCalculatorTest.cxx
 itkMIDASRegionOfInterestCalculatorBySlicesTest.cxx
 itkMIDASRetainMarksNoThresholdingTest.cxx
@@ -64,5 +64,5 @@ itkMIDASRegionOfInterestCalculatorMinimumRegionTest.cxx
 itkMIDASRegionGrowingImageFilterTest2.cxx
 )
 
-ADD_EXECUTABLE(MIDASIrregularVolumeEditorIntegrationTests MIDASIrregularVolumeEditorIntegrationTests ${MIDASIrregIntegrationTests_SRCS})
-TARGET_LINK_LIBRARIES(MIDASIrregularVolumeEditorIntegrationTests ${NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES} )
+ADD_EXECUTABLE(itkMIDASIrregularVolumeEditorIntegrationTests itkMIDASIrregularVolumeEditorIntegrationTests.cxx ${MIDASIrregIntegrationTests_SRCS})
+TARGET_LINK_LIBRARIES(itkMIDASIrregularVolumeEditorIntegrationTests ${NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES} )

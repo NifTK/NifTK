@@ -22,16 +22,16 @@
 
  ============================================================================*/
 
-#ifndef ITKIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
-#define ITKIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
+#ifndef ITKMIDASIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
+#define ITKMIDASIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
 
-#include "itkImageUpdateProcessor.h"
+#include "itkMIDASImageUpdateProcessor.h"
 
 namespace itk
 {
 
 /**
- * \class ImageUpdatePixelWiseSingleValueProcessor
+ * \class MIDASImageUpdatePixelWiseSingleValueProcessor
  * \brief Class to support undo/redo of an operation that
  * takes a list of pixels, and sets them all to a given value.
  *
@@ -39,21 +39,21 @@ namespace itk
  * in the MorphologicalEditor.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdatePixelWiseSingleValueProcessor : public ImageUpdateProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdatePixelWiseSingleValueProcessor : public MIDASImageUpdateProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdatePixelWiseSingleValueProcessor      Self;
-  typedef ImageUpdateProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef MIDASImageUpdatePixelWiseSingleValueProcessor      Self;
+  typedef MIDASImageUpdateProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                 Pointer;
+  typedef SmartPointer<const Self>                           ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdatePixelWiseSingleValueProcessor, ImageUpdateProcessor);
+  itkTypeMacro(MIDASImageUpdatePixelWiseSingleValueProcessor, MIDASImageUpdateProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -88,12 +88,12 @@ public:
   virtual void Redo();
 
 protected:
-  ImageUpdatePixelWiseSingleValueProcessor();
+  MIDASImageUpdatePixelWiseSingleValueProcessor();
   void PrintSelf(std::ostream& os, Indent indent) const;
-  virtual ~ImageUpdatePixelWiseSingleValueProcessor() {}
+  virtual ~MIDASImageUpdatePixelWiseSingleValueProcessor() {}
 
 private:
-  ImageUpdatePixelWiseSingleValueProcessor(const Self&); //purposely not implemented
+  MIDASImageUpdatePixelWiseSingleValueProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
   void ApplyListToDestinationImage(const DataListType& list);
@@ -108,7 +108,7 @@ private:
 } // end namespace
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkImageUpdatePixelWiseSingleValueProcessor.txx"
+#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.txx"
 #endif
 
-#endif // ITKIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
+#endif // ITKMIDASIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H

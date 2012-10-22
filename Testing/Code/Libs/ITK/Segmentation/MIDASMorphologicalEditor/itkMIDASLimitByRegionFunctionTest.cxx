@@ -32,7 +32,7 @@
 /**
  * Basic test for
  */
-int itkLimitByRegionFunctionTest(int argc, char * argv[])
+int itkMIDASLimitByRegionFunctionTest(int argc, char * argv[])
 {
 
   const unsigned int Dimension = 2;

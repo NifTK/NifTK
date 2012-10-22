@@ -8,8 +8,8 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-10-06 05:46:51 +0100 (Thu, 06 Oct 2011) $
- Revision          : $Revision: 7444 $
+ Last Changed      : $Date: 2011-10-15 07:06:41 +0100 (Sat, 15 Oct 2011) $
+ Revision          : $Revision: 7522 $
  Last modified by  : $Author: mjc $
 
  Original author   : m.clarkson@ucl.ac.uk
@@ -22,36 +22,31 @@
 
  ============================================================================*/
 
-#include "itkImageUpdatePasteRegionProcessor.h"
-#include "itkImageRegionIterator.h"
+#include "itkMIDASImageUpdateCopyRegionProcessor.h"
 
 namespace itk
 {
 
 template<class TPixel, unsigned int VImageDimension>
-ImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
-::ImageUpdatePasteRegionProcessor()
-: m_SourceImage(NULL)
-, m_CopyBackground(true)
+MIDASImageUpdateCopyRegionProcessor<TPixel, VImageDimension>
+::MIDASImageUpdateCopyRegionProcessor()
+: m_SourceImage(0)
 {
 }
 
 template<class TPixel, unsigned int VImageDimension>
 void 
-ImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateCopyRegionProcessor<TPixel, VImageDimension>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
-  Superclass::PrintSelf(os,indent);   
+  Superclass::PrintSelf(os,indent);  
   os << indent << "m_SourceImage=" << std::endl;
-  os << indent.GetNextIndent() << m_SourceImage << std::endl;
-  os << indent << "m_CopyBackground=" << m_CopyBackground << std::endl;   
-  os << indent << "m_SourceRegionOfInterest=" <<std::endl;
-  os << indent.GetNextIndent() << m_SourceRegionOfInterest << std::endl;
+  os << indent.GetNextIndent() << m_SourceImage << std::endl; 
 }
 
 template<class TPixel, unsigned int VImageDimension>
 void 
-ImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateCopyRegionProcessor<TPixel, VImageDimension>
 ::SetSourceRegionOfInterest(std::vector<int> &array)
 {
   assert (array.size() == 6);
@@ -75,13 +70,15 @@ ImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdatePasteRegionProcessor<TPixel, VImageDimension> 
+MIDASImageUpdateCopyRegionProcessor<TPixel, VImageDimension> 
 ::ApplyUpdateToAfterImage()
 {
   RegionType sourceRegionOfInterest = this->GetSourceRegionOfInterest();
   RegionType destinationRegionOfInterest = this->GetDestinationRegionOfInterest();
+  
+  // The "AfterImage" is a sub-region of the destination image that is being edited.
   ImagePointer targetImage = this->GetAfterImage();
-
+  
   if (m_SourceImage.IsNull())
   {
     itkExceptionMacro(<< "Source image is NULL");
@@ -99,16 +96,16 @@ ImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
     itkExceptionMacro("Destination region of interest=\n" << destinationRegionOfInterest << ", is not inside target region=\n" << targetImage->GetLargestPossibleRegion() );
   }
   
-  ImageRegionConstIterator<ImageType> sourceIterator(m_SourceImage, m_SourceRegionOfInterest);
-  ImageRegionIterator<ImageType> targetIterator(targetImage, destinationRegionOfInterest);
+  PasteImagePointerType pasteImageFilter = PasteImageFilterType::New();
+  pasteImageFilter->InPlaceOn();
+  pasteImageFilter->SetSourceImage(m_SourceImage);
+  pasteImageFilter->SetSourceRegion(sourceRegionOfInterest);
+  pasteImageFilter->SetDestinationImage(targetImage);
+  pasteImageFilter->SetDestinationIndex(destinationRegionOfInterest.GetIndex()); 
+  pasteImageFilter->Update();
   
-  for (sourceIterator.GoToBegin(), targetIterator.GoToBegin(); !sourceIterator.IsAtEnd() && !targetIterator.IsAtEnd(); ++sourceIterator, ++targetIterator)
-  {
-    if (m_CopyBackground || sourceIterator.Get() > 0)
-    {
-      targetIterator.Set(sourceIterator.Get());
-    }
-  }   
+  // The memory address changes, due to InPlaceOn.
+  this->SetAfterImage(pasteImageFilter->GetOutput());
 }
 
 } // end namespace

@@ -27,16 +27,16 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImageUpdatePixelWiseSingleValueProcessor.h"
+#include "itkMIDASImageUpdateClearRegionProcessor.h"
 
 /**
- * Basic tests for itkImageUpdatePixelWiseSingleValueProcessor
+ * Basic tests for itkMIDASImageUpdateClearRegionProcessor
  */
-int itkImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
+int itkMIDASImageUpdateClearRegionProcessorTest(int argc, char * argv[])
 {
 
-  itk::ImageUpdatePixelWiseSingleValueProcessor<unsigned char, 2>::Pointer processor
-    = itk::ImageUpdatePixelWiseSingleValueProcessor<unsigned char, 2>::New();
+  itk::MIDASImageUpdateClearRegionProcessor<unsigned char, 2>::Pointer processor
+    = itk::MIDASImageUpdateClearRegionProcessor<unsigned char, 2>::New();
 
   typedef itk::Image<unsigned char, 2> ImageType;
 
@@ -55,13 +55,16 @@ int itkImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
   image->Allocate();
   image->FillBuffer(2);
 
-  index.Fill(0);
-  processor->AddToList(index);
+  ImageType::RegionType regionOfInterest;
+  ImageType::SizeType roiSize;
+  roiSize.Fill(1);
   index.Fill(1);
-  processor->AddToList(index);
+  regionOfInterest.SetIndex(index);
+  regionOfInterest.SetSize(roiSize);
 
   processor->SetDestinationImage(image);
-  processor->SetValue(1);
+  processor->SetDestinationRegionOfInterest(regionOfInterest);
+  processor->SetWipeValue(1);
   processor->SetDebug(true);
 
   std::cerr << "Calling first redo" << std::endl;
@@ -78,9 +81,9 @@ int itkImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
     return EXIT_FAILURE;
   }
   index.Fill(0);
-  if (image->GetPixel(index) != 1)
+  if (image->GetPixel(index) != 2)
   {
-    std::cerr << "2. At index=" << index << ", was expecting 1, but got:" << image->GetPixel(index) << std::endl;
+    std::cerr << "2. At index=" << index << ", was expecting 2, but got:" << image->GetPixel(index) << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -118,7 +121,7 @@ int itkImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
     return EXIT_FAILURE;
   }
   index.Fill(0);
-  if (image->GetPixel(index) != 1)
+  if (image->GetPixel(index) != 2)
   {
     std::cerr << "6. At index=" << index << ", was expecting 2, but got:" << image->GetPixel(index) << std::endl;
     return EXIT_FAILURE;

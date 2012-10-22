@@ -22,14 +22,14 @@
 
  ============================================================================*/
 
-#include "itkImageUpdatePixelWiseSingleValueProcessor.h"
+#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
 
 namespace itk
 {
 
 template<class TPixel, unsigned int VImageDimension>
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
-::ImageUpdatePixelWiseSingleValueProcessor()
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+::MIDASImageUpdatePixelWiseSingleValueProcessor()
 : m_Value(0)
 , m_UpdateCalculated(false)
 {
@@ -41,7 +41,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void 
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf(os,indent);  
@@ -55,7 +55,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::ClearList()
 {
   m_Indexes.clear();
@@ -67,7 +67,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::AddToList(IndexType &voxelIndex)
 {
   m_Indexes.push_back(voxelIndex);
@@ -76,7 +76,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 unsigned long int 
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::GetNumberOfVoxels()
 {
   return m_Indexes.size();
@@ -85,7 +85,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 std::vector<int> 
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::ComputeMinimalBoundingBox()
 {
   IndexType minIndex;
@@ -128,7 +128,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void 
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 ::ApplyListToDestinationImage(const DataListType& list)
 {
   Superclass::ValidateInputs();
@@ -148,7 +148,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension> 
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension> 
 ::Undo()
 {
   this->ApplyListToDestinationImage(m_Before);
@@ -157,7 +157,7 @@ ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension> 
+MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension> 
 ::Redo()
 {
   IndexType voxelIndex;

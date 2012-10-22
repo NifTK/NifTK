@@ -22,10 +22,10 @@
 
  ============================================================================*/
 
-#ifndef ITKIMAGEUPDATEREGIONPROCESSOR_H
-#define ITKIMAGEUPDATEREGIONPROCESSOR_H
+#ifndef ITKMIDASIMAGEUPDATEREGIONPROCESSOR_H
+#define ITKMIDASIMAGEUPDATEREGIONPROCESSOR_H
 
-#include "itkImageUpdateProcessor.h"
+#include "itkMIDASImageUpdateProcessor.h"
 #include "itkExtractImageFilter.h"
 #include "itkPasteImageFilter.h"
 
@@ -33,22 +33,22 @@ namespace itk
 {
 
 /**
- * \class ImageUpdateRegionProcessor
+ * \class MIDASImageUpdateRegionProcessor
  * \brief Provides methods to do Undo/Redo within a specific Region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdateRegionProcessor : public ImageUpdateProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdateRegionProcessor : public MIDASImageUpdateProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdateRegionProcessor                    Self;
-  typedef ImageUpdateProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef MIDASImageUpdateRegionProcessor                    Self;
+  typedef MIDASImageUpdateProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                 Pointer;
+  typedef SmartPointer<const Self>                           ConstPointer;
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdateRegionProcessor, ImageUpdateProcessor);
+  itkTypeMacro(MIDASImageUpdateRegionProcessor, MIDASImageUpdateProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -76,9 +76,9 @@ public:
   virtual void Redo();
 
 protected:
-  ImageUpdateRegionProcessor();
+  MIDASImageUpdateRegionProcessor();
   void PrintSelf(std::ostream& os, Indent indent) const;
-  virtual ~ImageUpdateRegionProcessor() {}
+  virtual ~MIDASImageUpdateRegionProcessor() {}
 
   /** Returns the after image, so derived classes can apply an update. */
   itkGetObjectMacro(AfterImage, ImageType);
@@ -90,7 +90,7 @@ protected:
   virtual void ValidateInputs();
 
 private:
-  ImageUpdateRegionProcessor(const Self&); //purposely not implemented
+  MIDASImageUpdateRegionProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
   void CopyImageRegionToDestination(ImagePointer sourceImage);
@@ -105,7 +105,7 @@ private:
 } // end namespace
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkImageUpdateRegionProcessor.txx"
+#include "itkMIDASImageUpdateRegionProcessor.txx"
 #endif
 
-#endif // ITKIMAGEUPDATEREGIONPROCESSOR_H
+#endif // ITKMIDASIMAGEUPDATEREGIONPROCESSOR_H

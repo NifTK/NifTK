@@ -22,14 +22,14 @@
 
  ============================================================================*/
 
-#include "itkImageUpdateProcessor.h"
+#include "itkMIDASImageUpdateRegionProcessor.h"
 
 namespace itk
 {
 
 template<class TPixel, unsigned int VImageDimension>
-ImageUpdateRegionProcessor<TPixel, VImageDimension>
-::ImageUpdateRegionProcessor()
+MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
+::MIDASImageUpdateRegionProcessor()
 : m_UpdateCalculated(false)
 , m_BeforeImage(0)
 , m_AfterImage(0)
@@ -50,7 +50,7 @@ ImageUpdateRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdateRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf(os,indent);
@@ -64,7 +64,7 @@ ImageUpdateRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdateRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
 ::SetDestinationRegionOfInterest(std::vector<int> &array)
 {
   assert (array.size() == 6);
@@ -88,7 +88,7 @@ ImageUpdateRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdateRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
 ::ValidateInputs()
 {
   Superclass::ValidateInputs();
@@ -109,7 +109,7 @@ ImageUpdateRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdateRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
 ::CopyImageRegionToDestination(ImagePointer sourceImage)
 {
   // Here we assume:
@@ -130,7 +130,7 @@ ImageUpdateRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdateRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
 ::Redo()
 {
   Superclass::ValidateInputs();
@@ -174,7 +174,7 @@ ImageUpdateRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdateRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
 ::Undo()
 {
   Superclass::ValidateInputs();

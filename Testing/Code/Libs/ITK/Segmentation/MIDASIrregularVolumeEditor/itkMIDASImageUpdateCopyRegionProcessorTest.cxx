@@ -27,16 +27,16 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImageUpdateCopyRegionProcessor.h"
+#include "itkMIDASImageUpdateCopyRegionProcessor.h"
 
 /**
- * Basic tests for itkImageUpdateCopyRegionProcessor
+ * Basic tests for itkMIDASImageUpdateCopyRegionProcessor
  */
-int itkImageUpdateCopyRegionProcessorTest(int argc, char * argv[])
+int itkMIDASImageUpdateCopyRegionProcessorTest(int argc, char * argv[])
 {
 
-  itk::ImageUpdateCopyRegionProcessor<unsigned char, 2>::Pointer processor
-    = itk::ImageUpdateCopyRegionProcessor<unsigned char, 2>::New();
+  itk::MIDASImageUpdateCopyRegionProcessor<unsigned char, 2>::Pointer processor
+    = itk::MIDASImageUpdateCopyRegionProcessor<unsigned char, 2>::New();
 
   typedef itk::Image<unsigned char, 2> ImageType;
 

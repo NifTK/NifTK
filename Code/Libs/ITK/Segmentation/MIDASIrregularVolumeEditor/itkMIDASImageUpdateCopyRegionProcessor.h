@@ -22,35 +22,35 @@
 
  ============================================================================*/
 
-#ifndef ITKIMAGEUPDATEPASTEREGIONPROCESSOR_H
-#define ITKIMAGEUPDATEPASTEREGIONPROCESSOR_H
+#ifndef ITKMIDASIMAGEUPDATECOPYREGIONPROCESSOR_H
+#define ITKMIDASIMAGEUPDATECOPYREGIONPROCESSOR_H
 
-#include "itkImageUpdateRegionProcessor.h"
+#include "itkMIDASImageUpdateRegionProcessor.h"
+#include "itkPasteImageFilter.h"
 
 namespace itk
 {
 
 /**
- * \class ImageUpdatePasteRegionProcessor
- * \brief Class to support undo/redo of a paste operation, within a given region,
- * where we take non-zero pixels in the source image, and write them to the destination image.
+ * \class MIDASImageUpdateCopyRegionProcessor
+ * \brief Class to support undo/redo of a copy operation, within a given region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdatePasteRegionProcessor : public ImageUpdateRegionProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdateCopyRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdatePasteRegionProcessor                     Self;
-  typedef ImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                                  Pointer;
-  typedef SmartPointer<const Self>                            ConstPointer;
+  typedef MIDASImageUpdateCopyRegionProcessor                      Self;
+  typedef MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                       Pointer;
+  typedef SmartPointer<const Self>                                 ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdatePasteRegionProcessor, ImageUpdateRegionProcessor);
+  itkTypeMacro(MIDASImageUpdateCopyRegionProcessor, MIDASImageUpdateRegionProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -59,6 +59,8 @@ public:
   typedef typename ImageType::IndexType   IndexType;
   typedef typename ImageType::SizeType    SizeType;
   typedef typename ImageType::RegionType  RegionType;
+  typedef PasteImageFilter<ImageType, ImageType> PasteImageFilterType;
+  typedef typename PasteImageFilterType::Pointer PasteImagePointerType;
 
   /** Set the source image. Data is copied from here to destination image. */
   itkSetObjectMacro(SourceImage, ImageType);
@@ -71,32 +73,26 @@ public:
   /** Overloaded method to provide simple acess via a std::vector, where we assume the length is 6 corresponding to the first 3 numbers indicating the starting index, and the next 3 numbers indicating the region size. */
   void SetSourceRegionOfInterest(std::vector<int> &region);
 
-  /** Set/Get flag to copy background. If true, the background value of 0 is copied across, if false, only non-zero values are copied across. */
-  itkSetMacro(CopyBackground, bool);
-  itkGetMacro(CopyBackground, bool);
-
 protected:
-  ImageUpdatePasteRegionProcessor();
+  MIDASImageUpdateCopyRegionProcessor();
   void PrintSelf(std::ostream& os, Indent indent) const;
-  virtual ~ImageUpdatePasteRegionProcessor() {}
+  virtual ~MIDASImageUpdateCopyRegionProcessor() {}
 
-  // This method that applies the change.
+  // This class
   virtual void ApplyUpdateToAfterImage();
 
 private:
-  ImageUpdatePasteRegionProcessor(const Self&); //purposely not implemented
+  MIDASImageUpdateCopyRegionProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
   ImagePointer m_SourceImage;
   RegionType   m_SourceRegionOfInterest;
-
-  bool m_CopyBackground;
 };
 
 } // end namespace
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkImageUpdatePasteRegionProcessor.txx"
+#include "itkMIDASImageUpdateCopyRegionProcessor.txx"
 #endif
 
-#endif // ITKIMAGEUPDATEPASTEREGIONPROCESSOR_H
+#endif // ITKIMAGEUPDATEBYREGIONPROCESSOR_H

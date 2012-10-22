@@ -31,8 +31,8 @@
 #include "mitkPointSet.h"
 #include "mitkContourSet.h"
 #include "itkMIDASHelper.h"
-#include "itkImageUpdateClearRegionProcessor.h"
-#include "itkImageUpdatePasteRegionProcessor.h"
+#include "itkMIDASImageUpdateClearRegionProcessor.h"
+#include "itkMIDASImageUpdatePasteRegionProcessor.h"
 #include "itkMIDASRetainMarksNoThresholdingProcessor.h"
 
 namespace mitk
@@ -200,7 +200,7 @@ class OpPropagate: public OpGeneralSegmentorBaseCommand
 {
 public:
 
-  typedef itk::ImageUpdatePasteRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
+  typedef itk::MIDASImageUpdatePasteRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
   typedef ProcessorType::Pointer ProcessorPointer;
 
   OpPropagate(
@@ -235,7 +235,7 @@ class OpThresholdApply: public OpPropagate
 {
 public:
 
-  typedef itk::ImageUpdatePasteRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
+  typedef itk::MIDASImageUpdatePasteRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
   typedef ProcessorType::Pointer ProcessorPointer;
 
   OpThresholdApply(
@@ -294,7 +294,7 @@ private:
 class OpWipe: public OpGeneralSegmentorBaseCommand
 {
 public:
-  typedef itk::ImageUpdateClearRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
+  typedef itk::MIDASImageUpdateClearRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
   typedef ProcessorType::Pointer ProcessorPointer;
 
   OpWipe(

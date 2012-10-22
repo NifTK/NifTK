@@ -22,14 +22,14 @@
 
  ============================================================================*/
 
-#include "itkImageUpdateProcessor.h"
+#include "itkMIDASImageUpdateProcessor.h"
 
 namespace itk
 {
 
 template<class TPixel, unsigned int VImageDimension>
-ImageUpdateProcessor<TPixel, VImageDimension>
-::ImageUpdateProcessor()
+MIDASImageUpdateProcessor<TPixel, VImageDimension>
+::MIDASImageUpdateProcessor()
 : m_DestinationImage(0)
 {
   m_DestinationImage = ImageType::New();
@@ -37,7 +37,7 @@ ImageUpdateProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void 
-ImageUpdateProcessor<TPixel, VImageDimension>
+MIDASImageUpdateProcessor<TPixel, VImageDimension>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf(os,indent);  
@@ -47,7 +47,7 @@ ImageUpdateProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void 
-ImageUpdateProcessor<TPixel, VImageDimension>
+MIDASImageUpdateProcessor<TPixel, VImageDimension>
 ::ValidateInputs()
 {
   if (m_DestinationImage.IsNull())

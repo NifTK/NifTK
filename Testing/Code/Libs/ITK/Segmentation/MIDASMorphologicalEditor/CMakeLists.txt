@@ -29,7 +29,7 @@ SET(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES
   )
 
 # This is the name of the actual executable that gets run.  
-SET(MIDAS_MORPH_INTEGRATION_TESTS ${CXX_TEST_PATH}/MIDASMorphologicalEditorIntegrationTests)
+SET(MIDAS_MORPH_INTEGRATION_TESTS ${CXX_TEST_PATH}/itkMIDASMorphologicalEditorIntegrationTests)
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
 #----------------------------------
@@ -64,7 +64,7 @@ ADD_TEST(MIDAS-Morph-PipeRethresh6 ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${
 # Build instructions.
 #################################################################################
 SET( MIDASMorphIntegrationTests_SRCS
-itkLimitByRegionFunctionTest.cxx
+itkMIDASLimitByRegionFunctionTest.cxx
 itkMIDASMeanIntensityWithinARegionFilterTest.cxx
 itkMIDASConditionalErosionFilterTest.cxx
 itkMIDASConditionalDilationFilterTest.cxx
@@ -76,5 +76,5 @@ itkMIDASMaskByRegionFilterTest.cxx
 itkMIDASPipelineTest.cxx 
 )
 
-ADD_EXECUTABLE(MIDASMorphologicalEditorIntegrationTests MIDASMorphologicalEditorIntegrationTests ${MIDASMorphIntegrationTests_SRCS})
-TARGET_LINK_LIBRARIES(MIDASMorphologicalEditorIntegrationTests ${NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES} )
+ADD_EXECUTABLE(itkMIDASMorphologicalEditorIntegrationTests itkMIDASMorphologicalEditorIntegrationTests.cxx ${MIDASMorphIntegrationTests_SRCS})
+TARGET_LINK_LIBRARIES(itkMIDASMorphologicalEditorIntegrationTests ${NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES} )

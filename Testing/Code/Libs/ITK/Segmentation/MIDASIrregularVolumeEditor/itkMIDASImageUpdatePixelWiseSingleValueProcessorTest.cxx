@@ -27,16 +27,16 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImageUpdateClearRegionProcessor.h"
+#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
 
 /**
- * Basic tests for itkImageUpdateClearRegionProcessor
+ * Basic tests for itkMIDASImageUpdatePixelWiseSingleValueProcessor
  */
-int itkImageUpdateClearRegionProcessorTest(int argc, char * argv[])
+int itkMIDASImageUpdatePixelWiseSingleValueProcessorTest(int argc, char * argv[])
 {
 
-  itk::ImageUpdateClearRegionProcessor<unsigned char, 2>::Pointer processor
-    = itk::ImageUpdateClearRegionProcessor<unsigned char, 2>::New();
+  itk::MIDASImageUpdatePixelWiseSingleValueProcessor<unsigned char, 2>::Pointer processor
+    = itk::MIDASImageUpdatePixelWiseSingleValueProcessor<unsigned char, 2>::New();
 
   typedef itk::Image<unsigned char, 2> ImageType;
 
@@ -55,16 +55,13 @@ int itkImageUpdateClearRegionProcessorTest(int argc, char * argv[])
   image->Allocate();
   image->FillBuffer(2);
 
-  ImageType::RegionType regionOfInterest;
-  ImageType::SizeType roiSize;
-  roiSize.Fill(1);
+  index.Fill(0);
+  processor->AddToList(index);
   index.Fill(1);
-  regionOfInterest.SetIndex(index);
-  regionOfInterest.SetSize(roiSize);
+  processor->AddToList(index);
 
   processor->SetDestinationImage(image);
-  processor->SetDestinationRegionOfInterest(regionOfInterest);
-  processor->SetWipeValue(1);
+  processor->SetValue(1);
   processor->SetDebug(true);
 
   std::cerr << "Calling first redo" << std::endl;
@@ -81,9 +78,9 @@ int itkImageUpdateClearRegionProcessorTest(int argc, char * argv[])
     return EXIT_FAILURE;
   }
   index.Fill(0);
-  if (image->GetPixel(index) != 2)
+  if (image->GetPixel(index) != 1)
   {
-    std::cerr << "2. At index=" << index << ", was expecting 2, but got:" << image->GetPixel(index) << std::endl;
+    std::cerr << "2. At index=" << index << ", was expecting 1, but got:" << image->GetPixel(index) << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -121,7 +118,7 @@ int itkImageUpdateClearRegionProcessorTest(int argc, char * argv[])
     return EXIT_FAILURE;
   }
   index.Fill(0);
-  if (image->GetPixel(index) != 2)
+  if (image->GetPixel(index) != 1)
   {
     std::cerr << "6. At index=" << index << ", was expecting 2, but got:" << image->GetPixel(index) << std::endl;
     return EXIT_FAILURE;

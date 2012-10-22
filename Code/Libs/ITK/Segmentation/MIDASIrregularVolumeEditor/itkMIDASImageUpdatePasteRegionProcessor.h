@@ -22,35 +22,35 @@
 
  ============================================================================*/
 
-#ifndef ITKIMAGEUPDATECOPYREGIONPROCESSOR_H
-#define ITKIMAGEUPDATECOPYREGIONPROCESSOR_H
+#ifndef ITKMIDASIMAGEUPDATEPASTEREGIONPROCESSOR_H
+#define ITKMIDASIMAGEUPDATEPASTEREGIONPROCESSOR_H
 
-#include "itkImageUpdateRegionProcessor.h"
-#include "itkPasteImageFilter.h"
+#include "itkMIDASImageUpdateRegionProcessor.h"
 
 namespace itk
 {
 
 /**
- * \class ImageUpdateCopyRegionProcessor
- * \brief Class to support undo/redo of a copy operation, within a given region.
+ * \class MIDASImageUpdatePasteRegionProcessor
+ * \brief Class to support undo/redo of a paste operation, within a given region,
+ * where we take non-zero pixels in the source image, and write them to the destination image.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdateCopyRegionProcessor : public ImageUpdateRegionProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdatePasteRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdateCopyRegionProcessor                      Self;
-  typedef ImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                                  Pointer;
-  typedef SmartPointer<const Self>                            ConstPointer;
+  typedef MIDASImageUpdatePasteRegionProcessor                     Self;
+  typedef MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                       Pointer;
+  typedef SmartPointer<const Self>                                 ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdateCopyRegionProcessor, ImageUpdateRegionProcessor);
+  itkTypeMacro(MIDASImageUpdatePasteRegionProcessor, MIDASImageUpdateRegionProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -59,8 +59,6 @@ public:
   typedef typename ImageType::IndexType   IndexType;
   typedef typename ImageType::SizeType    SizeType;
   typedef typename ImageType::RegionType  RegionType;
-  typedef PasteImageFilter<ImageType, ImageType> PasteImageFilterType;
-  typedef typename PasteImageFilterType::Pointer PasteImagePointerType;
 
   /** Set the source image. Data is copied from here to destination image. */
   itkSetObjectMacro(SourceImage, ImageType);
@@ -73,26 +71,32 @@ public:
   /** Overloaded method to provide simple acess via a std::vector, where we assume the length is 6 corresponding to the first 3 numbers indicating the starting index, and the next 3 numbers indicating the region size. */
   void SetSourceRegionOfInterest(std::vector<int> &region);
 
-protected:
-  ImageUpdateCopyRegionProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const;
-  virtual ~ImageUpdateCopyRegionProcessor() {}
+  /** Set/Get flag to copy background. If true, the background value of 0 is copied across, if false, only non-zero values are copied across. */
+  itkSetMacro(CopyBackground, bool);
+  itkGetMacro(CopyBackground, bool);
 
-  // This class
+protected:
+  MIDASImageUpdatePasteRegionProcessor();
+  void PrintSelf(std::ostream& os, Indent indent) const;
+  virtual ~MIDASImageUpdatePasteRegionProcessor() {}
+
+  // This method that applies the change.
   virtual void ApplyUpdateToAfterImage();
 
 private:
-  ImageUpdateCopyRegionProcessor(const Self&); //purposely not implemented
+  MIDASImageUpdatePasteRegionProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
   ImagePointer m_SourceImage;
   RegionType   m_SourceRegionOfInterest;
+
+  bool m_CopyBackground;
 };
 
 } // end namespace
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkImageUpdateCopyRegionProcessor.txx"
+#include "itkMIDASImageUpdatePasteRegionProcessor.txx"
 #endif
 
-#endif // ITKIMAGEUPDATEBYREGIONPROCESSOR_H
+#endif // ITKMIDASIMAGEUPDATEPASTEREGIONPROCESSOR_H

@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef ITKIMAGEUPDATEPROCESSOR_H
-#define ITKIMAGEUPDATEPROCESSOR_H
+#ifndef ITKMIDASIMAGEUPDATEPROCESSOR_H
+#define ITKMIDASIMAGEUPDATEPROCESSOR_H
 
 #include "itkObject.h"
 #include "itkObjectFactory.h"
@@ -33,7 +33,7 @@ namespace itk
 {
 
 /**
- * \class ImageUpdateProcessor
+ * \class MIDASImageUpdateProcessor
  * \brief Class that takes a pointer to a destination image, and applies changes
  * directly to it and enablng undo/redo. In practice, this may result in large
  * memory overhead, so, if we are using this for undo/redo we should consider
@@ -43,18 +43,18 @@ namespace itk
  * image, and define Undo/Redo methods. Its up to sub-classes to do the rest.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdateProcessor : public Object {
+class ITK_EXPORT MIDASImageUpdateProcessor : public Object {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdateProcessor      Self;
+  typedef MIDASImageUpdateProcessor      Self;
   typedef Object                    Superclass;
   typedef SmartPointer<Self>        Pointer;
   typedef SmartPointer<const Self>  ConstPointer;
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdateProcessor, Object);
+  itkTypeMacro(MIDASImageUpdateProcessor, Object);
 
   /** Dimension of the image.  This constant is used by functions that are
    * templated over image type (as opposed to being templated over pixel type
@@ -81,14 +81,14 @@ public:
   virtual void Redo() = 0;
 
 protected:
-  ImageUpdateProcessor();
+  MIDASImageUpdateProcessor();
   void PrintSelf(std::ostream& os, Indent indent) const;
-  virtual ~ImageUpdateProcessor() {}
+  virtual ~MIDASImageUpdateProcessor() {}
 
   virtual void ValidateInputs();
 
 private:
-  ImageUpdateProcessor(const Self&); //purposely not implemented
+  MIDASImageUpdateProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
   ImagePointer m_DestinationImage;
@@ -98,7 +98,7 @@ private:
 } // end namespace
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkImageUpdateProcessor.txx"
+#include "itkMIDASImageUpdateProcessor.txx"
 #endif
 
-#endif // ITKIMAGEUPDATEPROCESSOR_H
+#endif // ITKMIDASIMAGEUPDATEPROCESSOR_H

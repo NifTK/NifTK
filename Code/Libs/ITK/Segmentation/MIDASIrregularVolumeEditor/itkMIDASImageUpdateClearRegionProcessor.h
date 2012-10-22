@@ -22,34 +22,34 @@
 
  ============================================================================*/
 
-#ifndef ITKIMAGEUPDATECLEARREGIONPROCESSOR_H
-#define ITKIMAGEUPDATECLEARREGIONPROCESSOR_H
+#ifndef ITKMIDASIMAGEUPDATECLEARREGIONPROCESSOR_H
+#define ITKMIDASIMAGEUPDATECLEARREGIONPROCESSOR_H
 
-#include "itkImageUpdateRegionProcessor.h"
+#include "itkMIDASImageUpdateRegionProcessor.h"
 
 namespace itk
 {
 
 /**
- * \class ImageUpdateClearRegionProcessor
+ * \class MIDASImageUpdateClearRegionProcessor
  * \brief Class to support undo/redo of a clear operation (set value to zero), within a given region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT ImageUpdateClearRegionProcessor : public ImageUpdateRegionProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdateClearRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
   /** Standard class typedefs */
-  typedef ImageUpdateClearRegionProcessor                     Self;
-  typedef ImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
-  typedef SmartPointer<Self>                                  Pointer;
-  typedef SmartPointer<const Self>                            ConstPointer;
+  typedef MIDASImageUpdateClearRegionProcessor                     Self;
+  typedef MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> Superclass;
+  typedef SmartPointer<Self>                                       Pointer;
+  typedef SmartPointer<const Self>                                 ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ImageUpdateClearRegionProcessor, ImageUpdateRegionProcessor);
+  itkTypeMacro(MIDASImageUpdateClearRegionProcessor, MIDASImageUpdateRegionProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -64,15 +64,15 @@ public:
   itkGetMacro(WipeValue, PixelType);
 
 protected:
-  ImageUpdateClearRegionProcessor();
+  MIDASImageUpdateClearRegionProcessor();
   void PrintSelf(std::ostream& os, Indent indent) const;
-  virtual ~ImageUpdateClearRegionProcessor() {}
+  virtual ~MIDASImageUpdateClearRegionProcessor() {}
 
   // This class, simply clears the image using value m_WipeValue.
   virtual void ApplyUpdateToAfterImage();
 
 private:
-  ImageUpdateClearRegionProcessor(const Self&); //purposely not implemented
+  MIDASImageUpdateClearRegionProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
   PixelType m_WipeValue;
@@ -81,7 +81,7 @@ private:
 } // end namespace
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkImageUpdateClearRegionProcessor.txx"
+#include "itkMIDASImageUpdateClearRegionProcessor.txx"
 #endif
 
-#endif // ITKIMAGEUPDATECLEARREGIONPROCESSOR_H
+#endif // ITKMIDASIMAGEUPDATECLEARREGIONPROCESSOR_H

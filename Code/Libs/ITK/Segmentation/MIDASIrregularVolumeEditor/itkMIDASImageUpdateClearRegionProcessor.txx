@@ -22,22 +22,22 @@
 
  ============================================================================*/
 
-#include "itkImageUpdateClearRegionProcessor.h"
+#include "itkMIDASImageUpdateClearRegionProcessor.h"
 #include "itkImageRegionIterator.h"
 
 namespace itk
 {
 
 template<class TPixel, unsigned int VImageDimension>
-ImageUpdateClearRegionProcessor<TPixel, VImageDimension>
-::ImageUpdateClearRegionProcessor()
+MIDASImageUpdateClearRegionProcessor<TPixel, VImageDimension>
+::MIDASImageUpdateClearRegionProcessor()
 : m_WipeValue(0)
 {
 }
 
 template<class TPixel, unsigned int VImageDimension>
 void 
-ImageUpdateClearRegionProcessor<TPixel, VImageDimension>
+MIDASImageUpdateClearRegionProcessor<TPixel, VImageDimension>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf(os,indent);  
@@ -46,7 +46,7 @@ ImageUpdateClearRegionProcessor<TPixel, VImageDimension>
 
 template<class TPixel, unsigned int VImageDimension>
 void
-ImageUpdateClearRegionProcessor<TPixel, VImageDimension> 
+MIDASImageUpdateClearRegionProcessor<TPixel, VImageDimension> 
 ::ApplyUpdateToAfterImage()
 {
   RegionType regionOfInterest = this->GetDestinationRegionOfInterest();

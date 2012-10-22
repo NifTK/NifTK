@@ -26,7 +26,7 @@
 #define ITKMIDASRETAINMARKSNOTHRESHOLDINGPROCESSOR_H
 
 #include "itkObject.h"
-#include "itkImageUpdateCopyRegionProcessor.h"
+#include "itkMIDASImageUpdateCopyRegionProcessor.h"
 #include "itkMIDASHelper.h"
 #include "itkMIDASRegionOfInterestCalculator.h"
 
@@ -58,7 +58,7 @@ public:
   /** Additional typedefs */
   typedef TPixel PixelType;
   typedef Image<TPixel, VImageDimension>  ImageType;
-  typedef itk::ImageUpdateCopyRegionProcessor<TPixel, VImageDimension> ProcessorType;
+  typedef itk::MIDASImageUpdateCopyRegionProcessor<TPixel, VImageDimension> ProcessorType;
   typedef typename ProcessorType::Pointer ProcessorPointer;
   typedef itk::MIDASRegionOfInterestCalculator<TPixel, VImageDimension> CalculatorType;
   typedef typename CalculatorType::Pointer CalculatorPointer;
