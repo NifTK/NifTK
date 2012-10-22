@@ -225,26 +225,21 @@ public:
 protected slots:
  
   /// \brief Qt slot called when the user hits the button "New segmentation",
-  /// creating new working data such as a region growing image, a contour objects
+  /// creating new working data such as a region growing image, contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
 
-  /// \brief Qt slot called from the ToolManager when a segmentation tool is activated,
-  /// toggles whether render windows listen to slice navigation events,
-  /// i.e. it stops the cursors moving.
+  /// \brief Qt slot called from the ToolManager when a segmentation tool is activated.
   virtual void OnToolSelected(int id);
 
-  /// \brief Qt slot called from "see prior" checkbox to show the contour from the
-  /// previous slice, this simply toggles the contours visibility.
+  /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
   void OnSeePriorCheckBoxToggled(bool b);
 
-  /// \brief Qt slot called from "see next" checkbox to show the contour from the next
-  /// slice, this simply toggles the contours visibility.
+  /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
   void OnSeeNextCheckBoxToggled(bool b);
 
   /// \brief Qt slot called from the "view" checkbox so that when b=true, we just
-  /// see the image, when b=false, we additionally see all the contours, and again,
-  /// this is just toggling data node visibility.
+  /// see the image, when b=false, we additionally see all the contours and reference data.
   void OnSeeImageCheckBoxPressed(bool b);
 
   /// \brief Qt slot called when the Clean button is pressed, indicating the
@@ -254,22 +249,14 @@ protected slots:
 
   /// \brief Qt slot called when the Propagate Up button is pressed to take the
   /// current seeds and threshold values, and propagate Anterior/Superior/Right.
-  ///
-  /// This takes the seeds on the current slice, and for the region Anterior/Superior/Right
-  /// will push the seeds into the first slice, and do 3D region growing, and calculate new
-  /// seeds on a per slice basis.
   void OnPropagateUpButtonPressed();
 
   /// \brief Qt slot called when the Propagate Down button is pressed to take the current
   /// seeds and threshold values, and propagate Posterior/Inferor/Left.
-  ///
-  /// This takes the seeds on the current slice, and for the region Posterior/Inferor/Left
-  /// will push the seeds into the first slice, and do 3D region growing, and calculate new
-  /// seeds on a per slice basis.
   void OnPropagateDownButtonPressed();
 
-  /// \brief Qt slot called when the Propagate 3D button is pressed that effectively calls
-  /// OnPropagateUpButtonPressed() then OnPropagateDownButtonPressed() in that order.
+  /// \brief Qt slot called when the Propagate 3D button is pressed that is effectively
+  /// equivalent to calling OnPropagateUpButtonPressed and OnPropagateDownButtonPressed.
   void OnPropagate3DButtonPressed();
 
   /// \brief Qt slot called when the Wipe button is pressed and will erase the current
@@ -299,8 +286,8 @@ protected slots:
   void OnCancelButtonPressed();
 
   /// \brief Qt slot called when the Apply button is pressed and used to accept the
-  /// current segmentation, recalculates seed positions as per MIDAS spec described in
-  /// this class intro.
+  /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
+  /// described in this class intro.
   void OnThresholdApplyButtonPressed();
 
   /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
@@ -334,12 +321,9 @@ protected:
   /// but we currently do nothing.
   virtual void SetFocus();
 
-  /// \brief Creates the connections of widgets in this class to the slots in this class.
+  /// \brief Creates the Qt connections of widgets in this class to the slots in this class.
   virtual void CreateConnections();
 
-  /// \brief Method to enable derived classes to turn all widgets off/on to signify
-  /// when the view is considered enabled/disabled.
-  ///
   /// \see QmitkMIDASBaseSegmentation::EnableSegmentationWidgets
   virtual void EnableSegmentationWidgets(bool b);
 
@@ -371,12 +355,10 @@ protected:
   /// and moving to the next one.
   virtual void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Called from the registered Seed, Poly and Draw tools when the number of
-  /// seeds has changed.
+  /// \brief Called from the registered Seed, Poly and Draw tools when the number of seeds has changed.
   virtual void OnNumberOfSeedsChanged(int numberOfSeeds);
 
-  /// \brief Called from the registered Poly tool and Draw tool to indicate that
-  /// contours have changed.
+  /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();
 
 private:
@@ -429,13 +411,6 @@ private:
   /// \brief Method that actually does the threshold apply, so we can call it from the
   /// threshold apply button and not change slice, or when we change slice.
   bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
-
-  /// \brief When the user draws on the slice, and puts seeds down, we may need to simply
-  /// update the slice immediately.
-  ///
-  /// This function does not need to "Undo", as when you undo the adding of the seed or
-  /// adding of any given contour, then you can simply recompute the current slice.
-  void DoUpdateCurrentSlice();
 
   /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
   void UpdateRegionGrowing();
