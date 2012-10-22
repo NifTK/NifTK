@@ -32,7 +32,6 @@ void RegisterTests()
 {
   REGISTER_TEST(itkLimitByRegionFunctionTest);
   REGISTER_TEST(itkMIDASMeanIntensityWithinARegionFilterTest);
-  REGISTER_TEST(itkMIDASThresholdAndAxialCutoffFilterTest);
   REGISTER_TEST(itkMIDASConditionalErosionFilterTest);
   REGISTER_TEST(itkMIDASConditionalDilationFilterTest);
   REGISTER_TEST(itkMIDASDownSamplingFilterTest);

@@ -40,7 +40,6 @@ SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 # First we test the transformations, as this is purely coordinate/geometry based.
 #################################################################################
 ADD_TEST(MIDAS-Morph-MeanIntensityWithinARegion ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASMeanIntensityWithinARegionFilterTest )
-ADD_TEST(MIDAS-Morph-ThresholdAndAxialCutoff ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASThresholdAndAxialCutoffFilterTest )
 ADD_TEST(MIDAS-Morph-ConditionalErosion ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASConditionalErosionFilterTest )
 ADD_TEST(MIDAS-Morph-ConditionalDilation ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASConditionalDilationFilterTest )
 ADD_TEST(MIDAS-Morph-DownSampling ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASDownSamplingFilterTest )
@@ -67,7 +66,6 @@ ADD_TEST(MIDAS-Morph-PipeRethresh6 ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${
 SET( MIDASMorphIntegrationTests_SRCS
 itkLimitByRegionFunctionTest.cxx
 itkMIDASMeanIntensityWithinARegionFilterTest.cxx
-itkMIDASThresholdAndAxialCutoffFilterTest.cxx
 itkMIDASConditionalErosionFilterTest.cxx
 itkMIDASConditionalDilationFilterTest.cxx
 itkMIDASDownSamplingFilterTest.cxx
