@@ -57,6 +57,11 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 , m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
 {
+  // This should come early on, as we are setting renderer specific properties,
+  // and when you set a renderer specific property, if the renderer is NULL,
+  // it is an equivalent function call to setting a global property.
+  m_BaseRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
+
   m_BoundingBox = mitk::Cuboid::New();
   m_BoundingBoxNode = mitk::DataNode::New();
   m_BoundingBoxNode->SetData( m_BoundingBox );
@@ -79,10 +84,11 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_WheelEventEater->SetIsEating(true);
   this->installEventFilter(m_WheelEventEater);
 
-  m_BaseRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
-
   std::vector<mitk::BaseRenderer*> renderers;
   renderers.push_back(m_BaseRenderer);
+
+  std::vector<mitk::DataNode*> nodesToIgnore;
+  nodesToIgnore.push_back(m_BoundingBoxNode);
 
   m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
   m_NodeAddedSetter->SetRenderers(renderers);
@@ -90,6 +96,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
+  m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
 }
 
 
@@ -109,6 +116,27 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
 
 
 //-----------------------------------------------------------------------------
+void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(const bool &add)
+{
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  if (dataStorage.IsNotNull())
+  {
+    if (add && !dataStorage->Exists(m_BoundingBoxNode))
+    {
+
+      dataStorage->Add(m_BoundingBoxNode);
+      this->setBoundingBoxVisible(true);
+
+    } else if (!add && dataStorage->Exists(m_BoundingBoxNode))
+    {
+      dataStorage->Remove(m_BoundingBoxNode);
+      this->setBoundingBoxVisible(false);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::Activated()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -120,6 +148,9 @@ void QmitkThumbnailRenderWindow::Activated()
 
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
   }
+
+  this->AddBoundingBoxToDataStorage(false);
+  this->OnFocusChanged();
 
   if (m_DataStorage.IsNotNull())
   {
@@ -151,6 +182,7 @@ void QmitkThumbnailRenderWindow::Deactivated()
   }
 
   this->RemoveObserversFromTrackedObjects();
+  this->AddBoundingBoxToDataStorage(false);
 }
 
 
@@ -310,9 +342,6 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
     // Tidy up
     cube->Delete();
 
-    // We shouldn't need this every time, but without it you don't seem to get all the updates.
-    this->setBoundingBoxVisible(true);
-
     // Request a single update at the end of the method.
     mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
   }
@@ -451,15 +480,10 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
       mitk::BaseRenderer::ConstPointer focusedWindowRenderer = focusManager->GetFocused();
       if (focusedWindowRenderer.IsNotNull())
       {
-        vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
+        if (focusedWindowRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
+        {
+          vtkRenderWindow* focusedWindowRenderWindow = focusedWindowRenderer->GetRenderWindow();
 
-        if (focusedWindowRenderer->GetMapperID() == mitk::BaseRenderer::Standard3D)
-        {
-          // Remove any existing geometry observers
-          this->RemoveObserversFromTrackedObjects();
-        }
-        else if (focusedWindowRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
-        {
           if (!(focusedWindowRenderWindow == this->GetVtkRenderWindow()))
           {
             // Remove any existing geometry observers
@@ -497,19 +521,17 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
               onTimeChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnTimeStepChanged );
               m_FocusedWindowTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
 
-              // Check we added bounding box to data storage.
               // I'm doing this in this method so that when the initial first
               // window starts (i.e. before any data is loaded),
               // the bounding box will not be included, and not visible.
+              this->AddBoundingBoxToDataStorage(true);
               if (!dataStorage->Exists(m_BoundingBoxNode))
               {
                 this->GetDataStorage()->Add(m_BoundingBoxNode);
+
               }
 
-              // This sets the tracked render window to the same slice and time step and re-computes the world geometry.
               this->UpdateSliceAndTimeStep();
-
-              // This computes the bounding box.
               this->OnDisplayGeometryChanged();
 
               // Setup the visibility tracker.
