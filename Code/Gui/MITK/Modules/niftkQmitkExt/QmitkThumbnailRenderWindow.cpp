@@ -57,6 +57,11 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 , m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
 {
+  // This should come early on, as we are setting renderer specific properties,
+  // and when you set a renderer specific property, if the renderer is NULL,
+  // it is an equivalent function call to setting a global property.
+  m_BaseRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
+
   m_BoundingBox = mitk::Cuboid::New();
   m_BoundingBoxNode = mitk::DataNode::New();
   m_BoundingBoxNode->SetData( m_BoundingBox );
@@ -79,10 +84,11 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_WheelEventEater->SetIsEating(true);
   this->installEventFilter(m_WheelEventEater);
 
-  m_BaseRenderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
-
   std::vector<mitk::BaseRenderer*> renderers;
   renderers.push_back(m_BaseRenderer);
+
+  std::vector<mitk::DataNode*> nodesToIgnore;
+  nodesToIgnore.push_back(m_BoundingBoxNode);
 
   m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
   m_NodeAddedSetter->SetRenderers(renderers);
@@ -90,6 +96,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
+  m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
 }
 
 
@@ -310,9 +317,6 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
     // Tidy up
     cube->Delete();
 
-    // We shouldn't need this every time, but without it you don't seem to get all the updates.
-    this->setBoundingBoxVisible(true);
-
     // Request a single update at the end of the method.
     mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
   }
@@ -504,12 +508,10 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
               if (!dataStorage->Exists(m_BoundingBoxNode))
               {
                 this->GetDataStorage()->Add(m_BoundingBoxNode);
+                this->setBoundingBoxVisible(true);
               }
 
-              // This sets the tracked render window to the same slice and time step and re-computes the world geometry.
               this->UpdateSliceAndTimeStep();
-
-              // This computes the bounding box.
               this->OnDisplayGeometryChanged();
 
               // Setup the visibility tracker.
