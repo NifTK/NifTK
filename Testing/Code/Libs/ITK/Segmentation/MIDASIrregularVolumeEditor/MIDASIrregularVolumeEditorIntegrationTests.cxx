@@ -35,15 +35,8 @@ void RegisterTests()
   REGISTER_TEST(itkImageUpdatePixelWiseSingleValueProcessorTest);
   REGISTER_TEST(itkMIDASRegionGrowingImageFilterTest2);
   REGISTER_TEST(itkMIDASRegionOfInterestCalculatorTest);
-  REGISTER_TEST(itkMIDASWipeSliceTest);
-  REGISTER_TEST(itkMIDASWipePlusTest);
-  REGISTER_TEST(itkMIDASWipeMinusTest);
   REGISTER_TEST(itkMIDASRegionOfInterestCalculatorBySlicesTest);
   REGISTER_TEST(itkMIDASRetainMarksNoThresholdingTest);
   REGISTER_TEST(itkMIDASRegionOfInterestCalculatorSplitExistingRegionTest);
-  REGISTER_TEST(itkMIDASRegionGrowingProcessorTest);
-  REGISTER_TEST(itkMIDASPropagateUpProcessorTest);
-  REGISTER_TEST(itkMIDASPropagateDownProcessorTest);
   REGISTER_TEST(itkMIDASRegionOfInterestCalculatorMinimumRegionTest);
-  REGISTER_TEST(itkMIDASThresholdApplyProcessorTest);
 }

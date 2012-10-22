@@ -32,7 +32,6 @@
 #include "mitkContourSet.h"
 #include "itkMIDASHelper.h"
 #include "itkImageUpdateClearRegionProcessor.h"
-#include "itkImageUpdateCopyRegionProcessor.h"
 #include "itkImageUpdatePasteRegionProcessor.h"
 #include "itkMIDASRetainMarksNoThresholdingProcessor.h"
 

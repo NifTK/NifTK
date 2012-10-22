@@ -43,20 +43,10 @@ ADD_TEST(MIDAS-Irreg-Upd-CopyRegion ${MIDAS_IRREG_INTEGRATION_TESTS} itkImageUpd
 ADD_TEST(MIDAS-Irreg-Upd-ClearRegion ${MIDAS_IRREG_INTEGRATION_TESTS} itkImageUpdateClearRegionProcessorTest )
 ADD_TEST(MIDAS-Irreg-Upd-PixelWise ${MIDAS_IRREG_INTEGRATION_TESTS} itkImageUpdatePixelWiseSingleValueProcessorTest )
 ADD_TEST(MIDAS-Irreg-RoiCalulator ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorTest )
-ADD_TEST(MIDAS-Irreg-WipeSlice ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASWipeSliceTest )
-ADD_TEST(MIDAS-Irreg-WipePlus ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASWipePlusTest )
-ADD_TEST(MIDAS-Irreg-WipeMinus ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASWipeMinusTest )
 ADD_TEST(MIDAS-Irreg-SliceRoiCalulator ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorBySlicesTest )
 ADD_TEST(MIDAS-Irreg-RetainMarksNoThresh ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRetainMarksNoThresholdingTest )
 ADD_TEST(MIDAS-Irreg-SplitRegion ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorSplitExistingRegionTest )
 ADD_TEST(MIDAS-Irreg-MinROI ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionOfInterestCalculatorMinimumRegionTest)
-ADD_TEST(MIDAS-Irreg-ThreshApply ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASThresholdApplyProcessorTest)
-ADD_TEST(MIDAS-Irreg-RegGrowProc ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionGrowingProcessorTest )
-ADD_TEST(MIDAS-Irreg-PropUp ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASPropagateUpProcessorTest)
-ADD_TEST(MIDAS-Irreg-PropDown ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASPropagateDownProcessorTest)
-
-# itkMIDASRegionGrowingImageFilterTest is deprecated, use itkMIDASRegionGrowingImageFilterTest2 instead.
-# ADD_TEST(MIDAS-Seg-RegionGrowingImageFilter ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionGrowingImageFilterTest ${INPUT_DATA}/two_regions_three_intensities.png ${INPUT_DATA}/two_regions_three_intensities_regiondef.png 1 300 ${INPUT_DATA}/two_regions_three_intensities.png ${INPUT_DATA}/two_regions_three_intensities_regiondef.png 1 200)
 ADD_TEST(MIDAS-Irreg-RegionGrowingImageFilter ${MIDAS_IRREG_INTEGRATION_TESTS} itkMIDASRegionGrowingImageFilterTest2)
 
 #################################################################################
@@ -67,17 +57,10 @@ itkImageUpdateClearRegionProcessorTest.cxx
 itkImageUpdateCopyRegionProcessorTest.cxx
 itkImageUpdatePixelWiseSingleValueProcessorTest.cxx
 itkMIDASRegionOfInterestCalculatorTest.cxx
-itkMIDASWipeSliceTest.cxx
-itkMIDASWipePlusTest.cxx
-itkMIDASWipeMinusTest.cxx
 itkMIDASRegionOfInterestCalculatorBySlicesTest.cxx
 itkMIDASRetainMarksNoThresholdingTest.cxx
 itkMIDASRegionOfInterestCalculatorSplitExistingRegionTest.cxx
-itkMIDASRegionGrowingProcessorTest.cxx
-itkMIDASPropagateUpProcessorTest.cxx
-itkMIDASPropagateDownProcessorTest.cxx
 itkMIDASRegionOfInterestCalculatorMinimumRegionTest.cxx
-itkMIDASThresholdApplyProcessorTest.cxx
 itkMIDASRegionGrowingImageFilterTest2.cxx
 )
 
