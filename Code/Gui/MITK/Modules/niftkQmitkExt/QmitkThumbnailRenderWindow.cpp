@@ -116,6 +116,27 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
 
 
 //-----------------------------------------------------------------------------
+void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(const bool &add)
+{
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  if (dataStorage.IsNotNull())
+  {
+    if (add && !dataStorage->Exists(m_BoundingBoxNode))
+    {
+
+      dataStorage->Add(m_BoundingBoxNode);
+      this->setBoundingBoxVisible(true);
+
+    } else if (!add && dataStorage->Exists(m_BoundingBoxNode))
+    {
+      dataStorage->Remove(m_BoundingBoxNode);
+      this->setBoundingBoxVisible(false);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::Activated()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -127,6 +148,9 @@ void QmitkThumbnailRenderWindow::Activated()
 
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
   }
+
+  this->AddBoundingBoxToDataStorage(false);
+  this->OnFocusChanged();
 
   if (m_DataStorage.IsNotNull())
   {
@@ -158,6 +182,7 @@ void QmitkThumbnailRenderWindow::Deactivated()
   }
 
   this->RemoveObserversFromTrackedObjects();
+  this->AddBoundingBoxToDataStorage(false);
 }
 
 
@@ -501,14 +526,14 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
               onTimeChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnTimeStepChanged );
               m_FocusedWindowTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
 
-              // Check we added bounding box to data storage.
               // I'm doing this in this method so that when the initial first
               // window starts (i.e. before any data is loaded),
               // the bounding box will not be included, and not visible.
+              this->AddBoundingBoxToDataStorage(true);
               if (!dataStorage->Exists(m_BoundingBoxNode))
               {
                 this->GetDataStorage()->Add(m_BoundingBoxNode);
-                this->setBoundingBoxVisible(true);
+
               }
 
               this->UpdateSliceAndTimeStep();

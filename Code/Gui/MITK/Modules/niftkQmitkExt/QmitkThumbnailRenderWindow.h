@@ -179,6 +179,13 @@ private:
   // Called to remove all observers from tracked objects.
   void RemoveObserversFromTrackedObjects();
 
+  // \brief Used to add/remove the bounding box from data storage.
+  //
+  // If add=true will add the bounding box to data storage if it isn't already,
+  // and if false will remove it if it isn't already removed.
+  // If data storage is NULL, will silently do nothing.
+  void AddBoundingBoxToDataStorage(const bool &add);
+
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
 
