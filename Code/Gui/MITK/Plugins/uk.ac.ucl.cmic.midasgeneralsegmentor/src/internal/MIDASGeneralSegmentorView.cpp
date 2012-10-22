@@ -3053,7 +3053,7 @@ void MIDASGeneralSegmentorView::ITKCopyImage(
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
-  itk::ImageRegionIterator<ImageType> inputIterator(input, input->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<ImageType> inputIterator(input, input->GetLargestPossibleRegion());
   itk::ImageRegionIterator<ImageType> outputIterator(output, output->GetLargestPossibleRegion());
 
   for (inputIterator.GoToBegin(), outputIterator.GoToBegin();
@@ -3150,47 +3150,6 @@ void MIDASGeneralSegmentorView
 }
 
 
-//-----------------------------------------------------------------------------
-template<typename TPixel, unsigned int VImageDimension>
-void
-MIDASGeneralSegmentorView
-::ITKFilterInputPointSetToExcludeRegionOfInterest(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
-    mitk::PointSet &inputSeeds,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeedsNotInRegionOfInterest
-    )
-{
-  // Copy inputSeeds to outputCopyOfInputSeeds seeds, so that they can be passed on to
-  // Redo/Undo framework for Undo purposes. Additionally, copy any input seed that is not
-  // within the regionOfInterest. Seed locations are all in millimetres.
-
-  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::IndexType IndexType;
-  typedef typename ImageType::PointType PointType;
-
-  PointType voxelIndexInMillimetres;
-  IndexType voxelIndex;
-
-  int pointCounter = 0;
-  for (int i = 0; i < inputSeeds.GetSize(); i++)
-  {
-    // Copy every point to outputCopyOfInputSeeds.
-    outputCopyOfInputSeeds.InsertPoint(i, inputSeeds.GetPoint(i));
-
-    // Only copy points outside of ROI.
-    voxelIndexInMillimetres = inputSeeds.GetPoint(i);
-    itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
-
-    if (!regionOfInterest.IsInside(voxelIndex))
-    {
-      outputNewSeedsNotInRegionOfInterest.InsertPoint(pointCounter, inputSeeds.GetPoint(i));
-      pointCounter++;
-    }
-  }
-}
-
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
@@ -3261,6 +3220,48 @@ MIDASGeneralSegmentorView
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+void
+MIDASGeneralSegmentorView
+::ITKFilterInputPointSetToExcludeRegionOfInterest(
+    itk::Image<TPixel, VImageDimension> *itkImage,
+    typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
+    mitk::PointSet &inputSeeds,
+    mitk::PointSet &outputCopyOfInputSeeds,
+    mitk::PointSet &outputNewSeedsNotInRegionOfInterest
+    )
+{
+  // Copy inputSeeds to outputCopyOfInputSeeds seeds, so that they can be passed on to
+  // Redo/Undo framework for Undo purposes. Additionally, copy any input seed that is not
+  // within the regionOfInterest. Seed locations are all in millimetres.
+
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::IndexType IndexType;
+  typedef typename ImageType::PointType PointType;
+
+  PointType voxelIndexInMillimetres;
+  IndexType voxelIndex;
+
+  int pointCounter = 0;
+  for (int i = 0; i < inputSeeds.GetSize(); i++)
+  {
+    // Copy every point to outputCopyOfInputSeeds.
+    outputCopyOfInputSeeds.InsertPoint(i, inputSeeds.GetPoint(i));
+
+    // Only copy points outside of ROI.
+    voxelIndexInMillimetres = inputSeeds.GetPoint(i);
+    itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
+
+    if (!regionOfInterest.IsInside(voxelIndex))
+    {
+      outputNewSeedsNotInRegionOfInterest.InsertPoint(pointCounter, inputSeeds.GetPoint(i));
+      pointCounter++;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 bool MIDASGeneralSegmentorView
 ::ITKSliceDoesHaveSeeds(
     itk::Image<TPixel, VImageDimension> *itkImage,
@@ -3306,17 +3307,9 @@ MIDASGeneralSegmentorView
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
-  typedef typename ImageType::SizeType SizeType;
-  typedef typename ImageType::IndexType IndexType;
 
-  RegionType region = itkImage->GetLargestPossibleRegion();
-  SizeType regionSize = region.GetSize();
-  IndexType regionIndex = region.GetIndex();
-
-  regionSize[axis] = 1;
-  regionIndex[axis] = slice;
-  region.SetSize(regionSize);
-  region.SetIndex(regionIndex);
+  RegionType region;
+  this->ITKCalculateSliceRegion(itkImage, axis, slice, region);
 
   outputSliceIsEmpty = true;
 
@@ -4178,6 +4171,48 @@ MIDASGeneralSegmentorView
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+bool MIDASGeneralSegmentorView
+::ITKImageHasNonZeroEdgePixels(
+    itk::Image<TPixel, VImageDimension> *itkImage
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
+  typedef typename ImageType::IndexType IndexType;
+  typedef typename ImageType::SizeType SizeType;
+
+  RegionType region = itkImage->GetLargestPossibleRegion();
+  SizeType regionSize = region.GetSize();
+  IndexType voxelIndex;
+
+  for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
+  {
+    regionSize[i] -= 1;
+  }
+
+  itk::ImageRegionConstIteratorWithIndex<ImageType> iterator(itkImage, region);
+  for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+  {
+    voxelIndex = iterator.GetIndex();
+    bool isEdge(false);
+    for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
+    {
+      if ((int)voxelIndex[i] == 0 || (int)voxelIndex[i] == (int)regionSize[i])
+      {
+        isEdge = true;
+      }
+    }
+    if (isEdge && itkImage->GetPixel(voxelIndex) > 0)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void MIDASGeneralSegmentorView
 ::ITKSliceDoesHaveUnEnclosedSeeds(
     itk::Image<TPixel, VImageDimension> *itkImage,
@@ -4398,47 +4433,6 @@ void MIDASGeneralSegmentorView
   }
 }
 
-
-//-----------------------------------------------------------------------------
-template<typename TPixel, unsigned int VImageDimension>
-bool MIDASGeneralSegmentorView
-::ITKImageHasNonZeroEdgePixels(
-    itk::Image<TPixel, VImageDimension> *itkImage
-    )
-{
-  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::RegionType RegionType;
-  typedef typename ImageType::IndexType IndexType;
-  typedef typename ImageType::SizeType SizeType;
-
-  RegionType region = itkImage->GetLargestPossibleRegion();
-  SizeType regionSize = region.GetSize();
-  IndexType voxelIndex;
-
-  for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
-  {
-    regionSize[i] -= 1;
-  }
-
-  itk::ImageRegionConstIteratorWithIndex<ImageType> iterator(itkImage, region);
-  for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
-  {
-    voxelIndex = iterator.GetIndex();
-    bool isEdge(false);
-    for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
-    {
-      if ((int)voxelIndex[i] == 0 || (int)voxelIndex[i] == (int)regionSize[i])
-      {
-        isEdge = true;
-      }
-    }
-    if (isEdge && itkImage->GetPixel(voxelIndex) > 0)
-    {
-      return true;
-    }
-  }
-  return false;
-}
 
 
 //-----------------------------------------------------------------------------

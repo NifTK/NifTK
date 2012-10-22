@@ -531,7 +531,7 @@ private:
       int slice
       );
 
-  /// \brief Takes the inputSeeds and filters filters them so that outputSeeds
+  /// \brief Takes the inputSeeds and filters them so that outputSeeds
   /// contains just those seeds contained within the current slice.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKFilterSeedsToCurrentSlice(
@@ -540,6 +540,19 @@ private:
       int axis,
       int slice,
       mitk::PointSet &outputSeeds
+      );
+
+  /// \brief Called from RecalculateMinAndMaxOfSeedValues(), the actual method
+  /// in ITK that recalculates the min and max intensity value of all the voxel
+  /// locations given by the seeds.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKRecalculateMinAndMaxOfSeedValues(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      mitk::PointSet &inputSeeds,
+      int axis,
+      int slice,
+      double &min,
+      double &max
       );
 
   /// \brief Takes the inputSeeds and copies them to outputCopyOfInputSeeds,
@@ -571,19 +584,6 @@ private:
       int axis,
       int slice,
       bool &outputSliceIsEmpty
-      );
-
-  /// \brief Called from RecalculateMinAndMaxOfSeedValues(), the actual method
-  /// in ITK that recalculates the min and max intensity value of all the voxel
-  /// locations given by the seeds.
-  template<typename TPixel, unsigned int VImageDimension>
-  void ITKRecalculateMinAndMaxOfSeedValues(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      mitk::PointSet &inputSeeds,
-      int axis,
-      int slice,
-      double &min,
-      double &max
       );
 
   /// \brief Called from UpdateRegionGrowing(), updates the interactive ITK

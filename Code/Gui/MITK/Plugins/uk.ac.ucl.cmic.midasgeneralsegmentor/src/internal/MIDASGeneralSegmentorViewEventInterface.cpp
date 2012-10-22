@@ -25,20 +25,27 @@
 #include "MIDASGeneralSegmentorViewEventInterface.h"
 #include "MIDASGeneralSegmentorView.h"
 
+//-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewEventInterface::MIDASGeneralSegmentorViewEventInterface()
 : m_View(NULL)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewEventInterface::~MIDASGeneralSegmentorViewEventInterface()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewEventInterface::SetMIDASGeneralSegmentorView( MIDASGeneralSegmentorView* view )
 {
   m_View = view;
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewEventInterface::ExecuteOperation(mitk::Operation* op)
 {
   m_View->ExecuteOperation(op);
