@@ -105,7 +105,6 @@ public:
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
   MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
-  MIDASConnectedComponentFilterPointer           m_ConnectedComponentFilter;
   SegmentationImageType*                         m_OutputImage;
 };
 

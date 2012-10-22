@@ -49,10 +49,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
   m_RegionGrowingFilter->SetForegroundValue(1);
-  m_ConnectedComponentFilter = MIDASConnectedComponentFilterType::New();
-  m_ConnectedComponentFilter->SetInputBackgroundValue(0);
-  m_ConnectedComponentFilter->SetOutputBackgroundValue(0);
-  m_ConnectedComponentFilter->SetOutputForegroundValue(1);
 }
 
 template<typename TPixel, unsigned int VImageDimension>
