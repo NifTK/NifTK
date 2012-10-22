@@ -1,0 +1,51 @@
+/**
+
+\page TechnicalCheckListPreRelease Checklist: Pre-Release
+
+The aim of this pre-release checklist is to improve reliability of the releases, by making
+sure installers work, unit tests work and so on.
+
+\section ChecklistPreReleaseGeneral General Checks
+
+The following table lists points that should be checked. The reason for a table layout is so
+that each month we can print it out, and put a big tick in the Linux, Mac and Windows box to say
+that we have checked it.
+
+<table>
+  <tr><th>Item</th><th>Linux</th><th>Mac</th><th>Windows</th></tr>
+  <tr><td>Unit Tests work, or retired, or an exception noted</td><td></td><td></td><td></td></tr>
+  <tr><td>Application NiftyView launches</td><td></td><td></td><td></td></tr>
+  <tr><td>NiftyView help pages visible. (Help->Open Help Perspective)</td><td></td><td></td><td></td></tr>
+  <tr><td>NiftyView context sensitive help available. Choose any view, hit F1, should launch help perspective</td><td></td><td></td><td></td></tr>
+  <tr><td>Each View has a Test Script</td><td></td><td></td><td></td></tr>
+  <tr><td>Each View is consistently named in the Window->Show View menu</td><td></td><td></td><td></td></tr>
+  <tr><td>Each View is consistently named in the preferences dialog</td><td></td><td></td><td></td></tr>
+</table>
+
+\section ChecklistPreReleasePlugins Specific Plugin Checks
+
+Each plugin should provide a test script, called TestScript.dox. This should comprise of a description of 
+a series of steps that a tester can perform, and the exact outcome. Again, the list below is a table layout
+so we can print it out, and tick things off. Each test script should be as brief as possible. The test script
+should be initially provided by the developer, or produced as a result of requirements analysis with the end-user.
+Over time, the test script should be updated by both testers that can use git, and also developers, as 
+new use cases and test cases emerge.
+
+<table>
+  <tr><th>View</th><th>Linux</th><th>Mac</th><th>Windows</th></tr>
+  <tr><td>\subpage TestScriptIntensityProfile</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptNiftyView</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptImageLookupTables</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptImageStatistics</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptMIDASEditor</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptGeneralSegmentor</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptMIDASMorph</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptMITKSegmentation</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptSnapshot</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptSurfaceExtractor</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptSurgicalGuidance</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptThumbnail</td><td></td><td></td><td></td></tr>
+  <tr><td>\subpage TestScriptXNAT</td><td></td><td></td><td></td></tr>
+</table>
+
+*/
