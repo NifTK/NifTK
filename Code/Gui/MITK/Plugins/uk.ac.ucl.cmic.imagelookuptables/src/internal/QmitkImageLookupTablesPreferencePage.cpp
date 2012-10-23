@@ -43,6 +43,7 @@ const std::string QmitkImageLookupTablesPreferencePage::INITIALISATION_PERCENTAG
 const std::string QmitkImageLookupTablesPreferencePage::PERCENTAGE_NAME("percentage");
 const std::string QmitkImageLookupTablesPreferencePage::PRECISION_NAME("precision");
 
+//-----------------------------------------------------------------------------
 QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage()
 : m_MainControl(0)
 , m_UseMidasInitialisationRadioButton(0)
@@ -54,6 +55,8 @@ QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage()
 
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage(const QmitkImageLookupTablesPreferencePage& other)
 : berry::Object(), QObject()
 {
@@ -61,16 +64,22 @@ QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage(const
   throw std::runtime_error("Copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkImageLookupTablesPreferencePage::~QmitkImageLookupTablesPreferencePage()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkImageLookupTablesPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
@@ -117,11 +126,15 @@ void QmitkImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = false;
 }
 
+
+//-----------------------------------------------------------------------------
 QWidget* QmitkImageLookupTablesPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkImageLookupTablesPreferencePage::PerformOk()
 {
   std::string method;
@@ -145,11 +158,15 @@ bool QmitkImageLookupTablesPreferencePage::PerformOk()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkImageLookupTablesPreferencePage::PerformCancel()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkImageLookupTablesPreferencePage::Update()
 {
   std::string method = m_ImageLookupTablesPreferencesNode->Get(INITIALISATION_METHOD_NAME, INITIALISATION_MIDAS);
@@ -169,6 +186,8 @@ void QmitkImageLookupTablesPreferencePage::Update()
   m_Precision->setValue(m_ImageLookupTablesPreferencesNode->GetInt(PRECISION_NAME, 2));
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkImageLookupTablesPreferencePage::OnMIDASInitialisationRadioButtonChecked(bool checked)
 {
   if (m_Initializing) return;
@@ -183,6 +202,8 @@ void QmitkImageLookupTablesPreferencePage::OnMIDASInitialisationRadioButtonCheck
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkImageLookupTablesPreferencePage::OnLevelWindowRadioButtonChecked(bool checked)
 {
   if (m_Initializing) return;
@@ -197,6 +218,8 @@ void QmitkImageLookupTablesPreferencePage::OnLevelWindowRadioButtonChecked(bool 
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkImageLookupTablesPreferencePage::OnImageDataRadioButtonChecked(bool checked)
 {
   if (m_Initializing) return;
