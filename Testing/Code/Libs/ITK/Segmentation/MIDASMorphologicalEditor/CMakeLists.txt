@@ -45,7 +45,7 @@ ADD_TEST(MIDAS-Morph-ConditionalDilation ${MIDAS_MORPH_INTEGRATION_TESTS} itkMID
 ADD_TEST(MIDAS-Morph-DownSampling ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASDownSamplingFilterTest )
 ADD_TEST(MIDAS-Morph-UpSampling ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASUpSamplingFilterTest )
 ADD_TEST(MIDAS-Morph-Rethresholding ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MIDASRethresholding.nii.gz ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz itkMIDASRethresholdingFilterTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img 400 ${TEMPORARY_OUTPUT}/BF-MIDASRethresholding.nii.gz)
-ADD_TEST(MIDAS-Morph-LimitByRegionFunction ${MIDAS_MORPH_INTEGRATION_TESTS} itkLimitByRegionFunctionTest)
+ADD_TEST(MIDAS-Morph-LimitByRegionFunction ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASLimitByRegionFunctionTest)
 ADD_TEST(MIDAS-Morph-MaskByRegion ${MIDAS_MORPH_INTEGRATION_TESTS} itkMIDASMaskByRegionFilterTest)
 ADD_TEST(MIDAS-Morph-PipeErode1 ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${BASELINE}/midas.erode1.nii.gz ${TEMPORARY_OUTPUT}/MIDAS-Morph-PE1.nii.gz itkMIDASPipelineTest ${INPUT_DATA}/volunteers/16856/16856-002-1.nii.gz ${TEMPORARY_OUTPUT}/MIDAS-Morph-PE1.nii.gz 1 59 139 96 139 1 60 160 2 0)
 ADD_TEST(MIDAS-Morph-PipeDilate1 ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${BASELINE}/midas.dilate1.nii.gz ${TEMPORARY_OUTPUT}/MIDAS-Morph-PD1.nii.gz itkMIDASPipelineTest ${INPUT_DATA}/volunteers/16856/16856-002-1.nii.gz ${TEMPORARY_OUTPUT}/MIDAS-Morph-PD1.nii.gz 2 59 139 96 139 1 60 160 1 0)
