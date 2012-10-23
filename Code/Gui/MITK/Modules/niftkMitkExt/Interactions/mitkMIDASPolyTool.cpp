@@ -339,8 +339,6 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
         &planeGeometry
         );
 
-    std::cerr << "Matt, index=" << m_DraggedPointIndex << ", new=" << closestCornerPoint << ", previous=" << m_PreviousContour->GetPoints()->GetElement(m_DraggedPointIndex) << std::endl;
-
     mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Update PolyLine");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
     ExecuteOperation(doOp);

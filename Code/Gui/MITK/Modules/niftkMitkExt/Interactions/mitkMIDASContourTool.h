@@ -82,7 +82,7 @@ namespace mitk {
     static void CopyContour(mitk::Contour &a, mitk::Contour &b);
 
     /// \brief Copies contour set from a to b.
-    static void CopyContourSet(mitk::ContourSet &a, mitk::ContourSet &b);
+    static void CopyContourSet(mitk::ContourSet &a, mitk::ContourSet &b, bool initialise=true);
 
     /// \brief Initialises the output contour b with properties like, closed, width and selected, copied from the reference contour a.
     static void InitialiseContour(mitk::Contour &a, mitk::Contour &b);

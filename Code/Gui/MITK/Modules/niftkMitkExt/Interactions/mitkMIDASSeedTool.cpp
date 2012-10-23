@@ -72,7 +72,7 @@ float mitk::MIDASSeedTool::CanHandleEvent(const StateEvent *event) const
   }
   else
   {
-    return mitk::StateMachine::CanHandleEvent(event);
+    return mitk::MIDASTool::CanHandleEvent(event);
   }
 }
 

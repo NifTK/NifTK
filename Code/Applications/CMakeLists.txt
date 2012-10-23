@@ -400,9 +400,9 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   TARGET_LINK_LIBRARIES(niftkSeriesReadVolumeWrite ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkSeriesReadVolumeWrite RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
 
-  #ADD_EXECUTABLE(niftkExtractScalp niftkExtractScalp.cxx )
-  #TARGET_LINK_LIBRARIES(niftkExtractScalp ${NIFTK_APPLICATION_LINK_LIBRARIES} )
-  #INSTALL(TARGETS niftkExtractScalp RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  ADD_EXECUTABLE(niftkExtractScalp niftkExtractScalp.cxx )
+  TARGET_LINK_LIBRARIES(niftkExtractScalp ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkExtractScalp RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   
   ADD_EXECUTABLE(niftkMTPDbc niftkMTPDbc.cxx)
   TARGET_LINK_LIBRARIES(niftkMTPDbc ${NIFTK_APPLICATION_LINK_LIBRARIES} )
@@ -435,6 +435,10 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   ADD_EXECUTABLE(niftkTestCompareImage niftkTestCompareImage.cxx )
   TARGET_LINK_LIBRARIES(niftkTestCompareImage ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkTestCompareImage RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+
+  ADD_EXECUTABLE(niftkVesselExtractor niftkVesselExtractor.cxx )
+  TARGET_LINK_LIBRARIES(niftkVesselExtractor ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkVesselExtractor RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)  
   
   ##############################################################
   # Other command line applications, that require VTK.

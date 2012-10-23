@@ -223,7 +223,7 @@
    <item>
     <widget class="QPushButton" name="m_NewSegmentationButton">
      <property name="text">
-      <string>new segmentation</string>
+      <string>start/re-start segmentation</string>
      </property>
     </widget>
    </item>

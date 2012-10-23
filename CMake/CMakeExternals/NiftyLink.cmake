@@ -36,42 +36,46 @@ IF(BUILD_IGI)
   SET(proj NiftyLink)
   SET(proj_DEPENDENCIES)
   SET(NIFTYLINK_DEPENDS ${proj})
-  
+
   IF(NOT DEFINED NiftyLink_DIR)
-  
-    SET(revision_tag 0ade68b60630d46a08e49597b86a3c8728aca891)
 
-    IF(${proj}_REVISION_TAG)
-      SET(revision_tag ${${proj}_REVISION_TAG})
-    ENDIF()
+    if (NIFTK_LOCATION_NIFTYLINK_DEV)
+      set(NiftyLink_location_options
+        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
+        GIT_TAG development
+      )
+    else ()
+      niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
+      set(NiftyLink_location_options
+        URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
+        URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
+      )
+    endif ()
 
-    MESSAGE("Pulling NiftyLink from ${NIFTK_LOCATION_NIFTYLINK}")
-    
     ExternalProject_Add(${proj}
-       GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK}
-       GIT_TAG ${revision_tag}
-       BINARY_DIR ${proj}-build
-       INSTALL_COMMAND ""
-       CMAKE_GENERATOR ${GEN}
-       CMAKE_ARGS
-         ${EP_COMMON_ARGS}
-         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-         -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-       DEPENDS ${proj_DEPENDENCIES}
+      ${NiftyLink_location_options}
+      BINARY_DIR ${proj}-build
+      INSTALL_COMMAND ""
+      CMAKE_GENERATOR ${GEN}
+      CMAKE_ARGS
+        ${EP_COMMON_ARGS}
+        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+        -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
+        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+      DEPENDS ${proj_DEPENDENCIES}
     )
-   
+
     SET(NiftyLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/NiftyLink-build)
     SET(NiftyLink_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/NiftyLink)
     SET(OpenIGTLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
-    
+
     MESSAGE("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     MESSAGE("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")
-    
+
   ELSE(NOT DEFINED NiftyLink_DIR)
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   ENDIF(NOT DEFINED NiftyLink_DIR)
 
 ENDIF(BUILD_IGI)

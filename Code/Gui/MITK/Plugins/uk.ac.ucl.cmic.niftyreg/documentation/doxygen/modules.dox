@@ -4,7 +4,7 @@
 
   \brief Implements a plugin to interface to the NiftyReg registration algorithm
   
-  Written by Matt Clarkson (m.clarkson@ucl.ac.uk), and Anind Duttaroy (a.duttaroy@cs.ucl.ac.uk).
+  Written by John Hipwell (j.hipwell@ucl.ac.uk), Matt Clarkson (m.clarkson@ucl.ac.uk), and Anind Duttaroy (a.duttaroy@cs.ucl.ac.uk).
 */
 
 /**

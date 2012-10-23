@@ -30,7 +30,7 @@
 #include "mitkOperationActor.h"
 #include "mitkTool.h"
 #include "itkImage.h"
-#include "itkImageUpdatePixelWiseSingleValueProcessor.h"
+#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
 
 namespace mitk
 {
@@ -43,7 +43,7 @@ namespace mitk
 class NIFTKMITKEXT_EXPORT MIDASPaintbrushToolOpEditImage: public mitk::Operation
 {
 public:
-  typedef itk::ImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
+  typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
 
   MIDASPaintbrushToolOpEditImage(
       mitk::OperationType type,

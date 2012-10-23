@@ -48,6 +48,7 @@
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPaintbrushTool.h"
 #include "mitkMIDASImageUtils.h"
+#include "mitkITKRegionParametersDataNodeProperty.h"
 
 /**
  * \brief Test class for mitkMIDASPaintbrushTool.
@@ -64,6 +65,16 @@ public:
   mitk::MIDASPaintbrushTool* m_Tool;
   int m_PaintbrushToolId;
 
+  //-----------------------------------------------------------------------------
+  void SetupNode(const mitk::DataNode::Pointer node, std::string name)
+  {
+    mitk::ITKRegionParametersDataNodeProperty::Pointer prop = mitk::ITKRegionParametersDataNodeProperty::New();
+    prop->SetSize(1,1,1);
+    prop->SetValid(false);
+
+    node->SetName(name);
+    node->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), prop);
+  }
 
   //-----------------------------------------------------------------------------
   void Setup(char* argv[])
@@ -89,16 +100,16 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 4),".. Testing 4 images loaded.");
 
     const mitk::DataNode::Pointer erodeAdditionsNode = (*allImages)[0];
-    erodeAdditionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
+    this->SetupNode(erodeAdditionsNode, mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
 
     const mitk::DataNode::Pointer erodeSubtractionsNode = (*allImages)[1];
-    erodeSubtractionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
+    this->SetupNode(erodeSubtractionsNode, mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
 
     const mitk::DataNode::Pointer dilateAdditionsNode = (*allImages)[2];
-    dilateAdditionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
+    this->SetupNode(dilateAdditionsNode, mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
 
     const mitk::DataNode::Pointer dilateSubtractionsNode = (*allImages)[3];
-    dilateSubtractionsNode->SetName(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
+    this->SetupNode(dilateSubtractionsNode, mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
 
     mitk::ToolManager::DataVectorType vector;
     vector.push_back(erodeAdditionsNode);

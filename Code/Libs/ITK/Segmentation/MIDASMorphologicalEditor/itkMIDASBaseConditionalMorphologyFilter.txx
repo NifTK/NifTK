@@ -96,7 +96,7 @@ namespace itk
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   bool 
   MIDASBaseConditionalMorphologyFilter<TInputImage1, TInputImage2, TOutputImage>
-  ::IsOnBoundaryOfImage(OutputImageIndexType &voxelIndex, OutputImageSizeType &size)
+  ::IsOnBoundaryOfImage(const OutputImageIndexType &voxelIndex, const OutputImageSizeType &size)
   {
     for (int i = 0; i < TInputImage1::ImageDimension; i++)
     {
@@ -111,7 +111,7 @@ namespace itk
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   bool
   MIDASBaseConditionalMorphologyFilter<TInputImage1, TInputImage2, TOutputImage> 
-  ::IsOnBoundaryOfRegion(OutputImageIndexType &voxelIndex, OutputImageRegionType& region)
+  ::IsOnBoundaryOfRegion(const OutputImageIndexType &voxelIndex, const OutputImageRegionType& region)
   {
     for (int i = 0; i < TInputImage1::ImageDimension; i++)
     {
@@ -162,11 +162,12 @@ namespace itk
       this->CopyImageData(inputMaskImagePtr, outputImagePtr);
       return;
     }
-    
+
     // If we have 1 iteration, we don't require any temporary images, 
     // so we read from the input, and write straight to the output 
-    else if (m_NumberOfIterations == 1)
+    if (m_NumberOfIterations == 1)
     {
+      outputImagePtr->FillBuffer(this->GetOutValue());
       this->DoOneIterationOfFilter(inputMainImagePtr.GetPointer(), inputMaskImagePtr.GetPointer(), outputImagePtr.GetPointer());
       return;
     }

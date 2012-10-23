@@ -28,7 +28,7 @@
 # Also, Trac 1592, version number MUST change if CTK changes.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 09 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 10 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -134,6 +134,7 @@ OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external rel
 OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
 OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
+OPTION(NIFTK_LOCATION_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 
 ######################################################################
 # Variables that get compiled into C++ code. 
@@ -157,33 +158,41 @@ ENDIF(WIN32)
 SET(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}" CACHE STRING "String to describe fully named version" FORCE)
 SET(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
-SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/html/BuildInstructions.html" CACHE STRING "Build instructions")
-SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/html/BuildInstructions.html" CACHE STRING "Installation instructions")
+SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
+SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 SET(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost")
 SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM")
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK")
-SET(NIFTK_VERSION_ITK "3.20.1" CACHE STRING "Version of ITK")
+SET(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK")
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
+# Note: If the CTK version changes, then you either clear the plugin cache
+# or change the deploy path by changing the patch level.
+SET(NIFTK_VERSION_CTK "12cc05735a" CACHE STRING "Version of CTK")
+SET(NIFTK_VERSION_MITK "6bca0b2907" CACHE STRING "Version of MITK")
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl")
+SET(NIFTK_VERSION_NIFTYLINK "0ade68b606" CACHE STRING "Version of NiftyLink")
 SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg")
 SET(NIFTK_VERSION_NIFTYSEG "88" CACHE STRING "Version of NiftySeg")
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec")
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim")
+SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL")
 SET(NIFTK_LOCATION_BOOST "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost-${NIFTK_VERSION_BOOST}.tar.gz" CACHE STRING "Location of Boost")
 SET(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM")
 SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK")
 SET(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK")
 SET(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK")
+SET(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK")
+SET(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK")
 SET(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.zip" CACHE STRING "Location of curl")
-SET(NIFTK_LOCATION_CTK "//github.com/commontk/CTK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
-SET(NIFTK_LOCATION_MITK "//github.com/MattClarkson/MITK.git" CACHE STRING "Location of CTK - see also NIFTK_USE_GIT_PROTOCOL.")
-SET(NIFTK_LOCATION_NIFTYLINK "git://cmicdev.cs.ucl.ac.uk/NiftyLink" CACHE STRING "Location of NiftyLink - see also NIFTK_USE_GIT_PROTOCOL.")
-SET(NIFTK_LOCATION_DATA "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING  "Location of NifTK unit test data.")
-SET(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only).")
-SET(NIFTK_LOCATION_NIFTYREG "https://niftyreg.svn.sourceforge.net/svnroot/niftyreg/trunk/nifty_reg/" CACHE STRING  "Location of NiftyReg.")
-SET(NIFTK_LOCATION_NIFTYSEG "https://niftyseg.svn.sourceforge.net/svnroot/niftyseg" CACHE STRING  "Location of NiftySEG.")
-SET(NIFTK_LOCATION_NIFTYREC "https://niftyrec.svn.sourceforge.net/svnroot/niftyrec/" CACHE STRING  "Location of NiftyRec.")
-SET(NIFTK_LOCATION_NIFTYSIM "https://niftysim.svn.sourceforge.net/svnroot/niftysim/trunk/nifty_sim/" CACHE STRING  "Location of NiftyRec.")
+SET(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball")
+SET(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "https://cmicdev.cs.ucl.ac.uk/git/NiftyLink" CACHE STRING "Location of NiftyLink repository")
+SET(NIFTK_LOCATION_DATA "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING  "Location of NifTK unit test data")
+SET(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only)")
+SET(NIFTK_LOCATION_NIFTYREG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyReg-${NIFTK_VERSION_NIFTYREG}.tar.gz" CACHE STRING  "Location of NiftyReg")
+SET(NIFTK_LOCATION_NIFTYSEG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySeg-${NIFTK_VERSION_NIFTYSEG}.tar.gz" CACHE STRING  "Location of NiftySeg")
+SET(NIFTK_LOCATION_NIFTYREC "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyRec-${NIFTK_VERSION_NIFTYREC}.tar.gz" CACHE STRING  "Location of NiftyRec")
+SET(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySim-${NIFTK_VERSION_NIFTYSIM}.tar.gz" CACHE STRING  "Location of NiftyRec")
+SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL")
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -261,6 +270,19 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 
 ######################################################################
+# Set GIT protocol, as dependencies need it
+######################################################################
+FIND_PACKAGE(Git REQUIRED)
+SET(GIT_PROTOCOL "git")
+IF(NOT NIFTK_USE_GIT_PROTOCOL)
+  SET(GIT_PROTOCOL "http")
+ENDIF()
+
+IF (WIN32)
+  SET(GITCOMMAND ${GIT_EXECUTABLE})
+ENDIF()
+
+######################################################################
 # Configure Dart testing support.  This should be done before any
 # MESSAGE(FATAL_ERROR ...) commands are invoked.
 ######################################################################
@@ -299,15 +321,6 @@ SET(NIFTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags")
 MARK_AS_ADVANCED(NIFTK_ADDITIONAL_C_FLAGS)
 SET(NIFTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags")
 MARK_AS_ADVANCED(NIFTK_ADDITIONAL_CXX_FLAGS)
-
-######################################################################
-# Set GIT protocol, as dependencies need it
-######################################################################
-FIND_PACKAGE(Git REQUIRED)
-SET(GIT_PROTOCOL "git")
-IF(NOT NIFTK_USE_GIT_PROTOCOL)
-  SET(GIT_PROTOCOL "http")
-ENDIF()
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -1038,6 +1051,17 @@ IF(BUILD_SHARED_LIBS)
       ENDFOREACH()
     ENDFOREACH()
   ENDIF()
+  
+  # cURL
+  IF(BUILD_GUI) 
+    FILE(GLOB CURL_LIB_FILES 
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.so
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.dylib
+	   ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.lib
+	   ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.dll
+       )
+    INSTALL(PROGRAMS ${CURL_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
+  ENDIF(BUILD_GUI)
   
 ELSE(BUILD_SHARED_LIBS)
   IF(WIN32)

@@ -51,6 +51,7 @@ ADD_TEST(BF-ExtractEdgeImage ${BASIC_FILTERS_INTEGRATION_TESTS} ExtractEdgeImage
 #ADD_TEST(BF-MeanCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MeanCurvature_out.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii MeanCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii 5 10 10 0.5)
 #ADD_TEST(BF-GaussianCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} GaussianCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-GaussianCurvature_out.nii)
 ADD_TEST(BF-Seg-ExcludeImageFilter ${BASIC_FILTERS_INTEGRATION_TESTS} itkExcludeImageFilterTest)
+ADD_TEST(BF-LargestConnected ${BASIC_FILTERS_INTEGRATION_TESTS} itkLargestConnectedComponentFilterTest)
 
 #################################################################################
 # Build instructions.
@@ -65,6 +66,7 @@ ExtractEdgeImageTest.cxx
 MeanCurvatureImageFilterTest.cxx
 GaussianCurvatureImageFilterTest.cxx
 itkExcludeImageFilterTest.cxx
+itkLargestConnectedComponentFilterTest.cxx
 )
 
 ADD_EXECUTABLE(BasicFiltersIntegrationTests BasicFiltersIntegrationTests.cxx ${BasicFiltersIntegrationTests_SRCS})

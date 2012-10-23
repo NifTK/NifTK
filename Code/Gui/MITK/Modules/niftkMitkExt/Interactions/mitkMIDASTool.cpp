@@ -31,6 +31,7 @@ const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEED
 const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
 const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = std::string("MIDAS_PRIOR_CONTOURS");
 const std::string mitk::MIDASTool::NEXT_CONTOURS_NAME = std::string("MIDAS_NEXT_CONTOURS");
+const std::string mitk::MIDASTool::DRAW_CONTOURS_NAME = std::string("MIDAS_DRAW_CONTOURS");
 const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = std::string("MIDAS_REGION_GROWING_IMAGE");
 const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS = std::string("MIDAS_EDITS_EROSIONS_SUBTRACTIONS");
 const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS = std::string("MIDAS_EDITS_EROSIONS_ADDITIONS");
@@ -43,10 +44,13 @@ mitk::MIDASTool::~MIDASTool()
 }
 
 mitk::MIDASTool::MIDASTool(const char* type) :
-    FeedbackContourTool(type),
-    m_AddToPointSetInteractor(NULL)
+    FeedbackContourTool(type)
+, m_AddToPointSetInteractor(NULL)
+, m_LastSeenNumberOfSeeds(0)
+, m_SeedsChangedTag(0)
+, m_IsActivated(false)
+, m_BlockNumberOfSeedsSignal(false)
 {
-  m_IsActivated = false;
 }
 
 const char* mitk::MIDASTool::GetGroup() const
@@ -173,3 +177,22 @@ void mitk::MIDASTool::OnSeedsModified()
     }
   }
 }
+
+float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
+{
+  // See StateMachine.xml for event Ids.
+
+  if (event != NULL
+      && event->GetEvent() != NULL
+      && (event->GetId() == 2   // right mouse down
+          )
+      )
+  {
+    return 1;
+  }
+  else
+  {
+    return mitk::FeedbackContourTool::CanHandleEvent(event);
+  }
+}
+

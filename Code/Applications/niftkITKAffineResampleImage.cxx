@@ -31,8 +31,10 @@
 
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-
+#include "itkUnaryFunctorImageFilter.h"
 #include "itkResampleImageFilter.h"
+#include "itkUnaryFunctorImageFilter.h"
+#include "itkMath.h"
 
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
@@ -77,16 +79,105 @@ struct arguments
 };
 
 
+namespace itk
+{
+namespace Functor {  
+  
+template< class TInput, class TOutput>
+class Round
+{
+public:
+  Round() {};
+  virtual ~Round() {};
+  bool operator!=( const Round & ) const
+    {
+    return false;
+    }
+  bool operator==( const Round & other ) const
+    {
+    return !(*this != other);
+    }
+  inline TOutput operator()( const TInput & A ) const
+    {
+      return static_cast<TOutput>( itk::Math::Round<TOutput>( A ) );
+    }
+};
+}
+
+template <class TInputImage, class TOutputImage>
+class ITK_EXPORT RoundImageFilter :
+    public
+UnaryFunctorImageFilter<TInputImage,TOutputImage, 
+                        Functor::Round< 
+  typename TInputImage::PixelType, 
+  typename TOutputImage::PixelType> >
+{
+public:
+  /** Standard class typedefs. */
+  typedef RoundImageFilter               Self;
+  typedef UnaryFunctorImageFilter<TInputImage,TOutputImage, 
+    Functor::Round< 
+  typename TInputImage::PixelType, 
+    typename TOutputImage::PixelType>   
+    >  Superclass;
+  typedef SmartPointer<Self>            Pointer;
+  typedef SmartPointer<const Self>      ConstPointer;
+
+  /** Method for creation through the object factory. */
+  itkNewMacro(Self);
+  
+  /** Run-time type information (and related methods). */
+  itkTypeMacro(RoundImageFilter, UnaryFunctorImageFilter);
+
+#ifdef ITK_USE_CONCEPT_CHECKING
+  /** Begin concept checking */
+  itkConceptMacro(InputConvertibleToOutputCheck,
+    (Concept::Convertible<typename TInputImage::PixelType,
+                          typename TOutputImage::PixelType>));
+  /** End concept checking */
+#endif
+
+protected:
+  RoundImageFilter() {}
+  virtual ~RoundImageFilter() {}
+
+  void GenerateData()
+    {
+    if( this->GetInPlace() && this->CanRunInPlace() )
+      {
+      // nothing to do, so avoid iterating over all the pixels
+      // for nothing! Allocate the output, generate a fake progress and exit
+      this->AllocateOutputs();
+      ProgressReporter progress(this, 0, 1);
+      return;
+      }
+    Superclass::GenerateData();
+    }
+  
+
+  
+private:
+  RoundImageFilter(const Self&); //purposely not implemented
+  void operator=(const Self&); //purposely not implemented
+
+};
+
+}
+
+
 template <int Dimension>
 int DoMain(arguments args)
 {
-  typedef short PixelType;                                          
-  typedef itk::Image< PixelType, Dimension > ImageType;
+  typedef float InputPixelType;                                          
+  typedef short OutputPixelType;                                          
 
-  typename ImageType::Pointer fixedImage = 0;
-  typename ImageType::Pointer movingImage = 0;
+  typedef itk::Image< InputPixelType, Dimension > InputImageType;
+  typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
+
+  typename InputImageType::Pointer fixedImage = 0;
+  typename InputImageType::Pointer movingImage = 0;
   
-  typedef itk::ImageFileReader< ImageType  > ImageReaderType;
+  typedef itk::ImageFileReader< InputImageType  > ImageReaderType;
 
   typedef itk::AffineTransform<double, Dimension> AffineTransformType; 
 
@@ -151,7 +242,7 @@ int DoMain(arguments args)
     
     // Transform the image
 
-    typedef itk::ResampleImageFilter< ImageType, ImageType > ResampleFilterType;
+    typedef itk::ResampleImageFilter< InputImageType, InputImageType > ResampleFilterType;
 
     typename ResampleFilterType::Pointer resampler = ResampleFilterType::New();
 
@@ -180,12 +271,18 @@ int DoMain(arguments args)
 
     // Write the resampled image to a file
 
-    typedef itk::ImageFileWriter< ImageType >  WriterType;
+    typedef itk::RoundImageFilter< InputImageType, OutputImageType > RoundImageFilterType;
+
+    typename RoundImageFilterType::Pointer caster = RoundImageFilterType::New();
+
+    caster->SetInput( resampler->GetOutput() );
+
+    typedef itk::ImageFileWriter< OutputImageType >  WriterType;
 
     typename WriterType::Pointer writer =  WriterType::New();
 
     writer->SetFileName( args.fileOutput.c_str() );
-    writer->SetInput( resampler->GetOutput() );
+    writer->SetInput( caster->GetOutput() );
 
     writer->Update();
 

@@ -59,22 +59,27 @@ class GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
 {
 public:
 
-  typedef itk::Index<VImageDimension>                                     IndexType;
-  typedef itk::ContinuousIndex<double, VImageDimension>                   ContinuousIndexType;
-  typedef itk::Image<TPixel, VImageDimension>                             GreyScaleImageType;
+  typedef itk::Index<VImageDimension>                                      IndexType;
+  typedef itk::ContinuousIndex<double, VImageDimension>                    ContinuousIndexType;
+  typedef itk::Image<TPixel, VImageDimension>                              GreyScaleImageType;
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType,
-                     VImageDimension>                                     SegmentationImageType;
-  typedef typename GreyScaleImageType::RegionType                         RegionType;
-  typedef typename GreyScaleImageType::SizeType                           SizeType;
-  typedef typename GreyScaleImageType::PointType                          PointType;
-  typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType> ExtractGreySliceFromGreyImageFilterType;
-  typedef typename ExtractGreySliceFromGreyImageFilterType::Pointer       ExtractGreySliceFromGreyImageFilterPointer;
-  typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType> CastGreySliceToSegmentationSliceFilterType;
-  typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer    CastGreySliceToSegmentationSliceFilterPointer;
+                     VImageDimension>                                      SegmentationImageType;
+  typedef typename SegmentationImageType::PixelType                        SegmentationImagePixelType;
+  typedef typename GreyScaleImageType::RegionType                          RegionType;
+  typedef typename GreyScaleImageType::SizeType                            SizeType;
+  typedef typename GreyScaleImageType::PointType                           PointType;
+  typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType>  ExtractGreySliceFromGreyImageFilterType;
+  typedef typename ExtractGreySliceFromGreyImageFilterType::Pointer        ExtractGreySliceFromGreyImageFilterPointer;
+  typedef itk::ExtractImageFilter<SegmentationImageType,
+                                  SegmentationImageType>                   ExtractBinarySliceFromBinaryImageFilterType;
+  typedef typename ExtractBinarySliceFromBinaryImageFilterType::Pointer    ExtractBinarySliceFromBinaryImageFilterPointer;
+
+  typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType>  CastGreySliceToSegmentationSliceFilterType;
+  typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer     CastGreySliceToSegmentationSliceFilterPointer;
   typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType,
                                              SegmentationImageType,
-                                             PointSetType>                MIDASRegionGrowingFilterType;
-  typedef typename MIDASRegionGrowingFilterType::Pointer                  MIDASRegionGrowingFilterPointer;
+                                             PointSetType>                 MIDASRegionGrowingFilterType;
+  typedef typename MIDASRegionGrowingFilterType::Pointer                   MIDASRegionGrowingFilterPointer;
 
   // Methods
   GeneralSegmentorPipeline();
@@ -87,16 +92,20 @@ public:
   TPixel m_LowerThreshold;
   TPixel m_UpperThreshold;
   PointSetPointer m_AllSeeds;
-  ParametricPathVectorType m_AllContours;
+  ParametricPathVectorType m_SegmentationContours;
+  ParametricPathVectorType m_ManualContours;
 
   // Controls whether we write to output. Default = true. If false, we can directly look at m_RegionGrowingFilter->GetOutput().
   bool m_UseOutput;
+  bool m_EraseFullSlice;
 
   // The main filters.
-  ExtractGreySliceFromGreyImageFilterPointer    m_ExtractRegionOfInterestFilter;
-  CastGreySliceToSegmentationSliceFilterPointer m_CastToBinaryFilter;
-  MIDASRegionGrowingFilterPointer               m_RegionGrowingFilter;
-  SegmentationImageType*                        m_OutputImage;
+  ExtractGreySliceFromGreyImageFilterPointer     m_ExtractGreyRegionOfInterestFilter;
+  ExtractBinarySliceFromBinaryImageFilterPointer m_ExtractBinaryRegionOfInterestFilter;
+  CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
+  CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
+  MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
+  SegmentationImageType*                         m_OutputImage;
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION

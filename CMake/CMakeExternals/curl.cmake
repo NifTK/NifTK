@@ -46,13 +46,15 @@ if( CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC )
 
   set(_PATCH_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/curl_patch.cmake" )
   message("\n ********* Adding patch to: ${_PATCH_FILE} ********* \n" )  
-  
+
+  niftkMacroGetChecksum(NIFTK_CHECKSUM_curl ${NIFTK_LOCATION_curl})
+
   ExternalProject_Add(${proj}
     BINARY_DIR ${proj}-build
     URL ${NIFTK_LOCATION_curl}
-	PATCH_COMMAND "${CMAKE_COMMAND};-P;${_PATCH_FILE}"
+    URL_MD5 ${NIFTK_CHECKSUM_curl}
+    PATCH_COMMAND "${CMAKE_COMMAND};-P;${_PATCH_FILE}"
     UPDATE_COMMAND ""
-    INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
@@ -60,6 +62,8 @@ if( CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC )
       -DBUILD_CURL_EXE:BOOL=OFF
       -DBUILD_CURL_TESTS:BOOL=OFF
       -DCURL_STATICLIB:BOOL=OFF
+	  -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
+	  -DBUILD_RELEASE_DEBUG_DIRS:BOOL=ON
     DEPENDS ${proj_DEPENDENCIES}
   )
 else()  
@@ -67,7 +71,6 @@ else()
     BINARY_DIR ${proj}-build
     URL ${NIFTK_LOCATION_curl}
     UPDATE_COMMAND ""
-    INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
@@ -75,6 +78,7 @@ else()
       -DBUILD_CURL_EXE:BOOL=OFF
       -DBUILD_CURL_TESTS:BOOL=OFF
       -DCURL_STATICLIB:BOOL=OFF
+	  -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
     DEPENDS ${proj_DEPENDENCIES}
   )
 endif()  

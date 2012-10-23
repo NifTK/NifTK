@@ -33,8 +33,8 @@
 #include "mitkGeometry3D.h"
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "mitkMIDASPaintbrushToolEventInterface.h"
+#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
 #include "itkImage.h"
-#include "itkImageUpdatePixelWiseSingleValueProcessor.h"
 
 namespace mitk
 {
@@ -74,7 +74,7 @@ public:
   itkNewMacro(MIDASPaintbrushTool);
 
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> ImageType;
-  typedef itk::ImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
+  typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
 
   /** Strings to help the tool identify itself in GUI. */
   virtual const char* GetName() const;

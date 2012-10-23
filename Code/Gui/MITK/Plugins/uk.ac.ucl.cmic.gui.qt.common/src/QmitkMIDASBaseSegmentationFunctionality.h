@@ -106,6 +106,16 @@ protected slots:
 
 protected:
 
+  /**
+   * \see mitk::ILifecycleAwarePart::PartVisible
+   */
+  virtual void Visible();
+
+  /**
+   * \see mitk::ILifecycleAwarePart::PartHidden
+   */
+  virtual void Hidden();
+
   /// \brief Gets a vector of the working data nodes (normally image, but could be surfaces etc) registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
   mitk::ToolManager::DataVectorType GetWorkingNodesFromToolManager();
 

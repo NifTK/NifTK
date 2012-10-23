@@ -32,6 +32,8 @@
 #include <itkImageFileWriter.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkBinaryFunctorImageFilter.h>
+#include <itkPolyLineParametricPath.h>
+#include <itkContinuousIndex.h>
 
 namespace itk {
 template <class TInputImage, class TOutputImage, class TPointSet>
@@ -56,6 +58,15 @@ public:
 	typedef typename OutputImageType::PixelType           OutputPixelType;
 	typedef TPointSet                                     PointSetType;
 
+	typedef itk::ContinuousIndex<double,TInputImage::ImageDimension> ContinuousIndexType;
+	typedef itk::PolyLineParametricPath<TInputImage::ImageDimension> ParametricPathType;
+
+	typedef typename ParametricPathType::Pointer          ParametricPathPointer;
+	typedef std::vector<ParametricPathPointer>            ParametricPathVectorType;
+	typedef typename ParametricPathType::VertexListType   ParametricPathVertexListType;
+	typedef typename ParametricPathType::VertexType       ParametricPathVertexType;
+
+
 	/** @} */
 
 	/**
@@ -76,11 +87,21 @@ private:
 	OutputPixelType                        m_ForegroundValue;
 	OutputPixelType                        m_BackgroundValue;
 	typename PointSetType::ConstPointer    mspc_SeedPoints;
-	typename OutputImageType::ConstPointer m_ContourImage;
-	OutputImageRegionType                  m_RegionOfInterest;
-	bool                                   m_UseRegionOfInterest;
-	bool                                   m_ProjectSeedsIntoRegion;
-	unsigned int                           m_MaximumSeedProjectionDistanceInVoxels;
+  OutputImageRegionType                  m_RegionOfInterest;
+  bool                                   m_UseRegionOfInterest;
+  bool                                   m_ProjectSeedsIntoRegion;
+  unsigned int                           m_MaximumSeedProjectionDistanceInVoxels;
+	typename OutputImageType::ConstPointer m_SegmentationContourImage;
+	OutputPixelType                        m_SegmentationContourImageInsideValue;
+	OutputPixelType                        m_SegmentationContourImageBorderValue;
+	OutputPixelType                        m_SegmentationContourImageOutsideValue;
+	typename OutputImageType::ConstPointer m_ManualContourImage;
+	OutputPixelType                        m_ManualContourImageBorderValue;
+	OutputPixelType                        m_ManualContourImageNonBorderValue;
+	ParametricPathVectorType*              m_ManualContours;
+	bool                                   m_EraseFullSlice;
+	OutputImageIndexType                   m_PropMask;
+	bool                                   m_UsePropMaskMode;
 
 public:
 
@@ -108,6 +129,32 @@ public:
   itkSetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
   itkGetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
 
+  itkSetMacro(SegmentationContourImageInsideValue, OutputPixelType);
+  itkGetConstMacro(SegmentationContourImageInsideValue, OutputPixelType);
+
+  itkSetMacro(SegmentationContourImageBorderValue, OutputPixelType);
+  itkGetConstMacro(SegmentationContourImageBorderValue, OutputPixelType);
+
+  itkSetMacro(SegmentationContourImageOutsideValue, OutputPixelType);
+  itkGetConstMacro(SegmentationContourImageOutsideValue, OutputPixelType);
+
+  itkSetMacro(ManualContourImageBorderValue, OutputPixelType);
+  itkGetConstMacro(ManualContourImageBorderValue, OutputPixelType);
+
+  itkSetMacro(ManualContourImageNonBorderValue, OutputPixelType);
+  itkGetConstMacro(ManualContourImageNonBorderValue, OutputPixelType);
+
+  itkSetMacro(EraseFullSlice, bool);
+  itkGetConstMacro(EraseFullSlice, bool);
+
+  itkSetMacro(PropMask, OutputImageIndexType);
+  itkGetConstMacro(PropMask, OutputImageIndexType);
+
+  itkSetMacro(UsePropMaskMode, bool);
+  itkGetConstMacro(UsePropMaskMode, bool);
+
+  void SetManualContours(ParametricPathVectorType* contours);
+
 	const PointSetType& GetSeedPoints(void) const {
 		return *mspc_SeedPoints;
 	}
@@ -117,11 +164,18 @@ public:
 		this->Modified();
 	}
 
-	const OutputImageType* GetContourImage(void) const {
-		return m_ContourImage;
+	const OutputImageType* GetSegmentationContourImage(void) const {
+		return m_SegmentationContourImage;
 	}
 
-	itkSetObjectMacro(ContourImage, OutputImageType);
+	itkSetObjectMacro(SegmentationContourImage, OutputImageType);
+
+  const OutputImageType* GetManualContourImage(void) const {
+    return m_ManualContourImage;
+  }
+
+  itkSetObjectMacro(ManualContourImage, OutputImageType);
+
 	/** @} */
 
 	/**
@@ -132,7 +186,18 @@ private:
 	void ConditionalAddPixel(
 	    std::stack<typename OutputImageType::IndexType> &r_stack,
 	    const typename OutputImageType::IndexType &currentImgIdx,
-	    const typename OutputImageType::IndexType &nextImgIdx
+	    const typename OutputImageType::IndexType &nextImgIdx,
+	    const bool &isFullyConnected
+	    );
+
+	bool IsFullyConnected(
+	    const typename OutputImageType::IndexType &index1,
+	    const typename OutputImageType::IndexType &index2
+	    );
+
+	bool IsCrossingLine(
+	    const typename OutputImageType::IndexType &index1,
+	    const typename OutputImageType::IndexType &index2
 	    );
 
 protected:
