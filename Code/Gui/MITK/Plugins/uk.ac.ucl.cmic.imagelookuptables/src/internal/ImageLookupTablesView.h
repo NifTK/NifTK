@@ -57,18 +57,6 @@ public:
   /// \brief Each view for a plugin has its own globally unique ID.
   static const std::string VIEW_ID;
 
-  /// \brief Used to store the property name "data min"
-  static const std::string DATA_MIN;
-
-  /// \brief Used to store the property name "data max"
-  static const std::string DATA_MAX;
-
-  /// \brief Used to store the property name "data mean"
-  static const std::string DATA_MEAN;
-
-  /// \brief Used to store the property name "data std dev"
-  static const std::string DATA_STDDEV;
-
   /// \brief Called by framework, this method creates all the controls for this view.
   virtual void CreateQtPartControl(QWidget *parent);
 
@@ -138,15 +126,6 @@ private:
   /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
-  /// \brief Gets the stats using itkStatisticsImageFilter.
-  template<typename TPixel, unsigned int VImageDimension>
-  void ITKGetStatistics(
-      itk::Image<TPixel, VImageDimension> *itkImage,
-      float& min,
-      float& max,
-      float &mean,
-      float &stdDev);
-
   /// \brief All the controls for the main view part.
   Ui::ImageLookupTablesViewControls* m_Controls;
 
@@ -158,12 +137,6 @@ private:
 
   /// \brief Tracks the currently selected image.
   mitk::Image::Pointer m_CurrentImage;
-
-  /// \brief We provide several different ways to initialise the first window/level that an image has.
-  std::string m_InitialisationMethod;
-
-  /// \brief Stores the percentage of the maximum intensity range to initialise to.
-  double m_PercentageOfRange;
 
   /// \brief Stores the precision, as you could have float images, with intensity range between 0 and 1.
   int m_Precision;
