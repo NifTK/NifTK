@@ -25,10 +25,16 @@
 #include "QmitkNiftyViewApplicationPlugin.h"
 #include "QmitkNiftyViewIGIPerspective.h"
 #include "QmitkNiftyViewMIDASPerspective.h"
+#include "QmitkNiftyViewApplicationPreferencePage.h"
 #include "../QmitkNiftyViewApplication.h"
 
 #include <mitkVersion.h>
 #include <mitkLogMacros.h>
+#include <mitkDataStorage.h>
+#include <mitkImage.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkLevelWindow.h>
+#include <mitkVtkResliceInterpolationProperty.h>
 
 #include <service/cm/ctkConfigurationAdmin.h>
 #include <service/cm/ctkConfiguration.h>
@@ -37,9 +43,10 @@
 #include <QDateTime>
 #include <QtPlugin>
 
-
 #include "mitkGlobalInteraction.h"
 #include "NifTKConfigure.h"
+
+#include "itkStatisticsImageFilter.h"
 
 const std::string QmitkNiftyViewApplicationPlugin::MIDAS_KEYPRESS_STATE_MACHINE_XML = std::string(
     "      <stateMachine NAME=\"MIDASKeyPressStateMachine\">"
@@ -242,29 +249,65 @@ const std::string QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_M
 
 QmitkNiftyViewApplicationPlugin* QmitkNiftyViewApplicationPlugin::inst = 0;
 
+//-----------------------------------------------------------------------------
 QmitkNiftyViewApplicationPlugin::QmitkNiftyViewApplicationPlugin()
+: context(NULL)
+, m_DataStorageServiceTracker(NULL)
+, m_InDataStorageChanged(false)
 {
   inst = this;
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkNiftyViewApplicationPlugin::~QmitkNiftyViewApplicationPlugin()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkNiftyViewApplicationPlugin* QmitkNiftyViewApplicationPlugin::GetDefault()
 {
   return inst;
 }
 
+
+//-----------------------------------------------------------------------------
+const mitk::DataStorage* QmitkNiftyViewApplicationPlugin::GetDataStorage()
+{
+  mitk::DataStorage::Pointer dataStorage = NULL;
+
+  if (m_DataStorageServiceTracker != NULL)
+  {
+    mitk::IDataStorageService* dsService = m_DataStorageServiceTracker->getService();
+    if (dsService != 0)
+    {
+      dataStorage = dsService->GetDataStorage()->GetDataStorage();
+    }
+  }
+
+  return dataStorage;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
 {
   berry::AbstractUICTKPlugin::start(context);
   
   this->context = context;
+  this->m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(context);
+  this->m_DataStorageServiceTracker->open();
   
+  this->GetDataStorage()->AddNodeEvent.AddListener
+      ( mitk::MessageDelegate1<QmitkNiftyViewApplicationPlugin, const mitk::DataNode*>
+        ( this, &QmitkNiftyViewApplicationPlugin::NodeAddedProxy ) );
+
+
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewMIDASPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   ctkServiceReference cmRef = context->getServiceReference<ctkConfigurationAdmin>();
   ctkConfigurationAdmin* configAdmin = 0;
@@ -304,9 +347,195 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   logoPref->Put("DepartmentLogo", "");
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkNiftyViewApplicationPlugin::stop(ctkPluginContext* context)
+{
+
+  if (m_DataStorageServiceTracker != NULL)
+  {
+
+    this->GetDataStorage()->AddNodeEvent.RemoveListener
+        ( mitk::MessageDelegate1<QmitkNiftyViewApplicationPlugin, const mitk::DataNode*>
+          ( this, &QmitkNiftyViewApplicationPlugin::NodeAddedProxy ) );
+
+    m_DataStorageServiceTracker->close();
+    delete m_DataStorageServiceTracker;
+    m_DataStorageServiceTracker = NULL;
+  }
+}
+
+//-----------------------------------------------------------------------------
 ctkPluginContext* QmitkNiftyViewApplicationPlugin::GetPluginContext() const
 {
   return context;
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkNiftyViewApplicationPlugin::NodeAddedProxy(const mitk::DataNode *node)
+{
+  // guarantee no recursions when a new node event is thrown in NodeAdded()
+  if(!m_InDataStorageChanged)
+  {
+    m_InDataStorageChanged = true;
+    this->NodeAdded(node);
+    m_InDataStorageChanged = false;
+  }
+}
+
+template<typename TPixel, unsigned int VImageDimension>
+void
+QmitkNiftyViewApplicationPlugin
+::ITKGetStatistics(
+    itk::Image<TPixel, VImageDimension> *itkImage,
+    float &min,
+    float &max,
+    float &mean,
+    float &stdDev)
+{
+  typedef itk::Image<TPixel, VImageDimension> ImageType;
+  typedef itk::StatisticsImageFilter<ImageType> FilterType;
+
+  typename FilterType::Pointer filter = FilterType::New();
+  filter->SetInput(itkImage);
+  filter->UpdateLargestPossibleRegion();
+  min = filter->GetMinimum();
+  max = filter->GetMaximum();
+  mean = filter->GetMean();
+  stdDev = filter->GetSigma();
+}
+
+//-----------------------------------------------------------------------------
+void QmitkNiftyViewApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
+{
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(constNode->GetData());
+  if (image.IsNotNull())
+  {
+    bool isBinary(true);
+    constNode->GetBoolProperty("binary", isBinary);
+
+    if (isBinary)
+    {
+      return;
+    }
+
+    berry::IPreferencesService::Pointer prefService =
+    berry::Platform::GetServiceRegistry()
+      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+
+    berry::IPreferences::Pointer prefNode = prefService->GetSystemPreferences()->Node("uk.ac.ucl.cmic.gui.qt.niftyview");
+    double percentageOfRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
+    std::string initialisationMethod = prefNode->Get(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME, QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS);
+
+    mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
+
+    float minDataLimit(0);
+    float maxDataLimit(0);
+    float meanData(0);
+    float stdDevData(0);
+
+    bool minDataLimitFound = node->GetFloatProperty("image data min", minDataLimit);
+    bool maxDataLimitFound = node->GetFloatProperty("image data max", maxDataLimit);
+    bool meanDataFound = node->GetFloatProperty("image data mean", meanData);
+    bool stdDevDataFound = node->GetFloatProperty("image data std dev", stdDevData);
+
+    if (!minDataLimitFound || !maxDataLimitFound || !meanDataFound || !stdDevDataFound)
+    {
+      try
+      {
+        if (image->GetDimension() == 2)
+        {
+          AccessFixedDimensionByItk_n(image,
+              ITKGetStatistics, 2,
+              (minDataLimit, maxDataLimit, meanData, stdDevData)
+            );
+        }
+        else if (image->GetDimension() == 3)
+        {
+          AccessFixedDimensionByItk_n(image,
+              ITKGetStatistics, 3,
+              (minDataLimit, maxDataLimit, meanData, stdDevData)
+            );
+        }
+        else if (image->GetDimension() == 4)
+        {
+          AccessFixedDimensionByItk_n(image,
+              ITKGetStatistics, 4,
+              (minDataLimit, maxDataLimit, meanData, stdDevData)
+            );
+        }
+        node->SetFloatProperty("image data min", minDataLimit);
+        node->SetFloatProperty("image data max", maxDataLimit);
+        node->SetFloatProperty("image data mean", meanData);
+        node->SetFloatProperty("image data std dev", stdDevData);
+      }
+      catch(const mitk::AccessByItkException& e)
+      {
+        MITK_ERROR << "Caught exception during QmitkNiftyViewApplicationPlugin::ITKGetStatistics, so image statistics will be wrong." << e.what();
+      }
+    }
+
+    if (!minDataLimitFound || !maxDataLimitFound || !meanDataFound || !stdDevDataFound)
+    {
+      double windowMin = 0;
+      double windowMax = 0;
+      mitk::LevelWindow levelWindow;
+
+      // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
+      // i.e. we haven't seen it before. So we have a choice of how to initialise the Level/Window.
+      if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS)
+      {
+        double centre = (minDataLimit + 4.51*stdDevData)/2.0;
+        double width = 4.5*stdDevData;
+        windowMin = centre - width/2.0;
+        windowMax = centre + width/2.0;
+      }
+      else if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE)
+      {
+        windowMin = minDataLimit;
+        windowMax = minDataLimit + (maxDataLimit - minDataLimit)*percentageOfRange/100.0;
+      }
+      else
+      {
+        // Do nothing, which means the MITK framework will pick one.
+      }
+
+      levelWindow.SetRangeMinMax(minDataLimit, maxDataLimit);
+      levelWindow.SetWindowBounds(windowMin, windowMax);
+      node->SetLevelWindow(levelWindow);
+    }
+
+    // Now set the default image interpolation.
+    int imageResliceInterpolation =  prefNode->GetInt(QmitkNiftyViewApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
+    int imageTextureInterpolation =  prefNode->GetInt(QmitkNiftyViewApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
+
+    if (imageTextureInterpolation == 0)
+    {
+      node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
+    }
+    else
+    {
+      node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
+    }
+
+    mitk::VtkResliceInterpolationProperty::Pointer interpolationProperty = mitk::VtkResliceInterpolationProperty::New();
+
+    if (imageResliceInterpolation == 0)
+    {
+      interpolationProperty->SetInterpolationToNearest();
+    }
+    else if (imageResliceInterpolation == 1)
+    {
+      interpolationProperty->SetInterpolationToLinear();
+    }
+    else if (imageResliceInterpolation == 2)
+    {
+      interpolationProperty->SetInterpolationToCubic();
+    }
+    node->SetProperty("reslice interpolation", interpolationProperty);
+  }
+}
+
+//-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_niftyview, QmitkNiftyViewApplicationPlugin)
