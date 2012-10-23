@@ -30,17 +30,20 @@
 
 namespace mitk {
 
+//-----------------------------------------------------------------------------
 void ImageLookupTablesViewActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(ImageLookupTablesView, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkImageLookupTablesPreferencePage, context);
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesViewActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
-}
+} // end namespace
 
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_imagelookuptables, mitk::ImageLookupTablesViewActivator)
