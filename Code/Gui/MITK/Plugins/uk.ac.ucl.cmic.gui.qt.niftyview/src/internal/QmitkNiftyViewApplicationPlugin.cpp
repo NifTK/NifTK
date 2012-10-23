@@ -534,6 +534,8 @@ void QmitkNiftyViewApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
       interpolationProperty->SetInterpolationToCubic();
     }
     node->SetProperty("reslice interpolation", interpolationProperty);
+
+    node->SetProperty("black opacity", mitk::FloatProperty::New(1));
   }
 }
 
