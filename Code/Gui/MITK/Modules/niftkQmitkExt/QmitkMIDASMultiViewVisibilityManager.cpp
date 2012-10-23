@@ -281,50 +281,8 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
 
 void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
 {
-
-  bool isBinary = false;
-  node->GetBoolProperty("binary", isBinary);
-
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
   this->SetNodeVisibilityForAllWindows(node, false);
-
-  // For MIDAS, which might have a light background in the render window,
-  // we need to make sure black is not transparent.
-  mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-  if (image != NULL)
-  {
-    node->SetProperty("black opacity", mitk::FloatProperty::New(1));
-
-    if (!isBinary)
-    {
-      if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-      {
-        node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
-      }
-      else
-      {
-        node->SetProperty("texture interpolation", mitk::BoolProperty::New(true));
-      }
-
-      mitk::VtkResliceInterpolationProperty::Pointer interpolationProperty = mitk::VtkResliceInterpolationProperty::New();
-
-      if (m_DefaultInterpolation == MIDAS_INTERPOLATION_NONE)
-      {
-        interpolationProperty->SetInterpolationToNearest();
-      }
-      else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_LINEAR)
-      {
-        interpolationProperty->SetInterpolationToLinear();
-      }
-      else if (m_DefaultInterpolation == MIDAS_INTERPOLATION_CUBIC)
-      {
-        interpolationProperty->SetInterpolationToCubic();
-      }
-
-      node->SetProperty("reslice interpolation", interpolationProperty);
-
-    } // end if not binary
-  } // end if is an image
 
   // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
   // windows as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
