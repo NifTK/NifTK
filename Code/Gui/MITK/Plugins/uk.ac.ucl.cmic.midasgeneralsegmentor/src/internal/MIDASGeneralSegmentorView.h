@@ -585,7 +585,6 @@ private:
       mitk::ContourSet &segmentationContours,
       mitk::ContourSet &drawContours,
       mitk::ContourSet &polyContours,
-      itk::ORIENTATION_ENUM orientation,
       int sliceNumber,
       int axis,
       double lowerThreshold,

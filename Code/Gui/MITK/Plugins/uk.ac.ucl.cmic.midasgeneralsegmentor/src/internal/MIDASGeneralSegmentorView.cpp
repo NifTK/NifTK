@@ -1422,10 +1422,8 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       mitk::ContourSet* drawToolContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[3])->GetData());
 
       int axisNumber = this->GetViewAxis();
-      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
-      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
-      if (axisNumber != -1 && sliceNumber != -1 && orientation != itk::ORIENTATION_UNKNOWN)
+      if (axisNumber != -1 && sliceNumber != -1)
       {
         try
         {
@@ -1437,7 +1435,6 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
                *segmentationContours,
                *drawToolContours,
                *polyToolContours,
-               orientation,
                sliceNumber,
                axisNumber,
                lowerThreshold,
@@ -1457,7 +1454,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       }
       else
       {
-        MITK_ERROR << "Could not do region growing: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << ", orientation=" << orientation << std::endl;
+        MITK_ERROR << "Could not do region growing: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << std::endl;
       }
 
       m_IsUpdating = false;
@@ -1961,6 +1958,12 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
       mitk::ContourSet* drawToolContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[3])->GetData());
       assert(drawToolContours);
 
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
+      assert(regionGrowingNode);
+
+      mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
+      assert(regionGrowingImage);
+
       double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
       double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
@@ -2054,18 +2057,48 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           ExecuteOperation(doOp);
 
-          if (!this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+          if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
           {
-            this->UpdateRegionGrowing(false,
-                                      sliceNumber,
-                                      referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
-                                      referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
-                                      false);
+            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+                ITKUpdateRegionGrowing, 3,
+                (false,
+                 *workingImage,
+                 *seedsWithoutUnenclosedSeeds,
+                 *segmentationContours,
+                 *drawToolContours,
+                 *polyToolContours,
+                 sliceNumber,
+                 axisNumber,
+                 lowerThreshold,
+                 upperThreshold,
+                 regionGrowingNode,  // This is the node for the image we are writing to.
+                 regionGrowingImage  // This is the image we are writing to.
+                )
+            );
+          }
+          else
+          {
+            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+                ITKUpdateRegionGrowing, 3,
+                (false,
+                 *workingImage,
+                 *seedsWithoutUnenclosedSeeds,
+                 *segmentationContours,
+                 *drawToolContours,
+                 *polyToolContours,
+                 sliceNumber,
+                 axisNumber,
+                 referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
+                 referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
+                 regionGrowingNode,  // This is the node for the image we are writing to.
+                 regionGrowingImage  // This is the image we are writing to.
+                )
+            );
 
             // Then we "apply" this region growing.
             mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
-            mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
-            mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
+            mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
+            mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
             mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
             ExecuteOperation(doApplyOp);
@@ -3218,7 +3251,6 @@ MIDASGeneralSegmentorView
     mitk::ContourSet &segmentationContours,
     mitk::ContourSet &drawContours,
     mitk::ContourSet &polyContours,
-    itk::ORIENTATION_ENUM orientation,
     int sliceNumber,
     int axisNumber,
     double lowerThreshold,
