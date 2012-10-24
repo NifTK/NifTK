@@ -27,15 +27,20 @@
 
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 
+//-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget(QWidget *parent)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewControlsWidget::~MIDASGeneralSegmentorViewControlsWidget()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
 {
   Ui_MIDASGeneralSegmentorViewControls::setupUi(parent);
@@ -61,11 +66,15 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
   this->SetEnableAllWidgets(false);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingCheckbox(bool enabled)
 {
   this->m_ThresholdCheckBox->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingWidgets(bool enabled)
 {
   this->m_Prop3DButton->setEnabled(enabled);
@@ -82,6 +91,8 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingWidgets(bool 
   this->m_ThresholdSeedMinValue->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableOKCancelResetWidgets(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
@@ -89,6 +100,8 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableOKCancelResetWidgets(bool
   m_CancelButton->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
 {
   this->SetEnableThresholdingCheckbox(enabled);
@@ -105,6 +118,8 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
   m_HelpButton->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetLowerAndUpperIntensityRanges(double lower, double upper)
 {
   m_ThresholdLowerSliderWidget->setMinimum(lower);
@@ -113,6 +128,8 @@ void MIDASGeneralSegmentorViewControlsWidget::SetLowerAndUpperIntensityRanges(do
   m_ThresholdUpperSliderWidget->setMaximum(upper);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetSeedMinAndMaxValues(double min, double max)
 {
   QString minText;

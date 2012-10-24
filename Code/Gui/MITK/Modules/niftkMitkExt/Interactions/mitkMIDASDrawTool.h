@@ -32,7 +32,8 @@ namespace mitk {
 
   /**
    * \class MIDASDrawTool
-   * \brief Tool to draw lines around voxel edges like MIDAS does rather than through them as most of the MITK tools do.
+   * \brief Tool to draw lines around voxel edges like MIDAS does rather than through them
+   * as most of the MITK tools do.
    *
    * Provides
    * <pre>
@@ -94,12 +95,31 @@ namespace mitk {
     /// \brief Different to MIDASContourTool::ClearData which clears the Feedback contour, this one finds the working data node, and erases all contours.
     virtual void ClearWorkingData();
 
+    /// \brief Called by the main application to clean the contour, which means, to erase any bits of contour
+    /// not currently touching the region growing image.
+    virtual void Clean(const int& sliceNumber, const int& axisNumber);
+
   protected:
 
     MIDASDrawTool(); // purposely hidden
     virtual ~MIDASDrawTool(); // purposely hidden
 
   private:
+
+    template<typename TPixel, unsigned int VImageDimension>
+    void ITKCleanContours(
+        itk::Image<TPixel, VImageDimension> *itkImage,
+        mitk::ContourSet& inputContours,
+        mitk::ContourSet& outputContours,
+        const int& axis,
+        const int& sliceNumber
+        );
+
+    /// \brief Operation constant, used in Undo/Redo framework.
+    static const mitk::OperationType MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR;
+
+    /// \brief Operation constant, used in Undo/Redo framework.
+    static const mitk::OperationType MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR;
 
     /// \brief Internal method to delete from the mitkToolManager WorkingData, data set 2, which should be a mitk::ContourSet representing the "currentContours" ie Green lines in MIDAS.
     bool DeleteFromContour(Action* action, const StateEvent* stateEvent);
@@ -109,9 +129,6 @@ namespace mitk {
 
     /// \brief Stores the most recent point, (i.e. the end of the line if we are drawing a line).
     mitk::Point3D m_MostRecentPointInMillimetres;
-
-    /// \brief Operation constant, used in Undo/Redo framework.
-    static const mitk::OperationType MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR;
 
     /// \brief Pointer to interface object, used as callback in Undo/Redo framework
     MIDASDrawToolEventInterface::Pointer m_Interface;

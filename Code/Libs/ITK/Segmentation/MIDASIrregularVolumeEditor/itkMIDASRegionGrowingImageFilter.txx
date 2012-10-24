@@ -107,7 +107,7 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
         
         previousVertex = list->ElementAt(0);
                     
-        for (unsigned long int k = 1; k < list->Size() - 1; k++)
+        for (unsigned long int k = 1; k < list->Size(); k++)
         {
           currentVertex = list->ElementAt(k);
           

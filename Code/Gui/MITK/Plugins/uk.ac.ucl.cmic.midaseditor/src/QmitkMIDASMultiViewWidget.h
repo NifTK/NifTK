@@ -228,6 +228,12 @@ public:
    */
   virtual bool IsLinkedNavigationEnabled() const;
 
+  /**
+   * \brief To be called from the editor, to set the focus to the currently selected
+   * widget, or the first widget.
+   */
+  virtual void SetFocus();
+
 signals:
 
 public slots:

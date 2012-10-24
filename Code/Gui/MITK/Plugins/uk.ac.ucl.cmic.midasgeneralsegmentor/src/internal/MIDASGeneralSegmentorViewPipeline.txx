@@ -134,10 +134,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         ParametricPathPointer path = m_SegmentationContours[j];
         const ParametricPathVertexListType* list = path->GetVertexList();
 
-        // NOTE: Intentionally ignoring first and last point.
-        if (list != NULL && list->Size() >= 3)
+        if (list != NULL && list->Size() >= 2)
         {
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             vertex = list->ElementAt(k);            
             m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
@@ -187,10 +186,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         ParametricPathPointer path = m_ManualContours[j];
         const ParametricPathVertexListType* list = path->GetVertexList();
 
-        // NOTE: Intentionally ignoring first and last point.
-        if (list != NULL && list->Size() >= 3)
+        if (list != NULL && list->Size() >= 2)
         {
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             vertex = list->ElementAt(k);            
             m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
