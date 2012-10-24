@@ -502,6 +502,15 @@ private:
       typename itk::Image<TPixel, VImageDimension>::RegionType &outputRegion
       );
 
+  /// \brief Calculates the region corresponding to a single slice.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKCalculateSliceRegionAsVector(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      int axis,
+      int slice,
+      std::vector<int>& outputRegion
+      );
+
 
   /// \brief Clears a slice by setting all voxels to zero for a given slice and axis.
   template<typename TPixel, unsigned int VImageDimension>
