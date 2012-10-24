@@ -893,6 +893,18 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindo
   this->RequestUpdateAll();
 }
 
+void QmitkMIDASMultiViewWidget::SetFocus()
+{
+  if (m_SelectedWindow != -1)
+  {
+    m_SingleViewWidgets[m_SelectedWindow]->setFocus();
+  }
+  else
+  {
+    m_SingleViewWidgets[0]->setFocus();
+  }
+}
+
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
 {
 
