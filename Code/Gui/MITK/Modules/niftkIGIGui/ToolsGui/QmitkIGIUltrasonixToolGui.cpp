@@ -98,5 +98,8 @@ void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
   {
     QImage image = imageMsg->getQImage();
     m_PixmapLabel->setPixmap(QPixmap::fromImage(image));
+		igtl::Matrix4x4 matrix;
+		imageMsg->getMatrix(matrix);
+		lcdNumber->display(matrix[0][3]);
   }
 }
