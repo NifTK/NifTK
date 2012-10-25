@@ -53,6 +53,7 @@ public:
   QmitkMIDASMultiViewVisibilityManager* m_MidasMultiViewVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   berry::IPartListener::Pointer m_PartListener;
+  mitk::IRenderingManager* m_RenderingManagerInterface;
 };
 
 struct QmitkMIDASMultiViewEditorPartListener : public berry::IPartListener
@@ -122,9 +123,11 @@ QmitkMIDASMultiViewEditorPrivate::QmitkMIDASMultiViewEditorPrivate()
 , m_MidasMultiViewVisibilityManager(0)
 , m_RenderingManager(0)
 , m_PartListener(new QmitkMIDASMultiViewEditorPartListener(this))
+, m_RenderingManagerInterface(0)
 {
   m_RenderingManager = mitk::RenderingManager::GetInstance();
   m_RenderingManager->SetConstrainedPaddingZooming(false);
+  m_RenderingManagerInterface = mitk::MakeRenderingManagerInterface(m_RenderingManager);
 }
 
 QmitkMIDASMultiViewEditorPrivate::~QmitkMIDASMultiViewEditorPrivate()
@@ -132,6 +135,11 @@ QmitkMIDASMultiViewEditorPrivate::~QmitkMIDASMultiViewEditorPrivate()
   if (m_MidasMultiViewVisibilityManager != NULL)
   {
     delete m_MidasMultiViewVisibilityManager;
+  }
+
+  if (m_RenderingManagerInterface != NULL)
+  {
+    delete m_RenderingManagerInterface;
   }
 }
 
@@ -222,7 +230,7 @@ void QmitkMIDASMultiViewEditor::SetFocus()
 {
   if (d->m_MIDASMultiViewWidget != 0)
   {
-    d->m_MIDASMultiViewWidget->setFocus();
+    d->m_MIDASMultiViewWidget->SetFocus();
   }
 }
 
@@ -305,7 +313,7 @@ QStringList QmitkMIDASMultiViewEditor::GetDecorations() const
 
 mitk::IRenderingManager* QmitkMIDASMultiViewEditor::GetRenderingManager() const
 {
-  return mitk::MakeRenderingManagerInterface(d->m_RenderingManager);
+  return d->m_RenderingManagerInterface;
 }
 
 mitk::SlicesRotator* QmitkMIDASMultiViewEditor::GetSlicesRotator() const

@@ -43,6 +43,18 @@
 
 QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(QWidget *parent)
 : QWidget(parent)
+, m_DataStorage(NULL)
+, m_RenderingManager(NULL)
+, m_Layout(NULL)
+, m_MultiWidget(NULL)
+, m_IsBound(false)
+, m_UnBoundGeometry(NULL)
+, m_BoundGeometry(NULL)
+, m_ActiveGeometry(NULL)
+, m_MinimumMagnification(0)
+, m_MaximumMagnification(0)
+, m_NavigationControllerEventListening(false)
+, m_RememberViewSettingsPerOrientation(false)
 {
   mitk::RenderingManager::Pointer renderingManager = mitk::RenderingManager::GetInstance();
 
@@ -59,12 +71,16 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
     mitk::DataStorage* dataStorage
     )
   : QWidget(parent)
+, m_DataStorage(NULL)
+, m_RenderingManager(NULL)
 , m_Layout(NULL)
 , m_MultiWidget(NULL)
 , m_IsBound(false)
 , m_UnBoundGeometry(NULL)
 , m_BoundGeometry(NULL)
 , m_ActiveGeometry(NULL)
+, m_MinimumMagnification(0)
+, m_MaximumMagnification(0)
 , m_NavigationControllerEventListening(false)
 , m_RememberViewSettingsPerOrientation(false)
 {

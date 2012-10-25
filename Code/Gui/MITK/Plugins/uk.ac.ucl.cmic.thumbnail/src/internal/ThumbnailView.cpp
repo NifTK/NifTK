@@ -34,11 +34,14 @@
 
 const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
+//-----------------------------------------------------------------------------
 ThumbnailView::ThumbnailView()
 : m_Controls(NULL)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 ThumbnailView::~ThumbnailView()
 {
   m_Controls->m_RenderWindow->Deactivated();
@@ -49,11 +52,15 @@ ThumbnailView::~ThumbnailView()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ThumbnailView::GetViewID() const
 {
   return VIEW_ID;
 }
 
+
+//-----------------------------------------------------------------------------
 void ThumbnailView::CreateQtPartControl( QWidget *parent )
 {
   if (!m_Controls)
@@ -63,11 +70,7 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
 
     RetrievePreferenceValues();
 
-    mitk::IDataStorageService::Pointer service =
-      berry::Platform::GetServiceRegistry().GetServiceById<mitk::IDataStorageService>(mitk::IDataStorageService::ID);
-    assert(service);
-
-    mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
+    mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
     m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
@@ -75,16 +78,22 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void ThumbnailView::SetFocus()
 {
   m_Controls->m_RenderWindow->setFocus();
 }
 
+
+//-----------------------------------------------------------------------------
 void ThumbnailView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   RetrievePreferenceValues();
 }
 
+
+//-----------------------------------------------------------------------------
 void ThumbnailView::RetrievePreferenceValues()
 {
   berry::IPreferencesService::Pointer prefService

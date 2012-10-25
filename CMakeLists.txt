@@ -1052,6 +1052,17 @@ IF(BUILD_SHARED_LIBS)
     ENDFOREACH()
   ENDIF()
   
+  # cURL
+  IF(BUILD_GUI) 
+    FILE(GLOB CURL_LIB_FILES 
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.so
+       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.dylib
+	   ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.lib
+	   ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.dll
+       )
+    INSTALL(PROGRAMS ${CURL_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
+  ENDIF(BUILD_GUI)
+  
 ELSE(BUILD_SHARED_LIBS)
   IF(WIN32)
     ADD_DEFINITIONS(-DNIFTK_STATIC)

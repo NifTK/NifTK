@@ -1,0 +1,59 @@
+/**
+
+\page TestProcedureMIDASMorph MIDAS Morphological Editor View Test Procedure
+
+You must have a 3 button mouse for this functionlity.
+
+\section TestScriptMIDASMorphSegmentation Basic Segmentation Test
+
+\li Read the Doxygen help page
+\li Load Analyze image NifTKData/Input/volunteers/16856/16856-002-1.img
+\li Drag and drop the image from the Datamanager to the Drag and Drop Display
+\li Check image does not appear obviously upside-down. If so, restart your application with environment variable NIFTK_DRC_ANALYZE=ON
+\li Open the MIDAS Morphological Editor. Window->Show View->MIDAS Morphological Editor
+\li Select the image in the Datamanager
+\li Click on "start/re-start segmentation" in the MIDAS Morphological Editor
+\li Set upper threshold to 139, lower threshold to 59 and axial cut-off to 96
+\li Click "accept"
+\li Set the number of erosions to 1
+\li Move to coronal slice 114, using the slice select slider at the top of the screen
+\li Click on the "Paintbrush tool", with a cursor size of 1.
+\li Use the connection breaker (middle mouse button) to remove (highlight in orange) the 3 pixels of the right optical chiasm (Figure 1.)
+
+\image html TestingSlice114RightOpticalChiasm.png "Figure 1. Slice 114, remove the right optical chiasm"
+
+\li Ensure that the right optical chiasm has disappeared in slice 115 and 116
+\li Click "accept"
+\li Set the number of dilations to 2
+\li Move to coronal slice 119 using the mouse wheel to scroll
+\li Set the Paintbrush Tool to have a cursor size of 6.
+\li Use connection breaker to remove the right temporal lobe.
+\li Check the right temporal lobe has disappeared from slices 120+
+\li Click "reset"
+\li Check the connection breaker is still present on slice 119
+\li Set the number of dilations to 2
+\li Check connection breaker has stopped the right temporal lobe expanding beyond slice 119
+\li Click "accept"
+\li Set the re-thresholding box size to 6
+\li Click "ok" to finish the segmentation
+\li Open the Image Statistics View. Window->Show View->Image Statistics
+\li In Datamanager, click on the image, and then the segmentation
+\li In the Image Statistics View click "update"
+\li Check that the volume is 1178.33 (ml) +/- 0.25
+\li Check that the mean intensity value is 87.9 +/- 0.1
+
+\section TestScriptMIDASMorphReliability Reliability Tests (Checking for not crashing)
+
+\li Restart the application.
+\li Load image 16856-002-1.img, drop the image into the Drag and Drop Display, close the Drag and Drop display.
+\li Right click on the image in the Datamanager, select Show In->Drag and Drop Display, check that the 
+Drag and Drop Display is re-launched. At this stage the image will not be visible in the Drag and Drop Display. 
+Drag and Drop the image from the Datamanager to the Drag and Drop Display again.
+\li Re-start the segmentation process above. After any stage select "cancel", which should abandon the segmentation.
+\li Re-start the segmentation process above. At any stage, try to exit the MIDAS Morphological Editor View. This should abandon the segmentation.
+\li Re-start the segmentation process above. At each tab, before clicking "accept", click "reset" 
+which should return to the previous tab. You will then need to "accept" the previous tabs settings again to move forward. 
+You should not be able to jump from one tab to the next and miss a step. If you can switch tabs, and move forward or backwards
+in the tab selector, the tab items should be disabled.
+
+*/

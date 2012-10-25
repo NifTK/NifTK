@@ -29,12 +29,14 @@
 
 namespace mitk {
 
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(MIDASGeneralSegmentorView, context);
   BERRY_REGISTER_EXTENSION_CLASS(MIDASGeneralSegmentorViewPreferencePage, context);
 }
 
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)

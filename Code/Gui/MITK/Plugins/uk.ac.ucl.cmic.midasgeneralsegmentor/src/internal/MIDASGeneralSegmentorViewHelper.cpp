@@ -24,6 +24,7 @@
 
 #include "MIDASGeneralSegmentorViewHelper.h"
 
+//-----------------------------------------------------------------------------
 void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points)
 {
   mitk::Point3D mitkPointIn3DMillimetres;
@@ -45,12 +46,16 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void ConvertMITKContoursAndAppendToITKContours(GeneralSegmentorPipelineParams &params, ParametricPathVectorType& contours)
 {
   ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, contours);
   ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, contours);
 }
 
+
+//-----------------------------------------------------------------------------
 void ConvertMITKContoursAndAppendToITKContours(mitk::ContourSet *mitkContourSet, ParametricPathVectorType& itkContourVector)
 {
   // The mitkContourSet is actually a map containing std::pair<int, mitk::Contour::Pointer>

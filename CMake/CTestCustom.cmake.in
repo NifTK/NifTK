@@ -144,4 +144,11 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   # Trac 1720 - fix warnings from doxygen
   ".*ignoring unsupported tag.*doygen.conf"
 
+  # Trac 1860 - turn of external NIFTYREG, NIFTYSEG package warnings etc.
+  ".*NIFTYREG.*"
+  ".*NIFTYSEG.*"
+  ".*NIFTYREC.*"
+  ".*NIFTYSIM.*"
+  ".*OPENIGTLINK.*"
+  
   )

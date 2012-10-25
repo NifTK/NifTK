@@ -49,10 +49,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
   m_RegionGrowingFilter->SetForegroundValue(1);
-  m_ConnectedComponentFilter = MIDASConnectedComponentFilterType::New();
-  m_ConnectedComponentFilter->SetInputBackgroundValue(0);
-  m_ConnectedComponentFilter->SetOutputBackgroundValue(0);
-  m_ConnectedComponentFilter->SetOutputForegroundValue(1);
 }
 
 template<typename TPixel, unsigned int VImageDimension>
@@ -138,10 +134,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         ParametricPathPointer path = m_SegmentationContours[j];
         const ParametricPathVertexListType* list = path->GetVertexList();
 
-        // NOTE: Intentionally ignoring first and last point.
-        if (list != NULL && list->Size() >= 3)
+        if (list != NULL && list->Size() >= 2)
         {
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             vertex = list->ElementAt(k);            
             m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
@@ -191,10 +186,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         ParametricPathPointer path = m_ManualContours[j];
         const ParametricPathVertexListType* list = path->GetVertexList();
 
-        // NOTE: Intentionally ignoring first and last point.
-        if (list != NULL && list->Size() >= 3)
+        if (list != NULL && list->Size() >= 2)
         {
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             vertex = list->ElementAt(k);            
             m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
@@ -230,19 +224,18 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetRegionOfInterest(region3D);
     m_RegionGrowingFilter->SetUseRegionOfInterest(true);
     m_RegionGrowingFilter->SetProjectSeedsIntoRegion(false);
+    m_RegionGrowingFilter->SetUsePropMaskMode(false);
     m_RegionGrowingFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
+    m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
     m_RegionGrowingFilter->SetSegmentationContourImage(m_CastToSegmentationContourFilter->GetOutput());
-    m_RegionGrowingFilter->SetManualContourImage(m_CastToManualContourFilter->GetOutput());
     m_RegionGrowingFilter->SetSegmentationContourImageInsideValue(segImageInside);
     m_RegionGrowingFilter->SetSegmentationContourImageBorderValue(segImageBorder);
     m_RegionGrowingFilter->SetSegmentationContourImageOutsideValue(segImageOutside);
+    m_RegionGrowingFilter->SetManualContourImage(m_CastToManualContourFilter->GetOutput());
     m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
     m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
-    m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
+    m_RegionGrowingFilter->SetManualContours(&m_ManualContours);
     m_RegionGrowingFilter->UpdateLargestPossibleRegion();
-    
-//    m_ConnectedComponentFilter->SetInput(m_RegionGrowingFilter->GetOutput());
-//    m_ConnectedComponentFilter->UpdateLargestPossibleRegion();
     
     // 7. Paste it back into output image. 
     if (m_UseOutput && m_OutputImage != NULL)

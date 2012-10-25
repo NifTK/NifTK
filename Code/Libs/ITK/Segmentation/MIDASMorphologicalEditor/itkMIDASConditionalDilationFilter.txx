@@ -63,51 +63,22 @@ namespace itk
   
   
   template <class TInputImage1, class TInputImage2, class TOutputImage>
-  bool 
-  MIDASConditionalDilationFilter<TInputImage1, TInputImage2, TOutputImage>
-  ::IsNextToObject(OutputImageIndexType &voxelIndex, OutputImageType* inMask)
-  {
-    bool result = false;
-    
-    if (inMask->GetPixel(voxelIndex) == this->GetOutValue())
-    {
-      OutputImageIndexType indexPlus;
-      OutputImageIndexType indexMinus;
-      
-      for (int i = 0; i < TInputImage1::ImageDimension; i++)
-      {
-        indexPlus = voxelIndex;
-        indexMinus = voxelIndex;
-        
-        indexPlus[i] += 1;
-        indexMinus[i] -= 1;
-
-        if (inMask->GetPixel(indexPlus) == this->GetInValue() || inMask->GetPixel(indexMinus) == this->GetInValue())
-        {
-          result = true;
-          break;
-        }      
-      }
-    }
-    return result;
-  }
-
-      
-  template <class TInputImage1, class TInputImage2, class TOutputImage>
   void 
   MIDASConditionalDilationFilter<TInputImage1, TInputImage2, TOutputImage>
   ::DoFilter(InputMainImageType* inGrey, OutputImageType* inMask, OutputImageType *out)
   {
-
     double mean = 0;
-    double actualLowerThreshold = 0;
-    double actualUpperThreshold = 0;
+    double actualLowerThreshold = m_LowerThreshold;
+    double actualUpperThreshold = m_UpperThreshold;
+    bool nextToBoundary = false;
 
-    InputMainImageSizeType size = inMask->GetLargestPossibleRegion().GetSize();
     OutputImageIndexType voxelIndex;
+    OutputImageIndexType offset;
+    int offsets[3] = {-1, 2, -1};
     
-    niftkitkDebugMacro(<< "DoFilter():Dilating size=" << size);
-        
+    PixelType1 outValue = this->GetOutValue();
+    PixelType1 inValue = this->GetInValue();
+    
     if (inGrey != NULL)
     {
         
@@ -118,44 +89,83 @@ namespace itk
       m_MeanFilter->UpdateLargestPossibleRegion();
       mean = m_MeanFilter->GetMeanIntensityMainImage();
     
-      niftkitkDebugMacro(<< "DoFilter():Dilating mean=" << mean);
-
       /** Convert the percentage thresholds to actual intensity values. */
       actualLowerThreshold = (mean * (m_LowerThreshold/(double)100.0));
       actualUpperThreshold = (mean * (m_UpperThreshold/(double)100.0));
-
-      niftkitkDebugMacro(<< "DoFilter():mean=" << mean << ", %=[" << m_LowerThreshold << ", " << m_UpperThreshold << "], val=[" << actualLowerThreshold << ", " << actualUpperThreshold << "]");
-      
     }
     
     typename InputMaskImageType::Pointer connectionBreakerImage = dynamic_cast<InputMaskImageType*>(this->ProcessObject::GetInput(2));
     
+    /** Precalculate the region size, so we don't have to check it each time */
+    InputMaskImageRegionType region = inMask->GetLargestPossibleRegion();
+    InputMaskImageSizeType   regionSize = region.GetSize();
+    InputMaskImageIndexType  regionIndex = region.GetIndex();
+    
+    for (int i = 0; i < TInputImage1::ImageDimension; i++)
+    {
+      regionIndex[i] += 1; // start 1 from the edge.
+      regionSize[i] -= 2;  // taking 1 of each end of the volume.
+    }
+    region.SetSize(regionSize);
+    region.SetIndex(regionIndex);
+    
     /**  ITERATORS */
-    ImageRegionConstIteratorWithIndex<InputMaskImageType> inputMaskImageIter(inMask, inMask->GetLargestPossibleRegion());
-    ImageRegionIterator<OutputImageType> outputMaskImageIter(out, out->GetLargestPossibleRegion());
+    ImageRegionConstIteratorWithIndex<InputMaskImageType> inputMaskImageIter(inMask, region);
+    ImageRegionIterator<OutputImageType> outputMaskImageIter(out, region);
+    int i, j;
     
     for(inputMaskImageIter.GoToBegin(), outputMaskImageIter.GoToBegin();
         !inputMaskImageIter.IsAtEnd();
         ++inputMaskImageIter, ++outputMaskImageIter)
-    {                
-      voxelIndex = inputMaskImageIter.GetIndex();
-      
-      if (   !this->IsOnBoundaryOfImage(voxelIndex, size)
-          && this->IsNextToObject(voxelIndex, inMask)
-          && (inGrey == NULL || (inGrey->GetPixel(voxelIndex) > actualLowerThreshold && inGrey->GetPixel(voxelIndex) < actualUpperThreshold))
-          && (connectionBreakerImage.IsNull()
-              || (connectionBreakerImage.IsNotNull() && connectionBreakerImage->GetPixel(voxelIndex) == this->GetOutValue()))
-          )
+    {
+      if (inputMaskImageIter.Get() == outValue)
       {
-        outputMaskImageIter.Set(this->GetInValue());
+        voxelIndex = inputMaskImageIter.GetIndex();
+        
+        if (inGrey == NULL || (inGrey->GetPixel(voxelIndex) > actualLowerThreshold && inGrey->GetPixel(voxelIndex) < actualUpperThreshold))
+        {
+          offset = voxelIndex;
+        
+          nextToBoundary = false;
+
+          for (i = 0; i < TInputImage1::ImageDimension; i++)
+          {
+            for (j = 0; j < 2; j++)
+            {
+              offset[i] += offsets[j];
+            
+              if (inMask->GetPixel(offset) == inValue)
+              {
+                nextToBoundary = true;
+                break;
+              }
+            }
+            offset[i] += offsets[2];
+          }
+        
+          if (nextToBoundary
+              && (connectionBreakerImage.IsNull()
+                  || (connectionBreakerImage.IsNotNull() && connectionBreakerImage->GetPixel(voxelIndex) == outValue)
+                 )               
+             )
+          {
+            outputMaskImageIter.Set(inValue); // i.e. do the dilation
+          } 
+          else
+          {
+            outputMaskImageIter.Set(inputMaskImageIter.Get()); // i.e. don't do the dilation
+          }        
+        }
+        else
+        {
+          outputMaskImageIter.Set(inputMaskImageIter.Get()); // i.e. don't do the dilation
+        }                
       }
       else
       {
-        outputMaskImageIter.Set(inputMaskImageIter.Get());
-      }
+        outputMaskImageIter.Set(inputMaskImageIter.Get());// i.e. don't do the dilation
+      }                 
     }
-    
-    niftkitkDebugMacro(<< "DoFilter():Done");
   }
   
 }//end namespace itk

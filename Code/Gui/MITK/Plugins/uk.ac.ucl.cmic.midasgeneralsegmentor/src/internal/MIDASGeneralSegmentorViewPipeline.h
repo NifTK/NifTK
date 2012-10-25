@@ -33,7 +33,6 @@
 #include "itkPasteImageFilter.h"
 #include "itkMIDASHelper.h"
 #include "itkMIDASRegionGrowingImageFilter.h"
-#include "itkMIDASLargestConnectedComponentFilter.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
 
 /**
@@ -65,6 +64,7 @@ public:
   typedef itk::Image<TPixel, VImageDimension>                              GreyScaleImageType;
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType,
                      VImageDimension>                                      SegmentationImageType;
+  typedef typename SegmentationImageType::PixelType                        SegmentationImagePixelType;
   typedef typename GreyScaleImageType::RegionType                          RegionType;
   typedef typename GreyScaleImageType::SizeType                            SizeType;
   typedef typename GreyScaleImageType::PointType                           PointType;
@@ -80,9 +80,6 @@ public:
                                              SegmentationImageType,
                                              PointSetType>                 MIDASRegionGrowingFilterType;
   typedef typename MIDASRegionGrowingFilterType::Pointer                   MIDASRegionGrowingFilterPointer;
-  typedef itk::MIDASLargestConnectedComponentFilter<SegmentationImageType,
-                                                    SegmentationImageType> MIDASConnectedComponentFilterType;
-  typedef typename MIDASConnectedComponentFilterType::Pointer              MIDASConnectedComponentFilterPointer;
 
   // Methods
   GeneralSegmentorPipeline();
@@ -108,7 +105,6 @@ public:
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
   MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
-  MIDASConnectedComponentFilterPointer           m_ConnectedComponentFilter;
   SegmentationImageType*                         m_OutputImage;
 };
 

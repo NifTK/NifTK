@@ -87,22 +87,12 @@ class QGridLayout;
  * </ul>
  * Additional, significant bits of functionality include:
  *
- * <h2>Retain Marks</h2>
- *
- * The "retain marks" functionality only has an impact if we change slices. When the "retain marks"
- * checkbox is ticked, and we change slices we:
- * <pre>
- * 1. Check if the new slice is empty.
- * 2. If not empty we warn.
- * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
- * </pre>
- *
  * <h2>Recalculation of Seed Position</h2>
  *
  * The number of seeds for a slice often needs re-computing.  This is often because a slice
  * has been automatically propagated, and hence we need new seeds for each slice because
  * as you scroll through slices, regions without a seed would be wiped. For a given slice, the seeds
- * are set so that each disjoint (i.e. not-connected) region will have its own seed at the
+ * are set so that each disjoint (i.e. not 4-connected) region will have its own seed at the
  * largest minimum distance from the edge, scanning only in a vertical or horizontal direction.
  * In other words, for an image containing a single region:
  * <pre>
@@ -114,16 +104,20 @@ class QGridLayout;
  *     best voxel location = current voxel location
  *     best distance = minimum distance
  * </pre>
- * The result is the largest minimum distance, or the largest distance to an edge, noting
+ * The result is the largest minimum distance, or the largest minimum distance to an edge, noting
  * that we are not scanning diagonally.
  *
  * <h2>Propagate Up/Down/3D</h2>
  *
  * Propagate runs a 3D region propagation from the current slice up/down, writing the
  * output to the current segmentation volume, overwriting anything already there.
- * The current slice is not affected. So, you can leave the threshold tick box either on or off.
+ * The current slice is always affected. So, you can leave the threshold tick box either on or off.
  * For each subsequent slice in the up/down direction, the number of seeds is recomputed (as above).
  * 3D propagation is exactly equivalent to clicking "prop up" followed by "prop down".
+ * Here, note that in 3D, you would normally do region growing in a 6-connected neighbourhood.
+ * Here, we are doing a 5D connected neighbourhood, as you always propagate forwards in one
+ * direction. i.e. in a coronal slice, and selecting "propagate up", which means propagate anterior,
+ * then you cannot do region growing in the posterior direction. So its a 5D region growing.
  *
  * <h2>Threshold Apply</h2>
  *
@@ -148,6 +142,16 @@ class QGridLayout;
  * All three pieces of functionality appear similar, wiping the whole slice, whole anterior
  * region, or whole posterior region, including all segmentation and seeds. The threshold controls
  * are not changed. So, if it was on before, it will be on afterwards.
+ *
+ * <h2>Retain Marks</h2>
+ *
+ * The "retain marks" functionality only has an impact if we change slices. When the "retain marks"
+ * checkbox is ticked, and we change slices we:
+ * <pre>
+ * 1. Check if the new slice is empty.
+ * 2. If not empty we warn.
+ * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
+ * </pre>
  *
  * \sa QmitkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorView
@@ -225,26 +229,21 @@ public:
 protected slots:
  
   /// \brief Qt slot called when the user hits the button "New segmentation",
-  /// creating new working data such as a region growing image, a contour objects
+  /// creating new working data such as a region growing image, contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
   virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
 
-  /// \brief Qt slot called from the ToolManager when a segmentation tool is activated,
-  /// toggles whether render windows listen to slice navigation events,
-  /// i.e. it stops the cursors moving.
+  /// \brief Qt slot called from the ToolManager when a segmentation tool is activated.
   virtual void OnToolSelected(int id);
 
-  /// \brief Qt slot called from "see prior" checkbox to show the contour from the
-  /// previous slice, this simply toggles the contours visibility.
+  /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
   void OnSeePriorCheckBoxToggled(bool b);
 
-  /// \brief Qt slot called from "see next" checkbox to show the contour from the next
-  /// slice, this simply toggles the contours visibility.
+  /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
   void OnSeeNextCheckBoxToggled(bool b);
 
   /// \brief Qt slot called from the "view" checkbox so that when b=true, we just
-  /// see the image, when b=false, we additionally see all the contours, and again,
-  /// this is just toggling data node visibility.
+  /// see the image, when b=false, we additionally see all the contours and reference data.
   void OnSeeImageCheckBoxPressed(bool b);
 
   /// \brief Qt slot called when the Clean button is pressed, indicating the
@@ -254,22 +253,14 @@ protected slots:
 
   /// \brief Qt slot called when the Propagate Up button is pressed to take the
   /// current seeds and threshold values, and propagate Anterior/Superior/Right.
-  ///
-  /// This takes the seeds on the current slice, and for the region Anterior/Superior/Right
-  /// will push the seeds into the first slice, and do 3D region growing, and calculate new
-  /// seeds on a per slice basis.
   void OnPropagateUpButtonPressed();
 
   /// \brief Qt slot called when the Propagate Down button is pressed to take the current
   /// seeds and threshold values, and propagate Posterior/Inferor/Left.
-  ///
-  /// This takes the seeds on the current slice, and for the region Posterior/Inferor/Left
-  /// will push the seeds into the first slice, and do 3D region growing, and calculate new
-  /// seeds on a per slice basis.
   void OnPropagateDownButtonPressed();
 
-  /// \brief Qt slot called when the Propagate 3D button is pressed that effectively calls
-  /// OnPropagateUpButtonPressed() then OnPropagateDownButtonPressed() in that order.
+  /// \brief Qt slot called when the Propagate 3D button is pressed that is effectively
+  /// equivalent to calling OnPropagateUpButtonPressed and OnPropagateDownButtonPressed.
   void OnPropagate3DButtonPressed();
 
   /// \brief Qt slot called when the Wipe button is pressed and will erase the current
@@ -299,8 +290,8 @@ protected slots:
   void OnCancelButtonPressed();
 
   /// \brief Qt slot called when the Apply button is pressed and used to accept the
-  /// current segmentation, recalculates seed positions as per MIDAS spec described in
-  /// this class intro.
+  /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
+  /// described in this class intro.
   void OnThresholdApplyButtonPressed();
 
   /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
@@ -334,12 +325,9 @@ protected:
   /// but we currently do nothing.
   virtual void SetFocus();
 
-  /// \brief Creates the connections of widgets in this class to the slots in this class.
+  /// \brief Creates the Qt connections of widgets in this class to the slots in this class.
   virtual void CreateConnections();
 
-  /// \brief Method to enable derived classes to turn all widgets off/on to signify
-  /// when the view is considered enabled/disabled.
-  ///
   /// \see QmitkMIDASBaseSegmentation::EnableSegmentationWidgets
   virtual void EnableSegmentationWidgets(bool b);
 
@@ -371,12 +359,10 @@ protected:
   /// and moving to the next one.
   virtual void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Called from the registered Seed, Poly and Draw tools when the number of
-  /// seeds has changed.
+  /// \brief Called from the registered Seed, Poly and Draw tools when the number of seeds has changed.
   virtual void OnNumberOfSeedsChanged(int numberOfSeeds);
 
-  /// \brief Called from the registered Poly tool and Draw tool to indicate that
-  /// contours have changed.
+  /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();
 
 private:
@@ -430,13 +416,6 @@ private:
   /// threshold apply button and not change slice, or when we change slice.
   bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
 
-  /// \brief When the user draws on the slice, and puts seeds down, we may need to simply
-  /// update the slice immediately.
-  ///
-  /// This function does not need to "Undo", as when you undo the adding of the seed or
-  /// adding of any given contour, then you can simply recompute the current slice.
-  void DoUpdateCurrentSlice();
-
   /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
   void UpdateRegionGrowing();
 
@@ -481,7 +460,10 @@ private:
   void CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(int sliceNumber);
+  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber);
+
+  /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
+  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber, mitk::PointSet& seeds);
 
   /**************************************************************
    * Start of ITK stuff.
@@ -520,6 +502,15 @@ private:
       typename itk::Image<TPixel, VImageDimension>::RegionType &outputRegion
       );
 
+  /// \brief Calculates the region corresponding to a single slice.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKCalculateSliceRegionAsVector(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      int axis,
+      int slice,
+      std::vector<int>& outputRegion
+      );
+
 
   /// \brief Clears a slice by setting all voxels to zero for a given slice and axis.
   template<typename TPixel, unsigned int VImageDimension>
@@ -528,7 +519,7 @@ private:
       int slice
       );
 
-  /// \brief Takes the inputSeeds and filters filters them so that outputSeeds
+  /// \brief Takes the inputSeeds and filters them so that outputSeeds
   /// contains just those seeds contained within the current slice.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKFilterSeedsToCurrentSlice(
@@ -537,6 +528,19 @@ private:
       int axis,
       int slice,
       mitk::PointSet &outputSeeds
+      );
+
+  /// \brief Called from RecalculateMinAndMaxOfSeedValues(), the actual method
+  /// in ITK that recalculates the min and max intensity value of all the voxel
+  /// locations given by the seeds.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKRecalculateMinAndMaxOfSeedValues(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      mitk::PointSet &inputSeeds,
+      int axis,
+      int slice,
+      double &min,
+      double &max
       );
 
   /// \brief Takes the inputSeeds and copies them to outputCopyOfInputSeeds,
@@ -570,19 +574,6 @@ private:
       bool &outputSliceIsEmpty
       );
 
-  /// \brief Called from RecalculateMinAndMaxOfSeedValues(), the actual method
-  /// in ITK that recalculates the min and max intensity value of all the voxel
-  /// locations given by the seeds.
-  template<typename TPixel, unsigned int VImageDimension>
-  void ITKRecalculateMinAndMaxOfSeedValues(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      mitk::PointSet &inputSeeds,
-      int axis,
-      int slice,
-      double &min,
-      double &max
-      );
-
   /// \brief Called from UpdateRegionGrowing(), updates the interactive ITK
   /// single 2D slice region growing pipeline.
   template<typename TPixel, unsigned int VImageDimension>
@@ -594,7 +585,6 @@ private:
       mitk::ContourSet &segmentationContours,
       mitk::ContourSet &drawContours,
       mitk::ContourSet &polyContours,
-      itk::ORIENTATION_ENUM orientation,
       int sliceNumber,
       int axis,
       double lowerThreshold,

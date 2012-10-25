@@ -76,61 +76,61 @@ class NIFTKQMITKEXT_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
 
 public:
 
-  /// \brief Constructor creates the bounding box, event filters and registers with the global mitk::FocusManager.
+  /// \brief Constructor.
   QmitkThumbnailRenderWindow(QWidget *parent);
 
-  /// \brief Destructor removes various geometry observers, and deletes event filters.
+  /// \brief Destructor.
   ~QmitkThumbnailRenderWindow();
 
   /// \brief A valid dataStorage must be passed in so this method does assert(dataStorage).
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
-  /// \brief Connects the widget to the FocusManager.
+  /// \brief Connects the widget to the FocusManager, and registers listeners.
   void Activated();
 
-  /// \brief Disconnects the widget from the FocusManager.
+  /// \brief Disconnects the widget from the FocusManager, and de-registers listeners.
   void Deactivated();
 
   /// \brief Gets the bounding box color, default is red.
   QColor boundingBoxColor() const;
 
-  /// \brief Sets the bounding box color, default is red.
+  /// \brief Sets the bounding box color.
   void setBoundingBoxColor(QColor &color);
 
-  /// \brief Sets the bounding box color, default is red.
+  /// \brief Sets the bounding box color.
   void setBoundingBoxColor(float r, float g, float b);
 
   /// \brief Sets the bounding box line thickness, default is 1 pixel, but on some displays (eg. various Linux) may appear wider due to anti-aliasing.
   int boundingBoxLineThickness() const;
 
-  /// \brief Gets the bounding box line thickness, default is 1 pixel.
+  /// \brief Gets the bounding box line thickness.
   void setBoundingBoxLineThickness(int thickness);
 
   /// \brief Gets the bounding box opacity, default is 1.
   float boundingBoxOpacity() const;
 
-  /// \brief Sets the bounding box opacity, default is 1.
+  /// \brief Sets the bounding box opacity.
   void setBoundingBoxOpacity(float opacity);
 
   /// \brief Gets the bounding box layer, default is 99.
   int boundingBoxLayer() const;
 
-  /// \brief Sets the bounding box layer, default is 99.
+  /// \brief Sets the bounding box layer.
   void setBoundingBoxLayer(int layer);
 
   /// \brief Sets the bounding box visibility, default is true.
   void setBoundingBoxVisible(bool visible);
 
-  /// \brief Gets the bounding box visibility, default is true.
+  /// \brief Gets the bounding box visibility.
   bool boundingBoxVisible() const;
 
-  /// \brief Sets whether to resond to mouse events, default is on.
+  /// \brief Sets whether to resond to mouse events.
   void setRespondToMouseEvents(bool on);
 
   /// \brief Gets whether to resond to mouse events, default is on.
   bool respondToMouseEvents() const;
 
-  /// \brief Sets whether to resond to wheel events, default is off.
+  /// \brief Sets whether to resond to wheel events.
   void setRespondToWheelEvents(bool on);
 
   /// \brief Gets whether to resond to wheel events, default is off.
@@ -178,6 +178,13 @@ private:
 
   // Called to remove all observers from tracked objects.
   void RemoveObserversFromTrackedObjects();
+
+  // \brief Used to add/remove the bounding box from data storage.
+  //
+  // If add=true will add the bounding box to data storage if it isn't already,
+  // and if false will remove it if it isn't already removed.
+  // If data storage is NULL, will silently do nothing.
+  void AddBoundingBoxToDataStorage(const bool &add);
 
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);

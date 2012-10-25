@@ -41,6 +41,7 @@ const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS("thu
 const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY("thumbnail view box opacity");
 const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER("thumbnail view box layer");
 
+//-----------------------------------------------------------------------------
 QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage()
 : m_MainControl(0)
 , m_BoxThickness(0)
@@ -51,6 +52,8 @@ QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage()
 
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage(const QmitkThumbnailViewPreferencePage& other)
 : berry::Object(), QObject()
 {
@@ -58,16 +61,22 @@ QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage(const QmitkTh
   throw std::runtime_error("QmitkThumbnailViewPreferencePage copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkThumbnailViewPreferencePage::~QmitkThumbnailViewPreferencePage()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
@@ -126,11 +135,15 @@ void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = false;
 }
 
+
+//-----------------------------------------------------------------------------
 QWidget* QmitkThumbnailViewPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkThumbnailViewPreferencePage::PerformOk()
 {
   m_ThumbnailPreferencesNode->Put(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, m_BoxColorStyleSheet.toStdString());
@@ -141,11 +154,15 @@ bool QmitkThumbnailViewPreferencePage::PerformOk()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::PerformCancel()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::Update()
 {
   m_BoxColorStyleSheet = QString::fromStdString(m_ThumbnailPreferencesNode->Get(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, ""));
@@ -165,6 +182,8 @@ void QmitkThumbnailViewPreferencePage::Update()
   m_BoxOpacity->setValue(m_ThumbnailPreferencesNode->GetDouble(THUMBNAIL_BOX_OPACITY, 1));
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::OnBoxColourChanged()
 {
   QColor colour = QColorDialog::getColor();
@@ -190,6 +209,8 @@ void QmitkThumbnailViewPreferencePage::OnBoxColourChanged()
   }
  }
 
+
+//-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::OnResetBoxColour()
 {
   m_BoxColorStyleSheet = "background-color: rgb(255,0,0)";

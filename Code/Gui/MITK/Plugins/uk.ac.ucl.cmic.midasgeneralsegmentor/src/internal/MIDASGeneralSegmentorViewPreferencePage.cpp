@@ -39,6 +39,7 @@
 
 const std::string MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasgeneralsegmentor");
 
+//-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewPreferencePage::MIDASGeneralSegmentorViewPreferencePage()
 : m_MainControl(0)
 , m_Initializing(false)
@@ -46,6 +47,8 @@ MIDASGeneralSegmentorViewPreferencePage::MIDASGeneralSegmentorViewPreferencePage
 
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewPreferencePage::MIDASGeneralSegmentorViewPreferencePage(const MIDASGeneralSegmentorViewPreferencePage& other)
 : berry::Object(), QObject()
 {
@@ -53,16 +56,22 @@ MIDASGeneralSegmentorViewPreferencePage::MIDASGeneralSegmentorViewPreferencePage
   throw std::runtime_error("Copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewPreferencePage::~MIDASGeneralSegmentorViewPreferencePage()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
@@ -99,11 +108,15 @@ void MIDASGeneralSegmentorViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = false;
 }
 
+
+//-----------------------------------------------------------------------------
 QWidget* MIDASGeneralSegmentorViewPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorViewPreferencePage::PerformOk()
 {
   m_MIDASGeneralSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet.toStdString());
@@ -112,11 +125,15 @@ bool MIDASGeneralSegmentorViewPreferencePage::PerformOk()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewPreferencePage::PerformCancel()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewPreferencePage::Update()
 {
   m_DefauleColorStyleSheet = QString::fromStdString(m_MIDASGeneralSegmentorViewPreferencesNode->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, ""));
@@ -132,6 +149,8 @@ void MIDASGeneralSegmentorViewPreferencePage::Update()
   m_DefaultColorPushButton->setStyleSheet(m_DefauleColorStyleSheet);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewPreferencePage::OnDefaultColourChanged()
 {
   QColor colour = QColorDialog::getColor();
@@ -157,6 +176,8 @@ void MIDASGeneralSegmentorViewPreferencePage::OnDefaultColourChanged()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewPreferencePage::OnResetDefaultColour()
 {
   m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";
