@@ -1331,7 +1331,6 @@ void MIDASGeneralSegmentorView::OnThresholdCheckBoxToggled(bool b)
 
   if (b)
   {
-    this->UpdateCurrentSliceContours();
     this->UpdateRegionGrowing();
   }
 }
@@ -1640,10 +1639,6 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
     // but is not a valid use case for the rest of this method.
     m_PreviousSliceNumber = afterSliceNumber;
     m_PreviousFocusPoint = m_CurrentFocusPoint;
-    this->UpdatePriorAndNext();
-    this->UpdateRegionGrowing();
-    this->UpdateCurrentSliceContours();
-    this->RequestRenderWindowUpdate();
     return;
   }
 

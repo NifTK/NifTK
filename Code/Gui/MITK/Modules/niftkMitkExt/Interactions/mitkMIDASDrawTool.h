@@ -121,8 +121,8 @@ namespace mitk {
     /// \brief Operation constant, used in Undo/Redo framework.
     static const mitk::OperationType MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR;
 
-    /// \brief Internal method to delete from the mitkToolManager WorkingData, data set 2, which should be a mitk::ContourSet representing the "currentContours" ie Green lines in MIDAS.
-    bool DeleteFromContour(Action* action, const StateEvent* stateEvent);
+    /// \brief Internal method to delete from the mitkToolManager WorkingData[workingDataNumber], which should be a mitk::ContourSet representing the "currentContours" ie Green lines in MIDAS.
+    bool DeleteFromContour(const int &workingDataNumber, Action* action, const StateEvent* stateEvent);
 
     /// \brief Cursor size for editing, currently called "Eraser" in MIDAS, where this eraser is defined in millimetres distance.
     int m_CursorSize;
