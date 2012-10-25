@@ -39,7 +39,7 @@ IF(BUILD_IGI)
 
   IF(NOT DEFINED NiftyLink_DIR)
   
-    SET(revision_tag b1763-fix-and-optimise-qimage-mitk-image-coversion)
+    SET(revision_tag development)
 
     if (NIFTK_LOCATION_NIFTYLINK_DEV)
       set(NiftyLink_location_options
