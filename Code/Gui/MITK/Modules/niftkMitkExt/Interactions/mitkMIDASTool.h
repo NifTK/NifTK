@@ -68,17 +68,20 @@ namespace mitk {
     /// \brief We store a seed point set name, so all classes have access to the name.
     static const std::string SEED_POINT_SET_NAME;
 
-    /// \brief We store the name of the current slice contours, so all class have access to the name.
+    /// \brief We store the name of the current slice contours, so all classes have access to the name.
     static const std::string CURRENT_CONTOURS_NAME;
 
-    /// \brief We store the name of the region growing image, so all class have access to the name.
+    /// \brief We store the name of the region growing image, so all classes have access to the name.
     static const std::string REGION_GROWING_IMAGE_NAME;
 
-    /// \brief We store the name of the prior contours, so all class have access to the name.
+    /// \brief We store the name of the prior contours, so all classes have access to the name.
     static const std::string PRIOR_CONTOURS_NAME;
 
-    /// \brief We store the name of the next contours, so all class have access to the name.
+    /// \brief We store the name of the next contours, so all classes have access to the name.
     static const std::string NEXT_CONTOURS_NAME;
+
+    /// \brief We store the name of the draw tool contours, so all classes have access to the name.
+    static const std::string DRAW_CONTOURS_NAME;
 
     /// \brief We store the name of the MIDAS connection breaker image, used in Morphological Editor.
     static const std::string MORPH_EDITS_EROSIONS_SUBTRACTIONS;
@@ -106,6 +109,9 @@ namespace mitk {
 
     /// \brief Get the flag to block the signal that indicates that the number of seeds has changed.
     itkGetMacro(BlockNumberOfSeedsSignal, bool);
+
+    /// \see mitk::StateMachine::CanHandleEvent
+    float CanHandleEvent(const StateEvent *) const;
 
   protected:
 

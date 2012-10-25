@@ -46,11 +46,14 @@ if( CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC )
 
   set(_PATCH_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/curl_patch.cmake" )
   message("\n ********* Adding patch to: ${_PATCH_FILE} ********* \n" )  
-  
+
+  niftkMacroGetChecksum(NIFTK_CHECKSUM_curl ${NIFTK_LOCATION_curl})
+
   ExternalProject_Add(${proj}
     BINARY_DIR ${proj}-build
     URL ${NIFTK_LOCATION_curl}
-	PATCH_COMMAND "${CMAKE_COMMAND};-P;${_PATCH_FILE}"
+    URL_MD5 ${NIFTK_CHECKSUM_curl}
+    PATCH_COMMAND "${CMAKE_COMMAND};-P;${_PATCH_FILE}"
     UPDATE_COMMAND ""
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}

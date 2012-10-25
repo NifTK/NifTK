@@ -27,6 +27,7 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkITKImageImport.h>
 #include <itkImage.h>
+#include <itkImageFileWriter.h>
 #include <itkImageRegionConstIterator.h>
 #include <mitkPositionEvent.h>
 #include <mitkStateEvent.h>
@@ -536,6 +537,55 @@ void CopyIntensityData(const mitk::Image* input, mitk::Image* output)
     catch (const mitk::AccessByItkException &e)
     {
       MITK_ERROR << "CopyIntensityData: AccessTwoImagesFixedDimensionByItk failed to copy data due to." << e.what() << std::endl;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+ITKDumpImage(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const std::string& filename
+    )
+{
+  typedef itk::Image<TPixel, VImageDimension> ImageType;
+  typedef itk::ImageFileWriter<ImageType> FileWriterType;
+
+  typename FileWriterType::Pointer writer = FileWriterType::New();
+  writer->SetInput(itkImage);
+  writer->SetFileName(filename);
+  writer->Update();
+}
+
+
+//-----------------------------------------------------------------------------
+void DumpImage(const mitk::Image *image, const std::string& fileName)
+{
+  if (image != NULL)
+  {
+    try
+    {
+      int dimensions = image->GetDimension();
+      switch(dimensions)
+      {
+      case 2:
+        AccessFixedDimensionByItk_n(image, ITKDumpImage, 2, (fileName));
+        break;
+      case 3:
+        AccessFixedDimensionByItk_n(image, ITKDumpImage, 3, (fileName));
+        break;
+      case 4:
+        AccessFixedDimensionByItk_n(image, ITKDumpImage, 4, (fileName));
+        break;
+      default:
+        MITK_ERROR << "During DumpImage, unsupported number of dimensions:" << dimensions << std::endl;
+      }
+    }
+    catch (const mitk::AccessByItkException &e)
+    {
+      MITK_ERROR << "FillImage: AccessFixedDimensionByItk_n failed to dump image due to." << e.what() << std::endl;
     }
   }
 }

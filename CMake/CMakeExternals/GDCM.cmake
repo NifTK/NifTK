@@ -40,8 +40,12 @@ SET(proj_DEPENDENCIES )
 SET(GDCM_DEPENDS ${proj})
 
 IF(NOT DEFINED GDCM_DIR)
+
+  niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
+
   ExternalProject_Add(${proj}
      URL ${NIFTK_LOCATION_GDCM}
+     URL_MD5 ${NIFTK_CHECKSUM_GDCM}
      BINARY_DIR ${proj}-build
      INSTALL_COMMAND ""
      PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-2.0.18.cmake
@@ -58,11 +62,11 @@ IF(NOT DEFINED GDCM_DIR)
   MESSAGE("SuperBuild loading GDCM from ${GDCM_DIR}")
 
   SET(GDCM_IS_2_0_18 TRUE)
-  
+
 ELSE()
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   FIND_PACKAGE(GDCM)
 
   IF( GDCM_BUILD_VERSION EQUAL "18")

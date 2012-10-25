@@ -176,7 +176,7 @@ GetUpDirectionFromITKImage(
 
   std::string orientationString = "UNKNOWN";
   GetOrientationStringFromITKImage(itkImage, orientationString);
-  std::cerr << "Matt, GetUpDirectionFromITKImage geom dir=" << itkImage->GetDirection() << std::endl;
+
   int axisOfInterest = -1;
   GetAxisFromITKImage(itkImage, orientation, axisOfInterest);
 

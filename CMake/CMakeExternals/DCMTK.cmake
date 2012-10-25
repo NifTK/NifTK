@@ -30,7 +30,7 @@
 if(DEFINED DCMTK_DIR AND NOT EXISTS ${DCMTK_DIR})
   message(FATAL_ERROR "DCMTK_DIR variable is defined but corresponds to non-existing directory")
 endif()
-  
+
 set(proj DCMTK)
 set(proj_DEPENDENCIES )
 set(DCMTK_DEPENDS ${proj})
@@ -46,9 +46,11 @@ if(NOT DEFINED DCMTK_DIR)
     set(DCMTK_C_FLAGS "${DCMTK_CXX_FLAGS} -DSITE_UID_ROOT=\\\"${DCMTK_DICOM_ROOT_ID}\\\"")
   endif()
 
+  niftkMacroGetChecksum(NIFTK_CHECKSUM_DCMTK ${NIFTK_LOCATION_DCMTK})
+
   ExternalProject_Add(${proj}
     URL ${NIFTK_LOCATION_DCMTK}
-    URL_MD5 86fa9e0f91e4e0c6b44d513ea48391d6
+    URL_MD5 ${NIFTK_CHECKSUM_DCMTK}
     SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
     BINARY_DIR ${proj}-build
     PREFIX ${proj}-cmake

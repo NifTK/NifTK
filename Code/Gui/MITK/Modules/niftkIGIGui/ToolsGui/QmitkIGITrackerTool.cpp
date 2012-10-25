@@ -298,7 +298,7 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-    // this->DisplayTrackerData(msg);
+    this->DisplayTrackerData(msg);
     this->HandleTrackerData(msg);
   }
 }

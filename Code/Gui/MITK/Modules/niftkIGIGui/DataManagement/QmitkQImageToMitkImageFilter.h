@@ -78,6 +78,8 @@ private:
 
     template <typename TPixel, unsigned int VImageDimension>
     static mitk::Image::Pointer ConvertQImageToMitkImage( const QImage* input);
+    template <typename TPixel, unsigned int VImageDimension>
+    static mitk::Image::Pointer Convert8BitQImageToMitkImage( const QImage* input);
 };
 
 #endif // QMITKQIMAGETOMITKIMAGEFILTER_H

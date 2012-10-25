@@ -21,6 +21,32 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Motor Position</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLCDNumber" name="lcdNumber">
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="segmentStyle">
+         <enum>QLCDNumber::Flat</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QScrollArea" name="m_ScrollArea">
      <property name="widgetResizable">
       <bool>true</bool>
@@ -30,8 +56,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>394</width>
-        <height>287</height>
+        <width>398</width>
+        <height>240</height>
        </rect>
       </property>
       <property name="sizePolicy">

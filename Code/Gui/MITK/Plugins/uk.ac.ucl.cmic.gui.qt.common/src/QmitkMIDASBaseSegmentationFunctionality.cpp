@@ -101,6 +101,19 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
 
 
 //-----------------------------------------------------------------------------
+void QmitkMIDASBaseSegmentationFunctionality::Visible()
+{
+  QmitkBaseView::Visible();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASBaseSegmentationFunctionality::Hidden()
+{
+  QmitkBaseView::Hidden();
+}
+
+//-----------------------------------------------------------------------------
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality(
     const QmitkMIDASBaseSegmentationFunctionality& other)
 {

@@ -435,6 +435,10 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   ADD_EXECUTABLE(niftkTestCompareImage niftkTestCompareImage.cxx )
   TARGET_LINK_LIBRARIES(niftkTestCompareImage ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkTestCompareImage RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+
+  ADD_EXECUTABLE(niftkVesselExtractor niftkVesselExtractor.cxx )
+  TARGET_LINK_LIBRARIES(niftkVesselExtractor ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkVesselExtractor RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)  
   
   ##############################################################
   # Other command line applications, that require VTK.
