@@ -74,16 +74,16 @@ void QmitkQImageToMitkImageFilter::GenerateData()
 
   if (m_QImage->format() == QImage::Format_RGB888)
   {
-    m_Image = ConvertQImageToMitkImage< UCRGBPixelType, 2>( m_QImage );
+    m_Image = ConvertQImageToMitkImage< UCRGBPixelType, 3>( m_QImage );
   }
   else
   {
 		if ( m_QImage->format() == QImage::Format_Indexed8 )
-      m_Image = Convert8BitQImageToMitkImage < unsigned char, 2>(m_QImage);
+      m_Image = Convert8BitQImageToMitkImage < unsigned char, 3>(m_QImage);
 		else
 		{
 			QImage tmpImage = m_QImage->convertToFormat(QImage::Format_RGB888);
-      m_Image = ConvertQImageToMitkImage< UCRGBPixelType, 2>( &tmpImage );
+      m_Image = ConvertQImageToMitkImage< UCRGBPixelType, 3>( &tmpImage );
 		}
   }
 }
@@ -105,6 +105,7 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
 
   size[0]  = input->width();
   size[1]  = input->height();
+	size[2]  = 1;
 
   typename ImportFilterType::IndexType start;
   start.Fill( 0 );
@@ -118,16 +119,18 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
   double origin[ VImageDimension ];
   origin[0] = 0.0;    // X coordinate
   origin[1] = 0.0;    // Y coordinate
+	origin[2] = 0.0;    // Z coordinate
 
   importFilter->SetOrigin( origin );
 
   double spacing[ VImageDimension ];
   spacing[0] = 1.0;    // along X direction
   spacing[1] = 1.0;    // along Y direction
+  spacing[2] = 1.0;    // along Z direction
 
   importFilter->SetSpacing( spacing );
 
-  const unsigned int numberOfPixels = size[0] * size[1];
+  const unsigned int numberOfPixels = size[0] * size[1] * size[2];
   const unsigned int numberOfBytes = numberOfPixels * sizeof( TPixel );
 
   TPixel * localBuffer = new TPixel[numberOfPixels];
@@ -165,6 +168,7 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
 
   size[0]  = input->width();
   size[1]  = input->height();
+	size[2]  = 1;
 
   typename ImportFilterType::IndexType start;
   start.Fill( 0 );
@@ -178,16 +182,18 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
   double origin[ VImageDimension ];
   origin[0] = 0.0;    // X coordinate
   origin[1] = 0.0;    // Y coordinate
+  origin[2] = 0.0;    // Z coordinate
 
   importFilter->SetOrigin( origin );
 
   double spacing[ VImageDimension ];
   spacing[0] = 1.0;    // along X direction
   spacing[1] = 1.0;    // along Y direction
+  spacing[2] = 1.0;    // along Z direction
 
   importFilter->SetSpacing( spacing );
 
-  const unsigned int numberOfPixels = size[0] * size[1];
+  const unsigned int numberOfPixels = size[0] * size[1] * size[2];
   const unsigned int numberOfBytes = numberOfPixels * sizeof( TPixel );
 
   TPixel * localBuffer = new TPixel[numberOfPixels];
