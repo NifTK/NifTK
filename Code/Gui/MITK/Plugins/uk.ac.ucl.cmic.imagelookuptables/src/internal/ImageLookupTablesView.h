@@ -39,8 +39,7 @@ class LookupTableManager;
 
 /**
  * \class ImageLookupTablesView
- * \brief Provides a simple GUI enabling the selection of window, level, min, max
- * and a choice of many lookup tables.
+ * \brief Provides a simple GUI enabling the selection of window, level, min, max and a choice of lookup tables.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
 class ImageLookupTablesView : public QmitkAbstractView
@@ -58,34 +57,41 @@ public:
   /// \brief Each view for a plugin has its own globally unique ID.
   static const std::string VIEW_ID;
 
-  static const std::string DATA_MIN;
-  static const std::string DATA_MAX;
-  static const std::string DATA_MEAN;
-  static const std::string DATA_STDDEV;
+  /// \brief Called by framework, this method creates all the controls for this view.
+  virtual void CreateQtPartControl(QWidget *parent);
+
+  /// \brief called by QmitkAbstractView when DataManager's selection has changed.
+  virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
+                                   const QList<mitk::DataNode::Pointer>& nodes );
 
 protected:
-
-  /// \brief Called by framework, this method creates all the controls for this view
-  virtual void CreateQtPartControl(QWidget *parent);
 
   /// \brief Called by framework, sets the focus on a specific widget.
   virtual void SetFocus();
 
+  /// \brief We listen to the Level/Window property on the registered image, so this callback
+  /// updates this GUI when the watched property changes.
+  virtual void OnPropertyChanged(const itk::EventObject&);
+
+  /// \brief Actually updates the GUI when property changes.
+  virtual void OnPropertyChanged();
+
 protected slots:
 
-  /// \brief Called when the min/max slider has changed, and updates the LevelWindow.
-  void OnWindowBoundsChanged();
-
-  /// \brief Called when the window/level slider has changed, and updates the LevelWindow.
-  void OnLevelWindowChanged();
-
-  /// \brief Called when the min/max intensity limits has changed, which affects the actual minimum and maximum values that the sliders can reach.
+  /// \brief Qt slot called when a different image is selected or the min/max intensity limits has changed,
+  /// which affects the actual minimum and maximum values that the sliders can reach.
   void OnRangeChanged();
 
-  /// \brief Called when the lookup table combo box value changes, trigger the lookup table to be swapped.
+  /// \brief Qt slot called when the min/max slider has changed.
+  void OnWindowBoundsChanged();
+
+  /// \brief Qt slot called when the window/level slider has changed.
+  void OnLevelWindowChanged();
+
+  /// \brief Qt slot called when the lookup table combo box value changes, trigger the lookup table to be swapped.
   void OnLookupTableComboBoxChanged(int comboBoxIndex);
 
-  /// \brief Called when the reset button is pressed which will recalculate the minimum and maximum intensity values, and set the minimum and maximum value on the sliders.
+  /// \brief Qt slot called when the reset button is pressed which will recalculate the minimum and maximum intensity values, and set the minimum and maximum value on the sliders.
   void OnResetButtonPressed();
 
 private:
@@ -93,17 +99,23 @@ private:
   /// \brief Creation of the connections of widgets to slots.
   void CreateConnections();
 
-  /// \brief Called from OnNodeChanged to indicate that the window/level has changed, so this View needs to update.
-  void LevelWindowChanged();
+  /// \brief Checks the GUI selection.
+  bool IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes);
 
-  /// \brief Called from OnNodeChanged to indicate a new image, and hence this View needs to update accordingly.
-  void DifferentImageSelected(const mitk::DataNode* node, mitk::Image* image);
+  /// \brief Registers the given node, as the one we are tracking.
+  void Register(const mitk::DataNode::Pointer node);
 
-  /// \brief Makes the GUI controls reflect the values on the level window manager.
-  void UpdateGuiFromLevelWindowManager();
+  /// \brief Unregisters the given node.
+  void Unregister();
 
-  /// \brief Blocks signals from min/max, window/level widgets.
-  void BlockMinMaxSignals(bool b);
+  /// \brief Called when a node is successfully registered, to initialize/reset the controls to appropriate ranges.
+  void DifferentImageSelected();
+
+  /// \brief Makes the GUI controls reflect the values on the level window property.
+  void UpdateGuiFromLevelWindow();
+
+  /// \brief Blocks all signals.
+  void BlockSignals(bool b);
 
   /// \brief Enables/Disables controls.
   void EnableControls(bool b);
@@ -114,43 +126,29 @@ private:
   /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
-  /// \brief Called when the data store thinks a node has changed (for whatever reason).
-  virtual void NodeChanged(const mitk::DataNode* node);
-
-  /// \brief Retrieve's the corresponding node for the image
-  mitk::DataNode* FindNodeForImage(mitk::Image* image);
-
-  /// \brief Gets the stats using itkStatisticsImageFilter.
-  template<typename TPixel, unsigned int VImageDimension>
-  void ITKGetStatistics(
-      itk::Image<TPixel, VImageDimension> *itkImage,
-      float& min,
-      float& max,
-      float &mean,
-      float &stdDev);
-
   /// \brief All the controls for the main view part.
   Ui::ImageLookupTablesViewControls* m_Controls;
 
-  /// \brief We contain a LookupTableManager containing vtkLookupTables loaded from resource system.
+  /// \brief We contain a LookupTableManager containing vtkLookupTables loaded from the resource system.
   LookupTableManager *m_LookupTableManager;
 
-  /// \brief We create a mitkLevelWindowManager to correctly hook into the DataStorage for window/level.
-  mitk::LevelWindowManager::Pointer m_LevelWindowManager;
+  /// \brief Tracks the currently selected node.
+  mitk::DataNode::Pointer m_CurrentNode;
 
-  // Preferences.
-  std::string m_InitialisationMethod;
-  double m_PercentageOfRange;
+  /// \brief Tracks the currently selected image.
+  mitk::Image::Pointer m_CurrentImage;
+
+  /// \brief Stores the precision, as you could have float images, with intensity range between 0 and 1.
   int m_Precision;
 
-  // To Track the current image.
-  mitk::DataNode::Pointer m_CurrentNode;
-  mitk::Image::Pointer m_CurrentImage;
-  mitk::LevelWindow m_CurrentLevelWindow;
+  /// \brief To stop re-entering the same piece of code recursively.
   bool m_InUpdate;
+
+  /// \brief Used to affect the step size on the sliders/spin boxes.
   int m_ThresholdForIntegerBehaviour;
 
-  // Store a reference to the parent widget of this view.
-  QWidget *m_Parent;
+  /// \brief To store the
+  unsigned long int m_PropertyObserverTag;
+
 };
 #endif // _IMAGELOOKUPTABLESVIEW_H_INCLUDED
