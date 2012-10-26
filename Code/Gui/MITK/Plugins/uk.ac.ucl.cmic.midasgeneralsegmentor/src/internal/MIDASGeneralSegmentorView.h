@@ -416,18 +416,18 @@ private:
   /// threshold apply button and not change slice, or when we change slice.
   bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
 
-  /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
-  void UpdateRegionGrowing();
-
   /// \brief Given the two thresholds, and all seeds and contours, will recalculate the thresholded region in the current slice.
   /// \param isVisible whether the region growing volume should be visible.
   void UpdateRegionGrowing(bool isVisible, int sliceNumber, double lowerThreshold, double upperThreshold, bool skipUpdate);
 
+  /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
+  void UpdateRegionGrowing(bool updateRendering=true);
+
   /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
-  void UpdatePriorAndNext();
+  void UpdatePriorAndNext(bool updateRendering=true);
 
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
-  void UpdateCurrentSliceContours();
+  void UpdateCurrentSliceContours(bool updateRendering=true);
 
   /// \brief Takes the currently focussed window, and makes sure the segmented volume
   /// is not visible in the currently focussed window and takes the global visibility value in the previously

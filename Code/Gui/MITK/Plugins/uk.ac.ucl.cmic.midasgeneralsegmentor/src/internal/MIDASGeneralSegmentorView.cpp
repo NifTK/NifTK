@@ -72,6 +72,15 @@
 #include "mitkMIDASOrientationUtils.h"
 #include "mitkMIDASImageUtils.h"
 
+/*
+#include "sys/time.h"
+double timespecDiff(struct timespec *timeA_p, struct timespec *timeB_p)
+{
+  return (((timeA_p->tv_sec * 1000000000) + timeA_p->tv_nsec) -
+           ((timeB_p->tv_sec * 1000000000) + timeB_p->tv_nsec))/1000000000.0;
+}
+*/
+
 const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
 const mitk::OperationType MIDASGeneralSegmentorView::OP_CHANGE_SLICE = 9320411;
@@ -1092,7 +1101,7 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateCurrentSliceContours()
+void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 {
   if (!this->HaveInitialisedWorkingData())
   {
@@ -1119,9 +1128,12 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours()
     if (contourSet->GetNumberOfContours() > 0)
     {
       workingNodes[2]->Modified();
-      this->RequestRenderWindowUpdate();
-    }
 
+      if (updateRendering)
+      {
+        this->RequestRenderWindowUpdate();
+      }
+    }
   }
 } // end function
 
@@ -1194,6 +1206,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const int& sliceNum
       MITK_ERROR << "Caught exception during ITKSliceDoesHaveUnEnclosedSeeds, so will return false, caused by:" << e.what();
     }
   }
+
   return sliceDoesHaveUnenclosedSeeds;
 }
 
@@ -1275,7 +1288,7 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool justImage)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdatePriorAndNext()
+void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 {
   if (!this->HaveInitialisedWorkingData())
   {
@@ -1296,6 +1309,11 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
     if (contourSet->GetNumberOfContours() > 0)
     {
       workingNodes[4]->Modified();
+
+      if (updateRendering)
+      {
+        this->RequestRenderWindowUpdate();
+      }
     }
   }
 
@@ -1307,6 +1325,11 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
     if (contourSet->GetNumberOfContours() > 0)
     {
       workingNodes[5]->Modified();
+
+      if (updateRendering)
+      {
+        this->RequestRenderWindowUpdate();
+      }
     }
   }
 } // end function
@@ -1351,7 +1374,7 @@ void MIDASGeneralSegmentorView::OnUpperThresholdValueChanged(double d)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateRegionGrowing()
+void MIDASGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
 {
   bool isVisible = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
@@ -1362,6 +1385,11 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
   if (isVisible)
   {
     this->UpdateRegionGrowing(isVisible, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
+
+    if (updateRendering)
+    {
+      this->RequestRenderWindowUpdate();
+    }
   }
 }
 
@@ -1457,8 +1485,6 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       }
 
       m_IsUpdating = false;
-
-      this->RequestRenderWindowUpdate();
 
     } // end if working image
   } // end if reference image
@@ -1625,20 +1651,12 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
       || m_IsChangingSlice
       || beforeSliceNumber == -1
       || afterSliceNumber == -1
+      || abs(beforeSliceNumber - afterSliceNumber) != 1
       )
   {
-    // i.e. early exit due to invalid data, so do as little as possible.
     m_PreviousSliceNumber = afterSliceNumber;
     m_PreviousFocusPoint = m_CurrentFocusPoint;
-    return;
-  }
-
-  if (abs(beforeSliceNumber - afterSliceNumber) != 1)
-  {
-    // User appears to be skipping slices, which is a possibility,
-    // but is not a valid use case for the rest of this method.
-    m_PreviousSliceNumber = afterSliceNumber;
-    m_PreviousFocusPoint = m_CurrentFocusPoint;
+    this->UpdateCurrentSliceContours();
     return;
   }
 
@@ -1832,11 +1850,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
                 ExecuteOperation(doApplyOp);
 
-                workingImage->Modified();
-                workingNode->Modified();
-
                 drawTool->ClearWorkingData();
-                this->UpdateCurrentSliceContours();
 
               } // end if/else unenclosed seeds
             } // end if/else thresholding on
@@ -1878,9 +1892,10 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
           toolManager->ActivateTool(-1);
         }
 
-        this->UpdatePriorAndNext();
-        this->UpdateRegionGrowing();
-        this->UpdateCurrentSliceContours();
+        bool updateRendering(false);
+        this->UpdatePriorAndNext(updateRendering);
+        this->UpdateRegionGrowing(updateRendering);
+        this->UpdateCurrentSliceContours(updateRendering);
         this->RequestRenderWindowUpdate();
 
       } // end if, slice number, axis ok.
@@ -2657,8 +2672,6 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
   {
   case OP_CHANGE_SLICE:
     {
-      assert(m_SliceNavigationController);
-
       // Simply to make sure we can switch slice, and undo/redo it.
       mitk::OpChangeSliceCommand *op = dynamic_cast<mitk::OpChangeSliceCommand*>(operation);
       assert(op);
@@ -2694,7 +2707,6 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
     }
   case OP_PROPAGATE_SEEDS:
     {
-
       mitk::OpPropagateSeeds *op = dynamic_cast<mitk::OpPropagateSeeds*>(operation);
       assert(op);
 
@@ -2702,6 +2714,8 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
       assert(seeds);
 
       this->CopySeeds(newSeeds, seeds);
+
+      seeds->Modified();
 
       break;
     }
@@ -2746,6 +2760,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do retain marks: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_THRESHOLD_APPLY:
@@ -2767,6 +2782,10 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         this->m_GeneralControls->m_ThresholdCheckBox->setChecked(op->GetThresholdFlag());
         this->m_GeneralControls->m_ThresholdCheckBox->blockSignals(false);
         this->m_GeneralControls->SetEnableThresholdingWidgets(op->GetThresholdFlag());
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -2778,6 +2797,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do threshold: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_CLEAN:
@@ -2795,12 +2815,17 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
 
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
         contoursToReplace->Modified();
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
       }
       catch( itk::ExceptionObject &err )
       {
         MITK_ERROR << "Could not do clean: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_WIPE:
@@ -2819,6 +2844,10 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
                 op
               )
             );
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -2830,6 +2859,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_PROPAGATE:
@@ -2846,6 +2876,10 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
                 op
               )
             );
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -2861,22 +2895,6 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
     }
   default:;
   }
-
-  segmentedImage->Modified();
-  seeds->Modified();
-
-  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-  assert(workingNodes.size() == 7);
-
-  for (unsigned int i = 0; i < workingNodes.size(); i++)
-  {
-    workingNodes[i]->Modified();
-  }
-  this->RecalculateMinAndMaxOfSeedValues();
-  this->UpdateRegionGrowing();
-  this->UpdateCurrentSliceContours();
-  this->RequestRenderWindowUpdate();
-
 }
 
 /******************************************************************
@@ -3603,6 +3621,7 @@ MIDASGeneralSegmentorView
   itkImage->TransformIndexToPhysicalPoint(projectedRegionIndex, originOfProjectedSlice);
   itkImage->TransformIndexToPhysicalPoint(axes[0], axesInMillimetres[0]);
   itkImage->TransformIndexToPhysicalPoint(axes[1], axesInMillimetres[1]);
+
   for (int i = 0; i < 3; i++)
   {
     axesInMillimetres[0][i] -= originOfSlice[i];
@@ -3618,7 +3637,6 @@ MIDASGeneralSegmentorView
   typename ExtractContoursFilterType::Pointer extractContoursFilter = ExtractContoursFilterType::New();
   extractContoursFilter->SetInput(extractSliceFilter->GetOutput());
   extractContoursFilter->SetContourValue(0.5);
-
   extractContoursFilter->Update();
 
   // Now extract the contours, and convert to millimetre coordinates.
