@@ -1,0 +1,19 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.breastsegmentation} CMIC Breast Segmentation
+
+\image html icon.xpm "Icon of CMIC Breast Segmentation"
+
+Available sections:
+  - \ref uk.ac.ucl.cmic.breastsegmentationOverview
+
+\section uk.ac.ucl.cmic.breastsegmentationOverview
+Describe the features of your awesome plugin here
+<ul>
+<li>Increases productivity
+<li>Creates beautiful images
+<li>Generates PhD thesis
+<li>Brings world peace
+</ul>
+
+*/
+
