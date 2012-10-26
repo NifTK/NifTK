@@ -47,7 +47,8 @@ const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_TEXTURE_INTERPO
 
 //-----------------------------------------------------------------------------
 QmitkNiftyViewApplicationPreferencePage::QmitkNiftyViewApplicationPreferencePage()
-: m_MainControl(0)
+: m_Parent(0)
+, m_MainControl(0)
 , m_UseMidasInitialisationRadioButton(0)
 , m_UseLevelWindowRadioButton(0)
 , m_UseImageDataRadioButton(0)
@@ -86,6 +87,8 @@ void QmitkNiftyViewApplicationPreferencePage::Init(berry::IWorkbench::Pointer )
 //-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPreferencePage::CreateQtControl(QWidget* parent)
 {
+  m_Parent = parent;
+
   m_Initializing = true;
   berry::IPreferencesService::Pointer prefService
     = berry::Platform::GetServiceRegistry()
@@ -146,6 +149,9 @@ QWidget* QmitkNiftyViewApplicationPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool QmitkNiftyViewApplicationPreferencePage::PerformOk()
 {
+  QMessageBox::warning(m_Parent, tr("NiftyView"),
+                                 tr("Changing application settings will require a restart.\n"),
+                                 QMessageBox::Ok);
   std::string method;
 
   if (m_UseMidasInitialisationRadioButton->isChecked())
