@@ -1656,7 +1656,12 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
   {
     m_PreviousSliceNumber = afterSliceNumber;
     m_PreviousFocusPoint = m_CurrentFocusPoint;
-    this->UpdateCurrentSliceContours();
+
+    bool updateRendering(false);
+
+    this->UpdateRegionGrowing(updateRendering);
+    this->UpdateCurrentSliceContours(updateRendering);
+    this->RequestRenderWindowUpdate();
     return;
   }
 
