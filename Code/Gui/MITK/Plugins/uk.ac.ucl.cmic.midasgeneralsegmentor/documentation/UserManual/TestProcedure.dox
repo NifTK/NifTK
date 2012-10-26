@@ -1,7 +1,84 @@
 /**
 
-\page TestScriptGeneralSegmentor MIDAS Irregular Volume Editor View Test Procedure
+\page TestProcedureGeneralSegmentor MIDAS Irregular Volume Editor View Test Procedure
 
-\li Read the Doxygen help page
+\section TestScriptMIDASGeneralSegmentation Basic Segmentation Test
 
+\li Read the Doxygen help page.
+\li Perform the morphological brain segmentation procedure described in \ref TestProcedureMIDASMorph checking that the volume of the brain is correct.
+\li Make sure you are using the MIDAS "Drag and Drop Display" as your main editor window and not the MITK "Display".
+\li Open the "MIDAS Irregular Volume Editor" view. Window->Show View->MIDAS Irregular Volume Editor, or the big Yellow M icon.
+\li Select the brain segmentation image in the Datamanager that you have just created.
+\li Click "start/re-start" segmentation on the view.
+\li Click the "threshold" checkbox, making sure the threshold control panel below becomes enabled.
+\li Set the upper threshold to the max (325) and the lower threshold to 60, and you should see a blue outline.
+\li Move the lower threshold down to 51, and the region growing should expand until it matches the brain segmentation outline (orange).
+\li Check that when the blue and orange line meets, the blue line should disappear as it sits UNDER the orange line. This is expected. 
+\li Move to slice 119 using the slice selection slider in the top control panel.
+\li Select the "Poly" tool. Verify that while a tool is on, the left-mouse-click slice navigation is off. i.e. the cross
+hairs cannot be moved.
+\li Right click to add a seed in the right temporal lobe, which should create a region outlined in blue as the result of
+a region growing algorithm.
+\li Use Poly tool to tidy round the edge of the region, selecting at least 3 points with the left mouse button, checking the line
+is displayed in yellow.
+\li Click the Undo button to remove the most recent point.
+\li Click the Redo button to re-add the most recent point.
+\li Use the middle mouse button to click on a point in the middle of the Poly line, and drag the middle point to some new location.
+Check that as the yellow line moves, a green line is indicating it's previous position for reference sake.
+\li Return the yellow line to the correct place and release the middle mouse button.
+\li Move to slice 120 by using the mouse wheel to scroll forward.
+\li Move to slice 119 by using the mouse wheel to scroll backwards, and check that the blue region is now accepted and is orange.
+\li Move to slice 120 using the A button.
+\li Move to slice 119 using the Z button.
+\li Return to slice 120 using the A button.
+\li Select Draw tool.
+\li Add a seed to the right temporal lobe, and use the draw tool to add a line at the top of the region to tidy up the edge.
+\li Select seed tool, and use the left mouse button to click on the seed from the single pixel region next 
+to the left temporal lobe and drag it about a centimetre to the left into air-space.
+\li Click on "Clean" and check that the single voxel region disappears, and the number of seeds remains the same, 
+and the lines drawn by the "Draw" tool are the minimum length necessary, with any extraneous bits removed.
+\li Click "apply" to apply the threshold region and check that the threshold checkbox is deselected, the threshold controls disabled and the region growing
+lines disappear, as they are converted to a "real" or "accepted" region (currently orange).
+\li Turn "threshold" mode back on.
+\li Select "see prior" to see the outline of the previous slice.
+\li Select "see next" to see the outline of the next slice.
+\li Turn "see prior" and "see next" off again.
+\li Move to slice coronal 61 using the slider in the top control panel.
+\li Select the draw tool, and set the eraser size to 5.
+\li Use the middle mouse button to click-hold-down-and-drag to erase the region of interest boundary, on the bottom right of the cerebellum where
+the boundary is not filled.
+\li Fill in this area of the cerebellum using the thresholding tool by adjusting the threshold.
+\li Move forward (A), then back (Z) to make sure the slice has been saved.
+\li Move to coronal slice 14 using the slider in the top control panel.
+\li Click "wipe-" and click "OK" in the pop-up warning window.
+\li Check that all slices down (posterior in coronal orientation) have been erased. This should be visible in the 
+MIDAS Irregular Volume Editor auxillary view.
+\li Click "prop down" and click "OK" in the pop-up warning window.
+\li Check the thresholded region is propagated down (posterior in coronal orientation) and appears in green.
+\li Move to coronal slice 148 using the slider in the top control panel.
+\li Click "wipe+" and then "OK" to confirm.
+\li Move to slice 149, checking region appears in blue.
+\li Click "prop up" and click on "OK" in the pop-up warning window
+\li Check the region propagated up (anterior in coronal view)
+\li Click OK to accept and finish the segmentation
+\li Open the Image Statistics View. Window->Show View->Image Statistics
+\li In Datamanager, click on the image, and then the segmentation
+\li In the Image Statistics View click "update"
+\li Check that the volume is 1179.13 (ml) +/- 0.25
+\li Check that the mean intensity value is 87.8 +/- 0.1
+\li Select the segmentation again.
+\li Click "start/re-start" segmentation in the MIDAS Irregular Volume Editor View
+\li Click "reset" and check that the segmentation is cleared.
+\li Click "OK" and check that the segmentation is destroyed and the application does not crash.
+
+\section TestScriptMIDASGeneralEditorReliability Additional Reliability Tests (Checking for not crashing)
+
+\li Click on a grey scale image, and start a new segmentation.
+\li Outline a region with the Draw tool. (i.e. draw a shape of your choice).
+\li Click A followed by Z to change slice up, then change slice down. The shape should disappear.
+\li Draw another shape, and place a seed within the region.
+\li Click A followed by Z to change slice up, then change slice down. The shape should have been saved, as there was a seed in it.
+\li Check that with Seed, Draw and Poly tools, right-clicking will draw a seed with all 3 tools.
+\li Check that with the Seed tool, the left mouse button can select a seed, and that dragging will move the seed.
+\li Check that with the Seed tool, the middle mouse button will remove the closest seed.
 */

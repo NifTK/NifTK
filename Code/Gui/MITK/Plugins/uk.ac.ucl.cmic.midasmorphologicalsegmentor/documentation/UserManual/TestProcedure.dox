@@ -1,6 +1,6 @@
 /**
 
-\page TestScriptMIDASMorph MIDAS Morphological Editor View Test Procedure
+\page TestProcedureMIDASMorph MIDAS Morphological Editor View Test Procedure
 
 You must have a 3 button mouse for this functionlity.
 
@@ -8,6 +8,7 @@ You must have a 3 button mouse for this functionlity.
 
 \li Read the Doxygen help page
 \li Load Analyze image NifTKData/Input/volunteers/16856/16856-002-1.img
+\li Make sure you are using the MIDAS "Drag and Drop Display" as your main editor window and not the MITK "Display".
 \li Drag and drop the image from the Datamanager to the Drag and Drop Display
 \li Check image does not appear obviously upside-down. If so, restart your application with environment variable NIFTK_DRC_ANALYZE=ON
 \li Open the MIDAS Morphological Editor. Window->Show View->MIDAS Morphological Editor
@@ -42,7 +43,7 @@ You must have a 3 button mouse for this functionlity.
 \li Check that the volume is 1178.33 (ml) +/- 0.25
 \li Check that the mean intensity value is 87.9 +/- 0.1
 
-\section TestScriptMIDASMorphReliability Reliability Tests (Checking for not crashing)
+\section TestScriptMIDASMorphReliability Additional Reliability Tests (Checking for not crashing)
 
 \li Restart the application.
 \li Load image 16856-002-1.img, drop the image into the Drag and Drop Display, close the Drag and Drop display.

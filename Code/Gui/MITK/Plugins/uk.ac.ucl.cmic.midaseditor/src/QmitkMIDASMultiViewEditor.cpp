@@ -230,7 +230,7 @@ void QmitkMIDASMultiViewEditor::SetFocus()
 {
   if (d->m_MIDASMultiViewWidget != 0)
   {
-    d->m_MIDASMultiViewWidget->setFocus();
+    d->m_MIDASMultiViewWidget->SetFocus();
   }
 }
 
