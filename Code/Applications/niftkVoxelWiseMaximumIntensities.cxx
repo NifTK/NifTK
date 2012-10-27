@@ -115,7 +115,7 @@ int DoMain(arguments args)
         
         std::cout << "Processed " << args.inputImages[i] << std::endl;
       }
-    
+
     typename ImageFileWriterType::Pointer fileWriter = ImageFileWriterType::New();
     fileWriter->SetFileName(args.outputImage);
     fileWriter->SetInput(image);
