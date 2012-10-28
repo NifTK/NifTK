@@ -82,8 +82,6 @@ int DoMain(arguments args)
   
   try
   {
-    int counter = 1;
-    
     typename ImageFileReaderType::Pointer fileReader = ImageFileReaderType::New();
     fileReader->SetFileName(args.inputImages[0]);
     fileReader->Update();
@@ -115,15 +113,7 @@ int DoMain(arguments args)
             outputIterator.Set( inputIterator.Get() );
           }
         
-        counter++;
-        
         std::cout << "Processed " << args.inputImages[i] << std::endl;
-      }
-    
-    typename itk::ImageRegionIterator<ImageType> outputIterator(image, image->GetLargestPossibleRegion());
-    for (outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator)
-      {
-        outputIterator.Set(outputIterator.Get() / (float)counter);
       }
     
     typename ImageFileWriterType::Pointer fileWriter = ImageFileWriterType::New();
