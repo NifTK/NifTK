@@ -447,7 +447,12 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   ADD_EXECUTABLE(niftkComputeJointHistogram niftkComputeJointHistogram.cxx )
   TARGET_LINK_LIBRARIES(niftkComputeJointHistogram ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkComputeJointHistogram RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)  
-  
+ 
+  ADD_EXECUTABLE(niftkComputeImageHistogram niftkComputeImageHistogram.cxx )
+  TARGET_LINK_LIBRARIES(niftkComputeImageHistogram ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkComputeImageHistogram RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)  
+ 
+ 
   ##############################################################
   # Other command line applications, that require VTK.
   ##############################################################
