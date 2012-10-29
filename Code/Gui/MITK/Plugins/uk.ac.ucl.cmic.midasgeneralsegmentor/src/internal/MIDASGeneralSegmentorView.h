@@ -64,28 +64,31 @@ class QGridLayout;
 
 /**
  * \class MIDASGeneralSegmentorView
- * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia Research Centre UCL.
+ * \brief Provides the MIDAS general purpose, Irregular Volume Editor functionality originally developed
+ * at the Dementia Research Centre UCL (http://dementia.ion.ucl.ac.uk/).
+ *
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
  * This class uses the mitk::ToolManager and associated framework described in this paper on the
  * <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation framework</a>.
+ *
  * The mitk::ToolManager has the following data sets registered in this order.
  * <pre>
  *   0. mitk::Image = the image being segmented, i.e. The Output.
- *   1. mitk::PointSet = the seeds for region growing.
- *   2. mitk::ContourSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS.
- *   3. mitk::ContourSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS.
+ *   1. mitk::PointSet = the seeds for region growing, noting that the seeds are in 3D, spreading throughout the volume.
+ *   2. mitk::ContourSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS, but drawn here in orange.
+ *   3. mitk::ContourSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS, and also drawn here in orange.
  *   4. mitk::ContourSet = a set of contours for the prior slice, i.e. whiteish lines in MIDAS.
  *   5. mitk::ContourSet = a set of contours for the next slice, i.e. turquoise blue lines in MIDAS.
- *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.*
+ *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.
  * </pre>
- * and more specifically, items 1-6 are set up in the mitk::DataManager as hidden children of item 0.
- *
  * Useful notes towards helping the understanding of this class
  * <ul>
+ *   <li>Items 1-6 are set up in the mitk::DataManager as hidden children of item 0.</li>
+ *   <li>The segmentation is very specific to a given view, as for example the ContourSet in WorkingData items 2,3,4,5 are only generated for a single slice, corresponding to the currently selected render window.</li>
  *   <li>Region growing is 2D on the currently selected slice, except when doing propagate up or propagate down.</li>
  * </ul>
- * Additional, significant bits of functionality include:
+ * Additionally, significant bits of functionality include:
  *
  * <h2>Recalculation of Seed Position</h2>
  *
@@ -109,7 +112,7 @@ class QGridLayout;
  *
  * <h2>Propagate Up/Down/3D</h2>
  *
- * Propagate runs a 3D region propagation from the current slice up/down, writing the
+ * Propagate runs a 3D region propagation from and including the current slice up/down, writing the
  * output to the current segmentation volume, overwriting anything already there.
  * The current slice is always affected. So, you can leave the threshold tick box either on or off.
  * For each subsequent slice in the up/down direction, the number of seeds is recomputed (as above).
@@ -122,19 +125,15 @@ class QGridLayout;
  * <h2>Threshold Apply</h2>
  *
  * The threshold "apply" button is only enabled when the threshold check-box is enabled,
- * and disabled otherwise. If MIDAS green contours, representing the current segmentation
- * are already present, then these contours limit the region growing.
+ * and disabled otherwise. The current segmentation, draw tool contours and poly tool contours
+ * (eg. WorkingData items 2 and 3, plus temporary data in the mitk::MIDASPolyTool) all limit the
+ * region growing.
  *
  * When we hit "apply":
  * <pre>
  * 1. Takes the current region growing image, and writes it to the current image.
  * 2. Recalculate the number of seeds for that slice, 1 per disjoint region, as above.
  * 3. Turn off thresholding, leaving sliders at current value.
- * </pre>
- * Undo therefore should:
- * <pre>
- * 1. Revert to the previous number of seeds, previous segmented region, previous contours,
- * 2. turn thresholding back on.
  * </pre>
  *
  * <h2>Wipe, Wipe+, Wipe-</h2>
@@ -359,9 +358,6 @@ protected:
   /// and moving to the next one.
   virtual void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Called from the registered Seed, Poly and Draw tools when the number of seeds has changed.
-  virtual void OnNumberOfSeedsChanged(int numberOfSeeds);
-
   /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();
 
@@ -460,10 +456,10 @@ private:
   void CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber);
+  bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber, mitk::PointSet& seeds);
+  bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber, mitk::PointSet& seeds);
 
   /**************************************************************
    * Start of ITK stuff.
@@ -731,7 +727,7 @@ private:
       mitk::Image &workingImage,
       double lowerThreshold,
       double upperThreshold,
-      bool doRegionGrowing,
+      bool useThresholds,
       int axis,
       int slice,
       bool &sliceDoesHaveUnenclosedSeeds
