@@ -461,6 +461,22 @@ private:
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
   bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber, mitk::PointSet& seeds);
 
+  /// \brief Filters seeds to current slice
+  void FilterSeedsToCurrentSlice(
+      mitk::PointSet& inputPoints,
+      int& axis,
+      int& sliceNumber,
+      mitk::PointSet& outputPoints
+      );
+
+  /// \brief Filters seeds to current slice, and selects seeds that are enclosed.
+  void FilterSeedsToEnclosedSeedsOnCurrentSlice(
+      mitk::PointSet& inputPoints,
+      bool& thresholdOn,
+      int& sliceNumber,
+      mitk::PointSet& outputPoints
+      );
+
   /**************************************************************
    * Start of ITK stuff.
    *************************************************************/
@@ -474,20 +490,29 @@ private:
       );
 
 
-  /// \brief Clears an image by setting all voxels to zero.
+  /// \brief Clears an image by setting all voxels to zero using ITKFillRegion.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKClearImage(
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
 
-  /// \brief Copies an image, assumes input and output already allocated and of the same size.
+  /// \brief Copies an image from input to output, assuming input and output already allocated and of the same size.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKCopyImage(
       itk::Image<TPixel, VImageDimension>* input,
       itk::Image<TPixel, VImageDimension>* output
       );
 
+
+  /// \brief Copies the region from input to output, assuming both images are the same size, and contain the region.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKCopyRegion(
+      itk::Image<TPixel, VImageDimension>* input,
+      int axis,
+      int slice,
+      itk::Image<TPixel, VImageDimension>* output
+      );
 
   /// \brief Calculates the region corresponding to a single slice.
   template<typename TPixel, unsigned int VImageDimension>
