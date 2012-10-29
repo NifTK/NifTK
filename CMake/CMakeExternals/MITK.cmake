@@ -221,7 +221,20 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1469, MITK 12003 = https://github.com/MattClarkson/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
     #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
     #       + Trac 1588, MITK 12506 = https://github.com/MattClarkson/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0 (Slicer Command Line Modules)
-    #       + Trac 1791, MITK 11627 = https://github.com/MattClarkson/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)    
+    #       + Trac 1791, MITK 11627 = https://github.com/MattClarkson/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)   
+    #
+    # 18. Trac 1871 - Fixing deployment of CTK Designer plugins, along with a new MITK version to pick up latest changes.
+    #      
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK d70faf53e4 - Oct 26 2012 - 16:10:44
+    #       + Trac 853,  MITK 10174 = https://github.com/NifTK/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0 (Slicer Command Line Modules)
+    #       + Trac 1871, MITK 13504 - https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (Change to how CTK Designer plugins installed)
+    #
+    #     Giving c4e1a21b92b on niftk branch
+    #
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
