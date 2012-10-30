@@ -64,7 +64,7 @@ DataStorageVisibilityTracker::DataStorageVisibilityTracker(const mitk::DataStora
 //-----------------------------------------------------------------------------
 DataStorageVisibilityTracker::~DataStorageVisibilityTracker()
 {
-  // m_Listener destroyed via smart pointer.
+  m_Listener->PropertyChanged += mitk::MessageDelegate<DataStorageVisibilityTracker>( this, &DataStorageVisibilityTracker::OnPropertyChanged );
 }
 
 
