@@ -106,6 +106,7 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_SliceNavigationControllerObserverTag(0)
 , m_FocusManagerObserverTag(0)
 , m_IsUpdating(false)
+, m_IsDeleting(false)
 , m_IsChangingSlice(false)
 , m_PreviousSliceNumber(0)
 {
@@ -812,6 +813,7 @@ void MIDASGeneralSegmentorView::DestroyPipeline()
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
   {
+    m_IsDeleting = true;
     try
     {
       AccessFixedDimensionByItk(referenceImage, ITKDestroyPipeline, 3);
@@ -820,6 +822,7 @@ void MIDASGeneralSegmentorView::DestroyPipeline()
     {
       MITK_ERROR << "Caught exception, so abandoning destroying the ITK pipeline, caused by:" << e.what();
     }
+    m_IsDeleting = false;
   }
 }
 
@@ -831,6 +834,8 @@ void MIDASGeneralSegmentorView::RemoveWorkingData()
   {
     return;
   }
+
+  m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingNodesFromToolManager();
@@ -844,6 +849,8 @@ void MIDASGeneralSegmentorView::RemoveWorkingData()
   mitk::ToolManager::DataVectorType emptyWorkingDataArray;
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
+
+  m_IsDeleting = false;
 }
 
 
@@ -2641,13 +2648,10 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 {
-  if (!this->HaveInitialisedWorkingData())
-  {
-    return;
-  }
-
-  // To stop repeated updates triggering from data storage updates.
-  if (m_IsUpdating)
+  if (   m_IsDeleting
+      || m_IsUpdating
+      || !this->HaveInitialisedWorkingData()
+      )
   {
     return;
   }
@@ -4557,11 +4561,8 @@ MIDASGeneralSegmentorView
   if (pipeline != NULL)
   {
     delete pipeline;
-  }
-  else
-  {
-    MITK_ERROR << "MIDASGeneralSegmentorView::DestroyITKPipeline(..), failed to delete pipeline, as it was already NULL????" << std::endl;
-  }
+  };
+
   m_TypeToPipelineMap.clear();
 }
 

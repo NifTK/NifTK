@@ -839,8 +839,11 @@ private:
   /// \brief Used for the mitkFocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
 
-  /// \brief Flag to stop re-entering code.
+  /// \brief Flag to stop re-entering code, while updating.
   bool m_IsUpdating;
+
+  /// \brief Flag to stop re-entering code, while trying to delete/clear the pipeline.
+  bool m_IsDeleting;
 
   /// \brief Additional flag to stop re-entering code, specifically to block
   /// slice change commands from the slice navigation controller.
