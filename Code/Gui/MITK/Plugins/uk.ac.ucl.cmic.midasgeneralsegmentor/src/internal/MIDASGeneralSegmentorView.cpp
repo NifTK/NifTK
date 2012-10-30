@@ -534,6 +534,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
 
     this->FocusOnCurrentWindow();
+    this->OnFocusChanged();
     this->RequestRenderWindowUpdate();
     this->WaitCursorOff();
 
