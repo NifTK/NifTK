@@ -624,12 +624,12 @@ mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints)
+void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet& inputPoints, mitk::PointSet& outputPoints)
 {
-  outputPoints->Initialize();
-  for (int i = 0; i < inputPoints->GetSize(); i++)
+  outputPoints.Clear();
+  for (int i = 0; i < inputPoints.GetSize(); i++)
   {
-    outputPoints->InsertPoint(i, inputPoints->GetPoint(i));
+    outputPoints.InsertPoint(i, inputPoints.GetPoint(i));
   }
 }
 
@@ -773,7 +773,7 @@ void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
     mitk::PointSet& outputPoints
     )
 {
-  outputPoints.Initialize();
+  outputPoints.Clear();
 
   mitk::PointSet::Pointer singleSeedPointSet = mitk::PointSet::New();
   unsigned int pointCounter = 0;
@@ -782,7 +782,7 @@ void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
   {
     mitk::PointSet::PointType point = inputPoints.GetPoint(i);
 
-    singleSeedPointSet->Initialize();
+    singleSeedPointSet->Clear();
     singleSeedPointSet->InsertPoint(0, point);
 
     bool unenclosed = this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, *(singleSeedPointSet.GetPointer()));
@@ -2354,12 +2354,12 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
           if (direction == 0)
           {
             this->CopySeeds(
-                seeds,
-                copyOfInputSeeds
+                *seeds,
+                *copyOfInputSeeds
                 );
             this->CopySeeds(
-                seeds,
-                outputSeeds
+                *seeds,
+                *outputSeeds
                 );
 
             AccessFixedDimensionByItk_n(workingImage,
@@ -2757,6 +2757,9 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
+  mitk::DataNode::Pointer seedsNode = this->GetWorkingNodesFromToolManager()[1];
+  assert(seedsNode);
+
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
   assert(renderWindowPart);
 
@@ -2803,11 +2806,12 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
       assert(op);
 
       mitk::PointSet* newSeeds = op->GetSeeds();
-      assert(seeds);
+      assert(newSeeds);
 
-      this->CopySeeds(newSeeds, seeds);
+      this->CopySeeds(*newSeeds, *seeds);
 
       seeds->Modified();
+      seedsNode->Modified();
 
       break;
     }
@@ -2909,6 +2913,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
 
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
         contoursToReplace->Modified();
+        this->GetWorkingNodesFromToolManager()[2]->Modified();
 
         segmentedImage->Modified();
         segmentedNode->Modified();
@@ -3483,7 +3488,7 @@ MIDASGeneralSegmentorView
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
   // First take a copy of input seeds, as we need to store them for Undo/Redo purposes.
-  this->CopySeeds(&inputSeeds, &outputCopyOfInputSeeds);
+  this->CopySeeds(inputSeeds, outputCopyOfInputSeeds);
 
   // Work out the output region of interest that will be affected.
   // We want the region upstream/downstream/both of the slice of interest
@@ -4029,8 +4034,8 @@ MIDASGeneralSegmentorView
     {
       // Copy all input seeds, as we are moving to an empty slice.
       this->CopySeeds(
-          &inputSeeds,
-          &outputCopyOfInputSeeds
+          inputSeeds,
+          outputCopyOfInputSeeds
           );
 
       // Take all seeds on the current slice number, and propagate to new slice.
@@ -4104,16 +4109,16 @@ MIDASGeneralSegmentorView
   if (outputCopyOfInputSeeds.GetSize() == 0)
   {
     this->CopySeeds(
-        &inputSeeds,
-        &outputCopyOfInputSeeds
+        inputSeeds,
+        outputCopyOfInputSeeds
         );
   }
 
   if (outputNewSeeds.GetSize() == 0)
   {
     this->CopySeeds(
-        &inputSeeds,
-        &outputNewSeeds
+        inputSeeds,
+        outputNewSeeds
         );
   }
 }

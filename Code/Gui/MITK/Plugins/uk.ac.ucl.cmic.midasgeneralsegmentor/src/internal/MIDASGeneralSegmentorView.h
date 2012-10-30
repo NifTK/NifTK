@@ -453,7 +453,7 @@ private:
   void ToggleTool(int toolId);
 
   /// \brief Copies inputPoints to outputPoints
-  void CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints);
+  void CopySeeds(const mitk::PointSet& inputPoints, mitk::PointSet& outputPoints);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
   bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber);
