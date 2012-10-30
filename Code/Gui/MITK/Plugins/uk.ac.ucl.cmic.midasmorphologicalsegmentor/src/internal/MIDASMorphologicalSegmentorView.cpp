@@ -108,6 +108,8 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
     mitk::Tool* paintbrushTool = toolManager->GetToolById(paintbrushToolId);
     assert(paintbrushTool);
 
+    this->WaitCursorOn();
+
     if (mitk::IsNodeABinaryImage(m_SelectedNode)
         && this->CanStartSegmentationForBinaryNode(m_SelectedNode)
         && !this->IsNodeASegmentationImage(m_SelectedNode)
@@ -232,12 +234,15 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       }
       this->SetControlsByParameterValues();
       this->m_PipelineManager->UpdateSegmentation();
-      this->RequestRenderWindowUpdate();
     }
     catch (std::bad_alloc)
     {
       QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
     }
+
+    this->FocusOnCurrentWindow();
+    this->RequestRenderWindowUpdate();
+    this->WaitCursorOff();
 
   } // end if we have a reference image
 
