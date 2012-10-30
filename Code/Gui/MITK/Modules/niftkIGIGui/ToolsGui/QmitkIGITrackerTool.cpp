@@ -298,7 +298,7 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-    this->DisplayTrackerData(msg);
+  //  this->DisplayTrackerData(msg);
     this->HandleTrackerData(msg);
   }
 }
@@ -315,6 +315,9 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage::Pointer msg)
     QString toolName = trMsg->getTrackerToolName();
 
     // try to find DataNode for tool in DataStorage
+		// Not quite, I want to have a list stored of all the 
+		// associated data nodes. The nodes are associated manually 
+		// when the GUI is is set up
     mitk::DataStorage* ds = this->GetDataStorage();
     if (ds == NULL)
     {

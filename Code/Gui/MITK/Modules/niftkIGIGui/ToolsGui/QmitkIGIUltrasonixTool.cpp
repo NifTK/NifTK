@@ -25,6 +25,7 @@
 #include "QmitkIGIUltrasonixTool.h"
 #include <QImage>
 #include "mitkRenderingManager.h"
+#include <QmitkCommonFunctionality.h>
 
 NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
@@ -85,5 +86,19 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
     }
 
     mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+		emit SaveImage(imageMsg);
   }
+}
+
+void QmitkIGIUltrasonixTool::SaveDataNode(QString filename)
+{
+	mitk::BaseData::Pointer data = m_ImageNode->GetData();
+	if ( data.IsNotNull() )
+		CommonFunctionality::SaveBaseData( data.GetPointer(), "/dev/shm/image.nii" );
+	else
+		qDebug() << "Image node is NULL";
+}
+void QmitkIGIUltrasonixTool::SaveImage(QString filename)
+{
+		CommonFunctionality::SaveImage( m_Image, filename.toAscii() );
 }
