@@ -60,6 +60,17 @@ public:
    */
   void GetToolPosition(const QString &toolName);
 
+	/**
+	 * \brief Add an associated tool to the named tool associated tools for a given 
+	 * tracker tool
+	 */
+	void AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+	
+	/**
+	 * \brief return a QList of the tools associated with a given toolName
+	 */
+
+	QList<mitk::DataNode::Pointer>  GetDataNode(const QString);
   /**
    * \brief Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
    */
@@ -137,6 +148,7 @@ private:
   unsigned long int                                    m_MsgCounter;
   QHash<QString, bool>                                 m_EnabledTools;
   QHash<QString, mitk::DataNode::Pointer>              m_ToolRepresentations;
+  QHash<QString, mitk::DataNode::Pointer>              m_AssociatedTools;
   bool                                                 m_PointSetsInitialized;
   bool                                                 m_UseICP;
   mitk::DataNode::Pointer                              m_ImageFiducialsDataNode;
