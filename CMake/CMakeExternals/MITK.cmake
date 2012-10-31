@@ -223,17 +223,27 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1588, MITK 12506 = https://github.com/MattClarkson/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0 (Slicer Command Line Modules)
     #       + Trac 1791, MITK 11627 = https://github.com/MattClarkson/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)   
     #
-    # 18. Trac 1871 - Fixing deployment of CTK Designer plugins, along with a new MITK version to pick up latest changes.
-    #      
+    # 18. Trac 1872 - Creating a new MITK version.
+    #
+    #     HOWEVER: With the MITK on NifTK/MITK/master latest, we merged MITK d70faf53e4 - Oct 26 2012 - 16:10:44
+    #              and found that the MIDAS morph editor does not work due to changes to image accessors due to MITK
+    #              bug: http://bugs.mitk.org/show_bug.cgi?id=13230
+    #     
+    #     SO: I took the latest niftk branch - commit 6bca0b2907 and cherry-picked:
+    #
     #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
-    #       MITK d70faf53e4 - Oct 26 2012 - 16:10:44
+    #       MITK b6cfb353a9 - Sep 19 2012 = 2012.09.0 release
     #       + Trac 853,  MITK 10174 = https://github.com/NifTK/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
     #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
     #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/NifTK/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
     #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0 (Slicer Command Line Modules)
-    #       + Trac 1871, MITK 13504 - https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (Change to how CTK Designer plugins installed)
-    #
-    #     Giving c4e1a21b92b on niftk branch
+    #       + Trac 1791, MITK 11627 = https://github.com/NifTK/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)   
+    #       + Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
+    #       +            MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
+    # 
+    #     Giving c3214181308907c12c2d62f6cb775da04411772d on NifTK/MITK/niftk-tmp-12.10 branch
     #
     #########################################################
 
