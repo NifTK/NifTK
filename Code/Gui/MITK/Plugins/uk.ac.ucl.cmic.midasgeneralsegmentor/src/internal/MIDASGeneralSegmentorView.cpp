@@ -221,6 +221,10 @@ void MIDASGeneralSegmentorView::Visible()
 
   mitk::MIDASPolyTool* midasPolyTool = dynamic_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
   midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+
+  mitk::MIDASDrawTool* midasDrawTool = dynamic_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
+  midasDrawTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+
 }
 
 
@@ -241,6 +245,10 @@ void MIDASGeneralSegmentorView::Hidden()
 
   mitk::MIDASPolyTool* midasPolyTool = dynamic_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
   midasPolyTool->ContoursHaveChanged -= mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+
+  mitk::MIDASDrawTool* midasDrawTool = dynamic_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
+  midasDrawTool->ContoursHaveChanged -= mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+
 }
 
 /**************************************************************
