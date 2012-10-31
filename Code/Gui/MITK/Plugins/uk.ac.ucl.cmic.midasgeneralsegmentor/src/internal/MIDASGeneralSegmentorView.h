@@ -633,6 +633,10 @@ private:
       );
 
   /// \brief Called from ITKPropagateToRegionGrowingImage to propagate up or down.
+  ///
+  /// This is basically a case of taking the seeds on the current slice,
+  /// and calculating the up/down region (which should include the currrent slice),
+  /// and then perform 5D region growing in the correct direction.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKPropagateUpOrDown(
       itk::Image<TPixel, VImageDimension> *itkImage,
@@ -675,7 +679,8 @@ private:
     itk::Image<TPixel, VImageDimension>* itkImage,
     TPixel& foregroundPixelValue,
     typename itk::Image<TPixel, VImageDimension>::IndexType &outputSeedIndex,
-    int &outputDistance);
+    int &outputDistance
+    );
 
   /// \brief For the given input itkImage (assumed to always be binary), and regionOfInterest,
   /// will iterate on a slice by slice basis, recalculating new seeds.
@@ -728,6 +733,11 @@ private:
       );
 
   /// \brief Does the wipe command for Wipe, Wipe+, Wipe-.
+  ///
+  /// Most of the logic is contained within the OpWipe command
+  /// and the processing is done with itk::MIDASImageUpdateClearRegionProcessor
+  /// which basically fills a given region (contained on OpWipe) with zero.
+  /// The seed processing is done elsewhere. \see DoWipe.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKDoWipe(
       itk::Image<TPixel, VImageDimension> *itkImage,
@@ -742,6 +752,15 @@ private:
       );
 
   /// \brief Will return true if slice has unenclosed seeds, and false otherwise.
+  ///
+  /// This works by region growing. We create a local GeneralSegmentorPipeline
+  /// and perform region growing, and then check if the region has his the edge
+  /// of the image. If the region growing hits the edge of the image, then the seeds
+  /// must have been un-enclosed, and true is returned, and false otherwise.
+  ///
+  /// \param useThreshold if true will use lowerThreshold and upperThreshold
+  /// and if false will use the min and maximum limit of the pixel data type
+  /// of the itkImage.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKSliceDoesHaveUnEnclosedSeeds(
       itk::Image<TPixel, VImageDimension> *itkImage,
@@ -759,6 +778,16 @@ private:
       );
 
   /// \brief Extracts a new contour set, for doing "Clean" operation.
+  ///
+  /// This method creates a local GeneralSegmentorPipeline pipeline for region
+  /// growing, and does a standard region growing, then for each point on
+  /// each contour on the input contour sets will filter the contours to only
+  /// retain contours that are touching (i.e. on the boundary of) the region
+  /// growing image.
+  ///
+  /// \param isThreshold if true, we use the lowerThreshold and upperThreshold,
+  /// whereas if false, we use the min and maximum limit of the pixel data type
+  /// of the itkImage.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKFilterContours(
       itk::Image<TPixel, VImageDimension> *itkImage,
@@ -792,13 +821,21 @@ private:
       );
 
   /// \brief Completely removes the current 2D region growing pipeline that is stored in the map m_TypeToPipelineMap.
+  /// \param itkImage pass in the reference image (grey scale image being segmented), just as
+  /// a dummy parameter, as it is called via the MITK ImageAccess macros.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKDestroyPipeline(
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
 
-  /// \brief Called from InitialiseSeedsForVolume to create a seed for every distinct region on each slice.
+  /// \brief Creates seeds for each distinct 4-connected region on each slice for a given axis.
+  ///
+  /// This is called when the user starts a segmentation from an existing one. When you click
+  /// "re-start segmentation", the current view will have an orientation (axial, coronal, sagittal)
+  /// and hence a known through-slice axis. So this methods retrieves the largest possible
+  /// region, and calls ITKAddNewSeedsToPointSet to iterate through each slice, and create new seeds.
+  /// \param axis through slice axis, which should be [0|1|2].
   template<typename TPixel, unsigned int VImageDimension>
   void ITKInitialiseSeedsForVolume(
       itk::Image<TPixel, VImageDimension> *itkImage,
@@ -827,7 +864,7 @@ private:
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
 
-  /// \brief Container for the Morphological Controls Widgets. \see QmitkMIDASBaseSegmentationFunctionality
+  /// \brief Container for the main Widgets. Also \see QmitkMIDASBaseSegmentationFunctionality
   QWidget *m_ContainerForControlsWidget;
 
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
@@ -836,7 +873,7 @@ private:
   /// \brief Each time the window changes, we register to the current slice navigation controller.
   unsigned long m_SliceNavigationControllerObserverTag;
 
-  /// \brief Used for the mitkFocusManager to register callbacks to track the currently focus window.
+  /// \brief Used for the mitk::FocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Flag to stop re-entering code, while updating.
@@ -852,9 +889,13 @@ private:
   /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
   int m_PreviousSliceNumber;
 
-  /// \brief We also need to keep track of the focus point, as depending on geometry,
-  /// we cannot rely on slice navigation controller slice number.
-  mitk::Point3D m_PreviousFocusPoint;
+  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
+  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
   mitk::Point3D m_CurrentFocusPoint;
+
+  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
+  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
+  mitk::Point3D m_PreviousFocusPoint;
+
 };
 #endif // _MIDASGENERALSEGMENTORVIEW_H_INCLUDED

@@ -42,6 +42,6 @@ void MIDASGeneralSegmentorViewActivator::stop(ctkPluginContext* context)
   Q_UNUSED(context)
 }
 
-}
+} // end namespace
 
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midasgeneralsegmentor, mitk::MIDASGeneralSegmentorViewActivator)
