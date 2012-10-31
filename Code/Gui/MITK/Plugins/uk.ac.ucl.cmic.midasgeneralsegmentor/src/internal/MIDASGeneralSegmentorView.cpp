@@ -906,6 +906,11 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
     return;
   }
 
+  if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+  {
+    this->OnThresholdApplyButtonPressed();
+  }
+
   this->DestroyPipeline();
   this->RemoveWorkingData();
   this->UpdateSegmentationImageVisibility(true);
@@ -1715,9 +1720,8 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
     m_PreviousFocusPoint = m_CurrentFocusPoint;
 
     bool updateRendering(false);
-
-    this->UpdateRegionGrowing(updateRendering);
     this->UpdateCurrentSliceContours(updateRendering);
+    this->UpdateRegionGrowing(updateRendering);
     this->RequestRenderWindowUpdate();
     return;
   }
@@ -2630,6 +2634,7 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 
           drawTool->ClearWorkingData();
           this->UpdateCurrentSliceContours(false);
+          this->UpdateRegionGrowing(false);
         }
         catch(const mitk::AccessByItkException& e)
         {
