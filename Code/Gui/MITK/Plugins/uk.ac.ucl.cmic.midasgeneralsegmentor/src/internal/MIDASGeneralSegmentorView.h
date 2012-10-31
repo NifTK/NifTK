@@ -64,28 +64,31 @@ class QGridLayout;
 
 /**
  * \class MIDASGeneralSegmentorView
- * \brief Provides the MIDAS hippocampus/ventricle segmentation developed at the Dementia Research Centre UCL.
+ * \brief Provides the MIDAS general purpose, Irregular Volume Editor functionality originally developed
+ * at the Dementia Research Centre UCL (http://dementia.ion.ucl.ac.uk/).
+ *
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
  * This class uses the mitk::ToolManager and associated framework described in this paper on the
  * <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation framework</a>.
+ *
  * The mitk::ToolManager has the following data sets registered in this order.
  * <pre>
  *   0. mitk::Image = the image being segmented, i.e. The Output.
- *   1. mitk::PointSet = the seeds for region growing.
- *   2. mitk::ContourSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS.
- *   3. mitk::ContourSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS.
+ *   1. mitk::PointSet = the seeds for region growing, noting that the seeds are in 3D, spreading throughout the volume.
+ *   2. mitk::ContourSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS, but drawn here in orange.
+ *   3. mitk::ContourSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS, and also drawn here in orange.
  *   4. mitk::ContourSet = a set of contours for the prior slice, i.e. whiteish lines in MIDAS.
  *   5. mitk::ContourSet = a set of contours for the next slice, i.e. turquoise blue lines in MIDAS.
- *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.*
+ *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.
  * </pre>
- * and more specifically, items 1-6 are set up in the mitk::DataManager as hidden children of item 0.
- *
  * Useful notes towards helping the understanding of this class
  * <ul>
+ *   <li>Items 1-6 are set up in the mitk::DataManager as hidden children of item 0.</li>
+ *   <li>The segmentation is very specific to a given view, as for example the ContourSet in WorkingData items 2,3,4,5 are only generated for a single slice, corresponding to the currently selected render window.</li>
  *   <li>Region growing is 2D on the currently selected slice, except when doing propagate up or propagate down.</li>
  * </ul>
- * Additional, significant bits of functionality include:
+ * Additionally, significant bits of functionality include:
  *
  * <h2>Recalculation of Seed Position</h2>
  *
@@ -109,7 +112,7 @@ class QGridLayout;
  *
  * <h2>Propagate Up/Down/3D</h2>
  *
- * Propagate runs a 3D region propagation from the current slice up/down, writing the
+ * Propagate runs a 3D region propagation from and including the current slice up/down, writing the
  * output to the current segmentation volume, overwriting anything already there.
  * The current slice is always affected. So, you can leave the threshold tick box either on or off.
  * For each subsequent slice in the up/down direction, the number of seeds is recomputed (as above).
@@ -122,19 +125,15 @@ class QGridLayout;
  * <h2>Threshold Apply</h2>
  *
  * The threshold "apply" button is only enabled when the threshold check-box is enabled,
- * and disabled otherwise. If MIDAS green contours, representing the current segmentation
- * are already present, then these contours limit the region growing.
+ * and disabled otherwise. The current segmentation, draw tool contours and poly tool contours
+ * (eg. WorkingData items 2 and 3, plus temporary data in the mitk::MIDASPolyTool) all limit the
+ * region growing.
  *
  * When we hit "apply":
  * <pre>
  * 1. Takes the current region growing image, and writes it to the current image.
  * 2. Recalculate the number of seeds for that slice, 1 per disjoint region, as above.
  * 3. Turn off thresholding, leaving sliders at current value.
- * </pre>
- * Undo therefore should:
- * <pre>
- * 1. Revert to the previous number of seeds, previous segmented region, previous contours,
- * 2. turn thresholding back on.
  * </pre>
  *
  * <h2>Wipe, Wipe+, Wipe-</h2>
@@ -359,9 +358,6 @@ protected:
   /// and moving to the next one.
   virtual void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Called from the registered Seed, Poly and Draw tools when the number of seeds has changed.
-  virtual void OnNumberOfSeedsChanged(int numberOfSeeds);
-
   /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();
 
@@ -416,18 +412,18 @@ private:
   /// threshold apply button and not change slice, or when we change slice.
   bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
 
-  /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
-  void UpdateRegionGrowing();
-
   /// \brief Given the two thresholds, and all seeds and contours, will recalculate the thresholded region in the current slice.
   /// \param isVisible whether the region growing volume should be visible.
   void UpdateRegionGrowing(bool isVisible, int sliceNumber, double lowerThreshold, double upperThreshold, bool skipUpdate);
 
+  /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
+  void UpdateRegionGrowing(bool updateRendering=true);
+
   /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
-  void UpdatePriorAndNext();
+  void UpdatePriorAndNext(bool updateRendering=true);
 
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
-  void UpdateCurrentSliceContours();
+  void UpdateCurrentSliceContours(bool updateRendering=true);
 
   /// \brief Takes the currently focussed window, and makes sure the segmented volume
   /// is not visible in the currently focussed window and takes the global visibility value in the previously
@@ -457,13 +453,29 @@ private:
   void ToggleTool(int toolId);
 
   /// \brief Copies inputPoints to outputPoints
-  void CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints);
+  void CopySeeds(const mitk::PointSet& inputPoints, mitk::PointSet& outputPoints);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber);
+  bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(const int& sliceNumber, mitk::PointSet& seeds);
+  bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber, mitk::PointSet& seeds);
+
+  /// \brief Filters seeds to current slice
+  void FilterSeedsToCurrentSlice(
+      mitk::PointSet& inputPoints,
+      int& axis,
+      int& sliceNumber,
+      mitk::PointSet& outputPoints
+      );
+
+  /// \brief Filters seeds to current slice, and selects seeds that are enclosed.
+  void FilterSeedsToEnclosedSeedsOnCurrentSlice(
+      mitk::PointSet& inputPoints,
+      bool& thresholdOn,
+      int& sliceNumber,
+      mitk::PointSet& outputPoints
+      );
 
   /**************************************************************
    * Start of ITK stuff.
@@ -478,20 +490,29 @@ private:
       );
 
 
-  /// \brief Clears an image by setting all voxels to zero.
+  /// \brief Clears an image by setting all voxels to zero using ITKFillRegion.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKClearImage(
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
 
-  /// \brief Copies an image, assumes input and output already allocated and of the same size.
+  /// \brief Copies an image from input to output, assuming input and output already allocated and of the same size.
   template<typename TPixel, unsigned int VImageDimension>
   void ITKCopyImage(
       itk::Image<TPixel, VImageDimension>* input,
       itk::Image<TPixel, VImageDimension>* output
       );
 
+
+  /// \brief Copies the region from input to output, assuming both images are the same size, and contain the region.
+  template<typename TPixel, unsigned int VImageDimension>
+  void ITKCopyRegion(
+      itk::Image<TPixel, VImageDimension>* input,
+      int axis,
+      int slice,
+      itk::Image<TPixel, VImageDimension>* output
+      );
 
   /// \brief Calculates the region corresponding to a single slice.
   template<typename TPixel, unsigned int VImageDimension>
@@ -731,7 +752,7 @@ private:
       mitk::Image &workingImage,
       double lowerThreshold,
       double upperThreshold,
-      bool doRegionGrowing,
+      bool useThresholds,
       int axis,
       int slice,
       bool &sliceDoesHaveUnenclosedSeeds
@@ -818,8 +839,11 @@ private:
   /// \brief Used for the mitkFocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
 
-  /// \brief Flag to stop re-entering code.
+  /// \brief Flag to stop re-entering code, while updating.
   bool m_IsUpdating;
+
+  /// \brief Flag to stop re-entering code, while trying to delete/clear the pipeline.
+  bool m_IsDeleting;
 
   /// \brief Additional flag to stop re-entering code, specifically to block
   /// slice change commands from the slice navigation controller.

@@ -88,7 +88,6 @@ protected slots:
 
 protected:
 
-  QWidget        *m_Parent;
   QWidget        *m_MainControl;
   QRadioButton   *m_UseMidasInitialisationRadioButton;
   QRadioButton   *m_UseLevelWindowRadioButton;

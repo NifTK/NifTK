@@ -33,6 +33,7 @@ namespace mitk {
 
 ctkPluginContext* uk_ac_ucl_cmic_midaseditor_Activator::s_PluginContext(NULL);
 
+//-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_midaseditor_Activator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASMultiViewEditor, context)
@@ -40,15 +41,21 @@ void uk_ac_ucl_cmic_midaseditor_Activator::start(ctkPluginContext* context)
   s_PluginContext = context;
 }
 
+
+//-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_midaseditor_Activator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
+
+//-----------------------------------------------------------------------------
 ctkPluginContext* uk_ac_ucl_cmic_midaseditor_Activator::GetPluginContext()
 {
   return s_PluginContext;
 }
-}
+
+
+} // end namespace
 
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midaseditor, mitk::uk_ac_ucl_cmic_midaseditor_Activator)

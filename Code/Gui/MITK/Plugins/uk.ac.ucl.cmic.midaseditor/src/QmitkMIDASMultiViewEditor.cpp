@@ -56,19 +56,25 @@ public:
   mitk::IRenderingManager* m_RenderingManagerInterface;
 };
 
+//-----------------------------------------------------------------------------
 struct QmitkMIDASMultiViewEditorPartListener : public berry::IPartListener
 {
   berryObjectMacro(QmitkMIDASMultiViewEditorPartListener)
 
+  //-----------------------------------------------------------------------------
   QmitkMIDASMultiViewEditorPartListener(QmitkMIDASMultiViewEditorPrivate* dd)
     : d(dd)
   {}
 
+
+  //-----------------------------------------------------------------------------
   Events::Types GetPartEventTypes() const
   {
     return Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
   }
 
+
+  //-----------------------------------------------------------------------------
   void PartClosed (berry::IWorkbenchPartReference::Pointer partRef)
   {
     if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
@@ -83,6 +89,8 @@ struct QmitkMIDASMultiViewEditorPartListener : public berry::IPartListener
     }
   }
 
+
+  //-----------------------------------------------------------------------------
   void PartHidden (berry::IWorkbenchPartReference::Pointer partRef)
   {
     if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
@@ -97,6 +105,8 @@ struct QmitkMIDASMultiViewEditorPartListener : public berry::IPartListener
     }
   }
 
+
+  //-----------------------------------------------------------------------------
   void PartVisible (berry::IWorkbenchPartReference::Pointer partRef)
   {
     if (partRef->GetId() == QmitkMIDASMultiViewEditor::EDITOR_ID)
@@ -117,6 +127,8 @@ private:
 
 };
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditorPrivate::QmitkMIDASMultiViewEditorPrivate()
 : m_ViewKeyPressStateMachine(0)
 , m_MIDASMultiViewWidget(0)
@@ -130,6 +142,8 @@ QmitkMIDASMultiViewEditorPrivate::QmitkMIDASMultiViewEditorPrivate()
   m_RenderingManagerInterface = mitk::MakeRenderingManagerInterface(m_RenderingManager);
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditorPrivate::~QmitkMIDASMultiViewEditorPrivate()
 {
   if (m_MidasMultiViewVisibilityManager != NULL)
@@ -143,16 +157,22 @@ QmitkMIDASMultiViewEditorPrivate::~QmitkMIDASMultiViewEditorPrivate()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditor::QmitkMIDASMultiViewEditor()
 : d(new QmitkMIDASMultiViewEditorPrivate)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditor::~QmitkMIDASMultiViewEditor()
 {
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
 {
   if (d->m_MIDASMultiViewWidget == NULL)
@@ -179,6 +199,9 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     bool show3DViewInOrthoView = prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false);
     bool show2DCursors = prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true);
     bool rememberViewSettingsPerOrientation = prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, true);
+    bool sliceSelectTracking = prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SLICE_SELECT_TRACKING, true);
+    bool magnificationSelectTracking = prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_MAGNIFICATION_SELECT_TRACKING, true);
+    bool timeSelectTracking = prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_TIME_SELECT_TRACKING, true);
 
     d->m_MidasMultiViewVisibilityManager = new QmitkMIDASMultiViewVisibilityManager(dataStorage);
     d->m_MidasMultiViewVisibilityManager->SetDefaultInterpolationType(defaultInterpolation);
@@ -204,6 +227,9 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     d->m_MIDASMultiViewWidget->SetShow3DViewInOrthoView(show3DViewInOrthoView);
     d->m_MIDASMultiViewWidget->SetShowMagnificationSlider(showMagnificationSlider);
     d->m_MIDASMultiViewWidget->SetRememberViewSettingsPerOrientation(rememberViewSettingsPerOrientation);
+    d->m_MIDASMultiViewWidget->SetSliceSelectTracking(sliceSelectTracking);
+    d->m_MIDASMultiViewWidget->SetMagnificationSelectTracking(magnificationSelectTracking);
+    d->m_MIDASMultiViewWidget->SetTimeSelectTracking(timeSelectTracking);
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
 
@@ -221,11 +247,15 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewWidget* QmitkMIDASMultiViewEditor::GetMIDASMultiViewWidget()
 {
   return d->m_MIDASMultiViewWidget;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditor::SetFocus()
 {
   if (d->m_MIDASMultiViewWidget != 0)
@@ -234,6 +264,8 @@ void QmitkMIDASMultiViewEditor::SetFocus()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
 {
   if (d->m_MIDASMultiViewWidget != NULL)
@@ -263,47 +295,67 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     d->m_MIDASMultiViewWidget->SetShow2DCursors(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true));
     d->m_MIDASMultiViewWidget->SetShow3DViewInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
     d->m_MIDASMultiViewWidget->SetRememberViewSettingsPerOrientation(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, true));
+    d->m_MIDASMultiViewWidget->SetSliceSelectTracking(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SLICE_SELECT_TRACKING, true));
+    d->m_MIDASMultiViewWidget->SetMagnificationSelectTracking(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_MAGNIFICATION_SELECT_TRACKING, true));
+    d->m_MIDASMultiViewWidget->SetTimeSelectTracking(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_TIME_SELECT_TRACKING, true));
   }
 }
 
-// -------------------  mitk::IRenderWindowPart  ----------------------
+//-----------------------------------------------------------------------------
+// -------------------  mitk::IRenderWindowPart  ------------------------------
+//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
 QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveQmitkRenderWindow() const
 {
   return d->m_MIDASMultiViewWidget->GetActiveRenderWindow();
 }
 
+
+//-----------------------------------------------------------------------------
 QHash<QString, QmitkRenderWindow *> QmitkMIDASMultiViewEditor::GetQmitkRenderWindows() const
 {
   return d->m_MIDASMultiViewWidget->GetRenderWindows();
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetQmitkRenderWindow(const QString &id) const
 {
   return d->m_MIDASMultiViewWidget->GetRenderWindow(id);
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::Point3D QmitkMIDASMultiViewEditor::GetSelectedPosition(const QString &id) const
 {
   return d->m_MIDASMultiViewWidget->GetSelectedPosition(id);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
 {
   return d->m_MIDASMultiViewWidget->SetSelectedPosition(pos, id);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditor::EnableDecorations(bool enable, const QStringList &decorations)
 {
   // Deliberately do nothing. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewEditor::IsDecorationEnabled(const QString &decoration) const
 {
   // Deliberately deny having any decorations. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
   return false;
 }
 
+
+//-----------------------------------------------------------------------------
 QStringList QmitkMIDASMultiViewEditor::GetDecorations() const
 {
   // Deliberately return nothing. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
@@ -311,40 +363,54 @@ QStringList QmitkMIDASMultiViewEditor::GetDecorations() const
   return decorations;
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::IRenderingManager* QmitkMIDASMultiViewEditor::GetRenderingManager() const
 {
   return d->m_RenderingManagerInterface;
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::SlicesRotator* QmitkMIDASMultiViewEditor::GetSlicesRotator() const
 {
   // Deliberately return nothing. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
   return NULL;
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::SlicesSwiveller* QmitkMIDASMultiViewEditor::GetSlicesSwiveller() const
 {
   // Deliberately return nothing. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
   return NULL;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditor::EnableSlicingPlanes(bool enable)
 {
   // Deliberately do nothing. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
   Q_UNUSED(enable);
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewEditor::IsSlicingPlanesEnabled() const
 {
   // Deliberately do nothing. ToDo - maybe get QmitkMIDASMultiViewWidget to support it.
   return false;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditor::EnableLinkedNavigation(bool enable)
 {
   d->m_MIDASMultiViewWidget->EnableLinkedNavigation(enable);
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_MIDASMultiViewWidget->IsLinkedNavigationEnabled();
