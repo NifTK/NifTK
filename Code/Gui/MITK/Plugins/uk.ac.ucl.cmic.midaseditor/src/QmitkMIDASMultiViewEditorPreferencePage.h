@@ -104,6 +104,15 @@ public:
   /// \brief Stores the preference name for whether we adopt MIDAS behaviour when switching orientation to revert to last remembered slice, timestep, magnification.
   static const std::string MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION;
 
+  /// \brief Stores the preference name for slice select tracking
+  static const std::string MIDAS_SLICE_SELECT_TRACKING;
+
+  /// \brief Stores the preference name for magnification select tracking
+  static const std::string MIDAS_MAGNIFICATION_SELECT_TRACKING;
+
+  /// \brief Stores the preference name for time select tracking
+  static const std::string MIDAS_TIME_SELECT_TRACKING;
+
 public slots:
 
   void OnBackgroundColourChanged();
@@ -129,6 +138,9 @@ private:
   QCheckBox   *m_Show2DCursorsCheckBox;
   QCheckBox   *m_RememberEachOrientationsViewSettings;
   QPushButton *m_BackgroundColourButton;
+  QCheckBox   *m_SliceSelectTracking;
+  QCheckBox   *m_MagnificationSelectTracking;
+  QCheckBox   *m_TimeSelectTracking;
 
   berry::IPreferences::Pointer m_MIDASMultiViewEditorPreferencesNode;
 };
