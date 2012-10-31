@@ -104,6 +104,13 @@ namespace mitk {
     MIDASDrawTool(); // purposely hidden
     virtual ~MIDASDrawTool(); // purposely hidden
 
+    /**
+    \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).
+
+    Derived tools should call their parents implementation.
+    */
+    virtual void Activated();
+
   private:
 
     template<typename TPixel, unsigned int VImageDimension>
