@@ -105,9 +105,7 @@ void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
   {
     QImage image = imageMsg->getQImage();
     m_PixmapLabel->setPixmap(QPixmap::fromImage(image));
-		igtl::Matrix4x4 matrix;
-		imageMsg->getMatrix(matrix);
-		lcdNumber->display(matrix[0][3]);
+		lcdNumber->display(this->GetQmitkIGIUltrasonixTool()->GetMotorPos());
   }
 }
 
@@ -115,7 +113,7 @@ void QmitkIGIUltrasonixToolGui::OnSaveImage(OIGTLImageMessage::Pointer imageMsg)
 {
   //Save the motor position matrix
 	igtl::Matrix4x4 Matrix;
-  imageMsg->getMatrix(Matrix);
+	this->GetQmitkIGIUltrasonixTool()->GetImageMatrix(Matrix);
 	QString filename = QObject::tr("%1/%2.motor_position")
 		.arg(lineEdit->text())
 		.arg(QString::number(imageMsg->getId()));

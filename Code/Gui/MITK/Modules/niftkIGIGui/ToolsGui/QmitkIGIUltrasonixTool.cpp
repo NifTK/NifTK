@@ -73,14 +73,17 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
 
   if (imageMsg.data() != NULL)
   {
-    emit UpdatePreviewImage(imageMsg);
 
     QImage image = imageMsg->getQImage();
     m_Filter->SetQImage(&image);
 		m_Filter->SetGeometryImage(m_Image);
     m_Filter->Update();
     m_Image = m_Filter->GetOutput();
+
+		imageMsg->getMatrix(m_ImageMatrix);
     m_ImageNode->SetData(m_Image);
+
+    emit UpdatePreviewImage(imageMsg);
 
     if (!this->GetDataStorage()->Exists(m_ImageNode))
     {
@@ -95,4 +98,15 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
 void QmitkIGIUltrasonixTool::SaveImage(QString filename)
 {
 	CommonFunctionality::SaveImage( m_Image, filename.toAscii() );
+}
+
+float QmitkIGIUltrasonixTool::GetMotorPos()
+{
+	return m_ImageMatrix[0][3];
+}
+void QmitkIGIUltrasonixTool::GetImageMatrix(igtl::Matrix4x4 &ImageMatrix)
+{
+	for ( int row = 0 ; row < 4 ; row ++)
+		for ( int col = 0 ; col < 4 ; col ++ )
+			ImageMatrix[row][col]=m_ImageMatrix[row][col];
 }
