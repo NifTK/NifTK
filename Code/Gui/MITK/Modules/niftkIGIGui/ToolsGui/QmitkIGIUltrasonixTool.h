@@ -45,7 +45,6 @@ public:
   itkNewMacro(QmitkIGIUltrasonixTool);
 
   static const std::string ULTRASONIX_TOOL_2D_IMAGE_NAME;
-	void SaveDataNode (QString filename);
 	void SaveImage (QString filename);
 
 public slots:
