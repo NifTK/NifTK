@@ -179,7 +179,6 @@ void QmitkIGITrackerToolGui::OnManageToolConnection(void)
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnAssocClicked(void)
 {
- std::cerr << "ToDo: Sometime QmitkIGITrackerToolGui::OnEditClicked" << std::endl;
  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
  if (tool != NULL)
  {
