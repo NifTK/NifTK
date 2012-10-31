@@ -43,6 +43,7 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
   m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
   m_ImageNode->SetVisibility(true);
   m_ImageNode->SetOpacity(1);
+  m_Image = mitk::Image::New();
 }
 
 
@@ -76,6 +77,7 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
 
     QImage image = imageMsg->getQImage();
     m_Filter->SetQImage(&image);
+		m_Filter->SetGeometryImage(m_Image);
     m_Filter->Update();
     m_Image = m_Filter->GetOutput();
     m_ImageNode->SetData(m_Image);
@@ -90,15 +92,7 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
   }
 }
 
-void QmitkIGIUltrasonixTool::SaveDataNode(QString filename)
-{
-	mitk::BaseData::Pointer data = m_ImageNode->GetData();
-	if ( data.IsNotNull() )
-		CommonFunctionality::SaveBaseData( data.GetPointer(), "/dev/shm/image.nii" );
-	else
-		qDebug() << "Image node is NULL";
-}
 void QmitkIGIUltrasonixTool::SaveImage(QString filename)
 {
-		CommonFunctionality::SaveImage( m_Image, filename.toAscii() );
+	CommonFunctionality::SaveImage( m_Image, filename.toAscii() );
 }
