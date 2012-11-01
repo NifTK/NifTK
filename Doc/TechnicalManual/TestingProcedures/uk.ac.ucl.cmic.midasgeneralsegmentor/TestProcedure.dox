@@ -5,7 +5,7 @@
 \section TestScriptMIDASGeneralSegmentation Basic Segmentation Test
 
 \li Read the Doxygen help page.
-\li Perform the morphological brain segmentation procedure described in \ref TestProcedureMIDASMorph checking that the volume of the brain is correct.
+\li Perform the morphological brain segmentation procedure described in \subpage TestProcedureMIDASMorph checking that the volume of the brain is correct.
 \li Make sure you are using the MIDAS "Drag and Drop Display" as your main editor window and not the MITK "Display".
 \li Open the "MIDAS Irregular Volume Editor" view. Window->Show View->MIDAS Irregular Volume Editor, or the big Yellow M icon.
 \li Select the brain segmentation image in the Datamanager that you have just created.

@@ -17,7 +17,6 @@ that we have checked it.
   <tr><td>Application NiftyView launches</td><td></td><td></td><td></td></tr>
   <tr><td>NiftyView help pages visible. (Help->Open Help Perspective)</td><td></td><td></td><td></td></tr>
   <tr><td>NiftyView context sensitive help available. Choose any view, hit F1, should launch help perspective</td><td></td><td></td><td></td></tr>
-  <tr><td>Each View has a Test Procedure</td><td></td><td></td><td></td></tr>
   <tr><td>Each View is consistently named in the Window->Show View menu</td><td></td><td></td><td></td></tr>
   <tr><td>Each View is consistently named in the preferences dialog</td><td></td><td></td><td></td></tr>
 </table>

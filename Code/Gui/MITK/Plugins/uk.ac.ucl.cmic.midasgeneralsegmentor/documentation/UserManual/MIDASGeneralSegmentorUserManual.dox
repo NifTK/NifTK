@@ -3,10 +3,218 @@
 
 \image html MIDASGeneralSegmentor.png "The Icon for MIDAS Irregular Volume Editor"
 
-\section Introduction
+\li \ref MIDASIrregIntro
+\li \ref MIDASIrregImportantNotes
+\li \ref MIDASIrregRegionGrowing
+\li \ref MIDASIrregAuxView
+\li \ref MIDASIrregSeedTool
+\li \ref MIDASIrregDrawTool
+\li \ref MIDASIrregPolyTool
+\li \ref MIDASIrregThresholdApply
+\li \ref MIDASIrregSeedPositioning
+\li \ref MIDASIrregNoThresholdingRegions
+\li \ref MIDASIrregChangeSlice
+\li \ref MIDASIrregPriorNext
+\li \ref MIDASIrregPropUpDown
+\li \ref MIDASIrregWipe
+\li \ref MIDASIrregOkResetCancel
+\li \ref MIDASIrregReferences
 
-\section Usage
+\addindex Seed Tool
+\addindex Draw Tool
+\addindex Poly Tool
+\addindex Region Growing
+\addindex Propagate Up/Down
+\addindex Wipe Up/Down
+\addindex Optimising Seed Position
 
-\section References
+\section MIDASIrregIntro Introduction
+
+This plugin provides the MIDAS Irregular Volume Editor, which is a general purpose tool
+for segmenting images. At the heart of the method, there is a region growing algorithm,
+but the additional of several tools such as the ability to automatically propagate segmentations
+forward/backward through slices, and to erase regions quickly over multiple slices make this plugin 
+very useful for a wide variety of tasks, and provides additional benefit over and above other similar editors.
+
+The MIDAS Irregular Volume Editor and the MIDAS Morphological Editor were developed at
+the <a href="http://www.ucl.ac.uk">University College London (UCL)</a>,
+<a href="http://dementia.ion.ucl.ac.uk">Dementia Research Centre</a>. The Morphological Editor
+provides a protocol specifically for brain segmentation from T1 images. The Irregular Volume Editor
+can then be used to post-process brain segmentations after the Morphological Editor, or can
+be used in it's own right, to segment any structure.  Typically the Irregular Volume Editor 
+is used to segment hippocampi, ventricles, caudate and thalamus, which are of particular
+interest in the study of various neuro-degenerative diseases.
+
+\section MIDASIrregImportantNotes Important Notes
+
+\li You will need a 3 button mouse, or 3 button mouse emulation.
+\li The MIDAS Irregular Volume Editor is designed to work with the MIDAS Drag and Drop Display.
+\li In contrast to the original MIDAS, the segmentation that is saved to the image will by default be outlined in
+green. However, in addition to this, on the currently selected slice, the outline is overlaid with orange contours.
+When these are manually edited, you will see the underlying current segmentation in green. The orange contours
+are not saved into the image, they are there for guidance, until they are "applied" to the current segmentation.
+
+\section MIDASIrregRegionGrowing Region Growing
+
+Region growing is based on 
+
+\li A starting position, called a "seed" is placed in the image and if this voxel satisfies inclusion criteria, it is added to the segmentation.
+\li The surrounding voxels, are checked and if they satisfy the same inclusion criteria, they are also added
+\li The process is repeated until no more voxels can be added.
+
+So, the interesting points are:
+
+\li In this case the surrounding voxels are in 2D the 4-connected neighbours, meaning the pixel above, below, left and right of the current voxel, so not going diagonally.
+\li The inclusion criteria: The output segmentation must be currently blank at the same location, the grey 
+value must be greater than or equal to the lower limit, less than or equal to the upper limit, not passing the 
+edge of the border of the image, and not passing any limiting contours such as the bounding limit of the brain,
+or any other guiding line that the user has placed.
+
+So, for this tool, the current region growing outline changes in real-time as the thresholds are changed.
+More seeds can be added, and the region growing simply grows out from all seeds simultaneously. See Figure 1.
+
+\image html RegionGrowingExample.png "Figure 1. A seed is placed (small red cross), and as thresholds are changed, the region is highlighted in blue."
+
+\section MIDASIrregAuxView Auxilliary View
+
+The MIDAS Irregular Volume Editor has a set of controls. Within these controls, is an additional 
+secondary view of the image. By default this secondary view shows one image plane. As you click on 
+image planes within the main window, this secondary view updates to show a diffent orientation.
+See Figure 2.
+
+\image html SecondaryView.png "Figure 2. If the main window is showing region growing in the coronal plane (Figure 1.), the secondary view will show a different plane."
+
+There would be no point simply showing the same slice and orientation. For example, if the main 
+window shows coronal, the secondary window will show axial. There is a "2 view" check box, which 
+enables this secondary view to show 2 image planes. So if the main window is on coronal, the 
+secondary view will respond by showing axial and sagittal. The secondary view responds to mouse interaction
+like the main MIDAS Drag and Drop Editor, but generally speaking it is for information purposes only.
+
+\section MIDASIrregSeedTool Seed Tool
+
+To start region growing, seeds must be placed.  There are 3 main tools in the tool box, which are mutually 
+exclusive. Activating a given tool will de-activate any current tool. The 3 tools are called the Seed Tool,
+Draw Tool and Poly Tool.  Tools are selected by pressing the appropriate button. All 3 tools can add seeds
+by right clicking on the current slice.  The Seed tool however has more options:
+
+\li Use the left button to click on a seed and select it, then holding the mouse down, drag the seed to a new location.
+\li Use the middle button to click near a seed, and the nearest seed (up to a limiting distance) will be erased. You can "hoover up" seeds 
+by holding the middle mouse button down, and moving it over many seeds.
+
+\section MIDASIrregDrawTool Draw Tool
+
+The Draw tool enables the user to place lines into the image. The lines are able to limit the region growing.
+Region growing will expand until it hits one of these lines. Many lines may be added. When the user changes slice
+or hits "clean", these additional lines become amalgamated into the current segmentation of the current slice, and
+so are erased. In contrast with other tools, lines are computed specifically to traverse round the edge of voxels.
+
+\li Use the left button to click and hold down and drag to draw lines. See Figure 3.
+\li Use the middle button to click and hold down and erase the orange contours. See Figure 4. 
+
+\image html DrawTool.png "Figure 3. The Draw Tool can be used to limit the region growing."
+
+\image html DrawToolErase.png "Figure 4. Following from Figure 3, the middle mouse button can be used to erase contours, and the region growing again updates accordingly."
+
+\section MIDASIrregPolyTool Poly Tool
+
+The Poly tool is used to create Poly Lines by clicking on specific points that are automatically joined up
+using straight lines. As with the draw tool, these lines are used to limit the current region growing, and
+are amalgamated into the current segmentation when the slice is saved in any way.
+
+\li Use the left button to click and denote specific points to form the poly line. See Figure 5.
+\li The poly line is rendered in yellow.
+\li Use the middle mouse button to select and drag the nearest point and move it. As the line is moving
+you will see the yellow line for the current position, and a green line to denote whence it came. 
+
+\image html PolyTool.png "Figure 5. The Poly Tool is used to create Poly Lines, i.e. connected points."
+
+\section MIDASIrregThresholdApply Applying The Threshold
+
+Once a region is correctly defined as the result of the region growing and setting appropriate boundaries,
+the current slice is applied by clicking "apply".  The blue region growing line turns orange on the
+currently selected slice, and the outline is stored in the segmented image. The thresholding controls
+are disabled.
+
+\section MIDASIrregSeedPositioning Seed Positioning
+
+When the threshold is "applied", the seed position will be optimised. This is so that when scrolling through slices,
+the minimum number of adjustments is necessary. For each disjoint region, there will be 1 seed placed as the largest
+minimum distance from the edge, searching in a horizontal and vertical fashion, not diagonally.
+
+\section MIDASIrregNoThresholdingRegions Creating Regions Without Thresholding
+
+Having now seen how region growing works, it is possible to work without region growing. However, a seed is still
+required.  If you draw round a region, and put a seed in, then this region will be stored when changing slice to the
+next or prior slice. If the slice has un-enclosed seeds, i.e. a seed that is not fully contained within a region,
+the slice will be silently wiped.
+
+\section MIDASIrregChangeSlice Changing Slice
+
+By changing slice, we refer to changing to the slice immediately before or after, either by scrolling the mouse wheel
+one click, forward ot back, or by using the A (forward), or Z (back) keys, or using the slider in the MIDAS Drag
+and Drop Display. Simply changing slice is equivalent to:
+
+\li If thresholding is on: do "apply", 
+
+\li If thresholding is off: If we have un-enclosed seeds, wipe slice silently, and move onto next slice. 
+Do region growing without thresholds, to save regions that have been manually drawn. Then process the seeds as in the 
+case where thresholding was on.
+  
+\li Then, if next slice is empty, take seeds on current slice and copy to next slice at corresponding position. 
+If next slice is not empty, take the seeds on the next slice, and optimise their position as described above.
+
+\section MIDASIrregPriorNext See Prior Or Next Slices
+
+The user can at any point click "see prior" or "see next" to see an outline of the previous or next slice
+projected onto the current slice. See Figure 6.
+
+\image html PriorNext.png "Figure 6. The see prior and see next options project the outline of the prior or next slice onto the current slice."
+
+\section MIDASIrregPropUpDown Region Propagation
+
+The propose of propagate Up/Down or 3D is to use region growing to carry a thresholded region forward/backward
+automatically. By Up or Down we mean:
+
+\li If the current slice is coronal: Up=anterior, Down=posterior
+\li If the current slice is axial: Up=superior, Down=inferior
+\li If the current slice is sagittal: Up=right, Down=left
+
+For propagate up:
+
+\li Propagate Up means: Take the seeds on the current slice, and apply 5D region growing from and including the 
+current slice, anterior/superior/right throughout the volume, and immediately "apply" the threshold to each slice.
+\li Propagate Down means: As Up, but moving posterior/inferior/left.
+\li Propagate 3D means: Do both Up and Down.
+
+In 2D, the region growing is 4-connected. So as you look at the slice, each pixel will grow to its neighbours
+immediately up, down, left and right of itself. i.e. 4 neighbours.  In a 3D region growing, we would normally
+use the 6 connected neighbours, (up, down, left, right, forward, back).  However, if we are propagating forward
+through the volume, then we never use the voxel backwards of the current one. Similarly, if we are propagating
+backwards, we never use the voxel forwards of the current one. Hence it should be considered 5D region growing. 
+ 
+\section MIDASIrregWipe Fast Wiping of Slices
+
+Having understood the explanation for propagating up or down, the wipe, wipe- and wipe+ buttons are obvious.
+
+\li wipe: clear the current slice
+\li wipe-: clear all slices down from the current, meaning posterior, inferior or left
+\li wipe+: clear all slices up from the current, meaning anterior, superior or right
+
+\section MIDASIrregOkResetCancel Ok, Reset, Cancel Buttons
+
+\li OK: Accept, and finish the current segmentation, destroying any internal reference data, and 
+ending up with the "finished product". You can always restart it later to continue editing.
+\li Reset: Clear, the current segmentation, which means go back to the beginning.
+\li Cancel: Destroy the current segmentation and all internal reference data.
+
+A special point of note: If you close the MIDAS Irregular Volume Editor without hitting OK, the result
+is equivalent to hitting Cancel, not OK.
+
+\section MIDASIrregReferences References
+
+[1] Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the 
+segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
+(53), 15-25, 1997. 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
 
 */
