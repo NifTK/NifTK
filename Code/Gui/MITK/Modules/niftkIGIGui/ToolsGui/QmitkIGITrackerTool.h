@@ -110,6 +110,13 @@ public:
    * \brief Retrieves / Creates tool, puts it into DataStorage, and returns pointer to the node.
    */
   mitk::DataNode* GetToolRepresentation(const QString name);
+	
+	/** 
+	 * \brief Creates a tool representation, currently a cone, but intent is to
+	 * make geometry representative of the object being tracked. ie ultrasound 
+	 * probe or laparoscope
+	 */
+	mitk::DataNode::Pointer CreateConeRepresentation( const char* label );
 
   /**
    * \brief If name does not end in ".rom", will add ".rom"

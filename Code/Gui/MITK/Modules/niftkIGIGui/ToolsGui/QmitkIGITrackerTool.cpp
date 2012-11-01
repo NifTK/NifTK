@@ -29,6 +29,10 @@
 
 #include "mitkIGITestDataUtils.h"
 
+#include <mitkCone.h>
+#include <vtkConeSource.h>
+
+
 NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 
 //-----------------------------------------------------------------------------
@@ -484,4 +488,35 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage::Pointer msg)
       qDebug() << "QmitkIGITrackerTool:" << message;
     }
   }
+}
+
+mitk::DataNode::Pointer QmitkIGITrackerTool::CreateConeRepresentation( const char* label )
+{
+
+  //new data
+  mitk::Cone::Pointer activeToolData = mitk::Cone::New();
+  vtkConeSource* vtkData = vtkConeSource::New();
+
+  vtkData->SetRadius(7.5);
+  vtkData->SetHeight(15.0);
+  vtkData->SetDirection(0,0,1);
+  //vtkData->SetDirection(m_DirectionOfProjectionVector[0],m_DirectionOfProjectionVector[1],m_DirectionOfProjectionVector[2]);
+  vtkData->SetCenter(0.0, 0.0, 7.5);
+  vtkData->SetResolution(20);
+  vtkData->CappingOn();
+  vtkData->Update();
+  activeToolData->SetVtkPolyData(vtkData->GetOutput());
+  vtkData->Delete();
+
+  //new node
+  mitk::DataNode::Pointer coneNode = mitk::DataNode::New();
+  coneNode->SetData(activeToolData);
+  coneNode->GetPropertyList()->SetProperty("name", mitk::StringProperty::New( label ));
+  coneNode->GetPropertyList()->SetProperty("layer", mitk::IntProperty::New(0));
+  coneNode->GetPropertyList()->SetProperty("visible", mitk::BoolProperty::New(true));
+  coneNode->SetColor(1.0,0.0,0.0);
+  coneNode->SetOpacity(0.85);
+  coneNode->Modified();
+
+  return coneNode;
 }
