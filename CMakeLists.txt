@@ -97,7 +97,7 @@ ENDFOREACH()
 
 OPTION(BUILD_SUPERBUILD "Build NIFTK and the projects it depends on via SuperBuild.cmake." ON)
 
-If(BUILD_SUPERBUILD)
+IF(BUILD_SUPERBUILD)
   PROJECT(NIFTK-SUPERBUILD)
 ELSE(BUILD_SUPERBUILD)
   PROJECT(NIFTK)
@@ -113,7 +113,6 @@ OPTION(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Cod
 OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
 OPTION(BUILD_GUI "Build GUI in NifTK/Code/Gui." OFF)
 OPTION(BUILD_IGI "Build CMIC IGI platform." OFF)
-OPTION(BUILD_MESHING "Build meshing?" OFF)
 OPTION(BUILD_NIFTYREG "Build NiftyReg." ON)
 OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
@@ -135,6 +134,18 @@ OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
 OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
 OPTION(NIFTK_LOCATION_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
+
+######################################################################
+# Meshing module-related checks and options
+######################################################################
+INCLUDE (CheckIncludeFiles)
+
+CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
+IF (NIFTK_MESHING_CAN_BUILD) 
+  OPTION(BUILD_MESHING "Build meshing?" OFF)
+ELSE (NIFTK_MESHING_CAN_BUILD) 
+  MESSAGE("Could not locate GNU MPFR headers, disabling meshing.")
+ENDIF (NIFTK_MESHING_CAN_BUILD) 
 
 ######################################################################
 # Variables that get compiled into C++ code. 
