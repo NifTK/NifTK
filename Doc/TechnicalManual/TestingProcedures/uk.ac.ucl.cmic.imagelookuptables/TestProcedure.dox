@@ -2,6 +2,22 @@
 
 \page TestProcedureImageLookupTables Image Lookup Tables View Test Procedure
 
-\li Read the Doxygen help page
+The Image Lookup Tables plugin provides the ability to assign a different colour map to each image.
+
+\section TestProcedureImageLookupTables Basic Image Lookup Tables View Test
+
+\li Read the Doxygen help page.
+\li Load Analyze image NifTKData/Input/volunteers/16856/16856-002-1.img.
+\li Make sure you are using the MIDAS "Drag and Drop Display" as your main editor window and not the MITK "Display".
+\li If you are using as your main editor window the MITK "Display", make sure that the image that you are changing with the lookup table is visible (checked) and selected in the Data Manager list.
+\li At the top of the Image Lookup Tables plugin, there is a drop down combo-box enabling the selection of a lookup table. Select a lookup table of the list (by default "NONE" is selected).
+\li Check that selected Lookup Table is immediately applied to the current image.
+\li Select "NONE" in the combo box and check that you are reverting to the default colour scheme.
+\li Move min, max, level and window sliders to the left and to the right and check that colours are immediately ajusted.
+\li Repeat with min, max, level and window spin boxes, and check that colours are immediately ajusted too.
+\li Try to write into spin box text box and press enter, and check that colours are immediately ajusted too.
+\li Open hide data limits menu. 
+\li Changes the minimum and maximum limits, then click on one slider, and check that colours are immediately ajusted.
+\li Click on the reset button to revert back to the minimum and maximum images values.
 
 */
