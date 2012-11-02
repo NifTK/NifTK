@@ -37,7 +37,7 @@ source _niftkCommon.sh
 
 # This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
 n3_options='-clobber -stop 0.000100 -fwhm 0.050000 -distance 150 -iterations 1000 -shrink 2'
-dir_output='noneck/' 
+dir_output='noneck/'
 unalias rm 2> /dev/null # don't ask about removing existing files
 
 # Directory configurations for change the default
@@ -178,11 +178,15 @@ function remove_neck() {
 # Param	    : $1 input image
 # Param	    : $2 output image
 # Param     : $3 patient name
+# Param     : $4 options for BET
+# Param     : $5 fractional intensity threshold
 function BETter() 
 {
 	local img=$1
 	local output_result=$2
 	local name=$3
+	local options=$4
+	local f=$5
 	
 	# Starting brain extraction process
 	if [[ ! -f "${output_result}"  ]] ; then
@@ -197,8 +201,7 @@ function BETter()
 		progress "0.6" "Calculating brain extraction"
 		
 		# Pospescu 2012 Neuroimage article suggests that best parameters could be -B -f 0.1, previously neck removal
-		# run bet "${img}_no_neck_n3" "${img}_brain" -m -s -f 0.1 -B >> ../report.siena
-		execute_command_or_else_stop "bet ${img}_no_neck_n3 ${img}_brain -m -s -f 0.1 -B" 
+		execute_command_or_else_stop "bet ${img}_no_neck_n3 ${img}_brain -m -s $f $options" 
 		
 		progress "0.9" "Copying results"
 		
@@ -256,12 +259,28 @@ cat <<EOF
 <executable>
    <category>MS Tools.Segmentation</category>
    <title>BET Brain segmentation improved</title>
-   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for BET mask calculation using Pospescu et al. Neuroimage 2012 brain extraction process and Boyes et al. Neuroimage 2008 normalization process.]]></description>
+   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for BET mask calculation using Pospescu et al. Neuroimage 2012 
+   brain extraction process and Boyes et al. Neuroimage 2008 normalization process.<br>
+   <ul>
+   <li><i>Input image</i>, selects the file that you would like to segment</li>
+   <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
+   <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
+   <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
+   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is in NIFTI format.</li>
+   </ul>
+   <br>
+   <p><h2>Recomendations:</h2></p>
+   <p>
+   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152.<br> 
+   Atlas head maks, mask and data files. For other data sources you would need to check it.<br>
+   Check that it exists an important overlapping between mask, headmask, head and input file.<br>
+   </p>
+   ]]></description>
    <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811912003552</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>
-   <parameters>
+   <parameters advanced="false">
       <label>Input and output images</label>
       <description>Input image to be segmented and the name of output image</description>
       <image fileExtensions="*.nii,*.nii.gz,*.img">
@@ -297,10 +316,45 @@ cat <<EOF
           <longflag>out</longflag>
 	  <description>Output image name</description>
 	  <label>Output image</label>
-	  <default>~/output.nii</default>
+	  <default>output.nii</default>
           <channel>output</channel>
       </image>
    </parameters>
+   <parameters advanced="true">
+    <label>Variations on default BET functionality</label>
+    <description>BET options</description>
+    <string-enumeration>
+      <name>BEToptions</name>
+      <longflag>bet</longflag>
+      <description><![CDATA[Variations on default BET functionality: 
+      B - bias field & neck cleanup, 
+      S - eye & optic nerve cleanup, 
+      R - robust brain centre estimation and 
+      Z - improve BET if FOV is very small in Z]]></description>
+      <label>BET options</label>
+      <default>B</default>
+      <element>B</element>
+      <element>S</element>
+      <element>R</element>
+      <element>Z</element>
+    </string-enumeration>
+    <float>
+      <name>FractionalIntensityThreshold</name>
+      <longflag>f</longflag>
+      <description><![CDATA[Fractional intensity threshold (0-1); 
+      default=0.1 for Pospescu et al. 2012 paper. 
+      In BET, 0.5 is the default value. 
+      Lower values than default give larger brain outlines; 
+      higher values lead to smaller brain outlines.]]></description>
+      <label>Fractional intensity threshold</label>
+      <default>0.1</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    </parameters>
 </executable>
 EOF
 exit 0
@@ -323,12 +377,14 @@ Mandatory Arguments:
   --headmask	: is the headmask atlas file in NIFTI format
   --mask	: is the mask atlas file in NIFTI format
   --atlas	: is the atlas data file in NIFTI format
+  --bet		: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default -B
+  --f		: fractional intensity threshold (0->1); by default 0.1.
 
 Recomendations:
 
 	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152 
 	Atlas head maks, mask and data files. For other data sources you would need to check it.
-	Check that there is an important overlapping between mask, headmask, head and input file.
+	Check that it exists an important overlapping between mask, headmask, head and input file.
 	
 EOF
 exit 127
@@ -363,6 +419,8 @@ function closeprogress() {
 
 # Program start
 num=0
+f="-f 0.1"
+options="-B"
 if [ $# -eq 0 ]; then
   Usage
 fi
@@ -400,6 +458,14 @@ do
 	HEAD_IMAGE=$2
 	shift 1
 	;;
+    --bet)
+	options="-$2"
+	shift 1
+	;;
+    --f)
+	f="-f $2"
+	shift 1
+	;;
     -*)
 	Usage
 	exitprog "Error: option $1 not recognised" 1
@@ -409,7 +475,7 @@ do
 done
 
 # Start of the main program
-openprogress "BETter Starts"
+openprogress "BETter Starts with options: ${options} ${f}"
 progress "0.04" "Checking programs"
 
 # Check that all programs exist
@@ -450,7 +516,7 @@ copyFileToDestination ${INPUT_IMAGE} ${dir_output} "input_image"
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Start process
-BETter "input_image" ${OUTPUT_IMAGE} ${patient} 
+BETter "input_image" ${OUTPUT_IMAGE} ${patient} ${options} ${f}
 
 # Delete temporary directory
 execute_command_or_else_stop "rm -f *.nii *.mnc *.txt" 
