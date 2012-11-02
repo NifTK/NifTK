@@ -45,7 +45,7 @@ dir_niftyreg=""
 mnidir=""
 n3dir=""
 
-# Function  : Clean temp directory
+# Function  : Clean temp directory 
 #
 function cleanup
 {
@@ -61,7 +61,7 @@ trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
 
 # Function  : Data normalization
 #
-# Param	    : $1 input image
+# Param	    : $1 input image 
 # Param     : $2 patient name
 function normalization() 
 {
@@ -185,23 +185,22 @@ function BETter()
 	local img=$1
 	local output_result=$2
 	local name=$3
-	local options=$4
-	local f=$5
+	local opt=$4
+	local frac=$5
 	
 	# Starting brain extraction process
 	if [[ ! -f "${output_result}"  ]] ; then
 		# First remove neck slices according to Popescu 2012 method
-		
 		remove_neck ${img} ${name}
 		progress "0.2" "Neck removed"
 
 		# Normalize intesity for image following from Boyes et al. Neuroimage 2008 page 1756
 		normalization ${img}_no_neck ${name}
 
-		progress "0.6" "Calculating brain extraction"
+		progress "0.6" "Calculating brain extraction: bet ${opt} -f ${frac}"
 		
 		# Pospescu 2012 Neuroimage article suggests that best parameters could be -B -f 0.1, previously neck removal
-		execute_command_or_else_stop "bet ${img}_no_neck_n3 ${img}_brain -m -s $f $options" 
+		execute_command_or_else_stop "bet ${img}_no_neck_n3 ${img}_brain -m -s ${opt} -f ${frac}" 
 		
 		progress "0.9" "Copying results"
 		
@@ -213,10 +212,7 @@ function BETter()
 		# Delete temp files
 		execute_command_or_else_stop "rm -f *.nii.gz"
 
-		# For security reasons ;) we copy geometry for align at the same direction the new image
-		#execute_command_or_else_stop "fslcpgeom ${img}.nii output.nii"
-		#execute_command_or_else_stop "fslcpgeom ${img}.nii output_mask.nii"
-		#execute_command_or_else_stop "fslcpgeom ${img}.nii output_skull.nii"
+		# Copy all the results
 		execute_command_or_else_stop "cp output.nii ${output_result}"
 		execute_command_or_else_stop "cp output_mask.nii ${output_result/%\.???/_mask.nii}"
 		execute_command_or_else_stop "cp output_skull.nii ${output_result/%\.???/_skull.nii}"
@@ -266,7 +262,13 @@ cat <<EOF
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
-   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is in NIFTI format.</li>
+   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is in NIFTI format. The output file is composed for three files:
+	<ul>
+	<li><i>output.nii</i>, it contains the segmented brain</li>
+	<li><i>output_mask.nii</i>, it correponds to the brain mask of the segmented brain</li>
+	<li><i>output_skull.nii</i>, it correponds to the brain skull of the segmented brain</li>
+	</ul>
+   </li>
    </ul>
    <br>
    <p><h2>Recomendations:</h2></p>
@@ -392,8 +394,6 @@ exit 127
 
 # Function  : this function output a log of the progress for Command Line Module plugin
 #
-# Param	    : $1 integer [0..100], it is the progression percentage
-# Param	    : $2 string, it is an information message
 function progress(){
 	echo "<filter-progress-text progress=\"$1\">$2</filter-progress-text>"  
 	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
@@ -401,7 +401,6 @@ function progress(){
 
 # Function  : this function open the log progress for Command Line Module plugin
 #
-# Param	    : $1 string, it is an information message, usually the program name
 function openprogress() {
 	echo "<filter-start>" 
 	echo "<filter-name>$1</filter-name>"
@@ -412,7 +411,6 @@ function openprogress() {
 
 # Function  : this function close the log progress for Command Line Module plugin
 #
-# Param	    : $1 string, it is an information message with name of output image
 function closeprogress() {
 	echo "<filter-result name=\"outputImageName\">$1</filter-result>"
 	echo "<filter-result name=\"exitStatusOutput\">Normal exit</filter-result>"
@@ -423,7 +421,7 @@ function closeprogress() {
 
 # Program start
 num=0
-f="-f 0.1"
+f="0.1"
 options="-B"
 if [ $# -eq 0 ]; then
   Usage
@@ -467,7 +465,7 @@ do
 	shift 1
 	;;
     --f)
-	f="-f $2"
+	f="$2"
 	shift 1
 	;;
     -*)
@@ -479,7 +477,7 @@ do
 done
 
 # Start of the main program
-openprogress "BETter Starts with options: ${options} ${f}"
+openprogress "BETter Starts with options: ${options} -f ${f}"
 progress "0.04" "Checking programs"
 
 # Check that all programs exist
