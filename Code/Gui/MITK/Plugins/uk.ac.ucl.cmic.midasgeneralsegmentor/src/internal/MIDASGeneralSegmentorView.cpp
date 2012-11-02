@@ -987,7 +987,7 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnToolSelected(int id)
 {
-  QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
+  //QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
 }
 
 
@@ -1327,7 +1327,7 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool justImage)
 
   workingNodes[0]->SetVisibility(!justImage); // segmentation image
   workingNodes[1]->SetVisibility(!justImage); // seeds
-  workingNodes[2]->SetVisibility(!justImage); // green/red contours from current segmentation
+  workingNodes[2]->SetVisibility(!justImage); // orange contours from current segmentation
   workingNodes[3]->SetVisibility(!justImage); // draw tool contours
   workingNodes[4]->SetVisibility(!justImage && this->m_GeneralControls->m_SeePriorCheckBox->isChecked()); // see prior
   workingNodes[5]->SetVisibility(!justImage && this->m_GeneralControls->m_SeeNextCheckBox->isChecked()); // see next
