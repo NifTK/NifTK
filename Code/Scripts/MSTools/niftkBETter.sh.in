@@ -392,6 +392,8 @@ exit 127
 
 # Function  : this function output a log of the progress for Command Line Module plugin
 #
+# Param	    : $1 integer [0..100], it is the progression percentage
+# Param	    : $2 string, it is an information message
 function progress(){
 	echo "<filter-progress-text progress=\"$1\">$2</filter-progress-text>"  
 	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
@@ -399,6 +401,7 @@ function progress(){
 
 # Function  : this function open the log progress for Command Line Module plugin
 #
+# Param	    : $1 string, it is an information message, usually the program name
 function openprogress() {
 	echo "<filter-start>" 
 	echo "<filter-name>$1</filter-name>"
@@ -409,6 +412,7 @@ function openprogress() {
 
 # Function  : this function close the log progress for Command Line Module plugin
 #
+# Param	    : $1 string, it is an information message with name of output image
 function closeprogress() {
 	echo "<filter-result name=\"outputImageName\">$1</filter-result>"
 	echo "<filter-result name=\"exitStatusOutput\">Normal exit</filter-result>"
