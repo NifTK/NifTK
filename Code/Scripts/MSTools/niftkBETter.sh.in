@@ -262,11 +262,11 @@ cat <<EOF
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
-   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is in NIFTI format. The output file is composed for three files:<br>
+   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is in NIFTI format. The output file is composed for three files:
 	<ul>
-	<li><i>output.nii</i>, it contains the brain segmented</li>
-	<li><i>output_mask.nii</i>, it correponds to the brain mask of this brain</li>
-	<li><i>output_skull.nii</i>, it correponds to the brain skull of this brain</li>
+	<li><i>output.nii</i>, it contains the segmented brain</li>
+	<li><i>output_mask.nii</i>, it correponds to the brain mask of the segmented brain</li>
+	<li><i>output_skull.nii</i>, it correponds to the brain skull of the segmented brain</li>
 	</ul>
    </li>
    </ul>
