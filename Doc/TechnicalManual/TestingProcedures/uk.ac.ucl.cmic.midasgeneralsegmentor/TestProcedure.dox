@@ -64,7 +64,7 @@ lines disappear, as they are converted to a "real" or "accepted" region (current
 \li Select "see prior" to see the outline of the previous slice.
 \li Select "see next" to see the outline of the next slice. See Figure 8.
 
-\image html TestProcedureCleaned.png "Figure 8. See Prior and See Next show the outline of the previous and next slice."
+\image html TestProcedurePriorNext.png "Figure 8. See Prior and See Next show the outline of the previous and next slice."
 
 \li Turn "see prior" and "see next" off again.
 \li Move to slice coronal 61 using the slider in the top control panel.
