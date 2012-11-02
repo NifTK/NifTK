@@ -51,6 +51,9 @@ protected:
   /// \brief Purposely hidden, destructor.
   ~MIDASViewKeyPressStateMachine(){}
 
+  /// \see mitk::StateMachine::CanHandleEvent
+  float CanHandleEvent(const StateEvent *) const;
+
   /// \brief Move in the anterior direction, simply passing method onto the MIDASViewKeyPressResponder
   bool MoveAnterior(Action*, const StateEvent*);
 
