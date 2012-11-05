@@ -389,7 +389,11 @@ int main( int argc, char *argv[] )
   // Generate the NifTK command line interface (CLI) xml code
 
   for ( int i=1; i<argc; i++ ) 
+<<<<<<< HEAD
     if ( (strcmp(argv[i], "--xml")==0) || (strcmp(argv[i], "-xml")==0) )
+=======
+    if(strcmp(argv[i], "--xml")==0)
+>>>>>>> 38beca49e1573d351f1ae181df2aeb987b234286
     {
       std::cout << xml_BreastMaskSegmentationFromMRI;
       return EXIT_SUCCESS;
@@ -442,6 +446,7 @@ int main( int argc, char *argv[] )
   // Read the input image
   // ~~~~~~~~~~~~~~~~~~~~
 
+<<<<<<< HEAD
   if ( fileInputStructural.length() == 0 ) 
   {
     std::cerr << "ERROR: An input structural MRI image must be specified"
@@ -449,6 +454,8 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
 
+=======
+>>>>>>> 38beca49e1573d351f1ae181df2aeb987b234286
   // Read the structural image
 
   imageReader->SetFileName( fileInputStructural.c_str() );

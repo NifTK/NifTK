@@ -6,7 +6,11 @@
  */
 
 
+<<<<<<< HEAD
 std::string xml_BreastMaskSegmentationFromMRI =
+=======
+char xml_BreastMaskSegmentationFromMRI[] =
+>>>>>>> 38beca49e1573d351f1ae181df2aeb987b234286
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 
   // Executable description
