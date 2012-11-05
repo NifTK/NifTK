@@ -460,6 +460,15 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
 
     this->WaitCursorOn();
 
+    // Override the base colour to be orange, and we revert this when OK pressed at the end.
+    mitk::Color tmpColor;
+    tmpColor[0] = 1.0;
+    tmpColor[1] = 0.65;
+    tmpColor[2] = 0.0;
+    mitk::ColorProperty::Pointer tmpColorProperty = mitk::ColorProperty::New(tmpColor);
+    newSegmentation->SetColor(tmpColor);
+    newSegmentation->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
+
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
     newSegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
@@ -484,8 +493,8 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetColor( 1.0, 0, 0 );
 
     // Create all the contours.
-    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 1,0.65,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 97);
-    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 1,0.65,0, mitk::MIDASTool::DRAW_CONTOURS_NAME, true, 98);
+    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 97);
+    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 0,1,0, mitk::MIDASTool::DRAW_CONTOURS_NAME, true, 98);
     mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, mitk::MIDASTool::NEXT_CONTOURS_NAME, false, 95);
     mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, mitk::MIDASTool::PRIOR_CONTOURS_NAME, false, 96);
 
@@ -544,6 +553,7 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->FocusOnCurrentWindow();
     this->OnFocusChanged();
     this->RequestRenderWindowUpdate();
+
     this->WaitCursorOff();
 
   } // end if we have a reference image
@@ -916,6 +926,12 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   this->UpdateSegmentationImageVisibility(true);
   this->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
+
+  // Set the colour to that which the user selected in the first place.
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
+  workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
+  workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
+
   this->RequestRenderWindowUpdate();
 }
 

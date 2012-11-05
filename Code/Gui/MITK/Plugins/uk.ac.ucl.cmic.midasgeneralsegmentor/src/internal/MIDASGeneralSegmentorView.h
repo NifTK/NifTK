@@ -87,6 +87,7 @@ class QGridLayout;
  *   <li>Items 1-6 are set up in the mitk::DataManager as hidden children of item 0.</li>
  *   <li>The segmentation is very specific to a given view, as for example the ContourSet in WorkingData items 2,3,4,5 are only generated for a single slice, corresponding to the currently selected render window.</li>
  *   <li>Region growing is 2D on the currently selected slice, except when doing propagate up or propagate down.</li>
+ *   <li>Apologies that this is rather a large monolithic class.</li>
  * </ul>
  * Additionally, significant bits of functionality include:
  *
