@@ -441,6 +441,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentation
             emptySegmentation = firstTool->CreateEmptySegmentationNode( referenceImage, dialog->GetSegmentationName().toStdString(), color);
             emptySegmentation->SetColor(color);
             emptySegmentation->SetProperty("binaryimage.selectedcolor", mitk::ColorProperty::New(color));
+            emptySegmentation->SetProperty("midas.tmp.selectedcolor", mitk::ColorProperty::New(color));
 
             if (emptySegmentation.IsNotNull())
             {
