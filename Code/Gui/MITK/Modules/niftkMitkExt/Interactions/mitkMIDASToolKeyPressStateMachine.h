@@ -51,6 +51,9 @@ protected:
   /// \brief Purposely hidden, destructor.
   ~MIDASToolKeyPressStateMachine(){}
 
+  /// \see mitk::StateMachine::CanHandleEvent
+  float CanHandleEvent(const StateEvent *) const;
+
   /// \see mitk::MIDASToolKeyPressResponder::SelectSeedTool()
   bool SelectSeedTool(Action*, const StateEvent*);
 

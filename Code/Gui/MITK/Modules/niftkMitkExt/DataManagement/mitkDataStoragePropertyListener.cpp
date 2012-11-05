@@ -46,6 +46,7 @@ DataStoragePropertyListener::DataStoragePropertyListener(const mitk::DataStorage
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::~DataStoragePropertyListener()
 {
+  this->Deactivate();
 }
 
 
@@ -60,8 +61,8 @@ void DataStoragePropertyListener::Activate(const mitk::DataStorage::Pointer data
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::Deactivate()
 {
-  mitk::DataStorageListener::Deactivate();
   this->RemoveAllFromObserverToPropertyMap();
+  mitk::DataStorageListener::Deactivate();
 }
 
 

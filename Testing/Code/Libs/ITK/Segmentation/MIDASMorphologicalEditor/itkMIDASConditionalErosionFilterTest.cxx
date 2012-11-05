@@ -36,11 +36,24 @@
  */
 int itkMIDASConditionalErosionFilterTest(int argc, char * argv[])
 {
+
+  if (argc != 4)
+  {
+    std::cerr << "Usage: itkMIDASConditionalErosionFilterTest numberErosions upperThreshold pixelsRemaining" << std::endl;
+    return EXIT_FAILURE;
+  }
+
   // Declare the types of the images
   const unsigned int Dimension = 2;
   typedef int PixelType;
   typedef itk::Image<PixelType, Dimension>                         ImageType;
   typedef itk::MIDASConditionalErosionFilter<ImageType, ImageType, ImageType> ConditionalErosionFilterType;
+
+  int numberOfErosions     = atoi(argv[1]);
+  PixelType upperThreshold = atoi(argv[2]);
+  int expectedRemaining    = atoi(argv[3]);
+
+  std::cerr << "Doing " << numberOfErosions << " erosions, with threshold=" << upperThreshold << ", expecting " << expectedRemaining << ", pixels remaining." << std::endl;
 
   // Create the first image.
   ImageType::Pointer inputImage  = ImageType::New();
@@ -133,10 +146,6 @@ int itkMIDASConditionalErosionFilterTest(int argc, char * argv[])
   ConditionalErosionFilterType::Pointer ConditionalErosionFilter = ConditionalErosionFilterType::New();
   ConditionalErosionFilter->SetGreyScaleImageInput(inputImage);
   ConditionalErosionFilter->SetBinaryImageInput(inputMask);
-
-  int numberOfErosions     = 2;
-  PixelType upperThreshold = 4;
-
   ConditionalErosionFilter->SetUpperThreshold(upperThreshold);
   ConditionalErosionFilter->SetNumberOfIterations(numberOfErosions);
   ConditionalErosionFilter->Update();
@@ -146,39 +155,23 @@ int itkMIDASConditionalErosionFilterTest(int argc, char * argv[])
   typedef itk::ImageRegionConstIterator<ImageType> OutputImageIterator;
   OutputImageIterator outputImageIter(outputImagePtr, outputImagePtr->GetLargestPossibleRegion());
 
-  std::vector<int> outValueVector;
-  outValueVector.reserve(25);
-  for(unsigned int i = 0; i < 25; i++)
-  {
-    outValueVector.push_back(0);
-  }
-
-  //TEST FOR DIFFERENT NUMBER OF EROSIONS
-  if(numberOfErosions == 1)
-  {
-    outValueVector[12] = 1;
-  }
-
-  unsigned int index   = 0;
-  bool bFilterStatus   = true;
+  int actualPixelsRemaining = 0;
 
   outputImageIter.GoToBegin();
   while(!outputImageIter.IsAtEnd())
   {
-    if(outputImageIter.Get() != outValueVector[index])
+    if(outputImageIter.Get() > 0)
     {
-      bFilterStatus = false;
-      break;
+      actualPixelsRemaining++;
     }
     ++outputImageIter;
-    ++index;
   }
 
-  if(bFilterStatus)
-    return EXIT_SUCCESS;
-  else
+  if (actualPixelsRemaining != expectedRemaining)
+  {
+    std::cerr << "Expected:" << expectedRemaining << ", but got:" << actualPixelsRemaining << std::endl;
     return EXIT_FAILURE;
+  }
 
-  return EXIT_FAILURE;
-
+  return EXIT_SUCCESS;
 }

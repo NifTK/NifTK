@@ -155,7 +155,7 @@ ITKImagesHaveEqualIntensities(
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
   typename ImageToItkType::Pointer itkImage2 = ImageToItkType::New();
-  itkImage2->SetInput(image2);
+  itkImage2->SetInput(const_cast<mitk::Image*>(image2));
   itkImage2->Update();
 
   typename ImageType::ConstPointer im1 = itkImage;
@@ -227,7 +227,7 @@ ITKImagesHaveSameSpatialExtent(
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
   typename ImageToItkType::Pointer itkImage2 = ImageToItkType::New();
-  itkImage2->SetInput(image2);
+  itkImage2->SetInput(const_cast<mitk::Image*>(image2));
   itkImage2->Update();
 
   typename ImageType::ConstPointer im1 = itkImage;

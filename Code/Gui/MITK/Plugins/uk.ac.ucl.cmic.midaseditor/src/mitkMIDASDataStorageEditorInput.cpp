@@ -30,30 +30,41 @@
 namespace mitk
 {
 
+//-----------------------------------------------------------------------------
 MIDASDataStorageEditorInput::MIDASDataStorageEditorInput()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASDataStorageEditorInput::MIDASDataStorageEditorInput(IDataStorageReference::Pointer ref)
 {
   m_DataStorageRef = ref;
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASDataStorageEditorInput::Exists() const
 {
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string MIDASDataStorageEditorInput::GetName() const
 {
   return "MIDAS DataStorage Scene";
 }
 
+
+//-----------------------------------------------------------------------------
 std::string MIDASDataStorageEditorInput::GetToolTipText() const
 {
   return "";
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASDataStorageEditorInput::operator==(const berry::Object* o) const
 {
   if (const MIDASDataStorageEditorInput* input = dynamic_cast<const MIDASDataStorageEditorInput*>(o))
@@ -62,8 +73,9 @@ bool MIDASDataStorageEditorInput::operator==(const berry::Object* o) const
   return false;
 }
 
-IDataStorageReference::Pointer
-MIDASDataStorageEditorInput::GetDataStorageReference()
+
+//-----------------------------------------------------------------------------
+IDataStorageReference::Pointer MIDASDataStorageEditorInput::GetDataStorageReference()
 {
   if (m_DataStorageRef.IsNull())
   {
@@ -76,4 +88,4 @@ MIDASDataStorageEditorInput::GetDataStorageReference()
   return m_DataStorageRef;
 }
 
-}
+} // end namespace

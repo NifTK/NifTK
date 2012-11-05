@@ -53,6 +53,15 @@ public:
   /// \brief Calls setEnabled(enabled) on all contained widgets.
   void SetEnabled(bool enabled);
 
+  /// \brief Set whether the slice selection ctkSlidersWidget is tracking.
+  void SetSliceTracking(bool isTracking);
+
+  /// \brief Set whether the magnification selection ctkSlidersWidget is tracking.
+  void SetMagnificationTracking(bool isTracking);
+
+  /// \brief Set whether the time selection ctkSlidersWidget is tracking.
+  void SetTimeTracking(bool isTracking);
+
 signals:
 
 protected slots:

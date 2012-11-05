@@ -24,16 +24,21 @@
 
 #include "QmitkMIDASSlidersWidget.h"
 
+//-----------------------------------------------------------------------------
 QmitkMIDASSlidersWidget::QmitkMIDASSlidersWidget(QWidget *parent)
 {
   this->setupUi(this);
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASSlidersWidget::~QmitkMIDASSlidersWidget()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
 {
   Ui_QmitkMIDASSlidersWidget::setupUi(parent);
@@ -48,6 +53,8 @@ void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
   m_TimeSelectionWidget->setSingleStep(1);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSlidersWidget::SetBlockSignals(bool block)
 {
   m_MagnificationFactorWidget->blockSignals(block);
@@ -55,9 +62,32 @@ void QmitkMIDASSlidersWidget::SetBlockSignals(bool block)
   m_TimeSelectionWidget->blockSignals(block);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASSlidersWidget::SetEnabled(bool enabled)
 {
   m_MagnificationFactorWidget->setEnabled(enabled);
   m_SliceSelectionWidget->setEnabled(enabled);
   m_TimeSelectionWidget->setEnabled(enabled);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSlidersWidget::SetSliceTracking(bool isTracking)
+{
+  m_SliceSelectionWidget->setTracking(isTracking);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSlidersWidget::SetMagnificationTracking(bool isTracking)
+{
+  m_MagnificationFactorWidget->setTracking(isTracking);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSlidersWidget::SetTimeTracking(bool isTracking)
+{
+  m_TimeSelectionWidget->setTracking(isTracking);
 }

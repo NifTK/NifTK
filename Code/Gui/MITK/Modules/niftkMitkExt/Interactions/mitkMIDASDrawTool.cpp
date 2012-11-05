@@ -48,7 +48,7 @@ namespace mitk{
 
 //-----------------------------------------------------------------------------
 mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
-, m_CursorSize(15)
+, m_CursorSize(1)
 , m_Interface(NULL)
 {
   // great magic numbers, connecting interactor straight to method calls.
@@ -594,4 +594,12 @@ void mitk::MIDASDrawTool::ExecuteOperation(Operation* operation)
 
   // Make sure all views everywhere get updated.
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASDrawTool::Activated()
+{
+  mitk::MIDASTool::Activated();
+  CursorSizeChanged.Send(m_CursorSize);
 }

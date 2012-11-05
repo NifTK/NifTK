@@ -263,6 +263,7 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
       || name.find(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME) != std::string::npos
       || name.find(mitk::MIDASTool::PRIOR_CONTOURS_NAME) != std::string::npos
       || name.find(mitk::MIDASTool::NEXT_CONTOURS_NAME) != std::string::npos
+      || name.find(mitk::MIDASTool::DRAW_CONTOURS_NAME) != std::string::npos
       || name.find(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS) != std::string::npos
       || name.find(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS) != std::string::npos
       || name.find(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS) != std::string::npos

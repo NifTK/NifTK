@@ -29,16 +29,16 @@ INCLUDE(mitkFunctionGetGccVersion)
 INCLUDE(mitkFunctionGetVersion)
 
 # Retrieve some software versions
-mitkFunctionGetVersion(${MITK_SOURCE_DIR} MITK)
-
 mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK)
+MESSAGE("NIFTK version=${NIFTK_REVISION_ID}")
 
 IF(BUILD_GUI)
   MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-  
-  mitkFunctionGetVersion(${CTK_SOURCE_DIR} CTK) # We should always build off a hashtag, so this should match that in CTK.cmake
-  MESSAGE("CTK version=${CTK_REVISION_ID}")
+  MESSAGE("CTK version=${NIFTK_VERSION_CTK}")
 ENDIF()
+IF(BUILD_IGI)
+  MESSAGE("NiftyLink version=${NIFTK_VERSION_NIFTYLINK}")
+ENDIF(BUILD_IGI)
 
 # Print out other versions.
 MESSAGE("BOOST version=${NIFTK_VERSION_BOOST}")                 
@@ -46,14 +46,7 @@ MESSAGE("GDCM version=${NIFTK_VERSION_GDCM}")
 MESSAGE("DCMTK version=${NIFTK_VERSION_DCMTK}")
 MESSAGE("ITK version=${NIFTK_VERSION_ITK}") 
 MESSAGE("VTK version=${NIFTK_VERSION_VTK}")                     
-MESSAGE("MITK version=${MITK_REVISION_ID}")
-
-IF(BUILD_IGI)
-  mitkFunctionGetVersion(${NiftyLink_SOURCE_DIR} NIFTYLINK)
-  MESSAGE("NiftyLink version=${NIFTYLINK_REVISION_ID}")
-ENDIF(BUILD_IGI)
-
-MESSAGE("NIFTK version=${NIFTK_REVISION_ID}")
+MESSAGE("MITK version=${NIFTK_VERSION_MITK}")
 
 # MinGW does not export all symbols automatically, so no need to set flags
 IF(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)

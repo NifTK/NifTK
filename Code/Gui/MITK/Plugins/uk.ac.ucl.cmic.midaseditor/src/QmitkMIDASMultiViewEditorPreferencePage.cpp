@@ -48,7 +48,11 @@ const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS("midas show 2D cursors");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER("midas show magnification slider");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION("midas remember each orientations view settings");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SLICE_SELECT_TRACKING("midas slice select tracking");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_MAGNIFICATION_SELECT_TRACKING("midas magnification select tracking");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_TIME_SELECT_TRACKING("midas time select tracking");
 
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage()
 : m_MainControl(0)
 , m_DefaultNumberOfRowsSpinBox(NULL)
@@ -63,21 +67,28 @@ QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage
 , m_Show2DCursorsCheckBox(NULL)
 , m_RememberEachOrientationsViewSettings(NULL)
 , m_BackgroundColourButton(NULL)
+, m_SliceSelectTracking(NULL)
+, m_MagnificationSelectTracking(NULL)
+, m_TimeSelectTracking(NULL)
 {
-
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage(const QmitkMIDASMultiViewEditorPreferencePage& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditorPreferencePage::Init(berry::IWorkbench::Pointer )
 {
-
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService::Pointer prefService
@@ -139,6 +150,15 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_Show2DCursorsCheckBox = new QCheckBox(parent);
   formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
 
+  m_SliceSelectTracking = new QCheckBox(parent);
+  formLayout->addRow("slice select tracking", m_SliceSelectTracking);
+
+  m_MagnificationSelectTracking = new QCheckBox(parent);
+  formLayout->addRow("magnification select tracking", m_MagnificationSelectTracking);
+
+  m_TimeSelectTracking = new QCheckBox(parent);
+  formLayout->addRow("time select tracking", m_TimeSelectTracking);
+
   m_RememberEachOrientationsViewSettings = new QCheckBox(parent);
   formLayout->addRow("remember each orientations view settings", m_RememberEachOrientationsViewSettings);
 
@@ -168,11 +188,15 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   this->Update();
 }
 
+
+//-----------------------------------------------------------------------------
 QWidget* QmitkMIDASMultiViewEditorPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewEditorPreferencePage::PerformOk()
 {
   m_MIDASMultiViewEditorPreferencesNode->Put(MIDAS_BACKGROUND_COLOUR_STYLESHEET, m_BackgroundColorStyleSheet.toStdString());
@@ -188,14 +212,20 @@ bool QmitkMIDASMultiViewEditorPreferencePage::PerformOk()
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, m_RememberEachOrientationsViewSettings->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SLICE_SELECT_TRACKING, m_SliceSelectTracking->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_MAGNIFICATION_SELECT_TRACKING, m_MagnificationSelectTracking->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_TIME_SELECT_TRACKING, m_TimeSelectTracking->isChecked());
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditorPreferencePage::PerformCancel()
 {
-
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditorPreferencePage::Update()
 {
   m_BackgroundColorStyleSheet = QString::fromStdString(m_MIDASMultiViewEditorPreferencesNode->Get(MIDAS_BACKGROUND_COLOUR_STYLESHEET, ""));
@@ -221,8 +251,13 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
   m_Show2DCursorsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_2D_CURSORS, true));
   m_ShowMagnificationSliderCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, true));
   m_RememberEachOrientationsViewSettings->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, true));
+  m_SliceSelectTracking->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SLICE_SELECT_TRACKING, true));
+  m_MagnificationSelectTracking->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_MAGNIFICATION_SELECT_TRACKING, true));
+  m_TimeSelectTracking->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_TIME_SELECT_TRACKING, true));
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditorPreferencePage::OnBackgroundColourChanged()
 {
   QColor colour = QColorDialog::getColor();
@@ -248,6 +283,8 @@ void QmitkMIDASMultiViewEditorPreferencePage::OnBackgroundColourChanged()
   }
  }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditorPreferencePage::OnResetBackgroundColour()
 {
   m_BackgroundColorStyleSheet = "background-color: rgb(0, 0, 0)";
@@ -255,6 +292,8 @@ void QmitkMIDASMultiViewEditorPreferencePage::OnResetBackgroundColour()
   m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewEditorPreferencePage::OnResetMIDASBackgroundColour()
 {
   m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS off-white colour.
