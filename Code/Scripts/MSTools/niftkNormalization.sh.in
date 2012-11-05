@@ -35,7 +35,7 @@ source _niftkCommon.sh
 
 # This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
 n3_options='-clobber -stop 0.000100 -fwhm 0.050000 -distance 150 -iterations 1000 -shrink 2'
-dir_output='norm_n3/' 
+dir_output='norm_n3/'
 unalias rm 2> /dev/null # don't ask about removing existing files
 
 # Directory configurations for change the default
@@ -171,7 +171,21 @@ cat <<EOF
 <executable>
    <category>MS Tools.Normalization</category>
    <title>N3 Data Normalization</title>
-   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for doing Boyes et al. Neuroimage 2008 normalization process.]]></description>
+   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for doing Boyes et al. Neuroimage 2008 normalization process.<br>
+   <ul>
+   <li><i>Input image</i>, selects the file that you would like to normalize</li>
+   <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
+   <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
+   <li><i>Output image</i>, select the name and the directory of the output file where the normalized image will be recorded. The output file is in NIFTI format.</li>
+   </ul>
+   <br>
+   <p><h2>Recomendations:</h2></p>
+   <p>
+   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152.<br> 
+   Atlas head maks, mask and data files. For other data sources you would need to check it.<br>
+   Check that it exists an important overlapping between mask, headmask, head and input file.<br>
+   </p>
+   ]]></description>
    <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811907009494</documentation-url>
    <license>BSD</license>
@@ -205,6 +219,7 @@ cat <<EOF
           <longflag>out</longflag>
 	  <description>Output image name</description>
 	  <label>Output image</label>
+	  <default>output.nii</default>
           <channel>output</channel>
       </image>
    </parameters>
@@ -233,7 +248,7 @@ Recomendations:
 
 	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152 
 	Atlas head maks, mask and data files. For other data sources you would need to check it.
-	Check that there is an important overlapping between mask, headmask, head and input file.
+	Check it exists an important overlapping between mask, headmask, head and input file.
 
 	
 EOF
@@ -242,6 +257,8 @@ exit 127
 
 # Function  : this function output a log of the progress for Command Line Module plugin
 #
+# Param	    : $1 integer [0..100], it is the progression percentage
+# Param	    : $2 string, it is an information message
 function progress(){
 	echo "<filter-progress-text progress=\"$1\">$2</filter-progress-text>"  
 	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
@@ -249,6 +266,7 @@ function progress(){
 
 # Function  : this function open the log progress for Command Line Module plugin
 #
+# Param	    : $1 string, it is an information message, usually the program name
 function openprogress() {
 	echo "<filter-start>" 
 	echo "<filter-name>$1</filter-name>"
@@ -259,6 +277,7 @@ function openprogress() {
 
 # Function  : this function close the log progress for Command Line Module plugin
 #
+# Param	    : $1 string, it is an information message with name of output image
 function closeprogress() {
 	echo "<filter-result name=\"outputImageName\">$1</filter-result>"
 	echo "<filter-result name=\"exitStatusOutput\">Normal exit</filter-result>"
