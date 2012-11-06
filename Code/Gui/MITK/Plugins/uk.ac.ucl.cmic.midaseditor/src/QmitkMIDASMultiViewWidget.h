@@ -139,6 +139,15 @@ public:
   /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch orientation between axial, coronal, sagittal.
   void SetRememberViewSettingsPerOrientation(bool remember);
 
+  /// \brief Sets the slice select slider to be tracking.
+  void SetSliceSelectTracking(bool isTracking);
+
+  /// \brief Sets the magnification select slider to be tracking.
+  void SetMagnificationSelectTracking(bool isTracking);
+
+  /// \brief Sets the time select slider to be tracking.
+  void SetTimeSelectTracking(bool isTracking);
+
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes time step.
   void SetSelectedTimeStep(int timeStep);
 

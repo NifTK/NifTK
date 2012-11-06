@@ -23,17 +23,20 @@
  ============================================================================*/
 
 #include "QmitkThumbnailRenderWindow.h"
+#include <QtGui>
+
+#include <mitkGlobalInteraction.h>
+#include <mitkFocusManager.h>
+#include <mitkDataStorage.h>
+#include <mitkDisplayGeometry.h>
+#include <itkCommand.h>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+#include <vtkCubeSource.h>
+
 #include "QmitkMouseEventEater.h"
 #include "QmitkWheelEventEater.h"
-#include <QtGui>
-#include "mitkGlobalInteraction.h"
-#include "mitkFocusManager.h"
-#include "mitkDataStorage.h"
-#include "mitkDisplayGeometry.h"
-#include "itkCommand.h"
-#include "vtkPolyData.h"
-#include "vtkSmartPointer.h"
-#include "vtkCubeSource.h"
+#include "mitkDataStorageUtils.h"
 
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
@@ -352,7 +355,11 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
 void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is created in NodeAdded()
-  if(!m_InDataStorageChanged && node != m_BoundingBoxNode)
+  if(!m_InDataStorageChanged
+      && node != NULL
+      && !mitk::IsNodeAHelperObject(node)
+      && node != m_BoundingBoxNode
+      )
   {
     m_InDataStorageChanged = true;
     this->NodeAdded(node);
@@ -376,7 +383,11 @@ void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
 void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is created in NodeAdded()
-  if(!m_InDataStorageChanged && node != m_BoundingBoxNode)
+  if(!m_InDataStorageChanged
+      && node != NULL
+      && !mitk::IsNodeAHelperObject(node)
+      && node != m_BoundingBoxNode
+      )
   {
     m_InDataStorageChanged = true;
     this->NodeChanged(node);

@@ -109,6 +109,24 @@ namespace mitk
 
 
   //-----------------------------------------------------------------------------
+  bool IsNodeAHelperObject(const mitk::DataNode* node)
+  {
+    bool result = false;
+
+    if (node != NULL)
+    {
+      bool isHelper(false);
+      if (node->GetBoolProperty("helper object", isHelper) && isHelper)
+      {
+        result = true;
+      }
+    }
+
+    return result;
+  }
+
+
+  //-----------------------------------------------------------------------------
   bool IsNodeAGreyScaleImage(const mitk::DataNode::Pointer node)
   {
     bool result = false;

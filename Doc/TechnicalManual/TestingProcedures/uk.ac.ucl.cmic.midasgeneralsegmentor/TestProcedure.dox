@@ -1,0 +1,120 @@
+/**
+
+\page TestProcedureGeneralSegmentor MIDAS Irregular Volume Editor View Test Procedure
+
+\section TestScriptMIDASGeneralSegmentation Basic Segmentation Test
+
+\li Read the Doxygen help page.
+\li Perform the morphological brain segmentation procedure described in \subpage TestProcedureMIDASMorph checking that the volume of the brain is correct.
+\li Make sure you are using the MIDAS "Drag and Drop Display" as your main editor window and not the MITK "Display".
+\li Open the "MIDAS Irregular Volume Editor" view. Window->Show View->MIDAS Irregular Volume Editor, or the big Yellow M icon.
+\li Select the brain segmentation image in the Datamanager that you have just created.
+\li Click "start/re-start" segmentation on the view. Check the currently focussed window has orange contours, and that crosses appear on each disjoint 4-connected region on the current slice.
+\li Move to slice 119, (or stay at 119 if you finished the MIDAS Morphological Editor on slice 119). There should be 1 red cross (a seed). See Figure 1.
+
+\image html TestProcedureSlice119Start.png "Figure 1. The starting point for the segmentation, slice 119, 1 single red cross (a seed)."
+
+\li Click the "threshold" checkbox, making sure the threshold control panel below becomes enabled.
+\li Set the upper threshold to the max (325) and the lower threshold to 71, and you should see a blue outline. See Figure 2. The region growing outline should change as you move the sliders.
+
+\image html TestProcedureRegionGrowingOutline.png "Figure 2. Lower threshold of 71, Upper Threshold of max=325 gives the region growing outline."
+
+\li Move the lower threshold down to 51, and the region growing should expand until it matches the orange brain segmentation outline.
+\li Check that when the blue and orange line meets, the blue line should disappear as it sits UNDER the orange line. This is expected. 
+\li Select the "Poly" tool. Verify that while a tool is on, the left-mouse-click slice navigation is off. i.e. the cross
+hairs cannot be moved.
+\li Right click to add a seed in the right temporal lobe, which should create a region outlined in blue as the result of
+a region growing algorithm. See Figure 3.
+
+\image html TestProcedurePolyToolSeedRightTemporalLobe.png "Figure 3. With thresholding on, adding a seed causes immediate region growing."
+
+\li Use Poly tool to draw round the top right edge of the region, selecting at least 3 points with the left mouse button, checking the line
+is displayed in yellow. See Figure 4.
+
+\image html TestProcedurePolyToolLines.png "Figure 4. Using Poly Tool to draw round the edge of the region causes the region growing to be blocked."
+
+\li Click the Undo button to remove the most recent point.
+\li Click the Redo button to re-add the most recent point.
+\li Use the middle mouse button to click on a point in the middle of the Poly line, and drag the middle point to some new location.
+Check that as the yellow line moves, a green line is indicating it's previous position for reference sake.
+\li Return the yellow line to the correct place and release the middle mouse button.
+\li Move to slice 120 by using the mouse wheel to scroll forward.
+\li Move to slice 119 by using the mouse wheel to scroll backwards, and check that the blue region is now accepted and is orange. See Figure 5.
+
+\image html TestProcedurePolyToolRegionAccepted.png "Figure 5. When changing slice, any thresholded region is accepted."
+
+\li Move to slice 120 using the A button.
+\li Move to slice 119 using the Z button.
+\li Return to slice 120 using the A button.
+\li Select Draw tool.
+\li Add a seed to the right temporal lobe, and use the draw tool to add a line at the top of the region to tidy up the edge.
+\li Select seed tool, and use the left mouse button to click on the seed from the single pixel region next 
+to the left temporal lobe and drag it about a centimetre to the left into air-space. See Figure 6.
+
+\image html TestProcedureDrawToolRegionPlusArrow.png "Figure 6. Add seed with Draw Tool, and tidy top of region before moving the seed contained within a single voxel 1cm to the left onto a black background."
+
+\li Click on "Clean" and check that the single voxel region disappears, and the number of seeds remains the same, 
+and the lines drawn by the "Draw" tool are the minimum length necessary, with any extraneous bits removed.
+
+\image html TestProcedureCleaned.png "Figure 7. Cleaning removed extraneous contours, and regions without seeds."
+
+\li Click "apply" to apply the threshold region and check that the threshold checkbox is deselected, the threshold controls disabled and the region growing
+lines disappear, as they are converted to a "real" or "accepted" region (currently orange).
+\li Turn "threshold" mode back on.
+\li Select "see prior" to see the outline of the previous slice.
+\li Select "see next" to see the outline of the next slice. See Figure 8.
+
+\image html TestProcedurePriorNext.png "Figure 8. See Prior and See Next show the outline of the previous and next slice."
+
+\li Turn "see prior" and "see next" off again.
+\li Move to slice coronal 61 using the slider in the top control panel.
+\li Select the draw tool, and set the eraser size to 5.
+\li Use the middle mouse button to click to erase the region of interest boundary, on the bottom right of the cerebellum where
+the boundary is not filled. See Figure 9.
+
+\image html TestProcedureDrawToolErase.png "Figure 9. The middle mouse button erases the current contour (orange), thresholding is on, so the region growing tool expands the region, and the green outline is the previous location of the region boundary before we erased the orange edges."
+
+\li Move forward (A), then back (Z) to make sure the slice has been saved.
+\li Move to coronal slice 14 using the slider in the top control panel.
+\li Click "wipe-" and click "OK" in the pop-up warning window.
+\li Check that all slices down (posterior in coronal orientation) have been erased. This should be visible in the 
+MIDAS Irregular Volume Editor helper view. See Figure 10.
+
+\image html TestProcedureWipeMinus.png "Figure 10. Erasing all slices down (posterior) can be seen in the small helper view."
+
+\li Click "prop down" and click "OK" in the pop-up warning window.
+\li Check the thresholded region is propagated down (posterior in coronal orientation) and appears in green in the small helper view.
+\li Move to coronal slice 148 using the slider in the top control panel.
+\li Click "wipe+" and then "OK" to confirm.
+\li Move to slice 149, checking region appears in blue.
+\li Click "prop up" and click on "OK" in the pop-up warning window
+\li Check the region propagated up (anterior in coronal view)
+\li Click OK to accept and finish the segmentation
+\li Open the Image Statistics View. Window->Show View->Image Statistics
+\li In Datamanager, click on the image, and then the segmentation in that order.
+\li In the Image Statistics View click "update"
+\li Check that the volume is 1179.13 (ml) +/- 0.25
+\li Check that the mean intensity value is 87.8 +/- 0.1
+
+\image html TestProcedureResult.png "Figure 11. In Dementia Research Centre document, the volume should be 1179.13 (ml) +/- 0.25, and the mean intensity = 87.8 +/- 0.1. Here we are within range."
+
+\li Select the segmentation again.
+\li Click "start/re-start" segmentation in the MIDAS Irregular Volume Editor View
+\li Click "reset" and check that the segmentation is cleared.
+\li Click "OK" and check that the segmentation is destroyed and the application does not crash.
+
+\image html TestProcedureResult3D.png "Figure 12. The segmented brain, shown here by switching the view to 3D, and then right clicking on the segmentation in Datamanager, and selecting 'Create smoothed polygon model'."
+
+\section TestScriptMIDASGeneralEditorReliability Additional Reliability Tests (Checking for not crashing)
+
+\li Click on a grey scale image, and start a new segmentation.
+\li Outline a region with the Draw tool. (i.e. draw a shape of your choice).
+\li Click A followed by Z to change slice up, then change slice down. The shape should disappear.
+\li Draw another shape, and place a seed within the region.
+\li Click A followed by Z to change slice up, then change slice down. The shape should have been saved, as there was a seed in it.
+\li Check that with Seed, Draw and Poly tools, right-clicking will draw a seed with all 3 tools.
+\li Check that with the Seed tool, the left mouse button can select a seed, and that dragging will move the seed.
+\li Check that with the Seed tool, the middle mouse button will remove the closest seed.
+\li Create a segmentation image, and then click "OK" to finish segmenting it. Then close the MIDAS Irregular Volume Editor and check the application does not crash. The right click on the segmentation image, and delete it, and check the application does not crash.
+
+*/

@@ -27,8 +27,17 @@
 #define QMITKNIFTYVIEWAPPLICATIONPLUGIN_H_
 
 #include <berryAbstractUICTKPlugin.h>
-
+#include <mitkIDataStorageService.h>
+#include <ctkServiceTracker.h>
 #include <QString>
+#include <itkImage.h>
+
+class QmitkNiftyViewApplicationPluginPrivate;
+
+namespace mitk {
+  class DataNode;
+  class DataStorage;
+}
 
 /**
  * \class QmitkNiftyViewApplicationPlugin
@@ -50,6 +59,7 @@ public:
   ctkPluginContext* GetPluginContext() const;
 
   void start(ctkPluginContext*);
+  void stop(ctkPluginContext*);
 
   QString GetQtHelpCollectionFile() const;
 
@@ -71,12 +81,29 @@ public:
   // Currently, creating state machine using hard coded string, as I don't know where to load them from.
   static const std::string MIDAS_KEYPRESS_STATE_MACHINE_XML;
 
+protected:
+
+  // Called each time a data node is added.
+  virtual void NodeAdded(const mitk::DataNode *node);
+
 private:
 
+  virtual void NodeAddedProxy(const mitk::DataNode *node);
+  const mitk::DataStorage* GetDataStorage();
+
+  template<typename TPixel, unsigned int VImageDimension>
+  void
+  ITKGetStatistics(
+      itk::Image<TPixel, VImageDimension> *itkImage,
+      float &min,
+      float &max,
+      float &mean,
+      float &stdDev);
+
   static QmitkNiftyViewApplicationPlugin* inst;
-
   ctkPluginContext* context;
-
+  ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
+  bool m_InDataStorageChanged;
 };
 
 #endif /* QMITKEXTAPPLICATIONPLUGIN_H_ */

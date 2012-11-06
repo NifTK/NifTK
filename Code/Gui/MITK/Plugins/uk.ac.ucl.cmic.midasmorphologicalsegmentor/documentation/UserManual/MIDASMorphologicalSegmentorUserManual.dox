@@ -4,6 +4,7 @@
 \image html MIDASMorphologicalSegmentor.png "The Icon for MIDAS Morphological Editor"
 
 \li \ref MorphEditorIntro
+\li \ref MorphEditorImportantNotes
 \li \ref MorphEditorThreshold
 \li \ref MorphEditorErosion
 \li \ref MorphEditorDilation
@@ -11,14 +12,29 @@
 \li \ref MorphEditorManual
 \li \ref MorphEditorSave
 
+\addindex Morphological Editor
+\addindex Thresholding
+\addindex Erosions
+\addindex Dilations
+\addindex Manual editing of brain regions
+\addindex Paintbrush Tool
+\addindex Connection Breaker
+
 \section MorphEditorIntro Introduction
 
-This plugin provides the MIDAS Brain Segmentation algorithm [1], developed at the 
-<a href="http://www.ucl.ac.uk">University College London (UCL)</a>,
+This plugin provides the MIDAS Morphological Editor Brain Segmentation algorithm 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">[1]</a>, 
+developed at the <a href="http://www.ucl.ac.uk">University College London (UCL)</a>,
 <a href="http://dementia.ion.ucl.ac.uk">Dementia Research Centre</a>.
-The algorithm has been used in many publications between 1996 and 2011,
-and several phase 1 and phase 2 clinical drugs trials. The algorithm will now be described in detail, 
-by stepping through each step, as it should be performed.
+The algorithm has been used in many publications since 1996, and several phase 1 and phase 2 
+clinical drugs trials. The algorithm will now be described in detail, by stepping through each step, 
+as it should be performed. The theory can be found in 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">[1]</a>.
+
+\section MorphEditorImportantNotes Important Notes
+
+\li You will need a 3 button mouse, or 3 button mouse emulation.
+\li The MIDAS Irregular Volume Editor is designed to work with the MIDAS Drag and Drop Display.
 
 \section MorphEditorControls The Morphological Editor Controls
 

@@ -45,13 +45,16 @@ public:
 
   MIDASDrawToolOpEraseContour(
       mitk::OperationType type,
-      mitk::ContourSet* contour
+      mitk::ContourSet* contour,
+      const int& workingNodeNumber
       );
   ~MIDASDrawToolOpEraseContour() {};
   mitk::ContourSet* GetContourSet() const { return m_ContourSet;}
+  int GetWorkingNode() const { return m_WorkingNodeNumber; }
 
 private:
   mitk::ContourSet::Pointer m_ContourSet;
+  int m_WorkingNodeNumber;
 };
 
 } // end namespace
