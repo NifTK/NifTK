@@ -178,8 +178,8 @@ SET(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK")
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-SET(NIFTK_VERSION_CTK "12cc05735a" CACHE STRING "Version of CTK")
-SET(NIFTK_VERSION_MITK "c321418130" CACHE STRING "Version of MITK")
+SET(NIFTK_VERSION_CTK "dd4386a4b0" CACHE STRING "Version of CTK")
+SET(NIFTK_VERSION_MITK "acffcb4f1f" CACHE STRING "Version of MITK")
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl")
 SET(NIFTK_VERSION_NIFTYLINK "0ade68b606" CACHE STRING "Version of NiftyLink")
 SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg")
