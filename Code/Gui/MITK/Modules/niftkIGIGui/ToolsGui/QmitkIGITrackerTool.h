@@ -122,6 +122,10 @@ public slots:
    * \brief Main message handler routine for this tool.
    */
   virtual void InterpretMessage(OIGTLMessage::Pointer msg);
+  /**
+   * \brief Finds a message which best matches id and handles it
+   */
+//  virtual void HandleMessageByTimeStamp (igtlUint64 id);
 
 signals:
 

@@ -94,6 +94,23 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="m_RefreshRatelabel">
+         <property name="text">
+          <string>Refresh Rate (Hz)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="m_RefreshdoubleSpinBox">
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="value">
+          <double>10.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="m_HorizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

@@ -137,6 +137,8 @@ private:
   QHash<int, OIGTLSocketObject*>           m_Sockets;
   QHash<int, ClientDescriptorXMLBuilder *> m_ClientDescriptors;
   QHash<int, QmitkIGITool::Pointer>        m_Tools;
+  //QTimer                                *m_UpdateTimer;
+
 }; // end class
 
 #endif

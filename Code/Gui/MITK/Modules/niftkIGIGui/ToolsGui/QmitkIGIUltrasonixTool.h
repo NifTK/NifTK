@@ -56,6 +56,11 @@ public slots:
    */
   virtual void InterpretMessage(OIGTLMessage::Pointer msg);
 
+	/**
+	 * \brief Finds a message which best matches id and handles it
+	 * */
+//	virtual void HandleMessageByTimeStamp (igtlUint64 id);
+
 signals:
 
   void StatusUpdate(QString statusUpdateMessage);

@@ -61,10 +61,18 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("IMAGE"))
      )
   {
+		this->m_MessageMap.insert(msg->getId(), msg);
     this->HandleImageData(msg);
   }
 }
 
+//-----------------------------------------------------------------------------
+/*void QmitkIGIUltrasonixTool::HandleMessageByTimeStamp(igtlUint64 id)
+{
+  QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.lowerBound(id);
+  qDebug () << "Time Error = " << I.key() - id ;
+  this->HandleImageData(I.value());
+}*/
 
 //-----------------------------------------------------------------------------
 void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)

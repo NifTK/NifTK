@@ -62,3 +62,4 @@ void QmitkIGITool::SendMessage(OIGTLMessage::Pointer msg)
     m_Socket->sendMessage(msg);
   }
 }
+

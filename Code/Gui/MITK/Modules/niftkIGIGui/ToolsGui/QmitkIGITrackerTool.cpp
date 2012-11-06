@@ -308,6 +308,7 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
      )
   {
   //  this->DisplayTrackerData(msg);
+	  this->m_MessageMap.insert(msg->getId(), msg);
     this->HandleTrackerData(msg);
   }
 }
@@ -485,4 +486,12 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage::Pointer msg)
     }
   }
 }
+
+//-----------------------------------------------------------------------------
+/*void QmitkIGITrackerTool::HandleMessageByTimeStamp(igtlUint64 id)
+{
+	  QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.lowerBound(id);
+	  qDebug () << "Time Error = " << I.key() - id ;
+	  this->HandleTrackerData(I.value());
+}*/
 
