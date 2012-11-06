@@ -167,7 +167,7 @@ enum {
 const unsigned int ImageDimension = 3;
 
 typedef float InputPixelType;
-typedef itk::Image<InputPixelType, ImageDimension> InputImageType;
+typedef itk::Image<InputPixelType, ImageDimension> InternalImageType;
 
 
 // --------------------------------------------------------------------------
@@ -188,8 +188,8 @@ struct larger_second
 // --------------------------------------------------------------------------
 // DistanceBetweenVoxels()
 // --------------------------------------------------------------------------
-double DistanceBetweenVoxels( InputImageType::IndexType p, 
-			      InputImageType::IndexType q )
+double DistanceBetweenVoxels( InternalImageType::IndexType p, 
+			      InternalImageType::IndexType q )
 {
   double dx = p[0] - q[0];
   double dy = p[1] - q[1];
@@ -203,16 +203,60 @@ double DistanceBetweenVoxels( InputImageType::IndexType p,
 // WriteImageToFile()
 // --------------------------------------------------------------------------
 bool WriteImageToFile( std::string &fileOutput, const char *description,
-		       InputImageType::Pointer image )
+		       InternalImageType::Pointer image )
 {
   if ( fileOutput.length() ) {
 
-    typedef itk::ImageFileWriter< InputImageType > FileWriterType;
+    typedef itk::ImageFileWriter< InternalImageType > FileWriterType;
 
     FileWriterType::Pointer writer = FileWriterType::New();
 
     writer->SetFileName( fileOutput.c_str() );
     writer->SetInput( image );
+
+    try
+    {
+      std::cout << "Writing " << description << " to file: "
+		<< fileOutput.c_str() << std::endl;
+      writer->Update();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e << std::endl;
+    }
+
+    return true;
+  }
+  else
+    return false;
+}
+
+
+// --------------------------------------------------------------------------
+// WriteBinaryImageToUCharFile()
+// --------------------------------------------------------------------------
+bool WriteBinaryImageToUCharFile( std::string &fileOutput, const char *description,
+				  InternalImageType::Pointer image )
+{
+  if ( fileOutput.length() ) {
+
+    typedef unsigned char OutputPixelType;
+    typedef itk::Image< OutputPixelType, ImageDimension> OutputImageType;
+
+    typedef itk::RescaleIntensityImageFilter< InternalImageType, OutputImageType > CastFilterType;
+    typedef itk::ImageFileWriter< OutputImageType > FileWriterType;
+
+
+    CastFilterType::Pointer caster = CastFilterType::New();
+
+    caster->SetInput( image );
+    caster->SetOutputMinimum(   0 );
+    caster->SetOutputMaximum( 255 );
+
+    FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( fileOutput.c_str() );
+    writer->SetInput( caster->GetOutput() );
 
     try
     {
@@ -314,22 +358,19 @@ int main( int argc, char *argv[] )
   std::string fileInputFatSat;
 
 
-  typedef itk::ImageFileReader< InputImageType > FileReaderType;
+  typedef itk::ImageFileReader< InternalImageType > FileReaderType;
 
-  typedef float OutputPixelType;
-  typedef itk::Image<OutputPixelType, ImageDimension> OutputImageType;
-
-  typedef itk::ImageDuplicator< InputImageType > DuplicatorType;
+  typedef itk::ImageDuplicator< InternalImageType > DuplicatorType;
 
   const unsigned int SliceDimension = 2;
   typedef itk::Image<InputPixelType, SliceDimension> InputSliceType;
   typedef itk::BasicImageFeaturesImageFilter< InputSliceType, InputSliceType > BasicImageFeaturesFilterType;
 
-  typedef itk::SliceBySliceImageFilter< InputImageType, InputImageType > SliceBySliceImageFilterType;
+  typedef itk::SliceBySliceImageFilter< InternalImageType, InternalImageType > SliceBySliceImageFilterType;
 
-  typedef itk::ImageRegionIterator< InputImageType > IteratorType;    
-  typedef itk::ImageSliceIteratorWithIndex< InputImageType > SliceIteratorType;
-  typedef itk::ImageLinearIteratorWithIndex< InputImageType > LineIteratorType;
+  typedef itk::ImageRegionIterator< InternalImageType > IteratorType;    
+  typedef itk::ImageSliceIteratorWithIndex< InternalImageType > SliceIteratorType;
+  typedef itk::ImageLinearIteratorWithIndex< InternalImageType > LineIteratorType;
 
   typedef float RealType;
   const unsigned int ParametricDimension = 2; // (x,z) coords of surface points
@@ -339,26 +380,26 @@ int main( int argc, char *argv[] )
   typedef itk::Image<VectorType,    ParametricDimension>  VectorImageType;
   typedef itk::PointSet<VectorType, ParametricDimension>  PointSetType;
 
-  typedef itk::RegionGrowSurfacePoints< InputImageType, InputImageType > ConnectedSurfaceVoxelFilterType;
+  typedef itk::RegionGrowSurfacePoints< InternalImageType, InternalImageType > ConnectedSurfaceVoxelFilterType;
 
-  typedef itk::CurvatureAnisotropicDiffusionImageFilter< InputImageType,
-							 InputImageType > SmoothingFilterType;
+  typedef itk::CurvatureAnisotropicDiffusionImageFilter< InternalImageType,
+							 InternalImageType > SmoothingFilterType;
     
 
-  typedef itk::GradientMagnitudeRecursiveGaussianImageFilter< InputImageType,
-							      InputImageType > GradientFilterType;
+  typedef itk::GradientMagnitudeRecursiveGaussianImageFilter< InternalImageType,
+							      InternalImageType > GradientFilterType;
 
-  typedef itk::SigmoidImageFilter<InputImageType,
-				  InputImageType > SigmoidFilterType;
+  typedef itk::SigmoidImageFilter<InternalImageType,
+				  InternalImageType > SigmoidFilterType;
     
-  typedef  itk::FastMarchingImageFilter< InputImageType,
-					 InputImageType > FastMarchingFilterType;
+  typedef  itk::FastMarchingImageFilter< InternalImageType,
+					 InternalImageType > FastMarchingFilterType;
 
-  typedef itk::BinaryThresholdImageFilter< InputImageType, 
-					   InputImageType > ThresholdingFilterType;
+  typedef itk::BinaryThresholdImageFilter< InternalImageType, 
+					   InternalImageType > ThresholdingFilterType;
 
-  typedef itk::LewisGriffinRecursiveGaussianImageFilter < InputImageType, 
-							  InputImageType > DerivativeFilterType;
+  typedef itk::LewisGriffinRecursiveGaussianImageFilter < InternalImageType, 
+							  InternalImageType > DerivativeFilterType;
   
   typedef DerivativeFilterType::Pointer  DerivativeFilterPointer;
    
@@ -366,22 +407,21 @@ int main( int argc, char *argv[] )
   PointSetType::PointType point;
   unsigned long iPointPec = 0;
 
-  InputImageType::RegionType region;
-  InputImageType::SizeType size;
-  InputImageType::IndexType start;
+  InternalImageType::RegionType region;
+  InternalImageType::SizeType size;
+  InternalImageType::IndexType start;
 
-  InputImageType::Pointer imStructural = 0;
-  InputImageType::Pointer imFatSat = 0;
-  InputImageType::Pointer imBIFs = 0;
+  InternalImageType::Pointer imStructural = 0;
+  InternalImageType::Pointer imFatSat = 0;
+  InternalImageType::Pointer imBIFs = 0;
 
-  InputImageType::Pointer imMax = 0;
-  InputImageType::Pointer imPectoralVoxels = 0;
-  InputImageType::Pointer imPectoralSurfaceVoxels = 0;
-  InputImageType::Pointer imChestSurfaceVoxels = 0;
+  InternalImageType::Pointer imMax = 0;
+  InternalImageType::Pointer imPectoralVoxels = 0;
+  InternalImageType::Pointer imPectoralSurfaceVoxels = 0;
+  InternalImageType::Pointer imChestSurfaceVoxels = 0;
+  InternalImageType::Pointer imSegmented = 0;
 
-  InputImageType::Pointer imTmp;
-
-  OutputImageType::Pointer imSegmented = 0;
+  InternalImageType::Pointer imTmp;
 
   FileReaderType::Pointer imageReader = FileReaderType::New();
 
@@ -389,11 +429,7 @@ int main( int argc, char *argv[] )
   // Generate the NifTK command line interface (CLI) xml code
 
   for ( int i=1; i<argc; i++ ) 
-<<<<<<< HEAD
     if ( (strcmp(argv[i], "--xml")==0) || (strcmp(argv[i], "-xml")==0) )
-=======
-    if(strcmp(argv[i], "--xml")==0)
->>>>>>> 38beca49e1573d351f1ae181df2aeb987b234286
     {
       std::cout << xml_BreastMaskSegmentationFromMRI;
       return EXIT_SUCCESS;
@@ -446,7 +482,6 @@ int main( int argc, char *argv[] )
   // Read the input image
   // ~~~~~~~~~~~~~~~~~~~~
 
-<<<<<<< HEAD
   if ( fileInputStructural.length() == 0 ) 
   {
     std::cerr << "ERROR: An input structural MRI image must be specified"
@@ -454,8 +489,6 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
 
-=======
->>>>>>> 38beca49e1573d351f1ae181df2aeb987b234286
   // Read the structural image
 
   imageReader->SetFileName( fileInputStructural.c_str() );
@@ -662,8 +695,8 @@ int main( int argc, char *argv[] )
   // Smooth the image to increase separation of the background
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #if 0
-  typedef itk::CurvatureFlowImageFilter< InputImageType, 
-					 InputImageType > CurvatureFlowImageFilterType;
+  typedef itk::CurvatureFlowImageFilter< InternalImageType, 
+					 InternalImageType > CurvatureFlowImageFilterType;
 
   CurvatureFlowImageFilterType::Pointer preRegionGrowingSmoothing = 
     CurvatureFlowImageFilterType::New();
@@ -712,7 +745,7 @@ int main( int argc, char *argv[] )
   // Compute the range of the maximum image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- typedef itk::MinimumMaximumImageCalculator< InputImageType > MinimumMaximumImageCalculatorType;
+ typedef itk::MinimumMaximumImageCalculator< InternalImageType > MinimumMaximumImageCalculatorType;
 
   MinimumMaximumImageCalculatorType::Pointer rangeCalculator = MinimumMaximumImageCalculatorType::New();
 
@@ -731,7 +764,7 @@ int main( int argc, char *argv[] )
   // Compute the histograms of the images
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef itk::Statistics::ScalarImageToHistogramGenerator< InputImageType > HistogramGeneratorType;
+  typedef itk::Statistics::ScalarImageToHistogramGenerator< InternalImageType > HistogramGeneratorType;
 
   HistogramGeneratorType::Pointer histGeneratorT2 = HistogramGeneratorType::New();
   HistogramGeneratorType::Pointer histGeneratorFS = 0;
@@ -929,7 +962,7 @@ int main( int argc, char *argv[] )
   // Region grow the background
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef itk::ConnectedThresholdImageFilter< InputImageType, InputImageType > ConnectedFilterType;
+  typedef itk::ConnectedThresholdImageFilter< InternalImageType, InternalImageType > ConnectedFilterType;
 
   ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
 
@@ -940,7 +973,7 @@ int main( int argc, char *argv[] )
 
   connectedThreshold->SetReplaceValue( 1000 );
 
-  InputImageType::IndexType  index;
+  InternalImageType::IndexType  index;
   
   index[0] = regGrowXcoord;
   index[1] = regGrowYcoord;
@@ -980,7 +1013,7 @@ int main( int argc, char *argv[] )
 
   // Write the background mask to a file?
 
-  WriteImageToFile( fileOutputBackground, "background image", imSegmented );
+  WriteBinaryImageToUCharFile( fileOutputBackground, "background image", imSegmented );
 
 
   // Find the nipple locations
@@ -988,11 +1021,11 @@ int main( int argc, char *argv[] )
 
   bool flgFoundNippleSlice;
   int nVoxels;
-  InputImageType::IndexType idx, idxNippleLeft, idxNippleRight;
+  InternalImageType::IndexType idx, idxNippleLeft, idxNippleRight;
         
-  InputImageType::RegionType lateralRegion;
-  InputImageType::IndexType lateralStart;
-  InputImageType::SizeType lateralSize;
+  InternalImageType::RegionType lateralRegion;
+  InternalImageType::IndexType lateralStart;
+  InternalImageType::SizeType lateralSize;
 
   // Start iterating over the left-hand side
 
@@ -1185,7 +1218,7 @@ int main( int argc, char *argv[] )
   // Find the mid-point on the sternum between the nipples
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InputImageType::IndexType idxMidSternum;
+  InternalImageType::IndexType idxMidSternum;
 
   // Iterate towards the sternum from the midpoint between the nipples
 
@@ -1211,7 +1244,7 @@ int main( int argc, char *argv[] )
     ++itSegLinear;
   }
 
-  InputImageType::PixelType pixelValueMidSternumT2 = imStructural->GetPixel( idxMidSternum );
+  InternalImageType::PixelType pixelValueMidSternumT2 = imStructural->GetPixel( idxMidSternum );
 
   if (flgVerbose) 
     std::cout << "Mid-sternum location: " << idxMidSternum << std::endl
@@ -1225,8 +1258,8 @@ int main( int argc, char *argv[] )
 
   // Left breast first
 
-  InputImageType::IndexType idxLeftPosterior;
-  InputImageType::IndexType idxLeftBreastMidPoint;
+  InternalImageType::IndexType idxLeftPosterior;
+  InternalImageType::IndexType idxLeftBreastMidPoint;
 
   region = imSegmented->GetLargestPossibleRegion();
   region.SetIndex( idxNippleLeft );
@@ -1255,8 +1288,8 @@ int main( int argc, char *argv[] )
 
   // then the right breast
 
-  InputImageType::IndexType idxRightPosterior;
-  InputImageType::IndexType idxRightBreastMidPoint;
+  InternalImageType::IndexType idxRightPosterior;
+  InternalImageType::IndexType idxRightBreastMidPoint;
 
   region = imSegmented->GetLargestPossibleRegion();
   region.SetIndex( idxNippleRight );
@@ -1287,7 +1320,7 @@ int main( int argc, char *argv[] )
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   PointSetType::Pointer pecPointSet = PointSetType::New();  
-  InputImageType::IndexType idxMidPectoral;
+  InternalImageType::IndexType idxMidPectoral;
   
   if ( imBIFs ) 
   {
@@ -1436,7 +1469,7 @@ int main( int argc, char *argv[] )
 
     // Write the pectoral mask?
     
-    WriteImageToFile( fileOutputPectoral, "pectoral mask", imPectoralVoxels );
+    WriteBinaryImageToUCharFile( fileOutputPectoral, "pectoral mask", imPectoralVoxels );
 
     
     // Iterate posteriorly again but this time with the smoothed mask
@@ -1566,7 +1599,7 @@ int main( int argc, char *argv[] )
   region = imChestSurfaceVoxels->GetLargestPossibleRegion();
   size = region.GetSize();
 
-  const InputImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
+  const InternalImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
   size[1] = 60./sp[1];		// 60mm only
 
   region.SetSize( size );
@@ -1606,7 +1639,7 @@ int main( int argc, char *argv[] )
 
   // Write the chest surface points to a file?
 
-  if ( WriteImageToFile( fileOutputChestPoints, "chest surface points", 
+  if ( WriteBinaryImageToUCharFile( fileOutputChestPoints, "chest surface points", 
 			 imChestSurfaceVoxels ) )
     
     imChestSurfaceVoxels = 0;
@@ -1712,7 +1745,7 @@ int main( int argc, char *argv[] )
   if ( fileOutputPectoralSurfaceMask.length() ) 
   {
 
-    InputImageType::Pointer imPecSurfaceMask = InputImageType::New();
+    InternalImageType::Pointer imPecSurfaceMask = InternalImageType::New();
     imPecSurfaceMask->SetRegions( region );
     imPecSurfaceMask->SetOrigin(  imStructural->GetOrigin() );
     imPecSurfaceMask->SetSpacing( imStructural->GetSpacing() );
@@ -1757,7 +1790,7 @@ int main( int argc, char *argv[] )
 
     // Write the image to a file
 
-    WriteImageToFile( fileOutputPectoralSurfaceMask, 
+    WriteBinaryImageToUCharFile( fileOutputPectoralSurfaceMask, 
 		      "pectoral surface mask", 
 		      imPecSurfaceMask );
 
@@ -1933,8 +1966,8 @@ int main( int argc, char *argv[] )
   // Write the segmented image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  WriteImageToFile( fileOutputImage, "final segmented image", 
-		    imSegmented );
+  WriteBinaryImageToUCharFile( fileOutputImage, "final segmented image", 
+			       imSegmented );
 
   return EXIT_SUCCESS;
 }
