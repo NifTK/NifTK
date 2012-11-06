@@ -29,6 +29,7 @@
 #include "itkSymmetricSecondRankTensor.h"
 #include "itkJoinSeriesImageFilter.h"
 #include "itkImage.h"
+#include "itkFlipImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
@@ -125,12 +126,12 @@ void Usage(char *exec)
     std::cout << "*** [mandatory] ***" << std::endl << std::endl;
     std::cout << "    -i    <filename>        Input  image " << std::endl;
     std::cout << "    -o    <filename>        Output image" << std::endl;
-    std::cout << "    -ns    <int>        Number of scales" << std::endl << std::endl;
+    std::cout << "    --ns    <int>        Number of scales" << std::endl << std::endl;
     std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -mod    <int>   [0]     Linear (0) or exponential (1) scale generation" << std::endl;
-    std::cout << "    -aone   <float> [0.5]   Alpha one parameter" << std::endl;
-    std::cout << "    -atwo   <float> [2.0]   Alpha two parameter" << std::endl;
-    std::cout << "    -max    <float> [10]    Maximum scale for exponential mode" << std::endl;
+    std::cout << "    --mod    <int>   [0]     Linear (0) or exponential (1) scale generation" << std::endl;
+    std::cout << "    --aone   <float> [0.5]   Alpha one parameter" << std::endl;
+    std::cout << "    --atwo   <float> [2.0]   Alpha two parameter" << std::endl;
+    std::cout << "    --max    <float> [10]    Maximum scale for exponential mode" << std::endl;
 }
   
 
@@ -311,6 +312,8 @@ int main( int argc, char *argv[] )
     region.SetIndex(outind);
     
     maxImage->SetRegions(region);
+    maxImage->SetOrigin( reader->GetOutput()->GetOrigin() );
+    maxImage->SetDirection( reader->GetOutput()->GetDirection() );
     maxImage->Allocate();
     maxImage->SetSpacing( spacing );
 
@@ -333,7 +336,7 @@ int main( int argc, char *argv[] )
     WriterType::Pointer   writer = WriterType::New();
     writer->SetFileName( outputImageName );		
     writer->SetInput( maxImage );
-    
+        
     try
     {
 	writer->Update();
