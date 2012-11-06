@@ -52,7 +52,7 @@ function cleanup
 		cd ..
 	fi
 	if [[ -d ${dir_output} ]] ; then
-		rm -rf  ${dir_output}
+		rm -rf  ${dir_output} 
 	fi
 }
 trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
@@ -292,11 +292,11 @@ function N3() {
 	local orient_flag=$3
 	local nu_distance=$4
 	
-	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}" 
-	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}_bet_mask"
+	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}.nii ${image}.mnc" 
+	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}_mask.nii ${image}_mask.mnc"
 	
 	execute_command_or_else_stop "${n3dir}nu_correct -normalize_field -clobber -distance $nu_distance \
-					 -mask ${image}_bet_mask.mnc \
+					 -mask ${image}_mask.mnc \
 					 ${image}.mnc \
 					 ${image}_n3.mnc"
 	
@@ -304,7 +304,7 @@ function N3() {
 	execute_command_or_else_stop "rm -f *.mnc"
 	
 	# The next line may be need to be commented depending of the results
-	if [[ "$deleteorient" ]] ; then
+	if $deleteorient ; then
 		echo "Swapping y axis and deleting orient in nu_correct output file"
 		execute_command_or_else_stop "fslswapdim_exe ${image}_n3 -x y z ${image}_n3_corrected"
 		execute_command_or_else_stop "imcp ${image}_n3_corrected ${image}_n3"
@@ -315,7 +315,9 @@ function N3() {
 
 # Function  : Calculate image histogram
 #
-function Histogram() {
+function histogram() {
+	local image=$1
+	
 	mem=512
 	class="Smooth_Histogram"
 
@@ -332,7 +334,14 @@ function Histogram() {
 			java_path=${java_path/%java/}
 		fi
 	fi
-	execute_command_or_else_stop "${java_path}java -mx${mem}m -Dplugins.dir=${ij_path} -Dscript.name=histogram $class > input_image_bet_n3.hist"
+	
+	# Modify classpath
+	CLASSPATH="${ij_path}ij.jar"
+	CLASSPATH="${CLASSPATH}:${ij_plugins}/Histogram/"
+	CLASSPATH="${CLASSPATH}:${ij_plugins}/jars/getopt.jar"
+	export CLASSPATH=$CLASSPATH
+	
+	execute_command_or_else_stop "${java_path}java -mx${mem}m -Dplugins.dir=${ij_path} -Dscript.name=histogram $class -a ${image}.nii > input_image_bet_n3.hist"
 }
 
 # Function  : Copy files to a specific destination as NIFTI file
@@ -365,7 +374,7 @@ cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
    <category>MS Tools.Fill lesions</category>
-   <title>Automated lesion filling</title>
+   <title>Automated lesion-filling</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, to develop an automated lesion-filling technique (LEAP; LEsion Automated Preprocessing) that would reduce lesion-associated brain tissue segmentation bias (which is known to affect automated brain gray [GM] and white matter [WM] tissue segmentations in people who have multiple sclerosis).<br>
    <ul>
    <li><i>Input image</i>, selects the file that you would like to fill lesions</li>
@@ -385,6 +394,12 @@ for '--l', eg 30, 60. Values below 30 run very slowly!<br><br>
 If the lesion filling is good but there is a shaddow around the filled lesions (ie the lesion mask was conservative), try with the '--d s' 
 or '--d h' options. The '--d h' option should be used with caution as it could cause filling in of grey matter with white matter intensity 
 if the lesion is on a grey/white border.
+   </p>
+   <br>
+   <p><h2>Installation and configuration of associated software:</h2></p>
+<p>
+For the installation and configuration of the different needed software in this pipeline, please, reads this 
+<a href="https://docs.google.com/document/d/1L9dNHdUzsNPFOXCILOWdb-XFxyWmUAIo4N1VWOwCZjQ/edit">document</a>.  
    </p>
    ]]></description>
    <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
@@ -442,7 +457,7 @@ if the lesion is on a grey/white border.
       R - robust brain centre estimation and 
       Z - improve BET if FOV is very small in Z]]></description>
       <label>BET options</label>
-      <default>B</default>
+      <default>S</default>
       <element>B</element>
       <element>S</element>
       <element>R</element>
@@ -452,16 +467,15 @@ if the lesion is on a grey/white border.
       <name>FractionalIntensityThreshold</name>
       <longflag>f</longflag>
       <description><![CDATA[Fractional intensity threshold (0-1); 
-      default=0.1 for Pospescu et al. 2012 paper. 
       In BET, 0.5 is the default value. 
       Lower values than default give larger brain outlines; 
       higher values lead to smaller brain outlines.]]></description>
       <label>Fractional intensity threshold</label>
-      <default>0.1</default>
+      <default>0.5</default>
       <constraints>
         <minimum>0</minimum>
         <maximum>1</maximum>
-        <step>0.1</step>
+        <step>0.5</step>
       </constraints>
     </float>
     <image fileExtensions="*.nii">
@@ -505,14 +519,14 @@ if the lesion is on a grey/white border.
     <boolean>
       <name>deleteorient</name>
       <longflag>z</longflag>      
-      <description>Delete orientation to the mask file</description>
+      <description>Delete orientation to the both mask files</description>
       <label>Delete orientation to the mask file</label>
     </boolean>
     <boolean>
       <name>swapoutput</name>
       <longflag>r</longflag>      
       <description>Swap left/right and delete orientation NIFTI file obtained by nu_correct</description>
-      <label>Swap output nu_correct</label>
+      <label>Swap nu_correct output</label>
     </boolean>
     </parameters>
 </executable>
@@ -539,12 +553,12 @@ Optional Arguments:
   --bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default -B
   --f			: fractional intensity threshold (0->1); by default 0.1.
   --b <mask file>	: use existing brain mask file
-  --d <dilation>	: dilate lesion mask: N(one) S(oft 2D) H(ard 3D) [by default none]
+  --d <dilation>	: dilate lesion mask: none (N), soft 2D (S) or hard 3D (H) [by default none (N)]
   --l <distance>	: length scale of non-uniformity. Default=35 (mm)
   --t2			: T2 image as input [by default T1]
 
 Advanced Options: 
-  --z			: delete orientation to the mask file
+  --z			: delete orientation to the input mask files
   --r			: swap left/right and delete orientation NIFTI file obtained by nu_correct
 
 EOF
@@ -559,8 +573,10 @@ deleteorientmask=false
 deleteorient=false
 t2_image=false
 nu_distance=35;
+dilation="N"
 frac="0.1"
 options="-B"
+orientation=""
 if [ $# -eq 0 ]; then
 	Usage
 fi
@@ -592,11 +608,17 @@ do
 	;;
     --orient)
 	case $2 in
-		a) orientation='-transverse'
+		a) orientation="-transverse"
 		;;
-		c) orientation='-coronal'
+		c) orientation="-coronal"
 		;;
-		s) orientation='-sagittal'
+		s) orientation="-sagittal"
+		;;
+		A) orientation="-transverse"
+		;;
+		C) orientation="-coronal"
+		;;
+		S) orientation="-sagittal"
 		;;
 	esac
 	shift 1
@@ -638,27 +660,24 @@ do
     shift 1
 done
 
-if [[ -z $orientation ]] ; then
-	echo "Failed, specify an orientation is needed" 
-        exit 9
+if [[ -z ${orientation} ]] ; then
+	exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
 fi
-if [[ -z $OUTPUT_IMAGE ]] ; then
-	echo "Failed, specify an output filename is needed" 
-        exit 9
+if [[ -z ${OUTPUT_IMAGE} ]] ; then
+	exitprog "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})" 1
 fi
 
 # Start of the main program
-openprogressXML "FillLesions Starts"
+openprogressXML "Fill Lesions Starts"
 progressXML "0.04" "Checking programs"
 
 # Check that all programs exist
 check_program_exists fslcpgeom
 check_program_exists fslchfiletype
+check_program_exists imcp
+check_program_exists fslswapdim_exe
 check_program_exists bet
 check_program_exists fslmaths
-check_program_exists reg_aladin
-check_program_exists reg_resample
-check_program_exists reg_tools
 check_program_exists nii2mnc
 check_program_exists mnc2nii
 check_program_exists nu_correct
@@ -668,7 +687,6 @@ check_program_exists java
 
 # Check if all needed files exist
 check_file_exists ${INPUT_IMAGE} 
-check_file_exists ${BET_MASK}
 check_file_exists ${LESION_MASK}
 
 # Get specific information
@@ -686,7 +704,7 @@ copyFileToDestination ${LESION_MASK} ${dir_output} "lesion_mask"
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Deleting orientation mask
-if [[ "$deleteorientmask" ]] ; then
+if ${deleteorientmask} ; then
 	progressXML "0.05" "Deleting orientation on mask" 
 	execute_command_or_else_stop "fslorient -deleteorient lesion_mask"
 fi
@@ -695,20 +713,21 @@ progressXML "0.10" "Run brain extraction"
 # RUN BRAIN EXTRACTION
 if [[ -n "$BET_MASK" ]] ; then
 	# USER SPECIFIED BRAIN MASK
-	execute_command_or_else_stop "fslmaths input_image -mas ${BET_MASK} input_image_bet -odt char"
+	check_file_exists ${BET_MASK}
+	copyFileToDestination ${BET_MASK} " " "input_image_bet_mask"
+	if ${deleteorientmask} ; then
+		execute_command_or_else_stop "fslorient -deleteorient input_image_bet_mask"
+	fi
+	execute_command_or_else_stop "fslmaths input_image -mas input_image_bet_mask input_image_bet"   
 else
 	# BET BRAIN EXTRACTION
 	execute_command_or_else_stop "bet input_image input_image_bet ${options} -f ${frac}"
-	#run better "input_image.nii" "input_image_bet.nii" 
-fi
-if [[ "input_image_bet_mask" != $(trimNiftiAnaExt $bet_mask) ]] ; then
-	run fslmaths "input_image_bet" -bin "input_image_bet_mask" -odt char
 fi
 
 progressXML "0.40" "Run non-uniformity correction using BET image" 
 
 # RUN NON-UNIFORMITY CORRECTION USING BET IMAGE
-n3 "input_image_bet" "${deleteorient}" "${orient_flag}" "${nu_distance}"
+N3 "input_image_bet" "${deleteorient}" "${orient_flag}" "${nu_distance}"
 
 # CREATE NON-UNIFORMITY RATIO MAP
 progressXML "0.70" "Create non-uniformity ratio map"
@@ -720,10 +739,9 @@ execute_command_or_else_stop "fslmaths input_image -div input_image_bet_n3 -mas 
 progressXML "0.72" "Remove lesion volume from N3 corrected image with brain mask"
 execute_command_or_else_stop "fslmaths lesion_mask -sub 1 -mul -1 -thr 1 -bin lesion_mask_inv -odt char"
 execute_command_or_else_stop "fslmaths input_image_bet_n3 -mas lesion_mask_inv input_image_bet_n3_nolesions"
-#execute_command_or_else_stop "rm -f ${les_mask_file%.???}_inv.*"
 
 progressXML "0.74" "Calculate image histogram"
-histogram
+histogram "input_image_bet_n3_nolesions"
 
 # could start from the peak at greatest x, after there are two peaks added, but get max from 4 peak fit
 # What the   cfityk script does:
@@ -745,8 +763,7 @@ if [ -f $fcfityk ] ; then
     export FITYKVERSION=$(cfityk -V -v | awk '$1  {print $3}')
     alias cfityk=$fcfityk
 else
-    echo "${RED}Can't find cfityk${NC}"
-    exit 1
+    exitprog "Can't find cfityk" 1
 fi
 
 if [ "${FITYKVERSION}" == "0.9.8" -o "${FITYKVERSION}" \> "0.9.8" ]; then
@@ -775,8 +792,7 @@ fi
 wm_peak="$gaussian_peak"
     
 if [[ "$wm_peak" != +([0-9]).+([0-9]) ]] || [[ "$wm_peak_hwhm" != +([0-9]).+([0-9]) ]] ; then
-	echo "Failed to estimate WM peak location, exiting" 
-        exit 9
+	exitprog "Failed to estimate WM peak location, exiting" 1
 fi
 echo "White matter peak=$wm_peak hwhm=$wm_peak_hwhm"    
 
@@ -785,29 +801,29 @@ dil_les_mask=""
 case "${dilation}" in 
     H)
 	progressXML "0.78" "Hard dilation lesions mask"
-	dil_les_mask="${les_mask_file%\.???}_H"
+	dil_les_mask="lesion_mask_H.nii"
         execute_command_or_else_stop "fslmaths lesion_mask -kernel 3D -dilM ${dil_les_mask} -odt char"
         ;;
     N)
 	progressXML "0.78" "Non dilate lesions mask"
-        dil_les_mask="${les_mask_file%\.???}"
+        dil_les_mask="lesion_mask.nii"
         ;;
     S) 
 	progressXML "0.78" "Soft dilatation lesions mask"
-        dil_les_mask="${les_mask_file%\.???}_S"
+        dil_les_mask="lesion_mask_S.nii"
         execute_command_or_else_stop "fslmaths lesion_mask -kernel 2D -fmeanu -mul 2 -min 1 ${dil_les_mask} -odt float"
         ;;
-    *)  echo "Unrecognised dilation"
-        exit 9
+    *)  exitprog "Unrecognised dilation" 1
         ;;
 esac
 
 # FILL LESION VOLUME
 progressXML "0.80" "Filling lesions"
-execute_command_or_else_stop "imagej -b local/fill_lesions.txt $image filled.nii ${dil_les_mask}${out_file_ext} input_image_nu_map${out_file_ext} ${wm_peak} ${wm_peak_hwhm}"
+execute_command "imagej -b local/fill_lesions.txt input_image.nii filled.img ${dil_les_mask} input_image_nu_map.nii ${wm_peak} ${wm_peak_hwhm}"
 
+# Output usually is a Analyze file, and it needs to be converted
 execute_command_or_else_stop "fslchfiletype NIFTI filled ${OUTPUT_IMAGE}"
-execute_command_or_else_stop "fslcpgeom filled ${OUTPUT_IMAGE}"
+execute_command_or_else_stop "fslcpgeom input_image.nii ${OUTPUT_IMAGE}"
 
 # Delete temporary directory
 execute_command_or_else_stop "rm -f *.nii *.img *.hdr *.mnc *.txt" 

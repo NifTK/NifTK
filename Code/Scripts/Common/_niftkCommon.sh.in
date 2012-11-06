@@ -692,3 +692,39 @@ dos_2_unix() {
     dos2unix $1
   fi
 }
+
+#####################################################################################
+# Function  : this function output a log of the progress for Command Line Module plugin
+#
+# Param	    : $1 integer [0..100], it is the progression percentage
+# Param	    : $2 string, it is an information message
+#####################################################################################
+function progressXML(){
+	echo "<filter-progress-text progress=\"$1\">$2</filter-progress-text>"  
+	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
+}
+
+#####################################################################################
+# Function  : this function open the log progress for Command Line Module plugin
+#
+# Param	    : $1 string, it is an information message, usually the program name
+#####################################################################################
+function openprogressXML() {
+	echo "<filter-start>" 
+	echo "<filter-name>$1</filter-name>"
+	echo "<filter-comment>$1</filter-comment>"  
+	echo "</filter-start>" 
+	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
+}
+
+#####################################################################################
+# Function  : this function close the log progress for Command Line Module plugin
+#
+# Param	    : $1 string, it is an information message with name of output image
+#####################################################################################
+function closeprogressXML() {
+	echo "<filter-result name=\"outputImageName\">$1</filter-result>"
+	echo "<filter-result name=\"exitStatusOutput\">Normal exit</filter-result>"
+	echo "<filter-progress>1</filter-progress>"
+	echo "<filter-end><filter-comment>Finished successfully.</filter-comment></filter-end>"
+}
