@@ -97,7 +97,7 @@ ENDFOREACH()
 
 OPTION(BUILD_SUPERBUILD "Build NIFTK and the projects it depends on via SuperBuild.cmake." ON)
 
-If(BUILD_SUPERBUILD)
+IF(BUILD_SUPERBUILD)
   PROJECT(NIFTK-SUPERBUILD)
 ELSE(BUILD_SUPERBUILD)
   PROJECT(NIFTK)
@@ -113,7 +113,6 @@ OPTION(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Cod
 OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
 OPTION(BUILD_GUI "Build GUI in NifTK/Code/Gui." OFF)
 OPTION(BUILD_IGI "Build CMIC IGI platform." OFF)
-OPTION(BUILD_MESHING "Build meshing?" OFF)
 OPTION(BUILD_NIFTYREG "Build NiftyReg." ON)
 OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
@@ -135,6 +134,18 @@ OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
 OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
 OPTION(NIFTK_LOCATION_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
+
+######################################################################
+# Meshing module-related checks and options
+######################################################################
+INCLUDE (CheckIncludeFiles)
+
+CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
+IF (NIFTK_MESHING_CAN_BUILD) 
+  OPTION(BUILD_MESHING "Build meshing?" OFF)
+ELSE (NIFTK_MESHING_CAN_BUILD) 
+  MESSAGE("Could not locate GNU MPFR headers, disabling meshing.")
+ENDIF (NIFTK_MESHING_CAN_BUILD) 
 
 ######################################################################
 # Variables that get compiled into C++ code. 
@@ -167,8 +178,8 @@ SET(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK")
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-SET(NIFTK_VERSION_CTK "12cc05735a" CACHE STRING "Version of CTK")
-SET(NIFTK_VERSION_MITK "c321418130" CACHE STRING "Version of MITK")
+SET(NIFTK_VERSION_CTK "dd4386a4b0" CACHE STRING "Version of CTK")
+SET(NIFTK_VERSION_MITK "acffcb4f1f" CACHE STRING "Version of MITK")
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl")
 SET(NIFTK_VERSION_NIFTYLINK "0ade68b606" CACHE STRING "Version of NiftyLink")
 SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg")
@@ -680,6 +691,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Common)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BasicFilters)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/IO)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Numerics)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Pipelines)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BoundaryShiftIntegral)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/CorticalThickness)

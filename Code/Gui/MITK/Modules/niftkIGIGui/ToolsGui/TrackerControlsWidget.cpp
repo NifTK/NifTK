@@ -48,7 +48,7 @@ TrackerControlsWidget::TrackerControlsWidget(QWidget *parent)
 
   // Temporary:
   pushButton_Tracking->setVisible(false);
-  toolButton_Edit->setVisible(false);
+  toolButton_Assoc->setVisible(true);
 }
 
 

@@ -66,7 +66,7 @@ private slots:
   void OnGetCurrentPosition(void);
   void OnFiducialRegistrationClicked(void);
   void OnManageToolConnection(void);
-  void OnEditClicked(void);
+  void OnAssocClicked(void);
   void OnStatusUpdate(QString message);
   void OnRegisterFiducials();
 
