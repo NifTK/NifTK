@@ -35,7 +35,7 @@ Body CappingOn
 
 vtkTransform BodyTransform 
 BodyTransform RotateX 0
-BodyTransform Translate 40.576 -60 6
+BodyTransform Translate 51.696 -60 0
 vtkTransformPolyDataFilter BodyTransformer 
 BodyTransformer SetInput [Body GetOutput ]
 BodyTransformer SetTransform BodyTransform
@@ -49,35 +49,35 @@ Cowl CappingOn
 
 vtkTransform CowlTransform 
 CowlTransform RotateX 0
-CowlTransform Translate 40.576 -8.085 0
+CowlTransform Translate 45.696 -8.085 0
 vtkTransformPolyDataFilter CowlTransformer 
 CowlTransformer SetInput [Cowl GetOutput ]
 CowlTransformer SetTransform CowlTransform
 
 
 #A sphere source to represent the transducer,
-#centre is 256 * 0.317 / 2 = 40.576, 0 , 0
+#centre is 256 * 0.357 / 2 = 45.696, 0 , 0
 #radius is r = (4 * 25.4) / (2*pi)
 vtkSphereSource Transducer
 Transducer SetRadius 16.170 
-Transducer SetCenter 40.576 0.0 0.0
+Transducer SetCenter 45.696 0.0 0.0
 Transducer SetThetaResolution 40
 Transducer SetPhiResolution 40
 
 #some projection lines
 vtkLineSource Projection1
-Projection1 SetPoint1 40.576 0.0 0.0
-Projection1 SetPoint2 0.0 40.576 0.0
+Projection1 SetPoint1 45.696 0.0 0.0
+Projection1 SetPoint2 0.0 45.696 0.0
 
 #some projection lines
 vtkLineSource Projection2
-Projection2 SetPoint1 40.576 0.0 0.0
-Projection2 SetPoint2 81.152 40.576 0.0
+Projection2 SetPoint1 45.696 0.0 0.0
+Projection2 SetPoint2 91.392 45.696 0.0
 
 vtkArcSource Projection3
-Projection3 SetPoint1 0.0 40.576 0.0
-Projection3 SetPoint2 81.152 40.576 0.0
-Projection3 SetCenter 40.576 0.0 0.0
+Projection3 SetPoint1 0.0 45.696 0.0
+Projection3 SetPoint2 91.392 45.696 0.0
+Projection3 SetCenter 45.696 0.0 0.0
 Projection3 SetResolution 40
 
 vtkAppendPolyData Appenderer
