@@ -67,6 +67,7 @@ function normalization()
 {
 	local img=$1
 	local name=$2
+	local orientation=$3
 	
 	# Normalization
 	if [[ ! -f "${img}_n3.nii"  ]] ; then
@@ -91,13 +92,13 @@ function normalization()
 
 		# Change format to NIFTI
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_ICBM152_mask_register-bin.nii.gz ${img}_ICBM152_mask_register.nii"
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.nii.gz"  
+		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_ICBM152_mask_register-bin ${img}_ICBM152_mask_register.nii"
+		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.*"  
 
 		# Change format to mnc
-		execute_command_or_else_stop "${mnidir}nii2mnc $img.nii $img.mnc"
-		execute_command_or_else_stop "${mnidir}nii2mnc ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
-		progress "0.30" "Image ready to be normalized"
+		execute_command_or_else_stop "${mnidir}nii2mnc $orientation $img.nii $img.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
+		progressXML "0.30" "Image ready to be normalized"
 		
 		# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
 		if [[ ! -f "${img}_n3.mnc"  ]] ; then		
@@ -106,7 +107,7 @@ function normalization()
 			${img}.mnc \
 			${img}_n3.mnc" > /dev/null
 		fi		
-		progress "0.45" "Image normalized"
+		progressXML "0.45" "Image normalized"
 
 		# Change format from mnc to NIFTI
 		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ${img}_n3.nii"
@@ -116,8 +117,6 @@ function normalization()
 		execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.imp ${img}_n3_register.nii"
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register* source-to*"
 
-		# For security reasons ;) we copy geometry for align at the same direction the new image
-		#execute_command_or_else_stop "fslcpgeom ${img}.nii ${img}_n3.nii"
 	else
 		echo "File ${img}_n3.nii exists, we don't repeat the calculation "
 	fi
@@ -132,7 +131,7 @@ function remove_neck() {
 	local name=$2
 	
 	if [[ ! -f "${img}_no_neck.nii"  ]] ; then
-		progress "0.1" "Registring atlas"
+		progressXML "0.1" "Registering atlas"
 		
 		# Register atlas to target space
 		execute_command_or_else_stop "${dir_niftyreg}reg_aladin \
@@ -142,7 +141,7 @@ function remove_neck() {
 			-res ${img}_neck_register.nii \
 			-sym \
 			-lp 5" 
-		progress "0.15" "Atlas registered"
+		progressXML "0.15" "Atlas registered"
 			
 		# Move whole headmask to target space			
 		execute_command_or_else_stop "${dir_niftyreg}reg_resample \
@@ -166,8 +165,6 @@ function remove_neck() {
 		# Delete temporally files
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.* ${img}_neck_register* ${img}_no_neck-nonan*"
 
-		# For security reasons ;) we copy geometry for align at the same direction the new image
-		#execute_command_or_else_stop "fslcpgeom ${img}.nii ${img}_no_neck.nii"
 	else
 		echo "File ${img}_no_neck.nii exists, we don't repeat the calculation "
 	fi
@@ -187,27 +184,28 @@ function BETter()
 	local name=$3
 	local opt=$4
 	local frac=$5
+	local orientation=$6
 	
 	# Starting brain extraction process
 	if [[ ! -f "${output_result}"  ]] ; then
 		# First remove neck slices according to Popescu 2012 method
 		remove_neck ${img} ${name}
-		progress "0.2" "Neck removed"
+		progressXML "0.2" "Neck removed"
 
 		# Normalize intesity for image following from Boyes et al. Neuroimage 2008 page 1756
-		normalization ${img}_no_neck ${name}
+		normalization ${img}_no_neck ${name} ${orientation}
 
-		progress "0.6" "Calculating brain extraction: bet ${opt} -f ${frac}"
+		progressXML "0.6" "Calculating brain extraction: bet ${opt} -f ${frac}"
 		
 		# Pospescu 2012 Neuroimage article suggests that best parameters could be -B -f 0.1, previously neck removal
 		execute_command_or_else_stop "bet ${img}_no_neck_n3 ${img}_brain -m -s ${opt} -f ${frac}" 
 		
-		progress "0.9" "Copying results"
+		progressXML "0.9" "Copying results"
 		
 		# Change format to NIFTI
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain.nii.gz output.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain_mask.nii.gz output_mask.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain_skull.nii.gz output_skull.nii"
+		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain output.nii"
+		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain_mask output_mask.nii"
+		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain_skull output_skull.nii"
 		
 		# Delete temp files
 		execute_command_or_else_stop "rm -f *.nii.gz"
@@ -223,6 +221,7 @@ function BETter()
 	execute_command_or_else_stop "rm -f ${img}*_no_neck*"
 
 }
+
 # Function  : Copy files to a specific destination as NIFTI file
 #
 # Param	    : $1 input image
@@ -243,7 +242,6 @@ function copyFileToDestination() {
 # Function  : Check if a file is a NIFTI file
 #
 function isNifti()  {
-    # requires 'shopt -s extglob'
     [[ "$1" == ?*.nii ]]
 }
 
@@ -259,6 +257,7 @@ cat <<EOF
    brain extraction process and Boyes et al. Neuroimage 2008 normalization process.<br>
    <ul>
    <li><i>Input image</i>, selects the file that you would like to segment</li>
+   <li><i>Orient</i>, indicates in which orientation is the input images: AXIAL, CORONAL or SAGITALL.</li>
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
@@ -273,8 +272,8 @@ cat <<EOF
    <br>
    <p><h2>Recomendations:</h2></p>
    <p>
-   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152.<br> 
-   Atlas head maks, mask and data files. For other data sources you would need to check it.<br>
+   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
+   atlas head maks, mask and data files. For other data sources you would need to check it.
    Check that it exists an important overlapping between mask, headmask, head and input file.<br>
    </p>
    ]]></description>
@@ -283,7 +282,7 @@ cat <<EOF
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>
    <parameters advanced="false">
-      <label>Input and output images</label>
+      <label>Mandatory arguments</label>
       <description>Input image to be segmented and the name of output image</description>
       <image fileExtensions="*.nii,*.nii.gz,*.img">
           <name>inputImageName</name>
@@ -292,6 +291,19 @@ cat <<EOF
 	  <label>Input image</label>
 	  <channel>input</channel>
       </image>
+      <string-enumeration>
+      <name>orientation</name>
+      <longflag>orient</longflag>
+      <description><![CDATA[Input images are in:
+      A - Axial orientation 
+      C - Coronal orientation 
+      S - Sagitall orientation]]></description>
+      <label>Input image orientation</label>
+      <default>A</default>
+      <element>A</element>
+      <element>C</element>
+      <element>S</element>
+    </string-enumeration>
       <image fileExtensions="*.nii,*.nii.gz,*.img">
           <name>inputHead</name>
           <longflag>atlas</longflag>
@@ -370,17 +382,20 @@ cat <<EOF
 This script is for BET mask calculation using Pospescu et al. Neuroimage 2012 
 brain extraction process and Boyes et al. Neuroimage 2008 normalization process. 
 
-Usage: $0 --in input_file --out output_file --headmask head_mask_file --mask mask_file --atlas head_file
+Usage: $0 --in input_file --orient <value> --out output_file --headmask head_mask_file --mask mask_file --atlas head_file
 
 Mandatory Arguments:
  
-  --in		: is the input file in NIFTI format
-  --out		: is the output file in NIFTI format
-  --headmask	: is the headmask atlas file in NIFTI format
-  --mask	: is the mask atlas file in NIFTI format
-  --atlas	: is the atlas data file in NIFTI format
-  --bet		: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default -B
-  --f		: fractional intensity threshold (0->1); by default 0.1.
+  --in			: is the input file in NIFTI format
+  --orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITALL (s) orientation
+  --out			: is the output file in NIFTI format
+  --headmask		: is the headmask atlas file in NIFTI format
+  --mask		: is the mask atlas file in NIFTI format
+  --atlas		: is the atlas data file in NIFTI format
+  
+Optional Arguments:   
+  --bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default -B
+  --f			: fractional intensity threshold (0->1); by default 0.1.
 
 Recomendations:
 
@@ -392,41 +407,12 @@ EOF
 exit 127
 }
 
-# Function  : this function output a log of the progress for Command Line Module plugin
-#
-# Param	    : $1 integer [0..100], it is the progression percentage
-# Param	    : $2 string, it is an information message
-function progress(){
-	echo "<filter-progress-text progress=\"$1\">$2</filter-progress-text>"  
-	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
-}
-
-# Function  : this function open the log progress for Command Line Module plugin
-#
-# Param	    : $1 string, it is an information message, usually the program name
-function openprogress() {
-	echo "<filter-start>" 
-	echo "<filter-name>$1</filter-name>"
-	echo "<filter-comment>$1</filter-comment>"  
-	echo "</filter-start>" 
-	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
-}
-
-# Function  : this function close the log progress for Command Line Module plugin
-#
-# Param	    : $1 string, it is an information message with name of output image
-function closeprogress() {
-	echo "<filter-result name=\"outputImageName\">$1</filter-result>"
-	echo "<filter-result name=\"exitStatusOutput\">Normal exit</filter-result>"
-	echo "<filter-progress>1</filter-progress>"
-	echo "<filter-end><filter-comment>Finished successfully.</filter-comment></filter-end>"
-}
-
 
 # Program start
-num=0
+export FSLOUTPUTTYPE=NIFTI
 f="0.1"
 options="-B"
+orientation=""
 if [ $# -eq 0 ]; then
   Usage
 fi
@@ -472,6 +458,23 @@ do
 	f="$2"
 	shift 1
 	;;
+    --orient)
+	case $2 in
+		a) orientation="-transverse"
+		;;
+		c) orientation="-coronal"
+		;;
+		s) orientation="-sagittal"
+		;;
+		A) orientation="-transverse"
+		;;
+		C) orientation="-coronal"
+		;;
+		S) orientation="-sagittal"
+		;;;
+	esac
+	shift 1
+	;;
     -*)
 	Usage
 	exitprog "Error: option $1 not recognised" 1
@@ -480,9 +483,16 @@ do
     shift 1
 done
 
+if [[ -z $orientation ]] ; then
+	exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
+fi
+if [[ -z $OUTPUT_IMAGE ]] ; then
+	exitprog "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})" 1
+fi
+
 # Start of the main program
-openprogress "BETter Starts with options: ${options} -f ${f}"
-progress "0.04" "Checking programs"
+openprogressXML "BETter Starts with options: ${options} -f ${f}"
+progressXML "0.04" "Checking programs"
 
 # Check that all programs exist
 check_program_exists fslcpgeom
@@ -496,10 +506,9 @@ check_program_exists nii2mnc
 check_program_exists mnc2nii
 check_program_exists nu_correct
 
-progress "0.08" "Checking input and output file"
+progressXML "0.08" "Checking input and output file"
 if [[ -d ${OUTPUT_IMAGE} ]] ; then
-	echo "${OUTPUT_IMAGE} is not a file, select a file"
-	exit 1
+	exitprog "${OUTPUT_IMAGE} is not a file, select a file" 1
 fi
 
 # Check if all needed files exist
@@ -522,13 +531,13 @@ copyFileToDestination ${INPUT_IMAGE} ${dir_output} "input_image"
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Start process
-BETter "input_image" ${OUTPUT_IMAGE} ${patient} ${options} ${f}
+BETter "input_image" ${OUTPUT_IMAGE} ${patient} ${options} ${f} ${orientation}
 
 # Delete temporary directory
 execute_command_or_else_stop "rm -f *.nii *.mnc *.txt" 
 execute_command_or_else_stop "cd .."
 execute_command_or_else_stop "rm -rf ${dir_output}"
 
-progress "1" "Finish"
-closeprogress ${OUTPUT_IMAGE}
+progressXML "1" "Finish"
+closeprogressXML ${OUTPUT_IMAGE}
 # End of the main program
