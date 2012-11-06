@@ -301,7 +301,7 @@ void WriteHistogramToFile( std::string fileOutput,
   for ( iBin=0; iBin<nBins; iBin++ ) 
     fout << xHistIntensity[ iBin ] << " "
 	 << yHistFrequency[ iBin ] << std::endl;     
-  
+
   fout.close();
 }  
 
@@ -928,7 +928,7 @@ int main( int argc, char *argv[] )
 
   double totalFrequency = 0.;
 
-  for ( iBin=0; iBin<nBins; iBin++ ) 
+  for ( iBin=0; iBin<nBinsForFit; iBin++ ) 
   {
     yFreqLessBgndCDF[ iBin ] = yHistFrequency[ iBin ] - 
       fitFunc.compute( xHistIntensity[ iBin ], aFit[0], aFit[1] );
@@ -941,7 +941,7 @@ int main( int argc, char *argv[] )
     yFreqLessBgndCDF[ iBin ] = totalFrequency;
   }
 
-  for ( iBin=0; iBin<nBins; iBin++ ) {
+  for ( iBin=0; iBin<nBinsForFit; iBin++ ) {
     yFreqLessBgndCDF[ iBin ] /= totalFrequency;
     
     if ( yFreqLessBgndCDF[ iBin ] < bgndThresholdProb )
@@ -956,13 +956,14 @@ int main( int argc, char *argv[] )
 
   if ( fileOutputFreqLessBgndCDF.length() )
     WriteHistogramToFile( fileOutputFreqLessBgndCDF,
-			  xHistIntensity, yFreqLessBgndCDF, nBins );
+			  xHistIntensity, yFreqLessBgndCDF, nBinsForFit );
 
 
   // Region grow the background
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef itk::ConnectedThresholdImageFilter< InternalImageType, InternalImageType > ConnectedFilterType;
+  typedef itk::ConnectedThresholdImageFilter< InternalImageType, 
+                                              InternalImageType > ConnectedFilterType;
 
   ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
 
