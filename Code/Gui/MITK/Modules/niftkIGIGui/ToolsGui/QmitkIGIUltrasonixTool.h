@@ -78,6 +78,7 @@ private:
   mitk::DataNode::Pointer m_ImageNode;
   QmitkQImageToMitkImageFilter::Pointer m_Filter;
 	igtl::Matrix4x4 m_ImageMatrix;
+	float m_RadToDeg;
 
 }; // end class
 

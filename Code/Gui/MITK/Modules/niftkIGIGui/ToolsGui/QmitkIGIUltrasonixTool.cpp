@@ -36,6 +36,7 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
 : m_Image(NULL)
 , m_ImageNode(NULL)
 , m_Filter(NULL)
+, m_RadToDeg ( 180 / 3.14159265358979323846)
 {
   m_Filter = QmitkQImageToMitkImageFilter::New();
 
@@ -104,7 +105,8 @@ void QmitkIGIUltrasonixTool::SaveImage(QString filename)
 
 float QmitkIGIUltrasonixTool::GetMotorPos()
 {
-  return m_ImageMatrix[0][3];
+  float AcosAngle = m_ImageMatrix[2][2];
+  return acos ( AcosAngle ) * m_RadToDeg;
 }
 void QmitkIGIUltrasonixTool::GetImageMatrix(igtl::Matrix4x4 &ImageMatrix)
 {
