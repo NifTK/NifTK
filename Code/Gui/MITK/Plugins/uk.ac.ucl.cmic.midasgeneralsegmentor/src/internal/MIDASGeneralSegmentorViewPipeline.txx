@@ -30,6 +30,7 @@
 #include "itkImageFileWriter.h"
 #include "itkImageRegionIterator.h"
 
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::GeneralSegmentorPipeline()
@@ -51,6 +52,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter->SetForegroundValue(1);
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
@@ -63,6 +66,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_EraseFullSlice = p.m_EraseFullSlice;
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>

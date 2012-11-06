@@ -314,7 +314,24 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.snapshot/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.surfaceextractor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.surgicalguidance/documentation/UserManual \
-                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.thumbnail/documentation/UserManual
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.thumbnail/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/it.unito.cim.intensityprofile \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.affinetransform \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.gui.qt.niftyview \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.imagelookuptables \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.imagestatistics \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midaseditor \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midasgeneralsegmentor \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midasmorphologicalsegmentor \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.mitksegmentation \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.niftyreg \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.niftyseg \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.snapshot \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.surfaceextractor \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.surgicalguidance \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.thumbnail 
+                        
+                        
                         
                         
                                                                                                                                                                         

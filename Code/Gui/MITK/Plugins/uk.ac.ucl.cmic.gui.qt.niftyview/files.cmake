@@ -6,6 +6,7 @@ SET(SRC_CPP_FILES
 
 SET(INTERNAL_CPP_FILES
   QmitkNiftyViewApplicationPlugin.cpp
+  QmitkNiftyViewApplicationPreferencePage.cpp  
   QmitkNiftyViewIGIPerspective.cpp
   QmitkNiftyViewMIDASPerspective.cpp
 )
@@ -14,6 +15,7 @@ SET(MOC_H_FILES
   src/QmitkNiftyViewApplication.h
   src/QmitkNiftyViewWorkbenchWindowAdvisor.h
   src/internal/QmitkNiftyViewApplicationPlugin.h
+  src/internal/QmitkNiftyViewApplicationPreferencePage.h
   src/internal/QmitkNiftyViewIGIPerspective.h
   src/internal/QmitkNiftyViewMIDASPerspective.h
 )

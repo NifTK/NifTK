@@ -36,9 +36,7 @@ class QSpinBox;
 
 /**
  * \class QmitkImageLookupTablesPreferencePage
- * \brief Preferences page for this plugin, enabling choice of spin box precision, and initialisation options
- * for the initial Level/Window widget, which can either be according the MITK LevelWindow side bar, or just
- * based on image intensity.
+ * \brief Preferences page for this plugin, enabling choice of spin box precision.
  * \ingroup uk_ac_ucl_cmic_gui_imagelookuptables
  *
  */
@@ -53,11 +51,6 @@ public:
   QmitkImageLookupTablesPreferencePage(const QmitkImageLookupTablesPreferencePage& other);
   ~QmitkImageLookupTablesPreferencePage();
 
-  static const std::string INITIALISATION_METHOD_NAME;
-  static const std::string INITIALISATION_MIDAS;
-  static const std::string INITIALISATION_LEVELWINDOW;
-  static const std::string INITIALISATION_PERCENTAGE;
-  static const std::string PERCENTAGE_NAME;
   static const std::string PRECISION_NAME;
 
   void Init(berry::IWorkbench::Pointer workbench);
@@ -83,19 +76,10 @@ public:
 
 protected slots:
 
-  void OnMIDASInitialisationRadioButtonChecked(bool);
-  void OnLevelWindowRadioButtonChecked(bool);
-  void OnImageDataRadioButtonChecked(bool);
-
 protected:
 
   QWidget* m_MainControl;
-  QRadioButton* m_UseMidasInitialisationRadioButton;
-  QRadioButton* m_UseLevelWindowRadioButton;
-  QRadioButton* m_UseImageDataRadioButton;
-  QDoubleSpinBox* m_PercentageOfDataRangeDoubleSpinBox;
   QSpinBox* m_Precision;
-
   bool m_Initializing;
 
   berry::IPreferences::Pointer m_ImageLookupTablesPreferencesNode;
