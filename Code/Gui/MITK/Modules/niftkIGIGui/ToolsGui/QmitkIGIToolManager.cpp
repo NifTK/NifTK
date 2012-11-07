@@ -40,8 +40,10 @@ QmitkIGIToolManager::QmitkIGIToolManager()
 {
   m_ToolFactory = QmitkIGIToolFactory::New();
   m_UpdateTimer =  new QTimer(this);
+	//TODO Work out why the following line caused segmentation fault.
+	//I don't really understand the UI here
 //  m_UpdateTimer->setInterval ( 1000 / m_update_fps_spinBox->value());
-  m_UpdateTimer->setInterval ( 100 );
+  m_UpdateTimer->setInterval ( 50 );
   connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeOut()) );
   m_UpdateTimer->start ();
 }
