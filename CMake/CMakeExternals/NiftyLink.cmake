@@ -41,10 +41,13 @@ IF(BUILD_IGI)
   
     SET(revision_tag development)
 
-    if (NIFTK_LOCATION_NIFTYLINK_DEV)
+    if (NIFTK_NIFTYLINK_DEV)
       set(NiftyLink_location_options
         GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
         GIT_TAG ${revision_tag}
+      )
+      set(NiftyLink_options
+        -DNIFTYLINK_OIGTLINK_DEV:BOOL=ON
       )
     else ()
       niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
@@ -52,6 +55,9 @@ IF(BUILD_IGI)
         URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
         URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
       )
+      set(NiftyLink_options
+        -DNIFTYLINK_OIGTLINK_DEV:BOOL=OFF
+      )      
     endif ()
 
     ExternalProject_Add(${proj}
@@ -61,6 +67,7 @@ IF(BUILD_IGI)
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        ${NiftyLink_options}
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
