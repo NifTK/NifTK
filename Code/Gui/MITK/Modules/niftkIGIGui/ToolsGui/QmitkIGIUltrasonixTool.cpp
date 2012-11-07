@@ -61,18 +61,26 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("IMAGE"))
      )
   {
-		this->m_MessageMap.insert(msg->getId(), msg);
-    this->HandleImageData(msg);
+    this->m_MessageMap.insert(msg->getId(), msg);
+    if ( m_HandleOnReceive ) 
+      this->HandleImageData(msg);
   }
 }
 
 //-----------------------------------------------------------------------------
-/*void QmitkIGIUltrasonixTool::HandleMessageByTimeStamp(igtlUint64 id)
+igtlUint64 QmitkIGIUltrasonixTool::HandleMessageByTimeStamp(igtlUint64 id)
 {
-  QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.lowerBound(id);
-  qDebug () << "Time Error = " << I.key() - id ;
-  this->HandleImageData(I.value());
-}*/
+  if ( ! this->m_MessageMap.isEmpty() ) 
+  { 
+    QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.upperBound(id);
+    if ( I != this->m_MessageMap.begin() )
+      I--;
+    this->HandleImageData(I.value());
+    return id - I.key() ;
+  }
+  else
+    return 999999999999999;
+}
 
 //-----------------------------------------------------------------------------
 void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
@@ -100,8 +108,9 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
     {
       this->GetDataStorage()->Add(m_ImageNode);
     }
+    if ( m_HandleOnReceive ) 
+      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
     emit SaveImage(imageMsg);
   }
 }

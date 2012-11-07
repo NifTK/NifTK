@@ -27,7 +27,8 @@
 
 //-----------------------------------------------------------------------------
 QmitkIGITool::QmitkIGITool()
-: m_DataStorage(NULL)
+: m_HandleOnReceive(false)
+, m_DataStorage(NULL)
 , m_Socket(NULL)
 , m_ClientDescriptor(NULL)
 {

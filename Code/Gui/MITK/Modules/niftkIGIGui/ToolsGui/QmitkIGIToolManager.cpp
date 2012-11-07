@@ -39,6 +39,11 @@ QmitkIGIToolManager::QmitkIGIToolManager()
 , m_ToolFactory(NULL)
 {
   m_ToolFactory = QmitkIGIToolFactory::New();
+  m_UpdateTimer =  new QTimer(this);
+//  m_UpdateTimer->setInterval ( 1000 / m_update_fps_spinBox->value());
+  m_UpdateTimer->setInterval ( 100 );
+  connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeOut()) );
+  m_UpdateTimer->start ();
 }
 
 
@@ -62,6 +67,22 @@ QmitkIGIToolManager::~QmitkIGIToolManager()
   }
 }
 
+void QmitkIGIToolManager::OnUpdateTimeOut()
+{
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
+  igtlUint64 idNow = timeNow->GetTimeStampUint64();
+
+  QmitkIGITool::Pointer tool;
+  foreach ( tool , m_Tools )
+  {
+    igtlUint64 delay = tool->HandleMessageByTimeStamp(idNow);
+    //TODO do something with the delay, it should be related to accuracy
+  }
+  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
+  renderer->ForceImmediateUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
+
+}
 
 //-----------------------------------------------------------------------------
 void QmitkIGIToolManager::SetDataStorage(mitk::DataStorage* dataStorage)

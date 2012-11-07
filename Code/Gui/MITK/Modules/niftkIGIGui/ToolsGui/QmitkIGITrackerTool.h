@@ -60,17 +60,17 @@ public:
    */
   void GetToolPosition(const QString &toolName);
 
-	/**
-	 * \brief Add an associated tool to the named tool associated tools for a given 
-	 * tracker tool
-	 */
-	void AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
-	
-	/**
-	 * \brief return a QList of the tools associated with a given toolName
-	 */
+  /**
+   * \brief Add an associated tool to the named tool associated tools for a given 
+   * tracker tool
+   */
+  void AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+  
+  /**
+   * \brief return a QList of the tools associated with a given toolName
+   */
 
-	QList<mitk::DataNode::Pointer>  GetDataNode(const QString);
+  QList<mitk::DataNode::Pointer>  GetDataNode(const QString);
   /**
    * \brief Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
    */
@@ -110,7 +110,7 @@ public:
    * \brief Retrieves / Creates tool, puts it into DataStorage, and returns pointer to the node.
    */
   mitk::DataNode* GetToolRepresentation(const QString name);
-	
+  
   /**
    * \brief If name does not end in ".rom", will add ".rom"
    */
@@ -125,7 +125,7 @@ public slots:
   /**
    * \brief Finds a message which best matches id and handles it
    */
-//  virtual void HandleMessageByTimeStamp (igtlUint64 id);
+  virtual igtlUint64 HandleMessageByTimeStamp (igtlUint64 id);
 
 signals:
 

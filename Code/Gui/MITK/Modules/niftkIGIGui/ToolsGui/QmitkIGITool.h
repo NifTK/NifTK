@@ -108,10 +108,10 @@ public slots:
    */
   virtual void InterpretMessage(OIGTLMessage::Pointer msg) = 0;
  
-	/**
+  /**
    * \brief Main message handler routine for this tool, that subclasses must implement.
    */
-  //virtual void HandleMessageByTimeStamp(igtlUint64 id) = 0;
+  virtual igtlUint64 HandleMessageByTimeStamp(igtlUint64 id) = 0;
 
 
 protected:
@@ -122,8 +122,9 @@ protected:
   QmitkIGITool(const QmitkIGITool&); // Purposefully not implemented.
   QmitkIGITool& operator=(const QmitkIGITool&); // Purposefully not implemented.
 
-	QMap<igtlUint64 , OIGTLMessage::Pointer> m_MessageMap; // A message buffer
+  QMap<igtlUint64 , OIGTLMessage::Pointer> m_MessageMap; // A message buffer
 
+  bool                         m_HandleOnReceive; //if set true messages are handled when received, else they are handled by the tool manager timer
 private:
 
   mitk::DataStorage           *m_DataStorage;
