@@ -61,6 +61,7 @@ trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
 # Param	    : $1 input image
 # Param	    : $2 output image
 # Param     : $3 patient name
+# Param	    : $4 volume orientation
 function normalization() 
 {
 	local img=$1
@@ -110,8 +111,8 @@ function normalization()
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.*"  
 
 		# Change format to mnc
-		execute_command_or_else_stop "${mnidir}nii2mnc $orientation $img.nii $img.mnc"
-		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}.nii ${img}.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
 		
 		progressXML "0.5" "Starting N3"
 		

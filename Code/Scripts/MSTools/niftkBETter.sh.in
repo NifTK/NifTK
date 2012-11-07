@@ -63,6 +63,7 @@ trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
 #
 # Param	    : $1 input image 
 # Param     : $2 patient name
+# Param	    : $3 volume orientation
 function normalization() 
 {
 	local img=$1
@@ -177,6 +178,7 @@ function remove_neck() {
 # Param     : $3 patient name
 # Param     : $4 options for BET
 # Param     : $5 fractional intensity threshold
+# Param	    : $6 volume orientation
 function BETter() 
 {
 	local img=$1
