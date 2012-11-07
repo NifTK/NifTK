@@ -473,7 +473,7 @@ do
 		C) orientation="-coronal"
 		;;
 		S) orientation="-sagittal"
-		;;;
+		;;
 	esac
 	shift 1
 	;;
