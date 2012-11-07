@@ -1856,7 +1856,7 @@ int main( int argc, char *argv[] )
   // Left breast
   
   double leftRadius = DistanceBetweenVoxels( idxLeftBreastMidPoint, idxMidSternum );
-  double leftHeight = vcl_fabs( idxNippleLeft[1] - idxLeftPosterior[1] );
+  double leftHeight = vcl_fabs( (double) (idxNippleLeft[1] - idxLeftPosterior[1]) );
 
   if ( leftRadius < leftHeight/2. )
     leftRadius = leftHeight/2.;
@@ -1887,7 +1887,7 @@ int main( int argc, char *argv[] )
   // Right breast
   
   double rightRadius = DistanceBetweenVoxels( idxRightBreastMidPoint, idxMidSternum );
-  double rightHeight = vcl_fabs( idxNippleRight[1] - idxRightPosterior[1] );
+  double rightHeight = vcl_fabs( (double) (idxNippleRight[1] - idxRightPosterior[1]) );
 
   if ( rightRadius < rightHeight/2. )
     rightRadius = rightHeight/2.;

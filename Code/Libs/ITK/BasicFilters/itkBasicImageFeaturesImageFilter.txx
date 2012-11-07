@@ -392,7 +392,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 
   for ( k=1; k<m_NumberOfOrientations; k++ ) {
 
-    theta = k*2.*M_PI/m_NumberOfOrientations;
+    theta = k*2.*vnl_math::pi/m_NumberOfOrientations;
 
     R( 0, 0 ) = vcl_cos( theta ); R( 0, 1 ) =  vcl_sin( theta ); 
     R( 1, 0 ) = vcl_sin( theta ); R( 1, 1 ) = -vcl_cos( theta );
@@ -651,11 +651,11 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
       // Ensure angle is between -pi and +pi for first order or between
       // 0 and pi for second order
       
-      if ( theta > M_PI )
-	theta = theta - 2.*M_PI;
+      if ( theta > vnl_math::pi )
+	theta = theta - 2.*vnl_math::pi;
       
-      else if ( theta < -M_PI )
-	theta = 2.*M_PI + theta;
+      else if ( theta < -vnl_math::pi )
+	theta = 2.*vnl_math::pi + theta;
 
       if ( flgIsSecondOrder && ( theta < 0 ) )
 	theta = -theta;  
