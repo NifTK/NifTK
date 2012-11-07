@@ -1,6 +1,7 @@
 #! /usr/bin/tclsh 
 package require vtk
-# create matrix
+# create the calibration matrix
+# TODO, make a better interface for this
 vtkMatrix4x4 matrix
 matrix SetElement 0 0 1.0
 matrix SetElement 0 1 0.0 
@@ -10,7 +11,7 @@ matrix SetElement 0 3 0.0
 matrix SetElement 1 0 0.0
 matrix SetElement 1 1 1.0
 matrix SetElement 1 2 0.0
-matrix SetElement 1 3 0.0
+matrix SetElement 1 3 100 
 
 matrix SetElement 2 0 0.0
 matrix SetElement 2 1 0.0
@@ -23,8 +24,8 @@ matrix SetElement 3 2 0.0
 matrix SetElement 3 3 1.0
 
 
-vtkTransform trans
-   trans SetMatrix matrix 
+vtkTransform Calibtrans
+   Calibtrans SetMatrix matrix 
 #the narrow part of the body
 vtkCylinderSource Body
 Body SetRadius 8
@@ -88,8 +89,14 @@ Appenderer AddInput [ BodyTransformer GetOutput ]
 Appenderer AddInput [ CowlTransformer GetOutput ] 
 Appenderer AddInput [ Transducer GetOutput ] 
 
+vtkTransformPolyDataFilter AppendTransformer 
+AppendTransformer SetInput [Appenderer GetOutput ]
+AppendTransformer SetTransform Calibtrans
+
+
+
 vtkXMLPolyDataWriter writer
-   writer SetInput [ Appenderer GetOutput ]
+   writer SetInput [ AppendTransformer GetOutput ]
    writer SetFileName "4DEC9-5.vtp"
    writer Update
 exit
