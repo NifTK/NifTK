@@ -133,7 +133,7 @@ OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external rel
 OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
 OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
-OPTION(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
+OPTION(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" ON)
 
 ######################################################################
 # Meshing module-related checks and options
