@@ -35,7 +35,7 @@ NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultr
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()
 : m_PixmapLabel(NULL)
-, m_LastSavedMsgID(0) 
+, m_LastMsgID(0) 
 {
 
 }
@@ -113,7 +113,7 @@ void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
 void QmitkIGIUltrasonixToolGui::OnSaveImage(OIGTLImageMessage::Pointer imageMsg)
 {
   //only save it if it's different from the last image
-  if ( imageMsg->getId() != m_LastSavedMsgID )
+  if ( imageMsg->getId() != m_LastMsgID )
   {
     //Save the motor position matrix
     igtl::Matrix4x4 Matrix;
@@ -146,8 +146,8 @@ void QmitkIGIUltrasonixToolGui::OnSaveImage(OIGTLImageMessage::Pointer imageMsg)
       .arg(lineEdit->text())
       .arg(QString::number(imageMsg->getId()));
     tool->SaveImage(filename);
-    m_LastSavedMsgID = imageMsg->getId();
   }
+  m_LastMsgID = imageMsg->getId();
 }
 
 void QmitkIGIUltrasonixToolGui::OnManageSaveImage()

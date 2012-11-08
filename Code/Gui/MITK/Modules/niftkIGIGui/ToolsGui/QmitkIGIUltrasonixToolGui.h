@@ -73,7 +73,7 @@ private:
 
   QmitkIGIUltrasonixTool* GetQmitkIGIUltrasonixTool() const;
   QLabel *m_PixmapLabel;
-  igtlUint64 m_LastSavedMsgID;
+  igtlUint64 m_LastMsgID;
 
 }; // end class
 
