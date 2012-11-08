@@ -152,6 +152,23 @@ void XnatDownloadManager::startDownload()
   QTimer::singleShot(0, this, SLOT(downloadData()));
 }
 
+void XnatDownloadManager::startGroupDownload()
+{
+  // start download of ZIP file
+  zipFilename = QFileInfo(currDir, tr("xnat.group.zip")).absoluteFilePath();
+  if ( !this->startFileDownload(zipFilename) )
+  {
+    downloadDialog->close();
+    return;
+  }
+
+  // initialize download variables
+  finished = XNATRESTASYN_NOTDONE;
+  totalBytes = 0;
+
+  QTimer::singleShot(0, this, SLOT(downloadData()));
+}
+
 void XnatDownloadManager::downloadAllFiles()
 {
   // get name of file group to be downloaded
@@ -201,7 +218,7 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
 //  QTimer::singleShot(0, this, SLOT(startGroupDownload()));
   // start download of ZIP file
   zipFilename = QFileInfo(currDir, tr("xnat.file.zip")).absoluteFilePath();
-  if ( !this->startFileGroupDownload(zipFilename) )
+  if ( !this->startFileDownload(zipFilename) )
   {
     downloadDialog->close();
     return;
@@ -213,23 +230,6 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
   connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
   downloadDataBlocking();
-}
-
-void XnatDownloadManager::startGroupDownload()
-{
-  // start download of ZIP file
-  zipFilename = QFileInfo(currDir, tr("xnat.group.zip")).absoluteFilePath();
-  if ( !this->startFileGroupDownload(zipFilename) )
-  {
-    downloadDialog->close();
-    return;
-  }
-
-  // initialize download variables
-  finished = XNATRESTASYN_NOTDONE;
-  totalBytes = 0;
-
-  QTimer::singleShot(0, this, SLOT(downloadData()));
 }
 
 void XnatDownloadManager::downloadData()
@@ -399,23 +399,6 @@ bool XnatDownloadManager::startFileDownload(const QString& zipFilename)
   catch (XnatException& e)
   {
     QMessageBox::warning(xnatTreeView, tr("Downloaded File Error"), tr(e.what()));
-    return false;
-  }
-
-  return true;
-}
-
-bool XnatDownloadManager::startFileGroupDownload(const QString& zipFilename)
-{
-  // start download of zip file containing selected file group
-  try
-  {
-    QModelIndex index = xnatTreeView->selectionModel()->currentIndex();
-    xnatTreeView->xnatModel()->downloadFileGroup(index, zipFilename);
-  }
-  catch (XnatException& e)
-  {
-    QMessageBox::warning(xnatTreeView, tr("Download File Group Error"), tr(e.what()));
     return false;
   }
 
