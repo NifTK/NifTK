@@ -151,7 +151,8 @@ ENDIF (NIFTK_MESHING_CAN_BUILD)
 # Variables that get compiled into C++ code. 
 ######################################################################
 SET(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
-SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2012 University College London" CACHE STRING "Copyright string." FORCE )
+SET(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
+SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2012 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
 SET(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
 SET(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 SET(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
@@ -670,6 +671,19 @@ IF(NOT NIFTYSEG_FOUND)
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.breastsegmentation" OFF CACHE BOOL "Breast segmentation plugin" FORCE)
 ENDIF()
 
+
+######################################################################
+# Find SlicerExecutionModel
+######################################################################
+IF(BUILD_COMMAND_LINE_PROGRAMS)
+  FIND_PACKAGE(SlicerExecutionModel REQUIRED)
+  IF(SlicerExecutionModel_FOUND)
+    MESSAGE("Found SlicerExecutionModel")
+    INCLUDE(${SlicerExecutionModel_USE_FILE})
+  ELSE()
+    MESSAGE("Didn't find SlicerExecutionModel")
+  ENDIF()
+ENDIF()
 
 ########################################################################
 # Simplest if we list ALL our include directories here.
