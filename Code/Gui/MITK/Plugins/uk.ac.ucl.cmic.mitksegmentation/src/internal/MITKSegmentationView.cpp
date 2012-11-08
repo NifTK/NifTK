@@ -235,6 +235,8 @@ mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
     mitk::ToolManager::Pointer toolManager = this->GetToolManager();
     assert(toolManager);
 
+    this->WaitCursorOn();
+
     newSegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
 
     // The above method returns NULL if the user exited the colour selection dialog box.
@@ -250,13 +252,17 @@ mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
     {
       newSegmentation->SetOpacity(0.5);
     }
+
     // Give the ToolManager data to segment.
     mitk::ToolManager::DataVectorType workingData;
     workingData.push_back(newSegmentation);
     toolManager->SetWorkingData(workingData);
 
-    // Enable any widgets that need enabling.
     this->EnableSegmentationWidgets(true);
+
+    this->FocusOnCurrentWindow();
+    this->RequestRenderWindowUpdate();
+    this->WaitCursorOff();
 
   } // end if we have a reference image.
 

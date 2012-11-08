@@ -39,10 +39,10 @@ class MIDASGeneralSegmentorViewControlsWidget : public QWidget, public Ui::MIDAS
 
 public:
 
-  /** Constructor. */
+  /// \brief Constructor.
   MIDASGeneralSegmentorViewControlsWidget(QWidget *parent = 0);
 
-  /** Destructor. */
+  /// \brief Destructor.
   ~MIDASGeneralSegmentorViewControlsWidget();
 
   /// \brief Creates the GUI.

@@ -1,0 +1,15 @@
+/**
+
+\page TechnicalCheckListPostRelease Checklist: Post-Release
+
+The post-release check list is to make sure that we have installed or delivered NifTK correctly.
+There is an implicit assumption that the code was ready to release in the first place.
+
+\li Code tagged with a git tag with format v<Major>.<Minor>, and if patched then v<Major>.<Minor>.<Patch>, for example v12.09 or v12.09.1
+\li Tagged version merged to NifTK master branch
+\li On comic1, check that NiftyView can be run via 'ssh -X' with the display sent back to a different linux workstation
+\li In SetupDependencies.sh, SetupDependencies.csh, SetupNifTK.sh and SetupNifTK.csh, check the NIFTK_DIR
+\li Check doxygen crontab on logno updated to the new release number, and cron runs successfully, and web pages are accessible
+\li Email sent to niftk-users@ucl.ac.uk, niftk-developers@ucl.ac.uk, nifty-group@ucl.ac.uk, cmic-all
+
+*/

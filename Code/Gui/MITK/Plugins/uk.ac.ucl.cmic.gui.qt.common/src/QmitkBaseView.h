@@ -161,6 +161,11 @@ protected:
    */
   mitk::BaseRenderer* GetPreviouslyFocussedRenderer();
 
+  /**
+   * \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
+   */
+  void FocusOnCurrentWindow();
+
 private:
 
   void onNodeAddedInternal(const mitk::DataNode*);

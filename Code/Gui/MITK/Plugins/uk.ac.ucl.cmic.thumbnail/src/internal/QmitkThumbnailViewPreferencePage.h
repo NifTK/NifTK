@@ -37,7 +37,7 @@ class QPushButton;
 
 /**
  * \class QmitkThumbnailViewPreferencePage
- * \brief Preferences page for this plugin, enabling the user to set colour,
+ * \brief Preferences page for the ThumbnailView plugin, enabling the user to set colour,
  * line thickness, opacity, layer, and whether to respond to mouse events.
  * \ingroup uk_ac_ucl_cmic_gui_thumbnail
  *
@@ -68,19 +68,19 @@ public:
   /// \see IPreferencePage::Update()
   virtual void Update();
 
-  /// \brief Stores the preference name  of the box outline colour
+  /// \brief Stores the name of the preferences node that stores the box outline colour
   static const std::string THUMBNAIL_BOX_COLOUR;
 
-  /// \brief Stores the preference name of the box outline colour style sheet.
+  /// \brief Stores the name of the preferences name that stores the box outline colour style sheet.
   static const std::string THUMBNAIL_BOX_COLOUR_STYLE_SHEET;
 
-  /// \brief Stores the preference name of the box line thickness
+  /// \brief Stores the name of the preferences name that stores the box line thickness
   static const std::string THUMBNAIL_BOX_THICKNESS;
 
-  /// \brief Stores the preference name of the box opacity
+  /// \brief Stores the name of the preferences name that stores the box opacity
   static const std::string THUMBNAIL_BOX_OPACITY;
 
-  /// \brief Stores the preference name of the box layer.
+  /// \brief Stores the name of the preferences name that stores the box layer.
   static const std::string THUMBNAIL_BOX_LAYER;
 
 protected slots:

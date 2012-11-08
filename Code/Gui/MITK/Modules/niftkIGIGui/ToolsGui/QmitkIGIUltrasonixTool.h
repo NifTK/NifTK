@@ -45,6 +45,9 @@ public:
   itkNewMacro(QmitkIGIUltrasonixTool);
 
   static const std::string ULTRASONIX_TOOL_2D_IMAGE_NAME;
+	void SaveImage (QString filename);
+	float GetMotorPos();
+	void GetImageMatrix(igtl::Matrix4x4&);
 
 public slots:
 
@@ -57,6 +60,7 @@ signals:
 
   void StatusUpdate(QString statusUpdateMessage);
   void UpdatePreviewImage(OIGTLMessage::Pointer msg);
+	void SaveImage(OIGTLImageMessage::Pointer imageMsg);
 
 protected:
 
@@ -73,6 +77,8 @@ private:
   mitk::Image::Pointer m_Image;
   mitk::DataNode::Pointer m_ImageNode;
   QmitkQImageToMitkImageFilter::Pointer m_Filter;
+	igtl::Matrix4x4 m_ImageMatrix;
+	float m_RadToDeg;
 
 }; // end class
 

@@ -306,6 +306,10 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   ADD_EXECUTABLE(niftkAverage niftkAverage.cxx )
   TARGET_LINK_LIBRARIES(niftkAverage ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkAverage RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+ 
+ ADD_EXECUTABLE(niftkVoxelWiseMaximumIntensities niftkVoxelWiseMaximumIntensities.cxx )
+  TARGET_LINK_LIBRARIES(niftkVoxelWiseMaximumIntensities ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkVoxelWiseMaximumIntensities RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   
   ADD_EXECUTABLE(niftkInvertAffineTransform niftkInvertAffineTransform.cxx )
   TARGET_LINK_LIBRARIES(niftkInvertAffineTransform ${NIFTK_APPLICATION_LINK_LIBRARIES} )
@@ -400,9 +404,9 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   TARGET_LINK_LIBRARIES(niftkSeriesReadVolumeWrite ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkSeriesReadVolumeWrite RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
 
-  #ADD_EXECUTABLE(niftkExtractScalp niftkExtractScalp.cxx )
-  #TARGET_LINK_LIBRARIES(niftkExtractScalp ${NIFTK_APPLICATION_LINK_LIBRARIES} )
-  #INSTALL(TARGETS niftkExtractScalp RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  ADD_EXECUTABLE(niftkExtractScalp niftkExtractScalp.cxx )
+  TARGET_LINK_LIBRARIES(niftkExtractScalp ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkExtractScalp RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   
   ADD_EXECUTABLE(niftkMTPDbc niftkMTPDbc.cxx)
   TARGET_LINK_LIBRARIES(niftkMTPDbc ${NIFTK_APPLICATION_LINK_LIBRARIES} )
@@ -439,7 +443,27 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   ADD_EXECUTABLE(niftkVesselExtractor niftkVesselExtractor.cxx )
   TARGET_LINK_LIBRARIES(niftkVesselExtractor ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkVesselExtractor RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)  
-  
+
+  ADD_EXECUTABLE(niftkComputeJointHistogram niftkComputeJointHistogram.cxx )
+  TARGET_LINK_LIBRARIES(niftkComputeJointHistogram ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkComputeJointHistogram RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)  
+ 
+  ADD_EXECUTABLE(niftkComputeImageHistogram niftkComputeImageHistogram.cxx )
+  TARGET_LINK_LIBRARIES(niftkComputeImageHistogram ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkComputeImageHistogram RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)  
+
+  ADD_EXECUTABLE(niftkBasicImageFeatures niftkBasicImageFeatures.cxx )
+  TARGET_LINK_LIBRARIES(niftkBasicImageFeatures ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkBasicImageFeatures RUNTIME DESTINATION bin COMPONENT applications)
+
+  ADD_EXECUTABLE(niftkBasicImageFeatures3D niftkBasicImageFeatures3D.cxx )
+  TARGET_LINK_LIBRARIES(niftkBasicImageFeatures3D ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkBasicImageFeatures3D RUNTIME DESTINATION bin COMPONENT applications)
+
+  ADD_EXECUTABLE(niftkBreastMaskSegmentationFromMRI niftkBreastMaskSegmentationFromMRI.cxx )
+  TARGET_LINK_LIBRARIES(niftkBreastMaskSegmentationFromMRI ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkBreastMaskSegmentationFromMRI RUNTIME DESTINATION bin COMPONENT applications)
+ 
   ##############################################################
   # Other command line applications, that require VTK.
   ##############################################################

@@ -11,18 +11,7 @@ for the platform and any further information can be obtained be joining:
 
 The aim of providing this manual is to enable developers to understand the architecture, the code design, 
 layout and conventions, and to start coding and contributing to the platform. Where necessary or informative 
-the design decisions will be explained in detail. It is however assumed that the reader is a C++ developer.
-
-Throughout the manual we refer to an application called MIDAS. MIDAS is an application developed by
-Pete Freeborough and Nick Fox at the UCL Dementia Research Centre (DRC). MIDAS is used as a core part of
-the imaging trials infrastructure, and has influenced much of the design of NiftyView. NiftyView can
-be seen as a re-implementation of many of the important concepts from MIDAS, making the application
-multi-platform and bringing a lot of new functionality. The interested reader should refer to:
-
-[1] Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the 
-segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
-(53), 15-25, 1997. 
-<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
+the design decisions will be explained in detail. It is however assumed that the reader is a good C++ developer.
 
 \section TechnicalManualTable Table Of Contents
 
@@ -40,4 +29,39 @@ segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Prog
 \li \subpage HowToErasePluginCache
 \li \subpage HowToWritePlugins
 \li \subpage TestingApplications
+\li \subpage TechnicalCheckListPreRelease
+\li \subpage TechnicalCheckListPostRelease
+
+\section TechnicalManualAdditional Additional Reading
+
+<h3>The Medical Image Display And Analysis System (MIDAS) Application</h3>
+
+Throughout this manual we may refer to an application called MIDAS. MIDAS was developed by
+Pete Freeborough and Nick Fox at the UCL Dementia Research Centre. Many of the important
+features of MIDAS have been re-implemented and brought to this multi-platform environment
+with a lot of new functionality. The interested reader should refer to:
+
+[1] Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the 
+segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
+(53), 15-25, 1997. 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
+
+<h3>The MITK Segmentation Framework</h3>
+
+At least three of the available plugins are segmentation tools. The underlying architecture of these plugins
+is derived in some ways from the MITK Segmentation Framework described 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">here</a>.
+
+<h3>The Slicer Execution Model</h3>
+
+The Graphical User Interface (GUI)'s contained within this project can run command line executables as a 
+background process, using the Command Line Modules view. The underlying technology was developed as part
+of the <a href="http://www.slicer.org">Slicer</a> project, ported to the 
+<a href="http://www.gimias.org">GIMIAS</a> project, and then re-implemented within the 
+<a href="http://www.commontk.org">Common Toolkit (CTK)</a> project. Technical details can be found
+<a href="http://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation">here</a>.
+This technology is particularly interesting for developers interested in inter-operability.
+If you develop a command line module using this method, it should be runnable in NifTK applications
+and MITK, GIMIAS and Slicer.
+
 */

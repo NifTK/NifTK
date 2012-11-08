@@ -29,6 +29,7 @@
 namespace mitk
 {
 
+//-----------------------------------------------------------------------------
 MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char * stateMachinePattern, MIDASViewKeyPressResponder* responder)
 : StateMachine(stateMachinePattern)
 {
@@ -42,26 +43,59 @@ MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char * stateM
   CONNECT_ACTION( 350005, SwitchToCoronal );
 }
 
+
+//-----------------------------------------------------------------------------
+float MIDASViewKeyPressStateMachine::CanHandleEvent(const StateEvent *event) const
+{
+  // See StateMachine.xml for event Ids.
+  if (event != NULL
+      && event->GetEvent() != NULL
+      && (   event->GetId() == 4001 // A
+          || event->GetId() == 4019 // Z
+          || event->GetId() == 4013 // Q
+          || event->GetId() == 4016 // W
+          || event->GetId() == 19   // E
+          )
+      )
+  {
+    return 1;
+  }
+  else
+  {
+    return mitk::StateMachine::CanHandleEvent(event);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool MIDASViewKeyPressStateMachine::MoveAnterior(Action*, const StateEvent*)
 {
   return m_Responder->MoveAnterior();
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASViewKeyPressStateMachine::MovePosterior(Action*, const StateEvent*)
 {
   return m_Responder->MovePosterior();
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASViewKeyPressStateMachine::SwitchToAxial(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToAxial();
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASViewKeyPressStateMachine::SwitchToSagittal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToSagittal();
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASViewKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToCoronal();

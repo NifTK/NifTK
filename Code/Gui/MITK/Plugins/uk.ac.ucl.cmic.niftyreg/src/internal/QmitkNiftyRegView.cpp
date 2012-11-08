@@ -115,6 +115,18 @@ void QmitkNiftyRegView::SetDefaultParameters()
 
 QmitkNiftyRegView::~QmitkNiftyRegView()
 {
+  this->GetDataStorage()->AddNodeEvent
+    .RemoveListener( mitk::MessageDelegate1<QmitkNiftyRegView, const mitk::DataNode*>
+		     ( this, &QmitkNiftyRegView::OnNodeAdded ) );
+
+  this->GetDataStorage()->ChangedNodeEvent
+    .RemoveListener( mitk::MessageDelegate1<QmitkNiftyRegView, const mitk::DataNode*>
+		     ( this, &QmitkNiftyRegView::OnNodeChanged ) );
+  
+  this->GetDataStorage()->RemoveNodeEvent
+    .RemoveListener( mitk::MessageDelegate1<QmitkNiftyRegView, const mitk::DataNode*>
+		     ( this, &QmitkNiftyRegView::OnNodeRemoved ) );
+
   if ( m_RegAladin ) 
     delete m_RegAladin;
 
@@ -912,7 +924,7 @@ void QmitkNiftyRegView::OnNodeRemoved(const mitk::DataNode* node)
 
   // SourceImageComboBox
   index = m_Controls.m_SourceImageComboBox->findText( QString(name.c_str()) );
-  
+
   if ( index >= 0 )
   {
     m_Controls.m_SourceImageComboBox->removeItem( index );

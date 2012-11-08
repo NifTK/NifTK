@@ -142,6 +142,19 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*itkBSplineTransform.txx.*"
   
   # Trac 1720 - fix warnings from doxygen
-  ".*ignoring unsupported tag.*doygen.conf"
+  ".*ignoring unsupported tag.*doygen.*"
 
+  # Trac 1860 - turn of external NIFTYREG, NIFTYSEG package warnings etc.
+  ".*NIFTYREG.*"
+  ".*NIFTYSEG.*"
+  ".*NIFTYREC.*"
+  ".*NIFTYSIM.*"
+  ".*NIFTYLINK.*"
+  ".*OPENIGTLINK.*"
+  ".*niftyreg.*"
+  ".*niftyseg.*"
+  ".*niftyrec.*"
+  ".*niftysim.*"
+  ".*niftylink.*"
+  ".*openigtlink.*"
   )

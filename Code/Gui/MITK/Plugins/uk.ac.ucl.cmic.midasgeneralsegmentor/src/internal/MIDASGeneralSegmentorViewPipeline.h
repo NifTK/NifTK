@@ -33,7 +33,6 @@
 #include "itkPasteImageFilter.h"
 #include "itkMIDASHelper.h"
 #include "itkMIDASRegionGrowingImageFilter.h"
-#include "itkMIDASLargestConnectedComponentFilter.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
 
 /**
@@ -53,7 +52,9 @@ public:
  * \brief A specific implementation of GeneralSegmentorPipelineInterface, based on ITK, called from MITK.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
- * The input images are 3D, and the contours from the MIDASDrawTool and MIDASPolyTool are in 3D.
+ * The input images are 3D, and the contours from the MIDASDrawTool and MIDASPolyTool are in 3D,
+ * with coordinates in millimetres. This pipeline basically extracts 2D slices, and performs 2D region
+ * growing, providing the blue outline images seen within the GUI.
  */
 template<typename TPixel, unsigned int VImageDimension>
 class GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
@@ -65,6 +66,7 @@ public:
   typedef itk::Image<TPixel, VImageDimension>                              GreyScaleImageType;
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType,
                      VImageDimension>                                      SegmentationImageType;
+  typedef typename SegmentationImageType::PixelType                        SegmentationImagePixelType;
   typedef typename GreyScaleImageType::RegionType                          RegionType;
   typedef typename GreyScaleImageType::SizeType                            SizeType;
   typedef typename GreyScaleImageType::PointType                           PointType;
@@ -80,9 +82,6 @@ public:
                                              SegmentationImageType,
                                              PointSetType>                 MIDASRegionGrowingFilterType;
   typedef typename MIDASRegionGrowingFilterType::Pointer                   MIDASRegionGrowingFilterPointer;
-  typedef itk::MIDASLargestConnectedComponentFilter<SegmentationImageType,
-                                                    SegmentationImageType> MIDASConnectedComponentFilterType;
-  typedef typename MIDASConnectedComponentFilterType::Pointer              MIDASConnectedComponentFilterPointer;
 
   // Methods
   GeneralSegmentorPipeline();
@@ -108,7 +107,6 @@ public:
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
   CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
   MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
-  MIDASConnectedComponentFilterPointer           m_ConnectedComponentFilter;
   SegmentationImageType*                         m_OutputImage;
 };
 

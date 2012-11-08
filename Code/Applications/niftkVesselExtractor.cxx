@@ -29,6 +29,7 @@
 #include "itkSymmetricSecondRankTensor.h"
 #include "itkJoinSeriesImageFilter.h"
 #include "itkImage.h"
+#include "itkFlipImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
@@ -44,78 +45,73 @@ std::string xml_vesselextractor=
 "<executable>\n"
 "   <category>Segmentation</category>\n"
 "   <title>niftkVesselExtractor</title>\n"
-"   <description></description>\n"
+"   <description>Vesselness filter</description>\n"
 "   <version>0.0.1</version>\n"
-"   <documentation-url>TODO</documentation-url>\n"
+"   <documentation-url></documentation-url>\n"
 "   <license>BSD</license>\n"
 "   <contributor>Maria A. Zuluaga (UCL)</contributor>\n"
-"   <parameters advanced=\"false\">\n"
-"      <label>Input image and scales (mandatory)</label>\n"
-"      <description>Image to be filtered and scale generation configuration</description>\n"
-"      <file fileExtensions=\"*.nii,*.nii.gz,*.mhd\">\n"
+"   <parameters>\n"
+"      <label>Images</label>\n"
+"      <description>Input and output images</description>\n"
+"      <image fileExtensions=\"*.nii,*.nii.gz,*.mhd\">\n"
 "          <name>inputImageName</name>\n"
-"          <label>Input Image</label>\n"
-"          <default>required</default>\n"
 "          <flag>i</flag>\n"
+"          <description>Input image</description>\n"
+"          <label>Input Image</label>\n"
 "          <channel>input</channel>\n"
-"      </file>\n"
+"      </image>\n"
+"     <image fileExtensions=\"*.nii,*.nii.gz,*.mhd\">\n"
+"          <name>outputImageName</name>\n"
+"          <flag>o</flag>\n"
+"          <description>Output image</description>\n"
+"          <label>Output Image</label>\n"
+"          <channel>output</channel>\n"
+"      </image>\n"
+"   </parameters>\n"
+"   <parameters>\n"
+"      <label>Scales</label>\n"
+"      <description>Scales to evaluate</description>\n"
 "     <integer>\n"
 "         <name>scales</name>\n"
+"         <longflag>ns</longflag>\n"
 "         <description>Number of scales in which the filter will be evaluated</description>\n"
 "         <label>Number of scales</label>\n"
-"         <default>required</default>\n"
-"         <flag>ns</flag>\n"
-"         <channel>input</channel>\n"
+"         <default>1</default>\n"
 "     </integer>\n"
 "   </parameters>\n"
-"   <parameters advanced=\"true\">\n"
+"   <parameters>\n"
 "      <label>Filter parameters</label>\n"
 "      <description>Vesselness filter configuration parameters</description>\n"
 "     <integer-enumeration>\n"
 "         <name>mode</name>\n"
+"         <longflag>mod</longflag>\n"
 "         <description>Scale generation method: linear (0) or exponential (1)</description>\n"
 "         <label>Mode</label>\n"
 "         <default>0</default>\n"
-"         <flag>mod</flag>\n"
-"         <channel>input</channel>\n"
 "	  <element>0</element>\n"
 "         <element>1</element>\n"
 "     </integer-enumeration>\n"
 "      <float>\n"
 "         <name>alphaone</name>\n"
+"         <longflag>aone</longflag>\n"
 "         <description>Alpha 1 parameter from Sato's filter</description>\n"
 "         <label>Alpha one</label>\n"
 "         <default>0.5</default>\n"
-"         <flag>aone</flag>\n"
-"         <channel>input</channel>\n"
 "      </float>\n"
 "      <float>\n"
 "         <name>alphatwo</name>\n"
+"         <longflag>atwo</longflag>\n"
 "         <description>Alpha 2 parameter from Sato's filter</description>\n"
 "         <label>Alpha two</label>\n"
 "         <default>2</default>\n"
-"         <flag>atwo</flag>\n"
-"         <channel>input</channel>\n"
 "      </float>\n"
 "      <float>\n"
 "         <name>max</name>\n"
+"         <longflag>max</longflag>\n"
 "         <description>maximum desired scale when using exponential generator</description>\n"
 "         <label>Maximum Scale</label>\n"
 "         <default>10</default>\n"
-"         <flag>max</flag>\n"
-"         <channel>input</channel>\n"
 "      </float>\n"
-"   </parameters>\n"
-"   <parameters advanced=\"false\">\n"
-"      <label>Output image (mandatory)</label>\n"
-"      <description>Output image filename</description>\n"
-"      <file fileExtensions=\"*.nii,*.nii.gz,*.mhd\">\n"
-"          <name>outputImageName</name>\n"
-"          <label>Output Image</label>\n"
-"          <default>required</default>\n"
-"          <flag>o</flag>\n"
-"          <channel>output</channel>\n"
-"      </file>\n"
 "   </parameters>\n"
 "</executable>\n";
 
@@ -130,12 +126,12 @@ void Usage(char *exec)
     std::cout << "*** [mandatory] ***" << std::endl << std::endl;
     std::cout << "    -i    <filename>        Input  image " << std::endl;
     std::cout << "    -o    <filename>        Output image" << std::endl;
-    std::cout << "    -ns    <int>        Number of scales" << std::endl << std::endl;
+    std::cout << "    --ns    <int>        Number of scales" << std::endl << std::endl;
     std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -mod    <int>   [0]     Linear (0) or exponential (1) scale generation" << std::endl;
-    std::cout << "    -aone   <float> [0.5]   Alpha one parameter" << std::endl;
-    std::cout << "    -atwo   <float> [2.0]   Alpha two parameter" << std::endl;
-    std::cout << "    -max    <float> [10]    Maximum scale for exponential mode" << std::endl;
+    std::cout << "    --mod    <int>   [0]     Linear (0) or exponential (1) scale generation" << std::endl;
+    std::cout << "    --aone   <float> [0.5]   Alpha one parameter" << std::endl;
+    std::cout << "    --atwo   <float> [2.0]   Alpha two parameter" << std::endl;
+    std::cout << "    --max    <float> [10]    Maximum scale for exponential mode" << std::endl;
 }
   
 
@@ -164,23 +160,23 @@ int main( int argc, char *argv[] )
 	    outputImageName=argv[++i];
 	    std::cout << "Set -o=" << outputImageName << std::endl;
 	}
-	else if(strcmp(argv[i], "-ns") == 0){
+	else if(strcmp(argv[i], "--ns") == 0){
 	    scales=atoi(argv[++i]);
 	    std::cout << "Set -ns=" << niftk::ConvertToString(scales) << std::endl;
 	}
-	else if(strcmp(argv[i], "-mod") == 0){
+	else if(strcmp(argv[i], "--mod") == 0){
 	    mod=atoi(argv[++i]);
 	    std::cout << "Set -mod=" << niftk::ConvertToString(mod) << std::endl;
 	}
-	else if(strcmp(argv[i], "-aone") == 0){
+	else if(strcmp(argv[i], "--aone") == 0){
 	    alphaone=atof(argv[++i]);
 	    std::cout << "Set -aone=" << niftk::ConvertToString(alphaone) << std::endl;
 	}
-	else if(strcmp(argv[i], "-atwo") == 0){
+	else if(strcmp(argv[i], "--atwo") == 0){
 	    alphatwo=atof(argv[++i]);
 	    std::cout << "Set -atwo=" << niftk::ConvertToString(alphatwo) << std::endl;
 	}
-	else if(strcmp(argv[i], "-max") == 0){
+	else if(strcmp(argv[i], "--max") == 0){
 	    max=atof(argv[++i]);
 	    std::cout << "Set -max=" << niftk::ConvertToString(max) << std::endl;
 	}
@@ -316,6 +312,8 @@ int main( int argc, char *argv[] )
     region.SetIndex(outind);
     
     maxImage->SetRegions(region);
+    maxImage->SetOrigin( reader->GetOutput()->GetOrigin() );
+    maxImage->SetDirection( reader->GetOutput()->GetDirection() );
     maxImage->Allocate();
     maxImage->SetSpacing( spacing );
 
@@ -338,7 +336,7 @@ int main( int argc, char *argv[] )
     WriterType::Pointer   writer = WriterType::New();
     writer->SetFileName( outputImageName );		
     writer->SetInput( maxImage );
-    
+        
     try
     {
 	writer->Update();

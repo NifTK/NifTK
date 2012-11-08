@@ -72,6 +72,15 @@
 #include "mitkMIDASOrientationUtils.h"
 #include "mitkMIDASImageUtils.h"
 
+/*
+#include "sys/time.h"
+double timespecDiff(struct timespec *timeA_p, struct timespec *timeB_p)
+{
+  return (((timeA_p->tv_sec * 1000000000) + timeA_p->tv_nsec) -
+           ((timeB_p->tv_sec * 1000000000) + timeB_p->tv_nsec))/1000000000.0;
+}
+*/
+
 const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
 const mitk::OperationType MIDASGeneralSegmentorView::OP_CHANGE_SLICE = 9320411;
@@ -97,6 +106,7 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_SliceNavigationControllerObserverTag(0)
 , m_FocusManagerObserverTag(0)
 , m_IsUpdating(false)
+, m_IsDeleting(false)
 , m_IsChangingSlice(false)
 , m_PreviousSliceNumber(0)
 {
@@ -209,23 +219,12 @@ void MIDASGeneralSegmentorView::Visible()
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::MIDASTool* seedTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>()));
-  assert(seedTool);
-  seedTool->NumberOfSeedsHasChanged += mitk::MessageDelegate1<MIDASGeneralSegmentorView, int>( this, &MIDASGeneralSegmentorView::OnNumberOfSeedsChanged );
+  mitk::MIDASPolyTool* midasPolyTool = dynamic_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
+  midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
 
-  mitk::MIDASTool* drawTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
-  assert(drawTool);
-  drawTool->NumberOfSeedsHasChanged += mitk::MessageDelegate1<MIDASGeneralSegmentorView, int>( this, &MIDASGeneralSegmentorView::OnNumberOfSeedsChanged );
-
-  mitk::MIDASDrawTool* midasDrawTool = dynamic_cast<mitk::MIDASDrawTool*>(drawTool);
+  mitk::MIDASDrawTool* midasDrawTool = dynamic_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
   midasDrawTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
 
-  mitk::MIDASTool* polyTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-  assert(polyTool);
-  polyTool->NumberOfSeedsHasChanged += mitk::MessageDelegate1<MIDASGeneralSegmentorView, int>( this, &MIDASGeneralSegmentorView::OnNumberOfSeedsChanged );
-
-  mitk::MIDASPolyTool* midasPolyTool = dynamic_cast<mitk::MIDASPolyTool*>(polyTool);
-  midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
 }
 
 
@@ -244,23 +243,12 @@ void MIDASGeneralSegmentorView::Hidden()
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::MIDASTool* seedTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>()));
-  assert(seedTool);
-  seedTool->NumberOfSeedsHasChanged -= mitk::MessageDelegate1<MIDASGeneralSegmentorView, int>( this, &MIDASGeneralSegmentorView::OnNumberOfSeedsChanged );
+  mitk::MIDASPolyTool* midasPolyTool = dynamic_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
+  midasPolyTool->ContoursHaveChanged -= mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
 
-  mitk::MIDASTool* drawTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
-  assert(drawTool);
-  drawTool->NumberOfSeedsHasChanged -= mitk::MessageDelegate1<MIDASGeneralSegmentorView, int>( this, &MIDASGeneralSegmentorView::OnNumberOfSeedsChanged );
-
-  mitk::MIDASDrawTool* midasDrawTool = dynamic_cast<mitk::MIDASDrawTool*>(drawTool);
+  mitk::MIDASDrawTool* midasDrawTool = dynamic_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
   midasDrawTool->ContoursHaveChanged -= mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
 
-  mitk::MIDASTool* polyTool = dynamic_cast<mitk::MIDASTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-  assert(polyTool);
-  polyTool->NumberOfSeedsHasChanged -= mitk::MessageDelegate1<MIDASGeneralSegmentorView, int>( this, &MIDASGeneralSegmentorView::OnNumberOfSeedsChanged );
-
-  mitk::MIDASPolyTool* midasPolyTool = dynamic_cast<mitk::MIDASPolyTool*>(polyTool);
-  midasPolyTool->ContoursHaveChanged -= mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
 }
 
 /**************************************************************
@@ -396,8 +384,7 @@ mitk::ToolManager::DataVectorType MIDASGeneralSegmentorView::GetWorkingNodesFrom
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-  col->SetColor(r, g, b);
+  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r,g,b);
 
   mitk::ContourSet::Pointer contourSet = mitk::ContourSet::New();
   mitk::DataNode::Pointer contourSetNode = mitk::DataNode::New();
@@ -422,8 +409,8 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
   mitk::Tool* drawTool = toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>());
   assert(drawTool);
 
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-  col->SetColor(r, g, b);
+  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
+
   mitk::DataNode::Pointer helperImageNode = drawTool->CreateEmptySegmentationNode( referenceImage, name, col->GetColor());
   helperImageNode->SetColor(col->GetColor());
   helperImageNode->SetProperty("binaryimage.selectedcolor", col);
@@ -473,6 +460,15 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
 
     this->WaitCursorOn();
 
+    // Override the base colour to be orange, and we revert this when OK pressed at the end.
+    mitk::Color tmpColor;
+    tmpColor[0] = 1.0;
+    tmpColor[1] = 0.65;
+    tmpColor[2] = 0.0;
+    mitk::ColorProperty::Pointer tmpColorProperty = mitk::ColorProperty::New(tmpColor);
+    newSegmentation->SetColor(tmpColor);
+    newSegmentation->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
+
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
     newSegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
@@ -497,8 +493,8 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     pointSetNode->SetColor( 1.0, 0, 0 );
 
     // Create all the contours.
-    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 1,0.65,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 97);
-    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 1,0.65,0, mitk::MIDASTool::DRAW_CONTOURS_NAME, true, 98);
+    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, mitk::MIDASTool::CURRENT_CONTOURS_NAME, true, 97);
+    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 0,1,0, mitk::MIDASTool::DRAW_CONTOURS_NAME, true, 98);
     mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, mitk::MIDASTool::NEXT_CONTOURS_NAME, false, 95);
     mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, mitk::MIDASTool::PRIOR_CONTOURS_NAME, false, 96);
 
@@ -554,11 +550,13 @@ mitk::DataNode* MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed(
     this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
     this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
 
+    this->FocusOnCurrentWindow();
+    this->OnFocusChanged();
+    this->RequestRenderWindowUpdate();
+
     this->WaitCursorOff();
 
   } // end if we have a reference image
-
-  this->RequestRenderWindowUpdate();
 
   // And... relax.
   return newSegmentation;
@@ -645,12 +643,12 @@ mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet::Pointer inputPoints, mitk::PointSet::Pointer outputPoints)
+void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet& inputPoints, mitk::PointSet& outputPoints)
 {
-  outputPoints->Clear();
-  for (int i = 0; i < inputPoints->GetSize(); i++)
+  outputPoints.Clear();
+  for (int i = 0; i < inputPoints.GetSize(); i++)
   {
-    outputPoints->InsertPoint(i, inputPoints->GetPoint(i));
+    outputPoints.InsertPoint(i, inputPoints.GetPoint(i));
   }
 }
 
@@ -751,6 +749,72 @@ void MIDASGeneralSegmentorView::GenerateOutlineFromBinaryImage(mitk::Image::Poin
 }
 
 
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::FilterSeedsToCurrentSlice(
+    mitk::PointSet& inputPoints,
+    int& axisNumber,
+    int& sliceNumber,
+    mitk::PointSet& outputPoints
+    )
+{
+  if (!this->HaveInitialisedWorkingData())
+  {
+    return;
+  }
+
+  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+  if (referenceImage.IsNotNull())
+  {
+    try
+    {
+      AccessFixedDimensionByItk_n(referenceImage,
+          ITKFilterSeedsToCurrentSlice, 3,
+          (inputPoints,
+           axisNumber,
+           sliceNumber,
+           outputPoints
+          )
+        );
+    }
+    catch(const mitk::AccessByItkException& e)
+    {
+      MITK_ERROR << "Caught exception, so abandoning FilterSeedsToCurrentSlice, caused by:" << e.what();
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
+    mitk::PointSet& inputPoints,
+    bool& thresholdOn,
+    int& sliceNumber,
+    mitk::PointSet& outputPoints
+    )
+{
+  outputPoints.Clear();
+
+  mitk::PointSet::Pointer singleSeedPointSet = mitk::PointSet::New();
+  unsigned int pointCounter = 0;
+
+  for (int i = 0; i < inputPoints.GetSize(); i++)
+  {
+    mitk::PointSet::PointType point = inputPoints.GetPoint(i);
+
+    singleSeedPointSet->Clear();
+    singleSeedPointSet->InsertPoint(0, point);
+
+    bool unenclosed = this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, *(singleSeedPointSet.GetPointer()));
+
+    if (!unenclosed)
+    {
+      outputPoints.InsertPoint(pointCounter, point);
+      pointCounter++;
+    }
+  }
+}
+
+
 /**************************************************************
  * End of: Utility functions
  *************************************************************/
@@ -767,6 +831,7 @@ void MIDASGeneralSegmentorView::DestroyPipeline()
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
   {
+    m_IsDeleting = true;
     try
     {
       AccessFixedDimensionByItk(referenceImage, ITKDestroyPipeline, 3);
@@ -775,6 +840,7 @@ void MIDASGeneralSegmentorView::DestroyPipeline()
     {
       MITK_ERROR << "Caught exception, so abandoning destroying the ITK pipeline, caused by:" << e.what();
     }
+    m_IsDeleting = false;
   }
 }
 
@@ -786,6 +852,8 @@ void MIDASGeneralSegmentorView::RemoveWorkingData()
   {
     return;
   }
+
+  m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingNodesFromToolManager();
@@ -799,6 +867,8 @@ void MIDASGeneralSegmentorView::RemoveWorkingData()
   mitk::ToolManager::DataVectorType emptyWorkingDataArray;
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
+
+  m_IsDeleting = false;
 }
 
 
@@ -826,7 +896,10 @@ void MIDASGeneralSegmentorView::ClearWorkingData()
     seeds->Clear();
 
     // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
-    m_SliceNavigationController->SendSlice();
+    if (m_SliceNavigationController)
+    {
+      m_SliceNavigationController->SendSlice();
+    }
   }
   catch(const mitk::AccessByItkException& e)
   {
@@ -843,11 +916,22 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
     return;
   }
 
+  if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+  {
+    this->OnThresholdApplyButtonPressed();
+  }
+
   this->DestroyPipeline();
   this->RemoveWorkingData();
   this->UpdateSegmentationImageVisibility(true);
   this->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
+
+  // Set the colour to that which the user selected in the first place.
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
+  workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
+  workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
+
   this->RequestRenderWindowUpdate();
 }
 
@@ -892,6 +976,14 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
     return;
   }
 
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+                                                            tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
+                                                            QMessageBox::Yes | QMessageBox::No);
+  if (returnValue == QMessageBox::No)
+  {
+    return;
+  }
+
   this->ClearWorkingData();
   this->UpdateRegionGrowing();
   this->UpdatePriorAndNext();
@@ -911,8 +1003,7 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnToolSelected(int id)
 {
-  QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
-
+  //QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
 }
 
 
@@ -1082,7 +1173,7 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateCurrentSliceContours()
+void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 {
   if (!this->HaveInitialisedWorkingData())
   {
@@ -1109,15 +1200,28 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours()
     if (contourSet->GetNumberOfContours() > 0)
     {
       workingNodes[2]->Modified();
-      this->RequestRenderWindowUpdate();
-    }
 
+      if (updateRendering)
+      {
+        this->RequestRenderWindowUpdate();
+      }
+    }
   }
 } // end function
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
+bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber)
+{
+  mitk::PointSet* seeds = this->GetSeeds();
+  assert(seeds);
+
+  return this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, *seeds);
+}
+
+
+//-----------------------------------------------------------------------------
+bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber, mitk::PointSet& seeds)
 {
   bool sliceDoesHaveUnenclosedSeeds = false;
 
@@ -1129,9 +1233,6 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
   mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
-
-  mitk::PointSet* seeds = this->GetSeeds();
-  assert(seeds);
 
   mitk::ToolManager *toolManager = this->GetToolManager();
   assert(toolManager);
@@ -1151,6 +1252,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
 
   double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
   double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
+
   int axisNumber = this->GetViewAxis();
 
   if (axisNumber != -1 && sliceNumber != -1)
@@ -1159,14 +1261,14 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
     {
       AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
         ITKSliceDoesHaveUnEnclosedSeeds, 3,
-          (*seeds,
+          (seeds,
            *segmentationContours,
            *polyToolContours,
            *drawToolContours,
            *workingImage,
             lowerThreshold,
             upperThreshold,
-            this->m_GeneralControls->m_ThresholdCheckBox->isChecked(),
+            thresholdOn,
             axisNumber,
             sliceNumber,
             sliceDoesHaveUnenclosedSeeds
@@ -1178,9 +1280,9 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(int sliceNumber)
       MITK_ERROR << "Caught exception during ITKSliceDoesHaveUnEnclosedSeeds, so will return false, caused by:" << e.what();
     }
   }
+
   return sliceDoesHaveUnenclosedSeeds;
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -1241,7 +1343,7 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool justImage)
 
   workingNodes[0]->SetVisibility(!justImage); // segmentation image
   workingNodes[1]->SetVisibility(!justImage); // seeds
-  workingNodes[2]->SetVisibility(!justImage); // green/red contours from current segmentation
+  workingNodes[2]->SetVisibility(!justImage); // orange contours from current segmentation
   workingNodes[3]->SetVisibility(!justImage); // draw tool contours
   workingNodes[4]->SetVisibility(!justImage && this->m_GeneralControls->m_SeePriorCheckBox->isChecked()); // see prior
   workingNodes[5]->SetVisibility(!justImage && this->m_GeneralControls->m_SeeNextCheckBox->isChecked()); // see next
@@ -1259,7 +1361,7 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool justImage)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdatePriorAndNext()
+void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 {
   if (!this->HaveInitialisedWorkingData())
   {
@@ -1280,6 +1382,11 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
     if (contourSet->GetNumberOfContours() > 0)
     {
       workingNodes[4]->Modified();
+
+      if (updateRendering)
+      {
+        this->RequestRenderWindowUpdate();
+      }
     }
   }
 
@@ -1291,6 +1398,11 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext()
     if (contourSet->GetNumberOfContours() > 0)
     {
       workingNodes[5]->Modified();
+
+      if (updateRendering)
+      {
+        this->RequestRenderWindowUpdate();
+      }
     }
   }
 } // end function
@@ -1315,7 +1427,6 @@ void MIDASGeneralSegmentorView::OnThresholdCheckBoxToggled(bool b)
 
   if (b)
   {
-    this->UpdateCurrentSliceContours();
     this->UpdateRegionGrowing();
   }
 }
@@ -1336,7 +1447,7 @@ void MIDASGeneralSegmentorView::OnUpperThresholdValueChanged(double d)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateRegionGrowing()
+void MIDASGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
 {
   bool isVisible = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
@@ -1347,6 +1458,11 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing()
   if (isVisible)
   {
     this->UpdateRegionGrowing(isVisible, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
+
+    if (updateRendering)
+    {
+      this->RequestRenderWindowUpdate();
+    }
   }
 }
 
@@ -1406,10 +1522,8 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       mitk::ContourSet* drawToolContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[3])->GetData());
 
       int axisNumber = this->GetViewAxis();
-      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
-      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
 
-      if (axisNumber != -1 && sliceNumber != -1 && orientation != itk::ORIENTATION_UNKNOWN)
+      if (axisNumber != -1 && sliceNumber != -1)
       {
         try
         {
@@ -1421,7 +1535,6 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
                *segmentationContours,
                *drawToolContours,
                *polyToolContours,
-               orientation,
                sliceNumber,
                axisNumber,
                lowerThreshold,
@@ -1441,12 +1554,10 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       }
       else
       {
-        MITK_ERROR << "Could not do region growing: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << ", orientation=" << orientation << std::endl;
+        MITK_ERROR << "Could not do region growing: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << std::endl;
       }
 
       m_IsUpdating = false;
-
-      this->RequestRenderWindowUpdate();
 
     } // end if working image
   } // end if reference image
@@ -1528,7 +1639,10 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(
 
           bool currentCheckboxStatus = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
 
-          toolManager->ActivateTool(-1);
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+          {
+            toolManager->ActivateTool(-1);
+          }
 
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
@@ -1550,6 +1664,11 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(
           ExecuteOperation(doPropOp);
 
           drawTool->ClearWorkingData();
+
+          bool updateRendering(false);
+          this->UpdatePriorAndNext(updateRendering);
+          this->UpdateRegionGrowing(updateRendering);
+          this->UpdateCurrentSliceContours(updateRendering);
 
           updateWasApplied = true;
         }
@@ -1609,24 +1728,16 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
       || m_IsUpdating
       || m_IsChangingSlice
       || beforeSliceNumber == -1
-      || beforeSliceNumber == -1
+      || afterSliceNumber == -1
+      || abs(beforeSliceNumber - afterSliceNumber) != 1
       )
   {
-    // i.e. early exit due to invalid data, so do as little as possible.
     m_PreviousSliceNumber = afterSliceNumber;
     m_PreviousFocusPoint = m_CurrentFocusPoint;
-    return;
-  }
 
-  if (abs(beforeSliceNumber - afterSliceNumber) != 1)
-  {
-    // User appears to be skipping slices, which is a possibility,
-    // but is not a valid use case for the rest of this method.
-    m_PreviousSliceNumber = afterSliceNumber;
-    m_PreviousFocusPoint = m_CurrentFocusPoint;
-    this->UpdatePriorAndNext();
-    this->UpdateRegionGrowing();
-    this->UpdateCurrentSliceContours();
+    bool updateRendering(false);
+    this->UpdateCurrentSliceContours(updateRendering);
+    this->UpdateRegionGrowing(updateRendering);
     this->RequestRenderWindowUpdate();
     return;
   }
@@ -1791,7 +1902,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
             }
             else // threshold box not checked
             {
-              bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(beforeSliceNumber);
+              bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, beforeSliceNumber);
 
               if (thisSliceHasUnenclosedSeeds)
               {
@@ -1821,11 +1932,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
                 ExecuteOperation(doApplyOp);
 
-                workingImage->Modified();
-                workingNode->Modified();
-
                 drawTool->ClearWorkingData();
-                this->UpdateCurrentSliceContours();
 
               } // end if/else unenclosed seeds
             } // end if/else thresholding on
@@ -1862,9 +1969,15 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
 
         m_IsUpdating = false;
 
-        this->UpdatePriorAndNext();
-        this->UpdateRegionGrowing();
-        this->UpdateCurrentSliceContours();
+        if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+        {
+          toolManager->ActivateTool(-1);
+        }
+
+        bool updateRendering(false);
+        this->UpdatePriorAndNext(updateRendering);
+        this->UpdateRegionGrowing(updateRendering);
+        this->UpdateCurrentSliceContours(updateRendering);
         this->RequestRenderWindowUpdate();
 
       } // end if, slice number, axis ok.
@@ -1881,28 +1994,27 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
     return;
   }
 
+  bool thresholdCheckBox = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds(sliceNumber);
 
-  if (hasUnEnclosedPoints)
+  if (!thresholdCheckBox)
   {
-    int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                     tr("There are unenclosed points - slice will be wiped\n"
-                                                        "Are you sure?"),
-                                                     QMessageBox::Yes | QMessageBox::No);
-    if (returnValue == QMessageBox::Yes)
+    bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceNumber);
+    if (hasUnEnclosedPoints)
     {
-      this->DoWipe(0);
+      int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+                                                       tr("There are unenclosed points - slice will be wiped\n"
+                                                          "Are you sure?"),
+                                                       QMessageBox::Yes | QMessageBox::No);
+      if (returnValue == QMessageBox::Yes)
+      {
+        this->DoWipe(0);
+      }
+      return;
     }
-    return;
   }
 
   bool cleanWasPerformed = false;
-
-  // If not wiping slice, we are doing proper clean.
-  // Take all seeds, region grow without intensity limits = binary image of current regions.
-  // If thresholding on = region growing with intensity limits
-  // Take red contours, and filter by comparing contours with the output of above two pipelines.
 
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
@@ -1938,9 +2050,14 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
       mitk::ContourSet* drawToolContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[3])->GetData());
       assert(drawToolContours);
 
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
+      assert(regionGrowingNode);
+
+      mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
+      assert(regionGrowingImage);
+
       double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
       double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
-      int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
 
       mitk::ContourSet::Pointer copyOfInputContourSet = mitk::ContourSet::New();
@@ -1952,30 +2069,114 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
 
         try
         {
+          // Calculate the region of interest for this slice.
           std::vector<int> outputRegion;
-          mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
-          mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
-
-          // First work out region, and valid seeds.
           AccessFixedDimensionByItk_n(workingImage,
-              ITKPreProcessingOfSeedsForChangingSlice, 3,
-              (*seeds,
+              ITKCalculateSliceRegionAsVector, 3,
+              (axisNumber,
                sliceNumber,
-               axisNumber,
-               sliceNumber,
-               false, // optimise seed position on current slice.
-               false,
-               *(copyOfCurrentSeeds.GetPointer()),
-               *(propagatedSeeds.GetPointer()),
                outputRegion
               )
             );
 
-          // Then create filtered contours
+          if (thresholdCheckBox)
+          {
+            bool useThresholdsWhenCalculatingEnclosedSeeds = false;
+
+            // Get seeds just on the current slice
+            mitk::PointSet::Pointer seedsForCurrentSlice = mitk::PointSet::New();
+            this->FilterSeedsToCurrentSlice(
+                *seeds,
+                axisNumber,
+                sliceNumber,
+                *(seedsForCurrentSlice.GetPointer())
+                );
+
+            // Reduce the list just down to those that are fully enclosed.
+            mitk::PointSet::Pointer enclosedSeeds = mitk::PointSet::New();
+            this->FilterSeedsToEnclosedSeedsOnCurrentSlice(
+                *seedsForCurrentSlice,
+                useThresholdsWhenCalculatingEnclosedSeeds,
+                sliceNumber,
+                *(enclosedSeeds.GetPointer())
+                );
+
+            // Do region growing, using only enclosed seeds.
+            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+                ITKUpdateRegionGrowing, 3,
+                (false,
+                 *workingImage,
+                 *enclosedSeeds,
+                 *segmentationContours,
+                 *drawToolContours,
+                 *polyToolContours,
+                 sliceNumber,
+                 axisNumber,
+                 lowerThreshold,
+                 upperThreshold,
+                 regionGrowingNode,  // This is the node for the image we are writing to.
+                 regionGrowingImage  // This is the image we are writing to.
+                )
+            );
+
+            // Copy to segmentation image.
+            typedef itk::Image<unsigned char, 3> ImageType;
+            typedef mitk::ImageToItk< ImageType > ImageToItkType;
+
+            ImageToItkType::Pointer regionGrowingToItk = ImageToItkType::New();
+            regionGrowingToItk->SetInput(regionGrowingImage);
+            regionGrowingToItk->Update();
+
+            ImageToItkType::Pointer outputToItk = ImageToItkType::New();
+            outputToItk->SetInput(workingImage);
+            outputToItk->Update();
+
+            this->ITKCopyRegion<unsigned char, 3>(
+                regionGrowingToItk->GetOutput(),
+                axisNumber,
+                sliceNumber,
+                outputToItk->GetOutput()
+                );
+
+            // Update the current slice contours, to regenerate cleaned orange contours
+            // around just the regions of interest that have a valid seed.
+            this->UpdateCurrentSliceContours();
+          }
+          else
+          {
+            // Here we are not thresholding.
+
+            // However, we can assume that all seeds are enclosed.
+            // If the seeds were not all enclosed, the user received warning earlier,
+            // and either abandoned this method, or accepted the warning and wiped the slice.
+
+            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+                ITKUpdateRegionGrowing, 3,
+                (false,
+                 *workingImage,
+                 *seeds,
+                 *segmentationContours,
+                 *drawToolContours,
+                 *polyToolContours,
+                 sliceNumber,
+                 axisNumber,
+                 referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
+                 referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
+                 regionGrowingNode,  // This is the node for the image we are writing to.
+                 regionGrowingImage  // This is the image we are writing to.
+                )
+            );
+
+          }
+
+          // Then create filtered contours for the current slice.
+          // So, if we are thresholding, we fit them round the current region growing image,
+          // which if we have just used enclosed seeds above, will not include regions defined
+          // by a seed and a threshold, but that have not been "applied" yet.
+
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
               ITKFilterContours, 3,
-              (
-               *workingImage,
+              (*workingImage,
                *seeds,
                *segmentationContours,
                *drawToolContours,
@@ -2000,27 +2201,24 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           ExecuteOperation(doOp);
 
-          // Now, with the new set of contours, we calculate a new region, we know there are NOT un-enclosed seeds,
-          // so we can threshold without using region growing limits
-          this->UpdateRegionGrowing(false,
-                                    sliceNumber,
-                                    referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
-                                    referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
-                                    false);
+          // Then we update the region growing to get up-to-date contours.
+          this->UpdateRegionGrowing();
 
-          // Then we "apply" this region growing.
-          mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
-          mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
-          mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-          mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-          ExecuteOperation(doApplyOp);
+          if (!this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+          {
+            // Then we "apply" this region growing.
+            mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
+            mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
+            mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
+            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
+            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
+            ExecuteOperation(doApplyOp);
+          }
+
+          drawTool->Clean(sliceNumber, axisNumber);
 
           workingImage->Modified();
           workingNode->Modified();
-
-          drawTool->ClearWorkingData();
-          this->UpdateCurrentSliceContours();
 
           cleanWasPerformed = true;
 
@@ -2149,6 +2347,7 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
 
     mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
     mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
+
     if (workingImage.IsNotNull() && workingNode.IsNotNull())
     {
       mitk::PointSet* seeds = this->GetSeeds();
@@ -2174,17 +2373,53 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
 
         try
         {
-          AccessFixedDimensionByItk_n(workingImage, // The binary image = current segmentation
-              ITKPreProcessingForWipe, 3,
-              (*seeds,
-               sliceNumber,
-               axisNumber,
-               direction,
-               *(copyOfInputSeeds.GetPointer()),
-               *(outputSeeds.GetPointer()),
-               outputRegion
-              )
-            );
+
+          mitk::ToolManager *toolManager = this->GetToolManager();
+          assert(toolManager);
+
+          mitk::MIDASDrawTool *drawTool = static_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
+          assert(drawTool);
+
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+          {
+            toolManager->ActivateTool(-1);
+          }
+
+
+          if (direction == 0)
+          {
+            this->CopySeeds(
+                *seeds,
+                *copyOfInputSeeds
+                );
+            this->CopySeeds(
+                *seeds,
+                *outputSeeds
+                );
+
+            AccessFixedDimensionByItk_n(workingImage,
+                ITKCalculateSliceRegionAsVector, 3,
+                (axisNumber,
+                 sliceNumber,
+                 outputRegion
+                )
+              );
+
+          }
+          else
+          {
+            AccessFixedDimensionByItk_n(workingImage, // The binary image = current segmentation
+                ITKPreProcessingForWipe, 3,
+                (*seeds,
+                 sliceNumber,
+                 axisNumber,
+                 direction,
+                 *(copyOfInputSeeds.GetPointer()),
+                 *(outputSeeds.GetPointer()),
+                 outputRegion
+                )
+              );
+          }
 
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
@@ -2196,6 +2431,9 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Wipe command");
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           ExecuteOperation(doOp);
+
+          drawTool->ClearWorkingData();
+          this->UpdateCurrentSliceContours();
 
           // Successful outcome.
           wipeWasPerformed = true;
@@ -2386,6 +2624,11 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
               )
             );
 
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+          {
+            toolManager->ActivateTool(-1);
+          }
+
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
@@ -2406,6 +2649,8 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
           ExecuteOperation(doPropOp);
 
           drawTool->ClearWorkingData();
+          this->UpdateCurrentSliceContours(false);
+          this->UpdateRegionGrowing(false);
         }
         catch(const mitk::AccessByItkException& e)
         {
@@ -2432,13 +2677,10 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 {
-  if (!this->HaveInitialisedWorkingData())
-  {
-    return;
-  }
-
-  // To stop repeated updates triggering from data storage updates.
-  if (m_IsUpdating)
+  if (   m_IsDeleting
+      || m_IsUpdating
+      || !this->HaveInitialisedWorkingData()
+      )
   {
     return;
   }
@@ -2478,21 +2720,12 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 
         if (!contourIsBeingEdited)
         {
-
-          mitk::ToolManager *toolManager = this->GetToolManager();
-          assert(toolManager);
-
-          mitk::MIDASPolyTool *polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-          assert(polyTool);
-
-          mitk::Contour* polyToolContour = polyTool->GetContour();
-
           if (seedsChanged)
           {
             this->RecalculateMinAndMaxOfSeedValues();
           }
 
-          if (seedsChanged || drawContoursChanged || polyToolContour->GetPoints()->Size() > 0)
+          if (seedsChanged || drawContoursChanged)
           {
             this->UpdateRegionGrowing();
           }
@@ -2504,165 +2737,11 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnNumberOfSeedsChanged(int numberOfSeeds)
-{
-//  this->DoUpdateCurrentSlice();
-}
-
-
-//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnContoursChanged()
 {
   this->UpdateRegionGrowing();
 }
 
-
-//-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
-{
-  if (!this->HaveInitialisedWorkingData())
-  {
-    return;
-  }
-
-  // To stop repeated calls.
-  if (m_IsUpdating)
-  {
-    return;
-  }
-
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
-  {
-    mitk::DataNode::Pointer workingNode = this->GetWorkingNodesFromToolManager()[0];
-    mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
-
-    mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
-    assert(regionGrowingNode);
-
-    mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
-    assert(regionGrowingImage);
-
-    if (workingImage.IsNotNull() && workingNode.IsNotNull())
-    {
-/*
-      int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-      int axisNumber = this->GetViewAxis();
-      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
-      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
-
-      if (axisNumber != -1 && sliceNumber != -1)
-      {
-
-        mitk::PointSet* seeds = this->GetSeeds();
-        assert(seeds);
-
-        int numberOfSeeds = seeds->GetSize();
-
-        if (numberOfSeeds > 0)
-        {
-
-          mitk::ContourSet* greenContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
-          assert(greenContours);
-
-          mitk::ToolManager *toolManager = this->GetToolManager();
-          assert(toolManager);
-
-          mitk::MIDASPolyTool *polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-          assert(polyTool);
-
-          mitk::ContourSet::Pointer yellowContours = mitk::ContourSet::New();
-
-          mitk::Contour* polyToolContour = polyTool->GetContour();
-          if (polyToolContour != NULL && polyToolContour->GetPoints()->Size() > 0)
-          {
-            yellowContours->AddContour(0, polyToolContour);
-          }
-
-          bool hasUnEnclosedSeeds = this->DoesSliceHaveUnenclosedSeeds();
-          double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
-          double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
-
-          try
-          {
-            if (hasUnEnclosedSeeds)
-            {
-              AccessFixedDimensionByItk_n(workingImage,
-                  ITKClearSlice, 3,
-                  (axisNumber,
-                   sliceNumber
-                  )
-                );
-            }
-            else if (!hasUnEnclosedSeeds
-                     && ((greenContours->GetNumberOfContours() > 0) || (yellowContours->GetNumberOfContours() > 0))
-                     && !this->m_GeneralControls->m_ThresholdCheckBox->isChecked()
-                    )
-            {
-
-              // We do region growing unlimited by thresholds.
-              AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-                  ITKUpdateRegionGrowing, 3,
-                  (false,
-                   *workingImage,
-                   *seeds,
-                   *greenContours,
-                   *yellowContours,
-                   orientation,
-                   sliceNumber,
-                   axisNumber,
-                   this->m_GeneralControls->m_ThresholdLowerSliderWidget->minimum(),  // i.e. min and max possible values.
-                   this->m_GeneralControls->m_ThresholdLowerSliderWidget->maximum(),
-                   workingNode,
-                   workingImage
-                  )
-                );
-            }
-            else if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
-            {
-              AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-                  ITKUpdateRegionGrowing, 3,
-                  (false,
-                   *workingImage,
-                   *seeds,
-                   *greenContours,
-                   *yellowContours,
-                   orientation,
-                   sliceNumber,
-                   axisNumber,
-                   lowerThreshold,
-                   upperThreshold,
-                   workingNode,
-                   workingImage
-                  )
-                );
-
-            } // end else if
-          }
-          catch(const mitk::AccessByItkException& e)
-          {
-            MITK_ERROR << "Could not update slice: Caught mitk::AccessByItkException:" << e.what() << std::endl;
-          }
-          catch( itk::ExceptionObject &err )
-          {
-            MITK_ERROR << "Could not update slice: Caught itk::ExceptionObject:" << err.what() << std::endl;
-          }
-
-        } // end if number seeds > 0
-
-        // Make sure we are rendering the latest.
-        workingImage->Modified();
-        workingNode->Modified();
-        this->RequestRenderWindowUpdate();
-      }
-      else
-      {
-        MITK_ERROR << "Could not do UpdateCurrentSlice: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << std::endl;
-      }
-*/
-    }
-  }
-}
 
 /**************************************************************
  * End of: The main MIDAS business logic.
@@ -2670,6 +2749,21 @@ void MIDASGeneralSegmentorView::DoUpdateCurrentSlice()
 
 /******************************************************************
  * Start of ExecuteOperation - main method in Undo/Redo framework.
+ *
+ * Notes: In this method, we update items, using the given
+ * operation. We do not know if this is a "Undo" or a "Redo"
+ * type of operation. We can set the modified field.
+ * But do not be tempted to put things like:
+ *
+ * this->RequestRenderWindowUpdate();
+ *
+ * or
+ *
+ * this->UpdateRegionGrowing() etc.
+ *
+ * as these methods may be called multiple times during one user
+ * operation. So the methods creating the mitk::Operation objects
+ * should also be the ones deciding when we update the display.
  ******************************************************************/
 
 void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
@@ -2696,6 +2790,9 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
+  mitk::DataNode::Pointer seedsNode = this->GetWorkingNodesFromToolManager()[1];
+  assert(seedsNode);
+
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
   assert(renderWindowPart);
 
@@ -2703,8 +2800,6 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
   {
   case OP_CHANGE_SLICE:
     {
-      assert(m_SliceNavigationController);
-
       // Simply to make sure we can switch slice, and undo/redo it.
       mitk::OpChangeSliceCommand *op = dynamic_cast<mitk::OpChangeSliceCommand*>(operation);
       assert(op);
@@ -2740,14 +2835,16 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
     }
   case OP_PROPAGATE_SEEDS:
     {
-
       mitk::OpPropagateSeeds *op = dynamic_cast<mitk::OpPropagateSeeds*>(operation);
       assert(op);
 
       mitk::PointSet* newSeeds = op->GetSeeds();
-      assert(seeds);
+      assert(newSeeds);
 
-      this->CopySeeds(newSeeds, seeds);
+      this->CopySeeds(*newSeeds, *seeds);
+
+      seeds->Modified();
+      seedsNode->Modified();
 
       break;
     }
@@ -2792,6 +2889,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do retain marks: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_THRESHOLD_APPLY:
@@ -2813,6 +2911,12 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         this->m_GeneralControls->m_ThresholdCheckBox->setChecked(op->GetThresholdFlag());
         this->m_GeneralControls->m_ThresholdCheckBox->blockSignals(false);
         this->m_GeneralControls->SetEnableThresholdingWidgets(op->GetThresholdFlag());
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
+        regionGrowingImage->Modified();
+
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -2824,6 +2928,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do threshold: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_CLEAN:
@@ -2841,12 +2946,18 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
 
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
         contoursToReplace->Modified();
+        this->GetWorkingNodesFromToolManager()[2]->Modified();
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
       }
       catch( itk::ExceptionObject &err )
       {
         MITK_ERROR << "Could not do clean: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_WIPE:
@@ -2865,6 +2976,10 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
                 op
               )
             );
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -2876,6 +2991,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << err.what() << std::endl;
         return;
       }
+
       break;
     }
   case OP_PROPAGATE:
@@ -2892,6 +3008,10 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
                 op
               )
             );
+
+        segmentedImage->Modified();
+        segmentedNode->Modified();
+
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -2907,22 +3027,6 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
     }
   default:;
   }
-
-  segmentedImage->Modified();
-  seeds->Modified();
-
-  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-  assert(workingNodes.size() == 7);
-
-  for (unsigned int i = 0; i < workingNodes.size(); i++)
-  {
-    workingNodes[i]->Modified();
-  }
-  this->RecalculateMinAndMaxOfSeedValues();
-  this->UpdateRegionGrowing();
-  this->UpdateCurrentSliceContours();
-  this->RequestRenderWindowUpdate();
-
 }
 
 /******************************************************************
@@ -2931,6 +3035,11 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
 
 /**************************************************************
  * Start of ITK stuff.
+ *
+ * Notes: All code below this should never set the Modified
+ * flag. The ITK layer, just does basic iterating, basic
+ * low level image processing. It knows nothing of node
+ * properties, or undo/redo.
  *************************************************************/
 
 //-----------------------------------------------------------------------------
@@ -2975,13 +3084,40 @@ void MIDASGeneralSegmentorView::ITKCopyImage(
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
-  itk::ImageRegionIterator<ImageType> inputIterator(input, input->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<ImageType> inputIterator(input, input->GetLargestPossibleRegion());
   itk::ImageRegionIterator<ImageType> outputIterator(output, output->GetLargestPossibleRegion());
 
   for (inputIterator.GoToBegin(), outputIterator.GoToBegin();
       !inputIterator.IsAtEnd() && !outputIterator.IsAtEnd();
       ++inputIterator, ++outputIterator
       )
+  {
+    outputIterator.Set(inputIterator.Get());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MIDASGeneralSegmentorView
+::ITKCopyRegion(
+    itk::Image<TPixel, VImageDimension>* input,
+    int axis,
+    int slice,
+    itk::Image<TPixel, VImageDimension>* output
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
+
+  RegionType sliceRegion;
+  this->ITKCalculateSliceRegion(input, axis, slice, sliceRegion);
+
+  itk::ImageRegionConstIterator<ImageType> inputIterator(input, sliceRegion);
+  itk::ImageRegionIterator<ImageType> outputIterator(output, sliceRegion);
+
+  for (inputIterator.GoToBegin(), outputIterator.GoToBegin(); !inputIterator.IsAtEnd(); ++inputIterator, ++outputIterator)
   {
     outputIterator.Set(inputIterator.Get());
   }
@@ -3015,6 +3151,37 @@ MIDASGeneralSegmentorView
   outputRegion.SetIndex(regionIndex);
 }
 
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MIDASGeneralSegmentorView
+::ITKCalculateSliceRegionAsVector(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    int axis,
+    int slice,
+    std::vector<int>& outputRegion
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
+  typedef typename ImageType::SizeType SizeType;
+  typedef typename ImageType::IndexType IndexType;
+
+  RegionType region;
+  this->ITKCalculateSliceRegion(itkImage, axis, slice, region);
+
+  SizeType regionSize = region.GetSize();
+  IndexType regionIndex = region.GetIndex();
+
+  outputRegion.clear();
+  outputRegion.push_back(regionIndex[0]);
+  outputRegion.push_back(regionIndex[1]);
+  outputRegion.push_back(regionIndex[2]);
+  outputRegion.push_back(regionSize[0]);
+  outputRegion.push_back(regionSize[1]);
+  outputRegion.push_back(regionSize[2]);
+}
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
@@ -3066,48 +3233,6 @@ void MIDASGeneralSegmentorView
     if (voxelIndex[axis] == slice)
     {
       outputSeeds.InsertPoint(pointCounter, inputSeeds.GetPoint(i));
-      pointCounter++;
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-template<typename TPixel, unsigned int VImageDimension>
-void
-MIDASGeneralSegmentorView
-::ITKFilterInputPointSetToExcludeRegionOfInterest(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
-    mitk::PointSet &inputSeeds,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeedsNotInRegionOfInterest
-    )
-{
-  // Copy inputSeeds to outputCopyOfInputSeeds seeds, so that they can be passed on to
-  // Redo/Undo framework for Undo purposes. Additionally, copy any input seed that is not
-  // within the regionOfInterest. Seed locations are all in millimetres.
-
-  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::IndexType IndexType;
-  typedef typename ImageType::PointType PointType;
-
-  PointType voxelIndexInMillimetres;
-  IndexType voxelIndex;
-
-  int pointCounter = 0;
-  for (int i = 0; i < inputSeeds.GetSize(); i++)
-  {
-    // Copy every point to outputCopyOfInputSeeds.
-    outputCopyOfInputSeeds.InsertPoint(i, inputSeeds.GetPoint(i));
-
-    // Only copy points outside of ROI.
-    voxelIndexInMillimetres = inputSeeds.GetPoint(i);
-    itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
-
-    if (!regionOfInterest.IsInside(voxelIndex))
-    {
-      outputNewSeedsNotInRegionOfInterest.InsertPoint(pointCounter, inputSeeds.GetPoint(i));
       pointCounter++;
     }
   }
@@ -3183,6 +3308,48 @@ MIDASGeneralSegmentorView
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+void
+MIDASGeneralSegmentorView
+::ITKFilterInputPointSetToExcludeRegionOfInterest(
+    itk::Image<TPixel, VImageDimension> *itkImage,
+    typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
+    mitk::PointSet &inputSeeds,
+    mitk::PointSet &outputCopyOfInputSeeds,
+    mitk::PointSet &outputNewSeedsNotInRegionOfInterest
+    )
+{
+  // Copy inputSeeds to outputCopyOfInputSeeds seeds, so that they can be passed on to
+  // Redo/Undo framework for Undo purposes. Additionally, copy any input seed that is not
+  // within the regionOfInterest. Seed locations are all in millimetres.
+
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::IndexType IndexType;
+  typedef typename ImageType::PointType PointType;
+
+  PointType voxelIndexInMillimetres;
+  IndexType voxelIndex;
+
+  int pointCounter = 0;
+  for (int i = 0; i < inputSeeds.GetSize(); i++)
+  {
+    // Copy every point to outputCopyOfInputSeeds.
+    outputCopyOfInputSeeds.InsertPoint(i, inputSeeds.GetPoint(i));
+
+    // Only copy points outside of ROI.
+    voxelIndexInMillimetres = inputSeeds.GetPoint(i);
+    itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
+
+    if (!regionOfInterest.IsInside(voxelIndex))
+    {
+      outputNewSeedsNotInRegionOfInterest.InsertPoint(pointCounter, inputSeeds.GetPoint(i));
+      pointCounter++;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 bool MIDASGeneralSegmentorView
 ::ITKSliceDoesHaveSeeds(
     itk::Image<TPixel, VImageDimension> *itkImage,
@@ -3228,17 +3395,9 @@ MIDASGeneralSegmentorView
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
-  typedef typename ImageType::SizeType SizeType;
-  typedef typename ImageType::IndexType IndexType;
 
-  RegionType region = itkImage->GetLargestPossibleRegion();
-  SizeType regionSize = region.GetSize();
-  IndexType regionIndex = region.GetIndex();
-
-  regionSize[axis] = 1;
-  regionIndex[axis] = slice;
-  region.SetSize(regionSize);
-  region.SetIndex(regionIndex);
+  RegionType region;
+  this->ITKCalculateSliceRegion(itkImage, axis, slice, region);
 
   outputSliceIsEmpty = true;
 
@@ -3268,7 +3427,6 @@ MIDASGeneralSegmentorView
     mitk::ContourSet &segmentationContours,
     mitk::ContourSet &drawContours,
     mitk::ContourSet &polyContours,
-    itk::ORIENTATION_ENUM orientation,
     int sliceNumber,
     int axisNumber,
     double lowerThreshold,
@@ -3326,6 +3484,10 @@ MIDASGeneralSegmentorView
   // Update pipeline.
   if (!skipUpdate)
   {
+    // First wipe whole 3D volume
+    regionGrowingToItk->GetOutput()->FillBuffer(0);
+
+    // Configure pipeline.
     pipeline->SetParam(params);
 
     // Setting the pointer to the output image, then calling update on the pipeline
@@ -3359,7 +3521,7 @@ MIDASGeneralSegmentorView
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
   // First take a copy of input seeds, as we need to store them for Undo/Redo purposes.
-  this->CopySeeds(&inputSeeds, &outputCopyOfInputSeeds);
+  this->CopySeeds(inputSeeds, outputCopyOfInputSeeds);
 
   // Work out the output region of interest that will be affected.
   // We want the region upstream/downstream/both of the slice of interest
@@ -3472,6 +3634,8 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetInput(itkImage);
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
+  regionGrowingFilter->SetPropMask(propagationMask);
+  regionGrowingFilter->SetUsePropMaskMode(true);
   regionGrowingFilter->SetProjectSeedsIntoRegion(false);
   regionGrowingFilter->SetEraseFullSlice(false);
   regionGrowingFilter->SetForegroundValue(1);
@@ -3484,7 +3648,6 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetLowerThreshold(lowerThreshold);
   regionGrowingFilter->SetUpperThreshold(upperThreshold);
   regionGrowingFilter->SetSeedPoints(*(itkSeeds.GetPointer()));
-  regionGrowingFilter->SetPropMask(propagationMask);
   regionGrowingFilter->Update();
 
   // Write output of region growing filter directly back to the supplied region growing image
@@ -3621,6 +3784,7 @@ MIDASGeneralSegmentorView
   itkImage->TransformIndexToPhysicalPoint(projectedRegionIndex, originOfProjectedSlice);
   itkImage->TransformIndexToPhysicalPoint(axes[0], axesInMillimetres[0]);
   itkImage->TransformIndexToPhysicalPoint(axes[1], axesInMillimetres[1]);
+
   for (int i = 0; i < 3; i++)
   {
     axesInMillimetres[0][i] -= originOfSlice[i];
@@ -3636,7 +3800,6 @@ MIDASGeneralSegmentorView
   typename ExtractContoursFilterType::Pointer extractContoursFilter = ExtractContoursFilterType::New();
   extractContoursFilter->SetInput(extractSliceFilter->GetOutput());
   extractContoursFilter->SetContourValue(0.5);
-
   extractContoursFilter->Update();
 
   // Now extract the contours, and convert to millimetre coordinates.
@@ -3904,8 +4067,8 @@ MIDASGeneralSegmentorView
     {
       // Copy all input seeds, as we are moving to an empty slice.
       this->CopySeeds(
-          &inputSeeds,
-          &outputCopyOfInputSeeds
+          inputSeeds,
+          outputCopyOfInputSeeds
           );
 
       // Take all seeds on the current slice number, and propagate to new slice.
@@ -3979,16 +4142,16 @@ MIDASGeneralSegmentorView
   if (outputCopyOfInputSeeds.GetSize() == 0)
   {
     this->CopySeeds(
-        &inputSeeds,
-        &outputCopyOfInputSeeds
+        inputSeeds,
+        outputCopyOfInputSeeds
         );
   }
 
   if (outputNewSeeds.GetSize() == 0)
   {
     this->CopySeeds(
-        &inputSeeds,
-        &outputNewSeeds
+        inputSeeds,
+        outputNewSeeds
         );
   }
 }
@@ -4099,6 +4262,48 @@ MIDASGeneralSegmentorView
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+bool MIDASGeneralSegmentorView
+::ITKImageHasNonZeroEdgePixels(
+    itk::Image<TPixel, VImageDimension> *itkImage
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
+  typedef typename ImageType::IndexType IndexType;
+  typedef typename ImageType::SizeType SizeType;
+
+  RegionType region = itkImage->GetLargestPossibleRegion();
+  SizeType regionSize = region.GetSize();
+  IndexType voxelIndex;
+
+  for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
+  {
+    regionSize[i] -= 1;
+  }
+
+  itk::ImageRegionConstIteratorWithIndex<ImageType> iterator(itkImage, region);
+  for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+  {
+    voxelIndex = iterator.GetIndex();
+    bool isEdge(false);
+    for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
+    {
+      if ((int)voxelIndex[i] == 0 || (int)voxelIndex[i] == (int)regionSize[i])
+      {
+        isEdge = true;
+      }
+    }
+    if (isEdge && itkImage->GetPixel(voxelIndex) > 0)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void MIDASGeneralSegmentorView
 ::ITKSliceDoesHaveUnEnclosedSeeds(
     itk::Image<TPixel, VImageDimension> *itkImage,
@@ -4109,7 +4314,7 @@ void MIDASGeneralSegmentorView
     mitk::Image &workingImage,
     double lowerThreshold,
     double upperThreshold,
-    bool doRegionGrowing,
+    bool useThresholds,
     int axis,
     int slice,
     bool &sliceDoesHaveUnenclosedSeeds
@@ -4137,9 +4342,9 @@ void MIDASGeneralSegmentorView
   params.m_SegmentationContours = &segmentationContours;
   params.m_PolyContours = &polyToolContours;
   params.m_DrawContours = &drawToolContours;
-  params.m_EraseFullSlice = true;
+  params.m_EraseFullSlice = false;
 
-  if (doRegionGrowing)
+  if (useThresholds)
   {
     params.m_LowerThreshold = lowerThreshold;
     params.m_UpperThreshold = upperThreshold;
@@ -4205,9 +4410,7 @@ void MIDASGeneralSegmentorView
   typedef typename BinaryImageType::RegionType RegionType;
   typedef typename BinaryImageType::PointType PointType;
 
-  // Copy draw tool contours into segmentation contours.
   mitk::MIDASContourTool::CopyContourSet(segmentationContours, outputCopyOfInputContours, true);
-  mitk::MIDASContourTool::CopyContourSet(drawToolContours, outputCopyOfInputContours, false);
 
   GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = slice;
@@ -4254,6 +4457,12 @@ void MIDASGeneralSegmentorView
   mitk::Contour::Pointer outputContour = mitk::Contour::New();
   mitk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
+  RegionType neighbourhoodRegion;
+  SizeType neighbourhoodSize;
+  IndexType neighbourhoodIndex;
+  neighbourhoodSize.Fill(2);
+  neighbourhoodSize[axis] = 1;
+
   while ( contourIt != contourVec.end() )
   {
     mitk::Contour::Pointer nextContour = (mitk::Contour::Pointer) (*contourIt).second;
@@ -4272,23 +4481,18 @@ void MIDASGeneralSegmentorView
 
       for (unsigned int j = 0; j < SizeType::GetSizeDimension(); j++)
       {
-        voxelIndex[j] = continuousVoxelIndex[j];
+        voxelIndex[j] = (int)(continuousVoxelIndex[j]);
       }
-
-      SizeType neighbourhoodSize;
-      neighbourhoodSize.Fill(2);
-      neighbourhoodSize[axis] = 1;
-
-      IndexType neighbourhoodIndex = voxelIndex;
-      RegionType neighbourhoodRegion;
+      voxelIndex[axis] = slice;
+      neighbourhoodIndex = voxelIndex;
       neighbourhoodRegion.SetSize(neighbourhoodSize);
       neighbourhoodRegion.SetIndex(neighbourhoodIndex);
 
       bool isNearRegion = false;
-      itk::ImageRegionIterator<BinaryImageType> imageIterator(localPipeline.m_RegionGrowingFilter->GetOutput(), neighbourhoodRegion);
-      for (imageIterator.GoToBegin(); !imageIterator.IsAtEnd(); ++imageIterator)
+      itk::ImageRegionConstIteratorWithIndex<BinaryImageType> regionGrowingIterator(localPipeline.m_RegionGrowingFilter->GetOutput(), neighbourhoodRegion);
+      for (regionGrowingIterator.GoToBegin(); !regionGrowingIterator.IsAtEnd(); ++regionGrowingIterator)
       {
-        if (imageIterator.Get() > 0)
+        if (regionGrowingIterator.Get() > 0)
         {
           isNearRegion = true;
           break;
@@ -4318,47 +4522,6 @@ void MIDASGeneralSegmentorView
   }
 }
 
-
-//-----------------------------------------------------------------------------
-template<typename TPixel, unsigned int VImageDimension>
-bool MIDASGeneralSegmentorView
-::ITKImageHasNonZeroEdgePixels(
-    itk::Image<TPixel, VImageDimension> *itkImage
-    )
-{
-  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::RegionType RegionType;
-  typedef typename ImageType::IndexType IndexType;
-  typedef typename ImageType::SizeType SizeType;
-
-  RegionType region = itkImage->GetLargestPossibleRegion();
-  SizeType regionSize = region.GetSize();
-  IndexType voxelIndex;
-
-  for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
-  {
-    regionSize[i] -= 1;
-  }
-
-  itk::ImageRegionConstIteratorWithIndex<ImageType> iterator(itkImage, region);
-  for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
-  {
-    voxelIndex = iterator.GetIndex();
-    bool isEdge(false);
-    for (unsigned int i = 0; i < IndexType::GetIndexDimension(); i++)
-    {
-      if ((int)voxelIndex[i] == 0 || (int)voxelIndex[i] == (int)regionSize[i])
-      {
-        isEdge = true;
-      }
-    }
-    if (isEdge && itkImage->GetPixel(voxelIndex) > 0)
-    {
-      return true;
-    }
-  }
-  return false;
-}
 
 
 //-----------------------------------------------------------------------------
@@ -4427,11 +4590,8 @@ MIDASGeneralSegmentorView
   if (pipeline != NULL)
   {
     delete pipeline;
-  }
-  else
-  {
-    MITK_ERROR << "MIDASGeneralSegmentorView::DestroyITKPipeline(..), failed to delete pipeline, as it was already NULL????" << std::endl;
-  }
+  };
+
   m_TypeToPipelineMap.clear();
 }
 

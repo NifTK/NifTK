@@ -10,8 +10,6 @@ set(CPP_FILES
   DataManagement/mitkDataStorageListener.cpp
   DataManagement/mitkDataStoragePropertyListener.cpp
   DataManagement/mitkDataStorageVisibilityTracker.cpp
-  DataManagement/mitkMIDASNodeAddedInterpolationSetter.cpp
-  DataManagement/mitkMIDASNodeAddedBlackOpacitySetter.cpp
   DataManagement/mitkMIDASNodeAddedVisibilitySetter.cpp
   DataManagement/mitkMIDASDataNodeNameStringFilter.cpp
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cpp

@@ -25,6 +25,7 @@
 #include "QmitkIGIUltrasonixTool.h"
 #include <QImage>
 #include "mitkRenderingManager.h"
+#include <QmitkCommonFunctionality.h>
 
 NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
@@ -35,6 +36,7 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
 : m_Image(NULL)
 , m_ImageNode(NULL)
 , m_Filter(NULL)
+, m_RadToDeg ( 180 / 3.14159265358979323846)
 {
   m_Filter = QmitkQImageToMitkImageFilter::New();
 
@@ -42,6 +44,7 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
   m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
   m_ImageNode->SetVisibility(true);
   m_ImageNode->SetOpacity(1);
+  m_Image = mitk::Image::New();
 }
 
 
@@ -68,16 +71,22 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
 {
   OIGTLImageMessage::Pointer imageMsg;
   imageMsg = static_cast<OIGTLImageMessage::Pointer>(msg);
+  imageMsg->PreserveMatrix();
 
   if (imageMsg.data() != NULL)
   {
-    emit UpdatePreviewImage(imageMsg);
 
     QImage image = imageMsg->getQImage();
     m_Filter->SetQImage(&image);
+    m_Filter->SetGeometryImage(m_Image);
     m_Filter->Update();
     m_Image = m_Filter->GetOutput();
+
     m_ImageNode->SetData(m_Image);
+    
+    imageMsg->getMatrix(m_ImageMatrix);
+
+    emit UpdatePreviewImage(imageMsg);
 
     if (!this->GetDataStorage()->Exists(m_ImageNode))
     {
@@ -85,5 +94,23 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
     }
 
     mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    emit SaveImage(imageMsg);
   }
+}
+
+void QmitkIGIUltrasonixTool::SaveImage(QString filename)
+{
+  CommonFunctionality::SaveImage( m_Image, filename.toAscii() );
+}
+
+float QmitkIGIUltrasonixTool::GetMotorPos()
+{
+  float AcosAngle = m_ImageMatrix[2][2];
+  return acos ( AcosAngle ) * m_RadToDeg;
+}
+void QmitkIGIUltrasonixTool::GetImageMatrix(igtl::Matrix4x4 &ImageMatrix)
+{
+  for ( int row = 0 ; row < 4 ; row ++)
+    for ( int col = 0 ; col < 4 ; col ++ )
+      ImageMatrix[row][col]=m_ImageMatrix[row][col];
 }
