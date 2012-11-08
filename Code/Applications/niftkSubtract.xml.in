@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>@NIFTK_PLATFORM@.Image Operators</category>
+  <title>Subtract</title>
+  <description><![CDATA[Subtracts two images of exactly the same size on a voxel by voxel basis.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson, Marc Modat. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image>
+      <name>inputImage1</name>
+      <flag>i</flag>
+      <longflag>inputImage1</longflag>
+      <description>Input image 1</description>
+      <label>Image 1</label>
+      <channel>input</channel>
+    </image>
+    <image>
+      <name>inputImage2</name>
+      <flag>j</flag>
+      <longflag>inputImage2</longflag>
+      <description>Input image 2</description>
+      <label>Image 2</label>
+      <channel>input</channel>
+    </image>
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>outputSubtract.nii.gz</default>
+      <channel>output</channel>
+    </image>
+  </parameters>
+</executable>
