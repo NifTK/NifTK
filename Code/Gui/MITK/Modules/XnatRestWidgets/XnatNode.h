@@ -8,42 +8,39 @@
 #include <QList>
 #include <vector>
 
-class XnatNodeActivity;
-
 
 class XnatRestWidgets_EXPORT XnatNode
 {
 public:
-  XnatNode(XnatNodeActivity& activity, int row = -1, XnatNode* parent = NULL);
-  ~XnatNode();
+  explicit XnatNode(int row = -1, XnatNode* parent = NULL);
+  virtual ~XnatNode();
 
-  const char* getParentName();
+  const char* getParentName() const;
   int getRowInParent();
   XnatNode* getParentNode();
   int getNumChildren();
-  const char* getChildName(int row);
-  XnatNode* getChildNode(int row);
+  const char* getChildName(int row) const;
+  XnatNode* getChildNode(int row) const;
 
   void addChild(const char* name);
-  void addChildNode(int row, XnatNode* node);
-  XnatNode* makeChildNode(int row);
+  void setChildNode(int row, XnatNode* node);
+  virtual XnatNode* makeChildNode(int row) = 0;
   void removeChildNode(int row);
 
-  void download(int row, const char* zipFilename);
-  void downloadAllFiles(int row, const char* zipFilename);
-  void upload(int row, const char* zipFilename);
-  void add(int row, const char* name);
-  void remove(int row);
+  virtual void download(int row, const char* zipFilename);
+  virtual void upload(int row, const char* zipFilename);
+  virtual void add(int row, const char* name);
+  virtual void remove(int row);
 
-  const char* getKind();
-  const char* getModifiableChildKind(int row);
-  const char* getModifiableParentName(int row);
+  virtual const char* getKind() const;
+  virtual const char* getModifiableChildKind(int row) const;
+  virtual const char* getModifiableParentName(int row) const;
 
-  bool isFile();
-  bool holdsFiles();
-  bool receivesFiles();
-  bool isModifiable(int row);
-  bool isDeletable();
+  virtual bool isFile() const;
+  virtual bool holdsFiles() const;
+  virtual bool receivesFiles() const;
+  virtual bool isModifiable(int row) const;
+  virtual bool isDeletable() const;
 
 private:
   class XnatChild
@@ -52,11 +49,11 @@ private:
     std::string name;
     XnatNode* node;
 
-    XnatChild(const char* name, XnatNode* node = NULL);
+    XnatChild(const char* name);
     ~XnatChild();
   };
 
-  XnatNodeActivity& nodeActivity;
+private:
   int rowInParent;
   XnatNode* parent;
   std::vector<XnatChild*> children;

@@ -7,7 +7,6 @@ extern "C"
 
 #include "XnatConnection.h"
 #include "XnatException.h"
-#include "XnatNodeActivity.h"
 
 
 // XnatConnectionFactory class
