@@ -2458,8 +2458,7 @@ int main( int argc, char *argv[] )
       WriteImageToVTKSurfaceFile( derivativeFilterZ->GetOutput(), 
 				  fileOutputVTKSurface,
 				  BOTH_BREASTS, flgVerbose, finalSegmThreshold );
-
-  }
+ }
 
 
   // Disconnect the pipeline
