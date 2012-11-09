@@ -1,17 +1,27 @@
 set(CPP_FILES
-  XnatSettings.cpp
+  XnatCategoryNode.cpp
   XnatConnection.cpp
   XnatConnectionFactory.cpp
   XnatDownloadDialog.cpp
   XnatDownloadManager.cpp
+  XnatEmptyNode.cpp
   XnatException.cpp
+  XnatExperimentNode.cpp
   XnatLoginDialog.cpp
   XnatLoginProfile.cpp
   XnatModel.cpp
   XnatNameDialog.cpp
-  XnatNodeActivity.cpp
   XnatNode.cpp
-  XnatNodeProperties.cpp
+  XnatProjectNode.cpp
+  XnatReconstructionNode.cpp
+  XnatReconstructionResourceFileNode.cpp
+  XnatReconstructionResourceNode.cpp
+  XnatRootNode.cpp
+  XnatScanNode.cpp
+  XnatScanResourceFileNode.cpp
+  XnatScanResourceNode.cpp
+  XnatSettings.cpp
+  XnatSubjectNode.cpp
   XnatTreeView.cpp
   XnatUploadDialog.cpp
   XnatUploadManager.cpp

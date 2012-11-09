@@ -1,0 +1,835 @@
+#!/bin/bash 
+
+#/*=============================================================================
+#
+# NifTK: An image processing toolkit jointly developed by the
+#             Dementia Research Centre, and the Centre For Medical Image Computing
+#             at University College London.
+# 
+# See:        http://dementia.ion.ucl.ac.uk/
+#             http://cmic.cs.ucl.ac.uk/
+#             http://www.ucl.ac.uk/
+#
+# Last Changed      : $Date: 2012-11-05 14:43:44 +0000 (Mon, 05 Nov 2012) $
+# Revision          : $Revision: 1 $
+# Last modified by  : $Author: fp $
+#
+# Original author   : f.carrasco@ucl.ac.uk
+#
+# Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+#
+# This software is distributed WITHOUT ANY WARRANTY; without even
+# the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the above copyright notices for more information.
+#
+# ============================================================================*/
+#
+# This script is for Fill lesion volume with simulated WM pixel intensities developed by Jonathan S. Jackson 
+# and presented in the JMRI 2010 (Reducing the Imapc of White Matter Lesions on Automated Measures of Brain Gray and
+# White Matter Volumes). 
+#
+# The basic method is:
+# If the user runs niftkFillLesions.sh --xml we respond with the XML function contained herein.
+# All other command line invocations, we pass the parameters onto the underlying program.
+
+source _niftkCommon.sh
+
+###### DEFAULT OPTIONS #######
+
+dir_output='fill_lesions/'
+unalias rm 2> /dev/null # don't ask about removing existing files
+
+# Directory configurations for change the default
+dir_niftyreg=""
+mnidir=""
+n3dir=""
+
+# Function  : Clean temp directory 
+#
+function cleanup
+{
+	if [[ -d ../${dir_output} ]] ; then
+		cd ..
+	fi
+	if [[ -d ${dir_output} ]] ; then
+		rm -rf  ${dir_output} 
+	fi
+}
+trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
+
+# Function  : runs fityk older than version 0.98 for T1 images with 3 or 4 gaussian
+#
+# Param	    : $1 input histogram
+function cfityk_OLDER_T2() {
+	local image_root=$1
+	
+	# Be carefull the variable name of cfityk is max, but it contains a minimum peak
+	# cfityk version older than 0.9.8
+	progressXML "0.76" "CFITYK older than 0.9.8 version: ${FITYKVERSION}"
+	progressXML "0.77" "2 Gaussian";
+	    cfityk -q -c '
+	set autoplot = never;
+	set exit-on-warning = 0;
+	@0 < '"${image_root}_bet_n3.hist"':2:3::;
+	%t = guess Gaussian;
+	%u = guess Gaussian;
+	fit;
+	info peaks;
+	define TwoGaussian(h1,c1,w1,h2,c2,w2) = h1*exp(-ln(2)*((x-c1)/w1)^2) + h2*exp(-ln(2)*((x-c2)/w2)^2);
+	%histo=TwoGaussian($_1, $_2, $_3, $_4, $_5, $_6);
+	$peak1={ %t.center > x[M-1] ? 0 : %t.center};
+	$peak2={ %u.center > x[M-1] ? 0 : %u.center};
+	$max_peak={min2($peak1,$peak2)};
+	$peak_hwhm=0;
+	$peak_hwhm={ %t.center == $max_peak ? %t.hwhm : $peak_hwhm };
+	$peak_hwhm={ %u.center == $max_peak ? %u.hwhm : $peak_hwhm };
+	$start = {$max_peak-$peak_hwhm};
+	$end = {$max_peak+$peak_hwhm};
+	info $max_peak;
+	info $peak_hwhm;
+	info extremum(%histo, $start, $end );
+	' >| "${image_root}_bet_n3.fityk"
+}
+
+# Function  : runs fityk older than version 0.98 for T1 images with 3 or 4 gaussian
+#
+# Param	    : $1 input histogram
+function cfityk_OLDER_T1() {
+	local image_root=$1
+	
+	# cfityk version older than 0.9.8
+	progressXML "0.76" "CFITYK older than 0.9.8 version: ${FITYKVERSION}"
+	    cfityk -q -c '
+	set autoplot = never;
+	set exit-on-warning = 0;
+	@0 < '"${image_root}_bet_n3.hist"':2:3::;
+	%t = guess Gaussian;
+	%u = guess Gaussian;
+	fit;
+	%v = guess Gaussian;
+	fit;
+	%w = guess Gaussian;
+	fit;
+	info peaks;
+	define FourGaussian(h1,c1,w1,h2,c2,w2,h3,c3,w3,h4,c4,w4) = h1*exp(-ln(2)*((x-c1)/w1)^2) + h2*exp(-ln(2)*((x-c2)/w2)^2) +  h3*exp(-ln(2)*((x-c3)/w3)^2)+ h4*exp(-ln(2)*((x-c4)/w4)^2);
+	%histo=FourGaussian($_1, $_2, $_3, $_4, $_5, $_6, $_7, $_8, $_9, $_10, $_11, $_12);
+	$peak1={ %t.center > x[M-1] ? 0 : %t.center};
+	$peak2={ %u.center > x[M-1] ? 0 : %u.center};
+	$peak3={ %v.center > x[M-1] ? 0 : %v.center};
+	$peak4={ %w.center > x[M-1] ? 0 : %w.center};
+	$max_peak={max2(max2($peak1,$peak2),max2($peak3,$peak4))};
+	$peak_hwhm=0;
+	$peak_hwhm={ %t.center == $max_peak ? %t.hwhm : $peak_hwhm };
+	$peak_hwhm={ %u.center == $max_peak ? %u.hwhm : $peak_hwhm };
+	$peak_hwhm={ %v.center == $max_peak ? %v.hwhm : $peak_hwhm };
+	$peak_hwhm={ %w.center == $max_peak ? %w.hwhm : $peak_hwhm };
+	$start = {$max_peak-$peak_hwhm};
+	$end = {$max_peak+$peak_hwhm};
+	info $max_peak;
+	info $peak_hwhm;
+	info extremum(%histo, $start, $end );
+	' >| "${image_root}_bet_n3.fityk"
+ 
+	message=$(cat ${image_root}_bet_n3.fityk)
+	
+	if [[ "${message}" == *Warning* ]]; then
+		progressXML "0.77" "3 Gaussians"
+		# cfityk version older than 0.9.8
+		cfityk -q -c '
+		set autoplot = never;
+		set exit-on-warning = 0;
+		@0 < '"${image_root}_bet_n3.hist"':2:3::;
+		%t = guess Gaussian;
+		%u = guess Gaussian;
+		fit;
+		%v = guess Gaussian;
+		fit;
+		info peaks;
+		define FourGaussian(h1,c1,w1,h2,c2,w2,h3,c3,w3) = h1*exp(-ln(2)*((x-c1)/w1)^2) + h2*exp(-ln(2)*((x-c2)/w2)^2) +  h3*exp(-ln(2)*((x-c3)/w3)^2);
+		%histo=FourGaussian($_1, $_2, $_3, $_4, $_5, $_6, $_7, $_8, $_9);
+		$peak1={ %t.center > x[M-1] ? 0 : %t.center};
+		$peak2={ %u.center > x[M-1] ? 0 : %u.center};
+		$peak3={ %v.center > x[M-1] ? 0 : %v.center};
+		$max_peak={max2(max2($peak1,$peak2),$peak3)};
+		$peak_hwhm=0;
+		$peak_hwhm={ %t.center == $max_peak ? %t.hwhm : $peak_hwhm };
+		$peak_hwhm={ %u.center == $max_peak ? %u.hwhm : $peak_hwhm };
+		$peak_hwhm={ %v.center == $max_peak ? %v.hwhm : $peak_hwhm };
+		$start = {$max_peak-$peak_hwhm};
+		$end = {$max_peak+$peak_hwhm};
+		info $max_peak;
+		info $peak_hwhm;
+		info extremum(%histo, $start, $end );
+		' >| "${image_root}_bet_n3.fityk"
+	else
+		progressXML "0.77" "4 Gaussians"	
+	fi
+}
+
+# Function  : runs fityk v098 or newer for T1 images with 3 or 4 gaussian
+#
+# Param	    : $1 input histogram
+function cfityk_v098_OR_NEWER_T2() {
+	local image_root=$1
+	
+	# cfityk version 0.9.8 or newer
+	progressXML "0.76" "CFITYK 0.9.8 or newer: ${FITYKVERSION}"
+	progressXML "0.77" "2 Gaussian";
+	# Be carefull the variable name of cfityk is max, but it contains a minimum peak
+	echo "set autoplot = 0;
+	set exit_on_warning = 0;
+	@0 < ${image_root}_bet_n3.hist:2:3::;
+	guess %t = Gaussian;
+	guess %u = Gaussian;
+	fit;
+	info peaks;
+	define TwoGaussian(h1,c1,w1,h2,c2,w2) = h1*exp(-ln(2)*((x-c1)/w1)^2) + h2*exp(-ln(2)*((x-c2)/w2)^2);
+	%histo=TwoGaussian(\$_1, \$_2, \$_3, \$_4, \$_5, \$_6);
+	\$peak1={ %t.center > x[M-1] ? 0 : %t.center};
+	\$peak2={ %u.center > x[M-1] ? 0 : %u.center};
+	\$max_peak={min2(\$peak1,\$peak2)};
+	\$peak_hwhm=0;
+	\$peak_hwhm={ %t.center == \$max_peak ? %t.hwhm : \$peak_hwhm };
+	\$peak_hwhm={ %u.center == \$max_peak ? %u.hwhm : \$peak_hwhm };
+	\$start = {\$max_peak-\$peak_hwhm};
+	\$end = {\$max_peak+\$peak_hwhm};
+	info \$max_peak;
+	info \$peak_hwhm;
+	\$ext = {%histo.extremum(\$start, \$end)};
+	info \$ext; 
+	quit" > "${image_root}_bet_n3.fit"
+	    cfityk -q "${image_root}_bet_n3.fit" >| "${image_root}_bet_n3.fityk" 
+}
+
+
+# Function  : runs fityk v098 or newer for T1 images with 3 or 4 gaussian
+#
+# Param	    : $1 input histogram
+function cfityk_v098_OR_NEWER_T1() {
+	local image_root=$1
+	
+	# cfityk version 0.9.8 or newer
+	progressXML "0.76" "CFITYK 0.9.8 or newer: ${FITYKVERSION}"
+	echo "set autoplot = 0;
+	set exit_on_warning = 0;
+	@0 < ${image_root}_bet_n3.hist:2:3::;
+	guess %t = Gaussian;
+	guess %u = Gaussian;
+	fit;
+	guess %v = Gaussian;
+	fit;
+	guess %w = Gaussian;
+	fit;
+	info peaks;
+	define FourGaussian(h1,c1,w1,h2,c2,w2,h3,c3,w3,h4,c4,w4) = h1*exp(-ln(2)*((x-c1)/w1)^2) + h2*exp(-ln(2)*((x-c2)/w2)^2) +  h3*exp(-ln(2)*((x-c3)/w3)^2)+ h4*exp(-ln(2)*((x-c4)/w4)^2);
+	%histo=FourGaussian(\$_1, \$_2, \$_3, \$_4, \$_5, \$_6, \$_7, \$_8, \$_9, \$_10, \$_11, \$_12);
+	\$peak1={ %t.center > x[M-1] ? 0 : %t.center};
+	\$peak2={ %u.center > x[M-1] ? 0 : %u.center};
+	\$peak3={ %v.center > x[M-1] ? 0 : %v.center};
+	\$peak4={ %w.center > x[M-1] ? 0 : %w.center};
+	\$max_peak={max2(max2(\$peak1,\$peak2),max2(\$peak3,\$peak4))};
+	\$peak_hwhm=0;
+	\$peak_hwhm={ %t.center == \$max_peak ? %t.hwhm : \$peak_hwhm };
+	\$peak_hwhm={ %u.center == \$max_peak ? %u.hwhm : \$peak_hwhm };
+	\$peak_hwhm={ %v.center == \$max_peak ? %v.hwhm : \$peak_hwhm };
+	\$peak_hwhm={ %w.center == \$max_peak ? %w.hwhm : \$peak_hwhm };
+	\$start = {\$max_peak-\$peak_hwhm};
+	\$end = {\$max_peak+\$peak_hwhm};
+	info \$max_peak;
+	info \$peak_hwhm;
+	\$ext = {%histo.extremum(\$start, \$end)};
+	info \$ext; 
+	quit" > "${image_root}_bet_n3.fit"
+	    cfityk -q "${image_root}_bet_n3.fit" >| "${image_root}_bet_n3.fityk" 
+
+	message=$(cat ${image_root}_bet_n3.fityk)
+	
+	if [[ "${message}" == *Warning* || "${message}" == *Error* ]]; then
+		progressXML "0.77" "3 Gaussians"
+		# cfityk version 0.9.8 or newer
+		echo "set autoplot = 0;
+		set exit_on_warning = 0;
+		@0 < ${image_root}_bet_n3.hist:2:3::;
+		guess %t = Gaussian;
+		guess %u = Gaussian;
+		fit;
+		guess %v = Gaussian;
+		fit;
+		info peaks;
+		define FourGaussian(h1,c1,w1,h2,c2,w2,h3,c3,w3) = h1*exp(-ln(2)*((x-c1)/w1)^2) + h2*exp(-ln(2)*((x-c2)/w2)^2) +  h3*exp(-ln(2)*((x-c3)/w3)^2);
+		%histo=FourGaussian(\$_1, \$_2, \$_3, \$_4, \$_5, \$_6, \$_7, \$_8, \$_9);
+		\$peak1={ %t.center > x[M-1] ? 0 : %t.center};
+		\$peak2={ %u.center > x[M-1] ? 0 : %u.center};
+		\$peak3={ %v.center > x[M-1] ? 0 : %v.center};
+		\$max_peak={max2(max2(\$peak1,\$peak2),\$peak3)};
+		\$peak_hwhm=0;
+		\$peak_hwhm={ %t.center == \$max_peak ? %t.hwhm : \$peak_hwhm };
+		\$peak_hwhm={ %u.center == \$max_peak ? %u.hwhm : \$peak_hwhm };
+		\$peak_hwhm={ %v.center == \$max_peak ? %v.hwhm : \$peak_hwhm };
+		\$start = {\$max_peak-\$peak_hwhm};
+		\$end = {\$max_peak+\$peak_hwhm};
+		info \$max_peak;
+		info \$peak_hwhm;
+		\$ext = {%histo.extremum(\$start, \$end)};
+		info \$ext; 
+		quit" > "${image_root}_bet_n3.fit"
+		    cfityk -q "${image_root}_bet_n3.fit" >| "${image_root}_bet_n3.fityk"
+
+	else
+		progressXML "0.77" "4 Gaussians"
+	fi
+}
+
+# Function  : Calculate image histogram
+#
+# Param	    : $1 input image
+# Param	    : $2 delete orientation to the mask file
+# Param     : $3 input images orientation
+# Param     : $4 length scale of non-uniformity
+function N3() { 
+	local image=$1
+	local deleteorient=$2
+	local orient_flag=$3
+	local nu_distance=$4
+	
+	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}.nii ${image}.mnc" 
+	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}_mask.nii ${image}_mask.mnc"
+	
+	execute_command_or_else_stop "${n3dir}nu_correct -normalize_field -clobber -distance $nu_distance \
+					 -mask ${image}_mask.mnc \
+					 ${image}.mnc \
+					 ${image}_n3.mnc"
+	
+	execute_command_or_else_stop ${mnidir}"mnc2nii -nii ${image}_n3.mnc ${image}_n3"
+	execute_command_or_else_stop "rm -f *.mnc"
+	
+	# The next line may be need to be commented depending of the results
+	if $deleteorient ; then
+		echo "Swapping y axis and deleting orient in nu_correct output file"
+		execute_command_or_else_stop "fslswapdim_exe ${image}_n3 -x y z ${image}_n3_corrected"
+		execute_command_or_else_stop "imcp ${image}_n3_corrected ${image}_n3"
+		execute_command_or_else_stop "fslorient -deleteorient ${image}_n3"
+		execute_command_or_else_stop "rm -f ${image}_corrected.*"
+	fi
+}
+
+# Function  : Calculate image histogram
+#
+function histogram() {
+	local image=$1
+	
+	mem=512
+	class="Smooth_Histogram"
+
+	# Path to ImageJ user plugins, this lines set automatically the path
+	ij_path=$(locate ImageJ | grep 'ImageJ/plugins' | tail -n 1 | sed 's/plugins\/*/ /g' | awk '$1 {print $1}')
+	ij_plugins="${ij_path}plugins"
+
+	if [[ -d /usr/lib/jvm/default-java/bin/ ]] ; then
+		java_path="/usr/lib/jvm/default-java/bin/"
+	else
+		java_path="${JAVA_PATH:-/usr}/bin/"
+		if ! [[ -f "${java_path}java" ]] ; then
+			java_path=$(which java)
+			java_path=${java_path/%java/}
+		fi
+	fi
+	
+	# Modify classpath
+	CLASSPATH="${ij_path}ij.jar"
+	CLASSPATH="${CLASSPATH}:${ij_plugins}/Histogram/"
+	CLASSPATH="${CLASSPATH}:${ij_plugins}/jars/getopt.jar"
+	export CLASSPATH=$CLASSPATH
+	
+	execute_command_or_else_stop "${java_path}java -mx${mem}m -Dplugins.dir=${ij_path} -Dscript.name=histogram $class -a ${image}.nii > input_image_bet_n3.hist"
+}
+
+# Function  : Copy files to a specific destination as NIFTI file
+#
+# Param	    : $1 input image
+# Param	    : $2 output directory
+# Param     : $3 output image
+function copyFileToDestination() {
+	local full_image=${1}
+	local dir_output=${2}
+	local image=${3}
+
+	if isNifti ${full_image}  ; then
+		execute_command_or_else_stop "cp ${full_image} ${dir_output}${image}.nii"
+	else
+		execute_command_or_else_stop "fslchfiletype NIFTI ${full_image} ${dir_output}${image}.nii"
+	fi
+}
+
+# Function  : Check if a file is a NIFTI file
+#
+function isNifti()  {
+    [[ "$1" == ?*.nii ]]
+}
+
+# Function  : If the user runs niftkFillLesions.sh --xml we respond with the XML function contained herein.
+#
+function UsageXML() {
+cat <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+   <category>MS Tools.Fill lesions</category>
+   <title>Automated lesion-filling</title>
+   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, to develop an automated lesion-filling technique (LEAP; LEsion Automated Preprocessing) that would reduce lesion-associated brain tissue segmentation bias (which is known to affect automated brain gray [GM] and white matter [WM] tissue segmentations in people who have multiple sclerosis).<br>
+   <ul>
+   <li><i>Input image</i>, selects the file that you would like to fill lesions</li>
+   <li><i>Orient</i>, indicates in which orientation is the input images: AXIAL, CORONAL or SAGITALL.</li>
+   <li><i>Input lesion mask </i>, selects the lesion mask data file.</li>
+   <li><i>Output image</i>, select the name and the directory of the output file where the filled lesion image will be recorded. The output file is in NIFTI format.</li>
+   </ul>
+   <br>
+   <p><h2>Recomendations:</h2></p>
+   <p>
+To start with, while choosing what options work best for your images. Run with the default options first as this is the fastest. 
+Take a look at the BET output images to see if the brain extraction worked properly. Then look 
+at the final output images to see if the filled lesion intensity is approximately correct throughout the brain. 
+If the brain extraction has failed for some reason, try without the --bet and --f options and repeat the process. 
+If the brain extraction is good, but the lesion filling intensity doesn't vary correctly through the brain, try running with alternate values 
+for '--l', eg 30, 60. Values below 30 run very slowly!<br><br>
+If the lesion filling is good but there is a shaddow around the filled lesions (ie the lesion mask was conservative), try with the '--d s' 
+or '--d h' options. The '--d h' option should be used with caution as it could cause filling in of grey matter with white matter intensity 
+if the lesion is on a grey/white border.
+   </p>
+   <br>
+   <p><h2>Installation and configuration of associated software:</h2></p>
+<p>
+For the installation and configuration of the different needed software in this pipeline, please, reads this 
+<a href="https://docs.google.com/document/d/1L9dNHdUzsNPFOXCILOWdb-XFxyWmUAIo4N1VWOwCZjQ/edit">document</a>.  
+   </p>
+   ]]></description>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+   <documentation-url>http://onlinelibrary.wiley.com/doi/10.1002/jmri.22214/abstract</documentation-url>
+   <license>BSD</license>
+   <contributor>Ferran Prados (UCL)</contributor>
+   <parameters advanced="false">
+      <label>Mandatory arguments</label>
+      <description>Mandatory arguments: Input image, orientation, lesion mask and ouput image</description>
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
+          <name>inputImageName</name>
+          <longflag>in</longflag>
+	  <description>Input image name</description>
+	  <label>Input image</label>
+	  <channel>input</channel>
+      </image>
+      <string-enumeration>
+      <name>orientation</name>
+      <longflag>orient</longflag>
+      <description><![CDATA[Input images are in:
+      A - Axial orientation 
+      C - Coronal orientation 
+      S - Sagitall orientation]]></description>
+      <label>Input image orientation</label>
+      <default>A</default>
+      <element>A</element>
+      <element>C</element>
+      <element>S</element>
+    </string-enumeration>
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
+          <name>inputMask</name>
+          <longflag>mask</longflag>
+	  <description>Input lesion mask</description>
+	  <label>Input lesion mask</label>
+	  <channel>input</channel>
+      </image>
+      <image fileExtensions="*.nii">
+          <name>outputImageName</name>
+          <longflag>out</longflag>
+	  <description>Output image name</description>
+	  <label>Output image</label>
+	  <default>output.nii</default>
+          <channel>output</channel>
+      </image>
+   </parameters>
+   <parameters advanced="true">
+    <label>Optional arguments</label>
+    <description>Optional arguments</description>
+    <string-enumeration>
+      <name>BEToptions</name>
+      <longflag>bet</longflag>
+      <description><![CDATA[Variations on default BET functionality: 
+      B - bias field & neck cleanup, 
+      S - eye & optic nerve cleanup, 
+      R - robust brain centre estimation and 
+      Z - improve BET if FOV is very small in Z]]></description>
+      <label>BET options</label>
+      <default>S</default>
+      <element>B</element>
+      <element>S</element>
+      <element>R</element>
+      <element>Z</element>
+    </string-enumeration>
+    <float>
+      <name>FractionalIntensityThreshold</name>
+      <longflag>f</longflag>
+      <description><![CDATA[Fractional intensity threshold (0-1); 
+      In BET, 0.5 is the default value. 
+      Lower values than default give larger brain outlines; 
+      higher values lead to smaller brain outlines.]]></description>
+      <label>Fractional intensity threshold</label>
+      <default>0.5</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <step>0.5</step>
+      </constraints>
+    </float>
+    <image fileExtensions="*.nii">
+          <name>brainMaskFile</name>
+          <longflag>b</longflag>
+	  <description>Use existing brain mask file</description>
+	  <label>Brain mask image</label>
+          <channel>input</channel>
+      </image>
+      <string-enumeration>
+      <name>BEToptions</name>
+      <longflag>bet</longflag>
+      <description><![CDATA[Dilate lesion mask: 
+      N - None
+      S - Soft 2D
+      H - Hard 3D]]></description>
+      <label>Dilatation</label>
+      <default>N</default>
+      <element>N</element>
+      <element>S</element>
+      <element>H</element>
+    </string-enumeration>
+    <integer>
+      <name>uniformityscale</name>
+      <longflag>l</longflag>
+      <description>Length scale of non-uniformity</description>
+      <label>Non-uniformity scale</label>
+      <default>35</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>500</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <boolean>
+      <name>T2image</name>
+      <longflag>t2</longflag>      
+      <description>T2 image as input data is used</description>
+      <label>T2 image as input</label>
+    </boolean>
+    <boolean>
+      <name>deleteorient</name>
+      <longflag>z</longflag>      
+      <description>Delete orientation to the both mask files</description>
+      <label>Delete orientation to the mask file</label>
+    </boolean>
+    <boolean>
+      <name>swapoutput</name>
+      <longflag>r</longflag>      
+      <description>Swap left/right and delete orientation NIFTI file obtained by nu_correct</description>
+      <label>Swap nu_correct output</label>
+    </boolean>
+    </parameters>
+</executable>
+EOF
+exit 0
+}
+
+# Function  : If the user runs niftkFillLesions.sh -h, --help or without parameters we respond with the Usage function contained herein.
+#
+function Usage() {
+cat <<EOF
+Fill lesion volume with simulated WM pixel intensities
+
+Usage: $0 [options] --in input_file --orient <value> --mask mask_file --out output_file
+
+Mandatory arguments: 
+
+  --in			: input file in NIFTI format
+  --orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITALL (s) orientation
+  --mask <mask file>	: lesion mask file in NIFTI format
+  --out <file name>	: file name for new image in NIFTI format
+
+Optional Arguments: 
+  --bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default -B
+  --f			: fractional intensity threshold (0->1); by default 0.1.
+  --b <mask file>	: use existing brain mask file
+  --d <dilation>	: dilate lesion mask: none (N), soft 2D (S) or hard 3D (H) [by default none (N)]
+  --l <distance>	: length scale of non-uniformity. Default=35 (mm)
+  --t2			: T2 image as input [by default T1]
+
+Advanced Options: 
+  --z			: delete orientation to the input mask files
+  --r			: swap left/right and delete orientation NIFTI file obtained by nu_correct
+
+EOF
+exit 127
+}
+
+
+# Program start
+export FSLOUTPUTTYPE=NIFTI
+dilation='none'
+deleteorientmask=false
+deleteorient=false
+t2_image=false
+nu_distance=35;
+dilation="N"
+frac="0.1"
+options="-B"
+orientation=""
+if [ $# -eq 0 ]; then
+	Usage
+fi
+
+# Parse remaining command line options
+while [ "$#" -gt 0 ]
+do
+    case $1 in
+    --xml)
+	UsageXML
+	;;
+    -h)
+	Usage
+	;;
+    --help)
+	Usage
+	;;
+    --in)
+	INPUT_IMAGE=$2
+	shift 1
+	;;
+    --out)
+	OUTPUT_IMAGE=$2
+	shift 1
+	;;
+    --mask)
+	LESION_MASK=$2
+	shift 1
+	;;
+    --orient)
+	case $2 in
+		a) orientation="-transverse"
+		;;
+		c) orientation="-coronal"
+		;;
+		s) orientation="-sagittal"
+		;;
+		A) orientation="-transverse"
+		;;
+		C) orientation="-coronal"
+		;;
+		S) orientation="-sagittal"
+		;;
+	esac
+	shift 1
+	;;
+    --bet)
+	options="-$2"
+	shift 1
+	;;
+    --f)
+	frac="$2"
+	shift 1
+	;;
+    --b) 
+	BET_MASK="$2"
+	shift 1
+	;;
+    --l) 
+	nu_distance="$2"
+	shift 1
+	;;
+    --d) 
+	dilation="$2"
+	shift 1
+	;;
+    --t2) 
+	t2_image=true
+	;;
+    --z) 
+	deleteorientmask=true
+	;;
+    --r)
+	deleteorient=true
+	;;
+    -*)
+	Usage
+	exitprog "Error: option $1 not recognised" 1
+	 ;;
+    esac
+    shift 1
+done
+
+if [[ -z ${orientation} ]] ; then
+	exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
+fi
+if [[ -z ${OUTPUT_IMAGE} ]] ; then
+	exitprog "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})" 1
+fi
+
+# Start of the main program
+openprogressXML "Fill Lesions Starts"
+progressXML "0.04" "Checking programs"
+
+# Check that all programs exist
+check_program_exists fslcpgeom
+check_program_exists fslchfiletype
+check_program_exists imcp
+check_program_exists fslswapdim_exe
+check_program_exists bet
+check_program_exists fslmaths
+check_program_exists nii2mnc
+check_program_exists mnc2nii
+check_program_exists nu_correct
+check_program_exists imagej
+check_program_exists cfityk
+check_program_exists java
+
+# Check if all needed files exist
+check_file_exists ${INPUT_IMAGE} 
+check_file_exists ${LESION_MASK}
+
+# Get specific information
+patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
+dir_output=${patient}-${dir_output}
+
+# Create an output directory and copy data
+if [[ ! -d $dir_output ]] ; then
+	execute_command_or_else_stop "mkdir -p ${dir_output}"
+fi
+copyFileToDestination ${INPUT_IMAGE} ${dir_output} "input_image" 
+copyFileToDestination ${LESION_MASK} ${dir_output} "lesion_mask" 
+
+# Go to the output directory
+execute_command_or_else_stop "cd ${dir_output}"
+
+# Deleting orientation mask
+if ${deleteorientmask} ; then
+	progressXML "0.05" "Deleting orientation on mask" 
+	execute_command_or_else_stop "fslorient -deleteorient lesion_mask"
+fi
+
+progressXML "0.10" "Run brain extraction" 
+# RUN BRAIN EXTRACTION
+if [[ -n "$BET_MASK" ]] ; then
+	# USER SPECIFIED BRAIN MASK
+	check_file_exists ${BET_MASK}
+	copyFileToDestination ${BET_MASK} " " "input_image_bet_mask"
+	if ${deleteorientmask} ; then
+		execute_command_or_else_stop "fslorient -deleteorient input_image_bet_mask"
+	fi
+	execute_command_or_else_stop "fslmaths input_image -mas input_image_bet_mask input_image_bet"   
+else
+	# BET BRAIN EXTRACTION
+	execute_command_or_else_stop "bet input_image input_image_bet ${options} -f ${frac}"
+fi
+
+progressXML "0.40" "Run non-uniformity correction using BET image" 
+
+# RUN NON-UNIFORMITY CORRECTION USING BET IMAGE
+N3 "input_image_bet" "${deleteorient}" "${orient_flag}" "${nu_distance}"
+
+# CREATE NON-UNIFORMITY RATIO MAP
+progressXML "0.70" "Create non-uniformity ratio map"
+execute_command_or_else_stop "fslcpgeom input_image input_image_bet_n3"
+execute_command_or_else_stop "fslcpgeom input_image input_image_bet_mask"
+execute_command_or_else_stop "fslmaths input_image -div input_image_bet_n3 -mas input_image_bet_mask input_image_nu_map -odt float"
+
+# REMOVE LESION VOLUME FROM N3 CORRECTED IMAGE WITH BRAIN MASK
+progressXML "0.72" "Remove lesion volume from N3 corrected image with brain mask"
+execute_command_or_else_stop "fslmaths lesion_mask -sub 1 -mul -1 -thr 1 -bin lesion_mask_inv -odt char"
+execute_command_or_else_stop "fslmaths input_image_bet_n3 -mas lesion_mask_inv input_image_bet_n3_nolesions"
+
+progressXML "0.74" "Calculate image histogram"
+histogram "input_image_bet_n3_nolesions"
+
+# could start from the peak at greatest x, after there are two peaks added, but get max from 4 peak fit
+# What the   cfityk script does:
+    # 1)  fit 4 gaussians to the histogram
+    # 2)  get the gaussian peak locations (provided they are within range)
+    # 3)  find the location of the gaussian with the highest peak location
+    # 4)  find the fwhm of this peak
+    # 5)  find the peak of the fitted curve (the sum of 4 gaussians, %s) in this range 
+    
+# old stuff, may be useful
+# define FirstDerivative(h1,c1,w1,h2,c2,w2,h3,c3,w3,h4,c4,w4)= -ln(4)*h1*exp(-ln(2)*(x-c1)^2/w1^2)*(x-c1)/w1^2-ln(4)*h2*exp(-ln(2)*(x-c2)^2/w2^2)*(x-c2)/w2^2-ln(4)*h3*exp(-ln(2)*(x-c3)^2/w3^2)*(x-c3)/w3^2-ln(4)*h4*exp(-ln(2)*(x-c4)^2/w4^2)*(x-c4)/w4^2;
+# define SecondDerivative(h1,c1,w1,h2,c2,w2,h3,c3,w3,h4,c4,w4)= (-ln(4)*h1*exp(-ln(2)*(x-c1)^2/w1^2)+1.92181*h1*exp(-ln(2)*(x-c1)^2/w1^2)*(x-c1)^2/w1^2)/w1^2-(ln(4)*h2*exp(-ln(2)*(x-c2)^2/w2^2)-1.92181*h2*exp(-ln(2)*(x-c2)^2/w2^2)*(x-c2)^2/w2^2)/w2^2-(ln(4)*h3*exp(-ln(2)*(x-c3)^2/w3^2)-1.92181*h3*exp(-ln(2)*(x-c3)^2/w3^2)*(x-c3)^2/w3^2)/w3^2-(ln(4)*h4*exp(-ln(2)*(x-c4)^2/w4^2)-1.92181*h4*exp(-ln(2)*(x-c4)^2/w4^2)*(x-c4)^2/w4^2)/w4^2
+
+progressXML "0.76" "Finding WM peak location from histogram"
+
+# FITYK gaussian package
+fcfityk=$(which cfityk)
+if [ -f $fcfityk ] ; then
+    export FITYKVERSION=$(cfityk -V -v | awk '$1  {print $3}')
+    alias cfityk=$fcfityk
+else
+    exitprog "Can't find cfityk" 1
+fi
+
+if [ "${FITYKVERSION}" == "0.9.8" -o "${FITYKVERSION}" \> "0.9.8" ]; then
+	if [[ ${t2_image} = true ]] ; then
+		cfityk_v098_OR_NEWER_T2 input_image
+	else	
+		cfityk_v098_OR_NEWER_T1 input_image
+	fi
+	
+	gaussian_peak=$(tail -n 7 input_image_bet_n3.fityk | awk '$1 ~ /max_peak/ {print $3}')
+	wm_peak_hwhm=$(tail -n 5 input_image_bet_n3.fityk | awk '$1 ~ /peak_hwhm/ {print $3}')
+	wm_peak=$(tail -n 2 input_image_bet_n3.fityk | awk '$1 ~ /ext/ {print $3}')
+else
+	if [[ ${t2_image} = true ]] ; then
+		cfityk_OLDER_T2 input_image
+	else	
+		cfityk_OLDER_T1 input_image
+	fi
+ 
+	gaussian_peak=$(tail -n 3 input_image_bet_n3.fityk | awk '$1 ~ /max_peak/ {print $3}')
+	wm_peak_hwhm=$(tail -n 2 input_image_bet_n3.fityk | awk '$1 ~ /peak_hwhm/ {print $3}')
+	wm_peak=$(tail -n 1 input_image_bet_n3.fityk | awk '$1 ~ /ext/ {print $1}') 
+fi
+
+# We only use as peak method gaussian peak    
+wm_peak="$gaussian_peak"
+    
+if [[ "$wm_peak" != +([0-9]).+([0-9]) ]] || [[ "$wm_peak_hwhm" != +([0-9]).+([0-9]) ]] ; then
+	exitprog "Failed to estimate WM peak location, exiting" 1
+fi
+echo "White matter peak=$wm_peak hwhm=$wm_peak_hwhm"    
+
+# DILATE LESION MASK
+dil_les_mask=""
+case "${dilation}" in 
+    H)
+	progressXML "0.78" "Hard dilation lesions mask"
+	dil_les_mask="lesion_mask_H.nii"
+        execute_command_or_else_stop "fslmaths lesion_mask -kernel 3D -dilM ${dil_les_mask} -odt char"
+        ;;
+    N)
+	progressXML "0.78" "Non dilate lesions mask"
+        dil_les_mask="lesion_mask.nii"
+        ;;
+    S) 
+	progressXML "0.78" "Soft dilatation lesions mask"
+        dil_les_mask="lesion_mask_S.nii"
+        execute_command_or_else_stop "fslmaths lesion_mask -kernel 2D -fmeanu -mul 2 -min 1 ${dil_les_mask} -odt float"
+        ;;
+    *)  exitprog "Unrecognised dilation" 1
+        ;;
+esac
+
+# FILL LESION VOLUME
+progressXML "0.80" "Filling lesions"
+execute_command "imagej -b local/fill_lesions.txt input_image.nii filled.img ${dil_les_mask} input_image_nu_map.nii ${wm_peak} ${wm_peak_hwhm}"
+
+# Output usually is a Analyze file, and it needs to be converted
+execute_command_or_else_stop "fslchfiletype NIFTI filled ${OUTPUT_IMAGE}"
+execute_command_or_else_stop "fslcpgeom input_image.nii ${OUTPUT_IMAGE}"
+
+# Delete temporary directory
+execute_command_or_else_stop "rm -f *.nii *.img *.hdr *.mnc *.txt" 
+execute_command_or_else_stop "cd .."
+execute_command_or_else_stop "rm -rf ${dir_output}"
+
+progressXML "1" "Finish"
+closeprogressXML ${OUTPUT_IMAGE}
+# End of the main program

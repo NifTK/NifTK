@@ -7,8 +7,6 @@
 #include <XnatLoginDialog.h>
 #include <XnatModel.h>
 #include <XnatNameDialog.h>
-#include <XnatNodeActivity.h>
-#include <XnatNodeProperties.h>
 #include <XnatSettings.h>
 #include <XnatTreeView.h>
 #include <XnatUploadManager.h>
@@ -341,23 +339,23 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
 {
   Q_D(XnatBrowserWidget);
 
-  const XnatNodeProperties& nodeProperties = ui->xnatTreeView->nodeProperties(index);
-  ui->downloadButton->setEnabled(nodeProperties.isFile());
-  ui->downloadAllButton->setEnabled(nodeProperties.holdsFiles());
-  ui->importButton->setEnabled(nodeProperties.isFile());
-  ui->importAllButton->setEnabled(nodeProperties.holdsFiles());
-  ui->uploadButton->setEnabled(nodeProperties.receivesFiles());
-  ui->saveAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveAndUploadAction->isEnabled()));
-  ui->createButton->setEnabled(nodeProperties.isModifiable());
-  ui->deleteButton->setEnabled(nodeProperties.isDeletable());
+  const XnatNode* node = ui->xnatTreeView->node(index);
+  ui->downloadButton->setEnabled(node->isFile());
+  ui->downloadAllButton->setEnabled(node->holdsFiles());
+  ui->importButton->setEnabled(node->isFile());
+  ui->importAllButton->setEnabled(node->holdsFiles());
+  ui->uploadButton->setEnabled(node->receivesFiles());
+  ui->saveAndUploadButton->setEnabled((node->receivesFiles() && d->saveAndUploadAction->isEnabled()));
+  ui->createButton->setEnabled(node->isModifiable(index.row()));
+  ui->deleteButton->setEnabled(node->isDeletable());
 }
 
 void XnatBrowserWidget::setSaveAndUploadButtonEnabled()
 {
   Q_D(XnatBrowserWidget);
 
-  const XnatNodeProperties& nodeProperties = ui->xnatTreeView->currentNodeProperties();
-  ui->saveAndUploadButton->setEnabled((nodeProperties.receivesFiles() && d->saveAndUploadAction->isEnabled()));
+  const XnatNode* node = ui->xnatTreeView->currentNode();
+  ui->saveAndUploadButton->setEnabled((node->receivesFiles() && d->saveAndUploadAction->isEnabled()));
 }
 
 void XnatBrowserWidget::showContextMenu(const QPoint& position)
@@ -367,22 +365,22 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
   const QModelIndex& index = ui->xnatTreeView->indexAt(position);
   if ( index.isValid() )
   {
-    XnatNodeProperties nodeProperties = ui->xnatTreeView->nodeProperties(index);
+    const XnatNode* node = ui->xnatTreeView->node(index);
     QList<QAction*> actions;
-    if ( nodeProperties.isFile() )
+    if ( node->isFile() )
     {
       actions.append(d->downloadAction);
     }
-    if ( nodeProperties.holdsFiles() )
+    if ( node->holdsFiles() )
     {
         actions.append(d->downloadAllAction);
         actions.append(d->importAllAction);
     }
-    if ( nodeProperties.isFile() )
+    if ( node->isFile() )
     {
       actions.append(d->importAction);
     }
-    if ( nodeProperties.receivesFiles() )
+    if ( node->receivesFiles() )
     {
       actions.append(d->uploadAction);
 
@@ -391,11 +389,11 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
         actions.append(d->saveAndUploadAction);
       }
     }
-    if ( nodeProperties.isModifiable() )
+    if ( node->isModifiable(index.row()) )
     {
       actions.append(d->createAction);
     }
-    if ( nodeProperties.isDeletable() )
+    if ( node->isDeletable() )
     {
       actions.append(d->deleteAction);
     }

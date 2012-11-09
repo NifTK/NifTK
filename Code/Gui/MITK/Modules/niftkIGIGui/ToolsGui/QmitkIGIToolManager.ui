@@ -22,6 +22,43 @@
   <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
     <layout class="QGridLayout" name="m_TopLevelGridLayout">
+     <item row="3" column="0">
+      <widget class="ctkCollapsibleGroupBox" name="m_ToolOutputGroupBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>Tool Output</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="m_Frame">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
      <item row="0" column="0">
       <layout class="QHBoxLayout" name="m_HorizontalLayout">
        <property name="sizeConstraint">
@@ -94,17 +131,11 @@
         </widget>
        </item>
        <item>
-        <spacer name="m_HorizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+        <widget class="QSpinBox" name="m_update_fps_spinBox">
+         <property name="value">
+          <number>10</number>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>2</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </item>
@@ -198,43 +229,6 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="ctkCollapsibleGroupBox" name="m_ToolOutputGroupBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="title">
-        <string>Tool Output</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <property name="margin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QFrame" name="m_Frame">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-          <property name="lineWidth">
-           <number>0</number>
           </property>
          </widget>
         </item>

@@ -61,11 +61,13 @@ trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
 # Param	    : $1 input image
 # Param	    : $2 output image
 # Param     : $3 patient name
+# Param	    : $4 volume orientation
 function normalization() 
 {
 	local img=$1
 	local output=$2
 	local name=$3
+	local orientation=$4
 	
 	# Normalization
 	if [[ ! -f "${output}"  ]] ; then
@@ -73,7 +75,7 @@ function normalization()
 		execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.mnc ${img}_n3.imp ${img}_n3_register.nii"
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register*" 
 		
-		progress "0.2" "Register atlas to target space"
+		progressXML "0.2" "Register atlas to target space"
 		
 		# Register atlas to target space
 		execute_command_or_else_stop "${dir_niftyreg}reg_aladin \
@@ -84,7 +86,7 @@ function normalization()
 			-sym \
 			-lp 5" 
 		
-		progress "0.4" "Moving tissues mask to target space"
+		progressXML "0.4" "Moving tissues mask to target space"
 		
 		# Move tissues mask to target space
 		execute_command_or_else_stop "${dir_niftyreg}reg_resample \
@@ -94,7 +96,7 @@ function normalization()
 			-res ${img}_ICBM152_mask_register.nii \
 			-NN"
 		
-		progress "0.45" "Set tissues mask from float to char"
+		progressXML "0.45" "Set tissues mask from float to char"
 		
 		# Set tissues mask from float to char
 		execute_command_or_else_stop "fslmaths \
@@ -105,14 +107,14 @@ function normalization()
 
 		# Change format to NIFTI
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_ICBM152_mask_register-bin.nii.gz ${img}_ICBM152_mask_register.nii"
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.nii.gz"  
+		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_ICBM152_mask_register-bin ${img}_ICBM152_mask_register.nii"
+		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.*"  
 
 		# Change format to mnc
-		execute_command_or_else_stop "${mnidir}nii2mnc $img.nii $img.mnc"
-		execute_command_or_else_stop "${mnidir}nii2mnc ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}.nii ${img}.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
 		
-		progress "0.5" "Starting N3"
+		progressXML "0.5" "Starting N3"
 		
 		# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
 		if [[ ! -f "${img}_n3.mnc"  ]] ; then		
@@ -122,7 +124,7 @@ function normalization()
 			${img}_n3.mnc" > /dev/null
 		fi
 				
-		progress "0.9" "Change format from mnc to NIFTI"
+		progressXML "0.9" "Change format from mnc to NIFTI"
 		
 		# Change format from mnc to NIFTI
 		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ${output}"
@@ -132,8 +134,6 @@ function normalization()
 		execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.imp ${img}_n3_register.nii"
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register* source-to*"
 
-		# For security reasons ;) we copy geometry for align at the same direction the new image
-		#execute_command_or_else_stop "fslcpgeom ${img}.nii ${output}"
 	else
 		echo "File ${output/%\.???/_n3.nii} exists, we don't repeat the calculation "
 	fi
@@ -159,7 +159,6 @@ function copyFileToDestination() {
 # Function  : Check if a file is a NIFTI file
 #
 function isNifti()  {
-    # requires 'shopt -s extglob'
     [[ "$1" == ?*.nii ]]
 }
 
@@ -174,6 +173,7 @@ cat <<EOF
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for doing Boyes et al. Neuroimage 2008 normalization process.<br>
    <ul>
    <li><i>Input image</i>, selects the file that you would like to normalize</li>
+   <li><i>Orient</i>, indicates in which orientation is the input images: AXIAL, CORONAL or SAGITALL.</li>
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
    <li><i>Output image</i>, select the name and the directory of the output file where the normalized image will be recorded. The output file is in NIFTI format.</li>
@@ -181,8 +181,8 @@ cat <<EOF
    <br>
    <p><h2>Recomendations:</h2></p>
    <p>
-   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152.<br> 
-   Atlas head maks, mask and data files. For other data sources you would need to check it.<br>
+   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
+   atlas head maks, mask and data files. For other data sources you would need to check it.
    Check that it exists an important overlapping between mask, headmask, head and input file.<br>
    </p>
    ]]></description>
@@ -191,7 +191,7 @@ cat <<EOF
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>
    <parameters>
-      <label>Input and output images</label>
+      <label>Mandatory arguments</label>
       <description>Input image to be normalized and the name of output image</description>
       <image fileExtensions="*.nii,*.nii.gz,*.img">
           <name>inputImageName</name>
@@ -200,6 +200,19 @@ cat <<EOF
 	  <label>Input image</label>
 	  <channel>input</channel>
       </image>
+      <string-enumeration>
+      <name>orientation</name>
+      <longflag>orient</longflag>
+      <description><![CDATA[Input images are in:
+      A - Axial orientation 
+      C - Coronal orientation 
+      S - Sagitall orientation]]></description>
+      <label>Input image orientation</label>
+      <default>A</default>
+      <element>A</element>
+      <element>C</element>
+      <element>S</element>
+    </string-enumeration>
       <image fileExtensions="*.nii,*.nii.gz,*.img">
           <name>inputHead</name>
           <longflag>atlas</longflag>
@@ -235,19 +248,20 @@ cat <<EOF
 
 This script is for N3 normalization using Boyes et al. Neuroimage 2008 normalization process. 
 
-Usage: $0 --in input_file --out output_file --mask mask_file --atlas head_file
+Usage: $0 --in input_file --orient <value> --out output_file --mask mask_file --atlas head_file
 
 Mandatory Arguments:
  
-  --in		: is the input file in NIFTI format
-  --out		: is the output file in NIFTI format
-  --mask	: is the mask atlas file in NIFTI format
-  --atlas	: is the atlas data file in NIFTI format
+  --in			: is the input file in NIFTI format
+  --orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITALL (s) orientation
+  --out			: is the output file in NIFTI format
+  --mask		: is the mask atlas file in NIFTI format
+  --atlas		: is the atlas data file in NIFTI format
 
 Recomendations:
 
-	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152 
-	Atlas head maks, mask and data files. For other data sources you would need to check it.
+	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
+	atlas head maks, mask and data files. For other data sources you would need to check it.
 	Check it exists an important overlapping between mask, headmask, head and input file.
 
 	
@@ -255,40 +269,12 @@ EOF
 exit 127
 }
 
-# Function  : this function output a log of the progress for Command Line Module plugin
-#
-# Param	    : $1 integer [0..100], it is the progression percentage
-# Param	    : $2 string, it is an information message
-function progress(){
-	echo "<filter-progress-text progress=\"$1\">$2</filter-progress-text>"  
-	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
-}
-
-# Function  : this function open the log progress for Command Line Module plugin
-#
-# Param	    : $1 string, it is an information message, usually the program name
-function openprogress() {
-	echo "<filter-start>" 
-	echo "<filter-name>$1</filter-name>"
-	echo "<filter-comment>$1</filter-comment>"  
-	echo "</filter-start>" 
-	sleep 1 # sleep 1000ms to avoid squashing the last progress event with the finished event
-}
-
-# Function  : this function close the log progress for Command Line Module plugin
-#
-# Param	    : $1 string, it is an information message with name of output image
-function closeprogress() {
-	echo "<filter-result name=\"outputImageName\">$1</filter-result>"
-	echo "<filter-result name=\"exitStatusOutput\">Normal exit</filter-result>"
-	echo "<filter-progress>1</filter-progress>"
-	echo "<filter-end><filter-comment>Finished successfully.</filter-comment></filter-end>"
-}
-
 # Program start
+export FSLOUTPUTTYPE=NIFTI
 if [ $# -eq 0 ]; then
   Usage
 fi
+orientation=""
 
 # Parse remaining command line options
 while [ "$#" -gt 0 ]
@@ -319,6 +305,23 @@ do
 	HEAD_IMAGE=$2
 	shift 1
 	;;
+    --orient)
+	case $2 in
+		a) orientation="-transverse"
+		;;
+		c) orientation="-coronal"
+		;;
+		s) orientation="-sagittal"
+		;;
+		A) orientation="-transverse"
+		;;
+		C) orientation="-coronal"
+		;;
+		S) orientation="-sagittal"
+		;;
+	esac
+	shift 1
+	;;
     -*)
 	Usage
 	exitprog "Error: option $1 not recognised" 1
@@ -327,9 +330,16 @@ do
     shift 1
 done
 
+if [[ -z ${orientation} ]] ; then
+	exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
+fi
+if [[ -z ${OUTPUT_IMAGE} ]] ; then
+	exitprog "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})" 1
+fi
+
 # Start of the main program
-openprogress "N3 Starts"
-progress "0.1" "Checking programs"
+openprogressXML "N3 Starts"
+progressXML "0.1" "Checking programs"
 
 # Check that all programs exist
 check_program_exists fslcpgeom
@@ -343,12 +353,11 @@ check_program_exists nii2mnc
 check_program_exists mnc2nii
 check_program_exists nu_correct
 	
-if [[ -d $OUTPUT_IMAGE ]] ; then
-	echo "$OUTPUT_IMAGE is not a file, select a file"
-	exit 1
+if [[ -d ${OUTPUT_IMAGE} ]] ; then
+	exitprog "${OUTPUT_IMAGE} is not a file, select a file" 1
 fi
 
-progress "0.15" "Checking input and output file"
+progressXML "0.15" "Checking input and output file"
 # Check if all needed files exist
 check_file_exists ${INPUT_IMAGE} 
 check_file_exists ${HEAD_IMAGE}
@@ -368,13 +377,13 @@ copyFileToDestination ${INPUT_IMAGE} ${dir_output} "input_image"
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Start process
-normalization "input_image" ${OUTPUT_IMAGE} ${patient}
+normalization "input_image" ${OUTPUT_IMAGE} ${patient} ${orientation}
 
 # Delete temporary directory
 execute_command_or_else_stop "rm -f *.nii *.mnc *.txt" 
 execute_command_or_else_stop "cd .."
 execute_command_or_else_stop "rm -rf ${dir_output}"
 
-progress "1" "Finish"
-closeprogress ${OUTPUT_IMAGE}
+progressXML "1" "Finish"
+closeprogressXML ${OUTPUT_IMAGE}
 # End of the main program
