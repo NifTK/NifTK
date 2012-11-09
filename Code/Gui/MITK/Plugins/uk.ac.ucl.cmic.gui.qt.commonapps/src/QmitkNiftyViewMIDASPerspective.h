@@ -26,6 +26,8 @@
 #ifndef QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
 #define QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
 
+#include "mitkQtCommonAppsAppDll.h"
+
 #include <berryIPerspectiveFactory.h>
 
 /**
@@ -36,7 +38,7 @@
  *
  * Note: We have to load at least one view component, to get an editor created.
  */
-class QmitkNiftyViewMIDASPerspective : public QObject, public berry::IPerspectiveFactory
+class CMIC_QT_COMMONAPPS QmitkNiftyViewMIDASPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)

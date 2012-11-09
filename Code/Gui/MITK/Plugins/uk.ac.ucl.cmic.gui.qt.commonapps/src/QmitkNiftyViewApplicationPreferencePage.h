@@ -25,6 +25,8 @@
 #ifndef QMITKNIFTYVIEWAPPLICATIONPREFERENCEPAGE_H_
 #define QMITKNIFTYVIEWAPPLICATIONPREFERENCEPAGE_H_
 
+#include "mitkQtCommonAppsAppDll.h"
+
 #include "berryIQtPreferencePage.h"
 #include <berryIPreferences.h>
 
@@ -39,7 +41,7 @@ class QSpinBox;
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview_internal
  *
  */
-class QmitkNiftyViewApplicationPreferencePage : public QObject, public berry::IQtPreferencePage
+class CMIC_QT_COMMONAPPS QmitkNiftyViewApplicationPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

@@ -25,6 +25,8 @@
 #ifndef QMITKCOMMONAPPSAPPLICATIONPREFERENCEPAGE_H_
 #define QMITKCOMMONAPPSAPPLICATIONPREFERENCEPAGE_H_
 
+#include "mitkQtCommonAppsAppDll.h"
+
 #include "berryIQtPreferencePage.h"
 #include <berryIPreferences.h>
 
@@ -38,7 +40,7 @@ class QCheckBox;
  * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  *
  */
-class QmitkCommonAppsApplicationPreferencePage : public QObject, public berry::IQtPreferencePage
+class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

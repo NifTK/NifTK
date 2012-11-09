@@ -27,11 +27,6 @@
 #define QMITKNIFTYVIEWAPPLICATIONPLUGIN_H_
 
 #include "QmitkCommonAppsApplicationPlugin.h"
-#include <itkImage.h>
-
-namespace mitk {
-  class DataNode;
-}
 
 /**
  * \class QmitkNiftyViewApplicationPlugin
@@ -49,6 +44,7 @@ public:
   ~QmitkNiftyViewApplicationPlugin();
 
   void start(ctkPluginContext*);
+  void stop(ctkPluginContext*);
 
 protected:
 
@@ -60,14 +56,6 @@ protected:
 
 private:
 
-  template<typename TPixel, unsigned int VImageDimension>
-  void
-  ITKGetStatistics(
-      itk::Image<TPixel, VImageDimension> *itkImage,
-      float &min,
-      float &max,
-      float &mean,
-      float &stdDev);
 };
 
 #endif /* QMITKEXTAPPLICATIONPLUGIN_H_ */

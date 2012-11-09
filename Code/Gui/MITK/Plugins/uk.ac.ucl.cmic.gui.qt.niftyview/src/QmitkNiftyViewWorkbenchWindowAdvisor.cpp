@@ -21,28 +21,7 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-
 #include "QmitkNiftyViewWorkbenchWindowAdvisor.h"
-#include "internal/QmitkNiftyViewApplicationPlugin.h"
-#include <QMainWindow>
-#include <QMenu>
-#include <QMenuBar>
-#include <QAction>
-#include <QList>
-#include <QApplication>
-#include "QmitkHelpAboutDialog.h"
-#include "mitkDataNode.h"
-#include "mitkDataNodeFactory.h"
-#include "mitkDataStorage.h"
-#include "mitkDataStorageEditorInput.h"
-#include "mitkIDataStorageService.h"
-#include "mitkNodePredicateData.h"
-#include "mitkNodePredicateNot.h"
-#include "mitkNodePredicateProperty.h"
-#include "mitkProperties.h"
-#include "mitkRenderingManager.h"
-#include "EnvironmentHelper.h"
-#include "NifTKConfigure.h"
 
 //-----------------------------------------------------------------------------
 QmitkNiftyViewWorkbenchWindowAdvisor::QmitkNiftyViewWorkbenchWindowAdvisor(
@@ -57,29 +36,5 @@ QmitkNiftyViewWorkbenchWindowAdvisor::QmitkNiftyViewWorkbenchWindowAdvisor(
 void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
 {
   QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate();
-
-  // In NiftyView, I have set in the midaseditor plugin.xml for the Midas Drag and Drop editor to be default.
-  // This section is to try and force the standard MITK Display editor open.
-  // It is assumed to be off, unless the user sets the NIFTK_MITK_DISPLAY=ON.
-  // It is imagined that at the DRC, they will not want this viewer as much.
-  // The unfortunate side effect is that the GUI will not correctly remember which is the ordering of the editors.
-  // So, restoring a project from a project file may have the wrong viewer on-top on start-up.
-  if (niftk::BooleanEnvironmentVariableIsOn("NIFTK_MITK_DISPLAY"))
-  {
-    berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
-    berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
-    ctkPluginContext* context = QmitkNiftyViewApplicationPlugin::GetDefault()->GetPluginContext();
-    ctkServiceReference dsServiceRef = context->getServiceReference<mitk::IDataStorageService>();
-    if (dsServiceRef)
-    {
-      mitk::IDataStorageService* dsService = context->getService<mitk::IDataStorageService>(dsServiceRef);
-      if (dsService)
-      {
-        berry::IEditorInput::Pointer dsInput(new mitk::DataStorageEditorInput(dsService->GetActiveDataStorage()));
-        // Use MATCH_ID as matching strategy, otherwise another editor using the same input
-        // might by reused but we explicitly want an editor instance with id org.mitk.editors.stdmultiwidget.
-        page->OpenEditor(dsInput, "org.mitk.editors.stdmultiwidget", false, berry::IWorkbenchPage::MATCH_ID);
-      }
-    }
-  }
+  this->CheckIfLoadingMITKDisplay();
 }

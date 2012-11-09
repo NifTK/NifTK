@@ -4,6 +4,9 @@ SET(SRC_CPP_FILES
   QmitkBaseApplication.cpp   
   QmitkBaseAppWorkbenchAdvisor.cpp    
   QmitkBaseWorkbenchWindowAdvisor.cpp
+  QmitkNiftyViewApplicationPreferencePage.cpp
+  QmitkNiftyViewIGIPerspective.cpp
+  QmitkNiftyViewMIDASPerspective.cpp
 )
 
 SET(INTERNAL_CPP_FILES
@@ -14,6 +17,9 @@ SET(MOC_H_FILES
   src/QmitkCommonAppsApplicationPreferencePage.h
   src/QmitkBaseApplication.h
   src/QmitkBaseWorkbenchWindowAdvisor.h
+  src/QmitkNiftyViewApplicationPreferencePage.h
+  src/QmitkNiftyViewIGIPerspective.h
+  src/QmitkNiftyViewMIDASPerspective.h
 )
 
 SET(CACHED_RESOURCE_FILES
