@@ -460,10 +460,6 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   TARGET_LINK_LIBRARIES(niftkBasicImageFeatures3D ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkBasicImageFeatures3D RUNTIME DESTINATION bin COMPONENT applications)
 
-  ADD_EXECUTABLE(niftkBreastMaskSegmentationFromMRI niftkBreastMaskSegmentationFromMRI.cxx )
-  TARGET_LINK_LIBRARIES(niftkBreastMaskSegmentationFromMRI ${NIFTK_APPLICATION_LINK_LIBRARIES} )
-  INSTALL(TARGETS niftkBreastMaskSegmentationFromMRI RUNTIME DESTINATION bin COMPONENT applications)
- 
   ADD_EXECUTABLE(niftkBreastDicomSeriesReadImageWrite niftkBreastDicomSeriesReadImageWrite.cxx )
   TARGET_LINK_LIBRARIES(niftkBreastDicomSeriesReadImageWrite ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkBreastDicomSeriesReadImageWrite RUNTIME DESTINATION bin COMPONENT applications)
@@ -502,6 +498,10 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
     TARGET_LINK_LIBRARIES(niftkConvertImageToVTKStructuredGrid ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} )
     INSTALL(TARGETS niftkConvertImageToVTKStructuredGrid RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   
+    ADD_EXECUTABLE(niftkBreastMaskSegmentationFromMRI niftkBreastMaskSegmentationFromMRI.cxx )
+    TARGET_LINK_LIBRARIES(niftkBreastMaskSegmentationFromMRI ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} )
+    INSTALL(TARGETS niftkBreastMaskSegmentationFromMRI RUNTIME DESTINATION bin COMPONENT applications)
+ 
    
   
     IF (BUILD_MESHING) 
