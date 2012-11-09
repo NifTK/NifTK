@@ -1,0 +1,6 @@
+set(Plugin-Name "NiftyMIDAS Application")
+set(Plugin-Version "0.1")
+set(Plugin-Vendor "CMIC, Centre For Medical Image Computing, UCL.")
+set(Plugin-ContactAddress "http://cmic.cs.ucl.ac.uk/")
+set(Require-Plugin uk.ac.ucl.cmic.gui.qt.commonapps )
+set(Plugin-ActivationPolicy eager)
