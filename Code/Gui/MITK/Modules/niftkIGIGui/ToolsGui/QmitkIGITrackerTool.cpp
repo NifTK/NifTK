@@ -307,10 +307,9 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-  //  this->DisplayTrackerData(msg);
     this->m_MessageMap.insert(msg->getId(), msg);
-    if ( m_HandleOnReceive ) 
-      this->HandleTrackerData(msg);
+    if ( m_SavingMessages ) 
+      this->m_SaveBuffer.append(msg->getId());
   }
 }
 
@@ -419,11 +418,6 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage::Pointer msg)
      data->GetGeometry()->Modified();
      data->Modified();
 
-    }
-    if ( m_HandleOnReceive ) 
-    {
-      mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
-      renderer->ForceImmediateUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
     }
 
     //mitk::RenderingManager::GetInstance()->RequestUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);

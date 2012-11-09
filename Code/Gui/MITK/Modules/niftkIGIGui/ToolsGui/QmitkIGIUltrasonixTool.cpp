@@ -62,8 +62,9 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
      )
   {
     this->m_MessageMap.insert(msg->getId(), msg);
-    if ( m_HandleOnReceive ) 
-      this->HandleImageData(msg);
+    
+    if ( m_SavingMessages ) 
+      this->m_SaveBuffer.append(msg->getId());
   }
 }
 
@@ -108,15 +109,39 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage::Pointer msg)
     {
       this->GetDataStorage()->Add(m_ImageNode);
     }
-    if ( m_HandleOnReceive ) 
-      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-
-    emit SaveImage(imageMsg);
   }
 }
 
-void QmitkIGIUltrasonixTool::SaveImage(QString filename)
+void QmitkIGIUltrasonixTool::SaveImageMessage(OIGTLImageMessage::Pointer imageMsg)
 {
+  //Save the motor position matrix
+  igtl::Matrix4x4 Matrix;
+  this->GetImageMatrix(Matrix);
+  QString filename = QObject::tr("%1/%2.motor_position")
+      .arg(this->m_SavePrefix)
+      .arg(QString::number(imageMsg->getId()));
+  QFile matrixFile(filename);
+  matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
+  QTextStream matout(&matrixFile);
+  for ( int row = 0 ; row < 4 ; row ++ )
+  {
+    for ( int col = 0 ; col < 4 ; col ++ )
+    {
+      matout << Matrix[row][col];
+      if ( col < 3 )
+        matout << " " ;
+    }
+    if ( row < 3 )
+      matout << "\n";
+  }
+  matrixFile.close();
+  //Save the image
+  //Provided the tracker tool has been associated with the
+  //imageNode, this should also save the tracker matrix
+  filename = QObject::tr("%1/%2.ultrasoundImage.nii")
+      .arg(this->m_SavePrefix)
+      .arg(QString::number(imageMsg->getId()));
+
   CommonFunctionality::SaveImage( m_Image, filename.toAscii() );
 }
 
@@ -131,3 +156,19 @@ void QmitkIGIUltrasonixTool::GetImageMatrix(igtl::Matrix4x4 &ImageMatrix)
     for ( int col = 0 ; col < 4 ; col ++ )
       ImageMatrix[row][col]=m_ImageMatrix[row][col];
 }
+//-----------------------------------------------------------------------------
+igtlUint64 QmitkIGIUltrasonixTool::SaveMessageByTimeStamp(igtlUint64 id)
+{
+  if ( ! this->m_MessageMap.isEmpty() ) 
+  { 
+    QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.upperBound(id);
+    if ( I != this->m_MessageMap.begin() )
+      I--;
+    this->SaveImageMessage(static_cast<OIGTLImageMessage::Pointer>(I.value()));
+    return id - I.key() ;
+  }
+  else
+    return 999999999999999;
+}
+
+

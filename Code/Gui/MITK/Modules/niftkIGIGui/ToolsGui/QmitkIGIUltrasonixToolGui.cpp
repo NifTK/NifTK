@@ -35,7 +35,6 @@ NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultr
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()
 : m_PixmapLabel(NULL)
-, m_LastMsgID(0) 
 {
 
 }
@@ -110,46 +109,6 @@ void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
   }
 }
 
-void QmitkIGIUltrasonixToolGui::OnSaveImage(OIGTLImageMessage::Pointer imageMsg)
-{
-  //only save it if it's different from the last image
-  if ( imageMsg->getId() != m_LastMsgID )
-  {
-    //Save the motor position matrix
-    igtl::Matrix4x4 Matrix;
-    this->GetQmitkIGIUltrasonixTool()->GetImageMatrix(Matrix);
-    QString filename = QObject::tr("%1/%2.motor_position")
-      .arg(lineEdit->text())
-      .arg(QString::number(imageMsg->getId()));
-    QFile matrixFile(filename);
-    matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
-    QTextStream matout(&matrixFile);
-    for ( int row = 0 ; row < 4 ; row ++ )
-    {
-      for ( int col = 0 ; col < 4 ; col ++ )
-      {
-        matout << Matrix[row][col];
-        if ( col < 3 )
-          matout << " " ;
-      }
-      if ( row < 3 )
-        matout << "\n";
-    }
-    matrixFile.close();
-    //Save the image
-    //Provided the tracker tool has been associated with the
-    //imageNode, this should also save the tracker matrix
-    mitk::DataNode::Pointer ImageNode = mitk::DataNode::New();
-    QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
-  
-    filename = QObject::tr("%1/%2.ultrasoundImage.nii")
-      .arg(lineEdit->text())
-      .arg(QString::number(imageMsg->getId()));
-    tool->SaveImage(filename);
-  }
-  m_LastMsgID = imageMsg->getId();
-}
-
 void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
 {
   if ( pushButton_save->text() == "Save" ) 
@@ -157,7 +116,8 @@ void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
     QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
     if (tool != NULL)
     {
-      connect (tool, SIGNAL(SaveImage(OIGTLImageMessage::Pointer)), this, SLOT(OnSaveImage(OIGTLImageMessage::Pointer)));
+      tool->SetSavePrefix (lineEdit->text());
+      tool->SetSaveState (true);
       pushButton_save->setText("Don't Save");
     }
   }
@@ -166,7 +126,7 @@ void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
     QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
     if (tool != NULL)
     {
-      disconnect (tool, SIGNAL(SaveImage(OIGTLImageMessage::Pointer)), this, SLOT(OnSaveImage(OIGTLImageMessage::Pointer)));
+      tool->SetSaveState (false);
       pushButton_save->setText("Save");
     }
   }
@@ -177,4 +137,6 @@ void QmitkIGIUltrasonixToolGui::OnManageChangeSaveDir()
   QFileDialog dialog (this);
   QString savedir = QFileDialog::getExistingDirectory (this,tr("Select Save Directory"),lineEdit->text());
   lineEdit->setText(savedir);
+  QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
+  tool->SetSavePrefix (savedir);
 }

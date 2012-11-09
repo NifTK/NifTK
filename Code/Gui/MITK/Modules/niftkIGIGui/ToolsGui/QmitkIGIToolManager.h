@@ -132,6 +132,11 @@ private slots:
    */
   void OnUpdateTimeOut();
 
+  /**
+   * \ brief Triggered when one of the tools changes it's save state.
+   */
+  void OnToolSaveStateChanged();
+
 private:
 
   mitk::DataStorage                       *m_DataStorage;
@@ -142,6 +147,7 @@ private:
   QHash<int, ClientDescriptorXMLBuilder *> m_ClientDescriptors;
   QHash<int, QmitkIGITool::Pointer>        m_Tools;
   QTimer                                *m_UpdateTimer;
+  bool                                     m_AToolIsSaving;
 
 }; // end class
 

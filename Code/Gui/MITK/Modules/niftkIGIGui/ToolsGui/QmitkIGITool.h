@@ -101,6 +101,38 @@ public:
    */
   virtual void Initialize() {};
 
+  /**
+   * \brief Tools can have an optional message save function,
+   * with this class providing a default, do-nothing implementation.
+   */
+  virtual igtlUint64 SaveMessageByTimeStamp(igtlUint64 id) {return 999999999999999;};
+
+
+  /**
+   * \brief Set the filename prefix for any message saving
+   */
+  void SetSavePrefix (QString prefix);
+
+  /**
+   * \brief Set the message saving state
+   */
+  void SetSaveState (bool SavingMessages);
+  
+  /**
+   * \brief return the message saving state
+   */
+  bool GetSaveState ();
+  
+  /**
+   * \brief Look through the message save buffer and return the ID of the 
+   * next message to be saved and remove it from the buffer.
+   * \return The id of the next message to be saved. If the buffer is empty
+   * return value is 0
+   */
+  igtlUint64 GetNextSaveID ();
+
+
+
 public slots:
 
   /**
@@ -113,6 +145,12 @@ public slots:
    */
   virtual igtlUint64 HandleMessageByTimeStamp(igtlUint64 id) = 0;
 
+signals:
+
+  /**
+   * \brief Tell the world that the save state has changed
+   */
+  void SaveStateChanged();
 
 protected:
 
@@ -124,7 +162,9 @@ protected:
 
   QMap<igtlUint64 , OIGTLMessage::Pointer> m_MessageMap; // A message buffer
 
-  bool                         m_HandleOnReceive; //if set true messages are handled when received, else they are handled by the tool manager timer
+  QList<igtlUint64>            m_SaveBuffer; //the ID of messages to be save in here
+  bool                         m_SavingMessages; //whether or not images are to be saved
+  QString                      m_SavePrefix; //Where to save images
 private:
 
   mitk::DataStorage           *m_DataStorage;
