@@ -22,32 +22,36 @@
 
  ============================================================================*/
 
-#ifndef QMITKNIFTYVIEWAPPLICATION_H_
-#define QMITKNIFTYVIEWAPPLICATION_H_
+#ifndef QMITKBASEAPPLICATION_H_
+#define QMITKBASEAPPLICATION_H_
 
-#include "mitkQtNiftyViewAppDll.h"
-#include "QmitkBaseApplication.h"
+#include "mitkQtCommonAppsAppDll.h"
+
+#include <berryIApplication.h>
+#include <berryWorkbenchAdvisor.h>
 
 /**
- * \class QmitkNiftyViewApplication
- * \brief Plugin class to start up the NiftyView application.
- * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview
+ * \class QmitkBaseApplication
+ * \brief Abstract plugin class to start up an application.
+ * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  */
-class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewApplication : public QmitkBaseApplication
+class CMIC_QT_COMMONAPPS QmitkBaseApplication : public QObject, public berry::IApplication
 {
   Q_OBJECT
   Q_INTERFACES(berry::IApplication)
 
 public:
 
-  QmitkNiftyViewApplication();
-  QmitkNiftyViewApplication(const QmitkNiftyViewApplication& other);
+  QmitkBaseApplication();
+  QmitkBaseApplication(const QmitkBaseApplication& other);
+
+  int Start();
+  void Stop();
 
 protected:
 
   /// \brief Derived classes override this to provide a workbench advisor.
-  virtual berry::WorkbenchAdvisor* GetWorkbenchAdvisor();
-
+  virtual berry::WorkbenchAdvisor* GetWorkbenchAdvisor() = 0;
 };
 
-#endif /*QMITKNIFTYVIEWAPPLICATION_H_*/
+#endif /*QMITKBASEAPPLICATION_H_*/

@@ -8,8 +8,8 @@
              http://cmic.cs.ucl.ac.uk/
              http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2011-09-14 05:47:15 +0100 (Wed, 14 Sep 2011) $
- Revision          : $Revision: 7309 $
+ Last Changed      : $Date: 2011-08-26 10:10:39 +0100 (Fri, 26 Aug 2011) $
+ Revision          : $Revision: 7170 $
  Last modified by  : $Author: mjc $
 
  Original author   : m.clarkson@ucl.ac.uk
@@ -21,18 +21,18 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
+#include "QmitkBaseApplication.h"
 
-#include "QmitkNiftyViewIGIPerspective.h"
-#include "berryIViewLayout.h"
+#include <berryPlatformUI.h>
 
 //-----------------------------------------------------------------------------
-QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective()
+QmitkBaseApplication::QmitkBaseApplication()
 {
 }
- 
+
 
 //-----------------------------------------------------------------------------
-QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective(const QmitkNiftyViewIGIPerspective& other)
+QmitkBaseApplication::QmitkBaseApplication(const QmitkBaseApplication& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -40,20 +40,20 @@ QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective(const QmitkNiftyViewI
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyViewIGIPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
+int QmitkBaseApplication::Start()
 {
-  std::string editorArea = layout->GetEditorArea();
+  berry::Display* display = berry::PlatformUI::CreateDisplay();
 
-  layout->AddView("org.mitk.views.datamanager",
-    berry::IPageLayout::LEFT, 0.2f, editorArea);
+  int code = berry::PlatformUI::CreateAndRunWorkbench(display, this->GetWorkbenchAdvisor());
 
-  berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
-  lo->SetCloseable(false);
+  // exit the application with an appropriate return code
+  return code == berry::PlatformUI::RETURN_RESTART
+              ? EXIT_RESTART : EXIT_OK;
+}
 
-  layout->AddView("org.mitk.views.propertylistview",
-    berry::IPageLayout::BOTTOM, 0.5f, "org.mitk.views.datamanager");
 
-  layout->AddView("uk.ac.ucl.cmic.surgicalguidance",
-    berry::IPageLayout::RIGHT, 0.7f, editorArea);
+//-----------------------------------------------------------------------------
+void QmitkBaseApplication::Stop()
+{
 
 }

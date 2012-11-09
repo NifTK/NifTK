@@ -32,7 +32,6 @@
 #include <QDoubleSpinBox>
 #include <QMessageBox>
 #include <QSpinBox>
-#include <QComboBox>
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
@@ -42,8 +41,6 @@ const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_
 const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_LEVELWINDOW("window/level initialisation by window level widget");
 const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE("window/level initialisation by percentage of data range");
 const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE_NAME("window/level initialisation percentage");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION("default reslice interpolation");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION("default texture interpolation");
 
 //-----------------------------------------------------------------------------
 QmitkNiftyViewApplicationPreferencePage::QmitkNiftyViewApplicationPreferencePage()
@@ -52,11 +49,8 @@ QmitkNiftyViewApplicationPreferencePage::QmitkNiftyViewApplicationPreferencePage
 , m_UseLevelWindowRadioButton(0)
 , m_UseImageDataRadioButton(0)
 , m_PercentageOfDataRangeDoubleSpinBox(0)
-, m_ResliceInterpolationComboBox(0)
-, m_TextureInterpolationComboBox(0)
 , m_Initializing(false)
 {
-
 }
 
 
@@ -72,14 +66,12 @@ QmitkNiftyViewApplicationPreferencePage::QmitkNiftyViewApplicationPreferencePage
 //-----------------------------------------------------------------------------
 QmitkNiftyViewApplicationPreferencePage::~QmitkNiftyViewApplicationPreferencePage()
 {
-
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPreferencePage::Init(berry::IWorkbench::Pointer )
 {
-
 }
 
 
@@ -111,19 +103,8 @@ void QmitkNiftyViewApplicationPreferencePage::CreateQtControl(QWidget* parent)
   percentageFormLayout->addRow("Percentage:", m_PercentageOfDataRangeDoubleSpinBox);
   initialisationOptionsLayout->addLayout(percentageFormLayout);
 
-  m_ResliceInterpolationComboBox = new QComboBox();
-  m_ResliceInterpolationComboBox->insertItem(0, "none");
-  m_ResliceInterpolationComboBox->insertItem(1, "linear");
-  m_ResliceInterpolationComboBox->insertItem(2, "cubic");
-
-  m_TextureInterpolationComboBox = new QComboBox();
-  m_TextureInterpolationComboBox->insertItem(0, "none");
-  m_TextureInterpolationComboBox->insertItem(1, "linear");
-
   QFormLayout *formLayout = new QFormLayout;
   formLayout->addRow( "Image Level/Window initialization:", initialisationOptionsLayout );
-  formLayout->addRow( "Image reslice interpolation:", m_ResliceInterpolationComboBox );
-  formLayout->addRow( "Image texture interpolation:", m_TextureInterpolationComboBox );
 
   connect( m_UseLevelWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLevelWindowRadioButtonChecked(bool)));
   connect( m_UseImageDataRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnImageDataRadioButtonChecked(bool)));
@@ -163,8 +144,6 @@ bool QmitkNiftyViewApplicationPreferencePage::PerformOk()
 
   m_PreferencesNode->Put(IMAGE_INITIALISATION_METHOD_NAME, method);
   m_PreferencesNode->PutDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, m_PercentageOfDataRangeDoubleSpinBox->value());
-  m_PreferencesNode->PutInt(IMAGE_RESLICE_INTERPOLATION, m_ResliceInterpolationComboBox->currentIndex());
-  m_PreferencesNode->PutInt(IMAGE_TEXTURE_INTERPOLATION, m_TextureInterpolationComboBox->currentIndex());
   return true;
 }
 
@@ -193,8 +172,6 @@ void QmitkNiftyViewApplicationPreferencePage::Update()
     m_UseImageDataRadioButton->setChecked(true);
   }
   m_PercentageOfDataRangeDoubleSpinBox->setValue(m_PreferencesNode->GetDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, 50));
-  m_ResliceInterpolationComboBox->setCurrentIndex(m_PreferencesNode->GetInt(IMAGE_RESLICE_INTERPOLATION, 2));
-  m_TextureInterpolationComboBox->setCurrentIndex(m_PreferencesNode->GetInt(IMAGE_TEXTURE_INTERPOLATION, 1));
 }
 
 

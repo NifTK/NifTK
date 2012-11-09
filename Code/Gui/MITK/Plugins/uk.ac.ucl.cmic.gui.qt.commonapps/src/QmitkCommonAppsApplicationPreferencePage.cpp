@@ -97,7 +97,7 @@ void QmitkCommonAppsApplicationPreferencePage::CreateQtControl(QWidget* parent)
   QFormLayout *formLayout = new QFormLayout;
   formLayout->addRow( "Image reslice interpolation:", m_ResliceInterpolation );
   formLayout->addRow( "Image texture interpolation:", m_TextureInterpolation );
-  formLayout->addRow( "Opacity of black (lowest value in lookup table):", m_BlackOpacity);
+  formLayout->addRow( "Lowest lookup table value is opaque:", m_BlackOpacity);
 
   m_MainControl->setLayout(formLayout);
   this->Update();

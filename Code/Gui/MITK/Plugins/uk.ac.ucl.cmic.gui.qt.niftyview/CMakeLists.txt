@@ -3,9 +3,9 @@ PROJECT(uk_ac_ucl_cmic_gui_qt_niftyview)
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE CMIC_QT_NIFTYVIEWAPP
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES CTK QmitkExt niftkMitkExt niftkQmitkExt
+  MODULE_DEPENDENCIES CTK niftkMitkExt niftkQmitkExt
 )
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
-                      niftkcommon
-)
+#TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
+#                      niftkcommon
+#)

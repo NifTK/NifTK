@@ -189,6 +189,7 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
     berry::IPreferences::Pointer prefNode = prefService->GetSystemPreferences()->Node("uk.ac.ucl.cmic.gui.qt.commonapps");
     int imageResliceInterpolation =  prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
     int imageTextureInterpolation =  prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
+    bool blackOpacity = prefNode->GetBool(QmitkCommonAppsApplicationPreferencePage::BLACK_OPACITY, true);
 
     mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
 
@@ -217,7 +218,14 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
     }
     node->SetProperty("reslice interpolation", interpolationProperty);
 
-    node->SetProperty("black opacity", mitk::FloatProperty::New(1));
+    if (blackOpacity)
+    {
+      node->SetProperty("black opacity", mitk::FloatProperty::New(1));
+    }
+    else
+    {
+      node->SetProperty("black opacity", mitk::FloatProperty::New(0));
+    }
   }
 }
 

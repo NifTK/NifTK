@@ -25,16 +25,21 @@
 #include "QmitkNiftyViewMIDASPerspective.h"
 #include "berryIViewLayout.h"
 
+//-----------------------------------------------------------------------------
 QmitkNiftyViewMIDASPerspective::QmitkNiftyViewMIDASPerspective()
 {
 }
  
+
+//-----------------------------------------------------------------------------
 QmitkNiftyViewMIDASPerspective::QmitkNiftyViewMIDASPerspective(const QmitkNiftyViewMIDASPerspective& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkNiftyViewMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
   std::string editorArea = layout->GetEditorArea();

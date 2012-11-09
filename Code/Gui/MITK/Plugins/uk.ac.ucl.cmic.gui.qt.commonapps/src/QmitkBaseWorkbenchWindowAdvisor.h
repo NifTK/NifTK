@@ -26,8 +26,6 @@
 #define QMITKBASEWORKBENCHWINDOWADVISOR_H_
 
 #include "mitkQtCommonAppsAppDll.h"
-#include <QObject>
-#include <berryWorkbenchAdvisor.h>
 #include "QmitkExtWorkbenchWindowAdvisor.h"
 
 /**

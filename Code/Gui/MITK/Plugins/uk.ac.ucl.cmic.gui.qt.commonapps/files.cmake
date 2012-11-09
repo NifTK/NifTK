@@ -1,17 +1,19 @@
 SET(SRC_CPP_FILES
-  QmitkBaseAppWorkbenchAdvisor.cpp
+  QmitkCommonAppsApplicationPlugin.cpp
+  QmitkCommonAppsApplicationPreferencePage.cpp
+  QmitkBaseApplication.cpp   
+  QmitkBaseAppWorkbenchAdvisor.cpp    
   QmitkBaseWorkbenchWindowAdvisor.cpp
 )
 
 SET(INTERNAL_CPP_FILES
-  QmitkCommonAppsApplicationPlugin.cpp
-  QmitkCommonAppsApplicationPreferencePage.cpp  
 )
 
 SET(MOC_H_FILES
+  src/QmitkCommonAppsApplicationPlugin.h
+  src/QmitkCommonAppsApplicationPreferencePage.h
+  src/QmitkBaseApplication.h
   src/QmitkBaseWorkbenchWindowAdvisor.h
-  src/internal/QmitkCommonAppsApplicationPlugin.h
-  src/internal/QmitkCommonAppsApplicationPreferencePage.h
 )
 
 SET(CACHED_RESOURCE_FILES
