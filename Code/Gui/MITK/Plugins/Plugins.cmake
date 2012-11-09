@@ -4,6 +4,7 @@
 set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.midaseditor:ON
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
+  Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
   Plugins/it.unito.cim.intensityprofile:ON  
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
   Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON

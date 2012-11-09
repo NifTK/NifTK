@@ -1,0 +1,12 @@
+PROJECT(uk_ac_ucl_cmic_gui_qt_commonmidas)
+
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE CMIC_QT_COMMONMIDAS
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDENCIES CTK Mitk MitkExt Qmitk QmitkExt niftkQmitkExt niftkMitkExt
+  )
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}
+                      niftkITK
+)
+                      
