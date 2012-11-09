@@ -23,7 +23,7 @@
  ============================================================================*/
 
 #include "QmitkBaseWorkbenchWindowAdvisor.h"
-#include "internal/QmitkCommonAppsApplicationPlugin.h"
+#include "QmitkCommonAppsApplicationPlugin.h"
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>

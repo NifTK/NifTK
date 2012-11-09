@@ -32,7 +32,6 @@ class QWidget;
 class QRadioButton;
 class QDoubleSpinBox;
 class QSpinBox;
-class QComboBox;
 
 /**
  * \class QmitkNiftyViewApplicationPreferencePage
@@ -56,8 +55,6 @@ public:
   static const std::string IMAGE_INITIALISATION_LEVELWINDOW;
   static const std::string IMAGE_INITIALISATION_PERCENTAGE;
   static const std::string IMAGE_INITIALISATION_PERCENTAGE_NAME;
-  static const std::string IMAGE_RESLICE_INTERPOLATION;
-  static const std::string IMAGE_TEXTURE_INTERPOLATION;
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -93,8 +90,6 @@ protected:
   QRadioButton   *m_UseLevelWindowRadioButton;
   QRadioButton   *m_UseImageDataRadioButton;
   QDoubleSpinBox *m_PercentageOfDataRangeDoubleSpinBox;
-  QComboBox      *m_ResliceInterpolationComboBox;
-  QComboBox      *m_TextureInterpolationComboBox;
 
   bool m_Initializing;
 

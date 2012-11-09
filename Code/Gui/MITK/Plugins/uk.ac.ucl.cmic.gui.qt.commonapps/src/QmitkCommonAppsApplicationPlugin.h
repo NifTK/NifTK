@@ -67,13 +67,14 @@ protected:
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
   virtual QString GetHelpHomePageURL() const { return QString(); }
 
+  static QmitkCommonAppsApplicationPlugin* inst;
+  ctkPluginContext* context;
+
 private:
 
   virtual void NodeAddedProxy(const mitk::DataNode *node);
   const mitk::DataStorage* GetDataStorage();
 
-  static QmitkCommonAppsApplicationPlugin* inst;
-  ctkPluginContext* context;
   ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
   bool m_InDataStorageChanged;
 };
