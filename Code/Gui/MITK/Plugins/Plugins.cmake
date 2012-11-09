@@ -3,11 +3,12 @@
 
 set(PROJECT_PLUGINS
 
-# These are 'application level' plugins, and so are 'view' independent.
+# These are 'Application' plugins, and so are 'View' independent.
   Plugins/uk.ac.ucl.cmic.gui.qt.commonapps:ON 
   Plugins/uk.ac.ucl.cmic.gui.qt.niftyview:ON
-
-# These are 'view' plugins, and just depend on MITK.
+  Plugins/uk.ac.ucl.cmic.gui.qt.niftyigi:ON
+  
+# These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.snapshot:ON
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
@@ -19,12 +20,12 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
   Plugins/uk.ac.ucl.cmic.breastsegmentation:OFF           # Under development
  
-# This 'common' plugin is our preferred base class.  
+# This 'common' plugin is our preferred base class for things that can't just derive from MITK.  
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/it.unito.cim.intensityprofile:ON
   
-# This 'midascommon' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.  
+# This 'commonmidas' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.  
   Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON            
   Plugins/uk.ac.ucl.cmic.mitksegmentation:ON  
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
