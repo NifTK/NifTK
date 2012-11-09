@@ -7,6 +7,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.gui.qt.commonapps:ON 
   Plugins/uk.ac.ucl.cmic.gui.qt.niftyview:ON
   Plugins/uk.ac.ucl.cmic.gui.qt.niftyigi:ON
+  Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON
   
 # These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
