@@ -21,7 +21,6 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-
 #ifndef MITKQTCOMMONAPPSAPPDLL_H_
 #define MITKQTCOMMONAPPSAPPDLL_H_
 

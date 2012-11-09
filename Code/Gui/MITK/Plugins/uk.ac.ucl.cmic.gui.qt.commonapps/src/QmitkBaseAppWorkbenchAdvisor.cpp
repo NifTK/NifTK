@@ -21,7 +21,6 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-
 #include "QmitkBaseAppWorkbenchAdvisor.h"
 #include "QmitkBaseWorkbenchWindowAdvisor.h"
 
@@ -37,8 +36,8 @@ void QmitkBaseAppWorkbenchAdvisor::Initialize(berry::IWorkbenchConfigurer::Point
 berry::WorkbenchWindowAdvisor* QmitkBaseAppWorkbenchAdvisor::CreateWorkbenchWindowAdvisor(
         berry::IWorkbenchWindowConfigurer::Pointer configurer)
 {
-  QmitkBaseWorkbenchWindowAdvisor* advisor = new
-      QmitkBaseWorkbenchWindowAdvisor(this, configurer);
+  // Create the advisor, or derived classes can create their own.
+  QmitkBaseWorkbenchWindowAdvisor* advisor = this->CreateQmitkBaseWorkbenchWindowAdvisor(configurer);
 
   // Exclude the help perspective from org.blueberry.ui.qt.help from the normal perspective list.
   // The perspective gets a dedicated menu entry in the help menu.
@@ -50,4 +49,12 @@ berry::WorkbenchWindowAdvisor* QmitkBaseAppWorkbenchAdvisor::CreateWorkbenchWind
   advisor->SetWindowIcon(this->GetWindowIconResourcePath());
 
   return advisor;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkBaseWorkbenchWindowAdvisor* QmitkBaseAppWorkbenchAdvisor::CreateQmitkBaseWorkbenchWindowAdvisor(
+    berry::IWorkbenchWindowConfigurer::Pointer configurer)
+{
+  return new QmitkBaseWorkbenchWindowAdvisor(this, configurer);
 }

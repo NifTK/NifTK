@@ -47,13 +47,11 @@ int QmitkBaseApplication::Start()
   int code = berry::PlatformUI::CreateAndRunWorkbench(display, this->GetWorkbenchAdvisor());
 
   // exit the application with an appropriate return code
-  return code == berry::PlatformUI::RETURN_RESTART
-              ? EXIT_RESTART : EXIT_OK;
+  return code == berry::PlatformUI::RETURN_RESTART ? EXIT_RESTART : EXIT_OK;
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkBaseApplication::Stop()
 {
-
 }

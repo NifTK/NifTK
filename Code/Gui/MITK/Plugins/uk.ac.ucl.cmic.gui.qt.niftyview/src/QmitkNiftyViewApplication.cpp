@@ -21,7 +21,6 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-
 #include "QmitkNiftyViewApplication.h"
 #include "QmitkNiftyViewAppWorkbenchAdvisor.h"
 

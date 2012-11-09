@@ -43,11 +43,13 @@ public:
   QmitkNiftyViewWorkbenchWindowAdvisor(berry::WorkbenchAdvisor* wbAdvisor,
     berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
-  /// \brief We override QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate
-  /// to additionally provide an option to force the MITK display open
-  /// with an environment variable called NIFTK_MITK_DISPLAY=ON.
+  /**
+   * \brief We override QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate
+   * to additionally provide an option to force the MITK display open
+   * with an environment variable called NIFTK_MITK_DISPLAY=ON.
+   */
   virtual void PostWindowCreate();
 };
 
-#endif /*QMITKEXTWORKBENCHADVISOR_H_*/
+#endif /*QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_*/
 

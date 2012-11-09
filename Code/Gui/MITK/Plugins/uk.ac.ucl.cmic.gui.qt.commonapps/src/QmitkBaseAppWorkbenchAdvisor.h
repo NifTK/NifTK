@@ -33,7 +33,10 @@
 #endif
 
 #include "mitkQtCommonAppsAppDll.h"
+
 #include <berryQtWorkbenchAdvisor.h>
+
+class QmitkBaseWorkbenchWindowAdvisor;
 
 /**
  * \class QmitkBaseAppWorkbenchAdvisor
@@ -46,6 +49,10 @@ public:
 
   void Initialize(berry::IWorkbenchConfigurer::Pointer configurer);
 
+  /**
+   * \brief Called by framework to create the WorkbenchWindowAdvisor,
+   * and derived classes should instead override CreateQmitkBaseWorkbenchWindowAdvisor.
+   */
   berry::WorkbenchWindowAdvisor* CreateWorkbenchWindowAdvisor(
       berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
@@ -62,6 +69,13 @@ protected:
    * corresponding to a valid icon file, described using a Qt resource location.
    */
   virtual std::string GetWindowIconResourcePath() const = 0;
+
+  /**
+   * \brief Actually creates the derived WorkbenchWindowAdvisor.
+   */
+  virtual QmitkBaseWorkbenchWindowAdvisor* CreateQmitkBaseWorkbenchWindowAdvisor(
+      berry::IWorkbenchWindowConfigurer::Pointer configurer);
+
 };
 
 #endif /*QMITKBASEAPPWORKBENCHADVISOR_H_*/

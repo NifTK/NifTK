@@ -33,6 +33,7 @@
 #endif
 
 #include "mitkQtNiftyViewAppDll.h"
+
 #include "QmitkBaseAppWorkbenchAdvisor.h"
 
 /**

@@ -26,6 +26,7 @@
 #define QMITKBASEWORKBENCHWINDOWADVISOR_H_
 
 #include "mitkQtCommonAppsAppDll.h"
+
 #include "QmitkExtWorkbenchWindowAdvisor.h"
 
 /**
@@ -55,8 +56,14 @@ public:
 
 public slots:
 
+  /// \brief Opens the Help About dialog box.
   void OnHelpAbout();
 
+protected:
+
+  /// \brief Checks environment variable NIFTK_MITK_DISPLAY to see
+  /// if we are forcing the MITK display open.
+  void CheckIfLoadingMITKDisplay();
 };
 
 #endif /*QMITKBASEWORKBENCHWINDOWADVISOR_H_*/
