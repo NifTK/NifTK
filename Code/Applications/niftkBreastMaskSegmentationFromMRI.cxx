@@ -110,6 +110,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "ofm", "filename", "Output the fast-marching image."},
   {OPT_STRING, "otfm", "filename", "Output the thresholded fast-marching image."},
 
+  {OPT_STRING, "ovtk", "filename", "Output a VTK surface (PolyData) representation of the segmentation."},
+
   {OPT_STRING, "o",    "filename", "The output segmented image."},
 
   {OPT_STRING, "fs", "filename", "An additional optional fat-saturated image \n"
@@ -155,6 +157,8 @@ enum {
   O_OUTPUT_SPEED_IMAGE,
   O_OUTPUT_FAST_MARCHING_IMAGE,
   O_OUTPUT_THRESH_FAST_MARCH_IMAGE,
+
+  O_OUTPUT_VTK_SURFACE,
 
   O_OUTPUT_IMAGE,
 
@@ -352,6 +356,8 @@ int main( int argc, char *argv[] )
   std::string fileOutputSpeedImage;
   std::string fileOutputFastMarchingImage;
 
+  std::string fileOutputVTKSurface;
+
   std::string fileOutputImage;
 
   std::string fileInputStructural;
@@ -472,6 +478,8 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_GRADIENT_MAG_IMAGE, fileOutputGradientMagImage );
   CommandLineOptions.GetArgument( O_OUTPUT_SPEED_IMAGE, fileOutputSpeedImage );
   CommandLineOptions.GetArgument( O_OUTPUT_FAST_MARCHING_IMAGE, fileOutputFastMarchingImage );
+
+  CommandLineOptions.GetArgument( O_OUTPUT_VTK_SURFACE, fileOutputVTKSurface);
 
   CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, fileOutputImage );
 
@@ -1937,6 +1945,7 @@ int main( int argc, char *argv[] )
   derivativeFilterY->SetOrder( DerivativeFilterType::ZeroOrder );
   derivativeFilterZ->SetOrder( DerivativeFilterType::ZeroOrder );
 
+
   ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
   
   thresholder->SetLowerThreshold( 1000.*finalSegmThreshold );
@@ -1957,6 +1966,39 @@ int main( int argc, char *argv[] )
     std::cout << ex << std::endl;
     return EXIT_FAILURE;
   }
+
+
+  // Use this smoothed image to generate a VTK surface?
+
+  if ( fileOutputVTKSurface.length() )
+  {
+    typedef itk::Mesh<double> MeshType;
+    typedef itk::BinaryMask3DMeshSource< ImageType, MeshType >   MeshSourceType;
+
+    MeshSourceType::Pointer meshSource = MeshSourceType::New();
+
+
+    meshSource->SetObjectValue( 1000.*finalSegmThreshold );
+
+    meshSource->SetInput( derivativeFilterZ->GetOutput() );
+
+    try
+    {
+      meshSource->Update();
+    }
+    catch( itk::ExceptionObject & exp )
+    {
+      std::cerr << "ERROR: Mesh creation exception" << std::endl
+		<< exp << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    std::cout << "Mesh nodes: " << meshSource->GetNumberOfNodes() << std::endl;
+    std::cout << "Mesh cells: " << meshSource->GetNumberOfCells() << std::endl;
+  }
+
+
+  // Disconnect the pipeline
 
   imTmp = thresholder->GetOutput();
   imTmp->DisconnectPipeline();
