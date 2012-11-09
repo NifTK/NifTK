@@ -48,6 +48,6 @@ private:
 
 }; // MIDASActivator
 
-}
+} // end namespace
 
 #endif // MIDASACTIVATOR_H

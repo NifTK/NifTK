@@ -25,24 +25,23 @@
 #ifndef QMITKBASELEGACYVIEW_H
 #define QMITKBASELEGACYVIEW_H
 
-#include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
+#include <uk_ac_ucl_cmic_gui_qt_commonlegacy_Export.h>
 
 #include <QmitkAbstractView.h>
 
-class QmitkMIDASMultiViewWidget;
 class QmitkStdMultiWidget;
 
 /**
  * \class QmitkBaseLegacyView
- * \brief Base view component for plugins that (unfortunately) must have access to QmitkStdMultiWidget or QmitkMIDASMultiViewWidget.
+ * \brief Base view component for plugins that (unfortunately) must have access to QmitkStdMultiWidget.
  *
  * At All Costs, you should try to avoid using it, as you are introducing hard coded links to widgets.
  * Instead you should use the mitkIRenderWindowPart, described here: http://www.mitk.org/wiki/ViewsWithoutMultiWidget
  *
  * \deprecated
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
+ * \ingroup uk_ac_ucl_cmic_gui_qt_commonlegacy
  */
-class CMIC_QT_COMMON QmitkBaseLegacyView : public QmitkAbstractView
+class CMIC_QT_COMMONLEGACY QmitkBaseLegacyView : public QmitkAbstractView
 {
 
   Q_OBJECT
@@ -64,26 +63,12 @@ protected:
    */
   QmitkStdMultiWidget* GetActiveStdMultiWidget();
 
-  /**
-   * \brief Does a lookup and returns a pointer to the QmitkMIDASMultiViewWidget from the editor.
-   *
-   * Should NOT Be Used. Think Very Carefully Before Using This.
-   *
-   * \deprecated
-   */
-  QmitkMIDASMultiViewWidget* GetActiveMIDASMultiViewWidget();
-
 private:
 
   /**
    * \brief Saves the MITK widget, if available, to avoid repeated lookups.
    */
   QmitkStdMultiWidget *m_MITKWidget;
-
-  /**
-   * \brief Saves the MIDAS widget, if available, to avoid repeated lookups.
-   */
-  QmitkMIDASMultiViewWidget *m_MIDASWidget;
 
 };
 

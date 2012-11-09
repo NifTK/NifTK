@@ -35,5 +35,5 @@ SET(UI_FILES
 )
 
 SET(QRC_FILES
-  Resources/niftkIGIGui.qrc
+#  Resources/niftkIGIGui.qrc
 )

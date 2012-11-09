@@ -50,7 +50,6 @@
 
 #include "NifTKConfigure.h"
 #include "QmitkMIDASNewSegmentationDialog.h"
-#include "QmitkMIDASMultiViewWidget.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASDrawTool.h"
