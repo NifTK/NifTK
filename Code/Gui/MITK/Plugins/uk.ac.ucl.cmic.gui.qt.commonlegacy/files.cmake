@@ -1,19 +1,17 @@
 SET(SRC_CPP_FILES
-  QmitkBaseView.cpp
+  QmitkBaseLegacyView.cpp
 )
 
 SET(INTERNAL_CPP_FILES
-  CommonActivator.cpp
-  VisibilityChangedCommand.cpp
-  VisibilityChangeObserver.cpp
+  CommonLegacyActivator.cpp
 )
 
 SET(UI_FILES
 )
 
 SET(MOC_H_FILES
-  src/internal/CommonActivator.h
-  src/QmitkBaseView.h
+  src/internal/CommonLegacyActivator.h
+  src/QmitkBaseLegacyView.h
 )
 
 SET(CACHED_RESOURCE_FILES
@@ -22,7 +20,7 @@ SET(CACHED_RESOURCE_FILES
 
 # todo: add some qt style sheet resources
 SET(QRC_FILES
-  resources/CommonResources.qrc
+  resources/CommonLegacyResources.qrc
 )
 
 SET(CPP_FILES )

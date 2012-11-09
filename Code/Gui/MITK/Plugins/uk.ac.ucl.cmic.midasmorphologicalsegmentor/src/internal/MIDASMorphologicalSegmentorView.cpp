@@ -39,7 +39,6 @@
 #include "mitkITKRegionParametersDataNodeProperty.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPaintbrushTool.h"
-#include "QmitkMIDASMultiViewWidget.h"
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 

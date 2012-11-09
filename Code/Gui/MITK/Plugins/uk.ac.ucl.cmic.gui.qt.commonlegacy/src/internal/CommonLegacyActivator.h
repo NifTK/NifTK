@@ -22,33 +22,32 @@
 
  ============================================================================*/
 
-#include "MIDASActivator.h"
-#include <QtPlugin>
+#ifndef COMMONLEGACYACTIVATOR_H
+#define COMMONLEGACYACTIVATOR_H
+
+#include <ctkPluginActivator.h>
 
 namespace mitk {
 
-ctkPluginContext* MIDASActivator::s_PluginContext(NULL);
-
-//-----------------------------------------------------------------------------
-void MIDASActivator::start(ctkPluginContext* context)
+class CommonLegacyActivator :
+  public QObject, public ctkPluginActivator
 {
-  s_PluginContext = context;
-}
+  Q_OBJECT
+  Q_INTERFACES(ctkPluginActivator)
 
+public:
 
-//-----------------------------------------------------------------------------
-void MIDASActivator::stop(ctkPluginContext* context)
-{
-  Q_UNUSED(context)
-}
+  void start(ctkPluginContext* context);
+  void stop(ctkPluginContext* context);
 
+  static ctkPluginContext* GetPluginContext();
 
-//-----------------------------------------------------------------------------
-ctkPluginContext* MIDASActivator::GetPluginContext()
-{
-  return s_PluginContext;
-}
+private:
+
+  static ctkPluginContext* s_PluginContext;
+
+}; // CommonLegacyActivator
 
 } // end namespace
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonmidas, mitk::MIDASActivator)
+#endif // COMMONLEGACYACTIVATOR_H
