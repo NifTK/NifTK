@@ -567,11 +567,13 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 
     if ( (idx == 1) || (idx == 4) || (idx == 5) || (idx == 6) ) {
 	
-      bool flgIsSecondOrder;
+      bool flgIsSecondOrder = false;
       double theta;
       OutputImagePointType vReference;    
       vnl_double_2 vStructure;
 	
+      vStructure.fill( 0. );
+
       // Slope
 	
       if ( idx == 1 ) {
