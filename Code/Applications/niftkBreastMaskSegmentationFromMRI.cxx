@@ -1856,6 +1856,15 @@ int main( int argc, char *argv[] )
     gradientMagnitude->SetSigma( 1 );
     gradientMagnitude->SetInput( imStructural );
 
+    try
+    {
+      gradientMagnitude->Update();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e << std::endl;
+    }
+
     WriteImageToFile( fileOutputGradientMagImage, "gradient magnitude image", 
 		      gradientMagnitude->GetOutput(), flgLeft, flgRight );
 
@@ -1872,6 +1881,15 @@ int main( int argc, char *argv[] )
 
     sigmoid->SetInput( gradientMagnitude->GetOutput() );
 
+    try
+    {
+      sigmoid->Update();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e << std::endl;
+    }
+
     WriteImageToFile( fileOutputSpeedImage, "sigmoid speed image", 
 		      sigmoid->GetOutput(), flgLeft, flgRight );
 
@@ -1881,6 +1899,15 @@ int main( int argc, char *argv[] )
     fastMarching->SetOutputSize( imStructural->GetLargestPossibleRegion().GetSize() );
     fastMarching->SetStoppingValue( 100. );
     fastMarching->SetInput( sigmoid->GetOutput() );
+
+    try
+    {
+      fastMarching->Update();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e << std::endl;
+    }
 
     WriteImageToFile( fileOutputFastMarchingImage, "fast marching image", 
 		      fastMarching->GetOutput(), flgLeft, flgRight );
