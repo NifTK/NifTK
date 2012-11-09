@@ -8,7 +8,7 @@
 #include "XnatModel.h"
 #include "XnatNameDialog.h"
 #include "XnatNode.h"
-#include "XnatNodeActivity.h"
+#include "XnatEmptyNode.h"
 
 class XnatTreeViewPrivate
 {
@@ -23,7 +23,7 @@ XnatTreeView::XnatTreeView(QWidget* parent)
   setUniformRowHeights(true);
   setHeaderHidden(true);
 
-  initialize(new XnatNode(XnatEmptyNodeActivity::instance()));
+  initialize(new XnatEmptyNode());
 }
 
 XnatTreeView::~XnatTreeView()
@@ -65,18 +65,17 @@ XnatModel* XnatTreeView::xnatModel()
   return dynamic_cast<XnatModel*>(model());
 }
 
-XnatNodeProperties XnatTreeView::currentNodeProperties()
+const XnatNode* XnatTreeView::currentNode()
 {
-  return nodeProperties(this->selectionModel()->currentIndex());
+  return static_cast<const XnatNode*>(this->selectionModel()->currentIndex().internalPointer());
 }
 
-XnatNodeProperties XnatTreeView::nodeProperties(const QModelIndex& index)
+const XnatNode* XnatTreeView::node(const QModelIndex& index)
 {
-  return XnatNodeProperties(this->model()->data(index, Qt::UserRole).toBitArray());
+  return static_cast<const XnatNode*>(index.internalPointer());
 }
 
 void XnatTreeView::refreshRows()
-
 {
   QModelIndex index = this->selectionModel()->currentIndex();
   XnatModel* model = (XnatModel*) this->model();

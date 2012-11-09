@@ -6,8 +6,6 @@
 #include <QTreeView>
 #include <QModelIndex>
 
-#include "XnatNodeProperties.h"
-
 class XnatModel;
 class XnatNode;
 class XnatTreeViewPrivate;
@@ -24,8 +22,8 @@ public:
 
   XnatModel* xnatModel();
 
-  XnatNodeProperties nodeProperties(const QModelIndex& index);
-  XnatNodeProperties currentNodeProperties();
+  const XnatNode* node(const QModelIndex& index);
+  const XnatNode* currentNode();
 
 public slots:
   void refreshRows();

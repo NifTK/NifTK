@@ -464,6 +464,10 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   TARGET_LINK_LIBRARIES(niftkBreastMaskSegmentationFromMRI ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkBreastMaskSegmentationFromMRI RUNTIME DESTINATION bin COMPONENT applications)
  
+  ADD_EXECUTABLE(niftkBreastDicomSeriesReadImageWrite niftkBreastDicomSeriesReadImageWrite.cxx )
+  TARGET_LINK_LIBRARIES(niftkBreastDicomSeriesReadImageWrite ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkBreastDicomSeriesReadImageWrite RUNTIME DESTINATION bin COMPONENT applications)
+
   ##############################################################
   # Other command line applications, that require VTK.
   ##############################################################

@@ -1,11 +1,11 @@
 #include "XnatModel.h"
 
 #include "XnatException.h"
-#include "XnatNodeProperties.h"
 
+const int XnatModel::ModifiableChildKind = Qt::UserRole;
+const int XnatModel::ModifiableParentName = Qt::UserRole + 1;
 
-const int XnatModel::ModifiableChildKind = Qt::UserRole + 1;
-const int XnatModel::ModifiableParentName = Qt::UserRole + 2;
+#include <QDebug>
 
 XnatModel::XnatModel(XnatNode* rootNode)
 : root(rootNode)
@@ -42,11 +42,6 @@ QVariant XnatModel::data(const QModelIndex& index, int role) const
     {
       return QVariant(toolTip);
     }
-  }
-  else if ( role == Qt::UserRole )
-  {
-    XnatNodeProperties nodeProperties(index.row(), node);
-    return QVariant(nodeProperties.getBitArray());
   }
   else if ( role == ModifiableChildKind )
   {
@@ -93,15 +88,15 @@ QModelIndex XnatModel::index(int row, int column, const QModelIndex& parent) con
   {
     if ( ( row < root->getNumChildren() ) && ( row >= 0 ) )
     {
-      return createIndex(row, column, (void*) root);
+      return createIndex(row, column, root);
     }
     else
     {
       return QModelIndex();
     }
   }
-  XnatNode* node = (XnatNode*) parent.internalPointer();
-  XnatNode* childNode = node->getChildNode(parent.row());
+  XnatNode* parentNode = (XnatNode*) parent.internalPointer();
+  XnatNode* childNode = parentNode->getChildNode(parent.row());
   if ( childNode == NULL )
   {
     return QModelIndex();
@@ -117,15 +112,15 @@ int XnatModel::rowCount(const QModelIndex& parent) const
 {
   if ( !parent.isValid() )
   {
-    return ((int) (root->getNumChildren()));
+    return root->getNumChildren();
   }
-  XnatNode* node = (XnatNode*) parent.internalPointer();
-  XnatNode* childNode = node->getChildNode(parent.row());
+  XnatNode* parentNode = (XnatNode*) parent.internalPointer();
+  XnatNode* childNode = parentNode->getChildNode(parent.row());
   if ( childNode == NULL )
   {
     return 0;
   }
-  return ((int) (childNode->getNumChildren()));
+  return childNode->getNumChildren();
 }
 
 int XnatModel::columnCount(const QModelIndex& parent) const
@@ -173,20 +168,20 @@ void XnatModel::fetchMore(const QModelIndex& parent)
 {
   if ( parent.isValid() )
   {
-    XnatNode* node = (XnatNode*) parent.internalPointer();
-    XnatNode* childNode = node->getChildNode(parent.row());
+    XnatNode* parentNode = (XnatNode*) parent.internalPointer();
+    XnatNode* childNode = parentNode->getChildNode(parent.row());
     if ( childNode == NULL )
     {
       try
       {
-        XnatNode* tempNode = node->makeChildNode(parent.row());
+        XnatNode* tempNode = parentNode->makeChildNode(parent.row());
         if ( tempNode != NULL )
         {
           size_t numChildren = tempNode->getNumChildren();
           if ( numChildren > 0 )
           {
             beginInsertRows(parent, 0, ((int)(numChildren - 1)));
-            node->addChildNode(parent.row(), tempNode);
+            parentNode->setChildNode(parent.row(), tempNode);
             endInsertRows();
           }
           else
@@ -197,6 +192,7 @@ void XnatModel::fetchMore(const QModelIndex& parent)
       }
       catch (XnatException& e)
       {
+        qDebug() << "kurvara nem kene ide jutnom!!!!!";
         return;
       }
     }
@@ -240,17 +236,6 @@ void XnatModel::downloadFile(const QModelIndex& index, const QString& zipFilenam
 
   XnatNode* node = (XnatNode*) index.internalPointer();
   node->download(index.row(), zipFilename.toAscii().constData());
-}
-
-void XnatModel::downloadFileGroup(const QModelIndex& index, const QString& zipFilename)
-{
-  if ( !index.isValid() )
-  {
-    return;
-  }
-
-  XnatNode* node = (XnatNode*) index.internalPointer();
-  node->downloadAllFiles(index.row(), zipFilename.toAscii().constData());
 }
 
 void XnatModel::uploadFile(const QModelIndex& index, const QString& zipFilename)
