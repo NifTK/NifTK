@@ -22,60 +22,17 @@
 #
 #=================================================================================*/
 PROJECT(NiftyView)
+SET(MY_APP_NAME NiftyView)
 
-MITK_USE_MODULE(niftkMitkExt)
-MITK_USE_MODULE(qtsingleapplication)
+# We want every View plugin, but not the other apps.
 
-INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
-
-IF(APPLE)
-  SET( OSX_ICON_FILES ${CMAKE_CURRENT_SOURCE_DIR}/icon.icns) 
-  SET_SOURCE_FILES_PROPERTIES( ${OSX_ICON_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-ENDIF(APPLE)
-
-SET(app_sources ${MY_APP_NAME}.cpp ${OSX_ICON_FILES} ${OSX_LOGO_FILES} )
-
-SET(_app_options)
-IF(${MY_PROJECT_NAME}_SHOW_CONSOLE_WINDOW)
-  LIST(APPEND _app_options SHOW_CONSOLE)
-ENDIF()
-
-SET(_exclude_plugins
+SET(_exclude_plugins 
+  uk_ac_ucl_cmic_gui_qt_niftymidas
+  uk_ac_ucl_cmic_gui_qt_niftyigi
 )
 
-FunctionCreateBlueBerryApplication(
-  NAME ${MY_APP_NAME}
-  SOURCES ${app_sources}
-  DESCRIPTION "${PROJECT_NAME} - ${MY_APP_NAME} Application"
+NIFTK_CREATE_APPLICATION(
+  NiftyView
   EXCLUDE_PLUGINS ${_exclude_plugins}
-  ${_app_options}
+  SHOW_CONSOLE ${NIFTK_SHOW_CONSOLE_WINDOW}
 )
-
-IF(APPLE)
-  SET_TARGET_PROPERTIES( ${MY_APP_NAME} PROPERTIES 
-    MACOSX_BUNDLE_EXECUTABLE_NAME "${MY_APP_NAME}"
-    MACOSX_BUNDLE_GUI_IDENTIFIER "${MY_APP_NAME}"
-    MACOSX_BUNDLE_BUNDLE_NAME "${MY_APP_NAME}"
-    MACOSX_BUNDLE_LONG_VERSION_STRING "${NIFTK_VERSION_STRING}"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "${NIFTK_VERSION_STRING}"
-    MACOSX_BUNDLE_ICON_FILE "icon.icns"
-    MACOSX_BUNDLE_COPYRIGHT "${NIFTK_COPYRIGHT}"
-    )
-ENDIF(APPLE)
-
-IF(WIN32)
-  TARGET_LINK_LIBRARIES(${MY_APP_NAME}
-    optimized PocoFoundation debug PocoFoundationd
-    optimized PocoUtil debug PocoUtild
-    optimized PocoXml debug PocoXmld
-    org_blueberry_osgi
-    ${ALL_LIBRARIES}
-    ${QT_QTCORE_LIBRARY}
-    ${QT_QTMAIN_LIBRARY}
-    )
-ELSE(WIN32)
-  TARGET_LINK_LIBRARIES(${MY_APP_NAME}
-    org_blueberry_osgi
-    ${ALL_LIBRARIES}
-    )
-ENDIF(WIN32)

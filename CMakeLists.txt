@@ -283,6 +283,7 @@ SET(CMAKE_MODULE_PATH
 # Add in any functions/macros. 
 ######################################################################
 include(mitkMacroEmptyExternalProject)
+include(niftkMacroCreateApplication)
 
 ######################################################################
 # Test for some required system information. This came from old
