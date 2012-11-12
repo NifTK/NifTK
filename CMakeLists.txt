@@ -104,6 +104,50 @@ ELSE(BUILD_SUPERBUILD)
 ENDIF(BUILD_SUPERBUILD)
 
 ######################################################################
+# Configure GUI options from the choice of applications.
+# The user cannot be expected to know the component parts of apps.
+######################################################################
+
+INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
+SET(BUILD_GUI OFF)
+SET(BUILD_IGI OFF)
+
+# Please leave this off, as we can then JUST build command line apps.
+OPTION(NIFTK_BUILD_ALL_APPS "Build all NifTK Graphical User Interfaces" OFF) 
+
+# Check each GUI application.
+FOREACH(NIFTK_APP ${NIFTK_APPS})
+  
+  # extract option_name
+  STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+  SET(target_info_list ${target_info})
+  LIST(GET target_info_list 1 option_name)
+  LIST(GET target_info_list 0 app_name)
+
+  IF(${option_name} OR NIFTK_BUILD_ALL_APPS)
+
+    # Sets up the MACOSX_BUNDLE_NAMES variable, as all libraries are copied into each bundle.
+    IF(APPLE)
+      SET(MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES} ${app_name})
+    ENDIF()
+  
+    IF(${option_name})
+      SET(BUILD_GUI ON)
+    ENDIF()
+    
+     IF (${option_name} AND ${app_name} STREQUAL "NiftyIGI")
+       SET(BUILD_IGI ON)
+     ENDIF()
+     
+  ENDIF()
+      
+ENDFOREACH()
+
+# Print some status stuff to help the user.
+MESSAGE("BUILD_GUI=${BUILD_GUI}")
+MESSAGE("BUILD_IGI=${BUILD_IGI}")
+
+######################################################################
 # Options. These are set up front, so are available when configuring
 # the SuperBuild, and hence they must also be passed to the normal
 # build. So, look in CMake/Superbuild.cmake to see where they are
@@ -111,8 +155,6 @@ ENDIF(BUILD_SUPERBUILD)
 ######################################################################
 OPTION(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
 OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
-OPTION(BUILD_GUI "Build GUI in NifTK/Code/Gui." OFF)
-OPTION(BUILD_IGI "Build CMIC IGI platform." OFF)
 OPTION(BUILD_NIFTYREG "Build NiftyReg." ON)
 OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
@@ -142,7 +184,7 @@ CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
 IF (NIFTK_MESHING_CAN_BUILD) 
   OPTION(BUILD_MESHING "Build meshing?" OFF)
 ELSE (NIFTK_MESHING_CAN_BUILD) 
-  MESSAGE("Could not locate GNU MPFR headers, disabling meshing.")
+  MESSAGE("BUILD_MESHING option disabled")
 ENDIF (NIFTK_MESHING_CAN_BUILD) 
 
 ######################################################################
@@ -353,17 +395,13 @@ SET(NIFTK_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 ######################################################################
 IF(BUILD_GUI)
   IF(NOT BUILD_SHARED_LIBS)
-    MESSAGE(FATAL_ERROR "If you wan't to build the GUI, you must use dynamic linking, turn BUILD_SHARED to ON.")
+    MESSAGE(FATAL_ERROR "If you wan't to build a GUI, you must use dynamic linking, turn BUILD_SHARED to ON.")
   ENDIF(NOT BUILD_SHARED_LIBS)
 ENDIF(BUILD_GUI)
 
 IF(BUILD_GUI)
   SET(NIFTK_GENERATE_DOXYGEN_HELP ON)
 ENDIF(BUILD_GUI)
-
-IF(BUILD_IGI AND NOT BUILD_GUI)
-  MESSAGE(FATAL_ERROR "You have selected BUILD_IGI=ON, but to do so, you must enabled BUILD_GUI=ON")
-ENDIF()
 
 ######################################################################
 # Find Qt. We need to check for Qt first, before we go ahead and do
@@ -379,8 +417,6 @@ IF(BUILD_GUI)
   
   IF(QT_FOUND)
   
-    MESSAGE("Found Qt")
-    
     SET(QT_USE_QTXML 1)
     SET(QT_USE_QTXMLPATTERNS 1)
     SET(QT_USE_PHONON 0)
