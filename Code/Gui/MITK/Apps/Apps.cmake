@@ -22,12 +22,11 @@
 #
 #=================================================================================*/
 
-# This file is included in the top-level CMakeLists.txt file to
-# allow early dependency checking
+# This file is included in the top-level CMakeLists.txt file to allow early dependency checking
 
-option(${PROJECT_NAME}_Apps/NiftyView "Build NiftyView - Research application for all users." ON)
-option(${PROJECT_NAME}_Apps/NiftyMIDAS "Build NiftyMIDAS - Dementia Research Centre application for clinical trials in Dementia." ON)
-option(${PROJECT_NAME}_Apps/NiftyIGI "Build NiftyIGI - Research application for general image guided interventions" ON)
+option(NIFTK_Apps/NiftyView "Build NiftyView - Research application for all users." ON)
+option(NIFTK_Apps/NiftyMIDAS "Build NiftyMIDAS - Dementia Research Centre application for clinical trials in Dementia." ON)
+option(NIFTK_Apps/NiftyIGI "Build NiftyIGI - Research application for general image guided interventions" ON)
 
 # This variable is fed to ctkFunctionSetupPlugins() macro in the
 # top-level CMakeLists.txt file. This allows to automatically
@@ -38,9 +37,9 @@ option(${PROJECT_NAME}_Apps/NiftyIGI "Build NiftyIGI - Research application for 
 # target_libraries.cmake file setting a list named "target_libraries"
 # with required plug-in target names.
 
-set(PROJECT_APPS
-  Apps/NiftyView^^${PROJECT_NAME}_Apps/NiftyView
-  Apps/NiftyMIDAS^^${PROJECT_NAME}_Apps/NiftyMIDAS
-  Apps/NiftyIGI^^${PROJECT_NAME}_Apps/NiftyIGI
+set(NIFTK_APPS
+  NiftyView^^NIFTK_Apps/NiftyView
+  NiftyMIDAS^^NIFTK_Apps/NiftyMIDAS
+  NiftyIGI^^NIFTK_Apps/NiftyIGI
 )
 

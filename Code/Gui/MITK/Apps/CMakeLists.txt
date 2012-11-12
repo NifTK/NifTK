@@ -22,24 +22,18 @@
 #
 #=================================================================================*/
 
-# The name of the App, must match the directory name.
-SET(APPS
-  NiftyView
-  NiftyMIDAS
-  NiftyIGI
-)
+# Note: The name of the App in Apps.cmake, must match the directory name.
 
-SET(MACOSX_BUNDLE_NAMES)
+FOREACH(NIFTK_APP ${NIFTK_APPS})
+  
+  # extract option_name
+  STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+  SET(target_info_list ${target_info})
+  LIST(GET target_info_list 1 option_name)
+  LIST(GET target_info_list 0 app_name)
 
-FOREACH(MY_APP_NAME ${APPS})
-  IF(${PROJECT_NAME}_Apps/${MY_APP_NAME} OR ${PROJECT_NAME}_BUILD_ALL_APPS)
-    ADD_SUBDIRECTORY(${MY_APP_NAME})
- 
-    # Libraries get copied into each Mac bundle (see top level CMakeLists.txt), so we build up a list of currently enabled bundles.
-    IF(APPLE)
-      LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME} )
-    ENDIF(APPLE)
-    
+  IF(${option_name} OR NIFTK_BUILD_ALL_APPS)
+    ADD_SUBDIRECTORY(${app_name})
   ENDIF()
+      
 ENDFOREACH()
-
