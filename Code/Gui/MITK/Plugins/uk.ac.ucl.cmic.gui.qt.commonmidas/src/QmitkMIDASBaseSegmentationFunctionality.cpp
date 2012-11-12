@@ -25,7 +25,7 @@
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
 
 #include <QMessageBox>
-#include "internal/CommonActivator.h"
+#include "internal/MIDASActivator.h"
 #include <mitkILinkedRenderWindowPart.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkDataNodeObject.h>
@@ -165,7 +165,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     toolManager->SetDataStorage( *(this->GetDataStorage()) );
 
     // Set up the ctkEventAdmin stuff.
-    m_Context = mitk::CommonActivator::GetPluginContext();
+    m_Context = mitk::MIDASActivator::GetPluginContext();
     m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
     m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
     m_EventAdmin->publishSignal(this, SIGNAL(InteractorRequest(ctkDictionary)),

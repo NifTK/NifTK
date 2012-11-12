@@ -27,8 +27,7 @@
 # However, you will also need to specify stuff in each subdirectory.
 ####################################################################################
 
-SET(MY_PROJECT_NAME NIFTK)
-SET(MY_APP_NAME NiftyView)
+SET(MY_PROJECT_NAME ${PROJECT})
 
 OPTION(${MY_PROJECT_NAME}_BUILD_ALL_PLUGINS "Build all ${MY_PROJECT_NAME} plugins" OFF)
 OPTION(${MY_PROJECT_NAME}_BUILD_ALL_APPS "Build all ${MY_PROJECT_NAME} applications" OFF)
@@ -44,15 +43,6 @@ IF(MITK_USE_QT)
   SET(QT_QMAKE_EXECUTABLE ${MITK_QMAKE_EXECUTABLE})
   ADD_DEFINITIONS(-DQWT_DLL)
 ENDIF()
-
-####################################################################################
-# On Mac OSX all CTK plugins get copied into every application bundle.
-####################################################################################
-
-SET(MACOSX_BUNDLE_NAMES)
-IF(APPLE)
-  LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME} )
-ENDIF(APPLE)
 
 ####################################################################################
 # Add 'Modules', i.e. shared libs
