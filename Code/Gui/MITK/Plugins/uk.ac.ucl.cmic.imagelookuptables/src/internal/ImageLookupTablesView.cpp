@@ -26,53 +26,48 @@
 #include <QButtonGroup>
 #include <QSlider>
 #include <QDebug>
+#include <itkImage.h>
+#include <itkCommand.h>
+#include <itkStatisticsImageFilter.h>
+#include <itkEventObject.h>
+#include <vtkLookupTable.h>
+#include <mitkImage.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkLookupTable.h>
+#include <mitkLookupTableProperty.h>
+#include <mitkNamedLookupTableProperty.h>
+#include <mitkRenderingManager.h>
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
+#include "QmitkImageLookupTablesPreferencePage.h"
 #include "LookupTableManager.h"
 #include "LookupTableContainer.h"
-#include "vtkLookupTable.h"
-#include "mitkImage.h"
-#include "mitkImageAccessByItk.h"
+
 #include "mitkLevelWindowManager.h"
-#include "mitkRenderingManager.h"
-#include "mitkLookupTable.h"
-#include "mitkLookupTableProperty.h"
 #include "mitkNodePredicateData.h"
 #include "mitkNodePredicateDataType.h"
 #include "mitkNodePredicateProperty.h"
 #include "mitkNodePredicateAnd.h"
 #include "mitkNodePredicateNot.h"
-#include "mitkNamedLookupTableProperty.h"
-#include "QmitkImageLookupTablesPreferencePage.h"
-#include "berryIPreferencesService.h"
-#include "berryIBerryPreferences.h"
-#include "itkStatisticsImageFilter.h"
-#include "itkImage.h"
-
-#include <itkEventObject.h>
 
 const std::string ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
-const std::string ImageLookupTablesView::DATA_MIN("data min");
-const std::string ImageLookupTablesView::DATA_MAX("data max");
-const std::string ImageLookupTablesView::DATA_MEAN("data mean");
-const std::string ImageLookupTablesView::DATA_STDDEV("data std dev");
-
+//-----------------------------------------------------------------------------
 ImageLookupTablesView::ImageLookupTablesView()
 : m_Controls(0)
 , m_LookupTableManager(0)
-, m_LevelWindowManager(0)
-, m_InitialisationMethod(QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS)
-, m_PercentageOfRange(100)
-, m_Precision(2)
 , m_CurrentNode(NULL)
 , m_CurrentImage(NULL)
+, m_Precision(2)
 , m_InUpdate(false)
 , m_ThresholdForIntegerBehaviour(50)
-, m_Parent(NULL)
+, m_PropertyObserverTag(0)
 {
   m_LookupTableManager = new LookupTableManager();
-  m_LevelWindowManager = mitk::LevelWindowManager::New();
 }
 
+
+//-----------------------------------------------------------------------------
 ImageLookupTablesView::ImageLookupTablesView(const ImageLookupTablesView& other)
 : berry::Object()
 {
@@ -80,8 +75,12 @@ ImageLookupTablesView::ImageLookupTablesView(const ImageLookupTablesView& other)
   throw std::runtime_error("Copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 ImageLookupTablesView::~ImageLookupTablesView()
 {
+  this->Unregister();
+
   if (m_Controls != NULL)
   {
     delete m_Controls;
@@ -93,41 +92,11 @@ ImageLookupTablesView::~ImageLookupTablesView()
   }
 }
 
-void ImageLookupTablesView::RetrievePreferenceValues()
-{
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
-  assert( prefs );
-
-  m_InitialisationMethod = prefs->Get(QmitkImageLookupTablesPreferencePage::INITIALISATION_METHOD_NAME, QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS);
-  m_PercentageOfRange = prefs->GetDouble(QmitkImageLookupTablesPreferencePage::PERCENTAGE_NAME, 50);
-  m_Precision = prefs->GetInt(QmitkImageLookupTablesPreferencePage::PRECISION_NAME, 2);
-
-  m_Controls->m_MinSlider->setDecimals(m_Precision);
-  m_Controls->m_MaxSlider->setDecimals(m_Precision);
-  m_Controls->m_LevelSlider->setDecimals(m_Precision);
-  m_Controls->m_WindowSlider->setDecimals(m_Precision);
-  m_Controls->m_MinLimitDoubleSpinBox->setDecimals(m_Precision);
-  m_Controls->m_MaxLimitDoubleSpinBox->setDecimals(m_Precision);
-
-  MITK_DEBUG << "ImageLookupTablesView::RetrievePreferenceValues" \
-      " , m_InitialisationMethod=" << m_InitialisationMethod \
-      << ", m_PercentageOfRange=" << m_PercentageOfRange \
-      << ", m_Precision=" << m_Precision \
-      << std::endl;
-}
-
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
 {
   MITK_DEBUG << "ImageLookupTablesView::CreateQtPartControl() begin" << std::endl;
-
-  // setup the basic GUI of this view
-  m_Parent = parent;
 
   if (!m_Controls)
   {
@@ -135,8 +104,10 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     m_Controls = new Ui::ImageLookupTablesViewControls();
     m_Controls->setupUi(parent);
 
-    // Set defaults
+    // Set defaults on controls
     this->EnableControls(false);
+
+    // Decide which group boxes are open/closed.
     m_Controls->m_RangeGroupBox->setCollapsed(false);
     m_Controls->m_LimitsGroupBox->setCollapsed(true);
 
@@ -148,204 +119,69 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
       m_Controls->m_LookupTableComboBox->insertItem(container->GetOrder()+1, container->GetDisplayName());
     }
 
-    m_LevelWindowManager->SetDataStorage(this->GetDataStorage());
-
-    // Retrieve and store preference values.
-    RetrievePreferenceValues();
-
-    // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
-    CreateConnections();
+    this->RetrievePreferenceValues();
+    this->CreateConnections();
   }
+
   MITK_DEBUG << "ImageLookupTablesView::CreateQtPartControl() end" << std::endl;
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::CreateConnections()
 {
   connect(m_Controls->m_MinSlider, SIGNAL(valueChanged(double)), SLOT(OnWindowBoundsChanged()));
   connect(m_Controls->m_MaxSlider, SIGNAL(valueChanged(double)), SLOT(OnWindowBoundsChanged()));
   connect(m_Controls->m_LevelSlider, SIGNAL(valueChanged(double)), SLOT(OnLevelWindowChanged()));
   connect(m_Controls->m_WindowSlider, SIGNAL(valueChanged(double)), SLOT(OnLevelWindowChanged()));
-  connect(m_Controls->m_MinLimitDoubleSpinBox, SIGNAL(valueChanged(double)), SLOT(OnRangeChanged()));
-  connect(m_Controls->m_MaxLimitDoubleSpinBox, SIGNAL(valueChanged(double)), SLOT(OnRangeChanged()));
+  connect(m_Controls->m_MinLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
+  connect(m_Controls->m_MaxLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
   connect(m_Controls->m_LookupTableComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnLookupTableComboBoxChanged(int)));
   connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
 }
 
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*)
+{
+  RetrievePreferenceValues();
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::RetrievePreferenceValues()
+{
+  berry::IPreferencesService::Pointer prefService
+    = berry::Platform::GetServiceRegistry()
+    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+
+  berry::IBerryPreferences::Pointer prefs
+      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
+        .Cast<berry::IBerryPreferences>();
+  assert( prefs );
+
+  m_Precision = prefs->GetInt(QmitkImageLookupTablesPreferencePage::PRECISION_NAME, 2);
+
+  m_Controls->m_MinSlider->setDecimals(m_Precision);
+  m_Controls->m_MaxSlider->setDecimals(m_Precision);
+  m_Controls->m_LevelSlider->setDecimals(m_Precision);
+  m_Controls->m_WindowSlider->setDecimals(m_Precision);
+  m_Controls->m_MinLimitDoubleSpinBox->setDecimals(m_Precision);
+  m_Controls->m_MaxLimitDoubleSpinBox->setDecimals(m_Precision);
+
+  MITK_DEBUG << "ImageLookupTablesView::RetrievePreferenceValues" \
+      << ", m_Precision=" << m_Precision \
+      << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::SetFocus()
 {
 }
 
-void ImageLookupTablesView::LevelWindowChanged()
-{
-  try
-  {
-    m_CurrentLevelWindow = m_LevelWindowManager->GetLevelWindow();
-    UpdateGuiFromLevelWindowManager();
-    EnableControls(true);
-  }
-  catch(itk::ExceptionObject&)
-  {
-    try
-    {
-      EnableControls(false);
-    }
-    catch(std::exception&)
-    {
-    }
-  }
-}
 
-void ImageLookupTablesView::DifferentImageSelected(const mitk::DataNode* node, mitk::Image* image)
-{
-  m_CurrentNode = const_cast<mitk::DataNode*>(node);
-  m_CurrentImage = image;
-
-  int lookupTableIndex(0);
-  float minDataLimit(0);
-  float maxDataLimit(0);
-  float meanData(0);
-  float stdDevData(0);
-  bool minDataLimitFound = m_CurrentNode->GetFloatProperty(DATA_MIN.c_str(), minDataLimit);
-  bool maxDataLimitFound = m_CurrentNode->GetFloatProperty(DATA_MAX.c_str(), maxDataLimit);
-  bool meanDataFound = m_CurrentNode->GetFloatProperty(DATA_MEAN.c_str(), meanData);
-  bool stdDevDataFound = m_CurrentNode->GetFloatProperty(DATA_STDDEV.c_str(), stdDevData);
-  bool lookupTableIndexFound = m_CurrentNode->GetIntProperty("LookupTableIndex", lookupTableIndex);
-
-  if (!minDataLimitFound || !maxDataLimitFound || !meanDataFound || !stdDevDataFound)
-  {
-    try
-    {
-      if (image->GetDimension() == 2)
-      {
-        AccessFixedDimensionByItk_n(image,
-            ITKGetStatistics, 2,
-            (minDataLimit, maxDataLimit, meanData, stdDevData)
-          );
-      }
-      else if (image->GetDimension() == 3)
-      {
-        AccessFixedDimensionByItk_n(image,
-            ITKGetStatistics, 3,
-            (minDataLimit, maxDataLimit, meanData, stdDevData)
-          );
-      }
-      else if (image->GetDimension() == 4)
-      {
-        AccessFixedDimensionByItk_n(image,
-            ITKGetStatistics, 4,
-            (minDataLimit, maxDataLimit, meanData, stdDevData)
-          );
-      }
-      m_CurrentNode->SetFloatProperty(DATA_MIN.c_str(), minDataLimit);
-      m_CurrentNode->SetFloatProperty(DATA_MAX.c_str(), maxDataLimit);
-      m_CurrentNode->SetFloatProperty(DATA_MEAN.c_str(), meanData);
-      m_CurrentNode->SetFloatProperty(DATA_STDDEV.c_str(), stdDevData);
-    }
-    catch(const mitk::AccessByItkException& e)
-    {
-      MITK_ERROR << "Caught exception during ImageLookupTablesView::ITKGetStatistics, so image statistics will be wrong." << e.what();
-    }
-  }
-
-  double windowMin = 0;
-  double windowMax = 0;
-  mitk::LevelWindow levelWindow;
-
-  if (!minDataLimitFound || !maxDataLimitFound || !meanDataFound || !stdDevDataFound)
-  {
-    // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
-    // i.e. we haven't seen it before. So we have a choice of how to initialise the Level/Window.
-    if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_MIDAS)
-    {
-      double centre = (minDataLimit + 4.51*stdDevData)/2.0;
-      double width = 4.5*stdDevData;
-      windowMin = centre - width/2.0;
-      windowMax = centre + width/2.0;
-
-      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from MIDAS method" \
-          << ", mean=" << meanData \
-          << ", stdDev=" << stdDevData \
-          << ", minDataLimit=" << minDataLimit \
-          << ", maxDataLimit=" << maxDataLimit \
-          << ", windowMin=" << windowMin \
-          << ", windowMax=" << windowMax \
-          << std::endl;
-    }
-    else if (m_InitialisationMethod == QmitkImageLookupTablesPreferencePage::INITIALISATION_PERCENTAGE)
-    {
-      windowMin = minDataLimit;
-      windowMax = minDataLimit + (maxDataLimit - minDataLimit)*m_PercentageOfRange/100.0;
-
-      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from range" \
-          << ", m_PercentageOfRange=" << m_PercentageOfRange \
-          << ", minDataLimit=" << minDataLimit \
-          << ", maxDataLimit=" << maxDataLimit \
-          << ", windowMin=" << windowMin \
-          << ", windowMax=" << windowMax \
-          << std::endl;
-    }
-    else if (m_LevelWindowManager->GetLevelWindowProperty())
-    {
-      levelWindow = m_LevelWindowManager->GetLevelWindow();
-      minDataLimit = levelWindow.GetRangeMin();
-      maxDataLimit = levelWindow.GetRangeMax();
-      windowMin = levelWindow.GetLowerWindowBound();
-      windowMax = levelWindow.GetUpperWindowBound();
-
-      MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected, initialise from current levelWindow: " \
-          << ", minDataLimit=" << minDataLimit \
-          << ", maxDataLimit=" << maxDataLimit \
-          << ", windowMin=" << windowMin \
-          << ", windowMax=" << windowMax << std::endl;
-    }
-    else
-    {
-      MITK_WARN << "Node has min,max,mean,stdDev properties, but I couldn't chose an initialisation method. This should not happen." << std::endl;
-    }
-  }
-  else
-  {
-    m_CurrentNode->GetLevelWindow(levelWindow);
-    minDataLimit = levelWindow.GetRangeMin();
-    maxDataLimit = levelWindow.GetRangeMax();
-    windowMin = levelWindow.GetLowerWindowBound();
-    windowMax = levelWindow.GetUpperWindowBound();
-  }
-
-  MITK_DEBUG << "ImageLookupTablesView::DifferentImageSelected" \
-      << ", dataMin=" << minDataLimit \
-      << ", dataMax=" << maxDataLimit \
-      << ", windowMin=" << windowMin \
-      << ", windowMax=" << windowMax << std::endl;
-
-  // Round up the current min and max.
-  if (fabs(maxDataLimit - minDataLimit) > m_ThresholdForIntegerBehaviour)
-  {
-    windowMin = (int)(windowMin +0.5);
-    windowMax = (int)(windowMax +0.5);
-  }
-
-  // Propagate to min/max controls and back to m_LevelWindowManager
-  m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
-  m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
-  levelWindow.SetRangeMinMax(minDataLimit, maxDataLimit);
-  levelWindow.SetWindowBounds(windowMin, windowMax);
-  m_LevelWindowManager->SetLevelWindow(levelWindow);
-  m_CurrentLevelWindow = levelWindow;
-
-  if (lookupTableIndexFound)
-  {
-    m_Controls->m_LookupTableComboBox->setCurrentIndex(lookupTableIndex);
-  }
-  else
-  {
-    m_Controls->m_LookupTableComboBox->setCurrentIndex(0);
-  }
-  OnRangeChanged();
-  UpdateGuiFromLevelWindowManager();
-  EnableControls(true);
-}
-
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::EnableControls(bool b)
 {
   m_Controls->m_LookupTableComboBox->setEnabled(b);
@@ -358,7 +194,9 @@ void ImageLookupTablesView::EnableControls(bool b)
   m_Controls->m_ResetButton->setEnabled(b);
 }
 
-void ImageLookupTablesView::BlockMinMaxSignals(bool b)
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::BlockSignals(bool b)
 {
   m_Controls->m_MinSlider->blockSignals(b);
   m_Controls->m_MaxSlider->blockSignals(b);
@@ -369,41 +207,153 @@ void ImageLookupTablesView::BlockMinMaxSignals(bool b)
   m_Controls->m_ResetButton->blockSignals(b);
 }
 
-void ImageLookupTablesView::OnWindowBoundsChanged()
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
+                                             const QList<mitk::DataNode::Pointer>& nodes )
 {
-  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
-    return;
+
+  bool isValid = this->IsSelectionValid(nodes);
+
+  if (!isValid
+      || (nodes[0].IsNotNull() && nodes[0] != m_CurrentNode)
+     )
+  {
+    this->Unregister();
   }
 
-  mitk::LevelWindow levelWindow = m_LevelWindowManager->GetLevelWindow();
-  levelWindow.SetWindowBounds(m_Controls->m_MinSlider->value(), m_Controls->m_MaxSlider->value());
-  m_LevelWindowManager->SetLevelWindow(levelWindow);
-
-  QmitkAbstractView::RequestRenderWindowUpdate();
-}
-
-void ImageLookupTablesView::OnLevelWindowChanged()
-{
-  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
-    return;
+  if (isValid)
+  {
+    this->Register(nodes[0]);
   }
 
-  mitk::LevelWindow levelWindow = m_LevelWindowManager->GetLevelWindow();
-  levelWindow.SetLevelWindow(m_Controls->m_LevelSlider->value(), m_Controls->m_WindowSlider->value());
-  m_LevelWindowManager->SetLevelWindow(levelWindow);
-
-  QmitkAbstractView::RequestRenderWindowUpdate();
+  this->EnableControls(isValid);
 }
 
+//-----------------------------------------------------------------------------
+bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes)
+{
+  bool isValid = true;
+
+  if (nodes.count() != 1)
+  {
+    isValid = false;
+  }
+
+  // All nodes must be non null, non-helper images.
+  foreach( mitk::DataNode::Pointer node, nodes )
+  {
+    if(node.IsNull())
+    {
+      isValid = false;
+    }
+
+    if (node.IsNotNull() && dynamic_cast<mitk::Image*>(node->GetData()) == NULL)
+    {
+      isValid = false;
+    }
+
+    bool isHelper(false);
+    if (node->GetBoolProperty("helper object", isHelper) && isHelper)
+    {
+      isValid = false;
+    }
+
+    bool isSelected(false);
+    node->GetBoolProperty("selected", isSelected);
+    if (!isSelected)
+    {
+      isValid = false;
+    }
+
+    if (!node->GetProperty("levelwindow"))
+    {
+      isValid = false;
+    }
+
+  }
+
+  return isValid;
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
+{
+  if (node.IsNotNull())
+  {
+    m_CurrentNode = node;
+
+    this->DifferentImageSelected();
+    this->OnRangeChanged();
+    this->OnPropertyChanged();
+
+    itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer command
+      = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
+    command->SetCallbackFunction(this, &ImageLookupTablesView::OnPropertyChanged);
+    mitk::BaseProperty::Pointer property = node->GetProperty("levelwindow");
+
+    m_PropertyObserverTag = property->AddObserver(itk::ModifiedEvent(), command);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::Unregister()
+{
+  if (m_CurrentNode.IsNotNull())
+  {
+    mitk::BaseProperty::Pointer property = m_CurrentNode->GetProperty("levelwindow");
+    property->RemoveObserver(m_PropertyObserverTag);
+
+    m_CurrentNode = NULL;
+    m_PropertyObserverTag = -1;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::DifferentImageSelected()
+{
+  this->BlockSignals(true);
+
+  m_CurrentImage = dynamic_cast<mitk::Image*>(m_CurrentNode->GetData());
+
+  // As the NiftyView application level plugin provides a mitk::LevelWindow, it MUST be present.
+  mitk::LevelWindow levelWindow;
+  m_CurrentNode->GetLevelWindow(levelWindow);
+
+  float minDataLimit(0);
+  float maxDataLimit(0);
+  int lookupTableIndex(0);
+
+  m_CurrentNode->GetFloatProperty("image data min", minDataLimit);
+  m_CurrentNode->GetFloatProperty("image data max", maxDataLimit);
+  bool lookupTableIndexFound = m_CurrentNode->GetIntProperty("LookupTableIndex", lookupTableIndex);
+
+  m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
+  m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
+
+  if (lookupTableIndexFound)
+  {
+    m_Controls->m_LookupTableComboBox->setCurrentIndex(lookupTableIndex);
+  }
+  else
+  {
+    m_Controls->m_LookupTableComboBox->setCurrentIndex(0);
+  }
+
+  this->BlockSignals(false);
+}
+
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnRangeChanged()
 {
-  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
-    return;
-  }
+  this->BlockSignals(true);
 
-  BlockMinMaxSignals(true);
+  mitk::LevelWindow levelWindow;
+  m_CurrentNode->GetLevelWindow(levelWindow);
 
-  mitk::LevelWindow levelWindow = m_LevelWindowManager->GetLevelWindow();
   levelWindow.SetRangeMinMax(m_Controls->m_MinLimitDoubleSpinBox->value(), m_Controls->m_MaxLimitDoubleSpinBox->value());
 
   double rangeMin = levelWindow.GetRangeMin();
@@ -447,24 +397,32 @@ void ImageLookupTablesView::OnRangeChanged()
   m_Controls->m_LevelSlider->setMaximum(rangeMax);
   m_Controls->m_LevelSlider->setSingleStep(singleStep);
 
-  m_CurrentNode->SetFloatProperty(DATA_MIN.c_str(), levelWindow.GetRangeMin());
-  m_CurrentNode->SetFloatProperty(DATA_MAX.c_str(), levelWindow.GetRangeMax());
-
-  BlockMinMaxSignals(false);
-
-  m_LevelWindowManager->SetLevelWindow(levelWindow);
-  QmitkAbstractView::RequestRenderWindowUpdate();
+  this->BlockSignals(false);
+  this->RequestRenderWindowUpdate();
 }
 
-void ImageLookupTablesView::UpdateGuiFromLevelWindowManager()
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnPropertyChanged(const itk::EventObject&)
 {
-  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
-    return;
-  }
+  this->OnPropertyChanged();
+}
 
-  BlockMinMaxSignals(true);
 
-  const mitk::LevelWindow& levelWindow = m_LevelWindowManager->GetLevelWindow();
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnPropertyChanged()
+{
+  this->UpdateGuiFromLevelWindow();
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::UpdateGuiFromLevelWindow()
+{
+  this->BlockSignals(true);
+
+  mitk::LevelWindow levelWindow;
+  m_CurrentNode->GetLevelWindow(levelWindow);
 
   double min = levelWindow.GetLowerWindowBound();
   double max = levelWindow.GetUpperWindowBound();
@@ -476,93 +434,66 @@ void ImageLookupTablesView::UpdateGuiFromLevelWindowManager()
   m_Controls->m_LevelSlider->setValue(level);
   m_Controls->m_WindowSlider->setValue(window);
 
-  BlockMinMaxSignals(false);
+  this->BlockSignals(false);
 }
 
-mitk::DataNode* ImageLookupTablesView::FindNodeForImage(mitk::Image* image)
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnWindowBoundsChanged()
 {
-  mitk::DataNode::Pointer result = NULL;
+  // Get the current values
+  mitk::LevelWindow levelWindow;
+  m_CurrentNode->GetLevelWindow(levelWindow);
 
-  mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-  mitk::DataStorage::SetOfObjects::ConstPointer possibleCandidates = this->GetDataStorage()->GetSubset(isImage);
-  for (unsigned int i = 0; i < possibleCandidates->size(); i++)
-  {
-    mitk::DataNode* possibleNode = (*possibleCandidates)[i];
-    mitk::Image* possibleImage = dynamic_cast<mitk::Image*>(possibleNode->GetData());
-    if (possibleImage == image)
-    {
-      result = possibleNode;
-    }
-  }
-  return result;
+  // Note: This method is called when one of the sliders has been moved
+  // So, it's purpose is to update the other sliders to match.
+
+  // Update them from controls
+  double min = m_Controls->m_MinSlider->value();
+  double max = m_Controls->m_MaxSlider->value();
+
+  levelWindow.SetWindowBounds(min, max);
+  m_CurrentNode->SetLevelWindow(levelWindow);
+
+  this->RequestRenderWindowUpdate();
 }
 
-void ImageLookupTablesView::NodeChanged(const mitk::DataNode* nodeFromDataStore)
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnLevelWindowChanged()
 {
-  // Could be an assert statement.
-  if (nodeFromDataStore == NULL) return;
+  // Get the current values
+  mitk::LevelWindow levelWindow;
+  m_CurrentNode->GetLevelWindow(levelWindow);
 
-  // Just double check GUI has been created properly, and we are visible.
-  if (!m_Parent || !m_Parent->isVisible()) return;
+  // Note: This method is called when one of the sliders has been moved
+  // So, it's purpose is to update the other sliders to match.
 
-  std::string name;
-  nodeFromDataStore->GetStringProperty("name", name);
+  // Update them from controls
+  double window = m_Controls->m_WindowSlider->value();
+  double level = m_Controls->m_LevelSlider->value();
 
-  MITK_DEBUG << "ImageLookupTablesView::OnNodeChanged, name=" << name << ", node=" << nodeFromDataStore << std::endl;
+  levelWindow.SetLevelWindow(level, window);
+  m_CurrentNode->SetLevelWindow(levelWindow);
 
-  mitk::Image::Pointer imageFromDataStore = dynamic_cast<mitk::Image*>(nodeFromDataStore->GetData());
-  if (imageFromDataStore.IsNotNull() && !m_InUpdate)
-  {
-    m_InUpdate = true;
-
-    mitk::Image::Pointer currentImageFromLevelWindowManager = m_LevelWindowManager->GetCurrentImage();
-    if (currentImageFromLevelWindowManager.IsNotNull())
-    {
-      if (m_CurrentImage != currentImageFromLevelWindowManager)
-      {
-        mitk::DataNode::Pointer node = this->FindNodeForImage(currentImageFromLevelWindowManager);
-        node->GetStringProperty("name", name);
-
-        MITK_DEBUG << "ImageLookupTablesView::OnNodeChanged, new image=" << m_LevelWindowManager->GetCurrentImage() << ", name=" << name << std::endl;
-        DifferentImageSelected(node, m_LevelWindowManager->GetCurrentImage());
-      }
-      else if (m_CurrentImage == m_LevelWindowManager->GetCurrentImage() )
-      {
-        mitk::LevelWindow levelWindowFromDataStoreNode;
-        if (nodeFromDataStore->GetLevelWindow(levelWindowFromDataStoreNode))
-        {
-          if (levelWindowFromDataStoreNode != m_CurrentLevelWindow)
-          {
-            MITK_DEBUG << "ImageLookupTablesView::Updating levels" << std::endl;
-            LevelWindowChanged();
-          }
-        }
-      }
-    }
-
-    m_InUpdate = false;
-  }
-  else
-  {
-    MITK_DEBUG << "ImageLookupTablesView::node=" << nodeFromDataStore << ", was not an image" << std::endl;
-  }
+  this->RequestRenderWindowUpdate();
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 {
-  // Just double check GUI has been created properly, and we are visible.
-  if (!m_Parent || !m_Parent->isVisible()) return;
-
   if (comboBoxIndex > 0)
   {
-    // Copy the vtkLookupTable, and give to the node property.
+    // Copy the vtkLookupTable
     const LookupTableContainer* lutContainer = m_LookupTableManager->GetLookupTableContainer(comboBoxIndex - 1);
-
     const vtkLookupTable *vtkLUT = lutContainer->GetLookupTable();
     mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
     mitkLUT->SetVtkLookupTable(const_cast<vtkLookupTable*>(vtkLUT));
     const std::string& lutName = lutContainer->GetDisplayName().toStdString();
     mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New(lutName, mitkLUT);
+
+    // and give to the node property.
     m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
     m_CurrentNode->SetBoolProperty("use color", false);
     m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);
@@ -573,61 +504,37 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     m_CurrentNode->SetBoolProperty("use color", true);
     m_CurrentNode->GetPropertyList()->DeleteProperty("LookupTableIndex");
   }
+
   m_CurrentNode->Update();
-
-  QmitkAbstractView::RequestRenderWindowUpdate();
+  this->RequestRenderWindowUpdate();
 }
 
-void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*)
-{
-  RetrievePreferenceValues();
-}
 
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnResetButtonPressed()
 {
-  if (!m_LevelWindowManager->GetLevelWindowProperty()) {
-    return;
-  }
 
-  mitk::Image::Pointer image = m_LevelWindowManager->GetCurrentImage();
-  if (image.IsNotNull())
+  mitk::LevelWindow levelWindow;
+  m_CurrentNode->GetLevelWindow(levelWindow);
+
+  float rangeMin(0);
+  float rangeMax(0);
+
+  if (m_CurrentNode->GetFloatProperty("image data min", rangeMin)
+      && m_CurrentNode->GetFloatProperty("image data max", rangeMax))
   {
-    mitk::LevelWindow levelWindow = m_LevelWindowManager->GetLevelWindow();
+    levelWindow.SetRangeMinMax(rangeMin, rangeMax);
+    levelWindow.SetWindowBounds(rangeMin, rangeMax);
 
-    mitk::DataNode::Pointer node = this->FindNodeForImage(image);
-    float rangeMin(0);
-    float rangeMax(0);
+    m_Controls->m_MinLimitDoubleSpinBox->setValue(rangeMin);
+    m_Controls->m_MaxLimitDoubleSpinBox->setValue(rangeMax);
 
-    if (node->GetFloatProperty(DATA_MIN.c_str(), rangeMin)
-        && node->GetFloatProperty(DATA_MAX.c_str(), rangeMax))
-    {
-      levelWindow.SetRangeMinMax(rangeMin, rangeMax);
-      levelWindow.SetWindowBounds(rangeMin, rangeMax);
-      m_LevelWindowManager->SetLevelWindow(levelWindow);
+    m_CurrentNode->SetLevelWindow(levelWindow);
+    m_CurrentNode->Modified();
 
-      QmitkAbstractView::RequestRenderWindowUpdate();
-    }
+    this->UpdateGuiFromLevelWindow();
+    this->RequestRenderWindowUpdate();
   }
 }
 
-template<typename TPixel, unsigned int VImageDimension>
-void
-ImageLookupTablesView
-::ITKGetStatistics(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    float &min,
-    float &max,
-    float &mean,
-    float &stdDev)
-{
-  typedef itk::Image<TPixel, VImageDimension> ImageType;
-  typedef itk::StatisticsImageFilter<ImageType> FilterType;
-
-  typename FilterType::Pointer filter = FilterType::New();
-  filter->SetInput(itkImage);
-  filter->UpdateLargestPossibleRegion();
-  min = filter->GetMinimum();
-  max = filter->GetMaximum();
-  mean = filter->GetMean();
-  stdDev = filter->GetSigma();
-}

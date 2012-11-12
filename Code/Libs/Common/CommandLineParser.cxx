@@ -487,7 +487,10 @@ struct ml *CommandLineParser::ParseArguments(int argc, char *argv[],
        
       ParseStandardArguments(key, clArgList);
        
-      key++;			/* Step past initial '-' */
+      key++;			// Step past initial '-'
+
+      if (*(argv[arg] + 1) == '-')
+	key++;			// And the second if present
 
       /* Step through each option in programme option list and see
 	    if we can find the key there. */

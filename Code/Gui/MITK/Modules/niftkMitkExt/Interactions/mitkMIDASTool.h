@@ -110,6 +110,9 @@ namespace mitk {
     /// \brief Get the flag to block the signal that indicates that the number of seeds has changed.
     itkGetMacro(BlockNumberOfSeedsSignal, bool);
 
+    /// \see mitk::StateMachine::CanHandleEvent
+    float CanHandleEvent(const StateEvent *) const;
+
   protected:
 
     MIDASTool(); // purposefully hidden

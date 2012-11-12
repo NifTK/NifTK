@@ -127,6 +127,15 @@ private slots:
    * \brief This function interprets the received OIGTL messages, but only processes the initial client connected message.
    */
   void InterpretMessage(OIGTLMessage::Pointer msg);
+  /** 
+   * \brief Initiates message handling based on a timing signal
+   */
+  void OnUpdateTimeOut();
+
+  /**
+   * \ brief Triggered when one of the tools changes it's save state.
+   */
+  void OnToolSaveStateChanged();
 
 private:
 
@@ -137,6 +146,9 @@ private:
   QHash<int, OIGTLSocketObject*>           m_Sockets;
   QHash<int, ClientDescriptorXMLBuilder *> m_ClientDescriptors;
   QHash<int, QmitkIGITool::Pointer>        m_Tools;
+  QTimer                                *m_UpdateTimer;
+  bool                                     m_AToolIsSaving;
+
 }; // end class
 
 #endif

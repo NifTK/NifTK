@@ -30,6 +30,7 @@
 #include "itkImageFileWriter.h"
 #include "itkImageRegionIterator.h"
 
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::GeneralSegmentorPipeline()
@@ -40,6 +41,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_UpperThreshold = 0;
   m_AllSeeds = PointSetType::New();
   m_UseOutput = true;
+  m_EraseFullSlice = false;
   m_OutputImage = NULL;
   m_ExtractGreyRegionOfInterestFilter = ExtractGreySliceFromGreyImageFilterType::New();
   m_ExtractBinaryRegionOfInterestFilter = ExtractBinarySliceFromBinaryImageFilterType::New();
@@ -50,6 +52,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter->SetForegroundValue(1);
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
@@ -59,8 +63,11 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_AxisNumber = p.m_AxisNumber;
   m_LowerThreshold = p.m_LowerThreshold;
   m_UpperThreshold = p.m_UpperThreshold;
+  m_EraseFullSlice = p.m_EraseFullSlice;
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
@@ -132,10 +139,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         ParametricPathPointer path = m_SegmentationContours[j];
         const ParametricPathVertexListType* list = path->GetVertexList();
 
-        // NOTE: Intentionally ignoring first and last point.
-        if (list != NULL && list->Size() >= 3)
+        if (list != NULL && list->Size() >= 2)
         {
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             vertex = list->ElementAt(k);            
             m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
@@ -185,10 +191,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         ParametricPathPointer path = m_ManualContours[j];
         const ParametricPathVertexListType* list = path->GetVertexList();
 
-        // NOTE: Intentionally ignoring first and last point.
-        if (list != NULL && list->Size() >= 3)
+        if (list != NULL && list->Size() >= 2)
         {
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             vertex = list->ElementAt(k);            
             m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
@@ -219,44 +224,34 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
      
     // 6. Update Region growing.
     m_RegionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
-    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);     
+    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);
+    m_RegionGrowingFilter->SetEraseFullSlice(m_EraseFullSlice);         
     m_RegionGrowingFilter->SetRegionOfInterest(region3D);
     m_RegionGrowingFilter->SetUseRegionOfInterest(true);
     m_RegionGrowingFilter->SetProjectSeedsIntoRegion(false);
+    m_RegionGrowingFilter->SetUsePropMaskMode(false);
     m_RegionGrowingFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
+    m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
     m_RegionGrowingFilter->SetSegmentationContourImage(m_CastToSegmentationContourFilter->GetOutput());
-    m_RegionGrowingFilter->SetManualContourImage(m_CastToManualContourFilter->GetOutput());
     m_RegionGrowingFilter->SetSegmentationContourImageInsideValue(segImageInside);
     m_RegionGrowingFilter->SetSegmentationContourImageBorderValue(segImageBorder);
     m_RegionGrowingFilter->SetSegmentationContourImageOutsideValue(segImageOutside);
+    m_RegionGrowingFilter->SetManualContourImage(m_CastToManualContourFilter->GetOutput());
     m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
     m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
-    m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
+    m_RegionGrowingFilter->SetManualContours(&m_ManualContours);
     m_RegionGrowingFilter->UpdateLargestPossibleRegion();
     
     // 7. Paste it back into output image. 
     if (m_UseOutput && m_OutputImage != NULL)
     {
-      m_OutputImage->FillBuffer(0);
-      
       itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_RegionGrowingFilter->GetOutput(), region3D);
       itk::ImageRegionIterator<SegmentationImageType> outputIter(m_OutputImage, region3D);
       for (regionGrowingIter.GoToBegin(), outputIter.GoToBegin(); !regionGrowingIter.IsAtEnd(); ++regionGrowingIter, ++outputIter)
       {
         outputIter.Set(regionGrowingIter.Get());
       }
-    }
-/*
-    typename itk::ImageFileWriter<SegmentationImageType>::Pointer segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
-    segWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
-    segWriter->SetFileName("tmp.matt.segmentationcontours.nii");
-    segWriter->Update();
-
-    segWriter = itk::ImageFileWriter<SegmentationImageType>::New();
-    segWriter->SetInput(m_CastToManualContourFilter->GetOutput());
-    segWriter->SetFileName("tmp.matt.manualcontours.nii");
-    segWriter->Update();
-*/   
+    }  
   }
   catch( itk::ExceptionObject & err )
   {

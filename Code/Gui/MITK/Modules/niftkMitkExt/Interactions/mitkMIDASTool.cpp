@@ -44,10 +44,13 @@ mitk::MIDASTool::~MIDASTool()
 }
 
 mitk::MIDASTool::MIDASTool(const char* type) :
-    FeedbackContourTool(type),
-    m_AddToPointSetInteractor(NULL)
+    FeedbackContourTool(type)
+, m_AddToPointSetInteractor(NULL)
+, m_LastSeenNumberOfSeeds(0)
+, m_SeedsChangedTag(0)
+, m_IsActivated(false)
+, m_BlockNumberOfSeedsSignal(false)
 {
-  m_IsActivated = false;
 }
 
 const char* mitk::MIDASTool::GetGroup() const
@@ -174,3 +177,22 @@ void mitk::MIDASTool::OnSeedsModified()
     }
   }
 }
+
+float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
+{
+  // See StateMachine.xml for event Ids.
+
+  if (event != NULL
+      && event->GetEvent() != NULL
+      && (event->GetId() == 2   // right mouse down
+          )
+      )
+  {
+    return 1;
+  }
+  else
+  {
+    return mitk::FeedbackContourTool::CanHandleEvent(event);
+  }
+}
+

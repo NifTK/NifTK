@@ -27,7 +27,9 @@
 
 //-----------------------------------------------------------------------------
 QmitkIGITool::QmitkIGITool()
-: m_DataStorage(NULL)
+: m_SavingMessages(false)
+, m_SavePrefix("")
+, m_DataStorage(NULL)
 , m_Socket(NULL)
 , m_ClientDescriptor(NULL)
 {
@@ -39,6 +41,8 @@ QmitkIGITool::QmitkIGITool()
 QmitkIGITool::~QmitkIGITool()
 {
   // We don't own the data storage, socket, or client descriptor, so don't delete them.
+  m_SaveBuffer.clear();
+  m_MessageMap.clear();
 }
 
 
@@ -62,3 +66,30 @@ void QmitkIGITool::SendMessage(OIGTLMessage::Pointer msg)
     m_Socket->sendMessage(msg);
   }
 }
+//-----------------------------------------------------------------------------
+void QmitkIGITool::SetSavePrefix(QString prefix)
+{
+  this->m_SavePrefix = prefix;
+}
+//-----------------------------------------------------------------------------
+void QmitkIGITool::SetSaveState(bool SavingMessages)
+{
+  this->m_SavingMessages = SavingMessages;
+  emit SaveStateChanged();
+}
+//-----------------------------------------------------------------------------
+bool QmitkIGITool::GetSaveState()
+{
+  return this->m_SavingMessages;
+}
+//-----------------------------------------------------------------------------
+igtlUint64 QmitkIGITool::GetNextSaveID()
+{
+  if ( m_SaveBuffer.isEmpty() )
+    return 0;
+  else 
+  {
+    return m_SaveBuffer.takeFirst();
+  }
+}
+

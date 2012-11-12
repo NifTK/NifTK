@@ -34,7 +34,7 @@ class QPushButton;
 
 /**
  * \class MIDASGeneralSegmentorViewPreferencePage
- * \brief Preferences page for this plugin, enabling choice volume rendering on/off.
+ * \brief Preferences page for this plugin, enabling the choice of the default colour of the segmentation.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor
  *
  */

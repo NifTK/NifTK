@@ -506,9 +506,12 @@ void mitk::MIDASContourTool::CopyContour(mitk::Contour &a, mitk::Contour &b)
   b.UpdateOutputInformation();
 }
 
-void mitk::MIDASContourTool::CopyContourSet(mitk::ContourSet &a, mitk::ContourSet &b)
+void mitk::MIDASContourTool::CopyContourSet(mitk::ContourSet &a, mitk::ContourSet &b, bool initialise)
 {
-  b.Initialize();
+  if (initialise)
+  {
+    b.Initialize();
+  }
 
   mitk::ContourSet::ContourVectorType contourVec = a.GetContours();
   mitk::ContourSet::ContourIterator contourIt = contourVec.begin();
@@ -516,10 +519,10 @@ void mitk::MIDASContourTool::CopyContourSet(mitk::ContourSet &a, mitk::ContourSe
   unsigned int contourCounter = 0;
   while ( contourIt != contourVec.end() )
   {
-    mitk::Contour::Pointer nextContour = (mitk::Contour::Pointer) (*contourIt).second;
-
+    mitk::Contour* nextContour = ((*contourIt).second).GetPointer();
     mitk::Contour::Pointer outputContour = mitk::Contour::New();
-    mitk::MIDASContourTool::CopyContour(*(nextContour.GetPointer()), *(outputContour).GetPointer());
+
+    mitk::MIDASContourTool::CopyContour(*nextContour, *(outputContour.GetPointer()));
 
     b.AddContour(contourCounter, outputContour);
     contourCounter++;

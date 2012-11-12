@@ -28,6 +28,7 @@
 #include <QImage>
 #include <QPixmap>
 #include <QLabel>
+#include <QFileDialog>
 
 NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultrasonix Tool Gui")
 
@@ -78,6 +79,12 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget *parent, ClientDescriptorXMLB
     connect (tool, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
     connect (tool, SIGNAL(UpdatePreviewImage(OIGTLMessage::Pointer)), this, SLOT(OnUpdatePreviewImage(OIGTLMessage::Pointer)));
   }
+  //Connect the UI
+  connect(pushButton_save,SIGNAL(clicked()),this,SLOT(OnManageSaveImage()));
+  connect(pushButton_change_savedir,SIGNAL(clicked()),this,SLOT(OnManageChangeSaveDir()));
+  // Set the current save path.
+  QString currentDir = QDir::currentPath();
+  lineEdit->setText(currentDir);
 }
 
 
@@ -98,5 +105,38 @@ void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
   {
     QImage image = imageMsg->getQImage();
     m_PixmapLabel->setPixmap(QPixmap::fromImage(image));
+    lcdNumber->display(this->GetQmitkIGIUltrasonixTool()->GetMotorPos());
   }
+}
+
+void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
+{
+  if ( pushButton_save->text() == "Save" ) 
+  {
+    QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
+    if (tool != NULL)
+    {
+      tool->SetSavePrefix (lineEdit->text());
+      tool->SetSaveState (true);
+      pushButton_save->setText("Don't Save");
+    }
+  }
+  else
+  {
+    QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
+    if (tool != NULL)
+    {
+      tool->SetSaveState (false);
+      pushButton_save->setText("Save");
+    }
+  }
+}
+
+void QmitkIGIUltrasonixToolGui::OnManageChangeSaveDir()
+{
+  QFileDialog dialog (this);
+  QString savedir = QFileDialog::getExistingDirectory (this,tr("Select Save Directory"),lineEdit->text());
+  lineEdit->setText(savedir);
+  QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
+  tool->SetSavePrefix (savedir);
 }

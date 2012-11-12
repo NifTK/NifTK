@@ -37,7 +37,6 @@ public slots:
 
 private slots:
   bool startFileDownload(const QString& zipFilename);
-  bool startFileGroupDownload(const QString& zipFilename);
   void startDownload();
   void startGroupDownload();
   void downloadData();

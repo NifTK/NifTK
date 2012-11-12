@@ -8,6 +8,7 @@ link_directories(${curl_LIBRARY_DIR})
 list(APPEND ALL_LIBRARY_DIRS ${curl_LIBRARY_DIR})
 
 if (WIN32)
+  set(CURL_BINARY_DIR ${CMAKE_BINARY_DIR}/../curl-build/lib/${CMAKE_BUILD_TYPE})
   set(curl_LIBRARIES libcurl_imp)
 else ()
   set(curl_LIBRARIES curl)

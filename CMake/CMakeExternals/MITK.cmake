@@ -55,8 +55,8 @@ IF(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_org.mitk.gui.qt.coreapplication OFF CACHE BOOL \"Build the MITK CoreApp plugin. This should be OFF, as NifTK has it's own application NiftyView. \")      
       set(MITK_BUILD_org.mitk.gui.qt.imagecropper OFF CACHE BOOL \"Build the MITK image cropper plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.measurement OFF CACHE BOOL \"Build the MITK measurement plugin\")
-      set(MITK_BUILD_org.mitk.gui.qt.pointsetinteraction OFF CACHE BOOL \"Build the MITK point set interaction plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.volumevisualization ON CACHE BOOL \"Build the MITK volume visualization plugin\")
+      set(MITK_BUILD_org.mitk.gui.qt.pointsetinteraction ON CACHE BOOL \"Build the MITK point set interaction plugin\")            
       set(MITK_BUILD_org.mitk.gui.qt.stdmultiwidgeteditor ON CACHE BOOL \"Build the MITK ortho-viewer plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.segmentation OFF CACHE BOOL \"Build the MITK segmentation plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.cmdlinemodules ON CACHE BOOL \"Build the Command Line Modules plugin. \")
@@ -221,52 +221,98 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1469, MITK 12003 = https://github.com/MattClarkson/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
     #       + Trac 1781, MITK 13113 = https://github.com/MattClarkson/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
     #       + Trac 1588, MITK 12506 = https://github.com/MattClarkson/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0 (Slicer Command Line Modules)
-    #       + Trac 1791, MITK 11627 = https://github.com/MattClarkson/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)    
+    #       + Trac 1791, MITK 11627 = https://github.com/MattClarkson/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)   
+    #
+    # 18. Trac 1872 - Creating a new MITK version.
+    #
+    #     HOWEVER: With the MITK on NifTK/MITK/master latest, we merged MITK d70faf53e4 - Oct 26 2012 - 16:10:44
+    #              and found that the MIDAS morph editor does not work due to changes to image accessors due to MITK
+    #              bug: http://bugs.mitk.org/show_bug.cgi?id=13230
+    #     
+    #     SO: I took the latest niftk branch - commit 6bca0b2907 and cherry-picked:
+    #
+    #     Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
+    #                MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
+    #
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK b6cfb353a9 - Sep 19 2012 = 2012.09.0 release
+    #       + Trac 853,  MITK 10174 = https://github.com/NifTK/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/NifTK/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
+    #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/6bca0b2907b374aabbb5a6110ac6a2f7a06ad8b0 (Slicer Command Line Modules)
+    #       + Trac 1791, MITK 11627 = https://github.com/NifTK/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)   
+    #       + Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
+    #       +            MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
+    # 
+    #     Giving c3214181308907c12c2d62f6cb775da04411772d on NifTK/MITK/niftk-tmp-12.10 branch
+    #
+    # 19. Trac 1893 - New MITK and CTK version.
+    #  
+    #     Took the niftk branch - commit 6bca0b2907 and cherry-picked:
+    #      
+    #     Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
+    #                MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
+    #                MITK 13386 = https://github.com/MITK/MITK/commit/f69ab59f0fa0a1df848e17f4d1d25c4ebcbdb0c7  (missing newline Geometry3D already on MITK master)
+    #     Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (latest Slicer Command Line Modules)
+    #
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK b6cfb353a9 - Sep 19 2012 = 2012.09.0 release
+    #
+    #       + Trac 853,  MITK 10174 = https://github.com/NifTK/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1781, MITK 13113 = https://github.com/NifTK/MITK/commit/598ee13b691224cb07fa89bc264271a96e6e35ce (Reintroduce SegTool2D::SetEnable3DInterpolation)
+    #       + Trac 1791, MITK 11627 = https://github.com/NifTK/MITK/commit/0196305455913856beb251dd58e69df3e6a86e37 (Fix Analyze file name)   
+    #       + Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
+    #       +            MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
+    #       +            MITK 13386 = https://github.com/MITK/MITK/commit/f69ab59f0fa0a1df848e17f4d1d25c4ebcbdb0c7  (missing newline Geometry3D already on MITK master)
+    #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (Slicer Command Line Modules)
+    #
+    #     Giving acffcb4f1f3a483026b891ae49f45688d597cff8 on NifTK/MITK/niftk-tmp-12.10 branch  
     #########################################################
-    
-    SET(revision_tag 6bca0b2907)
-    
-    IF(${proj}_REVISION_TAG)
-      SET(revision_tag ${${proj}_REVISION_TAG})
-    ENDIF()
-    
+
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
+
     ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${GIT_PROTOCOL}:${NIFTK_LOCATION_MITK}
-    GIT_TAG ${revision_tag}
-    BINARY_DIR ${proj}-build
-    UPDATE_COMMAND ""
-    INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
-    CMAKE_CACHE_ARGS
-      ${EP_COMMON_ARGS}
-      -DDESIRED_QT_VERSION:STRING=4
-      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-      -DMITK_BUILD_TUTORIAL:BOOL=OFF
-      -DMITK_BUILD_ALL_PLUGINS:BOOL=OFF
-      -DMITK_USE_QT:BOOL=${QT_FOUND}
-      -DMITK_USE_CTK:BOOL=${QT_FOUND}
-      -DMITK_USE_BLUEBERRY:BOOL=${QT_FOUND}
-      -DMITK_USE_GDCMIO:BOOL=ON
-      -DMITK_USE_DCMTK:BOOL=ON
-      -DMITK_USE_Boost:BOOL=ON
-      -DMITK_USE_Boost_LIBRARIES:STRING="filesystem system date_time"
-      -DMITK_USE_SYSTEM_Boost:BOOL=OFF
-      -DMITK_USE_OpenCV:BOOL=${NIFTK_USE_OPENCV}
-      -DADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
-      -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
-      -DBOOST_ROOT:PATH=${BOOST_ROOT}                        # FindBoost expectes BOOST_ROOT  
-      -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
-      -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
-      -DGDCM_DIR:PATH=${GDCM_DIR}                            # FindGDCM expects GDCM_DIR
-      -DVTK_DIR:PATH=${VTK_DIR}                              # FindVTK expects VTK_DIR
-      -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
-      -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
-      -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
-      -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
-    DEPENDS ${proj_DEPENDENCIES}
-  )
-SET(MITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/${proj}-build)
-MESSAGE("SuperBuild loading MITK from ${MITK_DIR}")
+      URL ${NIFTK_LOCATION_MITK}
+      URL_MD5 ${NIFTK_CHECKSUM_MITK}
+      BINARY_DIR ${proj}-build
+      UPDATE_COMMAND ""
+      INSTALL_COMMAND ""
+      CMAKE_GENERATOR ${GEN}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_ARGS}
+        -DDESIRED_QT_VERSION:STRING=4
+        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+        -DMITK_BUILD_TUTORIAL:BOOL=OFF
+        -DMITK_BUILD_ALL_PLUGINS:BOOL=OFF
+        -DMITK_USE_QT:BOOL=${QT_FOUND}
+        -DMITK_USE_CTK:BOOL=${QT_FOUND}
+        -DMITK_USE_BLUEBERRY:BOOL=${QT_FOUND}
+        -DMITK_USE_GDCMIO:BOOL=ON
+        -DMITK_USE_DCMTK:BOOL=ON
+        -DMITK_USE_Boost:BOOL=ON
+        -DMITK_USE_Boost_LIBRARIES:STRING="filesystem system date_time"
+        -DMITK_USE_SYSTEM_Boost:BOOL=OFF
+        -DMITK_USE_OpenCV:BOOL=${NIFTK_USE_OPENCV}
+        -DADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
+        -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
+        -DBOOST_ROOT:PATH=${BOOST_ROOT}                        # FindBoost expectes BOOST_ROOT  
+        -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
+        -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
+        -DGDCM_DIR:PATH=${GDCM_DIR}                            # FindGDCM expects GDCM_DIR
+        -DVTK_DIR:PATH=${VTK_DIR}                              # FindVTK expects VTK_DIR
+        -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
+        -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
+        -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
+        -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
+      DEPENDS ${proj_DEPENDENCIES}
+      )
+    SET(MITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/${proj}-build)
+    MESSAGE("SuperBuild loading MITK from ${MITK_DIR}")
 
 ELSE()
 

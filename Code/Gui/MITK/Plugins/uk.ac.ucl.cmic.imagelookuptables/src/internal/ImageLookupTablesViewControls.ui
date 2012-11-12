@@ -157,6 +157,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>the minimum intensity value to use</string>
+            </property>
             <property name="decimals">
              <number>2</number>
             </property>
@@ -182,6 +185,9 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>the maximum intensity value to use</string>
             </property>
             <property name="decimals">
              <number>2</number>
@@ -209,6 +215,9 @@
           </item>
           <item row="0" column="5">
            <widget class="QPushButton" name="m_ResetButton">
+            <property name="toolTip">
+             <string>reset to the full image data range</string>
+            </property>
             <property name="text">
              <string>reset</string>
             </property>

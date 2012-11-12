@@ -61,6 +61,11 @@ class NIFTKIGIGUI_EXPORT QmitkQImageToMitkImageFilter : public mitk::ImageSource
 
     OutputImageType* GetOutput();
 
+		/**
+		 * \brief If set the image geometry will be copied from Geometry Image
+		 */
+		void SetGeometryImage ( mitk::Image::Pointer GeomImage);
+
 protected:
 
     QmitkQImageToMitkImageFilter(); // purposely hidden
@@ -73,11 +78,14 @@ protected:
 protected:
     const QImage* m_QImage;
     mitk::Image::Pointer m_Image;
+		mitk::Image::Pointer m_GeomImage;
 
 private:
 
     template <typename TPixel, unsigned int VImageDimension>
-    static mitk::Image::Pointer ConvertQImageToMitkImage( const QImage* input);
+    static mitk::Image::Pointer ConvertQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage);
+    template <typename TPixel, unsigned int VImageDimension>
+    static mitk::Image::Pointer Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage);
 };
 
 #endif // QMITKQIMAGETOMITKIMAGEFILTER_H

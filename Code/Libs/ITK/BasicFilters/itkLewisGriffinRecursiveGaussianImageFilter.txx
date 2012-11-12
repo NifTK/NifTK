@@ -420,7 +420,7 @@ typename LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>::Rea
 LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::GaussianZeroOrder(RealType x, RealType sigma)
 { 
-  return (exp(-(x * x) / (2 * sigma * sigma)) / (sqrt(2 * M_PI) * sigma));
+  return (exp(-(x * x) / (2 * sigma * sigma)) / (sqrt(2 * vnl_math::pi) * sigma));
 }
 
 
@@ -434,7 +434,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::GaussianFirstOrder(RealType x, RealType sigma)
 { 
   
-  return (exp(-(x * x) / (2 * sigma * sigma)) * x / (sqrt(2 * M_PI)* sigma * sigma * sigma));
+  return (exp(-(x * x) / (2 * sigma * sigma)) * x / (sqrt(2 * vnl_math::pi)* sigma * sigma * sigma));
 }
 
 
@@ -447,7 +447,7 @@ typename LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>::Rea
 LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::GaussianSecondOrder(RealType x, RealType sigma)
 { 
-  return (exp(-(x * x) / (2 * sigma * sigma)) * (x * x - sigma * sigma) / (sqrt(2 * M_PI) * sigma * sigma * sigma * sigma * sigma));
+  return (exp(-(x * x) / (2 * sigma * sigma)) * (x * x - sigma * sigma) / (sqrt(2 * vnl_math::pi) * sigma * sigma * sigma * sigma * sigma));
 }
 
 

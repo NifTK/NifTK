@@ -32,6 +32,8 @@
 #include <itkImageFileWriter.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkBinaryFunctorImageFilter.h>
+#include <itkPolyLineParametricPath.h>
+#include <itkContinuousIndex.h>
 
 namespace itk {
 template <class TInputImage, class TOutputImage, class TPointSet>
@@ -55,6 +57,15 @@ public:
 	typedef typename OutputImageType::ConstPointer        OutputImageConstPointerType;
 	typedef typename OutputImageType::PixelType           OutputPixelType;
 	typedef TPointSet                                     PointSetType;
+
+	typedef itk::ContinuousIndex<double,TInputImage::ImageDimension> ContinuousIndexType;
+	typedef itk::PolyLineParametricPath<TInputImage::ImageDimension> ParametricPathType;
+
+	typedef typename ParametricPathType::Pointer          ParametricPathPointer;
+	typedef std::vector<ParametricPathPointer>            ParametricPathVectorType;
+	typedef typename ParametricPathType::VertexListType   ParametricPathVertexListType;
+	typedef typename ParametricPathType::VertexType       ParametricPathVertexType;
+
 
 	/** @} */
 
@@ -87,6 +98,11 @@ private:
 	typename OutputImageType::ConstPointer m_ManualContourImage;
 	OutputPixelType                        m_ManualContourImageBorderValue;
 	OutputPixelType                        m_ManualContourImageNonBorderValue;
+	ParametricPathVectorType*              m_ManualContours;
+	bool                                   m_EraseFullSlice;
+	OutputImageIndexType                   m_PropMask;
+	bool                                   m_UsePropMaskMode;
+
 public:
 
 	itkSetMacro(LowerThreshold, InputPixelType);
@@ -128,6 +144,17 @@ public:
   itkSetMacro(ManualContourImageNonBorderValue, OutputPixelType);
   itkGetConstMacro(ManualContourImageNonBorderValue, OutputPixelType);
 
+  itkSetMacro(EraseFullSlice, bool);
+  itkGetConstMacro(EraseFullSlice, bool);
+
+  itkSetMacro(PropMask, OutputImageIndexType);
+  itkGetConstMacro(PropMask, OutputImageIndexType);
+
+  itkSetMacro(UsePropMaskMode, bool);
+  itkGetConstMacro(UsePropMaskMode, bool);
+
+  void SetManualContours(ParametricPathVectorType* contours);
+
 	const PointSetType& GetSeedPoints(void) const {
 		return *mspc_SeedPoints;
 	}
@@ -159,7 +186,18 @@ private:
 	void ConditionalAddPixel(
 	    std::stack<typename OutputImageType::IndexType> &r_stack,
 	    const typename OutputImageType::IndexType &currentImgIdx,
-	    const typename OutputImageType::IndexType &nextImgIdx
+	    const typename OutputImageType::IndexType &nextImgIdx,
+	    const bool &isFullyConnected
+	    );
+
+	bool IsFullyConnected(
+	    const typename OutputImageType::IndexType &index1,
+	    const typename OutputImageType::IndexType &index2
+	    );
+
+	bool IsCrossingLine(
+	    const typename OutputImageType::IndexType &index1,
+	    const typename OutputImageType::IndexType &index2
 	    );
 
 protected:

@@ -33,7 +33,7 @@
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
 #include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
-#include "itkMIDASLargestConnectedComponentFilter.h"
+#include "itkLargestConnectedComponentFilter.h"
 #include "itkMIDASDownSamplingFilter.h"
 #include "itkMIDASUpSamplingFilter.h"
 
@@ -108,7 +108,7 @@ int DoMain(arguments args)
   typedef typename itk::BinaryErodeImageFilter<InputImageType, InputImageType, CrossStructuringElementType> ErodeByCrossImageFilterType;
   typedef typename itk::BinaryErodeImageFilter<InputImageType, InputImageType, BallStructuringElementType> ErodeByBallImageFilterType;
   typedef typename itk::VotingBinaryIterativeHoleFillingImageFilter<InputImageType> HoleFillingFilterType;
-  typedef typename itk::MIDASLargestConnectedComponentFilter<InputImageType, InputImageType> LargestConnectedComponentType;
+  typedef typename itk::LargestConnectedComponentFilter<InputImageType, InputImageType> LargestConnectedComponentType;
   typedef typename itk::MIDASDownSamplingFilter<InputImageType, InputImageType> DownSamplingFilterType;
   typedef typename itk::MIDASUpSamplingFilter<InputImageType, InputImageType> UpSamplingFilterType;
 
@@ -128,8 +128,8 @@ int DoMain(arguments args)
     maskPixel = maskIterator.Get();
     imagePixel = imageIterator.Get();
 
-    if (fabs(imagePixel - 0) > args.tolerance      // Non-zero voxels
-        && fabs(maskPixel - 0) < args.tolerance)   // That are non-brain
+    if (fabs((double)(imagePixel - 0)) > args.tolerance      // Non-zero voxels
+        && fabs((double)(maskPixel - 0)) < args.tolerance)   // That are non-brain
     {
       voxelCounter++;
       t_skull += imagePixel;
@@ -150,7 +150,7 @@ int DoMain(arguments args)
     maskPixel = maskIterator.Get();
     imagePixel = imageIterator.Get();
 
-    if (fabs(maskPixel - 0) < args.tolerance  // non-brain voxels
+    if (fabs((double)(maskPixel - 0)) < args.tolerance  // non-brain voxels
         && imagePixel >= t_skull)
     {
       voxelCounter++;

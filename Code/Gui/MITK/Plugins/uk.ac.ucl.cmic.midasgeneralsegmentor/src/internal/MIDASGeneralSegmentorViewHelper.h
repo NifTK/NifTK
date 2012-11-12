@@ -49,6 +49,7 @@ typedef ParametricPathType::VertexType     ParametricPathVertexType;
  */
 struct GeneralSegmentorPipelineParams
 {
+  bool m_EraseFullSlice;
   int m_SliceNumber;
   int m_AxisNumber;
   double m_LowerThreshold;
@@ -63,7 +64,7 @@ struct GeneralSegmentorPipelineParams
 /** Converts Points from MITK to ITK. */
 void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points);
 
-/** Convert contours contained in a mitk::MIDASContourTool into ITK points. */
+/** Convert contours contained in a mitk::ContourSet into ITK points. */
 void ConvertMITKContoursAndAppendToITKContours(mitk::ContourSet *contourSet, ParametricPathVectorType& contours);
 
 /** Convert all contours for a pipeline into ITK points. */

@@ -100,7 +100,7 @@ namespace itk
     void operator=(const Self&); //purposely not implemented
 
     /** A pixel is on the boudary, if it is 1, and at least 1 6 connected neighbour (in 3D) is zero. */
-    bool IsOnBoundaryOfObject(OutputImageIndexType &voxelIndex, OutputImageType* inMask);
+    bool IsOnBoundaryOfObject(const OutputImageIndexType &voxelIndex, const OutputImageType* inMask);
 
     /** The upper threshold, below which, pixels are not eroded. */
     PixelType2 m_UpperThreshold;

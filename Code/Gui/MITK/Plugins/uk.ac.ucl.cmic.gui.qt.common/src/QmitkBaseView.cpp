@@ -351,3 +351,22 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
 
   return window;
 }
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::FocusOnCurrentWindow()
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  if (renderWindowPart != NULL)
+  {
+    QmitkRenderWindow* window = renderWindowPart->GetActiveQmitkRenderWindow();
+    if (window != NULL)
+    {
+      mitk::BaseRenderer* base = window->GetRenderer();
+      mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+
+      focusManager->SetFocused(base);
+    }
+  }
+
+}

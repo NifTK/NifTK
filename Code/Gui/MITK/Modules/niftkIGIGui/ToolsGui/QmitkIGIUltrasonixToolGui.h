@@ -65,6 +65,8 @@ private slots:
 
   void OnStatusUpdate(QString message);
   void OnUpdatePreviewImage(OIGTLMessage::Pointer msg);
+  void OnManageSaveImage();
+  void OnManageChangeSaveDir();
 
 private:
 

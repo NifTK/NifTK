@@ -26,4 +26,10 @@
     </perspective>
   </extension>
 
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.gui.qt.niftyview.NiftyViewPreferencePage" name="Application Preferences" class="QmitkNiftyViewApplicationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.gui.qt.niftyview.NiftyViewPreferencePageKeywords"></keywordreference>
+    </page>
+  </extension>
+
 </plugin>

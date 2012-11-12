@@ -27,6 +27,7 @@
 #include <QmitkFiducialRegistrationWidget.h>
 #include "QmitkIGITrackerTool.h"
 #include "QmitkFiducialRegistrationWidgetDialog.h"
+#include "QmitkDataStorageComboBox.h"
 
 NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerToolGui, "IGI Tracker Tool Gui")
 
@@ -71,7 +72,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_GetCurrentPos, SIGNAL(clicked()), this, SLOT(OnGetCurrentPosition()) );
   connect(m_TrackerControlsWidget->pushButton_FiducialRegistration, SIGNAL(clicked()), this, SLOT(OnFiducialRegistrationClicked()) );
   connect(m_TrackerControlsWidget->toolButton_Add, SIGNAL(clicked()), this, SLOT(OnManageToolConnection()) );
-  connect(m_TrackerControlsWidget->toolButton_Edit, SIGNAL(clicked()), this, SLOT(OnEditClicked()) );
+  connect(m_TrackerControlsWidget->toolButton_Assoc, SIGNAL(clicked()), this, SLOT(OnAssocClicked()) );
 
   if (config != NULL)
   {
@@ -99,6 +100,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
       }
     }
   }
+  m_TrackerControlsWidget->comboBox->SetDataStorage(this->GetTool()->GetDataStorage());
 }
 
 
@@ -175,9 +177,19 @@ void QmitkIGITrackerToolGui::OnManageToolConnection(void)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGITrackerToolGui::OnEditClicked(void)
+void QmitkIGITrackerToolGui::OnAssocClicked(void)
 {
-  std::cerr << "ToDo: QmitkIGITrackerToolGui::OnEditClicked" << std::endl;
+ QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+ if (tool != NULL)
+ {
+  QString toolname = m_TrackerControlsWidget->GetCurrentToolName();
+  mitk::DataNode::Pointer dataNode = m_TrackerControlsWidget->comboBox->GetSelectedNode();
+  tool->AddDataNode(toolname, dataNode);
+   //TODO a method to show what data nodes are associated
+ ////TODO a method to deassociate a data Node
+ }
+     
+ //mitk::DataNode::Pointer dataNode = ComboSelector->GetSelectedNode();
 }
 
 

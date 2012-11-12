@@ -112,14 +112,15 @@ int itkMIDASConditionalDilationFilterTest(int argc, char * argv[])
     //columns
     for(unsigned int j = 0; j < 5; j++)
     {
-      if( ((i == 1) || (i == 2) || (i == 3))
-         && ((j == 1) || (j == 2) || (j == 3)) )
+      if( ((i == 2))
+         && ((j == 2))
+        )
       {
-        intensityValue = 0;
+        intensityValue = 1;
       }
       else
       {
-        intensityValue = 1;
+        intensityValue = 0;
       }
 
       IndexType imageIndex;
@@ -141,6 +142,8 @@ int itkMIDASConditionalDilationFilterTest(int argc, char * argv[])
   ConditionalDilationFilter->SetLowerThreshold(lowerThresholdAsPercentage);
   ConditionalDilationFilter->SetUpperThreshold(upperThresholdAsPercentage);
   ConditionalDilationFilter->SetNumberOfIterations(numberOfDilations);
+  ConditionalDilationFilter->SetInValue(1);
+  ConditionalDilationFilter->SetOutValue(0);
   ConditionalDilationFilter->Update();
 
   /**Check if the filter gives the correct output */
@@ -152,17 +155,13 @@ int itkMIDASConditionalDilationFilterTest(int argc, char * argv[])
   outValueVector.reserve(25);
   for(unsigned int i = 0; i < 25; i++)
   {
-    outValueVector.push_back(1);
+    outValueVector.push_back(0);
   }
 
   //TEST FOR DIFFERENT NUMBER OF DILATIONS
-  outValueVector[6]  = 0;
-  outValueVector[7]  = 0;
-  outValueVector[8]  = 0;
-  outValueVector[12] = 0;
-  outValueVector[16] = 0;
-  outValueVector[17] = 0;
-  outValueVector[18] = 0;
+  outValueVector[11] = 1;
+  outValueVector[12] = 1;
+  outValueVector[13] = 1;
   
   unsigned int index   = 0;
   bool bFilterStatus   = true;
@@ -173,7 +172,7 @@ int itkMIDASConditionalDilationFilterTest(int argc, char * argv[])
   {
     pixelValue = outputImageIter.Get();
 
-    std::cerr << "Expected=" << outValueVector[index] << ", actual=" << pixelValue << std::endl;
+    std::cerr << "Index=" << index << ", Expected=" << outValueVector[index] << ", actual=" << pixelValue << std::endl;
 
     if(outputImageIter.Get() != outValueVector[index])
     {

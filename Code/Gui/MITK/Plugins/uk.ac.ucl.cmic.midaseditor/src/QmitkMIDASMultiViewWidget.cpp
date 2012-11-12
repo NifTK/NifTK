@@ -54,6 +54,7 @@
 #include "QmitkMIDASSingleViewWidget.h"
 #include "mitkMIDASOrientationUtils.h"
 
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     QmitkMIDASMultiViewVisibilityManager* visibilityManager,
     mitk::RenderingManager* renderingManager,
@@ -105,6 +106,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_InteractorsEnabled(false)
 {
   assert(visibilityManager);
+
+  this->setFocusPolicy(Qt::StrongFocus);
 
   /************************************
    * Create stuff.
@@ -318,6 +321,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASMultiViewWidget::~QmitkMIDASMultiViewWidget()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -328,6 +333,8 @@ QmitkMIDASMultiViewWidget::~QmitkMIDASMultiViewWidget()
   this->Deactivated();
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 {
   QmitkMIDASSingleViewWidget *widget = new QmitkMIDASSingleViewWidget(tr("QmitkRenderWindow"),
@@ -346,6 +353,8 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   return widget;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::RequestUpdateAll()
 {
   std::vector<unsigned int> listToUpdate = this->GetViewerIndexesToUpdate(true);
@@ -358,16 +367,22 @@ void QmitkMIDASMultiViewWidget::RequestUpdateAll()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType)
 {
   m_VisibilityManager->SetDefaultInterpolationType(interpolationType);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetDefaultViewType(MIDASView view)
 {
   m_VisibilityManager->SetDefaultViewType(view);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetDropTypeWidget(MIDASDropType dropType)
 {
   if (dropType == MIDAS_DROP_TYPE_SINGLE)
@@ -388,6 +403,8 @@ void QmitkMIDASMultiViewWidget::SetDropTypeWidget(MIDASDropType dropType)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetShowDropTypeWidgets(bool visible)
 {
   m_DropSingleRadioButton->setVisible(visible);
@@ -396,6 +413,8 @@ void QmitkMIDASMultiViewWidget::SetShowDropTypeWidgets(bool visible)
   m_DropAccumulateCheckBox->setVisible(visible);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetShowLayoutButtons(bool visible)
 {
   m_1x1LayoutButton->setVisible(visible);
@@ -404,22 +423,30 @@ void QmitkMIDASMultiViewWidget::SetShowLayoutButtons(bool visible)
   m_2x2LayoutButton->setVisible(visible);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetShowMagnificationSlider(bool visible)
 {
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setVisible(visible);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetShow2DCursors(bool visible)
 {
   m_Show2DCursors = visible;
   this->Update2DCursorVisibility();
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
 {
   return m_Show2DCursors;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetShow3DViewInOrthoView(bool visible)
 {
   m_Show3DViewInOrthoview = visible;
@@ -430,11 +457,15 @@ void QmitkMIDASMultiViewWidget::SetShow3DViewInOrthoView(bool visible)
   this->RequestUpdateAll();
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::GetShow3DViewInOrthoView() const
 {
   return m_Show3DViewInOrthoview;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remember)
 {
   for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -443,21 +474,29 @@ void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remem
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableSliderWidgets(bool enabled)
 {
   m_MIDASSlidersWidget->SetEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableOrientationWidgets(bool enabled)
 {
   m_MIDASOrientationWidget->SetEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableBindWidgets(bool enabled)
 {
   m_MIDASBindWidget->SetEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled)
 {
   m_DropSingleRadioButton->setEnabled(enabled);
@@ -466,6 +505,8 @@ void QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled)
   m_DropAccumulateCheckBox->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableLayoutWidgets(bool enabled)
 {
   m_1x1LayoutButton->setEnabled(enabled);
@@ -478,6 +519,8 @@ void QmitkMIDASMultiViewWidget::EnableLayoutWidgets(bool enabled)
   m_ColumnsLabel->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableWidgets(bool enabled)
 {
   this->EnableDropTypeWidgets(enabled);
@@ -487,6 +530,8 @@ void QmitkMIDASMultiViewWidget::EnableWidgets(bool enabled)
   this->EnableBindWidgets(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
 {
   this->m_IsThumbnailMode = enabled;
@@ -511,11 +556,15 @@ void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::GetThumbnailMode() const
 {
   return this->m_IsThumbnailMode;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
 {
   this->m_IsMIDASSegmentationMode = enabled;
@@ -538,11 +587,15 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::GetMIDASSegmentationMode() const
 {
   return this->m_IsMIDASSegmentationMode;
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASView QmitkMIDASMultiViewWidget::GetDefaultOrientationForSegmentation() const
 {
   assert(m_VisibilityManager);
@@ -560,6 +613,8 @@ MIDASView QmitkMIDASMultiViewWidget::GetDefaultOrientationForSegmentation() cons
   return viewForSegmentation;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 {
   QColor background(colour[0] * 255, colour[1] * 255, colour[2] * 255);
@@ -572,6 +627,8 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
   this->RequestUpdateAll();
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode)
 {
   // Work out required number of widgets, and hence if we need to create any new ones.
@@ -703,6 +760,8 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   }
 }
 
+
+//-----------------------------------------------------------------------------
 unsigned int QmitkMIDASMultiViewWidget::GetRowFromIndex(unsigned int i) const
 {
   if (i < 0 || i >= m_MaxRows*m_MaxCols)
@@ -715,6 +774,8 @@ unsigned int QmitkMIDASMultiViewWidget::GetRowFromIndex(unsigned int i) const
   }
 }
 
+
+//-----------------------------------------------------------------------------
 unsigned int QmitkMIDASMultiViewWidget::GetColumnFromIndex(unsigned int i) const
 {
   if (i < 0 || i >= m_MaxRows*m_MaxCols)
@@ -727,41 +788,57 @@ unsigned int QmitkMIDASMultiViewWidget::GetColumnFromIndex(unsigned int i) const
   }
 }
 
+
+//-----------------------------------------------------------------------------
 unsigned int QmitkMIDASMultiViewWidget::GetIndexFromRowAndColumn(unsigned int r, unsigned int c) const
 {
   return r*m_MaxCols + c;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::On1x1ButtonPressed()
 {
   this->SetLayoutSize(1,1, false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::On1x2ButtonPressed()
 {
   this->SetLayoutSize(1,2, false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::On1x3ButtonPressed()
 {
   this->SetLayoutSize(1,3, false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::On2x2ButtonPressed()
 {
   this->SetLayoutSize(2,2, false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnRowsSliderValueChanged(int r)
 {
   this->SetLayoutSize((unsigned int)r, (unsigned int)m_ColumnsSpinBox->value(), false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 {
   this->SetLayoutSize((unsigned int)m_RowsSpinBox->value(), (unsigned int)c, false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
   for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -780,6 +857,8 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
 {
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
@@ -797,6 +876,8 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
   // See also QmitkMIDASMultiViewVisibilityManager::OnNodesDropped which should trigger first.
@@ -824,6 +905,8 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   this->RequestUpdateAll();
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindow *selectedWindow)
 {
   if (selectedViewer >= 0 && selectedViewer < (int)m_SingleViewWidgets.size())
@@ -891,6 +974,24 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindo
   this->RequestUpdateAll();
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetFocus()
+{
+  /*
+  if (m_SelectedWindow != -1)
+  {
+    m_SingleViewWidgets[m_SelectedWindow]->setFocus();
+  }
+  else
+  {
+    m_SingleViewWidgets[0]->setFocus();
+  }
+  */
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
 {
 
@@ -915,6 +1016,8 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
   this->SwitchWindows(selectedWindow, focusedRenderWindow);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnDropSingleRadioButtonToggled(bool toggled)
 {
   if (toggled)
@@ -925,6 +1028,8 @@ void QmitkMIDASMultiViewWidget::OnDropSingleRadioButtonToggled(bool toggled)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnDropMultipleRadioButtonToggled(bool toggled)
 {
   if (toggled)
@@ -935,6 +1040,8 @@ void QmitkMIDASMultiViewWidget::OnDropMultipleRadioButtonToggled(bool toggled)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnDropThumbnailRadioButtonToggled(bool toggled)
 {
   if (toggled)
@@ -945,6 +1052,8 @@ void QmitkMIDASMultiViewWidget::OnDropThumbnailRadioButtonToggled(bool toggled)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnDropAccumulateStateChanged(int state)
 {
   if (state == Qt::Checked)
@@ -957,6 +1066,8 @@ void QmitkMIDASMultiViewWidget::OnDropAccumulateStateChanged(int state)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 std::vector<unsigned int> QmitkMIDASMultiViewWidget::GetViewerIndexesToUpdate(bool doAllVisible) const
 {
   std::vector<unsigned int> result;
@@ -979,16 +1090,22 @@ std::vector<unsigned int> QmitkMIDASMultiViewWidget::GetViewerIndexesToUpdate(bo
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::MoveAnterior()
 {
   return this->MoveAnteriorPosterior(true, 1);
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::MovePosterior()
 {
   return this->MoveAnteriorPosterior(false, 1);
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int slices)
 {
   bool actuallyDidSomething = false;
@@ -1022,11 +1139,15 @@ bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int sli
   return actuallyDidSomething;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnSliceNumberChanged(double sliceNumber)
 {
   this->SetSelectedWindowSliceNumber((int)sliceNumber);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 {
   int selectedWindow = this->GetSelectedWindowIndex();
@@ -1046,11 +1167,15 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
 {
   this->SetSelectedWindowMagnification((int)magnificationFactor);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnificationFactor)
 {
   std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
@@ -1060,11 +1185,15 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnification
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnTimeChanged(double timeStep)
 {
   this->SetSelectedTimeStep((int)timeStep);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
   std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_DropThumbnailRadioButton->isChecked());
@@ -1074,6 +1203,8 @@ void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView view)
 {
   if (view != MIDAS_VIEW_UNKNOWN)
@@ -1086,6 +1217,8 @@ void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView view)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedViewer()
 {
   int selectedWindow = this->GetSelectedWindowIndex();
@@ -1097,6 +1230,8 @@ void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedViewer()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::SwitchToAxial()
 {
   this->SetSelectedWindowToAxial();
@@ -1108,11 +1243,15 @@ bool QmitkMIDASMultiViewWidget::SwitchToAxial()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToAxial()
 {
   this->SwitchView(MIDAS_VIEW_AXIAL);
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
 {
   this->SetSelectedWindowToSagittal();
@@ -1124,11 +1263,15 @@ bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToSagittal()
 {
   this->SwitchView(MIDAS_VIEW_SAGITTAL);
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
 {
   this->SetSelectedWindowToCoronal();
@@ -1140,11 +1283,15 @@ bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 {
   this->SwitchView(MIDAS_VIEW_CORONAL);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SwitchView(MIDASView view)
 {
   int selectedWindow = this->GetSelectedWindowIndex();
@@ -1176,6 +1323,8 @@ void QmitkMIDASMultiViewWidget::SwitchView(MIDASView view)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
 {
   std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(true);
@@ -1191,6 +1340,8 @@ void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
   this->RequestUpdateAll();
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
 {
   int selectedWindow = this->GetSelectedWindowIndex();
@@ -1215,6 +1366,8 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
   } // end for each viewer
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::UpdateBoundMagnification(bool isBoundNow)
 {
   if (isBoundNow)
@@ -1231,11 +1384,15 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification(bool isBoundNow)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkMIDASMultiViewWidget::GetSliceNumber() const
 {
   return this->m_MIDASSlidersWidget->m_SliceSelectionWidget->value();
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
@@ -1257,6 +1414,7 @@ MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
 }
 
 
+//-----------------------------------------------------------------------------
 int QmitkMIDASMultiViewWidget::GetSelectedWindowIndex() const
 {
   int windowNumber = m_SelectedWindow;
@@ -1279,6 +1437,7 @@ int QmitkMIDASMultiViewWidget::GetSelectedWindowIndex() const
 }
 
 
+//-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
 {
   // NOTE: This MUST always return not-null.
@@ -1298,6 +1457,8 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
   return window;
 }
 
+
+//-----------------------------------------------------------------------------
 QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() const
 {
   // NOTE: This MUST always return a non-empty map.
@@ -1335,6 +1496,8 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
   return wnds;
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetRenderWindow(const QString& id) const
 {
   QHash<QString,QmitkRenderWindow*> windows = this->GetRenderWindows();
@@ -1349,6 +1512,8 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetRenderWindow(const QString& id)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::Point3D QmitkMIDASMultiViewWidget::GetSelectedPosition(const QString& /*id*/) const
 {
   int windowNumber = this->GetSelectedWindowIndex();
@@ -1356,6 +1521,8 @@ mitk::Point3D QmitkMIDASMultiViewWidget::GetSelectedPosition(const QString& /*id
   return position;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, const QString& /*id*/)
 {
   int windowNumber = this->GetSelectedWindowIndex();
@@ -1363,6 +1530,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, co
 }
 
 
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::Activated()
 {
   this->setEnabled(true);
@@ -1370,6 +1538,7 @@ void QmitkMIDASMultiViewWidget::Activated()
 }
 
 
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::Deactivated()
 {
   this->setEnabled(false);
@@ -1377,24 +1546,28 @@ void QmitkMIDASMultiViewWidget::Deactivated()
 }
 
 
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableLinkedNavigation(bool enable)
 {
   this->SetNavigationControllerEventListening(enable);
 }
 
 
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::IsLinkedNavigationEnabled() const
 {
   return this->GetNavigationControllerEventListening();
 }
 
 
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
 {
   return m_NavigationControllerEventListening;
 }
 
 
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled)
 {
   int selectedWindow = this->GetSelectedWindowIndex();
@@ -1410,6 +1583,7 @@ void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabl
 }
 
 
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
 {
   if (selectedIndex >= 0 && selectedIndex < m_SingleViewWidgets.size())
@@ -1449,6 +1623,8 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 {
   bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
@@ -1487,6 +1663,8 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
   this->Update2DCursorVisibility();
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnPopupOpened(bool opened)
 {
   if (!opened)
@@ -1498,4 +1676,25 @@ void QmitkMIDASMultiViewWidget::OnPopupOpened(bool opened)
       m_SingleViewWidgets[viewerIndex]->repaint();
     } // end for each viewer
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetSliceSelectTracking(bool isTracking)
+{
+  m_MIDASSlidersWidget->SetSliceTracking(isTracking);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetMagnificationSelectTracking(bool isTracking)
+{
+  m_MIDASSlidersWidget->SetMagnificationTracking(isTracking);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetTimeSelectTracking(bool isTracking)
+{
+  m_MIDASSlidersWidget->SetTimeTracking(isTracking);
 }

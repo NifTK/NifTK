@@ -68,7 +68,7 @@ public:
   /**
    * \brief Called when the window focus changes, and tracks the current and previous mitk::BaseRenderer*.
    */
-  void OnFocusChanged();
+  virtual void OnFocusChanged();
 
   /**
    * \brief Returns whether this functionality should be exclusive, or in other words, the only active plugin.
@@ -160,6 +160,11 @@ protected:
    * \return mitk::BaseRenderer* The previously focussed renderer, or NULL if it has not been set.
    */
   mitk::BaseRenderer* GetPreviouslyFocussedRenderer();
+
+  /**
+   * \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
+   */
+  void FocusOnCurrentWindow();
 
 private:
 
