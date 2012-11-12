@@ -464,6 +464,10 @@ IF(BUILD_COMMAND_LINE_PROGRAMS)
   TARGET_LINK_LIBRARIES(niftkBreastDicomSeriesReadImageWrite ${NIFTK_APPLICATION_LINK_LIBRARIES} )
   INSTALL(TARGETS niftkBreastDicomSeriesReadImageWrite RUNTIME DESTINATION bin COMPONENT applications)
 
+  ADD_EXECUTABLE(niftkReorientateImage niftkReorientateImage.cxx )
+  TARGET_LINK_LIBRARIES(niftkReorientateImage ${NIFTK_APPLICATION_LINK_LIBRARIES} )
+  INSTALL(TARGETS niftkReorientateImage RUNTIME DESTINATION bin COMPONENT applications)
+
   ##############################################################
   # Other command line applications, that require VTK.
   ##############################################################
