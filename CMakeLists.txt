@@ -1175,14 +1175,7 @@ INCLUDE(NIFTKCPackOptions)
 # 5. Include CPack module once all variables are set. i.e. this must be last.
 INCLUDE(CPack)
   
-# 6. Trac #1264, fixing installer to include Qt Assistant for help files.
-
-SET(MY_PROJECT_NAME NifTK)
-SET(MY_APP_NAME NiftyView)
-SET(MACOSX_BUNDLE_NAMES)
-IF(APPLE)
-  LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
-ENDIF(APPLE)
+# 6. Trac #1796 - Still need to call MITK rules to get Mac Bundles etc.
 INCLUDE(mitkInstallRules)
 
 ######################################################################

@@ -29,9 +29,17 @@ SET(APPS
   NiftyIGI
 )
 
+SET(MACOSX_BUNDLE_NAMES)
+
 FOREACH(MY_APP_NAME ${APPS})
   IF(${PROJECT_NAME}_Apps/${MY_APP_NAME} OR ${PROJECT_NAME}_BUILD_ALL_APPS)
     ADD_SUBDIRECTORY(${MY_APP_NAME})
+ 
+    # Libraries get copied into each Mac bundle (see top level CMakeLists.txt), so we build up a list of currently enabled bundles.
+    IF(APPLE)
+      LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME} )
+    ENDIF(APPLE)
+    
   ENDIF()
 ENDFOREACH()
 
