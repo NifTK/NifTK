@@ -24,15 +24,14 @@
 PROJECT(NiftyView)
 SET(MY_APP_NAME NiftyView)
 
-# We want every View plugin, but not the other apps.
-
-SET(_exclude_plugins 
-  uk_ac_ucl_cmic_gui_qt_niftymidas
+SET(_exclude_plugins
+  uk_ac_ucl_cmic_breastsegmentation
   uk_ac_ucl_cmic_gui_qt_niftyigi
+  uk_ac_ucl_cmic_gui_qt_niftymidas
+  uk_ac_ucl_cmic_niftyseg
 )
 
 NIFTK_CREATE_APPLICATION(
-  NiftyView
+  NAME NiftyView
   EXCLUDE_PLUGINS ${_exclude_plugins}
-  SHOW_CONSOLE ${NIFTK_SHOW_CONSOLE_WINDOW}
 )

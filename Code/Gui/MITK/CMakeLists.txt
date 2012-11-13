@@ -29,14 +29,7 @@
 
 SET(MY_PROJECT_NAME ${PROJECT})
 
-OPTION(${MY_PROJECT_NAME}_BUILD_ALL_PLUGINS "Build all ${MY_PROJECT_NAME} plugins" OFF)
-OPTION(${MY_PROJECT_NAME}_BUILD_ALL_APPS "Build all ${MY_PROJECT_NAME} applications" OFF)
-OPTION(${MY_PROJECT_NAME}_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications" OFF)
-
 MARK_AS_ADVANCED(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE
-                 ${MY_PROJECT_NAME}_BUILD_ALL_PLUGINS
-                 ${MY_PROJECT_NAME}_BUILD_ALL_APPS
-                 ${MY_PROJECT_NAME}_SHOW_CONSOLE_WINDOW
                  )
 
 IF(MITK_USE_QT)
@@ -78,9 +71,9 @@ endmacro()
 # Get infos about application directories and build options
 include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
 set(_apps_fullpath )
-foreach(_app ${PROJECT_APPS})
-  list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/${_app}")
-endforeach()
+FOREACH(NIFTK_APP ${NIFTK_APPS})
+  LIST(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")  
+ENDFOREACH()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
 ctkMacroSetupPlugins(${PROJECT_PLUGINS}
