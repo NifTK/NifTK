@@ -43,21 +43,44 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "v", NULL, "Verbose output."},
 
-  {OPT_STRING,         "inOrient",  "orientation", "The input image orientation (e.g. RAS etc.)."},
-  {OPT_STRING|OPT_REQ, "outOrient", "orientation", "The input image orientation (e.g. LIP etc.)."},
+  {OPT_SWITCH, "origin", NULL, "Set origin to [0,0,0]."},
+
+  {OPT_STRING, "inOrient",  "orientation", "The input image orientation (e.g. RAS etc.)."},
+  {OPT_STRING, "outOrient", "orientation", "The output image orientation (e.g. LIP etc.) [RAI]."},
 
   {OPT_STRING|OPT_REQ, "o",    "filename", "The output image."},
 
   {OPT_STRING|OPT_LONELY|OPT_REQ, NULL, "filename", "The input image."},
   
   {OPT_DONE, NULL, NULL, 
-   "Program to reorientate and image.\n"
+   "This program reorientates, that is flips and/or permutes the voxels of, an image. "
+   "It can be used to (a) correct the orientation of an image by changing the image's "
+   "direction cosines or (b) reorientate the image whilst preserving the information "
+   "stored in the image's origin and direction cosines (assumed to be correct). In (b) "
+   "the image before and after reorientation will appear unchanged when displayed in "
+   "NiftyView which uses the direction cosines to orientate the image for display.\n"
+   "\n"
+   "For example, ITK assumes that an image with an identity direction cosine matrix has "
+   "orientation RAI; that is the 'x' axis runs from right to left, 'y' from anterior to "
+   "posterior and 'z' from inferior to superior. To correct an image with an identity "
+   "direction cosine matrix which actually has orientation RAS you could execute:\n"
+   "\n"
+   "   niftkReorientateImage -v -inOrient RAS -o imOutput_RAI.nii imInput_RAS.nii\n"
+   "\n"
+   "If the orientation of the input image is believed to be correct then option '-inOrient' "
+   "is not required and the required output orientation can be simply sepcified via '-outOrient'. \n"
+   "\n"
+   "By default the origin of the output will be modified (i.e. flipped and/or permuted) "
+   "such that all voxels will keep the same coordinates they had in the input image. "
+   "Alternatively the user can reset the origin to [0,0,0] using option '-origin'.\n"
   }
 };
 
 
 enum {
   O_VERBOSE,
+
+  O_ORIGIN,
 
   O_INPUT_ORIENTATION,
   O_OUTPUT_ORIENTATION,
@@ -70,6 +93,8 @@ enum {
 struct arguments
 {
   bool flgVerbose;
+
+  bool flgResetOriginToZero;
 
   std::string strInputOrientation;
   std::string strOutputOrientation;
@@ -94,15 +119,15 @@ void PrintOrientationInfo( typename itk::OrientedImage< ScalarType, Dimension >:
   {
     for (unsigned int j = 0; j < Dimension; j++)
     {
-      direction[i][j] = image->GetDirection()[j][i];
+      direction[i][j] = image->GetDirection()[i][j];
     }
   }
 
-  std::cout << "Image direction: " << std::endl;
-  std::cout << direction << std::endl;
+  std::cout << "Image direction: " << std::endl
+	    << direction;
 
   AdaptorType adaptor;
-  std::cout << "Image orientation: " 
+  std::cout << "ITK orientation: " 
 	    << itk::ConvertSpatialOrientationToString(adaptor.FromDirectionCosines(direction)) 
 	    << std::endl;
 }
@@ -115,6 +140,8 @@ void PrintOrientationInfo( typename itk::OrientedImage< ScalarType, Dimension >:
 template <int Dimension, class ScalarType>
 int ReorientateImage( arguments &args )
 {
+  int iDim, iDirn;
+
   typedef itk::OrientedImage< ScalarType, Dimension > ImageType;
   typedef itk::ImageFileReader< ImageType > ReaderType;
   typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
@@ -123,6 +150,9 @@ int ReorientateImage( arguments &args )
   typedef typename OrientImageFilterType::FlipAxesArrayType FlipAxesArrayType;
   typedef typename OrientImageFilterType::PermuteOrderArrayType PermuteOrderArrayType;
 
+  typedef typename itk::OrientedImage< ScalarType, Dimension >::DirectionType DirectionType;
+
+  typedef typename itk::SpatialOrientationAdapter AdaptorType;
 
 
   // Read the input image
@@ -144,14 +174,27 @@ int ReorientateImage( arguments &args )
   inputImage->DisconnectPipeline();
 
   if ( args.flgVerbose ) 
-  {
-    std::cout << "Input image: " <<  args.fileInputImage.c_str() << std::endl;
-    PrintOrientationInfo<Dimension, ScalarType>( reader->GetOutput() );
+    std::cout << std::endl << "Input image: " <<  args.fileInputImage.c_str() << std::endl;
 
-    if ( args.strInputOrientation.length() ) 
-      std::cout << "Input orientation specified as: " 
+  
+  // Correct the input image orientation if it is incorrect
+
+  if ( args.strInputOrientation.length() ) 
+  {
+    AdaptorType adaptor;
+    DirectionType newDirection;
+
+    if ( args.flgVerbose ) 
+      std::cout << std::endl << "Input orientation specified as: " 
 		<< args.strInputOrientation.c_str() << std::endl;
+
+    newDirection = adaptor.ToDirectionCosines( itk::ConvertStringToSpatialOrientation( args.strInputOrientation ) );
+
+    inputImage->SetDirection( newDirection );
   }
+
+  if ( args.flgVerbose ) 
+    PrintOrientationInfo<Dimension, ScalarType>( inputImage );
 
 
   // Reorientate the image
@@ -166,7 +209,10 @@ int ReorientateImage( arguments &args )
   else
     orienter->UseImageDirectionOn();
 
-  orienter->SetDesiredCoordinateOrientation( itk::ConvertStringToSpatialOrientation( args.strOutputOrientation ) );
+  if ( args.strOutputOrientation.length() ) 
+    orienter->SetDesiredCoordinateOrientation( itk::ConvertStringToSpatialOrientation( args.strOutputOrientation ) );
+  else 
+    orienter->SetDesiredCoordinateOrientation( itk::ConvertStringToSpatialOrientation( "RAI" ) );
 
   orienter->SetInput( inputImage );
 
@@ -184,55 +230,86 @@ int ReorientateImage( arguments &args )
   PermuteOrderArrayType permuteAxes = orienter->GetPermuteOrder();
 
   if ( args.flgVerbose ) 
-  {
-    std::cout << "Output image: " <<  args.fileOutputImage.c_str() << std::endl
-
-	      << "Output orientation specified as: " 
-	      << args.strOutputOrientation.c_str() << std::endl
-
+    std::cout << std::endl
 	      << "Permute Axes: " << permuteAxes << std::endl
-	      << "Flip Axes: "    << flipAxes << std::endl;
-
-    PrintOrientationInfo<Dimension, ScalarType>( reader->GetOutput() );
-  }
+	      << "Flip Axes: "    << flipAxes << std::endl << std::endl;
 
   typename ImageType::Pointer reorientatedImage = orienter->GetOutput();
   reorientatedImage->DisconnectPipeline();
 
 
-  // Preserve the origin in the same voxel
+  // Preserve the origin in the same voxel?
 
-  int i;
-  typename ImageType::PointType oldOrigin = inputImage->GetOrigin();
   typename ImageType::PointType newOrigin;
 
-  typename ImageType::SpacingType sp = inputImage->GetSpacing();
+  if ( ! args.flgResetOriginToZero )
+  {
+    typename ImageType::PointType oldOrigin = inputImage->GetOrigin();
+
+    typename ImageType::SpacingType sp = inputImage->GetSpacing();
   
-  typename ImageType::SizeType sz = inputImage->GetLargestPossibleRegion().GetSize();
+    typename ImageType::SizeType sz = inputImage->GetLargestPossibleRegion().GetSize();
   
-  if ( args.flgVerbose )
-    std::cout << "Spacing: " 
-	      << sp[0] << ", " 
-	      << sp[1] << ", " 
-	      << sp[2] << std::endl
-	      << "Dimensions: " 
-	      << sz[0] << ", " 
-	      << sz[1] << ", " 
-	      << sz[2] << std::endl;
+    if ( args.flgVerbose )
+      std::cout << "Spacing: " 
+		<< sp[0] << ", " 
+		<< sp[1] << ", " 
+		<< sp[2] << std::endl
+		<< "Dimensions: " 
+		<< sz[0] << ", " 
+		<< sz[1] << ", " 
+		<< sz[2] << std::endl 
+		<< "Origin: " 
+		<< oldOrigin << std::endl << std::endl;
+    
+    for ( iDim=0; iDim<Dimension; iDim++ )
+      newOrigin[ permuteAxes[ iDim ] ] = oldOrigin[ iDim ];
+    
+    for ( iDim=0; iDim<Dimension; iDim++ )
+      if ( flipAxes[ iDim ] )
+	newOrigin[ iDim ] = newOrigin[ iDim ] - ( sz[iDim] - 1. )*sp[iDim];
+  }
 
-  for ( i=0; i<Dimension; i++ )
-    newOrigin[ permuteAxes[ i ] ] = oldOrigin[ i ];
+  // or reset it to [0,0,0]
 
-  for ( i=0; i<Dimension; i++ )
-    if ( flipAxes[ i ] )
-      newOrigin[ i ] = newOrigin[ i ] - ( sz[i] - 1. )*sp[i];
+  else 
+    for ( iDim=0; iDim<Dimension; iDim++ )
+      newOrigin[ iDim ] = 0.;
+    
 
-  reorientatedImage->SetOrigin( newOrigin );
+    reorientatedImage->SetOrigin( newOrigin );
 
-  if ( args.flgVerbose )
-    std::cout << "Old origin: " << oldOrigin << std::endl
-	      << "New origin: " << newOrigin << std::endl;
   
+  // and reorientate the direction cosines
+
+  DirectionType oldDirection = inputImage->GetDirection();
+  DirectionType newDirection;
+  
+  for ( iDim=0; iDim<Dimension; iDim++ )
+    for ( iDirn=0; iDirn<Dimension; iDirn++ )
+      newDirection[ iDirn ][ permuteAxes[ iDim ] ] = oldDirection[ iDirn ][ iDim ];
+
+  for ( iDim=0; iDim<Dimension; iDim++ )
+    if ( flipAxes[ iDim ] )
+      for ( iDirn=0; iDirn<Dimension; iDirn++ )
+	newDirection[ iDirn ][ iDim ] = -newDirection[ iDirn ][ iDim ];
+
+  reorientatedImage->SetDirection( newDirection );
+
+  if ( args.flgVerbose ) 
+  {
+    if ( args.strOutputOrientation.length() )
+      std::cout << "Output orientation specified as: " 
+		<< args.strOutputOrientation.c_str() << std::endl;
+    else
+      std::cout << "Default output orientation: RAI" << std::endl;
+
+    std::cout << "Origin: " << newOrigin << std::endl;
+    
+    PrintOrientationInfo<Dimension, ScalarType>( reorientatedImage );
+  }
+
+
   // Write the image to a file
         
   typename WriterType::Pointer writer = WriterType::New();
@@ -243,7 +320,7 @@ int ReorientateImage( arguments &args )
       
   try
   {
-    std::cout << "Writing the output image to: " << args.fileOutputImage
+    std::cout << std::endl << "Writing the output image to: " << args.fileOutputImage
 	      << std::endl << std::endl;
     writer->Update();
   }
@@ -273,6 +350,8 @@ int main( int argc, char *argv[] )
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
 
   CommandLineOptions.GetArgument( O_VERBOSE, args.flgVerbose );
+
+  CommandLineOptions.GetArgument( O_ORIGIN, args.flgResetOriginToZero );
 
   CommandLineOptions.GetArgument( O_INPUT_ORIENTATION, args.strInputOrientation );
   CommandLineOptions.GetArgument( O_OUTPUT_ORIENTATION, args.strOutputOrientation );
