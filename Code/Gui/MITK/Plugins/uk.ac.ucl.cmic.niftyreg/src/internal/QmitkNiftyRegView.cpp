@@ -2219,6 +2219,41 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 
 
 // ---------------------------------------------------------------------------
+// CreateDeformationVisualisationSurface();
+// --------------------------------------------------------------------------- 
+
+void QmitkNiftyRegView::CreateDeformationVisualisationSurface( void )
+{
+  if ( ! m_RegNonRigid )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No registration data available,"
+		   "\nplease execute a non-rigid registration.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  nifti_image *controlPointGrid 
+    = m_RegNonRigid->GetControlPointPositionImage();
+
+  std::cout << "Control point grid dimensions: " 
+	    << controlPointGrid->nx << " x " 
+	    << controlPointGrid->ny << " x " 
+	    << controlPointGrid->nz << std::endl
+	    << "Control point grid spacing: " 
+	    << controlPointGrid->dx << " x " 
+	    << controlPointGrid->dy << " x " 
+	    << controlPointGrid->dz << std::endl;
+
+
+
+  if ( this->controlPointGrid != NULL )
+    nifti_image_free( controlPointGrid );
+}
+
+
+// ---------------------------------------------------------------------------
 // ExecuteRegistration();
 // --------------------------------------------------------------------------- 
 
