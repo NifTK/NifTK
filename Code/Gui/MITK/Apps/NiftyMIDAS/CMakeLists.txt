@@ -25,17 +25,16 @@ PROJECT(NiftyMIDAS)
 SET(MY_APP_NAME NiftyMIDAS)
 
 SET(_exclude_plugins
-  it_unito_cim_intensityprofile 
-  uk_ac_ucl_cmic_breastsegmentation 
-  uk_ac_ucl_cmic_gui_qt_niftyigi 
-  uk_ac_ucl_cmic_gui_qt_niftyview
-  uk_ac_ucl_cmic_surgicalguidance
   org_mitk_gui_qt_pointsetinteraction
   org_mitk_gui_qt_stdmultiwidgeteditor
+  it_unito_cim_intensityprofile 
+  uk_ac_ucl_cmic_breastsegmentation
+  uk_ac_ucl_cmic_gui_qt_niftyview
+  uk_ac_ucl_cmic_gui_qt_niftyigi
+  uk_ac_ucl_cmic_niftyseg
 )
 
 NIFTK_CREATE_APPLICATION(
-  NiftyMIDAS
+  NAME NiftyMIDAS
   EXCLUDE_PLUGINS ${_exclude_plugins}
-  SHOW_CONSOLE ${NIFTK_SHOW_CONSOLE_WINDOW}
-  )
+)

@@ -22,11 +22,11 @@
 #
 #=================================================================================*/
 
-######################################################################
+###########################################################################
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
-# Also, Trac 1592, version number MUST change if CTK changes.
-######################################################################
+# Also, Trac 1592, version number must change if CTK changes significantly.
+###########################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
 SET(NIFTK_VERSION_MINOR 11 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
@@ -112,7 +112,9 @@ INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
 SET(BUILD_GUI OFF)
 SET(BUILD_IGI OFF)
 
-# Please leave this off, as we can then JUST build command line apps.
+# Please leave this off, as we can then JUST build command line apps, without
+# filling the CMakeCache.txt with GUI related variables which will only confuse
+# when someone subsequently tries to switch all the GUIs off.
 OPTION(NIFTK_BUILD_ALL_APPS "Build all NifTK Graphical User Interfaces" OFF) 
 
 # Check each GUI application.
@@ -126,19 +128,14 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
 
   IF(${option_name} OR NIFTK_BUILD_ALL_APPS)
 
-    # Sets up the MACOSX_BUNDLE_NAMES variable, as all libraries are copied into each bundle.
-    IF(APPLE)
-      SET(MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES} ${app_name})
-    ENDIF()
-  
     IF(${option_name})
       SET(BUILD_GUI ON)
     ENDIF()
     
-     IF (${option_name} AND ${app_name} STREQUAL "NiftyIGI")
-       SET(BUILD_IGI ON)
-     ENDIF()
-     
+    IF (${option_name} AND ${app_name} STREQUAL "NiftyIGI")
+      SET(BUILD_IGI ON)
+    ENDIF()
+  
   ENDIF()
       
 ENDFOREACH()
@@ -164,11 +161,12 @@ OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code." OFF)
 OPTION(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 IF(CMAKE_BUILD_TYPE MATCHES "Debug")
-  SET(NIFTK_SHOW_CONSOLE_WINDOW ON)
+  SET(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
 ELSE()
-  SET(NIFTK_SHOW_CONSOLE_WINDOW OFF)
+  SET(NIFTK_SHOW_CONSOLE_WINDOW_VAL OFF)
 ENDIF()
-OPTION(NIFTK_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications on Windows" ${NIFTK_SHOW_CONSOLE_WINDOW})
+OPTION(NIFTK_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications on Windows" ${NIFTK_SHOW_CONSOLE_WINDOW_VAL})
+OPTION(NIFTK_BUILD_ALL_PLUGINS "Build all NIFTK plugins" OFF)
 OPTION(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OFF)
 OPTION(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK does" OFF)
 OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
@@ -268,6 +266,7 @@ MARK_AS_ADVANCED(NIFTK_BASE_NAME)
 MARK_AS_ADVANCED(NIFTK_VERSION_STRING)
 MARK_AS_ADVANCED(NIFTK_DEPLOY_NAME)
 MARK_AS_ADVANCED(NIFTK_SHOW_CONSOLE_WINDOW)
+MARK_AS_ADVANCED(NIFTK_BUILD_ALL_PLUGINS)
 MARK_AS_ADVANCED(NIFTK_CHECK_COVERAGE)
 MARK_AS_ADVANCED(NIFTK_VERBOSE_COMPILER_WARNINGS)
 MARK_AS_ADVANCED(NIFTK_GENERATE_DOXYGEN_HELP)
@@ -476,12 +475,38 @@ ENDIF(BUILD_SUPERBUILD)
 
 ######################################################################
 # End of SuperBuild. Print out where the source and binary folders
-# are, just to make it really explicit... well explicit to the user
+# are, just to make it really explicit... well, explicit to the user
 # that bothers to read these messages! :-)
 ######################################################################
 
 MESSAGE("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
+
+######################################################################
+# Check each GUI application to set up MACOSX_BUNDLE_NAMES
+# as libraries are copied into each bundle.
+######################################################################
+
+IF(APPLE)
+
+  SET(MACOSX_BUNDLE_NAMES)
+  INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
+
+  FOREACH(NIFTK_APP ${NIFTK_APPS})
+    
+    # extract option_name
+    STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+    SET(target_info_list ${target_info})
+    LIST(GET target_info_list 1 option_name)
+    LIST(GET target_info_list 0 app_name)
+
+    IF(${option_name} OR NIFTK_BUILD_ALL_APPS)
+      SET(MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES} ${app_name})
+    ENDIF()
+          
+  ENDFOREACH()
+  
+ENDIF()
 
 ######################################################################
 # Configure CMake files before we need to use them in the FIND_XXX.
@@ -1216,7 +1241,9 @@ INCLUDE(mitkInstallRules)
 
 ######################################################################
 # If we are under Windows, create two batch files which correctly
-# set up the environment for the application and for Visual Studio
+# set up the environment for the application and for Visual Studio.
+# These are only used to start VS when developing. Not used in
+# the final installation package.
 ######################################################################
 IF(WIN32)
   IF(MITK_FOUND)
@@ -1232,4 +1259,3 @@ IF(WIN32)
     
   ENDIF(MITK_FOUND)
 ENDIF(WIN32)
-
