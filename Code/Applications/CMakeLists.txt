@@ -115,7 +115,6 @@ SET(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkBilateralImageFilter
   niftkBlockMatching
   niftkBreastDicomSeriesReadImageWrite
-  niftkBreastMaskSegmentationFromMRI
   niftkBSI
   niftkCombineSegmentations
   niftkComposeITKAffineTransformations
