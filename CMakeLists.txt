@@ -188,7 +188,7 @@ SET(NIFTK_VERSION_NIFTYSEG "88" CACHE STRING "Version of NiftySeg")
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec")
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim")
 SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL")
-SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Model.")
+SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package")
 SET(NIFTK_LOCATION_BOOST "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost-${NIFTK_VERSION_BOOST}.tar.gz" CACHE STRING "Location of Boost")
 SET(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM")
 SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK")
@@ -206,7 +206,7 @@ SET(NIFTK_LOCATION_NIFTYSEG "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nift
 SET(NIFTK_LOCATION_NIFTYREC "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyRec-${NIFTK_VERSION_NIFTYREC}.tar.gz" CACHE STRING  "Location of NiftyRec")
 SET(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySim-${NIFTK_VERSION_NIFTYSIM}.tar.gz" CACHE STRING  "Location of NiftyRec")
 SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL")
-SET(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of SEM")
+SET(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package")
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
