@@ -74,8 +74,10 @@ MACRO(NIFTK_CREATE_APPLICATION)
   # of this macro.
   #############################################################################
   
-  SET(TMP_MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES})
-  SET(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
+  IF(APPLE)
+    SET(TMP_MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES})
+    SET(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
+  ENDIF()
   
   FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
@@ -118,6 +120,8 @@ MACRO(NIFTK_CREATE_APPLICATION)
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.
   #############################################################################
-  SET(MACOSX_BUNDLE_NAMES ${TMP_MACOSX_BUNDLE_NAMES})
+  IF(APPLE)
+    SET(MACOSX_BUNDLE_NAMES ${TMP_MACOSX_BUNDLE_NAMES})
+  ENDIF()
   
 ENDMACRO(NIFTK_CREATE_APPLICATION)
