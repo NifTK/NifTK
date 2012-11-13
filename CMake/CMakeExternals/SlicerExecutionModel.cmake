@@ -37,11 +37,11 @@ SET(SlicerExecutionModel_DEPENDS ${proj})
 
 IF(NOT DEFINED SlicerExecutionModel_DIR)
 
-#  niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
+  niftkMacroGetChecksum(NIFTK_CHECKSUM_SEM ${NIFTK_LOCATION_SEM})
 
   ExternalProject_Add(${proj}
-     GIT_REPOSITORY git://github.com/Slicer/SlicerExecutionModel.git
-#     URL_MD5 ${NIFTK_CHECKSUM_ITK}
+     URL ${NIFTK_LOCATION_SEM}
+     URL_MD5 ${NIFTK_CHECKSUM_SEM}
      BINARY_DIR ${proj}-build
      INSTALL_COMMAND ""
      CMAKE_GENERATOR ${GEN}
