@@ -131,7 +131,6 @@ OPTION(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OF
 OPTION(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK does" OFF)
 OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
 OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
-OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
 OPTION(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 
 ######################################################################
@@ -268,7 +267,6 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_CGAL)
 MARK_AS_ADVANCED(NIFTK_LOCATION_SEM)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
-MARK_AS_ADVANCED(NIFTK_USE_OPENCV)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
