@@ -131,8 +131,6 @@ OPTION(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OF
 OPTION(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK does" OFF)
 OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
 OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
-OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
-OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
 OPTION(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 
 ######################################################################
@@ -212,6 +210,7 @@ SET(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-Sl
 # Hide these variables from the user, unless they are 'advanced' :-)
 ######################################################################
 MARK_AS_ADVANCED(NIFTK_PLATFORM)
+MARK_AS_ADVANCED(NIFTK_LICENSE_SHORT_STRING)
 MARK_AS_ADVANCED(NIFTK_COPYRIGHT)
 MARK_AS_ADVANCED(NIFTK_ORIGIN_URL)
 MARK_AS_ADVANCED(NIFTK_ORIGIN_SHORT_TEXT)
@@ -227,7 +226,6 @@ MARK_AS_ADVANCED(NIFTK_BASE_NAME)
 MARK_AS_ADVANCED(NIFTK_VERSION_STRING)
 MARK_AS_ADVANCED(NIFTK_DEPLOY_NAME)
 MARK_AS_ADVANCED(NIFTK_SHOW_CONSOLE_WINDOW)
-MARK_AS_ADVANCED(NIFTK_USE_GIT_PROTOCOL)
 MARK_AS_ADVANCED(NIFTK_CHECK_COVERAGE)
 MARK_AS_ADVANCED(NIFTK_VERBOSE_COMPILER_WARNINGS)
 MARK_AS_ADVANCED(NIFTK_GENERATE_DOXYGEN_HELP)
@@ -248,6 +246,7 @@ MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSEG)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_VERSION_CGAL)
+MARK_AS_ADVANCED(NIFTK_VERSION_SEM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_BOOST)
 MARK_AS_ADVANCED(NIFTK_LOCATION_GDCM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DCMTK)
@@ -265,10 +264,9 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSEG)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CGAL)
+MARK_AS_ADVANCED(NIFTK_LOCATION_SEM)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
-MARK_AS_ADVANCED(NIFTK_USE_GIT_PROTOCOL)
-MARK_AS_ADVANCED(NIFTK_USE_OPENCV)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
@@ -294,14 +292,9 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 
 ######################################################################
-# Set GIT protocol, as dependencies need it
+# Set GIT protocol, as dependencies need it. (Obselete???)
 ######################################################################
 FIND_PACKAGE(Git REQUIRED)
-SET(GIT_PROTOCOL "git")
-IF(NOT NIFTK_USE_GIT_PROTOCOL)
-  SET(GIT_PROTOCOL "http")
-ENDIF()
-
 IF (WIN32)
   SET(GITCOMMAND ${GIT_EXECUTABLE})
 ENDIF()
