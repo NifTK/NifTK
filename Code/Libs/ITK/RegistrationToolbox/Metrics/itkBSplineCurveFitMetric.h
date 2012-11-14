@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "itkConceptChecking.h"
-#include "itkSingleValuedCostFunction.h"
+#include "itkMultipleValuedCostFunction.h"
 #include "itkPoint.h"
 
 
@@ -40,13 +40,13 @@ namespace itk
  */
 
 template < class IntensityType = int >
-class ITK_EXPORT BSplineCurveFitMetric : public SingleValuedCostFunction
+class ITK_EXPORT BSplineCurveFitMetric : public MultipleValuedCostFunction
 {
   public:
 
   /** Standard class typedefs. */
   typedef BSplineCurveFitMetric        Self;
-  typedef SingleValuedCostFunction     Superclass;
+  typedef MultipleValuedCostFunction   Superclass;
   typedef SmartPointer<Self>           Pointer;
   typedef SmartPointer<const Self>     ConstPointer;
   
@@ -54,15 +54,15 @@ class ITK_EXPORT BSplineCurveFitMetric : public SingleValuedCostFunction
   itkNewMacro(Self);
   
   /** Run-time type information (and related methods). */
-  itkTypeMacro(BSplineCurveFitMetric, SingleValuedCostFunction);
+  itkTypeMacro(BSplineCurveFitMetric, MultipleValuedCostFunction);
   
   /** Type used for representing point components  */
   typedef typename Superclass::ParametersValueType CoordinateRepresentationType;
 
   /**  Type of the parameters. */
-  typedef typename SingleValuedCostFunction::ParametersType ParametersType;
-  typedef typename SingleValuedCostFunction::MeasureType    MeasureType;
-  typedef typename SingleValuedCostFunction::DerivativeType DerivativeType;
+  typedef typename MultipleValuedCostFunction::ParametersType ParametersType;
+  typedef typename MultipleValuedCostFunction::MeasureType    MeasureType;
+  typedef typename MultipleValuedCostFunction::DerivativeType DerivativeType;
   
   /**  Type of the Transform Base class */
   typedef Transform<CoordinateRepresentationType, 4, 4> TransformType;
@@ -79,6 +79,9 @@ class ITK_EXPORT BSplineCurveFitMetric : public SingleValuedCostFunction
   /** Return the number of parameters required by the Transform */
   unsigned int GetNumberOfParameters(void) const;
   
+  /** Return the number of values that are computed by the metric. */
+  unsigned int GetNumberOfValues( void ) const; 
+
   /** This method returns the value and derivative of the cost function corresponding
     * to the specified parameters    */ 
   virtual void GetValueAndDerivative( const ParametersType & parameters,

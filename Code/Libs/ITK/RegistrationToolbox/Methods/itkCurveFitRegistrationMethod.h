@@ -95,7 +95,7 @@ class ITK_EXPORT CurveFitRegistrationMethod :
   typedef typename MetricType::TransformParametersType ParametersType;
       
   /** Set/Get the initial transformation parameters. */
-  virtual void SetInitialTransformParameters( const ParametersType & param );
+  void SetInitialTransformParameters( const ParametersType &param );
   itkGetConstReferenceMacro( InitialParameters, ParametersType );
 
   /** Get the last transformation parameters visited by 
@@ -151,7 +151,7 @@ class ITK_EXPORT CurveFitRegistrationMethod :
   OptimizerPointer      m_Optimizer;
   MetricPointer         m_Metric;
 
-  TransformType         m_Transform;
+  TransformPointer      m_Transform;
 
   ParametersType        m_InitialParameters;
   ParametersType        m_LastParameters;

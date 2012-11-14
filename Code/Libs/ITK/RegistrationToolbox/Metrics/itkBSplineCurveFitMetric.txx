@@ -86,6 +86,19 @@ BSplineCurveFitMetric< IntensityType >
 
 
 /* -----------------------------------------------------------------------
+   GetNumberOfValues()
+   ----------------------------------------------------------------------- */
+
+template< class IntensityType >
+unsigned int 
+BSplineCurveFitMetric< IntensityType >
+::GetNumberOfValues( void ) const
+{
+  return 0;
+}
+
+
+/* -----------------------------------------------------------------------
    GetValue() - Get the value of the similarity metric
    ----------------------------------------------------------------------- */
 
@@ -96,7 +109,9 @@ BSplineCurveFitMetric< IntensityType >
 {
   niftkitkDebugMacro("BSplineCurveFitMetric::GetValue()");
 
-  MeasureType currentMeasure = 0;
+  MeasureType currentMeasure;
+
+  currentMeasure.Fill( 0. );
 
   std::cout << "Current cost: " << currentMeasure << std::endl;
 

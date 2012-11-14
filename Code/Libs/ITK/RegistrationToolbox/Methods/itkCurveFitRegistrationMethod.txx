@@ -52,8 +52,9 @@ CurveFitRegistrationMethod< IntensityType >
 
   m_InputTemporalVolume = 0;
    
-  m_Optimizer    = 0;
-  m_Metric       = 0;
+  m_Optimizer = 0;
+  m_Metric    = 0;
+  m_Transform = 0;
 
   this->SetNumberOfThreads( this->GetMultiThreader()->GetNumberOfThreads() );
 }
@@ -113,6 +114,21 @@ CurveFitRegistrationMethod< IntensityType >
   }
   else
     os << indent << "Registration Optimizer: NULL" << std::endl;
+}
+
+  
+  
+/* -----------------------------------------------------------------------
+   Initialise by setting the interconnects between components. 
+   ----------------------------------------------------------------------- */
+
+template< class IntensityType >
+void
+CurveFitRegistrationMethod< IntensityType >
+::SetInitialTransformParameters( const ParametersType &param )
+{
+  m_InitialParameters = param;
+  this->Modified();
 }
   
   
