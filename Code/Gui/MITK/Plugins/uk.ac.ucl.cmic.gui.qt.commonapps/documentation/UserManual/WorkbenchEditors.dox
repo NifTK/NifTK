@@ -1,0 +1,20 @@
+/**
+
+\page WorkbenchEditors Workbench Editors
+\addindex Workbench Editors
+
+Imagine you are using a popular word processing program.  The source of data is the 
+document you are writing. The application provides a a main view of the document, and 
+lets you edit the data. This main view is the Editor. There can be more than one Editor, 
+for example to show two different documents, or show two different pages of the
+same document, but their purpose is the same: Editors show the "main view" of the data.
+
+The Nifty applications have the same principal at heart. The application will load an 
+assortment of data. The screen will contain one or more Editors to provide a view of the data. 
+Figure 1. shows the Drag and Drop Display Editor developed for the MIDAS project.
+
+\image html MainScreenDragAndDropDisplay.png "Figure 1. The Drag and Drop Display, developed for the MIDAS project. This view shows two ortho-viewers with linked cursors."
+
+As the Nifty platform expands, expect to find new Editors to handle different types
+of data, and to provide different ways of interacting with the data.
+*/

@@ -27,11 +27,13 @@ SET(MY_APP_NAME NiftyMIDAS)
 SET(_exclude_plugins
   org_mitk_gui_qt_pointsetinteraction
   org_mitk_gui_qt_stdmultiwidgeteditor
+  org_mitk_gui_qt_volumevisualization
   it_unito_cim_intensityprofile 
   uk_ac_ucl_cmic_breastsegmentation
   uk_ac_ucl_cmic_gui_qt_niftyview
   uk_ac_ucl_cmic_gui_qt_niftyigi
   uk_ac_ucl_cmic_niftyseg
+  uk_ac_ucl_cmic_surgicalguidance
 )
 
 NIFTK_CREATE_APPLICATION(
