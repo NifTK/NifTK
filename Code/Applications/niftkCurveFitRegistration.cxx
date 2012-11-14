@@ -29,14 +29,9 @@
 #include <vector>
 #include <fstream>
 
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkConjugateGradientMaxIterOptimizer.h"
-#include "itkConjugateGradientOptimizer.h"
-#include "itkRegularStepGradientDescentOptimizer.h"
-#include "itkLBFGSOptimizer.h"
-
-#include "itkTemporalBSplineCurveFitRegistrationMethod.h"
-#include "itkTemporalBSplineCurveFitMetric.h"
+#include "itkLevenbergMarquardtOptimizer.h"
+#include "itkCurveFitRegistrationMethod.h"
+#include "itkBSplineCurveFitMetric.h"
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -81,12 +76,6 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_INT, "niters", "n", "Set the maximum number of iterations (set to zero to turn off) [10]"},
 
-  {OPT_INT,  "opt", "n", "The optimizer to use. Options are:\n"
-                         "           0    Conjugate gradient with max iterations [default],\n"
-                         "           1    Limited Memory BFGS,\n"
-                         "           2    Regular step gradient descent,\n"
-                         "           3    Conjugate gradient."},
-
   {OPT_STRING|OPT_LONELY|OPT_REQ, NULL, "filename", "The input image."},
   
   {OPT_DONE, NULL, NULL, 
@@ -97,23 +86,16 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 enum {
   O_NITERS,
 
-  O_OPTIMISER,
-
-
   O_INPUT_IMAGE
 };
 
 struct arguments
 {
-  enumOptimizerType enumOptimizer;
-  int optimiser;
   int nIterations;
 
   std::string fileInputImage;
  
   arguments() {
-    enumOptimizer =  OPTIMIZER_CONJUGATE_GRADIENT_MAXITER;
-    optimiser = 0;
     nIterations = 10;
   }
 };
@@ -143,88 +125,33 @@ int DoMain( char *exec, arguments args )
 
 
 
-  // Create an optimizer
+  // Create the optimizer
   
-  typedef itk::SingleValuedNonLinearOptimizer OptimizerType;
+  typedef itk::LevenbergMarquardtOptimizer OptimizerType;
   typedef typename OptimizerType::Pointer OptimizerPointer;
-  OptimizerPointer optimiser;
+  OptimizerPointer optimiser = OptimizerType::New();
 
-  std::cout << "Optimiser: " << nameOptimizer[args.enumOptimizer] << std::endl;
-  
-  switch ( args.enumOptimizer )
-  {
+  if ( args.nIterations )
+    optimiser->SetNumberOfIterations( args.nIterations );
 
-  case OPTIMIZER_CONJUGATE_GRADIENT_MAXITER: {
-
-    typedef typename itk::ConjugateGradientMaxIterOptimizer ConjugateGradOptimizerType;
-    ConjugateGradOptimizerType::Pointer conjGradOptimizer = ConjugateGradOptimizerType::New();
-
-    if ( args.nIterations )
-      conjGradOptimizer->SetMaximumNumberOfFunctionEvaluations(args.nIterations);
-
-    std::cout << "Maximum number of iterations set to: " 
-	      << niftk::ConvertToString((int) args.nIterations) << std::endl;
-    
-    optimiser = conjGradOptimizer;
-    break;
-  }
-    
-  case OPTIMIZER_LIMITED_MEMORY_BFGS: {
-    
-    typedef typename itk::LBFGSOptimizer LBFGSOptimizerType;
-    LBFGSOptimizerType::Pointer lbfgsOptimizer = LBFGSOptimizerType::New();
-    
-    if ( args.nIterations )
-      lbfgsOptimizer->SetMaximumNumberOfFunctionEvaluations(args.nIterations);
-    
-    std::cout << "Maximum number of iterations set to: "
-	      << niftk::ConvertToString((int) args.nIterations) << std::endl;
-    
-    optimiser = lbfgsOptimizer;
-    break;
-  }
-
-  case OPTIMIZER_REGULAR_STEP_GRADIENT_DESCENT: {
-    
-    typedef typename itk::RegularStepGradientDescentOptimizer RegularStepOptimizerType;
-    RegularStepOptimizerType::Pointer regStepOptimizer = RegularStepOptimizerType::New();
-    
-    optimiser = regStepOptimizer;
-    break;
-  }
-
-  case OPTIMIZER_CONJUGATE_GRADIENT: {
-    
-    typedef typename itk::ConjugateGradientOptimizer ConjugateGradOptimizerType;
-    ConjugateGradOptimizerType::Pointer conjGradOptimizer = ConjugateGradOptimizerType::New();
-    
-    optimiser = conjGradOptimizer;
-    break;
-  }
-    
-  default: {
-    std::cerr << exec
-	      << "Optimizer type: '"
-	      << niftk::ConvertToString(nameOptimizer[args.enumOptimizer])
-	      << "' not recognised.";
-    return -1;
-  }
-  }
+  std::cout << "Maximum number of iterations set to: " 
+	    << niftk::ConvertToString((int) args.nIterations) << std::endl;
 
   // Create the metric
  
-  typedef typename itk::TemporalBSplineCurveFitMetric< PixelType > BSplineFitMetricType;
+  typedef typename itk::BSplineCurveFitMetric< PixelType > BSplineFitMetricType;
   typename BSplineFitMetricType::Pointer metric = BSplineFitMetricType::New();
 
 
   // Create the method
 
-  typedef typename itk::TemporalBSplineCurveFitRegistrationMethod< PixelType > RegnMethodType;
+  typedef typename itk::CurveFitRegistrationMethod< PixelType > RegnMethodType;
   typename RegnMethodType::Pointer method = RegnMethodType::New();
 
-  method->SetInputTemporalVolume( image );
   method->SetOptimizer( optimiser );
   method->SetMetric( metric );
+
+  method->SetInput( image );
 
 
   // Perform the registration
@@ -264,9 +191,6 @@ int main( int argc, char *argv[] )
   niftk::CommandLineParser CommandLineOptions( argc, argv, clArgList, true );
 
   CommandLineOptions.GetArgument(O_NITERS, args.nIterations);
-
-  if ( CommandLineOptions.GetArgument( O_OPTIMISER, args.optimiser ) )
-    args.enumOptimizer = (enumOptimizerType) args.optimiser;
 
   CommandLineOptions.GetArgument( O_INPUT_IMAGE,  args.fileInputImage   );
 

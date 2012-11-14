@@ -45,7 +45,7 @@ class ITK_EXPORT BSplineCurveFitMetric : public SingleValuedCostFunction
   public:
 
   /** Standard class typedefs. */
-  typedef BSplineCurveFitMetric             Self;
+  typedef BSplineCurveFitMetric        Self;
   typedef SingleValuedCostFunction     Superclass;
   typedef SmartPointer<Self>           Pointer;
   typedef SmartPointer<const Self>     ConstPointer;
@@ -56,12 +56,22 @@ class ITK_EXPORT BSplineCurveFitMetric : public SingleValuedCostFunction
   /** Run-time type information (and related methods). */
   itkTypeMacro(BSplineCurveFitMetric, SingleValuedCostFunction);
   
+  /** Type used for representing point components  */
+  typedef typename Superclass::ParametersValueType CoordinateRepresentationType;
+
   /**  Type of the parameters. */
   typedef typename SingleValuedCostFunction::ParametersType ParametersType;
   typedef typename SingleValuedCostFunction::MeasureType    MeasureType;
   typedef typename SingleValuedCostFunction::DerivativeType DerivativeType;
   
-  /** Some convenient typedefs. */
+  /**  Type of the Transform Base class */
+  typedef Transform<CoordinateRepresentationType, 4, 4> TransformType;
+
+  typedef typename TransformType::Pointer            TransformPointer;
+  typedef typename TransformType::InputPointType     InputPointType;
+  typedef typename TransformType::OutputPointType    OutputPointType;
+  typedef typename TransformType::ParametersType     TransformParametersType;
+  typedef typename TransformType::JacobianType       TransformJacobianType;
 
   /** Initialise the regularly spaced B-Spline control points */
   void Initialise( void );

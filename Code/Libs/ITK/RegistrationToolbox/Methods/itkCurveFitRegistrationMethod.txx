@@ -45,8 +45,8 @@ CurveFitRegistrationMethod< IntensityType >
 ::CurveFitRegistrationMethod()
 {
 
-  this->SetNumberOfRequiredInputs( 1 );
-  this->SetNumberOfRequiredOutputs( 2 );
+  this->SetNumberOfRequiredInputs( 1 );   // The temporal volume to be registered
+  this->SetNumberOfRequiredOutputs( 1 );  // The registered volume
 
   m_FlagInitialised = false;
 
