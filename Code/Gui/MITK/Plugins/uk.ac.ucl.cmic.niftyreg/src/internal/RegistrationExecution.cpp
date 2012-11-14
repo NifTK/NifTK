@@ -183,17 +183,17 @@ void RegistrationExecution::ExecuteRegistration()
 
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage;
+    std::string nameOfResultImage( nodeSource->GetName() );
     if ( userData->m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
-      nameOfResultImage = "rigid registration to ";
+      nameOfResultImage.append( "_RigidRegnTo_" );
     else
-      nameOfResultImage = "affine_registration_to_";
+      nameOfResultImage.append( "_AffineRegnTo_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkSourceImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
 
     UpdateProgressBar( 100., userData );
 
@@ -227,13 +227,14 @@ void RegistrationExecution::ExecuteRegistration()
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage( "non-rigid_registration_to_" );
+    std::string nameOfResultImage( nodeSource->GetName() );
+    nameOfResultImage.append( "_NonRigidRegnTo_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkTransformedImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
 
     UpdateProgressBar( 100., userData );
    }

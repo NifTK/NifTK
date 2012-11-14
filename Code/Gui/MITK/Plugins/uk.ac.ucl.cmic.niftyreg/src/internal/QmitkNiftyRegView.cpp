@@ -48,7 +48,6 @@
 
 const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregview";
 
-#define USE_QT_THREADING
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -2182,16 +2181,6 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
   }
 
 
-#ifdef USE_THREADING
-
-  itk::MultiThreader::Pointer threader = itk::MultiThreader::New();
-
-  itk::ThreadFunctionType pointer = &ExecuteRegistration;
-  threader->SpawnThread( pointer, this );
-
-#else
-#ifdef USE_QT_THREADING
-
   QEventLoop q;
   RegistrationExecution regExecutionThread( this );
 
@@ -2208,15 +2197,7 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
   regExecutionThread.start();
   q.exec();
 
-#else
-
-  ExecuteRegistration( this );
-
-#endif
-#endif
-
   CreateDeformationVisualisationSurface();
-
 }
 
 
