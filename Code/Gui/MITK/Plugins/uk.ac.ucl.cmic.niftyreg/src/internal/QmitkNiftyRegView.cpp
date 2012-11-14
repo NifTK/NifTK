@@ -2215,6 +2215,8 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 #endif
 #endif
 
+  CreateDeformationVisualisationSurface();
+
 }
 
 
@@ -2248,7 +2250,7 @@ void QmitkNiftyRegView::CreateDeformationVisualisationSurface( void )
 
 
 
-  if ( this->controlPointGrid != NULL )
+  if ( controlPointGrid != NULL )
     nifti_image_free( controlPointGrid );
 }
 
@@ -2259,6 +2261,7 @@ void QmitkNiftyRegView::CreateDeformationVisualisationSurface( void )
 
 ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
 {
+
 #ifdef _USE_CUDA
   std::cout << "USING CUDA" << std::endl;
 #else
@@ -2389,17 +2392,17 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage;
+    std::string nameOfResultImage( nodeSource->GetName() );
     if ( userData->m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
-      nameOfResultImage = "rigid registration to ";
+      nameOfResultImage.append( "_RigidRegnTo_" );
     else
-      nameOfResultImage = "affine registration to ";
+      nameOfResultImage.append( "_AffineRegnTo_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkSourceImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
 
     UpdateProgressBar( 100., userData );
 
@@ -2428,13 +2431,14 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage( "non-rigid registration to " );
+    std::string nameOfResultImage( nodeSource->GetName() );
+    nameOfResultImage.append( "_Non-RigidRegnTo_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkTransformedImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
 
     UpdateProgressBar( 100., userData );
 
