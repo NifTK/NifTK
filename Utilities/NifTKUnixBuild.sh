@@ -91,7 +91,7 @@ run_command "git checkout -b $BRANCH origin/$BRANCH"
 run_command "cd .."
 run_command "mkdir ${FOLDER}"
 run_command "cd ${FOLDER}"
-run_command "cmake ../NifTK ${COVERAGE_ARG} ${GCC4_ARG} -DCMAKE_BUILD_TYPE=${TYPE} -DNIFTK_Apps/NiftyView=ON -DNIFTK_Apps/NiftyMIDAS=ON -DNIFTK_Apps/NiftyIGI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON"
+run_command "cmake ../NifTK ${COVERAGE_ARG} ${GCC4_ARG} -DCMAKE_BUILD_TYPE=${TYPE} -DNIFTK_BUILD_ALL_APPS=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON"
 run_command "make -j ${THREADS}"
 run_command "cd NifTK-build"
 run_command "${BUILD_COMMAND}" # Note that the submit task fails with http timeout, but we want to carry on regardless to get to the package bit.
