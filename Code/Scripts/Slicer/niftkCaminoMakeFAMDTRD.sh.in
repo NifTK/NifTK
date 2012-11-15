@@ -1,0 +1,208 @@
+#!/bin/bash
+
+#/*================================================================================
+#
+#  NifTK: An image processing toolkit jointly developed by the
+#              Dementia Research Centre, and the Centre For Medical Image Computing
+#              at University College London.
+#  
+#  See:        http://dementia.ion.ucl.ac.uk/
+#              http://cmic.cs.ucl.ac.uk/
+#              http://www.ucl.ac.uk/
+#
+#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+#
+#  Last Changed      : $LastChangedDate: 2010-05-28 22:05:02 +0100 (Fri, 28 May 2010) $ 
+#  Revision          : $Revision: 3326 $
+#  Last modified by  : $Author: mjc $
+#
+#  Original author   : m.clarkson@ucl.ac.uk
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notices for more information.
+#
+#=================================================================================*/
+
+# Example script, to demonstrate how the Slicer Command Line Execution Model
+# can be used to run any third part application within NiftyView. In this 
+# example we run a Camino pipeline to generate FA, MD and Trace(D) images.
+
+# The basic method is:
+# If the user runs niftkCaminoMakeFAMDTRD.sh --xml we respond with the XML function contained herein.
+# All other command line invocations, we pass the parameters onto the underlying program.
+
+function XML()
+{
+cat <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Camino</category>
+  <title>Make FA, MD, Trace</title>
+  <description><![CDATA[A simple wrapper sript, provided within @NIFTK_PLATFORM@ to generate an FA/MD/Tr(D) image using Camino]]></description>
+  <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/camino/</documentation-url>
+  <license>BSD</license>
+  <contributor>Matt Clarkson, Matt Hall</contributor>
+  <parameters advanced="false">
+    <label>Inputs</label>
+    <description>Something to describe the input here</description>
+    <image fileExtensions="*.nii,*.nii.gz">      
+      <name>input4DImage</name>
+      <longflag>input4DImage</longflag>
+      <description>4D image containing diffusion directions</description>
+      <label>4D image</label>
+      <channel>input</channel>
+    </image>
+    <image fileExtensions="*.nii,*.nii.gz">      
+      <name>inputMask</name>
+      <longflag>inputMask</longflag>
+      <description>mask image, defining a region of interest</description>
+      <label>mask image</label>
+      <channel>input</channel>
+    </image>    
+    <file fileExtensions="*.scheme, *.txt">
+      <name>schemeFile</name>
+      <longflag>schemeFile</longflag>
+      <description>Camino scheme file describing diffusion directions</description>
+      <label>scheme file</label>
+      <channel>input</channel>
+    </file>
+  </parameters>
+  <parameters advanced="false">
+    <label>Outputs</label>
+    <description>Something to describe the outputs here</description>
+    <image fileExtensions="*.nii,*.nii.gz">      
+      <name>faImage</name>
+      <longflag>faImage</longflag>
+      <description>F.A. image</description>
+      <label>F.A. image</label>
+      <default>outputFA.nii.gz</default>
+      <channel>output</channel>
+    </image>
+    <image fileExtensions="*.nii,*.nii.gz">      
+      <name>mdImage</name>
+      <longflag>mdImage</longflag>
+      <description>M.D. image</description>
+      <label>M.D. image</label>
+      <default>outputMD.nii.gz</default>\
+      <channel>output</channel>
+    </image>
+    <image fileExtensions="*.nii,*.nii.gz">      
+      <name>trdImage</name>
+      <longflag>trdImage</longflag>
+      <description>Tr(D) image</description>
+      <label>Tr(D) image</label>
+      <default>outputTRD.nii.gz</default>
+      <channel>output</channel>
+    </image>                                                                    
+  </parameters>
+</executable>
+EOF
+exit 0
+}
+
+function Usage()
+{
+cat <<EOF
+This script will run a Camino pipeline to generate an F.A., M.D. and Trace(D) image from a 4D NifTI image containing diffusion directions
+
+Usage: 
+
+EITHER:
+
+  niftkCaminoMakeFAMDTRD.sh --xml
+  
+OR
+
+  niftkCaminoMakeFAMDTRD.sh --input4DImage <filename.nii.gz> --inputMask <filename.nii.gz> --schemeFile <filename.scheme> --faImage <filename.nii.gz> --mdImage <filename.nii.gz> --trdImage <filename.nii.gz>
+
+EOF
+exit 127
+}
+
+if [ $# -eq 0 ]; then
+  Usage
+fi
+
+if [ $# -eq 1 -a "$1" = "--xml" ]; then
+  XML
+fi
+
+which_modelfit=`which modelfit`
+if [ "$which_modelfit" = "" ]; then
+  echo "Could not find Camino's 'modelfit' program, which suggests Camino is not properly installed. Please update your PATH, or speak to your systems administrator."
+  exit 1
+fi
+
+INPUT_IMAGE=""
+INPUT_MASK=""
+INPUT_SCHEME=""
+OUTPUT_FA_IMAGE=""
+OUTPUT_MD_IMAGE=""
+OUTPUT_TRD_IMAGE=""
+while [ "$#" -gt 0 ]
+do
+  case $1 in
+    --input4DImage)
+        INPUT_IMAGE=$2
+        shift 1
+        ;;      
+    --inputMask)
+        INPUT_MASK=$2
+        shift 1
+        ;;
+    --schemeFile)
+        INPUT_SCHEME=$2
+        shift 1
+        ;;
+    --faImage)
+        OUTPUT_FA_IMAGE=$2
+        shift 1
+        ;;
+    --mdImage)
+        OUTPUT_MD_IMAGE=$2
+        shift 1
+        ;;
+    --trdImage)
+        OUTPUT_TRD_IMAGE=$2
+        shift 1
+        ;;                        
+  esac
+  shift 1
+done
+
+if [ "${INPUT_IMAGE}" = "" -o "${INPUT_MASK}" = "" -o "${INPUT_SCHEME}" = "" -o "${OUTPUT_FA_IMAGE}" = "" -o "${OUTPUT_MD_IMAGE}" = "" -o "${OUTPUT_TRD_IMAGE}" = "" ]; then
+  Usage
+fi
+
+# Now take the INPUT_IMAGE, INPUT_MASK, INPUT_SCHEME, run pipeline, and generate OUTPUT_IMAGE
+echo "Starting Camino Make FA pipeline:"
+echo "Input 4D image :${INPUT_IMAGE}"
+echo "Input mask     :${INPUT_MASK}"
+echo "Input scheme   :${INPUT_SCHEME}"
+echo "Output FA image:${OUTPUT_FA_IMAGE}"
+echo "Output MD image:${OUTPUT_MD_IMAGE}"
+echo "Output TRD image:${OUTPUT_TRD_IMAGE}"
+
+image2voxel -4dimage ${INPUT_IMAGE} -outputfile /tmp/imagename.bfloat
+echo "<filter-progress-text progress=\"0.2\">converted to camino format data...</filter-progress-text>"
+
+modelfit -inputfile /tmp/imagename.bfloat -schemefile ${INPUT_SCHEME}  -model ldt -bgmask ${INPUT_MASK} -outputfile /tmp/dt.bdouble
+echo "<filter-progress-text progress=\"0.4\">model fitting complete...</filter-progress-text>"
+
+cat /tmp/dt.bdouble | fa | voxel2image -outputroot fa -header ${INPUT_IMAGE}
+echo "<filter-progress-text progress=\"0.5\">fa complete...</filter-progress-text>"
+
+cat /tmp/dt.bdouble | md | voxel2image -outputroot md -header ${INPUT_IMAGE}
+echo "<filter-progress-text progress=\"0.6\">md complete...</filter-progress-text>"
+
+cat /tmp/dt.bdouble | trd | voxel2image -outputroot trd -header ${INPUT_IMAGE}
+echo "<filter-progress-text progress=\"0.7\">trd complete...</filter-progress-text>"
+
+mv fa.nii ${OUTPUT_FA_IMAGE}
+mv md.nii  ${OUTPUT_MD_IMAGE}
+mv trd.nii ${OUTPUT_TRD_IMAGE}
+
+echo "<filter-progress-text progress=\"1.0\">produces output data...</filter-progress-text>"
+sleep 1
