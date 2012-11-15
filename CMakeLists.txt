@@ -130,7 +130,7 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
 
     SET(BUILD_GUI ON)
     
-    IF (${option_name} AND ${app_name} STREQUAL "NiftyIGI")
+    IF (${app_name} STREQUAL "NiftyIGI")
       SET(BUILD_IGI ON)
     ENDIF()
   
