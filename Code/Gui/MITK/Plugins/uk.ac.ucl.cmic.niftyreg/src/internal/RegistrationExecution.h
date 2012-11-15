@@ -48,8 +48,11 @@ public:
 protected slots:
 
   /// Run the actual registration
-  void ExecuteRegistration();
+  void ExecuteRegistration( void );
   
+  /// Create a VTK polydata object to visualise the deformation
+  void CreateDeformationVisualisationSurface( void );
+    
 
 
 protected:

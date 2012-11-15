@@ -48,7 +48,6 @@
 
 const std::string QmitkNiftyRegView::VIEW_ID = "uk.ac.ucl.cmic.views.niftyregview";
 
-#define USE_QT_THREADING
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -2182,16 +2181,6 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
   }
 
 
-#ifdef USE_THREADING
-
-  itk::MultiThreader::Pointer threader = itk::MultiThreader::New();
-
-  itk::ThreadFunctionType pointer = &ExecuteRegistration;
-  threader->SpawnThread( pointer, this );
-
-#else
-#ifdef USE_QT_THREADING
-
   QEventLoop q;
   RegistrationExecution regExecutionThread( this );
 
@@ -2207,14 +2196,6 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 
   regExecutionThread.start();
   q.exec();
-
-#else
-
-  ExecuteRegistration( this );
-
-#endif
-#endif
-
 }
 
 
@@ -2224,6 +2205,7 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 
 ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
 {
+
 #ifdef _USE_CUDA
   std::cout << "USING CUDA" << std::endl;
 #else
@@ -2354,17 +2336,17 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage;
+    std::string nameOfResultImage( nodeSource->GetName() );
     if ( userData->m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
-      nameOfResultImage = "rigid registration to ";
+      nameOfResultImage.append( "_RigidRegnTo_" );
     else
-      nameOfResultImage = "affine registration to ";
+      nameOfResultImage.append( "_AffineRegnTo_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkSourceImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
 
     UpdateProgressBar( 100., userData );
 
@@ -2393,13 +2375,14 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage( "non-rigid registration to " );
+    std::string nameOfResultImage( nodeSource->GetName() );
+    nameOfResultImage.append( "_Non-RigidRegnTo_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkTransformedImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
 
     UpdateProgressBar( 100., userData );
 

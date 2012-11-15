@@ -253,6 +253,7 @@ class QmitkNiftyRegView : public QmitkAbstractView
     /// \brief Function called whenever the object is modified
     void Modified();
 
+
     /// \brief The specific controls for this widget
     Ui::QmitkNiftyRegViewControls m_Controls;
 
