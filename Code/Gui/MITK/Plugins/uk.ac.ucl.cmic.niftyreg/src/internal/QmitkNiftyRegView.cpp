@@ -212,6 +212,7 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
        
   m_Controls.m_TargetMaskImageComboBox->clear();
   m_Controls.m_TargetMaskImageComboBox->insertItem(0, QString("no mask"));
+  m_Controls.m_TargetMaskImageComboBox->setCurrentIndex( 0 );
 
 
   // Multi-Scale Options
