@@ -128,9 +128,7 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
 
   IF(${option_name} OR NIFTK_BUILD_ALL_APPS)
 
-    IF(${option_name})
-      SET(BUILD_GUI ON)
-    ENDIF()
+    SET(BUILD_GUI ON)
     
     IF (${option_name} AND ${app_name} STREQUAL "NiftyIGI")
       SET(BUILD_IGI ON)
