@@ -24,9 +24,9 @@
 
 # This file is included in the top-level CMakeLists.txt file to allow early dependency checking
 
-option(NIFTK_Apps/NiftyView "Build NiftyView - Research application for all users." ON)
-option(NIFTK_Apps/NiftyMIDAS "Build NiftyMIDAS - Dementia Research Centre application for clinical trials in Dementia." ON)
-option(NIFTK_Apps/NiftyIGI "Build NiftyIGI - Research application for general image guided interventions" ON)
+option(NIFTK_Apps/NiftyView "Build NiftyView - Research application for all users." OFF)
+option(NIFTK_Apps/NiftyMIDAS "Build NiftyMIDAS - Dementia Research Centre application for clinical trials in Dementia." OFF)
+option(NIFTK_Apps/NiftyIGI "Build NiftyIGI - Research application for general image guided interventions" OFF)
 
 # This variable is fed to ctkFunctionSetupPlugins() macro in the
 # top-level CMakeLists.txt file. This allows to automatically
