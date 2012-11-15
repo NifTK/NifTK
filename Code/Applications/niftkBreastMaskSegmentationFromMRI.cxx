@@ -2082,9 +2082,6 @@ int main( int argc, char *argv[] )
   start[1] = idxMidSternum[1];
   start[2] = 0;
 
-  region.SetIndex( start );
-
-
   region = imChestSurfaceVoxels->GetLargestPossibleRegion();
 
   size = region.GetSize();
@@ -2096,6 +2093,7 @@ int main( int argc, char *argv[] )
     sizeChestSurfaceRegion[1] = size[1] - start[1] - 1;
 
   region.SetSize( sizeChestSurfaceRegion );
+  region.SetIndex( start );
 
 
   if ( flgVerbose )
