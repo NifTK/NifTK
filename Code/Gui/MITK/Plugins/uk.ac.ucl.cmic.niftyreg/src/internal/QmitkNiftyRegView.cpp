@@ -212,7 +212,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
        
   m_Controls.m_TargetMaskImageComboBox->clear();
   m_Controls.m_TargetMaskImageComboBox->insertItem(0, QString("no mask"));
-  m_Controls.m_TargetMaskImageComboBox->setCurrentIndex( 0 );
 
 
   // Multi-Scale Options
@@ -2197,43 +2196,6 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 
   regExecutionThread.start();
   q.exec();
-
-  CreateDeformationVisualisationSurface();
-}
-
-
-// ---------------------------------------------------------------------------
-// CreateDeformationVisualisationSurface();
-// --------------------------------------------------------------------------- 
-
-void QmitkNiftyRegView::CreateDeformationVisualisationSurface( void )
-{
-  if ( ! m_RegNonRigid )
-  {
-    QMessageBox msgBox;
-    msgBox.setText("No registration data available,"
-		   "\nplease execute a non-rigid registration.");
-    msgBox.exec();
-    
-    return;
-  }
-
-  nifti_image *controlPointGrid 
-    = m_RegNonRigid->GetControlPointPositionImage();
-
-  std::cout << "Control point grid dimensions: " 
-	    << controlPointGrid->nx << " x " 
-	    << controlPointGrid->ny << " x " 
-	    << controlPointGrid->nz << std::endl
-	    << "Control point grid spacing: " 
-	    << controlPointGrid->dx << " x " 
-	    << controlPointGrid->dy << " x " 
-	    << controlPointGrid->dz << std::endl;
-
-
-
-  if ( controlPointGrid != NULL )
-    nifti_image_free( controlPointGrid );
 }
 
 

@@ -23,6 +23,7 @@
  ============================================================================*/
 
 #include <QTimer>
+#include <QMessageBox>
 
 #include "RegistrationExecution.h"
 
@@ -239,10 +240,47 @@ void RegistrationExecution::ExecuteRegistration()
 
     userData->GetDataStorage()->Add( resultNode );
 
+    // Create VTK polydata to illustrate the deformation field
+    CreateDeformationVisualisationSurface();
+
     UpdateProgressBar( 100., userData );
    }
 
 
   userData->m_Modified = false;
   userData->m_Controls.m_ExecutePushButton->setEnabled( false );
+}
+
+
+// ---------------------------------------------------------------------------
+// CreateDeformationVisualisationSurface();
+// --------------------------------------------------------------------------- 
+
+void RegistrationExecution::CreateDeformationVisualisationSurface( void )
+{
+  if ( ! userData->m_RegNonRigid )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No registration data to create VTK deformation visualisation.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  nifti_image *controlPointGrid 
+    = userData->m_RegNonRigid->GetControlPointPositionImage();
+
+  std::cout << "Control point grid dimensions: " 
+	    << controlPointGrid->nx << " x " 
+	    << controlPointGrid->ny << " x " 
+	    << controlPointGrid->nz << std::endl
+	    << "Control point grid spacing: " 
+	    << controlPointGrid->dx << " x " 
+	    << controlPointGrid->dy << " x " 
+	    << controlPointGrid->dz << std::endl;
+
+
+
+  if ( controlPointGrid != NULL )
+    nifti_image_free( controlPointGrid );
 }
