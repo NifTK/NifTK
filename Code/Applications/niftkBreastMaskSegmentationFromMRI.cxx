@@ -1182,9 +1182,10 @@ int main( int argc, char *argv[] )
   IteratorType imIterator( imMax, imMax->GetLargestPossibleRegion() );
         
   for ( imIterator.GoToBegin(); ! imIterator.IsAtEnd(); ++imIterator )
+  {
     if ( imIterator.Get() < 0 )
       imIterator.Set( 0 );
-
+  }
 
   // Write the Maximum Image to a file?
 
