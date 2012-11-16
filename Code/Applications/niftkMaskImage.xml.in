@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>@NIFTK_PLATFORM@.Image Operators</category>
+  <title>Mask Image</title>
+  <description><![CDATA[Masks the input image (setting voxels outside the region of interest to zero) using a mask and/or a bounding box.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell, Kelvin Leung, Matt Clarkson. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>MaskedImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Region of interest</label>
+    <description><![CDATA[Parameters that control the region masked]]></description>
+
+    <boolean>
+      <name>flgCombineMaskAndBoundingBoxViaUnion</name>
+      <longflag>or</longflag>
+      <description>Logical 'OR' (union) of the mask and bounding box [default is to use an 'AND' (intersection) operation].</description>
+      <label>Logical 'OR'</label>
+      <default>0</default>
+    </boolean>
+
+    <boolean>
+      <name>flgIndicesInMM</name>
+      <longflag>mm</longflag>
+      <description>The bounding box coordinates are in mm [default is voxel indices].</description>
+      <label>Bounding Box in mm</label>
+      <default>0</default>
+    </boolean>
+
+
+    <image>
+      <name>fileMaskImage</name>
+      <flag>m</flag>
+      <longflag>maskImage</longflag>
+      <description>Mask image</description>
+      <label>Mask</label>
+      <channel>input</channel>
+    </image>
+
+    <float>
+      <name>sx</name>
+      <longflag>sx</longflag>
+      <description>
+	The first index in 'x' of the masked region.
+      </description>
+      <label>x start</label>
+      <default>-1e38</default>
+    </float>
+
+    <float>
+      <name>sy</name>
+      <longflag>sy</longflag>
+      <description>
+	The first index in 'y' of the masked region.
+      </description>
+      <label>y start</label>
+      <default>-1e38</default>
+    </float>
+
+    <float>
+      <name>sz</name>
+      <longflag>sz</longflag>
+      <description>
+	The first index in 'z' of the masked region.
+      </description>
+      <label>z start</label>
+      <default>-1e38</default>
+    </float>
+
+    <float>
+      <name>st</name>
+      <longflag>st</longflag>
+      <description>
+	The first index in 't' of the masked region.
+      </description>
+      <label>t start</label>
+      <default>-1e38</default>
+    </float>
+
+    <float>
+      <name>ex</name>
+      <longflag>ex</longflag>
+      <description>
+	The last index in 'x' of the masked region.
+      </description>
+      <label>x end</label>
+      <default>1e38</default>
+    </float>
+
+    <float>
+      <name>ey</name>
+      <longflag>ey</longflag>
+      <description>
+	The last index in 'y' of the masked region.
+      </description>
+      <label>y end</label>
+      <default>1e38</default>
+    </float>
+
+    <float>
+      <name>ez</name>
+      <longflag>ez</longflag>
+      <description>
+	The last index in 'z' of the masked region.
+      </description>
+      <label>z end</label>
+      <default>1e38</default>
+    </float>
+
+    <float>
+      <name>et</name>
+      <longflag>et</longflag>
+      <description>
+	The last index in 't' of the masked region.
+      </description>
+      <label>t end</label>
+      <default>1e38</default>
+    </float>
+
+  </parameters>
+
+</executable>

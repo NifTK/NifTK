@@ -69,8 +69,10 @@ IF(SlicerExecutionModel_FOUND)
   ##############################################################
   SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES
     niftkAdd
-    niftkSubtract
+    niftkCropImage
+    niftkMaskImage
     niftkMultiply
+    niftkSubtract
   )
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
@@ -131,7 +133,6 @@ SET(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkCreateAffineTransform
   niftkCreateMaskFromLabels
   niftkCreateTransformation
-  niftkCrop
   niftkCTEAcosta2009Subsampling
   niftkCTEAssignAtlasValues
   niftkCTEBourgeat2008
