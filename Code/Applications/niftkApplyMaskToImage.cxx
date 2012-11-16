@@ -23,29 +23,26 @@
  ============================================================================*/
 
 /*!
- * \file niftkCrop.cxx
- * \page niftkCrop
- * \section niftkCropSummary Crops the input image using a mask and/or a voxel-wise bounding box.
+ * \file niftkApplyMaskToImage.cxx
+ * \page niftkApplyMaskToImage
+ * \section niftkApplyMaskToImageSummary Masks the input image using a mask and/or a voxel-wise bounding box.
  *
  * \li Pixel type: Scalars only, of type short.
  *
- * \section niftkCropCaveat Caveats
+ * \section niftkApplyMaskToImageCaveat Caveats
  * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
  */
 
-
 #include "itkLogHelper.h"
-#include "itkCropImageFilter.h"
 #include "itkCommandLineHelper.h"
+#include "itkCropTargetImageWhereSourceImageNonZero.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkNumericTraits.h"
 #include "itkImageDuplicator.h"
-#include "itkImageRegionIteratorWithIndex.h"
 
-#include "niftkCropImageCLP.h"
-
+#include "niftkApplyMaskToImageCLP.h"
 
 //  -------------------------------------------------------------------------
 //  arguments
@@ -88,28 +85,25 @@ struct arguments
 };
 
 
-
 //  -------------------------------------------------------------------------
-//  CropImage()
-/// \brief Takes mask and target and crops target where mask is non zero.
+//  MaskImage()
+/// \brief Sets the target image to zero where mask is zero and/or inside bounding box.
 //  -------------------------------------------------------------------------
 
 template <int Dimension, class PixelType>
-int CropImage( arguments &args )
+int MaskImage( arguments &args )
 {
 
   typedef itk::Image< PixelType, Dimension > ImageType;   
   typedef itk::ImageFileReader< ImageType >  InputImageReaderType;
   typedef itk::ImageFileWriter< ImageType >  OutputImageWriterType;
 
-  typedef itk::CropImageFilter< ImageType, ImageType > CropFilterType;
+  typedef itk::CropTargetImageWhereSourceImageNonZeroImageFilter< ImageType, ImageType > MaskFilterType;
 
   typedef itk::ImageRegionIteratorWithIndex< ImageType > IteratorType;    
 
   typename ImageType::Pointer inImage = 0;
   typename ImageType::Pointer maskImage = 0;
-
-  typename ImageType::IndexType idx;
 
   float startCoord[4];
   float endCoord[4];
@@ -140,87 +134,19 @@ int CropImage( arguments &args )
   }
   catch( itk::ExceptionObject & err ) 
   { 
-    std::cerr << std::endl << "ERROR: Failed to read the input image: " << err
-	      << std::endl << std::endl; 
+    std::cerr << "ERROR: Failed to read the input image: " << err << std::endl; 
     return EXIT_FAILURE;
   }                
   
   inImage = imageReader->GetOutput();
   inImage->DisconnectPipeline();
-
-
-  // Calculate the extent of the bounding specified (the whole image by default)
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  unsigned int i;
-  typename ImageType::IndexType idxStart, idxEnd;
+  
   typename ImageType::RegionType region = inImage->GetLargestPossibleRegion();
   typename ImageType::SizeType size = region.GetSize();
-  
-  // Convert the indices from mm?
 
-  if ( args.flgIndicesInMM ) 
-  {
-    typename ImageType::PointType ptStart, ptEnd;
 
-    for ( i=0; i<Dimension; i++ )
-    {
-      ptStart[i] = startCoord[i];
-      ptEnd[i]   =   endCoord[i];
-    }
-
-    inImage->TransformPhysicalPointToIndex( ptStart, idxStart );
-    inImage->TransformPhysicalPointToIndex(   ptEnd,   idxEnd );
-  }
-  else
-  {
-    for ( i=0; i<Dimension; i++ )
-    { 
-      if ( startCoord[i] < 0 )
-	idxStart[i] = 0;
-      else if ( startCoord[i] > size[i] - 1 )
-	idxStart[i] = size[i] - 1;
-      else
-	idxStart[i] = static_cast<int>( startCoord[i] );
-      
-      if ( endCoord[i] < 0 )
-	idxEnd[i] = 0;
-      else if ( endCoord[i] > size[i] - 1 )
-	idxEnd[i] = size[i] - 1;
-      else
-	idxEnd[i]   = static_cast<int>( endCoord[i] );
-    }
-  }
-
-  // Clip the indices to the image size
-  
-  unsigned int idxTmp;
-
-  for ( i=0; i<Dimension; i++ )
-  { 
-    if ( idxStart[i] < 0 ) idxStart[i] = 0;
-    if ( idxStart[i] > static_cast<int>( size[i] - 1 ) ) idxStart[i] = size[i] - 1;
-  
-    if ( idxEnd[i] < 0 ) idxEnd[i] = 0;
-    if ( idxEnd[i] > static_cast<int>( size[i] - 1 ) ) idxEnd[i] = size[i] - 1;
-  
-    if ( idxStart[i] > idxEnd[i] ) {
-      idxTmp = idxEnd[i];
-      idxEnd[i] = idxStart[i];
-      idxStart[i] = idxTmp;
-    }
-
-    size[i] = idxEnd[i] - idxStart[i] + 1;
-  }
-
-  std::cout << "Crop bounding box:" << std::endl
-	    << "   from: " << idxStart << std::endl
-	    << "   to:   " << idxEnd << std::endl
-	    << "   size: " << size << std::endl;
-  
-
-  // Read the input mask and calculate the combined bounding box
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Read the input mask...
+  // ~~~~~~~~~~~~~~~~~~~~~~
 
   if ( args.fileMaskImage.length() )
   {
@@ -235,8 +161,7 @@ int CropImage( arguments &args )
     }
     catch( itk::ExceptionObject & err ) 
     { 
-      std::cerr << std::endl << "ERROR: Failed to read the mask image: " << err
-		<< std::endl << std::endl; 
+      std::cerr << "ERROR: Failed to read the mask image: " << err << std::endl; 
       return EXIT_FAILURE;
     }                
 
@@ -266,96 +191,166 @@ int CropImage( arguments &args )
 		<< std::endl;
       return EXIT_FAILURE;
     }
+  }
 
-    // The mask and the bounding box combine...?
+  // ...or create one
+
+  else
+  {      
+    typedef itk::ImageDuplicator< ImageType > DuplicatorType;
+
+    typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+    duplicator->SetInputImage( inImage );
+    duplicator->Update();
+
+    maskImage = duplicator->GetOutput();
+    maskImage->DisconnectPipeline();
 
     if ( args.flgCombineMaskAndBoundingBoxViaUnion )
+      maskImage->FillBuffer( 0 );
+    else
+      maskImage->FillBuffer( 1 );
+  }
+
+
+  // Add a bounding box to the image
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  unsigned int i;
+  typename ImageType::IndexType idxStart, idxEnd;
+  
+  // Convert the indices from mm?
+
+  if ( args.flgIndicesInMM ) 
+  {
+    typename ImageType::PointType ptStart, ptEnd;
+
+    for ( i=0; i<Dimension; i++ )
     {
-      typename ImageType::RegionType region = inImage->GetLargestPossibleRegion();
-      
-      IteratorType inputIterator( maskImage, region );
-      
-      for ( inputIterator.GoToBegin(); 
-	    ! inputIterator.IsAtEnd();
-	    ++inputIterator )
-      {
-	if ( inputIterator.Get() ) {
-	  idx = inputIterator.GetIndex();
-	  
-	  for ( i=0; i<Dimension; i++ )
-	  {
-	    if ( idx[i] < idxStart[i] ) 
-	      idxStart[i] = idx[i];
-	      
-	    if ( idx[i] > idxEnd[i] )
-	      idxEnd[i] = idx[i];
-	  }
-	}
-      }
+      ptStart[i] = startCoord[i];
+      ptEnd[i]   =   endCoord[i];
     }
+
+    inImage->TransformPhysicalPointToIndex( ptStart, idxStart );
+    inImage->TransformPhysicalPointToIndex(   ptEnd,   idxEnd );
+  }
+  else
+  {
+    for ( i=0; i<Dimension; i++ )
+    { 
+      if ( startCoord[i] < 0 )
+	idxStart[i] = 0;
+      else if ( startCoord[i] > size[i] - 1 )
+	idxStart[i] = size[i] - 1;
+      else
+	idxStart[i] = static_cast<int>( startCoord[i] );
+
+       if ( endCoord[i] < 0 )
+	idxEnd[i] = 0;
+      else if ( endCoord[i] > size[i] - 1 )
+	idxEnd[i] = size[i] - 1;
+      else
+	idxEnd[i]   = static_cast<int>( endCoord[i] );
+    }
+  }
+
+  // Clip the indices to the image size
+  
+  unsigned int idxTmp;
+
+  for ( i=0; i<Dimension; i++ )
+  { 
+    if ( idxStart[i] < 0 ) idxStart[i] = 0;
+    if ( idxStart[i] > static_cast<int>( size[i] - 1 ) ) idxStart[i] = size[i] - 1;
+  
+    if ( idxEnd[i] < 0 ) idxEnd[i] = 0;
+    if ( idxEnd[i] > static_cast<int>( size[i] - 1 ) ) idxEnd[i] = size[i] - 1;
+  
+    if ( idxStart[i] > idxEnd[i] ) {
+      idxTmp = idxEnd[i];
+      idxEnd[i] = idxStart[i];
+      idxStart[i] = idxTmp;
+    }
+
+    size[i] = idxEnd[i] - idxStart[i] + 1;
+  }
+
+  std::cout << "Mask bounding box:" << std::endl
+	    << "   from: " << idxStart << std::endl
+	    << "   to:   " << idxEnd << std::endl
+	    << "   size: " << size << std::endl;
+
+
+  // Set the voxels inside the bounding box...?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.flgCombineMaskAndBoundingBoxViaUnion )
+  {
+    typename ImageType::RegionType region = inImage->GetLargestPossibleRegion();
+
+    region.SetSize( size );
+    region.SetIndex( idxStart );
+
+    IteratorType inputIterator( maskImage, region );
+
+    for ( inputIterator.GoToBegin(); 
+	  ! inputIterator.IsAtEnd();
+	  ++inputIterator )
+    {
+      inputIterator.Set( 1 );
+    }
+  }
   
 
-    // ...or only where the mask and bounding box overlap?
-    
-    else
+  // ...or only where the mask and bounding box overlap?
+
+  else
+  {
+    bool flgInsideBoundingBox;
+    typename ImageType::IndexType idx;
+    typename ImageType::RegionType region = inImage->GetLargestPossibleRegion();
+
+    IteratorType inputIterator( maskImage, region );
+
+    for ( inputIterator.GoToBegin(); 
+	  ! inputIterator.IsAtEnd();
+	  ++inputIterator )
     {
-      typename ImageType::RegionType region = inImage->GetLargestPossibleRegion();
-      
-      region.SetSize( size );
-      region.SetIndex( idxStart );
-
-      idx = idxStart;
-      idxStart = idxEnd;
-      idxEnd = idx;
-
-      IteratorType inputIterator( maskImage, region );
-      
-      for ( inputIterator.GoToBegin(); 
-	    ! inputIterator.IsAtEnd();
-	    ++inputIterator )
+      if ( inputIterator.Get( ) )
       {
-	if ( inputIterator.Get( ) )
-	{
-	  idx = inputIterator.GetIndex();
-	
-	  for ( i=0; i<Dimension; i++ )
+	flgInsideBoundingBox = true;
+
+	idx = inputIterator.GetIndex();
+
+	for ( i=0; i<Dimension; i++ )
+	  if ( ( idx[i] < idxStart[i] ) || ( idx[i] > idxEnd[i] ) )
 	  {
-	    if ( idx[i] < idxStart[i] ) 
-	      idxStart[i] = idx[i];
-	      
-	    if ( idx[i] > idxEnd[i] )
-	      idxEnd[i] = idx[i];
+	    flgInsideBoundingBox = false;
+	    break;
 	  }
-	}
+
+	if ( flgInsideBoundingBox ) 
+	  inputIterator.Set( 1 );
+	else
+	  inputIterator.Set( 0 );
       }
     }
   }
 
 
+  // Mask the image
+  // ~~~~~~~~~~~~~~
 
-  // Crop the image
-
-  typename CropFilterType::Pointer filter = CropFilterType::New();  
-
-  typename ImageType::SizeType lowerSize, upperSize;
+  typename MaskFilterType::Pointer filter = MaskFilterType::New();  
   
-  for ( i=0; i<Dimension; i++ )
-    lowerSize[i] = idxStart[i];
-
-  filter->SetLowerBoundaryCropSize( lowerSize );
-
-
-  for ( i=0; i<Dimension; i++ )
-    upperSize[i] = inImage->GetLargestPossibleRegion().GetSize()[i] - idxEnd[i];
-
-  filter->SetUpperBoundaryCropSize( upperSize );
+  filter->SetInput1( maskImage  );
+  filter->SetInput2( inImage );
+  
 
 
-  filter->SetInput( inImage );
-
-
-
-  // Write the cropped image to a file
+  // Write the masked image to a file
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
 
@@ -369,11 +364,10 @@ int CropImage( arguments &args )
   }
   catch( itk::ExceptionObject & err ) 
   { 
-    std::cerr << std::endl << "ERROR: Failed to crop and write the image to a file." << err
-	      << std::endl << std::endl; 
+    std::cerr << "ERROR: Failed to mask and write the image to a file." << err << std::endl; 
     return EXIT_FAILURE;
   }                
-
+  
   return EXIT_SUCCESS; 
 }
 
@@ -434,43 +428,43 @@ int main( int argc, char *argv[] )
   switch ( itk::PeekAtComponentType( args.fileInputImage ) )
   {
   case itk::ImageIOBase::UCHAR:
-    result = CropImage<3, unsigned char>( args );
+    result = MaskImage<3, unsigned char>( args );
     break;
 
   case itk::ImageIOBase::CHAR:
-    result = CropImage<3, char>( args );
+    result = MaskImage<3, char>( args );
     break;
 
   case itk::ImageIOBase::USHORT:
-    result = CropImage<3, unsigned short>( args );
+    result = MaskImage<3, unsigned short>( args );
     break;
 
   case itk::ImageIOBase::SHORT:
-    result = CropImage<3, short>( args );
+    result = MaskImage<3, short>( args );
     break;
 
   case itk::ImageIOBase::UINT:
-    result = CropImage<3, unsigned int>( args );
+    result = MaskImage<3, unsigned int>( args );
     break;
 
   case itk::ImageIOBase::INT:
-    result = CropImage<3, int>( args );
+    result = MaskImage<3, int>( args );
     break;
 
   case itk::ImageIOBase::ULONG:
-    result = CropImage<3, unsigned long>( args );
+    result = MaskImage<3, unsigned long>( args );
     break;
 
   case itk::ImageIOBase::LONG:
-    result = CropImage<3, long>( args );
+    result = MaskImage<3, long>( args );
     break;
 
   case itk::ImageIOBase::FLOAT:
-    result = CropImage<3, float>( args );
+    result = MaskImage<3, float>( args );
     break;
 
   case itk::ImageIOBase::DOUBLE:
-    result = CropImage<3, double>( args );
+    result = MaskImage<3, double>( args );
     break;
 
   default:
