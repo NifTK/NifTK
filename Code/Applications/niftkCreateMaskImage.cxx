@@ -287,7 +287,7 @@ int main( int argc, char *argv[] )
   // Create a mask of the correct dimension
 
   int result = 0;
-  int dims = itk::PeekAtImageDimension( args.fileInputImage );
+  int dims = itk::PeekAtImageDimensionFromSizeInVoxels( args.fileInputImage );
 
   switch ( dims )
   {
