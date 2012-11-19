@@ -28,7 +28,7 @@
 # Also, Trac 1592, version number MUST change if CTK changes.
 ######################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 10 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 11 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -131,9 +131,7 @@ OPTION(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OF
 OPTION(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK does" OFF)
 OPTION(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
 OPTION(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
-OPTION(NIFTK_USE_GIT_PROTOCOL "If behind a firewall set to OFF to use http: and ON to use git:" OFF)
-OPTION(NIFTK_USE_OPENCV "Turn on OpenCV in MITK Build" OFF)
-OPTION(NIFTK_LOCATION_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
+OPTION(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 
 ######################################################################
 # Meshing module-related checks and options
@@ -151,7 +149,8 @@ ENDIF (NIFTK_MESHING_CAN_BUILD)
 # Variables that get compiled into C++ code. 
 ######################################################################
 SET(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
-SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2012 University College London" CACHE STRING "Copyright string." FORCE )
+SET(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
+SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2012 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
 SET(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
 SET(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 SET(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
@@ -181,12 +180,13 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK")
 SET(NIFTK_VERSION_CTK "dd4386a4b0" CACHE STRING "Version of CTK")
 SET(NIFTK_VERSION_MITK "acffcb4f1f" CACHE STRING "Version of MITK")
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl")
-SET(NIFTK_VERSION_NIFTYLINK "c08fa66d55" CACHE STRING "Version of NiftyLink")
+SET(NIFTK_VERSION_NIFTYLINK "ee2164487e" CACHE STRING "Version of NiftyLink")
 SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg")
 SET(NIFTK_VERSION_NIFTYSEG "88" CACHE STRING "Version of NiftySeg")
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec")
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim")
 SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL")
+SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package")
 SET(NIFTK_LOCATION_BOOST "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost-${NIFTK_VERSION_BOOST}.tar.gz" CACHE STRING "Location of Boost")
 SET(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM")
 SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK")
@@ -204,11 +204,13 @@ SET(NIFTK_LOCATION_NIFTYSEG "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nift
 SET(NIFTK_LOCATION_NIFTYREC "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyRec-${NIFTK_VERSION_NIFTYREC}.tar.gz" CACHE STRING  "Location of NiftyRec")
 SET(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySim-${NIFTK_VERSION_NIFTYSIM}.tar.gz" CACHE STRING  "Location of NiftyRec")
 SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL")
+SET(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package")
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
 ######################################################################
 MARK_AS_ADVANCED(NIFTK_PLATFORM)
+MARK_AS_ADVANCED(NIFTK_LICENSE_SHORT_STRING)
 MARK_AS_ADVANCED(NIFTK_COPYRIGHT)
 MARK_AS_ADVANCED(NIFTK_ORIGIN_URL)
 MARK_AS_ADVANCED(NIFTK_ORIGIN_SHORT_TEXT)
@@ -224,7 +226,6 @@ MARK_AS_ADVANCED(NIFTK_BASE_NAME)
 MARK_AS_ADVANCED(NIFTK_VERSION_STRING)
 MARK_AS_ADVANCED(NIFTK_DEPLOY_NAME)
 MARK_AS_ADVANCED(NIFTK_SHOW_CONSOLE_WINDOW)
-MARK_AS_ADVANCED(NIFTK_USE_GIT_PROTOCOL)
 MARK_AS_ADVANCED(NIFTK_CHECK_COVERAGE)
 MARK_AS_ADVANCED(NIFTK_VERBOSE_COMPILER_WARNINGS)
 MARK_AS_ADVANCED(NIFTK_GENERATE_DOXYGEN_HELP)
@@ -245,6 +246,7 @@ MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSEG)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_VERSION_CGAL)
+MARK_AS_ADVANCED(NIFTK_VERSION_SEM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_BOOST)
 MARK_AS_ADVANCED(NIFTK_LOCATION_GDCM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DCMTK)
@@ -262,11 +264,9 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSEG)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CGAL)
-MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYLINK_DEV)
+MARK_AS_ADVANCED(NIFTK_LOCATION_SEM)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
-MARK_AS_ADVANCED(NIFTK_USE_GIT_PROTOCOL)
-MARK_AS_ADVANCED(NIFTK_USE_OPENCV)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
@@ -292,14 +292,9 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 
 ######################################################################
-# Set GIT protocol, as dependencies need it
+# Set GIT protocol, as dependencies need it. (Obselete???)
 ######################################################################
 FIND_PACKAGE(Git REQUIRED)
-SET(GIT_PROTOCOL "git")
-IF(NOT NIFTK_USE_GIT_PROTOCOL)
-  SET(GIT_PROTOCOL "http")
-ENDIF()
-
 IF (WIN32)
   SET(GITCOMMAND ${GIT_EXECUTABLE})
 ENDIF()
@@ -671,6 +666,19 @@ IF(NOT NIFTYSEG_FOUND)
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.breastsegmentation" OFF CACHE BOOL "Breast segmentation plugin" FORCE)
 ENDIF()
 
+
+######################################################################
+# Find SlicerExecutionModel
+######################################################################
+IF(BUILD_COMMAND_LINE_PROGRAMS)
+  FIND_PACKAGE(SlicerExecutionModel REQUIRED)
+  IF(SlicerExecutionModel_FOUND)
+    MESSAGE("Found SlicerExecutionModel")
+    INCLUDE(${SlicerExecutionModel_USE_FILE})
+  ELSE()
+    MESSAGE("Didn't find SlicerExecutionModel")
+  ENDIF()
+ENDIF()
 
 ########################################################################
 # Simplest if we list ALL our include directories here.

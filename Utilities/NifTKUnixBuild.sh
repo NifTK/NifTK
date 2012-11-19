@@ -33,12 +33,12 @@ function run_command()
   fi
 }
 
-if [ $# -ne 8 ] && [ $# -ne 9 ]
+if [ $# -ne 6 ] && [ $# -ne 7 ]
 then
   echo "Simple bash script to run a full automated build. "
   echo "Assumes git, qt, cmake, authentication credentials, valgrind, in fact everything are already present and valid in the current shell."  
   echo "Does a two pass checkout. It checks out NifTK at the time you run this script, then does an update to the correct time to run unit tests, which means the dashboard shows the wrong number of updates."
-  echo "Usage: NifTKUnixBuild.sh [Debug|Release] <number_of_threads> [cov|nocov to control coverage] [val|noval to control valgrind] [opencv|noopencv to build OpenCV] [gcc44|nogcc44 to use gcc4] [igi|noigi for IGI] [http|git for git to use http or git protocol] [branch]"
+  echo "Usage: NifTKUnixBuild.sh [Debug|Release] <number_of_threads> [cov|nocov to control coverage] [val|noval to control valgrind] [gcc44|nogcc44 to use gcc4] [igi|noigi for IGI] [branch]"
   exit -1
 fi
 
@@ -46,15 +46,13 @@ TYPE=$1
 THREADS=$2
 COVERAGE=$3
 MEMCHECK=$4
-OPENCV=$5
-GCC4=$6
-IGI=$7
-GITHTTP=$8
-if [ $# -eq 8 ]
+GCC4=$5
+IGI=$6
+if [ $# -eq 6 ]
 then
   BRANCH=dev
 else
-  BRANCH=$9
+  BRANCH=$7
 fi
 
 if [ "${TYPE}" != "Debug" -a "${TYPE}" != "Release" ]; then
@@ -78,22 +76,12 @@ if [ "${COVERAGE}" = "cov" ]; then
   COVERAGE_ARG="-DNIFTK_CHECK_COVERAGE=ON"
 fi
 
-if [ "${OPENCV}" = "opencv" ]; then
-  OPENCV_ARG="-DBUILD_OPENCV=ON"
-fi
-
 if [ "${GCC4}" = "gcc44" ]; then
   GCC4_ARG="-DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44"
 fi
 
 if [ "${IGI}" = "igi" ]; then
   IGI_ARG="-DBUILD_IGI=ON"
-fi
-
-if [ "${GITHTTP}" = "http" ]; then
-  GIT_ARG="-DNIFTK_USE_GIT_PROTOCOL=OFF"
-else
-  GIT_ARG="-DNIFTK_USE_GIT_PROTOCOL=ON"
 fi
 
 if [ "${MEMCHECK}" = "val" ]; then
@@ -108,7 +96,7 @@ run_command "git checkout -b $BRANCH origin/$BRANCH"
 run_command "cd .."
 run_command "mkdir ${FOLDER}"
 run_command "cd ${FOLDER}"
-run_command "cmake ../NifTK ${COVERAGE_ARG} ${OPENCV_ARG} ${GCC4_ARG} ${IGI_ARG} ${GIT_ARG} -DCMAKE_BUILD_TYPE=${TYPE} -DBUILD_GUI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON"
+run_command "cmake ../NifTK ${COVERAGE_ARG} ${GCC4_ARG} ${IGI_ARG} -DCMAKE_BUILD_TYPE=${TYPE} -DBUILD_GUI=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON"
 run_command "make -j ${THREADS}"
 run_command "cd NifTK-build"
 run_command "${BUILD_COMMAND}" # Note that the submit task fails with http timeout, but we want to carry on regardless to get to the package bit.

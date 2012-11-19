@@ -162,6 +162,17 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "      <channel>output</channel>\n"
 "    </image>\n"
 
+  // Filename of the output vtk surface
+
+"    <image fileExtensions=\"*.vtk\">\n"
+"      <name>fileOutputSurface</name>\n"
+"      <longflag>ovtk</longflag>\n"
+"      <description>Write the breast surface to a VTK polydata file.</description>\n"
+"      <label>Output VTK surface</label>\n"
+"      <default>BreastSurface.vtk</default>\n"
+"      <channel>output</channel>\n"
+"    </image>\n"
+
 "  </parameters>\n"
 
 

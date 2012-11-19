@@ -37,14 +37,25 @@ QmitkIGIToolManager::QmitkIGIToolManager()
 , m_StdMultiWidget(NULL)
 , m_GridLayoutClientControls(NULL)
 , m_ToolFactory(NULL)
+, m_AToolIsSaving(false)
 {
   m_ToolFactory = QmitkIGIToolFactory::New();
+  m_UpdateTimer =  new QTimer(this);
+  //TODO Work out why the following line caused segmentation fault.
+  //I don't really understand the UI here
+//  m_UpdateTimer->setInterval ( 1000 / m_update_fps_spinBox->value());
+  m_UpdateTimer->setInterval ( 50 );
+  connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeOut()) );
+  m_UpdateTimer->start ();
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkIGIToolManager::~QmitkIGIToolManager()
 {
+  //stop the timer
+  m_UpdateTimer->stop();
+  delete m_UpdateTimer;
   m_Tools.clear(); // smart pointers delete the tools.
 
   // Delete the descriptors.
@@ -62,6 +73,50 @@ QmitkIGIToolManager::~QmitkIGIToolManager()
   }
 }
 
+void QmitkIGIToolManager::OnUpdateTimeOut()
+{
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
+  igtlUint64 idNow = timeNow->GetTimeStampUint64();
+
+  QmitkIGITool::Pointer tool;
+  foreach ( tool , m_Tools )
+  {
+    tool->HandleMessageByTimeStamp(idNow);
+    //TODO do something with the delay, it should be related to accuracy
+    //igtlUint64 delay = tool->HandleMessageByTimeStamp(idNow);
+  }
+  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
+  renderer->ForceImmediateUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
+  
+  if (  m_AToolIsSaving ) 
+  {
+    //this could take a while so lets stop the timer
+    m_UpdateTimer->stop();
+    QmitkIGITool::Pointer tool;
+    foreach ( tool , m_Tools )
+    { 
+      if ( tool->GetSaveState() ) 
+      {
+        //Get the first item in the hash save list
+        igtlUint64 idToSave = tool->GetNextSaveID();
+        while ( idToSave != 0 )
+        {
+          QmitkIGITool::Pointer t_tool;
+          foreach ( t_tool , m_Tools )
+          { 
+            t_tool->HandleMessageByTimeStamp(idToSave);
+          }
+          if ( tool->SaveMessageByTimeStamp(idToSave) != 0 )
+            qDebug() << "Error in save buffers, help.";
+          idToSave = tool->GetNextSaveID();
+        }
+        //TODO, update the rendering
+      }
+    }
+    m_UpdateTimer->start();
+  }
+}
 
 //-----------------------------------------------------------------------------
 void QmitkIGIToolManager::SetDataStorage(mitk::DataStorage* dataStorage)
@@ -265,7 +320,17 @@ void QmitkIGIToolManager::OnTableSelectionChange(int r, int c, int pr, int pc)
     m_PortNumberSpinBox->setValue(portNum);
 }
 
-
+//-----------------------------------------------------------------------------
+void QmitkIGIToolManager::OnToolSaveStateChanged()
+{
+  m_AToolIsSaving=false;
+  QmitkIGITool::Pointer tool;
+  foreach ( tool , m_Tools )
+  {
+    if ( tool->GetSaveState() ) 
+      m_AToolIsSaving = true;
+  }
+}
 //-----------------------------------------------------------------------------
 void QmitkIGIToolManager::OnCellDoubleClicked(int r, int c)
 {
@@ -361,7 +426,8 @@ void QmitkIGIToolManager::InterpretMessage(OIGTLMessage::Pointer msg)
       tool->SetClientDescriptor(clientInfo);
       tool->SetSocket(m_Sockets[portNum]);
       tool->Initialize();
-
+      
+      connect(m_Tools[portNum], SIGNAL(SaveStateChanged()), SLOT (OnToolSaveStateChanged()));
       connect(m_Sockets[portNum], SIGNAL(messageReceived(OIGTLMessage::Pointer )), m_Tools[portNum], SLOT(InterpretMessage(OIGTLMessage::Pointer )), Qt::QueuedConnection);
 
       // Update the appropriate row on the UI with the client's details

@@ -107,12 +107,12 @@ mitk::DataNode* QmitkIGITrackerTool::GetToolRepresentation(const QString toolNam
 //---------------------------------------------------------------------------
 void QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
 {
-	m_AssociatedTools.insertMulti(toolName,dataNode);
+  m_AssociatedTools.insertMulti(toolName,dataNode);
 }
 //---------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString toolName)
 {
-	return m_AssociatedTools.values(toolName);
+  return m_AssociatedTools.values(toolName);
 }
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::EnableTool(const QString &toolName, const bool& enable)
@@ -307,8 +307,9 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-  //  this->DisplayTrackerData(msg);
-    this->HandleTrackerData(msg);
+    this->m_MessageMap.insert(msg->getId(), msg);
+    if ( m_SavingMessages ) 
+      this->m_SaveBuffer.append(msg->getId());
   }
 }
 
@@ -330,13 +331,13 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage::Pointer msg)
       emit StatusUpdate(message);
       return;
     }
-		
+    
     float inputTransformMat[4][4];
     trMsg->getMatrix(inputTransformMat);
     toolName = this->GetNameWithRom(toolName);
     mitk::DataNode::Pointer tempNode = ds->GetNamedNode(toolName.toStdString().c_str());
-		foreach ( tempNode, m_AssociatedTools.values(toolName))
-		{
+    foreach ( tempNode, m_AssociatedTools.values(toolName))
+    {
 
      if (tempNode.IsNull())
      {
@@ -417,9 +418,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage::Pointer msg)
      data->GetGeometry()->Modified();
      data->Modified();
 
-		}
-    mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
-    renderer->ForceImmediateUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
+    }
 
     //mitk::RenderingManager::GetInstance()->RequestUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
 
@@ -484,5 +483,20 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage::Pointer msg)
       qDebug() << "QmitkIGITrackerTool:" << message;
     }
   }
+}
+
+//-----------------------------------------------------------------------------
+igtlUint64 QmitkIGITrackerTool::HandleMessageByTimeStamp(igtlUint64 id)
+{
+  if ( ! this->m_MessageMap.isEmpty() )
+  { 
+    QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.lowerBound(id);
+    if ( I != this->m_MessageMap.begin() )
+      I--;
+    this->HandleTrackerData(I.value());
+    return id - I.key() ;
+  }
+  else 
+    return 999999999999999;
 }
 
