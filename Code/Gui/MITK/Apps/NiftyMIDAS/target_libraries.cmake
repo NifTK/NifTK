@@ -3,11 +3,10 @@
 # (or be available in external projects) for this application.
 
 set(target_libraries
-
-  # Enable plug-ins from this project
-  uk_ac_ucl_cmic_gui_qt_niftymidas
-
-  # Require external plug-ins
   org_blueberry_compat
-  org_mitk_gui_qt_datamanager  
+  org_blueberry_ui_qt
+  org_blueberry_ui_qt_help
+  org_mitk_gui_qt_datamanager
+  uk_ac_ucl_cmic_gui_qt_commonapps
+  uk_ac_ucl_cmic_gui_qt_niftymidas
 )
