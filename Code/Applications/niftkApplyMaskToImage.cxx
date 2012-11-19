@@ -359,7 +359,7 @@ int MaskImage( arguments &args )
   
   try
   {
-    std::cout << "Writing cropped image to: " << args.fileOutputImage << std::endl; 
+    std::cout << "Writing masked image to: " << args.fileOutputImage << std::endl; 
     imageWriter->Update(); 
   }
   catch( itk::ExceptionObject & err ) 
@@ -411,64 +411,168 @@ int main( int argc, char *argv[] )
   
 
 
-  // Find the image dimension
-
-  int dims = itk::PeekAtImageDimension( args.fileInputImage );
-  if ( dims != 3 )
-  {
-    std::cout << "ERROR: Unsupported image dimension: " << dims << std::endl;
-    return EXIT_FAILURE;
-  }
-  
-
-  // and the image type
+  // Find the image dimension and the image type
 
   int result = 0;
+  int dims = itk::PeekAtImageDimensionFromSizeInVoxels( args.fileInputImage );
   
-  switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+  switch ( dims )
   {
-  case itk::ImageIOBase::UCHAR:
-    result = MaskImage<3, unsigned char>( args );
+  case 2: 
+  {
+    switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = MaskImage<2, unsigned char>( args );
+      break;
+      
+    case itk::ImageIOBase::CHAR:
+      result = MaskImage<2, char>( args );
+      break;
+      
+    case itk::ImageIOBase::USHORT:
+      result = MaskImage<2, unsigned short>( args );
+      break;
+      
+    case itk::ImageIOBase::SHORT:
+      result = MaskImage<2, short>( args );
+      break;
+      
+    case itk::ImageIOBase::UINT:
+      result = MaskImage<2, unsigned int>( args );
+      break;
+      
+    case itk::ImageIOBase::INT:
+      result = MaskImage<2, int>( args );
+      break;
+      
+    case itk::ImageIOBase::ULONG:
+      result = MaskImage<2, unsigned long>( args );
+      break;
+      
+    case itk::ImageIOBase::LONG:
+      result = MaskImage<2, long>( args );
+      break;
+      
+    case itk::ImageIOBase::FLOAT:
+      result = MaskImage<2, float>( args );
+      break;
+      
+    case itk::ImageIOBase::DOUBLE:
+      result = MaskImage<2, double>( args );
+      break;
+      
+    default:
+      std::cerr << "ERROR: Non standard pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
     break;
+  }
 
-  case itk::ImageIOBase::CHAR:
-    result = MaskImage<3, char>( args );
+  case 3:
+  {
+    switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = MaskImage<3, unsigned char>( args );
+      break;
+      
+    case itk::ImageIOBase::CHAR:
+      result = MaskImage<3, char>( args );
+      break;
+      
+    case itk::ImageIOBase::USHORT:
+      result = MaskImage<3, unsigned short>( args );
+      break;
+      
+    case itk::ImageIOBase::SHORT:
+      result = MaskImage<3, short>( args );
+      break;
+      
+    case itk::ImageIOBase::UINT:
+      result = MaskImage<3, unsigned int>( args );
+      break;
+      
+    case itk::ImageIOBase::INT:
+      result = MaskImage<3, int>( args );
+      break;
+      
+    case itk::ImageIOBase::ULONG:
+      result = MaskImage<3, unsigned long>( args );
+      break;
+      
+    case itk::ImageIOBase::LONG:
+      result = MaskImage<3, long>( args );
+      break;
+      
+    case itk::ImageIOBase::FLOAT:
+      result = MaskImage<3, float>( args );
+      break;
+      
+    case itk::ImageIOBase::DOUBLE:
+      result = MaskImage<3, double>( args );
+      break;
+      
+    default:
+      std::cerr << "ERROR: Non standard pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
     break;
+  }
 
-  case itk::ImageIOBase::USHORT:
-    result = MaskImage<3, unsigned short>( args );
+  case 4:
+  {
+    switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = MaskImage<4, unsigned char>( args );
+      break;
+      
+    case itk::ImageIOBase::CHAR:
+      result = MaskImage<4, char>( args );
+      break;
+      
+    case itk::ImageIOBase::USHORT:
+      result = MaskImage<4, unsigned short>( args );
+      break;
+      
+    case itk::ImageIOBase::SHORT:
+      result = MaskImage<4, short>( args );
+      break;
+      
+    case itk::ImageIOBase::UINT:
+      result = MaskImage<4, unsigned int>( args );
+      break;
+      
+    case itk::ImageIOBase::INT:
+      result = MaskImage<4, int>( args );
+      break;
+      
+    case itk::ImageIOBase::ULONG:
+      result = MaskImage<4, unsigned long>( args );
+      break;
+      
+    case itk::ImageIOBase::LONG:
+      result = MaskImage<4, long>( args );
+      break;
+      
+    case itk::ImageIOBase::FLOAT:
+      result = MaskImage<4, float>( args );
+      break;
+      
+    case itk::ImageIOBase::DOUBLE:
+      result = MaskImage<4, double>( args );
+      break;
+      
+    default:
+      std::cerr << "ERROR: Non standard pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
     break;
-
-  case itk::ImageIOBase::SHORT:
-    result = MaskImage<3, short>( args );
-    break;
-
-  case itk::ImageIOBase::UINT:
-    result = MaskImage<3, unsigned int>( args );
-    break;
-
-  case itk::ImageIOBase::INT:
-    result = MaskImage<3, int>( args );
-    break;
-
-  case itk::ImageIOBase::ULONG:
-    result = MaskImage<3, unsigned long>( args );
-    break;
-
-  case itk::ImageIOBase::LONG:
-    result = MaskImage<3, long>( args );
-    break;
-
-  case itk::ImageIOBase::FLOAT:
-    result = MaskImage<3, float>( args );
-    break;
-
-  case itk::ImageIOBase::DOUBLE:
-    result = MaskImage<3, double>( args );
-    break;
+  }
 
   default:
-    std::cerr << "ERROR: Non standard pixel format" << std::endl;
+    std::cerr << "ERROR: Unsupported image dimension: " << dims << std::endl;
     return EXIT_FAILURE;
   }
 

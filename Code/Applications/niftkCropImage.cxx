@@ -417,64 +417,168 @@ int main( int argc, char *argv[] )
   
 
 
-  // Find the image dimension
-
-  int dims = itk::PeekAtImageDimension( args.fileInputImage );
-  if ( dims != 3 )
-  {
-    std::cout << "ERROR: Unsupported image dimension: " << dims << std::endl;
-    return EXIT_FAILURE;
-  }
-  
-
-  // and the image type
+  // Find the image dimension and the image type
 
   int result = 0;
+  int dims = itk::PeekAtImageDimensionFromSizeInVoxels( args.fileInputImage );
   
-  switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+  switch ( dims )
   {
-  case itk::ImageIOBase::UCHAR:
-    result = CropImage<3, unsigned char>( args );
+  case 2: 
+  {
+    switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = CropImage<2, unsigned char>( args );
+      break;
+      
+    case itk::ImageIOBase::CHAR:
+      result = CropImage<2, char>( args );
+      break;
+      
+    case itk::ImageIOBase::USHORT:
+      result = CropImage<2, unsigned short>( args );
+      break;
+      
+    case itk::ImageIOBase::SHORT:
+      result = CropImage<2, short>( args );
+      break;
+      
+    case itk::ImageIOBase::UINT:
+      result = CropImage<2, unsigned int>( args );
+      break;
+      
+    case itk::ImageIOBase::INT:
+      result = CropImage<2, int>( args );
+      break;
+      
+    case itk::ImageIOBase::ULONG:
+      result = CropImage<2, unsigned long>( args );
+      break;
+      
+    case itk::ImageIOBase::LONG:
+      result = CropImage<2, long>( args );
+      break;
+      
+    case itk::ImageIOBase::FLOAT:
+      result = CropImage<2, float>( args );
+      break;
+      
+    case itk::ImageIOBase::DOUBLE:
+      result = CropImage<2, double>( args );
+      break;
+      
+    default:
+      std::cerr << "ERROR: Non standard pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
     break;
+  }
 
-  case itk::ImageIOBase::CHAR:
-    result = CropImage<3, char>( args );
+  case 3:
+  {
+    switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = CropImage<3, unsigned char>( args );
+      break;
+      
+    case itk::ImageIOBase::CHAR:
+      result = CropImage<3, char>( args );
+      break;
+      
+    case itk::ImageIOBase::USHORT:
+      result = CropImage<3, unsigned short>( args );
+      break;
+      
+    case itk::ImageIOBase::SHORT:
+      result = CropImage<3, short>( args );
+      break;
+      
+    case itk::ImageIOBase::UINT:
+      result = CropImage<3, unsigned int>( args );
+      break;
+      
+    case itk::ImageIOBase::INT:
+      result = CropImage<3, int>( args );
+      break;
+      
+    case itk::ImageIOBase::ULONG:
+      result = CropImage<3, unsigned long>( args );
+      break;
+      
+    case itk::ImageIOBase::LONG:
+      result = CropImage<3, long>( args );
+      break;
+      
+    case itk::ImageIOBase::FLOAT:
+      result = CropImage<3, float>( args );
+      break;
+      
+    case itk::ImageIOBase::DOUBLE:
+      result = CropImage<3, double>( args );
+      break;
+      
+    default:
+      std::cerr << "ERROR: Non standard pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
     break;
+  }
 
-  case itk::ImageIOBase::USHORT:
-    result = CropImage<3, unsigned short>( args );
+  case 4:
+  {
+    switch ( itk::PeekAtComponentType( args.fileInputImage ) )
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = CropImage<4, unsigned char>( args );
+      break;
+      
+    case itk::ImageIOBase::CHAR:
+      result = CropImage<4, char>( args );
+      break;
+      
+    case itk::ImageIOBase::USHORT:
+      result = CropImage<4, unsigned short>( args );
+      break;
+      
+    case itk::ImageIOBase::SHORT:
+      result = CropImage<4, short>( args );
+      break;
+      
+    case itk::ImageIOBase::UINT:
+      result = CropImage<4, unsigned int>( args );
+      break;
+      
+    case itk::ImageIOBase::INT:
+      result = CropImage<4, int>( args );
+      break;
+      
+    case itk::ImageIOBase::ULONG:
+      result = CropImage<4, unsigned long>( args );
+      break;
+      
+    case itk::ImageIOBase::LONG:
+      result = CropImage<4, long>( args );
+      break;
+      
+    case itk::ImageIOBase::FLOAT:
+      result = CropImage<4, float>( args );
+      break;
+      
+    case itk::ImageIOBase::DOUBLE:
+      result = CropImage<4, double>( args );
+      break;
+      
+    default:
+      std::cerr << "ERROR: Non standard pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
     break;
-
-  case itk::ImageIOBase::SHORT:
-    result = CropImage<3, short>( args );
-    break;
-
-  case itk::ImageIOBase::UINT:
-    result = CropImage<3, unsigned int>( args );
-    break;
-
-  case itk::ImageIOBase::INT:
-    result = CropImage<3, int>( args );
-    break;
-
-  case itk::ImageIOBase::ULONG:
-    result = CropImage<3, unsigned long>( args );
-    break;
-
-  case itk::ImageIOBase::LONG:
-    result = CropImage<3, long>( args );
-    break;
-
-  case itk::ImageIOBase::FLOAT:
-    result = CropImage<3, float>( args );
-    break;
-
-  case itk::ImageIOBase::DOUBLE:
-    result = CropImage<3, double>( args );
-    break;
+  }
 
   default:
-    std::cerr << "ERROR: Non standard pixel format" << std::endl;
+    std::cerr << "ERROR: Unsupported image dimension: " << dims << std::endl;
     return EXIT_FAILURE;
   }
 
