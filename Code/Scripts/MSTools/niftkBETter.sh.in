@@ -179,6 +179,7 @@ function remove_neck() {
 # Param     : $4 options for BET
 # Param     : $5 fractional intensity threshold
 # Param	    : $6 volume orientation
+# Param	    : $7 apply normalization
 function BETter() 
 {
 	local img=$1
@@ -187,6 +188,8 @@ function BETter()
 	local opt=$4
 	local frac=$5
 	local orientation=$6
+	local norm=$7
+	local suffix=""
 	
 	# Starting brain extraction process
 	if [[ ! -f "${output_result}"  ]] ; then
@@ -194,13 +197,18 @@ function BETter()
 		remove_neck ${img} ${name}
 		progressXML "0.2" "Neck removed"
 
-		# Normalize intesity for image following from Boyes et al. Neuroimage 2008 page 1756
-		normalization ${img}_no_neck ${name} ${orientation}
+		if [ ${norm} = true ] ; then
+			# Normalize intesity for image following from Boyes et al. Neuroimage 2008 page 1756
+			normalization ${img}_no_neck ${name} ${orientation}
+			suffix="_no_neck_n3"
+		else
+			suffix="_no_neck"
+		fi
 
 		progressXML "0.6" "Calculating brain extraction: bet ${opt} -f ${frac}"
 		
 		# Pospescu 2012 Neuroimage article suggests that best parameters could be -B -f 0.1, previously neck removal
-		execute_command_or_else_stop "bet ${img}_no_neck_n3 ${img}_brain -m -s ${opt} -f ${frac}" 
+		execute_command_or_else_stop "bet ${img}${suffix} ${img}_brain -m -s ${opt} -f ${frac}" 
 		
 		progressXML "0.9" "Copying results"
 		
@@ -256,10 +264,9 @@ cat <<EOF
    <category>MS Tools.Segmentation</category>
    <title>BET Brain segmentation improved</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for BET mask calculation using Pospescu et al. Neuroimage 2012 
-   brain extraction process and Boyes et al. Neuroimage 2008 normalization process.<br>
+   brain extraction process.<br>
    <ul>
    <li><i>Input image</i>, selects the file that you would like to segment</li>
-   <li><i>Orient</i>, indicates in which orientation is the input images: AXIAL, CORONAL or SAGITALL.</li>
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
@@ -293,19 +300,6 @@ cat <<EOF
 	  <label>Input image</label>
 	  <channel>input</channel>
       </image>
-      <string-enumeration>
-      <name>orientation</name>
-      <longflag>orient</longflag>
-      <description><![CDATA[Input images are in:
-      A - Axial orientation 
-      C - Coronal orientation 
-      S - Sagitall orientation]]></description>
-      <label>Input image orientation</label>
-      <default>A</default>
-      <element>A</element>
-      <element>C</element>
-      <element>S</element>
-    </string-enumeration>
       <image fileExtensions="*.nii,*.nii.gz,*.img">
           <name>inputHead</name>
           <longflag>atlas</longflag>
@@ -370,6 +364,25 @@ cat <<EOF
         <step>0.1</step>
       </constraints>
     </float>
+    <boolean>
+      <name>normalize</name>
+      <longflag>norm</longflag>      
+      <description>Apply Boyes et al. Neuroimage 2008 normalization process</description>
+      <label>Normalization (N3)</label>
+    </boolean>
+    <string-enumeration>
+      <name>orientation</name>
+      <longflag>orient</longflag>
+      <description><![CDATA[Input images are in:
+      A - Axial orientation 
+      C - Coronal orientation 
+      S - Sagittal orientation]]></description>
+      <label>Input image orientation</label>
+      <default>A</default>
+      <element>A</element>
+      <element>C</element>
+      <element>S</element>
+    </string-enumeration>
     </parameters>
 </executable>
 EOF
@@ -382,14 +395,13 @@ function Usage() {
 cat <<EOF
 
 This script is for BET mask calculation using Pospescu et al. Neuroimage 2012 
-brain extraction process and Boyes et al. Neuroimage 2008 normalization process. 
+brain extraction process. 
 
-Usage: $0 --in input_file --orient <value> --out output_file --headmask head_mask_file --mask mask_file --atlas head_file
+Usage: $0 --in input_file --out output_file --headmask head_mask_file --mask mask_file --atlas head_file
 
 Mandatory Arguments:
  
   --in			: is the input file in NIFTI format
-  --orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITALL (s) orientation
   --out			: is the output file in NIFTI format
   --headmask		: is the headmask atlas file in NIFTI format
   --mask		: is the mask atlas file in NIFTI format
@@ -398,6 +410,8 @@ Mandatory Arguments:
 Optional Arguments:   
   --bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default -B
   --f			: fractional intensity threshold (0->1); by default 0.1.
+  --norm		: apply Boyes et al. Neuroimage 2008 normalization process.
+  --orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITTAL (s) orientation, it is needed for the normalization step
 
 Recomendations:
 
@@ -415,6 +429,7 @@ export FSLOUTPUTTYPE=NIFTI
 f="0.1"
 options="-B"
 orientation=""
+norm=false
 if [ $# -eq 0 ]; then
   Usage
 fi
@@ -477,6 +492,9 @@ do
 	esac
 	shift 1
 	;;
+    --norm)
+	norm=true
+	;;
     -*)
 	Usage
 	exitprog "Error: option $1 not recognised" 1
@@ -485,8 +503,10 @@ do
     shift 1
 done
 
-if [[ -z $orientation ]] ; then
-	exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
+if [ ${norm} = true ] ; then
+	if [[ -z ${orientation} ]] ; then
+		exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
+	fi
 fi
 if [[ -z $OUTPUT_IMAGE ]] ; then
 	exitprog "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})" 1
@@ -533,7 +553,7 @@ copyFileToDestination ${INPUT_IMAGE} ${dir_output} "input_image"
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Start process
-BETter "input_image" ${OUTPUT_IMAGE} ${patient} ${options} ${f} ${orientation}
+BETter "input_image" ${OUTPUT_IMAGE} ${patient} ${options} ${f} ${orientation} ${norm}
 
 # Delete temporary directory
 execute_command_or_else_stop "rm -f *.nii *.mnc *.txt" 
