@@ -121,8 +121,13 @@ public:
  * \param appName the application name - for example "NiftyView", "MIDAS" etc.
  * \param orgName the organisation name - should be "CMIC"
  * \param applicationPlugin the application plugin - for example "uk.ac.ucl.cmic.gui.qt.niftyview"
+ * \param libraryPreLoadString a library to pre-load to speed up cache starts - for example "libuk_ac_ucl_cmic_gui_qt_niftyview"
  */
-int ApplicationMain(int argc, char** argv, QString appName, QString orgName, QString applicationPlugin)
+int ApplicationMain(int argc, char** argv,
+    QString appName,
+    QString orgName,
+    QString applicationPlugin,
+    QString libraryPreLoadString)
 {
   // Create a QApplication instance first
   QtSafeApplication myApp(argc, argv);
@@ -152,8 +157,6 @@ int ApplicationMain(int argc, char** argv, QString appName, QString orgName, QSt
     sbConfig->setString(berry::Platform::ARG_STORAGE_DIR, storageDir.toStdString());
   }
   sbConfig->setString(berry::Platform::ARG_PROVISIONING, provFile.toString());
-
-  MITK_INFO << "Starting application plugin:'" << applicationPlugin.toStdString() << "'";
   sbConfig->setString(berry::Platform::ARG_APPLICATION, applicationPlugin.toStdString());
 
   // Preload the org.mitk.gui.qt.ext plug-in (and hence also QmitkExt) to speed
@@ -161,7 +164,7 @@ int ApplicationMain(int argc, char** argv, QString appName, QString orgName, QSt
   // which have difficulties with multiple dynamic opening and closing of shared libraries with
   // many global static initializers. It also helps if dependent libraries have weird static
   // initialization methods and/or missing de-initialization code.
-  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "liborg_mitk_gui_qt_ext");
+  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, libraryPreLoadString.toStdString());
 
   // VTK errors cause problem on windows, as it brings up an annoying error window.
   // We get VTK errors from the Thumbnail widget, as it switches orientation (axial, coronal, sagittal).
@@ -174,5 +177,27 @@ int ApplicationMain(int argc, char** argv, QString appName, QString orgName, QSt
   // it, and replaces it with a more NifTK suitable one.
   RegisterNifTKCoreObjectFactory();
 
-  return berry::Starter::Run(argc, argv, sbConfig);
+  int returnStatus = -1;
+
+  try
+  {
+    returnStatus = berry::Starter::Run(argc, argv, sbConfig);
+  }
+  catch (Poco::Exception& e)
+  {
+    MITK_ERROR << "Caught Poco::Exception:" << e.displayText();
+    returnStatus = -2;
+  }
+  catch (std::exception& e)
+  {
+    MITK_ERROR << "Caught std::exception:" << e.what();
+    returnStatus = -3;
+  }
+  catch (...)
+  {
+    MITK_ERROR << "Caught unknown exception:";
+    returnStatus = -4;
+  }
+
+  return returnStatus;
 }

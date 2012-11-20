@@ -27,8 +27,9 @@
 
 #include "mitkQtCommonAppsAppDll.h"
 
-#include <berryAbstractUICTKPlugin.h>
+#include <ctkPluginActivator.h>
 #include <ctkServiceTracker.h>
+#include <berryIPreferencesService.h>
 #include <mitkIDataStorageService.h>
 
 #include <QObject>
@@ -44,7 +45,7 @@ namespace mitk {
  * \brief Abstract class that implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  */
-class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public QObject, public berry::AbstractUICTKPlugin
+class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -55,45 +56,48 @@ public:
   ~QmitkCommonAppsApplicationPlugin();
 
   static QmitkCommonAppsApplicationPlugin* GetDefault();
-
   ctkPluginContext* GetPluginContext() const;
 
-  virtual void start(ctkPluginContext*);
-  virtual void stop(ctkPluginContext*);
-
-  QString GetQtHelpCollectionFile() const;
+  void start(ctkPluginContext* context);
+  void stop(ctkPluginContext* context);
 
 protected:
+
+  /// \brief Deliberately not virtual method that enables derived classes to set the plugin context, and should be called from within the plugin start method.
+  void SetPluginContext(ctkPluginContext*);
+
+  /// \brief Deliberately not virtual method that connects this class to DataStorage so that we can receive NodeAdded events etc.
+  void RegisterDataStorageListener();
+
+  /// \brief Deliberately not virtual method that ddisconnects this class from DataStorage so that we can receive NodeAdded events etc.
+  void UnregisterDataStorageListener();
+
+  /// \brief Deliberately not virtual method thats called by derived classes within the start method to set up the help system.
+  void RegisterHelpSystem();
+
+  /// \brief Deliberately not virtual method that registers the Global Interaction Patterns developed as part of the MIDAS project.
+  void RegisterMIDASGlobalInteractionPatterns();
+
+  /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
+  void RegisterLevelWindowProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+
+  /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for Texture Interpolation, and Reslice Interpolation.
+  void RegisterInterpolationProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+
+  /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for black opacity property.
+  void RegisterBlackOpacityProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+
+  /// \brief Deliberately not virtual method thats called by derived classes, to register any extensions that this plugin knows about.
+  void RegisterQmitkCommonAppsExtensions();
+
+  /// \brief Deliberately not virtual method thats called by derived classes, to set the departmental logo to blank.
+  void BlankDepartmentalLogo();
 
   /// \brief Called each time a data node is added, and derived classes can override it.
   virtual void NodeAdded(const mitk::DataNode *node);
 
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
   virtual QString GetHelpHomePageURL() const { return QString(); }
-
-  /// \brief Connects this class to DataStorage so that we can receive NodeAdded events etc.
-  virtual void RegisterDataStorageListener();
-
-  /// \brief Disconnects this class from DataStorage so that we can receive NodeAdded events etc.
-  virtual void UnregisterDataStorageListener();
-
-  /// \brief Called by derived classes within the start method to set up the help system.
-  virtual void RegisterHelpSystem();
-
-  /// \brief Registers the Global Interaction Patterns developed as part of the MIDAS project.
-  virtual void RegisterMIDASGlobalInteractionPatterns();
-
-  /// \brief Called by derived classes, to register an initial LevelWindow property to each image.
-  virtual void RegisterLevelWindowProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
-
-  /// \brief Called by derived classes, to register an initial value for Texture Interpolation, and Reslice Interpolation.
-  virtual void RegisterInterpolationProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
-
-  /// \brief Called by derived classes, to register an initial value for black opacity property.
-  virtual void RegisterBlackOpacityProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
-
-  static QmitkCommonAppsApplicationPlugin* inst;
-  ctkPluginContext* context;
 
 private:
 
@@ -116,8 +120,11 @@ private:
       float &mean,
       float &stdDev);
 
+  ctkPluginContext* m_Context;
   ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
   bool m_InDataStorageChanged;
+  static QmitkCommonAppsApplicationPlugin* s_Inst;
+
 };
 
 #endif /* QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_ */

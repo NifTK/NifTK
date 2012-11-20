@@ -46,15 +46,15 @@
 #include "mitkMIDASTool.h"
 #include "mitkDataStorageUtils.h"
 
-QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::inst = 0;
+QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::s_Inst = 0;
 
 //-----------------------------------------------------------------------------
 QmitkCommonAppsApplicationPlugin::QmitkCommonAppsApplicationPlugin()
-: context(NULL)
+: m_Context(NULL)
 , m_DataStorageServiceTracker(NULL)
 , m_InDataStorageChanged(false)
 {
-  inst = this;
+  s_Inst = this;
 }
 
 
@@ -67,14 +67,38 @@ QmitkCommonAppsApplicationPlugin::~QmitkCommonAppsApplicationPlugin()
 //-----------------------------------------------------------------------------
 QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::GetDefault()
 {
-  return inst;
+  return s_Inst;
 }
 
 
 //-----------------------------------------------------------------------------
 ctkPluginContext* QmitkCommonAppsApplicationPlugin::GetPluginContext() const
 {
-  return context;
+  return m_Context;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::SetPluginContext(ctkPluginContext* context)
+{
+  m_Context = context;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
+{
+  this->SetPluginContext(context);
+  this->RegisterQmitkCommonAppsExtensions();
+  this->RegisterDataStorageListener();
+  this->BlankDepartmentalLogo();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::stop(ctkPluginContext* context)
+{
+  this->UnregisterDataStorageListener();
 }
 
 
@@ -99,7 +123,7 @@ const mitk::DataStorage* QmitkCommonAppsApplicationPlugin::GetDataStorage()
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterDataStorageListener()
 {
-  this->m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(context);
+  this->m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(m_Context);
   this->m_DataStorageServiceTracker->open();
 
   this->GetDataStorage()->AddNodeEvent.AddListener
@@ -128,11 +152,11 @@ void QmitkCommonAppsApplicationPlugin::UnregisterDataStorageListener()
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterHelpSystem()
 {
-  ctkServiceReference cmRef = context->getServiceReference<ctkConfigurationAdmin>();
+  ctkServiceReference cmRef = m_Context->getServiceReference<ctkConfigurationAdmin>();
   ctkConfigurationAdmin* configAdmin = 0;
   if (cmRef)
   {
-    configAdmin = context->getService<ctkConfigurationAdmin>(cmRef);
+    configAdmin = m_Context->getService<ctkConfigurationAdmin>(cmRef);
   }
 
   // Use the CTK Configuration Admin service to configure the BlueBerry help system
@@ -143,7 +167,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterHelpSystem()
     QString urlHomePage = this->GetHelpHomePageURL();
     helpProps.insert("homePage", urlHomePage);
     conf->update(helpProps);
-    context->ungetService(cmRef);
+    m_Context->ungetService(cmRef);
   }
   else
   {
@@ -153,14 +177,15 @@ void QmitkCommonAppsApplicationPlugin::RegisterHelpSystem()
 
 
 //-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
+void QmitkCommonAppsApplicationPlugin::RegisterQmitkCommonAppsExtensions()
 {
-  berry::AbstractUICTKPlugin::start(context);
-  this->context = context;
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsApplicationPreferencePage, m_Context);
+}
 
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsApplicationPreferencePage, context);
-  this->RegisterDataStorageListener();
 
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::BlankDepartmentalLogo()
+{
   // Blank the departmental logo for now.
   berry::IPreferencesService::Pointer prefService =
   berry::Platform::GetServiceRegistry()
@@ -168,13 +193,6 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
 
   berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("org.mitk.editors.stdmultiwidget");
   logoPref->Put("DepartmentLogo", "");
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::stop(ctkPluginContext* context)
-{
-  this->UnregisterDataStorageListener();
 }
 
 

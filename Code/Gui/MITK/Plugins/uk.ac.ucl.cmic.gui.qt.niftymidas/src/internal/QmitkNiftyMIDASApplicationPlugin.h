@@ -24,6 +24,7 @@
 #ifndef QMITKNIFTYMIDASAPPLICATIONPLUGIN_H_
 #define QMITKNIFTYMIDSAAPPLICATIONPLUGIN_H_
 
+#include <berryAbstractUICTKPlugin.h>
 #include "QmitkCommonAppsApplicationPlugin.h"
 
 /**
@@ -31,10 +32,9 @@
  * \brief Implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftymidas_internal
  */
-class QmitkNiftyMIDASApplicationPlugin : public QmitkCommonAppsApplicationPlugin
+class QmitkNiftyMIDASApplicationPlugin : public QmitkCommonAppsApplicationPlugin, public berry::AbstractUICTKPlugin
 {
   Q_OBJECT
-  Q_INTERFACES(ctkPluginActivator)
   
 public:
 

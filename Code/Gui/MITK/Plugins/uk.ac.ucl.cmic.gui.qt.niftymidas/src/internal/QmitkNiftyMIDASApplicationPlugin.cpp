@@ -50,15 +50,15 @@ QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 {
   berry::AbstractUICTKPlugin::start(context);
-  this->context = context;
+  this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewMIDASPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
-  this->RegisterMIDASGlobalInteractionPatterns();
   this->RegisterHelpSystem();
+  this->RegisterMIDASGlobalInteractionPatterns();
   this->RegisterDataStorageListener();
 }
 

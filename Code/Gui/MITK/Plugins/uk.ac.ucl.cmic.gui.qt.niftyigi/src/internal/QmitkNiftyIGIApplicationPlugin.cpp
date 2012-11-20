@@ -48,7 +48,7 @@ QString QmitkNiftyIGIApplicationPlugin::GetHelpHomePageURL() const
 void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
 {
   berry::AbstractUICTKPlugin::start(context);
-  this->context = context;
+  this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyIGIApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
