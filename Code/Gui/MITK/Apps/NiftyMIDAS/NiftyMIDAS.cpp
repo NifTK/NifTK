@@ -28,5 +28,5 @@
  */
 int main(int argc, char** argv)
 {
-  return ApplicationMain(argc, argv, "NiftyMIDAS", "CMIC", "uk.ac.ucl.cmic.gui.qt.niftymidas");
+  return ApplicationMain(argc, argv, "NiftyMIDAS", "CMIC", "uk.ac.ucl.cmic.gui.qt.niftymidas", "liborg_mitk_gui_qt_ext");
 }
