@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>@NIFTK_PLATFORM@.Image Operators</category>
+  <category>Image Operators</category>
   <title>Crop Image</title>
   <description><![CDATA[Crops the input image using a mask and/or a voxel-wise bounding box.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
@@ -37,7 +37,7 @@
 
   <parameters>
 
-    <label>Cropping</label>
+    <label>Cropping via mask and/or bounding box</label>
     <description><![CDATA[Parameters that control the region cropped]]></description>
 
     <boolean>
