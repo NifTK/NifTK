@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>@NIFTK_PLATFORM@.Image Operators</category>
-  <title>Add</title>
+  <category>Image Operators</category>
+  <title>Add Images</title>
   <description><![CDATA[Adds two images of exactly the same size on a voxel by voxel basis.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>@NIFTK_PLATFORM@.Image Operators</category>
+  <category>Image Operators</category>
   <title>Create Mask Image</title>
   <description><![CDATA[Creates a mask using the input image and a user specified bounding box.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
