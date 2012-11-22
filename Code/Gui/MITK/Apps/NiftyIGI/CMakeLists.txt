@@ -25,14 +25,14 @@ PROJECT(NiftyIGI)
 SET(MY_APP_NAME NiftyIGI)
 
 SET(_exclude_plugins
-  uk_ac_ucl_cmic_breastsegmentation
-  uk_ac_ucl_cmic_gui_qt_niftyview
-  uk_ac_ucl_cmic_gui_qt_niftymidas
-  uk_ac_ucl_cmic_midaseditor
-  uk_ac_ucl_cmic_midasgeneralsegmentor
-  uk_ac_ucl_cmic_midasmorphologicalsegmentor
-  uk_ac_ucl_cmic_niftyseg
-  uk_ac_ucl_cmic_thumbnail
+  uk.ac.ucl.cmic.breastsegmentation
+  uk.ac.ucl.cmic.gui.qt.niftyview
+  uk.ac.ucl.cmic.gui.qt.niftymidas
+  uk.ac.ucl.cmic.midaseditor
+  uk.ac.ucl.cmic.midasgeneralsegmentor
+  uk.ac.ucl.cmic.midasmorphologicalsegmentor
+  uk.ac.ucl.cmic.niftyseg
+  uk.ac.ucl.cmic.thumbnail
 )
 
 NIFTK_CREATE_APPLICATION(

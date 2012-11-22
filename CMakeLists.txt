@@ -323,6 +323,7 @@ SET(CMAKE_MODULE_PATH
 ######################################################################
 include(mitkMacroEmptyExternalProject)
 include(niftkMacroCreateApplication)
+include(FunctionCreateNifTKBlueBerryApplication)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -355,7 +356,6 @@ IF(BUILD_TESTING)
   
   # Setup file for setting custom ctest vars
   CONFIGURE_FILE(CMake/CTestCustom.cmake.in ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
-
 ENDIF(BUILD_TESTING)
 
 ######################################################################
@@ -854,7 +854,11 @@ ENDIF(WIN32)
 # This should now always be true as MITK is required.
 IF(MITK_FOUND)
   INCLUDE(mitkCompilerSettings)
-ENDIF(MITK_FOUND)
+ENDIF()
+
+IF(WIN32 AND NOT BUILD_SHARED_LIBS)
+  ADD_DEFINITIONS(-DNIFTK_STATIC)
+ENDIF()
 
 #######################################################################
 # Set the main install locations. 
@@ -899,24 +903,27 @@ SET(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 # Install commands for things like README, licenses etc.
 ######################################################################
 
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/CTK_LICENSE.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyRec.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR}/licenses COMPONENT documentation)
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupDependencies.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupDependencies.csh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupNifTK.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupNifTK.csh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/CTK_LICENSE.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/CTK_NOTICE.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyRec.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/LICENSE.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/README.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/INSTALLATION.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/CONTRIBUTORS.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
+IF(NOT WIN32 AND NOT APPLE)
+  INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupDependencies.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupDependencies.csh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupNifTK.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/SetupNifTK.csh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+ENDIF()
 
 ##########################################################################
 # Install commands for the NiftyReg, NiftySeg, NiftyRec, NiftySim packages
@@ -928,10 +935,10 @@ IF(BUILD_NIFTYREG AND NIFTYREG_FOUND)
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/lib/*.so
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/lib/*.dylib
        )
-  INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES})
 
   FILE(GLOB NIFTY_REG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/bin/*)
-  INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES} DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
 ENDIF(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
 # NiftySeg
@@ -940,10 +947,10 @@ IF(BUILD_NIFTYSEG)
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/lib/*.so
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/lib/*.dylib
        )
-  INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES})
 
   FILE(GLOB NIFTY_SEG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/bin/*)
-  INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES} DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
 
   FILE(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/priors/*)
   INSTALL(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
@@ -955,10 +962,10 @@ IF(BUILD_NIFTYREC AND NIFTYREC_FOUND)
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/lib/*.so
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/lib/*.dylib
        )
-  INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES})
 
   FILE(GLOB NIFTY_REC_INCL_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/include/*)
-  INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/include COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES})
 ENDIF(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 
 # NiftySim
@@ -967,198 +974,11 @@ IF(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/lib/*.so
        ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/lib/*.dylib
        )
-  INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES})
 
   FILE(GLOB NIFTY_SIM_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/bin/*)
-  INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES} DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 ENDIF(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
-
-#########################################################################
-# If we are building with shared libs, then the command line apps need
-# all the libraries copying into the right place. At the moment we
-# need all the Boost, ITK, VTK, GDCM. MITK and CTK are only used in the
-# GUI. If we wanted to use MITK in the command line apps, then we should 
-# do something a bit clever to copy over the MITK stuff. 
-#########################################################################
-
-IF(BUILD_SHARED_LIBS)
-
-  IF(WIN32)
-
-    ##############Debug Build##############
-    IF(CMAKE_BUILD_TYPE MATCHES "Debug")
-
-      SET(TMP_VTK_LIBRARY_DIR "${VTK_LIBRARY_DIRS}/Debug")
-      SET(TMP_ITK_LIBRARY_DIR "${ITK_LIBRARY_DIRS}/Debug")
-
-    ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
-    ##############Debug Build##############
- 
-    ##############Release Build##############
-    IF(CMAKE_BUILD_TYPE MATCHES "Release")
-
-      SET(TMP_VTK_LIBRARY_DIR "${VTK_LIBRARY_DIRS}/Release")
-      SET(TMP_ITK_LIBRARY_DIR "${ITK_LIBRARY_DIRS}/Release")
-
-    ENDIF(CMAKE_BUILD_TYPE MATCHES "Release")
-    ##############Release Build##############
-
-    # This is for vtk, to copy over the DLLs
-    FOREACH(vtkdir ${TMP_VTK_LIBRARY_DIR})
-      FILE(GLOB vtkdlls ${vtkdir}/*.dll)
-      FOREACH(vtkdll ${vtkdlls})
-        INSTALL(FILES ${vtkdll} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-      ENDFOREACH(vtkdll)
-    ENDFOREACH(vtkdir ${TMP_VTK_LIBRARY_DIR})
-	  
-    # This is for itk, to copy over the DLLs
-    FOREACH(itkdir ${TMP_ITK_LIBRARY_DIR})
-      FILE(GLOB itkdlls ${itkdir}/*.dll)
-      FOREACH(itkdll ${itkdlls})
-        INSTALL(FILES ${itkdll} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-      ENDFOREACH(itkdll)
-    ENDFOREACH(itkdir ${TMP_ITK_LIBRARY_DIR})
-        
-  ENDIF(WIN32)
-
-  FOREACH(vtkdir ${VTK_LIBRARY_DIRS})
-    IF(UNIX)
-      IF(APPLE)
-        FILE(GLOB vtklibs ${vtkdir}/*.dylib)
-      ELSE(APPLE)
-        FILE(GLOB vtklibs ${vtkdir}/*.so*)
-      ENDIF(APPLE)
-    ELSE(UNIX)
-      FILE(GLOB vtklibs ${vtkdir}/*.lib)
-    ENDIF(UNIX)
-    FOREACH(vtklib ${vtklibs})
-      INSTALL(FILES ${vtklib} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-    ENDFOREACH(vtklib)
-  ENDFOREACH(vtkdir)
-
-  IF(WIN32)
-	  SET(TMP_VTK_BIN_DIR "${VTK_LIBRARY_DIRS}/../../bin")
-	  FOREACH(vtkdir ${TMP_VTK_BIN_DIR})
-      FILE(GLOB vtkdlls ${vtkdir}/*.dll)
-	    FOREACH(vtkdll ${vtkdlls})
-	      INSTALL(FILES ${vtkdll} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-	    ENDFOREACH(vtkdll)
-	  ENDFOREACH(vtkdir ${TMP_VTK_BIN_DIR})
-  ENDIF(WIN32)
-    
-  FOREACH(itkdir ${ITK_LIBRARY_DIRS})
-    IF(UNIX)
-      IF(APPLE)
-        FILE(GLOB itklibs ${itkdir}/*.dylib)
-      ELSE(APPLE)
-        FILE(GLOB itklibs ${itkdir}/*.so*)
-      ENDIF(APPLE)
-    ELSE(UNIX)
-      FILE(GLOB itklibs ${itkdir}/*.dll)
-    ENDIF(UNIX)
-    FOREACH(itklib ${itklibs})
-      INSTALL(FILES ${itklib} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-    ENDFOREACH(itklib)
-  ENDFOREACH(itkdir)
-
-  IF(WIN32)
-    SET(TMP_ITK_BIN_DIR "${ITK_LIBRARY_DIRS}/../../bin")
-    FOREACH(itkdir ${TMP_ITK_BIN_DIR})
-      FILE(GLOB itkdlls ${itkdir}/*.dll)
-      FOREACH(itkdll ${itkdlls})
-        INSTALL(FILES ${itkdll} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-      ENDFOREACH(itkdll)
-    ENDFOREACH(itkdir ${TMP_ITK_BIN_DIR})
-  ENDIF(WIN32)
-
-  FOREACH(gdcmdir ${GDCM_LIBRARY_DIRS})
-    IF(UNIX)
-      IF(APPLE)
-        FILE(GLOB gdcmlibs ${gdcmdir}/*.dylib)
-      ELSE(APPLE)
-        FILE(GLOB gdcmlibs ${gdcmdir}/*.so*)
-      ENDIF(APPLE)
-    ELSE(UNIX)
-      FILE(GLOB gdcmlibs ${gdcmdir}/*.lib)
-    ENDIF(UNIX)
-    FOREACH(gdcmlib ${gdcmlibs})
-      INSTALL(FILES ${gdcmlib} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-    ENDFOREACH(gdcmlib)
-  ENDFOREACH(gdcmdir)
-
-  IF(WIN32)
-    FIND_PACKAGE(GDCM)
-    IF(GDCM_FOUND)
-      IF(CMAKE_BUILD_TYPE MATCHES "Release")
-        SET(TMP_GDCM_BIN_DIR "${GDCM_LIBRARY_DIRS}/Release")
-      ELSE(CMAKE_BUILD_TYPE MATCHES "Release")
-        SET(TMP_GDCM_BIN_DIR "${GDCM_LIBRARY_DIRS}/Debug")
-      ENDIF(CMAKE_BUILD_TYPE MATCHES "Release")
-      FOREACH(gdcmdir ${TMP_GDCM_BIN_DIR})
-        FILE(GLOB gdcmdlls ${gdcmdir}/*.dll)
-        FOREACH(gdcmdll ${gdcmdlls})
-          INSTALL(FILES ${gdcmdll} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-        ENDFOREACH(gdcmdll)
-      ENDFOREACH(gdcmdir ${TMP_GDCM_BIN_DIR})
-    ELSE(GDCM_FOUND)
-      MESSAGE("GDCM not found. So, NiftyView will not run.")
-    ENDIF(GDCM_FOUND)
-  ENDIF(WIN32)
-
-
-  IF(NIFTK_USE_FFTW)
-    GET_FILENAME_COMPONENT(fftwlibbase ${FFTW_LIBRARIES} NAME_WE)
-    GET_FILENAME_COMPONENT(fftwlibdir ${FFTW_LIBRARIES} PATH)
-    FILE(GLOB fftwlibs ${fftwlibdir}/${fftwlibbase}*)
-    FOREACH(fftwlib ${fftwlibs})
-      INSTALL(FILES ${fftwlib} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-    ENDFOREACH(fftwlib) 
-  ENDIF(NIFTK_USE_FFTW)
-  
-  FOREACH(boostlib ${Boost_LIBRARIES})
-    GET_FILENAME_COMPONENT(boostlibbase ${boostlib} NAME_WE)
-    GET_FILENAME_COMPONENT(boostlibdir ${boostlib} PATH)
-    FILE(GLOB boostlibraries ${boostlibdir}/${boostlibbase}*)
-    FOREACH(boostlibrary ${boostlibraries})
-      INSTALL(FILES ${boostlibrary} DESTINATION  ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-    ENDFOREACH(boostlibrary)
-  ENDFOREACH(boostlib)
-
-  ############################################################################################
-  # Trac 1497: Getting NiftyLink properly working within NiftyView, fixing installers.
-  #            The whole of this section, copying libraries around needs sorting out.
-  ############################################################################################
-  IF(NiftyLink_FOUND)
-    SET(_subdir)
-    IF(WIN32)
-      SET(_subdir ${CMAKE_BUILD_TYPE})
-    ENDIF()
-    FOREACH(niftylinklibrary ${NiftyLink_LIBRARIES})
-      FOREACH(niftklinkdir ${NiftyLink_LIBRARY_DIRS})
-        FILE(GLOB niftylinklibs ${niftklinkdir}/${_subdir}/*${niftylinklibrary}*)
-        FOREACH(niftylinklib ${niftylinklibs})
-          INSTALL(FILES ${niftylinklib} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT libraries)
-        ENDFOREACH()
-      ENDFOREACH()
-    ENDFOREACH()
-  ENDIF()
-  
-  # cURL
-  IF(BUILD_GUI) 
-    FILE(GLOB CURL_LIB_FILES 
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.so
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.dylib
-	   ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.lib
-	   ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/curl/lib/*.dll
-       )
-    INSTALL(PROGRAMS ${CURL_LIB_FILES} DESTINATION ${NIFTK_INSTALL_LIB_DIR} COMPONENT applications)
-  ENDIF(BUILD_GUI)
-  
-ELSE(BUILD_SHARED_LIBS)
-  IF(WIN32)
-    ADD_DEFINITIONS(-DNIFTK_STATIC)
-  ENDIF(WIN32)
-ENDIF(BUILD_SHARED_LIBS)
 
 ######################################################################
 # Decide what subdirectories we are building, and go and build them.

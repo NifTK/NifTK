@@ -22,18 +22,14 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
 IF(NOT WIN32)
-	CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/niftkBETter.sh.in ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkBETter.sh @ONLY )
-	INSTALL(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkBETter.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR}/cli-modules COMPONENT scripts)
-
-	CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/niftkNormalization.sh.in ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkNormalization.sh @ONLY )
-	INSTALL(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkNormalization.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR}/cli-modules COMPONENT scripts)
-
-	CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/niftkFillLesions.sh.in ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkFillLesions.sh @ONLY )
-	INSTALL(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkFillLesions.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR}/cli-modules COMPONENT scripts)
-  
+  SET(scripts
+    niftkBETter.sh
+    niftkNormalization.sh
+    niftkFillLesions.sh
+  )
+  FOREACH(script ${scripts})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  ENDFOREACH()
 ENDIF()
-

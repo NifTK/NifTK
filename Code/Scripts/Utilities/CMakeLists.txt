@@ -23,4 +23,4 @@
 #=================================================================================*/
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/anonymise.sh ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh @ONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh)
