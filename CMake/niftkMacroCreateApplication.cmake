@@ -33,18 +33,17 @@ MACRO(NIFTK_CREATE_APPLICATION)
   ENDIF()
                         
   SET(MY_APP_NAME ${_APP_NAME})
-  
+
+  # The MITK_USE_MODULE sets up the include path for compile time...
   MITK_USE_MODULE(niftkMitkExt)
   MITK_USE_MODULE(qtsingleapplication)
-
   INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
-
-  IF(APPLE)
-    SET( OSX_ICON_FILES ${CMAKE_CURRENT_SOURCE_DIR}/icon.icns) 
-    SET_SOURCE_FILES_PROPERTIES( ${OSX_ICON_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-  ENDIF(APPLE)
-
-  SET(app_sources ${MY_APP_NAME}.cpp ${OSX_ICON_FILES} ${OSX_LOGO_FILES} )
+  
+  # ... and here we are specifying additional link time dependencies.
+  SET(_link_libraries
+    niftkMitkExt
+    qtsingleapplication
+  )
 
   SET(_app_options)
   IF(${NIFTK_SHOW_CONSOLE_WINDOW})
@@ -57,7 +56,15 @@ MACRO(NIFTK_CREATE_APPLICATION)
   SET(_exclude_plugins
     ${_APP_EXCLUDE_PLUGINS}
   )
-
+  
+  # NOTE: Check CMake/PackageDepends for any additional dependencies.
+  SET(_library_dirs
+    ${NiftyLink_LIBRARY_DIRS}
+    ${curl_LIBRARY_DIR}
+    ${Boost_LIBRARY_DIRS}
+    ${zlib_LIBRARY_DIR}
+  )
+  
   #############################################################################
   # Watch out for this:
   # In the top level CMakeLists, MACOSX_BUNDLE_NAMES will contain all the apps
@@ -79,43 +86,14 @@ MACRO(NIFTK_CREATE_APPLICATION)
     SET(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
   ENDIF()
   
-  FunctionCreateBlueBerryApplication(
+  FunctionCreateNifTKBlueBerryApplication(
     NAME ${MY_APP_NAME}
-    SOURCES ${app_sources}
-    DESCRIPTION "${PROJECT_NAME} - ${MY_APP_NAME} Application"
     PLUGINS ${_include_plugins}
     EXCLUDE_PLUGINS ${_exclude_plugins}
+    LINK_LIBRARIES ${_link_libraries}
+    LIBRARY_DIRS ${_library_dirs}
     ${_app_options}
   )
-
-  IF(APPLE)
-    SET_TARGET_PROPERTIES( ${MY_APP_NAME} PROPERTIES 
-      MACOSX_BUNDLE_EXECUTABLE_NAME "${MY_APP_NAME}"
-      MACOSX_BUNDLE_GUI_IDENTIFIER "${MY_APP_NAME}"
-      MACOSX_BUNDLE_BUNDLE_NAME "${MY_APP_NAME}"
-      MACOSX_BUNDLE_LONG_VERSION_STRING "${NIFTK_VERSION_STRING}"
-      MACOSX_BUNDLE_SHORT_VERSION_STRING "${NIFTK_VERSION_STRING}"
-      MACOSX_BUNDLE_ICON_FILE "icon.icns"
-      MACOSX_BUNDLE_COPYRIGHT "${NIFTK_COPYRIGHT}"
-    )
-  ENDIF(APPLE)
-
-  IF(WIN32)
-    TARGET_LINK_LIBRARIES(${MY_APP_NAME}
-      optimized PocoFoundation debug PocoFoundationd
-      optimized PocoUtil debug PocoUtild
-      optimized PocoXml debug PocoXmld
-      org_blueberry_osgi
-      ${ALL_LIBRARIES}
-      ${QT_QTCORE_LIBRARY}
-      ${QT_QTMAIN_LIBRARY}
-    )
-  ELSE(WIN32)
-    TARGET_LINK_LIBRARIES(${MY_APP_NAME}
-      org_blueberry_osgi
-      ${ALL_LIBRARIES}
-    )
-  ENDIF(WIN32)
 
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.

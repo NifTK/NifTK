@@ -22,9 +22,12 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/updateParcellation.sh.in ${EXECUTABLE_OUTPUT_PATH}/updateParcellation.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/updateParcellation.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+IF(NOT WIN32)
+  SET(scripts
+    updateParcellation.sh
+  )
+  FOREACH(script ${scripts})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  ENDFOREACH()
+ENDIF()

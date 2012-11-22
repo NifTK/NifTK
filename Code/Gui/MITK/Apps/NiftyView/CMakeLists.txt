@@ -25,10 +25,10 @@ PROJECT(NiftyView)
 SET(MY_APP_NAME NiftyView)
 
 SET(_exclude_plugins
-  uk_ac_ucl_cmic_breastsegmentation
-  uk_ac_ucl_cmic_gui_qt_niftyigi
-  uk_ac_ucl_cmic_gui_qt_niftymidas
-  uk_ac_ucl_cmic_niftyseg
+  uk.ac.ucl.cmic.breastsegmentation
+  uk.ac.ucl.cmic.gui.qt.niftyigi
+  uk.ac.ucl.cmic.gui.qt.niftymidas
+  uk.ac.ucl.cmic.niftyseg
 )
 
 NIFTK_CREATE_APPLICATION(
