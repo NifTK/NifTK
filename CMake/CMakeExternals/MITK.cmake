@@ -252,8 +252,6 @@ IF(NOT DEFINED MITK_DIR)
     #  
     #     Took the niftk branch - commit 6bca0b2907 and cherry-picked:
     #      
-    #     Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
-    #                MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
     #                MITK 13386 = https://github.com/MITK/MITK/commit/f69ab59f0fa0a1df848e17f4d1d25c4ebcbdb0c7  (missing newline Geometry3D already on MITK master)
     #     Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (latest Slicer Command Line Modules)
     #
@@ -279,10 +277,6 @@ IF(NOT DEFINED MITK_DIR)
     #     
     #     Took the niftk branch - commit 6bca0b2907 and cherry-picked:
     #
-    #     Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
-    #                MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
-    #                MITK 13386 = https://github.com/MITK/MITK/commit/f69ab59f0fa0a1df848e17f4d1d25c4ebcbdb0c7  (missing newline Geometry3D already on MITK master)
-    #     Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (latest Slicer Command Line Modules)
     #     Trac 1926, MITK 13617 = https://github.com/NifTK/MITK/commit/901f94ffd246e7a78dce977ef7134082c1f40cf9 (fix deployment of excluded libs when doing multiple apps)
     #
     #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
@@ -308,12 +302,8 @@ IF(NOT DEFINED MITK_DIR)
     #     
     #     Took the niftk branch - commit 6bca0b2907 and cherry-picked:
     #
-    #     Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
-    #                MITK 13495 = https://github.com/MITK/MITK/commit/d9a3bfade7e349d19fd06ae06ed4899a5bdd8a77  (dicom. fix already on MITK master)
-    #                MITK 13386 = https://github.com/MITK/MITK/commit/f69ab59f0fa0a1df848e17f4d1d25c4ebcbdb0c7  (missing newline Geometry3D already on MITK master)
-    #     Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (latest Slicer Command Line Modules)
-    #     Trac 1926, MITK 13617 = https://github.com/NifTK/MITK/commit/901f94ffd246e7a78dce977ef7134082c1f40cf9 (fix deployment of excluded libs when doing multiple apps)
     #     Trac 1926, MITK 13617 = https://github.com/NifTK/MITK/commit/82959ba01204e81a95629503a99933f8faf751c9 (updated this bug, as it was fixed incorrectly)
+    #     Trac 1941, MITK 13706 = https://github.com/NifTK/MITK/commit/5fd6efd409fb027c74931c92a76e59e07d6bda93 (added LIBRARY_DIRS to FunctionCreateBlueBerryApplication)
     #
     #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
     #       MITK b6cfb353a9 - Sep 19 2012 = 2012.09.0 release
@@ -330,7 +320,9 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (Slicer Command Line Modules)
     #       + Trac 1926, MITK 13617 = https://github.com/NifTK/MITK/commit/901f94ffd246e7a78dce977ef7134082c1f40cf9 (fix deployment of excluded libs when doing multiple apps)
     #       + Trac 1926, MITK 13617 = https://github.com/NifTK/MITK/commit/82959ba01204e81a95629503a99933f8faf751c9 (updated this bug, as it was fixed incorrectly)
-    #     Giving ba2c8bf366 on NifTK/MITK/niftk-tmp-12.10 branch  
+    #       + Trac 1941, MITK 13706 = https://github.com/NifTK/MITK/commit/5fd6efd409fb027c74931c92a76e59e07d6bda93 (added LIBRARY_DIRS to FunctionCreateBlueBerryApplication)
+    #
+    #     Giving 3a5e06838b on NifTK/MITK/niftk-tmp-12.10 branch  
     #
     #########################################################
 

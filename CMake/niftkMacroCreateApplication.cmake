@@ -86,7 +86,7 @@ MACRO(NIFTK_CREATE_APPLICATION)
     SET(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
   ENDIF()
   
-  FunctionCreateNifTKBlueBerryApplication(
+  FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
     PLUGINS ${_include_plugins}
     EXCLUDE_PLUGINS ${_exclude_plugins}
