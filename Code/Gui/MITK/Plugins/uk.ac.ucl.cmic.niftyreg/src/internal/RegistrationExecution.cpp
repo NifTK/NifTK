@@ -23,6 +23,7 @@
  ============================================================================*/
 
 #include <QTimer>
+#include <QMessageBox>
 
 #include "RegistrationExecution.h"
 
@@ -185,15 +186,17 @@ void RegistrationExecution::ExecuteRegistration()
 
     std::string nameOfResultImage;
     if ( userData->m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
-      nameOfResultImage = "rigid registration to ";
+      nameOfResultImage = "RigidRegnOf_";
     else
-      nameOfResultImage = "affine_registration_to_";
+      nameOfResultImage = "AffineRegnOf_";
+    nameOfResultImage.append( nodeSource->GetName() );
+    nameOfResultImage.append( "_To_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkSourceImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
 
     UpdateProgressBar( 100., userData );
 
@@ -227,13 +230,18 @@ void RegistrationExecution::ExecuteRegistration()
     // Add this result to the data manager
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
 
-    std::string nameOfResultImage( "non-rigid_registration_to_" );
+    std::string nameOfResultImage( "NonRigidRegnOf_" );
+    nameOfResultImage.append( nodeSource->GetName() );
+    nameOfResultImage.append( "_To_" );
     nameOfResultImage.append( nodeTarget->GetName() );
 
     resultNode->SetProperty("name", mitk::StringProperty::New(nameOfResultImage) );
     resultNode->SetData( mitkTransformedImage );
 
-    userData->GetDataStorage()->Add( resultNode, nodeSource );
+    userData->GetDataStorage()->Add( resultNode );
+
+    // Create VTK polydata to illustrate the deformation field
+    CreateDeformationVisualisationSurface();
 
     UpdateProgressBar( 100., userData );
    }
@@ -241,4 +249,38 @@ void RegistrationExecution::ExecuteRegistration()
 
   userData->m_Modified = false;
   userData->m_Controls.m_ExecutePushButton->setEnabled( false );
+}
+
+
+// ---------------------------------------------------------------------------
+// CreateDeformationVisualisationSurface();
+// --------------------------------------------------------------------------- 
+
+void RegistrationExecution::CreateDeformationVisualisationSurface( void )
+{
+  if ( ! userData->m_RegNonRigid )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No registration data to create VTK deformation visualisation.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  nifti_image *controlPointGrid 
+    = userData->m_RegNonRigid->GetControlPointPositionImage();
+
+  std::cout << "Control point grid dimensions: " 
+	    << controlPointGrid->nx << " x " 
+	    << controlPointGrid->ny << " x " 
+	    << controlPointGrid->nz << std::endl
+	    << "Control point grid spacing: " 
+	    << controlPointGrid->dx << " x " 
+	    << controlPointGrid->dy << " x " 
+	    << controlPointGrid->dz << std::endl;
+
+
+
+  if ( controlPointGrid != NULL )
+    nifti_image_free( controlPointGrid );
 }

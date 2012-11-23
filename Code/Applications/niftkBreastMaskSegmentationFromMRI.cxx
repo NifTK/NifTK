@@ -1182,9 +1182,10 @@ int main( int argc, char *argv[] )
   IteratorType imIterator( imMax, imMax->GetLargestPossibleRegion() );
         
   for ( imIterator.GoToBegin(); ! imIterator.IsAtEnd(); ++imIterator )
+  {
     if ( imIterator.Get() < 0 )
       imIterator.Set( 0 );
-
+  }
 
   // Write the Maximum Image to a file?
 
@@ -2075,19 +2076,26 @@ int main( int argc, char *argv[] )
 
   // Extract the coordinates of the chest surface voxels
 
-  region = imChestSurfaceVoxels->GetLargestPossibleRegion();
-  size = region.GetSize();
-
+  InternalImageType::SizeType sizeChestSurfaceRegion;
   const InternalImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
-  size[1] = 60./sp[1];		// 60mm only
-
-  region.SetSize( size );
 
   start[0] = 0;
   start[1] = idxMidSternum[1];
   start[2] = 0;
 
+  region = imChestSurfaceVoxels->GetLargestPossibleRegion();
+
+  size = region.GetSize();
+  sizeChestSurfaceRegion = size;
+
+  sizeChestSurfaceRegion[1] = 60./sp[1];		// 60mm only
+
+  if ( start[1] + sizeChestSurfaceRegion[1] > size[1] )
+    sizeChestSurfaceRegion[1] = size[1] - start[1] - 1;
+
+  region.SetSize( sizeChestSurfaceRegion );
   region.SetIndex( start );
+
 
   if ( flgVerbose )
     std::cout << "Collating chest surface points in region: "
