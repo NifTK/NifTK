@@ -1,8 +1,1 @@
-/**
-\page @NIFTK_PLATFORM@License The @NIFTK_PLATFORM@ License
-
-@NIFTK_COPYRIGHT@
-
 Not finalised yet, so NOT for distribution outside of CMIC.
-
-*/
