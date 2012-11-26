@@ -3,6 +3,9 @@ SET(CPP_FILES
   DataManagement/QmitkQImageToMitkImageFilter.cpp
   ToolsGui/TrackerControlsWidget.cpp
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.cpp
+  ToolsGui/QmitkIGIDataSource.cpp
+  ToolsGui/QmitkIGILocalDataSource.cpp
+  ToolsGui/QmitkIGINetworkedDataSource.cpp
   ToolsGui/QmitkIGITool.cpp
   ToolsGui/QmitkIGIToolGui.cpp
   ToolsGui/QmitkIGIToolFactory.cpp  
@@ -16,6 +19,9 @@ SET(CPP_FILES
 SET(MOC_H_FILES
   ToolsGui/TrackerControlsWidget.h
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.h
+  ToolsGui/QmitkIGIDataSource.h
+  ToolsGui/QmitkIGILocalDataSource.h
+  ToolsGui/QmitkIGINetworkedDataSource.h
   ToolsGui/QmitkIGITool.h  
   ToolsGui/QmitkIGIToolGui.h
   ToolsGui/QmitkIGIToolFactory.h
