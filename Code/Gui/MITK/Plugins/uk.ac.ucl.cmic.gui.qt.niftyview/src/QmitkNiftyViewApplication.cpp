@@ -21,36 +21,25 @@
  PURPOSE.  See the above copyright notices for more information.
 
  ============================================================================*/
-
 #include "QmitkNiftyViewApplication.h"
-
-#include <berryPlatformUI.h>
-
 #include "QmitkNiftyViewAppWorkbenchAdvisor.h"
 
+//-----------------------------------------------------------------------------
 QmitkNiftyViewApplication::QmitkNiftyViewApplication()
 {
-
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkNiftyViewApplication::QmitkNiftyViewApplication(const QmitkNiftyViewApplication& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
 }
 
-int QmitkNiftyViewApplication::Start()
-{
-  berry::Display* display = berry::PlatformUI::CreateDisplay();
 
-  int code = berry::PlatformUI::CreateAndRunWorkbench(display, new QmitkNiftyViewAppWorkbenchAdvisor());
-  
-  // exit the application with an appropriate return code
-  return code == berry::PlatformUI::RETURN_RESTART
-              ? EXIT_RESTART : EXIT_OK;
-}
-
-void QmitkNiftyViewApplication::Stop()
+//-----------------------------------------------------------------------------
+berry::WorkbenchAdvisor* QmitkNiftyViewApplication::GetWorkbenchAdvisor()
 {
-  
+  return new QmitkNiftyViewAppWorkbenchAdvisor();
 }

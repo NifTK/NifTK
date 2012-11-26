@@ -22,11 +22,13 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/tbssGroup.sh.in ${EXECUTABLE_OUTPUT_PATH}/tbssGroup.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/tbssGroup.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/tbssBasicStats.sh.in ${EXECUTABLE_OUTPUT_PATH}/tbssBasicStats.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/tbssBasicStats.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+IF(NOT WIN32)
+  SET(scripts
+    tbssGroup.sh
+    tbssBasicStats.sh
+  )
+  FOREACH(script ${scripts})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  ENDFOREACH()
+ENDIF()

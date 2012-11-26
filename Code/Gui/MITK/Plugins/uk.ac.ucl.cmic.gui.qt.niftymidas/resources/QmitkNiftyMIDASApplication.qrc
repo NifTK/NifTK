@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource prefix="/QmitkNiftyMIDASApplication">
+     <file>icon_ion.xpm</file>
+     <file>icon_ucl.xpm</file>
+ </qresource>
+ </RCC>

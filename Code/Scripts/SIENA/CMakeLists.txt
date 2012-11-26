@@ -22,14 +22,14 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_sienaNoBet.sh.in ${EXECUTABLE_OUTPUT_PATH}/_sienaNoBet.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_sienaNoBet.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_sienaJob.sh.in ${EXECUTABLE_OUTPUT_PATH}/_sienaJob.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_sienaJob.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/sienaBatch.sh.in ${EXECUTABLE_OUTPUT_PATH}/sienaBatch.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/sienaBatch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+IF(NOT WIN32)
+  SET(scripts
+    _sienaNoBet.sh
+    _sienaJob.sh
+    sienaBatch.sh
+  )
+  FOREACH(script ${scripts})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  ENDFOREACH()
+ENDIF()
