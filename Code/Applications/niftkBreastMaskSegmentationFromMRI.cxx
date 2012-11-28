@@ -71,7 +71,7 @@
 #include "itkImageToVTKImageFilter.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkDiscreteGaussianImageFilter.h"
-#include "itkDerivativeImagefilter.h"
+#include "itkDerivativeImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
 
 #include <vtkMarchingCubes.h> 
