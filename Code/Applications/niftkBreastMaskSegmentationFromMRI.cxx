@@ -1075,8 +1075,6 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_LEFT_BREAST_FITTED_MASK,  fileOutputLeftFittedBreastMask );
   CommandLineOptions.GetArgument( O_OUTPUT_RIGHT_BREAST_FITTED_MASK, fileOutputRightFittedBreastMask );
 
-  O_OUTPUT_LEFT_BREAST_FITTED_MASK,
-
   CommandLineOptions.GetArgument( O_OUTPUT_VTK_SURFACE, fileOutputVTKSurface);
 
   CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, fileOutputImage );
