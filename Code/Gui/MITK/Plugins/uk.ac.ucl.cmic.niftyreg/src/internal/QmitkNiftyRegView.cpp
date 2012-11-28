@@ -2133,6 +2133,24 @@ void QmitkNiftyRegView::OnLoadRegistrationParametersPushButtonPressed( void )
 
 void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 {
+  if ( ! m_Controls.m_TargetImageComboBox->count() )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No target image specified.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  if ( ! m_Controls.m_SourceImageComboBox->count() )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No source image specified.");
+    msgBox.exec();
+    
+    return;
+  }
+
 
 #if 0
 

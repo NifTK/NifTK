@@ -49,16 +49,29 @@ protected slots:
 
   /// Run the actual registration
   void ExecuteRegistration( void );
-  
-  /// Create a VTK polydata object to visualise the deformation
-  void CreateDeformationVisualisationSurface( void );
-    
 
 
 protected:
 
+  typedef enum {
+    PLANE_XY,           //!< Create the 'xy' plane deformation field
+    PLANE_YZ,           //!< Create the 'yz' plane deformation field
+    PLANE_XZ,           //!< Create the 'xz' plane deformation field
+  } PlaneType;                                             
+
+    
   /// A pointer to the registration plugin
   QmitkNiftyRegView* userData;
+  
+  /// Create a VTK polydata object to visualise the control points
+  void CreateControlPointVisualisation( nifti_image *controlPointGrid );
+    
+  /// Create a VTK polydata object to visualise the control points using spheres
+  void CreateControlPointSphereVisualisation( nifti_image *controlPointGrid );
+    
+  /// Create a VTK polydata object to visualise the deformation
+  void CreateDeformationVisualisationSurface( nifti_image *controlPointGrid,
+					      PlaneType plane );
 
  };
 
