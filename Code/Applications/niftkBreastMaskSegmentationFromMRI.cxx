@@ -73,6 +73,7 @@
 #include "itkDiscreteGaussianImageFilter.h"
 #include "itkDerivativeImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
+#include "itkMaximumImageFilter.h"
 
 #include <vtkMarchingCubes.h> 
 #include <vtkPolyDataWriter.h> 
@@ -128,9 +129,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "obgderiv",    "filename", "Output the directional derivative of the background after smoothing."},
   {OPT_STRING, "opecsurfvox", "filename", "Output the surface voxels of the pectoralis (used for region growing)."},
   
-  {OPT_SWITCH, "cropfit",       NULL,       "Crop the final mask with a fitted B-Spline surface."},
-  {OPT_STRING, "ofitleftsurf",  "filename", "Output fitted surface to left breast."},
-  {OPT_STRING, "ofitrightsurf", "filename", "Output fitted surface to right breast."},
+  {OPT_SWITCH, "cropfit",  NULL,       "Crop the final mask with a fitted B-Spline surface."},
+  {OPT_STRING, "ofitsurf", "filename", "Output fitted skin surface mask to file."},
 
   {OPT_STRING, "ovtk", "filename", "Output a VTK surface (PolyData) representation of the segmentation."},
   
@@ -187,8 +187,7 @@ enum {
   O_OUTPUT_PECTORAL_SURF,
   
   O_CROP_FIT,
-  O_OUTPUT_LEFT_BREAST_FITTED_MASK,
-  O_OUTPUT_RIGHT_BREAST_FITTED_MASK,
+  O_OUTPUT_BREAST_FITTED_SURF_MASK,
 
   O_OUTPUT_VTK_SURFACE,
 
@@ -793,7 +792,6 @@ InternalImageType::Pointer MaskImageFromBSplineFittedSurface( const PointSetType
   
   // Fit the B-Spline surface
   // ~~~~~~~~~~~~~~~~~~~~~~~~
-std::cout << "Got to line " << __LINE__ << std::endl;
   typedef itk::BSplineScatteredDataPointSetToImageFilter < PointSetType, 
                                                            VectorImageType > FilterType;
 
@@ -951,8 +949,7 @@ int main( int argc, char *argv[] )
   std::string fileOutputPectoralSurfaceVoxels;
 
   bool bCropWithFittedSurface = false;
-  std::string fileOutputLeftFittedBreastMask;
-  std::string fileOutputRightFittedBreastMask;
+  std::string fileOutputFittedBreastMask;
 
   std::string fileOutputVTKSurface;
 
@@ -1071,9 +1068,8 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND_SMOOTH_DERIV, fileOutputBackgroundSmoothDeriv );
   CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_SURF,           fileOutputPectoralSurfaceVoxels );
   
-  CommandLineOptions.GetArgument( O_CROP_FIT,                        bCropWithFittedSurface         );
-  CommandLineOptions.GetArgument( O_OUTPUT_LEFT_BREAST_FITTED_MASK,  fileOutputLeftFittedBreastMask );
-  CommandLineOptions.GetArgument( O_OUTPUT_RIGHT_BREAST_FITTED_MASK, fileOutputRightFittedBreastMask );
+  CommandLineOptions.GetArgument( O_CROP_FIT,                       bCropWithFittedSurface     );
+  CommandLineOptions.GetArgument( O_OUTPUT_BREAST_FITTED_SURF_MASK, fileOutputFittedBreastMask );
 
   CommandLineOptions.GetArgument( O_OUTPUT_VTK_SURFACE, fileOutputVTKSurface);
 
@@ -2693,12 +2689,12 @@ int main( int argc, char *argv[] )
                                                                                 imStructural->GetSpacing(), 
                                                                                 imStructural->GetDirection(),
                                                                                 rHeightOffset, 3, 15, 3 );
-
+/*
     WriteBinaryImageToUCharFile( fileOutputLeftFittedBreastMask, 
                                  "left fitted breast mask", 
                                  imLeftFittedBreastMask, 
                                  flgLeft, flgRight );
-
+*/
 
     // and now extract surface points of right breast for surface fitting
     lateralRegion = imChestSurfaceVoxels->GetLargestPossibleRegion();
@@ -2741,7 +2737,7 @@ int main( int argc, char *argv[] )
       } 
     }
 
-    // Fit the B-Spline...
+    // Fit B-Spline...
 
     InternalImageType::Pointer imRightFittedBreastMask = MaskImageFromBSplineFittedSurface( rightChestPointSet, 
                                                                                 imSegmented->GetLargestPossibleRegion(), 
@@ -2751,74 +2747,50 @@ int main( int argc, char *argv[] )
                                                                                 rHeightOffset, 3, 15, 3 );
     
     
-    WriteBinaryImageToUCharFile( fileOutputRightFittedBreastMask, 
+/*    WriteBinaryImageToUCharFile( fileOutputRightFittedBreastMask, 
                                  "right fitted breast mask", 
                                  imRightFittedBreastMask, 
+                                 flgLeft, flgRight );
+
+
+*/
+
+    // Combine the left and right mask into one
+    typedef itk::MaximumImageFilter <InternalImageType, InternalImageType>   MaxImageFilterType;
+    
+    MaxImageFilterType::Pointer maxFilter = MaxImageFilterType::New();
+    maxFilter->SetInput1( imRightFittedBreastMask );
+    maxFilter->SetInput2( imLeftFittedBreastMask  );
+
+    try
+    {
+      maxFilter->Update();
+    }
+    catch( itk::ExceptionObject & ex )
+    {
+      std::cout << ex << std::endl;
+    }
+
+    WriteBinaryImageToUCharFile( fileOutputFittedBreastMask, 
+                                 "fitted breast surface mask", 
+                                 maxFilter->GetOutput(), 
                                  flgLeft, flgRight );
 
     imChestSurfaceVoxels = NULL;
 
     // Clip imSegmented outside the fitted surfaces...
-   
-    lateralRegion = imSegmented->GetLargestPossibleRegion();
-    
-    lateralStart  = lateralRegion.GetIndex();
-    lateralStart[0] = 0;
-    lateralStart[1] = 0;  
-    lateralStart[2] = 0;
+    IteratorType itImSeg( imSegmented,            imSegmented->GetLargestPossibleRegion() );
+    IteratorType itImFit( maxFilter->GetOutput(), imSegmented->GetLargestPossibleRegion() );
 
-    lateralSize   = lateralRegion.GetSize();
-    lateralSize[0] = idxMidSternum[0];
-    lateralSize[1] = lateralSize[1];
-    lateralSize[2] = lateralSize[2];
-    
-    lateralRegion.SetIndex( lateralStart );
-    lateralRegion.SetSize ( lateralSize  );
-
-    IteratorType itImSegLeft( imSegmented,            lateralRegion );
-    IteratorType itImLeftFit( imLeftFittedBreastMask, lateralRegion );
-
-    for ( itImSegLeft.GoToBegin(), itImLeftFit.GoToBegin() ; 
-          ( (! itImSegLeft.IsAtEnd()) && (! itImLeftFit.IsAtEnd()) )  ; 
-          ++itImSegLeft, ++itImLeftFit )
+    for ( itImSeg.GoToBegin(), itImFit.GoToBegin() ; 
+          ( (! itImSeg.IsAtEnd()) && (! itImFit.IsAtEnd()) )  ; 
+          ++itImSeg, ++itImFit )
     {
-      if ( itImSegLeft.Get() )
+      if ( itImSeg.Get() )
       {
-        if ( ! itImLeftFit.Get() )
+        if ( ! itImFit.Get() )
         {
-          itImSegLeft.Set( 0 );
-        }
-      }
-    }
-
-    // right image region
-    lateralRegion = imSegmented->GetLargestPossibleRegion();
-    
-    lateralStart    = lateralRegion.GetIndex();
-    lateralStart[0] = idxMidSternum[0];
-    lateralStart[1] = 0;  
-    lateralStart[2] = 0;
-
-    lateralSize   = lateralRegion.GetSize();
-    lateralSize[0] = lateralSize[0] - idxMidSternum[0];
-    lateralSize[1] = lateralSize[1];
-    lateralSize[2] = lateralSize[2];
-    
-    lateralRegion.SetIndex( lateralStart );
-    lateralRegion.SetSize ( lateralSize  );
-
-    IteratorType itImSegRight( imSegmented,            lateralRegion );
-    IteratorType itImRightFit( imRightFittedBreastMask, lateralRegion );
-
-    for ( itImSegRight.GoToBegin(), itImRightFit.GoToBegin() ; 
-          ( (! itImSegRight.IsAtEnd()) && (! itImRightFit.IsAtEnd()) )  ; 
-          ++itImSegRight, ++itImRightFit )
-    {
-      if ( itImSegRight.Get() )
-      {
-        if ( ! itImRightFit.Get() )
-        {
-          itImSegRight.Set( 0 );
+          itImSeg.Set( 0 );
         }
       }
     }
