@@ -22,26 +22,27 @@
 
  ============================================================================*/
 
-#ifndef QMITKIGINETWORKDATASOURCE_H
-#define QMITKIGINETWORKDATASOURCE_H
+#ifndef QMITKIGINIFTYLINKDATASOURCE_H
+#define QMITKIGINIFTYLINKDATASOURCE_H
 
 #include "niftkIGIGuiExports.h"
-#include "QmitkIGIDataSource.h"
+#include "mitkIGIDataSource.h"
 #include <OIGTLSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
 
 /**
- * \class QmitkIGINetworkDataSource
- * \brief Base class for IGI Data Sources that are receiving networked input,
- * such as tracker tools, or even US/Video grabbers on remote machines.
+ * \class QmitkIGINiftyLinkDataSource
+ * \brief Base class for IGI Data Sources that are receiving networked input
+ * from NiftyLink. NiftyLink uses Qt, so this class is in the Qt library, and named
+ * Qmitk.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGINetworkDataSource : public QmitkIGIDataSource
+class NIFTKIGIGUI_EXPORT QmitkIGINiftyLinkDataSource : public QObject, public mitk::IGIDataSource
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGINetworkDataSource, QmitkIGIDataSource);
+  mitkClassMacro(QmitkIGINiftyLinkDataSource, mitk::IGIDataSource);
 
   /**
    * \brief Sets the socket pointer.
@@ -69,21 +70,39 @@ public:
   int GetPort() const;
 
   /**
+   * \brief Tells this object to start listening on a given port number.
+   */
+  bool ListenOnPort(int portNumber);
+
+  /**
    * \brief If there is a socket associated with this tool, will send the message.
    */
   void SendMessage(OIGTLMessage::Pointer msg);
 
-public slots:
-
-signals:
-
 protected:
 
-  QmitkIGINetworkDataSource(); // Purposefully hidden.
-  virtual ~QmitkIGINetworkDataSource(); // Purposefully hidden.
+  QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
+  virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
-  QmitkIGINetworkDataSource(const QmitkIGINetworkDataSource&); // Purposefully not implemented.
-  QmitkIGINetworkDataSource& operator=(const QmitkIGINetworkDataSource&); // Purposefully not implemented.
+  QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
+  QmitkIGINiftyLinkDataSource& operator=(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
+
+protected slots:
+
+  /**
+   * \brief Slot called when socket connects.
+   */
+  virtual void ClientConnected();
+
+  /**
+   * \brief Slot called when socket disconnects.
+   */
+  virtual void ClientDisconnected();
+
+  /**
+   * \brief Main message handler routine for this tool, that subclasses must implement.
+   */
+  virtual void InterpretMessage(OIGTLMessage::Pointer msg) = 0;
 
 private:
 

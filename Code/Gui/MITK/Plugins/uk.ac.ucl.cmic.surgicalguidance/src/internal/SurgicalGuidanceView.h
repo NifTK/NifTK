@@ -26,7 +26,7 @@
 #define SurgicalGuidanceView_h
 
 #include "QmitkBaseLegacyView.h"
-#include "QmitkIGIToolManager.h"
+#include "QmitkIGIDataSourceManager.h"
 
 /**
  * \class SurgicalGuidanceView
@@ -66,7 +66,7 @@ private slots:
   
 private:
 
-  QmitkIGIToolManager::Pointer  m_ToolManager;
+  QmitkIGIDataSourceManager::Pointer  m_DataSourceManager;
 };
 
 #endif // SurgicalGuidanceView_h

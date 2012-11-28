@@ -26,7 +26,7 @@
 #define QMITKIGITRACKERTOOL_H
 
 #include "niftkIGIGuiExports.h"
-#include "QmitkIGITool.h"
+#include "QmitkIGINiftyLinkDataSource.h"
 #include <mitkNavigationDataLandmarkTransformFilter.h>
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
@@ -35,14 +35,20 @@
  * \class QmitkIGITrackerTool
  * \brief Base class for IGI Tracker Tools.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGITrackerTool : public QmitkIGITool
+class NIFTKIGIGUI_EXPORT QmitkIGITrackerTool : public QmitkIGINiftyLinkDataSource
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGITrackerTool, QmitkIGITool);
+  mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGITrackerTool);
+
+  /**
+   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType;
+   * \see mitk::IGIDataSource::CanHandleData()
+   */
+  virtual bool CanHandleData(mitk::IGIDataType::Pointer data) const;
 
   itkSetMacro(UseICP, bool);
   itkGetMacro(UseICP, bool);

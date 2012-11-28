@@ -29,7 +29,7 @@
 
 #include "mitkIGITestDataUtils.h"
 
-NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
+//NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::QmitkIGITrackerTool()
@@ -62,6 +62,25 @@ QmitkIGITrackerTool::~QmitkIGITrackerTool()
       dataStorage->Remove(toolRep);
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType::Pointer data) const
+{
+  bool canHandle = false;
+  if (data.IsNotNull() && data->GetNameOfClass() == std::string("QmitkIGINiftyLinkDataType").c_str())
+  {
+    OIGTLMessage::Pointer msg(reinterpret_cast<OIGTLMessage*>(data->GetData()));
+    if (msg.data() != NULL
+        && (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
+        )
+    {
+      canHandle = true;
+    }
+  }
+
+  return canHandle;
 }
 
 
@@ -307,9 +326,11 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
+/*
     this->m_MessageMap.insert(msg->getId(), msg);
     if ( m_SavingMessages ) 
       this->m_SaveBuffer.append(msg->getId());
+*/
   }
 }
 
@@ -488,8 +509,10 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage::Pointer msg)
 //-----------------------------------------------------------------------------
 igtlUint64 QmitkIGITrackerTool::HandleMessageByTimeStamp(igtlUint64 id)
 {
+/*
   if ( ! this->m_MessageMap.isEmpty() )
   { 
+
     QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.lowerBound(id);
     if ( I != this->m_MessageMap.begin() )
       I--;
@@ -497,6 +520,7 @@ igtlUint64 QmitkIGITrackerTool::HandleMessageByTimeStamp(igtlUint64 id)
     return id - I.key() ;
   }
   else 
+*/
     return 999999999999999;
 }
 

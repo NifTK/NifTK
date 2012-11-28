@@ -22,40 +22,40 @@
 
  ============================================================================*/
 
-#ifndef QMITKIGILOCALDATASOURCE_H
-#define QMITKIGILOCALDATASOURCE_H
+#ifndef MITKIGILOCALDATASOURCE_H
+#define MITKIGILOCALDATASOURCE_H
 
-#include "niftkIGIGuiExports.h"
-#include "QmitkIGIDataSource.h"
+#include "niftkIGIExports.h"
+#include "mitkIGIDataSource.h"
+
+namespace mitk
+{
 
 /**
  * \class QmitkIGILocalDataSource
  * \brief Base class for IGI Data Sources that are not receiving networked input,
  * and hence are grabbing data from the local machine - eg. Video grabber.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSource : public QmitkIGIDataSource
+class NIFTKIGI_EXPORT IGILocalDataSource : public IGIDataSource
 {
-  Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGILocalDataSource, QmitkIGIDataSource);
-
-public slots:
-
-signals:
+  mitkClassMacro(IGILocalDataSource, IGIDataSource);
 
 protected:
 
-  QmitkIGILocalDataSource(); // Purposefully hidden.
-  virtual ~QmitkIGILocalDataSource(); // Purposefully hidden.
+  IGILocalDataSource(); // Purposefully hidden.
+  virtual ~IGILocalDataSource(); // Purposefully hidden.
 
-  QmitkIGILocalDataSource(const QmitkIGILocalDataSource&); // Purposefully not implemented.
-  QmitkIGILocalDataSource& operator=(const QmitkIGILocalDataSource&); // Purposefully not implemented.
+  IGILocalDataSource(const IGILocalDataSource&); // Purposefully not implemented.
+  IGILocalDataSource& operator=(const IGILocalDataSource&); // Purposefully not implemented.
 
 private:
 
 }; // end class
+
+} // end namespace
 
 #endif
 

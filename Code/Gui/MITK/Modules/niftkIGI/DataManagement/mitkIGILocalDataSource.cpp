@@ -22,32 +22,20 @@
 
  ============================================================================*/
 
-#include "QmitkIGIDataSource.h"
-#include <itkObjectFactory.h>
+#include "mitkIGILocalDataSource.h"
+
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
-QmitkIGIDataSource::QmitkIGIDataSource()
-: m_DataStorage(NULL)
-, m_Identifier(-1)
-, m_FrameRate(0)
-, m_Name("")
-, m_Type("")
-, m_Description("")
+IGILocalDataSource::IGILocalDataSource()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIDataSource::~QmitkIGIDataSource()
+IGILocalDataSource::~IGILocalDataSource()
 {
-  // We don't own the m_DataStorage, so don't delete it.
 }
 
-
-//-----------------------------------------------------------------------------
-QPixmap QmitkIGIDataSource::GetStatusIcon() const
-{
-  QPixmap pix(22, 22);
-  pix.fill(QColor(Qt::lightGray));
-  return pix;
-}
+} // end namespace

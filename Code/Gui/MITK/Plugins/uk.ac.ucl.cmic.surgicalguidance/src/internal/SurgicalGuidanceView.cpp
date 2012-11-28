@@ -49,15 +49,15 @@ std::string SurgicalGuidanceView::GetViewID() const
 //-----------------------------------------------------------------------------
 void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
 {
-  m_ToolManager = QmitkIGIToolManager::New();
-  m_ToolManager->setupUi(parent);
-  m_ToolManager->SetStdMultiWidget(this->GetActiveStdMultiWidget());
-  m_ToolManager->SetDataStorage(this->GetDataStorage());
+  m_DataSourceManager = QmitkIGIDataSourceManager::New();
+  m_DataSourceManager->setupUi(parent);
+  m_DataSourceManager->SetStdMultiWidget(this->GetActiveStdMultiWidget());
+  m_DataSourceManager->SetDataStorage(this->GetDataStorage());
 }
 
 
 //-----------------------------------------------------------------------------
 void SurgicalGuidanceView::SetFocus()
 {
-  m_ToolManager->setFocus();
+  m_DataSourceManager->setFocus();
 }
