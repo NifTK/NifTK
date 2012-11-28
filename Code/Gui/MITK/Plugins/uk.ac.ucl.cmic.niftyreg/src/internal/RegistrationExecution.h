@@ -64,16 +64,42 @@ protected:
   QmitkNiftyRegView* userData;
   
   /// Create a VTK polydata object to visualise the control points
-  void CreateControlPointVisualisation( nifti_image *controlPointGrid );
+  void CreateControlPointVisualisation( void );
     
   /// Create a VTK polydata object to visualise the control points using spheres
-  void CreateControlPointSphereVisualisation( nifti_image *controlPointGrid );
+  void CreateControlPointSphereVisualisation( void );
     
+  template<class SplineTYPE>
+    SplineTYPE GetValue(SplineTYPE *array, int *dim, int x, int y, int z);
+
+  template<class SplineTYPE>
+    void SetValue(SplineTYPE *array, int *dim, int x, int y, int z, SplineTYPE value);
+  
+
+  template <class DTYPE>
+    void reg_bspline_refineControlPointGrid2D( nifti_image *targetImage,
+					       nifti_image *splineControlPoint,
+					       float xRefineFactor, 
+					       float yRefineFactor );
+  
+  template <class DTYPE>
+    void reg_bspline_refineControlPointGrid3D(nifti_image *targetImage,
+					      nifti_image *splineControlPoint,
+					      float xRefineFactor, 
+					      float yRefineFactor, 
+					      float zRefineFactor);
+  
+  void reg_bspline_refineControlPointGrid(nifti_image *referenceImage,
+					  nifti_image *controlPointGrid,
+					  float xRefineFactor, 
+					  float yRefineFactor, 
+					  float zRefineFactor);
+
   /// Create a VTK polydata object to visualise the deformation
-  void CreateDeformationVisualisationSurface( nifti_image *controlPointGrid,
-					      PlaneType plane );
+  void CreateDeformationVisualisationSurface( PlaneType plane );
 
  };
+
 
 #endif // RegistrationExecution_h
 
