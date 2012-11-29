@@ -220,10 +220,17 @@ function BETter()
 		# Delete temp files
 		execute_command_or_else_stop "rm -f *.nii.gz"
 
+		dir_file=`dirname ${output_result}`
+		if [ "${dir_file}" == "." ] ; then
+			dir_result="../"
+		else
+			dir_result=""
+		fi
+
 		# Copy all the results
-		execute_command_or_else_stop "cp output.nii ${output_result}"
-		execute_command_or_else_stop "cp output_mask.nii ${output_result/%\.???/_mask.nii}"
-		execute_command_or_else_stop "cp output_skull.nii ${output_result/%\.???/_skull.nii}"
+		execute_command_or_else_stop "cp output.nii ${dir_result}${output_result}"
+		execute_command_or_else_stop "cp output_mask.nii ${dir_result}${output_result/%\.???/_mask.nii}"
+		execute_command_or_else_stop "cp output_skull.nii ${dir_result}${output_result/%\.???/_skull.nii}"
 	else
 		echo "File ${output_result} exists, we don't repeat the calculation "
 	fi
@@ -408,11 +415,11 @@ Mandatory Arguments:
   --atlas		: is the atlas data file in NIFTI format
   
 Optional Arguments:   
-  --bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default -B
+  --bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default B
   --f			: fractional intensity threshold (0->1); by default 0.1.
   --norm		: apply Boyes et al. Neuroimage 2008 normalization process.
   --orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITTAL (s) orientation, it is needed for the normalization step
-
+  
 Recomendations:
 
 	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152 

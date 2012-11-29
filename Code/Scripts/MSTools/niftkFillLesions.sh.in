@@ -52,7 +52,9 @@ function cleanup
 		cd ..
 	fi
 	if [[ -d ${dir_output} ]] ; then
-		rm -rf  ${dir_output} 
+		if ! ${debug_mode} ; then
+			rm -rf  ${dir_output} 
+		fi
 	fi
 }
 trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
@@ -309,7 +311,7 @@ function N3() {
 		execute_command_or_else_stop "fslswapdim_exe ${image}_n3 -x y z ${image}_n3_corrected"
 		execute_command_or_else_stop "imcp ${image}_n3_corrected ${image}_n3"
 		execute_command_or_else_stop "fslorient -deleteorient ${image}_n3"
-		execute_command_or_else_stop "rm -f ${image}_corrected.*"
+		execute_command_or_else_stop "rm -f ${image}_n3_corrected.*"
 	fi
 }
 
@@ -375,7 +377,7 @@ cat <<EOF
 <executable>
    <category>MS Tools.Fill lesions</category>
    <title>Automated lesion-filling</title>
-   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, to develop an automated lesion-filling technique (LEAP; LEsion Automated Preprocessing) that would reduce lesion-associated brain tissue segmentation bias (which is known to affect automated brain gray [GM] and white matter [WM] tissue segmentations in people who have multiple sclerosis).<br>
+   <description><![CDATA[This script, provided within NifTK, to develop an automated lesion-filling technique (LEAP; LEsion Automated Preprocessing) that would reduce lesion-associated brain tissue segmentation bias (which is known to affect automated brain gray [GM] and white matter [WM] tissue segmentations in people who have multiple sclerosis).<br>
    <ul>
    <li><i>Input image</i>, selects the file that you would like to fill lesions</li>
    <li><i>Orient</i>, indicates in which orientation is the input images: AXIAL, CORONAL or SAGITALL.</li>
@@ -402,7 +404,7 @@ For the installation and configuration of the different needed software in this 
 <a href="https://docs.google.com/document/d/1L9dNHdUzsNPFOXCILOWdb-XFxyWmUAIo4N1VWOwCZjQ/edit">document</a>.  
    </p>
    ]]></description>
-   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+   <version>12.10</version>
    <documentation-url>http://onlinelibrary.wiley.com/doi/10.1002/jmri.22214/abstract</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>
@@ -556,6 +558,7 @@ Optional Arguments:
   --d <dilation>	: dilate lesion mask: none (N), soft 2D (S) or hard 3D (H) [by default none (N)]
   --l <distance>	: length scale of non-uniformity. Default=35 (mm)
   --t2			: T2 image as input [by default T1]
+  --debug		: debug (don't delete temporary intermediate images)
 
 Advanced Options: 
   --z			: delete orientation to the input mask files
@@ -577,6 +580,7 @@ dilation="N"
 frac="0.1"
 options="-B"
 orientation=""
+debug_mode=false
 if [ $# -eq 0 ]; then
 	Usage
 fi
@@ -652,6 +656,9 @@ do
     --r)
 	deleteorient=true
 	;;
+    --debug)
+	debug_mode=true
+	;;
     -*)
 	Usage
 	exitprog "Error: option $1 not recognised" 1
@@ -699,6 +706,10 @@ if [[ ! -d $dir_output ]] ; then
 fi
 copyFileToDestination ${INPUT_IMAGE} ${dir_output} "input_image" 
 copyFileToDestination ${LESION_MASK} ${dir_output} "lesion_mask" 
+if [[ -n "$BET_MASK" ]] ; then
+	check_file_exists ${BET_MASK}
+	copyFileToDestination ${BET_MASK} ${dir_output}  "input_image_bet_mask"
+fi
 
 # Go to the output directory
 execute_command_or_else_stop "cd ${dir_output}"
@@ -713,10 +724,9 @@ progressXML "0.10" "Run brain extraction"
 # RUN BRAIN EXTRACTION
 if [[ -n "$BET_MASK" ]] ; then
 	# USER SPECIFIED BRAIN MASK
-	check_file_exists ${BET_MASK}
-	copyFileToDestination ${BET_MASK} " " "input_image_bet_mask"
 	if ${deleteorientmask} ; then
 		execute_command_or_else_stop "fslorient -deleteorient input_image_bet_mask"
+		execute_command_or_else_stop "fslcpgeom input_image input_image_bet_mask"
 	fi
 	execute_command_or_else_stop "fslmaths input_image -mas input_image_bet_mask input_image_bet"   
 else
@@ -819,16 +829,24 @@ esac
 
 # FILL LESION VOLUME
 progressXML "0.80" "Filling lesions"
-execute_command "imagej -b local/fill_lesions.txt input_image.nii filled.img ${dil_les_mask} input_image_nu_map.nii ${wm_peak} ${wm_peak_hwhm}"
+execute_command "imagej -b local/fill_lesions.txt input_image.nii filled.nii ${dil_les_mask} input_image_nu_map.nii ${wm_peak} ${wm_peak_hwhm}"
 
 # Output usually is a Analyze file, and it needs to be converted
-execute_command_or_else_stop "fslchfiletype NIFTI filled ${OUTPUT_IMAGE}"
-execute_command_or_else_stop "fslcpgeom input_image.nii ${OUTPUT_IMAGE}"
+dir_file=`dirname ${OUTPUT_IMAGE}`
+if [ "${dir_file}" == "." ] ; then
+	execute_command_or_else_stop "fslchfiletype NIFTI filled ../${OUTPUT_IMAGE}"
+	execute_command_or_else_stop "fslcpgeom input_image.nii ../${OUTPUT_IMAGE}"	
+else 
+	execute_command_or_else_stop "fslchfiletype NIFTI filled ${OUTPUT_IMAGE}"
+	execute_command_or_else_stop "fslcpgeom input_image.nii ${OUTPUT_IMAGE}"
+fi
 
-# Delete temporary directory
-execute_command_or_else_stop "rm -f *.nii *.img *.hdr *.mnc *.txt" 
-execute_command_or_else_stop "cd .."
-execute_command_or_else_stop "rm -rf ${dir_output}"
+if ! ${debug_mode} ; then
+	# Delete temporary directory
+	execute_command_or_else_stop "rm -f *.nii *.img *.hdr *.mnc *.txt" 
+	execute_command_or_else_stop "cd .."
+	execute_command_or_else_stop "rm -rf ${dir_output}"
+fi
 
 progressXML "1" "Finish"
 closeprogressXML ${OUTPUT_IMAGE}
