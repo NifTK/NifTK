@@ -48,12 +48,6 @@
 namespace niftk
 {
 
-  typedef enum {
-    PLANE_XY,           //!< Create the 'xy' plane deformation field
-    PLANE_YZ,           //!< Create the 'yz' plane deformation field
-    PLANE_XZ,           //!< Create the 'xz' plane deformation field
-  } PlaneType;                                             
-
  
 // ---------------------------------------------------------------------------
 // Create a VTK polydata object to visualise the control points
@@ -163,8 +157,11 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *con
 
   vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
 
+#if 0
   sphere->SetThetaResolution(10);
   sphere->SetPhiResolution(5);
+#endif
+
   sphere->SetRadius( radius );
 
 
@@ -231,11 +228,11 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *con
 // Create a VTK polydata object to visualise the deformation
 // ---------------------------------------------------------------------------
 
-vtkSmartPointer<vtkPolyData> CreateDeformationVisualisationSurface( PlaneType plane,
-								    nifti_image *controlPointGrid,
-								    int xSkip,
-								    int ySkip,
-								    int zSkip )
+vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataSurface( PlaneType plane,
+								 nifti_image *controlPointGrid,
+								 int xSkip,
+								 int ySkip,
+								 int zSkip )
 {
   int i, j, k;
   int x, y, z, index;
@@ -253,7 +250,6 @@ vtkSmartPointer<vtkPolyData> CreateDeformationVisualisationSurface( PlaneType pl
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
   vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<vtkPolyData> vtkControlPoints = vtkSmartPointer<vtkPolyData>::New();
 
   int nPoints = controlPointGrid->nx*controlPointGrid->ny*controlPointGrid->nz;
 
@@ -300,14 +296,9 @@ vtkSmartPointer<vtkPolyData> CreateDeformationVisualisationSurface( PlaneType pl
   sgrid->SetDimensions(nxPoints, nyPoints, nzPoints);
   sgrid->SetPoints( points );
   
-  vtkControlPoints->SetPoints( points );
-  vtkControlPoints->SetVerts( cells );
-
 
   // Add the deformation planes to the DataManager
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  float rgb[3] = {0., 0., 0.};
 
   vtkSmartPointer<vtkAppendPolyData> appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
 
@@ -319,8 +310,6 @@ vtkSmartPointer<vtkPolyData> CreateDeformationVisualisationSurface( PlaneType pl
   {
   case PLANE_XY:
   {
-    rgb = {0.5, 0.247, 0.247};
-
     for ( k=0; k<nzPoints; k++ ) 
     {
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
@@ -341,8 +330,6 @@ vtkSmartPointer<vtkPolyData> CreateDeformationVisualisationSurface( PlaneType pl
 
   case PLANE_XZ:
   {
-    rgb = {0.247, 0.247, 0.5};
-
     for (j=0; j<nyPoints; j++) 
     {
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
@@ -362,8 +349,6 @@ vtkSmartPointer<vtkPolyData> CreateDeformationVisualisationSurface( PlaneType pl
 
   case PLANE_YZ:
   {
-    rgb = {0.247, 0.5, 0.247};
-
     for (i=0; i<nxPoints; i++) 
     {
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
@@ -395,11 +380,20 @@ void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 					  vtkSmartPointer<vtkPolyData> &xzDeformation,
 					  vtkSmartPointer<vtkPolyData> &yzDeformation )
 {
-  reg_bspline_refineControlPointGrid( referenceImage, controlPointGrid );
+   nifti_image *refinedGrid = nifti_copy_nim_info( controlPointGrid );
 
-  xyDeformation = CreateDeformationVisualisationSurface( PLANE_XY, controlPointGrid, 1, 1, 2 );
-  xzDeformation = CreateDeformationVisualisationSurface( PLANE_YZ, controlPointGrid, 2, 1, 1 );
-  yzDeformation = CreateDeformationVisualisationSurface( PLANE_XZ, controlPointGrid, 1, 2, 1 );
+  refinedGrid->data = (void *) malloc( refinedGrid->nvox * refinedGrid->nbyper);
+
+  memcpy( refinedGrid->data, controlPointGrid->data,
+	  refinedGrid->nvox * refinedGrid->nbyper);
+
+  reg_bspline_refineControlPointGrid( referenceImage, refinedGrid );
+
+  xyDeformation = F3DControlGridToVTKPolyDataSurface( PLANE_XY, refinedGrid, 1, 1, 2 );
+  xzDeformation = F3DControlGridToVTKPolyDataSurface( PLANE_YZ, refinedGrid, 2, 1, 1 );
+  yzDeformation = F3DControlGridToVTKPolyDataSurface( PLANE_XZ, refinedGrid, 1, 2, 1 );
+
+  nifti_image_free( refinedGrid );
 }
 
 

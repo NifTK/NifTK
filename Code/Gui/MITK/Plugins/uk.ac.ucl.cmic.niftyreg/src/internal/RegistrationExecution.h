@@ -28,6 +28,7 @@
 #include <QThread>
 
 #include "QmitkNiftyRegView.h"
+#include "niftkF3DControlGridToVTKPolyData.h"
 
 
 class RegistrationExecution : public QThread
@@ -52,13 +53,6 @@ protected slots:
 
 
 protected:
-
-  typedef enum {
-    PLANE_XY,           //!< Create the 'xy' plane deformation field
-    PLANE_YZ,           //!< Create the 'yz' plane deformation field
-    PLANE_XZ,           //!< Create the 'xz' plane deformation field
-  } PlaneType;                                             
-
     
   /// A pointer to the registration plugin
   QmitkNiftyRegView* userData;
@@ -70,7 +64,7 @@ protected:
   void CreateControlPointSphereVisualisation( nifti_image *controlPointGrid );
 
   /// Create a VTK polydata object to visualise the deformation
-  void CreateDeformationVisualisationSurface( PlaneType plane,
+  void CreateDeformationVisualisationSurface( niftk::PlaneType plane,
 					      nifti_image *controlPointGrid,
 					      int xSkip,
 					      int ySkip,

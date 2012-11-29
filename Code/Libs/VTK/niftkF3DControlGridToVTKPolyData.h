@@ -41,16 +41,29 @@
 namespace niftk
 {
 
+  typedef enum {
+    PLANE_XY,           //!< Create the 'xy' plane deformation field
+    PLANE_XZ,           //!< Create the 'xz' plane deformation field
+    PLANE_YZ,           //!< Create the 'yz' plane deformation field
+  } PlaneType;                                             
   
+
 /// Create a VTK polydata object to visualise the control points
 vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *controlPointGrid );
     
 /// Create a VTK polydata object to visualise the control points using spheres
 vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataSpheres( nifti_image *controlPointGrid,
 								 float radius );
-
 /// Create a VTK polydata object to visualise the deformation
+vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataSurface( PlaneType plane,
+								 nifti_image *controlPointGrid,
+								 int xSkip,
+								 int ySkip,
+								 int zSkip );
+
+/// Create VTK polydata objects to visualise the deformations
 void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
+					  nifti_image *referenceImage,
 					  vtkSmartPointer<vtkPolyData> &xyDeformation,
 					  vtkSmartPointer<vtkPolyData> &xzDeformation,
 					  vtkSmartPointer<vtkPolyData> &yzDeformation );

@@ -29,7 +29,6 @@
 
 #include "mitkImageToNifti.h"
 #include "niftiImageToMitk.h"
-#include "niftkF3DControlGridToVTKPolyData.h"
 
 #include "mitkSurface.h"
 
@@ -265,9 +264,9 @@ void RegistrationExecution::ExecuteRegistration()
     reg_bspline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
 					controlPointGrid );
 
-    CreateDeformationVisualisationSurface( PLANE_XY, controlPointGrid, 1, 1, 2 );
-    CreateDeformationVisualisationSurface( PLANE_YZ, controlPointGrid, 2, 1, 1 );
-    CreateDeformationVisualisationSurface( PLANE_XZ, controlPointGrid, 1, 2, 1 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_XY, controlPointGrid, 1, 1, 2 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, controlPointGrid, 1, 2, 1 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, controlPointGrid, 2, 1, 1 );
 
     if ( controlPointGrid != NULL )
       nifti_image_free( controlPointGrid );
@@ -296,13 +295,6 @@ void RegistrationExecution::CreateControlPointVisualisation( nifti_image *contro
     return;
   }
 
-  int x, y, z, index;
-  float xInit, yInit, zInit;
-
-  PrecisionTYPE *controlPointPtrX, *controlPointPtrY, *controlPointPtrZ;
-
-  mat44 *splineMatrix;
-
   QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
   QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
 
@@ -320,79 +312,10 @@ void RegistrationExecution::CreateControlPointVisualisation( nifti_image *contro
 	    << controlPointGrid->dz << std::endl;
 
 
-  // Create a VTK polydata object and add everything to it
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  vtkIdType id;
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-
   vtkSmartPointer<vtkPolyData> vtkControlPoints = vtkSmartPointer<vtkPolyData>::New();
   
-  controlPointPtrX = static_cast< PrecisionTYPE * >( controlPointGrid->data );
-  controlPointPtrY = &controlPointPtrX[ nControlPoints ];
-  controlPointPtrZ = &controlPointPtrY[ nControlPoints ];
-
-  if ( controlPointGrid->sform_code > 0 ) 
-    splineMatrix = &( controlPointGrid->sto_xyz );
-  else 
-    splineMatrix = &( controlPointGrid->qto_xyz );
-
-  for (z=0; z<controlPointGrid->nz; z++)
-  {
-    index = z*controlPointGrid->nx*controlPointGrid->ny;
-
-    for (y=0; y<controlPointGrid->ny; y++)
-    {
-      for (x=0; x<controlPointGrid->nx; x++)
-      {
-	  
-	// The initial control point position
-	xInit =
-	  splineMatrix->m[0][0]*static_cast<float>(x) +
-	  splineMatrix->m[0][1]*static_cast<float>(y) +
-	  splineMatrix->m[0][2]*static_cast<float>(z) +
-	  splineMatrix->m[0][3];
-	yInit =
-	  splineMatrix->m[1][0]*static_cast<float>(x) +
-	  splineMatrix->m[1][1]*static_cast<float>(y) +
-	  splineMatrix->m[1][2]*static_cast<float>(z) +
-	  splineMatrix->m[1][3];
-	zInit =
-	  splineMatrix->m[2][0]*static_cast<float>(x) +
-	  splineMatrix->m[2][1]*static_cast<float>(y) +
-	  splineMatrix->m[2][2]*static_cast<float>(z) +
-	  splineMatrix->m[2][3];
-
-	// The final control point position:
-	//    controlPointPtrX[index], controlPointPtrY[index], controlPointPtrZ[index];
-
-#if 1
-	id = points->InsertNextPoint( -controlPointPtrX[index], 
-				      -controlPointPtrY[index],
-				      controlPointPtrZ[index] );
-
-
-#else
-	id = points->InsertNextPoint( -xInit, -yInit, zInit );
-#endif 
-	cells->InsertNextCell( 1 );
-	cells->InsertCellPoint( id );
-
-	index++;
-      }
-    }
-  }
-
-  vtkControlPoints->SetPoints( points );
-  vtkControlPoints->SetVerts( cells );
-
-  vtkControlPoints->Print( std::cout );
+  vtkControlPoints = niftk::F3DControlGridToVTKPolyDataPoints( controlPointGrid );
   
-  // Add the control points to the DataManager
-
   mitk::Surface::Pointer mitkControlPoints = mitk::Surface::New();
 
   mitkControlPoints->SetVtkPolyData( vtkControlPoints );
@@ -428,13 +351,6 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *
     return;
   }
 
-  int x, y, z, index;
-  float xInit, yInit, zInit;
-
-  PrecisionTYPE *controlPointPtrX, *controlPointPtrY, *controlPointPtrZ;
-
-  mat44 *splineMatrix;
-
   QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
   QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
 
@@ -451,91 +367,29 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *
 	    << controlPointGrid->dy << " x " 
 	    << controlPointGrid->dz << std::endl;
 
-
-  // Get the target image
+ // Get the target image
   // ~~~~~~~~~~~~~~~~~~~~
 
   float radius = 1.;
   nifti_image *referenceImage = userData->m_RegParameters.m_ReferenceImage;
 
   if ( referenceImage )
-    radius = vcl_sqrt( referenceImage->dx*referenceImage->dx + 
-		       referenceImage->dy*referenceImage->dy +
-		       referenceImage->dz*referenceImage->dz );
-  
+    radius = vcl_sqrt( referenceImage->dx*referenceImage->dx +
+                       referenceImage->dy*referenceImage->dy +
+                       referenceImage->dz*referenceImage->dz );
+
 
   // Create a VTK polydata object and add everything to it
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  vtkSmartPointer<vtkAppendPolyData> appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
+  
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 
-  vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
-
-  sphere->SetThetaResolution(10);
-  sphere->SetPhiResolution(5);
-  sphere->SetRadius( radius );
-
-
-  controlPointPtrX = static_cast< PrecisionTYPE * >( controlPointGrid->data );
-  controlPointPtrY = &controlPointPtrX[ nControlPoints ];
-  controlPointPtrZ = &controlPointPtrY[ nControlPoints ];
-
-  if ( controlPointGrid->sform_code > 0 ) 
-    splineMatrix = &( controlPointGrid->sto_xyz );
-  else 
-    splineMatrix = &( controlPointGrid->qto_xyz );
-
-  for (z=0; z<controlPointGrid->nz; z++)
-  {
-    index = z*controlPointGrid->nx*controlPointGrid->ny;
-
-    for (y=0; y<controlPointGrid->ny; y++)
-    {
-      for (x=0; x<controlPointGrid->nx; x++)
-      {
-	  
-	// The initial control point position
-	xInit =
-	  splineMatrix->m[0][0]*static_cast<float>(x) +
-	  splineMatrix->m[0][1]*static_cast<float>(y) +
-	  splineMatrix->m[0][2]*static_cast<float>(z) +
-	  splineMatrix->m[0][3];
-	yInit =
-	  splineMatrix->m[1][0]*static_cast<float>(x) +
-	  splineMatrix->m[1][1]*static_cast<float>(y) +
-	  splineMatrix->m[1][2]*static_cast<float>(z) +
-	  splineMatrix->m[1][3];
-	zInit =
-	  splineMatrix->m[2][0]*static_cast<float>(x) +
-	  splineMatrix->m[2][1]*static_cast<float>(y) +
-	  splineMatrix->m[2][2]*static_cast<float>(z) +
-	  splineMatrix->m[2][3];
-
-	// The final control point position:
-	//    controlPointPtrX[index], controlPointPtrY[index], controlPointPtrZ[index];
-
-	sphere->SetCenter( -controlPointPtrX[index], 
-			   -controlPointPtrY[index],
-			   controlPointPtrZ[index] );
-
-	sphere->Update();
-
-	vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
-	polydataCopy->DeepCopy( sphere->GetOutput() );
-	
-	appendFilter->AddInput( polydataCopy );
-	appendFilter->Update();
-
-	index++;
-      }
-    }
-  }
-
-  // Add the control points to the DataManager
+  polyData = niftk::F3DControlGridToVTKPolyDataSpheres( controlPointGrid, radius );
 
   mitk::Surface::Pointer mitkControlPoints = mitk::Surface::New();
 
-  mitkControlPoints->SetVtkPolyData( appendFilter->GetOutput() );
+  mitkControlPoints->SetVtkPolyData( polyData );
 
   mitk::DataNode::Pointer mitkControlPointsNode = mitk::DataNode::New();
 
@@ -558,7 +412,7 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *
 // CreateDeformationVisualisationSurface();
 // --------------------------------------------------------------------------- 
 
-void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType plane,
+void RegistrationExecution::CreateDeformationVisualisationSurface( niftk::PlaneType plane,
 								   nifti_image *controlPointGrid,
 								   int xSkip,
 								   int ySkip,
@@ -573,171 +427,63 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
     return;
   }
 
-  int i, j, k;
-  int x, y, z, index;
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 
-  PrecisionTYPE *controlPointGridPtrX, *controlPointGridPtrY, *controlPointGridPtrZ;
+  polyData = niftk::F3DControlGridToVTKPolyDataSurface( plane, controlPointGrid, 
+							xSkip, ySkip, zSkip);
+
 
   QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
   QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
 
-  nifti_image *referenceImage = userData->m_RegParameters.m_ReferenceImage;
-
-  std::cout << "Control point grid: " << std::endl;
-  nifti_image_infodump( controlPointGrid );
-
-  std::cout << "Reference image: " << std::endl;
-  nifti_image_infodump( referenceImage );
-
-
-  // Create a VTK polydata object and add everything to it
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  vtkIdType id;
-
-  vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<vtkPolyData> vtkControlPoints = vtkSmartPointer<vtkPolyData>::New();
-
-  int nPoints = controlPointGrid->nx*controlPointGrid->ny*controlPointGrid->nz;
-
-  controlPointGridPtrX = static_cast< PrecisionTYPE * >( controlPointGrid->data );
-  controlPointGridPtrY = &controlPointGridPtrX[ nPoints ];
-  controlPointGridPtrZ = &controlPointGridPtrY[ nPoints ];
-
-  int nxPoints, nyPoints, nzPoints;
-
-
-  nzPoints = 0;
-  for ( z=1; z<controlPointGrid->nz; z += zSkip )
-  {
-    nyPoints = 0;
-    for ( y=1; y<controlPointGrid->ny; y += ySkip )
-    {
-
-      index = z*controlPointGrid->nx*controlPointGrid->ny 
-	+ y*controlPointGrid->nx + 1;
-
-      nxPoints = 0;
-      for ( x=1; x<controlPointGrid->nx; x += xSkip )
-      {
-
-	// The final control point position:
-	//    controlPointGridPtrX[index], controlPointGridPtrY[index], controlPointGridPtrZ[index];
-
-	id = points->InsertNextPoint( -controlPointGridPtrX[index], 
-				      -controlPointGridPtrY[index],
-				      controlPointGridPtrZ[index] );
-
-	cells->InsertNextCell( 1 );
-	cells->InsertCellPoint( id );
-
-	index += xSkip;
-
-	nxPoints++;
-      }
-      nyPoints++;
-    }
-    nzPoints++;
-  }
-
-  sgrid->SetDimensions(nxPoints, nyPoints, nzPoints);
-  sgrid->SetPoints( points );
-  
-  vtkControlPoints->SetPoints( points );
-  vtkControlPoints->SetVerts( cells );
-
-
-  // Add the deformation planes to the DataManager
+  // Add the deformation plane to the DataManager
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  float rgb[3] = {0., 0., 0.};
+  float rgb[3];
+  std::string nameOfDeformation;
 
   mitk::DataNode::Pointer mitkDeformationNode = mitk::DataNode::New();
   mitk::DataNode::Pointer mitkControlPointsNode = mitk::DataNode::New();
 
-  vtkSmartPointer<vtkAppendPolyData> appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
-
-  vtkSmartPointer<vtkStructuredGridGeometryFilter> structuredGridFilter = vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
-
-  structuredGridFilter->SetInput( sgrid );
-
-  std::string nameOfDeformation;
-
   switch (plane )
   {
-  case PLANE_XY:
+  case niftk::PLANE_XY:
   {
-    rgb = {0.5, 0.247, 0.247};
+    rgb[0] = 0.5; 		// Set colour to dark red
+    rgb[1] = 0.247;
+    rgb[2] = 0.247;
+
     nameOfDeformation = std::string( "DeformationXY_" );    
 
-    for ( k=0; k<nzPoints; k++ ) 
-    {
-      vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
-      
-      structuredGridFilter->SetExtent( 0, nxPoints-1, 
-				       0, nyPoints-1, 
-				       k, k );
-
-      structuredGridFilter->Update();
-      polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
-      
-      appendFilter->AddInput( polydataCopy );
-      appendFilter->Update();
-    }
-    
     break;
   }
 
-  case PLANE_XZ:
+  case niftk::PLANE_XZ:
   {
-    rgb = {0.247, 0.247, 0.5};
+    rgb[0] = 0.247;		// Set colour to dark green
+    rgb[1] = 0.247;
+    rgb[2] = 0.5;
+
     nameOfDeformation = std::string( "DeformationXZ_" );    
-
-    for (j=0; j<nyPoints; j++) 
-    {
-      vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
-      
-      structuredGridFilter->SetExtent( 0, nxPoints-1, 
-				       j, j,
-				       0, nzPoints-1 );
-      structuredGridFilter->Update();
-      polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
-      
-      appendFilter->AddInput( polydataCopy );
-      appendFilter->Update();
-    }
     
     break;
   }
 
-  case PLANE_YZ:
+  case niftk::PLANE_YZ:
   {
-    rgb = {0.247, 0.5, 0.247};
+    rgb[0] = 0.247;		// Set colour to dark blue
+    rgb[1] = 0.5;
+    rgb[2] = 0.247;
+
     nameOfDeformation = std::string( "DeformationYZ_" );    
 
-    for (i=0; i<nxPoints; i++) 
-    {
-      vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
-      
-      structuredGridFilter->SetExtent( i, i,
-				       0, nyPoints-1, 
-				       0, nzPoints-1 );
-      structuredGridFilter->Update();
-      polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
-      
-      appendFilter->AddInput( polydataCopy );
-      appendFilter->Update();
-    }
+    break;
   }
   }
 
   mitk::Surface::Pointer mitkDeformation = mitk::Surface::New();
 
-  mitkDeformation->SetVtkPolyData( appendFilter->GetOutput() );
+  mitkDeformation->SetVtkPolyData( polyData );
 
   nameOfDeformation.append( sourceName.toStdString() );
   nameOfDeformation.append( "_To_" );
@@ -749,26 +495,4 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
   mitkDeformationNode->SetData( mitkDeformation );
 
   userData->GetDataStorage()->Add( mitkDeformationNode );
-  
-
-#if 0
-  // Add the deformation points to the DataManager
-
-  mitk::Surface::Pointer mitkControlPoints = mitk::Surface::New();
-
-  mitkControlPoints->SetVtkPolyData( vtkControlPoints );
-
-  std::string nameOfControlPoints( "DeformationPointsFor_" );
-  nameOfControlPoints.append( sourceName.toStdString() );
-  nameOfControlPoints.append( "_To_" );
-  nameOfControlPoints.append( targetName.toStdString() );
-  
-  mitkControlPointsNode->SetProperty("name", mitk::StringProperty::New(nameOfControlPoints) );
-  mitkControlPointsNode->SetColor( rgb );
-
-  mitkControlPointsNode->SetData( mitkControlPoints );
-
-  userData->GetDataStorage()->Add( mitkControlPointsNode );
-#endif
-
 }
