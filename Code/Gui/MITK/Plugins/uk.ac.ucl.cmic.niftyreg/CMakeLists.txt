@@ -21,6 +21,7 @@ endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
                       niftkITK
+                      niftkVTK
 		      _reg_KLdivergence
 		      _reg_blockMatching
 		      _reg_femTransformation
@@ -31,11 +32,11 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 		      _reg_resampling
 		      _reg_ssd
 		      _reg_tools
+		      _reg_ReadWriteImage
 		      reg_png
 		      png
 		      reg_nrrd
 		      reg_NrrdIO
-		      _reg_ReadWriteImage
 )
 
 # The NiftyReg plugin currently can't use the CUDA version of NiftyReg

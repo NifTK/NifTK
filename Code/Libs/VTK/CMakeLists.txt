@@ -23,6 +23,7 @@
 #=================================================================================*/
 
 SET(niftkVTK_SRCS
+niftkF3DControlGridToVTKPolyData.cxx
 Common/vtkFunctions.cpp
 )
 

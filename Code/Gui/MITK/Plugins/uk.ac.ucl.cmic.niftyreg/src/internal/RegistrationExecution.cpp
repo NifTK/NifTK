@@ -1,26 +1,26 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: An image processing toolkit jointly developed by the
+  Dementia Research Centre, and the Centre For Medical Image Computing
+  at University College London.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  See:        http://dementia.ion.ucl.ac.uk/
+  http://cmic.cs.ucl.ac.uk/
+  http://www.ucl.ac.uk/
 
- Last Changed      : $Date: 2012-08-13 13:00:32 +0100 (Mon, 13 Aug 2012) $
- Revision          : $Revision: 9470 $
- Last modified by  : $Author: jhh $
+  Last Changed      : $Date: 2012-08-13 13:00:32 +0100 (Mon, 13 Aug 2012) $
+  Revision          : $Revision: 9470 $
+  Last modified by  : $Author: jhh $
 
- Original author   : j.hipwell@ucl.ac.uk
+  Original author   : j.hipwell@ucl.ac.uk
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notices for more information.
 
- ============================================================================*/
+  ============================================================================*/
 
 #include <QTimer>
 #include <QMessageBox>
@@ -29,6 +29,19 @@
 
 #include "mitkImageToNifti.h"
 #include "niftiImageToMitk.h"
+
+#include "mitkSurface.h"
+
+#include <vtkVersion.h>
+#include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
+#include <vtkPoints.h>
+#include <vtkCellArray.h>
+#include <vtkVertex.h>
+#include <vtkStructuredGrid.h>
+#include <vtkStructuredGridGeometryFilter.h>
+#include <vtkAppendPolyData.h>
+#include <vtkSphereSource.h>
 
 
 // ---------------------------------------------------------------------------
@@ -114,7 +127,7 @@ void RegistrationExecution::ExecuteRegistration()
   // Ensure the progress bar is scaled appropriately
 
   if (    userData->m_RegParameters.m_FlagDoInitialRigidReg 
-       && userData->m_RegParameters.m_FlagDoNonRigidReg ) 
+	  && userData->m_RegParameters.m_FlagDoNonRigidReg ) 
     userData->m_ProgressBarRange = 50.;
   else
     userData->m_ProgressBarRange = 100.;
@@ -240,11 +253,26 @@ void RegistrationExecution::ExecuteRegistration()
 
     userData->GetDataStorage()->Add( resultNode );
 
+
     // Create VTK polydata to illustrate the deformation field
-    CreateDeformationVisualisationSurface();
+
+    nifti_image *controlPointGrid =
+      userData->m_RegNonRigid->GetControlPointPositionImage();
+
+    CreateControlPointVisualisation( controlPointGrid );
+
+    reg_bspline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
+					controlPointGrid );
+
+    CreateDeformationVisualisationSurface( niftk::PLANE_XY, controlPointGrid, 1, 1, 2 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, controlPointGrid, 1, 2, 1 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, controlPointGrid, 2, 1, 1 );
+
+    if ( controlPointGrid != NULL )
+      nifti_image_free( controlPointGrid );
 
     UpdateProgressBar( 100., userData );
-   }
+  }
 
 
   userData->m_Modified = false;
@@ -253,10 +281,10 @@ void RegistrationExecution::ExecuteRegistration()
 
 
 // ---------------------------------------------------------------------------
-// CreateDeformationVisualisationSurface();
+// CreateControlPointVisualisation();
 // --------------------------------------------------------------------------- 
 
-void RegistrationExecution::CreateDeformationVisualisationSurface( void )
+void RegistrationExecution::CreateControlPointVisualisation( nifti_image *controlPointGrid )
 {
   if ( ! userData->m_RegNonRigid )
   {
@@ -267,10 +295,14 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( void )
     return;
   }
 
-  nifti_image *controlPointGrid 
-    = userData->m_RegNonRigid->GetControlPointPositionImage();
+  QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
 
-  std::cout << "Control point grid dimensions: " 
+  int nControlPoints = controlPointGrid->nx*controlPointGrid->ny*controlPointGrid->nz;
+
+  std::cout << "Number of control points: " 
+	    << nControlPoints << std::endl
+	    << "Control point grid dimensions: " 
 	    << controlPointGrid->nx << " x " 
 	    << controlPointGrid->ny << " x " 
 	    << controlPointGrid->nz << std::endl
@@ -280,7 +312,187 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( void )
 	    << controlPointGrid->dz << std::endl;
 
 
+  vtkSmartPointer<vtkPolyData> vtkControlPoints = vtkSmartPointer<vtkPolyData>::New();
+  
+  vtkControlPoints = niftk::F3DControlGridToVTKPolyDataPoints( controlPointGrid );
+  
+  mitk::Surface::Pointer mitkControlPoints = mitk::Surface::New();
 
-  if ( controlPointGrid != NULL )
-    nifti_image_free( controlPointGrid );
+  mitkControlPoints->SetVtkPolyData( vtkControlPoints );
+
+  mitk::DataNode::Pointer mitkControlPointsNode = mitk::DataNode::New();
+
+  std::string nameOfControlPoints( "ControlPointsFor_" );
+  nameOfControlPoints.append( sourceName.toStdString() );
+  nameOfControlPoints.append( "_To_" );
+  nameOfControlPoints.append( targetName.toStdString() );
+  
+  mitkControlPointsNode->SetProperty("name", mitk::StringProperty::New(nameOfControlPoints) );
+
+  mitkControlPointsNode->SetData( mitkControlPoints );
+  mitkControlPointsNode->SetColor( 1., 0.808, 0.220 );
+
+  userData->GetDataStorage()->Add( mitkControlPointsNode );
+}
+
+
+// ---------------------------------------------------------------------------
+// CreateControlPointSphereVisualisation();
+// --------------------------------------------------------------------------- 
+
+void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *controlPointGrid )
+{
+  if ( ! userData->m_RegNonRigid )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No registration data to create VTK deformation visualisation.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
+
+  int nControlPoints = controlPointGrid->nx*controlPointGrid->ny*controlPointGrid->nz;
+
+  std::cout << "Number of control points: " 
+	    << nControlPoints << std::endl
+	    << "Control point grid dimensions: " 
+	    << controlPointGrid->nx << " x " 
+	    << controlPointGrid->ny << " x " 
+	    << controlPointGrid->nz << std::endl
+	    << "Control point grid spacing: " 
+	    << controlPointGrid->dx << " x " 
+	    << controlPointGrid->dy << " x " 
+	    << controlPointGrid->dz << std::endl;
+
+ // Get the target image
+  // ~~~~~~~~~~~~~~~~~~~~
+
+  float radius = 1.;
+  nifti_image *referenceImage = userData->m_RegParameters.m_ReferenceImage;
+
+  if ( referenceImage )
+    radius = vcl_sqrt( referenceImage->dx*referenceImage->dx +
+                       referenceImage->dy*referenceImage->dy +
+                       referenceImage->dz*referenceImage->dz );
+
+
+  // Create a VTK polydata object and add everything to it
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+
+  polyData = niftk::F3DControlGridToVTKPolyDataSpheres( controlPointGrid, radius );
+
+  mitk::Surface::Pointer mitkControlPoints = mitk::Surface::New();
+
+  mitkControlPoints->SetVtkPolyData( polyData );
+
+  mitk::DataNode::Pointer mitkControlPointsNode = mitk::DataNode::New();
+
+  std::string nameOfControlPoints( "ControlPointSpheresFor_" );
+
+  nameOfControlPoints.append( sourceName.toStdString() );
+  nameOfControlPoints.append( "_To_" );
+  nameOfControlPoints.append( targetName.toStdString() );
+  
+  mitkControlPointsNode->SetProperty("name", mitk::StringProperty::New(nameOfControlPoints) );
+
+  mitkControlPointsNode->SetData( mitkControlPoints );
+  mitkControlPointsNode->SetColor( 1., 0.808, 0.220 );
+
+  userData->GetDataStorage()->Add( mitkControlPointsNode );
+}
+
+
+// ---------------------------------------------------------------------------
+// CreateDeformationVisualisationSurface();
+// --------------------------------------------------------------------------- 
+
+void RegistrationExecution::CreateDeformationVisualisationSurface( niftk::PlaneType plane,
+								   nifti_image *controlPointGrid,
+								   int xSkip,
+								   int ySkip,
+								   int zSkip )
+{
+  if ( ! userData->m_RegNonRigid )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No registration data to create VTK deformation visualisation.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+
+  polyData = niftk::F3DControlGridToVTKPolyDataSurface( plane, controlPointGrid, 
+							xSkip, ySkip, zSkip);
+
+
+  QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
+
+  // Add the deformation plane to the DataManager
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  float rgb[3];
+  std::string nameOfDeformation;
+
+  mitk::DataNode::Pointer mitkDeformationNode = mitk::DataNode::New();
+  mitk::DataNode::Pointer mitkControlPointsNode = mitk::DataNode::New();
+
+  switch (plane )
+  {
+  case niftk::PLANE_XY:
+  {
+    rgb[0] = 0.5; 		// Set colour to dark red
+    rgb[1] = 0.247;
+    rgb[2] = 0.247;
+
+    nameOfDeformation = std::string( "DeformationXY_" );    
+
+    break;
+  }
+
+  case niftk::PLANE_XZ:
+  {
+    rgb[0] = 0.247;		// Set colour to dark green
+    rgb[1] = 0.247;
+    rgb[2] = 0.5;
+
+    nameOfDeformation = std::string( "DeformationXZ_" );    
+    
+    break;
+  }
+
+  case niftk::PLANE_YZ:
+  {
+    rgb[0] = 0.247;		// Set colour to dark blue
+    rgb[1] = 0.5;
+    rgb[2] = 0.247;
+
+    nameOfDeformation = std::string( "DeformationYZ_" );    
+
+    break;
+  }
+  }
+
+  mitk::Surface::Pointer mitkDeformation = mitk::Surface::New();
+
+  mitkDeformation->SetVtkPolyData( polyData );
+
+  nameOfDeformation.append( sourceName.toStdString() );
+  nameOfDeformation.append( "_To_" );
+  nameOfDeformation.append( targetName.toStdString() );
+  
+  mitkDeformationNode->SetProperty("name", mitk::StringProperty::New( nameOfDeformation ) );
+  mitkDeformationNode->SetColor( rgb );
+
+  mitkDeformationNode->SetData( mitkDeformation );
+
+  userData->GetDataStorage()->Add( mitkDeformationNode );
 }

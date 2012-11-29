@@ -64,9 +64,9 @@ ENDIF (BUILD_MESHING)
 ###############################################################
 IF(SlicerExecutionModel_FOUND)
 
-  ##############################################################
+  #-------------------------------------------------------------
   # Add new programs to this list.
-  ##############################################################
+  #-------------------------------------------------------------
   SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES
     niftkAdd
     niftkApplyMaskToImage
@@ -90,7 +90,61 @@ IF(SlicerExecutionModel_FOUND)
     )
  
   ENDFOREACH()
+
+  #-------------------------------------------------------------
+  # Add new VTK programs which link to NiftyReg to this list.
+  #-------------------------------------------------------------
+  IF(VTK_FOUND)
+    SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
+      niftkF3DControlGridToVTKPolyData
+      )
+
+    if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+      # OpenMP is disabled when the compiler is based on Clang
+      find_package(OpenMP)
+      if(OPENMP_FOUND)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+      endif(OPENMP_FOUND)
+    endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    
+    ADD_DEFINITIONS(-DUSE_NIFTYREG)
+    LINK_DIRECTORIES(${NIFTYREG_DIR}/lib)
   
+    FOREACH(APP ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
+
+      CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${APP}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${APP}.xml @ONLY )
+
+      SET(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
+	${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
+	niftkITK
+	niftkVTK
+	_reg_KLdivergence
+	_reg_blockMatching
+	_reg_femTransformation
+	_reg_globalTransformation
+	_reg_localTransformation
+	_reg_maths
+	_reg_mutualinformation
+	_reg_resampling
+	_reg_ssd
+	_reg_tools
+	_reg_ReadWriteImage
+	reg_png
+	png
+	reg_nrrd
+	reg_NrrdIO
+	)
+
+      SEMMacroBuildNifTKCLI(
+	NAME ${APP}
+	EXECUTABLE_ONLY
+	${CMAKE_CURRENT_BINARY_DIR}
+	TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
+	)
+ 
+    ENDFOREACH()
+  ENDIF()  
 ENDIF()
 
 ###############################################################

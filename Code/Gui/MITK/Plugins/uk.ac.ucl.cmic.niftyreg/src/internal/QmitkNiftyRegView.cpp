@@ -1242,14 +1242,16 @@ void QmitkNiftyRegView::OnSaveTransformationPushButtonPressed( void )
   dialog.setAcceptMode( QFileDialog::AcceptSave );
   dialog.setLabelText( QFileDialog::FileName, tr( "File selected" ) );
 
+  int iOffset = 0;
   QStringList filters;
 
   if ( ! ( m_RegAladin && m_RegNonRigid ) )
   {
     if ( m_RegNonRigid )    
     {
-      filters << "B-spline control grid (*.nii)";      
-      dialog.selectNameFilter( filters[1] );
+      filters << "B-spline control grid (*.nii *.nii.gz)";      
+      dialog.selectNameFilter( filters[0] );
+      iOffset = 1;
     }
     else
     {
@@ -1259,7 +1261,7 @@ void QmitkNiftyRegView::OnSaveTransformationPushButtonPressed( void )
   }
   else {
     filters << "Affine transformation (*.affine)"
-	    << "B-spline control grid (*.nii)";
+	    << "B-spline control grid (*.nii *.nii.gz)";
     dialog.selectNameFilter( filters[0] );
   }
 
@@ -1288,7 +1290,7 @@ void QmitkNiftyRegView::OnSaveTransformationPushButtonPressed( void )
 
     // Save according to the filter selected
 
-    switch ( iSelectedFilter )
+    switch ( iSelectedFilter + iOffset )
     {
       // Affine transformation file
     case 0:
@@ -2133,6 +2135,24 @@ void QmitkNiftyRegView::OnLoadRegistrationParametersPushButtonPressed( void )
 
 void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 {
+  if ( ! m_Controls.m_TargetImageComboBox->count() )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No target image specified.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  if ( ! m_Controls.m_SourceImageComboBox->count() )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No source image specified.");
+    msgBox.exec();
+    
+    return;
+  }
+
 
 #if 0
 
