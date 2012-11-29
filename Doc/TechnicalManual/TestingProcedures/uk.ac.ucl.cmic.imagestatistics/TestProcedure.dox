@@ -2,6 +2,38 @@
 
 \page TestProcedureImageStatistics Image Statistics View Test Procedure
 
-\li Read the Doxygen help page
+\li Read the Doxygen help page.
+
+\li Open the Image Statistics Preferences page and ensure that  'auto-update' is unchecked, 'assume binary mask' is checked and 'background value' is zero
+
+\section Test 1
+
+\li Load non-binary image into NiftyView.
+\li Open the Image Statistics module.
+\li Select the non-binary image in the Data Manager.
+\li Press the Update button on the Image Statistics module.
+\li Verify that the statistics calculated look correct.
+
+\section Test 2
+
+\li Next load a binary mask image the same size as the previous non-binary into the Data Manager.
+\li Select this binary image in the Data Manager and press the Update button on the Image Statistics module.
+\li Verify that the statistics calculated look correct and make a note of the 'volume (ml)' value.
+
+\section Test 3
+
+\li Select both non-binary image and then the binary mask in the Data Manager.
+\li Verify that the correct images are indicated in the Image Statistics module.
+\li Press the Update button on the Image Statistics module.
+\li Verify that the statistics calculated look correct and that the 'volume (ml)' value is identical to the previous calculation.
+\li Make a note of the values displayed for this test.
+
+\section Test 4
+
+\li Open the Image Statistics Preferences page and uncheck the 'assume binary mask' checkbox.
+\li As for Test 3 ensure that both the non-binary image and then the binary mask are selected in the Data Manager.
+\li Verify that the correct images are indicated in the Image Statistics module.
+\li Press the Update button on the Image Statistics module.
+\li Verify that the statistics calculated for non-zero values are identical to the values that were displayed for Test 3.
 
 */

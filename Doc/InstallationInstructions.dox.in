@@ -14,13 +14,17 @@ Please see the instructions below.
 \section InstallationInstructionsMac Mac OSX
 
 <ol>
-<li> Drag and drop the @NIFTK_DEPLOY_NAME@ folder onto the Applications folder. 
+<li> Download a .dmg file, and double click to "mount" it.
+<li> You will see two folder. One named /Applications and one named @NIFTK_DEPLOY_NAME@. Drag and drop the @NIFTK_DEPLOY_NAME@ folder onto the Applications folder. 
 <li> The software will install into /Applications/@NIFTK_DEPLOY_NAME@
-<li> In your shell startup script ~/.bash_profile put
+<li> In Finder, you will see for example an icon for NiftyView.app and possibly other icons for other graphical user interfaces. 
+Each of these icons represents a bundle containing the main interface eg. NiftyView, and also command line programs and scripts.
+<li> In your shell startup script ~/.bash_profile put for example
 \verbatim
-export NIFTK_DIR=/Applications/@NIFTK_DEPLOY_NAME@
-source ${NIFTK_DIR}/bin/SetupNifTK.sh
+export PATH=/Applications/@NIFTK_DEPLOY_NAME@/NiftyView.app/Contents/MacOS:$PATH
 \endverbatim
+and similarly for other bundles.
+<li> Don't forget that when the version number changes, you have to change the PATH for the new version.
 </ol>
 
 \section InstallationInstructionsLinux Linux
@@ -57,18 +61,21 @@ a csh and the file to edit is ~/.uclcs-csh-options.
 <ol>
 <li> Download the .exe file
 <li> Run the .exe file following the on-screen prompts.
-<li> The software will install into "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@"
-<li> A short-cut will enable you to run NiftyView.
-<li> Command line programs will be in "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@\bin"
+<li> The software will install into "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@".
+<li> A desktop short-cut will enable you to run NiftyView and other graphical user interfaces.
+<li> Command line programs will be in "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@\bin".
 <li> Scripts will not be available.
+<li> If you want command line programs to be available from the command prompt, you must set your user or system PATH environment variable manually to "C:\Program Files\@NIFTK_PLATFORM@ @NIFTK_VERSION_STRING@\bin".
 </ol>
 
 \section Running the NiftyView application
 
 Once correctly installed, NiftyView can be run as follows:
 <ol>
-<li> On a Mac, you can find the NiftyView icon in the /Applications/@NIFTK_DEPLOY_NAME@ and drag it to the dock, or create an alias on your Desktop and run that. On the command line, the program is available as NiftyView.
-<li> On Linux, you should run NiftyView.sh
-<li> On Windows, you can launch NiftyView from the Start menu then @NIFTK_DEPLOY_NAME@ then NiftyView, or from the Desktop icon if you selected that option, and also from the command line if you chose to add it to the system or user PATH. 
+<li> On Linux, you should run NiftyView.sh, which should be available if you set the PATH variable correctly above.
+<li> On Windows, you can launch NiftyView from the Start menu then @NIFTK_DEPLOY_NAME@ then NiftyView, or from the Desktop icon if you selected that option, and also from the command line if you chose to add it to the system or user PATH.
+<li> On a Mac, you can find the NiftyView icon in the /Applications/@NIFTK_DEPLOY_NAME@ and drag it to the dock (which creates an alias), or create an alias to /Applications/@NIFTK_DEPLOY_NAME@/NiftyView.app on your Desktop and run that.
+On the command line you can run "open  /Applications/@NIFTK_DEPLOY_NAME@/NiftyView.app" or if you set your PATH in ~/.bash_profile you can just run "NiftyView."
 </ol>
+and similarly for other graphical user interfaces.
 */

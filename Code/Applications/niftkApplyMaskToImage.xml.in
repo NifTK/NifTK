@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>@NIFTK_PLATFORM@.Image Operators</category>
-  <title>Mask Image</title>
+  <category>Image Operators</category>
+  <title>Apply Mask to Image</title>
   <description><![CDATA[Masks the input image (setting voxels outside the region of interest to zero) using a mask and/or a bounding box.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -37,7 +37,7 @@
 
   <parameters>
 
-    <label>Region of interest</label>
+    <label>Region of interest via mask and/or bounding box</label>
     <description><![CDATA[Parameters that control the region masked]]></description>
 
     <boolean>

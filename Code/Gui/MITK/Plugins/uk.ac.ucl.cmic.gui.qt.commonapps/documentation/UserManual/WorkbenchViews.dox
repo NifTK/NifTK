@@ -1,0 +1,22 @@
+/**
+
+\page WorkbenchViews Workbench Views
+\addindex Workbench Views
+
+From the main Menu Bar, selecting "Window", then "View" shows the list of Views. 
+A View provides a discrete piece of functionality such as changing intensity window settings, 
+segmentation tools, iso-surface generation and so on. Selecting each View will launch a small window
+containing the View if indeed the View is not already shown. The View provides the necessary 
+controls for that discrete piece of functionality. Each View should be designed to be as stand-alone 
+as possible. In addition to the controls on the View's window, there may also be an optional 
+preference page. By way of example, Figure 1. shows the controls for 
+<a href="qthelp://uk.ac.ucl.cmic.imagelookuptables/bundle/index.html">The Image Lookup Tables View</a>
+enabling the user to choose a lookup table and settings such as window, level, minimum intensity and 
+maximum intensity.
+
+\image html MainScreenPreferenceExample.png "Figure 1. The Image Lookup Tables View provides controls to chose a look-up table, and intensity window."
+
+Furthermore, each View has its own Help page. Selecting the View and hitting F1 will launch 
+context sensitive help.
+
+*/
