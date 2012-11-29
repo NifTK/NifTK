@@ -51,7 +51,9 @@ function cleanup
 		cd ..
 	fi
 	if [[ -d ${dir_output} ]] ; then
-		rm -rf  ${dir_output}
+		if ! ${debug_mode} ; then
+			rm -rf  ${dir_output} 
+		fi
 	fi
 }
 trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
@@ -70,73 +72,69 @@ function normalization()
 	local orientation=$4
 	
 	# Normalization
-	if [[ ! -f "${output}"  ]] ; then
-		# Delete temporally files
-		execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.mnc ${img}_n3.imp ${img}_n3_register.nii"
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register*" 
-		
-		progressXML "0.2" "Register atlas to target space"
-		
-		# Register atlas to target space
-		execute_command_or_else_stop "${dir_niftyreg}reg_aladin \
-			-ref ${img}.nii \
-			-flo ${HEAD_IMAGE} \
-			-aff source-to-target-12dof.txt \
-			-res ${img}_neck_register.nii \
-			-sym \
-			-lp 5" 
-		
-		progressXML "0.4" "Moving tissues mask to target space"
-		
-		# Move tissues mask to target space
-		execute_command_or_else_stop "${dir_niftyreg}reg_resample \
-			-ref ${img}.nii \
-			-flo ${MASK_IMAGE} \
-			-aff source-to-target-12dof.txt \
-			-res ${img}_ICBM152_mask_register.nii \
-			-NN"
-		
-		progressXML "0.45" "Set tissues mask from float to char"
-		
-		# Set tissues mask from float to char
-		execute_command_or_else_stop "fslmaths \
-			${img}_ICBM152_mask_register.nii \
-			-bin \
-			${img}_ICBM152_mask_register-bin.nii \
-			-odt char"
 
-		# Change format to NIFTI
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_ICBM152_mask_register-bin ${img}_ICBM152_mask_register.nii"
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.*"  
+	# Delete temporally files
+	execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.mnc ${img}_n3.imp ${img}_n3_register.nii"
+	execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register*" 
+		
+	progressXML "0.2" "Register atlas to target space"
+		
+	# Register atlas to target space
+	execute_command_or_else_stop "${dir_niftyreg}reg_aladin \
+		-ref ${img}.nii \
+		-flo ${HEAD_IMAGE} \
+		-aff source-to-target-12dof.txt \
+		-res ${img}_neck_register.nii \
+		-sym \
+		-lp 5" 
+	
+	progressXML "0.4" "Moving tissues mask to target space"
+	
+	# Move tissues mask to target space
+	execute_command_or_else_stop "${dir_niftyreg}reg_resample \
+		-ref ${img}.nii \
+		-flo ${MASK_IMAGE} \
+		-aff source-to-target-12dof.txt \
+		-res ${img}_ICBM152_mask_register.nii \
+		-NN"
+	
+	progressXML "0.45" "Set tissues mask from float to char"
+	
+	# Set tissues mask from float to char
+	execute_command_or_else_stop "fslmaths \
+		${img}_ICBM152_mask_register.nii \
+		-bin \
+		${img}_ICBM152_mask_register-bin.nii \
+		-odt char"
 
-		# Change format to mnc
-		execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}.nii ${img}.mnc"
-		execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
-		
-		progressXML "0.5" "Starting N3"
-		
-		# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
-		if [[ ! -f "${img}_n3.mnc"  ]] ; then		
-			execute_command_or_else_stop "${n3dir}nu_correct $n3_options \
-			-mask ${img}_ICBM152_mask_register.mnc \
-			${img}.mnc \
-			${img}_n3.mnc" > /dev/null
-		fi
-				
-		progressXML "0.9" "Change format from mnc to NIFTI"
-		
-		# Change format from mnc to NIFTI
-		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ${output}"
-		
-		# Delete temporally files
-		execute_command_or_else_stop "rm -f ${img}_n3.mnc *.hdr *.img"
-		execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.imp ${img}_n3_register.nii"
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register* source-to*"
+	# Change format to NIFTI
+	execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.nii"
+	execute_command_or_else_stop "fslchfiletype NIFTI ${img}_ICBM152_mask_register-bin ${img}_ICBM152_mask_register.nii"
+	execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.*"  
 
-	else
-		echo "File ${output/%\.???/_n3.nii} exists, we don't repeat the calculation "
+	# Change format to mnc
+	execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}.nii ${img}.mnc"
+	execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
+	
+	progressXML "0.5" "Starting N3"
+	
+	# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
+	if [[ ! -f "${img}_n3.mnc"  ]] ; then		
+		execute_command_or_else_stop "${n3dir}nu_correct $n3_options \
+		-mask ${img}_ICBM152_mask_register.mnc \
+		${img}.mnc \
+		${img}_n3.mnc" > /dev/null
 	fi
+			
+	progressXML "0.9" "Change format from mnc to NIFTI"
+	
+	# Change format from mnc to NIFTI
+	dir_file=`dirname ${output}`
+	if [ "${dir_file}" == "." ] ; then
+		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ../${output}"
+	else
+		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ${output}"
+	fi		
 }
 
 # Function  : Copy files to a specific destination as NIFTI file
@@ -258,6 +256,9 @@ Mandatory Arguments:
   --mask		: is the mask atlas file in NIFTI format
   --atlas		: is the atlas data file in NIFTI format
 
+Optional Arguments: 
+  --debug		: debug (don't delete temporary intermediate images)
+
 Recomendations:
 
 	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
@@ -275,6 +276,7 @@ if [ $# -eq 0 ]; then
   Usage
 fi
 orientation=""
+debug_mode=false
 
 # Parse remaining command line options
 while [ "$#" -gt 0 ]
@@ -321,6 +323,9 @@ do
 		;;
 	esac
 	shift 1
+	;;
+     --debug)
+	debug_mode=true
 	;;
     -*)
 	Usage
@@ -379,10 +384,12 @@ execute_command_or_else_stop "cd ${dir_output}"
 # Start process
 normalization "input_image" ${OUTPUT_IMAGE} ${patient} ${orientation}
 
-# Delete temporary directory
-execute_command_or_else_stop "rm -f *.nii *.mnc *.txt" 
-execute_command_or_else_stop "cd .."
-execute_command_or_else_stop "rm -rf ${dir_output}"
+if ! ${debug_mode} ; then
+	# Delete temporary directory
+	execute_command_or_else_stop "rm -f *.nii *.mnc *.txt *.hdr *.img *.imp" 
+	execute_command_or_else_stop "cd .."
+	execute_command_or_else_stop "rm -rf ${dir_output}"
+fi
 
 progressXML "1" "Finish"
 closeprogressXML ${OUTPUT_IMAGE}
