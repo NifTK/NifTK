@@ -29,6 +29,7 @@
 
 #include "mitkImageToNifti.h"
 #include "niftiImageToMitk.h"
+#include "niftkF3DControlGridToVTKPolyData.h"
 
 #include "mitkSurface.h"
 
@@ -256,11 +257,20 @@ void RegistrationExecution::ExecuteRegistration()
 
     // Create VTK polydata to illustrate the deformation field
 
-    CreateControlPointVisualisation();
+    nifti_image *controlPointGrid =
+      userData->m_RegNonRigid->GetControlPointPositionImage();
 
-    CreateDeformationVisualisationSurface( PLANE_XY );
-    //CreateDeformationVisualisationSurface( PLANE_YZ );
-    //CreateDeformationVisualisationSurface( PLANE_XZ );
+    CreateControlPointVisualisation( controlPointGrid );
+
+    reg_bspline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
+					controlPointGrid );
+
+    CreateDeformationVisualisationSurface( PLANE_XY, controlPointGrid, 1, 1, 2 );
+    CreateDeformationVisualisationSurface( PLANE_YZ, controlPointGrid, 2, 1, 1 );
+    CreateDeformationVisualisationSurface( PLANE_XZ, controlPointGrid, 1, 2, 1 );
+
+    if ( controlPointGrid != NULL )
+      nifti_image_free( controlPointGrid );
 
     UpdateProgressBar( 100., userData );
   }
@@ -275,7 +285,7 @@ void RegistrationExecution::ExecuteRegistration()
 // CreateControlPointVisualisation();
 // --------------------------------------------------------------------------- 
 
-void RegistrationExecution::CreateControlPointVisualisation( void )
+void RegistrationExecution::CreateControlPointVisualisation( nifti_image *controlPointGrid )
 {
   if ( ! userData->m_RegNonRigid )
   {
@@ -295,9 +305,6 @@ void RegistrationExecution::CreateControlPointVisualisation( void )
 
   QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
   QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
-
-  nifti_image *controlPointGrid =
-    userData->m_RegNonRigid->GetControlPointPositionImage();
 
   int nControlPoints = controlPointGrid->nx*controlPointGrid->ny*controlPointGrid->nz;
 
@@ -400,11 +407,9 @@ void RegistrationExecution::CreateControlPointVisualisation( void )
   mitkControlPointsNode->SetProperty("name", mitk::StringProperty::New(nameOfControlPoints) );
 
   mitkControlPointsNode->SetData( mitkControlPoints );
+  mitkControlPointsNode->SetColor( 1., 0.808, 0.220 );
 
   userData->GetDataStorage()->Add( mitkControlPointsNode );
-
-  if ( controlPointGrid != NULL )
-    nifti_image_free( controlPointGrid );
 }
 
 
@@ -412,7 +417,7 @@ void RegistrationExecution::CreateControlPointVisualisation( void )
 // CreateControlPointSphereVisualisation();
 // --------------------------------------------------------------------------- 
 
-void RegistrationExecution::CreateControlPointSphereVisualisation( void )
+void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *controlPointGrid )
 {
   if ( ! userData->m_RegNonRigid )
   {
@@ -432,9 +437,6 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( void )
 
   QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
   QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
-
-  nifti_image *controlPointGrid =
-    userData->m_RegNonRigid->GetControlPointPositionImage();
 
   int nControlPoints = controlPointGrid->nx*controlPointGrid->ny*controlPointGrid->nz;
 
@@ -546,596 +548,9 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( void )
   mitkControlPointsNode->SetProperty("name", mitk::StringProperty::New(nameOfControlPoints) );
 
   mitkControlPointsNode->SetData( mitkControlPoints );
+  mitkControlPointsNode->SetColor( 1., 0.808, 0.220 );
 
   userData->GetDataStorage()->Add( mitkControlPointsNode );
-
-  if ( controlPointGrid != NULL )
-    nifti_image_free( controlPointGrid );
-}
-
-
-// ---------------------------------------------------------------------------
-// GetValue();
-// --------------------------------------------------------------------------- 
-
-template<class SplineTYPE>
-SplineTYPE RegistrationExecution::GetValue(SplineTYPE *array, int *dim, int x, int y, int z)
-{
-    if(x<0 || x>= dim[1] || y<0 || y>= dim[2] || z<0 || z>= dim[3])
-        return 0.0;
-    return array[(z*dim[2]+y)*dim[1]+x];
-}
-
-
-// ---------------------------------------------------------------------------
-// SetValue();
-// --------------------------------------------------------------------------- 
-
-template<class SplineTYPE>
-void RegistrationExecution::SetValue(SplineTYPE *array, int *dim, int x, int y, int z, SplineTYPE value)
-{
-    if(x<0 || x>= dim[1] || y<0 || y>= dim[2] || z<0 || z>= dim[3])
-        return;
-    array[(z*dim[2]+y)*dim[1]+x] = value;
-}
-
-
-// ---------------------------------------------------------------------------
-// reg_bspline_refineControlPointGrid2D();
-// --------------------------------------------------------------------------- 
-
-template <class SplineTYPE>
-void RegistrationExecution::reg_bspline_refineControlPointGrid2D( nifti_image *targetImage,
-								  nifti_image *splineControlPoint,
-								  float xRefineFactor, 
-								  float yRefineFactor )
-{
-  // The input grid is first saved
-  SplineTYPE *oldGrid = (SplineTYPE *)malloc(splineControlPoint->nvox*splineControlPoint->nbyper);
-  SplineTYPE *gridPtrX = static_cast<SplineTYPE *>(splineControlPoint->data);
-  memcpy(oldGrid, gridPtrX, splineControlPoint->nvox*splineControlPoint->nbyper);
-  if(splineControlPoint->data!=NULL) free(splineControlPoint->data);
-  int oldDim[4];
-  oldDim[1]=splineControlPoint->dim[1];
-  oldDim[2]=splineControlPoint->dim[2];
-  oldDim[3]=1;
-
-  splineControlPoint->dx = splineControlPoint->pixdim[1] = splineControlPoint->dx / xRefineFactor;
-  splineControlPoint->dy = splineControlPoint->pixdim[2] = splineControlPoint->dy / yRefineFactor;
-  splineControlPoint->dz = 1.0f;
-
-  splineControlPoint->dim[1]=splineControlPoint->nx=(int)reg_floor(targetImage->nx*targetImage->dx/splineControlPoint->dx)+5;
-  splineControlPoint->dim[2]=splineControlPoint->ny=(int)reg_floor(targetImage->ny*targetImage->dy/splineControlPoint->dy)+5;
-  //    splineControlPoint->dim[1]=splineControlPoint->nx=(int)reg_ceil(targetImage->nx*targetImage->dx/splineControlPoint->dx)+4;
-  //    splineControlPoint->dim[2]=splineControlPoint->ny=(int)reg_ceil(targetImage->ny*targetImage->dy/splineControlPoint->dy)+4;
-  splineControlPoint->dim[3]=1;
-
-  splineControlPoint->nvox=splineControlPoint->nx*splineControlPoint->ny*splineControlPoint->nz*splineControlPoint->nt*splineControlPoint->nu;
-  splineControlPoint->data = (void *)calloc(splineControlPoint->nvox, splineControlPoint->nbyper);
-
-  gridPtrX = static_cast<SplineTYPE *>(splineControlPoint->data);
-  SplineTYPE *gridPtrY = &gridPtrX[splineControlPoint->nx*splineControlPoint->ny];
-  SplineTYPE *oldGridPtrX = &oldGrid[0];
-  SplineTYPE *oldGridPtrY = &oldGridPtrX[oldDim[1]*oldDim[2]];
-
-  for(int y=0; y<oldDim[2]; y++){
-    int Y=yRefineFactor*y-1;
-    if(Y<splineControlPoint->ny){
-      for(int x=0; x<oldDim[1]; x++){
-	int X=xRefineFactor*x-1;
-	if(X<splineControlPoint->nx){
-
-	  /* X Axis */
-	  // 0 0
-	  SetValue(gridPtrX, splineControlPoint->dim, X, Y, 0,
-		   (GetValue(oldGridPtrX,oldDim,x-1,y-1,0) + GetValue(oldGridPtrX,oldDim,x+1,y-1,0) +
-		    GetValue(oldGridPtrX,oldDim,x-1,y+1,0) + GetValue(oldGridPtrX,oldDim,x+1,y+1,0)
-		    + 6.0f * (GetValue(oldGridPtrX,oldDim,x-1,y,0) + GetValue(oldGridPtrX,oldDim,x+1,y,0) +
-			      GetValue(oldGridPtrX,oldDim,x,y-1,0) + GetValue(oldGridPtrX,oldDim,x,y+1,0) )
-		    + 36.0f * GetValue(oldGridPtrX,oldDim,x,y,0) ) / 64.0f);
-	  // 1 0
-	  SetValue(gridPtrX, splineControlPoint->dim, X+1, Y, 0,
-		   (GetValue(oldGridPtrX,oldDim,x,y-1,0) + GetValue(oldGridPtrX,oldDim,x+1,y-1,0) +
-		    GetValue(oldGridPtrX,oldDim,x,y+1,0) + GetValue(oldGridPtrX,oldDim,x+1,y+1,0)
-		    + 6.0f * ( GetValue(oldGridPtrX,oldDim,x,y,0) + GetValue(oldGridPtrX,oldDim,x+1,y,0) ) ) / 16.0f);
-	  // 0 1
-	  SetValue(gridPtrX, splineControlPoint->dim, X, Y+1, 0,
-		   (GetValue(oldGridPtrX,oldDim,x-1,y,0) + GetValue(oldGridPtrX,oldDim,x-1,y+1,0) +
-		    GetValue(oldGridPtrX,oldDim,x+1,y,0) + GetValue(oldGridPtrX,oldDim,x+1,y+1,0)
-		    + 6.0f * ( GetValue(oldGridPtrX,oldDim,x,y,0) + GetValue(oldGridPtrX,oldDim,x,y+1,0) ) ) / 16.0f);
-	  // 1 1
-	  SetValue(gridPtrX, splineControlPoint->dim, X+1, Y+1, 0,
-		   (GetValue(oldGridPtrX,oldDim,x,y,0) + GetValue(oldGridPtrX,oldDim,x+1,y,0) +
-		    GetValue(oldGridPtrX,oldDim,x,y+1,0) + GetValue(oldGridPtrX,oldDim,x+1,y+1,0) ) / 4.0f);
-
-	  /* Y Axis */
-	  // 0 0
-	  SetValue(gridPtrY, splineControlPoint->dim, X, Y, 0,
-		   (GetValue(oldGridPtrY,oldDim,x-1,y-1,0) + GetValue(oldGridPtrY,oldDim,x+1,y-1,0) +
-		    GetValue(oldGridPtrY,oldDim,x-1,y+1,0) + GetValue(oldGridPtrY,oldDim,x+1,y+1,0)
-		    + 6.0f * (GetValue(oldGridPtrY,oldDim,x-1,y,0) + GetValue(oldGridPtrY,oldDim,x+1,y,0) +
-			      GetValue(oldGridPtrY,oldDim,x,y-1,0) + GetValue(oldGridPtrY,oldDim,x,y+1,0) )
-		    + 36.0f * GetValue(oldGridPtrY,oldDim,x,y,0) ) / 64.0f);
-	  // 1 0
-	  SetValue(gridPtrY, splineControlPoint->dim, X+1, Y, 0,
-		   (GetValue(oldGridPtrY,oldDim,x,y-1,0) + GetValue(oldGridPtrY,oldDim,x+1,y-1,0) +
-		    GetValue(oldGridPtrY,oldDim,x,y+1,0) + GetValue(oldGridPtrY,oldDim,x+1,y+1,0)
-		    + 6.0f * ( GetValue(oldGridPtrY,oldDim,x,y,0) + GetValue(oldGridPtrY,oldDim,x+1,y,0) ) ) / 16.0f);
-	  // 0 1
-	  SetValue(gridPtrY, splineControlPoint->dim, X, Y+1, 0,
-		   (GetValue(oldGridPtrY,oldDim,x-1,y,0) + GetValue(oldGridPtrY,oldDim,x-1,y+1,0) +
-		    GetValue(oldGridPtrY,oldDim,x+1,y,0) + GetValue(oldGridPtrY,oldDim,x+1,y+1,0)
-		    + 6.0f * ( GetValue(oldGridPtrY,oldDim,x,y,0) + GetValue(oldGridPtrY,oldDim,x,y+1,0) ) ) / 16.0f);
-	  // 1 1
-	  SetValue(gridPtrY, splineControlPoint->dim, X+1, Y+1, 0,
-		   (GetValue(oldGridPtrY,oldDim,x,y,0) + GetValue(oldGridPtrY,oldDim,x+1,y,0) +
-		    GetValue(oldGridPtrY,oldDim,x,y+1,0) + GetValue(oldGridPtrY,oldDim,x+1,y+1,0) ) / 4.0f);
-
-	}
-      }
-    }
-  }
-
-  free(oldGrid);
-}
-
-
-// ---------------------------------------------------------------------------
-// reg_bspline_refineControlPointGrid3D();
-// --------------------------------------------------------------------------- 
-
-template <class SplineTYPE>
-void RegistrationExecution::reg_bspline_refineControlPointGrid3D(nifti_image *targetImage,
-								 nifti_image *splineControlPoint,
-								 float xRefineFactor, 
-								 float yRefineFactor, 
-								 float zRefineFactor)
-{
-
-  // The input grid is first saved
-  SplineTYPE *oldGrid = (SplineTYPE *)malloc(splineControlPoint->nvox*splineControlPoint->nbyper);
-  SplineTYPE *gridPtrX = static_cast<SplineTYPE *>(splineControlPoint->data);
-  memcpy(oldGrid, gridPtrX, splineControlPoint->nvox*splineControlPoint->nbyper);
-  if(splineControlPoint->data!=NULL) free(splineControlPoint->data);
-  int oldDim[4];
-  oldDim[0]=splineControlPoint->dim[0];
-  oldDim[1]=splineControlPoint->dim[1];
-  oldDim[2]=splineControlPoint->dim[2];
-  oldDim[3]=splineControlPoint->dim[3];
-
-  splineControlPoint->dx = splineControlPoint->pixdim[1] = splineControlPoint->dx / xRefineFactor;
-  splineControlPoint->dy = splineControlPoint->pixdim[2] = splineControlPoint->dy / yRefineFactor;
-  splineControlPoint->dz = splineControlPoint->pixdim[3] = splineControlPoint->dz / zRefineFactor;
-
-  //    splineControlPoint->dim[1]=splineControlPoint->nx=(int)reg_ceil(targetImage->nx*targetImage->dx/splineControlPoint->dx)+4;
-  //    splineControlPoint->dim[2]=splineControlPoint->ny=(int)reg_ceil(targetImage->ny*targetImage->dy/splineControlPoint->dy)+4;
-  //    splineControlPoint->dim[3]=splineControlPoint->nz=(int)reg_ceil(targetImage->nz*targetImage->dz/splineControlPoint->dz)+4;
-
-  splineControlPoint->dim[1]=splineControlPoint->nx=(int)reg_floor(targetImage->nx*targetImage->dx/splineControlPoint->dx)+5;
-  splineControlPoint->dim[2]=splineControlPoint->ny=(int)reg_floor(targetImage->ny*targetImage->dy/splineControlPoint->dy)+5;
-  splineControlPoint->dim[3]=splineControlPoint->nz=(int)reg_floor(targetImage->nz*targetImage->dz/splineControlPoint->dz)+5;
-
-  splineControlPoint->nvox=splineControlPoint->nx*splineControlPoint->ny*splineControlPoint->nz*splineControlPoint->nt*splineControlPoint->nu;
-  splineControlPoint->data = (void *)calloc(splineControlPoint->nvox, splineControlPoint->nbyper);
-    
-  gridPtrX = static_cast<SplineTYPE *>(splineControlPoint->data);
-  SplineTYPE *gridPtrY = &gridPtrX[splineControlPoint->nx*splineControlPoint->ny*splineControlPoint->nz];
-  SplineTYPE *gridPtrZ = &gridPtrY[splineControlPoint->nx*splineControlPoint->ny*splineControlPoint->nz];
-  SplineTYPE *oldGridPtrX = &oldGrid[0];
-  SplineTYPE *oldGridPtrY = &oldGridPtrX[oldDim[1]*oldDim[2]*oldDim[3]];
-  SplineTYPE *oldGridPtrZ = &oldGridPtrY[oldDim[1]*oldDim[2]*oldDim[3]];
-
-
-  for(int z=0; z<oldDim[3]; z++){
-    int Z=zRefineFactor*z-1;
-    if(Z<splineControlPoint->nz){
-      for(int y=0; y<oldDim[2]; y++){
-	int Y=yRefineFactor*y-1;
-	if(Y<splineControlPoint->ny){
-	  for(int x=0; x<oldDim[1]; x++){
-	    int X=xRefineFactor*x-1;
-	    if(X<splineControlPoint->nx){
-
-	      /* X Axis */
-	      // 0 0 0
-	      SetValue(gridPtrX, splineControlPoint->dim, X, Y, Z,
-		       (GetValue(oldGridPtrX,oldDim,x-1,y-1,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y-1,z-1) +
-			GetValue(oldGridPtrX,oldDim,x-1,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z-1) +
-			GetValue(oldGridPtrX,oldDim,x-1,y-1,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y-1,z+1)+
-			GetValue(oldGridPtrX,oldDim,x-1,y+1,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1)
-			+ 6.0f * (GetValue(oldGridPtrX,oldDim,x-1,y-1,z) + GetValue(oldGridPtrX,oldDim,x-1,y+1,z) +
-				  GetValue(oldGridPtrX,oldDim,x+1,y-1,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) +
-				  GetValue(oldGridPtrX,oldDim,x-1,y,z-1) + GetValue(oldGridPtrX,oldDim,x-1,y,z+1) +
-				  GetValue(oldGridPtrX,oldDim,x+1,y,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y,z+1) +
-				  GetValue(oldGridPtrX,oldDim,x,y-1,z-1) + GetValue(oldGridPtrX,oldDim,x,y-1,z+1) +
-				  GetValue(oldGridPtrX,oldDim,x,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x,y+1,z+1) )
-			+ 36.0f * (GetValue(oldGridPtrX,oldDim,x-1,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y,z) +
-				   GetValue(oldGridPtrX,oldDim,x,y-1,z) + GetValue(oldGridPtrX,oldDim,x,y+1,z) +
-				   GetValue(oldGridPtrX,oldDim,x,y,z-1) + GetValue(oldGridPtrX,oldDim,x,y,z+1) )
-			+ 216.0f * GetValue(oldGridPtrX,oldDim,x,y,z) ) / 512.0f);
-
-	      // 1 0 0
-	      SetValue(gridPtrX, splineControlPoint->dim, X+1, Y, Z,
-		       ( GetValue(oldGridPtrX,oldDim,x,y-1,z-1) + GetValue(oldGridPtrX,oldDim,x,y-1,z+1) +
-			 GetValue(oldGridPtrX,oldDim,x,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x,y+1,z+1) +
-			 GetValue(oldGridPtrX,oldDim,x+1,y-1,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y-1,z+1) +
-			 GetValue(oldGridPtrX,oldDim,x+1,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrX,oldDim,x,y-1,z) + GetValue(oldGridPtrX,oldDim,x,y+1,z) +
-				 GetValue(oldGridPtrX,oldDim,x,y,z-1) + GetValue(oldGridPtrX,oldDim,x,y,z+1) +
-				 GetValue(oldGridPtrX,oldDim,x+1,y-1,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) +
-				 GetValue(oldGridPtrX,oldDim,x+1,y,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y,z+1)) +
-			 36.0f * (GetValue(oldGridPtrX,oldDim,x,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y,z)) ) / 128.0f);
-
-	      // 0 1 0
-	      SetValue(gridPtrX, splineControlPoint->dim, X, Y+1, Z,
-		       ( GetValue(oldGridPtrX,oldDim,x-1,y,z-1) + GetValue(oldGridPtrX,oldDim,x-1,y,z+1) +
-			 GetValue(oldGridPtrX,oldDim,x+1,y,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y,z+1) +
-			 GetValue(oldGridPtrX,oldDim,x-1,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x-1,y+1,z+1) +
-			 GetValue(oldGridPtrX,oldDim,x+1,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrX,oldDim,x-1,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y,z) +
-				 GetValue(oldGridPtrX,oldDim,x,y,z-1) + GetValue(oldGridPtrX,oldDim,x,y,z+1) +
-				 GetValue(oldGridPtrX,oldDim,x-1,y+1,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) +
-				 GetValue(oldGridPtrX,oldDim,x,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x,y+1,z+1)) +
-			 36.0f * (GetValue(oldGridPtrX,oldDim,x,y,z) + GetValue(oldGridPtrX,oldDim,x,y+1,z)) ) / 128.0f);
-
-	      // 1 1 0
-	      SetValue(gridPtrX, splineControlPoint->dim, X+1, Y+1, Z,
-		       (GetValue(oldGridPtrX,oldDim,x,y,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y,z-1) +
-			GetValue(oldGridPtrX,oldDim,x,y+1,z-1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z-1) +
-			GetValue(oldGridPtrX,oldDim,x,y,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y,z+1) +
-			GetValue(oldGridPtrX,oldDim,x,y+1,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrX,oldDim,x,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y,z) +
-				GetValue(oldGridPtrX,oldDim,x,y+1,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) ) ) / 32.0f);
-
-	      // 0 0 1
-	      SetValue(gridPtrX, splineControlPoint->dim, X, Y, Z+1,
-		       ( GetValue(oldGridPtrX,oldDim,x-1,y-1,z) + GetValue(oldGridPtrX,oldDim,x-1,y+1,z) +
-			 GetValue(oldGridPtrX,oldDim,x+1,y-1,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) +
-			 GetValue(oldGridPtrX,oldDim,x-1,y-1,z+1) + GetValue(oldGridPtrX,oldDim,x-1,y+1,z+1) +
-			 GetValue(oldGridPtrX,oldDim,x+1,y-1,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrX,oldDim,x-1,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y,z) +
-				 GetValue(oldGridPtrX,oldDim,x,y-1,z) + GetValue(oldGridPtrX,oldDim,x,y+1,z) +
-				 GetValue(oldGridPtrX,oldDim,x-1,y,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y,z+1) +
-				 GetValue(oldGridPtrX,oldDim,x,y-1,z+1) + GetValue(oldGridPtrX,oldDim,x,y+1,z+1)) +
-			 36.0f * (GetValue(oldGridPtrX,oldDim,x,y,z) + GetValue(oldGridPtrX,oldDim,x,y,z+1)) ) / 128.0f);
-
-	      // 1 0 1
-	      SetValue(gridPtrX, splineControlPoint->dim, X+1, Y, Z+1,
-		       (GetValue(oldGridPtrX,oldDim,x,y-1,z) + GetValue(oldGridPtrX,oldDim,x+1,y-1,z) +
-			GetValue(oldGridPtrX,oldDim,x,y-1,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y-1,z+1) +
-			GetValue(oldGridPtrX,oldDim,x,y+1,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrX,oldDim,x,y+1,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrX,oldDim,x,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y,z) +
-				GetValue(oldGridPtrX,oldDim,x,y,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y,z+1) ) ) / 32.0f);
-
-	      // 0 1 1
-	      SetValue(gridPtrX, splineControlPoint->dim, X, Y+1, Z+1,
-		       (GetValue(oldGridPtrX,oldDim,x-1,y,z) + GetValue(oldGridPtrX,oldDim,x-1,y+1,z) +
-			GetValue(oldGridPtrX,oldDim,x-1,y,z+1) + GetValue(oldGridPtrX,oldDim,x-1,y+1,z+1) +
-			GetValue(oldGridPtrX,oldDim,x+1,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrX,oldDim,x+1,y,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrX,oldDim,x,y,z) + GetValue(oldGridPtrX,oldDim,x,y+1,z) +
-				GetValue(oldGridPtrX,oldDim,x,y,z+1) + GetValue(oldGridPtrX,oldDim,x,y+1,z+1) ) ) / 32.0f);
-
-	      // 1 1 1
-	      SetValue(gridPtrX, splineControlPoint->dim, X+1, Y+1, Z+1,
-		       (GetValue(oldGridPtrX,oldDim,x,y,z) + GetValue(oldGridPtrX,oldDim,x+1,y,z) +
-			GetValue(oldGridPtrX,oldDim,x,y+1,z) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrX,oldDim,x,y,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y,z+1) +
-			GetValue(oldGridPtrX,oldDim,x,y+1,z+1) + GetValue(oldGridPtrX,oldDim,x+1,y+1,z+1)) / 8.0f);
-                            
-
-	      /* Y Axis */
-	      // 0 0 0
-	      SetValue(gridPtrY, splineControlPoint->dim, X, Y, Z,
-		       (GetValue(oldGridPtrY,oldDim,x-1,y-1,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y-1,z-1) +
-			GetValue(oldGridPtrY,oldDim,x-1,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z-1) +
-			GetValue(oldGridPtrY,oldDim,x-1,y-1,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y-1,z+1)+
-			GetValue(oldGridPtrY,oldDim,x-1,y+1,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1)
-			+ 6.0f * (GetValue(oldGridPtrY,oldDim,x-1,y-1,z) + GetValue(oldGridPtrY,oldDim,x-1,y+1,z) +
-				  GetValue(oldGridPtrY,oldDim,x+1,y-1,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) +
-				  GetValue(oldGridPtrY,oldDim,x-1,y,z-1) + GetValue(oldGridPtrY,oldDim,x-1,y,z+1) +
-				  GetValue(oldGridPtrY,oldDim,x+1,y,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y,z+1) +
-				  GetValue(oldGridPtrY,oldDim,x,y-1,z-1) + GetValue(oldGridPtrY,oldDim,x,y-1,z+1) +
-				  GetValue(oldGridPtrY,oldDim,x,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x,y+1,z+1) )
-			+ 36.0f * (GetValue(oldGridPtrY,oldDim,x-1,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y,z) +
-				   GetValue(oldGridPtrY,oldDim,x,y-1,z) + GetValue(oldGridPtrY,oldDim,x,y+1,z) +
-				   GetValue(oldGridPtrY,oldDim,x,y,z-1) + GetValue(oldGridPtrY,oldDim,x,y,z+1) )
-			+ 216.0f * GetValue(oldGridPtrY,oldDim,x,y,z) ) / 512.0f);
-
-	      // 1 0 0
-	      SetValue(gridPtrY, splineControlPoint->dim, X+1, Y, Z,
-		       ( GetValue(oldGridPtrY,oldDim,x,y-1,z-1) + GetValue(oldGridPtrY,oldDim,x,y-1,z+1) +
-			 GetValue(oldGridPtrY,oldDim,x,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x,y+1,z+1) +
-			 GetValue(oldGridPtrY,oldDim,x+1,y-1,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y-1,z+1) +
-			 GetValue(oldGridPtrY,oldDim,x+1,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrY,oldDim,x,y-1,z) + GetValue(oldGridPtrY,oldDim,x,y+1,z) +
-				 GetValue(oldGridPtrY,oldDim,x,y,z-1) + GetValue(oldGridPtrY,oldDim,x,y,z+1) +
-				 GetValue(oldGridPtrY,oldDim,x+1,y-1,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) +
-				 GetValue(oldGridPtrY,oldDim,x+1,y,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y,z+1)) +
-			 36.0f * (GetValue(oldGridPtrY,oldDim,x,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y,z)) ) / 128.0f);
-
-	      // 0 1 0
-	      SetValue(gridPtrY, splineControlPoint->dim, X, Y+1, Z,
-		       ( GetValue(oldGridPtrY,oldDim,x-1,y,z-1) + GetValue(oldGridPtrY,oldDim,x-1,y,z+1) +
-			 GetValue(oldGridPtrY,oldDim,x+1,y,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y,z+1) +
-			 GetValue(oldGridPtrY,oldDim,x-1,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x-1,y+1,z+1) +
-			 GetValue(oldGridPtrY,oldDim,x+1,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrY,oldDim,x-1,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y,z) +
-				 GetValue(oldGridPtrY,oldDim,x,y,z-1) + GetValue(oldGridPtrY,oldDim,x,y,z+1) +
-				 GetValue(oldGridPtrY,oldDim,x-1,y+1,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) +
-				 GetValue(oldGridPtrY,oldDim,x,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x,y+1,z+1)) +
-			 36.0f * (GetValue(oldGridPtrY,oldDim,x,y,z) + GetValue(oldGridPtrY,oldDim,x,y+1,z)) ) / 128.0f);
-
-	      // 1 1 0
-	      SetValue(gridPtrY, splineControlPoint->dim, X+1, Y+1, Z,
-		       (GetValue(oldGridPtrY,oldDim,x,y,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y,z-1) +
-			GetValue(oldGridPtrY,oldDim,x,y+1,z-1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z-1) +
-			GetValue(oldGridPtrY,oldDim,x,y,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y,z+1) +
-			GetValue(oldGridPtrY,oldDim,x,y+1,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrY,oldDim,x,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y,z) +
-				GetValue(oldGridPtrY,oldDim,x,y+1,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) ) ) / 32.0f);
-
-	      // 0 0 1
-	      SetValue(gridPtrY, splineControlPoint->dim, X, Y, Z+1,
-		       ( GetValue(oldGridPtrY,oldDim,x-1,y-1,z) + GetValue(oldGridPtrY,oldDim,x-1,y+1,z) +
-			 GetValue(oldGridPtrY,oldDim,x+1,y-1,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) +
-			 GetValue(oldGridPtrY,oldDim,x-1,y-1,z+1) + GetValue(oldGridPtrY,oldDim,x-1,y+1,z+1) +
-			 GetValue(oldGridPtrY,oldDim,x+1,y-1,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrY,oldDim,x-1,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y,z) +
-				 GetValue(oldGridPtrY,oldDim,x,y-1,z) + GetValue(oldGridPtrY,oldDim,x,y+1,z) +
-				 GetValue(oldGridPtrY,oldDim,x-1,y,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y,z+1) +
-				 GetValue(oldGridPtrY,oldDim,x,y-1,z+1) + GetValue(oldGridPtrY,oldDim,x,y+1,z+1)) +
-			 36.0f * (GetValue(oldGridPtrY,oldDim,x,y,z) + GetValue(oldGridPtrY,oldDim,x,y,z+1)) ) / 128.0f);
-
-	      // 1 0 1
-	      SetValue(gridPtrY, splineControlPoint->dim, X+1, Y, Z+1,
-		       (GetValue(oldGridPtrY,oldDim,x,y-1,z) + GetValue(oldGridPtrY,oldDim,x+1,y-1,z) +
-			GetValue(oldGridPtrY,oldDim,x,y-1,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y-1,z+1) +
-			GetValue(oldGridPtrY,oldDim,x,y+1,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrY,oldDim,x,y+1,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrY,oldDim,x,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y,z) +
-				GetValue(oldGridPtrY,oldDim,x,y,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y,z+1) ) ) / 32.0f);
-
-	      // 0 1 1
-	      SetValue(gridPtrY, splineControlPoint->dim, X, Y+1, Z+1,
-		       (GetValue(oldGridPtrY,oldDim,x-1,y,z) + GetValue(oldGridPtrY,oldDim,x-1,y+1,z) +
-			GetValue(oldGridPtrY,oldDim,x-1,y,z+1) + GetValue(oldGridPtrY,oldDim,x-1,y+1,z+1) +
-			GetValue(oldGridPtrY,oldDim,x+1,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrY,oldDim,x+1,y,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrY,oldDim,x,y,z) + GetValue(oldGridPtrY,oldDim,x,y+1,z) +
-				GetValue(oldGridPtrY,oldDim,x,y,z+1) + GetValue(oldGridPtrY,oldDim,x,y+1,z+1) ) ) / 32.0f);
-
-	      // 1 1 1
-	      SetValue(gridPtrY, splineControlPoint->dim, X+1, Y+1, Z+1,
-		       (GetValue(oldGridPtrY,oldDim,x,y,z) + GetValue(oldGridPtrY,oldDim,x+1,y,z) +
-			GetValue(oldGridPtrY,oldDim,x,y+1,z) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrY,oldDim,x,y,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y,z+1) +
-			GetValue(oldGridPtrY,oldDim,x,y+1,z+1) + GetValue(oldGridPtrY,oldDim,x+1,y+1,z+1)) / 8.0f);
-
-	      /* Z Axis */
-	      // 0 0 0
-	      SetValue(gridPtrZ, splineControlPoint->dim, X, Y, Z,
-		       (GetValue(oldGridPtrZ,oldDim,x-1,y-1,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y-1,z-1) +
-			GetValue(oldGridPtrZ,oldDim,x-1,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z-1) +
-			GetValue(oldGridPtrZ,oldDim,x-1,y-1,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y-1,z+1)+
-			GetValue(oldGridPtrZ,oldDim,x-1,y+1,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1)
-			+ 6.0f * (GetValue(oldGridPtrZ,oldDim,x-1,y-1,z) + GetValue(oldGridPtrZ,oldDim,x-1,y+1,z) +
-				  GetValue(oldGridPtrZ,oldDim,x+1,y-1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) +
-				  GetValue(oldGridPtrZ,oldDim,x-1,y,z-1) + GetValue(oldGridPtrZ,oldDim,x-1,y,z+1) +
-				  GetValue(oldGridPtrZ,oldDim,x+1,y,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z+1) +
-				  GetValue(oldGridPtrZ,oldDim,x,y-1,z-1) + GetValue(oldGridPtrZ,oldDim,x,y-1,z+1) +
-				  GetValue(oldGridPtrZ,oldDim,x,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x,y+1,z+1) )
-			+ 36.0f * (GetValue(oldGridPtrZ,oldDim,x-1,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y,z) +
-				   GetValue(oldGridPtrZ,oldDim,x,y-1,z) + GetValue(oldGridPtrZ,oldDim,x,y+1,z) +
-				   GetValue(oldGridPtrZ,oldDim,x,y,z-1) + GetValue(oldGridPtrZ,oldDim,x,y,z+1) )
-			+ 216.0f * GetValue(oldGridPtrZ,oldDim,x,y,z) ) / 512.0f);
-                            
-	      // 1 0 0
-	      SetValue(gridPtrZ, splineControlPoint->dim, X+1, Y, Z,
-		       ( GetValue(oldGridPtrZ,oldDim,x,y-1,z-1) + GetValue(oldGridPtrZ,oldDim,x,y-1,z+1) +
-			 GetValue(oldGridPtrZ,oldDim,x,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x,y+1,z+1) +
-			 GetValue(oldGridPtrZ,oldDim,x+1,y-1,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y-1,z+1) +
-			 GetValue(oldGridPtrZ,oldDim,x+1,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrZ,oldDim,x,y-1,z) + GetValue(oldGridPtrZ,oldDim,x,y+1,z) +
-				 GetValue(oldGridPtrZ,oldDim,x,y,z-1) + GetValue(oldGridPtrZ,oldDim,x,y,z+1) +
-				 GetValue(oldGridPtrZ,oldDim,x+1,y-1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) +
-				 GetValue(oldGridPtrZ,oldDim,x+1,y,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z+1)) +
-			 36.0f * (GetValue(oldGridPtrZ,oldDim,x,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y,z)) ) / 128.0f);
-                            
-	      // 0 1 0
-	      SetValue(gridPtrZ, splineControlPoint->dim, X, Y+1, Z,
-		       ( GetValue(oldGridPtrZ,oldDim,x-1,y,z-1) + GetValue(oldGridPtrZ,oldDim,x-1,y,z+1) +
-			 GetValue(oldGridPtrZ,oldDim,x+1,y,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z+1) +
-			 GetValue(oldGridPtrZ,oldDim,x-1,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x-1,y+1,z+1) +
-			 GetValue(oldGridPtrZ,oldDim,x+1,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrZ,oldDim,x-1,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y,z) +
-				 GetValue(oldGridPtrZ,oldDim,x,y,z-1) + GetValue(oldGridPtrZ,oldDim,x,y,z+1) +
-				 GetValue(oldGridPtrZ,oldDim,x-1,y+1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) +
-				 GetValue(oldGridPtrZ,oldDim,x,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x,y+1,z+1)) +
-			 36.0f * (GetValue(oldGridPtrZ,oldDim,x,y,z) + GetValue(oldGridPtrZ,oldDim,x,y+1,z)) ) / 128.0f);
-                            
-	      // 1 1 0
-	      SetValue(gridPtrZ, splineControlPoint->dim, X+1, Y+1, Z,
-		       (GetValue(oldGridPtrZ,oldDim,x,y,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z-1) +
-			GetValue(oldGridPtrZ,oldDim,x,y+1,z-1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z-1) +
-			GetValue(oldGridPtrZ,oldDim,x,y,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z+1) +
-			GetValue(oldGridPtrZ,oldDim,x,y+1,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrZ,oldDim,x,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y,z) +
-				GetValue(oldGridPtrZ,oldDim,x,y+1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) ) ) / 32.0f);
-                            
-	      // 0 0 1
-	      SetValue(gridPtrZ, splineControlPoint->dim, X, Y, Z+1,
-		       ( GetValue(oldGridPtrZ,oldDim,x-1,y-1,z) + GetValue(oldGridPtrZ,oldDim,x-1,y+1,z) +
-			 GetValue(oldGridPtrZ,oldDim,x+1,y-1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) +
-			 GetValue(oldGridPtrZ,oldDim,x-1,y-1,z+1) + GetValue(oldGridPtrZ,oldDim,x-1,y+1,z+1) +
-			 GetValue(oldGridPtrZ,oldDim,x+1,y-1,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1) +
-			 6.0f * (GetValue(oldGridPtrZ,oldDim,x-1,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y,z) +
-				 GetValue(oldGridPtrZ,oldDim,x,y-1,z) + GetValue(oldGridPtrZ,oldDim,x,y+1,z) +
-				 GetValue(oldGridPtrZ,oldDim,x-1,y,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z+1) +
-				 GetValue(oldGridPtrZ,oldDim,x,y-1,z+1) + GetValue(oldGridPtrZ,oldDim,x,y+1,z+1)) +
-			 36.0f * (GetValue(oldGridPtrZ,oldDim,x,y,z) + GetValue(oldGridPtrZ,oldDim,x,y,z+1)) ) / 128.0f);
-                            
-	      // 1 0 1
-	      SetValue(gridPtrZ, splineControlPoint->dim, X+1, Y, Z+1,
-		       (GetValue(oldGridPtrZ,oldDim,x,y-1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y-1,z) +
-			GetValue(oldGridPtrZ,oldDim,x,y-1,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y-1,z+1) +
-			GetValue(oldGridPtrZ,oldDim,x,y+1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrZ,oldDim,x,y+1,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrZ,oldDim,x,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y,z) +
-				GetValue(oldGridPtrZ,oldDim,x,y,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z+1) ) ) / 32.0f);
-                            
-	      // 0 1 1
-	      SetValue(gridPtrZ, splineControlPoint->dim, X, Y+1, Z+1,
-		       (GetValue(oldGridPtrZ,oldDim,x-1,y,z) + GetValue(oldGridPtrZ,oldDim,x-1,y+1,z) +
-			GetValue(oldGridPtrZ,oldDim,x-1,y,z+1) + GetValue(oldGridPtrZ,oldDim,x-1,y+1,z+1) +
-			GetValue(oldGridPtrZ,oldDim,x+1,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrZ,oldDim,x+1,y,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1) +
-			6.0f * (GetValue(oldGridPtrZ,oldDim,x,y,z) + GetValue(oldGridPtrZ,oldDim,x,y+1,z) +
-				GetValue(oldGridPtrZ,oldDim,x,y,z+1) + GetValue(oldGridPtrZ,oldDim,x,y+1,z+1) ) ) / 32.0f);
-                            
-	      // 1 1 1
-	      SetValue(gridPtrZ, splineControlPoint->dim, X+1, Y+1, Z+1,
-		       (GetValue(oldGridPtrZ,oldDim,x,y,z) + GetValue(oldGridPtrZ,oldDim,x+1,y,z) +
-			GetValue(oldGridPtrZ,oldDim,x,y+1,z) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z) +
-			GetValue(oldGridPtrZ,oldDim,x,y,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y,z+1) +
-			GetValue(oldGridPtrZ,oldDim,x,y+1,z+1) + GetValue(oldGridPtrZ,oldDim,x+1,y+1,z+1)) / 8.0f);
-	    }
-	  }
-	}
-      }
-    }
-  }
-
-  free(oldGrid);
-}
-
-
-// ---------------------------------------------------------------------------
-// reg_bspline_refineControlPointGrid();
-// --------------------------------------------------------------------------- 
-
-void RegistrationExecution::reg_bspline_refineControlPointGrid(nifti_image *referenceImage,
-							       nifti_image *controlPointGrid,
-							       float xRefineFactor, 
-							       float yRefineFactor, 
-							       float zRefineFactor)
-{
-#ifndef NDEBUG
-  printf("[NiftyReg DEBUG] Starting the refine the control point grid\n");
-#endif
-  if(controlPointGrid->nz==1){
-    switch(controlPointGrid->datatype){
-    case NIFTI_TYPE_FLOAT32:
-      reg_bspline_refineControlPointGrid2D<float>(referenceImage,
-						  controlPointGrid, 
-						  xRefineFactor, 
-						  yRefineFactor);
-      break;
-    case NIFTI_TYPE_FLOAT64:
-      reg_bspline_refineControlPointGrid2D<double>(referenceImage,
-						   controlPointGrid, 
-						   xRefineFactor, 
-						   yRefineFactor);
-      break;
-    default:
-      fprintf(stderr,"[NiftyReg ERROR] Only single or double precision is implemented for the bending energy gradient\n");
-      fprintf(stderr,"[NiftyReg ERROR] The bending energy gradient has not computed\n");
-      exit(1);
-    }
-  }else{
-    switch(controlPointGrid->datatype){
-    case NIFTI_TYPE_FLOAT32:
-      reg_bspline_refineControlPointGrid3D<float>(referenceImage,
-						  controlPointGrid, 
-						  xRefineFactor, 
-						  yRefineFactor, 
-						  zRefineFactor);
-      break;
-    case NIFTI_TYPE_FLOAT64:
-      reg_bspline_refineControlPointGrid3D<double>(referenceImage,
-						   controlPointGrid, 
-						   xRefineFactor, 
-						   yRefineFactor, 
-						   zRefineFactor);
-      break;
-    default:
-      fprintf(stderr,"[NiftyReg ERROR] Only single or double precision is implemented for the bending energy gradient\n");
-      fprintf(stderr,"[NiftyReg ERROR] The bending energy gradient has not computed\n");
-      exit(1);
-    }
-  }
-  // Compute the new control point header
-  // The qform (and sform) are set for the control point position image
-  controlPointGrid->quatern_b=referenceImage->quatern_b;
-  controlPointGrid->quatern_c=referenceImage->quatern_c;
-  controlPointGrid->quatern_d=referenceImage->quatern_d;
-  controlPointGrid->qoffset_x=referenceImage->qoffset_x;
-  controlPointGrid->qoffset_y=referenceImage->qoffset_y;
-  controlPointGrid->qoffset_z=referenceImage->qoffset_z;
-  controlPointGrid->qfac=referenceImage->qfac;
-  controlPointGrid->qto_xyz = nifti_quatern_to_mat44(controlPointGrid->quatern_b,
-						     controlPointGrid->quatern_c,
-						     controlPointGrid->quatern_d,
-						     controlPointGrid->qoffset_x,
-						     controlPointGrid->qoffset_y,
-						     controlPointGrid->qoffset_z,
-						     controlPointGrid->dx,
-						     controlPointGrid->dy,
-						     controlPointGrid->dz,
-						     controlPointGrid->qfac);
-
-  // Origin is shifted from 1 control point in the qform
-  float originIndex[3];
-  float originReal[3];
-  originIndex[0] = -1.0f;
-  originIndex[1] = -1.0f;
-  originIndex[2] = 0.0f;
-  if(referenceImage->nz>1) originIndex[2] = -1.0f;
-  reg_mat44_mul(&(controlPointGrid->qto_xyz), originIndex, originReal);
-  if(controlPointGrid->qform_code==0) controlPointGrid->qform_code=1;
-  controlPointGrid->qto_xyz.m[0][3] = controlPointGrid->qoffset_x = originReal[0];
-  controlPointGrid->qto_xyz.m[1][3] = controlPointGrid->qoffset_y = originReal[1];
-  controlPointGrid->qto_xyz.m[2][3] = controlPointGrid->qoffset_z = originReal[2];
-
-  controlPointGrid->qto_ijk = nifti_mat44_inverse(controlPointGrid->qto_xyz);
-
-  if(controlPointGrid->sform_code>0){
-    float scalingRatio[3];
-    scalingRatio[0]= controlPointGrid->dx / referenceImage->dx;
-    scalingRatio[1]= controlPointGrid->dy / referenceImage->dy;
-    scalingRatio[2]= controlPointGrid->dz / referenceImage->dz;
-
-    controlPointGrid->sto_xyz.m[0][0]=referenceImage->sto_xyz.m[0][0] * scalingRatio[0];
-    controlPointGrid->sto_xyz.m[1][0]=referenceImage->sto_xyz.m[1][0] * scalingRatio[0];
-    controlPointGrid->sto_xyz.m[2][0]=referenceImage->sto_xyz.m[2][0] * scalingRatio[0];
-    controlPointGrid->sto_xyz.m[3][0]=0.f;
-    controlPointGrid->sto_xyz.m[0][1]=referenceImage->sto_xyz.m[0][1] * scalingRatio[1];
-    controlPointGrid->sto_xyz.m[1][1]=referenceImage->sto_xyz.m[1][1] * scalingRatio[1];
-    controlPointGrid->sto_xyz.m[2][1]=referenceImage->sto_xyz.m[2][1] * scalingRatio[1];
-    controlPointGrid->sto_xyz.m[3][1]=0.f;
-    controlPointGrid->sto_xyz.m[0][2]=referenceImage->sto_xyz.m[0][2] * scalingRatio[2];
-    controlPointGrid->sto_xyz.m[1][2]=referenceImage->sto_xyz.m[1][2] * scalingRatio[2];
-    controlPointGrid->sto_xyz.m[2][2]=referenceImage->sto_xyz.m[2][2] * scalingRatio[2];
-    controlPointGrid->sto_xyz.m[3][2]=0.f;
-    controlPointGrid->sto_xyz.m[0][3]=referenceImage->sto_xyz.m[0][3];
-    controlPointGrid->sto_xyz.m[1][3]=referenceImage->sto_xyz.m[1][3];
-    controlPointGrid->sto_xyz.m[2][3]=referenceImage->sto_xyz.m[2][3];
-    controlPointGrid->sto_xyz.m[3][3]=1.f;
-
-    // The origin is shifted by one compare to the reference image
-    float originIndex[3];originIndex[0]=originIndex[1]=originIndex[2]=-1;
-    if(referenceImage->nz<=1) originIndex[2]=0;
-    reg_mat44_mul(&(controlPointGrid->sto_xyz), originIndex, originReal);
-    controlPointGrid->sto_xyz.m[0][3] = originReal[0];
-    controlPointGrid->sto_xyz.m[1][3] = originReal[1];
-    controlPointGrid->sto_xyz.m[2][3] = originReal[2];
-    controlPointGrid->sto_ijk = nifti_mat44_inverse(controlPointGrid->sto_xyz);
-  }
-#ifndef NDEBUG
-  printf("[NiftyReg DEBUG] The control point grid has been refined\n");
-#endif
-  return;
 }
 
 
@@ -1143,7 +558,11 @@ void RegistrationExecution::reg_bspline_refineControlPointGrid(nifti_image *refe
 // CreateDeformationVisualisationSurface();
 // --------------------------------------------------------------------------- 
 
-void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType plane )
+void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType plane,
+								   nifti_image *controlPointGrid,
+								   int xSkip,
+								   int ySkip,
+								   int zSkip )
 {
   if ( ! userData->m_RegNonRigid )
   {
@@ -1164,61 +583,11 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
 
   nifti_image *referenceImage = userData->m_RegParameters.m_ReferenceImage;
 
-  nifti_image *controlPointGrid =
-    userData->m_RegNonRigid->GetControlPointPositionImage();
-
   std::cout << "Control point grid: " << std::endl;
   nifti_image_infodump( controlPointGrid );
-  reg_io_WriteImageFile(controlPointGrid, "controlPointGrid.nii.gz" );
 
   std::cout << "Reference image: " << std::endl;
   nifti_image_infodump( referenceImage );
-
-
-  // Define the region of interest
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  float xUpSample = 1.;
-  float yUpSample = 1.;
-  float zUpSample = 1.;
-
-  switch (plane )
-  {
-  case PLANE_XY: 
-  {
-    xUpSample = floor( controlPointGrid->dx / referenceImage->dx );
-    yUpSample = floor( controlPointGrid->dy / referenceImage->dy );
-
-    break;
-  }
-
-  case PLANE_YZ: 
-  {
-    yUpSample = floor( controlPointGrid->dy / referenceImage->dy );
-    zUpSample = floor( controlPointGrid->dz / referenceImage->dz );
-
-    break;
-  }
-
-  case PLANE_XZ: 
-  {
-    xUpSample = floor( controlPointGrid->dx / referenceImage->dx );
-    zUpSample = floor( controlPointGrid->dz / referenceImage->dz );
-
-    break;
-  }
-
-  }
-
-  // Compute the new control grid
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  reg_bspline_refineControlPointGrid( referenceImage, controlPointGrid,
-				      2., 2., 2. );
-
-  std::cout << "New control grid: " << std::endl;
-  nifti_image_infodump( controlPointGrid );
-  reg_io_WriteImageFile(controlPointGrid, "controlPointGrid.nii.gz" );
 
 
   // Create a VTK polydata object and add everything to it
@@ -1227,7 +596,6 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
   vtkIdType id;
 
   vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
-  sgrid->SetDimensions(controlPointGrid->nx, controlPointGrid->ny, controlPointGrid->nz);
 
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
@@ -1240,13 +608,21 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
   controlPointGridPtrY = &controlPointGridPtrX[ nPoints ];
   controlPointGridPtrZ = &controlPointGridPtrY[ nPoints ];
 
-  for (z=0; z<controlPointGrid->nz; z++)
-  {
-    index = z*controlPointGrid->nx*controlPointGrid->ny;
+  int nxPoints, nyPoints, nzPoints;
 
-    for (y=0; y<controlPointGrid->ny; y++)
+
+  nzPoints = 0;
+  for ( z=1; z<controlPointGrid->nz; z += zSkip )
+  {
+    nyPoints = 0;
+    for ( y=1; y<controlPointGrid->ny; y += ySkip )
     {
-      for (x=0; x<controlPointGrid->nx; x++)
+
+      index = z*controlPointGrid->nx*controlPointGrid->ny 
+	+ y*controlPointGrid->nx + 1;
+
+      nxPoints = 0;
+      for ( x=1; x<controlPointGrid->nx; x += xSkip )
       {
 
 	// The final control point position:
@@ -1259,11 +635,16 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
 	cells->InsertNextCell( 1 );
 	cells->InsertCellPoint( id );
 
-	index++;
+	index += xSkip;
+
+	nxPoints++;
       }
+      nyPoints++;
     }
+    nzPoints++;
   }
 
+  sgrid->SetDimensions(nxPoints, nyPoints, nzPoints);
   sgrid->SetPoints( points );
   
   vtkControlPoints->SetPoints( points );
@@ -1272,6 +653,11 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
 
   // Add the deformation planes to the DataManager
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  float rgb[3] = {0., 0., 0.};
+
+  mitk::DataNode::Pointer mitkDeformationNode = mitk::DataNode::New();
+  mitk::DataNode::Pointer mitkControlPointsNode = mitk::DataNode::New();
 
   vtkSmartPointer<vtkAppendPolyData> appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
 
@@ -1285,36 +671,17 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
   {
   case PLANE_XY:
   {
+    rgb = {0.5, 0.247, 0.247};
     nameOfDeformation = std::string( "DeformationXY_" );    
 
-    for (k=0; k<controlPointGrid->nz; k++) 
+    for ( k=0; k<nzPoints; k++ ) 
     {
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
       
-      structuredGridFilter->SetExtent( 0, controlPointGrid->nx, 
-				       0, controlPointGrid->ny, 
+      structuredGridFilter->SetExtent( 0, nxPoints-1, 
+				       0, nyPoints-1, 
 				       k, k );
-      structuredGridFilter->Update();
-      polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
-      
-      appendFilter->AddInput( polydataCopy );
-      appendFilter->Update();
-    }
-    
-    break;
-  }
 
-  case PLANE_YZ:
-  {
-    nameOfDeformation = std::string( "DeformationYZ_" );    
-
-    for (j=0; j<controlPointGrid->ny; j++) 
-    {
-      vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
-      
-      structuredGridFilter->SetExtent( 0, controlPointGrid->nx, 
-				       j, j,
-				       0, controlPointGrid->nz );
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
@@ -1327,15 +694,38 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
 
   case PLANE_XZ:
   {
+    rgb = {0.247, 0.247, 0.5};
     nameOfDeformation = std::string( "DeformationXZ_" );    
 
-    for (i=0; i<controlPointGrid->nx; i++) 
+    for (j=0; j<nyPoints; j++) 
+    {
+      vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
+      
+      structuredGridFilter->SetExtent( 0, nxPoints-1, 
+				       j, j,
+				       0, nzPoints-1 );
+      structuredGridFilter->Update();
+      polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
+      
+      appendFilter->AddInput( polydataCopy );
+      appendFilter->Update();
+    }
+    
+    break;
+  }
+
+  case PLANE_YZ:
+  {
+    rgb = {0.247, 0.5, 0.247};
+    nameOfDeformation = std::string( "DeformationYZ_" );    
+
+    for (i=0; i<nxPoints; i++) 
     {
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
       
       structuredGridFilter->SetExtent( i, i,
-				       0, controlPointGrid->ny, 
-				       0, controlPointGrid->nz );
+				       0, nyPoints-1, 
+				       0, nzPoints-1 );
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
@@ -1349,26 +739,24 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
 
   mitkDeformation->SetVtkPolyData( appendFilter->GetOutput() );
 
-  mitk::DataNode::Pointer mitkDeformationNode = mitk::DataNode::New();
-
   nameOfDeformation.append( sourceName.toStdString() );
   nameOfDeformation.append( "_To_" );
   nameOfDeformation.append( targetName.toStdString() );
   
   mitkDeformationNode->SetProperty("name", mitk::StringProperty::New( nameOfDeformation ) );
+  mitkDeformationNode->SetColor( rgb );
 
   mitkDeformationNode->SetData( mitkDeformation );
 
   userData->GetDataStorage()->Add( mitkDeformationNode );
   
 
+#if 0
   // Add the deformation points to the DataManager
 
   mitk::Surface::Pointer mitkControlPoints = mitk::Surface::New();
 
   mitkControlPoints->SetVtkPolyData( vtkControlPoints );
-
-  mitk::DataNode::Pointer mitkControlPointsNode = mitk::DataNode::New();
 
   std::string nameOfControlPoints( "DeformationPointsFor_" );
   nameOfControlPoints.append( sourceName.toStdString() );
@@ -1376,12 +764,11 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( PlaneType pla
   nameOfControlPoints.append( targetName.toStdString() );
   
   mitkControlPointsNode->SetProperty("name", mitk::StringProperty::New(nameOfControlPoints) );
+  mitkControlPointsNode->SetColor( rgb );
 
   mitkControlPointsNode->SetData( mitkControlPoints );
 
   userData->GetDataStorage()->Add( mitkControlPointsNode );
+#endif
 
-
-  if ( controlPointGrid != NULL )
-    nifti_image_free( controlPointGrid );
 }
