@@ -127,6 +127,16 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "      </constraints>\n"
 "    </float>\n"
 
+  // Clip the segmented region with fitted B-Spline surface
+
+"    <boolean>\n"
+"      <name>flgCropFit</name>\n"
+"      <longflag>cropfit</longflag>\n"
+"      <description>A B-spline fit to the anterior breast surface is created and used to clip the segmentation [default: no].</description>\n"
+"      <label>Clip segmentation with fitted surface</label>\n"
+"      <default>false</default>\n"
+"    </boolean>\n"
+
 
 "  </parameters>\n"
 
@@ -151,6 +161,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "      <channel>output</channel>\n"
 "    </image>\n"
 
+
   // Filename of the output pectoral mask
 
 "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
@@ -161,6 +172,19 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "      <default>PectoralMask.nii.gz</default>\n"
 "      <channel>output</channel>\n"
 "    </image>\n"
+
+
+  // Filename of the output fitted surface mask
+
+"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"      <name>fileOutputFitSurface</name>\n"
+"      <longflag>ofitsurf</longflag>\n"
+"      <description>Output the mask from fitting a B-spline to the skin surface (Only possible when flgCropFit selected).</description>\n"
+"      <label>Output surface fitted mask</label>\n"
+"      <default>FittedSurfaceMask.nii.gz</default>\n"
+"      <channel>output</channel>\n"
+"    </image>\n"
+
 
   // Filename of the output vtk surface
 
