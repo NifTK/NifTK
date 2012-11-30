@@ -30,10 +30,14 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 IGIDataType::IGIDataType()
-: m_TimeStamp(0)
-, m_Duration(1)
+: m_DataSource("")
+, m_TimeStamp(0)
+, m_Duration(0)
+, m_FrameId(0)
 , m_IsSaved(false)
 {
+  m_TimeStamp = igtl::TimeStamp::New();
+  m_TimeStamp->toTAI();
 }
 
 //-----------------------------------------------------------------------------

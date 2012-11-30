@@ -28,6 +28,7 @@
 #include <mitkRenderingManager.h>
 
 #include "mitkIGITestDataUtils.h"
+#include "QmitkIGINiftyLinkDataType.h"
 
 //NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 
@@ -66,17 +67,23 @@ QmitkIGITrackerTool::~QmitkIGITrackerTool()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType::Pointer data) const
+bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
 {
   bool canHandle = false;
-  if (data.IsNotNull() && data->GetNameOfClass() == std::string("QmitkIGINiftyLinkDataType").c_str())
+  std::string className = data->GetNameOfClass();
+
+  if (data != NULL && className == std::string("QmitkIGINiftyLinkDataType"))
   {
-    OIGTLMessage::Pointer msg(reinterpret_cast<OIGTLMessage*>(data->GetData()));
-    if (msg.data() != NULL
-        && (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
-        )
+    QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
+    if (dataType.IsNotNull())
     {
-      canHandle = true;
+      OIGTLMessage* pointerToMessage = dataType->GetMessage();
+      if (pointerToMessage != NULL
+          && (pointerToMessage->getMessageType() == QString("TRANSFORM") || pointerToMessage->getMessageType() == QString("TDATA"))
+          )
+      {
+        canHandle = true;
+      }
     }
   }
 
@@ -123,16 +130,21 @@ mitk::DataNode* QmitkIGITrackerTool::GetToolRepresentation(const QString toolNam
   return result;
 }
 
+
 //---------------------------------------------------------------------------
 void QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
 {
   m_AssociatedTools.insertMulti(toolName,dataNode);
 }
+
+
 //---------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString toolName)
 {
   return m_AssociatedTools.values(toolName);
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::EnableTool(const QString &toolName, const bool& enable)
 {
@@ -267,6 +279,7 @@ void QmitkIGITrackerTool::RemoveFiducialsFromDataStorage()
   }
 }
 
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::RegisterFiducials()
 {
@@ -322,15 +335,83 @@ void QmitkIGITrackerTool::RegisterFiducials()
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
 {
-  if (msg.data() != NULL &&
+  if (msg->getMessageType() == QString("STRING"))
+  {
+    QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
+
+    if (str.isEmpty() || str.isNull())
+    {
+      return;
+    }
+
+    QString type = XMLBuilderBase::parseDescriptorType(str);
+    if (type == QString("TrackerClientDescriptor"))
+    {
+      ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
+      clientInfo->setXMLString(str);
+
+      if (!clientInfo->isMessageValid())
+      {
+        delete clientInfo;
+        return;
+      }
+
+      this->SetClientDescriptor(clientInfo);
+      this->SetName(clientInfo->getDeviceName().toStdString());
+      this->SetType(clientInfo->getDeviceType().toStdString());
+
+      QString descr = QString("Address=") +  clientInfo->getClientIP()
+          + QString(":") + clientInfo->getClientPort();
+
+      this->SetDescription(descr.toStdString());
+
+      QString deviceInfo;
+      deviceInfo.append("Client connected:");
+      deviceInfo.append("  Device name: ");
+      deviceInfo.append(clientInfo->getDeviceName());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Device type: ");
+      deviceInfo.append(clientInfo->getDeviceType());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Communication type: ");
+      deviceInfo.append(clientInfo->getCommunicationType());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Port name: ");
+      deviceInfo.append(clientInfo->getPortName());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Client ip: ");
+      deviceInfo.append(clientInfo->getClientIP());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Client port: ");
+      deviceInfo.append(clientInfo->getClientPort());
+      deviceInfo.append("\n");
+
+      qDebug() << deviceInfo;
+      DataSourceStatusUpdated.Send(this->GetIdentifier());
+    }
+  }
+  else if (msg.data() != NULL &&
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-/*
-    this->m_MessageMap.insert(msg->getId(), msg);
-    if ( m_SavingMessages ) 
-      this->m_SaveBuffer.append(msg->getId());
-*/
+    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+    wrapper->SetData(msg.data());
+    wrapper->SetDataSource("QmitkIGITrackerTool");
+    wrapper->SetFrameId(msg->getId());
+    wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
+
+    igtlUint64 res;
+    msg->getResolution(res);
+
+    wrapper->SetDuration(res);
+    wrapper->SetIsSaved(false);
+
+    this->AddData(wrapper.GetPointer());
   }
 }
 
@@ -505,6 +586,7 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage::Pointer msg)
     }
   }
 }
+
 
 //-----------------------------------------------------------------------------
 igtlUint64 QmitkIGITrackerTool::HandleMessageByTimeStamp(igtlUint64 id)

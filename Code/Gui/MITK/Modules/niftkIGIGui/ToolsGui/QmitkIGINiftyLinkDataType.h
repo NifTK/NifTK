@@ -41,8 +41,9 @@ public:
   mitkClassMacro(QmitkIGINiftyLinkDataType, mitk::IGIDataType);
   itkNewMacro(QmitkIGINiftyLinkDataType);
 
-  virtual void* GetData() { return m_Message.data(); }
-  void SetData(OIGTLMessage::Pointer message) { m_Message = message; this->Modified(); }
+  virtual void* GetData() const { return m_Message; }
+  OIGTLMessage* GetMessage() const { return m_Message; }
+  void SetData(OIGTLMessage* message) { m_Message = message; this->Modified(); }
 
 protected:
 
@@ -54,7 +55,7 @@ protected:
 
 private:
 
-  OIGTLMessage::Pointer m_Message;
+  OIGTLMessage* m_Message;
 
 }; // end class
 

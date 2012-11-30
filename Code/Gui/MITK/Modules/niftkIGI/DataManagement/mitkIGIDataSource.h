@@ -98,8 +98,8 @@ public:
   /**
    * \brief Sets the tolerance for checking data.
    */
-  itkSetMacro(TimeStampTolerance, mitk::IGIDataType::NifTKTimeStampType);
-  itkGetMacro(TimeStampTolerance, mitk::IGIDataType::NifTKTimeStampType);
+  itkSetMacro(TimeStampTolerance, igtlUint64);
+  itkGetMacro(TimeStampTolerance, igtlUint64);
 
   /**
    * \brief Sets the data storage.
@@ -121,13 +121,13 @@ public:
   /**
    * \brief Get the time stamp that we are interested in.
    */
-  itkGetMacro(RequestedTimeStamp, mitk::IGIDataType::NifTKTimeStampType);
+  igtlUint64 GetRequestedTimeStamp() const { return m_RequestedTimeStamp->GetTimeStampUint64(); }
 
   /**
    * \brief This is calculated internally, and represents the time-stamp of the "current" message,
    * which may be before or after the  RequestedTimeStamp.
    */
-  itkGetMacro(ActualTimeStamp, mitk::IGIDataType::NifTKTimeStampType);
+  igtlUint64 GetActualTimeStamp() const { return m_ActualTimeStamp->GetTimeStampUint64(); }
 
   /**
    * \brief Returns the current data item, with no iterating, or updating.
@@ -164,24 +164,24 @@ public:
   /**
    * \brief Returns the first time stamp, or 0 if the buffer is empty.
    */
-  mitk::IGIDataType::NifTKTimeStampType GetFirstTimeStamp() const;
+  igtlUint64 GetFirstTimeStamp() const;
 
   /**
    * \brief Returns the last time stamp, or 0 if the buffer is empty.
    */
-  mitk::IGIDataType::NifTKTimeStampType GetLastTimeStamp() const;
+  igtlUint64 GetLastTimeStamp() const;
 
   /**
    * \brief Add data to the buffer, derived classes can decide to reject the data,
    * so returns true if added and false otherwise.
    */
-  bool AddData(mitk::IGIDataType::Pointer data);
+  bool AddData(mitk::IGIDataType* data);
 
   /**
    * \brief Processes the data for a given timestamp, returning true if
    * the current data is processed successfully and within time tolerance.
    */
-  bool ProcessData(mitk::IGIDataType::NifTKTimeStampType requestedTimeStamp);
+  bool ProcessData(igtlUint64 requestedTimeStamp);
 
   /**
    * \brief Returns true if the current data frame is within time tolerances and false otherwise.
@@ -200,20 +200,20 @@ protected:
    * \brief Derived classes should implement this to decide if they can handle a certain type of data,
    * returning true if it can be handled, and false otherwise.
    */
-  virtual bool CanHandleData(mitk::IGIDataType::Pointer data) const = 0;
+  virtual bool CanHandleData(mitk::IGIDataType* data) const = 0;
 
   /**
    * \brief Will iterate through the internal buffer, returning the
    * closest message to the requested time stamp, and sets the
    * ActualTimeStamp accordingly, or else return NULL if it can't be found.
    */
-  virtual mitk::IGIDataType::Pointer RequestData(mitk::IGIDataType::NifTKTimeStampType requestedTimeStamp);
+  virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
   /**
    * \brief Derived classes implement this to provide some kind of update based on the given data,
    * which must be NOT NULL, and should return true for successful and false otherwise.
    */
-  virtual bool Update(mitk::IGIDataType::Pointer data) { return true; }
+  virtual bool Update(mitk::IGIDataType* data) { return true; }
 
 private:
 
@@ -228,10 +228,10 @@ private:
   std::string                                     m_SavePrefix;
   std::list<mitk::IGIDataType::Pointer>           m_Buffer;
   std::list<mitk::IGIDataType::Pointer>::iterator m_BufferIterator;
-  mitk::IGIDataType::NifTKTimeStampType           m_RequestedTimeStamp;
-  mitk::IGIDataType::NifTKTimeStampType           m_ActualTimeStamp;
-  mitk::IGIDataType::NifTKTimeStampType           m_TimeStampTolerance;
-  mitk::IGIDataType::Pointer                      m_ActualData;
+  igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
+  igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
+  igtlUint64                                      m_TimeStampTolerance;
+  mitk::IGIDataType*                              m_ActualData;
 
 }; // end class
 

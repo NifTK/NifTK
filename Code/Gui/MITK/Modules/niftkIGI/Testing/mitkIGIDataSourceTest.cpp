@@ -34,14 +34,14 @@ public:
   mitkClassMacro(TestIGIDataSource, IGIDataSource);
   itkNewMacro(TestIGIDataSource);
   virtual void Initialize(){};
-  mitk::IGIDataType::Pointer TestRequestData(mitk::IGIDataType::NifTKTimeStampType requestedTimeStamp)
+  mitk::IGIDataType::Pointer TestRequestData(igtlUint64 requestedTimeStamp)
   {
     return IGIDataSource::RequestData(requestedTimeStamp);
   }
 protected:
   TestIGIDataSource() {};
   virtual ~TestIGIDataSource() {};
-  virtual bool CanHandleData(mitk::IGIDataType::Pointer data) const { return true; }
+  virtual bool CanHandleData(mitk::IGIDataType* data) const { return true; }
 };
 
 } // end namespace
@@ -72,7 +72,7 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetBufferSize() == 0, ".. Testing default buffer size is zero");
 
   mitk::IGIDataType::Pointer data1 = mitk::IGIDataType::New();
-  data1->SetTimeStamp(1);
+  data1->SetTimeStampUint64(1);
   data1->SetDuration(10);
 
   dataSource->AddData(data1);
@@ -83,7 +83,7 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetLastTimeStamp() == 1, ".. Testing last time stamp = 1");
 
   mitk::IGIDataType::Pointer data2 = mitk::IGIDataType::New();
-  data2->SetTimeStamp(5);
+  data2->SetTimeStampUint64(5);
   data2->SetDuration(10);
 
   dataSource->AddData(data2);
@@ -118,7 +118,7 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
   for (int i = 1; i <= 20; i++)
   {
     mitk::IGIDataType::Pointer testData = mitk::IGIDataType::New();
-    testData->SetTimeStamp(i+1);
+    testData->SetTimeStampUint64(i+1);
     testData->SetDuration(10);
     dataSource->AddData(testData);
 

@@ -30,6 +30,7 @@
 #include <itkVersion.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <igtlTimeStamp.h>
 
 namespace mitk
 {
@@ -45,19 +46,17 @@ public:
   mitkClassMacro(IGIDataType, itk::Object);
   itkNewMacro(IGIDataType);
 
-  typedef unsigned long int NifTKTimeStampType;
-
   itkSetMacro(DataSource, std::string);
   itkGetMacro(DataSource, std::string);
 
+  igtlUint64 GetTimeStampUint64() const { return this->m_TimeStamp->GetTimeStampUint64(); }
+  void SetTimeStampUint64(const igtlUint64& time) { this->m_TimeStamp->SetTime(time); this->Modified(); }
+
+  itkSetMacro(Duration, igtlUint64);
+  itkGetMacro(Duration, igtlUint64);
+
   itkSetMacro(FrameId, unsigned long int);
   itkGetMacro(FrameId, unsigned long int);
-
-  itkSetMacro(TimeStamp, NifTKTimeStampType);
-  itkGetMacro(TimeStamp, NifTKTimeStampType);
-
-  itkSetMacro(Duration, NifTKTimeStampType);
-  itkGetMacro(Duration, NifTKTimeStampType);
 
   itkSetMacro(IsSaved, bool);
   itkGetMacro(IsSaved, bool);
@@ -77,11 +76,11 @@ protected:
 
 private:
 
-  NifTKTimeStampType m_TimeStamp;
-  NifTKTimeStampType m_Duration;
-  bool m_IsSaved;
   std::string m_DataSource;
+  igtl::TimeStamp::Pointer m_TimeStamp;
+  igtlUint64 m_Duration;
   unsigned long int m_FrameId;
+  bool m_IsSaved;
 };
 
 } // end namespace

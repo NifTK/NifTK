@@ -100,7 +100,7 @@
        <item>
         <widget class="QPushButton" name="m_PlayPushButton">
          <property name="text">
-          <string>Play</string>
+          <string>Play/Rec</string>
          </property>
         </widget>
        </item>

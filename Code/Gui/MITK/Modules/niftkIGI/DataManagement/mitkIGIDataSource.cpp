@@ -35,14 +35,21 @@ IGIDataSource::IGIDataSource()
 , m_FrameRate(0)
 , m_Name("")
 , m_Type("")
+, m_Status("")
 , m_Description("")
 , m_SavingMessages(false)
 , m_SavePrefix("")
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
-, m_TimeStampTolerance(1000)
+, m_TimeStampTolerance(0)
 , m_ActualData(NULL)
 {
+  m_RequestedTimeStamp = igtl::TimeStamp::New();
+  m_RequestedTimeStamp->toTAI();
+
+  m_ActualTimeStamp = igtl::TimeStamp::New();
+  m_ActualTimeStamp->toTAI();
+
   m_Buffer.clear();
 }
 
@@ -58,16 +65,17 @@ void IGIDataSource::SetSaveState(bool isSaving)
 {
   this->m_SavingMessages = isSaving;
   this->Modified();
+
   SaveStateChanged.Send();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::IGIDataType::NifTKTimeStampType IGIDataSource::GetFirstTimeStamp() const
+igtlUint64 IGIDataSource::GetFirstTimeStamp() const
 {
   if (m_Buffer.size() > 0)
   {
-    return m_Buffer.front()->GetTimeStamp();
+    return m_Buffer.front()->GetTimeStampUint64();
   }
   else
   {
@@ -77,11 +85,11 @@ mitk::IGIDataType::NifTKTimeStampType IGIDataSource::GetFirstTimeStamp() const
 
 
 //-----------------------------------------------------------------------------
-mitk::IGIDataType::NifTKTimeStampType IGIDataSource::GetLastTimeStamp() const
+igtlUint64 IGIDataSource::GetLastTimeStamp() const
 {
   if (m_Buffer.size() > 0)
   {
-    return m_Buffer.back()->GetTimeStamp();
+    return m_Buffer.back()->GetTimeStampUint64();
   }
   else
   {
@@ -108,10 +116,11 @@ void IGIDataSource::ClearBuffer()
 void IGIDataSource::CleanBuffer()
 {
   std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
+
   while(   iter != m_Buffer.end()
         && (*iter).IsNotNull()
         && ( !this->m_SavingMessages || (this->m_SavingMessages && (*iter)->GetIsSaved()))
-        && (*iter)->GetTimeStamp() < this->m_ActualTimeStamp
+        && ((*iter)->GetTimeStampUint64() < this->m_ActualTimeStamp->GetTimeStampUint64())
       )
   {
     m_Buffer.erase(iter);
@@ -120,17 +129,17 @@ void IGIDataSource::CleanBuffer()
 
 
 //-----------------------------------------------------------------------------
-mitk::IGIDataType::Pointer IGIDataSource::RequestData(mitk::IGIDataType::NifTKTimeStampType requestedTimeStamp)
+mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 {
   // Aim here is to iterate through the buffer, and find the closest
   // message to the requested time stamp, and leave the m_BufferIterator,
   // m_ActualTimeStamp and m_ActualData at that point, and return the corresponding data.
 
-  m_RequestedTimeStamp = requestedTimeStamp;
+  m_RequestedTimeStamp->SetTime(requestedTimeStamp);
 
   if (m_Buffer.size() == 0)
   {
-    m_ActualTimeStamp = 0;
+    m_ActualTimeStamp->SetTime((igtlUint64)0);
     m_ActualData = NULL;
   }
   else
@@ -143,7 +152,7 @@ mitk::IGIDataType::Pointer IGIDataSource::RequestData(mitk::IGIDataType::NifTKTi
     {
       while(     m_BufferIterator != m_Buffer.end()
             && (*m_BufferIterator).IsNotNull()
-            && (*m_BufferIterator)->GetTimeStamp() < m_RequestedTimeStamp
+            && (*m_BufferIterator)->GetTimeStampUint64() < m_RequestedTimeStamp->GetTimeStampUint64()
            )
       {
         m_BufferIterator++;
@@ -155,14 +164,14 @@ mitk::IGIDataType::Pointer IGIDataSource::RequestData(mitk::IGIDataType::NifTKTi
       }
       else if (m_BufferIterator != m_Buffer.begin())
       {
-        mitk::IGIDataType::NifTKTimeStampType afterTimeStamp = (*m_BufferIterator)->GetTimeStamp();
+        igtlUint64 afterTimeStamp = (*m_BufferIterator)->GetTimeStampUint64();
 
         m_BufferIterator--;
 
-        mitk::IGIDataType::NifTKTimeStampType beforeTimeStamp = (*m_BufferIterator)->GetTimeStamp();
+        igtlUint64 beforeTimeStamp = (*m_BufferIterator)->GetTimeStampUint64();
 
-        double beforeToRequested = fabs((double)(m_RequestedTimeStamp) - (double)(beforeTimeStamp));
-        double afterToRequested = fabs((double)(afterTimeStamp) - (double)(m_RequestedTimeStamp));
+        igtlUint64 beforeToRequested = m_RequestedTimeStamp->GetTimeStampUint64() - beforeTimeStamp;
+        igtlUint64 afterToRequested = afterTimeStamp - m_RequestedTimeStamp->GetTimeStampUint64();
 
         if (afterToRequested < beforeToRequested)
         {
@@ -172,7 +181,7 @@ mitk::IGIDataType::Pointer IGIDataSource::RequestData(mitk::IGIDataType::NifTKTi
     }
 
     m_ActualData = (*m_BufferIterator);
-    m_ActualTimeStamp = m_ActualData->GetTimeStamp();
+    m_ActualTimeStamp->SetTime(m_ActualData->GetTimeStampUint64());
   }
 
   return m_ActualData;
@@ -184,9 +193,9 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 {
   bool result = false;
 
-  if (m_ActualData.IsNotNull()
-      && fabs((double)m_RequestedTimeStamp - (double)m_ActualData->GetTimeStamp()) < m_TimeStampTolerance        // the data source can decide what to accept
-      && fabs((double)m_RequestedTimeStamp - (double)m_ActualData->GetTimeStamp()) < m_ActualData->GetDuration() // the data can have a duration that it is valid for
+  if (m_ActualData != NULL
+      && fabs((double)m_RequestedTimeStamp->GetTimeStampUint64() - (double)m_ActualData->GetTimeStampUint64()) < m_TimeStampTolerance        // the data source can decide what to accept
+      && fabs((double)m_RequestedTimeStamp->GetTimeStampUint64() - (double)m_ActualData->GetTimeStampUint64()) < m_ActualData->GetDuration() // the data can have a duration that it is valid for
       )
   {
     result = true;
@@ -208,28 +217,28 @@ void IGIDataSource::UpdateFrameRate()
     std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
     iter--;
 
-    mitk::IGIDataType::NifTKTimeStampType lastTimeStamp = (*iter)->GetTimeStamp();
+    igtlUint64 lastTimeStamp = (*iter)->GetTimeStampUint64();
     for (unsigned int i = 0; i < 9; i++)
     {
       iter--;
     }
-    mitk::IGIDataType::NifTKTimeStampType earlierTimeStamp = (*iter)->GetTimeStamp();
-    mitk::IGIDataType::NifTKTimeStampType difference = lastTimeStamp - earlierTimeStamp;
+    igtlUint64 earlierTimeStamp = (*iter)->GetTimeStampUint64();
+    igtlUint64 difference = lastTimeStamp - earlierTimeStamp;
 
-    // Assuming timestamps represent milliseconds, subclasses can override this.
-    m_FrameRate = 1.0 / (difference/9000.0);
+    // Timestamps are in nanoseconds.
+    m_FrameRate = 1.0 / (difference/9000000000.0);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSource::AddData(mitk::IGIDataType::Pointer data)
+bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
   bool result = false;
 
-  if (data.IsNull())
+  if (data == NULL)
   {
-    MITK_ERROR << "IGIDataSource::AddData is receiving NULL data. This is not allowed" << std::endl;
+    MITK_ERROR << "IGIDataSource::AddData is receiving NULL data. This is not allowed!" << std::endl;
     return false;
   }
 
@@ -241,21 +250,13 @@ bool IGIDataSource::AddData(mitk::IGIDataType::Pointer data)
       m_BufferIterator = m_Buffer.begin();
     }
     result = true;
-
-    MITK_DEBUG << "IGIDataSource::AddData. This DataSource(Identifier=" << this->GetIdentifier() \
-        << ", Name=" << this->GetName() << "), added data from DataSource(" << data->GetDataSource() << ", FrameId:" << data->GetFrameId() << ") as CanHandleData returned false" << std::endl;
-  }
-  else
-  {
-    MITK_DEBUG << "IGIDataSource::AddData. This DataSource(Identifier=" << this->GetIdentifier() \
-        << ", Name=" << this->GetName() << "), did not add data from DataSource(" << data->GetDataSource() << ", FrameId:" << data->GetFrameId() << ") as CanHandleData returned false" << std::endl;
   }
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSource::ProcessData(mitk::IGIDataType::NifTKTimeStampType requestedTimeStamp)
+bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 {
   bool result = false;
   mitk::IGIDataType::Pointer data = this->RequestData(requestedTimeStamp);

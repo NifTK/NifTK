@@ -48,7 +48,7 @@ public:
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType;
    * \see mitk::IGIDataSource::CanHandleData()
    */
-  virtual bool CanHandleData(mitk::IGIDataType::Pointer data) const;
+  virtual bool CanHandleData(mitk::IGIDataType* data) const;
 
   itkSetMacro(UseICP, bool);
   itkGetMacro(UseICP, bool);
