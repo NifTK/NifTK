@@ -45,13 +45,21 @@ public:
   itkNewMacro(QmitkIGITrackerTool);
 
   /**
+   * \brief Takes the tool name, and if name does not end in ".rom", will add ".rom" and return that string.
+   */
+  QString GetNameWithRom(const QString name);
+
+  /**
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType;
    * \see mitk::IGIDataSource::CanHandleData()
    */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
 
-  itkSetMacro(UseICP, bool);
-  itkGetMacro(UseICP, bool);
+  /**
+   * \brief Defined in base class, this is the method where we do the update based on the available data.
+   * \see mitk::IGIDataSource::Update()
+   */
+  virtual bool Update(mitk::IGIDataType* data);
 
   /**
    * \brief Instruct the tracker tool to enable a given tool
@@ -67,71 +75,67 @@ public:
   void GetToolPosition(const QString &toolName);
 
   /**
-   * \brief Add an associated tool to the named tool associated tools for a given 
-   * tracker tool
+   * \brief Associates a dataNode with a given tool name, where many nodes can be associated with a single tool.
    */
   void AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
   
   /**
-   * \brief return a QList of the tools associated with a given toolName
+   * \brief Return a QList of the tools associated with a given toolName
    */
-
   QList<mitk::DataNode::Pointer>  GetDataNode(const QString);
+
   /**
-   * \brief Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
+   * \brief Not Widely Used: Set a flag to say we are doing ICP.
+   */
+  itkSetMacro(UseICP, bool);
+  itkGetMacro(UseICP, bool);
+
+  /**
+   * \brief Not Widely Used: Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
    */
   void ClearFiducials();
 
   /**
-   * \Brief Initialises the point sets and filters for point based registration, and adds them to data storage.
+   * \brief Not Widely Used: Initialises the point sets and filters for point based registration, and adds them to data storage.
    */
   void InitializeFiducials();
 
   /**
-   * \brief If not already added, adds the fiducials to data storage.
+   * \brief Not Widely Used: If not already added, adds the fiducials to data storage.
    */
   void AddFiducialsToDataStorage();
 
   /**
-   * \brief If currently in data storage, will remove the fiducials from data storage.
+   * \brief Not Widely Used: If currently in data storage, will remove the fiducials from data storage.
    */
   void RemoveFiducialsFromDataStorage();
 
   /**
-   * \brief Retrieves the internal point set representing image fiducials.
+   * \brief Not Widely Used: Retrieves the internal point set representing image fiducials.
    */
   mitk::DataNode* GetImageFiducialsNode() const;
 
   /**
-   * \brief Retrieves the internal point set representing tracker fiducials.
+   * \brief Not Widely Used: Retrieves the internal point set representing tracker fiducials.
    */
   mitk::DataNode* GetTrackerFiducialsNode() const;
 
   /**
-   * \brief Called from the "Register" button on the QmitkFiducialRegistrationWidget to register point sets.
+   * \brief Not Widely Used: Called from the "Register" button on the QmitkFiducialRegistrationWidget to register point sets.
    */
   void RegisterFiducials();
 
   /**
-   * \brief Retrieves / Creates tool, puts it into DataStorage, and returns pointer to the node.
+   * \brief Not Widely Used: Retrieves / Creates tool, puts it into DataStorage, and returns pointer to the node.
    */
   mitk::DataNode* GetToolRepresentation(const QString name);
-  
-  /**
-   * \brief If name does not end in ".rom", will add ".rom"
-   */
-  QString GetNameWithRom(const QString name);
 
 public slots:
 
   /**
-   * \brief Main message handler routine for this tool.
+   * \brief Main message handler routine for this tool, called by the signal from the socket.
    */
   virtual void InterpretMessage(OIGTLMessage::Pointer msg);
-  /**
-   * \brief Finds a message which best matches id and handles it
-   */
-  virtual igtlUint64 HandleMessageByTimeStamp (igtlUint64 id);
 
 signals:
 
@@ -147,20 +151,25 @@ protected:
 
 private:
 
-  void HandleTrackerData(OIGTLMessage::Pointer msg);
+  /**
+   * \brief Takes a message and extracts a matrix/transform and applies it.
+   */
+  void HandleTrackerData(OIGTLMessage* msg);
 
   /**
    * \brief Used to feedback a message of either coordinates, or matrices to
    * the GUI consolve via the StatusUpdate method, and also writes to console.
    */
-  void DisplayTrackerData(OIGTLMessage::Pointer msg);
+  void DisplayTrackerData(OIGTLMessage* msg);
 
   unsigned long int                                    m_MsgCounter;
   QHash<QString, bool>                                 m_EnabledTools;
   QHash<QString, mitk::DataNode::Pointer>              m_ToolRepresentations;
   QHash<QString, mitk::DataNode::Pointer>              m_AssociatedTools;
-  bool                                                 m_PointSetsInitialized;
+
+  /** This lot is currently rarely used. */
   bool                                                 m_UseICP;
+  bool                                                 m_PointSetsInitialized;
   mitk::DataNode::Pointer                              m_ImageFiducialsDataNode;
   mitk::PointSet::Pointer                              m_ImageFiducialsPointSet;
   mitk::DataNode::Pointer                              m_TrackerFiducialsDataNode;

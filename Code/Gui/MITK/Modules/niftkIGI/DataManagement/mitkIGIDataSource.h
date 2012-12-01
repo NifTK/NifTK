@@ -40,6 +40,11 @@ namespace mitk {
  * \class IGIDataSource
  * \brief Base class for IGI Data Sources, where Data Sources can provide video data,
  * ultrasound data, tracker data etc.
+ *
+ * NOTE: All timestamps should be in TAI format. Also, take care NOT to expose a pointer to the
+ * igtl::TimeStamp object. You should only ever expose a copy of this data, or an equivalent
+ * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the timestamp
+ * and set the time to UTC for example.
  */
 class NIFTKIGI_EXPORT IGIDataSource : public itk::Object
 {
@@ -111,7 +116,7 @@ public:
    * \brief Returns true if we are saving messages and false otherwise.
    */
   itkGetMacro(SavingMessages, bool);
-  void SetSaveState(bool isSaving);
+  void SetSavingMessages(bool isSaving);
 
   /**
    * \brief FrameRate is calculated internally, and can be retrieved here, and units should be equivalent to frames per second.
@@ -203,19 +208,19 @@ protected:
   virtual bool CanHandleData(mitk::IGIDataType* data) const = 0;
 
   /**
-   * \brief Will iterate through the internal buffer, returning the
-   * closest message to the requested time stamp, and sets the
-   * ActualTimeStamp accordingly, or else return NULL if it can't be found.
-   */
-  virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
-
-  /**
    * \brief Derived classes implement this to provide some kind of update based on the given data,
    * which must be NOT NULL, and should return true for successful and false otherwise.
    */
   virtual bool Update(mitk::IGIDataType* data) { return true; }
 
 private:
+
+  /**
+   * \brief Will iterate through the internal buffer, returning the
+   * closest message to the requested time stamp, and sets the
+   * ActualTimeStamp accordingly, or else return NULL if it can't be found.
+   */
+  virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
   mitk::DataStorage                              *m_DataStorage;
   int                                             m_Identifier;

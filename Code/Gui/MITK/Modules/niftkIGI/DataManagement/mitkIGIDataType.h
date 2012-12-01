@@ -38,6 +38,11 @@ namespace mitk
 /**
  * \class IGIDataType
  * \brief Abstract base class for IGI Data, such as messages containing tracking data or video frames.
+ *
+ * NOTE: All timestamps should be in TAI format. Also, take care NOT to expose a pointer to the
+ * igtl::TimeStamp object. You should only ever expose a copy of this data, or an equivalent
+ * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the timestamp
+ * and set the time to UTC for example.
  */
 class NIFTKIGI_EXPORT IGIDataType : public itk::Object
 {
@@ -61,6 +66,9 @@ public:
   itkSetMacro(IsSaved, bool);
   itkGetMacro(IsSaved, bool);
 
+  itkSetMacro(ShouldBeSaved, bool);
+  itkGetMacro(ShouldBeSaved, bool);
+
   /**
    * \brief This object can contain any data, and derived classes should override this.
    */
@@ -81,6 +89,8 @@ private:
   igtlUint64 m_Duration;
   unsigned long int m_FrameId;
   bool m_IsSaved;
+  bool m_ShouldBeSaved;
+
 };
 
 } // end namespace

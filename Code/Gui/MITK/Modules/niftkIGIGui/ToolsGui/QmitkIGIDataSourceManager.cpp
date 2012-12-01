@@ -36,6 +36,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_StdMultiWidget(NULL)
 , m_GridLayoutClientControls(NULL)
 , m_UpdateTimer(NULL)
+, m_FrameRateTimer(NULL)
 , m_NextSourceIdentifier(0)
 {
 }
@@ -50,13 +51,13 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     delete m_UpdateTimer;
   }
 
+  if (m_FrameRateTimer != NULL)
+  {
+    m_FrameRateTimer->stop();
+    delete m_FrameRateTimer;
+  }
+
   m_Sources.clear(); // smart pointers should delete the sources.
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnUpdateTimeOut()
-{
 }
 
 
@@ -81,6 +82,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_UpdateTimer =  new QTimer(this);
   m_UpdateTimer->setInterval ( 50 );
 
+  m_FrameRateTimer = new QTimer(this);
+  m_FrameRateTimer->setInterval(5000); // every 5 seconds;
+
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
   m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
@@ -95,10 +99,12 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
-  connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeOut()) );
+  connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateDisplay()) );
+  connect(m_FrameRateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateFrameRate()) );
 
   m_SourceSelectComboBox->setCurrentIndex(0);
   m_UpdateTimer->start();
+  m_FrameRateTimer->start();
 }
 
 
@@ -153,12 +159,14 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
   std::string type = m_Sources[toolIdentifier]->GetType();
   std::string device = m_Sources[toolIdentifier]->GetName();
   std::string description = m_Sources[toolIdentifier]->GetDescription();
+  std::string frameRate = QString::number(m_Sources[toolIdentifier]->GetFrameRate()).toStdString();
 
   std::vector<std::string> fields;
   fields.push_back(status);
   fields.push_back(type);
   fields.push_back(device);
   fields.push_back(description);
+  fields.push_back(frameRate);
 
   if (rowNumber != -1)
   {
@@ -307,3 +315,57 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int, int)
 {
   // ToDo: Generate a GUI.
 }
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnUpdateDisplay()
+{
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->toTAI();
+
+  igtlUint64 idNow = timeNow->GetTimeStampUint64();
+
+  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  {
+    bool isValid = source->ProcessData(idNow);
+    int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
+    QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+
+    if (!isValid)
+    {
+      // Highlight that current row is in error.
+      QPixmap pix(22, 22);
+      pix.fill(QColor(Qt::red));
+      tItem->setIcon(pix);
+    }
+    else
+    {
+      // Highlight that current row is OK.
+      QPixmap pix(22, 22);
+      pix.fill(QColor(Qt::green));
+      tItem->setIcon(pix);
+    }
+  }
+
+  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
+  renderer->RequestUpdateAll();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnUpdateFrameRate()
+{
+  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  {
+    source->UpdateFrameRate();
+    float rate = source->GetFrameRate();
+    int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
+
+    QTableWidgetItem *item = new QTableWidgetItem(QString::number(rate));
+    item->setTextAlignment(Qt::AlignCenter);
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+    m_TableWidget->setItem(rowNumber, 4, item);
+  }
+}
+

@@ -61,7 +61,7 @@ IGIDataSource::~IGIDataSource()
 }
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::SetSaveState(bool isSaving)
+void IGIDataSource::SetSavingMessages(bool isSaving)
 {
   this->m_SavingMessages = isSaving;
   this->Modified();
@@ -119,7 +119,7 @@ void IGIDataSource::CleanBuffer()
 
   while(   iter != m_Buffer.end()
         && (*iter).IsNotNull()
-        && ( !this->m_SavingMessages || (this->m_SavingMessages && (*iter)->GetIsSaved()))
+        && (!((*iter)->GetShouldBeSaved()) || ((*iter)->GetShouldBeSaved() && (*iter)->GetIsSaved()))
         && ((*iter)->GetTimeStampUint64() < this->m_ActualTimeStamp->GetTimeStampUint64())
       )
   {
@@ -244,6 +244,17 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 
   if (this->CanHandleData(data))
   {
+    // As each piece of data is received, we stamp it with whether or not this
+    // data source is currently saving data.
+    if (this->GetSavingMessages())
+    {
+      data->SetShouldBeSaved(true);
+    }
+    else
+    {
+      data->SetShouldBeSaved(false);
+    }
+
     m_Buffer.push_back(data);
     if (m_Buffer.size() == 1)
     {

@@ -93,9 +93,14 @@ protected:
 private slots:
 
   /**
-   * \brief Initiates message handling based on a timing signal
+   * \brief Updates the display, based on the available messages.
    */
-  void OnUpdateTimeOut();
+  void OnUpdateDisplay();
+
+  /**
+   * \brief Updates the frame rate.
+   */
+  void OnUpdateFrameRate();
 
   /**
    * \brief Adds a data source to the table.
@@ -123,6 +128,7 @@ private:
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
   QTimer                                   *m_UpdateTimer;
+  QTimer                                   *m_FrameRateTimer;
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
   unsigned int                              m_NextSourceIdentifier;

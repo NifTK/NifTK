@@ -35,8 +35,8 @@
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::QmitkIGITrackerTool()
 : m_MsgCounter(0)
-, m_PointSetsInitialized(false)
 , m_UseICP(false)
+, m_PointSetsInitialized(false)
 , m_ImageFiducialsDataNode(NULL)
 , m_ImageFiducialsPointSet(NULL)
 , m_TrackerFiducialsDataNode(NULL)
@@ -67,6 +67,102 @@ QmitkIGITrackerTool::~QmitkIGITrackerTool()
 
 
 //-----------------------------------------------------------------------------
+QString QmitkIGITrackerTool::GetNameWithRom(const QString name)
+{
+  QString result = name;
+  if (!result.endsWith(".rom"))
+  {
+    result.append(".rom");
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
+{
+  if (msg->getMessageType() == QString("STRING"))
+  {
+    QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
+
+    if (str.isEmpty() || str.isNull())
+    {
+      return;
+    }
+
+    QString type = XMLBuilderBase::parseDescriptorType(str);
+    if (type == QString("TrackerClientDescriptor"))
+    {
+      ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
+      clientInfo->setXMLString(str);
+
+      if (!clientInfo->isMessageValid())
+      {
+        delete clientInfo;
+        return;
+      }
+
+      this->SetClientDescriptor(clientInfo);
+      this->SetName(clientInfo->getDeviceName().toStdString());
+      this->SetType(clientInfo->getDeviceType().toStdString());
+
+      QString descr = QString("Address=") +  clientInfo->getClientIP()
+          + QString(":") + clientInfo->getClientPort();
+
+      this->SetDescription(descr.toStdString());
+
+      QString deviceInfo;
+      deviceInfo.append("Client connected:");
+      deviceInfo.append("  Device name: ");
+      deviceInfo.append(clientInfo->getDeviceName());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Device type: ");
+      deviceInfo.append(clientInfo->getDeviceType());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Communication type: ");
+      deviceInfo.append(clientInfo->getCommunicationType());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Port name: ");
+      deviceInfo.append(clientInfo->getPortName());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Client ip: ");
+      deviceInfo.append(clientInfo->getClientIP());
+      deviceInfo.append("\n");
+
+      deviceInfo.append("  Client port: ");
+      deviceInfo.append(clientInfo->getClientPort());
+      deviceInfo.append("\n");
+
+      qDebug() << deviceInfo;
+      DataSourceStatusUpdated.Send(this->GetIdentifier());
+    }
+  }
+  else if (msg.data() != NULL &&
+      (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
+     )
+  {
+    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+    wrapper->SetData(msg.data());
+    wrapper->SetDataSource("QmitkIGITrackerTool");
+    wrapper->SetFrameId(msg->getId());
+    wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
+
+    igtlUint64 res;
+    msg->getResolution(res);
+
+    wrapper->SetDuration(res);
+    wrapper->SetIsSaved(false);
+
+    this->AddData(wrapper.GetPointer());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
 {
   bool canHandle = false;
@@ -79,7 +175,8 @@ bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
     {
       OIGTLMessage* pointerToMessage = dataType->GetMessage();
       if (pointerToMessage != NULL
-          && (pointerToMessage->getMessageType() == QString("TRANSFORM") || pointerToMessage->getMessageType() == QString("TDATA"))
+          && (pointerToMessage->getMessageType() == QString("TRANSFORM")
+              || pointerToMessage->getMessageType() == QString("TDATA"))
           )
       {
         canHandle = true;
@@ -92,14 +189,244 @@ bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
 
 
 //-----------------------------------------------------------------------------
-QString QmitkIGITrackerTool::GetNameWithRom(const QString name)
+bool QmitkIGITrackerTool::Update(mitk::IGIDataType* data)
 {
-  QString result = name;
-  if (!result.endsWith(".rom"))
+  bool result = false;
+
+  QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
+  if (dataType.IsNotNull())
   {
-    result.append(".rom");
+    OIGTLMessage* pointerToMessage = dataType->GetMessage();
+
+    this->HandleTrackerData(pointerToMessage);
+    this->DisplayTrackerData(pointerToMessage);
+    result = true;
   }
+
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
+{
+  if (msg->getMessageType() == QString("TDATA"))
+  {
+    OIGTLTrackingDataMessage* trMsg;
+    trMsg = static_cast<OIGTLTrackingDataMessage*>(msg);
+
+    QString toolName = trMsg->getTrackerToolName();
+
+    mitk::DataStorage* ds = this->GetDataStorage();
+    if (ds == NULL)
+    {
+      QString message("ERROR: QmitkIGITrackerTool, DataStorage Access Error: Could not access DataStorage!");
+      emit StatusUpdate(message);
+      return;
+    }
+
+    float inputTransformMat[4][4];
+    trMsg->getMatrix(inputTransformMat);
+    toolName = this->GetNameWithRom(toolName);
+    mitk::DataNode::Pointer tempNode = ds->GetNamedNode(toolName.toStdString().c_str());
+
+    foreach ( tempNode, m_AssociatedTools.values(toolName))
+    {
+
+     if (tempNode.IsNull())
+     {
+       QString message = QObject::tr("ERROR: QmitkIGITrackerTool, could not find node %1").arg(toolName);
+       emit StatusUpdate(message);
+       return;
+     }
+
+     // Get the transform from data
+     mitk::BaseData * data = tempNode->GetData();
+     mitk::AffineTransform3D::Pointer affineTransform = data->GetGeometry()->GetIndexToWorldTransform();
+
+     if (affineTransform.IsNull())
+     {
+       QString message("ERROR: QmitkIGITrackerTool, AffineTransform IndexToWorldTransform not initialized!");
+       emit StatusUpdate(message);
+       return;
+     }
+
+
+     mitk::NavigationData::Pointer nd_in  = mitk::NavigationData::New();
+     mitk::NavigationData::Pointer nd_out = mitk::NavigationData::New();
+     mitk::NavigationData::PositionType p;
+
+     mitk::FillVector3D(p, inputTransformMat[0][3], inputTransformMat[1][3], inputTransformMat[2][3]);
+     nd_in->SetPosition(p);
+
+     float * quats = new float[4];
+     igtl::MatrixToQuaternion(inputTransformMat, quats);
+
+     mitk::Quaternion mitkQuats(quats[0], quats[1], quats[2], quats[3]);
+     nd_in->SetOrientation(mitkQuats);
+     nd_in->SetDataValid(true);
+
+     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+     m_FiducialRegistrationFilter->SetInput(nd_in);
+     m_FiducialRegistrationFilter->UpdateOutputData(0);
+     nd_out = m_FiducialRegistrationFilter->GetOutput();
+     nd_out->SetDataValid(true);
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+     //store the current scaling to set it after transformation
+     mitk::Vector3D spacing = data->GetUpdatedTimeSlicedGeometry()->GetSpacing();
+     //clear spacing of data to be able to set it again afterwards
+     float scale[] = {1.0, 1.0, 1.0};
+     data->GetGeometry()->SetSpacing(scale);
+
+     /*now bring quaternion to affineTransform by using vnl_Quaternion*/
+     affineTransform->SetIdentity();
+
+     //calculate the transform from the quaternions
+     static itk::QuaternionRigidTransform<double>::Pointer quatTransform = itk::QuaternionRigidTransform<double>::New();
+
+     mitk::NavigationData::OrientationType orientation = nd_out->GetOrientation();
+     // convert mitk::ScalarType quaternion to double quaternion because of itk bug
+     vnl_quaternion<double> doubleQuaternion(orientation.x(), orientation.y(), orientation.z(), orientation.r());
+     quatTransform->SetIdentity();
+     quatTransform->SetRotation(doubleQuaternion);
+     quatTransform->Modified();
+
+     /* because of an itk bug, the transform can not be calculated with float data type.
+     To use it in the mitk geometry classes, it has to be transfered to mitk::ScalarType which is float */
+     static mitk::AffineTransform3D::MatrixType m;
+     mitk::TransferMatrix(quatTransform->GetMatrix(), m);
+     affineTransform->SetMatrix(m);
+
+     ///*set the offset by convert from itkPoint to itkVector and setting offset of transform*/
+     mitk::Vector3D pos;
+     pos.Set_vnl_vector(nd_out->GetPosition().Get_vnl_vector());
+     affineTransform->SetOffset(pos);
+     affineTransform->Modified();
+
+     //set the transform to data
+     data->GetGeometry()->SetIndexToWorldTransform(affineTransform);
+     //set the original spacing to keep scaling of the geometrical object
+     data->GetGeometry()->SetSpacing(spacing);
+     data->GetGeometry()->TransferItkToVtkTransform(); // update VTK Transform for rendering too
+     data->GetGeometry()->Modified();
+     data->Modified();
+
+    } // foreach node
+  } // if transform data
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
+{
+  // Don't print every message, otherwise the UI freezes
+  if (msg->getMessageType() == QString("TRANSFORM"))
+  {
+    OIGTLTransformMessage* trMsg;
+    trMsg = static_cast<OIGTLTransformMessage*>(msg);
+
+    if (trMsg != NULL)
+    {
+      // Print stuff
+      QString header;
+      header.setNum(m_MsgCounter);
+      header.prepend("Message num: ");
+      header.append("\nMessage from: ");
+      header.append(trMsg->getHostName());
+      header.append("\nMessage ID: ");
+      header.append(QString::number(trMsg->getId()));
+      header.append("\n");
+
+      QString matrix = trMsg->getMatrixAsString();
+      matrix.append("\n");
+
+      QString message = header + matrix;
+
+      emit StatusUpdate(message);
+      qDebug() << "QmitkIGITrackerTool:" << message;
+    }
+  }
+  else if (msg->getMessageType() == QString("TDATA"))
+  {
+    OIGTLTrackingDataMessage* trMsg;
+    trMsg = static_cast<OIGTLTrackingDataMessage*>(msg);
+
+    if (trMsg != NULL)
+    {
+      QString header;
+      header.setNum(m_MsgCounter);
+      header.prepend("Message num: ");
+      header.append("\nMessage from: ");
+      header.append(trMsg->getHostName());
+      header.append("\nMessage ID: ");
+      header.append(QString::number(trMsg->getId()));
+      header.append("\nTool ID: ");
+      header.append(trMsg->getTrackerToolName());
+      header.append("\n");
+
+      QString matrix = trMsg->getMatrixAsString();
+      matrix.append("\n");
+
+      QString message = header + matrix;
+
+      emit StatusUpdate(message);
+      qDebug() << "QmitkIGITrackerTool:" << message;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::EnableTool(const QString &toolName, const bool& enable)
+{
+  m_EnabledTools.insert(toolName, enable);
+
+//  // Send command to enable the given tool.
+//  CommandDescriptorXMLBuilder attachToolCmd;
+//  attachToolCmd.setCommandName("AttachTool");
+//  attachToolCmd.addParameter("ToolName", "QString", toolName);
+//  attachToolCmd.addParameter("Enabled", "bool", QString::number(enable));
+//
+//  OIGTLStringMessage::Pointer cmdMsg(new OIGTLStringMessage());
+//  cmdMsg->setString(attachToolCmd.getXMLAsString());
+//
+//  qDebug() << "TODO: send message " << attachToolCmd.getXMLAsString();
+
+  QString statusMessage = QString("STATUS: tool ") + toolName + QString(", set to enabled=") + QString::number(enable) + QString("\n");
+  emit StatusUpdate(statusMessage);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::GetToolPosition(const QString &toolName)
+{
+  if (m_EnabledTools.contains(toolName) && m_EnabledTools.value(toolName))
+  {
+//    OIGTLMessage::Pointer getPos;
+//    getPos.reset();
+//
+//    OIGTLTrackingDataMessage::Create_GET(getPos);
+//
+//    qDebug() << "TODO: send get current position message " << toolName;
+
+    QString statusMessage = QString("STATUS: Requested position from tool ") + toolName + QString("\n");
+    emit StatusUpdate(statusMessage);
+  }
+}
+
+
+//---------------------------------------------------------------------------
+void QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  m_AssociatedTools.insertMulti(toolName,dataNode);
+}
+
+
+//---------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString toolName)
+{
+  return m_AssociatedTools.values(toolName);
 }
 
 
@@ -128,59 +455,6 @@ mitk::DataNode* QmitkIGITrackerTool::GetToolRepresentation(const QString toolNam
     }
   }
   return result;
-}
-
-
-//---------------------------------------------------------------------------
-void QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
-{
-  m_AssociatedTools.insertMulti(toolName,dataNode);
-}
-
-
-//---------------------------------------------------------------------------
-QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString toolName)
-{
-  return m_AssociatedTools.values(toolName);
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::EnableTool(const QString &toolName, const bool& enable)
-{
-  m_EnabledTools.insert(toolName, enable);
-
-  // Send command to enable the given tool.
-  CommandDescriptorXMLBuilder attachToolCmd;
-  attachToolCmd.setCommandName("AttachTool");
-  attachToolCmd.addParameter("ToolName", "QString", toolName);
-  attachToolCmd.addParameter("Enabled", "bool", QString::number(enable));
-
-  OIGTLStringMessage::Pointer cmdMsg(new OIGTLStringMessage());
-  cmdMsg->setString(attachToolCmd.getXMLAsString());
-
-  qDebug() << "TODO: send message " << attachToolCmd.getXMLAsString();
-
-  QString statusMessage = QString("STATUS: tool ") + toolName + QString(", set to enabled=") + QString::number(enable) + QString("\n");
-  emit StatusUpdate(statusMessage);
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::GetToolPosition(const QString &toolName)
-{
-  if (m_EnabledTools.contains(toolName) && m_EnabledTools.value(toolName))
-  {
-    OIGTLMessage::Pointer getPos;
-    getPos.reset();
-
-    OIGTLTrackingDataMessage::Create_GET(getPos);
-
-    qDebug() << "TODO: send get current position message " << toolName;
-
-    QString statusMessage = QString("STATUS: Requested position from tool ") + toolName + QString("\n");
-    emit StatusUpdate(statusMessage);
-  }
 }
 
 
@@ -330,279 +604,3 @@ void QmitkIGITrackerTool::RegisterFiducials()
   QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
   emit StatusUpdate(statusUpdate);
 }
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
-{
-  if (msg->getMessageType() == QString("STRING"))
-  {
-    QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
-
-    if (str.isEmpty() || str.isNull())
-    {
-      return;
-    }
-
-    QString type = XMLBuilderBase::parseDescriptorType(str);
-    if (type == QString("TrackerClientDescriptor"))
-    {
-      ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
-      clientInfo->setXMLString(str);
-
-      if (!clientInfo->isMessageValid())
-      {
-        delete clientInfo;
-        return;
-      }
-
-      this->SetClientDescriptor(clientInfo);
-      this->SetName(clientInfo->getDeviceName().toStdString());
-      this->SetType(clientInfo->getDeviceType().toStdString());
-
-      QString descr = QString("Address=") +  clientInfo->getClientIP()
-          + QString(":") + clientInfo->getClientPort();
-
-      this->SetDescription(descr.toStdString());
-
-      QString deviceInfo;
-      deviceInfo.append("Client connected:");
-      deviceInfo.append("  Device name: ");
-      deviceInfo.append(clientInfo->getDeviceName());
-      deviceInfo.append("\n");
-
-      deviceInfo.append("  Device type: ");
-      deviceInfo.append(clientInfo->getDeviceType());
-      deviceInfo.append("\n");
-
-      deviceInfo.append("  Communication type: ");
-      deviceInfo.append(clientInfo->getCommunicationType());
-      deviceInfo.append("\n");
-
-      deviceInfo.append("  Port name: ");
-      deviceInfo.append(clientInfo->getPortName());
-      deviceInfo.append("\n");
-
-      deviceInfo.append("  Client ip: ");
-      deviceInfo.append(clientInfo->getClientIP());
-      deviceInfo.append("\n");
-
-      deviceInfo.append("  Client port: ");
-      deviceInfo.append(clientInfo->getClientPort());
-      deviceInfo.append("\n");
-
-      qDebug() << deviceInfo;
-      DataSourceStatusUpdated.Send(this->GetIdentifier());
-    }
-  }
-  else if (msg.data() != NULL &&
-      (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
-     )
-  {
-    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-    wrapper->SetData(msg.data());
-    wrapper->SetDataSource("QmitkIGITrackerTool");
-    wrapper->SetFrameId(msg->getId());
-    wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
-
-    igtlUint64 res;
-    msg->getResolution(res);
-
-    wrapper->SetDuration(res);
-    wrapper->SetIsSaved(false);
-
-    this->AddData(wrapper.GetPointer());
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage::Pointer msg)
-{
-  if (msg->getMessageType() == QString("TDATA"))
-  {
-    OIGTLTrackingDataMessage::Pointer trMsg;
-    trMsg = static_cast<OIGTLTrackingDataMessage::Pointer>(msg);
-
-    QString toolName = trMsg->getTrackerToolName();
-
-    mitk::DataStorage* ds = this->GetDataStorage();
-    if (ds == NULL)
-    {
-      QString message("ERROR: QmitkIGITrackerTool, DataStorage Access Error: Could not access DataStorage!");
-      emit StatusUpdate(message);
-      return;
-    }
-    
-    float inputTransformMat[4][4];
-    trMsg->getMatrix(inputTransformMat);
-    toolName = this->GetNameWithRom(toolName);
-    mitk::DataNode::Pointer tempNode = ds->GetNamedNode(toolName.toStdString().c_str());
-    foreach ( tempNode, m_AssociatedTools.values(toolName))
-    {
-
-     if (tempNode.IsNull())
-     {
-       QString message = QObject::tr("ERROR: QmitkIGITrackerTool, could not find node %1").arg(toolName);
-       emit StatusUpdate(message);
-       return;
-     }
-
-     // Get the transform from data
-     mitk::BaseData * data = tempNode->GetData();
-     mitk::AffineTransform3D::Pointer affineTransform = data->GetGeometry()->GetIndexToWorldTransform();
-
-     if (affineTransform.IsNull())
-     {
-       QString message("ERROR: QmitkIGITrackerTool, AffineTransform IndexToWorldTransform not initialized!");
-       emit StatusUpdate(message);
-       return;
-     }
-
-
-     mitk::NavigationData::Pointer nd_in  = mitk::NavigationData::New();
-     mitk::NavigationData::Pointer nd_out = mitk::NavigationData::New();
-     mitk::NavigationData::PositionType p;
-
-     mitk::FillVector3D(p, inputTransformMat[0][3], inputTransformMat[1][3], inputTransformMat[2][3]);
-     nd_in->SetPosition(p);
-
-     float * quats = new float[4];
-     igtl::MatrixToQuaternion(inputTransformMat, quats);
-
-     mitk::Quaternion mitkQuats(quats[0], quats[1], quats[2], quats[3]);
-     nd_in->SetOrientation(mitkQuats);
-     nd_in->SetDataValid(true);
-
-     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-     m_FiducialRegistrationFilter->SetInput(nd_in);
-     m_FiducialRegistrationFilter->UpdateOutputData(0);
-     nd_out = m_FiducialRegistrationFilter->GetOutput();
-     nd_out->SetDataValid(true);
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-     //store the current scaling to set it after transformation
-     mitk::Vector3D spacing = data->GetUpdatedTimeSlicedGeometry()->GetSpacing();
-     //clear spacing of data to be able to set it again afterwards
-     float scale[] = {1.0, 1.0, 1.0};
-     data->GetGeometry()->SetSpacing(scale);
-
-     /*now bring quaternion to affineTransform by using vnl_Quaternion*/
-     affineTransform->SetIdentity();
-
-     //calculate the transform from the quaternions
-     static itk::QuaternionRigidTransform<double>::Pointer quatTransform = itk::QuaternionRigidTransform<double>::New();
-
-     mitk::NavigationData::OrientationType orientation = nd_out->GetOrientation();
-     // convert mitk::ScalarType quaternion to double quaternion because of itk bug
-     vnl_quaternion<double> doubleQuaternion(orientation.x(), orientation.y(), orientation.z(), orientation.r());
-     quatTransform->SetIdentity();
-     quatTransform->SetRotation(doubleQuaternion);
-     quatTransform->Modified();
-
-     /* because of an itk bug, the transform can not be calculated with float data type.
-     To use it in the mitk geometry classes, it has to be transfered to mitk::ScalarType which is float */
-     static mitk::AffineTransform3D::MatrixType m;
-     mitk::TransferMatrix(quatTransform->GetMatrix(), m);
-     affineTransform->SetMatrix(m);
-
-     ///*set the offset by convert from itkPoint to itkVector and setting offset of transform*/
-     mitk::Vector3D pos;
-     pos.Set_vnl_vector(nd_out->GetPosition().Get_vnl_vector());
-     affineTransform->SetOffset(pos);
-     affineTransform->Modified();
-
-     //set the transform to data
-     data->GetGeometry()->SetIndexToWorldTransform(affineTransform);
-     //set the original spacing to keep scaling of the geometrical object
-     data->GetGeometry()->SetSpacing(spacing);
-     data->GetGeometry()->TransferItkToVtkTransform(); // update VTK Transform for rendering too
-     data->GetGeometry()->Modified();
-     data->Modified();
-
-    }
-
-    //mitk::RenderingManager::GetInstance()->RequestUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
-
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage::Pointer msg)
-{
-  // Don't print every message, otherwise the UI freezes
-  if (msg->getMessageType() == QString("TRANSFORM"))
-  {
-    OIGTLTransformMessage::Pointer trMsg;
-    trMsg = static_cast<OIGTLTransformMessage::Pointer>(msg);
-
-    if (trMsg.data() != NULL)
-    {
-      // Print stuff
-      QString header;
-      header.setNum(m_MsgCounter);
-      header.prepend("Message num: ");
-      header.append("\nMessage from: ");
-      header.append(trMsg->getHostName());
-      header.append("\nMessage ID: ");
-      header.append(QString::number(trMsg->getId()));
-      header.append("\n");
-
-      QString matrix = trMsg->getMatrixAsString();
-      matrix.append("\n");
-
-      QString message = header + matrix;
-
-      emit StatusUpdate(message);
-      qDebug() << "QmitkIGITrackerTool:" << message;
-    }
-  }
-  else if (msg->getMessageType() == QString("TDATA"))
-  {
-    OIGTLTrackingDataMessage::Pointer trMsg;
-    trMsg = static_cast<OIGTLTrackingDataMessage::Pointer>(msg);
-
-    if (trMsg.data() != NULL)
-    {
-      QString header;
-      header.setNum(m_MsgCounter);
-      header.prepend("Message num: ");
-      header.append("\nMessage from: ");
-      header.append(trMsg->getHostName());
-      header.append("\nMessage ID: ");
-      header.append(QString::number(trMsg->getId()));
-      header.append("\nTool ID: ");
-      header.append(trMsg->getTrackerToolName());
-      header.append("\n");
-
-      QString matrix = trMsg->getMatrixAsString();
-      matrix.append("\n");
-
-      QString message = header + matrix;
-
-      emit StatusUpdate(message);
-      qDebug() << "QmitkIGITrackerTool:" << message;
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-igtlUint64 QmitkIGITrackerTool::HandleMessageByTimeStamp(igtlUint64 id)
-{
-/*
-  if ( ! this->m_MessageMap.isEmpty() )
-  { 
-
-    QMap<igtlUint64, OIGTLMessage::Pointer>::const_iterator I = this->m_MessageMap.lowerBound(id);
-    if ( I != this->m_MessageMap.begin() )
-      I--;
-    this->HandleTrackerData(I.value());
-    return id - I.key() ;
-  }
-  else 
-*/
-    return 999999999999999;
-}
-
