@@ -260,16 +260,27 @@ void RegistrationExecution::ExecuteRegistration()
       userData->m_RegNonRigid->GetControlPointPositionImage();
 
     CreateControlPointVisualisation( controlPointGrid );
+    CreateVectorFieldVisualisation( controlPointGrid );
 
     reg_bspline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
 					controlPointGrid );
 
-    CreateDeformationVisualisationSurface( niftk::PLANE_XY, controlPointGrid, 1, 1, 2 );
-    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, controlPointGrid, 1, 2, 1 );
-    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, controlPointGrid, 2, 1, 1 );
+    nifti_image *referenceImage = niftk::AllocateReferenceImageGivenControlPointGrid( controlPointGrid );
 
-    if ( controlPointGrid != NULL )
-      nifti_image_free( controlPointGrid );
+    nifti_image *deformationFieldImage = niftk::AllocateDeformationGivenReferenceImage( referenceImage );
+    reg_getDeformationFromDisplacement( deformationFieldImage );
+
+    reg_spline_getDeformationField( controlPointGrid, referenceImage, deformationFieldImage,
+				    NULL, true, true );
+
+    CreateDeformationVisualisationSurface( niftk::PLANE_XY, deformationFieldImage, 1, 1, 2 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, deformationFieldImage, 1, 2, 1 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, deformationFieldImage, 2, 1, 1 );
+
+    if ( controlPointGrid      != NULL ) nifti_image_free( controlPointGrid );
+    if ( referenceImage        != NULL ) nifti_image_free( referenceImage );
+    if ( deformationFieldImage != NULL ) nifti_image_free( deformationFieldImage );
+
 
     UpdateProgressBar( 100., userData );
   }
@@ -354,18 +365,6 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *
   QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
   QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
 
-  int nControlPoints = controlPointGrid->nx*controlPointGrid->ny*controlPointGrid->nz;
-
-  std::cout << "Number of control points: " 
-	    << nControlPoints << std::endl
-	    << "Control point grid dimensions: " 
-	    << controlPointGrid->nx << " x " 
-	    << controlPointGrid->ny << " x " 
-	    << controlPointGrid->nz << std::endl
-	    << "Control point grid spacing: " 
-	    << controlPointGrid->dx << " x " 
-	    << controlPointGrid->dy << " x " 
-	    << controlPointGrid->dz << std::endl;
 
  // Get the target image
   // ~~~~~~~~~~~~~~~~~~~~
@@ -409,6 +408,48 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *
 
 
 // ---------------------------------------------------------------------------
+// CreateVectorFieldVisualisation();
+// --------------------------------------------------------------------------- 
+
+void RegistrationExecution::CreateVectorFieldVisualisation( nifti_image *controlPointGrid )
+{
+  if ( ! userData->m_RegNonRigid )
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No registration data to create VTK deformation visualisation.");
+    msgBox.exec();
+    
+    return;
+  }
+
+  QString sourceName = userData->m_Controls.m_SourceImageComboBox->currentText();
+  QString targetName = userData->m_Controls.m_TargetImageComboBox->currentText();
+
+  vtkSmartPointer<vtkPolyData> vtkVectorField = vtkSmartPointer<vtkPolyData>::New();
+  
+  vtkVectorField = niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 1, 1, 1 );
+  
+  mitk::Surface::Pointer mitkVectorField = mitk::Surface::New();
+
+  mitkVectorField->SetVtkPolyData( vtkVectorField );
+
+  mitk::DataNode::Pointer mitkVectorFieldNode = mitk::DataNode::New();
+
+  std::string nameOfVectorField( "VectorFieldFor_" );
+  nameOfVectorField.append( sourceName.toStdString() );
+  nameOfVectorField.append( "_To_" );
+  nameOfVectorField.append( targetName.toStdString() );
+  
+  mitkVectorFieldNode->SetProperty("name", mitk::StringProperty::New(nameOfVectorField) );
+
+  mitkVectorFieldNode->SetData( mitkVectorField );
+  mitkVectorFieldNode->SetColor( 1., 0.808, 0.220 );
+
+  userData->GetDataStorage()->Add( mitkVectorFieldNode );
+}
+
+
+// ---------------------------------------------------------------------------
 // CreateDeformationVisualisationSurface();
 // --------------------------------------------------------------------------- 
 
@@ -429,7 +470,7 @@ void RegistrationExecution::CreateDeformationVisualisationSurface( niftk::PlaneT
 
   vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 
-  polyData = niftk::F3DControlGridToVTKPolyDataSurface( plane, controlPointGrid, 
+  polyData = niftk::F3DDeformationToVTKPolyDataSurface( plane, controlPointGrid, 
 							xSkip, ySkip, zSkip);
 
 

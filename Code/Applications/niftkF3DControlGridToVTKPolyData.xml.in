@@ -65,8 +65,55 @@
     </image>
 
     <image>
+      <name>fileOutputHedghog</name>
+      <longflag>ohedgehog</longflag>
+      <description>Output VTK deformation hedghog</description>      
+      <label>Output Deformation Hedgehog</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>fileOutputDeformationVectorField</name>
+      <longflag>ovectors</longflag>
+      <description>Output VTK deformation vector field</description>      
+      <label>Output Deformation Vector Field</label>
+      <default>DeformationVectorField.vtk</default>
+      <channel>output</channel>
+    </image>
+
+
+    <image>
+      <name>fileOutputControlGridPlaneXY</name>
+      <longflag>oCGxy</longflag>
+      <description>Output control point grid visualisation in the XY plane.</description>      
+      <label>Output XY Control Grid</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>fileOutputControlGridPlaneXZ</name>
+      <longflag>oCGxz</longflag>
+      <description>Output control point grid visualisation in the XZ plane.</description>      
+      <label>Output XZ Control Grid</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>fileOutputControlGridPlaneYZ</name>
+      <longflag>oCGyz</longflag>
+      <description>Output control point grid visualisation in the YZ plane.</description>      
+      <label>Output YZ Control Grid</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+
+    <image>
       <name>fileOutputDeformationPlaneXY</name>
-      <longflag>oxy</longflag>
+      <longflag>oDefxy</longflag>
       <description>Output deformation visualisation in the XY plane.</description>      
       <label>Output XY Deformation</label>
       <default>DeformationXY.vtk</default>
@@ -75,7 +122,7 @@
 
     <image>
       <name>fileOutputDeformationPlaneXZ</name>
-      <longflag>oxz</longflag>
+      <longflag>oDefxz</longflag>
       <description>Output deformation visualisation in the XZ plane.</description>      
       <label>Output XZ Deformation</label>
       <default>DeformationXZ.vtk</default>
@@ -84,7 +131,7 @@
 
     <image>
       <name>fileOutputDeformationPlaneYZ</name>
-      <longflag>oyz</longflag>
+      <longflag>oDefyz</longflag>
       <description>Output deformation visualisation in the YZ plane.</description>      
       <label>Output YZ Deformation</label>
       <default>DeformationYZ.vtk</default>

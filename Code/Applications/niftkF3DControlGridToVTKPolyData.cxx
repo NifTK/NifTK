@@ -171,6 +171,104 @@ int main( int argc, char *argv[] )
   }
 
 
+  // Create a VTK hedgehog object to visualise the deformation field
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( fileOutputHedghog.length() ) 
+  {
+
+    vtkSmartPointer<vtkPolyData> vtkDeformationHedgehog = vtkSmartPointer<vtkPolyData>::New();
+
+    std::cout << "Generating deformation hedgehog..." << std::endl;
+    vtkDeformationHedgehog = niftk::F3DControlGridToVTKPolyDataHedgehog( controlPointGrid, 1, 1, 1 );
+
+    vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
+
+    writer->SetFileName( fileOutputHedghog.c_str() );
+    writer->SetInput( vtkDeformationHedgehog );
+    writer->SetFileType( VTK_BINARY );
+    
+    std::cout << "Writing deformation hedgehog: " << fileOutputHedghog << std::endl;
+    writer->Write();
+  }
+
+
+  // Create a VTK vector field object to visualise the deformation field
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( fileOutputDeformationVectorField.length() ) 
+  {
+
+    vtkSmartPointer<vtkPolyData> vtkDeformationVectorField = vtkSmartPointer<vtkPolyData>::New();
+
+    std::cout << "Generating deformation vector field..." << std::endl;
+    vtkDeformationVectorField = niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 
+									       1, 1, 1 );
+
+    vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
+
+    writer->SetFileName( fileOutputDeformationVectorField.c_str() );
+    writer->SetInput( vtkDeformationVectorField );
+    writer->SetFileType( VTK_BINARY );
+    
+    std::cout << "Writing deformation vector field: " << fileOutputDeformationVectorField << std::endl;
+    writer->Write();
+  }
+
+
+  // Create a VTK polydata file with a surface for each orthogonal plane of control points
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( fileOutputControlGridPlaneXY.length() ||
+       fileOutputControlGridPlaneYZ.length() ||
+       fileOutputControlGridPlaneXZ.length() )
+  {
+
+    vtkSmartPointer<vtkPolyData> xyControlGrid = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPolyData> xzControlGrid = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPolyData> yzControlGrid = vtkSmartPointer<vtkPolyData>::New();
+
+     std::cout << "Generating control grid visualisation..." << std::endl;
+    niftk::F3DControlGridToVTKPolyDataSurfaces( controlPointGrid, referenceImage,
+						xyControlGrid, xzControlGrid, yzControlGrid );
+    if ( fileOutputControlGridPlaneXY.length() )
+    {
+      vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
+
+      writer->SetFileName( fileOutputControlGridPlaneXY.c_str() );
+      writer->SetInput( xyControlGrid );
+      writer->SetFileType( VTK_BINARY );
+    
+      std::cout << "Writing xy visualisation: " << fileOutputControlGridPlaneXY << std::endl;
+      writer->Write();
+    }
+
+    if ( fileOutputControlGridPlaneXZ.length() )
+    {
+      vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
+
+      writer->SetFileName( fileOutputControlGridPlaneXZ.c_str() );
+      writer->SetInput( xzControlGrid );
+      writer->SetFileType( VTK_BINARY );
+    
+      std::cout << "Writing xz visualisation: " << fileOutputControlGridPlaneXZ << std::endl;
+      writer->Write();
+    }
+
+    if ( fileOutputControlGridPlaneYZ.length() )
+    {
+      vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
+
+      writer->SetFileName( fileOutputControlGridPlaneYZ.c_str() );
+      writer->SetInput( yzControlGrid );
+      writer->SetFileType( VTK_BINARY );
+    
+      std::cout << "Writing yz visualisation: " << fileOutputControlGridPlaneYZ << std::endl;
+      writer->Write();
+    }
+  }
+
+
   // Create a VTK polydata file with a surface for each orthogonal deformation
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -184,7 +282,7 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyData> yzDeformation = vtkSmartPointer<vtkPolyData>::New();
 
     std::cout << "Generating deformation visualisation..." << std::endl;
-    niftk::F3DControlGridToVTKPolyDataSurfaces( controlPointGrid, referenceImage,
+    niftk::F3DDeformationToVTKPolyDataSurfaces( controlPointGrid, referenceImage,
 						xyDeformation, xzDeformation, yzDeformation );
 
     if ( fileOutputDeformationPlaneXY.length() )
@@ -223,6 +321,10 @@ int main( int argc, char *argv[] )
       writer->Write();
     }
   }
+
+  nifti_image_free( controlPointGrid );
+  nifti_image_free( referenceImage );
+
 
   return EXIT_SUCCESS;
 }

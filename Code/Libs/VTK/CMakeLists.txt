@@ -23,9 +23,37 @@
 #=================================================================================*/
 
 SET(niftkVTK_SRCS
-niftkF3DControlGridToVTKPolyData.cxx
-Common/vtkFunctions.cpp
+  Common/vtkFunctions.cpp
 )
+
+IF(NIFTYREG_FOUND)
+  ADD_DEFINITIONS(-DUSE_NIFTYREG)
+  LINK_DIRECTORIES(${NIFTYREG_DIR}/lib)
+  INCLUDE_DIRECTORIES(${NIFTYREG_DIR}/include)
+      
+  SET(niftkVTK_SRCS
+    ${niftkVTK_SRCS}
+    niftkF3DControlGridToVTKPolyData.cxx
+    )
+
+  SET(NIFTYREG_LIBRARIES
+    _reg_KLdivergence
+    _reg_blockMatching
+    _reg_femTransformation
+    _reg_globalTransformation
+    _reg_localTransformation
+    _reg_maths
+    _reg_mutualinformation
+    _reg_resampling
+    _reg_ssd
+    _reg_tools
+    _reg_ReadWriteImage
+    reg_png
+    png
+    reg_nrrd
+    reg_NrrdIO
+    )
+ENDIF(NIFTYREG_FOUND)
 
 ADD_LIBRARY(niftkVTK ${niftkVTK_SRCS})
 
@@ -39,6 +67,7 @@ TARGET_LINK_LIBRARIES(niftkVTK
   niftkcommon
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
   ${Boost_LIBRARIES}  
+  ${NIFTYREG_LIBRARIES}
 ) 
 
 MITK_INSTALL(TARGETS niftkVTK)
