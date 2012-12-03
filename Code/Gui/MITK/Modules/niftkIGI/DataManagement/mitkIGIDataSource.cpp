@@ -193,7 +193,7 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 {
   bool result = false;
 
-  if (m_ActualData != NULL
+  if (   m_ActualData != NULL
       && fabs((double)m_RequestedTimeStamp->GetTimeStampUint64() - (double)m_ActualData->GetTimeStampUint64()) < m_TimeStampTolerance        // the data source can decide what to accept
       && fabs((double)m_RequestedTimeStamp->GetTimeStampUint64() - (double)m_ActualData->GetTimeStampUint64()) < m_ActualData->GetDuration() // the data can have a duration that it is valid for
       )
@@ -202,6 +202,18 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
   }
 
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+igtlUint64 IGIDataSource::GetCurrentTimeLag(igtlUint64 currentTimeStamp)
+{
+  igtlUint64 difference = currentTimeStamp; // this is so that you get a huge number, as we can't return negatives.
+  if (m_ActualData != NULL)
+  {
+    difference = currentTimeStamp - m_ActualData->GetTimeStampUint64();
+  }
+  return difference;
 }
 
 

@@ -54,8 +54,8 @@ public:
   mitkClassMacro(IGIDataSource, itk::Object);
 
   /**
-   * \brief Each tool should signal when the status has updated,
-   * so for example the GUI can redraw, passing its internal identifier.
+   * \brief Each tool should signal when the status has updated by
+   * emitting its internal identiier, so that for example the GUI can redraw.
    */
   Message1<int> DataSourceStatusUpdated;
 
@@ -65,7 +65,7 @@ public:
   Message<> SaveStateChanged;
 
   /**
-   * \brief Sets the identifier, which is just a tag to identify the tool by (i.e. item in a list).
+   * \brief Sets the identifier, which is just a tag to identify the tool by (i.e. item number in a list).
    */
   itkSetMacro(Identifier, int);
   itkGetMacro(Identifier, int);
@@ -95,19 +95,22 @@ public:
   itkGetMacro(Description, std::string);
 
   /**
-   * \brief Sets the file name prefix, for where to save data.
+   * \brief Sets the file name prefix, for where to save data, as each
+   * source can decide where and how to dump data to disk.
    */
   itkSetMacro(SavePrefix, std::string);
   itkGetMacro(SavePrefix, std::string);
 
   /**
-   * \brief Sets the tolerance for checking data.
+   * \brief Sets the time tolerance for checking data, implemented in nano-seconds
+   * as we are using TAI time format, but in practice platforms such as Windows
+   * do not properly store nano-seconds, so the best you can probably rely on is milliseconds.
    */
   itkSetMacro(TimeStampTolerance, igtlUint64);
   itkGetMacro(TimeStampTolerance, igtlUint64);
 
   /**
-   * \brief Sets the data storage.
+   * \brief Sets the data storage, as each data source can put items into the storage.
    */
   itkSetObjectMacro(DataStorage, mitk::DataStorage);
   itkGetConstMacro(DataStorage, mitk::DataStorage*);
@@ -119,23 +122,24 @@ public:
   void SetSavingMessages(bool isSaving);
 
   /**
-   * \brief FrameRate is calculated internally, and can be retrieved here, and units should be equivalent to frames per second.
+   * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
    */
   itkGetMacro(FrameRate, float);
 
   /**
-   * \brief Get the time stamp that we are interested in.
+   * \brief Get the time stamp of the most recently requested time-point.
    */
   igtlUint64 GetRequestedTimeStamp() const { return m_RequestedTimeStamp->GetTimeStampUint64(); }
 
   /**
    * \brief This is calculated internally, and represents the time-stamp of the "current" message,
-   * which may be before or after the  RequestedTimeStamp.
+   * which may be before or after that returned by GetRequestedTimeStamp()..
    */
   igtlUint64 GetActualTimeStamp() const { return m_ActualTimeStamp->GetTimeStampUint64(); }
 
   /**
-   * \brief Returns the current data item, with no iterating, or updating.
+   * \brief Returns the current data item that corresponds to the GetActualTimeStamp(),
+   * with no searching to find a new one, and no updating of any buffer pointers or timestamps.
    */
   itkGetMacro(ActualData, mitk::IGIDataType::Pointer);
 
@@ -146,7 +150,8 @@ public:
   virtual void Initialize() {};
 
   /**
-   * \brief Derived classes can update the frame rate, as they receive data, and the units should be in frames per second.
+   * \brief Derived classes can update the frame rate, as they receive data,
+   * and the units should be in frames per second.
    */
   virtual void UpdateFrameRate();
 
@@ -193,6 +198,11 @@ public:
    */
   bool IsCurrentWithinTimeTolerance() const;
 
+  /**
+   * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp().
+   */
+  igtlUint64 GetCurrentTimeLag(igtlUint64 currentTimeStamp);
+
 protected:
 
   IGIDataSource(); // Purposefully hidden.
@@ -210,6 +220,9 @@ protected:
   /**
    * \brief Derived classes implement this to provide some kind of update based on the given data,
    * which must be NOT NULL, and should return true for successful and false otherwise.
+   *
+   * This method has default, do-nothing implementation to make unit testing of the internal buffers
+   * and of the time-stamping mechanism easier, as we can create a test class derived from this one.
    */
   virtual bool Update(mitk::IGIDataType* data) { return true; }
 
