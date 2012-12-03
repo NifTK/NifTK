@@ -63,6 +63,9 @@ protected:
   /// Create a VTK polydata object to visualise the control points using spheres
   void CreateControlPointSphereVisualisation( nifti_image *controlPointGrid );
 
+  /// Create a VTK polydata object to visualise the deformation vector field
+  void CreateVectorFieldVisualisation( nifti_image *controlPointGrid );
+  
   /// Create a VTK polydata object to visualise the deformation
   void CreateDeformationVisualisationSurface( niftk::PlaneType plane,
 					      nifti_image *controlPointGrid,
