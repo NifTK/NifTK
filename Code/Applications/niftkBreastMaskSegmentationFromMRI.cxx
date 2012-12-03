@@ -106,6 +106,10 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_FLOAT, "sigma", "value", "The Guassian std. dev. in mm at which to smooth the pectoral mask [5.0]."},
 
+  {OPT_FLOAT, "marchingK1", "value", "Min gradient along contour of structure to be segmented [30.0]."},
+  {OPT_FLOAT, "marchingK2", "value", "Average value of gradient magnitude in middle of structure [15.0]."},
+  {OPT_FLOAT, "marchingT",  "value", "Fast marching time [ 5.0]"},
+
   {OPT_STRING, "bifs", "filename", "A Basic Image Features volume."},
   {OPT_STRING, "obifs", "filename", "Write the Basic Image Features volume."},
 
@@ -126,7 +130,6 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "ofm", "filename", "Output the fast-marching image."},
   {OPT_STRING, "otfm", "filename", "Output the thresholded fast-marching image."},
 
-  {OPT_STRING, "obgderiv",    "filename", "Output the directional derivative of the background after smoothing."},
   {OPT_STRING, "opecsurfvox", "filename", "Output the surface voxels of the pectoralis (used for region growing)."},
   
   {OPT_SWITCH, "cropfit",  NULL,       "Crop the final mask with a fitted B-Spline surface."},
@@ -161,8 +164,12 @@ enum {
 
   O_BACKGROUND_THRESHOLD,
   O_FINAL_SEGM_THRESHOLD,
-
   O_SIGMA_IN_MM,
+
+  O_MARCHING_K1,
+  O_MARCHING_K2,
+  O_MARCHING_TIME,
+
   O_BIFS,
   O_OUTPUT_BIFS,
 
@@ -183,7 +190,6 @@ enum {
   O_OUTPUT_FAST_MARCHING_IMAGE,
   O_OUTPUT_THRESH_FAST_MARCH_IMAGE,
 
-  O_OUTPUT_BACKGROUND_SMOOTH_DERIV,
   O_OUTPUT_PECTORAL_SURF,
   
   O_CROP_FIT,
@@ -929,6 +935,10 @@ int main( int argc, char *argv[] )
 
   float sigmaInMM = 5;
 
+  float fMarchingK1   = 30.0;
+  float fMarchingK2   = 15.0;
+  float fMarchingTime = 5.0;
+
   std::string fileBIFs;
   std::string fileOutputBIFs;
 
@@ -947,7 +957,6 @@ int main( int argc, char *argv[] )
   std::string fileOutputSpeedImage;
   std::string fileOutputFastMarchingImage;
 
-  std::string fileOutputBackgroundSmoothDeriv;
   std::string fileOutputPectoralSurfaceVoxels;
 
   bool bCropWithFittedSurface = false;
@@ -1049,6 +1058,11 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_FINAL_SEGM_THRESHOLD, finalSegmThreshold );
 
   CommandLineOptions.GetArgument( O_SIGMA_IN_MM, sigmaInMM );
+
+  CommandLineOptions.GetArgument( O_MARCHING_K1,   fMarchingK1   );
+  CommandLineOptions.GetArgument( O_MARCHING_K2,   fMarchingK2   );
+  CommandLineOptions.GetArgument( O_MARCHING_TIME, fMarchingTime );
+
   CommandLineOptions.GetArgument( O_BIFS, fileBIFs );
   CommandLineOptions.GetArgument( O_OUTPUT_BIFS, fileOutputBIFs );
 
@@ -1067,7 +1081,6 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_SPEED_IMAGE, fileOutputSpeedImage );
   CommandLineOptions.GetArgument( O_OUTPUT_FAST_MARCHING_IMAGE, fileOutputFastMarchingImage );
   
-  CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND_SMOOTH_DERIV, fileOutputBackgroundSmoothDeriv );
   CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_SURF,           fileOutputPectoralSurfaceVoxels );
   
   CommandLineOptions.GetArgument( O_CROP_FIT,                       bCropWithFittedSurface     );
@@ -1931,6 +1944,14 @@ int main( int argc, char *argv[] )
   
   PointSetType::Pointer pecPointSet = PointSetType::New();  
   InternalImageType::IndexType idxMidPectoral;
+
+  InternalImageType::SizeType maxSize = imStructural->GetLargestPossibleRegion().GetSize();
+  RealType rYHeightOffset = static_cast<RealType>( 0.0 );
+
+  if (flgProneSupineBoundary)
+  { 
+    rYHeightOffset = static_cast<RealType>( maxSize[1] ); 
+  }
   
   if ( imBIFs ) 
   {
@@ -2032,11 +2053,11 @@ int main( int argc, char *argv[] )
     sigmoid->SetOutputMinimum(  0.0  );
     sigmoid->SetOutputMaximum(  1.0  );
 
-    double K1 = 30.; // min gradient along contour of structure to be segmented
-    double K2 = 15.; // average value of gradient magnitude in middle of structure
+    //K1: min gradient along contour of structure to be segmented
+    //K2: average value of gradient magnitude in middle of structure
 
-    sigmoid->SetAlpha( (K2 - K1)/6. );
-    sigmoid->SetBeta( (K1 + K2)/2. );
+    sigmoid->SetAlpha( (fMarchingK2 - fMarchingK1) / 6. );
+    sigmoid->SetBeta ( (fMarchingK1 + fMarchingK2) / 2. );
 
     sigmoid->SetInput( gradientMagnitude->GetOutput() );
 
@@ -2056,7 +2077,7 @@ int main( int argc, char *argv[] )
 
     fastMarching->SetTrialPoints( seeds );
     fastMarching->SetOutputSize( imStructural->GetLargestPossibleRegion().GetSize() );
-    fastMarching->SetStoppingValue( 10. );
+    fastMarching->SetStoppingValue( fMarchingTime + 2.0 );
     fastMarching->SetInput( sigmoid->GetOutput() );
 
     try
@@ -2076,10 +2097,8 @@ int main( int argc, char *argv[] )
 
     ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
     
-    const InputPixelType timeThreshold = 5.;
-    
     thresholder->SetLowerThreshold(           0.0 );
-    thresholder->SetUpperThreshold( timeThreshold );
+    thresholder->SetUpperThreshold( fMarchingTime );
 
     thresholder->SetOutsideValue(  0  );
     thresholder->SetInsideValue(  1000 );
@@ -2180,8 +2199,8 @@ int main( int argc, char *argv[] )
 	  idx = itPecSurfaceVoxelsLinear.GetIndex();
 
 	  // The 'height' of the pectoral surface
-	  pecHeight[0] = static_cast<RealType>( idx[1] );
-
+    pecHeight[0] = static_cast<RealType>( idx[1] ) - rYHeightOffset;
+    
 	  // Location of this surface point
 	  point[0] = static_cast<RealType>( idx[0] );
 	  point[1] = static_cast<RealType>( idx[2] );
@@ -2237,33 +2256,6 @@ int main( int argc, char *argv[] )
   typedef itk::DiscreteGaussianImageFilter< InternalImageType, InternalImageType >  GaussianFilterType;
   typedef itk::DerivativeImageFilter<InternalImageType, InternalImageType>          DerivFilterType;
 
-  //// Get the gradient of the segmented image
-  //GaussianFilterType::Pointer   gaussianSmoother = GaussianFilterType::New();
-  //DerivFilterType::Pointer      derivFilter      = DerivFilterType::New();
-
-  //gaussianSmoother->SetInput( imSegmented );
-  //gaussianSmoother->SetVariance( 5.0 );
-
-  //derivFilter->SetInput( gaussianSmoother->GetOutput() );
-  //derivFilter->SetOrder( 1 );
-  //derivFilter->SetDirection( 1 );
-
-  //try
-  //{
-  //  derivFilter->Update();
-  //}
-  //catch(itk::ExceptionObject &ex )
-  //{
-  //  std::cout << ex << std::endl;
-  //  return EXIT_FAILURE;
-  //}
-
-  //InternalImageType::Pointer imSegmentedSmoothDeriv = derivFilter->GetOutput();
-
-  //WriteImageToFile( fileOutputBackgroundSmoothDeriv, 
-  //                  "segmented image smoothed, directional derivative", 
-  //                  imSegmentedSmoothDeriv, flgLeft, flgRight );
-
 
   InternalImageType::SizeType sizeChestSurfaceRegion;
   const InternalImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
@@ -2318,213 +2310,62 @@ int main( int argc, char *argv[] )
     }
   }
 
+  // Fit the B-Spline surface with offset
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  InternalImageType::Pointer imFittedPectoralis;
+
+  // We require smaller kernel support for the prone-supine case 
+  if (flgProneSupineBoundary)
+  {
+    imFittedPectoralis = MaskImageFromBSplineFittedSurface( pecPointSet, 
+                                                            imStructural->GetLargestPossibleRegion(), 
+                                                            imStructural->GetOrigin(), 
+                                                            imStructural->GetSpacing(), 
+                                                            imStructural->GetDirection(), 
+                                                            rYHeightOffset,
+                                                            3, 8, 3 );
+  }
+  else
+  {
+    imFittedPectoralis = MaskImageFromBSplineFittedSurface( pecPointSet, 
+                                                            imStructural->GetLargestPossibleRegion(), 
+                                                            imStructural->GetOrigin(), 
+                                                            imStructural->GetSpacing(), 
+                                                            imStructural->GetDirection(), 
+                                                            rYHeightOffset,
+                                                            3, 5, 3 );
+  }
+
+  // Write the fitted surface to file
+
+  WriteImageToFile( fileOutputPectoralSurfaceMask, 
+                    "fitted pectoral surface with offset", 
+                    imFittedPectoralis, flgLeft, flgRight );
+
   // Write the chest surface points to a file?
 
-  WriteBinaryImageToUCharFile( fileOutputChestPoints, "chest surface points", imChestSurfaceVoxels, flgLeft, flgRight );
+  WriteBinaryImageToUCharFile( fileOutputChestPoints, 
+                               "chest surface points", 
+                               imChestSurfaceVoxels, flgLeft, flgRight );
 
-
-
-  // Fit the B-Spline surface
-  // ~~~~~~~~~~~~~~~~~~~~~~~~
-
-  typedef itk::BSplineScatteredDataPointSetToImageFilter
-    <PointSetType, VectorImageType> FilterType;
-
-  FilterType::Pointer filter = FilterType::New();
-
-  filter->SetSplineOrder( 3 );  
-
-  FilterType::ArrayType ncps;  
-  ncps.Fill( 5 );  
-  filter->SetNumberOfControlPoints( ncps );
-
-  filter->SetNumberOfLevels( 3 );
-
-  // Define the parametric domain.
-
-  size = imSegmented->GetLargestPossibleRegion().GetSize();
-
-  FilterType::PointType   bsDomainOrigin;
-  FilterType::SpacingType bsDomainSpacing;
-  FilterType::SizeType    bsDomainSize;
-
-  for (i=0; i<2; i++) 
-  {
-    bsDomainOrigin[i] = 0;
-    bsDomainSpacing[i] = 1;
-  }
-  bsDomainSize[0] = size[0];
-  bsDomainSize[1] = size[2];
-
-  filter->SetOrigin(  bsDomainOrigin );
-  filter->SetSpacing( bsDomainSpacing );
-  filter->SetSize(    bsDomainSize );
-
-  filter->SetInput( pecPointSet );
-
-  try 
-  {
-    filter->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  {
-    std::cerr << "ERROR: itkBSplineScatteredDataImageFilter exception thrown" 
-	       << std::endl << ex << std::endl;
-    return EXIT_FAILURE;
-  }
-  
-  // The B-Spline surface heights are the intensities of the 2D output image
-
-  VectorImageType::Pointer bSplineSurface = filter->GetOutput();
-  bSplineSurface->DisconnectPipeline();
-
-  VectorImageType::IndexType bSplineCoord;
-  RealType surfaceHeight;
-
-  region = imSegmented->GetLargestPossibleRegion();
-
-  // Set the region below the surface to zero
-
-  LineIteratorType itSegBSplineLinear( imSegmented, region );
-
-  itSegBSplineLinear.SetDirection( 1 );
-
-  for ( itSegBSplineLinear.GoToBegin(); 
-	! itSegBSplineLinear.IsAtEnd(); 
-	itSegBSplineLinear.NextLine() )
-  {
-    itSegBSplineLinear.GoToBeginOfLine();
-
-    // Get the coordinate of this column of AP voxels
-
-    idx = itSegBSplineLinear.GetIndex();
-
-    bSplineCoord[0] = idx[0];
-    bSplineCoord[1] = idx[2];
-
-    // Hence the height (or y coordinate) of the surface
-
-    surfaceHeight = bSplineSurface->GetPixel( bSplineCoord )[0];
-
-    while ( ! itSegBSplineLinear.IsAtEndOfLine() )
-    {
-      idx = itSegBSplineLinear.GetIndex();
-      
-      if ( static_cast<RealType>( idx[1] ) > surfaceHeight )
-	itSegBSplineLinear.Set( 0 );
-
-      ++itSegBSplineLinear;
-    }
-  }
-
-
-  // Write the surface mask to a file?
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  if ( fileOutputPectoralSurfaceMask.length() ) 
-  {
-
-    InternalImageType::Pointer imPecSurfaceMask = InternalImageType::New();
-    imPecSurfaceMask->SetRegions( region );
-    imPecSurfaceMask->SetOrigin(  imStructural->GetOrigin() );
-    imPecSurfaceMask->SetSpacing( imStructural->GetSpacing() );
-    imPecSurfaceMask->Allocate();
-    imPecSurfaceMask->FillBuffer( 0 );
-
-    // Set the region below the PecSurface surface to zero
-
-    LineIteratorType itPecSurfaceMaskLinear( imPecSurfaceMask, region );
-
-    itPecSurfaceMaskLinear.SetDirection( 1 );
-
-    for ( itPecSurfaceMaskLinear.GoToBegin(); 
-	  ! itPecSurfaceMaskLinear.IsAtEnd(); 
-	  itPecSurfaceMaskLinear.NextLine() )
-    {
-      itPecSurfaceMaskLinear.GoToBeginOfLine();
-
-      // Get the coordinate of this column of AP voxels
-      
-      idx = itPecSurfaceMaskLinear.GetIndex();
-
-      bSplineCoord[0] = idx[0];
-      bSplineCoord[1] = idx[2];
-
-      // Hence the height (or y coordinate) of the PecSurface surface
-
-      surfaceHeight = bSplineSurface->GetPixel( bSplineCoord )[0];
-
-      while ( ! itPecSurfaceMaskLinear.IsAtEndOfLine() )
-      {
-	idx = itPecSurfaceMaskLinear.GetIndex();
-	
-	if ( static_cast<RealType>( idx[1] ) < surfaceHeight )
-	  itPecSurfaceMaskLinear.Set( 0 );
-	else
-	  itPecSurfaceMaskLinear.Set( 1000 );
-	
-	++itPecSurfaceMaskLinear;
-      }
-    }
-
-    // Write the image to a file
-
-    WriteBinaryImageToUCharFile( fileOutputPectoralSurfaceMask, 
-		      "pectoral surface mask", 
-		      imPecSurfaceMask, flgLeft, flgRight );
-
-    imPecSurfaceMask = 0;
-  }
 
 
   // Discard anything below the pectoral mask
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  if ( imBIFs ) 
+
+  IteratorType itSeg    = IteratorType( imSegmented,        imStructural->GetLargestPossibleRegion() );
+  IteratorType itFitPec = IteratorType( imFittedPectoralis, imStructural->GetLargestPossibleRegion() );
+
+  if ( flgVerbose ) std::cout << "Discarding segmentation posteriior to pectoralis mask. " << std::endl;
+
+  for ( itSeg.GoToBegin(), itFitPec.GoToBegin(); 
+        ( ! itSeg.IsAtEnd() ) && ( ! itFitPec.IsAtEnd() ) ; 
+        ++itSeg, ++itFitPec )
   {
-    region = imPectoralVoxels->GetLargestPossibleRegion();
-
-    start[0] = start[1] = start[2] = 0;
-    region.SetIndex( start );
-
-    LineIteratorType itPecVoxelsLinear( imPectoralVoxels, region );
-    LineIteratorType itSegLinear( imSegmented, region );
-
-    itPecVoxelsLinear.SetDirection( 1 );
-    itSegLinear.SetDirection( 1 );
-    
-    for ( itPecVoxelsLinear.GoToBegin(), itSegLinear.GoToBegin(); 
-	  ! itPecVoxelsLinear.IsAtEnd(); 
-	  itPecVoxelsLinear.NextLine(), itSegLinear.NextLine() )
-    {
-      itPecVoxelsLinear.GoToBeginOfLine();
-      itSegLinear.GoToBeginOfLine();
-      
-      // Find the first pectoral voxel for this column of voxels
-
-      while ( ! itPecVoxelsLinear.IsAtEndOfLine() )
-      {
-	if ( itPecVoxelsLinear.Get() > 1 ) 
-	{
-	  break;
-	}
-
-	++itPecVoxelsLinear;
-	++itSegLinear;
-      }
-
-      // and then set all remaining voxles in the segmented image to zero
-
-      while ( ! itPecVoxelsLinear.IsAtEndOfLine() )
-      {
-	itSegLinear.Set( 0 );
-	  
-	++itPecVoxelsLinear;
-	++itSegLinear;
-      }      
-    }
-
-    imPectoralVoxels = 0;    
+    if ( itSeg.Get() )
+      if ( itFitPec.Get() )
+        itSeg.Set( 0 );
   }
 
 
@@ -2630,9 +2471,9 @@ int main( int argc, char *argv[] )
     // iterate over left breast
     IteratorWithIndexType itChestSurfLeftRegion = IteratorWithIndexType( imChestSurfaceVoxels, lateralRegion );
     int iPointLeftSurf  = 0;
-    InternalImageType::SizeType maxSize = imStructural->GetLargestPossibleRegion().GetSize();
 
-    RealType rHeightOffset = static_cast<RealType>( maxSize[1] );
+    // This offset is necessary regardless of prone-supine scheme or not...
+    rYHeightOffset = static_cast<RealType>( maxSize[1] );
 
     for ( itChestSurfLeftRegion.GoToBegin(); 
           ! itChestSurfLeftRegion.IsAtEnd();
@@ -2643,7 +2484,7 @@ int main( int argc, char *argv[] )
         idx = itChestSurfLeftRegion.GetIndex();
         
         // The 'height' of the chest surface
-        surfHeight[0] = static_cast<RealType>( idx[1] ) - rHeightOffset;
+        surfHeight[0] = static_cast<RealType>( idx[1] ) - rYHeightOffset;
 
         // Location of this surface point
         point[0] = static_cast<RealType>( idx[0] );
@@ -2662,13 +2503,7 @@ int main( int argc, char *argv[] )
                                                                                 imStructural->GetOrigin(), 
                                                                                 imStructural->GetSpacing(), 
                                                                                 imStructural->GetDirection(),
-                                                                                rHeightOffset, 3, 15, 3 );
-/*
-    WriteBinaryImageToUCharFile( fileOutputLeftFittedBreastMask, 
-                                 "left fitted breast mask", 
-                                 imLeftFittedBreastMask, 
-                                 flgLeft, flgRight );
-*/
+                                                                                rYHeightOffset, 3, 15, 3 );
 
     // and now extract surface points of right breast for surface fitting
     lateralRegion = imChestSurfaceVoxels->GetLargestPossibleRegion();
@@ -2698,7 +2533,7 @@ int main( int argc, char *argv[] )
         idx = itChestSurfRightRegion.GetIndex();
         
         // The 'height' of the chest surface
-        surfHeight[0] = static_cast<RealType>( idx[1] ) - rHeightOffset;
+        surfHeight[0] = static_cast<RealType>( idx[1] ) - rYHeightOffset;
 
         // Location of this surface point
         point[0] = static_cast<RealType>( idx[0] );
@@ -2718,16 +2553,9 @@ int main( int argc, char *argv[] )
                                                                                 imStructural->GetOrigin(), 
                                                                                 imStructural->GetSpacing(), 
                                                                                 imStructural->GetDirection(),
-                                                                                rHeightOffset, 3, 15, 3 );
+                                                                                rYHeightOffset, 3, 15, 3 );
     
     
-/*    WriteBinaryImageToUCharFile( fileOutputRightFittedBreastMask, 
-                                 "right fitted breast mask", 
-                                 imRightFittedBreastMask, 
-                                 flgLeft, flgRight );
-
-
-*/
 
     // Combine the left and right mask into one
     typedef itk::MaximumImageFilter <InternalImageType, InternalImageType>   MaxImageFilterType;
