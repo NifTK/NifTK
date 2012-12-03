@@ -244,22 +244,14 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 
   if (this->CanHandleData(data))
   {
-    // As each piece of data is received, we stamp it with whether or not this
-    // data source is currently saving data.
-    if (this->GetSavingMessages())
-    {
-      data->SetShouldBeSaved(true);
-    }
-    else
-    {
-      data->SetShouldBeSaved(false);
-    }
-
+    data->SetShouldBeSaved(this->GetSavingMessages());
     m_Buffer.push_back(data);
+
     if (m_Buffer.size() == 1)
     {
       m_BufferIterator = m_Buffer.begin();
     }
+
     result = true;
   }
   return result;

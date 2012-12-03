@@ -50,7 +50,7 @@ public:
   QString GetNameWithRom(const QString name);
 
   /**
-   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType;
+   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;

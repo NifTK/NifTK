@@ -87,6 +87,11 @@ protected:
   QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
   QmitkIGINiftyLinkDataSource& operator=(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
 
+  /**
+   * \brief When client information is received we update the DataSource member variables, and dump info to console.
+   */
+  void ProcessClientInfo(ClientDescriptorXMLBuilder* clientInfo);
+
 protected slots:
 
   /**

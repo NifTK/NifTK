@@ -116,8 +116,8 @@ void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
     QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
     if (tool != NULL)
     {
-      tool->SetSavePrefix (lineEdit->text());
-      tool->SetSaveState (true);
+      tool->SetSavePrefix (lineEdit->text().toStdString());
+      tool->SetSavingMessages (true);
       pushButton_save->setText("Don't Save");
     }
   }
@@ -126,7 +126,7 @@ void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
     QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
     if (tool != NULL)
     {
-      tool->SetSaveState (false);
+      tool->SetSavingMessages (false);
       pushButton_save->setText("Save");
     }
   }
@@ -138,5 +138,5 @@ void QmitkIGIUltrasonixToolGui::OnManageChangeSaveDir()
   QString savedir = QFileDialog::getExistingDirectory (this,tr("Select Save Directory"),lineEdit->text());
   lineEdit->setText(savedir);
   QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
-  tool->SetSavePrefix (savedir);
+  tool->SetSavePrefix (savedir.toStdString());
 }

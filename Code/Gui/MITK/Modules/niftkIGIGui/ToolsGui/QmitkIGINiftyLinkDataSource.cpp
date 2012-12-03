@@ -103,3 +103,47 @@ void QmitkIGINiftyLinkDataSource::ClientDisconnected()
   this->SetStatus("Listening");
   DataSourceStatusUpdated.Send(this->GetIdentifier());
 }
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* clientInfo)
+{
+  this->SetClientDescriptor(clientInfo);
+
+  this->SetName(clientInfo->getDeviceName().toStdString());
+  this->SetType(clientInfo->getDeviceType().toStdString());
+
+  QString descr = QString("Address=") +  clientInfo->getClientIP()
+      + QString(":") + clientInfo->getClientPort();
+
+  this->SetDescription(descr.toStdString());
+
+  QString deviceInfo;
+  deviceInfo.append("Client connected:");
+  deviceInfo.append("  Device name: ");
+  deviceInfo.append(clientInfo->getDeviceName());
+  deviceInfo.append("\n");
+
+  deviceInfo.append("  Device type: ");
+  deviceInfo.append(clientInfo->getDeviceType());
+  deviceInfo.append("\n");
+
+  deviceInfo.append("  Communication type: ");
+  deviceInfo.append(clientInfo->getCommunicationType());
+  deviceInfo.append("\n");
+
+  deviceInfo.append("  Port name: ");
+  deviceInfo.append(clientInfo->getPortName());
+  deviceInfo.append("\n");
+
+  deviceInfo.append("  Client ip: ");
+  deviceInfo.append(clientInfo->getClientIP());
+  deviceInfo.append("\n");
+
+  deviceInfo.append("  Client port: ");
+  deviceInfo.append(clientInfo->getClientPort());
+  deviceInfo.append("\n");
+
+  qDebug() << deviceInfo;
+  DataSourceStatusUpdated.Send(this->GetIdentifier());
+}

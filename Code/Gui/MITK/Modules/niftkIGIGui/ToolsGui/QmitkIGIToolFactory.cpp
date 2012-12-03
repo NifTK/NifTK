@@ -73,7 +73,7 @@ QmitkIGITool::Pointer QmitkIGIToolFactory::CreateTool(const ClientDescriptorXMLB
   }
   else if (deviceType == QString("Imager") && deviceName == QString("Ultrasonix"))
   {
-    tool = QmitkIGIUltrasonixTool::New();
+    //tool = QmitkIGIUltrasonixTool::New();
   }
   else
   {
