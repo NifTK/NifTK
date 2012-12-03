@@ -910,6 +910,8 @@ int main( int argc, char *argv[] )
   bool flgLeft = 0;
   bool flgRight = 0;
 
+  bool flgProneSupineBoundary = false;
+
   bool flgRegGrowXcoord = false;
   bool flgRegGrowYcoord = false;
   bool flgRegGrowZcoord = false;
@@ -2235,32 +2237,32 @@ int main( int argc, char *argv[] )
   typedef itk::DiscreteGaussianImageFilter< InternalImageType, InternalImageType >  GaussianFilterType;
   typedef itk::DerivativeImageFilter<InternalImageType, InternalImageType>          DerivFilterType;
 
-  // Get the gradient of the segmented image
-  GaussianFilterType::Pointer   gaussianSmoother = GaussianFilterType::New();
-  DerivFilterType::Pointer      derivFilter      = DerivFilterType::New();
+  //// Get the gradient of the segmented image
+  //GaussianFilterType::Pointer   gaussianSmoother = GaussianFilterType::New();
+  //DerivFilterType::Pointer      derivFilter      = DerivFilterType::New();
 
-  gaussianSmoother->SetInput( imSegmented );
-  gaussianSmoother->SetVariance( 5.0 );
+  //gaussianSmoother->SetInput( imSegmented );
+  //gaussianSmoother->SetVariance( 5.0 );
 
-  derivFilter->SetInput( gaussianSmoother->GetOutput() );
-  derivFilter->SetOrder( 1 );
-  derivFilter->SetDirection( 1 );
+  //derivFilter->SetInput( gaussianSmoother->GetOutput() );
+  //derivFilter->SetOrder( 1 );
+  //derivFilter->SetDirection( 1 );
 
-  try
-  {
-    derivFilter->Update();
-  }
-  catch(itk::ExceptionObject &ex )
-  {
-    std::cout << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  //try
+  //{
+  //  derivFilter->Update();
+  //}
+  //catch(itk::ExceptionObject &ex )
+  //{
+  //  std::cout << ex << std::endl;
+  //  return EXIT_FAILURE;
+  //}
 
-  InternalImageType::Pointer imSegmentedSmoothDeriv = derivFilter->GetOutput();
+  //InternalImageType::Pointer imSegmentedSmoothDeriv = derivFilter->GetOutput();
 
-  WriteImageToFile( fileOutputBackgroundSmoothDeriv, 
-                    "segmented image smoothed, directional derivative", 
-                    imSegmentedSmoothDeriv, flgLeft, flgRight );
+  //WriteImageToFile( fileOutputBackgroundSmoothDeriv, 
+  //                  "segmented image smoothed, directional derivative", 
+  //                  imSegmentedSmoothDeriv, flgLeft, flgRight );
 
 
   InternalImageType::SizeType sizeChestSurfaceRegion;
@@ -2291,11 +2293,11 @@ int main( int argc, char *argv[] )
   IteratorType itSegPosteriorBreast( imChestSurfaceVoxels, region );
   
 
-  if ( ! bUseGradientForChest )
+  if ( ! flgProneSupineBoundary )
   {
     for ( itSegPosteriorBreast.GoToBegin(); 
         ! itSegPosteriorBreast.IsAtEnd() ; 
-	      ++itSegPosteriorBreast )
+        ++itSegPosteriorBreast )
     {
       if ( itSegPosteriorBreast.Get() ) {
    
@@ -2313,34 +2315,6 @@ int main( int argc, char *argv[] )
 
         iPointPec++;
       }
-    }
-  }
-  else
-  {
-    IteratorType itSegSmoothDeriv( imSegmentedSmoothDeriv, region );
-
-    for ( itSegPosteriorBreast.GoToBegin(), itSegSmoothDeriv.GoToBegin(); 
-          ! itSegPosteriorBreast.IsAtEnd() && ! itSegSmoothDeriv.IsAtEnd() ; 
-	        ++itSegPosteriorBreast, ++itSegSmoothDeriv )
-    {
-      //if ( itSegPosteriorBreast.Get() ) {
-        if ( itSegSmoothDeriv.Get() < -15.0 ) // additional condition
-        {
-          idx = itSegPosteriorBreast.GetIndex();
-
-          // The 'height' of the chest surface
-          pecHeight[0] = static_cast<RealType>( idx[1] );
-
-          // Location of this surface point
-          point[0] = static_cast<RealType>( idx[0] );
-          point[1] = static_cast<RealType>( idx[2] );
-
-          pecPointSet->SetPoint( iPointPec, point );
-          pecPointSet->SetPointData( iPointPec, pecHeight );
-
-          iPointPec++;
-        }
-      //}
     }
   }
 
