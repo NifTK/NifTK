@@ -70,8 +70,8 @@
 #include "itkSetBoundaryVoxelsToValueFilter.h"
 #include "itkImageToVTKImageFilter.h"
 #include "itkRegionOfInterestImageFilter.h"
-#include "itkDiscreteGaussianImageFilter.h"
-#include "itkDerivativeImageFilter.h"
+//#include "itkDiscreteGaussianImageFilter.h"
+//#include "itkDerivativeImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkMaximumImageFilter.h"
 
@@ -134,6 +134,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   
   {OPT_SWITCH, "cropfit",  NULL,       "Crop the final mask with a fitted B-Spline surface."},
   {OPT_STRING, "ofitsurf", "filename", "Output fitted skin surface mask to file."},
+  {OPT_SWITCH, "cropPS",  NULL,        "Crop for prone-supine simulations."},
 
   {OPT_STRING, "ovtk", "filename", "Output a VTK surface (PolyData) representation of the segmentation."},
   
@@ -194,6 +195,7 @@ enum {
   
   O_CROP_FIT,
   O_OUTPUT_BREAST_FITTED_SURF_MASK,
+  O_CROP_PRONE_SUPINE_SCHEME,
 
   O_OUTPUT_VTK_SURFACE,
 
@@ -1085,6 +1087,7 @@ int main( int argc, char *argv[] )
   
   CommandLineOptions.GetArgument( O_CROP_FIT,                       bCropWithFittedSurface     );
   CommandLineOptions.GetArgument( O_OUTPUT_BREAST_FITTED_SURF_MASK, fileOutputFittedBreastMask );
+  CommandLineOptions.GetArgument( O_CROP_PRONE_SUPINE_SCHEME,       flgProneSupineBoundary     );
 
   CommandLineOptions.GetArgument( O_OUTPUT_VTK_SURFACE, fileOutputVTKSurface);
 
@@ -2250,13 +2253,7 @@ int main( int argc, char *argv[] )
   imChestSurfaceVoxels->DisconnectPipeline();
 
   // Extract the coordinates of the chest surface voxels
-
-  bool bUseGradientForChest = false;
   
-  typedef itk::DiscreteGaussianImageFilter< InternalImageType, InternalImageType >  GaussianFilterType;
-  typedef itk::DerivativeImageFilter<InternalImageType, InternalImageType>          DerivFilterType;
-
-
   InternalImageType::SizeType sizeChestSurfaceRegion;
   const InternalImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
 
@@ -2368,76 +2365,10 @@ int main( int argc, char *argv[] )
         itSeg.Set( 0 );
   }
 
+  // Discard anything not within a fitted surface (switch -cropfit)
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  // Discard anything not within a certain radius of the breast center
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  if ( ! bCropWithFittedSurface )
-  {
-    // Left breast
-
-    double leftRadius = DistanceBetweenVoxels( idxLeftBreastMidPoint, idxMidSternum );
-    double leftHeight = vcl_fabs( (double) (idxNippleLeft[1] - idxLeftPosterior[1]) );
-
-    if ( leftRadius < leftHeight/2. )
-      leftRadius = leftHeight/2.;
-
-    leftRadius *= 1.05;
-
-    itSegLeftRegion.GoToBegin();
-
-    while ( ! itSegLeftRegion.IsAtEnd() ) 
-    {
-      while ( ! itSegLeftRegion.IsAtEndOfSlice() ) 
-      {
-        while ( ! itSegLeftRegion.IsAtEndOfLine() )
-        {
-	  if ( itSegLeftRegion.Get() ) {
-	    idx = itSegLeftRegion.GetIndex();
-
-	    if ( DistanceBetweenVoxels( idxLeftBreastMidPoint, idx ) > leftRadius )
-	      itSegLeftRegion.Set( 0 );
-	  }
-	  ++itSegLeftRegion; 
-        }
-        itSegLeftRegion.NextLine();
-      }
-      itSegLeftRegion.NextSlice(); 
-    }
-
-    // Right breast
-    
-    double rightRadius = DistanceBetweenVoxels( idxRightBreastMidPoint, idxMidSternum );
-    double rightHeight = vcl_fabs( (double) (idxNippleRight[1] - idxRightPosterior[1]) );
-
-    if ( rightRadius < rightHeight/2. )
-      rightRadius = rightHeight/2.;
-
-    itSegRightRegion.GoToBegin();
-
-    while ( ! itSegRightRegion.IsAtEnd() ) 
-    {
-      while ( ! itSegRightRegion.IsAtEndOfSlice() ) 
-      {
-        while ( ! itSegRightRegion.IsAtEndOfLine() )
-        {
-	  if ( itSegRightRegion.Get() ) {
-	    idx = itSegRightRegion.GetIndex();
-
-	    if ( DistanceBetweenVoxels( idxRightBreastMidPoint, idx ) > rightRadius )
-	      itSegRightRegion.Set( 0 );
-	  }
-	  ++itSegRightRegion; 
-        }
-        itSegRightRegion.NextLine();
-      }
-      itSegRightRegion.NextSlice(); 
-    }
-
-  }
-  // OR Discard anything not within a fitted surface (switch -cropfit)
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  else
+  if ( bCropWithFittedSurface )
   {
 
     if ( flgVerbose )
@@ -2473,7 +2404,7 @@ int main( int argc, char *argv[] )
     int iPointLeftSurf  = 0;
 
     // This offset is necessary regardless of prone-supine scheme or not...
-    rYHeightOffset = static_cast<RealType>( maxSize[1] );
+    rYHeightOffset = static_cast<RealType>( maxSize[ 1 ] );
 
     for ( itChestSurfLeftRegion.GoToBegin(); 
           ! itChestSurfLeftRegion.IsAtEnd();
@@ -2596,7 +2527,107 @@ int main( int argc, char *argv[] )
         }
       }
     }
+  } 
+
+  // OR Discard anything not within a certain radius of the breast center
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  else if ( ! flgProneSupineBoundary )
+  {
+    // Left breast
+
+    double leftRadius = DistanceBetweenVoxels( idxLeftBreastMidPoint, idxMidSternum );
+    double leftHeight = vcl_fabs( (double) (idxNippleLeft[1] - idxLeftPosterior[1]) );
+
+    if ( leftRadius < leftHeight/2. )
+      leftRadius = leftHeight/2.;
+
+    leftRadius *= 1.05;
+
+    itSegLeftRegion.GoToBegin();
+
+    while ( ! itSegLeftRegion.IsAtEnd() ) 
+    {
+      while ( ! itSegLeftRegion.IsAtEndOfSlice() ) 
+      {
+        while ( ! itSegLeftRegion.IsAtEndOfLine() )
+        {
+	  if ( itSegLeftRegion.Get() ) {
+	    idx = itSegLeftRegion.GetIndex();
+
+	    if ( DistanceBetweenVoxels( idxLeftBreastMidPoint, idx ) > leftRadius )
+	      itSegLeftRegion.Set( 0 );
+	  }
+	  ++itSegLeftRegion; 
+        }
+        itSegLeftRegion.NextLine();
+      }
+      itSegLeftRegion.NextSlice(); 
+    }
+
+    // Right breast
+    
+    double rightRadius = DistanceBetweenVoxels( idxRightBreastMidPoint, idxMidSternum );
+    double rightHeight = vcl_fabs( (double) (idxNippleRight[1] - idxRightPosterior[1]) );
+
+    if ( rightRadius < rightHeight/2. )
+      rightRadius = rightHeight/2.;
+
+    itSegRightRegion.GoToBegin();
+
+    while ( ! itSegRightRegion.IsAtEnd() ) 
+    {
+      while ( ! itSegRightRegion.IsAtEndOfSlice() ) 
+      {
+        while ( ! itSegRightRegion.IsAtEndOfLine() )
+        {
+	  if ( itSegRightRegion.Get() ) {
+	    idx = itSegRightRegion.GetIndex();
+
+	    if ( DistanceBetweenVoxels( idxRightBreastMidPoint, idx ) > rightRadius )
+	      itSegRightRegion.Set( 0 );
+	  }
+	  ++itSegRightRegion; 
+        }
+        itSegRightRegion.NextLine();
+      }
+      itSegRightRegion.NextSlice(); 
+    }
+
   }
+
+  // OR: for prone-supine scheme: clip at a distacne of 40mm 
+  //     posterior to the mid sternum point
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  else
+  {
+    
+    //InternalImageType::SizeType sizeChestSurfaceRegion;
+    const InternalImageType::SpacingType& spStruc = imStructural->GetSpacing();
+      
+    
+    region  = imStructural->GetLargestPossibleRegion();
+   
+    start    = region.GetIndex();
+    start[0] = 0;
+    start[1] = idxMidSternum[1] + (40. / sp[1]);
+    start[2] = 0;
+
+    size    = region.GetSize();
+    size[1] = size[1] - start[1];
+
+    region.SetSize( size );
+    region.SetIndex( start );
+
+    itSeg = IteratorType( imSegmented, region );
+
+    for ( itSeg.GoToBegin() ; ( ! itSeg.IsAtEnd() ) ; ++itSeg )
+    {
+      itSeg.Set(0);
+    }
+  }
+  
 
 
   // Finally smooth the mask and threshold to round corners etc.
@@ -2625,7 +2656,7 @@ int main( int argc, char *argv[] )
 
   ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
   
-  thresholder->SetLowerThreshold( 1000.*finalSegmThreshold );
+  thresholder->SetLowerThreshold( 1000. * finalSegmThreshold );
   thresholder->SetUpperThreshold( 100000 );
 
   thresholder->SetOutsideValue(  0  );
