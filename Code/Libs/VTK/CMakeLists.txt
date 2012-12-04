@@ -28,31 +28,14 @@ SET(niftkVTK_SRCS
 
 IF(NIFTYREG_FOUND)
   ADD_DEFINITIONS(-DUSE_NIFTYREG)
-  LINK_DIRECTORIES(${NIFTYREG_DIR}/lib)
-  INCLUDE_DIRECTORIES(${NIFTYREG_DIR}/include)
+  LINK_DIRECTORIES(${NIFTYREG_LIBRARY_DIR})
+  INCLUDE_DIRECTORIES(${NIFTYREG_INCLUDE_DIR})
       
   SET(niftkVTK_SRCS
     ${niftkVTK_SRCS}
     niftkF3DControlGridToVTKPolyData.cxx
     )
 
-  SET(NIFTYREG_LIBRARIES
-    _reg_KLdivergence
-    _reg_blockMatching
-    _reg_femTransformation
-    _reg_globalTransformation
-    _reg_localTransformation
-    _reg_maths
-    _reg_mutualinformation
-    _reg_resampling
-    _reg_ssd
-    _reg_tools
-    _reg_ReadWriteImage
-    reg_png
-    png
-    reg_nrrd
-    reg_NrrdIO
-    )
 ENDIF(NIFTYREG_FOUND)
 
 ADD_LIBRARY(niftkVTK ${niftkVTK_SRCS})

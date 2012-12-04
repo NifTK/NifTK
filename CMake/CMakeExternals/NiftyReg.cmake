@@ -59,6 +59,24 @@ IF(BUILD_NIFTYREG)
     SET(NIFTYREG_INCLUDE_DIR "${NIFTYREG_ROOT}/include")
     SET(NIFTYREG_LIBRARY_DIR "${NIFTYREG_ROOT}/lib")
 
+    SET(NIFTYREG_LIBRARIES
+      _reg_KLdivergence
+      _reg_blockMatching
+      _reg_femTransformation
+      _reg_globalTransformation
+      _reg_localTransformation
+      _reg_maths
+      _reg_mutualinformation
+      _reg_resampling
+      _reg_ssd
+      _reg_tools
+      _reg_ReadWriteImage
+      reg_png
+      png
+      reg_nrrd
+      reg_NrrdIO
+      )
+
     MESSAGE("SuperBuild loading NIFTYREG from ${NIFTYREG_ROOT}")
 
   ELSE(NOT DEFINED NIFTYREG_ROOT)
