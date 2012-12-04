@@ -153,7 +153,7 @@ OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scri
 OPTION(BUILD_NIFTYREG "Build NiftyReg." ON)
 OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
-OPTION(BUILD_NIFTYSEG "Build NiftySeg." OFF)
+OPTION(BUILD_NIFTYSEG "Build NiftySeg." ON)
 OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code." OFF)
