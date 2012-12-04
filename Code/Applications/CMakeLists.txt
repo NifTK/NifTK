@@ -82,6 +82,9 @@ IF(SlicerExecutionModel_FOUND)
 
     CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${APP}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${APP}.xml @ONLY )
 
+    CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${APP}.sh)
+
     SEMMacroBuildNifTKCLI(
       NAME ${APP}
       EXECUTABLE_ONLY
@@ -135,6 +138,25 @@ IF(SlicerExecutionModel_FOUND)
     ENDIF(NIFTYREG_FOUND)  
   ENDIF(VTK_FOUND)  
 ENDIF()
+
+
+###############################################################
+# The following applications don't use TCLAP but they do 
+# produce the SlicerExecutionModel xml code
+###############################################################
+
+SET(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
+  niftkBreastMaskSegmentationFromMRI
+  niftkVesselExtractor
+  )
+
+FOREACH(APP ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
+  
+  CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh @ONLY )
+  MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${APP}.sh)
+ 
+ENDFOREACH()
+
 
 ###############################################################
 # All other command line apps
