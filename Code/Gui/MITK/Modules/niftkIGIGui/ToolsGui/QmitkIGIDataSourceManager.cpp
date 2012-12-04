@@ -29,6 +29,7 @@
 #include "mitkIGIDataSource.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 #include "QmitkIGITrackerTool.h"
+#include "QmitkIGIDataSourceGui.h"
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
@@ -309,9 +310,50 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnCellDoubleClicked(int, int)
+void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 {
-  // ToDo: Generate a GUI.
+  QmitkIGIDataSourceGui* sourceGui = NULL;
+
+  int identifier = this->GetIdentifierFromRowNumber(row);
+  mitk::IGIDataSource* source = m_Sources[identifier];
+  const std::string classname = source->GetNameOfClass();
+
+  std::string guiClassname = classname + "Gui";
+
+  std::list<itk::LightObject::Pointer> allGUIs = itk::ObjectFactoryBase::CreateAllInstance(guiClassname.c_str());
+  for( std::list<itk::LightObject::Pointer>::iterator iter = allGUIs.begin();
+       iter != allGUIs.end();
+       ++iter )
+  {
+    if (sourceGui == NULL)
+    {
+      itk::LightObject* guiObject = (*iter).GetPointer();
+      sourceGui = dynamic_cast<QmitkIGIDataSourceGui*>( guiObject );
+    }
+    else
+    {
+      MITK_ERROR << "There is more than one GUI for " << classname << " (several factories claim ability to produce a " << guiClassname << " ) " << std::endl;
+      return;
+    }
+  }
+
+  if (sourceGui != NULL)
+  {
+    if (m_GridLayoutClientControls != NULL)
+    {
+      delete m_GridLayoutClientControls;
+    }
+
+    m_GridLayoutClientControls = new QGridLayout(m_Frame);
+    m_GridLayoutClientControls->setSpacing(0);
+    m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
+
+    sourceGui->SetStdMultiWidget(this->GetStdMultiWidget());
+    sourceGui->SetDataSource(source);
+    sourceGui->Initialize(NULL);
+
+    m_GridLayoutClientControls->addWidget(sourceGui, 0, 0);
+  }
 }
 
 

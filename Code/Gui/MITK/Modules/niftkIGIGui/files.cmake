@@ -4,16 +4,16 @@ SET(CPP_FILES
   ToolsGui/TrackerControlsWidget.cpp
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.cpp
   ToolsGui/QmitkIGIDataSourceManager.cpp    
-  ToolsGui/QmitkIGINiftyLinkDataSource.cpp
   ToolsGui/QmitkIGINiftyLinkDataType.cpp
-  ToolsGui/QmitkIGITool.cpp
-  ToolsGui/QmitkIGIToolGui.cpp
-  ToolsGui/QmitkIGIToolFactory.cpp  
-  ToolsGui/QmitkIGIToolManager.cpp  
+  ToolsGui/QmitkIGINiftyLinkDataSource.cpp
+  ToolsGui/QmitkIGIDataSourceGui.cpp
+  ToolsGui/QmitkIGINiftyLinkDataSourceGui.cpp
   ToolsGui/QmitkIGITrackerTool.cpp
   ToolsGui/QmitkIGITrackerToolGui.cpp
-  ToolsGui/QmitkIGIUltrasonixTool.cpp
-  ToolsGui/QmitkIGIUltrasonixToolGui.cpp   
+#  ToolsGui/QmitkIGITool.cpp
+#  ToolsGui/QmitkIGIToolManager.cpp  
+#  ToolsGui/QmitkIGIUltrasonixTool.cpp
+#  ToolsGui/QmitkIGIUltrasonixToolGui.cpp   
 )
 
 SET(MOC_H_FILES
@@ -21,14 +21,14 @@ SET(MOC_H_FILES
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.h
   ToolsGui/QmitkIGIDataSourceManager.h
   ToolsGui/QmitkIGINiftyLinkDataSource.h
-  ToolsGui/QmitkIGITool.h  
-  ToolsGui/QmitkIGIToolGui.h
-  ToolsGui/QmitkIGIToolFactory.h
-  ToolsGui/QmitkIGIToolManager.h
+  ToolsGui/QmitkIGIDataSourceGui.h
+  ToolsGui/QmitkIGINiftyLinkDataSourceGui.h
   ToolsGui/QmitkIGITrackerTool.h
-  ToolsGui/QmitkIGITrackerToolGui.h
-  ToolsGui/QmitkIGIUltrasonixTool.h
-  ToolsGui/QmitkIGIUltrasonixToolGui.h
+  ToolsGui/QmitkIGITrackerToolGui.h  
+#  ToolsGui/QmitkIGITool.h  
+#  ToolsGui/QmitkIGIToolManager.h
+#  ToolsGui/QmitkIGIUltrasonixTool.h
+#  ToolsGui/QmitkIGIUltrasonixToolGui.h
 )
 
 SET(UI_FILES

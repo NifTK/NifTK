@@ -29,8 +29,9 @@
 
 #include "mitkIGITestDataUtils.h"
 #include "QmitkIGINiftyLinkDataType.h"
+#include "QmitkIGIDataSourceMacro.h"
 
-//NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
+NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::QmitkIGITrackerTool()

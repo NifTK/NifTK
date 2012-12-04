@@ -22,18 +22,18 @@
 
  ============================================================================*/
 
-#include "QmitkIGIToolGui.h"
+#include "QmitkIGIDataSourceGui.h"
 #include <iostream>
 
 //-----------------------------------------------------------------------------
-QmitkIGIToolGui::QmitkIGIToolGui()
+QmitkIGIDataSourceGui::QmitkIGIDataSourceGui()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIToolGui::~QmitkIGIToolGui()
+QmitkIGIDataSourceGui::~QmitkIGIDataSourceGui()
 {
   m_ReferenceCountLock.Lock();
   m_ReferenceCount = 0; // otherwise ITK will complain in LightObject's destructor
@@ -44,29 +44,29 @@ QmitkIGIToolGui::~QmitkIGIToolGui()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIToolGui::Register() const
+void QmitkIGIDataSourceGui::Register() const
 {
   // empty on purpose, just don't let ITK handle calls to Register()
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIToolGui::UnRegister() const
+void QmitkIGIDataSourceGui::UnRegister() const
 {
   // empty on purpose, just don't let ITK handle calls to UnRegister()
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIToolGui::SetReferenceCount(int)
+void QmitkIGIDataSourceGui::SetReferenceCount(int)
 {
   // empty on purpose, just don't let ITK handle calls to SetReferenceCount()
 }
 
 //-----------------------------------------------------------------------------
-void QmitkIGIToolGui::SetTool( QmitkIGITool* tool )
+void QmitkIGIDataSourceGui::SetDataSource( mitk::IGIDataSource* source )
 {
-  m_Tool = tool;
-  emit NewToolAssociated(m_Tool);
+  m_Source = source;
+  emit NewSourceAssociated(m_Source);
 }
 

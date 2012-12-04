@@ -28,8 +28,9 @@
 #include "QmitkIGITrackerTool.h"
 #include "QmitkFiducialRegistrationWidgetDialog.h"
 #include "QmitkDataStorageComboBox.h"
+#include "QmitkIGIDataSourceMacro.h"
 
-NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerToolGui, "IGI Tracker Tool Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerToolGui, "IGI Tracker Tool Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerToolGui::QmitkIGITrackerToolGui()
@@ -54,9 +55,9 @@ QmitkIGITrackerTool* QmitkIGITrackerToolGui::GetQmitkIGITrackerTool() const
 {
   QmitkIGITrackerTool* result = NULL;
 
-  if (this->GetTool() != NULL)
+  if (this->GetSource() != NULL)
   {
-    result = dynamic_cast<QmitkIGITrackerTool*>(this->GetTool());
+    result = dynamic_cast<QmitkIGITrackerTool*>(this->GetSource());
   }
 
   return result;
@@ -100,7 +101,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
       }
     }
   }
-  m_TrackerControlsWidget->comboBox->SetDataStorage(this->GetTool()->GetDataStorage());
+  m_TrackerControlsWidget->comboBox->SetDataStorage(this->GetSource()->GetDataStorage());
 }
 
 
