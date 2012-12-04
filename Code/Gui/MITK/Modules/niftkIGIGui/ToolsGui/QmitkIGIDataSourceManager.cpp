@@ -80,10 +80,10 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   Ui_QmitkIGIDataSourceManager::setupUi(parent);
 
   m_UpdateTimer =  new QTimer(this);
-  m_UpdateTimer->setInterval ( 50 );
+  m_UpdateTimer->setInterval ( 50 ); // 20 times per second
 
   m_FrameRateTimer = new QTimer(this);
-  m_FrameRateTimer->setInterval(5000); // every 5 seconds;
+  m_FrameRateTimer->setInterval(1000); // every 1 seconds
 
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
@@ -159,14 +159,12 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
   std::string type = m_Sources[toolIdentifier]->GetType();
   std::string device = m_Sources[toolIdentifier]->GetName();
   std::string description = m_Sources[toolIdentifier]->GetDescription();
-  std::string frameRate = QString::number(m_Sources[toolIdentifier]->GetFrameRate()).toStdString();
 
   std::vector<std::string> fields;
   fields.push_back(status);
   fields.push_back(type);
   fields.push_back(device);
   fields.push_back(description);
-  fields.push_back(frameRate);
 
   if (rowNumber != -1)
   {
@@ -359,13 +357,19 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
   {
     source->UpdateFrameRate();
     float rate = source->GetFrameRate();
+    double lag = source->GetCurrentTimeLag();
+
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
 
-    QTableWidgetItem *item = new QTableWidgetItem(QString::number(rate));
-    item->setTextAlignment(Qt::AlignCenter);
-    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
+    frameRateItem->setTextAlignment(Qt::AlignCenter);
+    frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 4, frameRateItem);
 
-    m_TableWidget->setItem(rowNumber, 4, item);
+    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+    lagItem->setTextAlignment(Qt::AlignCenter);
+    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 5, lagItem);
   }
 }
 

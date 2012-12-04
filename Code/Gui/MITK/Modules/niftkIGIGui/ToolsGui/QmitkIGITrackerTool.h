@@ -162,7 +162,6 @@ private:
    */
   void DisplayTrackerData(OIGTLMessage* msg);
 
-  unsigned long int                                    m_MsgCounter;
   QHash<QString, bool>                                 m_EnabledTools;
   QHash<QString, mitk::DataNode::Pointer>              m_ToolRepresentations;
   QHash<QString, mitk::DataNode::Pointer>              m_AssociatedTools;

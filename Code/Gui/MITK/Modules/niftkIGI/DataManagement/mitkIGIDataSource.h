@@ -106,8 +106,8 @@ public:
    * as we are using TAI time format, but in practice platforms such as Windows
    * do not properly store nano-seconds, so the best you can probably rely on is milliseconds.
    */
-  itkSetMacro(TimeStampTolerance, igtlUint64);
-  itkGetMacro(TimeStampTolerance, igtlUint64);
+  itkSetMacro(TimeStampTolerance, unsigned long int);
+  itkGetMacro(TimeStampTolerance, unsigned long int);
 
   /**
    * \brief Sets the data storage, as each data source can put items into the storage.
@@ -199,9 +199,9 @@ public:
   bool IsCurrentWithinTimeTolerance() const;
 
   /**
-   * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp().
+   * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
    */
-  igtlUint64 GetCurrentTimeLag(igtlUint64 currentTimeStamp);
+  double GetCurrentTimeLag();
 
 protected:
 
@@ -238,6 +238,7 @@ private:
   mitk::DataStorage                              *m_DataStorage;
   int                                             m_Identifier;
   float                                           m_FrameRate;
+  unsigned long int                               m_CurrentFrameId;
   std::string                                     m_Name;
   std::string                                     m_Type;
   std::string                                     m_Status;
@@ -246,9 +247,10 @@ private:
   std::string                                     m_SavePrefix;
   std::list<mitk::IGIDataType::Pointer>           m_Buffer;
   std::list<mitk::IGIDataType::Pointer>::iterator m_BufferIterator;
+  std::list<mitk::IGIDataType::Pointer>::iterator m_FrameRateBufferIterator;
   igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
-  igtlUint64                                      m_TimeStampTolerance;
+  unsigned long int                               m_TimeStampTolerance;
   mitk::IGIDataType*                              m_ActualData;
 
 }; // end class

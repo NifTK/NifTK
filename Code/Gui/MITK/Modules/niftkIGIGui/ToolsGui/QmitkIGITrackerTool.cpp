@@ -34,8 +34,7 @@
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::QmitkIGITrackerTool()
-: m_MsgCounter(0)
-, m_UseICP(false)
+: m_UseICP(false)
 , m_PointSetsInitialized(false)
 , m_ImageFiducialsDataNode(NULL)
 , m_ImageFiducialsPointSet(NULL)
@@ -113,17 +112,14 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-    wrapper->SetData(msg.data());
-    wrapper->SetDataSource("QmitkIGITrackerTool");
-    wrapper->SetFrameId(msg->getId());
-    wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
-
     igtlUint64 res;
     msg->getResolution(res);
 
-    wrapper->SetDuration(res);
-    wrapper->SetIsSaved(false);
+    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+    wrapper->SetData(msg.data());
+    wrapper->SetDataSource("QmitkIGITrackerTool");
+    wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
+    wrapper->SetDuration(1000000000);
 
     this->AddData(wrapper.GetPointer());
   }
@@ -299,11 +295,9 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
     {
       // Print stuff
       QString header;
-      header.setNum(m_MsgCounter);
-      header.prepend("Message num: ");
-      header.append("\nMessage from: ");
+      header.append("Message from: ");
       header.append(trMsg->getHostName());
-      header.append("\nMessage ID: ");
+      header.append(", messageId=");
       header.append(QString::number(trMsg->getId()));
       header.append("\n");
 
@@ -313,7 +307,6 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
       QString message = header + matrix;
 
       emit StatusUpdate(message);
-      qDebug() << "QmitkIGITrackerTool:" << message;
     }
   }
   else if (msg->getMessageType() == QString("TDATA"))
@@ -323,14 +316,13 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
 
     if (trMsg != NULL)
     {
+      // Print stuff
       QString header;
-      header.setNum(m_MsgCounter);
-      header.prepend("Message num: ");
-      header.append("\nMessage from: ");
+      header.append("Message from: ");
       header.append(trMsg->getHostName());
-      header.append("\nMessage ID: ");
+      header.append(", messageId=");
       header.append(QString::number(trMsg->getId()));
-      header.append("\nTool ID: ");
+      header.append(", toolId=");
       header.append(trMsg->getTrackerToolName());
       header.append("\n");
 
@@ -340,7 +332,6 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
       QString message = header + matrix;
 
       emit StatusUpdate(message);
-      qDebug() << "QmitkIGITrackerTool:" << message;
     }
   }
 }

@@ -57,8 +57,10 @@ public:
   igtlUint64 GetTimeStampUint64() const { return this->m_TimeStamp->GetTimeStampUint64(); }
   void SetTimeStampUint64(const igtlUint64& time) { this->m_TimeStamp->SetTime(time); this->Modified(); }
 
-  itkSetMacro(Duration, igtlUint64);
-  itkGetMacro(Duration, igtlUint64);
+  igtlUint64 GetTimeStampInNanoSeconds() const;
+
+  itkSetMacro(Duration, unsigned long int);
+  itkGetMacro(Duration, unsigned long int);
 
   itkSetMacro(FrameId, unsigned long int);
   itkGetMacro(FrameId, unsigned long int);
@@ -86,7 +88,7 @@ private:
 
   std::string m_DataSource;
   igtl::TimeStamp::Pointer m_TimeStamp;
-  igtlUint64 m_Duration;
+  unsigned long int m_Duration;
   unsigned long int m_FrameId;
   bool m_IsSaved;
   bool m_ShouldBeSaved;

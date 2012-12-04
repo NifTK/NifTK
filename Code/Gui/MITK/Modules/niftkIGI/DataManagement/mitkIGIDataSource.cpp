@@ -24,6 +24,8 @@
 
 #include "mitkIGIDataSource.h"
 #include <itkObjectFactory.h>
+#include <NiftyLinkUtils.h>
+#include <igtlTimeStamp.h>
 
 namespace mitk
 {
@@ -33,6 +35,7 @@ IGIDataSource::IGIDataSource()
 : m_DataStorage(NULL)
 , m_Identifier(-1)
 , m_FrameRate(0)
+, m_CurrentFrameId(0)
 , m_Name("")
 , m_Type("")
 , m_Status("")
@@ -41,7 +44,7 @@ IGIDataSource::IGIDataSource()
 , m_SavePrefix("")
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
-, m_TimeStampTolerance(0)
+, m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
@@ -51,6 +54,8 @@ IGIDataSource::IGIDataSource()
   m_ActualTimeStamp->toTAI();
 
   m_Buffer.clear();
+  m_BufferIterator = m_Buffer.begin();
+  m_FrameRateBufferIterator = m_Buffer.begin();
 }
 
 
@@ -120,7 +125,7 @@ void IGIDataSource::CleanBuffer()
   while(   iter != m_Buffer.end()
         && (*iter).IsNotNull()
         && (!((*iter)->GetShouldBeSaved()) || ((*iter)->GetShouldBeSaved() && (*iter)->GetIsSaved()))
-        && ((*iter)->GetTimeStampUint64() < this->m_ActualTimeStamp->GetTimeStampUint64())
+        && ((*iter)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(this->m_ActualTimeStamp))
       )
   {
     m_Buffer.erase(iter);
@@ -152,7 +157,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     {
       while(     m_BufferIterator != m_Buffer.end()
             && (*m_BufferIterator).IsNotNull()
-            && (*m_BufferIterator)->GetTimeStampUint64() < m_RequestedTimeStamp->GetTimeStampUint64()
+            && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(m_RequestedTimeStamp)
            )
       {
         m_BufferIterator++;
@@ -164,14 +169,15 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
       }
       else if (m_BufferIterator != m_Buffer.begin())
       {
-        igtlUint64 afterTimeStamp = (*m_BufferIterator)->GetTimeStampUint64();
+        igtlUint64 afterTimeStamp = (*m_BufferIterator)->GetTimeStampInNanoSeconds();
 
         m_BufferIterator--;
 
-        igtlUint64 beforeTimeStamp = (*m_BufferIterator)->GetTimeStampUint64();
+        igtlUint64 beforeTimeStamp = (*m_BufferIterator)->GetTimeStampInNanoSeconds();
+        igtlUint64 requestedTimeStamp = GetTimeInNanoSeconds(m_RequestedTimeStamp);
 
-        igtlUint64 beforeToRequested = m_RequestedTimeStamp->GetTimeStampUint64() - beforeTimeStamp;
-        igtlUint64 afterToRequested = afterTimeStamp - m_RequestedTimeStamp->GetTimeStampUint64();
+        igtlUint64 beforeToRequested = requestedTimeStamp - beforeTimeStamp;
+        igtlUint64 afterToRequested = afterTimeStamp - requestedTimeStamp;
 
         if (afterToRequested < beforeToRequested)
         {
@@ -193,9 +199,12 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 {
   bool result = false;
 
+  igtlUint64 requestedTimeStamp = GetTimeInNanoSeconds(m_RequestedTimeStamp);
+  igtlUint64 actualTimeStamp = GetTimeInNanoSeconds(m_ActualTimeStamp);
+
   if (   m_ActualData != NULL
-      && fabs((double)m_RequestedTimeStamp->GetTimeStampUint64() - (double)m_ActualData->GetTimeStampUint64()) < m_TimeStampTolerance        // the data source can decide what to accept
-      && fabs((double)m_RequestedTimeStamp->GetTimeStampUint64() - (double)m_ActualData->GetTimeStampUint64()) < m_ActualData->GetDuration() // the data can have a duration that it is valid for
+      && fabs((double)requestedTimeStamp - (double)actualTimeStamp) < m_TimeStampTolerance        // the data source can decide what to accept
+      && fabs((double)requestedTimeStamp - (double)actualTimeStamp) < m_ActualData->GetDuration() // the data can have a duration that it is valid for
       )
   {
     result = true;
@@ -206,39 +215,49 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 
 
 //-----------------------------------------------------------------------------
-igtlUint64 IGIDataSource::GetCurrentTimeLag(igtlUint64 currentTimeStamp)
+double IGIDataSource::GetCurrentTimeLag()
 {
-  igtlUint64 difference = currentTimeStamp; // this is so that you get a huge number, as we can't return negatives.
+  igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
+  timeStamp->GetTime_TAI();
+
+  double lag = 0;
+  igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);
+
   if (m_ActualData != NULL)
   {
-    difference = currentTimeStamp - m_ActualData->GetTimeStampUint64();
+    igtlUint64 dataTime = m_ActualData->GetTimeStampInNanoSeconds();
+    lag = (double)nowTime - (double)dataTime;
   }
-  return difference;
+  lag /= 1000000000.0;
+  return lag;
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIDataSource::UpdateFrameRate()
 {
-  if (m_Buffer.size() < 10)
+  std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
+  iter--;
+
+  if (m_Buffer.size() == 0 || iter == m_FrameRateBufferIterator)
   {
     m_FrameRate = 0;
   }
   else
   {
-    std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
-    iter--;
+    igtlUint64 lastTimeStamp = (*m_FrameRateBufferIterator)->GetTimeStampInNanoSeconds();
+    unsigned long int lastFrameId = (*m_FrameRateBufferIterator)->GetFrameId();
 
-    igtlUint64 lastTimeStamp = (*iter)->GetTimeStampUint64();
-    for (unsigned int i = 0; i < 9; i++)
-    {
-      iter--;
-    }
-    igtlUint64 earlierTimeStamp = (*iter)->GetTimeStampUint64();
-    igtlUint64 difference = lastTimeStamp - earlierTimeStamp;
+    igtlUint64 currentTimeStamp = (*iter)->GetTimeStampInNanoSeconds();
+    unsigned long int currentFrameId = (*iter)->GetFrameId();
 
-    // Timestamps are in nanoseconds.
-    m_FrameRate = 1.0 / (difference/9000000000.0);
+    igtlUint64 timeDifference = currentTimeStamp - lastTimeStamp;
+    unsigned long int numberOfFrames = currentFrameId - lastFrameId;
+
+    double rate = (double)1.0 / ((double)timeDifference/(double)(numberOfFrames * 1000000000.0));
+
+    m_FrameRateBufferIterator = iter;
+    m_FrameRate = rate;
   }
 }
 
@@ -257,11 +276,15 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
   if (this->CanHandleData(data))
   {
     data->SetShouldBeSaved(this->GetSavingMessages());
+    data->SetIsSaved(false);
+    data->SetFrameId(m_CurrentFrameId++);
+
     m_Buffer.push_back(data);
 
     if (m_Buffer.size() == 1)
     {
       m_BufferIterator = m_Buffer.begin();
+      m_FrameRateBufferIterator = m_BufferIterator;
     }
 
     result = true;
@@ -287,29 +310,30 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 
       } catch (mitk::Exception& e)
       {
-        MITK_ERROR << "IGIDataSource::ProcessData. This DataSource(Identifier=" << this->GetIdentifier() \
-                << ", Name=" << this->GetName() << ") as data at requestedTimeStamp=" << requestedTimeStamp \
-                << ", received error:\nMITK Exception:\n\nDescription: " << e.GetDescription() << "\n\n" \
-                << "Filename: " << e.GetFile() << "\n\n" \
-                << "Line: " << e.GetLine() << std::endl;
+        MITK_ERROR << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+                   << ", received error:\nMITK Exception:\n\nDescription: " << e.GetDescription() << "\n\n" \
+                   << "Filename: " << e.GetFile() << "\n\n" \
+                   << "Line: " << e.GetLine() << std::endl;
       }
       catch (std::exception& e)
       {
-        MITK_ERROR << "IGIDataSource::ProcessData. This DataSource(Identifier=" << this->GetIdentifier() \
-                        << ", Name=" << this->GetName() << ") as data at requestedTimeStamp=" << requestedTimeStamp \
-                        << ", received error:" << e.what() << std::endl;
+        MITK_ERROR << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+                   << ", received error:" << e.what() << std::endl;
       }
       catch (...)
       {
-        MITK_ERROR << "IGIDataSource::ProcessData. This DataSource(Identifier=" << this->GetIdentifier() \
-                        << ", Name=" << this->GetName() << ") as data at requestedTimeStamp=" << requestedTimeStamp \
-                        << ", received error:Unknown exception" << std::endl;
+        MITK_ERROR << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+                   << ", received error:Unknown exception" << std::endl;
       }
     }
     else
     {
-      MITK_DEBUG << "IGIDataSource::AddData. This DataSource(Identifier=" << this->GetIdentifier() \
-              << ", Name=" << this->GetName() << ") as data at requestedTimeStamp=" << requestedTimeStamp << ", is deemed to be out of date" << std::endl;
+      MITK_DEBUG << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+                 << ", req=" << requestedTimeStamp \
+                 << ", msg=" << data->GetFrameId() \
+                 << ", ts=" << data->GetTimeStampUint64() \
+                 << ", dur=" << data->GetDuration()
+                 << ", result=out of date" << std::endl;
     }
   }
   else

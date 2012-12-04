@@ -162,7 +162,7 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>4</number>
+           <number>6</number>
           </property>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
@@ -172,22 +172,32 @@
           </attribute>
           <column>
            <property name="text">
-            <string>Status</string>
+            <string>status</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>Type</string>
+            <string>type</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>Device</string>
+            <string>device</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>Description</string>
+            <string>description</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>rate</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>lag</string>
            </property>
           </column>
          </widget>
