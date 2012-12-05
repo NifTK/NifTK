@@ -338,7 +338,7 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
 
 
   float v[3];
-  int nxPoints, nyPoints, nzPoints;
+  int nxPoints = 0, nyPoints = 0, nzPoints = 0;
 
   nzPoints = 0;
   for ( z=1; z<deformation->nz; z += zSkip )
@@ -483,7 +483,7 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
 
 
   float v[3];
-  int nxPoints, nyPoints, nzPoints;
+  int nxPoints = 0, nyPoints = 0, nzPoints = 0;
 
   nzPoints = 0;
   for ( z=1; z<deformation->nz; z += zSkip )
@@ -611,7 +611,7 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
   deformationPtrY = &deformationPtrX[ nPoints ];
   deformationPtrZ = &deformationPtrY[ nPoints ];
 
-  int nxPoints, nyPoints, nzPoints;
+  int nxPoints = 0, nyPoints = 0, nzPoints = 0;
 
 
   nzPoints = 0;
