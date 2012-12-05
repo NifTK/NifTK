@@ -49,52 +49,61 @@ namespace niftk
   
 
   /// Create a reference image corresponding to a given control point grid image
-  nifti_image *AllocateReferenceImageGivenControlPointGrid( nifti_image *controlPointGrid );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    nifti_image *AllocateReferenceImageGivenControlPointGrid( nifti_image *controlPointGrid );
 
   /// Create a deformation image corresponding to a given reference image
-  nifti_image *AllocateDeformationGivenReferenceImage( nifti_image *referenceImage );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    nifti_image *AllocateDeformationGivenReferenceImage( nifti_image *referenceImage );
 
   /// Create a VTK polydata object to visualise the control points
-  vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *controlPointGrid );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *controlPointGrid );
     
   /// Create a VTK polydata object to visualise the control points using spheres
-  vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataSpheres( nifti_image *controlPointGrid,
-								   float radius );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataSpheres( nifti_image *controlPointGrid,
+								     float radius );
 
   /// Create VTK polydata objects to visualise the deformations
-  void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
-					    nifti_image *referenceImage,
-					    vtkSmartPointer<vtkPolyData> &xyDeformation,
-					    vtkSmartPointer<vtkPolyData> &xzDeformation,
-					    vtkSmartPointer<vtkPolyData> &yzDeformation );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
+					      nifti_image *referenceImage,
+					      vtkSmartPointer<vtkPolyData> &xyDeformation,
+					      vtkSmartPointer<vtkPolyData> &xzDeformation,
+					      vtkSmartPointer<vtkPolyData> &yzDeformation );
 
   /// Create a VTK hedgehog object to visualise the deformation field
-  vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *deformation,
-								    int xSkip,
-								    int ySkip,
-								    int zSkip );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *deformation,
+								      int xSkip,
+								      int ySkip,
+								      int zSkip );
 
 
   /// Create a VTK polydata vector field object to visualise the deformation field
-  vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image *deformation,
-								       int xSkip,
-								       int ySkip,
-								       int zSkip );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image *deformation,
+									 int xSkip,
+									 int ySkip,
+									 int zSkip );
 
 
   /// Create a VTK polydata object to visualise the deformation
-  vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane,
-								   nifti_image *controlPointGrid,
-								   int xSkip,
-								   int ySkip,
-								   int zSkip );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane,
+								     nifti_image *controlPointGrid,
+								     int xSkip,
+								     int ySkip,
+								     int zSkip );
 
   /// Create VTK polydata objects to visualise the deformations
-  void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
-					    nifti_image *referenceImage,
-					    vtkSmartPointer<vtkPolyData> &xyDeformation,
-					    vtkSmartPointer<vtkPolyData> &xzDeformation,
-					    vtkSmartPointer<vtkPolyData> &yzDeformation );
+  extern "C++" NIFTKVTK_WINEXPORT 
+    void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
+					      nifti_image *referenceImage,
+					      vtkSmartPointer<vtkPolyData> &xyDeformation,
+					      vtkSmartPointer<vtkPolyData> &xzDeformation,
+					      vtkSmartPointer<vtkPolyData> &yzDeformation );
 
 
 
