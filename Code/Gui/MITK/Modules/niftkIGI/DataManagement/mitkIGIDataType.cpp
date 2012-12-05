@@ -51,7 +51,16 @@ IGIDataType::~IGIDataType()
 //-----------------------------------------------------------------------------
 igtlUint64 IGIDataType::GetTimeStampInNanoSeconds() const
 {
+  // Method in NiftyLink.
   return GetTimeInNanoSeconds(m_TimeStamp);
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataType::SetTimeStampInNanoSeconds(const igtlUint64& time)
+{
+  // Method in NiftyLink.
+  SetTimeInNanoSeconds(m_TimeStamp, time);
 }
 
 } // end namespace

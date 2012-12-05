@@ -26,6 +26,7 @@
 #define MITKIGIDATASOURCE_H
 
 #include "niftkIGIExports.h"
+#include <NiftyLinkUtils.h>
 #include <mitkDataStorage.h>
 #include <mitkMessage.h>
 #include <itkVersion.h>
@@ -129,13 +130,13 @@ public:
   /**
    * \brief Get the time stamp of the most recently requested time-point.
    */
-  igtlUint64 GetRequestedTimeStamp() const { return m_RequestedTimeStamp->GetTimeStampUint64(); }
+  igtlUint64 GetRequestedTimeStamp() const { return GetTimeInNanoSeconds(m_RequestedTimeStamp); }
 
   /**
    * \brief This is calculated internally, and represents the time-stamp of the "current" message,
    * which may be before or after that returned by GetRequestedTimeStamp()..
    */
-  igtlUint64 GetActualTimeStamp() const { return m_ActualTimeStamp->GetTimeStampUint64(); }
+  igtlUint64 GetActualTimeStamp() const { return GetTimeInNanoSeconds(m_ActualTimeStamp); }
 
   /**
    * \brief Returns the current data item that corresponds to the GetActualTimeStamp(),
@@ -226,14 +227,14 @@ protected:
    */
   virtual bool Update(mitk::IGIDataType* data) { return true; }
 
-private:
-
   /**
    * \brief Will iterate through the internal buffer, returning the
    * closest message to the requested time stamp, and sets the
    * ActualTimeStamp accordingly, or else return NULL if it can't be found.
    */
   virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
+
+private:
 
   mitk::DataStorage                              *m_DataStorage;
   int                                             m_Identifier;

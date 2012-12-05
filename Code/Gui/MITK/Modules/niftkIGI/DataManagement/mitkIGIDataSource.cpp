@@ -24,7 +24,6 @@
 
 #include "mitkIGIDataSource.h"
 #include <itkObjectFactory.h>
-#include <NiftyLinkUtils.h>
 #include <igtlTimeStamp.h>
 
 namespace mitk
@@ -78,28 +77,28 @@ void IGIDataSource::SetSavingMessages(bool isSaving)
 //-----------------------------------------------------------------------------
 igtlUint64 IGIDataSource::GetFirstTimeStamp() const
 {
+  igtlUint64 timeStamp = 0;
+
   if (m_Buffer.size() > 0)
   {
-    return m_Buffer.front()->GetTimeStampUint64();
+    timeStamp = m_Buffer.front()->GetTimeStampInNanoSeconds();
   }
-  else
-  {
-    return 0;
-  }
+
+  return timeStamp;
 }
 
 
 //-----------------------------------------------------------------------------
 igtlUint64 IGIDataSource::GetLastTimeStamp() const
 {
+  igtlUint64 timeStamp = 0;
+
   if (m_Buffer.size() > 0)
   {
-    return m_Buffer.back()->GetTimeStampUint64();
+    timeStamp = m_Buffer.back()->GetTimeStampInNanoSeconds();
   }
-  else
-  {
-    return 0;
-  }
+
+  return timeStamp;
 }
 
 
@@ -140,11 +139,11 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
   // message to the requested time stamp, and leave the m_BufferIterator,
   // m_ActualTimeStamp and m_ActualData at that point, and return the corresponding data.
 
-  m_RequestedTimeStamp->SetTime(requestedTimeStamp);
+  SetTimeInNanoSeconds(m_RequestedTimeStamp, requestedTimeStamp);
 
   if (m_Buffer.size() == 0)
   {
-    m_ActualTimeStamp->SetTime((igtlUint64)0);
+    SetTimeInNanoSeconds(m_ActualTimeStamp, 0);
     m_ActualData = NULL;
   }
   else
@@ -187,7 +186,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     }
 
     m_ActualData = (*m_BufferIterator);
-    m_ActualTimeStamp->SetTime(m_ActualData->GetTimeStampUint64());
+    SetTimeInNanoSeconds(m_ActualTimeStamp, m_ActualData->GetTimeStampInNanoSeconds());
   }
 
   return m_ActualData;
@@ -239,7 +238,7 @@ void IGIDataSource::UpdateFrameRate()
   std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
   iter--;
 
-  if (m_Buffer.size() == 0 || iter == m_FrameRateBufferIterator)
+  if (m_Buffer.size() < 2)
   {
     m_FrameRate = 0;
   }
@@ -331,7 +330,7 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
       MITK_DEBUG << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
                  << ", req=" << requestedTimeStamp \
                  << ", msg=" << data->GetFrameId() \
-                 << ", ts=" << data->GetTimeStampUint64() \
+                 << ", ts=" << data->GetTimeStampInNanoSeconds() \
                  << ", dur=" << data->GetDuration()
                  << ", result=out of date" << std::endl;
     }

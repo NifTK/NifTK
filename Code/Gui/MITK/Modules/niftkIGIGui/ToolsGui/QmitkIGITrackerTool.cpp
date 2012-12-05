@@ -116,7 +116,7 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
     QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
     wrapper->SetData(msg.data());
     wrapper->SetDataSource("QmitkIGITrackerTool");
-    wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
+    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
     wrapper->SetDuration(1000000000); // nanoseconds
 
     this->AddData(wrapper.GetPointer());

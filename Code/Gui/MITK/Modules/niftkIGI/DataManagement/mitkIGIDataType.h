@@ -54,10 +54,8 @@ public:
   itkSetMacro(DataSource, std::string);
   itkGetMacro(DataSource, std::string);
 
-  igtlUint64 GetTimeStampUint64() const { return this->m_TimeStamp->GetTimeStampUint64(); }
-  void SetTimeStampUint64(const igtlUint64& time) { this->m_TimeStamp->SetTime(time); this->Modified(); }
-
   igtlUint64 GetTimeStampInNanoSeconds() const;
+  void SetTimeStampInNanoSeconds(const igtlUint64& time);
 
   itkSetMacro(Duration, unsigned long int);
   itkGetMacro(Duration, unsigned long int);

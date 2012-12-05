@@ -66,13 +66,13 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
   dataSource->SetSavePrefix("cool");
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetSavePrefix() == "cool", ".. Testing Setter/Getter save prefix");
 
-  dataSource->SetSaveState(false);
+  dataSource->SetSavingMessages(false);
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetSavingMessages() == false, ".. Testing Setter/Getter save prefix");
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetFrameRate() == 0, ".. Testing default frame rate is zero");
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetBufferSize() == 0, ".. Testing default buffer size is zero");
 
   mitk::IGIDataType::Pointer data1 = mitk::IGIDataType::New();
-  data1->SetTimeStampUint64(1);
+  data1->SetTimeStampInNanoSeconds(1);
   data1->SetDuration(10);
 
   dataSource->AddData(data1);
@@ -83,7 +83,7 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetLastTimeStamp() == 1, ".. Testing last time stamp = 1");
 
   mitk::IGIDataType::Pointer data2 = mitk::IGIDataType::New();
-  data2->SetTimeStampUint64(5);
+  data2->SetTimeStampInNanoSeconds(5);
   data2->SetDuration(10);
 
   dataSource->AddData(data2);
@@ -118,16 +118,18 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
   for (int i = 1; i <= 20; i++)
   {
     mitk::IGIDataType::Pointer testData = mitk::IGIDataType::New();
-    testData->SetTimeStampUint64(i+1);
+    testData->SetTimeStampInNanoSeconds((igtlUint64)i*(igtlUint64)1000000000);
     testData->SetDuration(10);
+
     dataSource->AddData(testData);
 
     float expectedFrameRate = 0;
-    if (i >= 10)
+    if (dataSource->GetBufferSize() >= 2)
     {
-      expectedFrameRate = 1000;
+      expectedFrameRate = 1;
     }
     dataSource->UpdateFrameRate();
+
     MITK_TEST_CONDITION_REQUIRED(dataSource->GetFrameRate() == expectedFrameRate, "... Testing expected frame rate, i=" << i << ", exp=" << expectedFrameRate << ", actual=" << dataSource->GetFrameRate());
   }
   return EXIT_SUCCESS;
