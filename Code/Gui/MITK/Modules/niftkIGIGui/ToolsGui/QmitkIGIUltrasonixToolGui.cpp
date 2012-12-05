@@ -110,6 +110,8 @@ void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
 {
   if ( pushButton_save->text() == "Save" ) 
@@ -133,6 +135,8 @@ void QmitkIGIUltrasonixToolGui::OnManageSaveImage()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkIGIUltrasonixToolGui::OnManageChangeSaveDir()
 {
   QFileDialog dialog (this);

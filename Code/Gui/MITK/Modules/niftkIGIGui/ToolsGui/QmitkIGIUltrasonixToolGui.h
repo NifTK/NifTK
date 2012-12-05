@@ -45,7 +45,7 @@ class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixToolGui : public QmitkIGINiftyLinkDat
 
 public:
 
-  mitkClassMacro(QmitkIGIUltrasonixToolGui, QmitkIGIDataSourceGui);
+  mitkClassMacro(QmitkIGIUltrasonixToolGui, QmitkIGINiftyLinkDataSourceGui);
   itkNewMacro(QmitkIGIUltrasonixToolGui);
 
 protected:
