@@ -42,8 +42,9 @@ public:
   itkNewMacro(QmitkIGINiftyLinkDataType);
 
   virtual void* GetData() const { return m_Message; }
+
   OIGTLMessage* GetMessage() const { return m_Message; }
-  void SetData(OIGTLMessage* message) { m_Message = message; this->Modified(); }
+  void SetMessage(OIGTLMessage* message) { m_Message = message; this->Modified(); }
 
 protected:
 

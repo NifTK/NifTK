@@ -48,12 +48,6 @@ public:
   mitkClassMacro(QmitkIGIUltrasonixToolGui, QmitkIGIDataSourceGui);
   itkNewMacro(QmitkIGIUltrasonixToolGui);
 
-  /**
-   * \brief Initializes this widget, calling Ui_QmitkIGITrackerToolGui::setupUi(parent),
-   * and any other stuff as necessary.
-   */
-  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
-
 protected:
 
   QmitkIGIUltrasonixToolGui(); // Purposefully hidden.
@@ -61,6 +55,12 @@ protected:
 
   QmitkIGIUltrasonixToolGui(const QmitkIGIUltrasonixToolGui&); // Purposefully not implemented.
   QmitkIGIUltrasonixToolGui& operator=(const QmitkIGIUltrasonixToolGui&); // Purposefully not implemented.
+
+  /**
+   * \brief Initializes this widget, calling Ui_QmitkIGIUltrasonixToolGui::setupUi(parent),
+   * and any other stuff as necessary.
+   */
+  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
 
 private slots:
 
@@ -72,6 +72,7 @@ private slots:
 private:
 
   QmitkIGIUltrasonixTool* GetQmitkIGIUltrasonixTool() const;
+
   QLabel *m_PixmapLabel;
 
 }; // end class

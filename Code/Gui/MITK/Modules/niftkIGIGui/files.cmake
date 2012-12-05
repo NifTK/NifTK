@@ -30,7 +30,6 @@ SET(MOC_H_FILES
 SET(UI_FILES
   ToolsGui/TrackerControlsWidget.ui
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.ui  
-  ToolsGui/QmitkIGIToolManager.ui
   ToolsGui/QmitkIGITrackerToolGui.ui
   ToolsGui/QmitkIGIUltrasonixToolGui.ui
   ToolsGui/QmitkIGIDataSourceManager.ui

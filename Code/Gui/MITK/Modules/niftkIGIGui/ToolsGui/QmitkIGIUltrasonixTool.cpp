@@ -113,7 +113,7 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
      )
   {
     QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-    wrapper->SetData(msg.data());
+    wrapper->SetMessage(msg.data());
     wrapper->SetDataSource("QmitkIGIUltrasonixTool");
     wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
     wrapper->SetDuration(1000000000); // nanoseconds
