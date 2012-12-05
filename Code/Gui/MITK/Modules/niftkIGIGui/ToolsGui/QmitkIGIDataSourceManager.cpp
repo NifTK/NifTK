@@ -105,8 +105,6 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_FrameRateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateFrameRate()) );
 
   m_SourceSelectComboBox->setCurrentIndex(0);
-  m_UpdateTimer->start();
-  m_FrameRateTimer->start();
 }
 
 
@@ -264,6 +262,16 @@ void QmitkIGIDataSourceManager::OnAddSource()
 
   // Force an update.
   source->DataSourceStatusUpdated.Send(source->GetIdentifier());
+
+  // Launch timers
+  if (!m_UpdateTimer->isActive())
+  {
+    m_UpdateTimer->start();
+  }
+  if (!m_FrameRateTimer->isActive())
+  {
+    m_FrameRateTimer->start();
+  }
 }
 
 
@@ -304,6 +312,12 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   // This destroys the source. It is up to the source to correctly destroy itself,
   // as this class has no idea what the source is or what it contains etc.
   m_Sources.erase(m_Sources.begin() + rowIndex);
+
+  if (m_TableWidget->rowCount() == 0)
+  {
+    m_UpdateTimer->stop();
+    m_FrameRateTimer->stop();
+  }
 }
 
 
