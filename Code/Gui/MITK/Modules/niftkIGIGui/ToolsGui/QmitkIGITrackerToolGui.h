@@ -27,7 +27,6 @@
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGINiftyLinkDataSourceGui.h"
-#include "QmitkIGITrackerTool.h"
 #include "ui_QmitkIGITrackerToolGui.h"
 
 class ClientDescriptorXMLBuilder;
