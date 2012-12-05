@@ -92,7 +92,7 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
     QString type = XMLBuilderBase::parseDescriptorType(str);
     if (type == QString("ClientDescriptor"))
     {
-      ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
+      ClientDescriptorXMLBuilder* clientInfo = new ClientDescriptorXMLBuilder();
       clientInfo->setXMLString(str);
 
       if (!clientInfo->isMessageValid())
