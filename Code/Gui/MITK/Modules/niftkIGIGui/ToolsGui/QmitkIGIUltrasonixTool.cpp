@@ -26,8 +26,9 @@
 #include <QImage>
 #include <QmitkCommonFunctionality.h>
 #include "QmitkIGINiftyLinkDataType.h"
+#include "QmitkIGIDataSourceMacro.h"
 
-//NIFTK_IGITOOL_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
+NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
 const std::string QmitkIGIUltrasonixTool::ULTRASONIX_TOOL_2D_IMAGE_NAME = std::string("QmitkIGIUltrasonixTool image");
 
@@ -114,14 +115,8 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
     QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
     wrapper->SetData(msg.data());
     wrapper->SetDataSource("QmitkIGIUltrasonixTool");
-    wrapper->SetFrameId(msg->getId());
     wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
-
-    igtlUint64 res;
-    msg->getResolution(res);
-
-    wrapper->SetDuration(res);
-    wrapper->SetIsSaved(false);
+    wrapper->SetDuration(1000000000); // nanoseconds
 
     this->AddData(wrapper.GetPointer());
   }

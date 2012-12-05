@@ -10,10 +10,8 @@ SET(CPP_FILES
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.cpp
   ToolsGui/QmitkIGITrackerTool.cpp
   ToolsGui/QmitkIGITrackerToolGui.cpp
-#  ToolsGui/QmitkIGITool.cpp
-#  ToolsGui/QmitkIGIToolManager.cpp  
-#  ToolsGui/QmitkIGIUltrasonixTool.cpp
-#  ToolsGui/QmitkIGIUltrasonixToolGui.cpp   
+  ToolsGui/QmitkIGIUltrasonixTool.cpp
+  ToolsGui/QmitkIGIUltrasonixToolGui.cpp     
 )
 
 SET(MOC_H_FILES
@@ -25,10 +23,8 @@ SET(MOC_H_FILES
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.h
   ToolsGui/QmitkIGITrackerTool.h
   ToolsGui/QmitkIGITrackerToolGui.h  
-#  ToolsGui/QmitkIGITool.h  
-#  ToolsGui/QmitkIGIToolManager.h
-#  ToolsGui/QmitkIGIUltrasonixTool.h
-#  ToolsGui/QmitkIGIUltrasonixToolGui.h
+  ToolsGui/QmitkIGIUltrasonixTool.h
+  ToolsGui/QmitkIGIUltrasonixToolGui.h
 )
 
 SET(UI_FILES

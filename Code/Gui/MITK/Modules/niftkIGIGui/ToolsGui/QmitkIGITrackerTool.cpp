@@ -113,14 +113,11 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-    igtlUint64 res;
-    msg->getResolution(res);
-
     QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
     wrapper->SetData(msg.data());
     wrapper->SetDataSource("QmitkIGITrackerTool");
     wrapper->SetTimeStampUint64(msg->getTimeCreated()->GetTimeStampUint64());
-    wrapper->SetDuration(1000000000);
+    wrapper->SetDuration(1000000000); // nanoseconds
 
     this->AddData(wrapper.GetPointer());
   }

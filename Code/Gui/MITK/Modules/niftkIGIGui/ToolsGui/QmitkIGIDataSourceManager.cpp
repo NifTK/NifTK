@@ -27,9 +27,10 @@
 #include <QmitkStdMultiWidget.h>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
+#include "QmitkIGIDataSourceGui.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 #include "QmitkIGITrackerTool.h"
-#include "QmitkIGIDataSourceGui.h"
+#include "QmitkIGIUltrasonixTool.h"
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
@@ -81,7 +82,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   Ui_QmitkIGIDataSourceManager::setupUi(parent);
 
   m_UpdateTimer =  new QTimer(this);
-  m_UpdateTimer->setInterval ( 50 ); // 20 times per second
+  m_UpdateTimer->setInterval ( 100 ); // 10 times per second
 
   m_FrameRateTimer = new QTimer(this);
   m_FrameRateTimer->setInterval(1000); // every 1 seconds
@@ -92,9 +93,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 
   m_Frame->setContentsMargins(0, 0, 0, 0);
 
-  m_SourceSelectComboBox->addItem("tracker");
-  m_SourceSelectComboBox->addItem("ultrasonix");
-  m_SourceSelectComboBox->addItem("local framegrabber");
+  m_SourceSelectComboBox->addItem("networked tracker");
+  m_SourceSelectComboBox->addItem("networked ultrasonix scanner");
+  m_SourceSelectComboBox->addItem("local frame grabber");
 
   connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
@@ -231,17 +232,13 @@ void QmitkIGIDataSourceManager::OnAddSource()
     }
     else if (sourceType == 1)
     {
-
+      niftyLinkSource = QmitkIGIUltrasonixTool::New();
     }
     if (niftyLinkSource->ListenOnPort(portNumber))
     {
       m_PortsInUse.insert(portNumber);
     }
     source = niftyLinkSource;
-  }
-  else if (sourceType == 1)
-  {
-    // create ultrasonix source
   }
   else if (sourceType == 2)
   {
@@ -367,7 +364,10 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
 
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
+    // This is the main callback method to tell the source to update.
+    // Each source will then inform its own GUI (if present) to update.
     bool isValid = source->ProcessData(idNow);
+
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
     QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
 
@@ -399,6 +399,7 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
   {
     source->UpdateFrameRate();
     float rate = source->GetFrameRate();
+
     double lag = source->GetCurrentTimeLag();
 
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());

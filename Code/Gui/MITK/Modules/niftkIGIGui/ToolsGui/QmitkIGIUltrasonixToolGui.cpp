@@ -23,14 +23,15 @@
  ============================================================================*/
 
 #include "QmitkIGIUltrasonixToolGui.h"
-#include <Common/NiftyLinkXMLBuilder.h>
-#include "QmitkIGIUltrasonixTool.h"
 #include <QImage>
 #include <QPixmap>
 #include <QLabel>
 #include <QFileDialog>
+#include <Common/NiftyLinkXMLBuilder.h>
+#include "QmitkIGIUltrasonixTool.h"
+#include "QmitkIGIDataSourceMacro.h"
 
-NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultrasonix Tool Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultrasonix Tool Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()
@@ -51,9 +52,9 @@ QmitkIGIUltrasonixTool* QmitkIGIUltrasonixToolGui::GetQmitkIGIUltrasonixTool() c
 {
   QmitkIGIUltrasonixTool* result = NULL;
 
-  if (this->GetTool() != NULL)
+  if (this->GetSource() != NULL)
   {
-    result = dynamic_cast<QmitkIGIUltrasonixTool*>(this->GetTool());
+    result = dynamic_cast<QmitkIGIUltrasonixTool*>(this->GetSource());
   }
 
   return result;
