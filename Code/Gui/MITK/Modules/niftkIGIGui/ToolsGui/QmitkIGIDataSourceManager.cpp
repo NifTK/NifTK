@@ -237,6 +237,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
     if (niftyLinkSource->ListenOnPort(portNumber))
     {
       m_PortsInUse.insert(portNumber);
+      m_PortNumberSpinBox->setValue(portNumber+1);
     }
     source = niftyLinkSource;
   }
