@@ -69,6 +69,9 @@ public:
   itkSetMacro(ShouldBeSaved, bool);
   itkGetMacro(ShouldBeSaved, bool);
 
+  itkSetMacro(FileName, std::string);
+  itkGetMacro(FileName, std::string);
+
   /**
    * \brief This object can contain any data, and derived classes should override this.
    */
@@ -90,7 +93,7 @@ private:
   unsigned long int m_FrameId;
   bool m_IsSaved;
   bool m_ShouldBeSaved;
-
+  std::string m_FileName;
 };
 
 } // end namespace

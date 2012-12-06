@@ -37,6 +37,7 @@ IGIDataType::IGIDataType()
 , m_FrameId(0)
 , m_IsSaved(false)
 , m_ShouldBeSaved(false)
+, m_FileName("")
 {
   m_TimeStamp = igtl::TimeStamp::New();
   m_TimeStamp->toTAI();

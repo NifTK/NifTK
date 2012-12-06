@@ -96,13 +96,6 @@ public:
   itkGetMacro(Description, std::string);
 
   /**
-   * \brief Sets the file name prefix, for where to save data, as each
-   * source can decide where and how to dump data to disk.
-   */
-  itkSetMacro(SavePrefix, std::string);
-  itkGetMacro(SavePrefix, std::string);
-
-  /**
    * \brief Sets the time tolerance for checking data, implemented in nano-seconds
    * as we are using TAI time format, but in practice platforms such as Windows
    * do not properly store nano-seconds, so the best you can probably rely on is milliseconds.
@@ -117,10 +110,31 @@ public:
   itkGetConstMacro(DataStorage, mitk::DataStorage*);
 
   /**
+   * \brief Sets the file name prefix, for where to save data, as each
+   * source can decide where and how to dump data to disk.
+   */
+  itkSetMacro(SavePrefix, std::string);
+  itkGetMacro(SavePrefix, std::string);
+
+  /**
    * \brief Returns true if we are saving messages and false otherwise.
    */
   itkGetMacro(SavingMessages, bool);
   void SetSavingMessages(bool isSaving);
+
+  /**
+   * \brief If set to true, the data is saved immediately, and if false we rely on a background thread.
+   */
+  itkSetMacro(ImmediateSave, bool);
+  itkGetMacro(ImmediateSave, bool);
+
+  /**
+   * \brief If set to true, we save when ProcessData is called, which is called to update the GUI at
+   * a specific refresh rate, and if false we save every message that comes in, which may be faster
+   * than the refresh rate.
+   */
+  itkSetMacro(SaveOnProcessData, bool);
+  itkGetMacro(SaveOnProcessData, bool);
 
   /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
@@ -228,6 +242,14 @@ protected:
   virtual bool Update(mitk::IGIDataType* data) { return true; }
 
   /**
+   * \brief Derived classes may implement this to provide a mechanism to save data.
+   * \param data the data type, which is guaranteed to be valid for the subclass when this method is called (i.e. CanHandle has already returned true).
+   * \param outputFileName this will be written to, and contain the filename that the derived class actually attempted writing to.
+   * \return true if the file was saved, and false otherwise.
+   */
+  virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName) { return true; }
+
+  /**
    * \brief Will iterate through the internal buffer, returning the
    * closest message to the requested time stamp, and sets the
    * ActualTimeStamp accordingly, or else return NULL if it can't be found.
@@ -235,6 +257,8 @@ protected:
   virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
 private:
+
+  bool DoSaveData(mitk::IGIDataType* data);
 
   mitk::DataStorage                              *m_DataStorage;
   int                                             m_Identifier;
@@ -245,6 +269,8 @@ private:
   std::string                                     m_Status;
   std::string                                     m_Description;
   bool                                            m_SavingMessages;
+  bool                                            m_ImmediateSave;
+  bool                                            m_SaveOnProcessData;
   std::string                                     m_SavePrefix;
   std::list<mitk::IGIDataType::Pointer>           m_Buffer;
   std::list<mitk::IGIDataType::Pointer>::iterator m_BufferIterator;

@@ -40,6 +40,8 @@ IGIDataSource::IGIDataSource()
 , m_Status("")
 , m_Description("")
 , m_SavingMessages(false)
+, m_ImmediateSave(true)
+, m_SaveOnProcessData(false)
 , m_SavePrefix("")
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
@@ -262,6 +264,24 @@ void IGIDataSource::UpdateFrameRate()
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
+{
+  bool result = false;
+
+  std::string fileName = "";
+  if (this->SaveData(data, fileName))
+  {
+    data->SetIsSaved(true);
+    data->SetFileName(fileName);
+
+    result = true;
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
   bool result = false;
@@ -286,7 +306,18 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
       m_FrameRateBufferIterator = m_BufferIterator;
     }
 
-    result = true;
+
+    if (   m_SavingMessages     // recording/saving is turned on.
+        && m_ImmediateSave      // we are doing it immediately as opposed to some background thread.
+        && !m_SaveOnProcessData // we are saving every message that came in, regardless of display refresh rate.
+        )
+    {
+      result = this->DoSaveData(data);
+    }
+    else
+    {
+      result = true;
+    }
   }
   return result;
 }
@@ -296,15 +327,24 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 {
   bool result = false;
-  mitk::IGIDataType::Pointer data = this->RequestData(requestedTimeStamp);
+  mitk::IGIDataType* data = this->RequestData(requestedTimeStamp);
 
-  if (data.IsNotNull())
+  if (data != NULL)
   {
     if (this->IsCurrentWithinTimeTolerance())
     {
       try
       {
-        // Derived classes implement this.
+        // Decide if we are saving data
+        if (   m_SavingMessages    // recording/saving is turned on.
+            && m_ImmediateSave     // we are doing it immediately as opposed to some background thread.
+            && m_SaveOnProcessData // we only save the data that was shown on the display.
+            )
+        {
+          this->DoSaveData(data);
+        }
+
+        // Derived classes implement this to update the display.
         result = this->Update(data);
 
       } catch (mitk::Exception& e)
