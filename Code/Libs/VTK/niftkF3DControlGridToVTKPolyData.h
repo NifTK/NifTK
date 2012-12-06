@@ -28,6 +28,7 @@
 
 #include "NifTKConfigure.h"
 #include "niftkCommonWin32ExportHeader.h"
+#include "niftkVTKWin32ExportHeader.h"
 
 #include <ostream>
 #include <stdio.h>
