@@ -27,6 +27,7 @@
 
 #include "QmitkBaseLegacyView.h"
 #include "QmitkIGIDataSourceManager.h"
+#include <berryIBerryPreferences.h>
 
 /**
  * \class SurgicalGuidanceView
@@ -65,6 +66,12 @@ protected:
 private slots:
   
 private:
+
+  /// \brief Retrieve's the pref values from preference service, and stored in member variables.
+  void RetrievePreferenceValues();
+
+  /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   QmitkIGIDataSourceManager::Pointer  m_DataSourceManager;
 };

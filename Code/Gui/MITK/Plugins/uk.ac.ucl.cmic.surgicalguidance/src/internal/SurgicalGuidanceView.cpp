@@ -53,6 +53,8 @@ void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
   m_DataSourceManager->setupUi(parent);
   m_DataSourceManager->SetStdMultiWidget(this->GetActiveStdMultiWidget());
   m_DataSourceManager->SetDataStorage(this->GetDataStorage());
+
+  this->RetrievePreferenceValues();
 }
 
 
@@ -61,3 +63,65 @@ void SurgicalGuidanceView::SetFocus()
 {
   m_DataSourceManager->setFocus();
 }
+
+
+//-----------------------------------------------------------------------------
+void SurgicalGuidanceView::RetrievePreferenceValues()
+{
+  berry::IPreferences::Pointer prefs = GetPreferences();
+  if (prefs.IsNotNull())
+  {
+    int refreshRate = prefs->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE);
+
+    QString path = QString::fromStdString(prefs->Get("output directory prefix", ""));
+    if (path == "")
+    {
+      path = QmitkIGIDataSourceManager::GetDefaultPath();
+    }
+    QColor errorColour = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
+    std::string errorColourName = prefs->Get("error colour", "");
+    if (errorColourName != "")
+    {
+      errorColour.setNamedColor(QString::fromStdString(errorColourName));
+    }
+    QColor warningColour = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
+    std::string warningColourName = prefs->Get("warning colour", "");
+    if (warningColourName != "")
+    {
+      warningColour.setNamedColor(QString::fromStdString(warningColourName));
+    }
+    QColor okColour = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
+    std::string okColourName = prefs->Get("ok colour", "");
+    if (okColourName != "")
+    {
+      okColour.setNamedColor(QString::fromStdString(okColourName));
+    }
+
+    m_DataSourceManager->SetDirectoryPrefix(path);
+    m_DataSourceManager->SetFramesPerSecond(refreshRate);
+    m_DataSourceManager->SetErrorColour(errorColour);
+    m_DataSourceManager->SetWarningColour(warningColour);
+    m_DataSourceManager->SetOKColour(okColour);
+  }
+  else
+  {
+    QString defaultPath = QmitkIGIDataSourceManager::GetDefaultPath();
+    QColor defaultErrorColor = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
+    QColor defaultWarningColor = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
+    QColor defaultOKColor = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
+
+    m_DataSourceManager->SetDirectoryPrefix(defaultPath);
+    m_DataSourceManager->SetFramesPerSecond(QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE);
+    m_DataSourceManager->SetErrorColour(defaultErrorColor);
+    m_DataSourceManager->SetWarningColour(defaultWarningColor);
+    m_DataSourceManager->SetOKColour(defaultOKColor);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurgicalGuidanceView::OnPreferencesChanged(const berry::IBerryPreferences*)
+{
+  this->RetrievePreferenceValues();
+}
+

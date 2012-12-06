@@ -28,6 +28,7 @@
 #include "berryIQtPreferencePage.h"
 #include <berryIPreferences.h>
 #include <QString>
+#include <QColor>
 
 class QWidget;
 class QPushButton;
@@ -88,7 +89,7 @@ private slots:
 
 private:
 
-  void OnResetColour(int buttonIndex, unsigned char r, unsigned char g, unsigned char b, std::string hexColour);
+  void OnResetColour(int buttonIndex, QColor &color);
   void OnColourChanged(int buttonIndex);
   QGridLayout* CreateColourButtonLayout(QPushButton*& button, QPushButton*& resetButton);
 

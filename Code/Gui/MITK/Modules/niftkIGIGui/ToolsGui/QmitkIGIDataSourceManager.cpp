@@ -25,12 +25,18 @@
 #include "QmitkIGIDataSourceManager.h"
 #include <QMessageBox>
 #include <QmitkStdMultiWidget.h>
+#include <QDesktopServices>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
 #include "QmitkIGIDataSourceGui.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 #include "QmitkIGITrackerTool.h"
 #include "QmitkIGIUltrasonixTool.h"
+
+const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
+const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
+const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
+const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2;
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
@@ -40,9 +46,12 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_UpdateTimer(NULL)
 , m_FrameRateTimer(NULL)
 , m_NextSourceIdentifier(0)
-, m_FrameRate(2)
-, m_DirectoryPrefix("")
 {
+  m_OKColour = DEFAULT_OK_COLOUR;
+  m_WarningColour = DEFAULT_WARNING_COLOUR;
+  m_ErrorColour = DEFAULT_ERROR_COLOUR;
+  m_FrameRate = DEFAULT_FRAME_RATE;
+  m_DirectoryPrefix = GetDefaultPath();
 }
 
 
@@ -63,6 +72,39 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 
   m_Sources.clear(); // smart pointers should delete the sources.
 }
+
+
+//-----------------------------------------------------------------------------
+QString QmitkIGIDataSourceManager::GetDefaultPath()
+{
+  QString path;
+  QDir directory;
+
+  path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+  directory.setPath(path);
+
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDir::currentPath();
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = "";
+  }
+  return path;
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -444,14 +486,14 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
     {
       // Highlight that current row is in error.
       QPixmap pix(22, 22);
-      pix.fill(QColor(Qt::red));
+      pix.fill(m_ErrorColour);
       tItem->setIcon(pix);
     }
     else
     {
       // Highlight that current row is OK.
       QPixmap pix(22, 22);
-      pix.fill(QColor(Qt::green));
+      pix.fill(m_OKColour);
       tItem->setIcon(pix);
     }
   }

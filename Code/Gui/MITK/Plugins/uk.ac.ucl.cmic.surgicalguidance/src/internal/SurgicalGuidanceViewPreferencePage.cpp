@@ -35,6 +35,7 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <ctkDirectoryButton.h>
+#include "QmitkIGIDataSourceManager.h"
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
@@ -220,36 +221,13 @@ void SurgicalGuidanceViewPreferencePage::Update()
     m_ColorPushButton[2]->setStyleSheet(m_ColorStyleSheet[2]);
   }
 
-  m_FramesPerSecondSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("refresh rate", 2));
+  m_FramesPerSecondSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE));
 
   QString path = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("output directory prefix", ""));
 
   if (path == "")
   {
-    QDir directory;
-
-    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-    directory.setPath(path);
-
-    if (!directory.exists())
-    {
-      path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-      directory.setPath(path);
-    }
-    if (!directory.exists())
-    {
-      path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-      directory.setPath(path);
-    }
-    if (!directory.exists())
-    {
-      path = QDir::currentPath();
-      directory.setPath(path);
-    }
-    if (!directory.exists())
-    {
-      path = "";
-    }
+    path = QmitkIGIDataSourceManager::GetDefaultPath();
   }
   m_DirectoryPrefix->setDirectory(path);
 }
@@ -306,28 +284,31 @@ void SurgicalGuidanceViewPreferencePage::OnColourChanged(int buttonIndex)
 //-----------------------------------------------------------------------------
 void SurgicalGuidanceViewPreferencePage::OnResetErrorColour()
 {
-  this->OnResetColour(0, 255, 0, 0, "ff0000");
+  QColor color = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
+  this->OnResetColour(0, color);
 }
 
 
 //-----------------------------------------------------------------------------
 void SurgicalGuidanceViewPreferencePage::OnResetWarningColour()
 {
-  this->OnResetColour(1, 255, 127, 0, "ff0f00");
+  QColor color = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
+  this->OnResetColour(1, color);
 }
 
 
 //-----------------------------------------------------------------------------
 void SurgicalGuidanceViewPreferencePage::OnResetOKColour()
 {
-  this->OnResetColour(2, 0, 255, 0, "00ff00");
+  QColor color = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
+  this->OnResetColour(2, color);
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnResetColour(int buttonIndex, unsigned char r, unsigned char g, unsigned char b, std::string hexColour)
+void SurgicalGuidanceViewPreferencePage::OnResetColour(int buttonIndex, QColor &colorValue)
 {
-  m_Color[buttonIndex] = (QString("#%1").arg(QString::fromStdString(hexColour))).toStdString();
-  m_ColorStyleSheet[buttonIndex] = QString("background-color: rgb(%1,%2,%3)").arg(r).arg(g).arg(b);
+  m_Color[buttonIndex] = (QString("#%1").arg(colorValue.name())).toStdString();
+  m_ColorStyleSheet[buttonIndex] = QString("background-color: rgb(%1,%2,%3)").arg(colorValue.red()).arg(colorValue.green()).arg(colorValue.blue());
   m_ColorPushButton[buttonIndex]->setStyleSheet(m_ColorStyleSheet[buttonIndex]);
 }
