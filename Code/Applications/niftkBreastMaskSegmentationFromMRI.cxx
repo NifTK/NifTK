@@ -1002,6 +1002,8 @@ int main( int argc, char *argv[] )
 							  InternalImageType > DerivativeFilterType;
   
   typedef DerivativeFilterType::Pointer  DerivativeFilterPointer;
+
+  typedef itk::MaximumImageFilter <InternalImageType, InternalImageType>   MaxImageFilterType;
    
   VectorType pecHeight;
   PointSetType::PointType point;
@@ -2222,24 +2224,38 @@ int main( int argc, char *argv[] )
   }
     
    
-  // Scan the posterior breast image region looking for chest surface points
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Scan the posterior(?) breast image region looking for chest surface points
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  ConnectedSurfaceVoxelFilterType::Pointer connectedSurfacePoints = ConnectedSurfaceVoxelFilterType::New();
+  ConnectedSurfaceVoxelFilterType::Pointer connectedSurfacePointsL = ConnectedSurfaceVoxelFilterType::New();
+  ConnectedSurfaceVoxelFilterType::Pointer connectedSurfacePointsR = ConnectedSurfaceVoxelFilterType::New();
 
-  connectedSurfacePoints->SetInput( imSegmented );
+  connectedSurfacePointsL->SetInput( imSegmented );
+  connectedSurfacePointsR->SetInput( imSegmented );
 
-  connectedSurfacePoints->SetLower( 1000  );
-  connectedSurfacePoints->SetUpper( 1000 );
+  connectedSurfacePointsL->SetLower( 1000  );
+  connectedSurfacePointsL->SetUpper( 1000 );
 
-  connectedSurfacePoints->SetReplaceValue( 1000 );
+  connectedSurfacePointsR->SetLower( 1000  );
+  connectedSurfacePointsR->SetUpper( 1000 );
 
-  connectedSurfacePoints->SetSeed( idxMidSternum );
+
+  connectedSurfacePointsL->SetReplaceValue( 1000 );
+  connectedSurfacePointsR->SetReplaceValue( 1000 );
+
+  connectedSurfacePointsL->SetSeed( idxNippleLeft  );
+  connectedSurfacePointsR->SetSeed( idxNippleRight );
+
+  // Combine left and right surface into one
+  MaxImageFilterType::Pointer lrSurfaceCombineFilter = MaxImageFilterType::New();
+  
+  lrSurfaceCombineFilter->SetInput1( connectedSurfacePointsL->GetOutput() );
+  lrSurfaceCombineFilter->SetInput2( connectedSurfacePointsR->GetOutput() );
 
   try
   { 
     std::cout << "Region-growing the chest surface" << std::endl;
-    connectedSurfacePoints->Update();
+    lrSurfaceCombineFilter->Update();
   }
   catch (itk::ExceptionObject &ex)
   { 
@@ -2247,7 +2263,7 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
   
-  imChestSurfaceVoxels = connectedSurfacePoints->GetOutput();
+  imChestSurfaceVoxels = lrSurfaceCombineFilter->GetOutput();
   imChestSurfaceVoxels->DisconnectPipeline();
 
   // Extract the coordinates of the chest surface voxels
@@ -2487,7 +2503,7 @@ int main( int argc, char *argv[] )
     
 
     // Combine the left and right mask into one
-    typedef itk::MaximumImageFilter <InternalImageType, InternalImageType>   MaxImageFilterType;
+
     
     MaxImageFilterType::Pointer maxFilter = MaxImageFilterType::New();
     maxFilter->SetInput1( imRightFittedBreastMask );
