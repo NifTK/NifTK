@@ -271,6 +271,9 @@ public:
 
   /** Define RenderWindow (public)*/ 
   QmitkRenderWindow* mitkWidget1;
+  QmitkRenderWindow* mitkWidget2;
+  QmitkRenderWindow* mitkWidget3;
+  QmitkRenderWindow* mitkWidget4;
   QmitkLevelWindowWidget* levelWindowWidget;
   /********************************/
 
@@ -338,6 +341,9 @@ protected:
   QSplitter *m_SubSplit2;
   
   QWidget *mitkWidget1Container;
+  QWidget *mitkWidget2Container;
+  QWidget *mitkWidget3Container;
+  QWidget *mitkWidget4Container;
 
   struct  
   {

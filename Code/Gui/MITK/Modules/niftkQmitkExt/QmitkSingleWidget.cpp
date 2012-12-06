@@ -48,12 +48,10 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkVtkLayerController.h"
 
+
 QmitkSingleWidget::QmitkSingleWidget(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
 : QWidget(parent, f), 
 mitkWidget1(NULL),
-mitkWidget2(NULL),
-mitkWidget3(NULL),
-mitkWidget4(NULL),
 levelWindowWidget(NULL),
 QmitkSingleWidgetLayout(NULL),
 m_Layout(LAYOUT_DEFAULT),
@@ -66,9 +64,6 @@ m_LayoutSplit(NULL),
 m_SubSplit1(NULL),
 m_SubSplit2(NULL),
 mitkWidget1Container(NULL),
-mitkWidget2Container(NULL),
-mitkWidget3Container(NULL),
-mitkWidget4Container(NULL),
 m_PendingCrosshairPositionEvent(false),
 m_CrosshairNavigationEnabled(false)
 {
@@ -109,93 +104,38 @@ m_CrosshairNavigationEnabled(false)
 
   //creae Widget Container
   mitkWidget1Container = new QWidget(m_SubSplit1);
-  mitkWidget2Container = new QWidget(m_SubSplit1);
-  mitkWidget3Container = new QWidget(m_SubSplit2);
-  mitkWidget4Container = new QWidget(m_SubSplit2);
 
   mitkWidget1Container->setContentsMargins(0,0,0,0);
-  mitkWidget2Container->setContentsMargins(0,0,0,0);
-  mitkWidget3Container->setContentsMargins(0,0,0,0);
-  mitkWidget4Container->setContentsMargins(0,0,0,0);
 
   //create Widget Layout
   QHBoxLayout *mitkWidgetLayout1 = new QHBoxLayout(mitkWidget1Container);
-  QHBoxLayout *mitkWidgetLayout2 = new QHBoxLayout(mitkWidget2Container);
-  QHBoxLayout *mitkWidgetLayout3 = new QHBoxLayout(mitkWidget3Container);
-  QHBoxLayout *mitkWidgetLayout4 = new QHBoxLayout(mitkWidget4Container);
 
   mitkWidgetLayout1->setMargin(0);
-  mitkWidgetLayout2->setMargin(0);
-  mitkWidgetLayout3->setMargin(0);
-  mitkWidgetLayout4->setMargin(0);
 
   //set Layout to Widget Container  
   mitkWidget1Container->setLayout(mitkWidgetLayout1); 
-  mitkWidget2Container->setLayout(mitkWidgetLayout2); 
-  mitkWidget3Container->setLayout(mitkWidgetLayout3); 
-  mitkWidget4Container->setLayout(mitkWidgetLayout4); 
 
   //set SizePolicy
   mitkWidget1Container->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-  mitkWidget2Container->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-  mitkWidget3Container->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-  mitkWidget4Container->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
 
   //insert Widget Container into the splitters
   m_SubSplit1->addWidget( mitkWidget1Container );
-  m_SubSplit1->addWidget( mitkWidget2Container );
 
-  m_SubSplit2->addWidget( mitkWidget3Container );
-  m_SubSplit2->addWidget( mitkWidget4Container );
 
   //  m_RenderingManager->SetGlobalInteraction( mitk::GlobalInteraction::GetInstance() );
 
   //Create RenderWindows 1
   mitkWidget1 = new QmitkRenderWindow(mitkWidget1Container, "single.widget1", NULL, m_RenderingManager);
   mitkWidget1->setMaximumSize(2000,2000);
-  mitkWidget1->SetLayoutIndex( AXIAL );
+  mitkWidget1->SetLayoutIndex( THREE_D );
   mitkWidgetLayout1->addWidget(mitkWidget1); 
-
-  //Create RenderWindows 2
-  mitkWidget2 = new QmitkRenderWindow(mitkWidget2Container, "single.widget2", NULL, m_RenderingManager);
-  mitkWidget2->setMaximumSize(2000,2000);
-  mitkWidget2->setEnabled( TRUE );
-  mitkWidget2->SetLayoutIndex( SAGITTAL );
-  mitkWidgetLayout2->addWidget(mitkWidget2); 
-
-  //Create RenderWindows 3
-  mitkWidget3 = new QmitkRenderWindow(mitkWidget3Container, "single.widget3", NULL, m_RenderingManager);
-  mitkWidget3->setMaximumSize(2000,2000);
-  mitkWidget3->SetLayoutIndex( CORONAL );
-  mitkWidgetLayout3->addWidget(mitkWidget3); 
-
-  //Create RenderWindows 4
-  mitkWidget4 = new QmitkRenderWindow(mitkWidget4Container, "single.widget4", NULL, m_RenderingManager);
-  mitkWidget4->setMaximumSize(2000,2000);
-  mitkWidget4->SetLayoutIndex( THREE_D );
-  mitkWidgetLayout4->addWidget(mitkWidget4); 
 
   //create SignalSlot Connection
   connect( mitkWidget1, SIGNAL( SignalLayoutDesignChanged(int) ), this, SLOT( OnLayoutDesignChanged(int) ) );
   connect( mitkWidget1, SIGNAL( ResetView() ), this, SLOT( ResetCrosshair() ) );
   connect( mitkWidget1, SIGNAL( ChangeCrosshairRotationMode(int) ), this, SLOT( SetWidgetPlaneMode(int) ) );
   connect( this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget1, SLOT(OnWidgetPlaneModeChanged(int)) );
-
-  connect( mitkWidget2, SIGNAL( SignalLayoutDesignChanged(int) ), this, SLOT( OnLayoutDesignChanged(int) ) );
-  connect( mitkWidget2, SIGNAL( ResetView() ), this, SLOT( ResetCrosshair() ) );
-  connect( mitkWidget2, SIGNAL( ChangeCrosshairRotationMode(int) ), this, SLOT( SetWidgetPlaneMode(int) ) );
-  connect( this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget2, SLOT(OnWidgetPlaneModeChanged(int)) );
-
-  connect( mitkWidget3, SIGNAL( SignalLayoutDesignChanged(int) ), this, SLOT( OnLayoutDesignChanged(int) ) );
-  connect( mitkWidget3, SIGNAL( ResetView() ), this, SLOT( ResetCrosshair() ) );
-  connect( mitkWidget3, SIGNAL( ChangeCrosshairRotationMode(int) ), this, SLOT( SetWidgetPlaneMode(int) ) );
-  connect( this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget3, SLOT(OnWidgetPlaneModeChanged(int)) );
-
-  connect( mitkWidget4, SIGNAL( SignalLayoutDesignChanged(int) ), this, SLOT( OnLayoutDesignChanged(int) ) );
-  connect( mitkWidget4, SIGNAL( ResetView() ), this, SLOT( ResetCrosshair() ) );
-  connect( mitkWidget4, SIGNAL( ChangeCrosshairRotationMode(int) ), this, SLOT( SetWidgetPlaneMode(int) ) );
-  connect( this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget4, SLOT(OnWidgetPlaneModeChanged(int)) );
 
   //Create Level Window Widget
   levelWindowWidget = new QmitkLevelWindowWidget( m_MainSplit ); //this
@@ -239,36 +179,12 @@ void QmitkSingleWidget::InitializeWidget()
   layer = mitk::IntProperty::New(1000);
   planeNode->SetProperty("layer",layer);
 
-  // ... of widget 2
-  planeNode = mitk::BaseRenderer::GetInstance(mitkWidget2->GetRenderWindow())->GetCurrentWorldGeometry2DNode();
-  planeNode->SetColor(0.0,1.0,0.0);
-  layer = mitk::IntProperty::New(1000);
-  planeNode->SetProperty("layer",layer);
-
-  // ... of widget 3
-  planeNode = mitk::BaseRenderer::GetInstance(mitkWidget3->GetRenderWindow())->GetCurrentWorldGeometry2DNode();
-  planeNode->SetColor(0.0,0.0,1.0);
-  layer = mitk::IntProperty::New(1000);
-  planeNode->SetProperty("layer",layer);
-
-  // ... of widget 4
-  planeNode = mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow())->GetCurrentWorldGeometry2DNode();
-  planeNode->SetColor(1.0,1.0,0.0);
-  layer = mitk::IntProperty::New(1000);
-  planeNode->SetProperty("layer",layer);
-
-  mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard3D);
+  mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard3D);
   // Set plane mode (slicing/rotation behavior) to slicing (default)
   m_PlaneMode = PLANE_MODE_SLICING;
 
   // Set default view directions for SNCs
   mitkWidget1->GetSliceNavigationController()->SetDefaultViewDirection(
-    mitk::SliceNavigationController::Axial );
-  mitkWidget2->GetSliceNavigationController()->SetDefaultViewDirection(
-    mitk::SliceNavigationController::Sagittal );
-  mitkWidget3->GetSliceNavigationController()->SetDefaultViewDirection(
-    mitk::SliceNavigationController::Frontal );
-  mitkWidget4->GetSliceNavigationController()->SetDefaultViewDirection(
     mitk::SliceNavigationController::Original );
 
   /*************************************************/
@@ -290,7 +206,7 @@ void QmitkSingleWidget::InitializeWidget()
 
   //Render Window 1 == axial
   m_CornerAnnotaions[0].cornerText = vtkCornerAnnotation::New();
-  m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
+  m_CornerAnnotaions[0].cornerText->SetText(0, "Single View");
   m_CornerAnnotaions[0].cornerText->SetMaximumFontSize(12);
   m_CornerAnnotaions[0].textProp = vtkTextProperty::New();
   m_CornerAnnotaions[0].textProp->SetColor( 1.0, 0.0, 0.0 );
@@ -300,31 +216,6 @@ void QmitkSingleWidget::InitializeWidget()
   m_CornerAnnotaions[0].ren->InteractiveOff();
   mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->InsertForegroundRenderer(m_CornerAnnotaions[0].ren,true);
   
-  //Render Window 2 == sagittal
-  m_CornerAnnotaions[1].cornerText = vtkCornerAnnotation::New();
-  m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
-  m_CornerAnnotaions[1].cornerText->SetMaximumFontSize(12);
-  m_CornerAnnotaions[1].textProp = vtkTextProperty::New();
-  m_CornerAnnotaions[1].textProp->SetColor( 0.0, 1.0, 0.0 );
-  m_CornerAnnotaions[1].cornerText->SetTextProperty( m_CornerAnnotaions[1].textProp );
-  m_CornerAnnotaions[1].ren = vtkRenderer::New();
-  m_CornerAnnotaions[1].ren->AddActor(m_CornerAnnotaions[1].cornerText);
-  m_CornerAnnotaions[1].ren->InteractiveOff();
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->InsertForegroundRenderer(m_CornerAnnotaions[1].ren,true);
-  
-  //Render Window 3 == coronal
-  m_CornerAnnotaions[2].cornerText = vtkCornerAnnotation::New();
-  m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
-  m_CornerAnnotaions[2].cornerText->SetMaximumFontSize(12);
-  m_CornerAnnotaions[2].textProp = vtkTextProperty::New();
-  m_CornerAnnotaions[2].textProp->SetColor( 0.295, 0.295, 1.0 );
-  m_CornerAnnotaions[2].cornerText->SetTextProperty( m_CornerAnnotaions[2].textProp );
-  m_CornerAnnotaions[2].ren = vtkRenderer::New();
-  m_CornerAnnotaions[2].ren->AddActor(m_CornerAnnotaions[2].cornerText);
-  m_CornerAnnotaions[2].ren->InteractiveOff();
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->InsertForegroundRenderer(m_CornerAnnotaions[2].ren,true);
-   
-  /*************************************************/
 
 
   // create a slice rotator
@@ -334,40 +225,18 @@ void QmitkSingleWidget::InitializeWidget()
   m_SlicesRotator = mitk::SlicesRotator::New("slices-rotator");
   m_SlicesRotator->AddSliceController(
     mitkWidget1->GetSliceNavigationController() );
-  m_SlicesRotator->AddSliceController(
-    mitkWidget2->GetSliceNavigationController() );
-  m_SlicesRotator->AddSliceController(
-    mitkWidget3->GetSliceNavigationController() );
 
   // create a slice swiveller (using the same state-machine as SlicesRotator)
   m_SlicesSwiveller = mitk::SlicesSwiveller::New("slices-rotator");
   m_SlicesSwiveller->AddSliceController(
     mitkWidget1->GetSliceNavigationController() );
-  m_SlicesSwiveller->AddSliceController(
-    mitkWidget2->GetSliceNavigationController() );
-  m_SlicesSwiveller->AddSliceController(
-    mitkWidget3->GetSliceNavigationController() );
 
   //connect to the "time navigation controller": send time via sliceNavigationControllers
   m_TimeNavigationController->ConnectGeometryTimeEvent(
     mitkWidget1->GetSliceNavigationController() , false);
-  m_TimeNavigationController->ConnectGeometryTimeEvent(
-    mitkWidget2->GetSliceNavigationController() , false);
-  m_TimeNavigationController->ConnectGeometryTimeEvent(
-    mitkWidget3->GetSliceNavigationController() , false);
-  m_TimeNavigationController->ConnectGeometryTimeEvent(
-    mitkWidget4->GetSliceNavigationController() , false);
-  mitkWidget1->GetSliceNavigationController()
-    ->ConnectGeometrySendEvent(mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow()));
 
   //reverse connection between sliceNavigationControllers and m_TimeNavigationController
   mitkWidget1->GetSliceNavigationController()
-    ->ConnectGeometryTimeEvent(m_TimeNavigationController, false);
-  mitkWidget2->GetSliceNavigationController()
-    ->ConnectGeometryTimeEvent(m_TimeNavigationController, false);
-  mitkWidget3->GetSliceNavigationController()
-    ->ConnectGeometryTimeEvent(m_TimeNavigationController, false);
-  mitkWidget4->GetSliceNavigationController()
     ->ConnectGeometryTimeEvent(m_TimeNavigationController, false);
 
   m_MouseModeSwitcher = mitk::MouseModeSwitcher::New( mitk::GlobalInteraction::GetInstance() );
@@ -381,23 +250,8 @@ void QmitkSingleWidget::InitializeWidget()
   m_GradientBackground1 = mitk::GradientBackground::New();
   m_GradientBackground1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
-  m_GradientBackground1->Disable();
-
-  m_GradientBackground2 = mitk::GradientBackground::New();
-  m_GradientBackground2->SetRenderWindow(
-    mitkWidget2->GetRenderWindow() );
-  m_GradientBackground2->Disable();
-
-  m_GradientBackground3 = mitk::GradientBackground::New();
-  m_GradientBackground3->SetRenderWindow(
-    mitkWidget3->GetRenderWindow() );
-  m_GradientBackground3->Disable();
-
-  m_GradientBackground4 = mitk::GradientBackground::New();
-  m_GradientBackground4->SetRenderWindow(
-    mitkWidget4->GetRenderWindow() );
-  m_GradientBackground4->SetGradientColors(0.1,0.1,0.1,0.5,0.5,0.5);
-  m_GradientBackground4->Enable();
+  m_GradientBackground1->SetGradientColors(0.1,0.1,0.1,0.5,0.5,0.5);
+  m_GradientBackground1->Enable();
 
   // setup the department logo rendering
   m_LogoRendering1 = mitk::ManufacturerLogo::New();
@@ -405,40 +259,10 @@ void QmitkSingleWidget::InitializeWidget()
     mitkWidget1->GetRenderWindow() );
   m_LogoRendering1->Disable();
 
-  m_LogoRendering2 = mitk::ManufacturerLogo::New();
-  m_LogoRendering2->SetRenderWindow(
-    mitkWidget2->GetRenderWindow() );
-  m_LogoRendering2->Disable();
-
-  m_LogoRendering3 = mitk::ManufacturerLogo::New();
-  m_LogoRendering3->SetRenderWindow(
-    mitkWidget3->GetRenderWindow() );
-  m_LogoRendering3->Disable();
-
-  m_LogoRendering4 = mitk::ManufacturerLogo::New();
-  m_LogoRendering4->SetRenderWindow(
-    mitkWidget4->GetRenderWindow() );
-  m_LogoRendering4->Enable();
-
   m_RectangleRendering1 = mitk::RenderWindowFrame::New();
   m_RectangleRendering1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
   m_RectangleRendering1->Enable(1.0,0.0,0.0);
-
-  m_RectangleRendering2 = mitk::RenderWindowFrame::New();
-  m_RectangleRendering2->SetRenderWindow(
-    mitkWidget2->GetRenderWindow() );
-  m_RectangleRendering2->Enable(0.0,1.0,0.0);
-
-  m_RectangleRendering3 = mitk::RenderWindowFrame::New();
-  m_RectangleRendering3->SetRenderWindow(
-    mitkWidget3->GetRenderWindow() );
-  m_RectangleRendering3->Enable(0.0,0.0,1.0);
-
-  m_RectangleRendering4 = mitk::RenderWindowFrame::New();
-  m_RectangleRendering4->SetRenderWindow(
-    mitkWidget4->GetRenderWindow() );
-  m_RectangleRendering4->Enable(1.0,1.0,0.0);
 }
   
 QmitkSingleWidget::~QmitkSingleWidget()
@@ -447,26 +271,14 @@ QmitkSingleWidget::~QmitkSingleWidget()
   DisableNavigationControllerEventListening();
 
   m_TimeNavigationController->Disconnect(mitkWidget1->GetSliceNavigationController());
-  m_TimeNavigationController->Disconnect(mitkWidget2->GetSliceNavigationController());
-  m_TimeNavigationController->Disconnect(mitkWidget3->GetSliceNavigationController());
-  m_TimeNavigationController->Disconnect(mitkWidget4->GetSliceNavigationController());
 
   mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->RemoveRenderer( m_CornerAnnotaions[0].ren );
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->RemoveRenderer( m_CornerAnnotaions[1].ren );
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->RemoveRenderer( m_CornerAnnotaions[2].ren );
 
   //Delete CornerAnnotation
   m_CornerAnnotaions[0].cornerText->Delete();
   m_CornerAnnotaions[0].textProp->Delete();
   m_CornerAnnotaions[0].ren->Delete();
 
-  m_CornerAnnotaions[1].cornerText->Delete();
-  m_CornerAnnotaions[1].textProp->Delete();
-  m_CornerAnnotaions[1].ren->Delete();
-
-  m_CornerAnnotaions[2].cornerText->Delete();
-  m_CornerAnnotaions[2].textProp->Delete();
-  m_CornerAnnotaions[2].ren->Delete();
 }
 
 void QmitkSingleWidget::RemovePlanesFromDataStorage()
@@ -500,257 +312,16 @@ void QmitkSingleWidget::AddPlanesToDataStorage()
   }
 }
 
-void QmitkSingleWidget::changeLayoutTo2DImagesUp()
-{
-  SMW_INFO << "changing layout to 2D images up... " << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //Set Layout to widget
-  this->setLayout(QmitkSingleWidgetLayout);
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( Qt::Vertical, m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
-  //insert Widget Container into splitter top
-  m_SubSplit1->addWidget( mitkWidget1Container );
-  m_SubSplit1->addWidget( mitkWidget2Container );
-  m_SubSplit1->addWidget( mitkWidget3Container );
-
-  //set SplitterSize for splitter top
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_SubSplit1->setSizes( splitterSize );
-
-  //insert Widget Container into splitter bottom
-  m_SubSplit2->addWidget( mitkWidget4Container );
-
-  //set SplitterSize for splitter m_LayoutSplit
-  splitterSize.clear();
-  splitterSize.push_back(400);
-  splitterSize.push_back(1000);
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt
-  m_MainSplit->show();
-
-  //show Widget if hidden
-  if ( mitkWidget1->isHidden() ) mitkWidget1->show();
-  if ( mitkWidget2->isHidden() ) mitkWidget2->show();
-  if ( mitkWidget3->isHidden() ) mitkWidget3->show();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  //Change Layout Name
-  m_Layout = LAYOUT_2D_IMAGES_UP;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_2D_IMAGES_UP );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_2D_IMAGES_UP );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_2D_IMAGES_UP );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_2D_IMAGES_UP );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-void QmitkSingleWidget::changeLayoutTo2DImagesLeft()
-{
-  SMW_INFO << "changing layout to 2D images left... " << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( Qt::Vertical, m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
-  //insert Widget into the splitters
-  m_SubSplit1->addWidget( mitkWidget1Container );
-  m_SubSplit1->addWidget( mitkWidget2Container );
-  m_SubSplit1->addWidget( mitkWidget3Container );
-
-  //set splitterSize of SubSplit1
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_SubSplit1->setSizes( splitterSize );
-
-  m_SubSplit2->addWidget( mitkWidget4Container );
-
-  //set splitterSize of Layout Split
-  splitterSize.clear();
-  splitterSize.push_back(400);
-  splitterSize.push_back(1000);
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show Widget if hidden
-  if ( mitkWidget1->isHidden() ) mitkWidget1->show();
-  if ( mitkWidget2->isHidden() ) mitkWidget2->show();
-  if ( mitkWidget3->isHidden() ) mitkWidget3->show();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  //update Layout Name
-  m_Layout = LAYOUT_2D_IMAGES_LEFT;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_2D_IMAGES_LEFT );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_2D_IMAGES_LEFT );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_2D_IMAGES_LEFT );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_2D_IMAGES_LEFT );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
 
 void QmitkSingleWidget::changeLayoutToDefault()
 {
   SMW_INFO << "changing layout to default... " << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( Qt::Vertical, m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
-  //insert Widget container into the splitters
-  m_SubSplit1->addWidget( mitkWidget1Container );
-  m_SubSplit1->addWidget( mitkWidget2Container );
-
-  m_SubSplit2->addWidget( mitkWidget3Container );
-  m_SubSplit2->addWidget( mitkWidget4Container );
-
-  //set splitter Size
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_SubSplit1->setSizes( splitterSize );
-  m_SubSplit2->setSizes( splitterSize );
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show Widget if hidden
-  if ( mitkWidget1->isHidden() ) mitkWidget1->show();
-  if ( mitkWidget2->isHidden() ) mitkWidget2->show();
-  if ( mitkWidget3->isHidden() ) mitkWidget3->show();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_DEFAULT;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_DEFAULT );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_DEFAULT );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_DEFAULT );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_DEFAULT );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
+  this->changeLayoutToBig3D();
 }
 
 void QmitkSingleWidget::changeLayoutToBig3D()
 {
   SMW_INFO << "changing layout to big 3D ..." << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //add widget Splitter to main Splitter
-  m_MainSplit->addWidget( mitkWidget4Container );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  mitkWidget1->hide();
-  mitkWidget2->hide();
-  mitkWidget3->hide();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_BIG_3D;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_BIG_3D );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_BIG_3D );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_BIG_3D );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_BIG_3D );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-void QmitkSingleWidget::changeLayoutToWidget1()
-{
-  SMW_INFO << "changing layout to big Widget1 ..." << std::endl;
 
   //Hide all Menu Widgets
   this->HideAllWidgetToolbars();
@@ -775,491 +346,20 @@ void QmitkSingleWidget::changeLayoutToWidget1()
 
   //show/hide Widgets
   if ( mitkWidget1->isHidden() ) mitkWidget1->show();
-  mitkWidget2->hide();
-  mitkWidget3->hide();
-  mitkWidget4->hide();
 
-  m_Layout = LAYOUT_WIDGET1;
+  m_Layout = LAYOUT_BIG_3D;
 
   //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_WIDGET1 );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_WIDGET1 );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_WIDGET1 );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_WIDGET1 );
+  mitkWidget1->LayoutDesignListChanged( LAYOUT_BIG_3D );
 
   //update Alle Widgets
   this->UpdateAllWidgets();
 }
-
-void QmitkSingleWidget::changeLayoutToWidget2()
-{
-  SMW_INFO << "changing layout to big Widget2 ..." << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //add widget Splitter to main Splitter
-  m_MainSplit->addWidget( mitkWidget2Container );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  mitkWidget1->hide();
-  if ( mitkWidget2->isHidden() ) mitkWidget2->show();
-  mitkWidget3->hide();
-  mitkWidget4->hide();
-
-  m_Layout = LAYOUT_WIDGET2;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_WIDGET2 );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_WIDGET2 );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_WIDGET2 );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_WIDGET2 );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-void QmitkSingleWidget::changeLayoutToWidget3()
-{
-  SMW_INFO << "changing layout to big Widget3 ..." << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //add widget Splitter to main Splitter
-  m_MainSplit->addWidget( mitkWidget3Container );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  mitkWidget1->hide();
-  mitkWidget2->hide();
-  if ( mitkWidget3->isHidden() ) mitkWidget3->show();
-  mitkWidget4->hide();
-
-  m_Layout = LAYOUT_WIDGET3;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_WIDGET3 );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_WIDGET3 );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_WIDGET3 );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_WIDGET3 );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-void QmitkSingleWidget::changeLayoutToRowWidget3And4()
-{
-  SMW_INFO << "changing layout to Widget3 and 4 in a Row..." << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( Qt::Vertical, m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //add Widgets to splitter
-  m_LayoutSplit->addWidget( mitkWidget3Container );
-  m_LayoutSplit->addWidget( mitkWidget4Container );
-
-  //set Splitter Size
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  mitkWidget1->hide();
-  mitkWidget2->hide();
-  if ( mitkWidget3->isHidden() ) mitkWidget3->show();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_ROW_WIDGET_3_AND_4;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_ROW_WIDGET_3_AND_4 );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_ROW_WIDGET_3_AND_4 );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_ROW_WIDGET_3_AND_4 );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_ROW_WIDGET_3_AND_4 );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-void QmitkSingleWidget::changeLayoutToColumnWidget3And4()
-{
-  SMW_INFO << "changing layout to Widget3 and 4 in one Column..." << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //add Widgets to splitter
-  m_LayoutSplit->addWidget( mitkWidget3Container );
-  m_LayoutSplit->addWidget( mitkWidget4Container );
-
-  //set SplitterSize
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  mitkWidget1->hide();
-  mitkWidget2->hide();
-  if ( mitkWidget3->isHidden() ) mitkWidget3->show();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_COLUMN_WIDGET_3_AND_4;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_COLUMN_WIDGET_3_AND_4 );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_COLUMN_WIDGET_3_AND_4 );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_COLUMN_WIDGET_3_AND_4 );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_COLUMN_WIDGET_3_AND_4 );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-void QmitkSingleWidget::changeLayoutToRowWidgetSmall3andBig4()
-{
-  SMW_INFO << "changing layout to Widget3 and 4 in a Row..." << std::endl;
-
-  this->changeLayoutToRowWidget3And4();
-
-  m_Layout = LAYOUT_ROW_WIDGET_SMALL3_AND_BIG4;
-}
-
-
-void QmitkSingleWidget::changeLayoutToSmallUpperWidget2Big3and4()
-{
-  SMW_INFO << "changing layout to Widget3 and 4 in a Row..." << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( Qt::Vertical, m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( Qt::Vertical, m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
-  //insert Widget into the splitters
-  m_SubSplit1->addWidget( mitkWidget2Container );
-
-  m_SubSplit2->addWidget( mitkWidget3Container );
-  m_SubSplit2->addWidget( mitkWidget4Container );
-
-  //set Splitter Size
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_SubSplit2->setSizes( splitterSize );
-  splitterSize.clear();
-  splitterSize.push_back(500);
-  splitterSize.push_back(1000);
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt
-  m_MainSplit->show();
-
-  //show Widget if hidden
-  mitkWidget1->hide();
-  if ( mitkWidget2->isHidden() ) mitkWidget2->show();
-  if ( mitkWidget3->isHidden() ) mitkWidget3->show();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4 );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4 );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4 );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4 );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-
-void QmitkSingleWidget::changeLayoutTo2x2Dand3DWidget()
-{
-  SMW_INFO << "changing layout to 2 x 2D and 3D Widget" << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( Qt::Vertical, m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
-  //add Widgets to splitter
-  m_SubSplit1->addWidget( mitkWidget1Container );
-  m_SubSplit1->addWidget( mitkWidget2Container );
-  m_SubSplit2->addWidget( mitkWidget4Container );
-
-  //set Splitter Size
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_SubSplit1->setSizes( splitterSize );
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  if ( mitkWidget1->isHidden() ) mitkWidget1->show();
-  if ( mitkWidget2->isHidden() ) mitkWidget2->show();
-  mitkWidget3->hide();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_2X_2D_AND_3D_WIDGET;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_2X_2D_AND_3D_WIDGET );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_2X_2D_AND_3D_WIDGET );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_2X_2D_AND_3D_WIDGET );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_2X_2D_AND_3D_WIDGET );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-
-void QmitkSingleWidget::changeLayoutToLeft2Dand3DRight2D()
-{
-  SMW_INFO << "changing layout to 2D and 3D left, 2D right Widget" << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( Qt::Vertical, m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
-
-  //add Widgets to splitter
-  m_SubSplit1->addWidget( mitkWidget1Container );
-  m_SubSplit1->addWidget( mitkWidget4Container );
-  m_SubSplit2->addWidget( mitkWidget2Container );
-
-  //set Splitter Size
-  QList<int> splitterSize;
-  splitterSize.push_back(1000);
-  splitterSize.push_back(1000);
-  m_SubSplit1->setSizes( splitterSize );
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt and add to Layout
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  if ( mitkWidget1->isHidden() ) mitkWidget1->show();
-  if ( mitkWidget2->isHidden() ) mitkWidget2->show();
-  mitkWidget3->hide();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET );
-
-  //update Alle Widgets
-  this->UpdateAllWidgets();
-}
-
-void QmitkSingleWidget::changeLayoutTo2DUpAnd3DDown()
-{
-  SMW_INFO << "changing layout to 2D up and 3D down" << std::endl;
-
-  //Hide all Menu Widgets
-  this->HideAllWidgetToolbars();
-
-  delete QmitkSingleWidgetLayout ;
-
-  //create Main Layout
-  QmitkSingleWidgetLayout =  new QHBoxLayout( this );
-
-  //Set Layout to widget
-  this->setLayout(QmitkSingleWidgetLayout);
-
-  //create main splitter
-  m_MainSplit = new QSplitter( this );
-  QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( Qt::Vertical, m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //add LevelWindow Widget to mainSplitter
-  m_MainSplit->addWidget( levelWindowWidget );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
-  //insert Widget Container into splitter top
-  m_SubSplit1->addWidget( mitkWidget1Container );
-
-  //set SplitterSize for splitter top
-   QList<int> splitterSize;
-//   splitterSize.push_back(1000);
-//   splitterSize.push_back(1000);
-//   splitterSize.push_back(1000);
-//   m_SubSplit1->setSizes( splitterSize );
-
-  //insert Widget Container into splitter bottom
-  m_SubSplit2->addWidget( mitkWidget4Container );
-
-  //set SplitterSize for splitter m_LayoutSplit
-  splitterSize.clear();
-  splitterSize.push_back(700);
-  splitterSize.push_back(700);
-  m_LayoutSplit->setSizes( splitterSize );
-
-  //show mainSplitt
-  m_MainSplit->show();
-
-  //show/hide Widgets
-  if ( mitkWidget1->isHidden() ) mitkWidget1->show();
-  mitkWidget2->hide();
-  mitkWidget3->hide();
-  if ( mitkWidget4->isHidden() ) mitkWidget4->show();
-
-  m_Layout = LAYOUT_2D_UP_AND_3D_DOWN;
-
-  //update Layout Design List
-  mitkWidget1->LayoutDesignListChanged( LAYOUT_2D_UP_AND_3D_DOWN );
-  mitkWidget2->LayoutDesignListChanged( LAYOUT_2D_UP_AND_3D_DOWN );
-  mitkWidget3->LayoutDesignListChanged( LAYOUT_2D_UP_AND_3D_DOWN );
-  mitkWidget4->LayoutDesignListChanged( LAYOUT_2D_UP_AND_3D_DOWN );
-
-  //update all Widgets
-  this->UpdateAllWidgets();
-}
-
 
 
 void QmitkSingleWidget::SetDataStorage( mitk::DataStorage* ds )
 {
   mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())->SetDataStorage(ds);
-  mitk::BaseRenderer::GetInstance(mitkWidget2->GetRenderWindow())->SetDataStorage(ds);
-  mitk::BaseRenderer::GetInstance(mitkWidget3->GetRenderWindow())->SetDataStorage(ds);
-  mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow())->SetDataStorage(ds);
   m_DataStorage = ds;
 }
 
@@ -1268,26 +368,11 @@ void QmitkSingleWidget::Fit()
 {
   vtkRenderer * vtkrenderer;
   mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())->GetDisplayGeometry()->Fit();
-  mitk::BaseRenderer::GetInstance(mitkWidget2->GetRenderWindow())->GetDisplayGeometry()->Fit();
-  mitk::BaseRenderer::GetInstance(mitkWidget3->GetRenderWindow())->GetDisplayGeometry()->Fit();
-  mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow())->GetDisplayGeometry()->Fit();
 
   int w = vtkObject::GetGlobalWarningDisplay();
   vtkObject::GlobalWarningDisplayOff();
 
   vtkrenderer = mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())->GetVtkRenderer();
-  if ( vtkrenderer!= NULL ) 
-    vtkrenderer->ResetCamera();
-
-  vtkrenderer = mitk::BaseRenderer::GetInstance(mitkWidget2->GetRenderWindow())->GetVtkRenderer();
-  if ( vtkrenderer!= NULL ) 
-    vtkrenderer->ResetCamera();
-
-  vtkrenderer = mitk::BaseRenderer::GetInstance(mitkWidget3->GetRenderWindow())->GetVtkRenderer();
-  if ( vtkrenderer!= NULL ) 
-    vtkrenderer->ResetCamera();
-
-  vtkrenderer = mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow())->GetVtkRenderer();
   if ( vtkrenderer!= NULL ) 
     vtkrenderer->ResetCamera();
 
@@ -1320,33 +405,12 @@ void QmitkSingleWidget::AddDisplayPlaneSubTree()
 
   // ... of widget 1
   m_PlaneNode1 = (mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow()))->GetCurrentWorldGeometry2DNode();
-  m_PlaneNode1->SetColor(white, mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow()));
   m_PlaneNode1->SetProperty("visible", mitk::BoolProperty::New(true));
   m_PlaneNode1->SetProperty("name", mitk::StringProperty::New("widget1Plane"));
   m_PlaneNode1->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
   m_PlaneNode1->SetProperty("helper object", mitk::BoolProperty::New(true));
   mapper = mitk::Geometry2DDataMapper2D::New();
   m_PlaneNode1->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
-
-  // ... of widget 2
-  m_PlaneNode2 =( mitk::BaseRenderer::GetInstance(mitkWidget2->GetRenderWindow()))->GetCurrentWorldGeometry2DNode();
-  m_PlaneNode2->SetColor(white, mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow()));
-  m_PlaneNode2->SetProperty("visible", mitk::BoolProperty::New(true));
-  m_PlaneNode2->SetProperty("name", mitk::StringProperty::New("widget2Plane"));
-  m_PlaneNode2->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
-  m_PlaneNode2->SetProperty("helper object", mitk::BoolProperty::New(true));
-  mapper = mitk::Geometry2DDataMapper2D::New();
-  m_PlaneNode2->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
-
-  // ... of widget 3
-  m_PlaneNode3 = (mitk::BaseRenderer::GetInstance(mitkWidget3->GetRenderWindow()))->GetCurrentWorldGeometry2DNode();
-  m_PlaneNode3->SetColor(white, mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow()));
-  m_PlaneNode3->SetProperty("visible", mitk::BoolProperty::New(true));
-  m_PlaneNode3->SetProperty("name", mitk::StringProperty::New("widget3Plane"));
-  m_PlaneNode3->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
-  m_PlaneNode3->SetProperty("helper object", mitk::BoolProperty::New(true));
-  mapper = mitk::Geometry2DDataMapper2D::New();
-  m_PlaneNode3->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
 
   m_Node = mitk::DataNode::New();
   m_Node->SetProperty("name", mitk::StringProperty::New("Widgets"));
@@ -1386,18 +450,12 @@ bool QmitkSingleWidget::InitializeStandardViews( const mitk::Geometry3D * geomet
 void QmitkSingleWidget::RequestUpdate()
 {
   m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
-  m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
-  m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
-  m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
 }
 
 
 void QmitkSingleWidget::ForceImmediateUpdate()
 {
   m_RenderingManager->ForceImmediateUpdate(mitkWidget1->GetRenderWindow());
-  m_RenderingManager->ForceImmediateUpdate(mitkWidget2->GetRenderWindow());
-  m_RenderingManager->ForceImmediateUpdate(mitkWidget3->GetRenderWindow());
-  m_RenderingManager->ForceImmediateUpdate(mitkWidget4->GetRenderWindow());
 }
 
 
@@ -1435,24 +493,6 @@ QmitkRenderWindow* QmitkSingleWidget::GetRenderWindow1() const
 }
 
 
-QmitkRenderWindow* QmitkSingleWidget::GetRenderWindow2() const
-{
-  return mitkWidget2;
-}
-
-
-QmitkRenderWindow* QmitkSingleWidget::GetRenderWindow3() const
-{
-  return mitkWidget3;
-}
-
-
-QmitkRenderWindow* QmitkSingleWidget::GetRenderWindow4() const
-{
-  return mitkWidget4;
-}
-
-
 const mitk::Point3D& QmitkSingleWidget::GetLastLeftClickPosition() const
 {
   return m_LastLeftClickPositionSupplier->GetCurrentPoint();
@@ -1461,24 +501,6 @@ const mitk::Point3D& QmitkSingleWidget::GetLastLeftClickPosition() const
 
 const mitk::Point3D QmitkSingleWidget::GetCrossPosition() const
 {
-  const mitk::PlaneGeometry *plane1 =
-    mitkWidget1->GetSliceNavigationController()->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry *plane2 =
-    mitkWidget2->GetSliceNavigationController()->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry *plane3 =
-    mitkWidget3->GetSliceNavigationController()->GetCurrentPlaneGeometry();
-
-  mitk::Line3D line;
-  if ( (plane1 != NULL) && (plane2 != NULL)
-    && (plane1->IntersectionLine( plane2, line )) )
-  {
-    mitk::Point3D point;
-    if ( (plane3 != NULL)
-      && (plane3->IntersectionPoint( line, point )) )
-    {
-      return point;
-    }
-  }
   return m_LastLeftClickPositionSupplier->GetCurrentPoint();
 }
 
@@ -1556,14 +578,10 @@ void QmitkSingleWidget::MoveCrossToPosition(const mitk::Point3D& newPosition)
   default:
   case PLANE_MODE_SLICING:
     mitkWidget1->GetSliceNavigationController()->HandleEvent( &stateEvent );
-    mitkWidget2->GetSliceNavigationController()->HandleEvent( &stateEvent );
-    mitkWidget3->GetSliceNavigationController()->HandleEvent( &stateEvent );
 
     // just in case SNCs will develop something that depends on the mouse
     // button being released again
     mitkWidget1->GetSliceNavigationController()->HandleEvent( &stateEvent2 );
-    mitkWidget2->GetSliceNavigationController()->HandleEvent( &stateEvent2 );
-    mitkWidget3->GetSliceNavigationController()->HandleEvent( &stateEvent2 );
     break;
 
   case PLANE_MODE_ROTATION:
@@ -1586,10 +604,6 @@ void QmitkSingleWidget::MoveCrossToPosition(const mitk::Point3D& newPosition)
   // determine if cross is now out of display
   // if so, move the display window
   EnsureDisplayContainsPoint( mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())
-    ->GetDisplayGeometry(), newPosition );
-  EnsureDisplayContainsPoint( mitk::BaseRenderer::GetInstance(mitkWidget2->GetRenderWindow())
-    ->GetDisplayGeometry(), newPosition );
-  EnsureDisplayContainsPoint( mitk::BaseRenderer::GetInstance(mitkWidget3->GetRenderWindow())
     ->GetDisplayGeometry(), newPosition );
 
   // update displays
@@ -1678,17 +692,12 @@ void QmitkSingleWidget::EnableNavigationControllerEventListening()
 
   // Listen for SliceNavigationController
   mitkWidget1->GetSliceNavigationController()->crosshairPositionEvent.AddListener( mitk::MessageDelegate<QmitkSingleWidget>( this, &QmitkSingleWidget::HandleCrosshairPositionEvent ) );
-  mitkWidget2->GetSliceNavigationController()->crosshairPositionEvent.AddListener( mitk::MessageDelegate<QmitkSingleWidget>( this, &QmitkSingleWidget::HandleCrosshairPositionEvent ) );
-  mitkWidget3->GetSliceNavigationController()->crosshairPositionEvent.AddListener( mitk::MessageDelegate<QmitkSingleWidget>( this, &QmitkSingleWidget::HandleCrosshairPositionEvent ) );
 
   switch ( m_PlaneMode )
   {
   default:
   case PLANE_MODE_SLICING:
     gi->AddListener( mitkWidget1->GetSliceNavigationController() );
-    gi->AddListener( mitkWidget2->GetSliceNavigationController() );
-    gi->AddListener( mitkWidget3->GetSliceNavigationController() );
-    gi->AddListener( mitkWidget4->GetSliceNavigationController() );
     break;
 
   case PLANE_MODE_ROTATION:
@@ -1714,9 +723,6 @@ void QmitkSingleWidget::DisableNavigationControllerEventListening()
   default:
   case PLANE_MODE_SLICING:
     gi->RemoveListener( mitkWidget1->GetSliceNavigationController() );
-    gi->RemoveListener( mitkWidget2->GetSliceNavigationController() );
-    gi->RemoveListener( mitkWidget3->GetSliceNavigationController() );
-    gi->RemoveListener( mitkWidget4->GetSliceNavigationController() );
     break;
 
   case PLANE_MODE_ROTATION:
@@ -1752,7 +758,7 @@ void QmitkSingleWidget::EnableGradientBackground()
   //m_GradientBackground1->Enable();
   //m_GradientBackground2->Enable();
   //m_GradientBackground3->Enable();
-  m_GradientBackground4->Enable();
+  m_GradientBackground1->Enable();
   m_GradientBackgroundFlag = true;
 }
 
@@ -1762,7 +768,7 @@ void QmitkSingleWidget::DisableGradientBackground()
   //m_GradientBackground1->Disable();
   //m_GradientBackground2->Disable();
   //m_GradientBackground3->Disable();
-  m_GradientBackground4->Disable();
+  m_GradientBackground1->Disable();
   m_GradientBackgroundFlag = false;
 }
 
@@ -1906,9 +912,6 @@ void QmitkSingleWidget::SetWidgetPlaneMode( int userMode )
     emit WidgetPlaneModeSlicing( false );
 
     gi->RemoveListener( mitkWidget1->GetSliceNavigationController() );
-    gi->RemoveListener( mitkWidget2->GetSliceNavigationController() );
-    gi->RemoveListener( mitkWidget3->GetSliceNavigationController() );
-    gi->RemoveListener( mitkWidget4->GetSliceNavigationController() );
     break;
 
   case PLANE_MODE_ROTATION:
@@ -1939,9 +942,6 @@ void QmitkSingleWidget::SetWidgetPlaneMode( int userMode )
 
     // Add listeners
     gi->AddListener( mitkWidget1->GetSliceNavigationController() );
-    gi->AddListener( mitkWidget2->GetSliceNavigationController() );
-    gi->AddListener( mitkWidget3->GetSliceNavigationController() );
-    gi->AddListener( mitkWidget4->GetSliceNavigationController() );
 
     m_RenderingManager->InitializeViews();
     break;
@@ -1970,9 +970,6 @@ void QmitkSingleWidget::SetWidgetPlaneMode( int userMode )
 void QmitkSingleWidget::SetGradientBackgroundColors( const mitk::Color & upper, const mitk::Color & lower )
 {
   m_GradientBackground1->SetGradientColors(upper[0], upper[1], upper[2], lower[0], lower[1], lower[2]);
-  m_GradientBackground2->SetGradientColors(upper[0], upper[1], upper[2], lower[0], lower[1], lower[2]);
-  m_GradientBackground3->SetGradientColors(upper[0], upper[1], upper[2], lower[0], lower[1], lower[2]);
-  m_GradientBackground4->SetGradientColors(upper[0], upper[1], upper[2], lower[0], lower[1], lower[2]);
   m_GradientBackgroundFlag = true;
 }
 
@@ -1980,9 +977,6 @@ void QmitkSingleWidget::SetGradientBackgroundColors( const mitk::Color & upper, 
 void QmitkSingleWidget::SetDepartmentLogoPath( const char * path )
 {
   m_LogoRendering1->SetLogoSource(path);
-  m_LogoRendering2->SetLogoSource(path);
-  m_LogoRendering3->SetLogoSource(path);
-  m_LogoRendering4->SetLogoSource(path);
 }
 
 
@@ -2021,64 +1015,9 @@ void QmitkSingleWidget::OnLayoutDesignChanged( int layoutDesignIndex )
       this->changeLayoutToDefault();
       break;
     }
-  case LAYOUT_2D_IMAGES_UP:
-    {
-      this->changeLayoutTo2DImagesUp();
-      break;
-    }
-  case LAYOUT_2D_IMAGES_LEFT:
-    {
-      this->changeLayoutTo2DImagesLeft();
-      break;
-    }
   case LAYOUT_BIG_3D:
     {
       this->changeLayoutToBig3D();
-      break;
-    }
-  case LAYOUT_WIDGET1:
-    {
-      this->changeLayoutToWidget1();
-      break;
-    }
-  case LAYOUT_WIDGET2:
-    {
-      this->changeLayoutToWidget2();
-      break;
-    }
-  case LAYOUT_WIDGET3:
-    {
-      this->changeLayoutToWidget3();
-      break;
-    }
-  case LAYOUT_2X_2D_AND_3D_WIDGET:
-    {
-      this->changeLayoutTo2x2Dand3DWidget();
-      break;
-    }
-  case LAYOUT_ROW_WIDGET_3_AND_4:
-    {
-      this->changeLayoutToRowWidget3And4();
-      break;
-    }
-  case LAYOUT_COLUMN_WIDGET_3_AND_4:
-    {
-      this->changeLayoutToColumnWidget3And4();
-      break;
-    }
-  case LAYOUT_ROW_WIDGET_SMALL3_AND_BIG4:
-    {
-      this->changeLayoutToRowWidgetSmall3andBig4();
-      break;
-    }
-  case LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4:
-    {
-      this->changeLayoutToSmallUpperWidget2Big3and4();
-      break;
-    }
-  case LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET:
-    {
-      this->changeLayoutToLeft2Dand3DRight2D();
       break;
     }
 
@@ -2092,14 +1031,8 @@ void QmitkSingleWidget::UpdateAllWidgets()
   mitkWidget1->resize( mitkWidget1Container->frameSize().width()-1, mitkWidget1Container->frameSize().height() );
   mitkWidget1->resize( mitkWidget1Container->frameSize().width(), mitkWidget1Container->frameSize().height() );
 
-  mitkWidget2->resize( mitkWidget2Container->frameSize().width()-1, mitkWidget2Container->frameSize().height() );
-  mitkWidget2->resize( mitkWidget2Container->frameSize().width(), mitkWidget2Container->frameSize().height() );
 
-  mitkWidget3->resize( mitkWidget3Container->frameSize().width()-1, mitkWidget3Container->frameSize().height() );
-  mitkWidget3->resize( mitkWidget3Container->frameSize().width(), mitkWidget3Container->frameSize().height() );
 
-  mitkWidget4->resize( mitkWidget4Container->frameSize().width()-1, mitkWidget4Container->frameSize().height() );
-  mitkWidget4->resize( mitkWidget4Container->frameSize().width(), mitkWidget4Container->frameSize().height() );
 
 }
 
@@ -2107,17 +1040,11 @@ void QmitkSingleWidget::UpdateAllWidgets()
 void QmitkSingleWidget::HideAllWidgetToolbars()
 {
   mitkWidget1->HideRenderWindowMenu();
-  mitkWidget2->HideRenderWindowMenu();
-  mitkWidget3->HideRenderWindowMenu();
-  mitkWidget4->HideRenderWindowMenu();
 }
 
 void QmitkSingleWidget::ActivateMenuWidget( bool state )
 {
-  mitkWidget1->ActivateMenuWidget( state, this );
-  mitkWidget2->ActivateMenuWidget( state, this );
-  mitkWidget3->ActivateMenuWidget( state, this );
-  mitkWidget4->ActivateMenuWidget( state, this );
+  mitkWidget1->ActivateMenuWidget( state  );
 }
 
 bool QmitkSingleWidget::IsMenuWidgetEnabled() const

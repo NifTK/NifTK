@@ -18,6 +18,7 @@ SET(CPP_FILES
   QmitkMIDASSingleViewWidgetListManager.cpp
   QmitkMIDASSingleViewWidgetListVisibilityManager.cpp
   QmitkMIDASSingleViewWidgetListDropManager.cpp
+  QmitkSingleWidget.cpp
 )
 
 SET(MOC_H_FILES 
@@ -37,6 +38,7 @@ SET(MOC_H_FILES
   QmitkMIDASStdMultiWidget.h
   QmitkMIDASSingleViewWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
+  QmitkSingleWidget.h
 )
 
 SET(UI_FILES

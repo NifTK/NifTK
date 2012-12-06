@@ -285,10 +285,7 @@ void QmitkSingleWidgetEditor::CreateQtPartControl(QWidget* parent)
 
     d->m_SingleWidget = new QmitkSingleWidget(parent);
 
-    d->m_RenderWindows.insert("axial", d->m_SingleWidget->GetRenderWindow1());
-    d->m_RenderWindows.insert("sagittal", d->m_SingleWidget->GetRenderWindow2());
-    d->m_RenderWindows.insert("coronal", d->m_SingleWidget->GetRenderWindow3());
-    d->m_RenderWindows.insert("3d", d->m_SingleWidget->GetRenderWindow4());
+    d->m_RenderWindows.insert("3d", d->m_SingleWidget->GetRenderWindow1());
     
     d->m_MouseModeToolbar->setMouseModeSwitcher( d->m_SingleWidget->GetMouseModeSwitcher() );
     connect( d->m_MouseModeToolbar, SIGNAL( MouseModeSelected(mitk::MouseModeSwitcher::MouseMode) ),
@@ -307,7 +304,7 @@ void QmitkSingleWidgetEditor::CreateQtPartControl(QWidget* parent)
     mitk::RenderingManager::GetInstance()->InitializeViews(geo);
 
     // Initialize bottom-right view as 3D view
-    d->m_SingleWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(
+    d->m_SingleWidget->GetRenderWindow1()->GetRenderer()->SetMapperID(
       mitk::BaseRenderer::Standard3D );
 
     // Enable standard handler for levelwindow-slider
@@ -335,6 +332,7 @@ void QmitkSingleWidgetEditor::OnPreferencesChanged(const berry::IBerryPreference
 {
   // Enable change of logo. If no DepartmentLogo was set explicitly, MBILogo is used.
   // Set new department logo by prefs->Set("DepartmentLogo", "PathToImage");
+
   std::vector<std::string> keys = prefs->Keys();
   
   for( int i = 0; i < keys.size(); ++i )
