@@ -22,22 +22,26 @@
 
  ============================================================================*/
 
-#ifndef _MIDASMORPHOLOGICALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
-#define _MIDASMORPHOLOGICALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
+#ifndef _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED
+#define _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED
 
 #include "berryIQtPreferencePage.h"
 #include <berryIPreferences.h>
+#include <QString>
 
 class QWidget;
 class QPushButton;
+class QSpinBox;
+class QGridLayout;
+class ctkDirectoryButton;
 
 /**
- * \class MIDASMorphologicalSegmentorViewPreferencePage
- * \brief Preferences page for this plugin, enabling choice volume rendering on/off.
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor
+ * \class SurgicalGuidanceViewPreferencePage
+ * \brief Preferences page for the surgical guidance plugin with choices for colours, default paths to save data etc.
+ * \ingroup uk_ac_ucl_cmic_surgicalguidance_internal
  *
  */
-class MIDASMorphologicalSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class SurgicalGuidanceViewPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
@@ -47,9 +51,9 @@ public:
   /// \brief Stores the name of the preferences node.
   static const std::string PREFERENCES_NODE_NAME;
 
-  MIDASMorphologicalSegmentorViewPreferencePage();
-  MIDASMorphologicalSegmentorViewPreferencePage(const MIDASMorphologicalSegmentorViewPreferencePage& other);
-  ~MIDASMorphologicalSegmentorViewPreferencePage();
+  SurgicalGuidanceViewPreferencePage();
+  SurgicalGuidanceViewPreferencePage(const SurgicalGuidanceViewPreferencePage& other);
+  ~SurgicalGuidanceViewPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -72,22 +76,38 @@ public:
   ///
   virtual void Update();
 
-protected slots:
+private slots:
 
-  void OnDefaultColourChanged();
-  void OnResetDefaultColour();
+  void OnErrorColourChanged();
+  void OnWarningColourChanged();
+  void OnOKColourChanged();
 
-protected:
+  void OnResetErrorColour();
+  void OnResetWarningColour();
+  void OnResetOKColour();
+
+private:
+
+  void OnResetColour(int buttonIndex, unsigned char r, unsigned char g, unsigned char b, std::string hexColour);
+  void OnColourChanged(int buttonIndex);
+  QGridLayout* CreateColourButtonLayout(QPushButton*& button, QPushButton*& resetButton);
 
   QWidget        *m_MainControl;
-  QPushButton    *m_DefaultColorPushButton;
-  QString         m_DefauleColorStyleSheet;
-  std::string     m_DefaultColor;
+
+  // We have 3 buttons... 0=Error, 1=Warning, 2=OK
+  QPushButton    *m_ColorPushButton[3];
+  QPushButton    *m_ColorResetPushButton[3];
+  QString         m_ColorStyleSheet[3];
+  std::string     m_Color[3];
+
+  // Other controls.
+  QSpinBox           *m_FramesPerSecondSpinBox;
+  ctkDirectoryButton *m_DirectoryPrefix;
 
   bool m_Initializing;
 
-  berry::IPreferences::Pointer m_MIDASMorphologicalSegmentorViewPreferencesNode;
+  berry::IPreferences::Pointer m_SurgicalGuidanceViewPreferencesNode;
 };
 
-#endif /* _MIDASMORPHOLOGICALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED */
+#endif /* _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED */
 
