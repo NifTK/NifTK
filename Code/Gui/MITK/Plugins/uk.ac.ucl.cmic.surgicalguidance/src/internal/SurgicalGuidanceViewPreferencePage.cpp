@@ -32,6 +32,8 @@
 #include <QPushButton>
 #include <QColorDialog>
 #include <QSpinBox>
+#include <QDir>
+#include <QDesktopServices>
 #include <ctkDirectoryButton.h>
 
 #include <berryIPreferencesService.h>
@@ -219,7 +221,37 @@ void SurgicalGuidanceViewPreferencePage::Update()
   }
 
   m_FramesPerSecondSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("refresh rate", 2));
-  m_DirectoryPrefix->setDirectory(QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("output directory prefix", "")));
+
+  QString path = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("output directory prefix", ""));
+
+  if (path == "")
+  {
+    QDir directory;
+
+    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+    directory.setPath(path);
+
+    if (!directory.exists())
+    {
+      path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+      directory.setPath(path);
+    }
+    if (!directory.exists())
+    {
+      path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+      directory.setPath(path);
+    }
+    if (!directory.exists())
+    {
+      path = QDir::currentPath();
+      directory.setPath(path);
+    }
+    if (!directory.exists())
+    {
+      path = "";
+    }
+  }
+  m_DirectoryPrefix->setDirectory(path);
 }
 
 
