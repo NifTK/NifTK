@@ -25,7 +25,7 @@
 # ============================================================================*/
 #
 # This script is for Fill lesion volume with simulated WM pixel intensities developed by Jonathan S. Jackson 
-# and presented in the JMRI 2010 (Reducing the Imapc of White Matter Lesions on Automated Measures of Brain Gray and
+# and presented in the JMRI 2010 (Reducing the Impact of White Matter Lesions on Automated Measures of Brain Gray and
 # White Matter Volumes). 
 #
 # The basic method is:
@@ -325,8 +325,13 @@ function histogram() {
 
 	# Path to ImageJ user plugins, this lines set automatically the path
 	ij_path=$(locate ImageJ | grep 'ImageJ/plugins' | tail -n 1 | sed 's/plugins\/*/ /g' | awk '$1 {print $1}')
+	
+	if [[ ! -n ${ij_path} ]]; then
+		ij_path=$(which imagej | tail -n 1 | sed 's/\/imagej*/ /g' | awk '$1 {print $1}')
+	fi
+	
 	ij_plugins="${ij_path}plugins"
-
+	
 	if [[ -d /usr/lib/jvm/default-java/bin/ ]] ; then
 		java_path="/usr/lib/jvm/default-java/bin/"
 	else
@@ -338,7 +343,7 @@ function histogram() {
 	fi
 	
 	# Modify classpath
-	CLASSPATH="${ij_path}ij.jar"
+	CLASSPATH="${ij_path}ij.jar:$CLASSPATH"
 	CLASSPATH="${CLASSPATH}:${ij_plugins}/Histogram/"
 	CLASSPATH="${CLASSPATH}:${ij_plugins}/jars/getopt.jar"
 	export CLASSPATH=$CLASSPATH
@@ -801,8 +806,8 @@ fi
 # We only use as peak method gaussian peak    
 wm_peak="$gaussian_peak"
     
-if [[ "$wm_peak" != +([0-9]).+([0-9]) ]] || [[ "$wm_peak_hwhm" != +([0-9]).+([0-9]) ]] ; then
-	exitprog "Failed to estimate WM peak location, exiting" 1
+if !( echo "$wm_peak" | grep '[0-9][0-9]*\.\?[0-9]*' > /dev/null ) || !( echo "$wm_peak_hwhm" | grep '[0-9][0-9]*\.\?[0-9]*' > /dev/null ) ; then  
+	exitprog "Failed to estimate WM peak location (wm_peak=${wm_peak} and wm_peak_hwhm=${wm_peak_hwhm}), exiting" 1
 fi
 echo "White matter peak=$wm_peak hwhm=$wm_peak_hwhm"    
 
@@ -829,7 +834,8 @@ esac
 
 # FILL LESION VOLUME
 progressXML "0.80" "Filling lesions"
-execute_command "imagej -b local/fill_lesions.txt input_image.nii filled.nii ${dil_les_mask} input_image_nu_map.nii ${wm_peak} ${wm_peak_hwhm}"
+directory=`pwd`
+execute_command "imagej -b local/fill_lesions.txt ${directory}/input_image.nii ${directory}/filled.nii ${directory}/${dil_les_mask} ${directory}/input_image_nu_map.nii ${wm_peak} ${wm_peak_hwhm}"
 
 # Output usually is a Analyze file, and it needs to be converted
 dir_file=`dirname ${OUTPUT_IMAGE}`
