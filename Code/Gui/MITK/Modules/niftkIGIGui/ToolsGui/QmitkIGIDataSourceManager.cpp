@@ -40,6 +40,8 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_UpdateTimer(NULL)
 , m_FrameRateTimer(NULL)
 , m_NextSourceIdentifier(0)
+, m_FrameRate(2)
+, m_DirectoryPrefix("")
 {
 }
 
@@ -77,6 +79,52 @@ void QmitkIGIDataSourceManager::SetDataStorage(mitk::DataStorage* dataStorage)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
+{
+  m_FrameRate = framesPerSecond;
+
+  if (m_UpdateTimer != NULL)
+  {
+    int milliseconds = 1000 / framesPerSecond;
+    m_FrameRateTimer->setInterval(milliseconds);
+  }
+
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetDirectoryPrefix(QString& directoryPrefix)
+{
+  m_DirectoryPrefix = directoryPrefix;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetErrorColour(QColor &colour)
+{
+  m_ErrorColour = colour;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetWarningColour(QColor &colour)
+{
+  m_WarningColour = colour;
+  this->Modified();
+}
+
+
+void QmitkIGIDataSourceManager::SetOKColour(QColor &colour)
+{
+  m_OKColour = colour;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 {
   Ui_QmitkIGIDataSourceManager::setupUi(parent);
@@ -85,8 +133,10 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_RecordPushButton->setIcon(QIcon(":/niftkIGIGuiResources/record.png"));
   m_StopPushButton->setIcon(QIcon(":/niftkIGIGuiResources/stop.png"));
 
+  m_PlayPushButton->setEnabled(false); // not ready yet.
+
   m_UpdateTimer =  new QTimer(this);
-  m_UpdateTimer->setInterval ( 100 ); // 10 times per second
+  m_UpdateTimer->setInterval ( 500 ); // 2 times per second
 
   m_FrameRateTimer = new QTimer(this);
   m_FrameRateTimer->setInterval(1000); // every 1 seconds

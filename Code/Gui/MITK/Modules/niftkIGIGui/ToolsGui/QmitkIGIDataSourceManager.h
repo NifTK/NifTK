@@ -33,6 +33,7 @@
 #include <QGridLayout>
 #include <QTimer>
 #include <QSet>
+#include <QColor>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
 
@@ -81,6 +82,31 @@ public:
    * \brief Gets the StdMultiWidget.
    */
   itkGetConstMacro(StdMultiWidget, QmitkStdMultiWidget*);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  void SetFramesPerSecond(int framesPerSecond);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  void SetDirectoryPrefix(QString& directoryPrefix);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  void SetErrorColour(QColor &colour);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  void SetWarningColour(QColor &colour);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  void SetOKColour(QColor &colour);
 
 protected:
 
@@ -132,6 +158,12 @@ private:
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
   unsigned int                              m_NextSourceIdentifier;
+
+  QColor                                    m_ErrorColour;
+  QColor                                    m_WarningColour;
+  QColor                                    m_OKColour;
+  int                                       m_FrameRate;
+  QString                                   m_DirectoryPrefix;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
