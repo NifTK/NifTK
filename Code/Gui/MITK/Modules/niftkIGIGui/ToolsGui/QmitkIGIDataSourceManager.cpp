@@ -81,6 +81,10 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 {
   Ui_QmitkIGIDataSourceManager::setupUi(parent);
 
+  m_PlayPushButton->setIcon(QIcon(":/niftkIGIGuiResources/play.png"));
+  m_RecordPushButton->setIcon(QIcon(":/niftkIGIGuiResources/record.png"));
+  m_StopPushButton->setIcon(QIcon(":/niftkIGIGuiResources/stop.png"));
+
   m_UpdateTimer =  new QTimer(this);
   m_UpdateTimer->setInterval ( 100 ); // 10 times per second
 

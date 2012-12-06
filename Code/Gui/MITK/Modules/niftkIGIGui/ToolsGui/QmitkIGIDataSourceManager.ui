@@ -99,15 +99,31 @@
        </item>
        <item>
         <widget class="QPushButton" name="m_PlayPushButton">
+         <property name="toolTip">
+          <string>play back data from a previously recorded session</string>
+         </property>
          <property name="text">
-          <string>Play/Rec</string>
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_RecordPushButton">
+         <property name="toolTip">
+          <string>record (save) data</string>
+         </property>
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="m_StopPushButton">
+         <property name="toolTip">
+          <string>stop recording or playing</string>
+         </property>
          <property name="text">
-          <string>Stop</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -164,9 +180,6 @@
           <property name="columnCount">
            <number>6</number>
           </property>
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
