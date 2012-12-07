@@ -2616,11 +2616,7 @@ int main( int argc, char *argv[] )
   
   else
   {
-    
     //InternalImageType::SizeType sizeChestSurfaceRegion;
-    const InternalImageType::SpacingType& spStruc = imStructural->GetSpacing();
-      
-    
     region  = imStructural->GetLargestPossibleRegion();
    
     start    = region.GetIndex();
