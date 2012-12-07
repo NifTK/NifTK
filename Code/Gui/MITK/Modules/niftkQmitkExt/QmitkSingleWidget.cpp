@@ -93,7 +93,7 @@ m_CrosshairNavigationEnabled(false)
   //create main splitter
   m_MainSplit = new QSplitter( this );
   QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-
+/*
   //create m_LayoutSplit  and add to the mainSplit
   m_LayoutSplit = new QSplitter( Qt::Vertical, m_MainSplit );
   m_MainSplit->addWidget( m_LayoutSplit );
@@ -101,9 +101,9 @@ m_CrosshairNavigationEnabled(false)
   //create m_SubSplit1 and m_SubSplit2  
   m_SubSplit1 = new QSplitter( m_LayoutSplit );
   m_SubSplit2 = new QSplitter( m_LayoutSplit );
-
+*/
   //creae Widget Container
-  mitkWidget1Container = new QWidget(m_SubSplit1);
+  mitkWidget1Container = new QWidget(m_MainSplit);
 
   mitkWidget1Container->setContentsMargins(0,0,0,0);
 
@@ -120,8 +120,8 @@ m_CrosshairNavigationEnabled(false)
 
 
   //insert Widget Container into the splitters
-  m_SubSplit1->addWidget( mitkWidget1Container );
-
+  //m_SubSplit1 
+  m_MainSplit->addWidget( mitkWidget1Container );
 
   //  m_RenderingManager->SetGlobalInteraction( mitk::GlobalInteraction::GetInstance() );
 
@@ -160,7 +160,7 @@ m_CrosshairNavigationEnabled(false)
   this->InitializeWidget();
 
   //Activate Widget Menu
-  this->ActivateMenuWidget( true );
+  this->ActivateMenuWidget( false );
 }
 
 void QmitkSingleWidget::InitializeWidget()
@@ -281,7 +281,7 @@ QmitkSingleWidget::~QmitkSingleWidget()
 
 }
 
-void QmitkSingleWidget::RemovePlanesFromDataStorage()
+void QmitkSingleWidget::RemoveCameraFromDataStorage()
 {
   if (m_PlaneNode1.IsNotNull() && m_PlaneNode2.IsNotNull() && m_PlaneNode3.IsNotNull() && m_Node.IsNotNull())
   {
@@ -295,9 +295,12 @@ void QmitkSingleWidget::RemovePlanesFromDataStorage()
   }
 }
 
-void QmitkSingleWidget::AddPlanesToDataStorage()
+void QmitkSingleWidget::AddCameraToDataStorage()
 {
-  if (m_PlaneNode1.IsNotNull() && m_PlaneNode2.IsNotNull() && m_PlaneNode3.IsNotNull() && m_Node.IsNotNull())
+  vtkCamera * Camera;
+  Camera = mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())->GetVtkRenderer()->GetActiveCamera();
+  
+  if (Camera != NULL  )
   {
     if (m_DataStorage.IsNotNull())
     {
@@ -399,10 +402,7 @@ void QmitkSingleWidget::AddDisplayPlaneSubTree()
 {
   // add the displayed planes of the multiwidget to a node to which the subtree 
   // @a planesSubTree points ...
-
-  float white[3] = {1.0f,1.0f,1.0f};
   mitk::Geometry2DDataMapper2D::Pointer mapper;
-
   // ... of widget 1
   m_PlaneNode1 = (mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow()))->GetCurrentWorldGeometry2DNode();
   m_PlaneNode1->SetProperty("visible", mitk::BoolProperty::New(true));
@@ -656,7 +656,7 @@ void QmitkSingleWidget::HandleCrosshairPositionEventDelayed()
   std::stringstream stream;
 
   mitk::Index3D p;
-  int timestep = baseRenderer->GetTimeStep();
+  unsigned int timestep = baseRenderer->GetTimeStep();
 
   if(image.IsNotNull() && (image->GetTimeSteps() > timestep ))
   {
@@ -831,8 +831,6 @@ void QmitkSingleWidget::SetWidgetPlanesLocked(bool locked)
 {
   //do your job and lock or unlock slices.
   GetRenderWindow1()->GetSliceNavigationController()->SetSliceLocked(locked);
-  GetRenderWindow2()->GetSliceNavigationController()->SetSliceLocked(locked);
-  GetRenderWindow3()->GetSliceNavigationController()->SetSliceLocked(locked);
 }
 
 
@@ -840,8 +838,6 @@ void QmitkSingleWidget::SetWidgetPlanesRotationLocked(bool locked)
 {
   //do your job and lock or unlock slices.
   GetRenderWindow1()->GetSliceNavigationController()->SetSliceRotationLocked(locked);
-  GetRenderWindow2()->GetSliceNavigationController()->SetSliceRotationLocked(locked);
-  GetRenderWindow3()->GetSliceNavigationController()->SetSliceRotationLocked(locked);
 }
 
 

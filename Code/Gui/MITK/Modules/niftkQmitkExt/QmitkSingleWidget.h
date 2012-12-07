@@ -72,12 +72,6 @@ public:
 
   QmitkRenderWindow* GetRenderWindow1() const;
 
-  QmitkRenderWindow* GetRenderWindow2() const;
-
-  QmitkRenderWindow* GetRenderWindow3() const;
-
-  QmitkRenderWindow* GetRenderWindow4() const;
-
   const mitk::Point3D &
   GetLastLeftClickPosition() const;
 
@@ -127,9 +121,9 @@ public:
   void InitializeWidget();
 
   /// called when the SingleWidget is closed to remove the 3 widget planes and the helper node from the DataStorage
-  void RemovePlanesFromDataStorage();
+  void RemoveCameraFromDataStorage();
 
-  void AddPlanesToDataStorage();
+  void AddCameraToDataStorage();
 
   void SetDataStorage( mitk::DataStorage* ds );
 
@@ -155,33 +149,9 @@ public slots:
   /// Receives the signal from HandleCrosshairPositionEvent, executes the StatusBar update
   void HandleCrosshairPositionEventDelayed();
 
-  void changeLayoutTo2DImagesUp();
-
-  void changeLayoutTo2DImagesLeft();
-
   void changeLayoutToDefault();
 
   void changeLayoutToBig3D();
-
-  void changeLayoutToWidget1();
-
-  void changeLayoutToWidget2();
-
-  void changeLayoutToWidget3();
-
-  void changeLayoutToRowWidget3And4();
-
-  void changeLayoutToColumnWidget3And4();
-
-  void changeLayoutToRowWidgetSmall3andBig4();
-
-  void changeLayoutToSmallUpperWidget2Big3and4();
-
-  void changeLayoutTo2x2Dand3DWidget();
-
-  void changeLayoutToLeft2Dand3DRight2D();
-
-  void changeLayoutTo2DUpAnd3DDown();
 
   void Fit();
 
