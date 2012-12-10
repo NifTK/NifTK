@@ -198,41 +198,63 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage* msg)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixTool::SaveImageMessage(OIGTLImageMessage::Pointer imageMsg)
+bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outputFileName)
 {
-  // Save the motor position matrix
-  igtl::Matrix4x4 Matrix;
-  this->GetImageMatrix(Matrix);
+  bool success = false;
+  outputFileName = "";
 
-  QString filename = QObject::tr("%1/%2.motor_position")
-      .arg(QString::fromStdString(this->GetSavePrefix()))
-      .arg(QString::number(imageMsg->getId()));
-
-  QFile matrixFile(filename);
-  matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
-
-  QTextStream matout(&matrixFile);
-
-  for ( int row = 0 ; row < 4 ; row ++ )
+  QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
+  if (dataType.IsNotNull())
   {
-    for ( int col = 0 ; col < 4 ; col ++ )
+    OIGTLMessage* pointerToMessage = dataType->GetMessage();
+    if (pointerToMessage != NULL)
     {
-      matout << Matrix[row][col];
-      if ( col < 3 )
-        matout << " " ;
+      OIGTLImageMessage* imgMsg = static_cast<OIGTLImageMessage*>(pointerToMessage);
+      if (imgMsg != NULL)
+      {
+        QString fileName =
+            QString::fromStdString(this->GetSavePrefix())
+            + QDir::separator()
+            + tr("QmitkIGIUltrasonixTool-%1-motor_position.txt").arg(imgMsg->getId());
+
+        igtl::Matrix4x4 Matrix;
+        this->GetImageMatrix(Matrix);
+
+        QFile matrixFile(fileName);
+        matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
+
+        QTextStream matout(&matrixFile);
+
+        for ( int row = 0 ; row < 4 ; row ++ )
+        {
+          for ( int col = 0 ; col < 4 ; col ++ )
+          {
+            matout << Matrix[row][col];
+            if ( col < 3 )
+              matout << " " ;
+          }
+          if ( row < 3 )
+            matout << "\n";
+        }
+        matrixFile.close();
+
+        // Save the image
+        // Provided the tracker tool has been associated with the
+        // imageNode, this should also save the tracker matrix
+
+        fileName =
+            QString::fromStdString(this->GetSavePrefix())
+            + QDir::separator()
+            + tr("QmitkIGIUltrasonixTool-%1-ultrasoundImage.nii").arg(imgMsg->getId());
+
+        CommonFunctionality::SaveImage( m_Image, fileName.toAscii() );
+
+        outputFileName = fileName.toStdString();
+        success = true;
+      }
     }
-    if ( row < 3 )
-      matout << "\n";
   }
-  matrixFile.close();
 
-  // Save the image
-  // Provided the tracker tool has been associated with the
-  // imageNode, this should also save the tracker matrix
-  filename = QObject::tr("%1/%2.ultrasoundImage.nii")
-      .arg(QString::fromStdString(this->GetSavePrefix()))
-      .arg(QString::number(imageMsg->getId()));
-
-  CommonFunctionality::SaveImage( m_Image, filename.toAscii() );
+  std::cerr << "QmitkIGIUltrasonixTool::SaveData:success=" << success << ", name=" << outputFileName << std::endl;
+  return success;
 }
-

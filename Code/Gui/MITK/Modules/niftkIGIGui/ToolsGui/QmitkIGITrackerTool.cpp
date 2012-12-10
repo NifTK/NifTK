@@ -582,6 +582,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
     if (pointerToMessage != NULL)
     {
       OIGTLTrackingDataMessage* trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
+      if (trMsg != NULL)
       {
         QString fileName = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + tr("QmitkIGITrackerTool-%1.txt").arg(data->GetFrameId());
         outputFileName = fileName.toStdString();
@@ -615,5 +616,5 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
   }
 
   std::cerr << "QmitkIGITrackerTool::SaveData:success=" << success << ", name=" << outputFileName << std::endl;
-  return true;
+  return success;
 }

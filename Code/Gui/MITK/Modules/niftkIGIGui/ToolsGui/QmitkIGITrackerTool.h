@@ -56,7 +56,7 @@ public:
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
 
   /**
-   * \brief Defined in base class, this is the method where we do the update based on the available data.
+   * \brief Defined in base class, this is the method where we do any update based on the available data.
    * \see mitk::IGIDataSource::Update()
    */
   virtual bool Update(mitk::IGIDataType* data);

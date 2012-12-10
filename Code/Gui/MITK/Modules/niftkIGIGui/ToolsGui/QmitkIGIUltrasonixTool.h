@@ -91,6 +91,11 @@ protected:
   QmitkIGIUltrasonixTool(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
 
+  /**
+   * \brief \see IGIDataSource::SaveData();
+   */
+  virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
+
 private:
 
   /**
@@ -99,11 +104,6 @@ private:
    * in the data storage.
    */
   void HandleImageData(OIGTLMessage* msg);
-
-  /**
-   * \brief Utility method to save both the matrix and the image.
-   */
-  void SaveImageMessage (OIGTLImageMessage::Pointer imageMsg);
 
   mitk::Image::Pointer m_Image;
   mitk::DataNode::Pointer m_ImageNode;
