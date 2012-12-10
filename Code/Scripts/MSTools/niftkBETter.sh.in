@@ -53,7 +53,9 @@ function cleanup
 		cd ..
 	fi
 	if [[ -d ${dir_output} ]] ; then
-		rm -rf  ${dir_output}
+		if ! ${debug_mode} ; then
+			rm -rf ${dir_output} 
+		fi
 	fi
 }
 trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
@@ -71,33 +73,34 @@ function normalization()
 	local orientation=$3
 	
 	# Normalization
-	if [[ ! -f "${img}_n3.nii"  ]] ; then
+	if [[ ! -f "${img}_n3.nii.gz"  ]] ; then
 		# Delete temporally files
-		execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.mnc ${img}_n3.imp ${img}_n3_register.nii"
+		execute_command_or_else_stop "rm -f *.mnc ${img}_n3*"
 		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register*" 
 		
 		# Move tissues mask to target space
 		execute_command_or_else_stop "${dir_niftyreg}reg_resample \
-			-ref ${img}.nii \
+			-ref ${img}.nii.gz \
 			-flo ${MASK_IMAGE} \
 			-aff source-to-target-12dof.txt \
-			-res ${img}_ICBM152_mask_register.nii \
+			-res ${img}_ICBM152_mask_register.nii.gz \
 			-NN"
 		
 		# Set tissues mask from float to char
 		execute_command_or_else_stop "fslmaths \
-			${img}_ICBM152_mask_register.nii \
+			${img}_ICBM152_mask_register.nii.gz \
 			-bin \
-			${img}_ICBM152_mask_register-bin.nii \
+			${img}_ICBM152_mask_register-bin.nii.gz \
 			-odt char"
 
 		# Change format to NIFTI
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.nii"
+		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.nii.gz"
 		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_ICBM152_mask_register-bin ${img}_ICBM152_mask_register.nii"
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.*"  
+		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register-bin.*"
+		execute_command_or_else_stop "fslchfiletype NIFTI ${img}.nii.gz ${img}_2.nii"  
 
 		# Change format to mnc
-		execute_command_or_else_stop "${mnidir}nii2mnc $orientation $img.nii $img.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_2.nii ${img}.mnc"
 		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
 		progressXML "0.30" "Image ready to be normalized"
 		
@@ -111,15 +114,11 @@ function normalization()
 		progressXML "0.45" "Image normalized"
 
 		# Change format from mnc to NIFTI
-		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ${img}_n3.nii"
-		
-		# Delete temporally files
-		execute_command_or_else_stop "rm -f ${img}_n3.mnc *.hdr *.img"
-		execute_command_or_else_stop "rm -f ${img}.mnc ${img}_n3.imp ${img}_n3_register.nii"
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register* source-to*"
-
+		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ${img}_n3_temp.nii"
+		execute_command_or_else_stop "fslchfiletype NIFTI_GZ ${img}_n3_temp.nii ${img}_n3.nii.gz"
+		execute_command_or_else_stop "rm -f ${img}_n3_nifti.nii *.mnc"
 	else
-		echo "File ${img}_n3.nii exists, we don't repeat the calculation "
+		echo "File ${img}_n3.nii.gz exists, we don't repeat the calculation "
 	fi
 }
 
@@ -131,43 +130,39 @@ function remove_neck() {
 	local img=$1
 	local name=$2
 	
-	if [[ ! -f "${img}_no_neck.nii"  ]] ; then
+	if [[ ! -f "${img}_no_neck.nii.gz"  ]] ; then
 		progressXML "0.1" "Registering atlas"
 		
 		# Register atlas to target space
 		execute_command_or_else_stop "${dir_niftyreg}reg_aladin \
-			-ref ${img}.nii \
+			-ref ${img}.nii.gz \
 			-flo ${HEAD_IMAGE} \
 			-aff source-to-target-12dof.txt \
-			-res ${img}_neck_register.nii \
+			-res ${img}_neck_register.nii.gz \
 			-sym \
 			-lp 5" 
 		progressXML "0.15" "Atlas registered"
 			
 		# Move whole headmask to target space			
 		execute_command_or_else_stop "${dir_niftyreg}reg_resample \
-			-ref ${img}.nii \
+			-ref ${img}.nii.gz \
 			-flo ${HEADMASK_IMAGE} \
 			-aff source-to-target-12dof.txt \
-			-res ${img}_ICBM152_mask_register.nii \
+			-res ${img}_ICBM152_mask_register.nii.gz \
 			-NN"
 			
 		# Remove neck of input image	
 		execute_command_or_else_stop "${dir_niftyreg}reg_tools \
-			-in ${img}.nii \
-			-nan ${img}_ICBM152_mask_register.nii \
-			-out ${img}_no_neck.nii"
+			-in ${img}.nii.gz \
+			-nan ${img}_ICBM152_mask_register.nii.gz \
+			-out ${img}_no_neck.nii.gz"
 
 		# Convert nan to 0, if not, BET crashes
-		execute_command_or_else_stop "fslmaths ${img}_no_neck.nii -nan ${img}_no_neck-nonan.nii"
-		execute_command_or_else_stop "rm -f ${img}_no_neck.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_no_neck-nonan ${img}_no_neck.nii"
-
-		# Delete temporally files
-		execute_command_or_else_stop "rm -f ${img}_ICBM152_mask_register.* ${img}_neck_register* ${img}_no_neck-nonan*"
+		execute_command_or_else_stop "fslmaths ${img}_no_neck.nii.gz -nan ${img}_no_neck-nonan.nii.gz"
+		execute_command_or_else_stop "cp ${img}_no_neck-nonan.nii.gz ${img}_no_neck.nii.gz"
 
 	else
-		echo "File ${img}_no_neck.nii exists, we don't repeat the calculation "
+		echo "File ${img}_no_neck.nii.gz exists, we don't repeat the calculation "
 	fi
 }
 
@@ -189,6 +184,7 @@ function BETter()
 	local frac=$5
 	local orientation=$6
 	local norm=$7
+	local output_type=$8
 	local suffix=""
 	
 	# Starting brain extraction process
@@ -208,58 +204,33 @@ function BETter()
 		progressXML "0.6" "Calculating brain extraction: bet ${opt} -f ${frac}"
 		
 		# Pospescu 2012 Neuroimage article suggests that best parameters could be -B -f 0.1, previously neck removal
-		execute_command_or_else_stop "bet ${img}${suffix} ${img}_brain -m -s ${opt} -f ${frac}" 
-		
+		if [[ ! -f "${img}_brain.nii.gz"  ]] ; then
+			execute_command_or_else_stop "bet ${img}${suffix} ${img}_brain -m -s ${opt} -f ${frac}" 
+		else
+			echo "File "${img}_brain.nii.gz" exists, we don't repeat the calculation "
+		fi
+	
 		progressXML "0.9" "Copying results"
 		
-		# Change format to NIFTI
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain output.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain_mask output_mask.nii"
-		execute_command_or_else_stop "fslchfiletype NIFTI ${img}_brain_skull output_skull.nii"
-		
-		# Delete temp files
-		execute_command_or_else_stop "rm -f *.nii.gz"
-
 		dir_file=`dirname ${output_result}`
 		if [ "${dir_file}" == "." ] ; then
 			dir_result="../"
 		else
-			dir_result=""
+			dir_result="${dir_file}/"
 		fi
 
 		# Copy all the results
-		execute_command_or_else_stop "cp output.nii ${dir_result}${output_result}"
-		execute_command_or_else_stop "cp output_mask.nii ${dir_result}${output_result/%\.???/_mask.nii}"
-		execute_command_or_else_stop "cp output_skull.nii ${dir_result}${output_result/%\.???/_skull.nii}"
+		name_file=`basename ${output_result}`
+		name=${name_file%%.*};
+		extension=${name_file#*.};
+		copyFileToDestination "${img}_brain.nii.gz" "${dir_result}${name}.${extension}"
+		copyFileToDestination "${img}_brain_mask.nii.gz" "${dir_result}${name}_mask.${extension}"
+		copyFileToDestination "${img}_brain_skull.nii.gz" "${dir_result}${name}_skull.${extension}"
+		
 	else
 		echo "File ${output_result} exists, we don't repeat the calculation "
 	fi
 	
-	execute_command_or_else_stop "rm -f ${img}*_no_neck*"
-
-}
-
-# Function  : Copy files to a specific destination as NIFTI file
-#
-# Param	    : $1 input image
-# Param	    : $2 output directory
-# Param     : $3 output image
-function copyFileToDestination() {
-	local full_image=${1}
-	local dir_output=${2}
-	local image=${3}
-
-	if isNifti ${full_image}  ; then
-		execute_command_or_else_stop "cp ${full_image} ${dir_output}${image}.nii"
-	else
-		execute_command_or_else_stop "fslchfiletype NIFTI ${full_image} ${dir_output}${image}.nii"
-	fi
-}
-
-# Function  : Check if a file is a NIFTI file
-#
-function isNifti()  {
-    [[ "$1" == ?*.nii ]]
 }
 
 # Function  : If the user runs niftkBETter.sh --xml we respond with the XML function contained herein.
@@ -277,11 +248,11 @@ cat <<EOF
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
-   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is in NIFTI format. The output file is composed for three files:
+   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is composed for three files:
 	<ul>
-	<li><i>output.nii</i>, it contains the segmented brain</li>
-	<li><i>output_mask.nii</i>, it correponds to the brain mask of the segmented brain</li>
-	<li><i>output_skull.nii</i>, it correponds to the brain skull of the segmented brain</li>
+	<li><i>output</i>, it contains the segmented brain</li>
+	<li><i>output_mask</i>, it correponds to the brain mask of the segmented brain</li>
+	<li><i>output_skull</i>, it correponds to the brain skull of the segmented brain</li>
 	</ul>
    </li>
    </ul>
@@ -293,7 +264,7 @@ cat <<EOF
    Check that it exists an important overlapping between mask, headmask, head and input file.<br>
    </p>
    ]]></description>
-   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+   <version>12.11</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811912003552</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>
@@ -328,12 +299,12 @@ cat <<EOF
 	  <label>Input atlas mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="*.nii">
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
           <name>outputImageName</name>
           <longflag>out</longflag>
 	  <description>Output image name</description>
 	  <label>Output image</label>
-	  <default>output.nii</default>
+	  <default>output.nii.gz</default>
           <channel>output</channel>
       </image>
    </parameters>
@@ -390,6 +361,18 @@ cat <<EOF
       <element>C</element>
       <element>S</element>
     </string-enumeration>
+    <boolean>
+          <name>debugMode</name>
+          <longflag>debug</longflag>      
+          <description>Debug mode doesn't delete temporary intermediate images</description>
+          <label>Debug mode</label>
+      </boolean>
+      <boolean>
+          <name>same</name>
+          <longflag>same</longflag>      
+          <description>Always use the same temp directory for computing (this option is useful mixed with -debug)</description>
+          <label>Temp directory</label>
+      </boolean>
     </parameters>
 </executable>
 EOF
@@ -401,24 +384,25 @@ exit 0
 function Usage() {
 cat <<EOF
 
-This script is for BET mask calculation using Pospescu et al. Neuroimage 2012 
-brain extraction process. 
+This script is for BET mask calculation using Pospescu et al. Neuroimage 2012 brain extraction process. 
 
-Usage: $0 --in input_file --out output_file --headmask head_mask_file --mask mask_file --atlas head_file
+Usage: $0 -in input_file -out output_file -headmask head_mask_file -mask mask_file -atlas head_file
 
 Mandatory Arguments:
  
-  --in			: is the input file in NIFTI format
-  --out			: is the output file in NIFTI format
-  --headmask		: is the headmask atlas file in NIFTI format
-  --mask		: is the mask atlas file in NIFTI format
-  --atlas		: is the atlas data file in NIFTI format
+  -in			: is the input file 
+  -out			: is the output file 
+  -headmask		: is the headmask atlas file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii)
+  -mask			: is the mask atlas file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii)
+  -atlas		: is the atlas data file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii)
   
 Optional Arguments:   
-  --bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default B
-  --f			: fractional intensity threshold (0->1); by default 0.1.
-  --norm		: apply Boyes et al. Neuroimage 2008 normalization process.
-  --orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITTAL (s) orientation, it is needed for the normalization step
+  -bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default B
+  -f			: fractional intensity threshold (0->1); by default 0.1.
+  -norm			: apply Boyes et al. Neuroimage 2008 normalization process.
+  -orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITTAL (s) orientation, it is needed for the normalization step
+  -debug		: debug mode doesn't delete temporary intermediate images
+  -same			: Always use the same temp directory for computing (this option is useful mixed with -debug)
   
 Recomendations:
 
@@ -432,11 +416,13 @@ exit 127
 
 
 # Program start
-export FSLOUTPUTTYPE=NIFTI
+export FSLOUTPUTTYPE=NIFTI_GZ
 f="0.1"
 options="-B"
 orientation=""
 norm=false
+debug_mode=false
+same=false
 if [ $# -eq 0 ]; then
   Usage
 fi
@@ -445,62 +431,58 @@ fi
 while [ "$#" -gt 0 ]
 do
     case $1 in
-    --xml)
-	UsageXML
-	;;
-    -h)
+    -xml | --xml) UsageXML
+	;; 
+    -h | --help)
 	Usage
 	;;
-    --help)
-	Usage
-	;;
-    --in)
+    --in | -in )
 	INPUT_IMAGE=$2
 	shift 1
 	;;
-    --out)
+    --out | -out )
 	OUTPUT_IMAGE=$2
 	shift 1
 	;;
-    --headmask)
+    --headmask | -headmask )
 	HEADMASK_IMAGE=$2
 	shift 1
 	;;
-    --mask)
+    --mask | -mask )
 	MASK_IMAGE=$2
 	shift 1
 	;;
-    --atlas)
+    --atlas | -atlas )
 	HEAD_IMAGE=$2
 	shift 1
 	;;
-    --bet)
+    --bet | -bet )
 	options="-$2"
 	shift 1
 	;;
-    --f)
+    --f | -f)
 	f="$2"
 	shift 1
 	;;
-    --orient)
+    --orient | -orient)
 	case $2 in
-		a) orientation="-transverse"
+		a | A) orientation="-transverse"
 		;;
-		c) orientation="-coronal"
+		c | C) orientation="-coronal"
 		;;
-		s) orientation="-sagittal"
-		;;
-		A) orientation="-transverse"
-		;;
-		C) orientation="-coronal"
-		;;
-		S) orientation="-sagittal"
+		s | S) orientation="-sagittal"
 		;;
 	esac
 	shift 1
 	;;
-    --norm)
+    --norm | -norm)
 	norm=true
+	;;
+    --debug | -debug)
+	debug_mode=true
+	;;
+    --same | -same)
+	same=true
 	;;
     -*)
 	Usage
@@ -514,9 +496,6 @@ if [ ${norm} = true ] ; then
 	if [[ -z ${orientation} ]] ; then
 		exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
 	fi
-fi
-if [[ -z $OUTPUT_IMAGE ]] ; then
-	exitprog "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})" 1
 fi
 
 # Start of the main program
@@ -536,8 +515,17 @@ check_program_exists mnc2nii
 check_program_exists nu_correct
 
 progressXML "0.08" "Checking input and output file"
+if [[ -z ${OUTPUT_IMAGE} ]] ; then
+	progressXML "0.08" "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})"
+	exitprog "Failed, specify an output filename is needed (output image=${OUTPUT_IMAGE})" 1
+fi
 if [[ -d ${OUTPUT_IMAGE} ]] ; then
+	progressXML "0.08" "${OUTPUT_IMAGE} is not a file, select a file"
 	exitprog "${OUTPUT_IMAGE} is not a file, select a file" 1
+fi
+if ( ls ${OUTPUT_IMAGE/%\.*/}* > /dev/null ) then
+	progressXML "0.08" "There are files with the same name of the output file (${OUTPUT_IMAGE}) in the output directory. It could be a source of conflicts. Please, change the name, or remove the files."
+	exitprog "There are files with the same name of the output file (${OUTPUT_IMAGE}) in the output directory. It could be a source of conflicts. Please, change the name, or remove the files." 1
 fi
 
 # Check if all needed files exist
@@ -547,25 +535,24 @@ check_file_exists ${MASK_IMAGE}
 check_file_exists ${HEADMASK_IMAGE}
 
 # Get specific information
-patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
+if [ ${same} = true ] ; then
+	patient='nifTK'
+else
+	patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
+fi
 dir_output=${patient}-${dir_output}
 
 # Create an output directory and copy data
 if [[ ! -d $dir_output ]] ; then
 	execute_command_or_else_stop "mkdir -p ${dir_output}"
 fi
-copyFileToDestination ${INPUT_IMAGE} ${dir_output} "input_image" 
+copyFileToDestination ${INPUT_IMAGE} "${dir_output}input_image.nii.gz" 
 
 # Go to the output directory
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Start process
-BETter "input_image" ${OUTPUT_IMAGE} ${patient} ${options} ${f} ${orientation} ${norm}
-
-# Delete temporary directory
-execute_command_or_else_stop "rm -f *.nii *.mnc *.txt" 
-execute_command_or_else_stop "cd .."
-execute_command_or_else_stop "rm -rf ${dir_output}"
+BETter "input_image" "${OUTPUT_IMAGE}" "${patient}" "${options}" "${f}" "${orientation}" "${norm}" "${OUTPUT_TYPE}"
 
 progressXML "1" "Finish"
 closeprogressXML ${OUTPUT_IMAGE}
