@@ -155,7 +155,7 @@ bool QmitkIGITrackerTool::Update(mitk::IGIDataType* data)
 {
   bool result = false;
 
-  QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
+  QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
   if (dataType.IsNotNull())
   {
 
@@ -288,13 +288,10 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
 {
-  std::cerr << "Matt, DisplayTrackerData msg=" << msg << std::endl;
-  std::cerr << "Matt, DisplayTrackerData ty[e=" << msg->getMessageType() << std::endl;
-
   if (msg->getMessageType() == QString("TRANSFORM"))
   {
     OIGTLTransformMessage* trMsg;
-    trMsg = dynamic_cast<OIGTLTransformMessage*>(msg);
+    trMsg = static_cast<OIGTLTransformMessage*>(msg);
 
     if (trMsg != NULL)
     {
@@ -317,7 +314,7 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
   else if (msg->getMessageType() == QString("TDATA"))
   {
     OIGTLTrackingDataMessage* trMsg;
-    trMsg = dynamic_cast<OIGTLTrackingDataMessage*>(msg);
+    trMsg = static_cast<OIGTLTrackingDataMessage*>(msg);
 
     if (trMsg != NULL)
     {
