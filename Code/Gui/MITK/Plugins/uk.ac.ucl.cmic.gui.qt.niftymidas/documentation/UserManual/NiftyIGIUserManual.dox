@@ -1,0 +1,31 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.gui.qt.niftymidas} NiftyMIDAS Introduction
+
+Welcome to the NiftyMIDAS application. This page contains some general information
+to help you get started. For all other enquiries, please join 
+
+\li <a href="http://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users">the users mailing list</a>
+
+and ask questions via email.
+
+\section NiftyMIDASPurpose Purpose
+
+The NiftyMIDAS application was developed by the 
+<a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a> to support
+the work of the <a href="http://dementia.ion.ucl.ac.uk/">UCL Dementia Research Centre</a>.
+NiftyMIDAS provides a variety of segmentation tools to provide atrophy measurements for clinical
+trials. It is not intended for clinical use.
+
+\section NiftyIGIFurtherReading Further Reading
+
+
+\li Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the 
+segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
+(53), 15-25, 1997. 
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchMainWindow.html">The Main Window</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchEditors.html">Editors</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchViews.html">Views</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchPerspectives.html">Perspectives</a>
+
+*/

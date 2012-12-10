@@ -6,6 +6,3 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   MODULE_DEPENDENCIES CTK QmitkExt niftkMitkExt niftkQmitkExt
 )
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
-                      niftkITK
-)

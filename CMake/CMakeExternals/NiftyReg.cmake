@@ -55,12 +55,6 @@ IF(BUILD_NIFTYREG)
       DEPENDS ${proj_DEPENDENCIES}
       )
 
-    SET(NIFTYREG_ROOT ${proj_INSTALL})
-    SET(NIFTYREG_INCLUDE_DIR "${NIFTYREG_ROOT}/include")
-    SET(NIFTYREG_LIBRARY_DIR "${NIFTYREG_ROOT}/lib")
-
-    MESSAGE("SuperBuild loading NIFTYREG from ${NIFTYREG_ROOT}")
-
   ELSE(NOT DEFINED NIFTYREG_ROOT)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")

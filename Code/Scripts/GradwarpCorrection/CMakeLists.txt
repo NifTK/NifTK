@@ -22,9 +22,7 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-FILE(GLOB SH_FILES *.sh)
-INSTALL(PROGRAMS ${SH_FILES} DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
+IF(NOT WIN23)
+  FILE(GLOB SH_FILES *.sh)
+  MITK_INSTALL(PROGRAMS ${SH_FILES})
+ENDIF()
