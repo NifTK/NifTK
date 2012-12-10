@@ -154,6 +154,16 @@ private slots:
    */
   void OnCurrentIndexChanged(int indexNumber);
 
+  /**
+   * \brief Callback to start recording data.
+   */
+  void OnRecordStart();
+
+  /**
+   * \brief Callback to stop recording data.
+   */
+  void OnRecordStop();
+
 private:
 
   mitk::DataStorage                        *m_DataStorage;

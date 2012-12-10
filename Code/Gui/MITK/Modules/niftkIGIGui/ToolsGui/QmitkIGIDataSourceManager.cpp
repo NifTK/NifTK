@@ -176,6 +176,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_StopPushButton->setIcon(QIcon(":/niftkIGIGuiResources/stop.png"));
 
   m_PlayPushButton->setEnabled(false); // not ready yet.
+  m_RecordPushButton->setEnabled(true);
+  m_StopPushButton->setEnabled(false);
 
   m_UpdateTimer =  new QTimer(this);
   m_UpdateTimer->setInterval ( 500 ); // 2 times per second
@@ -199,6 +201,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateDisplay()) );
   connect(m_FrameRateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateFrameRate()) );
+  connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+  connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 }
@@ -527,3 +531,21 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnRecordStart()
+{
+  // Generate a unique directory folder name.
+  QString baseDirectory = m_DirectoryPrefix;
+
+  m_RecordPushButton->setEnabled(false);
+  m_StopPushButton->setEnabled(true);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnRecordStop()
+{
+  m_RecordPushButton->setEnabled(true);
+  m_StopPushButton->setEnabled(false);
+}
