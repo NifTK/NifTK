@@ -198,4 +198,5 @@ void QmitkIGITrackerToolGui::OnAssocClicked(void)
 void QmitkIGITrackerToolGui::OnStatusUpdate(QString message)
 {
   m_ConsoleDisplay->insertPlainText(message);
+  m_ConsoleDisplay->update();
 }

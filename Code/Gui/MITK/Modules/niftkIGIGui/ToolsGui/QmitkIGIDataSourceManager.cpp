@@ -503,6 +503,8 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
     }
   }
 
+  m_TableWidget->update();
+
   mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
   renderer->RequestUpdateAll();
 }
@@ -530,6 +532,8 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
     lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_TableWidget->setItem(rowNumber, 5, lagItem);
   }
+
+  m_TableWidget->update();
 }
 
 
