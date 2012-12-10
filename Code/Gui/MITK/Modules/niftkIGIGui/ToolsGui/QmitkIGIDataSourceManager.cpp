@@ -457,6 +457,17 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
   {
     if (m_GridLayoutClientControls != NULL)
     {
+      QLayoutItem *item = m_GridLayoutClientControls->itemAtPosition(0,0);
+      if (item != NULL)
+      {
+        QWidget *widget = item->widget();
+        if (widget != NULL)
+        {
+          widget->setVisible(false);
+        }
+        m_GridLayoutClientControls->removeItem(item);
+        delete item;
+      }
       delete m_GridLayoutClientControls;
     }
 
@@ -464,13 +475,11 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
     m_GridLayoutClientControls->setSpacing(0);
     m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
 
-    sourceGui->setParent(m_Frame);
     sourceGui->SetStdMultiWidget(this->GetStdMultiWidget());
     sourceGui->SetDataSource(source);
     sourceGui->Initialize(NULL);
 
     m_GridLayoutClientControls->addWidget(sourceGui, 0, 0);
-    m_GridLayoutClientControls->activate();
   }
   else
   {

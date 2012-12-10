@@ -70,6 +70,7 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget *parent, ClientDescriptorXMLB
   {
     delete m_PixmapLabel;
   }
+
   m_PixmapLabel = new QLabel(this);
   m_ScrollArea->setWidget(m_PixmapLabel);
 
@@ -80,9 +81,11 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget *parent, ClientDescriptorXMLB
     connect (tool, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
     connect (tool, SIGNAL(UpdatePreviewImage(OIGTLMessage::Pointer)), this, SLOT(OnUpdatePreviewImage(OIGTLMessage::Pointer)));
   }
-  //Connect the UI
+
+  // Connect the UI
   connect(pushButton_save,SIGNAL(clicked()),this,SLOT(OnManageSaveImage()));
   connect(pushButton_change_savedir,SIGNAL(clicked()),this,SLOT(OnManageChangeSaveDir()));
+
   // Set the current save path.
   QString currentDir = QDir::currentPath();
   lineEdit->setText(currentDir);

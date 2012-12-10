@@ -63,7 +63,7 @@ protected:
   virtual QmitkIGINiftyLinkDataSource* GetQmitkIGINiftyLinkDataSource();
 
   /**
-   * \brief Called by Initialize(QWidget *parent);
+   * \brief Called by Initialize(QWidget *parent), where either parent or config could be null.
    */
   virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config) = 0;
 

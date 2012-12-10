@@ -59,9 +59,8 @@ void QmitkIGINiftyLinkDataSourceGui::Initialize(QWidget *parent)
   if (source != NULL)
   {
     ClientDescriptorXMLBuilder* config = source->GetClientDescriptor();
-    if (config != NULL)
-    {
-      this->Initialize(parent, config);
-    }
+
+    // Derived classes should make sure they can cope with a null config.
+    this->Initialize(parent, config);
   }
 }
