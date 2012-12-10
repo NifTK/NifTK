@@ -107,7 +107,7 @@ protected slots:
   /**
    * \brief Main message handler routine for this tool, that subclasses must implement.
    */
-  virtual void InterpretMessage(OIGTLMessage::Pointer msg) = 0;
+  virtual void InterpretMessage(OIGTLMessage::Pointer msg) {};
 
 private:
 

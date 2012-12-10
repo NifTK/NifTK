@@ -158,14 +158,19 @@ bool QmitkIGITrackerTool::Update(mitk::IGIDataType* data)
   QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
   if (dataType.IsNotNull())
   {
+
     OIGTLMessage* pointerToMessage = dataType->GetMessage();
-
-    this->HandleTrackerData(pointerToMessage);
-    this->DisplayTrackerData(pointerToMessage);
-
-    result = true;
+    if (pointerToMessage != NULL)
+    {
+//      this->HandleTrackerData(pointerToMessage);
+      this->DisplayTrackerData(pointerToMessage);
+      result = true;
+    }
+    else
+    {
+      MITK_ERROR << "QmitkIGITrackerTool::Update is receiving messages with no data ... this is wrong!" << std::endl;
+    }
   }
-
   return result;
 }
 
@@ -283,11 +288,13 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
 {
-  // Don't print every message, otherwise the UI freezes
+  std::cerr << "Matt, DisplayTrackerData msg=" << msg << std::endl;
+  std::cerr << "Matt, DisplayTrackerData ty[e=" << msg->getMessageType() << std::endl;
+
   if (msg->getMessageType() == QString("TRANSFORM"))
   {
     OIGTLTransformMessage* trMsg;
-    trMsg = static_cast<OIGTLTransformMessage*>(msg);
+    trMsg = dynamic_cast<OIGTLTransformMessage*>(msg);
 
     if (trMsg != NULL)
     {
@@ -310,7 +317,7 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
   else if (msg->getMessageType() == QString("TDATA"))
   {
     OIGTLTrackingDataMessage* trMsg;
-    trMsg = static_cast<OIGTLTrackingDataMessage*>(msg);
+    trMsg = dynamic_cast<OIGTLTrackingDataMessage*>(msg);
 
     if (trMsg != NULL)
     {
@@ -561,4 +568,15 @@ void QmitkIGITrackerTool::RegisterFiducials()
 
   QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
   emit StatusUpdate(statusUpdate);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputFileName)
+{
+  QString fileName = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + tr("QmitkIGITrackerTool-%1.txt").arg(data->GetFrameId());
+  outputFileName = fileName.toStdString();
+
+  std::cerr << "QmitkIGITrackerTool::SaveData:" << outputFileName << std::endl;
+  return true;
 }

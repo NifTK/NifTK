@@ -95,7 +95,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="ctkPathLineEdit" name="m_FileChooser" native="true"/>
+        <widget class="ctkPathLineEdit" name="m_DirectoryChooser" native="true"/>
        </item>
        <item>
         <widget class="QPushButton" name="m_PlayPushButton">
@@ -180,9 +180,6 @@
           <property name="columnCount">
            <number>6</number>
           </property>
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>

@@ -26,6 +26,7 @@
 #include <QMessageBox>
 #include <QmitkStdMultiWidget.h>
 #include <QDesktopServices>
+#include <QDateTime>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
 #include "QmitkIGIDataSourceGui.h"
@@ -475,7 +476,7 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   timeNow->toTAI();
 
-  igtlUint64 idNow = timeNow->GetTimeStampUint64();
+  igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
@@ -538,6 +539,33 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   // Generate a unique directory folder name.
   QString baseDirectory = m_DirectoryPrefix;
 
+  igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
+  timeStamp->GetTime_TAI();
+
+  igtlUint32 seconds;
+  igtlUint32 nanoseconds;
+  igtlUint64 millis;
+
+  timeStamp->GetTimeStamp(&seconds, &nanoseconds);
+  millis = (igtlUint64)seconds*1000 + nanoseconds/1000000;
+
+  QDateTime dateTime;
+  dateTime.setMSecsSinceEpoch(millis);
+
+  QString formattedTime = dateTime.toString("yyyy-MM-dd-hh-mm-ss-zzz");
+
+  QDir directory(baseDirectory + QDir::separator() + formattedTime);
+  m_DirectoryChooser->setCurrentPath(directory.absolutePath());
+
+  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  {
+    source->ClearBuffer();
+    source->SetSavePrefix(directory.absolutePath().toStdString());
+    source->SetSavingMessages(true);
+    source->SetImmediateSave(true);
+    source->SetSaveOnProcessData(true);
+  }
+
   m_RecordPushButton->setEnabled(false);
   m_StopPushButton->setEnabled(true);
 }
@@ -546,6 +574,11 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRecordStop()
 {
+  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  {
+    source->SetSavingMessages(true);
+  }
+
   m_RecordPushButton->setEnabled(true);
   m_StopPushButton->setEnabled(false);
 }

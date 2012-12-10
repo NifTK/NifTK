@@ -149,6 +149,11 @@ protected:
   QmitkIGITrackerTool(const QmitkIGITrackerTool&); // Purposefully not implemented.
   QmitkIGITrackerTool& operator=(const QmitkIGITrackerTool&); // Purposefully not implemented.
 
+  /**
+   * \brief \see IGIDataSource::SaveData();
+   */
+  virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
+
 private:
 
   /**
