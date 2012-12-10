@@ -117,6 +117,7 @@ void QmitkIGIDataSourceManager::SetDataStorage(mitk::DataStorage* dataStorage)
   {
     source->SetDataStorage(dataStorage);
   }
+
   this->Modified();
 }
 
@@ -195,6 +196,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("networked tracker");
   m_SourceSelectComboBox->addItem("networked ultrasonix scanner");
   m_SourceSelectComboBox->addItem("local frame grabber");
+
+  m_ToolManagerConsoleGroupBox->setCollapsed(true);
 
   connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
@@ -387,7 +390,6 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   if (rowIndex < 0)
     rowIndex = m_TableWidget->rowCount()-1;
 
-
   mitk::IGIDataSource::Pointer source = m_Sources[rowIndex];
 
   // De-registers this class as a listener to this source.
@@ -466,6 +468,10 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
     sourceGui->Initialize(NULL);
 
     m_GridLayoutClientControls->addWidget(sourceGui, 0, 0);
+  }
+  else
+  {
+    MITK_ERROR << "For class " << classname << ", could not create GUI class " << guiClassname << std::endl;
   }
 }
 
@@ -563,7 +569,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
-    source->ClearBuffer();
+    source->ClearBuffer(); // for now, until we have a background thread to sort this out.
     source->SetSavePrefix(directory.absolutePath().toStdString());
     source->SetSavingMessages(true);
     source->SetImmediateSave(true);
@@ -580,7 +586,7 @@ void QmitkIGIDataSourceManager::OnRecordStop()
 {
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
-    source->SetSavingMessages(true);
+    source->SetSavingMessages(false);
   }
 
   m_RecordPushButton->setEnabled(true);
