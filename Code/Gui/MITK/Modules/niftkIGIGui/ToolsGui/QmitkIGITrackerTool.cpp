@@ -23,6 +23,7 @@
  ============================================================================*/
 
 #include "QmitkIGITrackerTool.h"
+#include <QFile>
 #include <mitkDataNode.h>
 #include <mitkBaseData.h>
 #include <mitkRenderingManager.h>
@@ -584,37 +585,35 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
       OIGTLTrackingDataMessage* trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString fileName = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + tr("QmitkIGITrackerTool-%1.txt").arg(data->GetFrameId());
-        outputFileName = fileName.toStdString();
-
-        float matrix[4][4];
-        trMsg->getMatrix(matrix);
-
-        std::ofstream stream;
-        stream.open(outputFileName.c_str(), ios::out | ios::app);
-
-        if (!stream.fail())
+        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool");
+        QDir directory(directoryPath);
+        if (directory.mkpath(directoryPath))
         {
-          stream << matrix[0][0] << "\t" << matrix[0][1] << "\t" << matrix[0][2] << "\t" << matrix[0][3]  << std::endl;
-          stream << matrix[1][0] << "\t" << matrix[1][1] << "\t" << matrix[1][2] << "\t" << matrix[1][3]  << std::endl;
-          stream << matrix[2][0] << "\t" << matrix[2][1] << "\t" << matrix[2][2] << "\t" << matrix[2][3]  << std::endl;
-          stream << matrix[3][0] << "\t" << matrix[3][1] << "\t" << matrix[3][2] << "\t" << matrix[3][3]  << std::endl;
+          QString fileName =  directoryPath + QDir::separator() + tr("%1.txt").arg(pointerToMessage->getId());
 
-          if(stream.is_open())
+          float matrix[4][4];
+          trMsg->getMatrix(matrix);
+
+          QFile matrixFile(fileName);
+          matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
+
+          if (!matrixFile.error())
           {
-            stream.close();
-          }
+            QTextStream matout(&matrixFile);
 
-          success = true;
-        }
-        else
-        {
-          std::cerr << "ERROR: QmitkIGITrackerTool::SaveData() failed to open matrix file " <<  outputFileName.c_str() << std::endl;
+            matout << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3]  << "\n";
+            matout << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3]  << "\n";
+            matout << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3]  << "\n";
+            matout << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3]  << "\n";
+
+            matrixFile.close();
+
+            outputFileName = fileName.toStdString();
+            success = true;
+          }
         }
       }
     }
   }
-
-  std::cerr << "QmitkIGITrackerTool::SaveData:success=" << success << ", name=" << outputFileName << std::endl;
   return success;
 }
