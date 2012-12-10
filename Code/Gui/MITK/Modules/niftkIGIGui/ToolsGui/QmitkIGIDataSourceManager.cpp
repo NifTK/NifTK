@@ -430,6 +430,7 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
   QmitkIGIDataSourceGui* sourceGui = NULL;
 
   int identifier = this->GetIdentifierFromRowNumber(row);
+
   mitk::IGIDataSource* source = m_Sources[identifier];
   const std::string classname = source->GetNameOfClass();
 
@@ -463,15 +464,17 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
     m_GridLayoutClientControls->setSpacing(0);
     m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
 
+    sourceGui->setParent(m_Frame);
     sourceGui->SetStdMultiWidget(this->GetStdMultiWidget());
     sourceGui->SetDataSource(source);
     sourceGui->Initialize(NULL);
 
     m_GridLayoutClientControls->addWidget(sourceGui, 0, 0);
+    m_GridLayoutClientControls->activate();
   }
   else
   {
-    MITK_ERROR << "For class " << classname << ", could not create GUI class " << guiClassname << std::endl;
+    this->PrintStatusMessage(QString("ERROR:For class ") + QString::fromStdString(classname) + ", could not create GUI class " + QString::fromStdString(guiClassname));
   }
 }
 
@@ -591,4 +594,12 @@ void QmitkIGIDataSourceManager::OnRecordStop()
 
   m_RecordPushButton->setEnabled(true);
   m_StopPushButton->setEnabled(false);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::PrintStatusMessage(const QString& message) const
+{
+  m_ToolManagerConsole->appendPlainText(message + "\n");
+  MITK_INFO << "QmitkIGIDataSourceManager:" << message.toStdString() << std::endl;
 }

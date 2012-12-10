@@ -203,6 +203,11 @@ private:
    */
   void UpdateToolDisplay(int toolIdentifier);
 
+  /**
+   * \brief Adds a message to the QmitkIGIDataSourceManager console.
+   */
+  void PrintStatusMessage(const QString& message) const;
+
 }; // end class
 
 #endif
