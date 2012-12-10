@@ -156,9 +156,7 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
   if (dataType.IsNotNull())
   {
     OIGTLMessage* pointerToMessage = dataType->GetMessage();
-
     this->HandleImageData(pointerToMessage);
-
     result = true;
   }
 

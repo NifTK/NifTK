@@ -69,6 +69,11 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
 {
   setupUi(this);
 
+  m_TrackerControlsWidget->pushButton_Tracking->setVisible(false);
+  m_TrackerControlsWidget->pushButton_GetCurrentPos->setVisible(false);
+  m_TrackerControlsWidget->pushButton_FiducialRegistration->setVisible(false);
+  m_TrackerControlsWidget->line->setVisible(false);
+
   connect(m_TrackerControlsWidget->pushButton_Tracking, SIGNAL(clicked()), this, SLOT(OnStartTrackingClicked()) );
   connect(m_TrackerControlsWidget->pushButton_GetCurrentPos, SIGNAL(clicked()), this, SLOT(OnGetCurrentPosition()) );
   connect(m_TrackerControlsWidget->pushButton_FiducialRegistration, SIGNAL(clicked()), this, SLOT(OnFiducialRegistrationClicked()) );
