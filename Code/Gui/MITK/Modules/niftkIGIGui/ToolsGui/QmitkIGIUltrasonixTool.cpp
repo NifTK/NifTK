@@ -119,6 +119,8 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
     wrapper->SetDuration(1000000000); // nanoseconds
 
     this->AddData(wrapper.GetPointer());
+
+    std::cerr << "Matt, added ultrasonix image, timestamp=" << GetTimeInNanoSeconds(msg->getTimeCreated()) << ", buffer size=" << this->GetBufferSize() << std::endl;
   }
 }
 
@@ -223,6 +225,8 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
 
           QTextStream matout(&matrixFile);
+          matout.setRealNumberPrecision(10);
+          matout.setRealNumberNotation(QTextStream::FixedNotation);
 
           for ( int row = 0 ; row < 4 ; row ++ )
           {

@@ -600,6 +600,8 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
           if (!matrixFile.error())
           {
             QTextStream matout(&matrixFile);
+            matout.setRealNumberPrecision(10);
+            matout.setRealNumberNotation(QTextStream::FixedNotation);
 
             matout << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3]  << "\n";
             matout << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3]  << "\n";
