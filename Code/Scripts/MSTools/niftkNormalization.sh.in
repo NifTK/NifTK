@@ -165,7 +165,7 @@ cat <<EOF
    Check that it exists an important overlapping between mask, headmask, head and input file.<br>
    </p>
    ]]></description>
-   <version>12.11</version>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811907009494</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>
