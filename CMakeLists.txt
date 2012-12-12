@@ -1076,7 +1076,14 @@ IF(WIN32)
       mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartVS.bat.in"
         ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat
         ${VS_BUILD_TYPE})
+
+      MESSAGE( "CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat" )
+
     endforeach()
     
+  ELSE(MITK_FOUND)
+    MESSAGE( "CreateWindowsBatchScript: MITK not found" )
   ENDIF(MITK_FOUND)
+ELSE(WIN32)
+  MESSAGE( "CreateWindowsBatchScript: WIN32 not found" )
 ENDIF(WIN32)
