@@ -392,7 +392,7 @@ For the installation and configuration of the different needed software in this 
 <a href="https://docs.google.com/document/d/1L9dNHdUzsNPFOXCILOWdb-XFxyWmUAIo4N1VWOwCZjQ/edit">document</a>.  
    </p>
    ]]></description>
-   <version>12.10</version>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
    <documentation-url>http://onlinelibrary.wiley.com/doi/10.1002/jmri.22214/abstract</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>

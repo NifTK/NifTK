@@ -201,16 +201,26 @@ function BETter()
 			suffix="_no_neck"
 		fi
 
-		progressXML "0.6" "Calculating brain extraction: bet ${opt} -f ${frac}"
+		progressXML "0.5" "Calculating brain extraction: bet ${opt} -f ${frac}"
 		
 		# Pospescu 2012 Neuroimage article suggests that best parameters could be -B -f 0.1, previously neck removal
 		if [[ ! -f "${img}_brain.nii.gz"  ]] ; then
-			execute_command_or_else_stop "bet ${img}${suffix} ${img}_brain -m -s ${opt} -f ${frac}" 
+			execute_command_or_else_stop "bet ${img}${suffix} ${img}_brain ${opt} -f ${frac}" 
 		else
 			echo "File "${img}_brain.nii.gz" exists, we don't repeat the calculation "
 		fi
-	
-		progressXML "0.9" "Copying results"
+		
+		progressXML "0.75" "Applying FAST"
+		
+		if [[ ! -f "${img}_brain_seg.nii.gz"  ]] ; then
+			execute_command_or_else_stop "fast -n 3 -o ${img}_brain"
+		else
+			echo "File "${img}_fast.nii.gz" exists, we don't repeat the calculation "
+		fi
+		execute_command_or_else_stop "fslmaths ${img}_brain_seg -thr 2 ${img}_tissues"
+		execute_command_or_else_stop "fslmaths ${img}_tissues -bin ${img}_fast -odt char"
+		
+		progressXML "0.95" "Copying results"
 		
 		dir_file=`dirname ${output_result}`
 		if [ "${dir_file}" == "." ] ; then
@@ -223,9 +233,7 @@ function BETter()
 		name_file=`basename ${output_result}`
 		name=${name_file%%.*};
 		extension=${name_file#*.};
-		copyFileToDestination "${img}_brain.nii.gz" "${dir_result}${name}.${extension}"
-		copyFileToDestination "${img}_brain_mask.nii.gz" "${dir_result}${name}_mask.${extension}"
-		copyFileToDestination "${img}_brain_skull.nii.gz" "${dir_result}${name}_skull.${extension}"
+		copyFileToDestination "${img}_fast.nii.gz" "${dir_result}${name}.${extension}"
 		
 	else
 		echo "File ${output_result} exists, we don't repeat the calculation "
@@ -248,13 +256,7 @@ cat <<EOF
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
-   <li><i>Output image</i>, select the name and the directory of the output file where the segmented image will be recorded. The output file is composed for three files:
-	<ul>
-	<li><i>output</i>, it contains the segmented brain</li>
-	<li><i>output_mask</i>, it correponds to the brain mask of the segmented brain</li>
-	<li><i>output_skull</i>, it correponds to the brain skull of the segmented brain</li>
-	</ul>
-   </li>
+   <li><i>Output image</i> it correponds to the brain mask of the segmented brain</li>
    </ul>
    <br>
    <p><h2>Recomendations:</h2></p>
@@ -264,7 +266,7 @@ cat <<EOF
    Check that it exists an important overlapping between mask, headmask, head and input file.<br>
    </p>
    ]]></description>
-   <version>12.11</version>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811912003552</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>
@@ -309,8 +311,8 @@ cat <<EOF
       </image>
    </parameters>
    <parameters advanced="true">
-    <label>Variations on default BET functionality</label>
-    <description>BET options</description>
+   <label>Optional arguments</label>
+    <description>Optional arguments</description>
     <string-enumeration>
       <name>BEToptions</name>
       <longflag>bet</longflag>
@@ -506,6 +508,7 @@ progressXML "0.04" "Checking programs"
 check_program_exists fslcpgeom
 check_program_exists fslchfiletype
 check_program_exists bet
+check_program_exists fast
 check_program_exists fslmaths
 check_program_exists reg_aladin
 check_program_exists reg_resample
