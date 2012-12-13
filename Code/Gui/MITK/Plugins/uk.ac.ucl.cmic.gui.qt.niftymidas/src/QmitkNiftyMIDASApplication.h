@@ -24,7 +24,7 @@
 #ifndef QMITKNIFTYMIDASAPPLICATION_H_
 #define QMITKNIFTYMIDASAPPLICATION_H_
 
-#include "mitkQtNiftyMIDASAppDll.h"
+#include <uk_ac_ucl_cmic_gui_qt_niftymidas_Export.h>
 #include "QmitkBaseApplication.h"
 
 /**

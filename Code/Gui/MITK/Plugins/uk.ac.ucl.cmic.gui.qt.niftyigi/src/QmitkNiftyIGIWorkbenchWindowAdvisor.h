@@ -24,7 +24,7 @@
 #ifndef QMITKNIFTYIGIWORKBENCHWINDOWADVISOR_H_
 #define QMITKNIFTYIGIWORKBENCHWINDOWADVISOR_H_
 
-#include "mitkQtNiftyIGIAppDll.h"
+#include <uk_ac_ucl_cmic_gui_qt_niftyigi_Export.h>
 #include "QmitkBaseWorkbenchWindowAdvisor.h"
 
 /**

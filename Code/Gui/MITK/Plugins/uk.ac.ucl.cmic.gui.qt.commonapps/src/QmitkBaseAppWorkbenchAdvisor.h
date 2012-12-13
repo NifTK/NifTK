@@ -32,9 +32,9 @@
 #include <windows.h>
 #endif
 
-#include "mitkQtCommonAppsAppDll.h"
-
+#include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryQtWorkbenchAdvisor.h>
+#include <berryIWorkbenchConfigurer.h>
 
 class QmitkBaseWorkbenchWindowAdvisor;
 
@@ -47,13 +47,13 @@ class CMIC_QT_COMMONAPPS QmitkBaseAppWorkbenchAdvisor: public berry::QtWorkbench
 {
 public:
 
-  void Initialize(berry::IWorkbenchConfigurer::Pointer configurer);
+  virtual void Initialize(berry::IWorkbenchConfigurer::Pointer configurer);
 
   /**
    * \brief Called by framework to create the WorkbenchWindowAdvisor,
    * and derived classes should instead override CreateQmitkBaseWorkbenchWindowAdvisor.
    */
-  berry::WorkbenchWindowAdvisor* CreateWorkbenchWindowAdvisor(
+  virtual berry::WorkbenchWindowAdvisor* CreateWorkbenchWindowAdvisor(
       berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
   /**
