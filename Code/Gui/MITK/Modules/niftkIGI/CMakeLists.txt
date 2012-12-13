@@ -1,7 +1,7 @@
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
   INCLUDE_DIRS Tools DataManagement
-  DEPENDS Mitk MitkExt 
+  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport
   PACKAGE_DEPENDS ITK NiftyLink
 )
   

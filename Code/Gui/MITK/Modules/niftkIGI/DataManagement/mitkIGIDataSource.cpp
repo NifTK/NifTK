@@ -49,10 +49,10 @@ IGIDataSource::IGIDataSource()
 , m_ActualData(NULL)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
-  m_RequestedTimeStamp->toTAI();
+  m_RequestedTimeStamp->GetTime();
 
   m_ActualTimeStamp = igtl::TimeStamp::New();
-  m_ActualTimeStamp->toTAI();
+  m_ActualTimeStamp->GetTime();
 
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
@@ -237,14 +237,13 @@ double IGIDataSource::GetCurrentTimeLag()
 //-----------------------------------------------------------------------------
 void IGIDataSource::UpdateFrameRate()
 {
+  // default position is zero.
+  m_FrameRate = 0;
+
   std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
   iter--;
 
-  if (m_Buffer.size() < 2)
-  {
-    m_FrameRate = 0;
-  }
-  else
+  if (m_Buffer.size() >= 2 && iter != m_Buffer.begin() && iter != m_Buffer.end() && iter != m_FrameRateBufferIterator)
   {
     igtlUint64 lastTimeStamp = (*m_FrameRateBufferIterator)->GetTimeStampInNanoSeconds();
     unsigned long int lastFrameId = (*m_FrameRateBufferIterator)->GetFrameId();
@@ -255,10 +254,13 @@ void IGIDataSource::UpdateFrameRate()
     igtlUint64 timeDifference = currentTimeStamp - lastTimeStamp;
     unsigned long int numberOfFrames = currentFrameId - lastFrameId;
 
-    double rate = (double)1.0 / ((double)timeDifference/(double)(numberOfFrames * 1000000000.0));
+    if (timeDifference > 0 && numberOfFrames > 0)
+    {
+      double rate = (double)1.0 / ((double)timeDifference/(double)(numberOfFrames * 1000000000.0));
 
-    m_FrameRateBufferIterator = iter;
-    m_FrameRate = rate;
+      m_FrameRateBufferIterator = iter;
+      m_FrameRate = rate;
+    }
   }
 }
 

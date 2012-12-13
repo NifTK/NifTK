@@ -42,10 +42,10 @@ namespace mitk {
  * \brief Base class for IGI Data Sources, where Data Sources can provide video data,
  * ultrasound data, tracker data etc.
  *
- * NOTE: All timestamps should be in TAI format. Also, take care NOT to expose a pointer to the
+ * NOTE: All timestamps should be in UTC format. Also, take care NOT to expose a pointer to the
  * igtl::TimeStamp object. You should only ever expose a copy of this data, or an equivalent
  * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the timestamp
- * and set the time to UTC for example.
+ * and set the time to TAI for example.
  */
 class NIFTKIGI_EXPORT IGIDataSource : public itk::Object
 {

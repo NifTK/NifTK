@@ -3,4 +3,6 @@ set(CPP_FILES
   DataManagement/mitkIGIDataType.cpp
   DataManagement/mitkIGIDataSource.cpp
   DataManagement/mitkIGILocalDataSource.cpp
+  DataManagement/mitkIGIOpenCVDataType.cpp
+  DataManagement/mitkIGIOpenCVDataSource.cpp
 )

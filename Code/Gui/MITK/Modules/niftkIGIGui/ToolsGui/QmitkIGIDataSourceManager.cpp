@@ -130,7 +130,12 @@ void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
   if (m_UpdateTimer != NULL)
   {
     int milliseconds = 1000 / framesPerSecond;
-    m_FrameRateTimer->setInterval(milliseconds);
+
+    // This is for the display update.
+    // We have two timers: m_UpdateTimer will process the data,
+    // and m_FrameRateTimer is just to update the frame rate.
+    // This method called by preference page update to set the display rate.
+    m_UpdateTimer->setInterval(milliseconds);
   }
 
   this->Modified();
@@ -259,19 +264,19 @@ int QmitkIGIDataSourceManager::GetIdentifierFromRowNumber(int rowNumber)
 void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
 {
   int rowNumber = this->GetRowNumberFromIdentifier(toolIdentifier);
-  std::string status = m_Sources[toolIdentifier]->GetStatus();
-  std::string type = m_Sources[toolIdentifier]->GetType();
-  std::string device = m_Sources[toolIdentifier]->GetName();
-  std::string description = m_Sources[toolIdentifier]->GetDescription();
-
-  std::vector<std::string> fields;
-  fields.push_back(status);
-  fields.push_back(type);
-  fields.push_back(device);
-  fields.push_back(description);
-
-  if (rowNumber != -1)
+  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
   {
+    std::string status = m_Sources[toolIdentifier]->GetStatus();
+    std::string type = m_Sources[toolIdentifier]->GetType();
+    std::string device = m_Sources[toolIdentifier]->GetName();
+    std::string description = m_Sources[toolIdentifier]->GetDescription();
+
+    std::vector<std::string> fields;
+    fields.push_back(status);
+    fields.push_back(type);
+    fields.push_back(device);
+    fields.push_back(description);
+
     if (rowNumber == m_TableWidget->rowCount())
     {
       m_TableWidget->insertRow(rowNumber);
@@ -370,7 +375,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
   // Launch timers
   if (!m_UpdateTimer->isActive())
   {
-    m_UpdateTimer->start();
+    //m_UpdateTimer->start();
   }
   if (!m_FrameRateTimer->isActive())
   {
@@ -411,6 +416,7 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   }
 
   m_TableWidget->removeRow(rowIndex);
+  m_TableWidget->update();
 
   // This destroys the source. It is up to the source to correctly destroy itself,
   // as this class has no idea what the source is or what it contains etc.
@@ -492,7 +498,7 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 void QmitkIGIDataSourceManager::OnUpdateDisplay()
 {
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-  timeNow->toTAI();
+  timeNow->GetTime();
 
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
@@ -562,7 +568,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   QString baseDirectory = m_DirectoryPrefix;
 
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-  timeStamp->GetTime_TAI();
+  timeStamp->GetTime();
 
   igtlUint32 seconds;
   igtlUint32 nanoseconds;

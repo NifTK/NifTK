@@ -27,6 +27,7 @@
 #include <QmitkCommonFunctionality.h>
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
+#include <QCoreApplication>
 
 NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
@@ -119,9 +120,9 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
     wrapper->SetDuration(1000000000); // nanoseconds
 
     this->AddData(wrapper.GetPointer());
-
-    std::cerr << "Matt, added ultrasonix image, timestamp=" << GetTimeInNanoSeconds(msg->getTimeCreated()) << ", buffer size=" << this->GetBufferSize() << std::endl;
   }
+
+  QCoreApplication::processEvents();
 }
 
 

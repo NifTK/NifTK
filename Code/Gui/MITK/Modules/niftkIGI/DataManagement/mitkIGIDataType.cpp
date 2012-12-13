@@ -40,7 +40,7 @@ IGIDataType::IGIDataType()
 , m_FileName("")
 {
   m_TimeStamp = igtl::TimeStamp::New();
-  m_TimeStamp->toTAI();
+  m_TimeStamp->GetTime();
 }
 
 //-----------------------------------------------------------------------------
