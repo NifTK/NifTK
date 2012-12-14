@@ -17,7 +17,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef QMITKSINGLEWIDGET_H_
 #define QMITKSINGLEWIDGET_H_
 
-#include <QmitkExports.h>
+#include "niftkQmitkExtExports.h"
 
 #include "mitkPositionTracker.h"
 #include "mitkSlicesRotator.h"
@@ -51,7 +51,7 @@ namespace mitk {
 class RenderingManager;
 }
 
-class QMITK_EXPORT QmitkSingleWidget : public QWidget
+class NIFTKQMITKEXT_EXPORT QmitkSingleWidget : public QWidget
 {
   Q_OBJECT
 
@@ -149,10 +149,20 @@ public slots:
   /// Receives the signal from HandleCrosshairPositionEvent, executes the StatusBar update
   void HandleCrosshairPositionEventDelayed();
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 50812c6a718278a1cec11251807b9c6988155e08
   void changeLayoutToDefault();
 
   void changeLayoutToBig3D();
 
+<<<<<<< HEAD
+=======
+ 
+
+
+>>>>>>> 50812c6a718278a1cec11251807b9c6988155e08
   void Fit();
 
   void InitPositionTracking();
