@@ -149,20 +149,10 @@ public slots:
   /// Receives the signal from HandleCrosshairPositionEvent, executes the StatusBar update
   void HandleCrosshairPositionEventDelayed();
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 50812c6a718278a1cec11251807b9c6988155e08
   void changeLayoutToDefault();
 
   void changeLayoutToBig3D();
 
-<<<<<<< HEAD
-=======
- 
-
-
->>>>>>> 50812c6a718278a1cec11251807b9c6988155e08
   void Fit();
 
   void InitPositionTracking();

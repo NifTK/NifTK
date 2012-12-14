@@ -257,7 +257,7 @@ void QmitkSingleWidget::InitializeWidget()
   m_LogoRendering1 = mitk::ManufacturerLogo::New();
   m_LogoRendering1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
-  m_LogoRendering1->Disable();
+  m_LogoRendering1->Enable();
 
   m_RectangleRendering1 = mitk::RenderWindowFrame::New();
   m_RectangleRendering1->SetRenderWindow(
