@@ -74,7 +74,6 @@ struct QmitkSingleWidgetPartListener : public berry::IPartListener
 
       if (d->m_SingleWidget == singleWidgetEditor->GetSingleWidget())
       {
-        d->m_SingleWidget->RemovePlanesFromDataStorage();
         singleWidgetEditor->RequestActivateMenuWidget(false);
       }
     }
@@ -88,7 +87,6 @@ struct QmitkSingleWidgetPartListener : public berry::IPartListener
 
       if (d->m_SingleWidget == singleWidgetEditor->GetSingleWidget())
       {
-        d->m_SingleWidget->RemovePlanesFromDataStorage();
         singleWidgetEditor->RequestActivateMenuWidget(false);
       }
     }
@@ -102,7 +100,6 @@ struct QmitkSingleWidgetPartListener : public berry::IPartListener
 
       if (d->m_SingleWidget == singleWidgetEditor->GetSingleWidget())
       {
-        d->m_SingleWidget->AddPlanesToDataStorage();
         singleWidgetEditor->RequestActivateMenuWidget(true);
       }
     }
