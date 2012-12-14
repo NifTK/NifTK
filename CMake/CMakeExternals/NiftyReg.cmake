@@ -55,6 +55,10 @@ IF(BUILD_NIFTYREG)
       DEPENDS ${proj_DEPENDENCIES}
       )
 
+    SET(NIFTYREG_ROOT ${proj_INSTALL})
+
+    MESSAGE("SuperBuild loading NIFTYREG from ${NIFTYREG_ROOT}")
+
   ELSE(NOT DEFINED NIFTYREG_ROOT)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
