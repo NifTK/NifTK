@@ -831,8 +831,6 @@ void QmitkSingleWidget::SetWidgetPlanesLocked(bool locked)
 {
   //do your job and lock or unlock slices.
   GetRenderWindow1()->GetSliceNavigationController()->SetSliceLocked(locked);
-  GetRenderWindow2()->GetSliceNavigationController()->SetSliceLocked(locked);
-  GetRenderWindow3()->GetSliceNavigationController()->SetSliceLocked(locked);
 }
 
 
@@ -840,8 +838,6 @@ void QmitkSingleWidget::SetWidgetPlanesRotationLocked(bool locked)
 {
   //do your job and lock or unlock slices.
   GetRenderWindow1()->GetSliceNavigationController()->SetSliceRotationLocked(locked);
-  GetRenderWindow2()->GetSliceNavigationController()->SetSliceRotationLocked(locked);
-  GetRenderWindow3()->GetSliceNavigationController()->SetSliceRotationLocked(locked);
 }
 
 
