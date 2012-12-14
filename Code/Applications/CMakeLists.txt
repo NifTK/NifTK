@@ -72,6 +72,7 @@ IF(SlicerExecutionModel_FOUND)
     niftkApplyMaskToImage
     niftkCreateMaskImage
     niftkCropImage
+    niftkExtrudeMaskToVolume
     niftkMultiply
     niftkSubtract
   )
