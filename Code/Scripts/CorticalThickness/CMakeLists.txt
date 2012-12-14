@@ -22,33 +22,21 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteOverlayThicknessImageOnFreeSurfer.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteOverlayThicknessImageOnFreeSurfer.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteOverlayThicknessImageOnFreeSurfer.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteRunCrossSectional.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteRunCrossSectional.sh @ONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteRunCrossSectional.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteRunCrossSectionalBatch.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteRunCrossSectionalBatch.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteRunCrossSectionalBatch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteRunLongitudinal.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteRunLongitudinal.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteRunLongitudinal.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteRegisterAtlasToImage.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteRegisterAtlasToImage.sh @ONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteRegisterAtlasToImage.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteRegisterThicknessImageToAtlas.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteRegisterThicknessImageToAtlas.sh @ONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteRegisterThicknessImageToAtlas.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteRefineLabelImage.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteRefineLabelImage.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteRefineLabelImage.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteExtractStatsUsingAtlas.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteExtractStatsUsingAtlas.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteExtractStatsUsingAtlas.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cteMaskImageUsingRegions.sh.in ${EXECUTABLE_OUTPUT_PATH}/cteMaskImageUsingRegions.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cteMaskImageUsingRegions.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+IF(NOT WIN32)
+  SET(scripts
+    cteOverlayThicknessImageOnFreeSurfer.sh
+    cteRunCrossSectional.sh
+    cteRunCrossSectionalBatch.sh
+    cteRunLongitudinal.sh
+    cteRegisterAtlasToImage.sh
+    cteRegisterThicknessImageToAtlas.sh
+    cteRefineLabelImage.sh
+    cteExtractStatsUsingAtlas.sh
+    cteMaskImageUsingRegions.sh
+  )
+  FOREACH(script ${scripts})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  ENDFOREACH()
+ENDIF()
  

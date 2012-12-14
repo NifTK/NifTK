@@ -12,12 +12,9 @@ as it may need to be manually deleted.
 
 You can safely delete the following folders:
 
-\li Linux: ~/.local/share/data/CMIC
-\li Linux: ~/.local/share/data/CMICNiftyView
-\li Mac: ~/Library/Application Support/CMIC
-\li Mac: ~/Library/Application Support/CMICNiftyView
-\li Windows: C:/Documents and Settings/<username>/Local Settings/Application Data/CMIC 
-\li Windows: C:/Documents and Settings/<username>/Local Settings/Application Data/CMICNiftyView
+\li Linux: ~/.local/share/data/CMIC*
+\li Mac: ~/Library/Application Support/CMIC*
+\li Windows: C:/Documents and Settings/<username>/Local Settings/Application Data/CMIC*
 
 The cache includes all preference settings.  So removing the cache will also remove all your preference settings,
 and the application will return to default preferences.

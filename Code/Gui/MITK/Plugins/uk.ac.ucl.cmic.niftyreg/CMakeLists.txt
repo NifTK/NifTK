@@ -1,7 +1,7 @@
 project(uk_ac_ucl_cmic_niftyreg)
 
-INCLUDE_DIRECTORIES(${NIFTYREG_DIR}/include)
-LINK_DIRECTORIES(${NIFTYREG_DIR}/lib)
+LINK_DIRECTORIES(${NIFTYREG_LIBRARY_DIR})
+INCLUDE_DIRECTORIES(${NIFTYREG_INCLUDE_DIR})
 ADD_DEFINITIONS(-DUSE_NIFTYREG)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
@@ -21,21 +21,8 @@ endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
                       niftkITK
-		      _reg_KLdivergence
-		      _reg_blockMatching
-		      _reg_femTransformation
-		      _reg_globalTransformation
-		      _reg_localTransformation
-		      _reg_maths
-		      _reg_mutualinformation
-		      _reg_resampling
-		      _reg_ssd
-		      _reg_tools
-		      reg_png
-		      png
-		      reg_nrrd
-		      reg_NrrdIO
-		      _reg_ReadWriteImage
+                      niftkVTK
+		      ${NIFTYREG_LIBRARIES}
 )
 
 # The NiftyReg plugin currently can't use the CUDA version of NiftyReg

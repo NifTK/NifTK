@@ -23,18 +23,16 @@
 #=================================================================================*/
 
 ADD_SUBDIRECTORY(Libs)
+
+IF(BUILD_COMMAND_LINE_PROGRAMS)
+  ADD_SUBDIRECTORY(Applications)
+ENDIF()
+
+IF(BUILD_COMMAND_LINE_SCRIPTS)
+  ADD_SUBDIRECTORY(Scripts)
+ENDIF()
+
 IF(BUILD_GUI)
   ADD_SUBDIRECTORY(Gui)
 ENDIF(BUILD_GUI)
-ADD_SUBDIRECTORY(Scripts)
-ADD_SUBDIRECTORY(Applications)
-
-# Trac 1296. Turn these off for now
-
-#FILE(GLOB_RECURSE H_FILES *.h *.txx)
-#INSTALL(FILES ${H_FILES} DESTINATION ${NIFTK_INSTALL_INCLUDE_DIR} COMPONENT headers )
-
-
-
-
 

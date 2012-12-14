@@ -22,74 +22,34 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsImport.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsImport.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsImport.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsInclude.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsInclude.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsInclude.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsRunCleanup.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsRunCleanup.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsRunCleanup.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsRunCleanups.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsRunCleanups.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsRunCleanups.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsRunCrossSectionals.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsRunCrossSectionals.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsRunCrossSectionals.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsRunCrossSectional.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsRunCrossSectional.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsRunCrossSectional.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsRunStats.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsRunStats.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsRunStats.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsTransferSubjects.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsTransferSubjects.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsTransferSubjects.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsRerunAfterEdits.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsRerunAfterEdits.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsRerunAfterEdits.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsRerunAfterEdits.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsRerunAfterEdits.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsRerunAfterEdits.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsCheckJob.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsCheckJob.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsCheckJob.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsVoxelBasedGenerateThickness.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsVoxelBasedGenerateThickness.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsVoxelBasedGenerateThickness.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsVoxelBasedGenerateThickness.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsVoxelBasedGenerateThickness.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsVoxelBasedGenerateThickness.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsVoxelBasedImport.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsVoxelBasedImport.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsVoxelBasedImport.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsVoxelBasedSegmentationRunCrossSectionals.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsVoxelBasedSegmentationRunCrossSectionals.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsVoxelBasedSegmentationRunCrossSectionals.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsVoxelBasedSegmentationRunCrossSectional.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsVoxelBasedSegmentationRunCrossSectional.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsVoxelBasedSegmentationRunCrossSectional.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsImportUsingMRIConvert.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsImportUsingMRIConvert.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsImportUsingMRIConvert.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsImportVentricles.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsImportVentricles.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsImportVentricles.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsRunLongitudinalBaseTemplates.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsRunLongitudinalBaseTemplates.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsRunLongitudinalBaseTemplates.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsRunLongitudinalBaseTemplate.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsRunLongitudinalBaseTemplate.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsRunLongitudinalBaseTemplate.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsRunLongitudinalAllTimepoints.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsRunLongitudinalAllTimepoints.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsRunLongitudinalAllTimepoints.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_fsRunLongitudinalAllTimepoints.sh.in ${EXECUTABLE_OUTPUT_PATH}/_fsRunLongitudinalAllTimepoints.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_fsRunLongitudinalAllTimepoints.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/fsShowT1.sh.in ${EXECUTABLE_OUTPUT_PATH}/fsShowT1.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/fsShowT1.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+IF(NOT WIN32)
+  SET(scripts
+    fsImport.sh
+    _fsInclude.sh
+    _fsRunCleanup.sh
+    fsRunCleanups.sh
+    fsRunCrossSectionals.sh
+    _fsRunCrossSectional.sh
+    fsRunStats.sh
+    fsTransferSubjects.sh
+    fsRerunAfterEdits.sh
+    _fsRerunAfterEdits.sh
+    fsCheckJob.sh
+    fsVoxelBasedGenerateThickness.sh
+    _fsVoxelBasedGenerateThickness.sh
+    fsVoxelBasedImport.sh
+    fsVoxelBasedSegmentationRunCrossSectionals.sh
+    _fsVoxelBasedSegmentationRunCrossSectional.sh
+    fsImportUsingMRIConvert.sh
+    fsImportVentricles.sh
+    fsRunLongitudinalBaseTemplates.sh
+    _fsRunLongitudinalBaseTemplate.sh
+    fsRunLongitudinalAllTimepoints.sh
+    _fsRunLongitudinalAllTimepoints.sh
+    fsShowT1.sh
+  )
+  FOREACH(script ${scripts})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  ENDFOREACH()
+ENDIF()

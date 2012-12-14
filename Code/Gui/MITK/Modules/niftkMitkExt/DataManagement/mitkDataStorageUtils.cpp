@@ -136,10 +136,10 @@ namespace mitk
       mitk::Image::Pointer image = static_cast<mitk::Image*>(node->GetData());
       if (image.IsNotNull())
       {
-        bool isBinary;
-        node->GetBoolProperty("binary", isBinary);
+        bool isBinary(false);
+        bool foundBinaryProperty = node->GetBoolProperty("binary", isBinary);
 
-        if (!isBinary)
+        if ((foundBinaryProperty && !isBinary) || !foundBinaryProperty)
         {
           result = true;
         }
@@ -160,7 +160,13 @@ namespace mitk
       mitk::Image::Pointer image = static_cast<mitk::Image*>(node->GetData());
       if (image.IsNotNull())
       {
-        node->GetBoolProperty("binary", result);
+        bool isBinary(false);
+        bool foundBinaryProperty = node->GetBoolProperty("binary", isBinary);
+
+        if(foundBinaryProperty && isBinary)
+        {
+          result = true;
+        }
       }
     }
 

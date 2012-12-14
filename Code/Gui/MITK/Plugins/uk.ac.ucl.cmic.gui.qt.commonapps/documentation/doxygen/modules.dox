@@ -1,0 +1,17 @@
+/**
+  \defgroup uk_ac_ucl_cmic_gui_qt_commonapps uk.ac.ucl.cmic.gui.qt.commonapps Plugin
+  \ingroup CMICPlugins
+
+  \brief This plug-in is like a 'base class' for other application level plugins.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_gui_qt_commonapps_internal Internal
+  \ingroup uk_ac_ucl_cmic_gui_qt_commonapps
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.gui.qt.commonapps plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

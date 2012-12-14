@@ -1,117 +1,34 @@
 /**
 \bundlemainpage{uk.ac.ucl.cmic.gui.qt.niftyview} NiftyView Introduction
 
-\addindex Main Window
-\addindex User Preferences
-\addindex Help information
-\addindex About NiftyView
-\addindex Views
-\addindex Perspectives
-\addindex Editors
-
-\li \ref NiftyViewIntroduction
-\li \ref NiftyViewPlugins
-\li \ref NiftyViewEditors
-\li \ref NiftyViewPerspectives
-\li \ref NiftyViewConclusion
-
-\section NiftyViewIntroduction Introduction
-
 Welcome to the NiftyView application. This page contains some general information
 to help you get started. For all other enquiries, please join 
-<a href="http://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users">the users mailing list</a>
+
+\li <a href="http://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users">the users mailing list</a>
+
 and ask questions via email.
 
-NiftyView was developed by the <a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a>
-to provide a general purpose graphical user interface (GUI) for medical image visualisation and analysis.
-The GUI is designed to be extensible through Plugins. Plugins can contain Views or Editors, and the screen
-layout is managed using Perspectives. These concepts are introduced below, and will help with familiarisation
-with the NiftyView application. Once the general layout is understood it can be seen that each discrete piece
-of functionality is provided via a Plugin containing a View or an Editor. The interested reader then only needs 
-to understand the Plugins that they themselves are using.
+\section NiftyViewPurpose Purpose
 
-\section NiftyViewMainWindow The Main Window
+The NiftyView application was developed by the 
+<a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a> as a general
+purpose research application for medical image visualisation and analysis, and to support
+image guided interventions. It is not intended for clinical use.
 
-\image html MainScreenBlank.png "Figure 1. The Main Screen with only the Data Manager plugin loaded. "
+By design, all available plugins for the NifTK platform will be available in NiftyView.
+More specific application will also be developed, and provide a subset of the functionality 
+according to different user requirements.  For example, CMIC has also developed
+ 
+\li NiftyMIDAS, which is a specific program for the 
+<a href="http://dementia.ion.ucl.ac.uk/">UCL Dementia Research Centre</a>, to provide
+image analysis tools to study dementia.
+\li NiftyIGI to provide a platform for reasearch into Image Guided Interventions (IGI).
 
-The NiftyView application can potentially start up with an almost empty screen. Figure 1. shows the screen and the top menu bar
-as displayed under Mac OSX. The exact appearance will depend on your platform. The main screen area shows nothing more 
-than a grey outline, and by default the 
-<a href="http://www.mitk.org">MITK</a> <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> 
-View is visible, and uncloseable. Each piece of functionality is provided using Plugins. From the users perspective, 
-a Plugin can either be an Editor or a View, and these are explained below.
+\section NiftyViewFurtherReading Further Reading
 
-The Main Window provides:
-
-\li File Open/Save.
-\li Project Open/Save.
-\li Access to user preferences.
-\li Useful information about the application provided via the "About NiftyView" dialog box.
-\li A view of the Data Storage provided with the Data Manager plugin - in Figure 1. it is empty.
-
-The "About NiftyView" dialog box provides acknowledgements, links to third party software licenses, and important 
-versioning information.
-
-\image html MainScreenHelpAbout.png "Figure 2. The 'About NiftyView' dialog box provides important information."
-
-The "User Preferences" dialog provides a single place to find all the user preferences. Each plugin can contain
-various preferences and configuration parameters that can be registered with this dialog box when the application starts.
-
-\image html MainScreenPreferences.png "Figure 3. The 'User Preferences' dialog box, is the single point for application settings"
-
-\section NiftyViewEditors Editors
-
-Imagine you are using a popular word processing program.  The source of data is the document you are writing.
-The application provides a a main view of the document, and lets you edit the data. This main view is the Editor.
-There can be more than one Editor, for example to show two different documents, or show two different pages of the
-same document, but their purpose is the same: Editors show the "main view" of the data.
-
-NiftyView has the same principal at heart. The application will load an assortment of data. The screen will
-contain one or more Editors to provide a view of the data. Figure 5. shows the Drag and Drop Display developed
-for the MIDAS project.
-
-\image html MainScreenDragAndDropDisplay.png "Figure 5. The Drag and Drop Display, developed for the MIDAS project. This view shows two ortho-viewers with linked cursors."
-
-\section NiftyViewPlugins Views
-
-From the main Menu Bar, selecting "Window", then "View" shows the list of Views. A View provides a discrete piece of 
-functionality such as changing intensity window settings, segmentation tools, iso-surface generation and so on.
-Selecting each View will launch a small window, if the View is not already shown. The View provides the necessary 
-controls for that discrete piece of functionality. Each View should be designed to be as stand-alone as possible. 
-In addition to the controls on the View's window, there may also be an optional preference page. By way of example, 
-Figure 4. shows the controls for 
-<a href="qthelp://uk.ac.ucl.cmic.imagelookuptables/bundle/index.html">The Image Lookup Tables View</a>
-enabling the user to choose a lookup table and settings such as window, level, minimum intensity and maximum intensity.
-
-Furthermore, each View has its own Help page. Selecting the View and hitting F1 will launch context sensitive help.
-
-\image html MainScreenPreferenceExample.png "Figure 4. The Image Lookup Tables View provides controls to chose a look-up table, and intensity window."
-
-\section NiftyViewPerspectives Perspectives
-
-Given that Plugins provide Editors to display the data and Views to provide sets of controls for some functionality,
-a Perspective is an arrangement of Editors and Views.  Within the application framework, there is nothing to stop any
-View or any Editor being available or being displayed in any Perspective. A Perspective is a default arrangement 
-that can itself be modified as appropriate. NiftyView will attempt to save the current perspective and screen arrangement on
-exit. Figure 6. shows the screen with some Views and Editors loaded.
-
-\image html MainScreen.png "Figure 6. The Main Screen contains a central Editor, and several Views. A perspective is an arrangement of Editors and Views."
-
-In addition, Views can be moved by dragging the title bar of each plugin, and then docked on the top, right, 
-bottom or left side of the Editor area, and can also be detatched and placed outside of the main window.
-
-\image html MainScreenUndocked.png "Figure 7. Plugins can be re-arranged and even moved outside the main window."
-
-The NiftyView GUI will come with several Perspectives. These can be accessed by clicking on "Window" and then "Open Perspective".
-For example there is a MIDAS perpsective, for the user to perform MIDAS style segmentation, an IGI perspective for image
-guided interventions, and also an MITK perspective for MITK based segmentation tools. Selecting any of these perspectives 
-will simply re-arrange the screen to a useful layout.
-
-\section NiftyViewConclusion Conclusion
-
-So, to best understand NiftyView, learn the application one Editor/View at a time. Each 
-Editor/View will be developed separately, possibly even by different groups of developers at different locations. 
-Each plugin will have its own independent Help page, accessed via the Help menu on the main menu-bar. 
-Further information on each plugin will be contained on the plugin specific help page.
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchMainWindow.html">The Main Window</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchEditors.html">Editors</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchViews.html">Views</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchPerspectives.html">Perspectives</a>
 
 */

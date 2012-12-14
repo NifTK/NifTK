@@ -5,9 +5,3 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES niftkMitkExt niftkIGI niftkIGIGui QmitkExt MitkIGT MitkIGTUI
 )
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
-                      igtlutil
-                      niftylink
-                      OpenIGTLink
-)

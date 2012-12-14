@@ -15,7 +15,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "<executable>\n"
 
 "  <category>Segmentation</category>\n"
-"  <title>niftkBreastMaskSegmentationFromMRI</title>\n"
+"  <title>Breast Mask Segmentation from MRI</title>\n"
 "  <description>Executable to segment left and right breasts from a 3D MR volume.</description>\n"
 "  <version>0.1</version>\n"
 "  <documentation-url>http://cmic.cs.ucl.ac.uk/home/software/</documentation-url>\n"
@@ -127,6 +127,16 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "      </constraints>\n"
 "    </float>\n"
 
+  // Clip the segmented region with fitted B-Spline surface
+
+"    <boolean>\n"
+"      <name>flgCropFit</name>\n"
+"      <longflag>cropfit</longflag>\n"
+"      <description>A B-spline fit to the anterior breast surface is created and used to clip the segmentation [default: no].</description>\n"
+"      <label>Clip segmentation with fitted surface</label>\n"
+"      <default>false</default>\n"
+"    </boolean>\n"
+
 
 "  </parameters>\n"
 
@@ -151,6 +161,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "      <channel>output</channel>\n"
 "    </image>\n"
 
+
   // Filename of the output pectoral mask
 
 "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
@@ -159,6 +170,30 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "      <description>Output the pectoral mask.</description>\n"
 "      <label>Output pectoral mask</label>\n"
 "      <default>PectoralMask.nii.gz</default>\n"
+"      <channel>output</channel>\n"
+"    </image>\n"
+
+
+  // Filename of the output fitted surface mask
+
+"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"      <name>fileOutputFitSurface</name>\n"
+"      <longflag>ofitsurf</longflag>\n"
+"      <description>Output the mask from fitting a B-spline to the skin surface (Only possible when flgCropFit selected).</description>\n"
+"      <label>Output surface fitted mask</label>\n"
+"      <default>FittedSurfaceMask.nii.gz</default>\n"
+"      <channel>output</channel>\n"
+"    </image>\n"
+
+
+  // Filename of the output vtk surface
+
+"    <image fileExtensions=\"*.vtk\">\n"
+"      <name>fileOutputSurface</name>\n"
+"      <longflag>ovtk</longflag>\n"
+"      <description>Write the breast surface to a VTK polydata file.</description>\n"
+"      <label>Output VTK surface</label>\n"
+"      <default>BreastSurface.vtk</default>\n"
 "      <channel>output</channel>\n"
 "    </image>\n"
 

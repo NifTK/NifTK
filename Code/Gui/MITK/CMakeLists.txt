@@ -27,32 +27,15 @@
 # However, you will also need to specify stuff in each subdirectory.
 ####################################################################################
 
-SET(MY_PROJECT_NAME NIFTK)
-SET(MY_APP_NAME NiftyView)
-
-OPTION(${MY_PROJECT_NAME}_BUILD_ALL_PLUGINS "Build all ${MY_PROJECT_NAME} plugins" OFF)
-OPTION(${MY_PROJECT_NAME}_BUILD_ALL_APPS "Build all ${MY_PROJECT_NAME} applications" OFF)
-OPTION(${MY_PROJECT_NAME}_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications" OFF)
+SET(MY_PROJECT_NAME ${PROJECT})
 
 MARK_AS_ADVANCED(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE
-                 ${MY_PROJECT_NAME}_BUILD_ALL_PLUGINS
-                 ${MY_PROJECT_NAME}_BUILD_ALL_APPS
-                 ${MY_PROJECT_NAME}_SHOW_CONSOLE_WINDOW
                  )
 
 IF(MITK_USE_QT)
   SET(QT_QMAKE_EXECUTABLE ${MITK_QMAKE_EXECUTABLE})
   ADD_DEFINITIONS(-DQWT_DLL)
 ENDIF()
-
-####################################################################################
-# On Mac OSX all CTK plugins get copied into every application bundle.
-####################################################################################
-
-SET(MACOSX_BUNDLE_NAMES)
-IF(APPLE)
-  LIST(APPEND MACOSX_BUNDLE_NAMES ${MY_APP_NAME} )
-ENDIF(APPLE)
 
 ####################################################################################
 # Add 'Modules', i.e. shared libs
@@ -88,9 +71,9 @@ endmacro()
 # Get infos about application directories and build options
 include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
 set(_apps_fullpath )
-foreach(_app ${PROJECT_APPS})
-  list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/${_app}")
-endforeach()
+FOREACH(NIFTK_APP ${NIFTK_APPS})
+  LIST(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")  
+ENDFOREACH()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
 ctkMacroSetupPlugins(${PROJECT_PLUGINS}

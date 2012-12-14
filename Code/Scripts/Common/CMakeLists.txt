@@ -22,11 +22,13 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/_niftkCommon.sh.in ${EXECUTABLE_OUTPUT_PATH}/_niftkCommon.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/_niftkCommon.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/runBatch.sh.in ${EXECUTABLE_OUTPUT_PATH}/runBatch.sh COPYONLY )
-INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/runBatch.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT scripts)
+IF(NOT WIN32)
+  SET(scripts
+    _niftkCommon.sh
+    runBatch.sh
+  )
+  FOREACH(script ${scripts})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+    MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  ENDFOREACH()
+ENDIF()

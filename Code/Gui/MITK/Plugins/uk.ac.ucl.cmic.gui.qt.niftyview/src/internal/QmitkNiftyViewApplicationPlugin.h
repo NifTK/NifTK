@@ -27,83 +27,35 @@
 #define QMITKNIFTYVIEWAPPLICATIONPLUGIN_H_
 
 #include <berryAbstractUICTKPlugin.h>
-#include <mitkIDataStorageService.h>
-#include <ctkServiceTracker.h>
-#include <QString>
-#include <itkImage.h>
-
-class QmitkNiftyViewApplicationPluginPrivate;
-
-namespace mitk {
-  class DataNode;
-  class DataStorage;
-}
+#include "QmitkCommonAppsApplicationPlugin.h"
 
 /**
  * \class QmitkNiftyViewApplicationPlugin
  * \brief Implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview_internal
  */
-class QmitkNiftyViewApplicationPlugin : public QObject, public berry::AbstractUICTKPlugin
+class QmitkNiftyViewApplicationPlugin : public QmitkCommonAppsApplicationPlugin, public berry::AbstractUICTKPlugin
 {
   Q_OBJECT
-  Q_INTERFACES(ctkPluginActivator)
   
 public:
 
   QmitkNiftyViewApplicationPlugin();
   ~QmitkNiftyViewApplicationPlugin();
 
-  static QmitkNiftyViewApplicationPlugin* GetDefault();
-
-  ctkPluginContext* GetPluginContext() const;
-
   void start(ctkPluginContext*);
   void stop(ctkPluginContext*);
 
-  QString GetQtHelpCollectionFile() const;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_DROPPER_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_POLY_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_DRAW_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_KEYPRESS_STATE_MACHINE_XML;
-
 protected:
 
-  // Called each time a data node is added.
+  /// \brief Called each time a data node is added, so we make sure it is initialised with a Window/Level.
   virtual void NodeAdded(const mitk::DataNode *node);
+
+  /// \brief Called by framework to get a URL for help system.
+  virtual QString GetHelpHomePageURL() const;
 
 private:
 
-  virtual void NodeAddedProxy(const mitk::DataNode *node);
-  const mitk::DataStorage* GetDataStorage();
-
-  template<typename TPixel, unsigned int VImageDimension>
-  void
-  ITKGetStatistics(
-      itk::Image<TPixel, VImageDimension> *itkImage,
-      float &min,
-      float &max,
-      float &mean,
-      float &stdDev);
-
-  static QmitkNiftyViewApplicationPlugin* inst;
-  ctkPluginContext* context;
-  ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
-  bool m_InDataStorageChanged;
 };
 
 #endif /* QMITKEXTAPPLICATIONPLUGIN_H_ */

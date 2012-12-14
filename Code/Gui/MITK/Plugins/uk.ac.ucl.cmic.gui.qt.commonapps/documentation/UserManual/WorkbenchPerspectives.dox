@@ -1,0 +1,25 @@
+/**
+
+\page WorkbenchPerspectives Workbench Perspectives
+\addindex Workbench Perspectives
+
+Given that Plugins provide Editors to display the data and Views to provide sets of 
+controls for some functionality, a Perspective is an arrangement of Editors and Views.  
+Within the application framework, there is nothing to stop any View or any Editor being 
+available or being displayed in any Perspective. A Perspective is a default arrangement 
+that can itself be modified as appropriate. Each Nifty application will attempt to save the 
+current perspective and screen arrangement on exit. Figure 1. shows the screen with some 
+Views and Editors loaded.
+
+\image html MainScreen.png "Figure 1. The Main Screen contains a central Editor, and several Views. A perspective is an arrangement of Editors and Views."
+
+In addition, Views can be moved by dragging the title bar of each plugin, and then docked on the top, 
+right, bottom or left side of the Editor area, and can also be detatched and placed outside of 
+the main window.
+
+\image html MainScreenUndocked.png "Figure 2. Plugins can be re-arranged and even moved outside the main window."
+
+The Nifty applications may come with several Perspectives. These can be accessed by clicking 
+on "Window" and then "Open Perspective". 
+
+*/

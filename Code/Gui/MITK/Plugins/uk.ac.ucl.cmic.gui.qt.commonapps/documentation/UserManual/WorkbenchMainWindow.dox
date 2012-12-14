@@ -1,0 +1,36 @@
+/**
+
+\page WorkbenchMainWindow Workbench Main Window
+
+\addindex Workbench Main Window
+\addindex User Preferences
+\addindex About Dialog Box
+
+\image html MainScreenBlank.png "Figure 1. The Main Screen with only the Data Manager plugin loaded. "
+
+The Nifty applications could potentially start up with an almost empty screen. Figure 1. shows 
+the screen and the top menu bar as displayed under Mac OSX. The exact appearance will depend 
+on your platform. The main screen area shows nothing more than a grey outline, and by default the 
+<a href="http://www.mitk.org">MITK</a> <a href="qthelp://org.mitk.gui.qt.datamanager/bundle/index.html">Data Manager</a> 
+View is visible, and uncloseable. 
+
+The Main Window provides:
+
+\li File Open/Save.
+\li Project Open/Save.
+\li Access to user preferences.
+\li Useful information about the application provided via the "About" dialog box.
+\li A view of the Data Storage provided with the Data Manager plugin - in Figure 1. it is empty.
+
+The "About" dialog box provides acknowledgements, links to third party software licenses, and 
+important versioning information.
+
+\image html MainScreenHelpAbout.png "Figure 2. The 'About' dialog box provides important information."
+
+The "User Preferences" dialog provides a single place to find all the user preferences. 
+Each plugin can contain various preferences and configuration parameters that 
+will appear in this dialog box.
+
+\image html MainScreenPreferences.png "Figure 3. The 'User Preferences' dialog box, is the single point for application settings"
+
+*/
