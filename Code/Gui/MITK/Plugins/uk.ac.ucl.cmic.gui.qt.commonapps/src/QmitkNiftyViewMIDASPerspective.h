@@ -26,8 +26,7 @@
 #ifndef QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
 #define QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
 
-#include "mitkQtCommonAppsAppDll.h"
-
+#include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryIPerspectiveFactory.h>
 
 /**
