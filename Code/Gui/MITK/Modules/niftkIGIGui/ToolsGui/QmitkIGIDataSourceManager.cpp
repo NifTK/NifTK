@@ -540,8 +540,8 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
     source->UpdateFrameRate();
-    float rate = source->GetFrameRate();
 
+    float rate = source->GetFrameRate();
     double lag = source->GetCurrentTimeLag();
 
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());

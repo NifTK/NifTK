@@ -589,7 +589,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {
-          QString fileName =  directoryPath + QDir::separator() + tr("%1.txt").arg(pointerToMessage->getId());
+          QString fileName =  directoryPath + QDir::separator() + tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
 
           float matrix[4][4];
           trMsg->getMatrix(matrix);
