@@ -44,7 +44,7 @@ QmitkIGIToolManager::QmitkIGIToolManager()
   //TODO Work out why the following line caused segmentation fault.
   //I don't really understand the UI here
 //  m_UpdateTimer->setInterval ( 1000 / m_update_fps_spinBox->value());
-  m_UpdateTimer->setInterval ( 50 );
+  m_UpdateTimer->setInterval ( 1000 );
   connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeOut()) );
   m_UpdateTimer->start ();
 }
@@ -82,9 +82,10 @@ void QmitkIGIToolManager::OnUpdateTimeOut()
   QmitkIGITool::Pointer tool;
   foreach ( tool , m_Tools )
   {
-    tool->HandleMessageByTimeStamp(idNow);
+    //tool->HandleMessageByTimeStamp(idNow);
     //TODO do something with the delay, it should be related to accuracy
-    //igtlUint64 delay = tool->HandleMessageByTimeStamp(idNow);
+    igtlUint64 delay = tool->HandleMessageByTimeStamp(idNow);
+	qDebug () << "Time now = " << idNow << "Got message with delay = " << delay;
   }
   mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
   renderer->ForceImmediateUpdateAll(mitk::RenderingManager::REQUEST_UPDATE_ALL);
