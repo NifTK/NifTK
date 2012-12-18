@@ -240,28 +240,38 @@ void IGIDataSource::UpdateFrameRate()
   // default position is zero.
   m_FrameRate = 0;
 
+  // Always initialise...
+  igtlUint64 lastTimeStamp = 0;
+  unsigned long int lastFrameId = 0;
+  igtlUint64 currentTimeStamp = 0;
+  unsigned long int currentFrameId = 0;
+  igtlUint64 timeDifference = 0;
+  unsigned long int numberOfFrames = 0;
+
   std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
   iter--;
 
   if (m_Buffer.size() >= 2 && iter != m_Buffer.begin() && iter != m_Buffer.end() && iter != m_FrameRateBufferIterator)
   {
-    igtlUint64 lastTimeStamp = (*m_FrameRateBufferIterator)->GetTimeStampInNanoSeconds();
-    unsigned long int lastFrameId = (*m_FrameRateBufferIterator)->GetFrameId();
+    lastTimeStamp = (*m_FrameRateBufferIterator)->GetTimeStampInNanoSeconds();
+    lastFrameId = (*m_FrameRateBufferIterator)->GetFrameId(); // assumed to be sequentially increasing
 
-    igtlUint64 currentTimeStamp = (*iter)->GetTimeStampInNanoSeconds();
-    unsigned long int currentFrameId = (*iter)->GetFrameId();
+    currentTimeStamp = (*iter)->GetTimeStampInNanoSeconds();
+    currentFrameId = (*iter)->GetFrameId(); // assumed to be sequentially increasing
 
-    igtlUint64 timeDifference = currentTimeStamp - lastTimeStamp;
-    unsigned long int numberOfFrames = currentFrameId - lastFrameId;
-
-    if (timeDifference > 0 && numberOfFrames > 0)
+    if (currentTimeStamp > lastTimeStamp)
     {
+      timeDifference = currentTimeStamp - lastTimeStamp;
+      numberOfFrames = currentFrameId - lastFrameId;
+
       double rate = (double)1.0 / ((double)timeDifference/(double)(numberOfFrames * 1000000000.0));
 
       m_FrameRateBufferIterator = iter;
       m_FrameRate = rate;
     }
   }
+
+  std::cerr << "Matt, rate=" << m_FrameRate << ", lts=" << lastTimeStamp << ", cts=" << currentTimeStamp << ", td=" << timeDifference << ", #f=" << numberOfFrames << std::endl;
 }
 
 

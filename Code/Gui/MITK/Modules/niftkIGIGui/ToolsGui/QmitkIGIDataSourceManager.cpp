@@ -29,10 +29,11 @@
 #include <QDateTime>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
-#include "QmitkIGIDataSourceGui.h"
+#include "mitkIGIOpenCVDataSource.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 #include "QmitkIGITrackerTool.h"
 #include "QmitkIGIUltrasonixTool.h"
+#include "QmitkIGIDataSourceGui.h"
 
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
@@ -264,12 +265,21 @@ int QmitkIGIDataSourceManager::GetIdentifierFromRowNumber(int rowNumber)
 void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
 {
   int rowNumber = this->GetRowNumberFromIdentifier(toolIdentifier);
-  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
+  int toolNumber = -1;
+  for (int i = 0; i < (int)m_Sources.size(); i++)
   {
-    std::string status = m_Sources[toolIdentifier]->GetStatus();
-    std::string type = m_Sources[toolIdentifier]->GetType();
-    std::string device = m_Sources[toolIdentifier]->GetName();
-    std::string description = m_Sources[toolIdentifier]->GetDescription();
+    if (m_Sources[i]->GetIdentifier() == toolIdentifier)
+    {
+      toolNumber = i;
+    }
+  }
+
+  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size() && toolNumber >= 0 && toolNumber < (int)m_Sources.size())
+  {
+    std::string status = m_Sources[toolNumber]->GetStatus();
+    std::string type = m_Sources[toolNumber]->GetType();
+    std::string device = m_Sources[toolNumber]->GetName();
+    std::string description = m_Sources[toolNumber]->GetDescription();
 
     std::vector<std::string> fields;
     fields.push_back(status);
@@ -344,22 +354,20 @@ void QmitkIGIDataSourceManager::OnAddSource()
     if (niftyLinkSource->ListenOnPort(portNumber))
     {
       m_PortsInUse.insert(portNumber);
-      m_PortNumberSpinBox->setValue(portNumber+1);
     }
     source = niftyLinkSource;
   }
   else if (sourceType == 2)
   {
-    // create OpenCV local frame grabber.
+    source = mitk::IGIOpenCVDataSource::New();
   }
   else
   {
     std::cerr << "Matt, not implemented yet" << std::endl;
   }
 
-  source->SetIdentifier(m_NextSourceIdentifier++);
+  source->SetIdentifier(m_NextSourceIdentifier);
   source->SetDataStorage(m_DataStorage);
-
   m_Sources.push_back(source);
 
   // Registers this class as a listener to any status updates and connects to UpdateToolDisplay.
@@ -370,7 +378,10 @@ void QmitkIGIDataSourceManager::OnAddSource()
         this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
 
   // Force an update.
-  source->DataSourceStatusUpdated.Send(source->GetIdentifier());
+  source->DataSourceStatusUpdated.Send(m_NextSourceIdentifier);
+
+  // Increase this so that tools always have new identifier, regardless of what row of the table they are in.
+  m_NextSourceIdentifier++;
 
   // Launch timers
   if (!m_UpdateTimer->isActive())
@@ -403,16 +414,11 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
         this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
 
   // If it is a networked tool, removes the port number from our list of "ports in use".
-  if (source->GetNameOfClass() == std::string("QmitkIGITrackerTool").c_str()
-    || source->GetNameOfClass() == std::string("QmitkIGIUltrasonixTool").c_str()
-    )
+  QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(source.GetPointer());
+  if (niftyLinkSource.IsNotNull())
   {
-    QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(source.GetPointer());
-    if (niftyLinkSource.IsNotNull())
-    {
-      int portNumber = niftyLinkSource->GetPort();
-      m_PortsInUse.remove(portNumber);
-    }
+    int portNumber = niftyLinkSource->GetPort();
+    m_PortsInUse.remove(portNumber);
   }
 
   m_TableWidget->removeRow(rowIndex);
