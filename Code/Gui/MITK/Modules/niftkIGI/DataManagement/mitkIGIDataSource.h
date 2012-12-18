@@ -123,18 +123,17 @@ public:
   void SetSavingMessages(bool isSaving);
 
   /**
-   * \brief If set to true, the data is saved immediately, and if false we rely on a background thread.
+   * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously immediately.
    */
-  itkSetMacro(ImmediateSave, bool);
-  itkGetMacro(ImmediateSave, bool);
+  itkSetMacro(SaveInBackground, bool);
+  itkGetMacro(SaveInBackground, bool);
 
   /**
-   * \brief If set to true, we save when ProcessData is called, which is called to update the GUI at
-   * a specific refresh rate, and if false we save every message that comes in, which may be faster
-   * than the refresh rate.
+   * \brief If set to true, we save when the data is received, and if false, only when we
+   * update the GUI, which may be at a different refresh rate to the incoming data.
    */
-  itkSetMacro(SaveOnProcessData, bool);
-  itkGetMacro(SaveOnProcessData, bool);
+  itkSetMacro(SaveOnReceipt, bool);
+  itkGetMacro(SaveOnReceipt, bool);
 
   /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
@@ -269,8 +268,8 @@ private:
   std::string                                     m_Status;
   std::string                                     m_Description;
   bool                                            m_SavingMessages;
-  bool                                            m_ImmediateSave;
-  bool                                            m_SaveOnProcessData;
+  bool                                            m_SaveOnReceipt;
+  bool                                            m_SaveInBackground;
   std::string                                     m_SavePrefix;
   std::list<mitk::IGIDataType::Pointer>           m_Buffer;
   std::list<mitk::IGIDataType::Pointer>::iterator m_BufferIterator;

@@ -40,6 +40,8 @@ const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
 const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2; // twice per second
 const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 60; // every 60 seconds
+const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT = true;
+const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND = false;
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
@@ -54,7 +56,10 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_WarningColour = DEFAULT_WARNING_COLOUR;
   m_ErrorColour = DEFAULT_ERROR_COLOUR;
   m_FrameRate = DEFAULT_FRAME_RATE;
+  m_ClearDataRate = DEFAULT_CLEAR_RATE;
   m_DirectoryPrefix = GetDefaultPath();
+  m_SaveOnReceipt = DEFAULT_SAVE_ON_RECEIPT;
+  m_SaveInBackground = DEFAULT_SAVE_IN_BACKGROUND;
 }
 
 
@@ -597,8 +602,8 @@ void QmitkIGIDataSourceManager::OnRecordStart()
     source->ClearBuffer(); // for now, until we have a background thread to sort this out.
     source->SetSavePrefix(directory.absolutePath().toStdString());
     source->SetSavingMessages(true);
-    source->SetImmediateSave(true);
-    source->SetSaveOnProcessData(true);
+    source->SetSaveInBackground(this->m_SaveInBackground);
+    source->SetSaveOnReceipt(this->m_SaveOnReceipt);
   }
 
   m_RecordPushButton->setEnabled(false);

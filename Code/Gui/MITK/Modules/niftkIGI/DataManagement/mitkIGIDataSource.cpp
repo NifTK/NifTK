@@ -40,8 +40,8 @@ IGIDataSource::IGIDataSource()
 , m_Status("")
 , m_Description("")
 , m_SavingMessages(false)
-, m_ImmediateSave(true)
-, m_SaveOnProcessData(false)
+, m_SaveOnReceipt(true)
+, m_SaveInBackground(false)
 , m_SavePrefix("")
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
@@ -320,8 +320,8 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 
 
     if (   m_SavingMessages     // recording/saving is turned on.
-        && m_ImmediateSave      // we are doing it immediately as opposed to some background thread.
-        && !m_SaveOnProcessData // we are saving every message that came in, regardless of display refresh rate.
+        && !m_SaveInBackground  // we are doing it immediately as opposed to some background thread.
+        && m_SaveOnReceipt      // we are saving every message that came in, regardless of display refresh rate.
         )
     {
       result = this->DoSaveData(data);
@@ -349,8 +349,8 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
       {
         // Decide if we are saving data
         if (   m_SavingMessages    // recording/saving is turned on.
-            && m_ImmediateSave     // we are doing it immediately as opposed to some background thread.
-            && m_SaveOnProcessData // we only save the data that was shown on the display.
+            && !m_SaveInBackground // we are doing it immediately as opposed to some background thread.
+            && !m_SaveOnReceipt    // we only save the data that was shown on the display.
             )
         {
           this->DoSaveData(data);

@@ -190,7 +190,6 @@ bool SurgicalGuidanceViewPreferencePage::PerformOk()
   m_SurgicalGuidanceViewPreferencesNode->PutInt("refresh rate", m_FramesPerSecondSpinBox->value());
   m_SurgicalGuidanceViewPreferencesNode->PutInt("clear data rate", m_ClearDataSpinBox->value());
   m_SurgicalGuidanceViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory().toStdString());
-  m_SurgicalGuidanceViewPreferencesNode->PutBool("save on update", m_SaveOnUpdate->isChecked());
   m_SurgicalGuidanceViewPreferencesNode->PutBool("save on receive", m_SaveOnReceive->isChecked());
   m_SurgicalGuidanceViewPreferencesNode->PutBool("save in background", m_SaveInBackground->isChecked());
   return true;
@@ -244,7 +243,7 @@ void SurgicalGuidanceViewPreferencePage::Update()
   }
 
   m_FramesPerSecondSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE));
-  m_ClearDataSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("clear rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE));
+  m_ClearDataSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("clear data rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE));
 
   QString path = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("output directory prefix", ""));
 
@@ -254,9 +253,8 @@ void SurgicalGuidanceViewPreferencePage::Update()
   }
   m_DirectoryPrefix->setDirectory(path);
 
-  m_SaveOnUpdate->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save on update", 0));
-  m_SaveOnReceive->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save on receive", 1));
-  m_SaveInBackground->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save in background", 0));
+  m_SaveOnReceive->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save on receive", QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT));
+  m_SaveInBackground->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save in background", QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND));
 }
 
 

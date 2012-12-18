@@ -63,6 +63,8 @@ public:
   static const QColor DEFAULT_OK_COLOUR;
   static const int    DEFAULT_FRAME_RATE;
   static const int    DEFAULT_CLEAR_RATE;
+  static const bool   DEFAULT_SAVE_ON_RECEIPT;
+  static const bool   DEFAULT_SAVE_IN_BACKGROUND;
 
   /**
    * \brief Creates the base class widgets, and connects signals and slots.
@@ -114,6 +116,21 @@ public:
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
   void SetOKColour(QColor &colour);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  itkSetMacro(ClearDataRate, int);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  itkSetMacro(SaveOnReceipt, bool);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
+  itkSetMacro(SaveInBackground, bool);
 
 protected:
 
@@ -180,7 +197,10 @@ private:
   QColor                                    m_WarningColour;
   QColor                                    m_OKColour;
   int                                       m_FrameRate;
+  int                                       m_ClearDataRate;
   QString                                   m_DirectoryPrefix;
+  bool                                      m_SaveOnReceipt;
+  bool                                      m_SaveInBackground;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
