@@ -62,6 +62,7 @@ public:
   static const QColor DEFAULT_WARNING_COLOUR;
   static const QColor DEFAULT_OK_COLOUR;
   static const int    DEFAULT_FRAME_RATE;
+  static const int    DEFAULT_CLEAR_RATE;
 
   /**
    * \brief Creates the base class widgets, and connects signals and slots.

@@ -34,6 +34,9 @@ class QWidget;
 class QPushButton;
 class QSpinBox;
 class QGridLayout;
+class QCheckBox;
+class QRadioButton;
+
 class ctkDirectoryButton;
 
 /**
@@ -103,7 +106,11 @@ private:
 
   // Other controls.
   QSpinBox           *m_FramesPerSecondSpinBox;
+  QSpinBox           *m_ClearDataSpinBox;
   ctkDirectoryButton *m_DirectoryPrefix;
+  QRadioButton       *m_SaveOnUpdate;
+  QRadioButton       *m_SaveOnReceive;
+  QCheckBox          *m_SaveInBackground;
 
   bool m_Initializing;
 

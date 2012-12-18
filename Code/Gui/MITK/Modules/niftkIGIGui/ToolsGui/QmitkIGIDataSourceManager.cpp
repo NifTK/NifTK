@@ -38,7 +38,8 @@
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
-const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2;
+const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2; // twice per second
+const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 60; // every 60 seconds
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()

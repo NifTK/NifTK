@@ -32,6 +32,8 @@
 #include <QPushButton>
 #include <QColorDialog>
 #include <QSpinBox>
+#include <QRadioButton>
+#include <QCheckBox>
 #include <QDir>
 #include <QDesktopServices>
 #include <ctkDirectoryButton.h>
@@ -46,7 +48,11 @@ const std::string SurgicalGuidanceViewPreferencePage::PREFERENCES_NODE_NAME("/uk
 SurgicalGuidanceViewPreferencePage::SurgicalGuidanceViewPreferencePage()
 : m_MainControl(0)
 , m_FramesPerSecondSpinBox(0)
+, m_ClearDataSpinBox(0)
 , m_DirectoryPrefix(0)
+, m_SaveOnUpdate(0)
+, m_SaveOnReceive(0)
+, m_SaveInBackground(0)
 , m_Initializing(false)
 , m_SurgicalGuidanceViewPreferencesNode(0)
 {
@@ -136,15 +142,27 @@ void SurgicalGuidanceViewPreferencePage::CreateQtControl(QWidget* parent)
 
   m_FramesPerSecondSpinBox = new QSpinBox();
   m_FramesPerSecondSpinBox->setMinimum(1);
-  m_FramesPerSecondSpinBox->setMaximum(25);
+  m_FramesPerSecondSpinBox->setMaximum(50);
+
+  m_ClearDataSpinBox = new QSpinBox();
+  m_ClearDataSpinBox->setMinimum(1);
+  m_ClearDataSpinBox->setMaximum(3600);
 
   m_DirectoryPrefix = new ctkDirectoryButton();
+
+  m_SaveOnUpdate = new QRadioButton();
+  m_SaveOnReceive = new QRadioButton();
+  m_SaveInBackground = new QCheckBox();
 
   formLayout->addRow("error colour", errorButtonLayout);
   formLayout->addRow("warning colour", warningButtonLayout);
   formLayout->addRow("OK colour", okButtonLayout);
   formLayout->addRow("refresh rate (per second)", m_FramesPerSecondSpinBox);
+  formLayout->addRow("clear data rate (seconds)", m_ClearDataSpinBox);
   formLayout->addRow("output directory prefix", m_DirectoryPrefix);
+  formLayout->addRow("save data each screen update", m_SaveOnUpdate);
+  formLayout->addRow("save data as it is received", m_SaveOnReceive);
+  formLayout->addRow("save in background", m_SaveInBackground);
 
   m_MainControl->setLayout(formLayout);
   this->Update();
@@ -170,7 +188,11 @@ bool SurgicalGuidanceViewPreferencePage::PerformOk()
   m_SurgicalGuidanceViewPreferencesNode->Put("ok colour style sheet", m_ColorStyleSheet[2].toStdString());
   m_SurgicalGuidanceViewPreferencesNode->PutByteArray("ok colour", m_Color[2]);
   m_SurgicalGuidanceViewPreferencesNode->PutInt("refresh rate", m_FramesPerSecondSpinBox->value());
+  m_SurgicalGuidanceViewPreferencesNode->PutInt("clear data rate", m_ClearDataSpinBox->value());
   m_SurgicalGuidanceViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory().toStdString());
+  m_SurgicalGuidanceViewPreferencesNode->PutBool("save on update", m_SaveOnUpdate->isChecked());
+  m_SurgicalGuidanceViewPreferencesNode->PutBool("save on receive", m_SaveOnReceive->isChecked());
+  m_SurgicalGuidanceViewPreferencesNode->PutBool("save in background", m_SaveInBackground->isChecked());
   return true;
 }
 
@@ -222,6 +244,7 @@ void SurgicalGuidanceViewPreferencePage::Update()
   }
 
   m_FramesPerSecondSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE));
+  m_ClearDataSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("clear rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE));
 
   QString path = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("output directory prefix", ""));
 
@@ -230,6 +253,10 @@ void SurgicalGuidanceViewPreferencePage::Update()
     path = QmitkIGIDataSourceManager::GetDefaultPath();
   }
   m_DirectoryPrefix->setDirectory(path);
+
+  m_SaveOnUpdate->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save on update", 0));
+  m_SaveOnReceive->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save on receive", 1));
+  m_SaveInBackground->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save in background", 0));
 }
 
 
