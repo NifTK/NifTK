@@ -26,14 +26,13 @@
 #define QMITKNIFTYVIEWAPPWORKBENCHADVISOR_H_
 
 #ifdef __MINGW32__
-// We need to inlclude winbase.h here in order to declare
+// We need to include winbase.h here in order to declare
 // atomic intrinsics like InterlockedIncrement correctly.
 // Otherwhise, they would be declared wrong within qatomic_windows.h .
 #include <windows.h>
 #endif
 
-#include "mitkQtNiftyViewAppDll.h"
-
+#include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
 #include "QmitkBaseAppWorkbenchAdvisor.h"
 
 /**
@@ -52,4 +51,4 @@ public:
   virtual std::string GetWindowIconResourcePath() const;
 };
 
-#endif /*QMITKEXTAPPWORKBENCHADVISOR_H_*/
+#endif /*QMITKNIFTYVIEWAPPWORKBENCHADVISOR_H_*/

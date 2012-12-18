@@ -31,8 +31,7 @@
 #include <windows.h>
 #endif
 
-#include "mitkQtNiftyIGIAppDll.h"
-
+#include <uk_ac_ucl_cmic_gui_qt_niftyigi_Export.h>
 #include "QmitkBaseAppWorkbenchAdvisor.h"
 
 /**

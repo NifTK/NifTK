@@ -25,8 +25,7 @@
 #ifndef QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_
 #define QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_
 
-#include "mitkQtCommonAppsAppDll.h"
-
+#include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <ctkPluginActivator.h>
 #include <ctkServiceTracker.h>
 #include <berryIPreferencesService.h>

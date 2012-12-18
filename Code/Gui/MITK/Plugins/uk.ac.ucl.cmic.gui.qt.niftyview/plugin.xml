@@ -13,7 +13,7 @@
       id="uk.ac.ucl.cmic.gui.qt.niftyview.igiperspective"
       name="IGI Perspective"
       class="QmitkNiftyViewIGIPerspective"
-	  icon="resources/icon_cmic.xpm">
+      icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
 
