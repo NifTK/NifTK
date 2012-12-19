@@ -27,6 +27,7 @@
 
 #include "niftkIGIExports.h"
 #include "mitkIGIDataType.h"
+#include <cv.h>
 
 namespace mitk
 {
@@ -42,6 +43,9 @@ public:
   mitkClassMacro(IGIOpenCVDataType, IGIDataType);
   itkNewMacro(IGIOpenCVDataType);
 
+  /// \brief Used for loading in an image, see mitk::OpenCVVideoSource
+  void CloneImage(const IplImage *image);
+
 protected:
 
   IGIOpenCVDataType(); // Purposefully hidden.
@@ -51,6 +55,9 @@ protected:
   IGIOpenCVDataType& operator=(const IGIOpenCVDataType&); // Purposefully not implemented.
 
 private:
+
+  IplImage *m_Image;
+
 };
 
 } // end namespace

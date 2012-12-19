@@ -219,7 +219,7 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 double IGIDataSource::GetCurrentTimeLag()
 {
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-  timeStamp->GetTime_TAI();
+  timeStamp->GetTime();
 
   double lag = 0;
   igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);
@@ -270,8 +270,6 @@ void IGIDataSource::UpdateFrameRate()
       m_FrameRate = rate;
     }
   }
-
-  std::cerr << "Matt, rate=" << m_FrameRate << ", lts=" << lastTimeStamp << ", cts=" << currentTimeStamp << ", td=" << timeDifference << ", #f=" << numberOfFrames << std::endl;
 }
 
 

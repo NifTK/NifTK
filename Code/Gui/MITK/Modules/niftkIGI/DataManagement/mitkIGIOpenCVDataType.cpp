@@ -29,12 +29,28 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 IGIOpenCVDataType::IGIOpenCVDataType()
+: m_Image(NULL)
 {
 }
 
 //-----------------------------------------------------------------------------
 IGIOpenCVDataType::~IGIOpenCVDataType()
 {
+  if (m_Image != NULL)
+  {
+    delete m_Image;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIOpenCVDataType::CloneImage(const IplImage *image)
+{
+  if (m_Image != NULL)
+  {
+    delete m_Image;
+  }
+  m_Image = cvCloneImage(image);
 }
 
 } // end namespace

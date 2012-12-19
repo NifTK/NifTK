@@ -26,6 +26,8 @@
 #include "mitkIGIOpenCVDataType.h"
 #include <QmitkVideoBackground.h>
 #include <vtkRenderWindow.h>
+#include <igtlTimeStamp.h>
+#include <NiftyLinkUtils.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
@@ -127,6 +129,17 @@ void QmitkIGIOpenCVDataSource::Initialize(vtkRenderWindow* window)
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSource::OnNewFrameAvailable()
 {
-  std::cerr << "Matt, OnNewFrameAvailable" << std::endl;
+  igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+  timeCreated->GetTime();
+
+  // Aim of this method is to do something like when a NiftyLink message comes in.
+  mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
+  wrapper->CloneImage(m_VideoSource->GetCurrentFrame());
+  wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
+  wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
+  wrapper->SetDuration(1000000000); // nanoseconds
+
+  this->AddData(wrapper.GetPointer());
+
 }
 
