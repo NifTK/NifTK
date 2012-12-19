@@ -27,6 +27,7 @@ SET(MOC_H_FILES
   ToolsGui/QmitkIGITrackerToolGui.h  
   ToolsGui/QmitkIGIUltrasonixTool.h
   ToolsGui/QmitkIGIUltrasonixToolGui.h
+  ToolsGui/QmitkIGIOpenCVDataSource.h
   ToolsGui/QmitkIGIOpenCVDataSourceGui.h
 )
 

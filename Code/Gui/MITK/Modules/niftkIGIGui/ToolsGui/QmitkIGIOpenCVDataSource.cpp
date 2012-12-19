@@ -24,12 +24,22 @@
 
 #include "QmitkIGIOpenCVDataSource.h"
 #include "mitkIGIOpenCVDataType.h"
+#include <QmitkVideoBackground.h>
+#include <vtkRenderWindow.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
+: m_Background(NULL)
 {
+  qRegisterMetaType<mitk::VideoSource*>();
+
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoSource->SetVideoCameraInput(0);
+
+  m_Background = new QmitkVideoBackground(m_VideoSource);
+  connect(m_Background, SIGNAL(NewFrameAvailable(mitk::VideoSource*)), this, SLOT(OnNewFrameAvailable()));
+
+  this->StartCapturing();
 
   this->SetName("Video");
   this->SetType("Frame Grabber");
@@ -42,6 +52,10 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
   this->StopCapturing();
+  if (m_Background != NULL)
+  {
+    delete m_Background;
+  }
 }
 
 
@@ -82,3 +96,37 @@ void QmitkIGIOpenCVDataSource::StopCapturing()
     m_VideoSource->StopCapturing();
   }
 }
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGIOpenCVDataSource::IsCapturing()
+{
+  bool result = false;
+
+  if (m_VideoSource.IsNotNull() && !m_VideoSource->IsCapturingEnabled())
+  {
+    result = m_VideoSource->IsCapturingEnabled();
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::Initialize(vtkRenderWindow* window)
+{
+  int hertz = 25;
+  int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
+
+  m_Background->SetTimerDelay(updateTime);
+  m_Background->AddRenderWindow(window);
+  m_Background->Enable();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::OnNewFrameAvailable()
+{
+  std::cerr << "Matt, OnNewFrameAvailable" << std::endl;
+}
+

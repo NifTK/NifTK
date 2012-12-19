@@ -31,8 +31,6 @@
 #include "QmitkIGIDataSourceGui.h"
 #include "ui_QmitkIGIOpenCVDataSourceGui.h"
 
-class QGridLayout;
-class QmitkVideoBackground;
 class QmitkRenderWindow;
 class QmitkIGIOpenCVDataSource;
 
@@ -62,15 +60,10 @@ protected:
    */
   virtual void Initialize(QWidget *parent);
 
-private slots:
-
-  void OnNewFrameAvailable(mitk::VideoSource*);
-
 private:
 
   QmitkIGIOpenCVDataSource* GetOpenCVDataSource() const;
 
-  QmitkVideoBackground *m_Background;
 }; // end class
 
 #endif

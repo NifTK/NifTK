@@ -29,13 +29,21 @@
 #include "mitkIGILocalDataSource.h"
 #include <mitkOpenCVVideoSource.h>
 #include <mitkMessage.h>
+#include <mitkVideoSource.h>
+#include <QObject>
+#include <QMetaType>
+
+class QmitkVideoBackground;
+class vtkRenderWindow;
 
 /**
  * \class IGIOpenCVDataSource
  * \brief Data source that provides access to a local video frame grabber using OpenCV
  */
-class NIFTKIGI_EXPORT QmitkIGIOpenCVDataSource : public mitk::IGILocalDataSource
+class NIFTKIGI_EXPORT QmitkIGIOpenCVDataSource : public QObject, public mitk::IGILocalDataSource
 {
+
+  Q_OBJECT
 
 public:
 
@@ -64,6 +72,16 @@ public:
    */
   void StopCapturing();
 
+  /**
+   * \brief Returns true if capturing and false otherwise.
+   */
+  bool IsCapturing();
+
+  /**
+   * \brief Connects this class to a vtkRenderWindow.
+   */
+  void Initialize(vtkRenderWindow* window);
+
 protected:
 
   QmitkIGIOpenCVDataSource(); // Purposefully hidden.
@@ -72,11 +90,18 @@ protected:
   QmitkIGIOpenCVDataSource(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
   QmitkIGIOpenCVDataSource& operator=(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
 
+private slots:
+
+  void OnNewFrameAvailable();
+
 private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
+  QmitkVideoBackground *m_Background;
 
 }; // end class
+
+Q_DECLARE_METATYPE(mitk::VideoSource*)
 
 #endif
 

@@ -45,14 +45,6 @@ QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 {
-  QmitkIGIOpenCVDataSource *source = this->GetOpenCVDataSource();
-  if (source != NULL)
-  {
-    if (source->GetVideoSource()->IsCapturingEnabled())
-    {
-      source->StopCapturing();
-    }
-  }
 }
 
 
@@ -79,27 +71,7 @@ void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
   QmitkIGIOpenCVDataSource *source = this->GetOpenCVDataSource();
   if (source != NULL)
   {
-    m_Background = new QmitkVideoBackground(source->GetVideoSource());
-    m_Background->setParent(this);
-
-    source->StartCapturing();
-    if (!source->GetVideoSource()->IsCapturingEnabled())
-    {
-      MITK_ERROR << "Video could not be initialized!";
-    }
-    else
-    {
-      int hertz = 25;
-      int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
-
-      m_Background->SetTimerDelay( updateTime );
-      m_Background->AddRenderWindow(m_RenderWindow->GetVtkRenderWindow());
-
-      this->connect( m_Background, SIGNAL(NewFrameAvailable(mitk::VideoSource*))
-        , this, SLOT(OnNewFrameAvailable(mitk::VideoSource*)));
-
-      m_Background->Enable();
-    }
+    source->Initialize(m_RenderWindow->GetVtkRenderWindow());
   }
   else
   {
@@ -107,10 +79,3 @@ void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
   }
 
 }
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSourceGui::OnNewFrameAvailable(mitk::VideoSource* source)
-{
-}
-
