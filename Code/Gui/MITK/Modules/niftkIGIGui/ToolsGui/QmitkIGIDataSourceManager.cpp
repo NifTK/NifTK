@@ -29,10 +29,10 @@
 #include <QDateTime>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
-#include "mitkIGIOpenCVDataSource.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 #include "QmitkIGITrackerTool.h"
 #include "QmitkIGIUltrasonixTool.h"
+#include "QmitkIGIOpenCVDataSource.h"
 #include "QmitkIGIDataSourceGui.h"
 
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
@@ -210,6 +210,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("local frame grabber");
 
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
+  m_ToolManagerConsole->setMaximumHeight(100);
+  m_TableWidget->setMaximumHeight(150);
 
   connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
@@ -365,7 +367,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
   }
   else if (sourceType == 2)
   {
-    source = mitk::IGIOpenCVDataSource::New();
+    source = QmitkIGIOpenCVDataSource::New();
   }
   else
   {
@@ -392,7 +394,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
   // Launch timers
   if (!m_UpdateTimer->isActive())
   {
-    //m_UpdateTimer->start();
+    m_UpdateTimer->start();
   }
   if (!m_FrameRateTimer->isActive())
   {
@@ -453,6 +455,8 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
   const std::string classname = source->GetNameOfClass();
 
   std::string guiClassname = classname + "Gui";
+
+  this->PrintStatusMessage(QString("INFO:Creating ") + QString::fromStdString(guiClassname) + QString(" for ") + QString::fromStdString(classname));
 
   std::list<itk::LightObject::Pointer> allGUIs = itk::ObjectFactoryBase::CreateAllInstance(guiClassname.c_str());
   for( std::list<itk::LightObject::Pointer>::iterator iter = allGUIs.begin();

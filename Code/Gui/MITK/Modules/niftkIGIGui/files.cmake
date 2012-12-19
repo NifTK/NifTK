@@ -11,7 +11,9 @@ SET(CPP_FILES
   ToolsGui/QmitkIGITrackerTool.cpp
   ToolsGui/QmitkIGITrackerToolGui.cpp
   ToolsGui/QmitkIGIUltrasonixTool.cpp
-  ToolsGui/QmitkIGIUltrasonixToolGui.cpp     
+  ToolsGui/QmitkIGIUltrasonixToolGui.cpp   
+  ToolsGui/QmitkIGIOpenCVDataSource.cpp 
+  ToolsGui/QmitkIGIOpenCVDataSourceGui.cpp 
 )
 
 SET(MOC_H_FILES
@@ -25,6 +27,7 @@ SET(MOC_H_FILES
   ToolsGui/QmitkIGITrackerToolGui.h  
   ToolsGui/QmitkIGIUltrasonixTool.h
   ToolsGui/QmitkIGIUltrasonixToolGui.h
+  ToolsGui/QmitkIGIOpenCVDataSourceGui.h
 )
 
 SET(UI_FILES
@@ -33,6 +36,7 @@ SET(UI_FILES
   ToolsGui/QmitkIGITrackerToolGui.ui
   ToolsGui/QmitkIGIUltrasonixToolGui.ui
   ToolsGui/QmitkIGIDataSourceManager.ui
+  ToolsGui/QmitkIGIOpenCVDataSourceGui.ui
 )
 
 SET(QRC_FILES

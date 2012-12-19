@@ -22,26 +22,38 @@
 
  ============================================================================*/
 
-#include "mitkIGIOpenCVDataSource.h"
+#include "QmitkIGIOpenCVDataSource.h"
 #include "mitkIGIOpenCVDataType.h"
 
-namespace mitk
-{
-
 //-----------------------------------------------------------------------------
-IGIOpenCVDataSource::IGIOpenCVDataSource()
+QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 {
+  m_VideoSource = mitk::OpenCVVideoSource::New();
+  m_VideoSource->SetVideoCameraInput(0);
+
+  this->SetName("Video");
+  this->SetType("Frame Grabber");
+  this->SetDescription("OpenCV");
+  this->SetStatus("Initialised");
 }
 
 
 //-----------------------------------------------------------------------------
-IGIOpenCVDataSource::~IGIOpenCVDataSource()
+QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
+  this->StopCapturing();
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOpenCVDataSource::CanHandleData(mitk::IGIDataType* data) const
+mitk::OpenCVVideoSource* QmitkIGIOpenCVDataSource::GetVideoSource() const
+{
+  return m_VideoSource;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGIOpenCVDataSource::CanHandleData(mitk::IGIDataType* data) const
 {
   bool result = false;
   if (static_cast<mitk::IGIOpenCVDataType*>(data) != NULL)
@@ -51,4 +63,22 @@ bool IGIOpenCVDataSource::CanHandleData(mitk::IGIDataType* data) const
   return result;
 }
 
-} // end namespace
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::StartCapturing()
+{
+  if (m_VideoSource.IsNotNull() && !m_VideoSource->IsCapturingEnabled())
+  {
+    m_VideoSource->StartCapturing();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::StopCapturing()
+{
+  if (m_VideoSource.IsNotNull() && m_VideoSource->IsCapturingEnabled())
+  {
+    m_VideoSource->StopCapturing();
+  }
+}

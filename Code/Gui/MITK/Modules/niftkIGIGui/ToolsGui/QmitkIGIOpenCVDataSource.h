@@ -27,21 +27,20 @@
 
 #include "niftkIGIExports.h"
 #include "mitkIGILocalDataSource.h"
-
-namespace mitk
-{
+#include <mitkOpenCVVideoSource.h>
+#include <mitkMessage.h>
 
 /**
  * \class IGIOpenCVDataSource
  * \brief Data source that provides access to a local video frame grabber using OpenCV
  */
-class NIFTKIGI_EXPORT IGIOpenCVDataSource : public IGILocalDataSource
+class NIFTKIGI_EXPORT QmitkIGIOpenCVDataSource : public mitk::IGILocalDataSource
 {
 
 public:
 
-  mitkClassMacro(IGIOpenCVDataSource, IGILocalDataSource);
-  itkNewMacro(IGIOpenCVDataSource);
+  mitkClassMacro(QmitkIGIOpenCVDataSource, mitk::IGILocalDataSource);
+  itkNewMacro(QmitkIGIOpenCVDataSource);
 
   /**
    * \brief Defined in base class, so we check that the data type is in fact
@@ -50,19 +49,34 @@ public:
    */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
 
+  /**
+   * \brief Returns a pointer to the internal video source.
+   */
+  mitk::OpenCVVideoSource* GetVideoSource() const;
+
+  /**
+   * \brief Starts the framegrabbing.
+   */
+  void StartCapturing();
+
+  /**
+   * \brief Stops the framegrabbing.
+   */
+  void StopCapturing();
+
 protected:
 
-  IGIOpenCVDataSource(); // Purposefully hidden.
-  virtual ~IGIOpenCVDataSource(); // Purposefully hidden.
+  QmitkIGIOpenCVDataSource(); // Purposefully hidden.
+  virtual ~QmitkIGIOpenCVDataSource(); // Purposefully hidden.
 
-  IGIOpenCVDataSource(const IGIOpenCVDataSource&); // Purposefully not implemented.
-  IGIOpenCVDataSource& operator=(const IGIOpenCVDataSource&); // Purposefully not implemented.
+  QmitkIGIOpenCVDataSource(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
+  QmitkIGIOpenCVDataSource& operator=(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
 
 private:
 
-}; // end class
+  mitk::OpenCVVideoSource::Pointer m_VideoSource;
 
-} // end namespace
+}; // end class
 
 #endif
 

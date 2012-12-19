@@ -4,5 +4,4 @@ set(CPP_FILES
   DataManagement/mitkIGIDataSource.cpp
   DataManagement/mitkIGILocalDataSource.cpp
   DataManagement/mitkIGIOpenCVDataType.cpp
-  DataManagement/mitkIGIOpenCVDataSource.cpp
 )
