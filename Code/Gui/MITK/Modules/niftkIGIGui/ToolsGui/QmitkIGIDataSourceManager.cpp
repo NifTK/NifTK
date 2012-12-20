@@ -50,6 +50,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_GridLayoutClientControls(NULL)
 , m_UpdateTimer(NULL)
 , m_FrameRateTimer(NULL)
+, m_CleardownTimer(NULL)
 , m_NextSourceIdentifier(0)
 {
   m_OKColour = DEFAULT_OK_COLOUR;
@@ -199,6 +200,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_FrameRateTimer = new QTimer(this);
   m_FrameRateTimer->setInterval(1000); // every 1 seconds
 
+  m_CleardownTimer = new QTimer(this);
+  m_CleardownTimer->setInterval(1000);
+
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
   m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
@@ -219,6 +223,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateDisplay()) );
   connect(m_FrameRateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateFrameRate()) );
+  connect(m_CleardownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
   connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
 
@@ -400,6 +405,10 @@ void QmitkIGIDataSourceManager::OnAddSource()
   {
     m_FrameRateTimer->start();
   }
+  if (!m_CleardownTimer->isActive())
+  {
+    m_CleardownTimer->start();
+  }
 }
 
 
@@ -553,6 +562,7 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateFrameRate()
 {
+  // This should be done in a separate thread, or a separate thread per source.
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
     source->UpdateFrameRate();
@@ -574,6 +584,17 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
   }
 
   m_TableWidget->update();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnCleanData()
+{
+  // This should be done in a separate thread, or a separate thread per source.
+  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  {
+    source->CleanBuffer();
+  }
 }
 
 

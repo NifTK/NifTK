@@ -114,22 +114,43 @@ unsigned long int IGIDataSource::GetBufferSize() const
 //-----------------------------------------------------------------------------
 void IGIDataSource::ClearBuffer()
 {
+  unsigned long int bufferSizeBefore = m_Buffer.size();
+
   m_Buffer.clear();
+
+  unsigned long int bufferSizeAfter = m_Buffer.size();
+  MITK_INFO << this->GetName() << ": Clear operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
+
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIDataSource::CleanBuffer()
 {
-  std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
-
-  while(   iter != m_Buffer.end()
-        && (*iter).IsNotNull()
-        && (!((*iter)->GetShouldBeSaved()) || ((*iter)->GetShouldBeSaved() && (*iter)->GetIsSaved()))
-        && ((*iter)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(this->m_ActualTimeStamp))
-      )
+  unsigned int approxDoubleTheFrameRate = 1;
+  if (this->GetFrameRate() > 0)
   {
-    m_Buffer.erase(iter);
+    approxDoubleTheFrameRate = (int)(this->GetFrameRate() * 2);
+  }
+
+  if (m_Buffer.size() > approxDoubleTheFrameRate)
+  {
+    unsigned long int bufferSizeBefore = m_Buffer.size();
+
+    std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
+
+    while(   m_Buffer.size() > approxDoubleTheFrameRate
+          && (*iter).IsNotNull()
+          && (!((*iter)->GetShouldBeSaved()) || ((*iter)->GetShouldBeSaved() && (*iter)->GetIsSaved()))
+          && ((*iter)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(this->m_ActualTimeStamp))
+        )
+    {
+      m_Buffer.erase(iter);
+      iter++;
+    }
+
+    unsigned long int bufferSizeAfter = m_Buffer.size();
+    MITK_INFO << this->GetName() << ": Clean operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
   }
 }
 

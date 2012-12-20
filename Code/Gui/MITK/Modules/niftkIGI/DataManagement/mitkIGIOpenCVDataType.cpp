@@ -38,7 +38,7 @@ IGIOpenCVDataType::~IGIOpenCVDataType()
 {
   if (m_Image != NULL)
   {
-    delete m_Image;
+    //delete m_Image;
   }
 }
 

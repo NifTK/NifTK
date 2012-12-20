@@ -143,7 +143,7 @@ protected:
 private slots:
 
   /**
-   * \brief Updates the display, based on the available messages.
+   * \brief Updates the whole rendered scene, based on the available messages.
    */
   void OnUpdateDisplay();
 
@@ -151,6 +151,11 @@ private slots:
    * \brief Updates the frame rate.
    */
   void OnUpdateFrameRate();
+
+  /**
+   * \brief Tells each data source to clean data, see mitk::IGIDataSource::CleanData().
+   */
+  void OnCleanData();
 
   /**
    * \brief Adds a data source to the table.
@@ -187,8 +192,9 @@ private:
   mitk::DataStorage                        *m_DataStorage;
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
-  QTimer                                   *m_UpdateTimer;
-  QTimer                                   *m_FrameRateTimer;
+  QTimer                                   *m_UpdateTimer;    // Used to make the whole rendered scene update
+  QTimer                                   *m_FrameRateTimer; // Used to just update the frame rate
+  QTimer                                   *m_CleardownTimer; // Used to tell data sources to clear stuff.
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
   unsigned int                              m_NextSourceIdentifier;
