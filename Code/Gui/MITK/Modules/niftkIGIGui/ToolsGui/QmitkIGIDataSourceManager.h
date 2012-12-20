@@ -100,6 +100,11 @@ public:
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
+  void SetClearDataRate(int numberOfSeconds);
+
+  /**
+   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+   */
   void SetDirectoryPrefix(QString& directoryPrefix);
 
   /**
@@ -116,11 +121,6 @@ public:
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
   void SetOKColour(QColor &colour);
-
-  /**
-   * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
-   */
-  itkSetMacro(ClearDataRate, int);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.

@@ -39,7 +39,7 @@ const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
 const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2; // twice per second
-const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 60; // every 60 seconds
+const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 2; // every 2 seconds
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT = true;
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND = false;
 
@@ -151,6 +151,21 @@ void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetClearDataRate(int numberOfSeconds)
+{
+  m_ClearDataRate = numberOfSeconds;
+
+  if (m_CleardownTimer != NULL)
+  {
+    int milliseconds = 1000 * numberOfSeconds;
+    m_CleardownTimer->setInterval(milliseconds);
+  }
+
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::SetDirectoryPrefix(QString& directoryPrefix)
 {
   m_DirectoryPrefix = directoryPrefix;
@@ -195,13 +210,13 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_StopPushButton->setEnabled(false);
 
   m_UpdateTimer =  new QTimer(this);
-  m_UpdateTimer->setInterval ( 500 ); // 2 times per second
+  this->SetFramesPerSecond(DEFAULT_FRAME_RATE);
 
   m_FrameRateTimer = new QTimer(this);
   m_FrameRateTimer->setInterval(1000); // every 1 seconds
 
   m_CleardownTimer = new QTimer(this);
-  m_CleardownTimer->setInterval(1000);
+  this->SetClearDataRate(DEFAULT_CLEAR_RATE);
 
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
