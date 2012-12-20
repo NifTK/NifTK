@@ -25,8 +25,7 @@
 #ifndef QMITKBASEAPPLICATION_H_
 #define QMITKBASEAPPLICATION_H_
 
-#include "mitkQtCommonAppsAppDll.h"
-
+#include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryIApplication.h>
 #include <berryWorkbenchAdvisor.h>
 

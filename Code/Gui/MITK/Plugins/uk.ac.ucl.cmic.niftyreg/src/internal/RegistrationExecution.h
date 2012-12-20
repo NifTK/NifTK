@@ -28,6 +28,7 @@
 #include <QThread>
 
 #include "QmitkNiftyRegView.h"
+#include "niftkF3DControlGridToVTKPolyData.h"
 
 
 class RegistrationExecution : public QThread
@@ -49,18 +50,31 @@ protected slots:
 
   /// Run the actual registration
   void ExecuteRegistration( void );
-  
-  /// Create a VTK polydata object to visualise the deformation
-  void CreateDeformationVisualisationSurface( void );
-    
 
 
 protected:
-
+    
   /// A pointer to the registration plugin
   QmitkNiftyRegView* userData;
+  
+  /// Create a VTK polydata object to visualise the control points
+  void CreateControlPointVisualisation( nifti_image *controlPointGrid );
+    
+  /// Create a VTK polydata object to visualise the control points using spheres
+  void CreateControlPointSphereVisualisation( nifti_image *controlPointGrid );
+
+  /// Create a VTK polydata object to visualise the deformation vector field
+  void CreateVectorFieldVisualisation( nifti_image *controlPointGrid );
+  
+  /// Create a VTK polydata object to visualise the deformation
+  void CreateDeformationVisualisationSurface( niftk::PlaneType plane,
+					      nifti_image *controlPointGrid,
+					      int xSkip,
+					      int ySkip,
+					      int zSkip );
 
  };
+
 
 #endif // RegistrationExecution_h
 

@@ -25,9 +25,8 @@
 #ifndef QMITKBASEWORKBENCHWINDOWADVISOR_H_
 #define QMITKBASEWORKBENCHWINDOWADVISOR_H_
 
-#include "mitkQtCommonAppsAppDll.h"
-
-#include "QmitkExtWorkbenchWindowAdvisor.h"
+#include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
+#include <QmitkExtWorkbenchWindowAdvisor.h>
 
 /**
  * \class QmitkBaseViewWorkbenchWindowAdvisor

@@ -25,9 +25,8 @@
 #ifndef QMITKNIFTYVIEWAPPLICATIONPREFERENCEPAGE_H_
 #define QMITKNIFTYVIEWAPPLICATIONPREFERENCEPAGE_H_
 
-#include "mitkQtCommonAppsAppDll.h"
-
-#include "berryIQtPreferencePage.h"
+#include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 
 class QWidget;

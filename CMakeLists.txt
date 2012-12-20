@@ -28,7 +28,7 @@
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 11 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 12 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -153,7 +153,7 @@ OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scri
 OPTION(BUILD_NIFTYREG "Build NiftyReg." ON)
 OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
 OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
-OPTION(BUILD_NIFTYSEG "Build NiftySeg." OFF)
+OPTION(BUILD_NIFTYSEG "Build NiftySeg." ON)
 OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code." OFF)
@@ -1076,7 +1076,14 @@ IF(WIN32)
       mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartVS.bat.in"
         ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat
         ${VS_BUILD_TYPE})
+
+      MESSAGE( "CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat" )
+
     endforeach()
     
+  ELSE(MITK_FOUND)
+    MESSAGE( "CreateWindowsBatchScript: MITK not found" )
   ENDIF(MITK_FOUND)
+ELSE(WIN32)
+  MESSAGE( "CreateWindowsBatchScript: WIN32 not found" )
 ENDIF(WIN32)

@@ -33,57 +33,57 @@ ENDIF(NOT NIFTYREG_DIR)
 IF(CUDA_FOUND)
 
   FIND_PATH(NIFTYREG_INCLUDE_DIR
-    _reg_tools_gpu.h
-    ${NIFTYREG_DIR}/include
-    ${NIFTYREG_DIR}-1.3/include
-    ${NIFTYREG_DIR}-1.2/include
-    ${NIFTYREG_DIR}-1.1/include
-    ${NIFTYREG_DIR}-1.0/include
-    @NIFTK_LINK_PREFIX@/include
-    /usr/local/include
-    /usr/include
+    NAME _reg_tools_gpu.h
+    PATHS ${NIFTYREG_DIR}/include ${NIFTK_LINK_PREFIX}/include /usr/local/include /usr/include
     )
 
-  FIND_LIBRARY(NIFTYREG_LIBRARIES
-    _reg_tools_gpu
-    ${NIFTYREG_DIR}/lib
-    ${NIFTYREG_DIR}-1.3/lib
-    ${NIFTYREG_DIR}-1.2/lib
-    ${NIFTYREG_DIR}-1.1/lib
-    ${NIFTYREG_DIR}-1.0/lib
-    @NIFTK_LINK_PREFIX@/lib
-    /usr/local/lib
-    /usr/lib
+  FIND_LIBRARY(NIFTYREG_TOOLS_LIBRARY
+    NAMES _reg_tools_gpu
+    PATHS ${NIFTYREG_DIR}/lib ${NIFTK_LINK_PREFIX}/lib /usr/local/lib /usr/lib
     )
 
 ELSE(CUDA_FOUND)
 
   FIND_PATH(NIFTYREG_INCLUDE_DIR
-    _reg_tools.h
-    ${NIFTYREG_DIR}/include
-    ${NIFTYREG_DIR}-1.3/include
-    ${NIFTYREG_DIR}-1.2/include
-    ${NIFTYREG_DIR}-1.1/include
-    ${NIFTYREG_DIR}-1.0/include
-    @NIFTK_LINK_PREFIX@/include
-    /usr/local/include
-    /usr/include
+    NAME _reg_tools.h
+    PATHS ${NIFTYREG_DIR}/include ${NIFTK_LINK_PREFIX}/include /usr/local/include /usr/include
     )
 
-  FIND_LIBRARY(NIFTYREG_LIBRARIES
-    _reg_tools
-    ${NIFTYREG_DIR}/lib
-    ${NIFTYREG_DIR}-1.3/lib
-    ${NIFTYREG_DIR}-1.2/lib
-    ${NIFTYREG_DIR}-1.1/lib
-    ${NIFTYREG_DIR}-1.0/lib
-    @NIFTK_LINK_PREFIX@/lib
-    /usr/local/lib
-    /usr/lib
+  FIND_LIBRARY(NIFTYREG_TOOLS_LIBRARY
+    NAMES _reg_tools
+    PATHS ${NIFTYREG_DIR}/lib ${NIFTK_LINK_PREFIX}/lib /usr/local/lib /usr/lib
     )
-
+	
 ENDIF(CUDA_FOUND)
 
-IF(NIFTYREG_LIBRARIES AND NIFTYREG_INCLUDE_DIR)
+IF(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)
   SET(NIFTYREG_FOUND 1)
-ENDIF(NIFTYREG_LIBRARIES AND NIFTYREG_INCLUDE_DIR)
+
+  SET(NIFTYREG_LIBRARIES
+    _reg_KLdivergence
+    _reg_blockMatching
+    _reg_femTransformation
+    _reg_globalTransformation
+    _reg_localTransformation
+    _reg_maths
+    _reg_mutualinformation
+    _reg_resampling
+    _reg_ssd
+    _reg_tools
+    _reg_ReadWriteImage
+    reg_png
+    png
+    reg_nrrd
+    reg_NrrdIO
+    z
+    )
+
+  GET_FILENAME_COMPONENT( NIFTYREG_LIBRARY_DIR ${NIFTYREG_TOOLS_LIBRARY} PATH )
+
+  MESSAGE( "NIFTYREG_INCLUDE_DIR: ${NIFTYREG_INCLUDE_DIR}" )
+  MESSAGE( "NIFTYREG_LIBRARY_DIR: ${NIFTYREG_LIBRARY_DIR}" )
+  MESSAGE( "NIFTYREG_LIBRARIES: ${NIFTYREG_LIBRARIES}" )
+
+ELSE(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)
+  MESSAGE( FATAL_ERROR "ERROR: NiftyReg not Found" )
+ENDIF(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)

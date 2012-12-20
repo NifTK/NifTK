@@ -174,6 +174,7 @@ private:
   /** This lot is currently rarely used. */
   bool                                                 m_UseICP;
   bool                                                 m_PointSetsInitialized;
+  bool                                                 m_LinkCamera;
   mitk::DataNode::Pointer                              m_ImageFiducialsDataNode;
   mitk::PointSet::Pointer                              m_ImageFiducialsPointSet;
   mitk::DataNode::Pointer                              m_TrackerFiducialsDataNode;

@@ -27,10 +27,17 @@
 #include <mitkDataNode.h>
 #include <mitkBaseData.h>
 #include <mitkRenderingManager.h>
+#include <mitkBaseRenderer.h>
 
 #include "mitkIGITestDataUtils.h"
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
+#include "vtkCamera.h"
+#include "vtkRenderer.h"
+#include "vtkRendererCollection.h"
+#include "vtkRenderWindow.h"
+#include "vtkTransform.h"
+#include "vtkMatrix4x4.h"
 
 NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 
@@ -38,6 +45,7 @@ NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool
 QmitkIGITrackerTool::QmitkIGITrackerTool()
 : m_UseICP(false)
 , m_PointSetsInitialized(false)
+, m_LinkCamera(false)
 , m_ImageFiducialsDataNode(NULL)
 , m_ImageFiducialsPointSet(NULL)
 , m_TrackerFiducialsDataNode(NULL)
@@ -196,6 +204,46 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
 
     float inputTransformMat[4][4];
     trMsg->getMatrix(inputTransformMat);
+
+    if ( m_LinkCamera )
+    {
+      // find the active camera via the rendering manager
+      mitk::RenderingManager::RenderWindowVector RenderWindows;
+      RenderWindows = mitk::RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
+
+      int windowsFound = RenderWindows.size() ;
+      for ( int i = 0 ; i < windowsFound ; i ++ )
+      {
+        vtkRenderWindow * thisWindow;
+        thisWindow = RenderWindows.at(i);
+
+        vtkRendererCollection * Renderers;
+        Renderers = thisWindow->GetRenderers();
+        vtkRenderer * Renderer;
+        Renderers->InitTraversal();
+        for ( int i = 0 ; i <  Renderers->GetNumberOfItems() ; i ++ )
+          Renderer = Renderers->GetNextItem();
+        vtkCamera * Camera;
+        Camera = Renderer->GetActiveCamera();
+        //this performs the important function of rotating the logo, it looks really natty.
+        Camera->Azimuth( 1);
+        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
+        vtkTransform * Transform = vtkTransform::New();
+        vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
+        for ( int row = 0 ; row < 4 ; row ++ )
+          for ( int column = 0 ; column < 4 ; column ++ )
+          {
+            viewMatrix->SetElement(row,column,inputTransformMat[row][column]);
+          }
+        Transform->SetMatrix(viewMatrix);
+        //as the view matrix is not zero, need to zero it, should really only do this once,
+        //when camera tracking is set to true I guess
+        Camera->SetPosition(0,0,0);
+        Camera->SetFocalPoint(0,0,1);
+        Camera->SetUserViewTransform(Transform);
+        Camera->Azimuth( 1);
+      }
+    }
 
     toolName = this->GetNameWithRom(toolName);
     mitk::DataNode::Pointer tempNode = ds->GetNamedNode(toolName.toStdString().c_str());
