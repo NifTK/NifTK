@@ -73,13 +73,15 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget *parent, ClientDescriptorXMLB
 
   m_PixmapLabel = new QLabel(this);
   m_ScrollArea->setWidget(m_PixmapLabel);
+  m_PixmapLabel->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+  m_PixmapLabel->setAlignment(Qt::AlignCenter);
 
   // Connect to signals from the tool.
   QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
   if (tool != NULL)
   {
     connect (tool, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
-    connect (tool, SIGNAL(UpdatePreviewImage(OIGTLMessage::Pointer)), this, SLOT(OnUpdatePreviewImage(OIGTLMessage::Pointer)));
+    connect (tool, SIGNAL(UpdatePreviewDisplay(QImage*, float)), this, SLOT(OnUpdatePreviewDisplay(QImage*, float)));
   }
 }
 
@@ -92,16 +94,12 @@ void QmitkIGIUltrasonixToolGui::OnStatusUpdate(QString message)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixToolGui::OnUpdatePreviewImage(OIGTLMessage::Pointer msg)
+void QmitkIGIUltrasonixToolGui::OnUpdatePreviewDisplay(QImage* image, float motorPosition)
 {
-  OIGTLImageMessage::Pointer imageMsg;
-  imageMsg = static_cast<OIGTLImageMessage::Pointer>(msg);
+  m_PixmapLabel->setPixmap(QPixmap::fromImage(*image));
+  m_PixmapLabel->repaint();
 
-  if (imageMsg.data() != NULL)
-  {
-    QImage image = imageMsg->getQImage();
-    m_PixmapLabel->setPixmap(QPixmap::fromImage(image));
-    lcdNumber->display(this->GetQmitkIGIUltrasonixTool()->GetMotorPos());
-  }
+  lcdNumber->display(motorPosition);
+  lcdNumber->repaint();
 }
 

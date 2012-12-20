@@ -50,16 +50,6 @@ public:
   static const std::string ULTRASONIX_TOOL_2D_IMAGE_NAME;
 
   /**
-   * \brief Retrieves the motor position from the most recent data available.
-   */
-  float GetMotorPos();
-
-  /**
-   * \brief Copies out the internal matrix.
-   */
-  void GetImageMatrix(igtl::Matrix4x4& matrix);
-
-  /**
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
@@ -81,7 +71,7 @@ public slots:
 signals:
 
   void StatusUpdate(QString statusUpdateMessage);
-  void UpdatePreviewImage(OIGTLMessage::Pointer msg);
+  void UpdatePreviewDisplay(QImage *image, float motorPosition);
 
 protected:
 
@@ -105,12 +95,22 @@ private:
    */
   void HandleImageData(OIGTLMessage* msg);
 
-  mitk::Image::Pointer m_Image;
-  mitk::DataNode::Pointer m_ImageNode;
-  QmitkQImageToMitkImageFilter::Pointer m_Filter;
-  igtl::Matrix4x4 m_ImageMatrix;
-  float m_RadToDeg;
+  /**
+   * \brief Retrieves the motor position from the most recent data available.
+   */
+  float GetMotorPos();
 
+  /**
+   * \brief Copies out the internal matrix.
+   */
+  void GetImageMatrix(igtl::Matrix4x4& matrix);
+
+  mitk::Image::Pointer                  m_Image;
+  mitk::DataNode::Pointer               m_ImageNode;
+  QmitkQImageToMitkImageFilter::Pointer m_Filter;
+  igtl::Matrix4x4                       m_ImageMatrix;
+  float                                 m_RadToDeg;
+  QImage                                m_QImage;
 }; // end class
 
 #endif

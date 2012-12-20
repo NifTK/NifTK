@@ -65,7 +65,7 @@ protected:
 private slots:
 
   void OnStatusUpdate(QString message);
-  void OnUpdatePreviewImage(OIGTLMessage::Pointer msg);
+  void OnUpdatePreviewDisplay(QImage* image, float motorPosition);
 
 private:
 

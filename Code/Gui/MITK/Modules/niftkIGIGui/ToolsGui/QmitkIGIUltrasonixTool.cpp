@@ -121,8 +121,6 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
 
     this->AddData(wrapper.GetPointer());
   }
-
-  QCoreApplication::processEvents();
 }
 
 
@@ -173,13 +171,14 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage* msg)
   OIGTLImageMessage::Pointer imageMsg;
 
   imageMsg = static_cast<OIGTLImageMessage*>(msg);
-  imageMsg->PreserveMatrix();
 
   if (imageMsg.data() != NULL)
   {
-    QImage image = imageMsg->getQImage();
 
-    m_Filter->SetQImage(&image);
+    imageMsg->PreserveMatrix();
+    m_QImage = imageMsg->getQImage();
+
+    m_Filter->SetQImage(&m_QImage);
     m_Filter->SetGeometryImage(m_Image);
     m_Filter->Update();
 
@@ -193,7 +192,7 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage* msg)
       this->GetDataStorage()->Add(m_ImageNode);
     }
 
-    emit UpdatePreviewImage(imageMsg);
+    emit UpdatePreviewDisplay(&m_QImage, this->GetMotorPos());
   }
 }
 
