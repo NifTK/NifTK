@@ -307,6 +307,11 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 
     result = true;
   }
+  else
+  {
+    MITK_ERROR << "IGIDataSource::DoSaveData: Source=" << this->GetIdentifier() \
+        << ", failed to save data at timestamp:" << data->GetTimeStampInNanoSeconds() << std::endl;
+  }
 
   return result;
 }
@@ -337,7 +342,6 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
       m_FrameRateBufferIterator = m_BufferIterator;
     }
 
-
     if (   m_SavingMessages     // recording/saving is turned on.
         && !m_SaveInBackground  // we are doing it immediately as opposed to some background thread.
         && m_SaveOnReceipt      // we are saving every message that came in, regardless of display refresh rate.
@@ -358,6 +362,8 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 {
   bool result = false;
+  bool saveResult = false;
+
   mitk::IGIDataType* data = this->RequestData(requestedTimeStamp);
 
   if (data != NULL)
@@ -367,38 +373,44 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
       try
       {
         // Decide if we are saving data
-        if (   m_SavingMessages    // recording/saving is turned on.
-            && !m_SaveInBackground // we are doing it immediately as opposed to some background thread.
-            && !m_SaveOnReceipt    // we only save the data that was shown on the display.
+        if (   data->GetShouldBeSaved() // when the data was received it was stamped as save=true
+            && !m_SaveInBackground      // we are doing it immediately as opposed to some background thread.
+            && !m_SaveOnReceipt         // we only save the data that was shown on the display.
             )
         {
-          this->DoSaveData(data);
+
+          saveResult = this->DoSaveData(data);
+
+          if(saveResult)
+          {
+            result = this->Update(data);
+          }
         }
-
-        // Derived classes implement this to update the display.
-        result = this->Update(data);
-
+        else
+        {
+          result = this->Update(data);
+        }
       } catch (mitk::Exception& e)
       {
-        MITK_ERROR << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+        MITK_ERROR << "IGIDataSource::ProcessData: Source=" << this->GetIdentifier() \
                    << ", received error:\nMITK Exception:\n\nDescription: " << e.GetDescription() << "\n\n" \
                    << "Filename: " << e.GetFile() << "\n\n" \
                    << "Line: " << e.GetLine() << std::endl;
       }
       catch (std::exception& e)
       {
-        MITK_ERROR << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+        MITK_ERROR << "IGIDataSource::ProcessData: Source=" << this->GetIdentifier() \
                    << ", received error:" << e.what() << std::endl;
       }
       catch (...)
       {
-        MITK_ERROR << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+        MITK_ERROR << "IGIDataSource::ProcessData: Source=" << this->GetIdentifier() \
                    << ", received error:Unknown exception" << std::endl;
       }
     }
     else
     {
-      MITK_DEBUG << "IGIDataSource::AddData: Source=" << this->GetIdentifier() \
+      MITK_DEBUG << "IGIDataSource::ProcessData: Source=" << this->GetIdentifier() \
                  << ", req=" << requestedTimeStamp \
                  << ", msg=" << data->GetFrameId() \
                  << ", ts=" << data->GetTimeStampInNanoSeconds() \

@@ -90,6 +90,11 @@ protected:
   QmitkIGIOpenCVDataSource(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
   QmitkIGIOpenCVDataSource& operator=(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
 
+  /**
+   * \brief \see IGIDataSource::SaveData();
+   */
+  virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
+
 private slots:
 
   void OnNewFrameAvailable();

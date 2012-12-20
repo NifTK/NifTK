@@ -28,6 +28,7 @@
 #include <vtkRenderWindow.h>
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
+#include <cv.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
@@ -143,3 +144,30 @@ void QmitkIGIOpenCVDataSource::OnNewFrameAvailable()
 
 }
 
+
+//-----------------------------------------------------------------------------
+bool QmitkIGIOpenCVDataSource::SaveData(mitk::IGIDataType* data, std::string& outputFileName)
+{
+  bool success = false;
+  outputFileName = "";
+
+  mitk::IGIOpenCVDataType::Pointer dataType = static_cast<mitk::IGIOpenCVDataType*>(data);
+  if (dataType.IsNotNull())
+  {
+    const IplImage* imageFrame = dataType->GetImage();
+    if (imageFrame != NULL)
+    {
+      QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+      QDir directory(directoryPath);
+      if (directory.mkpath(directoryPath))
+      {
+        QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
+
+        success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
+        outputFileName = fileName.toStdString();
+      }
+    }
+  }
+
+  return success;
+}

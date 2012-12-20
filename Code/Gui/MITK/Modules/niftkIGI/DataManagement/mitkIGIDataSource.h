@@ -257,6 +257,10 @@ protected:
 
 private:
 
+  /**
+   * \brief Private method that takes the input data, asks derived classes to save it
+   * and then stamps it the data object with the save status and filename.
+   */
   bool DoSaveData(mitk::IGIDataType* data);
 
   mitk::DataStorage                              *m_DataStorage;

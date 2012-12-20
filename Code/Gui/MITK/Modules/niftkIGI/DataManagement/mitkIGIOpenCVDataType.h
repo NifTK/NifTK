@@ -43,8 +43,15 @@ public:
   mitkClassMacro(IGIOpenCVDataType, IGIDataType);
   itkNewMacro(IGIOpenCVDataType);
 
-  /// \brief Used for loading in an image, see mitk::OpenCVVideoSource
+  /**
+   * \brief Used for loading in an image, see mitk::OpenCVVideoSource
+   */
   void CloneImage(const IplImage *image);
+
+  /**
+   * \brief Returns the internal image, so do not modify it.
+   */
+  const IplImage* GetImage();
 
 protected:
 

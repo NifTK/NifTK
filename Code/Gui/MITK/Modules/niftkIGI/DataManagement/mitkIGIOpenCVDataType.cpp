@@ -38,7 +38,7 @@ IGIOpenCVDataType::~IGIOpenCVDataType()
 {
   if (m_Image != NULL)
   {
-    //delete m_Image;
+    cvReleaseImage(&m_Image);
   }
 }
 
@@ -51,6 +51,13 @@ void IGIOpenCVDataType::CloneImage(const IplImage *image)
     delete m_Image;
   }
   m_Image = cvCloneImage(image);
+}
+
+
+//-----------------------------------------------------------------------------
+const IplImage* IGIOpenCVDataType::GetImage()
+{
+  return m_Image;
 }
 
 } // end namespace

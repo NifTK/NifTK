@@ -67,19 +67,8 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 {
-  if (m_UpdateTimer != NULL)
-  {
-    m_UpdateTimer->stop();
-    delete m_UpdateTimer;
-  }
-
-  if (m_FrameRateTimer != NULL)
-  {
-    m_FrameRateTimer->stop();
-    delete m_FrameRateTimer;
-  }
-
-  m_Sources.clear(); // smart pointers should delete the sources.
+  // smart pointers should delete the sources, and each source should delete its data.
+  m_Sources.clear();
 }
 
 
