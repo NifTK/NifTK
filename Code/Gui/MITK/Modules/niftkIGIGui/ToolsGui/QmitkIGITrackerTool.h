@@ -45,11 +45,6 @@ public:
   itkNewMacro(QmitkIGITrackerTool);
 
   /**
-   * \brief Takes the tool name, and if name does not end in ".rom", will add ".rom" and return that string.
-   */
-  QString GetNameWithRom(const QString name);
-
-  /**
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */

@@ -100,8 +100,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
         QString trackerTool;
         foreach (trackerTool, trackerTools)
         {
-          QString trackerToolName = tool->GetNameWithRom(trackerTool);
-          tool->GetToolRepresentation(trackerToolName);
+          tool->GetToolRepresentation(trackerTool);
         }
       }
     }
