@@ -282,21 +282,13 @@ int QmitkIGIDataSourceManager::GetIdentifierFromRowNumber(int rowNumber)
 void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
 {
   int rowNumber = this->GetRowNumberFromIdentifier(toolIdentifier);
-  int toolNumber = -1;
-  for (int i = 0; i < (int)m_Sources.size(); i++)
-  {
-    if (m_Sources[i]->GetIdentifier() == toolIdentifier)
-    {
-      toolNumber = i;
-    }
-  }
 
-  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size() && toolNumber >= 0 && toolNumber < (int)m_Sources.size())
+  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
   {
-    std::string status = m_Sources[toolNumber]->GetStatus();
-    std::string type = m_Sources[toolNumber]->GetType();
-    std::string device = m_Sources[toolNumber]->GetName();
-    std::string description = m_Sources[toolNumber]->GetDescription();
+    std::string status = m_Sources[rowNumber]->GetStatus();
+    std::string type = m_Sources[rowNumber]->GetType();
+    std::string device = m_Sources[rowNumber]->GetName();
+    std::string description = m_Sources[rowNumber]->GetDescription();
 
     std::vector<std::string> fields;
     fields.push_back(status);
@@ -462,9 +454,7 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 {
   QmitkIGIDataSourceGui* sourceGui = NULL;
 
-  int identifier = this->GetIdentifierFromRowNumber(row);
-
-  mitk::IGIDataSource* source = m_Sources[identifier];
+  mitk::IGIDataSource* source = m_Sources[row];
   const std::string classname = source->GetNameOfClass();
 
   std::string guiClassname = classname + "Gui";
