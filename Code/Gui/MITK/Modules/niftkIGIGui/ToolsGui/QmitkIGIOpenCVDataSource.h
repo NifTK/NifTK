@@ -83,6 +83,11 @@ public:
    */
   void Initialize(QmitkRenderWindow *window);
 
+  /**
+   * \brief Called from the GUI to detach from the background.
+   */
+  void DeInitialize();
+
 signals:
 
   /**

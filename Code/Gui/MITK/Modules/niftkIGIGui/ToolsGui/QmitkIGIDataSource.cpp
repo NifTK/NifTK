@@ -38,6 +38,10 @@ QmitkIGIDataSource::~QmitkIGIDataSource()
   if (m_SaveThread->isRunning())
   {
     m_SaveThread->exit(0);
+    while(!m_SaveThread->isFinished())
+    {
+      m_SaveThread->wait(250);
+    }
   }
 }
 

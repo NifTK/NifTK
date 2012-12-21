@@ -72,6 +72,10 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
   if (m_ClearDownThread->isRunning())
   {
     m_ClearDownThread->exit(0);
+    while(!m_ClearDownThread->isFinished())
+    {
+      m_ClearDownThread->wait(250);
+    }
   }
 
   // smart pointers should delete the sources, and each source should delete its data.

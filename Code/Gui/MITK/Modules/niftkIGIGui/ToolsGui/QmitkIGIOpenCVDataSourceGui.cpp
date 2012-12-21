@@ -48,7 +48,7 @@ QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 {
-  disconnect();
+  this->disconnect();
 }
 
 

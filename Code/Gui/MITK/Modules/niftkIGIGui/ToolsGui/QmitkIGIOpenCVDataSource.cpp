@@ -131,17 +131,25 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSource::Initialize(QmitkRenderWindow* renderWindow)
 {
+
+  this->DeInitialize();
+
+  m_Background->AddRenderWindow(renderWindow->GetVtkRenderWindow());
+  m_RenderWindow = renderWindow;
+
+  m_Background->Enable();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::DeInitialize()
+{
   m_Background->Disable();
 
   if (m_RenderWindow != NULL)
   {
     m_Background->RemoveRenderWindow(m_RenderWindow->GetVtkRenderWindow());
   }
-
-  m_Background->AddRenderWindow(renderWindow->GetVtkRenderWindow());
-  m_RenderWindow = renderWindow;
-
-  m_Background->Enable();
 }
 
 
