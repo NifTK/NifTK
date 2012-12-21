@@ -77,22 +77,22 @@ void SurgicalGuidanceView::RetrievePreferenceValues()
       path = QmitkIGIDataSourceManager::GetDefaultPath();
     }
     QColor errorColour = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
-    std::string errorColourName = prefs->Get("error colour", "");
+    QString errorColourName = QString::fromStdString(prefs->GetByteArray("error colour", ""));
     if (errorColourName != "")
     {
-      errorColour.setNamedColor(QString::fromStdString(errorColourName));
+      errorColour = QColor(errorColourName);
     }
     QColor warningColour = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
-    std::string warningColourName = prefs->Get("warning colour", "");
+    QString warningColourName = QString::fromStdString(prefs->GetByteArray("warning colour", ""));
     if (warningColourName != "")
     {
-      warningColour.setNamedColor(QString::fromStdString(warningColourName));
+      warningColour = QColor(warningColourName);
     }
     QColor okColour = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
-    std::string okColourName = prefs->Get("ok colour", "");
+    QString okColourName = QString::fromStdString(prefs->GetByteArray("ok colour", ""));
     if (okColourName != "")
     {
-      okColour.setNamedColor(QString::fromStdString(okColourName));
+      okColour = QColor(okColourName);
     }
 
     int refreshRate = prefs->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE);

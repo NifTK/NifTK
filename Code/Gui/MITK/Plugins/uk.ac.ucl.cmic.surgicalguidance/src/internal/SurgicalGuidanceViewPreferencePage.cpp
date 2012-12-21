@@ -42,7 +42,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string SurgicalGuidanceViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_surgicalguidance");
+const std::string SurgicalGuidanceViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.surgicalguidance");
 
 //-----------------------------------------------------------------------------
 SurgicalGuidanceViewPreferencePage::SurgicalGuidanceViewPreferencePage()
@@ -333,7 +333,7 @@ void SurgicalGuidanceViewPreferencePage::OnResetOKColour()
 //-----------------------------------------------------------------------------
 void SurgicalGuidanceViewPreferencePage::OnResetColour(int buttonIndex, QColor &colorValue)
 {
-  m_Color[buttonIndex] = (QString("#%1").arg(colorValue.name())).toStdString();
+  m_Color[buttonIndex] = (QString("%1").arg(colorValue.name())).toStdString();
   m_ColorStyleSheet[buttonIndex] = QString("background-color: rgb(%1,%2,%3)").arg(colorValue.red()).arg(colorValue.green()).arg(colorValue.blue());
   m_ColorPushButton[buttonIndex]->setStyleSheet(m_ColorStyleSheet[buttonIndex]);
 }
