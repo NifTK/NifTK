@@ -26,7 +26,7 @@
 #define MITKIGIOPENCVDATASOURCE_H
 
 #include "niftkIGIExports.h"
-#include "mitkIGILocalDataSource.h"
+#include "QmitkIGILocalDataSource.h"
 #include <mitkOpenCVVideoSource.h>
 #include <mitkMessage.h>
 #include <mitkVideoSource.h>
@@ -41,14 +41,14 @@ class QmitkRenderWindow;
  * \class IGIOpenCVDataSource
  * \brief Data source that provides access to a local video frame grabber using OpenCV
  */
-class NIFTKIGI_EXPORT QmitkIGIOpenCVDataSource : public QObject, public mitk::IGILocalDataSource
+class NIFTKIGI_EXPORT QmitkIGIOpenCVDataSource : public QmitkIGILocalDataSource
 {
 
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGIOpenCVDataSource, mitk::IGILocalDataSource);
+  mitkClassMacro(QmitkIGIOpenCVDataSource, QmitkIGILocalDataSource);
   itkNewMacro(QmitkIGIOpenCVDataSource);
 
   /**

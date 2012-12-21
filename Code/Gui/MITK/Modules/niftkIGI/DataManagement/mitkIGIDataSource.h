@@ -121,7 +121,7 @@ public:
    * \brief Returns true if we are saving messages and false otherwise.
    */
   itkGetMacro(SavingMessages, bool);
-  void SetSavingMessages(bool isSaving);
+  virtual void SetSavingMessages(bool isSaving);
 
   /**
    * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously immediately.
@@ -182,6 +182,12 @@ public:
   void CleanBuffer();
 
   /**
+   * \brief Method to iterate through the buffer, and call DoSaveData() on each
+   * item that needs saving, returning the number of saved messages.
+   */
+  unsigned long int SaveBuffer();
+
+  /**
    * \brief Returns the number of items in the buffer to aid testing.
    */
   unsigned long int GetBufferSize() const;
@@ -217,12 +223,6 @@ public:
    * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
    */
   double GetCurrentTimeLag();
-
-  /**
-   * \brief Method to iterate through the buffer, and call DoSaveData() on each
-   * item that needs saving, returning the number of saved messages.
-   */
-  unsigned long int SaveBuffer();
 
 protected:
 

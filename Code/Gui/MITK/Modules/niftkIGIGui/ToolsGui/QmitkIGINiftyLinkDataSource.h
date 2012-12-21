@@ -26,7 +26,7 @@
 #define QMITKIGINIFTYLINKDATASOURCE_H
 
 #include "niftkIGIGuiExports.h"
-#include "mitkIGIDataSource.h"
+#include "QmitkIGIDataSource.h"
 #include <OIGTLSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
 
@@ -36,13 +36,13 @@
  * from NiftyLink. NiftyLink uses Qt, so this class is in the Qt library, and named
  * Qmitk.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGINiftyLinkDataSource : public QObject, public mitk::IGIDataSource
+class NIFTKIGIGUI_EXPORT QmitkIGINiftyLinkDataSource : public QmitkIGIDataSource
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGINiftyLinkDataSource, mitk::IGIDataSource);
+  mitkClassMacro(QmitkIGINiftyLinkDataSource, QmitkIGIDataSource);
 
   /**
    * \brief Sets the socket pointer.

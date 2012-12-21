@@ -6,8 +6,10 @@ SET(CPP_FILES
   ToolsGui/QmitkIGIDataSourceManager.cpp    
   ToolsGui/QmitkIGINiftyLinkDataType.cpp
   ToolsGui/QmitkIGINiftyLinkDataSource.cpp
-  ToolsGui/QmitkIGIDataSourceGui.cpp
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.cpp
+  ToolsGui/QmitkIGIDataSource.cpp
+  ToolsGui/QmitkIGIDataSourceGui.cpp
+  ToolsGui/QmitkIGILocalDataSource.cpp
   ToolsGui/QmitkIGITrackerTool.cpp
   ToolsGui/QmitkIGITrackerToolGui.cpp
   ToolsGui/QmitkIGIUltrasonixTool.cpp
@@ -21,8 +23,10 @@ SET(MOC_H_FILES
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.h
   ToolsGui/QmitkIGIDataSourceManager.h
   ToolsGui/QmitkIGINiftyLinkDataSource.h
-  ToolsGui/QmitkIGIDataSourceGui.h
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.h
+  ToolsGui/QmitkIGIDataSource.h
+  ToolsGui/QmitkIGIDataSourceGui.h
+  ToolsGui/QmitkIGILocalDataSource.h
   ToolsGui/QmitkIGITrackerTool.h
   ToolsGui/QmitkIGITrackerToolGui.h  
   ToolsGui/QmitkIGIUltrasonixTool.h

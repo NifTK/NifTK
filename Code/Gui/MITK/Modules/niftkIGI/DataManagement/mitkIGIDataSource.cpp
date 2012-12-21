@@ -146,32 +146,35 @@ void IGIDataSource::CleanBuffer()
   }
 
   // Don't forget that frame rate can deteriorate to zero if no data is arriving.
-  if (approxDoubleTheFrameRate < 25)
+  unsigned int minimumNumberOfBufferItems = 25;
+  if (approxDoubleTheFrameRate < minimumNumberOfBufferItems)
   {
-    approxDoubleTheFrameRate = 25;
+    approxDoubleTheFrameRate = minimumNumberOfBufferItems;
   }
 
   if (m_Buffer.size() > approxDoubleTheFrameRate)
   {
-    unsigned long int bufferSizeBefore = m_Buffer.size();
+    unsigned int bufferSizeBefore = m_Buffer.size();
+    unsigned int numberToDelete = 0;
 
     std::list<mitk::IGIDataType::Pointer>::iterator startIter = m_Buffer.begin();
     std::list<mitk::IGIDataType::Pointer>::iterator endIter = m_Buffer.begin();
 
-    while(   m_Buffer.size() > approxDoubleTheFrameRate
+    while(   bufferSizeBefore - numberToDelete > approxDoubleTheFrameRate
           && endIter != m_FrameRateBufferIterator
           && (*endIter).IsNotNull()
           && (!((*endIter)->GetShouldBeSaved()) || ((*endIter)->GetShouldBeSaved() && (*endIter)->GetIsSaved()))
           && ((*endIter)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(this->m_ActualTimeStamp))
         )
     {
+      numberToDelete++;
       endIter++;
     }
 
     m_Buffer.erase(startIter, endIter);
 
-    unsigned long int bufferSizeAfter = m_Buffer.size();
-    MITK_INFO << this->GetName() << ": Clean operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
+    unsigned int bufferSizeAfter = m_Buffer.size();
+    MITK_DEBUG << this->GetName() << ": Clean operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
   }
 }
 
