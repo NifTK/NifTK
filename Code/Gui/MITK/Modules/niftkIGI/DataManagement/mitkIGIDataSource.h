@@ -218,6 +218,12 @@ public:
    */
   double GetCurrentTimeLag();
 
+  /**
+   * \brief Method to iterate through the buffer, and call DoSaveData() on each
+   * item that needs saving, returning the number of saved messages.
+   */
+  unsigned long int SaveBuffer();
+
 protected:
 
   IGIDataSource(); // Purposefully hidden.

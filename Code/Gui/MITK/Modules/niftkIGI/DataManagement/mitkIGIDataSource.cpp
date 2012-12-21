@@ -81,6 +81,8 @@ void IGIDataSource::SetSavingMessages(bool isSaving)
 //-----------------------------------------------------------------------------
 igtlUint64 IGIDataSource::GetFirstTimeStamp() const
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   igtlUint64 timeStamp = 0;
 
   if (m_Buffer.size() > 0)
@@ -95,6 +97,8 @@ igtlUint64 IGIDataSource::GetFirstTimeStamp() const
 //-----------------------------------------------------------------------------
 igtlUint64 IGIDataSource::GetLastTimeStamp() const
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   igtlUint64 timeStamp = 0;
 
   if (m_Buffer.size() > 0)
@@ -109,6 +113,8 @@ igtlUint64 IGIDataSource::GetLastTimeStamp() const
 //-----------------------------------------------------------------------------
 unsigned long int IGIDataSource::GetBufferSize() const
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   return m_Buffer.size();
 }
 
@@ -149,17 +155,20 @@ void IGIDataSource::CleanBuffer()
   {
     unsigned long int bufferSizeBefore = m_Buffer.size();
 
-    std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
+    std::list<mitk::IGIDataType::Pointer>::iterator startIter = m_Buffer.begin();
+    std::list<mitk::IGIDataType::Pointer>::iterator endIter = m_Buffer.begin();
 
     while(   m_Buffer.size() > approxDoubleTheFrameRate
-          && (*iter).IsNotNull()
-          && (!((*iter)->GetShouldBeSaved()) || ((*iter)->GetShouldBeSaved() && (*iter)->GetIsSaved()))
-          && ((*iter)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(this->m_ActualTimeStamp))
+          && endIter != m_FrameRateBufferIterator
+          && (*endIter).IsNotNull()
+          && (!((*endIter)->GetShouldBeSaved()) || ((*endIter)->GetShouldBeSaved() && (*endIter)->GetIsSaved()))
+          && ((*endIter)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(this->m_ActualTimeStamp))
         )
     {
-      m_Buffer.erase(iter);
-      iter++;
+      endIter++;
     }
+
+    m_Buffer.erase(startIter, endIter);
 
     unsigned long int bufferSizeAfter = m_Buffer.size();
     MITK_INFO << this->GetName() << ": Clean operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
@@ -170,6 +179,8 @@ void IGIDataSource::CleanBuffer()
 //-----------------------------------------------------------------------------
 mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   // Aim here is to iterate through the buffer, and find the closest
   // message to the requested time stamp, and leave the m_BufferIterator,
   // m_ActualTimeStamp and m_ActualData at that point, and return the corresponding data.
@@ -306,6 +317,31 @@ void IGIDataSource::UpdateFrameRate()
 
 
 //-----------------------------------------------------------------------------
+unsigned long int IGIDataSource::SaveBuffer()
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+  unsigned long int numberSaved = 0;
+
+  std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
+  for (iter = m_Buffer.begin(); iter != m_Buffer.end(); iter++)
+  {
+    if (    (*iter).IsNotNull()
+        &&  (*iter)->GetShouldBeSaved()
+        && !(*iter)->GetIsSaved()
+        )
+    {
+      if (this->DoSaveData((*iter).GetPointer()))
+      {
+        numberSaved++;
+      }
+    }
+  }
+
+  return numberSaved;
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 {
   bool result = false;
@@ -331,6 +367,8 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   bool result = false;
 
   if (data == NULL)
@@ -341,8 +379,6 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 
   if (this->CanHandleData(data))
   {
-    itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
     data->SetShouldBeSaved(this->GetSavingMessages());
     data->SetIsSaved(false);
     data->SetFrameId(m_CurrentFrameId++);
