@@ -26,20 +26,31 @@
 #include "mitkIGIOpenCVDataType.h"
 #include <QmitkVideoBackground.h>
 #include <vtkRenderWindow.h>
+#include <vtkObjectFactory.h>
+#include <vtkCommand.h>
+#include <vtkSmartPointer.h>
+#include <vtkCallbackCommand.h>
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
 #include <cv.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
-: m_Background(NULL)
+: m_VideoSource(NULL)
+, m_Background(NULL)
+, m_RenderWindow(NULL)
 {
   qRegisterMetaType<mitk::VideoSource*>();
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoSource->SetVideoCameraInput(0);
 
+  int hertz = 25;
+  int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
+
   m_Background = new QmitkVideoBackground(m_VideoSource);
+  m_Background->SetTimerDelay(updateTime);
+
   connect(m_Background, SIGNAL(NewFrameAvailable(mitk::VideoSource*)), this, SLOT(OnNewFrameAvailable()));
 
   this->StartCapturing();
@@ -55,6 +66,7 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
   this->StopCapturing();
+
   if (m_Background != NULL)
   {
     delete m_Background;
@@ -116,13 +128,18 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSource::Initialize(vtkRenderWindow* window)
+void QmitkIGIOpenCVDataSource::Initialize(vtkRenderWindow* renderWindow)
 {
-  int hertz = 25;
-  int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
+  m_Background->Disable();
 
-  m_Background->SetTimerDelay(updateTime);
-  m_Background->AddRenderWindow(window);
+  if (m_RenderWindow != NULL)
+  {
+    m_Background->RemoveRenderWindow(m_RenderWindow);
+  }
+
+  m_Background->AddRenderWindow(renderWindow);
+  m_RenderWindow = renderWindow;
+
   m_Background->Enable();
 }
 
@@ -141,7 +158,6 @@ void QmitkIGIOpenCVDataSource::OnNewFrameAvailable()
   wrapper->SetDuration(1000000000); // nanoseconds
 
   this->AddData(wrapper.GetPointer());
-
 }
 
 

@@ -35,6 +35,7 @@
 
 class QmitkVideoBackground;
 class vtkRenderWindow;
+class vtkObject;
 
 /**
  * \class IGIOpenCVDataSource
@@ -103,7 +104,7 @@ private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
   QmitkVideoBackground *m_Background;
-
+  vtkRenderWindow *m_RenderWindow;
 }; // end class
 
 Q_DECLARE_METATYPE(mitk::VideoSource*)
