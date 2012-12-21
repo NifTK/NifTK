@@ -24,6 +24,7 @@
 
 #include "mitkIGIDataSource.h"
 #include <itkObjectFactory.h>
+#include <itkMutexLockHolder.h>
 #include <igtlTimeStamp.h>
 
 namespace mitk
@@ -31,7 +32,8 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 IGIDataSource::IGIDataSource()
-: m_DataStorage(NULL)
+: m_Mutex(itk::FastMutexLock::New())
+, m_DataStorage(NULL)
 , m_Identifier(-1)
 , m_FrameRate(0)
 , m_CurrentFrameId(0)
@@ -114,6 +116,8 @@ unsigned long int IGIDataSource::GetBufferSize() const
 //-----------------------------------------------------------------------------
 void IGIDataSource::ClearBuffer()
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   unsigned long int bufferSizeBefore = m_Buffer.size();
 
   m_Buffer.clear();
@@ -127,10 +131,18 @@ void IGIDataSource::ClearBuffer()
 //-----------------------------------------------------------------------------
 void IGIDataSource::CleanBuffer()
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   unsigned int approxDoubleTheFrameRate = 1;
   if (this->GetFrameRate() > 0)
   {
     approxDoubleTheFrameRate = (int)(this->GetFrameRate() * 2);
+  }
+
+  // Don't forget that frame rate can deteriorate to zero if no data is arriving.
+  if (approxDoubleTheFrameRate < 25)
+  {
+    approxDoubleTheFrameRate = 25;
   }
 
   if (m_Buffer.size() > approxDoubleTheFrameRate)
@@ -258,8 +270,7 @@ double IGIDataSource::GetCurrentTimeLag()
 //-----------------------------------------------------------------------------
 void IGIDataSource::UpdateFrameRate()
 {
-  // default position is zero.
-  m_FrameRate = 0;
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   // Always initialise...
   igtlUint64 lastTimeStamp = 0;
@@ -330,6 +341,8 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 
   if (this->CanHandleData(data))
   {
+    itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
     data->SetShouldBeSaved(this->GetSavingMessages());
     data->SetIsSaved(false);
     data->SetFrameId(m_CurrentFrameId++);

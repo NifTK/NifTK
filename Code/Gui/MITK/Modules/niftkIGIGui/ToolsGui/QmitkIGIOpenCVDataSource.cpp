@@ -25,6 +25,7 @@
 #include "QmitkIGIOpenCVDataSource.h"
 #include "mitkIGIOpenCVDataType.h"
 #include <QmitkVideoBackground.h>
+#include <QmitkRenderWindow.h>
 #include <vtkRenderWindow.h>
 #include <vtkObjectFactory.h>
 #include <vtkCommand.h>
@@ -128,16 +129,16 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSource::Initialize(vtkRenderWindow* renderWindow)
+void QmitkIGIOpenCVDataSource::Initialize(QmitkRenderWindow* renderWindow)
 {
   m_Background->Disable();
 
   if (m_RenderWindow != NULL)
   {
-    m_Background->RemoveRenderWindow(m_RenderWindow);
+    m_Background->RemoveRenderWindow(m_RenderWindow->GetVtkRenderWindow());
   }
 
-  m_Background->AddRenderWindow(renderWindow);
+  m_Background->AddRenderWindow(renderWindow->GetVtkRenderWindow());
   m_RenderWindow = renderWindow;
 
   m_Background->Enable();
@@ -158,6 +159,9 @@ void QmitkIGIOpenCVDataSource::OnNewFrameAvailable()
   wrapper->SetDuration(1000000000); // nanoseconds
 
   this->AddData(wrapper.GetPointer());
+
+  // We signal every time we receive data, rather than at the refresh rate, otherwise video looks very odd.
+  emit UpdateDisplay();
 }
 
 

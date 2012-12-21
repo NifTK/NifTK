@@ -50,8 +50,8 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_GridLayoutClientControls(NULL)
 , m_UpdateTimer(NULL)
 , m_FrameRateTimer(NULL)
-, m_CleardownTimer(NULL)
 , m_NextSourceIdentifier(0)
+, m_ClearDownThread(NULL)
 {
   m_OKColour = DEFAULT_OK_COLOUR;
   m_WarningColour = DEFAULT_WARNING_COLOUR;
@@ -61,12 +61,19 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_DirectoryPrefix = GetDefaultPath();
   m_SaveOnReceipt = DEFAULT_SAVE_ON_RECEIPT;
   m_SaveInBackground = DEFAULT_SAVE_IN_BACKGROUND;
+
+  m_ClearDownThread = new QmitkIGIDataSourceManagerClearDownThread(this, this);
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 {
+  if (m_ClearDownThread->isRunning())
+  {
+    m_ClearDownThread->exit(0);
+  }
+
   // smart pointers should delete the sources, and each source should delete its data.
   m_Sources.clear();
 }
@@ -144,10 +151,10 @@ void QmitkIGIDataSourceManager::SetClearDataRate(int numberOfSeconds)
 {
   m_ClearDataRate = numberOfSeconds;
 
-  if (m_CleardownTimer != NULL)
+  if (m_ClearDownThread != NULL)
   {
     int milliseconds = 1000 * numberOfSeconds;
-    m_CleardownTimer->setInterval(milliseconds);
+    m_ClearDownThread->SetInterval(milliseconds);
   }
 
   this->Modified();
@@ -204,9 +211,6 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_FrameRateTimer = new QTimer(this);
   m_FrameRateTimer->setInterval(1000); // every 1 seconds
 
-  m_CleardownTimer = new QTimer(this);
-  this->SetClearDataRate(DEFAULT_CLEAR_RATE);
-
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
   m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
@@ -227,7 +231,6 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateDisplay()) );
   connect(m_FrameRateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateFrameRate()) );
-  connect(m_CleardownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
   connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
 
@@ -401,9 +404,9 @@ void QmitkIGIDataSourceManager::OnAddSource()
   {
     m_FrameRateTimer->start();
   }
-  if (!m_CleardownTimer->isActive())
+  if (!m_ClearDownThread->isRunning())
   {
-    m_CleardownTimer->start();
+    m_ClearDownThread->start();
   }
 }
 
@@ -648,4 +651,64 @@ void QmitkIGIDataSourceManager::PrintStatusMessage(const QString& message) const
 {
   m_ToolManagerConsole->appendPlainText(message + "\n");
   MITK_INFO << "QmitkIGIDataSourceManager:" << message.toStdString() << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGIDataSourceManagerClearDownThread::QmitkIGIDataSourceManagerClearDownThread(
+    QObject *parent, QmitkIGIDataSourceManager *manager)
+: QThread(parent)
+, m_TimerInterval(0)
+, m_Timer(NULL)
+, m_Manager(manager)
+{
+  this->setObjectName("QmitkIGIDataSourceManagerClearDownThread");
+  this->m_TimerInterval = QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE*1000;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGIDataSourceManagerClearDownThread::~QmitkIGIDataSourceManagerClearDownThread()
+{
+  if (m_Timer != NULL)
+  {
+    m_Timer->stop();
+    delete m_Timer;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManagerClearDownThread::SetInterval(unsigned int milliseconds)
+{
+  m_TimerInterval = milliseconds;
+  if (m_Timer != NULL)
+  {
+    m_Timer->setInterval(m_TimerInterval);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManagerClearDownThread::run()
+{
+  m_Timer = new QTimer(); // do not pass in (this)
+
+  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()), Qt::DirectConnection);
+
+  m_Timer->setInterval(m_TimerInterval);
+  m_Timer->start();
+
+  this->exec();
+
+  disconnect(m_Timer, 0, 0, 0);
+  delete m_Timer;
+  m_Timer = NULL;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManagerClearDownThread::OnTimeout()
+{
+  m_Manager->OnCleanData();
 }

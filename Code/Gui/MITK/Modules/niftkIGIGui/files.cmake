@@ -37,7 +37,6 @@ SET(UI_FILES
   ToolsGui/QmitkIGITrackerToolGui.ui
   ToolsGui/QmitkIGIUltrasonixToolGui.ui
   ToolsGui/QmitkIGIDataSourceManager.ui
-  ToolsGui/QmitkIGIOpenCVDataSourceGui.ui
 )
 
 SET(QRC_FILES

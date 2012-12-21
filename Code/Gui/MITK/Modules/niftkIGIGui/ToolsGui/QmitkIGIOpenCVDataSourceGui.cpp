@@ -39,12 +39,16 @@ NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIOpenCVDataSourceGui, "IGI 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
 {
+  // We run this class with its own RenderingManager so that you don't
+  // get rendering updates causing re-rendering before the video framebuffer is ready.
+  m_RenderingManager = mitk::RenderingManager::New();
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 {
+  disconnect();
 }
 
 
@@ -65,17 +69,32 @@ QmitkIGIOpenCVDataSource* QmitkIGIOpenCVDataSourceGui::GetOpenCVDataSource() con
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
 {
+  this->setParent(parent);
 
-  setupUi(this);
+  m_Layout = new QGridLayout(this);
+  m_Layout->setContentsMargins(0,0,0,0);
+  m_Layout->setSpacing(0);
+
+  m_RenderWindow = new QmitkRenderWindow(this, QString("QmitkIGIOpenCVDataSourceGui"), NULL, m_RenderingManager);
+
+  m_Layout->addWidget(m_RenderWindow, 0, 0);
 
   QmitkIGIOpenCVDataSource *source = this->GetOpenCVDataSource();
+
   if (source != NULL)
   {
-    source->Initialize(m_RenderWindow->GetVtkRenderWindow());
+    source->Initialize(m_RenderWindow);
+    connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
   }
   else
   {
     MITK_ERROR << "QmitkIGIOpenCVDataSourceGui: source is NULL, which suggests a programming bug" << std::endl;
   }
+}
 
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSourceGui::OnUpdateDisplay()
+{
+  m_RenderingManager->RequestUpdateAll();
 }

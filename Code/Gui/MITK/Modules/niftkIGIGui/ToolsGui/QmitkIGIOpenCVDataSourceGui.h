@@ -27,18 +27,19 @@
 
 #include "niftkIGIGuiExports.h"
 #include <QWidget>
-#include "mitkVideoSource.h"
+#include <mitkVideoSource.h>
+#include <mitkRenderingManager.h>
 #include "QmitkIGIDataSourceGui.h"
-#include "ui_QmitkIGIOpenCVDataSourceGui.h"
 
 class QmitkRenderWindow;
 class QmitkIGIOpenCVDataSource;
+class QGridLayout;
 
 /**
  * \class QmitkIGIOpenCVDataSourceGui
  * \brief Implements a GUI interface to display live video in the Surgical Guidance plugin.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIOpenCVDataSourceGui : public QmitkIGIDataSourceGui, public Ui_QmitkIGIOpenCVDataSourceGui
+class NIFTKIGIGUI_EXPORT QmitkIGIOpenCVDataSourceGui : public QmitkIGIDataSourceGui
 {
   Q_OBJECT
 
@@ -60,9 +61,20 @@ protected:
    */
   virtual void Initialize(QWidget *parent);
 
+protected slots:
+
+  /**
+   * \brief Connected to QmitkIGIOpenCVDataSource::UpdateDisplay to refresh the rendering manager.
+   */
+  void OnUpdateDisplay();
+
 private:
 
   QmitkIGIOpenCVDataSource* GetOpenCVDataSource() const;
+
+  QmitkRenderWindow               *m_RenderWindow;
+  mitk::RenderingManager::Pointer  m_RenderingManager;
+  QGridLayout                     *m_Layout;
 
 }; // end class
 

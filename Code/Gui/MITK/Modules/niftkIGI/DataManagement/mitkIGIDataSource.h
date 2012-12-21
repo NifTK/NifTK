@@ -32,6 +32,7 @@
 #include <itkVersion.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <itkFastMutexLock.h>
 #include <list>
 #include "mitkIGIDataType.h"
 
@@ -263,6 +264,7 @@ private:
    */
   bool DoSaveData(mitk::IGIDataType* data);
 
+  itk::FastMutexLock::Pointer                     m_Mutex;
   mitk::DataStorage                              *m_DataStorage;
   int                                             m_Identifier;
   float                                           m_FrameRate;

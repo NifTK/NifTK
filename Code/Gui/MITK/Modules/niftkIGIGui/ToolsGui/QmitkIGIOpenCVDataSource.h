@@ -30,12 +30,12 @@
 #include <mitkOpenCVVideoSource.h>
 #include <mitkMessage.h>
 #include <mitkVideoSource.h>
+
 #include <QObject>
 #include <QMetaType>
 
 class QmitkVideoBackground;
-class vtkRenderWindow;
-class vtkObject;
+class QmitkRenderWindow;
 
 /**
  * \class IGIOpenCVDataSource
@@ -79,9 +79,16 @@ public:
   bool IsCapturing();
 
   /**
-   * \brief Connects this class to a vtkRenderWindow.
+   * \brief Connects this class to a QmitkRenderWindow.
    */
-  void Initialize(vtkRenderWindow* window);
+  void Initialize(QmitkRenderWindow *window);
+
+signals:
+
+  /**
+   * \brief We signal to the GUI that it should be updated.
+   */
+  void UpdateDisplay();
 
 protected:
 
@@ -104,7 +111,8 @@ private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
   QmitkVideoBackground *m_Background;
-  vtkRenderWindow *m_RenderWindow;
+  QmitkRenderWindow *m_RenderWindow;
+
 }; // end class
 
 Q_DECLARE_METATYPE(mitk::VideoSource*)

@@ -34,10 +34,12 @@
 #include <QTimer>
 #include <QSet>
 #include <QColor>
+#include <QThread>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
 
 class QmitkStdMultiWidget;
+class QmitkIGIDataSourceManagerClearDownThread;
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -53,6 +55,8 @@ class NIFTKIGIGUI_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_Q
   Q_OBJECT
 
 public:
+
+  friend class QmitkIGIDataSourceManagerClearDownThread;
 
   mitkClassMacro(QmitkIGIDataSourceManager, itk::Object);
   itkNewMacro(QmitkIGIDataSourceManager);
@@ -194,7 +198,6 @@ private:
   QGridLayout                              *m_GridLayoutClientControls;
   QTimer                                   *m_UpdateTimer;    // Used to make the whole rendered scene update
   QTimer                                   *m_FrameRateTimer; // Used to just update the frame rate
-  QTimer                                   *m_CleardownTimer; // Used to tell data sources to clear stuff.
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
   unsigned int                              m_NextSourceIdentifier;
@@ -207,6 +210,7 @@ private:
   QString                                   m_DirectoryPrefix;
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;
+  QmitkIGIDataSourceManagerClearDownThread *m_ClearDownThread;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
@@ -237,5 +241,25 @@ private:
 
 }; // end class
 
+/**
+ * \brief Separate thread class to run the clear down.
+ */
+class QmitkIGIDataSourceManagerClearDownThread : public QThread {
+  Q_OBJECT
+public:
+  QmitkIGIDataSourceManagerClearDownThread(QObject *parent, QmitkIGIDataSourceManager *manager);
+  ~QmitkIGIDataSourceManagerClearDownThread();
+
+  void SetInterval(unsigned int milliseconds);
+  void run();
+
+public slots:
+  void OnTimeout();
+
+private:
+  unsigned int m_TimerInterval;
+  QTimer *m_Timer;
+  QmitkIGIDataSourceManager *m_Manager;
+};
 #endif
 
