@@ -74,19 +74,6 @@ QmitkIGITrackerTool::~QmitkIGITrackerTool()
   }
 }
 
-
-//-----------------------------------------------------------------------------
-QString QmitkIGITrackerTool::GetNameWithRom(const QString name)
-{
-  QString result = name;
-  if (!result.endsWith(".rom"))
-  {
-    result.append(".rom");
-  }
-  return result;
-}
-
-
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
 {
@@ -245,7 +232,6 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
       }
     }
 
-    toolName = this->GetNameWithRom(toolName);
     mitk::DataNode::Pointer tempNode = ds->GetNamedNode(toolName.toStdString().c_str());
 
     foreach ( tempNode, m_AssociatedTools.values(toolName))
