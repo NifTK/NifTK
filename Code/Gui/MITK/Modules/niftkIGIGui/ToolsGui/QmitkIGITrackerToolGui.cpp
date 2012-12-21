@@ -28,8 +28,9 @@
 #include "QmitkIGITrackerTool.h"
 #include "QmitkFiducialRegistrationWidgetDialog.h"
 #include "QmitkDataStorageComboBox.h"
+#include "QmitkIGIDataSourceMacro.h"
 
-NIFTK_IGITOOL_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerToolGui, "IGI Tracker Tool Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerToolGui, "IGI Tracker Tool Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerToolGui::QmitkIGITrackerToolGui()
@@ -54,9 +55,9 @@ QmitkIGITrackerTool* QmitkIGITrackerToolGui::GetQmitkIGITrackerTool() const
 {
   QmitkIGITrackerTool* result = NULL;
 
-  if (this->GetTool() != NULL)
+  if (this->GetSource() != NULL)
   {
-    result = dynamic_cast<QmitkIGITrackerTool*>(this->GetTool());
+    result = dynamic_cast<QmitkIGITrackerTool*>(this->GetSource());
   }
 
   return result;
@@ -67,6 +68,11 @@ QmitkIGITrackerTool* QmitkIGITrackerToolGui::GetQmitkIGITrackerTool() const
 void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config)
 {
   setupUi(this);
+
+  m_TrackerControlsWidget->pushButton_Tracking->setVisible(false);
+  m_TrackerControlsWidget->pushButton_GetCurrentPos->setVisible(false);
+  m_TrackerControlsWidget->pushButton_FiducialRegistration->setVisible(false);
+  m_TrackerControlsWidget->line->setVisible(false);
 
   connect(m_TrackerControlsWidget->pushButton_Tracking, SIGNAL(clicked()), this, SLOT(OnStartTrackingClicked()) );
   connect(m_TrackerControlsWidget->pushButton_GetCurrentPos, SIGNAL(clicked()), this, SLOT(OnGetCurrentPosition()) );
@@ -94,13 +100,12 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
         QString trackerTool;
         foreach (trackerTool, trackerTools)
         {
-          QString trackerToolName = tool->GetNameWithRom(trackerTool);
-          tool->GetToolRepresentation(trackerToolName);
+          tool->GetToolRepresentation(trackerTool);
         }
       }
     }
   }
-  m_TrackerControlsWidget->comboBox->SetDataStorage(this->GetTool()->GetDataStorage());
+  m_TrackerControlsWidget->comboBox->SetDataStorage(this->GetSource()->GetDataStorage());
 }
 
 
@@ -196,5 +201,6 @@ void QmitkIGITrackerToolGui::OnAssocClicked(void)
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnStatusUpdate(QString message)
 {
-  m_ConsoleDisplay->insertPlainText(message);
+  m_ConsoleDisplay->setPlainText(message);
+  m_ConsoleDisplay->update();
 }

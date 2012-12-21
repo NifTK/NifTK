@@ -22,39 +22,38 @@
 
  ============================================================================*/
 
-#ifndef QMITKIGITOOLGUI_H
-#define QMITKIGITOOLGUI_H
+#ifndef QMITKIGIDATASOURCEGUI_H
+#define QMITKIGIDATASOURCEGUI_H
 
 #include "niftkIGIGuiExports.h"
 #include <itkObject.h>
 #include <QWidget>
 #include <mitkDataStorage.h>
-#include "QmitkIGITool.h"
+#include "mitkIGIDataSource.h"
 
-class ClientDescriptorXMLBuilder;
 class QmitkStdMultiWidget;
 
 /**
- * \class QmitkIGIToolGui
+ * \class QmitkIGIDataSourceGui
  * \brief Base class for the GUI belonging to an IGI Tool.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIToolGui : public QWidget, public itk::Object
+class NIFTKIGIGUI_EXPORT QmitkIGIDataSourceGui : public QWidget, public itk::Object
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGIToolGui, itk::Object);
+  mitkClassMacro(QmitkIGIDataSourceGui, itk::Object);
 
   /**
-   * \brief Sets the tool that this GUI will operate.
+   * \brief Sets the DataSource that this GUI will operate.
    */
-  void SetTool(QmitkIGITool *tool);
+  void SetDataSource(mitk::IGIDataSource *source);
 
   /**
-   * \brief Retrieves the tool that this GUI will operate on.
+   * \brief Retrieves the source that this GUI will operate on.
    */
-  itkGetConstMacro(Tool, QmitkIGITool*);
+  itkGetConstMacro(Source, mitk::IGIDataSource*);
 
   /**
    * \brief Sets the StdMultiWidget.
@@ -69,7 +68,7 @@ public:
   /**
    * \brief ToolGui can have an optional Initialize function to perform any setup.
    */
-  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config) {};
+  virtual void Initialize(QWidget *parent) {};
 
   // just make sure ITK won't take care of anything (especially not destruction)
   virtual void Register() const;
@@ -78,19 +77,19 @@ public:
 
 signals:
 
-  void NewToolAssociated( QmitkIGITool* );
+  void NewSourceAssociated( mitk::IGIDataSource* );
 
 protected:
 
-  QmitkIGIToolGui(); // Purposefully hidden.
-  virtual ~QmitkIGIToolGui(); // Purposefully hidden.
+  QmitkIGIDataSourceGui(); // Purposefully hidden.
+  virtual ~QmitkIGIDataSourceGui(); // Purposefully hidden.
 
-  QmitkIGIToolGui(const QmitkIGIToolGui&); // Purposefully not implemented.
-  QmitkIGIToolGui& operator=(const QmitkIGIToolGui&); // Purposefully not implemented.
+  QmitkIGIDataSourceGui(const QmitkIGIDataSourceGui&); // Purposefully not implemented.
+  QmitkIGIDataSourceGui& operator=(const QmitkIGIDataSourceGui&); // Purposefully not implemented.
 
 private:
 
-  QmitkIGITool        *m_Tool;
+  mitk::IGIDataSource *m_Source;
   QmitkStdMultiWidget *m_StdMultiWidget;
 
 }; // end class

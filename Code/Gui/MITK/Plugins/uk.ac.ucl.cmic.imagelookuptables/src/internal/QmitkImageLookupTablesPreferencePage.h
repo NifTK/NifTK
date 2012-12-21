@@ -26,7 +26,6 @@
 #define _QMITKIMAGELOOKUPTABLESPREFERENCE_PAGE_H_INCLUDED
 
 #include "berryIQtPreferencePage.h"
-#include "uk_ac_ucl_cmic_imagelookuptables_Export.h"
 #include <berryIPreferences.h>
 
 class QWidget;
@@ -40,7 +39,7 @@ class QSpinBox;
  * \ingroup uk_ac_ucl_cmic_gui_imagelookuptables
  *
  */
-class IMAGELOOKUPTABLES_EXPORTS QmitkImageLookupTablesPreferencePage : public QObject, public berry::IQtPreferencePage
+class QmitkImageLookupTablesPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

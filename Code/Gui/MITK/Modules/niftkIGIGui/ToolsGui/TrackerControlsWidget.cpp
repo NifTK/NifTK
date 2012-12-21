@@ -69,25 +69,11 @@ void TrackerControlsWidget::InitTrackerTools(QStringList &toolList)
 
   comboBox_trackerTool->clear();
 
-  if (toolList.contains(QString("8700338.rom")))
-    comboBox_trackerTool->addItem(pix2, "8700338.rom");
-  else
-    comboBox_trackerTool->addItem(pix, "8700338.rom");
-
-  if (toolList.contains(QString("8700339.rom")))
-    comboBox_trackerTool->addItem(pix2, "8700339.rom");
-  else
-    comboBox_trackerTool->addItem(pix, "8700339.rom");
-
-  if (toolList.contains(QString("8700340.rom")))
-    comboBox_trackerTool->addItem(pix2, "8700340.rom");
-  else
-    comboBox_trackerTool->addItem(pix, "8700340.rom");
-
-  if (toolList.contains(QString("8700302.rom")))
-    comboBox_trackerTool->addItem(pix2, "8700302.rom");
-  else
-    comboBox_trackerTool->addItem(pix, "8700302.rom");
+  QString thistool;
+  foreach (thistool, toolList)
+  {
+	  comboBox_trackerTool->addItem(pix2, thistool);
+  }
 
   m_CurrentlyTrackedTools = toolList;
 }

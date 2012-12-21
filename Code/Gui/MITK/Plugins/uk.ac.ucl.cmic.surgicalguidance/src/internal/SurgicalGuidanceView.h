@@ -26,7 +26,8 @@
 #define SurgicalGuidanceView_h
 
 #include "QmitkBaseLegacyView.h"
-#include "QmitkIGIToolManager.h"
+#include "QmitkIGIDataSourceManager.h"
+#include <berryIBerryPreferences.h>
 
 /**
  * \class SurgicalGuidanceView
@@ -66,7 +67,13 @@ private slots:
   
 private:
 
-  QmitkIGIToolManager::Pointer  m_ToolManager;
+  /// \brief Retrieve's the pref values from preference service, and stored in member variables.
+  void RetrievePreferenceValues();
+
+  /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+
+  QmitkIGIDataSourceManager::Pointer  m_DataSourceManager;
 };
 
 #endif // SurgicalGuidanceView_h

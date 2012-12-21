@@ -26,7 +26,6 @@
 #define _IMAGESTATISTICSVIEWPREFERENCESPAGE_H_INCLUDED
 
 #include "berryIQtPreferencePage.h"
-#include "uk_ac_ucl_cmic_imagestatistics_Export.h"
 #include <berryIPreferences.h>
 
 class QWidget;
@@ -41,7 +40,7 @@ class QSpinBox;
  * \ingroup uk_ac_ucl_cmic_imagestatistics_internal
  *
  */
-class IMAGESTATISTICS_EXPORT ImageStatisticsViewPreferencesPage : public QObject, public berry::IQtPreferencePage
+class ImageStatisticsViewPreferencesPage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
