@@ -33,7 +33,7 @@
  * \brief Base class for IGI Data Sources that are not receiving networked input,
  * and hence are grabbing data from the local machine - eg. Video grabber.
  */
-class NIFTKIGI_EXPORT QmitkIGILocalDataSource : public QmitkIGIDataSource
+class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSource : public QmitkIGIDataSource
 {
 
   Q_OBJECT
