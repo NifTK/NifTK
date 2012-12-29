@@ -350,7 +350,21 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1941, MITK 13706 = https://github.com/NifTK/MITK/commit/5fd6efd409fb027c74931c92a76e59e07d6bda93 (added LIBRARY_DIRS to FunctionCreateBlueBerryApplication)
     #       + Trac 1943, MITK 13617 = https://github.com/NifTK/MITK/commit/0686d220a213abcbb707154fc4bc9210d4230dad (setting _bundle_dest_dir as local variable)
     #
-    #     Giving 0686d220a2 on NifTK/MITK/niftk-tmp-12.10 branch      
+    #     Giving 0686d220a2 on NifTK/MITK/niftk-tmp-12.10 branch
+    #
+    # 23. Trac 1978 - New MITK version to pull in MITK version 2012.12.
+    #
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK c9b8a272f3 - Dec 17 2012 = 2012.12.0 release
+    #              
+    #       + Trac 853,  MITK 10174 = https://github.com/NifTK/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)  (this was fixed using an alternative method in MITK 13321, but we leave this change intact in our NifTK version rather than backing it out).
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
+    #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (Slicer Command Line Modules)
+    #
+    #     Giving e065d2cecb on NifTK/MITK/niftk branch.
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
