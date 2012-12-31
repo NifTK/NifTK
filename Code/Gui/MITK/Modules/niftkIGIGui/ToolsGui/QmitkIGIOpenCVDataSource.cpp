@@ -24,42 +24,37 @@
 
 #include "QmitkIGIOpenCVDataSource.h"
 #include "mitkIGIOpenCVDataType.h"
-#include <QmitkVideoBackground.h>
-#include <QmitkRenderWindow.h>
-#include <vtkRenderWindow.h>
-#include <vtkObjectFactory.h>
-#include <vtkCommand.h>
-#include <vtkSmartPointer.h>
-#include <vtkCallbackCommand.h>
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
 #include <cv.h>
+#include <QTimer>
+#include <QCoreApplication>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 : m_VideoSource(NULL)
-, m_Background(NULL)
-, m_RenderWindow(NULL)
+, m_Timer(NULL)
 {
   qRegisterMetaType<mitk::VideoSource*>();
-
-  m_VideoSource = mitk::OpenCVVideoSource::New();
-  m_VideoSource->SetVideoCameraInput(0);
-
-  int hertz = 25;
-  int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
-
-  m_Background = new QmitkVideoBackground(m_VideoSource);
-  m_Background->SetTimerDelay(updateTime);
-
-  connect(m_Background, SIGNAL(NewFrameAvailable(mitk::VideoSource*)), this, SLOT(OnNewFrameAvailable()));
-
-  this->StartCapturing();
 
   this->SetName("Video");
   this->SetType("Frame Grabber");
   this->SetDescription("OpenCV");
   this->SetStatus("Initialised");
+
+  m_VideoSource = mitk::OpenCVVideoSource::New();
+  m_VideoSource->SetVideoCameraInput(0);
+
+  this->StartCapturing();
+  m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
+
+  m_Timer = new QTimer();
+  m_Timer->setInterval(50); // milliseconds
+  m_Timer->setSingleShot(false);
+
+  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()));
+
+  m_Timer->start();
 }
 
 
@@ -67,11 +62,6 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
   this->StopCapturing();
-
-  if (m_Background != NULL)
-  {
-    delete m_Background;
-  }
 }
 
 
@@ -129,33 +119,10 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSource::Initialize(QmitkRenderWindow* renderWindow)
+void QmitkIGIOpenCVDataSource::OnTimeout()
 {
+  m_VideoSource->FetchFrame();
 
-  this->DeInitialize();
-
-  m_Background->AddRenderWindow(renderWindow->GetVtkRenderWindow());
-  m_RenderWindow = renderWindow;
-
-  m_Background->Enable();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSource::DeInitialize()
-{
-  m_Background->Disable();
-
-  if (m_RenderWindow != NULL)
-  {
-    m_Background->RemoveRenderWindow(m_RenderWindow->GetVtkRenderWindow());
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSource::OnNewFrameAvailable()
-{
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
   timeCreated->GetTime();
 
@@ -168,7 +135,7 @@ void QmitkIGIOpenCVDataSource::OnNewFrameAvailable()
 
   this->AddData(wrapper.GetPointer());
 
-  // We signal every time we receive data, rather than at the refresh rate, otherwise video looks very odd.
+  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();
 }
 

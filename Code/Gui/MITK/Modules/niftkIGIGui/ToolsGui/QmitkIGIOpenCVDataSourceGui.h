@@ -31,6 +31,7 @@
 #include <mitkRenderingManager.h>
 #include "QmitkIGIDataSourceGui.h"
 
+class QmitkVideoBackground;
 class QmitkRenderWindow;
 class QmitkIGIOpenCVDataSource;
 class QGridLayout;
@@ -72,6 +73,7 @@ private:
 
   QmitkIGIOpenCVDataSource* GetOpenCVDataSource() const;
 
+  QmitkVideoBackground            *m_Background;
   QmitkRenderWindow               *m_RenderWindow;
   mitk::RenderingManager::Pointer  m_RenderingManager;
   QGridLayout                     *m_Layout;

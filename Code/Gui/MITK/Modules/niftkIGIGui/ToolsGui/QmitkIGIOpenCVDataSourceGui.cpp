@@ -27,7 +27,6 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QGridLayout>
-
 #include <QmitkVideoBackground.h>
 #include <QmitkRenderWindow.h>
 #include "QmitkIGIDataSourceMacro.h"
@@ -38,6 +37,10 @@ NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIOpenCVDataSourceGui, "IGI 
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
+: m_Background(NULL)
+, m_RenderWindow(NULL)
+, m_RenderingManager(NULL)
+, m_Layout(NULL)
 {
   // We run this class with its own RenderingManager so that you don't
   // get rendering updates causing re-rendering before the video framebuffer is ready.
@@ -48,7 +51,18 @@ QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 {
+  m_Background->disconnect();
   this->disconnect();
+
+  // delete render window first.
+  if (m_RenderWindow != NULL)
+  {
+    delete m_RenderWindow;
+  }
+  if (m_Background != NULL)
+  {
+    delete m_Background;
+  }
 }
 
 
@@ -76,14 +90,15 @@ void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
   m_Layout->setSpacing(0);
 
   m_RenderWindow = new QmitkRenderWindow(this, QString("QmitkIGIOpenCVDataSourceGui"), NULL, m_RenderingManager);
-
   m_Layout->addWidget(m_RenderWindow, 0, 0);
 
   QmitkIGIOpenCVDataSource *source = this->GetOpenCVDataSource();
-
   if (source != NULL)
   {
-    source->Initialize(m_RenderWindow);
+    m_Background = new QmitkVideoBackground(source->GetVideoSource());
+    m_Background->AddRenderWindow(m_RenderWindow->GetVtkRenderWindow());
+    m_Background->UpdateVideo();
+
     connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
   }
   else
@@ -96,5 +111,6 @@ void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSourceGui::OnUpdateDisplay()
 {
+  m_Background->UpdateVideo();
   m_RenderingManager->RequestUpdateAll();
 }

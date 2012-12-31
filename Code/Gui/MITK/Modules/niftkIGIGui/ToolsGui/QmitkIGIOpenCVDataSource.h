@@ -34,8 +34,7 @@
 #include <QObject>
 #include <QMetaType>
 
-class QmitkVideoBackground;
-class QmitkRenderWindow;
+class QTimer;
 
 /**
  * \class IGIOpenCVDataSource
@@ -78,16 +77,6 @@ public:
    */
   bool IsCapturing();
 
-  /**
-   * \brief Connects this class to a QmitkRenderWindow.
-   */
-  void Initialize(QmitkRenderWindow *window);
-
-  /**
-   * \brief Called from the GUI to detach from the background.
-   */
-  void DeInitialize();
-
 signals:
 
   /**
@@ -110,13 +99,15 @@ protected:
 
 private slots:
 
-  void OnNewFrameAvailable();
+  /**
+   * \brief Call this to process a new frame.
+   */
+  void OnTimeout();
 
 private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
-  QmitkVideoBackground *m_Background;
-  QmitkRenderWindow *m_RenderWindow;
+  QTimer *m_Timer;
 
 }; // end class
 

@@ -78,9 +78,34 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     }
   }
 
+  // Must delete the current GUI before the sources.
+  this->DeleteCurrentGuiWidget();
+
   // smart pointers should delete the sources, and each source should delete its data.
   m_Sources.clear();
 }
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::DeleteCurrentGuiWidget()
+{
+  if (m_GridLayoutClientControls != NULL)
+  {
+    QLayoutItem *item = m_GridLayoutClientControls->itemAtPosition(0,0);
+    if (item != NULL)
+    {
+      QWidget *widget = item->widget();
+      if (widget != NULL)
+      {
+        widget->setVisible(false);
+      }
+      m_GridLayoutClientControls->removeItem(item);
+      delete item;
+    }
+    delete m_GridLayoutClientControls;
+  }
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -487,21 +512,7 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 
   if (sourceGui != NULL)
   {
-    if (m_GridLayoutClientControls != NULL)
-    {
-      QLayoutItem *item = m_GridLayoutClientControls->itemAtPosition(0,0);
-      if (item != NULL)
-      {
-        QWidget *widget = item->widget();
-        if (widget != NULL)
-        {
-          widget->setVisible(false);
-        }
-        m_GridLayoutClientControls->removeItem(item);
-        delete item;
-      }
-      delete m_GridLayoutClientControls;
-    }
+    this->DeleteCurrentGuiWidget();
 
     m_GridLayoutClientControls = new QGridLayout(m_Frame);
     m_GridLayoutClientControls->setSpacing(0);

@@ -239,6 +239,11 @@ private:
    */
   void PrintStatusMessage(const QString& message) const;
 
+  /**
+   * \brief Deletes the current GUI widget.
+   */
+  void DeleteCurrentGuiWidget();
+
 }; // end class
 
 /**
