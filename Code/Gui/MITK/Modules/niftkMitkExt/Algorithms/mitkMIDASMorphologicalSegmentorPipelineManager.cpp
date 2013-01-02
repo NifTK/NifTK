@@ -629,18 +629,20 @@ MIDASMorphologicalSegmentorPipelineManager
     pipeline = new MorphologicalSegmentorPipeline<TPixel, VImageDimension>();
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
-    pipeline->m_ThresholdingFilter->SetInput(itkImage);
-    pipeline->m_ErosionMaskFilter->SetInput(1, erosionsAdditionsToItk->GetOutput());
-    pipeline->m_ErosionMaskFilter->SetInput(2, erosionEditsToItk->GetOutput());
-    pipeline->m_DilationMaskFilter->SetInput(1, dilationsAditionsToItk->GetOutput());
-    pipeline->m_DilationMaskFilter->SetInput(2, dilationsEditsToItk->GetOutput());
-    pipeline->m_DilationFilter->SetConnectionBreakerImage(dilationsEditsToItk->GetOutput());
   }
   else
   {
     myPipeline = iter->second;
     pipeline = static_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
   }
+
+  // Connect input images.
+  pipeline->m_ThresholdingFilter->SetInput(itkImage);
+  pipeline->m_ErosionMaskFilter->SetInput(1, erosionsAdditionsToItk->GetOutput());
+  pipeline->m_ErosionMaskFilter->SetInput(2, erosionEditsToItk->GetOutput());
+  pipeline->m_DilationMaskFilter->SetInput(1, dilationsAditionsToItk->GetOutput());
+  pipeline->m_DilationMaskFilter->SetInput(2, dilationsEditsToItk->GetOutput());
+  pipeline->m_DilationFilter->SetConnectionBreakerImage(dilationsEditsToItk->GetOutput());
 
   // Set most of the parameters on the pipeline.
   pipeline->SetParam(params);
@@ -659,6 +661,14 @@ MIDASMorphologicalSegmentorPipelineManager
   {
     pipeline->Update(editingFlags, editingRegion);
   }
+
+  // Disconnect pipeline, or else SmartPointers to ImageToItkType do not seem to deregister.
+  pipeline->m_ThresholdingFilter->SetInput(NULL);
+  pipeline->m_ErosionMaskFilter->SetInput(1, NULL);
+  pipeline->m_ErosionMaskFilter->SetInput(2, NULL);
+  pipeline->m_DilationMaskFilter->SetInput(1, NULL);
+  pipeline->m_DilationMaskFilter->SetInput(2, NULL);
+  pipeline->m_DilationFilter->SetConnectionBreakerImage(NULL);
 
   // Get hold of the output, and make sure we don't re-allocate memory.
   output->InitializeByItk< ImageType >(pipeline->GetOutput(editingFlags).GetPointer());
