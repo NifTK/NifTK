@@ -22,7 +22,7 @@
 
  ============================================================================*/
 
-#define NIFTK_IGITOOL_MACRO(EXPORT_SPEC, CLASS_NAME, DESCRIPTION) \
+#define NIFTK_IGISOURCE_MACRO(EXPORT_SPEC, CLASS_NAME, DESCRIPTION) \
 \
 class EXPORT_SPEC CLASS_NAME ## Factory : public ::itk::ObjectFactoryBase \
 { \
@@ -62,7 +62,7 @@ class EXPORT_SPEC CLASS_NAME ## Factory : public ::itk::ObjectFactoryBase \
     \
     CLASS_NAME ## Factory() \
     {\
-      itk::ObjectFactoryBase::RegisterOverride("QmitkIGITool", \
+      itk::ObjectFactoryBase::RegisterOverride("mitk::IGIDataSource", \
                               #CLASS_NAME, \
                               DESCRIPTION, \
                               1, \
@@ -104,7 +104,7 @@ class CLASS_NAME ## RegistrationMethod \
 \
 static CLASS_NAME ## RegistrationMethod somestaticinitializer_ ## CLASS_NAME ;
 
-#define NIFTK_IGITOOL_GUI_MACRO(EXPORT_SPEC, CLASS_NAME, DESCRIPTION) \
+#define NIFTK_IGISOURCE_GUI_MACRO(EXPORT_SPEC, CLASS_NAME, DESCRIPTION) \
 \
 class EXPORT_SPEC CLASS_NAME ## Factory : public ::itk::ObjectFactoryBase \
 {\

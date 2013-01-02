@@ -8,4 +8,10 @@
           icon="resources/icon.xpm" />
   </extension>
 
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.SurgicalGuidancePreferencePage" name="Surgical Guidance" class="SurgicalGuidanceViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.SurgicalGuidanceKeywords"></keywordreference>
+    </page>
+  </extension>
+
 </plugin>

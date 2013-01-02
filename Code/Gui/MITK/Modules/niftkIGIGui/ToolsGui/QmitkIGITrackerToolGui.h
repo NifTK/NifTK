@@ -26,7 +26,7 @@
 #define QMITKIGITRACKERTOOLGUI_H
 
 #include "niftkIGIGuiExports.h"
-#include "QmitkIGIToolGui.h"
+#include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGITrackerToolGui.h"
 
 class ClientDescriptorXMLBuilder;
@@ -37,20 +37,14 @@ class QmitkFiducialRegistrationWidgetDialog;
  * \class QmitkIGITrackerToolGui
  * \brief Base class for IGI Tracker Tool GUIs.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGITrackerToolGui : public QmitkIGIToolGui, public Ui_QmitkIGITrackerToolGui
+class NIFTKIGIGUI_EXPORT QmitkIGITrackerToolGui : public QmitkIGINiftyLinkDataSourceGui, public Ui_QmitkIGITrackerToolGui
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGITrackerToolGui, QmitkIGIToolGui);
+  mitkClassMacro(QmitkIGITrackerToolGui, QmitkIGINiftyLinkDataSourceGui);
   itkNewMacro(QmitkIGITrackerToolGui);
-
-  /**
-   * \brief Initializes this widget, calling Ui_QmitkIGITrackerToolGui::setupUi(parent),
-   * and any other stuff as necessary.
-   */
-  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
 
 protected:
 
@@ -59,6 +53,12 @@ protected:
 
   QmitkIGITrackerToolGui(const QmitkIGITrackerToolGui&); // Purposefully not implemented.
   QmitkIGITrackerToolGui& operator=(const QmitkIGITrackerToolGui&); // Purposefully not implemented.
+
+  /**
+   * \brief Initializes this widget, calling Ui_QmitkIGITrackerToolGui::setupUi(parent),
+   * and any other stuff as necessary.
+   */
+  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config);
 
 private slots:
 
@@ -73,7 +73,6 @@ private slots:
 private:
 
   QmitkIGITrackerTool* GetQmitkIGITrackerTool() const;
-
 
   QmitkFiducialRegistrationWidgetDialog *m_FiducialRegWidgetDialog;
 }; // end class
