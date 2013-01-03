@@ -1,0 +1,25 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.gui.qt.niftyigi} NiftyIGI Introduction
+
+Welcome to the NiftyIGI application. This page contains some general information
+to help you get started. For all other enquiries, please join 
+
+\li <a href="http://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users">the users mailing list</a>
+
+and ask questions via email.
+
+\section NiftyIGIPurpose Purpose
+
+The NiftyIGI application was developed by the 
+<a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a> as a general
+purpose graphical user interface (GUI) to support research into image guided interventions.
+It is not intended for clinical use.
+
+\section NiftyIGIFurtherReading Further Reading
+
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchMainWindow.html">The Main Window</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchEditors.html">Editors</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchViews.html">Views</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.gui.qt.commonapps/bundle/WorkbenchPerspectives.html">Perspectives</a>
+
+*/

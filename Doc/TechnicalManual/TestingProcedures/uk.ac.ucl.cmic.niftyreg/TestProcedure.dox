@@ -2,6 +2,15 @@
 
 \page TestProcedureNiftyReg NiftyReg View Test Procedure
 
-\li Read the Doxygen help page
+\li Read the Doxygen help page.
+\li Load a single image.
+\li Open the NiftyReg plugin window.
+\li Check that both the 'target' and 'source' images in the 'Quick Start' tab are set to this image.
+\li Open the 'Common' tab of the NiftyReg plugin and also set the 'target mask image' to this image.
+\li Press the 'Execute' button on the NiftyReg plugin and verify that the progress bar gets updated.
+\li When the registration finishes check that two new images have been added to the 'Data Manager'. The first should be called 'AffineRegnOf_<imagename>_To_<imagename>' and the second 'NonRigidRegnOf_<imagename>_To_<imagename>'. These images should be identical to the original target image'.
+\li Press the 'Save Transformation' button and save both the affine and non-rigid transformations to files. Check that these have been created.
+\li Press the 'Save Registration Parameters' button and save the registration parameters to a file. Check that this have been created and contains commands to run the 'reg_aladin' and 'reg_f3d'.
+\li Press the 'Load Registration Parameters' button and reload this same file.
 
 */

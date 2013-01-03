@@ -26,7 +26,6 @@
 #define _QMITKTHUMBNAILVIEWPREFERENCE_PAGE_H_INCLUDED
 
 #include "berryIQtPreferencePage.h"
-#include "uk_ac_ucl_cmic_thumbnail_Export.h"
 #include <berryIPreferences.h>
 
 class QWidget;
@@ -42,7 +41,7 @@ class QPushButton;
  * \ingroup uk_ac_ucl_cmic_gui_thumbnail
  *
  */
-class THUMBNAIL_EXPORT QmitkThumbnailViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class QmitkThumbnailViewPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

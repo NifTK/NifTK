@@ -1,11 +1,7 @@
 #include "XnatNode.h"
 
-#include "XnatNodeActivity.h"
-
-
-XnatNode::XnatNode(XnatNodeActivity& a, int r, XnatNode* p)
-: nodeActivity(a)
-, rowInParent(r)
+XnatNode::XnatNode(int r, XnatNode* p)
+: rowInParent(r)
 , parent(p)
 {
 }
@@ -22,7 +18,7 @@ XnatNode::~XnatNode()
   }
 }
 
-const char* XnatNode::getParentName()
+const char* XnatNode::getParentName() const
 {
   return ( ( parent != NULL ) ? parent->getChildName(rowInParent) : NULL );
 }
@@ -42,12 +38,12 @@ int XnatNode::getNumChildren()
   return children.size();
 }
 
-const char* XnatNode::getChildName(int row)
+const char* XnatNode::getChildName(int row) const
 {
   return children[row]->name.c_str();
 }
 
-XnatNode* XnatNode::getChildNode(int row)
+XnatNode* XnatNode::getChildNode(int row) const
 {
   return children[row]->node;
 }
@@ -57,14 +53,9 @@ void XnatNode::addChild(const char* name)
   children.push_back(new XnatChild(name));
 }
 
-void XnatNode::addChildNode(int row, XnatNode* node)
+void XnatNode::setChildNode(int row, XnatNode* node)
 {
   children[row]->node = node;
-}
-
-XnatNode* XnatNode::makeChildNode(int row)
-{
-  return nodeActivity.makeChildNode(row, this);
 }
 
 void XnatNode::removeChildNode(int row)
@@ -78,72 +69,67 @@ void XnatNode::removeChildNode(int row)
 
 void XnatNode::download(int row, const char* zipFilename)
 {
-  nodeActivity.download(row, this, zipFilename);
-}
-
-void XnatNode::downloadAllFiles(int row, const char* zipFilename)
-{
-  nodeActivity.downloadAllFiles(row, this, zipFilename);
+  // do nothing
 }
 
 void XnatNode::upload(int row, const char* zipFilename)
 {
-  nodeActivity.upload(row, this, zipFilename);
+  // do nothing
 }
 
 void XnatNode::add(int row, const char* name)
 {
-  nodeActivity.add(row, this, name);
+  // do nothing
 }
 
 void XnatNode::remove(int row)
 {
-  nodeActivity.remove(row, this);
+  // do nothing
 }
 
-const char* XnatNode::getKind()
+const char* XnatNode::getKind() const
 {
-  return nodeActivity.getKind();
+  return NULL;
 }
 
-const char* XnatNode::getModifiableChildKind(int row)
+const char* XnatNode::getModifiableChildKind(int row) const
 {
-  return nodeActivity.getModifiableChildKind(row, this);
+  return NULL;
 }
 
-const char* XnatNode::getModifiableParentName(int row)
+const char* XnatNode::getModifiableParentName(int row) const
 {
-  return nodeActivity.getModifiableParentName(row, this);
+  return NULL;
 }
 
-bool XnatNode::isFile()
+bool XnatNode::isFile() const
 {
-  return nodeActivity.isFile();
+  return false;
 }
 
-bool XnatNode::holdsFiles()
+bool XnatNode::holdsFiles() const
 {
-  return nodeActivity.holdsFiles();
+  return false;
 }
 
-bool XnatNode::receivesFiles()
+bool XnatNode::receivesFiles() const
 {
-  return nodeActivity.receivesFiles();
+  return false;
 }
 
-bool XnatNode::isModifiable(int row)
+bool XnatNode::isModifiable(int row) const
 {
-  return nodeActivity.isModifiable(row, this);
+  return false;
 }
 
-bool XnatNode::isDeletable()
+bool XnatNode::isDeletable() const
 {
-  return nodeActivity.isDeletable();
+  return false;
 }
 
-XnatNode::XnatChild::XnatChild(const char* who, XnatNode* ptr)
+XnatNode::XnatChild::XnatChild(const char* who)
 : name(who)
-, node(ptr)
+, node(0)
 {
 }
 

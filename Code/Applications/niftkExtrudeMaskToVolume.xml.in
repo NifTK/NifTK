@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+  <title>Extrude Mask to Volume</title>
+  <description><![CDATA[Converts an image containing one or more masks in the 'x', 'y' or 'z' planes into a volume by extruding these masks across the whole volume. This program was created to enable simple planar masks (such as those that can be created with the MITK Segmentation Plugin in NiftyView) which have been drawn on a single slice or slices, to be converted into a crude volume mask. Such a mask could then be used to mask the target or moving image in a registration, for instance.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputMask</name>
+      <flag>i</flag>
+      <longflag>inputMask</longflag>
+      <description>Input mask</description>
+      <label>Mask</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputMask</name>
+      <flag>o</flag>
+      <longflag>outputMask</longflag>
+      <description>Output mask</description>      
+      <label>Output mask</label>
+      <default>ExtrudedMask.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Extrusion Axes</label>
+    <description><![CDATA[By default the volume is extruded along each of the 'x', 'y' and 'z' axes but one or more of these can be switched off]]></description>
+
+    <boolean>
+      <name>flgExtrudeInX</name>
+      <longflag>xAxis</longflag>
+      <description>Extrude along the x axis.</description>
+      <label>X Axis</label>
+      <default>true</default>
+    </boolean>
+
+    <boolean>
+      <name>flgExtrudeInY</name>
+      <longflag>yAxis</longflag>
+      <description>Extrude along the y axis.</description>
+      <label>Y Axis</label>
+      <default>true</default>
+    </boolean>
+
+    <boolean>
+      <name>flgExtrudeInZ</name>
+      <longflag>zAxis</longflag>
+      <description>Extrude along the z axis.</description>
+      <label>Z Axis</label>
+      <default>true</default>
+    </boolean>
+
+  </parameters>
+
+</executable>

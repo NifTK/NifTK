@@ -28,26 +28,13 @@
 #include "itkImageFileWriter.h"
 #include "itkMultiplyImageFilter.h"
 
+#include "niftkMultiplyCLP.h"
+
 /*!
  * \file niftkMultiply.cxx
  * \page niftkMultiply
  * \section niftkMultiplySummary Multiplies image 1 by image 2 on a voxel-by-voxel basis, without checking image sizes.
  */
-void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Multiplies image 1 by image 2 on a voxel-by-voxel basis, without checking image sizes." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i image1FileName -j image2FileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image 1" << std::endl;
-    std::cout << "    -j    <filename>        Input image 2" << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  }
-
 struct arguments
 {
   std::string inputImage1;
@@ -99,37 +86,19 @@ int DoMain(arguments args)
 int main(int argc, char** argv)
 {
   // To pass around command line args
-  struct arguments args;
-  
+  PARSE_ARGS;
 
-  // Parse command line args
-  for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
-      Usage(argv[0]);
-      return -1;
-    }
-    else if(strcmp(argv[i], "-i") == 0){
-      args.inputImage1=argv[++i];
-      std::cout << "Set -i=" << args.inputImage1 << std::endl;
-    }
-    else if(strcmp(argv[i], "-o") == 0){
-      args.outputImage=argv[++i];
-      std::cout << "Set -o=" << args.outputImage << std::endl;
-    }
-    else if(strcmp(argv[i], "-j") == 0){
-      args.inputImage2=argv[++i];
-      std::cout << "Set -j=" << args.inputImage2 << std::endl;
-    }
-    else {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
-      return -1;
-    }            
-  }
+  // To pass around command line args
+  struct arguments args;
+  args.inputImage1=inputImage1.c_str();
+  args.inputImage2=inputImage2.c_str();
+  args.outputImage=outputImage.c_str();
 
   // Validate command line args
-  if (args.inputImage1.length() == 0 || args.outputImage.length() == 0 || args.inputImage2.length() == 0)
+  if (args.inputImage1.length() == 0 ||
+      args.inputImage2.length() == 0 ||
+      args.outputImage.length() == 0)
     {
-      Usage(argv[0]);
       return EXIT_FAILURE;
     }
 

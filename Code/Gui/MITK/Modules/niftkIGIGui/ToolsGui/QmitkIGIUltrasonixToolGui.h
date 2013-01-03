@@ -26,8 +26,9 @@
 #define QMITKIGIULTRASONIXTOOLGUI_H
 
 #include "niftkIGIGuiExports.h"
-#include "QmitkIGIToolGui.h"
+ #include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGIUltrasonixToolGui.h"
+#include <OIGTLMessage.h>
 
 class QmitkIGIUltrasonixTool;
 class ClientDescriptorXMLBuilder;
@@ -38,20 +39,14 @@ class QLabel;
  * \class QmitkIGITrackerToolGui
  * \brief Implements a tool GUI interface to receive and process messages from the Ultrasonix scanner.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixToolGui : public QmitkIGIToolGui, public Ui_QmitkIGIUltrasonixToolGui
+class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixToolGui : public QmitkIGINiftyLinkDataSourceGui, public Ui_QmitkIGIUltrasonixToolGui
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGIUltrasonixToolGui, QmitkIGIToolGui);
+  mitkClassMacro(QmitkIGIUltrasonixToolGui, QmitkIGINiftyLinkDataSourceGui);
   itkNewMacro(QmitkIGIUltrasonixToolGui);
-
-  /**
-   * \brief Initializes this widget, calling Ui_QmitkIGITrackerToolGui::setupUi(parent),
-   * and any other stuff as necessary.
-   */
-  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
 
 protected:
 
@@ -61,13 +56,16 @@ protected:
   QmitkIGIUltrasonixToolGui(const QmitkIGIUltrasonixToolGui&); // Purposefully not implemented.
   QmitkIGIUltrasonixToolGui& operator=(const QmitkIGIUltrasonixToolGui&); // Purposefully not implemented.
 
+  /**
+   * \brief Initializes this widget, calling Ui_QmitkIGIUltrasonixToolGui::setupUi(parent),
+   * and any other stuff as necessary.
+   */
+  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
+
 private slots:
 
   void OnStatusUpdate(QString message);
-  void OnUpdatePreviewImage(OIGTLMessage::Pointer msg);
-	void OnSaveImage(OIGTLImageMessage::Pointer imageMsg);
-	void OnManageSaveImage();
-	void OnManageChangeSaveDir();
+  void OnUpdatePreviewDisplay(QImage* image, float motorPosition);
 
 private:
 

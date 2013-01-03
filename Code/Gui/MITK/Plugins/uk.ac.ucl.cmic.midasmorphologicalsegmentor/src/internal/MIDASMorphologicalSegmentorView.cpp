@@ -39,7 +39,6 @@
 #include "mitkITKRegionParametersDataNodeProperty.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPaintbrushTool.h"
-#include "QmitkMIDASMultiViewWidget.h"
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 
@@ -108,8 +107,6 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
     mitk::Tool* paintbrushTool = toolManager->GetToolById(paintbrushToolId);
     assert(paintbrushTool);
 
-    this->WaitCursorOn();
-
     if (mitk::IsNodeABinaryImage(m_SelectedNode)
         && this->CanStartSegmentationForBinaryNode(m_SelectedNode)
         && !this->IsNodeASegmentationImage(m_SelectedNode)
@@ -128,6 +125,8 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
         return NULL;
       }
     }
+
+    this->WaitCursorOn();
 
     // Mark the newSegmentation as "unfinished".
     newSegmentation->SetProperty(mitk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(false));

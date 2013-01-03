@@ -25,10 +25,8 @@
 #ifndef QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_
 #define QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_
 
-#include "mitkQtNiftyViewAppDll.h"
-#include <QObject>
-#include <berryWorkbenchAdvisor.h>
-#include "QmitkExtWorkbenchWindowAdvisor.h"
+#include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
+#include "QmitkBaseWorkbenchWindowAdvisor.h"
 
 /**
  * \class QmitkNiftyViewWorkbenchWindowAdvisor
@@ -36,7 +34,7 @@
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview
  * \sa QmitkHelpAboutDialog
  */
-class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewWorkbenchWindowAdvisor : public QmitkExtWorkbenchWindowAdvisor
+class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewWorkbenchWindowAdvisor : public QmitkBaseWorkbenchWindowAdvisor
 {
   Q_OBJECT
 
@@ -45,22 +43,13 @@ public:
   QmitkNiftyViewWorkbenchWindowAdvisor(berry::WorkbenchAdvisor* wbAdvisor,
     berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
-  /// \brief We override the base class PreWindowOpen to specifically set
-  /// QmitkExtWorkbenchWindowAdvisor::showVersionInfo and
-  /// QmitkExtWorkbenchWindowAdvisor::showMitkVersionInfo to false.
-  virtual void PreWindowOpen();
-
-  /// \brief We override the base class PostWindowCreate to specifically
-  /// enable image files to be loaded from the command line and to customise
-  /// the About dialog box to call our QmitkHelpAboutDialog, and to remove
-  /// the Welcome dialog box.
+  /**
+   * \brief We override QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate
+   * to additionally provide an option to force the MITK display open
+   * with an environment variable called NIFTK_MITK_DISPLAY=ON.
+   */
   virtual void PostWindowCreate();
-
-public slots:
-
-  void OnHelpAbout();
-
 };
 
-#endif /*QMITKEXTWORKBENCHADVISOR_H_*/
+#endif /*QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_*/
 

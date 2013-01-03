@@ -245,10 +245,13 @@ void sliceCallBack(itk::Object* object, const itk::EventObject &, void*)
   // real stuff begins here
   // get the slice by slice filter and the median filter
   SliceBySliceFilterType *sliceFilter = dynamic_cast< SliceBySliceFilterType * >( object );
+
+#if 0
   BasicImageFeaturesFilterType *bifFilter = dynamic_cast< BasicImageFeaturesFilterType * >( sliceFilter->GetInputFilter() );
+  bifFilter->Print( std::cout );
+#endif
 
   std::cout << std::endl << "Processing slice: " << sliceFilter->GetSliceIndex() << std::endl;
-  //bifFilter->Print( std::cout );
 }
 
 

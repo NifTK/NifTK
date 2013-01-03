@@ -26,7 +26,6 @@
 #define _MIDASMORPHOLOGICALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
 
 #include "berryIQtPreferencePage.h"
-#include "uk_ac_ucl_cmic_midasmorphologicalsegmentor_Export.h"
 #include <berryIPreferences.h>
 
 class QWidget;
@@ -38,7 +37,7 @@ class QPushButton;
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor
  *
  */
-class MIDASMORPHOLOGICALSEGMENTOR_EXPORTS MIDASMorphologicalSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class MIDASMorphologicalSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

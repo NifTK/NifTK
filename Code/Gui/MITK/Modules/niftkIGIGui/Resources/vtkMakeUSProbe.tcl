@@ -1,30 +1,34 @@
 #! /usr/bin/tclsh 
 package require vtk
-# create matrix
+# create the calibration matrix
+set fp [ open "4DEC9-5.calib.matrix" "r" ]
+set file_data [ read $fp ] 
+close $fp
+scan $file_data "%f %f %f %f\n%f %f %f %f\n%f %f %f %d\n%f %f %f %f" a00 a01 a02 a03 a10 a11 a12 a13 a20 a21 a22 a23 a30 a31 a32 a33
 vtkMatrix4x4 matrix
-matrix SetElement 0 0 1.0
-matrix SetElement 0 1 0.0 
-matrix SetElement 0 2 0.0
-matrix SetElement 0 3 0.0
+matrix SetElement 0 0 $a00 
+matrix SetElement 0 1 $a01
+matrix SetElement 0 2 $a02
+matrix SetElement 0 3 $a03
 
-matrix SetElement 1 0 0.0
-matrix SetElement 1 1 1.0
-matrix SetElement 1 2 0.0
-matrix SetElement 1 3 0.0
+matrix SetElement 1 0 $a10
+matrix SetElement 1 1 $a11
+matrix SetElement 1 2 $a12
+matrix SetElement 1 3 $a13
 
-matrix SetElement 2 0 0.0
-matrix SetElement 2 1 0.0
-matrix SetElement 2 2 1.0
-matrix SetElement 2 3 0.0
+matrix SetElement 2 0 $a20
+matrix SetElement 2 1 $a21
+matrix SetElement 2 2 $a22
+matrix SetElement 2 3 $a23
 
-matrix SetElement 3 0 0.0
-matrix SetElement 3 1 0.0
-matrix SetElement 3 2 0.0
-matrix SetElement 3 3 1.0
+matrix SetElement 3 0 $a30
+matrix SetElement 3 1 $a31
+matrix SetElement 3 2 $a32
+matrix SetElement 3 3 $a33
 
 
-vtkTransform trans
-   trans SetMatrix matrix 
+vtkTransform Calibtrans
+   Calibtrans SetMatrix matrix 
 #the narrow part of the body
 vtkCylinderSource Body
 Body SetRadius 8
@@ -88,8 +92,14 @@ Appenderer AddInput [ BodyTransformer GetOutput ]
 Appenderer AddInput [ CowlTransformer GetOutput ] 
 Appenderer AddInput [ Transducer GetOutput ] 
 
+vtkTransformPolyDataFilter AppendTransformer 
+AppendTransformer SetInput [Appenderer GetOutput ]
+AppendTransformer SetTransform Calibtrans
+
+
+
 vtkXMLPolyDataWriter writer
-   writer SetInput [ Appenderer GetOutput ]
+   writer SetInput [ AppendTransformer GetOutput ]
    writer SetFileName "4DEC9-5.vtp"
    writer Update
 exit

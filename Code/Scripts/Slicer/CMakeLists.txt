@@ -22,13 +22,19 @@
 #
 #=================================================================================*/
 
-#--------------------------
-# Install the shell scripts
-#--------------------------
-IF(NOT WIN32)
+SET(scripts)
 
-  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/niftkBET.sh.in ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkBET.sh @ONLY )
-  INSTALL(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/niftkBET.sh DESTINATION ${NIFTK_INSTALL_BIN_DIR}/cli-modules COMPONENT scripts)
-  
+IF(NOT WIN32)
+  SET(scripts
+    niftkBET.sh
+    niftkCaminoMakeFAMDTRD.sh
+    ${scripts}    
+  )
 ENDIF()
+
+FOREACH(script ${scripts})
+  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
+  NIFTK_INSTALL_CLI(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
+ENDFOREACH()
+
 

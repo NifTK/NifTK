@@ -364,20 +364,12 @@ classes. Typical values are 32, 64 or 128. The default value is 64.
 
 \section NiftyRegReferences References
 
-[1] Sebastien Ourselin, A Roche, G Subsol, Xavier Pennec, and Nicholas Ayache.
-Reconstructing a 3d structure from serial histological sections. %Image 
-and Vision Computing, 19(1-2):25–31, 2001. 
+[1] Sebastien Ourselin, A Roche, G Subsol, Xavier Pennec, and Nicholas Ayache. Reconstructing a 3d structure from serial histological sections. Image and Vision Computing, 19(1-2):25–31, 2001. 
 
-[2] Robust registration of multi-modal images: Towards real-time clinical
-applications, 2002. 
+[2] Sebastien Ourselin, Radu Stefanescu and Xavier Pennec. Robust registration of multi-modal images: Towards real-time clinical applications, MICCAI 2002.
 
-[3] Marc Modat, Gerard G Ridgway, Zeike A Taylor, Manja Lehmann, 
-Josephine Barnes, Nick C Fox, David J Hawkes, and Sebastien Ourselin. 
-Fast free-form deformation using graphics processing units. Comput Meth 
-Prog Bio, accepted. 
+[3] Marc Modat, Gerard G Ridgway, Zeike A Taylor, Manja Lehmann, Josephine Barnes, Nick C Fox, David J Hawkes, and Sebastien Ourselin. Fast free-form deformation using graphics processing units. Comput Meth Prog Bio, accepted. 
 
-[4] D. Rueckert, L.I. Sonoda, C. Hayes, D.L.G. Hill, M.O. Leach, and D.J. 
-Hawkes. Nonrigid Registration Using Free-Form Deformations: Application 
-to Breast MR Images. IEEE Trans. Med. Imag., 18:712–721, 1999.
+[4] D. Rueckert, L.I. Sonoda, C. Hayes, D.L.G. Hill, M.O. Leach, and D.J. Hawkes. Nonrigid Registration Using Free-Form Deformations: Application to Breast MR Images. IEEE Trans. Med. Imag., 18:712–721, 1999.
 
 */

@@ -1,0 +1,17 @@
+/**
+  \defgroup uk_ac_ucl_cmic_gui_qt_niftymidas uk.ac.ucl.cmic.gui.qt.niftymidas Plugin
+  \ingroup CMICPlugins
+
+  \brief This plug-in is responsible for initializing the "NiftyMIDAS" application.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_gui_qt_niftymidas_internal Internal
+  \ingroup uk_ac_ucl_cmic_gui_qt_niftymidas
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.gui.qt.niftymidas plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

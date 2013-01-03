@@ -1,5 +1,5 @@
 Welcome
------------------------------
+-------
 
 This is the @NIFTK_PLATFORM@ Translational Software Platform version @NIFTK_VERSION_STRING@.
 For all questions and queries, please join the users mailing list: @NIFTK_USER_CONTACT@,
@@ -7,25 +7,34 @@ or the developers mailing list: @NIFTK_DEVELOPER_CONTACT@.
 
 
 Documentation
------------------------------
+-------------
 
 The documentation is provided via
 
   an online @NIFTK_WIKI_TEXT@: @NIFTK_WIKI_URL@
   nightly generated documentation: @NIFTK_NIGHTLY_DOCS@
 
-and the NiftyView GUI contains its own help files.
+and each graphical user interface contains its own help files.
 
+Notices
+-------
+
+We have included the Slicer Execution Model. This is downloaded at compile
+time, in order to build command line applications. In addition the file
+NifTK/CMake/niftkMacroBuildCLI.cmake contains a modified version of 
+SEMMacroBuildCLI.cmake.
+
+All or portions of this licensed product (such portions are the "Software") 
+have been obtained under license from The Brigham and Women's Hospital, Inc. 
+and are subject to the following terms and conditions:
+  http://www.slicer.org/copyright/copyright.txt
 
 Additional Libraries
------------------------------
+--------------------
 
 This platform uses these libraries/projects listed below. 
-Please check the Doc/licenses directory for licenses.
+Please check the Doc/Licenses directory for licenses.
      
-Current Mandatory libraries:
-----------------------------
-
 Library : Boost
 Website : http://www.boost.org/
 Purpose : Generic library of high quality C++ code. 
@@ -50,11 +59,12 @@ Library : MITK
 Website : http://www.mitk.org
 Purpose : Application framework, common medical imaging specific classes.
 License : Doc/Licenses/MITK.txt (BSD license)
+
+Library : Slicer Execution Model 
+Website : https://github.com/Slicer/SlicerExecutionModel
+Purpose : Part of the build system for building command line apps
+License : Doc/Licenses/SlicerExecutionModel (Slicer License)
           
-
-Additional Optional Libraries for the GUI NiftyView:
-----------------------------------------------------
-
 Library : Qt
 Website : http://qt.nokia.com/products
 Purpose : Gui framework.
@@ -64,10 +74,6 @@ Library : CTK
 Website : http://www.commontk.org
 Purpose : Common medical imaging specific classes.
 License : Doc/Licenses/CTK_LICENSE.txt (Apache license)
-
-
-Additional Optional Libraries:
-------------------------------
 
 Library : NiftyReg
 Website : http://sourceforge.net/projects/niftyreg/ 
@@ -88,3 +94,8 @@ Library : NiftyRec
 Website : http://sourceforge.net/projects/niftyrec/
 Purpose : Tomographic Reconstruction Library
 License : Doc/Licenses/NiftyRec.txt (BSD License)
+
+Library : NiftyLink
+Website : http://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html
+Purpose : Messaging Library to talk to client applications
+License : Doc/Licenses/NiftyLink.txt (Not finalised)

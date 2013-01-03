@@ -25,15 +25,15 @@
 #ifndef QMITKNIFTYVIEWAPPLICATION_H_
 #define QMITKNIFTYVIEWAPPLICATION_H_
 
-#include "mitkQtNiftyViewAppDll.h"
-#include <berryIApplication.h>
+#include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
+#include "QmitkBaseApplication.h"
 
 /**
  * \class QmitkNiftyViewApplication
  * \brief Plugin class to start up the NiftyView application.
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview
  */
-class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewApplication : public QObject, public berry::IApplication
+class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewApplication : public QmitkBaseApplication
 {
   Q_OBJECT
   Q_INTERFACES(berry::IApplication)
@@ -42,9 +42,12 @@ public:
 
   QmitkNiftyViewApplication();
   QmitkNiftyViewApplication(const QmitkNiftyViewApplication& other);
-  
-  int Start();
-  void Stop();
+
+protected:
+
+  /// \brief Derived classes override this to provide a workbench advisor.
+  virtual berry::WorkbenchAdvisor* GetWorkbenchAdvisor();
+
 };
 
 #endif /*QMITKNIFTYVIEWAPPLICATION_H_*/

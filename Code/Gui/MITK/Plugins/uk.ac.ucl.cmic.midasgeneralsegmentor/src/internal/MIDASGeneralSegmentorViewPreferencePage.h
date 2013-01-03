@@ -26,7 +26,6 @@
 #define _MIDASGENERALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
 
 #include "berryIQtPreferencePage.h"
-#include "uk_ac_ucl_cmic_midasgeneralsegmentor_Export.h"
 #include <berryIPreferences.h>
 
 class QWidget;
@@ -38,7 +37,7 @@ class QPushButton;
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor
  *
  */
-class MIDASGENERALSEGMENTOR_EXPORTS MIDASGeneralSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class MIDASGeneralSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

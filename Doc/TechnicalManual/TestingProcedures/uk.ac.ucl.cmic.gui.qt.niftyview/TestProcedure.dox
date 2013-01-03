@@ -4,4 +4,54 @@
 
 \li Read the Doxygen help page
 
+\section TestProcedureNiftyView Load Image Test
+
+\li Read the Doxygen help page
+\li Click on Open from the Tool bar
+\li Select Analyze image NifTKData/Input/volunteers/16856/16856-002-1.img.
+\li Click on Ok
+\li Verify that the image is listed in the Data Manager box
+\li Drag the image listed on the Data Manager box to the Drag and Drop Display
+\li The image should be visualized
+
+\section TestProcedureNiftyView Save Project Test
+
+\li Read the Doxygen help page
+\li Perform TestProcedureNiftyView Load Image Test as described in the previous section
+\li Click on the Save Project option from the Tool bar
+\li Give a name to the current project and click on save
+\li Close NiftyView
+\li Open NiftyView
+\li Click on Open from the Tool bar
+\li Search for the project that was saved
+\li Click on Ok
+\li Verify that the loaded image corresponds to the one that was saved
+
+\section TestProcedureNiftyView Close Project Test
+
+\li Read the Doxygen help page
+\li Perform TestProcedureNiftyView Save Project Test as described in the previous section
+\li Click on Close project
+\li When the warning box appears, click on Ok.
+\li Verify that the image is not anymore inthe Data Manager Box
+
+\section TestProcedureNiftyView Help About Box Test
+
+\li Read the Doxygen help page
+\li Click on the Help menu
+\li Click on the About option
+\li Verify that the about box appears and it is correctly displayed
+\li Scroll down to the botton of the box
+\li Press Ok and exit
+
+\section TestProcedureNiftyView Open Preferences Box Test
+
+\li Read the Doxygen help page
+\li Click on the Window menu
+\li Click on the Preferences option
+\li Go through every option at the left of the window and verify that the right side of the panel is correctly updated
+\li Press Ok and exit
+\li Press Ctrl + P and verify that the Preferences window appears
+\li Press Ok and exit
+
 */

@@ -26,33 +26,29 @@
 #define QMITKNIFTYVIEWAPPWORKBENCHADVISOR_H_
 
 #ifdef __MINGW32__
-// We need to inlclude winbase.h here in order to declare
+// We need to include winbase.h here in order to declare
 // atomic intrinsics like InterlockedIncrement correctly.
 // Otherwhise, they would be declared wrong within qatomic_windows.h .
 #include <windows.h>
 #endif
 
-#include "mitkQtNiftyViewAppDll.h"
-#include <berryQtWorkbenchAdvisor.h>
+#include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
+#include "QmitkBaseAppWorkbenchAdvisor.h"
 
 /**
  * \class QmitkNiftyViewAppWorkbenchAdvisor
  * \brief Advisor class to set up the initial NiftyView workbench.
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview
  */
-class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewAppWorkbenchAdvisor: public berry::QtWorkbenchAdvisor
+class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewAppWorkbenchAdvisor: public QmitkBaseAppWorkbenchAdvisor
 {
 public:
 
-  static const std::string DEFAULT_PERSPECTIVE_ID;
+  /// \brief Returns uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective which should match that in plugin.xml.
+  virtual std::string GetInitialWindowPerspectiveId();
 
-  void Initialize(berry::IWorkbenchConfigurer::Pointer configurer);
-
-  berry::WorkbenchWindowAdvisor* CreateWorkbenchWindowAdvisor(
-      berry::IWorkbenchWindowConfigurer::Pointer configurer);
-
-  std::string GetInitialWindowPerspectiveId();
-
+  /// \brief Gets the resource name of the window icon.
+  virtual std::string GetWindowIconResourcePath() const;
 };
 
-#endif /*QMITKEXTAPPWORKBENCHADVISOR_H_*/
+#endif /*QMITKNIFTYVIEWAPPWORKBENCHADVISOR_H_*/
