@@ -59,7 +59,7 @@
 /**
  * Roughly estimate the CSF intensity using the dilated mask. 
  */
-void estimateCSFIntensityFromDilatedMask(char* imageName, char* maskName, double& mean, double& sd)
+void estimateCSFGMWMIntensityFromDilatedMask(char* imageName, char* maskName, double& csfMean, double& csfSd, double& gmMean, double& wmMean)
 {
   typedef itk::Image<double, 3> DoubleImageType;
   typedef itk::Image<int, 3> IntImageType;
@@ -89,42 +89,78 @@ void estimateCSFIntensityFromDilatedMask(char* imageName, char* maskName, double
   multipleDilateImageFilter->SetInput(binariseUsingPadding->GetOutput());
   multipleDilateImageFilter->Update();
   
+  // Rough estimate for CSF mean by taking the mean values of the (dilated region - brain region).
   typedef itk::SubtractImageFilter<IntImageType, IntImageType> SubtractImageFilterType; 
   SubtractImageFilterType::Pointer subtractImageFilter = SubtractImageFilterType::New(); 
   subtractImageFilter->SetInput1(multipleDilateImageFilter->GetOutput());
   subtractImageFilter->SetInput2(binariseUsingPadding->GetOutput()); 
   subtractImageFilter->Update(); 
+
+  typedef itk::MultipleErodeImageFilter<IntImageType> MultipleErodeImageFilterType;
+  MultipleErodeImageFilterType::Pointer multipleErodeImageFilterFilter = MultipleErodeImageFilterType::New();
+
+  // Erode multiple times.
+  multipleErodeImageFilterFilter->SetNumberOfErosions(3);
+  multipleErodeImageFilterFilter->SetInput(binariseUsingPadding->GetOutput());
+  multipleErodeImageFilterFilter->Update();
+
+  // Rough estimate for GM mean by taking the mean values of the (brain region - eroded region).
+  SubtractImageFilterType::Pointer gmSubtractImageFilter = SubtractImageFilterType::New();
+  gmSubtractImageFilter->SetInput1(binariseUsingPadding->GetOutput());
+  gmSubtractImageFilter->SetInput2(multipleErodeImageFilterFilter->GetOutput());
+  gmSubtractImageFilter->Update();
   
   itk::ImageRegionIterator<DoubleImageType> imageIterator(imageReader->GetOutput(), imageReader->GetOutput()->GetLargestPossibleRegion());
   itk::ImageRegionIterator<IntImageType> maskIterator(subtractImageFilter->GetOutput(), subtractImageFilter->GetOutput()->GetLargestPossibleRegion());
-  
-  mean = 0.0; 
+  itk::ImageRegionIterator<IntImageType> gmMaskIterator(gmSubtractImageFilter->GetOutput(), gmSubtractImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<IntImageType> wmMaskIterator(multipleErodeImageFilterFilter->GetOutput(), multipleErodeImageFilterFilter->GetOutput()->GetLargestPossibleRegion());
+
+  csfMean = 0.0;
   int count = 0; 
-  for (imageIterator.GoToBegin(), maskIterator.GoToBegin();
+  gmMean = 0.0;
+  int gmCount = 0;
+  wmMean = 0.0;
+  int wmCount = 0;
+
+  for (imageIterator.GoToBegin(), maskIterator.GoToBegin(), gmMaskIterator.GoToBegin(), wmMaskIterator.GoToBegin();
        !imageIterator.IsAtEnd(); 
-       ++imageIterator, ++maskIterator)
+       ++imageIterator, ++maskIterator, ++gmMaskIterator, ++wmMaskIterator)
   {
     if (maskIterator.Get() > 0)
     {
-      mean += imageIterator.Get(); 
+      csfMean += imageIterator.Get();
       count++; 
     }
-    
+    if (gmMaskIterator.Get() > 0)
+    {
+      gmMean += imageIterator.Get();
+      gmCount++;
+    }
+    if (wmMaskIterator.Get() > 0)
+    {
+      wmMean += imageIterator.Get();
+      wmCount++;
+    }
   }
-  mean /= count; 
-  sd = 0.0; 
+  csfMean /= count;
+  gmMean /= gmCount;
+  wmMean /= wmCount;
+  csfSd = 0.0;
   for (imageIterator.GoToBegin(), maskIterator.GoToBegin();
        !imageIterator.IsAtEnd(); 
        ++imageIterator, ++maskIterator)
   {
     if (maskIterator.Get() > 0)
     {
-      double diff = imageIterator.Get()-mean; 
-      sd += diff*diff; 
+      double diff = imageIterator.Get()-csfMean;
+      csfSd += diff*diff;
     }
     
   }
-  sd = sqrt(sd/count); 
+  csfSd = sqrt(csfSd/count);
+
+  std::cerr << "csfMean=" << csfMean << ", gmMean=" << gmMean << ", wmMean=" << wmMean << std::endl;
+
 } 
 
 
@@ -322,7 +358,8 @@ int main(int argc, char* argv[])
     std::cerr << "         <output normalised repeat image>" << std::endl;
     std::cerr << "         <subroi:optional sub region of interest>" << std::endl;
     std::cerr << "         <number of classes for k-means clustering>" << std::endl;
-    std::cerr << "         <number of SD of WM intensity for the exclusion of high intensity voxel" << std::endl;
+    std::cerr << "         <number of SD of WM intensity for the exclusion of high intensity voxel>" << std::endl;
+    std::cerr << "         <1 for using kmeans auto init from image>" << std::endl;
     std::cerr << "Notice that all the images and masks for intensity normalisation must " << std::endl;
     std::cerr << "have the SAME voxel sizes and image dimensions. The same applies to the " << std::endl;
     std::cerr << "images and masks for BSI." << std::endl;
@@ -366,6 +403,15 @@ int main(int argc, char* argv[])
     {
       numberOfWmSdForIntensityExclusion = atof(argv[19]);
     }
+    bool isUseKMeanAutoInit = false;
+    if (argc > 20 && strlen(argv[20]) > 0)
+    {
+      if (atoi(argv[20]) == 1)
+      {
+        isUseKMeanAutoInit = true;
+        std::cerr << "isUseKMeanAutoInit = true" << std::endl;
+      }
+    }
 
     // Calculate mean brain intensity. 
     IntensityNormalisationCalculatorType::Pointer normalisationCalculator = IntensityNormalisationCalculatorType::New();
@@ -380,11 +426,15 @@ int main(int argc, char* argv[])
     
     double baselineCsfMean; 
     double baselineCsfSd; 
-    estimateCSFIntensityFromDilatedMask(argv[1], argv[2], baselineCsfMean, baselineCsfSd); 
+    double baselineGmMean;
+    double baselineWmMean;
+    estimateCSFGMWMIntensityFromDilatedMask(argv[1], argv[2], baselineCsfMean, baselineCsfSd, baselineGmMean, baselineWmMean);
     std::cout << "baseline csf," << baselineCsfMean << "," << baselineCsfSd << ","; 
     double repeatCsfMean; 
     double repeatCsfSd; 
-    estimateCSFIntensityFromDilatedMask(argv[3], argv[4], repeatCsfMean, repeatCsfSd);
+    double repeatGmMean;
+    double repeatWmMean;
+    estimateCSFGMWMIntensityFromDilatedMask(argv[3], argv[4], repeatCsfMean, repeatCsfSd, repeatGmMean, repeatWmMean);
     std::cout << "repeat csf," << repeatCsfMean << "," << repeatCsfSd << ","; 
                                      
     // Calculate the intensity window.                                      
@@ -397,10 +447,20 @@ int main(int argc, char* argv[])
     BinariseUsingPaddingImageFilterType::Pointer binariseImageFilter = BinariseUsingPaddingImageFilterType::New();
     MultipleDilateImageFilterType::Pointer multipleDilateImageFilter = MultipleDilateImageFilterType::New();
     
-    initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean2();
-    initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean2();
-    if (numberOfClasses >= 3)
-      initialMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean2();
+    if (isUseKMeanAutoInit == false)
+    {
+      initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean2();
+      initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean2();
+      if (numberOfClasses >= 3)
+        initialMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean2();
+    }
+    else
+    {
+      initialMeans[0] = baselineCsfMean;
+      initialMeans[1] = baselineGmMean;
+      if (numberOfClasses >= 3)
+        initialMeans[2] = baselineWmMean;
+    }
     binariseImageFilter->SetPaddingValue(0);
     binariseImageFilter->SetInput(baselineNormalisationMaskReader->GetOutput());
     binariseImageFilter->Update();
@@ -418,10 +478,20 @@ int main(int argc, char* argv[])
     imageWriter->SetFileName (argv[14]);
     imageWriter->Update();
     
-    initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean1();
-    initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean1();
-    if (numberOfClasses >= 3)
-      initialMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean1();
+    if (isUseKMeanAutoInit == false)
+    {
+      initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean1();
+      initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean1();
+      if (numberOfClasses >= 3)
+        initialMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean1();
+    }
+    else
+    {
+      initialMeans[0] = repeatCsfMean;
+      initialMeans[1] = repeatGmMean;
+      if (numberOfClasses >= 3)
+        initialMeans[2] = repeatWmMean;
+    }
     binariseImageFilter->SetPaddingValue(0);
     binariseImageFilter->SetInput(repeatNormalisationMaskReader->GetOutput());
     binariseImageFilter->Update();
