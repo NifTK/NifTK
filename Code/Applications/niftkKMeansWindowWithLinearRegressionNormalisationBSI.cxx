@@ -159,7 +159,7 @@ void estimateCSFGMWMIntensityFromDilatedMask(char* imageName, char* maskName, do
   }
   csfSd = sqrt(csfSd/count);
 
-  std::cerr << "csfMean=" << csfMean << ", gmMean=" << gmMean << ", wmMean=" << wmMean << std::endl;
+  // std::cerr << "csfMean=" << csfMean << ", gmMean=" << gmMean << ", wmMean=" << wmMean << std::endl;
 
 } 
 
@@ -409,7 +409,7 @@ int main(int argc, char* argv[])
       if (atoi(argv[20]) == 1)
       {
         isUseKMeanAutoInit = true;
-        std::cerr << "isUseKMeanAutoInit = true" << std::endl;
+        // std::cerr << "isUseKMeanAutoInit = true" << std::endl;
       }
     }
 
