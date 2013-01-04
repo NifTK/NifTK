@@ -529,4 +529,6 @@ void mitk::MIDASPaintbrushTool::RunITKProcessor(
   {
     processor->Undo();
   }
+
+  processor->SetDestinationImage(NULL);
 }

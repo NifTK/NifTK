@@ -332,7 +332,7 @@ void QmitkSingleWidgetEditor::OnPreferencesChanged(const berry::IBerryPreference
 
   std::vector<std::string> keys = prefs->Keys();
   
-  for( int i = 0; i < keys.size(); ++i )
+  for( unsigned int i = 0; i < keys.size(); ++i )
   {
     if( keys[i] == "DepartmentLogo")
     {

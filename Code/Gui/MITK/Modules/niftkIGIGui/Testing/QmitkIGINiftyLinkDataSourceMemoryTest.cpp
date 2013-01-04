@@ -38,7 +38,7 @@ int QmitkIGINiftyLinkDataSourceMemoryTest(int /*argc*/, char* /*argv*/[])
   OIGTLTrackingDataMessage* msg = new OIGTLTrackingDataMessage();
 
   // It gets wrapped in a data type. Here we create a local pointer, not a smart pointer.
-  QmitkIGINiftyLinkDataType* dataType = QmitkIGINiftyLinkDataType::New();
+  QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
   dataType->SetMessage(msg);
 
   // It gets added to the buffer of the data storage.
