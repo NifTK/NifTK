@@ -34,8 +34,6 @@ IF(WIN32)
     "E:/build/R304-developer/"
     "E:/NifTK/nvapi/"
     "E:/NifTK/R304-developer/"
-    "/usr/local/nvapi"
-    "/scratch0/NOT_BACKED_UP/clarkson/build/R304-developer"   
   )
 
   FIND_PATH(NVAPI_INCLUDE_DIR

@@ -35,6 +35,10 @@
 #include "QmitkIGIOpenCVDataSource.h"
 #include "QmitkIGIDataSourceGui.h"
 
+#ifdef _USE_NVAPI
+#include "QmitkIGINVidiaDataSource.h"
+#endif
+
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
@@ -226,9 +230,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 {
   Ui_QmitkIGIDataSourceManager::setupUi(parent);
 
-  m_PlayPushButton->setIcon(QIcon(":/niftkIGIGuiResources/play.png"));
-  m_RecordPushButton->setIcon(QIcon(":/niftkIGIGuiResources/record.png"));
-  m_StopPushButton->setIcon(QIcon(":/niftkIGIGuiResources/stop.png"));
+  m_PlayPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/play.png"));
+  m_RecordPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/record.png"));
+  m_StopPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/stop.png"));
 
   m_PlayPushButton->setEnabled(false); // not ready yet.
   m_RecordPushButton->setEnabled(true);
@@ -249,6 +253,11 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("networked tracker");
   m_SourceSelectComboBox->addItem("networked ultrasonix scanner");
   m_SourceSelectComboBox->addItem("local frame grabber");
+
+#ifdef _USE_NVAPI
+  m_SourceSelectComboBox->addItem("local NVidia SDI");
+#endif
+
 
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
   m_ToolManagerConsole->setMaximumHeight(100);
@@ -402,6 +411,12 @@ void QmitkIGIDataSourceManager::OnAddSource()
   {
     source = QmitkIGIOpenCVDataSource::New();
   }
+#ifdef _USE_NVAPI
+  else if (sourceType == 3)
+  {
+    source = QmitkIGINVidiaDataSource::New();
+  }
+#endif
   else
   {
     std::cerr << "Matt, not implemented yet" << std::endl;

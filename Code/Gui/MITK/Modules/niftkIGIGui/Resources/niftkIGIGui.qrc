@@ -1,8 +1,4 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource prefix="/niftkIGIGuiResources/">
-    <file>play.png</file>
-    <file>stop.png</file>
-    <file>pause.png</file>
-    <file>record.png</file>  
   </qresource>
 </RCC>

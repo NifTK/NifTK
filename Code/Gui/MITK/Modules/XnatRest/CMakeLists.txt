@@ -8,5 +8,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set_target_properties(XnatRest PROPERTIES COMPILE_FLAGS "-fvisibility=default")
 endif()
 
-# add testing dir
-add_subdirectory(Testing)
+IF(BUILD_TESTING)  
+  ADD_SUBDIRECTORY(Testing)
+ENDIF()  

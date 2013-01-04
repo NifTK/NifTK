@@ -10,9 +10,9 @@
 #
 #  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
 #
-#  Last Changed      : $LastChangedDate: 2011-12-16 15:42:03 +0000 (Fri, 16 Dec 2011) $ 
-#  Revision          : $Revision: 8057 $
-#  Last modified by  : $Author: mjc $
+#  Last Changed      : $LastChangedDate$ 
+#  Revision          : $Revision$
+#  Last modified by  : $Author$
 #
 #  Original author   : m.clarkson@ucl.ac.uk
 #
@@ -22,36 +22,9 @@
 #
 #=================================================================================*/
 
-SET(MODULE_DIRS
-  niftkMitkExt
-  niftkQmitkExt
-  XnatRest
-  XnatRestWidgets
+# tests with no extra command line parameter
+SET(MODULE_TESTS
 )
 
-IF(BUILD_IGI)
-
-  SET(MODULE_DIRS
-    ${MODULE_DIRS}
-    niftkIGI
-    niftkIGIGui
-  )
-
-  IF(NVAPI_FOUND)
-    SET(MODULE_DIRS
-      ${MODULE_DIRS}
-      niftkNVidia
-      niftkNVidiaGui
-    )
-  ENDIF()
-
-  SET(MODULE_DIRS
-    ${MODULE_DIRS}
-    niftkIGIGuiManager    
-  )
-  
-ENDIF()
-
-FOREACH(MODULE_DIR ${MODULE_DIRS})
-  ADD_SUBDIRECTORY(${MODULE_DIR})
-ENDFOREACH()
+set(MODULE_CUSTOM_TESTS
+)
