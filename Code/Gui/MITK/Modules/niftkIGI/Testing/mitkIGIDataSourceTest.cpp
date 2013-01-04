@@ -109,8 +109,10 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
   MITK_TEST_CONDITION_REQUIRED(test == data2, ".. Testing request nearest to second data point, but after all data");
   MITK_TEST_CONDITION_REQUIRED(dataSource->IsCurrentWithinTimeTolerance() == false, ".. Testing that this frame is invalid");
 
+  dataSource->UpdateFrameRate();
   dataSource->CleanBuffer();
-  MITK_TEST_CONDITION_REQUIRED(dataSource->GetBufferSize() == 1, ".. Calling clean, should only delete upto the current buffer.");
+
+  MITK_TEST_CONDITION_REQUIRED(dataSource->GetBufferSize() == 2, ".. Calling clean, will not delete anything as there is now a minimum of 25.");
 
   dataSource->ClearBuffer();
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetBufferSize() == 0, ".. Calling clear, should delete all buffer");
@@ -132,5 +134,6 @@ int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
 
     MITK_TEST_CONDITION_REQUIRED(dataSource->GetFrameRate() == expectedFrameRate, "... Testing expected frame rate, i=" << i << ", exp=" << expectedFrameRate << ", actual=" << dataSource->GetFrameRate());
   }
+
   return EXIT_SUCCESS;
 }
