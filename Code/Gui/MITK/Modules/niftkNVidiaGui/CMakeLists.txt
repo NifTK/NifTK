@@ -8,6 +8,7 @@ MITK_CREATE_MODULE(niftkNVidiaGui
 
 TARGET_LINK_LIBRARIES(niftkNVidiaGui
   ${NVAPI_LIBRARY}
+  niftknvapi
   )
   
 IF(BUILD_TESTING)  
