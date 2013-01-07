@@ -294,7 +294,7 @@ int main(int argc, char** argv)
   int dims = itk::PeekAtImageDimension(args.inputImage);
   if (dims != 2 && dims != 3 && dims != 4)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
   
@@ -305,8 +305,18 @@ int main(int argc, char** argv)
     case itk::ImageIOBase::UCHAR:
       if (dims == 2)
         {
-          result = PrintHeaderInfo<2, unsigned char>(args);
-          result = PrintImageInfo<2, unsigned char>(args);
+	  result = PrintHeaderInfo<2, unsigned char>(args);
+
+	  if ( itk::PeekAtPixelType(args.inputImage) == itk::ImageIOBase::SCALAR )
+	  {
+	    result = PrintImageInfo<2, unsigned char>(args);
+	  }
+	  else
+	  {
+	    std::cout << std::endl
+		      << "WARNING: Image intensity stats not implemented for non-scalar images" 
+		      << std::endl;
+	  }
         }
       else if (dims == 3)
         {
