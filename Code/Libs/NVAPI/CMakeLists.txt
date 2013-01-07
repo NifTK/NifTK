@@ -10,9 +10,9 @@
 #
 #  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
 #
-#  Last Changed      : $LastChangedDate: 2011-12-16 15:42:03 +0000 (Fri, 16 Dec 2011) $ 
-#  Revision          : $Revision: 8057 $
-#  Last modified by  : $Author: mjc $
+#  Last Changed      : $LastChangedDate: 2010-07-28 12:37:56 +0100 (Wed, 28 Jul 2010) $ 
+#  Revision          : $Revision: 7897 $
+#  Last modified by  : $Author: gerge $
 #
 #  Original author   : m.clarkson@ucl.ac.uk
 #
@@ -22,36 +22,19 @@
 #
 #=================================================================================*/
 
-SET(MODULE_DIRS
-  niftkMitkExt
-  niftkQmitkExt
-  XnatRest
-  XnatRestWidgets
+SET(niftknvapi_SRCS
+  niftkNVAPICommon.cpp
 )
 
-IF(BUILD_IGI)
+ADD_LIBRARY(niftknvapi ${niftknvapi_SRCS})
+IF(BUILD_SHARED_LIBS)
+  IF(WIN32)
+    ADD_DEFINITIONS(-DNIFTKNVAPI_WINDOWS_EXPORT)
+  ENDIF(WIN32)
+ENDIF(BUILD_SHARED_LIBS)
 
-  SET(MODULE_DIRS
-    ${MODULE_DIRS}
-    niftkIGI
-    niftkIGIGui
-  )
+TARGET_LINK_LIBRARIES(niftknvapi  
+  ${NVAPI_LIBRARY}
+)
 
-  IF(NVAPI_FOUND)  
-    SET(MODULE_DIRS
-      ${MODULE_DIRS}
-      niftkNVidia
-      niftkNVidiaGui
-    )
-  ENDIF()
-
-  SET(MODULE_DIRS
-    ${MODULE_DIRS}
-    niftkIGIGuiManager    
-  )
-  
-ENDIF()
-
-FOREACH(MODULE_DIR ${MODULE_DIRS})
-  ADD_SUBDIRECTORY(${MODULE_DIR})
-ENDFOREACH()
+MITK_INSTALL(TARGETS niftknvapi)
