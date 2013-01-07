@@ -108,7 +108,7 @@ int main(int argc, char **argv)
   // Map to associate the input strings with the enum values
   static std::map<std::string, itk::ImageIOBase::IOComponentType> mapOutputTypes;
 
-  mapOutputTypes["unset"]  = itk::ImageIOBase::UNKNOWNCOMPONENTTYPE;
+  mapOutputTypes["unchanged"]  = itk::ImageIOBase::UNKNOWNCOMPONENTTYPE;
   mapOutputTypes["uchar"]  = itk::ImageIOBase::UCHAR;
   mapOutputTypes["char"]   = itk::ImageIOBase::CHAR;
   mapOutputTypes["ushort"] = itk::ImageIOBase::USHORT;
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     int nNonUnityDimensions = dimension;
     itk::ImageIOBase::IOPixelType PixelType=imageIO->GetPixelType();
 
-    if (strOutputType == std::string("unset"))
+    if (strOutputType == std::string("unchanged"))
     {
       strOutputType = imageIO->GetComponentTypeAsString( imageIO->GetComponentType() ); 
     }
@@ -416,8 +416,6 @@ template <class TPixel, const int dimension> bool WriteNewScalarImage(Arguments 
 
   typename ImageType::SpacingType spacing = image->GetSpacing();
 
-  std::cout << "Initial spacing: " << spacing << std::endl;
-
   if ( args.rx && ( dimension > 0 ) ) 
   {
     std::cout << "Modifying 'x' resolution from: " 
@@ -446,10 +444,6 @@ template <class TPixel, const int dimension> bool WriteNewScalarImage(Arguments 
   }
 
   image->SetSpacing( spacing );
-
-  std::cout << "New spacing: " << image->GetSpacing() << std::endl;
-
-  image->Print(std::cout);
 
   typedef itk::ImageFileWriter<ImageType> WriterType;
   typename WriterType::Pointer writer = WriterType::New();
