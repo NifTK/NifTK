@@ -234,7 +234,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 	switch ( PixelType )
 	{
 	case itk::ImageIOBase::SCALAR:
-
+	{
 	  switch(componentType)
 	  {
 	  case itk::ImageIOBase::UCHAR:
@@ -381,8 +381,11 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 	    std::cerr << "non standard pixel component type" << std::endl;
 	  }
 
-	case itk::ImageIOBase::RGB:
+	  break;
+	}
 
+	case itk::ImageIOBase::RGB:
+	{
 	  switch(componentType)
 	  {
 	  case itk::ImageIOBase::UCHAR:
@@ -530,6 +533,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 	  }
 
 	  break;
+	}
 
 	default:
 	  std::cerr << "non standard pixel format" << std::endl;

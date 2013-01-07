@@ -22,6 +22,9 @@
   PURPOSE.  See the above copyright notices for more information.
 
   ============================================================================*/
+
+#include <map>
+
 #include "itkLogHelper.h"
 #include "itkCommandLineHelper.h"
 #include "itkImage.h"
@@ -34,6 +37,8 @@
 #include "itkINRImageIOFactory.h"
 #include "itkVectorImage.h"
 #include "itkRGBPixel.h"
+
+#include "niftkConvertImageCLP.h"
 
 /*!
  * \file niftkConvertImage.cxx
@@ -62,10 +67,29 @@ void Usage(char *exec)
   return;
 }
 
-typedef struct
+typedef struct arguments
 {
-  const char *inputName;
-  const char *outputName;
+  bool flg4DScalarImageTo3DVectorImage;
+
+  float rx;
+  float ry;
+  float rz;
+  float rt;
+
+  std::string strOutputType;
+
+  std::string fileInputImage;
+  std::string fileOutputImage;
+
+  arguments() {
+    flg4DScalarImageTo3DVectorImage = false;
+
+    rx = 0.;
+    ry = 0.;
+    rz = 0.;
+    rt = 0.;
+  }
+
 } Arguments;
 
 template <class TPixel> bool WriteNewImage(Arguments, const int dimension, bool vector);
@@ -81,68 +105,53 @@ template <class TPixel, const int inputDimension, const int outputDimension> boo
 
 int main(int argc, char **argv)
 {
+  // Map to associate the input strings with the enum values
+  static std::map<std::string, itk::ImageIOBase::IOComponentType> mapOutputTypes;
+
+  mapOutputTypes["unset"]  = itk::ImageIOBase::UNKNOWNCOMPONENTTYPE;
+  mapOutputTypes["uchar"]  = itk::ImageIOBase::UCHAR;
+  mapOutputTypes["char"]   = itk::ImageIOBase::CHAR;
+  mapOutputTypes["ushort"] = itk::ImageIOBase::USHORT;
+  mapOutputTypes["short"]  = itk::ImageIOBase::SHORT;
+  mapOutputTypes["uint"]   = itk::ImageIOBase::UINT;
+  mapOutputTypes["int"]    = itk::ImageIOBase::INT;
+  mapOutputTypes["ulong"]  = itk::ImageIOBase::ULONG;
+  mapOutputTypes["long"]   = itk::ImageIOBase::LONG;
+  mapOutputTypes["float"]  = itk::ImageIOBase::FLOAT;
+  mapOutputTypes["double"] = itk::ImageIOBase::DOUBLE;
+  
+  mapOutputTypes["unsigned_char"]  = itk::ImageIOBase::UCHAR;
+  mapOutputTypes["unsigned_short"] = itk::ImageIOBase::USHORT;
+  mapOutputTypes["unsigned_int"]   = itk::ImageIOBase::UINT;
+  mapOutputTypes["unsigned_long"]  = itk::ImageIOBase::ULONG;
+
   Arguments args;
-  args.inputName="\0";
-  args.outputName="\0";
-  bool vector=false;
-  int outputType = -1; 
 
-  for (int i=1; i<argc; i++)
+  
+
+  // Validate command line args
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  PARSE_ARGS;
+
+  if ( fileInputImage.length() == 0 || fileOutputImage.length() == 0 )
   {
-    if(strcmp(argv[i], "-help")==0 || 
-       strcmp(argv[i], "-Help")==0 || 
-       strcmp(argv[i], "-HELP")==0 || 
-       strcmp(argv[i], "-h")==0 || 
-       strcmp(argv[i], "--h")==0){
-      Usage(argv[0]);
-      return EXIT_FAILURE;
-    }
-    else if (strcmp(argv[i], "-i")==0)
-    {
-      args.inputName=argv[++i];
-    } else if (strcmp(argv[i], "-o")==0)
-    {
-      args.outputName=argv[++i];
-    } else if (strcmp(argv[i], "-v")==0)
-    {
-      vector=true;
-    } 
-    else if (strcmp(argv[i], "-ot")==0)
-    {
-      i++; 
-      if (i < argc)
-      {
-	if (strcmp(argv[i], "char")==0)
-	  outputType = itk::ImageIOBase::CHAR; 
-	else if (strcmp(argv[i], "short")==0)
-	  outputType = itk::ImageIOBase::SHORT; 
-	else if (strcmp(argv[i], "int")==0)
-	  outputType = itk::ImageIOBase::INT; 
-	else if (strcmp(argv[i], "float")==0)
-	  outputType = itk::ImageIOBase::FLOAT; 
-	else if (strcmp(argv[i], "double")==0)
-	  outputType = itk::ImageIOBase::DOUBLE;
-	else if (strcmp(argv[i], "uchar")==0)
-	  outputType = itk::ImageIOBase::UCHAR;
-	else if (strcmp(argv[i], "ushort")==0)
-	  outputType = itk::ImageIOBase::USHORT;
-
-	std::cout << "Using output type:" << argv[i] << std::endl; 
-      }
-    }
-    else
-    {
-      std::cerr<<"Unknown parameter: "<<argv[i]<<std::endl;
-      Usage(argv[0]);
-      return EXIT_FAILURE;
-    }
-  }
-
-  if (strcmp(args.inputName, "\0")==0 || strcmp(args.outputName, "\0")==0)
-  {
-    Usage(argv[0]);
+    commandLine.getOutput()->usage(commandLine);
     return EXIT_FAILURE;
   }
+
+  args.flg4DScalarImageTo3DVectorImage = flg4DScalarImageTo3DVectorImage;
+
+  args.rx = rx;
+  args.ry = ry;
+  args.rz = rz;
+  args.rt = rt;
+
+  args.fileInputImage  = fileInputImage;
+  args.fileOutputImage = fileOutputImage;
+  
+  args.strOutputType = strOutputType;
+
 
   try
   {
@@ -150,19 +159,22 @@ int main(int argc, char **argv)
     // Data variable type
     itk::ObjectFactoryBase::RegisterFactory(itk::INRImageIOFactory::New());
 
-    std::cout << "Input             :\t" << args.inputName << std::endl;
-    std::cout << "Output            :\t" << args.outputName << std::endl;
+    std::cout << "Input             :\t" << args.fileInputImage << std::endl;
+    std::cout << "Output            :\t" << args.fileOutputImage << std::endl;
 
-    itk::ImageIOBase::Pointer imageIO = itk::ImageIOFactory::CreateImageIO(args.inputName, itk::ImageIOFactory::ReadMode);
-    imageIO->SetFileName(args.inputName);
+    itk::ImageIOBase::Pointer imageIO = 
+      itk::ImageIOFactory::CreateImageIO(args.fileInputImage.c_str(), itk::ImageIOFactory::ReadMode);
+
+    imageIO->SetFileName(args.fileInputImage);
     imageIO->ReadImageInformation();
+
     int dimension=imageIO->GetNumberOfDimensions();
     int nNonUnityDimensions = dimension;
     itk::ImageIOBase::IOPixelType PixelType=imageIO->GetPixelType();
 
-    if (outputType == -1)
+    if (strOutputType == std::string("unset"))
     {
-      outputType = imageIO->GetComponentType(); 
+      strOutputType = imageIO->GetComponentTypeAsString( imageIO->GetComponentType() ); 
     }
   
 
@@ -177,103 +189,55 @@ int main(int argc, char **argv)
 
     std::cout << "Image Dimension   :\t" << dimension <<std::endl;
     std::cout << "PixelType         :\t" << imageIO->GetPixelTypeAsString(PixelType) << std::endl;
-    std::cout << "Vector type       :\t" << vector << std::endl;
+    std::cout << "Vector type       :\t" << args.flg4DScalarImageTo3DVectorImage << std::endl;
     std::cout << "Image voxel type  :\t";
     
     switch ( PixelType )
     {
     case itk::ImageIOBase::SCALAR:
+    {
 
-      switch (outputType)
+      switch ( mapOutputTypes[ strOutputType.c_str() ] )
       {
       case itk::ImageIOBase::UCHAR:
 	std::cout<<"unsigned char"<<std::endl;
-	WriteNewImage<unsigned char>(args, dimension, vector);
+	WriteNewImage<unsigned char>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::CHAR:
 	std::cout<<"char"<<std::endl;
-	WriteNewImage<char>(args, dimension, vector);
+	WriteNewImage<char>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::USHORT:
 	std::cout<<"unsigned short"<<std::endl;
-	WriteNewImage<unsigned short>(args, dimension, vector);
+	WriteNewImage<unsigned short>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::SHORT:
 	std::cout<<"short"<<std::endl;
-	WriteNewImage<short>(args, dimension, vector);
+	WriteNewImage<short>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::UINT:
 	std::cout<<"unsigned int"<<std::endl;
-	WriteNewImage<unsigned int>(args, dimension, vector);
+	WriteNewImage<unsigned int>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::INT:
 	std::cout<<"int"<<std::endl;
-	WriteNewImage<int>(args, dimension, vector);
+	WriteNewImage<int>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::ULONG:
 	std::cout<<"unsigned long"<<std::endl;
-	WriteNewImage<unsigned long>(args, dimension, vector);
+	WriteNewImage<unsigned long>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::LONG:
 	std::cout<<"long"<<std::endl;
-	WriteNewImage<long>(args, dimension, vector);
+	WriteNewImage<long>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::FLOAT:
 	std::cout<<"float"<<std::endl;
-	WriteNewImage<float>(args, dimension, vector);
+	WriteNewImage<float>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       case itk::ImageIOBase::DOUBLE:
 	std::cout<<"double"<<std::endl;
-	WriteNewImage<double>(args, dimension, vector);
-	break;
-      default:
-	std::cerr << "non standard component type" << std::endl;
-	return EXIT_FAILURE;
-      }
-
-    case itk::ImageIOBase::RGB:
-
-      switch (outputType)
-      {
-      case itk::ImageIOBase::UCHAR:
-	std::cout<<"unsigned char"<<std::endl;
-	WriteNewImage< itk::RGBPixel<unsigned char> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::CHAR:
-	std::cout<<"char"<<std::endl;
-	WriteNewImage< itk::RGBPixel<char> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::USHORT:
-	std::cout<<"unsigned short"<<std::endl;
-	WriteNewImage< itk::RGBPixel<unsigned short> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::SHORT:
-	std::cout<<"short"<<std::endl;
-	WriteNewImage< itk::RGBPixel<short> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::UINT:
-	std::cout<<"unsigned int"<<std::endl;
-	WriteNewImage< itk::RGBPixel<unsigned int> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::INT:
-	std::cout<<"int"<<std::endl;
-	WriteNewImage< itk::RGBPixel<int> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::ULONG:
-	std::cout<<"unsigned long"<<std::endl;
-	WriteNewImage< itk::RGBPixel<unsigned long> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::LONG:
-	std::cout<<"long"<<std::endl;
-	WriteNewImage< itk::RGBPixel<long> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::FLOAT:
-	std::cout<<"float"<<std::endl;
-	WriteNewImage< itk::RGBPixel<float> >(args, dimension, vector);
-	break;
-      case itk::ImageIOBase::DOUBLE:
-	std::cout<<"double"<<std::endl;
-	WriteNewImage< itk::RGBPixel<double> >(args, dimension, vector);
+	WriteNewImage<double>(args, dimension, args.flg4DScalarImageTo3DVectorImage);
 	break;
       default:
 	std::cerr << "non standard component type" << std::endl;
@@ -281,6 +245,60 @@ int main(int argc, char **argv)
       }
 
       break;
+    }
+
+    case itk::ImageIOBase::RGB:
+    {
+
+      switch ( mapOutputTypes[ strOutputType.c_str() ] )
+      {
+      case itk::ImageIOBase::UCHAR:
+	std::cout<<"unsigned char"<<std::endl;
+	WriteNewImage< itk::RGBPixel<unsigned char> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::CHAR:
+	std::cout<<"char"<<std::endl;
+	WriteNewImage< itk::RGBPixel<char> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::USHORT:
+	std::cout<<"unsigned short"<<std::endl;
+	WriteNewImage< itk::RGBPixel<unsigned short> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::SHORT:
+	std::cout<<"short"<<std::endl;
+	WriteNewImage< itk::RGBPixel<short> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::UINT:
+	std::cout<<"unsigned int"<<std::endl;
+	WriteNewImage< itk::RGBPixel<unsigned int> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::INT:
+	std::cout<<"int"<<std::endl;
+	WriteNewImage< itk::RGBPixel<int> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::ULONG:
+	std::cout<<"unsigned long"<<std::endl;
+	WriteNewImage< itk::RGBPixel<unsigned long> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::LONG:
+	std::cout<<"long"<<std::endl;
+	WriteNewImage< itk::RGBPixel<long> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::FLOAT:
+	std::cout<<"float"<<std::endl;
+	WriteNewImage< itk::RGBPixel<float> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      case itk::ImageIOBase::DOUBLE:
+	std::cout<<"double"<<std::endl;
+	WriteNewImage< itk::RGBPixel<double> >(args, dimension, args.flg4DScalarImageTo3DVectorImage);
+	break;
+      default:
+	std::cerr << "non standard component type" << std::endl;
+	return EXIT_FAILURE;
+      }
+
+      break;
+    }
 
     default:
       std::cerr << "non standard pixel format" << std::endl;
@@ -367,7 +385,7 @@ template <class TPixel, const int dimension> bool WriteNewScalarImage(Arguments 
   typename ImageReaderType::Pointer reader = ImageReaderType::New();
 
   // Image format
-  const char *inputFileExt=strrchr(args.inputName, '.');
+  const char *inputFileExt=strrchr(args.fileInputImage.c_str(), '.');
   if (strcmp(inputFileExt, ".gipl")==0)
   {
     itk::GiplImageIO::Pointer giplImageIO = itk::GiplImageIO::New();
@@ -379,29 +397,71 @@ template <class TPixel, const int dimension> bool WriteNewScalarImage(Arguments 
     reader->SetImageIO(vtkImageIO);
   }
 
-  reader->SetFileName(args.inputName);
+  reader->SetFileName(args.fileInputImage);
   try
   {
     reader->Update();
   }
   catch(itk::ExceptionObject &err)
   {
-    std::cerr<<"Exception caught when reading the input image: "<< args.inputName <<std::endl;
+    std::cerr<<"Exception caught when reading the input image: "<< args.fileInputImage <<std::endl;
     std::cerr<<"Error: "<<err<<std::endl;
     return EXIT_FAILURE;
   }
 
+  // Change the resolution?
+
+  typename ImageType::Pointer image = reader->GetOutput();
+  image->DisconnectPipeline();
+
+  typename ImageType::SpacingType spacing = image->GetSpacing();
+
+  std::cout << "Initial spacing: " << spacing << std::endl;
+
+  if ( args.rx && ( dimension > 0 ) ) 
+  {
+    std::cout << "Modifying 'x' resolution from: " 
+	      << spacing[0] << " to " << args.rx << " mm" << std::endl;
+    spacing[0] = args.rx;
+  }
+
+  if ( args.ry && ( dimension > 1 ) ) 
+  {
+    std::cout << "Modifying 'y' resolution from: " 
+	      << spacing[1] << " to " << args.ry << " mm" << std::endl;
+    spacing[1] = args.ry;
+  }
+
+  if ( args.rz && ( dimension > 2 ) ) 
+  {
+    std::cout << "Modifying 'z' resolution from: " 
+	      << spacing[2] << " to " << args.rz << " mm" << std::endl;
+    spacing[2] = args.rz;
+  }
+
+  if ( args.rt && ( dimension > 3 ) ) {
+    std::cout << "Modifying temporal resolution from: " 
+	      << spacing[3] << " to " << args.rt << " s" << std::endl;
+    spacing[3] = args.rt;
+  }
+
+  image->SetSpacing( spacing );
+
+  std::cout << "New spacing: " << image->GetSpacing() << std::endl;
+
+  image->Print(std::cout);
+
   typedef itk::ImageFileWriter<ImageType> WriterType;
   typename WriterType::Pointer writer = WriterType::New();
-  writer->SetInput(reader->GetOutput());
-  writer->SetFileName(args.outputName);
+  writer->SetInput(image);
+  writer->SetFileName(args.fileOutputImage);
   try
   {
     writer->Update();
   }
   catch(itk::ExceptionObject &err)
   {
-    std::cerr<<"Exception caught when writing the output image: "<< args.outputName <<std::endl;
+    std::cerr<<"Exception caught when writing the output image: "<< args.fileOutputImage <<std::endl;
     std::cerr<<"Error: "<<err<<std::endl;
     return EXIT_FAILURE;
   }
@@ -424,7 +484,7 @@ template <class TPixel, const int inputDimension, const int outputDimension> boo
   typename ImageReaderType::Pointer reader = ImageReaderType::New();
 
   // Image format
-  const char *inputFileExt=strrchr(args.inputName, '.');
+  const char *inputFileExt=strrchr(args.fileInputImage.c_str(), '.');
   if (strcmp(inputFileExt, ".gipl")==0)
   {
     itk::GiplImageIO::Pointer giplImageIO = itk::GiplImageIO::New();
@@ -436,14 +496,14 @@ template <class TPixel, const int inputDimension, const int outputDimension> boo
     reader->SetImageIO(vtkImageIO);
   }
 
-  reader->SetFileName(args.inputName);
+  reader->SetFileName(args.fileInputImage);
   try
   {
     reader->Update();
   }
   catch(itk::ExceptionObject &err)
   {
-    std::cerr<<"Exception caught when reading the input image: "<< args.inputName <<std::endl;
+    std::cerr<<"Exception caught when reading the input image: "<< args.fileInputImage <<std::endl;
     std::cerr<<"Error: "<<err<<std::endl;
     return EXIT_FAILURE;
   }
@@ -519,14 +579,14 @@ template <class TPixel, const int inputDimension, const int outputDimension> boo
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
   typename WriterType::Pointer writer = WriterType::New();
   writer->SetInput(outputImage);
-  writer->SetFileName(args.outputName);
+  writer->SetFileName(args.fileOutputImage);
   try
   {
     writer->Update();
   }
   catch(itk::ExceptionObject &err)
   {
-    std::cerr<<"Exception caught when writing the output image: "<< args.outputName <<std::endl;
+    std::cerr<<"Exception caught when writing the output image: "<< args.fileOutputImage <<std::endl;
     std::cerr<<"Error: "<<err<<std::endl;
     return EXIT_FAILURE;
   }
