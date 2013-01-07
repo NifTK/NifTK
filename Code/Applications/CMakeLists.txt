@@ -70,6 +70,7 @@ IF(SlicerExecutionModel_FOUND)
   SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES
     niftkAdd
     niftkApplyMaskToImage
+    niftkConvertImage
     niftkCreateMaskImage
     niftkCropImage
     niftkExtrudeMaskToVolume
@@ -205,7 +206,6 @@ SET(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkConnectedComponents
   niftkContourExtractor2DImageFilter
   #niftkConvertDofToFsl
-  niftkConvertImage
   niftkConvertMidasStrToNii
   niftkConvertToMidasStr
   niftkConvertTransformToRIREFormat
