@@ -2227,35 +2227,20 @@ int main( int argc, char *argv[] )
   // Scan the posterior(?) breast image region looking for chest surface points
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  ConnectedSurfaceVoxelFilterType::Pointer connectedSurfacePointsL = ConnectedSurfaceVoxelFilterType::New();
-  ConnectedSurfaceVoxelFilterType::Pointer connectedSurfacePointsR = ConnectedSurfaceVoxelFilterType::New();
+  ConnectedSurfaceVoxelFilterType::Pointer connectedSurfacePoints = ConnectedSurfaceVoxelFilterType::New();
 
-  connectedSurfacePointsL->SetInput( imSegmented );
-  connectedSurfacePointsR->SetInput( imSegmented );
-
-  connectedSurfacePointsL->SetLower( 1000  );
-  connectedSurfacePointsL->SetUpper( 1000 );
-
-  connectedSurfacePointsR->SetLower( 1000  );
-  connectedSurfacePointsR->SetUpper( 1000 );
-
-
-  connectedSurfacePointsL->SetReplaceValue( 1000 );
-  connectedSurfacePointsR->SetReplaceValue( 1000 );
-
-  connectedSurfacePointsL->SetSeed( idxNippleLeft  );
-  connectedSurfacePointsR->SetSeed( idxNippleRight );
-
-  // Combine left and right surface into one
-  MaxImageFilterType::Pointer lrSurfaceCombineFilter = MaxImageFilterType::New();
-  
-  lrSurfaceCombineFilter->SetInput1( connectedSurfacePointsL->GetOutput() );
-  lrSurfaceCombineFilter->SetInput2( connectedSurfacePointsR->GetOutput() );
+  connectedSurfacePoints->SetInput( imSegmented );
+  connectedSurfacePoints->SetLower( 1000  );
+  connectedSurfacePoints->SetUpper( 1000 );
+  connectedSurfacePoints->SetReplaceValue( 1000 );
+  connectedSurfacePoints->SetSeed( idxMidSternum  );
+  connectedSurfacePoints->AddSeed( idxNippleLeft  );
+  connectedSurfacePoints->AddSeed( idxNippleRight );
 
   try
   { 
     std::cout << "Region-growing the chest surface" << std::endl;
-    lrSurfaceCombineFilter->Update();
+    connectedSurfacePoints->Update();
   }
   catch (itk::ExceptionObject &ex)
   { 
@@ -2263,7 +2248,7 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
   
-  imChestSurfaceVoxels = lrSurfaceCombineFilter->GetOutput();
+  imChestSurfaceVoxels = connectedSurfacePoints->GetOutput();
   imChestSurfaceVoxels->DisconnectPipeline();
 
   // Extract the coordinates of the chest surface voxels
