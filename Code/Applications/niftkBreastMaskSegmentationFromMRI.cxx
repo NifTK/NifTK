@@ -72,6 +72,7 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkMaximumImageFilter.h"
+#include "itkImageAdaptor.h"
 
 #include <vtkMarchingCubes.h> 
 #include <vtkPolyDataWriter.h> 
@@ -248,6 +249,24 @@ struct larger_second
       return lhs.second > rhs.second;
    }
 };
+
+
+// -------------------------------------------------------------------------------------------------------
+// Pixel accessor class to include ascending and descending dark lines from BIF image into region Growing
+// -------------------------------------------------------------------------------------------------------
+class BIFIntensityAccessor
+{
+public:
+  typedef InputPixelType InternalType;
+  typedef InputPixelType ExternalType;
+
+  static ExternalType Get( const InternalType & in )
+  {
+    if ( in == 15.0f || in == 16.0f || in == 18.0f ) return 15.0f;
+    else return in;
+  }
+};
+
 
 
 // --------------------------------------------------------------------------
@@ -1979,32 +1998,78 @@ int main( int argc, char *argv[] )
       ++itBIFsLinear;
     }
     
+    
     // And then region grow from this voxel
 
-    connectedThreshold = ConnectedFilterType::New();
+    // Either with extended pectoral muscle width (ascending and descending dark lines added)
+    if ( flgProneSupineBoundary )
+    {      
+      typedef itk::ImageAdaptor< InternalImageType, BIFIntensityAccessor >  BIFIntensityAdaptorType;
+      typedef itk::ConnectedThresholdImageFilter< BIFIntensityAdaptorType, 
+                                                  InternalImageType >       ConnectedFilterAdaptorInputType;
 
-    connectedThreshold->SetInput( imBIFs );
+      BIFIntensityAdaptorType::Pointer BIFAdaptor = BIFIntensityAdaptorType::New();
+      BIFAdaptor->SetImage( imBIFs );
 
-    connectedThreshold->SetLower( 15  );
-    connectedThreshold->SetUpper( 15 );
+      ConnectedFilterAdaptorInputType::Pointer connectedAdaptorThreshold =  ConnectedFilterAdaptorInputType::New();
 
-    connectedThreshold->SetReplaceValue( 1000 );
-    connectedThreshold->SetSeed( idxMidPectoral );
+      
+      connectedAdaptorThreshold->SetInput( BIFAdaptor );
 
-    try
-    { 
-      std::cout << "Region-growing the pectoral muscle" << std::endl;
-      connectedThreshold->Update();
+
+      connectedAdaptorThreshold->SetLower( 15  );
+      connectedAdaptorThreshold->SetUpper( 15 );
+
+      connectedAdaptorThreshold->SetReplaceValue( 1000 );
+      connectedAdaptorThreshold->SetSeed( idxMidPectoral );
+
+      try
+      { 
+        std::cout << "Region-growing the pectoral muscle" << std::endl;
+        connectedAdaptorThreshold->Update();
+      }
+      catch (itk::ExceptionObject &ex)
+      { 
+        std::cout << ex << std::endl;
+        return EXIT_FAILURE;
+      }
+    
+      imPectoralVoxels = connectedAdaptorThreshold->GetOutput();
+      imPectoralVoxels->DisconnectPipeline(); 
+
+      connectedAdaptorThreshold = 0;
     }
-    catch (itk::ExceptionObject &ex)
+    // Or dark lines in the left-rigth direction only
+    else
     { 
-      std::cout << ex << std::endl;
-      return EXIT_FAILURE;
-    }
-  
-    imPectoralVoxels = connectedThreshold->GetOutput();
-    imPectoralVoxels->DisconnectPipeline();  
+      connectedThreshold = ConnectedFilterType::New();
+      connectedThreshold->SetInput( imBIFs );
+      
+      connectedThreshold->SetLower( 15  );
+      connectedThreshold->SetUpper( 15 );
 
+      connectedThreshold->SetReplaceValue( 1000 );
+      connectedThreshold->SetSeed( idxMidPectoral );
+      
+      try
+      { 
+        std::cout << "Region-growing the pectoral muscle" << std::endl;
+        connectedThreshold->Update();
+      }
+      catch (itk::ExceptionObject &ex)
+      { 
+        std::cout << ex << std::endl;
+        return EXIT_FAILURE;
+      }
+    
+      imPectoralVoxels = connectedThreshold->GetOutput();
+      imPectoralVoxels->DisconnectPipeline();  
+
+      connectedThreshold = 0;
+    }
+
+
+   
 
     // Iterate through the mask to extract the voxel locations to be
     // used as seeds for the Fast Marching filter
