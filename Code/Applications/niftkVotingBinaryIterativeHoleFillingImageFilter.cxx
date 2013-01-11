@@ -63,7 +63,7 @@ typedef struct arguments
   arguments() {
     radius = 1;
     majority = 2;
-    numberOfIterations = 10;
+    numberOfIterations = 100;
   }
 
 } Arguments;

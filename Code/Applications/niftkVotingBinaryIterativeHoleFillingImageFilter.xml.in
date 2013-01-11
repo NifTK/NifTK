@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Image Operators</category>
+  <category>Binary Mask Image Operators</category>
   <title>Iterative Hole Filling</title>
   <description><![CDATA[This filter implements the ITK VotingBinaryIterativeHoleFillingImageFilter which applies a voting operation in order to fill-in cavities. This can be used for smoothing contours and for filling holes in binary images. The filter runs until no pixels change or the maximum number of iterations has been reached.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
@@ -29,7 +29,7 @@
       <longflag>outputImage</longflag>
       <description>Output image</description>      
       <label>Output image</label>
-      <default>CroppedImage.nii.gz</default>
+      <default>HoleFilledImage.nii.gz</default>
       <channel>output</channel>
     </image>
 
@@ -77,10 +77,10 @@
 	The maximum number of iterations that this filter should be run. The number of iterations will determine the maximum size of holes and cavities that this filter will be able to fill-in. The more iterations you run, the larger the cavities that will be filled in.
       </description>
       <label>Number of iterations</label>
-      <default>2</default>
+      <default>100</default>
       <constraints>
         <minimum>1</minimum>
-        <maximum>99</maximum>
+        <maximum>99999</maximum>
         <step>1</step>
       </constraints>
     </integer>
