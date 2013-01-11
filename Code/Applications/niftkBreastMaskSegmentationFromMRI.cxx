@@ -95,6 +95,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH, "left",   NULL, "Save the left breast in a separate file (and append '_left' to the filename)."},
   {OPT_SWITCH, "right",  NULL, "Save the right breast in a separate file (and append '_right' to the filename)."},
 
+  {OPT_SWITCH, "extPM",  NULL, "Extend the initial pectoral muscle segmentation laterally using BIFs."},
+
   {OPT_INT, "xrg", "xCoord", "The 'x' voxel coordinate to regio-grow the bgnd from [nx/2]."},
   {OPT_INT, "yrg", "yCoord", "The 'y' voxel coordinate to regio-grow the bgnd from [ny/4]."},
   {OPT_INT, "zrg", "zCoord", "The 'z' voxel coordinate to regio-grow the bgnd from [nz/2]."},
@@ -157,6 +159,8 @@ enum {
 
   O_LEFT_BREAST,
   O_RIGHT_BREAST,
+
+  O_EXT_INIT_PECT,
 
   O_REGION_GROW_X,
   O_REGION_GROW_Y,
@@ -934,7 +938,7 @@ int main( int argc, char *argv[] )
   bool flgSmooth = 0;
   bool flgLeft = 0;
   bool flgRight = 0;
-
+  bool flgExtInitialPect = 0;
   bool flgProneSupineBoundary = false;
 
   bool flgRegGrowXcoord = false;
@@ -1070,7 +1074,9 @@ int main( int argc, char *argv[] )
 
   CommandLineOptions.GetArgument( O_LEFT_BREAST,  flgLeft );
   CommandLineOptions.GetArgument( O_RIGHT_BREAST, flgRight );
-
+  
+  CommandLineOptions.GetArgument( O_EXT_INIT_PECT, flgExtInitialPect );
+  
   flgRegGrowXcoord = CommandLineOptions.GetArgument( O_REGION_GROW_X, regGrowXcoord );
   flgRegGrowYcoord = CommandLineOptions.GetArgument( O_REGION_GROW_Y, regGrowYcoord );
   flgRegGrowZcoord = CommandLineOptions.GetArgument( O_REGION_GROW_Z, regGrowZcoord );
@@ -1975,6 +1981,7 @@ int main( int argc, char *argv[] )
     rYHeightOffset = static_cast<RealType>( maxSize[1] ); 
   }
   
+  // TODO: What if not???
   if ( imBIFs ) 
   {
    
@@ -2000,76 +2007,96 @@ int main( int argc, char *argv[] )
     
     
     // And then region grow from this voxel
-
-    // Either with extended pectoral muscle width (ascending and descending dark lines added)
-    if ( flgProneSupineBoundary )
-    {      
-      typedef itk::ImageAdaptor< InternalImageType, BIFIntensityAccessor >  BIFIntensityAdaptorType;
-      typedef itk::ConnectedThresholdImageFilter< BIFIntensityAdaptorType, 
-                                                  InternalImageType >       ConnectedFilterAdaptorInputType;
-
-      BIFIntensityAdaptorType::Pointer BIFAdaptor = BIFIntensityAdaptorType::New();
-      BIFAdaptor->SetImage( imBIFs );
-
-      ConnectedFilterAdaptorInputType::Pointer connectedAdaptorThreshold =  ConnectedFilterAdaptorInputType::New();
-
-      
-      connectedAdaptorThreshold->SetInput( BIFAdaptor );
-
-
-      connectedAdaptorThreshold->SetLower( 15  );
-      connectedAdaptorThreshold->SetUpper( 15 );
-
-      connectedAdaptorThreshold->SetReplaceValue( 1000 );
-      connectedAdaptorThreshold->SetSeed( idxMidPectoral );
-
-      try
-      { 
-        std::cout << "Region-growing the pectoral muscle" << std::endl;
-        connectedAdaptorThreshold->Update();
-      }
-      catch (itk::ExceptionObject &ex)
-      { 
-        std::cout << ex << std::endl;
-        return EXIT_FAILURE;
-      }
     
-      imPectoralVoxels = connectedAdaptorThreshold->GetOutput();
-      imPectoralVoxels->DisconnectPipeline(); 
+    // Idea: 
+    // Create a copy of the BIF image and modify the intensities so that 
+    // ascending dark lines (axial view, BIF intensity = 18) in the left 
+    // half of the image are changed to 16 (BIF-feature descending dark 
+    // lines). Hence the connected thresholder can then be given the 
+    // intensity range [15 - 16] for left and right side. 
+    //
+    //   direction  |  BIF intensity | changed to (for low x)
+    //  ------------+----------------+------------------------
+    //       /      |        18      |          16
+    //       \      |        16      |          18
+    //       -      |        15      |
+    //       |      |        17      |
+  
 
-      connectedAdaptorThreshold = 0;
+    InternalImageType::Pointer imModBIFs;
+
+    if ( flgExtInitialPect )
+    {
+      DuplicatorType::Pointer duplicatorBIF = DuplicatorType::New();
+      duplicatorBIF->SetInputImage( imBIFs ) ;
+      duplicatorBIF->Update();
+      imModBIFs = duplicatorBIF->GetOutput();
+      imModBIFs->DisconnectPipeline();
+      duplicatorBIF = 0;
+      
+      // Set the region for the low x-indices [ 0 -> midSternum[0] ]
+      region   = imModBIFs->GetLargestPossibleRegion();
+      
+      size     = region.GetSize();
+      size[0]  = idxMidSternum[0];
+      
+      start    = region.GetIndex();
+      start[0] = start[1] = start[2] = 0;
+      
+      region.SetIndex( start );
+      region.SetSize ( size  );
+
+      IteratorType itModBIFs = IteratorType( imModBIFs, region );
+      
+      for ( itModBIFs.GoToBegin();  !itModBIFs.IsAtEnd();  ++itModBIFs )
+      {
+        if ( itModBIFs.Get() == 16.0f )
+        {
+          itModBIFs.Set(18.0f);
+          continue;
+        }
+        if ( itModBIFs.Get() == 18.0f )
+        {
+          itModBIFs.Set( 16.0f );
+          continue;
+        }
+      }
     }
-    // Or dark lines in the left-rigth direction only
+
+    connectedThreshold = ConnectedFilterType::New();
+
+    connectedThreshold->SetLower( 15 );
+    connectedThreshold->SetReplaceValue( 1000 );
+    connectedThreshold->SetSeed( idxMidPectoral );
+    
+    // Extend initial pectoral muscle region?
+    if ( flgExtInitialPect )
+    {
+      connectedThreshold->SetInput( imModBIFs );
+      connectedThreshold->SetUpper( 16 );
+    }
     else
-    { 
-      connectedThreshold = ConnectedFilterType::New();
+    {
       connectedThreshold->SetInput( imBIFs );
-      
-      connectedThreshold->SetLower( 15  );
       connectedThreshold->SetUpper( 15 );
-
-      connectedThreshold->SetReplaceValue( 1000 );
-      connectedThreshold->SetSeed( idxMidPectoral );
-      
-      try
-      { 
-        std::cout << "Region-growing the pectoral muscle" << std::endl;
-        connectedThreshold->Update();
-      }
-      catch (itk::ExceptionObject &ex)
-      { 
-        std::cout << ex << std::endl;
-        return EXIT_FAILURE;
-      }
-    
-      imPectoralVoxels = connectedThreshold->GetOutput();
-      imPectoralVoxels->DisconnectPipeline();  
-
-      connectedThreshold = 0;
     }
+    
+    try
+    { 
+      std::cout << "Region-growing the pectoral muscle" << std::endl;
+      connectedThreshold->Update();
+    }
+    catch (itk::ExceptionObject &ex)
+    { 
+      std::cout << ex << std::endl;
+      return EXIT_FAILURE;
+    }
+  
+    imPectoralVoxels = connectedThreshold->GetOutput();
+    imPectoralVoxels->DisconnectPipeline();  
 
-
-   
+    connectedThreshold = 0;
+    imModBIFs          = 0;
 
     // Iterate through the mask to extract the voxel locations to be
     // used as seeds for the Fast Marching filter
