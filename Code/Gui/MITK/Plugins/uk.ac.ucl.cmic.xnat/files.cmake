@@ -32,6 +32,7 @@ set(INTERNAL_CPP_FILES
 set(UI_FILES
   src/internal/XnatBrowserView.ui
   src/internal/XnatBrowserWidget.ui
+  src/internal/XnatLoginDialog.ui
   src/internal/XnatPluginPreferencePage.ui
 )
 
