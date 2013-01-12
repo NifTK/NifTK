@@ -123,7 +123,6 @@ set(EXTERNAL_PROJECTS
   NiftyLink
 # OpenCV is inserted here, just before MITK, if BUILD_IGI is ON
   MITK
-  curl
   CGAL
   NiftySim
   NiftyReg
@@ -266,7 +265,6 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNIFTYREC_DIR:PATH=${EP_BASE}/Install/NIFTYREC
       -DNIFTYSIM_DIR:PATH=${EP_BASE}/Install/NIFTYSIM
       -DNIFTYSEG_DIR:PATH=${EP_BASE}/Install/NIFTYSEG
-      -DCURL_DIR:PATH=${EP_BASE}/Install/curl
       -Daruco_DIR:PATH=${aruco_DIR}
       -DOpenCV_DIR:PATH=${OpenCV_DIR}
       DEPENDS ${proj_DEPENDENCIES}

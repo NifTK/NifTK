@@ -26,7 +26,7 @@
 class QModelIndex;
 class XnatBrowserWidgetPrivate;
 class XnatSettings;
-class XnatNode;
+class XnatObject;
 
 class XnatBrowserWidget : public QWidget
 {
@@ -52,7 +52,6 @@ private slots:
 
 private:
   void createConnections();
-  void initializeTreeView(XnatNode* rootNode);
   void collectImageFiles(const QDir& tempWorkDirectory, QStringList& fileList);
 
   /// \brief All the controls for the main view part.

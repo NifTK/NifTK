@@ -15,12 +15,12 @@
 #include "XnatBrowserWidget.h"
 
 // XnatRestWidgets module includes
-#include <XnatConnection.h>
+#include <ctkXnatConnection.h>
 #include <XnatDownloadManager.h>
-#include <XnatException.h>
 #include <XnatLoginDialog.h>
 #include <XnatModel.h>
 #include <XnatNameDialog.h>
+#include <ctkXnatObject.h>
 #include <XnatSettings.h>
 #include <XnatTreeView.h>
 #include <XnatUploadManager.h>
@@ -41,7 +41,7 @@ class XnatBrowserWidgetPrivate
 public:
   XnatSettings* settings;
 
-  XnatConnection* connection;
+  ctkXnatConnection* connection;
   XnatDownloadManager* downloadManager;
   XnatUploadManager* uploadManager;
 
@@ -193,7 +193,7 @@ void XnatBrowserWidget::loginXnat()
   Q_D(XnatBrowserWidget);
 
   // show dialog for user to login to XNAT
-  XnatLoginDialog* loginDialog = new XnatLoginDialog(XnatConnectionFactory::instance(), this);
+  XnatLoginDialog* loginDialog = new XnatLoginDialog(ctkXnatConnectionFactory::instance(), this);
   loginDialog->setSettings(d->settings);
   if (loginDialog->exec())
   {
@@ -206,7 +206,7 @@ void XnatBrowserWidget::loginXnat()
     // get connection object
     d->connection = loginDialog->getConnection();
 
-    ui->xnatTreeView->initialize(d->connection->getRoot());
+    ui->xnatTreeView->initialize(d->connection);
 
     ui->downloadButton->setEnabled(false);
     ui->downloadAllButton->setEnabled(false);
@@ -353,23 +353,23 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
 {
   Q_D(XnatBrowserWidget);
 
-  const XnatNode* node = ui->xnatTreeView->node(index);
-  ui->downloadButton->setEnabled(node->isFile());
-  ui->downloadAllButton->setEnabled(node->holdsFiles());
-  ui->importButton->setEnabled(node->isFile());
-  ui->importAllButton->setEnabled(node->holdsFiles());
-  ui->uploadButton->setEnabled(node->receivesFiles());
-  ui->saveAndUploadButton->setEnabled((node->receivesFiles() && d->saveAndUploadAction->isEnabled()));
-  ui->createButton->setEnabled(node->isModifiable(index.row()));
-  ui->deleteButton->setEnabled(node->isDeletable());
+  const ctkXnatObject* object = ui->xnatTreeView->getObject(index);
+  ui->downloadButton->setEnabled(object->isFile());
+  ui->downloadAllButton->setEnabled(object->holdsFiles());
+  ui->importButton->setEnabled(object->isFile());
+  ui->importAllButton->setEnabled(object->holdsFiles());
+  ui->uploadButton->setEnabled(object->receivesFiles());
+  ui->saveAndUploadButton->setEnabled(object->receivesFiles() && d->saveAndUploadAction->isEnabled());
+  ui->createButton->setEnabled(object->isModifiable(index.row()));
+  ui->deleteButton->setEnabled(object->isDeletable());
 }
 
 void XnatBrowserWidget::setSaveAndUploadButtonEnabled()
 {
   Q_D(XnatBrowserWidget);
 
-  const XnatNode* node = ui->xnatTreeView->currentNode();
-  ui->saveAndUploadButton->setEnabled((node->receivesFiles() && d->saveAndUploadAction->isEnabled()));
+  const ctkXnatObject* object = ui->xnatTreeView->currentObject();
+  ui->saveAndUploadButton->setEnabled(object->receivesFiles() && d->saveAndUploadAction->isEnabled());
 }
 
 void XnatBrowserWidget::showContextMenu(const QPoint& position)
@@ -379,22 +379,22 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
   const QModelIndex& index = ui->xnatTreeView->indexAt(position);
   if ( index.isValid() )
   {
-    const XnatNode* node = ui->xnatTreeView->node(index);
+    const ctkXnatObject* object = ui->xnatTreeView->getObject(index);
     QList<QAction*> actions;
-    if ( node->isFile() )
+    if ( object->isFile() )
     {
       actions.append(d->downloadAction);
     }
-    if ( node->holdsFiles() )
+    if ( object->holdsFiles() )
     {
         actions.append(d->downloadAllAction);
         actions.append(d->importAllAction);
     }
-    if ( node->isFile() )
+    if ( object->isFile() )
     {
       actions.append(d->importAction);
     }
-    if ( node->receivesFiles() )
+    if ( object->receivesFiles() )
     {
       actions.append(d->uploadAction);
 
@@ -403,11 +403,11 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
         actions.append(d->saveAndUploadAction);
       }
     }
-    if ( node->isModifiable(index.row()) )
+    if ( object->isModifiable(index.row()) )
     {
       actions.append(d->createAction);
     }
-    if ( node->isDeletable() )
+    if ( object->isDeletable() )
     {
       actions.append(d->deleteAction);
     }
