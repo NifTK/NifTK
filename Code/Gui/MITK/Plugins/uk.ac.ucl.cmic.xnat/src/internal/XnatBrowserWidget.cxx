@@ -357,12 +357,6 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
   Q_D(XnatBrowserWidget);
   
   const ctkXnatObject::Pointer object = ui->xnatTreeView->getObject(index);
-  qDebug() << "object is " << object;
-  qDebug() << "object is file ? " << object->isFile();
-  qDebug() << "object holds files ? " << object->holdsFiles();
-  qDebug() << "object receives files ? " << object->receivesFiles();
-  qDebug() << "object modifiable ? " << object->isModifiable();
-  qDebug() << "object deletable ? " << object->isDeletable();
 
   ui->downloadButton->setEnabled(object->isFile());
   ui->downloadAllButton->setEnabled(object->holdsFiles());

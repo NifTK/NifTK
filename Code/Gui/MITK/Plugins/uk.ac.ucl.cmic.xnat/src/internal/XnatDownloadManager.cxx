@@ -51,7 +51,7 @@ XnatDownloadManager::~XnatDownloadManager()
 {
 }
 
-void XnatDownloadManager::setSettings(ctkXnatSettings* settings)
+void XnatDownloadManager::setSettings(XnatSettings* settings)
 {
   Q_D(XnatDownloadManager);
   d->settings = settings;

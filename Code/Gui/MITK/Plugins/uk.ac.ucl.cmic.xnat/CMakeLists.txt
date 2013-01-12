@@ -16,9 +16,6 @@ project(uk_ac_ucl_cmic_xnat)
 
 find_package(Qt4 4.6.2 COMPONENTS QtScript REQUIRED)
 
-#find_package(qRestAPI REQUIRED)
-#include(${qRestAPI_USE_FILE})                   # Call include_directories
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
