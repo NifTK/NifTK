@@ -76,6 +76,7 @@ IF(SlicerExecutionModel_FOUND)
     niftkExtrudeMaskToVolume
     niftkMultiply
     niftkSubtract
+    niftkVotingBinaryIterativeHoleFillingImageFilter
   )
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
