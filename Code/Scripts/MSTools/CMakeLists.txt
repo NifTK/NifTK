@@ -22,11 +22,14 @@
 #
 #=================================================================================*/
 
+SET(scripts)
+
 IF(NOT WIN32)
   SET(scripts
     niftkBETter.sh
     niftkNormalization.sh
     niftkFillLesions.sh
+    ${scripts}    
   )
   FOREACH(script ${scripts})
     CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
