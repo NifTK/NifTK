@@ -1,27 +1,27 @@
 
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
- Dementia Research Centre, and the Centre For Medical Image Computing
- at University College London.
+  NifTK: An image processing toolkit jointly developed by the
+  Dementia Research Centre, and the Centre For Medical Image Computing
+  at University College London.
  
- See:
- http://dementia.ion.ucl.ac.uk/
- http://cmic.cs.ucl.ac.uk/
- http://www.ucl.ac.uk/
+  See:
+  http://dementia.ion.ucl.ac.uk/
+  http://cmic.cs.ucl.ac.uk/
+  http://www.ucl.ac.uk/
 
- $Author:: jhh                 $
- $Date:: 2011-12-16 15:11:16 +#$
- $Rev:: 8052                   $
+  $Author:: jhh                 $
+  $Date:: 2011-12-16 15:11:16 +#$
+  $Rev:: 8052                   $
 
- Copyright (c) UCL : See the file LICENSE.txt in the top level
- directory for futher details.
+  Copyright (c) UCL : See the file LICENSE.txt in the top level
+  directory for futher details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notices for more information.
 
- ============================================================================*/
+  ============================================================================*/
 
 #include <math.h>
 #include <float.h>
@@ -246,12 +246,12 @@ typedef enum {
 
 template<class T>
 struct larger_second
-: std::binary_function<T,T,bool>
+  : std::binary_function<T,T,bool>
 {
-   inline bool operator()(const T& lhs, const T& rhs)
-   {
+  inline bool operator()(const T& lhs, const T& rhs)
+    {
       return lhs.second > rhs.second;
-   }
+    }
 };
 
 
@@ -265,10 +265,10 @@ public:
   typedef InputPixelType ExternalType;
 
   static ExternalType Get( const InternalType & in )
-  {
-    if ( in == 15.0f || in == 16.0f || in == 18.0f ) return 15.0f;
-    else return in;
-  }
+    {
+      if ( in == 15.0f || in == 16.0f || in == 18.0f ) return 15.0f;
+      else return in;
+    }
 };
 
 
@@ -549,9 +549,9 @@ bool WriteBinaryImageToUCharFile( std::string &fileOutput, const char *descripti
 // WriteBinaryImageToUCharFile()
 // --------------------------------------------------------------------------
 bool WriteBinaryImageToUCharFile( std::string &fileOutput,
-		       const char *description,
-		       InternalImageType::Pointer image, 
-		       bool flgLeft, bool flgRight )
+				  const char *description,
+				  InternalImageType::Pointer image, 
+				  bool flgLeft, bool flgRight )
 {
   if ( flgLeft && flgRight )
     return 
@@ -607,19 +607,19 @@ void polyDataInfo(vtkPolyData *polyData)
 {
   if (polyData) {
     std::cout << "   Number of vertices: " 
-	 << polyData->GetNumberOfVerts() << std::endl;
+	      << polyData->GetNumberOfVerts() << std::endl;
 
     std::cout << "   Number of lines:    " 
-	 << polyData->GetNumberOfLines() << std::endl;
+	      << polyData->GetNumberOfLines() << std::endl;
     
     std::cout << "   Number of cells:    " 
-	 << polyData->GetNumberOfCells() << std::endl;
+	      << polyData->GetNumberOfCells() << std::endl;
     
     std::cout << "   Number of polygons: " 
-	 << polyData->GetNumberOfPolys() << std::endl;
+	      << polyData->GetNumberOfPolys() << std::endl;
     
     std::cout << "   Number of strips:   " 
-	 << polyData->GetNumberOfStrips() << std::endl;
+	      << polyData->GetNumberOfStrips() << std::endl;
   }
 }  
 
@@ -652,156 +652,156 @@ void WriteImageToVTKSurfaceFile(InternalImageType::Pointer image,
 	    << sz[0] << "," << sz[1] << "," << sz[2] << std::endl;
   
 
-    // Set the border around the image to zero to prevent holes in the image
+  // Set the border around the image to zero to prevent holes in the image
  
-    typedef itk::SetBoundaryVoxelsToValueFilter< InternalImageType, InternalImageType > SetBoundaryVoxelsToValueFilterType;
+  typedef itk::SetBoundaryVoxelsToValueFilter< InternalImageType, InternalImageType > SetBoundaryVoxelsToValueFilterType;
     
-    SetBoundaryVoxelsToValueFilterType::Pointer setBoundary = SetBoundaryVoxelsToValueFilterType::New();
+  SetBoundaryVoxelsToValueFilterType::Pointer setBoundary = SetBoundaryVoxelsToValueFilterType::New();
     
-    setBoundary->SetInput( pipeITKImageDataConnector );
+  setBoundary->SetInput( pipeITKImageDataConnector );
     
-    setBoundary->SetValue( 0 );
+  setBoundary->SetValue( 0 );
     
-    try
-    { 
-      std::cout << "Sealing the image boundary..."<< std::endl;
-      setBoundary->Update();
-    }
-    catch (itk::ExceptionObject &ex)
-    { 
-      std::cout << ex << std::endl;
-      exit( EXIT_FAILURE );
-    }
-    pipeITKImageDataConnector = setBoundary->GetOutput();
+  try
+  { 
+    std::cout << "Sealing the image boundary..."<< std::endl;
+    setBoundary->Update();
+  }
+  catch (itk::ExceptionObject &ex)
+  { 
+    std::cout << ex << std::endl;
+    exit( EXIT_FAILURE );
+  }
+  pipeITKImageDataConnector = setBoundary->GetOutput();
 
 
-    // Downsample the image to istropic voxels with dimensions
+  // Downsample the image to istropic voxels with dimensions
 
-    double subsamplingResolution = 10.; //The isotropic volume resolution in mm for sub-sampling
-    typedef itk::ResampleImageFilter< InternalImageType, InternalImageType > ResampleImageFilterType;
-    ResampleImageFilterType::Pointer subsampleFilter = ResampleImageFilterType::New();
+  double subsamplingResolution = 10.; //The isotropic volume resolution in mm for sub-sampling
+  typedef itk::ResampleImageFilter< InternalImageType, InternalImageType > ResampleImageFilterType;
+  ResampleImageFilterType::Pointer subsampleFilter = ResampleImageFilterType::New();
   
-    subsampleFilter->SetInput( pipeITKImageDataConnector );
+  subsampleFilter->SetInput( pipeITKImageDataConnector );
 
-    double spacing[ ImageDimension ];
-    spacing[0] = subsamplingResolution; // pixel spacing in millimeters along X
-    spacing[1] = subsamplingResolution; // pixel spacing in millimeters along Y
-    spacing[2] = subsamplingResolution; // pixel spacing in millimeters along Z
+  double spacing[ ImageDimension ];
+  spacing[0] = subsamplingResolution; // pixel spacing in millimeters along X
+  spacing[1] = subsamplingResolution; // pixel spacing in millimeters along Y
+  spacing[2] = subsamplingResolution; // pixel spacing in millimeters along Z
     
-    subsampleFilter->SetOutputSpacing( spacing );
+  subsampleFilter->SetOutputSpacing( spacing );
 
-    double origin[ ImageDimension ];
-    origin[0] = 0.0;  // X space coordinate of origin
-    origin[1] = 0.0;  // Y space coordinate of origin
-    origin[2] = 0.0;  // Y space coordinate of origin
+  double origin[ ImageDimension ];
+  origin[0] = 0.0;  // X space coordinate of origin
+  origin[1] = 0.0;  // Y space coordinate of origin
+  origin[2] = 0.0;  // Y space coordinate of origin
 
-    subsampleFilter->SetOutputOrigin( origin );
+  subsampleFilter->SetOutputOrigin( origin );
 
-    InternalImageType::DirectionType direction;
-    direction.SetIdentity();
-    subsampleFilter->SetOutputDirection( direction );
+  InternalImageType::DirectionType direction;
+  direction.SetIdentity();
+  subsampleFilter->SetOutputDirection( direction );
 
-    InternalImageType::SizeType   size;
+  InternalImageType::SizeType   size;
 
-    size[0] = (int) ceil( sz[0]*sp[0]/spacing[0] );  // number of pixels along X
-    size[1] = (int) ceil( sz[1]*sp[1]/spacing[1] );  // number of pixels along X
-    size[2] = (int) ceil( sz[2]*sp[2]/spacing[2] );  // number of pixels along X
+  size[0] = (int) ceil( sz[0]*sp[0]/spacing[0] );  // number of pixels along X
+  size[1] = (int) ceil( sz[1]*sp[1]/spacing[1] );  // number of pixels along X
+  size[2] = (int) ceil( sz[2]*sp[2]/spacing[2] );  // number of pixels along X
 
-    subsampleFilter->SetSize( size );
+  subsampleFilter->SetSize( size );
 
-    typedef itk::AffineTransform< double, ImageDimension >  TransformType;
-    TransformType::Pointer transform = TransformType::New();
+  typedef itk::AffineTransform< double, ImageDimension >  TransformType;
+  TransformType::Pointer transform = TransformType::New();
 
-    subsampleFilter->SetTransform( transform );
+  subsampleFilter->SetTransform( transform );
 
-    typedef itk::LinearInterpolateImageFunction< InternalImageType, double >  InterpolatorType;
-    InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  typedef itk::LinearInterpolateImageFunction< InternalImageType, double >  InterpolatorType;
+  InterpolatorType::Pointer interpolator = InterpolatorType::New();
  
-    subsampleFilter->SetInterpolator( interpolator );
+  subsampleFilter->SetInterpolator( interpolator );
     
-    subsampleFilter->SetDefaultPixelValue( 0 );
+  subsampleFilter->SetDefaultPixelValue( 0 );
 
-    try
-    { 
-      std::cout << "Resampling image to dimensions: "
-		<< size[0] << ", " << size[1] << ", "<< size[2]
-		<< "voxels, with resolution : "
-		<< spacing[0] << ", " << spacing[1] << ", " << spacing[2] << "mm..."<< std::endl;
+  try
+  { 
+    std::cout << "Resampling image to dimensions: "
+	      << size[0] << ", " << size[1] << ", "<< size[2]
+	      << "voxels, with resolution : "
+	      << spacing[0] << ", " << spacing[1] << ", " << spacing[2] << "mm..."<< std::endl;
 
-      subsampleFilter->Update();
-    }
-    catch (itk::ExceptionObject &ex)
-    { 
-      std::cout << ex << std::endl;
-      exit( EXIT_FAILURE );
-    }
+    subsampleFilter->Update();
+  }
+  catch (itk::ExceptionObject &ex)
+  { 
+    std::cout << ex << std::endl;
+    exit( EXIT_FAILURE );
+  }
 
-    // Create the ITK to VTK filter
+  // Create the ITK to VTK filter
 
-    typedef itk::ImageToVTKImageFilter< InternalImageType > ImageToVTKImageFilterType;
+  typedef itk::ImageToVTKImageFilter< InternalImageType > ImageToVTKImageFilterType;
 
-    ImageToVTKImageFilterType::Pointer convertITKtoVTK = ImageToVTKImageFilterType::New();
+  ImageToVTKImageFilterType::Pointer convertITKtoVTK = ImageToVTKImageFilterType::New();
 
-    convertITKtoVTK->SetInput( pipeITKImageDataConnector );
+  convertITKtoVTK->SetInput( pipeITKImageDataConnector );
     
-    try
-    { 
-      if (flgVerbose) 
-	std::cout << "Converting the image to VTK format." << std::endl;
-
-      convertITKtoVTK->Update();
-    }
-    catch (itk::ExceptionObject &ex)
-    { 
-      std::cout << ex << std::endl;
-      exit( EXIT_FAILURE ); 
-    }
-    
-
-    // Apply the Marching Cubes algorithm
-  
-    vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkMarchingCubes::New();
-
-    surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
-
-    surfaceExtractor->SetInput((vtkDataObject *) convertITKtoVTK->GetOutput());
-    pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
-
-    if (flgVerbose) {
-      surfaceExtractor->Update();
-      
-      std::cout << std::endl << "Extracted surface data:" << std::endl;
-      polyDataInfo(pipeVTKPolyDataConnector);
-    }
-
-    // Post-decimation smoothing
-
-    int niterations = 5;		// The number of smoothing iterations
-    float bandwidth = 0.1;	// The band width of the smoothing filter
-
-    vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
-    
-    postSmoothingFilter->BoundarySmoothingOff();
-    
-    postSmoothingFilter->SetNumberOfIterations(niterations);
-    postSmoothingFilter->SetPassBand(bandwidth);
-    
-    postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
-    pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
-
-    // Write the created vtk surface to a file
-
-    vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
-
-    writer3D->SetFileName( fileModifiedOutput.c_str() );
-    writer3D->SetInput(pipeVTKPolyDataConnector);
-
-    writer3D->SetFileType(VTK_BINARY);
-
-    writer3D->Write();
-
+  try
+  { 
     if (flgVerbose) 
-      std::cout << "Polydata written to VTK file: " << fileModifiedOutput.c_str() << std::endl;
+      std::cout << "Converting the image to VTK format." << std::endl;
+
+    convertITKtoVTK->Update();
+  }
+  catch (itk::ExceptionObject &ex)
+  { 
+    std::cout << ex << std::endl;
+    exit( EXIT_FAILURE ); 
+  }
+    
+
+  // Apply the Marching Cubes algorithm
+  
+  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkMarchingCubes::New();
+
+  surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
+
+  surfaceExtractor->SetInput((vtkDataObject *) convertITKtoVTK->GetOutput());
+  pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
+
+  if (flgVerbose) {
+    surfaceExtractor->Update();
+      
+    std::cout << std::endl << "Extracted surface data:" << std::endl;
+    polyDataInfo(pipeVTKPolyDataConnector);
+  }
+
+  // Post-decimation smoothing
+
+  int niterations = 5;		// The number of smoothing iterations
+  float bandwidth = 0.1;	// The band width of the smoothing filter
+
+  vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
+    
+  postSmoothingFilter->BoundarySmoothingOff();
+    
+  postSmoothingFilter->SetNumberOfIterations(niterations);
+  postSmoothingFilter->SetPassBand(bandwidth);
+    
+  postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+  pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
+
+  // Write the created vtk surface to a file
+
+  vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
+
+  writer3D->SetFileName( fileModifiedOutput.c_str() );
+  writer3D->SetInput(pipeVTKPolyDataConnector);
+
+  writer3D->SetFileType(VTK_BINARY);
+
+  writer3D->Write();
+
+  if (flgVerbose) 
+    std::cout << "Polydata written to VTK file: " << fileModifiedOutput.c_str() << std::endl;
 }
 
 
@@ -822,7 +822,7 @@ InternalImageType::Pointer MaskImageFromBSplineFittedSurface( const PointSetType
   // Fit the B-Spline surface
   // ~~~~~~~~~~~~~~~~~~~~~~~~
   typedef itk::BSplineScatteredDataPointSetToImageFilter < PointSetType, 
-                                                           VectorImageType > FilterType;
+    VectorImageType > FilterType;
 
   FilterType::Pointer filter = FilterType::New();
 
@@ -864,7 +864,7 @@ InternalImageType::Pointer MaskImageFromBSplineFittedSurface( const PointSetType
   catch (itk::ExceptionObject &ex)
   {
     std::cerr << "ERROR: itkBSplineScatteredDataImageFilter exception thrown" 
-	       << std::endl << ex << std::endl;
+	      << std::endl << ex << std::endl;
   }
 
   // The B-Spline surface heights are the intensities of the 2D output image
@@ -1006,23 +1006,23 @@ int main( int argc, char *argv[] )
   typedef itk::RegionGrowSurfacePoints< InternalImageType, InternalImageType > ConnectedSurfaceVoxelFilterType;
 
   typedef itk::CurvatureAnisotropicDiffusionImageFilter< InternalImageType,
-							 InternalImageType > SmoothingFilterType;
+    InternalImageType > SmoothingFilterType;
     
 
   typedef itk::GradientMagnitudeRecursiveGaussianImageFilter< InternalImageType,
-							      InternalImageType > GradientFilterType;
+    InternalImageType > GradientFilterType;
 
   typedef itk::SigmoidImageFilter<InternalImageType,
-				  InternalImageType > SigmoidFilterType;
+    InternalImageType > SigmoidFilterType;
     
   typedef  itk::FastMarchingImageFilter< InternalImageType,
-					 InternalImageType > FastMarchingFilterType;
+    InternalImageType > FastMarchingFilterType;
 
   typedef itk::BinaryThresholdImageFilter< InternalImageType, 
-					   InternalImageType > ThresholdingFilterType;
+    InternalImageType > ThresholdingFilterType;
 
   typedef itk::LewisGriffinRecursiveGaussianImageFilter < InternalImageType, 
-							  InternalImageType > DerivativeFilterType;
+    InternalImageType > DerivativeFilterType;
   
   typedef DerivativeFilterType::Pointer  DerivativeFilterPointer;
 
@@ -1144,7 +1144,7 @@ int main( int argc, char *argv[] )
   catch (itk::ExceptionObject &ex)
   { 
     std::cerr << "ERROR: reading image: " <<  fileInputStructural.c_str()
-	       << std::endl << ex << std::endl;
+	      << std::endl << ex << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -1228,8 +1228,8 @@ int main( int argc, char *argv[] )
 
     try
     {
-	std::cout << "Computing basic image features";
-	sliceBySliceFilter->Update();
+      std::cout << "Computing basic image features";
+      sliceBySliceFilter->Update();
     }
     catch (itk::ExceptionObject &e)
     {
@@ -1324,8 +1324,8 @@ int main( int argc, char *argv[] )
     IteratorType outputIterator( imMax, imMax->GetLargestPossibleRegion() );
         
     for ( inputIterator.GoToBegin(), outputIterator.GoToBegin(); 
-	 ! inputIterator.IsAtEnd();
-	 ++inputIterator, ++outputIterator )
+	  ! inputIterator.IsAtEnd();
+	  ++inputIterator, ++outputIterator )
     {
       if ( inputIterator.Get() > outputIterator.Get() )
 	outputIterator.Set( inputIterator.Get() );
@@ -1339,7 +1339,7 @@ int main( int argc, char *argv[] )
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #if 0
   typedef itk::CurvatureFlowImageFilter< InternalImageType, 
-					 InternalImageType > CurvatureFlowImageFilterType;
+    InternalImageType > CurvatureFlowImageFilterType;
 
   CurvatureFlowImageFilterType::Pointer preRegionGrowingSmoothing = 
     CurvatureFlowImageFilterType::New();
@@ -1389,7 +1389,7 @@ int main( int argc, char *argv[] )
   // Compute the range of the maximum image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- typedef itk::MinimumMaximumImageCalculator< InternalImageType > MinimumMaximumImageCalculatorType;
+  typedef itk::MinimumMaximumImageCalculator< InternalImageType > MinimumMaximumImageCalculatorType;
 
   MinimumMaximumImageCalculatorType::Pointer rangeCalculator = MinimumMaximumImageCalculatorType::New();
 
@@ -1612,7 +1612,7 @@ int main( int argc, char *argv[] )
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   typedef itk::ConnectedThresholdImageFilter< InternalImageType, 
-                                              InternalImageType > ConnectedFilterType;
+    InternalImageType > ConnectedFilterType;
 
   ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
 
@@ -2294,7 +2294,7 @@ int main( int argc, char *argv[] )
 	  idx = itPecSurfaceVoxelsLinear.GetIndex();
 
 	  // The 'height' of the pectoral surface
-    pecHeight[0] = static_cast<RealType>( idx[1] ) - rYHeightOffset;
+	  pecHeight[0] = static_cast<RealType>( idx[1] ) - rYHeightOffset;
     
 	  // Location of this surface point
 	  point[0] = static_cast<RealType>( idx[0] );
@@ -2376,8 +2376,8 @@ int main( int argc, char *argv[] )
   if ( ! flgProneSupineBoundary )
   {
     for ( itSegPosteriorBreast.GoToBegin(); 
-        ! itSegPosteriorBreast.IsAtEnd() ; 
-        ++itSegPosteriorBreast )
+	  ! itSegPosteriorBreast.IsAtEnd() ; 
+	  ++itSegPosteriorBreast )
     {
       if ( itSegPosteriorBreast.Get() ) {
    
@@ -2438,17 +2438,17 @@ int main( int argc, char *argv[] )
                                imChestSurfaceVoxels, flgLeft, flgRight );
 
 
-
-  // Discard anything below the pectoral mask
+  // Discard anything below the fitted surface
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   IteratorType itSeg    = IteratorType( imSegmented,        imStructural->GetLargestPossibleRegion() );
   IteratorType itFitPec = IteratorType( imFittedPectoralis, imStructural->GetLargestPossibleRegion() );
 
-  if ( flgVerbose ) std::cout << "Discarding segmentation posteriior to pectoralis mask. " << std::endl;
+  if ( flgVerbose ) 
+    std::cout << "Discarding segmentation posteriior to pectoralis surface fit. " << std::endl;
 
   for ( itSeg.GoToBegin(), itFitPec.GoToBegin(); 
-        ( ! itSeg.IsAtEnd() ) && ( ! itFitPec.IsAtEnd() ) ; 
+	( ! itSeg.IsAtEnd() ) && ( ! itFitPec.IsAtEnd() ) ; 
         ++itSeg, ++itFitPec )
   {
     if ( itSeg.Get() )
@@ -2456,8 +2456,64 @@ int main( int argc, char *argv[] )
         itSeg.Set( 0 );
   }
 
-  // Discard anything not within a fitted surface (switch -cropfit)
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  // Discard anything below the pectoral mask
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+  if ( ! flgProneSupineBoundary )
+  {
+
+    if ( flgVerbose ) 
+      std::cout << "Discarding segmentation posteriior to pectoralis mask. " << std::endl;
+
+    region = imPectoralVoxels->GetLargestPossibleRegion();
+ 
+    start[0] = start[1] = start[2] = 0;
+    region.SetIndex( start );
+ 
+    LineIteratorType itSegLinear2( imSegmented, region );
+    LineIteratorType itPecVoxelsLinear( imPectoralVoxels, region );
+ 
+    itPecVoxelsLinear.SetDirection( 1 );
+    itSegLinear2.SetDirection( 1 );
+     
+    for ( itPecVoxelsLinear.GoToBegin(), itSegLinear2.GoToBegin(); 
+	  ! itPecVoxelsLinear.IsAtEnd(); 
+	  itPecVoxelsLinear.NextLine(), itSegLinear2.NextLine() )
+    {
+      itPecVoxelsLinear.GoToBeginOfLine();
+      itSegLinear2.GoToBeginOfLine();
+       
+      // Find the first pectoral voxel for this column of voxels
+ 
+      while ( ! itPecVoxelsLinear.IsAtEndOfLine() )
+      {
+	if ( itPecVoxelsLinear.Get() > 0 ) 
+	{
+	  break;
+	}
+  
+	++itPecVoxelsLinear;
+	++itSegLinear2;
+      }
+ 
+      // and then set all remaining voxles in the segmented image to zero
+ 
+      while ( ! itPecVoxelsLinear.IsAtEndOfLine() )
+      {
+	itSegLinear2.Set( 0 );
+           
+	++itPecVoxelsLinear;
+	++itSegLinear2;
+      }      
+    }
+  }
+
+  imPectoralVoxels = 0;    
+
+
+  // Discard anything not within the anterior breast fitted skin surface (switch -cropfit)
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   if ( bCropWithFittedSurface )
   {
@@ -2521,11 +2577,11 @@ int main( int argc, char *argv[] )
 
     // Fit the B-Spline...
     InternalImageType::Pointer imLeftFittedBreastMask = MaskImageFromBSplineFittedSurface( leftChestPointSet, 
-                                                                                imSegmented->GetLargestPossibleRegion(), 
-                                                                                imStructural->GetOrigin(), 
-                                                                                imStructural->GetSpacing(), 
-                                                                                imStructural->GetDirection(),
-                                                                                rYHeightOffset, 3, 15, 3 );
+											   imSegmented->GetLargestPossibleRegion(), 
+											   imStructural->GetOrigin(), 
+											   imStructural->GetSpacing(), 
+											   imStructural->GetDirection(),
+											   rYHeightOffset, 3, 15, 3 );
 
     // and now extract surface points of right breast for surface fitting
     lateralRegion = imChestSurfaceVoxels->GetLargestPossibleRegion();
@@ -2571,11 +2627,11 @@ int main( int argc, char *argv[] )
     // Fit B-Spline...
 
     InternalImageType::Pointer imRightFittedBreastMask = MaskImageFromBSplineFittedSurface( rightChestPointSet, 
-                                                                                imSegmented->GetLargestPossibleRegion(), 
-                                                                                imStructural->GetOrigin(), 
-                                                                                imStructural->GetSpacing(), 
-                                                                                imStructural->GetDirection(),
-                                                                                rYHeightOffset, 3, 15, 3 );
+											    imSegmented->GetLargestPossibleRegion(), 
+											    imStructural->GetOrigin(), 
+											    imStructural->GetSpacing(), 
+											    imStructural->GetDirection(),
+											    rYHeightOffset, 3, 15, 3 );
     
     
 
@@ -2716,9 +2772,8 @@ int main( int argc, char *argv[] )
   }
   
 
-
-  // Finally smooth the mask and threshold to round corners etc.
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Smooth the mask and threshold to round corners etc.
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   DerivativeFilterPointer derivativeFilterX = DerivativeFilterType::New();
   DerivativeFilterPointer derivativeFilterY = DerivativeFilterType::New();
@@ -2783,15 +2838,52 @@ int main( int argc, char *argv[] )
       WriteImageToVTKSurfaceFile( derivativeFilterZ->GetOutput(), 
 				  fileOutputVTKSurface,
 				  BOTH_BREASTS, flgVerbose, finalSegmThreshold );
- }
+  }
 
 
-  // Disconnect the pipeline
+  // Do a final region growing to eliminate any voids inside the breast
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  imTmp = thresholder->GetOutput();
-  imTmp->DisconnectPipeline();
-    
-  imSegmented = imTmp;
+  connectedThreshold = ConnectedFilterType::New();
+
+  connectedThreshold->SetInput( thresholder->GetOutput() );
+
+  connectedThreshold->SetLower( 0  );
+  connectedThreshold->SetUpper( 500 );
+
+  connectedThreshold->SetReplaceValue( 1000 );
+
+  index[0] = regGrowXcoord;
+  index[1] = regGrowYcoord;
+  index[2] = regGrowZcoord;
+
+  connectedThreshold->SetSeed( index );
+
+  try
+  { 
+    std::cout << "Region-growing to eliminate voids in the breast" << std::endl;
+    connectedThreshold->Update();
+  }
+  catch (itk::ExceptionObject &ex)
+  { 
+    std::cout << ex << std::endl;
+    return EXIT_FAILURE;
+  }
+  
+  imSegmented = connectedThreshold->GetOutput();
+  imSegmented->DisconnectPipeline();
+
+  connectedThreshold = 0;
+
+  // Invert the segmentation
+
+  IteratorType segIterator2( imSegmented, imSegmented->GetLargestPossibleRegion() );
+        
+  for ( segIterator2.GoToBegin(); ! segIterator2.IsAtEnd(); ++segIterator2 )
+    if ( segIterator2.Get() )
+      segIterator2.Set( 0 );
+    else
+      segIterator2.Set( 1000 );
 
 
   // Write the segmented image
