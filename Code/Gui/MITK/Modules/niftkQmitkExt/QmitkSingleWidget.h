@@ -23,7 +23,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkSlicesRotator.h"
 #include "mitkSlicesSwiveller.h"
 #include "mitkRenderWindowFrame.h"
-#include "mitkManufacturerLogo.h"
+#include "QmitkCmicLogo.h"
+//#include "mitkManufacturerLogo.h"
 #include "mitkGradientBackground.h"
 #include "mitkCoordinateSupplier.h"
 #include "mitkDataStorage.h"
@@ -114,8 +115,6 @@ public:
 
   bool IsColoredRectanglesEnabled() const;
 
-  bool IsDepartmentLogoEnabled() const;
-
   bool IsCrosshairNavigationEnabled() const;
 
   void InitializeWidget();
@@ -186,10 +185,6 @@ public slots:
 
   void DisableGradientBackground();
 
-  void EnableDepartmentLogo();
-
-  void DisableDepartmentLogo();
-  
   void EnableColoredRectangles();
 
   void DisableColoredRectangles();
@@ -209,6 +204,10 @@ public slots:
   void SetGradientBackgroundColors( const mitk::Color & upper, const mitk::Color & lower );
 
   void SetDepartmentLogoPath( const char * path );
+
+  void EnableDepartmentLogo ();
+
+  void DisableDepartmentLogo ();
 
   void SetWidgetPlaneModeToSlicing( bool activate );
 
@@ -245,12 +244,8 @@ public:
   /********************************/
 
   enum { PLANE_MODE_SLICING = 0, PLANE_MODE_ROTATION, PLANE_MODE_SWIVEL };
-  enum { LAYOUT_DEFAULT = 0, LAYOUT_2D_IMAGES_UP, LAYOUT_2D_IMAGES_LEFT,
-    LAYOUT_BIG_3D, LAYOUT_WIDGET1, LAYOUT_WIDGET2, LAYOUT_WIDGET3,
-    LAYOUT_2X_2D_AND_3D_WIDGET, LAYOUT_ROW_WIDGET_3_AND_4,
-    LAYOUT_COLUMN_WIDGET_3_AND_4, LAYOUT_ROW_WIDGET_SMALL3_AND_BIG4 ,
-    LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4,LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET,
-    LAYOUT_2D_UP_AND_3D_DOWN};
+  enum { LAYOUT_DEFAULT = 0, 
+    LAYOUT_BIG_3D}; 
 
   enum {
     TRANSVERSAL,
@@ -270,20 +265,12 @@ protected:
 
   mitk::RenderingManager* m_RenderingManager;
 
-  mitk::RenderWindowFrame::Pointer m_RectangleRendering3;
-  mitk::RenderWindowFrame::Pointer m_RectangleRendering2;
   mitk::RenderWindowFrame::Pointer m_RectangleRendering1;
-  mitk::RenderWindowFrame::Pointer m_RectangleRendering4;
 
-  mitk::ManufacturerLogo::Pointer m_LogoRendering1;
-  mitk::ManufacturerLogo::Pointer m_LogoRendering2;
-  mitk::ManufacturerLogo::Pointer m_LogoRendering3;
-  mitk::ManufacturerLogo::Pointer m_LogoRendering4;
+ // mitk::ManufacturerLogo::Pointer m_LogoRendering1;
+  CMICLogo::Pointer m_LogoRendering1;
 
   mitk::GradientBackground::Pointer m_GradientBackground1;
-  mitk::GradientBackground::Pointer m_GradientBackground2;
-  mitk::GradientBackground::Pointer m_GradientBackground4;
-  mitk::GradientBackground::Pointer m_GradientBackground3;
   bool m_GradientBackgroundFlag;
   
 
@@ -304,8 +291,6 @@ protected:
 
   QSplitter *m_MainSplit;
   QSplitter *m_LayoutSplit;
-  QSplitter *m_SubSplit1;
-  QSplitter *m_SubSplit2;
   
   QWidget *mitkWidget1Container;
 
