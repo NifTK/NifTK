@@ -166,6 +166,12 @@ namespace itk
         outputMaskImageIter.Set(inputMaskImageIter.Get());// i.e. don't do the dilation
       }                 
     }
+
+    // Set these to NULL, so that if this filter is used inside an ITK pipeline,
+    // that is persistent across calls, there are no smart pointers to the input images.
+    m_MeanFilter->SetGreyScaleImageInput(NULL);
+    m_MeanFilter->SetBinaryImageInput(NULL);
+
   }
   
 }//end namespace itk
