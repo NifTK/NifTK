@@ -62,8 +62,16 @@ public:
   /// \brief No-op destructor, as all objects will be destroyed by smart pointers.
   ~MorphologicalSegmentorPipeline() {};
 
+  /// \brief Disconnects the pipeline so that reference counts go to zero for the input image.
+  void DisconnectPipeline();
+
   /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
-  void SetParam(MorphologicalSegmentorPipelineParams& p);
+  void SetParam(GreyScaleImageType* referenceImage,
+                SegmentationImageType* erosionsAdditionsImage,
+                SegmentationImageType* erosionEditsImage,
+                SegmentationImageType* dilationsAditionsImage,
+                SegmentationImageType* dilationsEditsImage,
+                MorphologicalSegmentorPipelineParams& p);
 
   /// \brief Sets the value to use throughout the binary pipeline for foreground (defaults to 1).
   void SetForegroundValue(unsigned char foregroundValue);
