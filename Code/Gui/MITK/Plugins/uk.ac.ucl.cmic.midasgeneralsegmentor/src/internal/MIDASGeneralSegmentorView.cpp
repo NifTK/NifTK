@@ -916,6 +916,11 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
     return;
   }
 
+  // Set the colour to that which the user selected in the first place.
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
+  workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
+  workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
+
   if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
   {
     this->OnThresholdApplyButtonPressed();
@@ -926,11 +931,6 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   this->UpdateSegmentationImageVisibility(true);
   this->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
-
-  // Set the colour to that which the user selected in the first place.
-  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
-  workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
-  workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
 
   this->RequestRenderWindowUpdate();
 }
