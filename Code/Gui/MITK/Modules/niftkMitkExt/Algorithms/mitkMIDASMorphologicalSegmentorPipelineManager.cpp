@@ -664,11 +664,16 @@ MIDASMorphologicalSegmentorPipelineManager
 
   // Disconnect pipeline, or else SmartPointers to ImageToItkType do not seem to deregister.
   pipeline->m_ThresholdingFilter->SetInput(NULL);
+  pipeline->m_ErosionFilter->SetGreyScaleImageInput(NULL);
+  pipeline->m_ErosionMaskFilter->SetInput(0, NULL);
   pipeline->m_ErosionMaskFilter->SetInput(1, NULL);
   pipeline->m_ErosionMaskFilter->SetInput(2, NULL);
+  pipeline->m_DilationFilter->SetGreyScaleImageInput(NULL);
+  pipeline->m_DilationMaskFilter->SetInput(0, NULL);
   pipeline->m_DilationMaskFilter->SetInput(1, NULL);
   pipeline->m_DilationMaskFilter->SetInput(2, NULL);
   pipeline->m_DilationFilter->SetConnectionBreakerImage(NULL);
+  pipeline->m_RethresholdingFilter->SetGreyScaleImageInput(NULL);
 
   // Get hold of the output, and make sure we don't re-allocate memory.
   output->InitializeByItk< ImageType >(pipeline->GetOutput(editingFlags).GetPointer());
