@@ -137,6 +137,10 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
   // Connect input images.
   m_ThresholdingFilter->SetInput(referenceImage);
+  m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
+  m_DilationFilter->SetGreyScaleImageInput(referenceImage);
+  m_RethresholdingFilter->SetGreyScaleImageInput(referenceImage);
+
   m_ErosionMaskFilter->SetInput(1, erosionsAdditionsImage);
   m_ErosionMaskFilter->SetInput(2, erosionEditsImage);
   m_DilationMaskFilter->SetInput(1, dilationsAditionsImage);
