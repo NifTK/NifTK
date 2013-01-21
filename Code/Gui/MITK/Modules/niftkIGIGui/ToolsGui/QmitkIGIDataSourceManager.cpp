@@ -567,6 +567,12 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
       pix.fill(m_OKColour);
       tItem->setIcon(pix);
     }
+
+    double lag = source->GetCurrentTimeLag();
+    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+    lagItem->setTextAlignment(Qt::AlignCenter);
+    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 5, lagItem);
   }
 
   m_TableWidget->update();
@@ -585,19 +591,12 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
     source->UpdateFrameRate();
 
     float rate = source->GetFrameRate();
-    double lag = source->GetCurrentTimeLag();
-
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
 
     QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
     frameRateItem->setTextAlignment(Qt::AlignCenter);
     frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_TableWidget->setItem(rowNumber, 4, frameRateItem);
-
-    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-    lagItem->setTextAlignment(Qt::AlignCenter);
-    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    m_TableWidget->setItem(rowNumber, 5, lagItem);
   }
 
   m_TableWidget->update();
