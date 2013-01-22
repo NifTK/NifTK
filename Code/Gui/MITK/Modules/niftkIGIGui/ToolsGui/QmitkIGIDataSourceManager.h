@@ -40,6 +40,7 @@
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
+class QmitkIGIDataSourceManagerGuiUpdateThread;
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -57,6 +58,7 @@ class NIFTKIGIGUI_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_Q
 public:
 
   friend class QmitkIGIDataSourceManagerClearDownThread;
+  friend class QmitkIGIDataSourceManagerGuiUpdateThread;
 
   mitkClassMacro(QmitkIGIDataSourceManager, itk::Object);
   itkNewMacro(QmitkIGIDataSourceManager);
@@ -196,7 +198,6 @@ private:
   mitk::DataStorage                        *m_DataStorage;
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
-  QTimer                                   *m_UpdateTimer;    // Used to make the whole rendered scene update
   QTimer                                   *m_FrameRateTimer; // Used to just update the frame rate
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
@@ -211,6 +212,7 @@ private:
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;
   QmitkIGIDataSourceManagerClearDownThread *m_ClearDownThread;
+  QmitkIGIDataSourceManagerGuiUpdateThread *m_GuiUpdateThread;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
@@ -266,5 +268,27 @@ private:
   QTimer *m_Timer;
   QmitkIGIDataSourceManager *m_Manager;
 };
+
+/**
+ * \brief Separate thread class to run the GUI update at the right rate.
+ */
+class QmitkIGIDataSourceManagerGuiUpdateThread : public QThread {
+  Q_OBJECT
+public:
+  QmitkIGIDataSourceManagerGuiUpdateThread(QObject *parent, QmitkIGIDataSourceManager *manager);
+  ~QmitkIGIDataSourceManagerGuiUpdateThread();
+
+  void SetInterval(unsigned int milliseconds);
+  void run();
+
+public slots:
+  void OnTimeout();
+
+private:
+  unsigned int m_TimerInterval;
+  QTimer *m_Timer;
+  QmitkIGIDataSourceManager *m_Manager;
+};
+
 #endif
 
