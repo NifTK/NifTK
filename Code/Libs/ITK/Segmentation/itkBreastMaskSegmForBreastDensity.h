@@ -25,7 +25,7 @@
 #ifndef __itkBreastMaskSegmForBreastDensity_h
 #define __itkBreastMaskSegmForBreastDensity_h
 
-#include "BreastMaskSegmentationFromMRI.h"
+#include "itkBreastMaskSegmentationFromMRI.h"
 
 namespace itk
 {
@@ -35,19 +35,26 @@ namespace itk
  *
  *
  */
-template < const unsigned int ImageDimension = 3, class PixelType = float >
+template < const unsigned int ImageDimension = 3, class InputPixelType = float >
 class ITK_EXPORT BreastMaskSegmForBreastDensity 
-  : public BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+  : public BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 {
 public:
     
-  typedef BreastMaskSegmForBreastDensity    Self;
-  typedef BreastMaskSegmentationFromMRI Superclass;
-  typedef SmartPointer<Self>            Pointer;
-  typedef SmartPointer<const Self>      ConstPointer;
-  
+  typedef BreastMaskSegmForBreastDensity                                   Self;
+  typedef BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >  Superclass;
+  typedef SmartPointer<Self>                                               Pointer;
+  typedef SmartPointer<const Self>                                         ConstPointer;
+
+  itkNewMacro(Self); 
   itkTypeMacro( BreastMaskSegmForBreastDensity, BreastMaskSegmentationFromMRI );
 
+  typedef typename Superclass::InternalImageType               InternalImageType;
+  typedef typename Superclass::PointSetType                    PointSetType;
+  typedef typename Superclass::RealType                        RealType;
+  typedef typename Superclass::IteratorType                    IteratorType;
+  typedef typename Superclass::ConnectedSurfaceVoxelFilterType ConnectedSurfaceVoxelFilterType;
+  typedef typename Superclass::VectorType                      VectorType;
 
   /// Execute the segmentation 
   virtual void Execute( void );
@@ -62,7 +69,9 @@ protected:
   ~BreastMaskSegmForBreastDensity();
 
   /// Mask the pectoral muscle using a B-Spline surface
-  virtual void MaskThePectoralMuscleAndLateralChestSkinSurface( void );
+  void MaskThePectoralMuscleAndLateralChestSkinSurface( RealType rYHeightOffset, 
+							typename PointSetType::Pointer &pecPointSet,
+							unsigned long &iPointPec );
 
 private:
 

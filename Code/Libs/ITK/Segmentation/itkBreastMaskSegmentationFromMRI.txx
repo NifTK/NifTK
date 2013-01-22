@@ -28,48 +28,13 @@
 namespace itk
 {
 
-
-// --------------------------------------------------------------------------
-// Sort pairs in descending order, thus largest elements first
-// --------------------------------------------------------------------------
-
-template<class T>
-struct larger_second
-: std::binary_function<T,T,bool>
-{
-   inline bool operator()(const T& lhs, const T& rhs)
-   {
-      return lhs.second > rhs.second;
-   }
-};
-
-
-// --------------------------------------------------------------------------
-// Pixel accessor class to include ascending and descending dark lines
-// from BIF image into region Growing
-// --------------------------------------------------------------------------
-
-class BIFIntensityAccessor
-{
-public:
-  typedef InputPixelType InternalType;
-  typedef InputPixelType ExternalType;
-
-  static ExternalType Get( const InternalType & in )
-  {
-    if ( in == 15.0f || in == 16.0f || in == 18.0f ) return 15.0f;
-    else return in;
-  }
-};
-
-
 // --------------------------------------------------------------------------
 // Constructor
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
-::BreastMaskSegmentationFromMRI()
+template <const unsigned int ImageDimension, class InputPixelType>
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::BreastMaskSegmentationFromMRI() 
 {
   flgVerbose = false;
   flgXML = false;
@@ -82,7 +47,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   flgRegGrowYcoord = false;
   flgRegGrowZcoord = false;
 
-  bCropWithFittedSurface = false;
+  flgCropWithFittedSurface = false;
 
   regGrowXcoord = 0;
   regGrowYcoord = 0;
@@ -92,7 +57,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   minIntensity = 0;
 
   bgndThresholdProb = 0.6;
-  bgndThreshold = 0.;
 
   finalSegmThreshold = 0.45;
 
@@ -101,8 +65,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   fMarchingK1   = 30.0;
   fMarchingK2   = 15.0;
   fMarchingTime = 5.0;
-
-  iPointPec = 0;
 
   imStructural = 0;
   imFatSat = 0;
@@ -121,8 +83,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Destructor
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+template <const unsigned int ImageDimension, class InputPixelType>
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::~BreastMaskSegmentationFromMRI()
 {
 
@@ -133,20 +95,22 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Initialise()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::Initialise( void )
 {
   niftkitkInfoMacro( << "Initialising the segmentation object.");
   
   // Must have an input image
 
-  if ( imStructural->IsNull() )
+  if ( ! imStructural )
   {
-    itkExceptionMacro( << "The input structural image is not set" );
+    itkExceptionMacro( << "ERROR: The input structural image is not set" );
   }
 
+
+  typename InternalImageType::SizeType size;
 
   size = imStructural->GetLargestPossibleRegion().GetSize();
 
@@ -162,19 +126,19 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // CreateBIFs()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::CreateBIFs( void )
 {
-  BasicImageFeaturesFilterType::Pointer BIFsFilter = BasicImageFeaturesFilterType::New();
+  typename BasicImageFeaturesFilterType::Pointer BIFsFilter = BasicImageFeaturesFilterType::New();
   
   BIFsFilter->SetEpsilon( 1.0e-05 );
   BIFsFilter->CalculateOrientatedBIFs();
 
   BIFsFilter->SetSigma( 3. );
 
-  SliceBySliceImageFilterType::Pointer 
+  typename SliceBySliceImageFilterType::Pointer 
     sliceBySliceFilter = SliceBySliceImageFilterType::New();
   
   sliceBySliceFilter->SetFilter( BIFsFilter );
@@ -182,16 +146,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   sliceBySliceFilter->SetInput( imStructural );
 
-  try
-  {
-    std::cout << "Computing basic image features";
-    sliceBySliceFilter->Update();
-  }
-  catch (itk::ExceptionObject &e)
-  {
-    std::cerr << "ERROR: Failed to compute Basic Image Features" << std::endl;
-    std::cerr << e << std::endl;
-  }
+  std::cout << "Computing basic image features";
+  sliceBySliceFilter->Update();
   
   imBIFs = sliceBySliceFilter->GetOutput();
   imBIFs->DisconnectPipeline();  
@@ -205,16 +161,16 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Smooth the structural and FatSat images
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::SmoothTheInputImages( void )
 {
   if ( ! flgSmooth ) 
     return;
 
 
-  SmoothingFilterType::Pointer smoothing = SmoothingFilterType::New();
+  typename SmoothingFilterType::Pointer smoothing = SmoothingFilterType::New();
     
   smoothing->SetTimeStep( 0.0625 );
   smoothing->SetNumberOfIterations(  5 );
@@ -256,9 +212,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // CalculateTheMaximumImage()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::CalculateTheMaximumImage( void )
 {
   if ( imFatSat ) 
@@ -266,7 +222,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     
     // Copy the structural image into the maximum image 
 
-    DuplicatorType::Pointer duplicator = DuplicatorType::New();
+    typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
 
     duplicator->SetInputImage( imStructural );
     duplicator->Update();
@@ -298,7 +254,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   typedef itk::CurvatureFlowImageFilter< InternalImageType, 
 					 InternalImageType > CurvatureFlowImageFilterType;
 
-  CurvatureFlowImageFilterType::Pointer preRegionGrowingSmoothing = 
+  typename CurvatureFlowImageFilterType::Pointer preRegionGrowingSmoothing = 
     CurvatureFlowImageFilterType::New();
 
   preRegionGrowingSmoothing->SetInput( imMax );
@@ -309,18 +265,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   preRegionGrowingSmoothing->SetNumberOfIterations( nItersPreRegionGrowingSmoothing );
   preRegionGrowingSmoothing->SetTimeStep( 0.125 );
 
-  try
-  { 
-    std::cout << "Applying pre-region-growing smoothing, no. iters: "
-	      << nItersPreRegionGrowingSmoothing
-	      << ", time step: " << timeStepPreRegionGrowingSmoothing << std::endl;
-    preRegionGrowingSmoothing->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  { 
-    std::cout << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  std::cout << "Applying pre-region-growing smoothing, no. iters: "
+	    << nItersPreRegionGrowingSmoothing
+	    << ", time step: " << timeStepPreRegionGrowingSmoothing << std::endl;
+  preRegionGrowingSmoothing->Update();
 
   imMax = preRegionGrowingSmoothing->GetOutput();
   imMax->DisconnectPipeline();
@@ -341,15 +289,16 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   // Compute the range of the maximum image
 
- typedef itk::MinimumMaximumImageCalculator< InternalImageType > MinimumMaximumImageCalculatorType;
+  typedef itk::MinimumMaximumImageCalculator< InternalImageType > MinimumMaximumImageCalculatorType;
 
-  MinimumMaximumImageCalculatorType::Pointer rangeCalculator = MinimumMaximumImageCalculatorType::New();
+  typename MinimumMaximumImageCalculatorType::Pointer 
+    rangeCalculator = MinimumMaximumImageCalculatorType::New();
 
   rangeCalculator->SetImage( imMax );
   rangeCalculator->Compute();
 
-  float maxIntensity = rangeCalculator->GetMaximum();
-  float minIntensity = rangeCalculator->GetMinimum();
+  maxIntensity = rangeCalculator->GetMaximum();
+  minIntensity = rangeCalculator->GetMinimum();
   
   if (minIntensity < 1.0f)
   {
@@ -370,21 +319,23 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Segment the backgound using the maximum image histogram
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::SegmentBackground( void )
 {
+  float bgndThreshold = 0.;
+
 
   // Compute the histograms of the images
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   typedef itk::Statistics::ScalarImageToHistogramGenerator< InternalImageType > HistogramGeneratorType;
 
-  HistogramGeneratorType::Pointer histGeneratorT2 = HistogramGeneratorType::New();
-  HistogramGeneratorType::Pointer histGeneratorFS = 0;
+  typename HistogramGeneratorType::Pointer histGeneratorT2 = HistogramGeneratorType::New();
+  typename HistogramGeneratorType::Pointer histGeneratorFS = 0;
 
-  typedef HistogramGeneratorType::HistogramType  HistogramType;
+  typedef typename HistogramGeneratorType::HistogramType  HistogramType;
 
   const HistogramType *histogramT2 = 0;
   const HistogramType *histogramFS = 0;
@@ -422,10 +373,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   // Find the mode of the histogram
 
-  HistogramType::ConstIterator itrT2 = histogramT2->Begin();
-  HistogramType::ConstIterator endT2 = histogramT2->End();
+  typename HistogramType::ConstIterator itrT2 = histogramT2->Begin();
+  typename HistogramType::ConstIterator endT2 = histogramT2->End();
 
-  HistogramType::ConstIterator itrFS = 0;
+  typename HistogramType::ConstIterator itrFS = 0;
 
   if ( histogramFS ) itrFS = histogramFS->Begin();
 
@@ -447,8 +398,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   if ( histogramFS ) nSamples += histogramFS->GetTotalFrequency();
 
   if ( nSamples == 0. ) {
-    std::cerr << "ERROR: Total number of samples is zero" << std::endl;
-    return EXIT_FAILURE;
+    itkExceptionMacro( << "ERROR: Total number of samples is zero" );
   }
 
   if ( flgVerbose ) 
@@ -577,10 +527,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   // Region grow the background
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef itk::ConnectedThresholdImageFilter< InternalImageType, 
-                                              InternalImageType > ConnectedFilterType;
-
-  ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
+  typename ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
 
   connectedThreshold->SetInput( imMax );
 
@@ -589,7 +536,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   connectedThreshold->SetReplaceValue( 1000 );
 
-  InternalImageType::IndexType  index;
+  typename InternalImageType::IndexType  index;
   
   index[0] = regGrowXcoord;
   index[1] = regGrowYcoord;
@@ -597,17 +544,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   connectedThreshold->SetSeed( index );
 
-  try
-  { 
-    std::cout << "Region-growing the image background between: 0 and "
-	      << bgndThreshold << std::endl;
-    connectedThreshold->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  { 
-    std::cout << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  std::cout << "Region-growing the image background between: 0 and "
+	    << bgndThreshold << std::endl;
+  connectedThreshold->Update();
   
   imSegmented = connectedThreshold->GetOutput();
   imSegmented->DisconnectPipeline();
@@ -638,9 +577,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Find the nipple and mid-sternum landmarks
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::FindBreastLandmarks( void )
 {
 
@@ -649,11 +588,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   bool flgFoundNippleSlice;
   int nVoxels;
-  InternalImageType::IndexType idx, idxNippleLeft, idxNippleRight;
+
+  typename InternalImageType::IndexType idx;
         
-  InternalImageType::RegionType lateralRegion;
-  InternalImageType::IndexType lateralStart;
-  InternalImageType::SizeType lateralSize;
+  typename InternalImageType::RegionType lateralRegion;
+  typename InternalImageType::IndexType lateralStart;
+  typename InternalImageType::SizeType lateralSize;
 
   // Start iterating over the left-hand side
 
@@ -696,9 +636,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     itSegLeftRegion.NextSlice(); 
   }
 
-  if ( ! flgFoundNippleSlice ) {
-    std::cerr << "ERROR: Could not find left nipple slice" << std::endl;
-    return EXIT_FAILURE;
+  if ( ! flgFoundNippleSlice ) 
+  {
+    itkExceptionMacro( << "ERROR: Could not find left nipple slice" );
   }
 
   if ( flgVerbose )
@@ -735,9 +675,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     }
   }
 
-  if ( ! nVoxels ) {
-    std::cerr << "ERROR: Could not find the left nipple" << std::endl;
-    return EXIT_FAILURE;
+  if ( ! nVoxels ) 
+  {
+    itkExceptionMacro( << "ERROR: Could not find the left nipple" );
   }
 
   idxNippleLeft[0] /= nVoxels;
@@ -791,9 +731,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     itSegRightRegion.NextSlice(); 
   }
 
-  if ( ! flgFoundNippleSlice ) {
-    std::cerr << "ERROR: Could not find right nipple slice" << std::endl;
-    return EXIT_FAILURE;
+  if ( ! flgFoundNippleSlice ) 
+  {
+    itkExceptionMacro( << "ERROR: Could not find right nipple slice" );
   }
 
   if ( flgVerbose )
@@ -830,9 +770,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     }
   }
 
-  if ( ! nVoxels ) {
-    std::cerr << "ERROR: Could not find the right nipple" << std::endl;
-    return EXIT_FAILURE;
+  if ( ! nVoxels ) 
+  {
+    itkExceptionMacro( << "ERROR: Could not find the right nipple" );
   }
 
   idxNippleRight[0] /= nVoxels;
@@ -846,9 +786,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   // Find the mid-point on the sternum between the nipples
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InternalImageType::IndexType idxMidSternum;
-
   // Iterate towards the sternum from the midpoint between the nipples
+
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
 
   region = imSegmented->GetLargestPossibleRegion();
   size = region.GetSize();
@@ -872,7 +814,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     ++itSegLinear;
   }
 
-  InternalImageType::PixelType pixelValueMidSternumT2 = imStructural->GetPixel( idxMidSternum );
+  typename InternalImageType::PixelType 
+    pixelValueMidSternumT2 = imStructural->GetPixel( idxMidSternum );
 
   if (flgVerbose) 
     std::cout << "Mid-sternum location: " << idxMidSternum << std::endl
@@ -885,9 +828,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   // Left breast first
-
-  InternalImageType::IndexType idxLeftPosterior;
-  InternalImageType::IndexType idxLeftBreastMidPoint;
 
   region = imSegmented->GetLargestPossibleRegion();
   region.SetIndex( idxNippleLeft );
@@ -916,8 +856,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   // then the right breast
 
-  InternalImageType::IndexType idxRightPosterior;
-  InternalImageType::IndexType idxRightBreastMidPoint;
+  typename InternalImageType::IndexType idxRightPosterior;
 
   region = imSegmented->GetLargestPossibleRegion();
   region.SetIndex( idxNippleRight );
@@ -950,14 +889,17 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Segment the Pectoral Muscle
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
-PointSetType::Pointer 
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
-::SegmentThePectoralMuscle( RealType rYHeightOffset )
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::PointSetType::Pointer 
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::SegmentThePectoralMuscle( RealType rYHeightOffset, unsigned long &iPointPec )
 {
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
 
-  PointSetType::Pointer pecPointSet = PointSetType::New();  
-  InternalImageType::IndexType idxMidPectoral;
+  typename PointSetType::Pointer pecPointSet = PointSetType::New();  
+  typename InternalImageType::IndexType idxMidPectoral;
    
   // Iterate from mid sternum posteriorly looking for the first pectoral voxel
     
@@ -997,11 +939,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   //       |      |        17      |
   
 
-  InternalImageType::Pointer imModBIFs;
+  typename InternalImageType::Pointer imModBIFs;
 
   if ( flgExtInitialPect )
   {
-    DuplicatorType::Pointer duplicatorBIF = DuplicatorType::New();
+    typename DuplicatorType::Pointer duplicatorBIF = DuplicatorType::New();
     duplicatorBIF->SetInputImage( imBIFs ) ;
     duplicatorBIF->Update();
     imModBIFs = duplicatorBIF->GetOutput();
@@ -1037,6 +979,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     }
   }
 
+  typename ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
+
   connectedThreshold = ConnectedFilterType::New();
 
   connectedThreshold->SetLower( 15 );
@@ -1055,16 +999,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     connectedThreshold->SetUpper( 15 );
   }
     
-  try
-  { 
-    std::cout << "Region-growing the pectoral muscle" << std::endl;
-    connectedThreshold->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  { 
-    std::cout << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  std::cout << "Region-growing the pectoral muscle" << std::endl;
+  connectedThreshold->Update();
   
   imPectoralVoxels = connectedThreshold->GetOutput();
   imPectoralVoxels->DisconnectPipeline();  
@@ -1075,13 +1011,13 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   // Iterate through the mask to extract the voxel locations to be
   // used as seeds for the Fast Marching filter
              
-  typedef FastMarchingFilterType::NodeContainer           NodeContainer;
-  typedef FastMarchingFilterType::NodeType                NodeType;
+  typedef typename FastMarchingFilterType::NodeContainer           NodeContainer;
+  typedef typename FastMarchingFilterType::NodeType                NodeType;
     
   NodeType node;
   node.SetValue( 0 );
 
-  NodeContainer::Pointer seeds = NodeContainer::New();
+  typename NodeContainer::Pointer seeds = NodeContainer::New();
   seeds->Initialize();
 
   IteratorType pecVoxelIterator( imPectoralVoxels, 
@@ -1100,24 +1036,17 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   // Apply the Fast Marching filter to these seed positions
     
-  GradientFilterType::Pointer  gradientMagnitude = GradientFilterType::New();
+  typename GradientFilterType::Pointer gradientMagnitude = GradientFilterType::New();
     
   gradientMagnitude->SetSigma( 1 );
   gradientMagnitude->SetInput( imStructural );
 
-  try
-  {
-    gradientMagnitude->Update();
-  }
-  catch (itk::ExceptionObject &e)
-  {
-    std::cerr << e << std::endl;
-  }
+  gradientMagnitude->Update();
 
   WriteImageToFile( fileOutputGradientMagImage, "gradient magnitude image", 
 		    gradientMagnitude->GetOutput(), flgLeft, flgRight );
 
-  SigmoidFilterType::Pointer sigmoid = SigmoidFilterType::New();
+  typename SigmoidFilterType::Pointer sigmoid = SigmoidFilterType::New();
 
   sigmoid->SetOutputMinimum(  0.0  );
   sigmoid->SetOutputMaximum(  1.0  );
@@ -1130,33 +1059,19 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   sigmoid->SetInput( gradientMagnitude->GetOutput() );
 
-  try
-  {
-    sigmoid->Update();
-  }
-  catch (itk::ExceptionObject &e)
-  {
-    std::cerr << e << std::endl;
-  }
+  sigmoid->Update();
 
   WriteImageToFile( fileOutputSpeedImage, "sigmoid speed image", 
 		    sigmoid->GetOutput(), flgLeft, flgRight );
 
-  FastMarchingFilterType::Pointer fastMarching = FastMarchingFilterType::New();
+  typename FastMarchingFilterType::Pointer fastMarching = FastMarchingFilterType::New();
 
   fastMarching->SetTrialPoints( seeds );
   fastMarching->SetOutputSize( imStructural->GetLargestPossibleRegion().GetSize() );
   fastMarching->SetStoppingValue( fMarchingTime + 2.0 );
   fastMarching->SetInput( sigmoid->GetOutput() );
 
-  try
-  {
-    fastMarching->Update();
-  }
-  catch (itk::ExceptionObject &e)
-  {
-    std::cerr << e << std::endl;
-  }
+  fastMarching->Update();
 
   WriteImageToFile( fileOutputFastMarchingImage, "fast marching image", 
 		    fastMarching->GetOutput(), flgLeft, flgRight );
@@ -1164,7 +1079,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     
 
 
-  ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
+  typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
     
   thresholder->SetLowerThreshold(           0.0 );
   thresholder->SetUpperThreshold( fMarchingTime );
@@ -1174,16 +1089,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   thresholder->SetInput( fastMarching->GetOutput() );
 
-  try
-  { 
-    std::cout << "Segmenting pectoral with fast marching algorithm" << std::endl;
-    thresholder->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  { 
-    std::cerr << "ERROR: applying fast-marching algorithm" << std::endl << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  std::cout << "Segmenting pectoral with fast marching algorithm" << std::endl;
+  thresholder->Update();
 
   imTmp = thresholder->GetOutput();
   imTmp->DisconnectPipeline();
@@ -1219,7 +1126,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     
   // And region-grow the pectoral surface from this point
     
-  ConnectedSurfaceVoxelFilterType::Pointer 
+  typename ConnectedSurfaceVoxelFilterType::Pointer 
     connectedSurfacePecPoints = ConnectedSurfaceVoxelFilterType::New();
 
   connectedSurfacePecPoints->SetInput( imPectoralVoxels );
@@ -1231,16 +1138,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   connectedSurfacePecPoints->SetSeed( idxMidPectoral );
 
-  try
-  { 
-    std::cout << "Region-growing the pectoral surface" << std::endl;
-    connectedSurfacePecPoints->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  { 
-    std::cout << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  std::cout << "Region-growing the pectoral surface" << std::endl;
+  connectedSurfacePecPoints->Update();
   
   imPectoralSurfaceVoxels = connectedSurfacePecPoints->GetOutput();
   imPectoralSurfaceVoxels->DisconnectPipeline();
@@ -1253,6 +1152,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   region.SetIndex( start );
 
   LineIteratorType itPecSurfaceVoxelsLinear( imPectoralSurfaceVoxels, region );
+
+  VectorType pecHeight;
+  typename InternalImageType::IndexType idx;
+  typename PointSetType::PointType point;
 
   itPecSurfaceVoxelsLinear.SetDirection( 1 );
     
@@ -1300,9 +1203,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Discard anything not within a B-Spline fitted to the breast skin surface
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::MaskWithBSplineBreastSurface( void )
 {
 
@@ -1312,6 +1215,13 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   }
   VectorType surfHeight;
     
+  typename InternalImageType::SizeType 
+    maxSize = imStructural->GetLargestPossibleRegion().GetSize();
+
+  typename InternalImageType::RegionType lateralRegion;
+  typename InternalImageType::IndexType lateralStart;
+  typename InternalImageType::SizeType lateralSize;
+
   lateralRegion = imChestSurfaceVoxels->GetLargestPossibleRegion();
 
   lateralStart = lateralRegion.GetIndex();
@@ -1331,15 +1241,18 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   lateralRegion.SetSize( lateralSize );
   lateralRegion.SetIndex( lateralStart );
 
-  PointSetType::Pointer leftChestPointSet  = PointSetType::New();  
-  PointSetType::Pointer rightChestPointSet = PointSetType::New();  
+  typename PointSetType::Pointer leftChestPointSet  = PointSetType::New();  
+  typename PointSetType::Pointer rightChestPointSet = PointSetType::New();  
 
   // iterate over left breast
   IteratorWithIndexType itChestSurfLeftRegion = IteratorWithIndexType( imChestSurfaceVoxels, lateralRegion );
   int iPointLeftSurf  = 0;
 
   // This offset is necessary regardless of prone-supine scheme or not...
-  rYHeightOffset = static_cast<RealType>( maxSize[ 1 ] );
+  RealType rYHeightOffset = static_cast<RealType>( maxSize[ 1 ] );
+
+  typename InternalImageType::IndexType idx;
+  typename PointSetType::PointType point;
 
   for ( itChestSurfLeftRegion.GoToBegin(); 
 	! itChestSurfLeftRegion.IsAtEnd();
@@ -1364,7 +1277,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   }  
 
   // Fit the B-Spline...
-  InternalImageType::Pointer 
+  typename InternalImageType::Pointer 
     imLeftFittedBreastMask 
     = MaskImageFromBSplineFittedSurface( leftChestPointSet, 
 					 imSegmented->GetLargestPossibleRegion(), 
@@ -1416,7 +1329,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   // Fit B-Spline...
 
-  InternalImageType::Pointer 
+  typename InternalImageType::Pointer 
     imRightFittedBreastMask 
     = MaskImageFromBSplineFittedSurface( rightChestPointSet, 
 					 imSegmented->GetLargestPossibleRegion(), 
@@ -1427,18 +1340,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     
   // Combine the left and right mask into one
 
-  MaxImageFilterType::Pointer maxFilter = MaxImageFilterType::New();
+  typename MaxImageFilterType::Pointer maxFilter = MaxImageFilterType::New();
   maxFilter->SetInput1( imRightFittedBreastMask );
   maxFilter->SetInput2( imLeftFittedBreastMask  );
 
-  try
-  {
-    maxFilter->Update();
-  }
-  catch( itk::ExceptionObject & ex )
-  {
-    std::cout << ex << std::endl;
-  }
+  maxFilter->Update();
 
   WriteBinaryImageToUCharFile( fileOutputFittedBreastMask, 
 			       "fitted breast surface mask", 
@@ -1474,9 +1380,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Mask with a sphere centered on each breast
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::MaskBreastWithSphere( void )
 {
   // Left breast
@@ -1489,8 +1395,32 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   leftRadius *= 1.05;
 
+  typename InternalImageType::RegionType lateralRegion;
+  typename InternalImageType::IndexType lateralStart;
+  typename InternalImageType::SizeType lateralSize;
+
+  // Start iterating over the left-hand side
+
+  lateralRegion = imSegmented->GetLargestPossibleRegion();
+
+  lateralStart = lateralRegion.GetIndex();
+
+  lateralSize = lateralRegion.GetSize();
+  lateralSize[0] = lateralSize[0]/2;
+
+  lateralRegion.SetSize( lateralSize );
+
+  if ( flgVerbose )
+    std::cout << "Iterating over left region: " << lateralRegion << std::endl;
+
+  SliceIteratorType itSegLeftRegion( imSegmented, lateralRegion );
+  itSegLeftRegion.SetFirstDirection( 0 );
+  itSegLeftRegion.SetSecondDirection( 2 );
+
   itSegLeftRegion.GoToBegin();
 
+  typename InternalImageType::IndexType idx;
+ 
   while ( ! itSegLeftRegion.IsAtEnd() ) 
   {
     while ( ! itSegLeftRegion.IsAtEndOfSlice() ) 
@@ -1517,6 +1447,24 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   if ( rightRadius < rightHeight/2. )
     rightRadius = rightHeight/2.;
+
+  lateralRegion = imSegmented->GetLargestPossibleRegion();
+
+  lateralSize = lateralRegion.GetSize();
+  lateralSize[0] = lateralSize[0]/2;
+
+  lateralStart = lateralRegion.GetIndex();
+  lateralStart[0] = lateralSize[0];
+
+  lateralRegion.SetIndex( lateralStart );
+  lateralRegion.SetSize( lateralSize );
+
+  if ( flgVerbose )
+    std::cout << "Iterating over right region: " << lateralRegion << std::endl;
+
+  SliceIteratorType itSegRightRegion( imSegmented, lateralRegion );
+  itSegRightRegion.SetFirstDirection( 0 );
+  itSegRightRegion.SetSecondDirection( 2 );
 
   itSegRightRegion.GoToBegin();
 
@@ -1545,14 +1493,23 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Mask at a distance of 40mm posterior to the mid-sterum point
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::MaskAtAtFixedDistancePosteriorToMidSternum( void )
 {
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
+
+  IteratorType itSeg = IteratorType( imSegmented,        
+				     imStructural->GetLargestPossibleRegion() );
+
   //InternalImageType::SizeType sizeChestSurfaceRegion;
   region  = imStructural->GetLargestPossibleRegion();
   
+  const typename InternalImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
+
   start    = region.GetIndex();
   start[0] = 0;
   start[1] = idxMidSternum[1] + (40. / sp[1]);
@@ -1578,9 +1535,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Smooth the mask and threshold to round corners etc.
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::SmoothMask( void )
 {
   DerivativeFilterPointer derivativeFilterX = DerivativeFilterType::New();
@@ -1604,7 +1561,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   derivativeFilterZ->SetOrder( DerivativeFilterType::ZeroOrder );
 
 
-  ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
+  typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
   
   thresholder->SetLowerThreshold( 1000. * finalSegmThreshold );
   thresholder->SetUpperThreshold( 100000 );
@@ -1614,16 +1571,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   thresholder->SetInput( derivativeFilterZ->GetOutput() );
 
-  try
-  { 
-    std::cout << "Smoothing the segmented mask" << std::endl;
-    thresholder->Update(); 
-  }
-  catch (itk::ExceptionObject &ex)
-  { 
-    std::cout << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  std::cout << "Smoothing the segmented mask" << std::endl;
+  thresholder->Update(); 
 
 
   // Use this smoothed image to generate a VTK surface?
@@ -1649,12 +1598,43 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
  }
 
 
-  // Disconnect the pipeline
+  // Do a final region growing to eliminate any voids inside the breast
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  imTmp = thresholder->GetOutput();
-  imTmp->DisconnectPipeline();
-    
-  imSegmented = imTmp;
+  typename ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
+
+  connectedThreshold->SetInput( thresholder->GetOutput() );
+
+  connectedThreshold->SetLower( 0  );
+  connectedThreshold->SetUpper( 500 );
+
+  connectedThreshold->SetReplaceValue( 1000 );
+
+  typename InternalImageType::IndexType  index;
+
+  index[0] = regGrowXcoord;
+  index[1] = regGrowYcoord;
+  index[2] = regGrowZcoord;
+
+  connectedThreshold->SetSeed( index );
+
+  std::cout << "Region-growing to eliminate voids in the breast" << std::endl;
+  connectedThreshold->Update();
+  
+  imSegmented = connectedThreshold->GetOutput();
+  imSegmented->DisconnectPipeline();
+
+  connectedThreshold = 0;
+
+  // Invert the segmentation
+
+  IteratorType segIterator2( imSegmented, imSegmented->GetLargestPossibleRegion() );
+        
+  for ( segIterator2.GoToBegin(); ! segIterator2.IsAtEnd(); ++segIterator2 )
+    if ( segIterator2.Get() )
+      segIterator2.Set( 0 );
+    else
+      segIterator2.Set( 1000 );
 
 }
 
@@ -1663,11 +1643,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // DistanceBetweenVoxels()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 double
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
-::DistanceBetweenVoxels( InternalImageType::IndexType p, 
-			 InternalImageType::IndexType q )
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::DistanceBetweenVoxels( typename InternalImageType::IndexType p, 
+			 typename InternalImageType::IndexType q )
 {
   double dx = p[0] - q[0];
   double dy = p[1] - q[1];
@@ -1681,9 +1661,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // ModifySuffix()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 std::string
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::ModifySuffix( std::string filename, std::string strInsertBeforeSuffix ) 
 {
   boost::filesystem::path pathname( filename );
@@ -1710,9 +1690,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // GetBreastSide()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 std::string
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::GetBreastSide( std::string &fileOutput, enumBreastSideType breastSide )
 {
   std::string fileModifiedOutput;
@@ -1745,26 +1725,27 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // --------------------------------------------------------------------------
 // GetBreastSide()
 // --------------------------------------------------------------------------
-template <const unsigned int ImageDimension, class PixelType>
-InternalImageType::Pointer 
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
-::GetBreastSide( InternalImageType::Pointer inImage, 
+
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer 
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::GetBreastSide( typename InternalImageType::Pointer inImage, 
 		 enumBreastSideType breastSide )
 {
-  InternalImageType::RegionType lateralRegion;
-  InternalImageType::IndexType lateralStart;
-  InternalImageType::SizeType lateralSize;
+  typename InternalImageType::RegionType lateralRegion;
+  typename InternalImageType::IndexType lateralStart;
+  typename InternalImageType::SizeType lateralSize;
 
-  InternalImageType::Pointer imLateral;
+  typename InternalImageType::Pointer imLateral;
       
-  InternalImageType::Pointer outImage; 
+  typename InternalImageType::Pointer outImage; 
 
   // Extract the left breast region
 
   if ( breastSide == LEFT_BREAST ) 
   {
     typedef itk::RegionOfInterestImageFilter< InternalImageType, InternalImageType > FilterType;
-    FilterType::Pointer filter = FilterType::New();
+    typename FilterType::Pointer filter = FilterType::New();
 
     lateralRegion = inImage->GetLargestPossibleRegion();
 
@@ -1776,14 +1757,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     filter->SetRegionOfInterest( lateralRegion );
     filter->SetInput( inImage );
 
-    try
-    {
-      filter->Update();
-    }
-    catch (itk::ExceptionObject &e)
-    {
-      std::cerr << e << std::endl;
-    }
+    filter->Update();
 
     outImage = filter->GetOutput();
   }
@@ -1793,7 +1767,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   else if ( breastSide == RIGHT_BREAST ) 
   {
     typedef itk::RegionOfInterestImageFilter< InternalImageType, InternalImageType > FilterType;
-    FilterType::Pointer filter = FilterType::New();
+    typename FilterType::Pointer filter = FilterType::New();
 
     lateralRegion = inImage->GetLargestPossibleRegion();
 
@@ -1810,14 +1784,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     filter->SetRegionOfInterest( lateralRegion );
     filter->SetInput( inImage );
 
-    try
-    {
-      filter->Update();
-    }
-    catch (itk::ExceptionObject &e)
-    {
-      std::cerr << e << std::endl;
-    }
+    filter->Update();
 
     outImage = filter->GetOutput();
   }
@@ -1838,16 +1805,16 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // WriteImageToFile()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 bool
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::WriteImageToFile( std::string &fileOutput, const char *description,
-		    InternalImageType::Pointer image, enumBreastSideType breastSide )
+		    typename InternalImageType::Pointer image, enumBreastSideType breastSide )
 {
   if ( fileOutput.length() ) {
 
     std::string fileModifiedOutput;
-    InternalImageType::Pointer pipeITKImageDataConnector;
+    typename InternalImageType::Pointer pipeITKImageDataConnector;
 
     pipeITKImageDataConnector = GetBreastSide( image, breastSide );
     fileModifiedOutput = GetBreastSide( fileOutput, breastSide );
@@ -1856,21 +1823,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
     typedef itk::ImageFileWriter< InternalImageType > FileWriterType;
 
-    FileWriterType::Pointer writer = FileWriterType::New();
+    typename FileWriterType::Pointer writer = FileWriterType::New();
 
     writer->SetFileName( fileModifiedOutput.c_str() );
     writer->SetInput( pipeITKImageDataConnector );
 
-    try
-    {
-      std::cout << "Writing " << description << " to file: "
-		<< fileModifiedOutput.c_str() << std::endl;
-      writer->Update();
-    }
-    catch (itk::ExceptionObject &e)
-    {
-      std::cerr << e << std::endl;
-    }
+    std::cout << "Writing " << description << " to file: "
+	      << fileModifiedOutput.c_str() << std::endl;
+    writer->Update();
 
     return true;
   }
@@ -1883,12 +1843,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // WriteImageToFile()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 bool
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::WriteImageToFile( std::string &fileOutput,
 		    const char *description,
-		    InternalImageType::Pointer image, 
+		    typename InternalImageType::Pointer image, 
 		    bool flgLeft, bool flgRight )
 {
   if ( flgLeft && flgRight )
@@ -1912,12 +1872,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // WriteBinaryImageToUCharFile()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 bool
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::WriteBinaryImageToUCharFile( std::string &fileOutput, 
 			       const char *description,
-			       InternalImageType::Pointer image, 
+			       typename InternalImageType::Pointer image, 
 			       enumBreastSideType breastSide )
 {
   if ( fileOutput.length() ) {
@@ -1929,33 +1889,26 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
     typedef itk::ImageFileWriter< OutputImageType > FileWriterType;
 
     std::string fileModifiedOutput;
-    InternalImageType::Pointer pipeITKImageDataConnector;
+    typename InternalImageType::Pointer pipeITKImageDataConnector;
 
     pipeITKImageDataConnector = GetBreastSide( image, breastSide );
     fileModifiedOutput = GetBreastSide( fileOutput, breastSide );
 
 
-    CastFilterType::Pointer caster = CastFilterType::New();
+    typename CastFilterType::Pointer caster = CastFilterType::New();
 
     caster->SetInput( pipeITKImageDataConnector );
     caster->SetOutputMinimum(   0 );
     caster->SetOutputMaximum( 255 );
 
-    FileWriterType::Pointer writer = FileWriterType::New();
+    typename FileWriterType::Pointer writer = FileWriterType::New();
 
     writer->SetFileName( fileModifiedOutput.c_str() );
     writer->SetInput( caster->GetOutput() );
 
-    try
-    {
-      std::cout << "Writing " << description << " to file: "
-		<< fileModifiedOutput.c_str() << std::endl;
-      writer->Update();
-    }
-    catch (itk::ExceptionObject &e)
-    {
-      std::cerr << e << std::endl;
-    }
+    std::cout << "Writing " << description << " to file: "
+	      << fileModifiedOutput.c_str() << std::endl;
+    writer->Update();
 
     return true;
   }
@@ -1969,12 +1922,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // WriteBinaryImageToUCharFile()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 bool
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::WriteBinaryImageToUCharFile( std::string &fileOutput,
 			       const char *description,
-			       InternalImageType::Pointer image, 
+			       typename InternalImageType::Pointer image, 
 			       bool flgLeft, 
 			       bool flgRight )
 {
@@ -1999,9 +1952,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // WriteHistogramToFile()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::WriteHistogramToFile( std::string fileOutput,
 			vnl_vector< double > &xHistIntensity, 
 			vnl_vector< double > &yHistFrequency, 
@@ -2012,10 +1965,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   fout.open(fileOutput.c_str(), std::ios::out);
     
-  if ((! fout) || fout.bad()) {
-    std::cerr << "ERROR: Failed to open file: " 
-	      << fileOutput.c_str() << std::endl;
-    exit( EXIT_FAILURE );
+  if ((! fout) || fout.bad()) 
+  {
+    itkExceptionMacro( << "ERROR: Failed to open file: " << fileOutput.c_str() );
   }
   
   std::cout << "Writing histogram to file: "
@@ -2034,9 +1986,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // polyDataInfo(vtkPolyData *polyData) 
 // ----------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::polyDataInfo(vtkPolyData *polyData) 
 {
   if (polyData) {
@@ -2064,16 +2016,16 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // WriteImageToVTKSurfaceFile()
 // ----------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
-::WriteImageToVTKSurfaceFile(InternalImageType::Pointer image, 
-			     std::string &fileOutput, 
-			     enumBreastSideType breastSide,
-			     bool flgVerbose, 
-			     float finalSegmThreshold ) 
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::WriteImageToVTKSurfaceFile( typename InternalImageType::Pointer image, 
+			      std::string &fileOutput, 
+			      enumBreastSideType breastSide,
+			      bool flgVerbose, 
+			      float finalSegmThreshold ) 
 {
-  InternalImageType::Pointer pipeITKImageDataConnector;
+  typename InternalImageType::Pointer pipeITKImageDataConnector;
   vtkPolyData *pipeVTKPolyDataConnector;	// The link between objects in the pipeline
 
 
@@ -2082,165 +2034,149 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
 
 
-  const InternalImageType::SpacingType& sp = pipeITKImageDataConnector->GetSpacing();
+  const typename InternalImageType::SpacingType 
+    &sp = pipeITKImageDataConnector->GetSpacing();
+
   std::cout << "Input image resolution: "
 	    << sp[0] << "," << sp[1] << "," << sp[2] << std::endl;
     
-  const InternalImageType::SizeType& sz = pipeITKImageDataConnector->GetLargestPossibleRegion().GetSize();
+  const typename InternalImageType::SizeType 
+    &sz = pipeITKImageDataConnector->GetLargestPossibleRegion().GetSize();
+
   std::cout << "Input image dimensions: "
 	    << sz[0] << "," << sz[1] << "," << sz[2] << std::endl;
   
 
-    // Set the border around the image to zero to prevent holes in the image
+  // Set the border around the image to zero to prevent holes in the image
  
-    typedef itk::SetBoundaryVoxelsToValueFilter< InternalImageType, InternalImageType > SetBoundaryVoxelsToValueFilterType;
+  typedef itk::SetBoundaryVoxelsToValueFilter< InternalImageType, 
+    InternalImageType > SetBoundaryVoxelsToValueFilterType;
     
-    SetBoundaryVoxelsToValueFilterType::Pointer setBoundary = SetBoundaryVoxelsToValueFilterType::New();
+  typename SetBoundaryVoxelsToValueFilterType::Pointer 
+    setBoundary = SetBoundaryVoxelsToValueFilterType::New();
     
-    setBoundary->SetInput( pipeITKImageDataConnector );
+  setBoundary->SetInput( pipeITKImageDataConnector );
     
-    setBoundary->SetValue( 0 );
+  setBoundary->SetValue( 0 );
     
-    try
-    { 
-      std::cout << "Sealing the image boundary..."<< std::endl;
-      setBoundary->Update();
-    }
-    catch (itk::ExceptionObject &ex)
-    { 
-      std::cout << ex << std::endl;
-      exit( EXIT_FAILURE );
-    }
-    pipeITKImageDataConnector = setBoundary->GetOutput();
+  std::cout << "Sealing the image boundary..."<< std::endl;
+  setBoundary->Update();
+
+  pipeITKImageDataConnector = setBoundary->GetOutput();
 
 
-    // Downsample the image to istropic voxels with dimensions
+  // Downsample the image to istropic voxels with dimensions
 
-    double subsamplingResolution = 10.; //The isotropic volume resolution in mm for sub-sampling
-    typedef itk::ResampleImageFilter< InternalImageType, InternalImageType > ResampleImageFilterType;
-    ResampleImageFilterType::Pointer subsampleFilter = ResampleImageFilterType::New();
+  double subsamplingResolution = 10.; //The isotropic volume resolution in mm for sub-sampling
+  typedef itk::ResampleImageFilter< InternalImageType, InternalImageType > ResampleImageFilterType;
+  typename ResampleImageFilterType::Pointer subsampleFilter = ResampleImageFilterType::New();
   
-    subsampleFilter->SetInput( pipeITKImageDataConnector );
+  subsampleFilter->SetInput( pipeITKImageDataConnector );
 
-    double spacing[ ImageDimension ];
-    spacing[0] = subsamplingResolution; // pixel spacing in millimeters along X
-    spacing[1] = subsamplingResolution; // pixel spacing in millimeters along Y
-    spacing[2] = subsamplingResolution; // pixel spacing in millimeters along Z
+  double spacing[ ImageDimension ];
+  spacing[0] = subsamplingResolution; // pixel spacing in millimeters along X
+  spacing[1] = subsamplingResolution; // pixel spacing in millimeters along Y
+  spacing[2] = subsamplingResolution; // pixel spacing in millimeters along Z
     
-    subsampleFilter->SetOutputSpacing( spacing );
+  subsampleFilter->SetOutputSpacing( spacing );
 
-    double origin[ ImageDimension ];
-    origin[0] = 0.0;  // X space coordinate of origin
-    origin[1] = 0.0;  // Y space coordinate of origin
-    origin[2] = 0.0;  // Y space coordinate of origin
+  double origin[ ImageDimension ];
+  origin[0] = 0.0;  // X space coordinate of origin
+  origin[1] = 0.0;  // Y space coordinate of origin
+  origin[2] = 0.0;  // Y space coordinate of origin
 
-    subsampleFilter->SetOutputOrigin( origin );
+  subsampleFilter->SetOutputOrigin( origin );
 
-    InternalImageType::DirectionType direction;
-    direction.SetIdentity();
-    subsampleFilter->SetOutputDirection( direction );
+  typename InternalImageType::DirectionType direction;
+  direction.SetIdentity();
+  subsampleFilter->SetOutputDirection( direction );
 
-    InternalImageType::SizeType   size;
+  typename InternalImageType::SizeType size;
 
-    size[0] = (int) ceil( sz[0]*sp[0]/spacing[0] );  // number of pixels along X
-    size[1] = (int) ceil( sz[1]*sp[1]/spacing[1] );  // number of pixels along X
-    size[2] = (int) ceil( sz[2]*sp[2]/spacing[2] );  // number of pixels along X
+  size[0] = (int) ceil( sz[0]*sp[0]/spacing[0] );  // number of pixels along X
+  size[1] = (int) ceil( sz[1]*sp[1]/spacing[1] );  // number of pixels along X
+  size[2] = (int) ceil( sz[2]*sp[2]/spacing[2] );  // number of pixels along X
 
-    subsampleFilter->SetSize( size );
+  subsampleFilter->SetSize( size );
 
-    typedef itk::AffineTransform< double, ImageDimension >  TransformType;
-    TransformType::Pointer transform = TransformType::New();
+  typedef itk::AffineTransform< double, ImageDimension >  TransformType;
+  typename TransformType::Pointer transform = TransformType::New();
 
-    subsampleFilter->SetTransform( transform );
+  subsampleFilter->SetTransform( transform );
 
-    typedef itk::LinearInterpolateImageFunction< InternalImageType, double >  InterpolatorType;
-    InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  typedef itk::LinearInterpolateImageFunction< InternalImageType, double >  InterpolatorType;
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
  
-    subsampleFilter->SetInterpolator( interpolator );
+  subsampleFilter->SetInterpolator( interpolator );
     
-    subsampleFilter->SetDefaultPixelValue( 0 );
+  subsampleFilter->SetDefaultPixelValue( 0 );
 
-    try
-    { 
-      std::cout << "Resampling image to dimensions: "
-		<< size[0] << ", " << size[1] << ", "<< size[2]
-		<< "voxels, with resolution : "
-		<< spacing[0] << ", " << spacing[1] << ", " << spacing[2] << "mm..."<< std::endl;
-
-      subsampleFilter->Update();
-    }
-    catch (itk::ExceptionObject &ex)
-    { 
-      std::cout << ex << std::endl;
-      exit( EXIT_FAILURE );
-    }
-
-    // Create the ITK to VTK filter
-
-    typedef itk::ImageToVTKImageFilter< InternalImageType > ImageToVTKImageFilterType;
-
-    ImageToVTKImageFilterType::Pointer convertITKtoVTK = ImageToVTKImageFilterType::New();
-
-    convertITKtoVTK->SetInput( pipeITKImageDataConnector );
-    
-    try
-    { 
-      if (flgVerbose) 
-	std::cout << "Converting the image to VTK format." << std::endl;
-
-      convertITKtoVTK->Update();
-    }
-    catch (itk::ExceptionObject &ex)
-    { 
-      std::cout << ex << std::endl;
-      exit( EXIT_FAILURE ); 
-    }
-    
-
-    // Apply the Marching Cubes algorithm
+  std::cout << "Resampling image to dimensions: "
+	    << size[0] << ", " << size[1] << ", "<< size[2]
+	    << "voxels, with resolution : "
+	    << spacing[0] << ", " << spacing[1] << ", " << spacing[2] << "mm..."<< std::endl;
   
-    vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkMarchingCubes::New();
+  subsampleFilter->Update();
 
-    surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
 
-    surfaceExtractor->SetInput((vtkDataObject *) convertITKtoVTK->GetOutput());
-    pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
+  // Create the ITK to VTK filter
 
-    if (flgVerbose) {
-      surfaceExtractor->Update();
+  typedef itk::ImageToVTKImageFilter< InternalImageType > ImageToVTKImageFilterType;
+
+  typename ImageToVTKImageFilterType::Pointer convertITKtoVTK = ImageToVTKImageFilterType::New();
+
+  convertITKtoVTK->SetInput( pipeITKImageDataConnector );
+    
+  if (flgVerbose) 
+    std::cout << "Converting the image to VTK format." << std::endl;
+
+  convertITKtoVTK->Update();
+    
+
+  // Apply the Marching Cubes algorithm
+  
+  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkMarchingCubes::New();
+
+  surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
+
+  surfaceExtractor->SetInput((vtkDataObject *) convertITKtoVTK->GetOutput());
+  pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
+
+  if (flgVerbose) {
+    surfaceExtractor->Update();
       
-      std::cout << std::endl << "Extracted surface data:" << std::endl;
-      polyDataInfo(pipeVTKPolyDataConnector);
-    }
+    std::cout << std::endl << "Extracted surface data:" << std::endl;
+    polyDataInfo(pipeVTKPolyDataConnector);
+  }
 
-    // Post-decimation smoothing
+  // Post-decimation smoothing
 
-    int niterations = 5;		// The number of smoothing iterations
-    float bandwidth = 0.1;	// The band width of the smoothing filter
+  int niterations = 5;		// The number of smoothing iterations
+  float bandwidth = 0.1;	// The band width of the smoothing filter
 
-    vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
+  vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
     
-    postSmoothingFilter->BoundarySmoothingOff();
+  postSmoothingFilter->BoundarySmoothingOff();
     
-    postSmoothingFilter->SetNumberOfIterations(niterations);
-    postSmoothingFilter->SetPassBand(bandwidth);
+  postSmoothingFilter->SetNumberOfIterations(niterations);
+  postSmoothingFilter->SetPassBand(bandwidth);
     
-    postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
-    pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
+  postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+  pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
 
-    // Write the created vtk surface to a file
+  // Write the created vtk surface to a file
 
-    vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
+  vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
 
-    writer3D->SetFileName( fileModifiedOutput.c_str() );
-    writer3D->SetInput(pipeVTKPolyDataConnector);
+  writer3D->SetFileName( fileModifiedOutput.c_str() );
+  writer3D->SetInput(pipeVTKPolyDataConnector);
 
-    writer3D->SetFileType(VTK_BINARY);
+  writer3D->SetFileType(VTK_BINARY);
 
-    writer3D->Write();
+  writer3D->Write();
 
-    if (flgVerbose) 
-      std::cout << "Polydata written to VTK file: " << fileModifiedOutput.c_str() << std::endl;
+  if (flgVerbose) 
+    std::cout << "Polydata written to VTK file: " << fileModifiedOutput.c_str() << std::endl;
 }
 
 
@@ -2249,14 +2185,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 // Mask image from B-Spline surface
 // ------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
-InternalImageType::Pointer 
-BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
-::MaskImageFromBSplineFittedSurface( const PointSetType::Pointer            & pointSet, 
-				     const InternalImageType::RegionType    & region,
-				     const InternalImageType::PointType     & origin, 
-				     const InternalImageType::SpacingType   & spacing,
-				     const InternalImageType::DirectionType & direction,
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer 
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::MaskImageFromBSplineFittedSurface( const typename PointSetType::Pointer            & pointSet, 
+				     const typename InternalImageType::RegionType    & region,
+				     const typename InternalImageType::PointType     & origin, 
+				     const typename InternalImageType::SpacingType   & spacing,
+				     const typename InternalImageType::DirectionType & direction,
 				     const RealType rOffset, 
 				     const int splineOrder, 
 				     const int numOfControlPoints,
@@ -2268,11 +2204,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
   typedef itk::BSplineScatteredDataPointSetToImageFilter < PointSetType, 
                                                            VectorImageType > FilterType;
 
-  FilterType::Pointer filter = FilterType::New();
+  typename FilterType::Pointer filter = FilterType::New();
 
   filter->SetSplineOrder( splineOrder );  
 
-  FilterType::ArrayType ncps;  
+  typename FilterType::ArrayType ncps;  
   ncps.Fill( numOfControlPoints );  
   filter->SetNumberOfControlPoints( ncps );
 
@@ -2280,10 +2216,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   // Define the parametric domain.
 
-  InternalImageType::SizeType size = region.GetSize();
-  FilterType::PointType   bsDomainOrigin;
-  FilterType::SpacingType bsDomainSpacing;
-  FilterType::SizeType    bsDomainSize;
+  typename InternalImageType::SizeType size = region.GetSize();
+  typename FilterType::PointType   bsDomainOrigin;
+  typename FilterType::SpacingType bsDomainSpacing;
+  typename FilterType::SizeType    bsDomainSize;
 
   for (int i=0; i<2; i++) 
   {
@@ -2301,29 +2237,21 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
   filter->SetDebug( true );
 
-  try 
-  {
-    filter->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  {
-    std::cerr << "ERROR: itkBSplineScatteredDataImageFilter exception thrown" 
-	       << std::endl << ex << std::endl;
-  }
+  filter->Update();
 
   // The B-Spline surface heights are the intensities of the 2D output image
 
-  VectorImageType::Pointer bSplineSurface = filter->GetOutput();
+  typename VectorImageType::Pointer bSplineSurface = filter->GetOutput();
   bSplineSurface->DisconnectPipeline();
 
-  VectorImageType::IndexType bSplineCoord;
+  typename VectorImageType::IndexType bSplineCoord;
   RealType surfaceHeight;
 
 
   // Construct the mask
   // ~~~~~~~~~~~~~~~~~~
 
-  InternalImageType::Pointer imSurfaceMask = InternalImageType::New();
+  typename InternalImageType::Pointer imSurfaceMask = InternalImageType::New();
   imSurfaceMask->SetRegions  ( region    );
   imSurfaceMask->SetOrigin   ( origin    );
   imSurfaceMask->SetSpacing  ( spacing   );
@@ -2343,7 +2271,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, PixelType >
 
     // Get the coordinate of this column of AP voxels
     
-    InternalImageType::IndexType idx = itSurfaceMaskLinear.GetIndex();
+    typename InternalImageType::IndexType idx = itSurfaceMaskLinear.GetIndex();
 
     bSplineCoord[0] = idx[0];
     bSplineCoord[1] = idx[2];

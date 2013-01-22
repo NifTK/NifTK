@@ -32,8 +32,8 @@ namespace itk
 // Constructor
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
-BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
+template <const unsigned int ImageDimension, class InputPixelType>
+BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 ::BreastMaskSegmForBreastDensity()
 {
 
@@ -44,8 +44,8 @@ BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
 // Destructor
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
-BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
+template <const unsigned int ImageDimension, class InputPixelType>
+BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 ::~BreastMaskSegmForBreastDensity()
 {
 
@@ -56,11 +56,13 @@ BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
 // Execute()
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
+BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 ::Execute( void )
 {
+  unsigned long iPointPec = 0;
+
   // Initialise the segmentation
   this->Initialise();
   this->SmoothTheInputImages();
@@ -75,21 +77,25 @@ BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
   this->FindBreastLandmarks();
 
   // Segment the Pectoral Muscle
-  PointSetType::Pointer pecPointSet = 
-    this->SegmentThePectoralMuscle( static_cast<RealType>( 0.0 ) );
+  RealType rYHeightOffset = static_cast<RealType>( 0.0 );
 
-  MaskThePectoralMuscleAndLateralChestSkinSurface( pecPointSet );
+  typename PointSetType::Pointer pecPointSet = 
+    this->SegmentThePectoralMuscle( rYHeightOffset, iPointPec );
+
+  MaskThePectoralMuscleAndLateralChestSkinSurface( rYHeightOffset, 
+						   pecPointSet,
+						   iPointPec );
 
   // Discard anything not within a fitted surface (switch -cropfit)
-  if ( bCropWithFittedSurface )
-    MaskWithBSplineBreastSurface();
+  if ( this->flgCropWithFittedSurface )
+    this->MaskWithBSplineBreastSurface();
 
   // OR Discard anything not within a certain radius of the breast center
   else 
-    MaskBreastWithSphere();
+    this->MaskBreastWithSphere();
   
   // Finally smooth the mask and threshold to round corners etc.
-  SmoothMask();
+  this->SmoothMask();
 
 
 }
@@ -99,51 +105,49 @@ BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
 // Mask the pectoral muscle using a B-Spline surface
 // --------------------------------------------------------------------------
 
-template <const unsigned int ImageDimension, class PixelType>
+template <const unsigned int ImageDimension, class InputPixelType>
 void
-BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
-::MaskThePectoralMuscleAndLateralChestSkinSurface( PointSetType::Pointer &pecPointSet )
+BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
+::MaskThePectoralMuscleAndLateralChestSkinSurface( RealType rYHeightOffset, 
+						   typename PointSetType::Pointer &pecPointSet,
+						   unsigned long &iPointPec )
 {
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
+
        
   // Extract the skin surface voxels
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  ConnectedSurfaceVoxelFilterType::Pointer 
+  typename ConnectedSurfaceVoxelFilterType::Pointer 
     connectedSurfacePoints = ConnectedSurfaceVoxelFilterType::New();
 
-  connectedSurfacePoints->SetInput( imSegmented );
+  connectedSurfacePoints->SetInput( this->imSegmented );
   connectedSurfacePoints->SetLower( 1000  );
   connectedSurfacePoints->SetUpper( 1000 );
   connectedSurfacePoints->SetReplaceValue( 1000 );
-  connectedSurfacePoints->SetSeed( idxMidSternum  );
-  connectedSurfacePoints->AddSeed( idxNippleLeft  );
-  connectedSurfacePoints->AddSeed( idxNippleRight );
+  connectedSurfacePoints->SetSeed( this->idxMidSternum  );
+  connectedSurfacePoints->AddSeed( this->idxNippleLeft  );
+  connectedSurfacePoints->AddSeed( this->idxNippleRight );
 
-  try
-  { 
-    std::cout << "Region-growing the skin surface" << std::endl;
-    connectedSurfacePoints->Update();
-  }
-  catch (itk::ExceptionObject &ex)
-  { 
-    std::cout << ex << std::endl;
-    return EXIT_FAILURE;
-  }
+  std::cout << "Region-growing the skin surface" << std::endl;
+  connectedSurfacePoints->Update();
   
-  imChestSurfaceVoxels = connectedSurfacePoints->GetOutput();
-  imChestSurfaceVoxels->DisconnectPipeline();
+  this->imChestSurfaceVoxels = connectedSurfacePoints->GetOutput();
+  this->imChestSurfaceVoxels->DisconnectPipeline();
 
   // Extract the coordinates of the chest surface voxels -
   // i.e. posterior to the sternum
   
-  InternalImageType::SizeType sizeChestSurfaceRegion;
-  const InternalImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
+  typename InternalImageType::SizeType sizeChestSurfaceRegion;
+  const typename InternalImageType::SpacingType& sp = this->imChestSurfaceVoxels->GetSpacing();
 
   start[0] = 0;
-  start[1] = idxMidSternum[1];
+  start[1] = this->idxMidSternum[1];
   start[2] = 0;
 
-  region = imChestSurfaceVoxels->GetLargestPossibleRegion();
+  region = this->imChestSurfaceVoxels->GetLargestPossibleRegion();
 
   size = region.GetSize();
   sizeChestSurfaceRegion = size;
@@ -157,12 +161,15 @@ BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
   region.SetIndex( start );
 
 
-  if ( flgVerbose )
+  if ( this->flgVerbose )
     std::cout << "Collating chest surface points in region: "
 	      << region << std::endl;
 
-  IteratorType itSegPosteriorBreast( imChestSurfaceVoxels, region );
+  IteratorType itSegPosteriorBreast( this->imChestSurfaceVoxels, region );
   
+  VectorType pecHeight;
+  typename InternalImageType::IndexType idx;
+  typename PointSetType::PointType point;
 
   for ( itSegPosteriorBreast.GoToBegin(); 
         ! itSegPosteriorBreast.IsAtEnd() ; 
@@ -190,40 +197,40 @@ BreastMaskSegmForBreastDensity< ImageDimension, PixelType >
   // Fit the B-Spline surface with offset
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InternalImageType::Pointer imFittedPectoralis;
+ typename  InternalImageType::Pointer imFittedPectoralis;
 
   imFittedPectoralis = 
     MaskImageFromBSplineFittedSurface( pecPointSet, 
-				       imStructural->GetLargestPossibleRegion(), 
-				       imStructural->GetOrigin(), 
-				       imStructural->GetSpacing(), 
-				       imStructural->GetDirection(), 
+				       this->imStructural->GetLargestPossibleRegion(), 
+				       this->imStructural->GetOrigin(), 
+				       this->imStructural->GetSpacing(), 
+				       this->imStructural->GetDirection(), 
 				       rYHeightOffset,
 				       3, 5, 3 );
 
   // Write the fitted surface to file
 
-  WriteImageToFile( fileOutputPectoralSurfaceMask, 
+  WriteImageToFile( this->fileOutputPectoralSurfaceMask, 
                     "fitted pectoral surface with offset", 
-                    imFittedPectoralis, flgLeft, flgRight );
+                    imFittedPectoralis, this->flgLeft, this->flgRight );
 
   // Write the chest surface points to a file?
 
-  WriteBinaryImageToUCharFile( fileOutputChestPoints, 
+  WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
                                "chest surface points", 
-                               imChestSurfaceVoxels, flgLeft, flgRight );
+                               this->imChestSurfaceVoxels, this->flgLeft, this->flgRight );
 
 
  // Discard anything within the pectoral mask (i.e. below the surface fit)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  IteratorType itSeg    = IteratorType( imSegmented,        
-					imStructural->GetLargestPossibleRegion() );
+  IteratorType itSeg    = IteratorType( this->imSegmented,        
+					this->imStructural->GetLargestPossibleRegion() );
 
   IteratorType itFitPec = IteratorType( imFittedPectoralis, 
-					imStructural->GetLargestPossibleRegion() );
+					this->imStructural->GetLargestPossibleRegion() );
 
-  if ( flgVerbose ) 
+  if ( this->flgVerbose ) 
     std::cout << "Discarding segmentation posterior to pectoralis mask. " 
 	      << std::endl;
 

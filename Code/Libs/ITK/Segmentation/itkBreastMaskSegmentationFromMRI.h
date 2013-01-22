@@ -30,11 +30,6 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
-
-#include "niftkBreastMaskSegmentationFromMRI_xml.h"
-
 #include "itkImage.h"
 #include "itkImageRegionIterator.h"
 #include "itkImageRegionConstIterator.h"
@@ -98,7 +93,7 @@ namespace itk
  * breast mask segmentation.
  *
  */
-template <const unsigned int ImageDimension = 3, class PixelType = float>
+template <const unsigned int ImageDimension, class InputPixelType>
 class ITK_EXPORT BreastMaskSegmentationFromMRI : public Object 
 {
 public:
@@ -110,9 +105,9 @@ public:
   
   itkTypeMacro(BreastMaskSegmentationFromMRI, Object);
     
-  const unsigned int SliceDimension = 2;
-  const unsigned int ParametricDimension = 2; // (x,z) coords of surface points
-  const unsigned int DataDimension = 1;       // the 'height' of chest surface
+  itkStaticConstMacro( SliceDimension, unsigned int, 2 );
+  itkStaticConstMacro( ParametricDimension, unsigned int, 2 );
+  itkStaticConstMacro( DataDimension, unsigned int, 1 );
     
   typedef float RealType;
     
@@ -156,10 +151,13 @@ public:
   typedef itk::LewisGriffinRecursiveGaussianImageFilter < InternalImageType, 
 							  InternalImageType > DerivativeFilterType;
   
-  typedef DerivativeFilterType::Pointer  DerivativeFilterPointer;
+  typedef typename DerivativeFilterType::Pointer  DerivativeFilterPointer;
 
   typedef itk::MaximumImageFilter <InternalImageType, InternalImageType>   MaxImageFilterType;
  
+  typedef itk::ConnectedThresholdImageFilter< InternalImageType, 
+                                              InternalImageType > ConnectedFilterType;
+
   /// Breast side
   typedef enum {
     BOTH_BREASTS,
@@ -174,7 +172,7 @@ public:
   void SetLeftBreast( bool flag ) { flgLeft = flag; }
   void SetRightBreast( bool flag ) { flgRight = flag; }
   
-  void SetEXT_INIT_PECT( bool flag ) { flgExtInitialPect = flag; }
+  void SetExtInitialPect( bool flag ) { flgExtInitialPect = flag; }
   
   void SetRegionGrowX( int coord ) { regGrowXcoord = coord; flgRegGrowXcoord = true; }
   void SetRegionGrowY( int coord ) { regGrowYcoord = coord; flgRegGrowYcoord = true; }
@@ -208,21 +206,61 @@ public:
   
   void SetOutputPectoralSurf( std::string fn ) { fileOutputPectoralSurfaceVoxels = fn; }
   
-  void SetCropFit( bool flag ) { bCropWithFittedSurface = flag; }
+  void SetCropFit( bool flag ) { flgCropWithFittedSurface = flag; }
   void SetOutputBreastFittedSurfMask( std::string fn ) { fileOutputFittedBreastMask = fn; }
 
-  void SetOutputVTKSurface( std::string fn ) { fileOutputVTKSurface) = fn; }
+  void SetOutputVTKSurface( std::string fn ) { fileOutputVTKSurface = fn; }
 
 
-  void SetStructuralImage( InternalImageType::Pointer image ) { imStructural = image; }
+  void SetStructuralImage( typename InternalImageType::Pointer image ) { imStructural = image; }
 
-  void SetFatSatImage( InternalImageType::Pointer image ) { imFatSat = image; }
+  void SetFatSatImage( typename InternalImageType::Pointer image ) { imFatSat = image; }
 
-  void SetBIFImage( InternalImageType::Pointer image ) { imBIFs = image; }
+  void SetBIFImage( typename InternalImageType::Pointer image ) { imBIFs = image; }
 
 
   /// Execute the segmentation - must be implemented in derived class
   virtual void Execute( void ) = 0;
+
+  /// Write the segmented image to a file
+  void WriteSegmentationToAFile( std::string fileOutput ) {
+    WriteBinaryImageToUCharFile( fileOutput, "final segmented image", 
+				 imSegmented, flgLeft, flgRight );
+  };
+
+
+  // --------------------------------------------------------------------------
+  // Sort pairs in descending order, thus largest elements first
+  // --------------------------------------------------------------------------
+
+  template<class T>
+    struct larger_second
+    : std::binary_function<T,T,bool>
+  {
+    inline bool operator()(const T &lhs, const T &rhs)
+      {
+	return lhs.second > rhs.second;
+      }
+  };
+
+
+  // --------------------------------------------------------------------------
+  // Pixel accessor class to include ascending and descending dark lines
+  // from BIF image into region Growing
+  // --------------------------------------------------------------------------
+
+  class BIFIntensityAccessor
+  {
+  public:
+    typedef InputPixelType InternalType;
+    typedef InputPixelType ExternalType;
+    
+    static ExternalType Get( const InternalType &in )
+      {
+	if ( in == 15.0f || in == 16.0f || in == 18.0f ) return 15.0f;
+	else return in;
+      }
+  };
 
 
 protected:
@@ -238,7 +276,7 @@ protected:
   bool flgRegGrowYcoord;
   bool flgRegGrowZcoord;
 
-  bool bCropWithFittedSurface;
+  bool flgCropWithFittedSurface;
 
   unsigned int i;
 
@@ -250,7 +288,6 @@ protected:
   float minIntensity;
 
   float bgndThresholdProb;
-  float bgndThreshold;
 
   float finalSegmThreshold;
 
@@ -283,32 +320,38 @@ protected:
 
   std::string fileOutputVTKSurface;
 
-  VectorType pecHeight;
-  PointSetType::PointType point;
-  unsigned long iPointPec;
 
-  InternalImageType::RegionType region;
-  InternalImageType::SizeType size;
-  InternalImageType::IndexType start;
+  typename InternalImageType::Pointer imStructural;
+  typename InternalImageType::Pointer imFatSat;
+  typename InternalImageType::Pointer imBIFs;
 
-  InternalImageType::Pointer imStructural;
-  InternalImageType::Pointer imFatSat;
-  InternalImageType::Pointer imBIFs;
+  typename InternalImageType::Pointer imMax;
+  typename InternalImageType::Pointer imPectoralVoxels;
+  typename InternalImageType::Pointer imPectoralSurfaceVoxels;
+  typename InternalImageType::Pointer imChestSurfaceVoxels;
+  typename InternalImageType::Pointer imSegmented;
 
-  InternalImageType::Pointer imMax;
-  InternalImageType::Pointer imPectoralVoxels;
-  InternalImageType::Pointer imPectoralSurfaceVoxels;
-  InternalImageType::Pointer imChestSurfaceVoxels;
-  InternalImageType::Pointer imSegmented;
+  typename InternalImageType::Pointer imTmp;
 
-  InternalImageType::Pointer imTmp;
+  /// Breast Landmarks
+
+  typename InternalImageType::IndexType idxMidSternum;
+
+  typename InternalImageType::IndexType idxLeftBreastMidPoint;
+  typename InternalImageType::IndexType idxRightBreastMidPoint;
+
+  typename InternalImageType::IndexType idxNippleRight;
+  typename InternalImageType::IndexType idxNippleLeft;
+
+  typename InternalImageType::IndexType idxLeftPosterior;
+  typename InternalImageType::IndexType idxRightPosterior;
 
 
   /// Constructor
   BreastMaskSegmentationFromMRI();
 
   /// Destructor
-  ~BreastMaskSegmentationFromMRI();
+  virtual ~BreastMaskSegmentationFromMRI();
 
   /// Initialise the segmentor
   virtual void Initialise( void );
@@ -335,7 +378,8 @@ protected:
   void FindBreastLandmarks( void );
 
   /// Segment the Pectoral Muscle
-  void SegmentThePectoralMuscle( RealType rYHeightOffset );
+  typename PointSetType::Pointer SegmentThePectoralMuscle( RealType rYHeightOffset,
+							   unsigned long &iPointPec );
 
   /// Discard anything not within a B-Spline fitted to the breast skin surface
   void MaskWithBSplineBreastSurface( void );
@@ -347,14 +391,9 @@ protected:
   /// Smooth the mask and threshold to round corners etc.
   void SmoothMask( void );
 
-  /// Write the segmented image to a file
-  void WriteSegmentationToAFile( std::string fileOutput ) {
-    WriteBinaryImageToUCharFile( fileOutput, "final segmented image", 
-				 imSegmented, flgLeft, flgRight );
-  };
 
-  double DistanceBetweenVoxels( InternalImageType::IndexType p, 
-				InternalImageType::IndexType q );
+  double DistanceBetweenVoxels( typename InternalImageType::IndexType p, 
+				typename InternalImageType::IndexType q );
   
   std::string ModifySuffix( std::string filename, 
 			    std::string strInsertBeforeSuffix );
@@ -362,27 +401,27 @@ protected:
   std::string GetBreastSide( std::string &fileOutput, 
 			     enumBreastSideType breastSide );
   
-  InternalImageType::Pointer GetBreastSide( InternalImageType::Pointer inImage, 
-					    enumBreastSideType breastSide );
+  typename InternalImageType::Pointer GetBreastSide( typename InternalImageType::Pointer inImage, 
+						     enumBreastSideType breastSide );
   
   bool WriteImageToFile( std::string &fileOutput, 
 			 const char *description,
-			 InternalImageType::Pointer image, 
+			 typename InternalImageType::Pointer image, 
 			 enumBreastSideType breastSide );
   
   bool WriteImageToFile( std::string &fileOutput,
 			 const char *description,
-			 InternalImageType::Pointer image, 
+			 typename InternalImageType::Pointer image, 
 			 bool flgLeft, bool flgRight );
   
   bool WriteBinaryImageToUCharFile( std::string &fileOutput, 
 				    const char *description,
-				    InternalImageType::Pointer image, 
+				    typename InternalImageType::Pointer image, 
 				    enumBreastSideType breastSide );
   
   bool WriteBinaryImageToUCharFile( std::string &fileOutput,
 				    const char *description,
-				    InternalImageType::Pointer image, 
+				    typename InternalImageType::Pointer image, 
 				    bool flgLeft, bool flgRight );
   
   void WriteHistogramToFile( std::string fileOutput,
@@ -392,18 +431,18 @@ protected:
   
   void polyDataInfo(vtkPolyData *polyData);
   
-  void WriteImageToVTKSurfaceFile(InternalImageType::Pointer image, 
+  void WriteImageToVTKSurfaceFile(typename InternalImageType::Pointer image, 
 				  std::string &fileOutput, 
 				  enumBreastSideType breastSide,
 				  bool flgVerbose, 
 				  float finalSegmThreshold ); 
   
-  InternalImageType::Pointer 
-    MaskImageFromBSplineFittedSurface( const PointSetType::Pointer            &pointSet, 
-				       const InternalImageType::RegionType    &region,
-				       const InternalImageType::PointType     &origin, 
-				       const InternalImageType::SpacingType   &spacing,
-				       const InternalImageType::DirectionType &direction,
+  typename InternalImageType::Pointer 
+    MaskImageFromBSplineFittedSurface( const typename PointSetType::Pointer            &pointSet, 
+				       const typename InternalImageType::RegionType    &region,
+				       const typename InternalImageType::PointType     &origin, 
+				       const typename InternalImageType::SpacingType   &spacing,
+				       const typename InternalImageType::DirectionType &direction,
 				       const RealType rOffset, 
 				       const int splineOrder, 
 				       const int numOfControlPoints,
@@ -429,3 +468,4 @@ private:
 
 
 
+ 
