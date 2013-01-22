@@ -242,8 +242,58 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
       if ( itFitPec.Get() )
         itSeg.Set( 0 );
   }
-}
 
+
+  // Discard anything below the pectoral mask
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+  if ( this->flgVerbose ) 
+    std::cout << "Discarding segmentation posteriior to pectoralis mask. " << std::endl;
+
+  region = this->imPectoralVoxels->GetLargestPossibleRegion();
+ 
+  start[0] = start[1] = start[2] = 0;
+  region.SetIndex( start );
+ 
+  LineIteratorType itSegLinear2( this->imSegmented, region );
+  LineIteratorType itPecVoxelsLinear( this->imPectoralVoxels, region );
+ 
+  itPecVoxelsLinear.SetDirection( 1 );
+  itSegLinear2.SetDirection( 1 );
+     
+  for ( itPecVoxelsLinear.GoToBegin(), itSegLinear2.GoToBegin(); 
+	! itPecVoxelsLinear.IsAtEnd(); 
+	itPecVoxelsLinear.NextLine(), itSegLinear2.NextLine() )
+  {
+    itPecVoxelsLinear.GoToBeginOfLine();
+    itSegLinear2.GoToBeginOfLine();
+       
+    // Find the first pectoral voxel for this column of voxels
+ 
+    while ( ! itPecVoxelsLinear.IsAtEndOfLine() )
+    {
+      if ( itPecVoxelsLinear.Get() > 0 ) 
+      {
+	break;
+      }
+  
+      ++itPecVoxelsLinear;
+      ++itSegLinear2;
+    }
+ 
+    // and then set all remaining voxles in the segmented image to zero
+ 
+    while ( ! itPecVoxelsLinear.IsAtEndOfLine() )
+    {
+      itSegLinear2.Set( 0 );
+           
+      ++itPecVoxelsLinear;
+      ++itSegLinear2;
+    }      
+  }
+
+  this->imPectoralVoxels = 0;
+}
  
 
 

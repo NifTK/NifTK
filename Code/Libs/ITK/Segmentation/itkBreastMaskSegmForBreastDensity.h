@@ -55,6 +55,7 @@ public:
   typedef typename Superclass::IteratorType                    IteratorType;
   typedef typename Superclass::ConnectedSurfaceVoxelFilterType ConnectedSurfaceVoxelFilterType;
   typedef typename Superclass::VectorType                      VectorType;
+  typedef typename Superclass::LineIteratorType                LineIteratorType;
 
   /// Execute the segmentation 
   virtual void Execute( void );

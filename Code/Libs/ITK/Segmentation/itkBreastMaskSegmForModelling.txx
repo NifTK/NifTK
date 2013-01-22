@@ -164,8 +164,9 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
       if ( itFitPec.Get() )
         itSeg.Set( 0 );
   }
-}
 
+  this->imPectoralVoxels = 0;
+}
  
 
 
