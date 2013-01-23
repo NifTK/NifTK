@@ -37,6 +37,7 @@
 #include <QThread>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
+#include <OIGTLSocketObject.h>
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
@@ -162,9 +163,20 @@ private slots:
   void OnCleanData();
 
   /**
-   * \brief Adds a data source to the table.
+   * \brief Adds a data source to the table, using values from UI for sourcetype and portnumbeR
    */
   void OnAddSource();
+
+  /**
+   * \brief Adds a data source to the table.
+   */
+  int AddSource(int sourcetype , int portnumber);
+
+  /**
+   * \brief Adds a data source to the table.
+   * \return the added tool's identifier
+   */
+  int AddSource(int sourcetype , int portnumber, OIGTLSocketObject* socket);
 
   /**
    * \brief Removes a data source from the table, and completely destroys it.

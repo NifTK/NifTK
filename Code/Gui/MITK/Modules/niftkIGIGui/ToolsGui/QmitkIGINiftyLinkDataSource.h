@@ -73,15 +73,26 @@ public:
    * \brief Tells this object to start listening on a given port number.
    */
   bool ListenOnPort(int portNumber);
+  /**
+   * \brief Tells this object to start listening on a given port number, using an 
+   * existing socket
+   */
+  bool ListenOnPort(igtl::Socket::Pointer socket, int portNumber);
 
   /**
    * \brief If there is a socket associated with this tool, will send the message.
    */
   void SendMessage(OIGTLMessage::Pointer msg);
 
+  /**
+   * \brief Get the Associated Socket
+   */
+  OIGTLSocketObject* GetSocket();
+
 protected:
 
   QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
+  QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket); // Purposefully hidden.
   virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
   QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.

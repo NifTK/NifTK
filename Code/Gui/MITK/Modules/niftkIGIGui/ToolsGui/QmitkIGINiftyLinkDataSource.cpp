@@ -34,6 +34,16 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
   connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
   connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
 }
+//-----------------------------------------------------------------------------
+QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket)
+: m_Socket(socket)
+, m_ClientDescriptor(NULL)
+{
+  connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
+  connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
+  connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -87,6 +97,22 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
   DataSourceStatusUpdated.Send(this->GetIdentifier());
   return isListening;
 }
+//-----------------------------------------------------------------------------
+bool QmitkIGINiftyLinkDataSource::ListenOnPort(igtl::Socket::Pointer socket, int portNumber)
+{
+  bool isListening = m_Socket->listenOnPort(socket, portNumber);
+  if (isListening)
+  {
+    this->SetStatus("Listening");
+  }
+  else
+  {
+    this->SetStatus("Listening Failed");
+  }
+  DataSourceStatusUpdated.Send(this->GetIdentifier());
+  return isListening;
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -108,6 +134,11 @@ void QmitkIGINiftyLinkDataSource::ClientDisconnected()
 //-----------------------------------------------------------------------------
 void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* clientInfo)
 {
+  //ST, the tool names are in clientInfo. At present they are not used until
+  //the Tracker gui is initialized. I want to run through them now, and 
+  //open a new row for each tool
+  //it would be good to use the description field to show the rigid body
+  //could be "Master", "pointer.rig" , "800939.rom" etc
   this->SetClientDescriptor(clientInfo);
 
   this->SetName(clientInfo->getDeviceName().toStdString());
@@ -146,4 +177,9 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 
   qDebug() << deviceInfo;
   DataSourceStatusUpdated.Send(this->GetIdentifier());
+}
+//-----------------------------------------------------------------------------
+OIGTLSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
+{
+  return this->m_Socket;
 }

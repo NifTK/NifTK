@@ -49,6 +49,7 @@ IGIDataSource::IGIDataSource()
 , m_ActualTimeStamp(0)
 , m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
+, m_NumberOfTools(0)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_RequestedTimeStamp->GetTime();
@@ -59,6 +60,8 @@ IGIDataSource::IGIDataSource()
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
+  m_SubTools.clear();
+  m_SubToolsIterator = m_SubTools.begin();
 }
 
 
@@ -370,8 +373,15 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 
   return result;
 }
+void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
+{
+  this->m_SubTools = inStringList;
+}
 
-
+std::list<std::string> IGIDataSource::GetSubToolList ()
+{
+  return m_SubTools;
+}
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {

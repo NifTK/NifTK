@@ -43,6 +43,7 @@ public:
 
   mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGITrackerTool);
+  mitkNewMacro1Param(QmitkIGITrackerTool,OIGTLSocketObject *);
 
   /**
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
@@ -142,6 +143,7 @@ protected:
   virtual ~QmitkIGITrackerTool(); // Purposefully hidden.
 
   QmitkIGITrackerTool(const QmitkIGITrackerTool&); // Purposefully not implemented.
+  QmitkIGITrackerTool(OIGTLSocketObject* socket); // Purposefully not implemented.
   QmitkIGITrackerTool& operator=(const QmitkIGITrackerTool&); // Purposefully not implemented.
 
   /**

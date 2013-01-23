@@ -57,6 +57,24 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
 }
 
+//-----------------------------------------------------------------------------
+QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
+: QmitkIGINiftyLinkDataSource(socket)
+, m_UseICP(false)
+, m_PointSetsInitialized(false)
+, m_LinkCamera(false)
+, m_ImageFiducialsDataNode(NULL)
+, m_ImageFiducialsPointSet(NULL)
+, m_TrackerFiducialsDataNode(NULL)
+, m_TrackerFiducialsPointSet(NULL)
+, m_FiducialRegistrationFilter(NULL)
+, m_PermanentRegistrationFilter(NULL)
+{
+  m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+  m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+}
+
+
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::~QmitkIGITrackerTool()
@@ -97,7 +115,29 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
         delete clientInfo;
         return;
       }
+      //A single source can have multiple tracked tools. 
+      //this should read the xml and set up a data source for each 
+      //tool name
+      //this->SetUpToolSources(clientInfo);
+      QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->getTrackerTools();
+      QString tool;
+      this->SetNumberOfTools(trackerTools.length());
+      //convert trackerTools to a std string list and set tool names
+      std::list<std::string> StringList;
 
+
+      foreach (tool , trackerTools)
+      {
+        std::string String;
+        String = tool.toStdString();
+        StringList.push_back(String);
+      //  qDebug() << tool << trackerTools.length();
+        
+      }
+      if ( StringList.size() > 0 ) 
+      {
+        this->SetToolStringList(StringList);
+      }
       this->ProcessClientInfo(clientInfo);
     }
     else

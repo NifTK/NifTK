@@ -43,6 +43,8 @@ public:
 
   mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGIUltrasonixTool);
+  mitkNewMacro1Param(QmitkIGIUltrasonixTool,OIGTLSocketObject *);
+
 
   /**
    * \brief We store the node name here so other classes can refer to it.
@@ -80,6 +82,7 @@ protected:
 
   QmitkIGIUltrasonixTool(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
+  QmitkIGIUltrasonixTool(OIGTLSocketObject*); // Purposefully not implemented.
 
   /**
    * \brief \see IGIDataSource::SaveData();

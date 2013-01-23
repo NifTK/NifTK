@@ -97,6 +97,12 @@ public:
   itkGetMacro(Description, std::string);
 
   /**
+  * \brief A single source can have multiple tools attached
+  */
+  itkSetMacro(NumberOfTools, int);
+  itkGetMacro(NumberOfTools, int);
+  
+  /**
    * \brief Sets the time tolerance for checking data, implemented in nano-seconds
    * as we are using TAI time format, but in practice platforms such as Windows
    * do not properly store nano-seconds, so the best you can probably rely on is milliseconds.
@@ -223,6 +229,10 @@ public:
    * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
    */
   double GetCurrentTimeLag();
+  /**
+   * \brief Get the subtool list
+   */
+  std::list<std::string>  GetSubToolList ( ) ;
 
 protected:
 
@@ -262,6 +272,12 @@ protected:
    */
   virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
+  /**
+   * \brief Function to set the list of sub tools
+   */
+  void SetToolStringList ( std::list<std::string> );
+
+
 private:
 
   /**
@@ -290,6 +306,9 @@ private:
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   unsigned long int                               m_TimeStampTolerance;
   mitk::IGIDataType*                              m_ActualData;
+  int                                             m_NumberOfTools;
+  std::list<std::string>                          m_SubTools;
+  std::list<std::string>::iterator                m_SubToolsIterator;
 
 }; // end class
 
