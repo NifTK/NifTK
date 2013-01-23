@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Image Operators</category>
+  <category>Binary Mask Image Operators</category>
   <title>Apply Mask to Image</title>
   <description><![CDATA[Masks the input image (setting voxels outside the region of interest to zero) using a mask and/or a bounding box.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
