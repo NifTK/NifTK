@@ -97,23 +97,6 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
   DataSourceStatusUpdated.Send(this->GetIdentifier());
   return isListening;
 }
-//-----------------------------------------------------------------------------
-bool QmitkIGINiftyLinkDataSource::ListenOnPort(igtl::Socket::Pointer socket, int portNumber)
-{
-  bool isListening = m_Socket->listenOnPort(socket, portNumber);
-  if (isListening)
-  {
-    this->SetStatus("Listening");
-  }
-  else
-  {
-    this->SetStatus("Listening Failed");
-  }
-  DataSourceStatusUpdated.Send(this->GetIdentifier());
-  return isListening;
-}
-
-
 
 //-----------------------------------------------------------------------------
 void QmitkIGINiftyLinkDataSource::ClientConnected()

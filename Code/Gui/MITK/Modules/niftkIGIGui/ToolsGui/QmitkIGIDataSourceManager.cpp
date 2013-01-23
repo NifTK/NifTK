@@ -372,7 +372,9 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
           else
           {
             int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
+
             int tempRowNumber = this->GetRowNumberFromIdentifier(tempToolIdentifier);
+            qDebug() << "ID: " << tempToolIdentifier << " RN: " << tempRowNumber;
             m_Sources[tempRowNumber]->SetType(type);
             m_Sources[tempRowNumber]->SetName(device);
             m_Sources[tempRowNumber]->SetDescription(Tool);
@@ -506,7 +508,7 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
   {
     m_ClearDownThread->start();
   }
-  return m_NextSourceIdentifier;
+  return source->GetIdentifier();
 }
 
 //------------------------------------------------
@@ -571,7 +573,7 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSo
   {
     m_ClearDownThread->start();
   }
-  return m_NextSourceIdentifier;
+  return source->GetIdentifier();
 }
 
 //-----------------------------------------------------------------------------
