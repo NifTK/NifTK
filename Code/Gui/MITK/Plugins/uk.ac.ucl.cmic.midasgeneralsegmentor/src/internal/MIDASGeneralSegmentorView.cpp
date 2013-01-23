@@ -1724,6 +1724,7 @@ void MIDASGeneralSegmentorView::OnSliceChanged(const itk::EventObject & geometry
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int afterSliceNumber)
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::OnSliceNumberChanged() begin before: " << beforeSliceNumber << " after: " << afterSliceNumber << std::endl;
   if (  !this->HaveInitialisedWorkingData()
       || m_IsUpdating
       || m_IsChangingSlice
@@ -1739,6 +1740,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
     this->UpdateCurrentSliceContours(updateRendering);
     this->UpdateRegionGrowing(updateRendering);
     this->RequestRenderWindowUpdate();
+  //  MITK_INFO << "MIDASGeneralSegmentorView::OnSliceNumberChanged() end 1 before: " << beforeSliceNumber << " after: " << afterSliceNumber << std::endl;
     return;
   }
 
@@ -1831,6 +1833,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
               this->UpdateRegionGrowing();
               this->UpdateCurrentSliceContours();
               this->RequestRenderWindowUpdate();
+            //  MITK_INFO << "MIDASGeneralSegmentorView::OnSliceNumberChanged() end 2 before: " << beforeSliceNumber << " after: " << afterSliceNumber << std::endl;
               return;
             }
 
@@ -1983,6 +1986,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
       } // end if, slice number, axis ok.
     } // end have working image
   } // end have reference image
+//  MITK_INFO << "MIDASGeneralSegmentorView::OnSliceNumberChanged() end 3 before: " << beforeSliceNumber << " after: " << afterSliceNumber << std::endl;
 }
 
 
@@ -2137,6 +2141,9 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
                 sliceNumber,
                 outputToItk->GetOutput()
                 );
+
+            regionGrowingToItk = NULL;
+            outputToItk = NULL;
 
             // Update the current slice contours, to regenerate cleaned orange contours
             // around just the regions of interest that have a valid seed.
@@ -2334,10 +2341,12 @@ void MIDASGeneralSegmentorView::OnWipeMinusButtonPressed()
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::DoWipe(int direction)
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::DoWipe() begin direction: " << direction << std::endl;
   bool wipeWasPerformed = false;
 
   if (!this->HaveInitialisedWorkingData())
   {
+  //  MITK_INFO << "MIDASGeneralSegmentorView::DoWipe() end 1 " << std::endl;
     return wipeWasPerformed;
   }
 
@@ -2460,6 +2469,7 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
   {
     this->RequestRenderWindowUpdate();
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::DoWipe() end 2 " << std::endl;
   return wipeWasPerformed;
 }
 
@@ -2768,6 +2778,7 @@ void MIDASGeneralSegmentorView::OnContoursChanged()
 
 void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ExecuteOperation() begin operation type: " << operation->GetOperationType() << std::endl;
   if (!this->HaveInitialisedWorkingData())
   {
     return;
@@ -2878,6 +2889,8 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         {
           processor->Undo();
         }
+
+        targetImageToItk = NULL;
 
         mitk::Image::Pointer outputImage = mitk::ImportItkImage( processor->GetDestinationImage());
 
@@ -3027,6 +3040,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
     }
   default:;
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ExecuteOperation() end operation type: " << operation->GetOperationType() << std::endl;
 }
 
 /******************************************************************
@@ -3052,6 +3066,7 @@ MIDASGeneralSegmentorView
     TPixel fillValue
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFillRegion() begin" << std::endl;
   typedef itk::Image<TPixel, VImageDimension> ImageType;
   itk::ImageRegionIterator<ImageType> iter(itkImage, region);
 
@@ -3059,6 +3074,7 @@ MIDASGeneralSegmentorView
   {
     iter.Set(fillValue);
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFillRegion() end" << std::endl;
 }
 
 
@@ -3068,11 +3084,13 @@ void
 MIDASGeneralSegmentorView
 ::ITKClearImage(itk::Image<TPixel, VImageDimension>* itkImage)
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKClearImage() begin" << std::endl;
   typedef itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
   RegionType largestPossibleRegion = itkImage->GetLargestPossibleRegion();
   this->ITKFillRegion(itkImage, largestPossibleRegion, (TPixel)0);
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKClearImage() end" << std::endl;
 }
 
 
@@ -3083,6 +3101,7 @@ void MIDASGeneralSegmentorView::ITKCopyImage(
     itk::Image<TPixel, VImageDimension>* output
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCopyImage() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   itk::ImageRegionConstIterator<ImageType> inputIterator(input, input->GetLargestPossibleRegion());
   itk::ImageRegionIterator<ImageType> outputIterator(output, output->GetLargestPossibleRegion());
@@ -3094,6 +3113,7 @@ void MIDASGeneralSegmentorView::ITKCopyImage(
   {
     outputIterator.Set(inputIterator.Get());
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCopyImage() end" << std::endl;
 }
 
 
@@ -3108,6 +3128,7 @@ MIDASGeneralSegmentorView
     itk::Image<TPixel, VImageDimension>* output
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCopyRegion() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
@@ -3121,6 +3142,7 @@ MIDASGeneralSegmentorView
   {
     outputIterator.Set(inputIterator.Get());
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCopyRegion() end" << std::endl;
 }
 
 
@@ -3135,6 +3157,7 @@ MIDASGeneralSegmentorView
     typename itk::Image<TPixel, VImageDimension>::RegionType &outputRegion
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCalculateSliceRegion() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::SizeType SizeType;
@@ -3149,6 +3172,7 @@ MIDASGeneralSegmentorView
 
   outputRegion.SetSize(regionSize);
   outputRegion.SetIndex(regionIndex);
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCalculateSliceRegion() end" << std::endl;
 }
 
 
@@ -3163,6 +3187,7 @@ MIDASGeneralSegmentorView
     std::vector<int>& outputRegion
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCalculateSliceRegionAsVector() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
   typedef typename ImageType::SizeType SizeType;
@@ -3181,6 +3206,7 @@ MIDASGeneralSegmentorView
   outputRegion.push_back(regionSize[0]);
   outputRegion.push_back(regionSize[1]);
   outputRegion.push_back(regionSize[2]);
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKCalculateSliceRegionAsVector() end" << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -3192,7 +3218,7 @@ MIDASGeneralSegmentorView
     int slice
     )
 {
-
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKClearSlice() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
@@ -3201,6 +3227,7 @@ MIDASGeneralSegmentorView
 
   this->ITKCalculateSliceRegion(itkImage, axis, slice, sliceRegion);
   this->ITKFillRegion(itkImage, sliceRegion, pixelValue);
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKClearSlice() end" << std::endl;
 }
 
 
@@ -3215,6 +3242,7 @@ void MIDASGeneralSegmentorView
     mitk::PointSet &outputSeeds
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFilterSeedsToCurrentSlice() begin" << std::endl;
   outputSeeds.Clear();
 
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
@@ -3236,6 +3264,7 @@ void MIDASGeneralSegmentorView
       pointCounter++;
     }
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFilterSeedsToCurrentSlice() end" << std::endl;
 }
 
 
@@ -3252,6 +3281,7 @@ MIDASGeneralSegmentorView
     double &max
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKRecalculateMinAndMaxOfSeedValues() begin" << std::endl;
   if (inputSeeds.GetSize() == 0)
   {
     min = 0;
@@ -3303,6 +3333,7 @@ MIDASGeneralSegmentorView
       }
     }
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKRecalculateMinAndMaxOfSeedValues() end" << std::endl;
 }
 
 
@@ -3318,6 +3349,7 @@ MIDASGeneralSegmentorView
     mitk::PointSet &outputNewSeedsNotInRegionOfInterest
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFilterInputPointSetToExcludeRegionOfInterest() begin" << std::endl;
   // Copy inputSeeds to outputCopyOfInputSeeds seeds, so that they can be passed on to
   // Redo/Undo framework for Undo purposes. Additionally, copy any input seed that is not
   // within the regionOfInterest. Seed locations are all in millimetres.
@@ -3345,6 +3377,7 @@ MIDASGeneralSegmentorView
       pointCounter++;
     }
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFilterInputPointSetToExcludeRegionOfInterest() end" << std::endl;
 }
 
 
@@ -3358,6 +3391,8 @@ bool MIDASGeneralSegmentorView
     int slice
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKSliceDoesHaveSeeds() begin" << std::endl;
+
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
@@ -3378,6 +3413,7 @@ bool MIDASGeneralSegmentorView
     }
   }
 
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKSliceDoesHaveSeeds() end" << std::endl;
   return hasSeeds;
 }
 
@@ -3393,6 +3429,8 @@ MIDASGeneralSegmentorView
     bool &outputSliceIsEmpty
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKSliceIsEmpty() begin" << std::endl;
+
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
@@ -3411,6 +3449,7 @@ MIDASGeneralSegmentorView
     }
   }
 
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKSliceIsEmpty() end" << std::endl;
   return outputSliceIsEmpty;
 }
 
@@ -3435,6 +3474,7 @@ MIDASGeneralSegmentorView
     mitk::Image::Pointer &outputRegionGrowingImage
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKUpdateRegionGrowing() begin" << std::endl;
 
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
@@ -3496,6 +3536,7 @@ MIDASGeneralSegmentorView
     // To make sure we release all smart pointers.
     pipeline->DisconnectPipeline();
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKUpdateRegionGrowing() end" << std::endl;
 }
 
 
@@ -3518,6 +3559,7 @@ MIDASGeneralSegmentorView
   mitk::Image::Pointer &outputRegionGrowingImage
  )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateToRegionGrowingImage() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
@@ -3572,6 +3614,7 @@ MIDASGeneralSegmentorView
   outputToItk->SetInput(outputRegionGrowingImage);
   outputToItk->UpdateLargestPossibleRegion();
 
+  MITK_INFO << "before ITKAddNewSeedsToPointSet" << std::endl;
   // For each slice in the region growing output, calculate new seeds on a per slice basis.
   this->ITKAddNewSeedsToPointSet(
       outputToItk->GetOutput(),
@@ -3580,6 +3623,8 @@ MIDASGeneralSegmentorView
       axisNumber,
       outputNewSeeds
       );
+  MITK_INFO << "after ITKAddNewSeedsToPointSet" << std::endl;
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateToRegionGrowingImage() end" << std::endl;
 }
 
 
@@ -3599,6 +3644,7 @@ MIDASGeneralSegmentorView
     mitk::Image::Pointer &outputRegionGrowingImage
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateUpOrDown() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
   typedef typename itk::MIDASRegionGrowingImageFilter<GreyScaleImageType, BinaryImageType, PointSetType> RegionGrowingFilterType;
@@ -3668,6 +3714,7 @@ MIDASGeneralSegmentorView
   {
     outputIter.Set(regionIter.Get());
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateUpOrDown() end" << std::endl;
 }
 
 
@@ -3681,6 +3728,7 @@ MIDASGeneralSegmentorView
     mitk::Image* regionGrowingImage,
     mitk::OpPropagate *op)
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateToSegmentationImage() begin" << std::endl;
   typedef typename itk::Image<TGreyScalePixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
@@ -3711,6 +3759,9 @@ MIDASGeneralSegmentorView
     processor->Undo();
   }
 
+  processor->SetSourceImage(NULL);
+  processor->SetDestinationImage(NULL);
+
   // Clear the region growing image, as this was only used for temporary space.
   typename BinaryImageType::RegionType regionOfInterest = processor->GetSourceRegionOfInterest();
   typename itk::ImageRegionIterator<BinaryImageType> iter(regionGrowingImageToItk->GetOutput(), regionOfInterest);
@@ -3718,6 +3769,7 @@ MIDASGeneralSegmentorView
   {
     iter.Set(0);
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateToSegmentationImage() end" << std::endl;
 }
 
 
@@ -3733,6 +3785,7 @@ MIDASGeneralSegmentorView
     mitk::ContourSet::Pointer outputContourSet
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKGenerateOutlineFromBinaryImage() begin" << std::endl;
   // NOTE: This function is only meant to be called on binary images,
   // so we are assuming that TPixel is only ever unsigned char.
 
@@ -3836,6 +3889,7 @@ MIDASGeneralSegmentorView
     }
     outputContourSet->AddContour(i, contour);
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKGenerateOutlineFromBinaryImage() end" << std::endl;
 }
 
 
@@ -3848,6 +3902,7 @@ void MIDASGeneralSegmentorView
   typename itk::Image<TPixel, VImageDimension>::IndexType &outputSeedIndex,
   int &outputDistance)
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKGetLargestMinimumDistanceSeedLocation() begin" << std::endl;
   typedef itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::PixelType       PixelType;
   typedef typename ImageType::IndexType       IndexType;
@@ -3943,6 +3998,7 @@ void MIDASGeneralSegmentorView
   // Output the largest minimumDistance and the corresponding voxel location.
   outputSeedIndex = bestIndex;
   outputDistance = bestDistance;
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKGetLargestMinimumDistanceSeedLocation() end" << std::endl;
 }
 
 
@@ -3958,6 +4014,8 @@ MIDASGeneralSegmentorView
     mitk::PointSet &outputNewSeeds
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKAddNewSeedsToPointSet() begin" << std::endl;
+
   // Note, although templated over TPixel, input should only ever be unsigned char binary images.
   typedef typename itk::Image<TPixel, VImageDimension>        BinaryImageType;
   typedef typename BinaryImageType::PointType                 BinaryPointType;
@@ -4031,6 +4089,7 @@ MIDASGeneralSegmentorView
   // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
   extractSliceFilter->SetInput(NULL);
   connectedComponentsFilter->SetInput(NULL);
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKAddNewSeedsToPointSet() end" << std::endl;
 }
 
 
@@ -4051,6 +4110,7 @@ MIDASGeneralSegmentorView
     std::vector<int> &outputRegion
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPreProcessingOfSeedsForChangingSlice() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> BinaryImageType;
 
   // Work out the region of the current slice.
@@ -4166,6 +4226,7 @@ MIDASGeneralSegmentorView
         outputNewSeeds
         );
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPreProcessingOfSeedsForChangingSlice() end" << std::endl;
 }
 
 
@@ -4184,6 +4245,7 @@ MIDASGeneralSegmentorView
     std::vector<int> &outputRegion
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPreProcessingForWipe() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
 
   // Work out the region of interest that will be affected.
@@ -4228,6 +4290,7 @@ MIDASGeneralSegmentorView
       outputCopyOfInputSeeds,
       outputNewSeeds
       );
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPreProcessingForWipe() end" << std::endl;
 }
 
 
@@ -4241,6 +4304,7 @@ MIDASGeneralSegmentorView
     mitk::OpWipe *op
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKDoWipe() begin" << std::endl;
   // Assuming we are only called for the unsigned char, current segmentation image.
   typedef typename itk::Image<TPixel, VImageDimension> BinaryImageType;
 
@@ -4269,6 +4333,7 @@ MIDASGeneralSegmentorView
   {
     currentSeeds->InsertPoint(i, outputSeeds->GetPoint(i));
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKDoWipe() end" << std::endl;
 }
 
 
@@ -4279,6 +4344,7 @@ bool MIDASGeneralSegmentorView
     itk::Image<TPixel, VImageDimension> *itkImage
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKImageHasNonZeroEdgePixels() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
   typedef typename ImageType::IndexType IndexType;
@@ -4307,9 +4373,11 @@ bool MIDASGeneralSegmentorView
     }
     if (isEdge && itkImage->GetPixel(voxelIndex) > 0)
     {
+    //  MITK_INFO << "MIDASGeneralSegmentorView::ITKImageHasNonZeroEdgePixels() end" << std::endl;
       return true;
     }
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKImageHasNonZeroEdgePixels() end" << std::endl;
   return false;
 }
 
@@ -4332,6 +4400,7 @@ void MIDASGeneralSegmentorView
     bool &sliceDoesHaveUnenclosedSeeds
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKSliceDoesHaveUnEnclosedSeeds() begin" << std::endl;
   sliceDoesHaveUnenclosedSeeds = false;
 
   // Note input image should be 3D grey scale.
@@ -4374,11 +4443,13 @@ void MIDASGeneralSegmentorView
 
   // To make sure we release all smart pointers.
   pipeline.DisconnectPipeline();
+  workingImageToItk = NULL;
 
   // Check the output, to see if we have seeds inside non-enclosing green contours.
   sliceDoesHaveUnenclosedSeeds = this->ITKImageHasNonZeroEdgePixels<
       mitk::Tool::DefaultSegmentationDataType, VImageDimension>
       (pipeline.m_RegionGrowingFilter->GetOutput());
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKSliceDoesHaveUnEnclosedSeeds() end" << std::endl;
 }
 
 
@@ -4401,6 +4472,7 @@ void MIDASGeneralSegmentorView
     mitk::ContourSet &outputContours
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFilterContours() begin" << std::endl;
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
@@ -4411,6 +4483,7 @@ void MIDASGeneralSegmentorView
   // Input contour set could be empty, so nothing to filter.
   if (segmentationContours.GetNumberOfContours() == 0)
   {
+  //  MITK_INFO << "MIDASGeneralSegmentorView::ITKFilterContours() end" << std::endl;
     return;
   }
 
@@ -4452,6 +4525,7 @@ void MIDASGeneralSegmentorView
 
   // To make sure we release all smart pointers.
   localPipeline.DisconnectPipeline();
+  workingImageToItk = NULL;
 
   // Now calculate filtered contours, we want to get rid of any contours that are not near a region.
   // NOTE: Poly line contours (yellow) contours are not cleaned.
@@ -4534,6 +4608,7 @@ void MIDASGeneralSegmentorView
     }
     contourIt++;
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKFilterContours() end" << std::endl;
 }
 
 
@@ -4550,6 +4625,7 @@ void MIDASGeneralSegmentorView
     int newSliceNumber
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateSeedsToNewSlice() begin" << std::endl;
 
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::IndexType IndexType;
@@ -4584,6 +4660,7 @@ void MIDASGeneralSegmentorView
       }
     }
   }
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKPropagateSeedsToNewSlice() end" << std::endl;
 }
 
 
@@ -4593,7 +4670,7 @@ void
 MIDASGeneralSegmentorView
 ::ITKDestroyPipeline(itk::Image<TPixel, VImageDimension>* itkImage)
 {
-
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKDestroyPipeline() begin" << std::endl;
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
 
@@ -4607,6 +4684,7 @@ MIDASGeneralSegmentorView
   };
 
   m_TypeToPipelineMap.clear();
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKDestroyPipeline() end" << std::endl;
 }
 
 
@@ -4620,6 +4698,7 @@ MIDASGeneralSegmentorView
     int axis
     )
 {
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKInitialiseSeedsForVolume() begin" << std::endl;
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
@@ -4632,6 +4711,7 @@ MIDASGeneralSegmentorView
       axis,
       seeds
       );
+//  MITK_INFO << "MIDASGeneralSegmentorView::ITKInitialiseSeedsForVolume() end" << std::endl;
 }
 
 /**************************************************************
