@@ -3461,8 +3461,6 @@ MIDASGeneralSegmentorView
     pipeline = new GeneralSegmentorPipeline<TPixel, VImageDimension>();
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
-    pipeline->m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
-    pipeline->m_ExtractBinaryRegionOfInterestFilter->SetInput(workingImageToItk->GetOutput());
   }
   else
   {
@@ -3488,12 +3486,15 @@ MIDASGeneralSegmentorView
     regionGrowingToItk->GetOutput()->FillBuffer(0);
 
     // Configure pipeline.
-    pipeline->SetParam(params);
+    pipeline->SetParam(itkImage, workingImageToItk->GetOutput(), params);
 
     // Setting the pointer to the output image, then calling update on the pipeline
     // will mean that the pipeline will copy its data to the output image.
     pipeline->m_OutputImage = regionGrowingToItk->GetOutput();
     pipeline->Update(params);
+
+    // To make sure we release all smart pointers.
+    pipeline->DisconnectPipeline();
   }
 }
 
@@ -3650,6 +3651,9 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetSeedPoints(*(itkSeeds.GetPointer()));
   regionGrowingFilter->Update();
 
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  regionGrowingFilter->SetInput(NULL);
+
   // Write output of region growing filter directly back to the supplied region growing image
 
   typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
@@ -3801,6 +3805,10 @@ MIDASGeneralSegmentorView
   extractContoursFilter->SetInput(extractSliceFilter->GetOutput());
   extractContoursFilter->SetContourValue(0.5);
   extractContoursFilter->Update();
+
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  extractSliceFilter->SetInput(NULL);
+  extractContoursFilter->SetInput(NULL);
 
   // Now extract the contours, and convert to millimetre coordinates.
   unsigned int numberOfContours = extractContoursFilter->GetNumberOfOutputs();
@@ -4019,6 +4027,10 @@ MIDASGeneralSegmentorView
       } // end if new label
     } // end for each label
   } // end for each slice
+
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  extractSliceFilter->SetInput(NULL);
+  connectedComponentsFilter->SetInput(NULL);
 }
 
 
@@ -4357,10 +4369,11 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  pipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
-  pipeline.m_ExtractBinaryRegionOfInterestFilter->SetInput(workingImageToItk->GetOutput());
-  pipeline.SetParam(params);
+  pipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
   pipeline.Update(params);
+
+  // To make sure we release all smart pointers.
+  pipeline.DisconnectPipeline();
 
   // Check the output, to see if we have seeds inside non-enclosing green contours.
   sliceDoesHaveUnenclosedSeeds = this->ITKImageHasNonZeroEdgePixels<
@@ -4434,10 +4447,11 @@ void MIDASGeneralSegmentorView
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> localPipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
   localPipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
-  localPipeline.m_ExtractGreyRegionOfInterestFilter->SetInput(itkImage);
-  localPipeline.m_ExtractBinaryRegionOfInterestFilter->SetInput(workingImageToItk->GetOutput());
-  localPipeline.SetParam(params);
+  localPipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
   localPipeline.Update(params);
+
+  // To make sure we release all smart pointers.
+  localPipeline.DisconnectPipeline();
 
   // Now calculate filtered contours, we want to get rid of any contours that are not near a region.
   // NOTE: Poly line contours (yellow) contours are not cleaned.

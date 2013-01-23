@@ -57,8 +57,11 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(GeneralSegmentorPipelineParams& p)
+::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
 {
+  m_ExtractGreyRegionOfInterestFilter->SetInput(referenceImage);
+  m_ExtractBinaryRegionOfInterestFilter->SetInput(segmentationImage);
+
   m_SliceNumber = p.m_SliceNumber;
   m_AxisNumber = p.m_AxisNumber;
   m_LowerThreshold = p.m_LowerThreshold;
@@ -257,6 +260,22 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   {
     MITK_ERROR << "GeneralSegmentorPipeline::Update Failed: " << err << std::endl;
   }
+}
+
+template<typename TPixel, unsigned int VImageDimension>
+void
+GeneralSegmentorPipeline<TPixel, VImageDimension>
+::DisconnectPipeline()
+{
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  m_ExtractGreyRegionOfInterestFilter->SetInput(NULL);
+  m_ExtractBinaryRegionOfInterestFilter->SetInput(NULL);
+
+  m_CastToSegmentationContourFilter->SetInput(NULL);
+  m_CastToManualContourFilter->SetInput(NULL);
+  m_RegionGrowingFilter->SetInput(NULL);
+  m_RegionGrowingFilter->SetSegmentationContourImage(NULL);
+  m_RegionGrowingFilter->SetManualContourImage(NULL);
 }
 
 #endif
