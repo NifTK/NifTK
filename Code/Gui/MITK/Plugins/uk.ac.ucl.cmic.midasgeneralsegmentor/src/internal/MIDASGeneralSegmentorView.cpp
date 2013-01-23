@@ -3651,6 +3651,9 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetSeedPoints(*(itkSeeds.GetPointer()));
   regionGrowingFilter->Update();
 
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  regionGrowingFilter->SetInput(NULL);
+
   // Write output of region growing filter directly back to the supplied region growing image
 
   typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
@@ -3802,6 +3805,10 @@ MIDASGeneralSegmentorView
   extractContoursFilter->SetInput(extractSliceFilter->GetOutput());
   extractContoursFilter->SetContourValue(0.5);
   extractContoursFilter->Update();
+
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  extractSliceFilter->SetInput(NULL);
+  extractContoursFilter->SetInput(NULL);
 
   // Now extract the contours, and convert to millimetre coordinates.
   unsigned int numberOfContours = extractContoursFilter->GetNumberOfOutputs();
@@ -4020,6 +4027,10 @@ MIDASGeneralSegmentorView
       } // end if new label
     } // end for each label
   } // end for each slice
+
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  extractSliceFilter->SetInput(NULL);
+  connectedComponentsFilter->SetInput(NULL);
 }
 
 
