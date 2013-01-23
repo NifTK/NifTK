@@ -191,6 +191,10 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   m_Controls.m_SourceImageComboBox->clear();
   m_Controls.m_TargetImageComboBox->clear();
 
+  m_Controls.m_TargetMaskImageComboBox->clear();
+  m_Controls.m_TargetMaskImageComboBox->insertItem(0, QString("no mask"));
+
+
   if ( nodes ) 
   {    
     for (unsigned int i = 0; i < nodes->size(); i++) 
@@ -200,6 +204,8 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
       
       m_Controls.m_SourceImageComboBox->insertItem(i, QString(name.c_str()));
       m_Controls.m_TargetImageComboBox->insertItem(i, QString(name.c_str()));
+
+      m_Controls.m_TargetMaskImageComboBox->insertItem(i+1, QString(name.c_str()));
     }
   }
 
@@ -210,9 +216,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
     m_Controls.m_SourceImageComboBox->setCurrentIndex( 1 );
   }
        
-  m_Controls.m_TargetMaskImageComboBox->clear();
-  m_Controls.m_TargetMaskImageComboBox->insertItem(0, QString("no mask"));
-
 
   // Multi-Scale Options
     
