@@ -130,7 +130,8 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
   QString descr = QString("Address=") +  clientInfo->getClientIP()
       + QString(":") + clientInfo->getClientPort();
 
-  this->SetDescription(descr.toStdString());
+  //ST SetDescription is now handled in the DataSourceManager update loop
+  //this->SetDescription(descr.toStdString());
 
   QString deviceInfo;
   deviceInfo.append("Client connected:");

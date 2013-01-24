@@ -149,13 +149,26 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-    wrapper->SetMessage(msg.data());
-    wrapper->SetDataSource("QmitkIGITrackerTool");
-    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
-    wrapper->SetDuration(1000000000); // nanoseconds
+    //Check the tool name
+    OIGTLTrackingDataMessage::Pointer trMsg;
+    trMsg = static_cast<OIGTLTrackingDataMessage::Pointer>(msg);
 
-    this->AddData(wrapper.GetPointer());
+    QString messageToolName = trMsg->getTrackerToolName();
+    QString sourceToolName = QString::fromStdString(this->GetDescription());
+    if ( messageToolName == sourceToolName ) 
+    {
+      QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+      wrapper->SetMessage(msg.data());
+      wrapper->SetDataSource("QmitkIGITrackerTool");
+      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
+      wrapper->SetDuration(1000000000); // nanoseconds
+
+      this->AddData(wrapper.GetPointer());
+    }
+    else
+    {
+      qDebug() << messageToolName << " not equal to " << sourceToolName << " dumping message";
+    }
   }
 }
 
