@@ -126,6 +126,16 @@ public:
    */
   mitk::DataNode* GetToolRepresentation(const QString name);
 
+  /**
+   * \brief Initialises the source based on the contents of the passed init string
+   */
+  void ProcessInitString(QString);
+
+  /**
+   * \brief Get the stored init string
+   */
+  QString GetInitString ();
+
 public slots:
 
   /**
@@ -178,7 +188,9 @@ private:
   mitk::PointSet::Pointer                              m_TrackerFiducialsPointSet;
   mitk::NavigationDataLandmarkTransformFilter::Pointer m_FiducialRegistrationFilter;   ///< this filter transforms from tracking coordinates into mitk world coordinates
   mitk::NavigationDataLandmarkTransformFilter::Pointer m_PermanentRegistrationFilter;  ///< this filter transforms from tracking coordinates into mitk world coordinates if needed it is interconnected before the FiducialEegistrationFilter
-
+  
+  //store a copy of the init string
+  QString                                              m_InitString;
 }; // end class
 
 #endif

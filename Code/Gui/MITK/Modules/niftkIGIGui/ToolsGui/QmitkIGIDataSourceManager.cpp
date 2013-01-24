@@ -374,12 +374,22 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
             int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
 
             int tempRowNumber = this->GetRowNumberFromIdentifier(tempToolIdentifier);
-            qDebug() << "ID: " << tempToolIdentifier << " RN: " << tempRowNumber;
-            m_Sources[tempRowNumber]->SetType(type);
-            m_Sources[tempRowNumber]->SetName(device);
-            m_Sources[tempRowNumber]->SetDescription(Tool);
+            if ( type == "Tracker" ) 
+            {
+              mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
+              QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
+              QmitkIGITrackerTool* TrackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
+              m_Sources[tempRowNumber]->SetDescription(Tool);
+              TrackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
+            }
+            else
+            {
+              m_Sources[tempRowNumber]->SetType(type);
+              m_Sources[tempRowNumber]->SetName(device);
+              m_Sources[tempRowNumber]->SetDescription(Tool);
+            }
             // Force an update.
-            source->DataSourceStatusUpdated.Send(tempRowNumber);
+            //source->DataSourceStatusUpdated.Send(tempRowNumber);
             
           }
         }
@@ -528,6 +538,7 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSo
     {
       niftyLinkSource = QmitkIGIUltrasonixTool::New(socket);
     }
+    
     if (niftyLinkSource->ListenOnPort(portNumber))
     {
       m_PortsInUse.insert(portNumber);

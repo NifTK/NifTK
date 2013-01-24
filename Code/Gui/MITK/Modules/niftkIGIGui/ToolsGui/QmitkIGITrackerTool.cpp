@@ -98,52 +98,11 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
   if (msg->getMessageType() == QString("STRING"))
   {
     QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
-
     if (str.isEmpty() || str.isNull())
     {
       return;
     }
-
-    QString type = XMLBuilderBase::parseDescriptorType(str);
-    if (type == QString("TrackerClientDescriptor"))
-    {
-      ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
-      clientInfo->setXMLString(str);
-
-      if (!clientInfo->isMessageValid())
-      {
-        delete clientInfo;
-        return;
-      }
-      //A single source can have multiple tracked tools. 
-      //this should read the xml and set up a data source for each 
-      //tool name
-      //this->SetUpToolSources(clientInfo);
-      QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->getTrackerTools();
-      QString tool;
-      this->SetNumberOfTools(trackerTools.length());
-      //convert trackerTools to a std string list and set tool names
-      std::list<std::string> StringList;
-
-
-      foreach (tool , trackerTools)
-      {
-        std::string String;
-        String = tool.toStdString();
-        StringList.push_back(String);
-      //  qDebug() << tool << trackerTools.length();
-        
-      }
-      if ( StringList.size() > 0 ) 
-      {
-        this->SetToolStringList(StringList);
-      }
-      this->ProcessClientInfo(clientInfo);
-    }
-    else
-    {
-      // error?
-    }
+    this->ProcessInitString(str);
   }
   else if (msg.data() != NULL &&
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
@@ -171,8 +130,57 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
     }
   }
 }
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::ProcessInitString(QString str)
+{
+  QString type = XMLBuilderBase::parseDescriptorType(str);
+  if (type == QString("TrackerClientDescriptor"))
+  {
+    m_InitString = str;
+    ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
+    clientInfo->setXMLString(str);
+
+    if (!clientInfo->isMessageValid())
+    {
+      delete clientInfo;
+      return;
+    }
+    //A single source can have multiple tracked tools. 
+    //this should read the xml and set up a data source for each 
+    //tool name
+    //this->SetUpToolSources(clientInfo);
+    QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->getTrackerTools();
+    QString tool;
+    this->SetNumberOfTools(trackerTools.length());
+    //convert trackerTools to a std string list and set tool names
+    std::list<std::string> StringList;
 
 
+    foreach (tool , trackerTools)
+    {
+      std::string String;
+      String = tool.toStdString();
+      StringList.push_back(String);
+    //  qDebug() << tool << trackerTools.length();
+      
+    }
+    if ( StringList.size() > 0 ) 
+    {
+      this->SetToolStringList(StringList);
+    }
+    this->ProcessClientInfo(clientInfo);
+  }
+  else
+  {
+    // error?
+  }
+}
+
+//-----------------------------------------------------------------------------
+QString QmitkIGITrackerTool::GetInitString()
+{
+  return m_InitString;
+}
 //-----------------------------------------------------------------------------
 bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
 {
