@@ -234,6 +234,8 @@ int main( int argc, char *argv[] )
   if ( fileOutputDensityTextFile.length() != 0 ) {
     std::ofstream fout( fileOutputDensityTextFile.c_str() );
 
+    fout.precision(16);
+
     if ((! fout) || fout.bad()) {
       std::cerr << "ERROR: Could not open file: " << fileOutputDensityTextFile << std::endl;
       return EXIT_FAILURE;
