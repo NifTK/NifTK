@@ -22,22 +22,41 @@
 #
 #=================================================================================*/
 
-SET(MODULE_DIRS
-  niftkMitkExt
-  niftkQmitkExt
-  XnatRest
-  XnatRestWidgets
+MACRO(NIFTK_ADD_MODULE module_name)
+  INCLUDE(${${PROJECT_NAME}_MODULES_CONF_DIR}/${module_name}Config.cmake)
+  INCLUDE_DIRECTORIES(${${module_name}_INCLUDE_DIRS})
+  LINK_DIRECTORIES(${${module_name}_LIBRARY_DIRS})
+  SET(HELPER_APP_LIBRARIES
+    ${HELPER_APP_LIBRARIES}
+    ${${module_name}_PROVIDES}
+    ${${module_name}_DEPENDS}    
+  )
+ENDMACRO()
+
+LINK_DIRECTORIES(${MITK_LIBRARY_DIRS})
+INCLUDE_DIRECTORIES(${MITK_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${${PROJECT_NAME}_MODULES_CONF_DIR})
+
+SET(HELPER_APP_LIBRARIES
+  ${ALL_LIBRARIES}
 )
 
-IF(BUILD_IGI)
-  SET(MODULE_DIRS
-    ${MODULE_DIRS}
-    niftkOpenCV
-    niftkIGI
-    niftkIGIGui    
-  )
-ENDIF()
+SET(HELPER_APPS
+  niftkCameraCalibration
+)
 
-FOREACH(MODULE_DIR ${MODULE_DIRS})
-  ADD_SUBDIRECTORY(${MODULE_DIR})
+SET(HELPER_APPS_REQUIRED_MODULES
+  niftkOpenCV
+)
+
+# This sets up all the include and library folders using the above macro.
+FOREACH(MOD ${HELPER_APPS_REQUIRED_MODULES})
+  NIFTK_ADD_MODULE(${MOD})
+ENDFOREACH()
+
+# Then foreach app, we just build against libraries (modules).
+FOREACH(APP ${HELPER_APPS})
+  ADD_EXECUTABLE(${APP} ${APP}.cpp )
+  TARGET_LINK_LIBRARIES(${APP} ${HELPER_APP_LIBRARIES} )
+  MITK_INSTALL(TARGETS ${APP})
 ENDFOREACH()
