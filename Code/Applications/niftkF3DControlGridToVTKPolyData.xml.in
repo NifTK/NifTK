@@ -17,7 +17,7 @@
     <image>
       <name>fileInputImage</name>
       <flag>i</flag>
-      <longflag>fileInputImage</longflag>
+      <longflag>image</longflag>
       <description>Input reference image</description>
       <label>Input Reference Image</label>
       <channel>input</channel>
@@ -31,9 +31,36 @@
       <channel>input</channel>
     </image>
 
+    <integer>
+      <name>subSamplingFactor</name>
+      <longflag>ssf</longflag>
+      <description>Increasing this factor above unity will cause the deformation to be displayed at every nth control point in the grid.</description>
+      <label>Control Grid Sub-Sampling Factor</label>
+      <default>1</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>maxGridDimension</name>
+      <longflag>mgd</longflag>
+      <description>This number specifies the maximum number of grid points along any given axis, and hence limits the complexity of the generated VTK data to a level that can be displayed interactively.</description>
+      <label>Maximum Grid Dimension</label>
+      <default>32</default>
+      <constraints>
+        <minimum>3</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
     <float>
       <name>radius</name>
       <flag>r</flag>
+      <longflag>radius</longflag>
       <description>The radius of the output control grid VTK spheres.</description>
       <label>Control Grid Sphere Radius</label>
       <default>0</default>
@@ -76,7 +103,7 @@
     <image>
       <name>fileOutputDeformationVectorField</name>
       <longflag>ovectors</longflag>
-      <description>Output VTK deformation vector field</description>      
+      <description>Output VTK deformation vector field (creates a VTK structured grid of arrow glyphs)</description>      
       <label>Output Deformation Vector Field</label>
       <default>DeformationVectorField.vtk</default>
       <channel>output</channel>
