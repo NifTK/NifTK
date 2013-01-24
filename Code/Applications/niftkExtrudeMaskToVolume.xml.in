@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Image Operators</category>
+  <category>Binary Mask Image Operators</category>
   <title>Extrude Mask to Volume</title>
   <description><![CDATA[Converts an image containing one or more masks in the 'x', 'y' or 'z' planes into a volume by extruding these masks across the whole volume. This program was created to enable simple planar masks (such as those that can be created with the MITK Segmentation Plugin in NiftyView) which have been drawn on a single slice or slices, to be converted into a crude volume mask. Such a mask could then be used to mask the target or moving image in a registration, for instance.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
