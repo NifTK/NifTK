@@ -933,6 +933,7 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   this->SetReferenceImageSelected();
 
   this->RequestRenderWindowUpdate();
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
 }
 
 
@@ -965,6 +966,7 @@ void MIDASGeneralSegmentorView::OnCancelButtonPressed()
   this->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
   this->RequestRenderWindowUpdate();
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
 }
 
 
