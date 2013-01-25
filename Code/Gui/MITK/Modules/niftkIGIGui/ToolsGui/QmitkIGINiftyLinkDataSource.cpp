@@ -33,7 +33,7 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
   m_Socket = new OIGTLSocketObject();
   connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
   connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
-  connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
+  connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )), Qt::DirectConnection);
 }
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket)

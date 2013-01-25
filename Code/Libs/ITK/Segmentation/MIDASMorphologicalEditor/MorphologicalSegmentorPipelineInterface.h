@@ -43,9 +43,6 @@ public:
   /// \brief Default no-op destructor.
   ~MorphologicalSegmentorPipelineInterface() {};
 
-  /// \brief Pass all parameters to pipeline.
-  virtual void SetParam(MorphologicalSegmentorPipelineParams& p) = 0;
-
   /// \brief Update the pipeline.
   ///
   /// \param editingFlags array of 4 booleans to say which images are being editted.

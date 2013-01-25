@@ -107,9 +107,45 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(MorphologicalSegmentorPipelineParams& p)
+::DisconnectPipeline()
+{
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  m_ThresholdingFilter->SetInput(NULL);
+  m_ErosionFilter->SetGreyScaleImageInput(NULL);
+  m_DilationFilter->SetGreyScaleImageInput(NULL);
+  m_RethresholdingFilter->SetGreyScaleImageInput(NULL);
+
+  m_ErosionMaskFilter->SetInput(1, NULL);
+  m_ErosionMaskFilter->SetInput(2, NULL);
+  m_DilationMaskFilter->SetInput(1, NULL);
+  m_DilationMaskFilter->SetInput(2, NULL);
+  m_DilationFilter->SetConnectionBreakerImage(NULL);
+}
+
+
+template<typename TPixel, unsigned int VImageDimension>
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetParam(GreyScaleImageType* referenceImage,
+    SegmentationImageType* erosionsAdditionsImage,
+    SegmentationImageType* erosionEditsImage,
+    SegmentationImageType* dilationsAditionsImage,
+    SegmentationImageType* dilationsEditsImage,
+    MorphologicalSegmentorPipelineParams& p)
 {
   m_Stage = p.m_Stage;
+
+  // Connect input images.
+  m_ThresholdingFilter->SetInput(referenceImage);
+  m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
+  m_DilationFilter->SetGreyScaleImageInput(referenceImage);
+  m_RethresholdingFilter->SetGreyScaleImageInput(referenceImage);
+
+  m_ErosionMaskFilter->SetInput(1, erosionsAdditionsImage);
+  m_ErosionMaskFilter->SetInput(2, erosionEditsImage);
+  m_DilationMaskFilter->SetInput(1, dilationsAditionsImage);
+  m_DilationMaskFilter->SetInput(2, dilationsEditsImage);
+  m_DilationFilter->SetConnectionBreakerImage(dilationsEditsImage);
 
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
 
@@ -205,6 +241,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else if (m_Stage == 1)
   {
+
     m_ThresholdingConnectedComponentFilter->SetInput(m_ThresholdingMaskFilter->GetOutput());
 
     m_ErosionFilter->SetBinaryImageInput(m_ThresholdingConnectedComponentFilter->GetOutput());
@@ -217,6 +254,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else if (m_Stage == 2)
   {
+
     m_DilationFilter->SetBinaryImageInput(m_ErosionConnectedComponentFilter->GetOutput());
     m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
     m_DilationFilter->SetLowerThreshold((int)(p.m_LowerPercentageThresholdForDilations));
@@ -325,7 +363,6 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
           updateMethod = 2;                      
         }      
       }
-
       // Now we have decided, input, output, and which method.
       if (updateMethod == 1)
       {

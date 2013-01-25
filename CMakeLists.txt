@@ -27,8 +27,8 @@
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
-SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 12 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
+SET(NIFTK_VERSION_MINOR 01 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -216,9 +216,9 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 SET(NIFTK_VERSION_CTK "dd4386a4b0" CACHE STRING "Version of CTK" FORCE)
-SET(NIFTK_VERSION_MITK "a5924029b0" CACHE STRING "Version of MITK" FORCE)
+SET(NIFTK_VERSION_MITK "e4e8dbec92" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
-SET(NIFTK_VERSION_NIFTYLINK "2c7c97631c" CACHE STRING "Version of NiftyLink" FORCE)
+SET(NIFTK_VERSION_NIFTYLINK "f87aa369bc" CACHE STRING "Version of NiftyLink" FORCE)
 SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg" FORCE)
 SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
