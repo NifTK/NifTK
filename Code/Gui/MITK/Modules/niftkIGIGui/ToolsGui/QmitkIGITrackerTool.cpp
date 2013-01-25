@@ -672,7 +672,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
       OIGTLTrackingDataMessage* trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool");
+        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->GetDescription());
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {
