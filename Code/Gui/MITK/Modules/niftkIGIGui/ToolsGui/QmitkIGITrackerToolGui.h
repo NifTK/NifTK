@@ -67,6 +67,7 @@ private slots:
   void OnFiducialRegistrationClicked(void);
   void OnManageToolConnection(void);
   void OnAssocClicked(void);
+  void OnCameraLinkClicked(void);
   void OnStatusUpdate(QString message);
   void OnRegisterFiducials();
 

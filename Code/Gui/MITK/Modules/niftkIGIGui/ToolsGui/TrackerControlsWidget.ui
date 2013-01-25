@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>558</width>
-    <height>181</height>
+    <width>534</width>
+    <height>187</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -185,6 +185,13 @@
             </property>
             <property name="text">
              <string>associate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="pushButton_CameraLink">
+            <property name="text">
+             <string>Associate with VTK Camera</string>
             </property>
            </widget>
           </item>

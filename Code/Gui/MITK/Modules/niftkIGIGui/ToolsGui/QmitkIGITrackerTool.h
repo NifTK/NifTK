@@ -136,6 +136,17 @@ public:
    */
   QString GetInitString ();
 
+  /**
+   * \sets the state of the VTK camera link variable, 
+   * true will move the vtk camera with the tracking tool
+   */
+  void SetCameraLink (bool);
+  /**
+   * \gets the state of the VTK camera link variable, 
+   * true will move the vtk camera with the tracking tool
+   */
+  bool GetCameraLink ();
+
 public slots:
 
   /**

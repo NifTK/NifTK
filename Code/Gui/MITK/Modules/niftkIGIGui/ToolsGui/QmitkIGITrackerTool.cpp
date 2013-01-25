@@ -706,3 +706,13 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
   }
   return success;
 }
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
+{
+   m_LinkCamera = LinkCamera;
+}
+//-----------------------------------------------------------------------------
+bool QmitkIGITrackerTool::GetCameraLink()
+{
+   return m_LinkCamera;
+}

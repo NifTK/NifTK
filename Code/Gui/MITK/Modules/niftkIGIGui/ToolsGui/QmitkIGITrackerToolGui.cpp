@@ -79,6 +79,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_FiducialRegistration, SIGNAL(clicked()), this, SLOT(OnFiducialRegistrationClicked()) );
   connect(m_TrackerControlsWidget->toolButton_Add, SIGNAL(clicked()), this, SLOT(OnManageToolConnection()) );
   connect(m_TrackerControlsWidget->toolButton_Assoc, SIGNAL(clicked()), this, SLOT(OnAssocClicked()) );
+  connect(m_TrackerControlsWidget->pushButton_CameraLink, SIGNAL(clicked()), this, SLOT(OnCameraLinkClicked()) );
 
   if (config != NULL)
   {
@@ -197,6 +198,25 @@ void QmitkIGITrackerToolGui::OnAssocClicked(void)
  }
      
  //mitk::DataNode::Pointer dataNode = ComboSelector->GetSelectedNode();
+}
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnCameraLinkClicked(void)
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if ( tool != NULL ) 
+  {
+    if ( tool->GetCameraLink() )
+    {
+      tool->SetCameraLink(false);
+      m_TrackerControlsWidget->pushButton_CameraLink->setText("Associate with VTK Camera");
+    }
+    else
+    {
+      tool->SetCameraLink(true);
+      m_TrackerControlsWidget->pushButton_CameraLink->setText("Disassociate with VTK Camera");
+    }
+  }
 }
 
 
