@@ -28,6 +28,7 @@
 QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
 : m_Socket(NULL)
 , m_ClientDescriptor(NULL)
+, m_UsingSomeoneElsesSocket(false)
 {
   m_Socket = new OIGTLSocketObject();
   connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
@@ -38,6 +39,7 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
 QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket)
 : m_Socket(socket)
 , m_ClientDescriptor(NULL)
+, m_UsingSomeoneElsesSocket(true)
 {
   connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
   connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
@@ -49,7 +51,7 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *sock
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::~QmitkIGINiftyLinkDataSource()
 {
-  if (m_Socket != NULL)
+  if (m_Socket != NULL && ! m_UsingSomeoneElsesSocket)
   {
     delete m_Socket;
   }
@@ -117,11 +119,6 @@ void QmitkIGINiftyLinkDataSource::ClientDisconnected()
 //-----------------------------------------------------------------------------
 void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* clientInfo)
 {
-  //ST, the tool names are in clientInfo. At present they are not used until
-  //the Tracker gui is initialized. I want to run through them now, and 
-  //open a new row for each tool
-  //it would be good to use the description field to show the rigid body
-  //could be "Master", "pointer.rig" , "800939.rom" etc
   this->SetClientDescriptor(clientInfo);
 
   this->SetName(clientInfo->getDeviceName().toStdString());
@@ -129,9 +126,10 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 
   QString descr = QString("Address=") +  clientInfo->getClientIP()
       + QString(":") + clientInfo->getClientPort();
-
-  //ST SetDescription is now handled in the DataSourceManager update loop
-  //this->SetDescription(descr.toStdString());
+  
+  //Don't set description for trackers
+  if ( clientInfo->getDeviceType() != "Tracker" ) 
+    this->SetDescription(descr.toStdString());
 
   QString deviceInfo;
   deviceInfo.append("Client connected:");

@@ -119,6 +119,7 @@ private:
 
   OIGTLSocketObject           *m_Socket;
   ClientDescriptorXMLBuilder  *m_ClientDescriptor;
+  bool                        m_UsingSomeoneElsesSocket;
 
 }; // end class
 
