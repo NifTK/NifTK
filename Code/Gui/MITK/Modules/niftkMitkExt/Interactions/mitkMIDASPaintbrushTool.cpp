@@ -501,6 +501,10 @@ void mitk::MIDASPaintbrushTool::ExecuteOperation(Operation* operation)
       imageToEditToItk->Update();
 
       RunITKProcessor<mitk::Tool::DefaultSegmentationDataType, 3>(imageToEditToItk->GetOutput(), processor, redo, valueToWrite);
+
+      imageToEdit = NULL;
+      imageToEditToItk = NULL;
+
       nodeToEdit->Modified();
 
       mitk::RenderingManager::GetInstance()->RequestUpdateAll();
@@ -529,4 +533,6 @@ void mitk::MIDASPaintbrushTool::RunITKProcessor(
   {
     processor->Undo();
   }
+
+  processor->SetDestinationImage(NULL);
 }

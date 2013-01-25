@@ -49,6 +49,7 @@ IGIDataSource::IGIDataSource()
 , m_ActualTimeStamp(0)
 , m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
+, m_NumberOfTools(0)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_RequestedTimeStamp->GetTime();
@@ -59,6 +60,8 @@ IGIDataSource::IGIDataSource()
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
+  m_SubTools.clear();
+  m_SubToolsIterator = m_SubTools.begin();
 }
 
 
@@ -294,28 +297,33 @@ void IGIDataSource::UpdateFrameRate()
   igtlUint64 timeDifference = 0;
   unsigned long int numberOfFrames = 0;
 
-  std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
-  iter--;
+  double rate = 0;
 
-  if (m_Buffer.size() >= 2 && iter != m_Buffer.begin() && iter != m_Buffer.end() && iter != m_FrameRateBufferIterator)
+  if (m_Buffer.size() >= 2)
   {
-    lastTimeStamp = (*m_FrameRateBufferIterator)->GetTimeStampInNanoSeconds();
-    lastFrameId = (*m_FrameRateBufferIterator)->GetFrameId(); // assumed to be sequentially increasing
+    std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
+    iter--;
 
-    currentTimeStamp = (*iter)->GetTimeStampInNanoSeconds();
-    currentFrameId = (*iter)->GetFrameId(); // assumed to be sequentially increasing
-
-    if (currentTimeStamp > lastTimeStamp)
+    if (iter != m_Buffer.begin() && iter != m_Buffer.end() && iter != m_FrameRateBufferIterator)
     {
-      timeDifference = currentTimeStamp - lastTimeStamp;
-      numberOfFrames = currentFrameId - lastFrameId;
+      lastTimeStamp = (*m_FrameRateBufferIterator)->GetTimeStampInNanoSeconds();
+      lastFrameId = (*m_FrameRateBufferIterator)->GetFrameId(); // assumed to be sequentially increasing
 
-      double rate = (double)1.0 / ((double)timeDifference/(double)(numberOfFrames * 1000000000.0));
+      currentTimeStamp = (*iter)->GetTimeStampInNanoSeconds();
+      currentFrameId = (*iter)->GetFrameId(); // assumed to be sequentially increasing
 
-      m_FrameRateBufferIterator = iter;
-      m_FrameRate = rate;
+      if (currentTimeStamp > lastTimeStamp)
+      {
+        timeDifference = currentTimeStamp - lastTimeStamp;
+        numberOfFrames = currentFrameId - lastFrameId;
+
+        rate = (double)1.0 / ((double)timeDifference/(double)(numberOfFrames * 1000000000.0));
+        m_FrameRateBufferIterator = iter;
+      }
     }
   }
+
+  m_FrameRate = rate;
 }
 
 
@@ -365,8 +373,15 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 
   return result;
 }
+void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
+{
+  this->m_SubTools = inStringList;
+}
 
-
+std::list<std::string> IGIDataSource::GetSubToolList ()
+{
+  return m_SubTools;
+}
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {

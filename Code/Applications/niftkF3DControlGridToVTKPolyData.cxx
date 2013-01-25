@@ -127,6 +127,17 @@ int main( int argc, char *argv[] )
   }
 
 
+  // Calculate the control grid skip factor to limit the size of the VTK data generated
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  unsigned int controlGridSkipFactor = niftk::ComputeControlGridSkipFactor( controlPointGrid,
+									    subSamplingFactor,
+									    maxGridDimension );
+
+  std::cout << "Plotting deformation for every " << controlGridSkipFactor << " control points"
+	    << std::endl;
+
+
   // Create a VTK polydata file with a point for each control grid position
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -180,7 +191,10 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyData> vtkDeformationHedgehog = vtkSmartPointer<vtkPolyData>::New();
 
     std::cout << "Generating deformation hedgehog..." << std::endl;
-    vtkDeformationHedgehog = niftk::F3DControlGridToVTKPolyDataHedgehog( controlPointGrid, 1, 1, 1 );
+    vtkDeformationHedgehog = niftk::F3DControlGridToVTKPolyDataHedgehog( controlPointGrid, 
+									 controlGridSkipFactor, 
+									 controlGridSkipFactor, 
+									 controlGridSkipFactor );
 
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
@@ -193,8 +207,8 @@ int main( int argc, char *argv[] )
   }
 
 
-  // Create a VTK vector field object to visualise the deformation field
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Create a VTK vector field object to visualise the deformation field (using VTK arrow glyphs)
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   if ( fileOutputDeformationVectorField.length() ) 
   {
@@ -202,8 +216,11 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyData> vtkDeformationVectorField = vtkSmartPointer<vtkPolyData>::New();
 
     std::cout << "Generating deformation vector field..." << std::endl;
-    vtkDeformationVectorField = niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 
-									       1, 1, 1 );
+    vtkDeformationVectorField = 
+      niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 
+						     controlGridSkipFactor, 
+						     controlGridSkipFactor, 
+						     controlGridSkipFactor );
 
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
@@ -211,7 +228,9 @@ int main( int argc, char *argv[] )
     writer->SetInput( vtkDeformationVectorField );
     writer->SetFileType( VTK_BINARY );
     
-    std::cout << "Writing deformation vector field: " << fileOutputDeformationVectorField << std::endl;
+    std::cout << "Writing deformation vector field: " 
+	      << fileOutputDeformationVectorField << std::endl;
+
     writer->Write();
   }
 
@@ -228,8 +247,9 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyData> xzControlGrid = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPolyData> yzControlGrid = vtkSmartPointer<vtkPolyData>::New();
 
-     std::cout << "Generating control grid visualisation..." << std::endl;
+    std::cout << "Generating control grid visualisation..." << std::endl;
     niftk::F3DControlGridToVTKPolyDataSurfaces( controlPointGrid, referenceImage,
+						controlGridSkipFactor,
 						xyControlGrid, xzControlGrid, yzControlGrid );
     if ( fileOutputControlGridPlaneXY.length() )
     {
@@ -282,7 +302,8 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyData> yzDeformation = vtkSmartPointer<vtkPolyData>::New();
 
     std::cout << "Generating deformation visualisation..." << std::endl;
-    niftk::F3DDeformationToVTKPolyDataSurfaces( controlPointGrid, referenceImage,
+    niftk::F3DDeformationToVTKPolyDataSurfaces( controlPointGrid, referenceImage, 
+						controlGridSkipFactor,
 						xyDeformation, xzDeformation, yzDeformation );
 
     if ( fileOutputDeformationPlaneXY.length() )

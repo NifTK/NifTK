@@ -59,6 +59,29 @@ namespace niftk
 // Create a reference image corresponding to a given control point grid image
 // ---------------------------------------------------------------------------
 
+unsigned int ComputeControlGridSkipFactor( nifti_image *controlPointGrid,
+					   unsigned int subSamplingFactor,
+					   unsigned int maxGridDimension )
+{
+  unsigned int controlGridSkipFactor;
+
+  controlGridSkipFactor = subSamplingFactor;
+
+  while ( ( controlPointGrid->nx/controlGridSkipFactor > maxGridDimension ) ||
+	  ( controlPointGrid->ny/controlGridSkipFactor > maxGridDimension ) ||
+	  ( controlPointGrid->nz/controlGridSkipFactor > maxGridDimension ) )
+  {
+    controlGridSkipFactor++;
+  }
+
+  return controlGridSkipFactor;
+}
+
+
+// ---------------------------------------------------------------------------
+// Create a reference image corresponding to a given control point grid image
+// ---------------------------------------------------------------------------
+
 nifti_image *AllocateReferenceImageGivenControlPointGrid( nifti_image *controlPointGrid )
 {
   nifti_image *referenceImage = nifti_copy_nim_info( controlPointGrid );
@@ -557,6 +580,7 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
 
 void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 					  nifti_image *referenceImage,
+					  int controlGridSkipFactor,
 					  vtkSmartPointer<vtkPolyData> &xyDeformation,
 					  vtkSmartPointer<vtkPolyData> &xzDeformation,
 					  vtkSmartPointer<vtkPolyData> &yzDeformation )
@@ -570,9 +594,20 @@ void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 
   reg_bspline_refineControlPointGrid( referenceImage, refinedGrid );
 
-  xyDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XY, refinedGrid, 1, 1, 2 );
-  xzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_YZ, refinedGrid, 2, 1, 1 );
-  yzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XZ, refinedGrid, 1, 2, 1 );
+  xyDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XY, refinedGrid, 
+						      controlGridSkipFactor, 
+						      controlGridSkipFactor, 
+						      2*controlGridSkipFactor );
+
+  xzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_YZ, refinedGrid, 
+						      2*controlGridSkipFactor, 
+						      controlGridSkipFactor, 
+						      controlGridSkipFactor );
+
+  yzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XZ, refinedGrid, 
+						      controlGridSkipFactor, 
+						      2*controlGridSkipFactor, 
+						      controlGridSkipFactor );
 
   nifti_image_free( refinedGrid );
 }
@@ -729,7 +764,8 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
 // ---------------------------------------------------------------------------
 
 void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
-					  nifti_image *targetImage,
+					  nifti_image *targetImage, 
+					  int controlGridSkipFactor,
 					  vtkSmartPointer<vtkPolyData> &xyDeformation,
 					  vtkSmartPointer<vtkPolyData> &xzDeformation,
 					  vtkSmartPointer<vtkPolyData> &yzDeformation )
@@ -763,9 +799,20 @@ void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
     );
 
 
-  xyDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XY, deformationFieldImage, 1, 1, 2 );
-  xzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_YZ, deformationFieldImage, 2, 1, 1 );
-  yzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XZ, deformationFieldImage, 1, 2, 1 );
+  xyDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XY, deformationFieldImage, 
+						      controlGridSkipFactor, 
+						      controlGridSkipFactor, 
+						      2*controlGridSkipFactor );
+
+  xzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_YZ, deformationFieldImage, 
+						      2*controlGridSkipFactor, 
+						      controlGridSkipFactor, 
+						      controlGridSkipFactor );
+
+  yzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XZ, deformationFieldImage, 
+						      controlGridSkipFactor, 
+						      2*controlGridSkipFactor, 
+						      controlGridSkipFactor );
 
   nifti_image_free( referenceImage );
   nifti_image_free( deformationFieldImage );

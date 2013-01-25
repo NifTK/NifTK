@@ -87,13 +87,15 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
     TrackerClientDescriptor *trDesc = dynamic_cast<TrackerClientDescriptor*>(config);
     if (trDesc != NULL)
     {
-      QStringList trackerTools = trDesc->getTrackerTools();
-      m_TrackerControlsWidget->InitTrackerTools(trackerTools);
-
-      // Connect to signals from the tool.
       QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
       if (tool != NULL)
       {
+        QStringList trackerTools;
+        QString toolName = QString::fromStdString(tool->GetDescription());
+        trackerTools.append (toolName);
+        m_TrackerControlsWidget->InitTrackerTools(trackerTools);
+
+        // Connect to signals from the tool.
         connect (tool, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
 
         // Instantiate Representations of each tool.

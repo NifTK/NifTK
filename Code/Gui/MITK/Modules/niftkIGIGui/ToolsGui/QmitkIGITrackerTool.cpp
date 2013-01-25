@@ -57,6 +57,24 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
 }
 
+//-----------------------------------------------------------------------------
+QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
+: QmitkIGINiftyLinkDataSource(socket)
+, m_UseICP(false)
+, m_PointSetsInitialized(false)
+, m_LinkCamera(false)
+, m_ImageFiducialsDataNode(NULL)
+, m_ImageFiducialsPointSet(NULL)
+, m_TrackerFiducialsDataNode(NULL)
+, m_TrackerFiducialsPointSet(NULL)
+, m_FiducialRegistrationFilter(NULL)
+, m_PermanentRegistrationFilter(NULL)
+{
+  m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+  m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+}
+
+
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::~QmitkIGITrackerTool()
@@ -80,46 +98,81 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
   if (msg->getMessageType() == QString("STRING"))
   {
     QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
-
     if (str.isEmpty() || str.isNull())
     {
       return;
     }
-
-    QString type = XMLBuilderBase::parseDescriptorType(str);
-    if (type == QString("TrackerClientDescriptor"))
-    {
-      ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
-      clientInfo->setXMLString(str);
-
-      if (!clientInfo->isMessageValid())
-      {
-        delete clientInfo;
-        return;
-      }
-
-      this->ProcessClientInfo(clientInfo);
-    }
-    else
-    {
-      // error?
-    }
+    this->ProcessInitString(str);
   }
   else if (msg.data() != NULL &&
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-    wrapper->SetMessage(msg.data());
-    wrapper->SetDataSource("QmitkIGITrackerTool");
-    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
-    wrapper->SetDuration(1000000000); // nanoseconds
+    //Check the tool name
+    OIGTLTrackingDataMessage::Pointer trMsg;
+    trMsg = static_cast<OIGTLTrackingDataMessage::Pointer>(msg);
 
-    this->AddData(wrapper.GetPointer());
+    QString messageToolName = trMsg->getTrackerToolName();
+    QString sourceToolName = QString::fromStdString(this->GetDescription());
+    if ( messageToolName == sourceToolName ) 
+    {
+      QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+      wrapper->SetMessage(msg.data());
+      wrapper->SetDataSource("QmitkIGITrackerTool");
+      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
+      wrapper->SetDuration(1000000000); // nanoseconds
+
+      this->AddData(wrapper.GetPointer());
+    }
+  }
+}
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::ProcessInitString(QString str)
+{
+  QString type = XMLBuilderBase::parseDescriptorType(str);
+  if (type == QString("TrackerClientDescriptor"))
+  {
+    m_InitString = str;
+    ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
+    clientInfo->setXMLString(str);
+
+    if (!clientInfo->isMessageValid())
+    {
+      delete clientInfo;
+      return;
+    }
+    //A single source can have multiple tracked tools. 
+    QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->getTrackerTools();
+    QString tool;
+    this->SetNumberOfTools(trackerTools.length());
+    std::list<std::string> StringList;
+
+
+    foreach (tool , trackerTools)
+    {
+      std::string String;
+      String = tool.toStdString();
+      StringList.push_back(String);
+    //  qDebug() << tool << trackerTools.length();
+      
+    }
+    if ( StringList.size() > 0 ) 
+    {
+      this->SetToolStringList(StringList);
+    }
+    this->ProcessClientInfo(clientInfo);
+  }
+  else
+  {
+    // error?
   }
 }
 
-
+//-----------------------------------------------------------------------------
+QString QmitkIGITrackerTool::GetInitString()
+{
+  return m_InitString;
+}
 //-----------------------------------------------------------------------------
 bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
 {
@@ -206,7 +259,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
 
         vtkRendererCollection * Renderers;
         Renderers = thisWindow->GetRenderers();
-        vtkRenderer * Renderer;
+        vtkRenderer * Renderer = NULL;
         Renderers->InitTraversal();
         for ( int i = 0 ; i <  Renderers->GetNumberOfItems() ; i ++ )
           Renderer = Renderers->GetNextItem();
@@ -619,7 +672,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
       OIGTLTrackingDataMessage* trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool");
+        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->GetDescription());
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {
