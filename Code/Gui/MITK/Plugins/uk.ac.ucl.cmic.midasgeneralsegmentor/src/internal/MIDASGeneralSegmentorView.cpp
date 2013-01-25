@@ -2896,6 +2896,9 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
 
         mitk::Image::Pointer outputImage = mitk::ImportItkImage( processor->GetDestinationImage());
 
+        processor->SetSourceImage(NULL);
+        processor->SetDestinationImage(NULL);
+
         segmentedNode->SetData(outputImage);
         segmentedNode->Modified();
       }
@@ -4328,6 +4331,8 @@ MIDASGeneralSegmentorView
   {
     processor->Undo();
   }
+
+  processor->SetDestinationImage(NULL);
 
   // Update the current point set.
   currentSeeds->Clear();
