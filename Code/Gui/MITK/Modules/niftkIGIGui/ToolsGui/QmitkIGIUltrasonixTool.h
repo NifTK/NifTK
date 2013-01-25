@@ -101,19 +101,12 @@ private:
   /**
    * \brief Retrieves the motor position from the most recent data available.
    */
-  float GetMotorPos();
-
-  /**
-   * \brief Copies out the internal matrix.
-   */
-  void GetImageMatrix(igtl::Matrix4x4& matrix);
+  float GetMotorPos(igtl::Matrix4x4& matrix);
 
   mitk::Image::Pointer                  m_Image;
   mitk::DataNode::Pointer               m_ImageNode;
-  QmitkQImageToMitkImageFilter::Pointer m_Filter;
-  igtl::Matrix4x4                       m_ImageMatrix;
   float                                 m_RadToDeg;
-  QImage                                m_QImage;
+
 }; // end class
 
 #endif
