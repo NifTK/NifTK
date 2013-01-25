@@ -610,6 +610,25 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   if (niftyLinkSource.IsNotNull())
   {
     int portNumber = niftyLinkSource->GetPort();
+    //scan through the other source looking for any others using the same port, 
+    //and kill them as well
+    for ( int i = 0 ; i < m_TableWidget->rowCount() ; i ++ )
+    {
+      mitk::IGIDataSource::Pointer tempSource = m_Sources[i];
+      QmitkIGINiftyLinkDataSource::Pointer tempNiftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(tempSource.GetPointer());
+      if ( tempNiftyLinkSource.IsNotNull() ) 
+      {
+        int tempPortNumber = tempNiftyLinkSource->GetPort();
+        if ( tempPortNumber == portNumber ) 
+        {
+          tempSource->DataSourceStatusUpdated
+            -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
+            this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
+          m_TableWidget->removeRow(i);
+          m_Sources.erase(m_Sources.begin() + i);
+        }
+      }
+    }
     m_PortsInUse.remove(portNumber);
   }
 
