@@ -51,7 +51,11 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *sock
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::~QmitkIGINiftyLinkDataSource()
 {
-  if (m_Socket != NULL && ! m_UsingSomeoneElsesSocket)
+  if ( m_UsingSomeoneElsesSocket )
+  {
+    m_Socket = NULL;
+  }
+  if (m_Socket != NULL )
   {
     delete m_Socket;
   }

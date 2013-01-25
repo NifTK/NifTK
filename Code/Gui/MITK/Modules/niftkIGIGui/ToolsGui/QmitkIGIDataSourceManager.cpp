@@ -574,20 +574,20 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSo
 
   // Increase this so that tools always have new identifier, regardless of what row of the table they are in.
   m_NextSourceIdentifier++;
-
-  // Launch timers
-  if (!m_UpdateTimer->isActive())
+ // Launch timers
+  if (!m_ClearDownThread->isRunning())
   {
-    m_UpdateTimer->start();
+    m_ClearDownThread->start();
+  }
+  if (!m_GuiUpdateThread->isRunning())
+  {
+    m_GuiUpdateThread->start();
   }
   if (!m_FrameRateTimer->isActive())
   {
     m_FrameRateTimer->start();
   }
-  if (!m_ClearDownThread->isRunning())
-  {
-    m_ClearDownThread->start();
-  }
+  
   return source->GetIdentifier();
 }
 
