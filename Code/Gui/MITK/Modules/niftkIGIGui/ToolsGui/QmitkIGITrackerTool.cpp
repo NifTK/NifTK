@@ -124,10 +124,6 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
 
       this->AddData(wrapper.GetPointer());
     }
-    else
-    {
-      qDebug() << messageToolName << " not equal to " << sourceToolName << " dumping message";
-    }
   }
 }
 //-----------------------------------------------------------------------------
@@ -146,13 +142,9 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
       return;
     }
     //A single source can have multiple tracked tools. 
-    //this should read the xml and set up a data source for each 
-    //tool name
-    //this->SetUpToolSources(clientInfo);
     QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->getTrackerTools();
     QString tool;
     this->SetNumberOfTools(trackerTools.length());
-    //convert trackerTools to a std string list and set tool names
     std::list<std::string> StringList;
 
 
