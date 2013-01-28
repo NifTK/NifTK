@@ -34,6 +34,7 @@
 #include <mitkImageStatisticsHolder.h>
 #include <mitkColorProperty.h>
 #include <mitkDataStorageUtils.h>
+#include <mitkUndoController.h>
 
 #include "itkConversionUtils.h"
 #include "mitkITKRegionParametersDataNodeProperty.h"
@@ -361,6 +362,7 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
     this->m_PipelineManager->FinalizeSegmentation();
     this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
+    mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
 }
 
@@ -399,6 +401,7 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
     this->GetDataStorage()->Remove(segmentationNode);
     this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
+    mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
 }
 
