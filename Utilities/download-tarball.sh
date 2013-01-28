@@ -56,12 +56,14 @@ function download_from_github() {
     tarball=$directory.tar.gz
     if $discard_repo
     then
+        rm $tarball
         wget -O $tarball http://github.com/$organisation/$project/tarball/$version
     else
         git clone git://github.com/$organisation/$project $directory
         cd $directory
         git checkout $version
         cd ..
+        rm $tarball
         tar cvfz $tarball ${directory}
         rm -rf $directory
     fi
@@ -78,10 +80,12 @@ function download_from_sourceforge() {
     if $discard_repo
     then
         svn export -r ${version} $repo_url $directory
+        rm $tarball
         tar cvfz $tarball $directory
         rm -rf $directory
     else
         svn checkout -r ${version} $repo_url $directory
+        rm $tarball
         tar cvfz $tarball $directory
         rm -rf $directory
     fi
@@ -103,6 +107,7 @@ then
         cd $directory
         git checkout $version
         cd ..
+        rm $tarball
         tar cvfz $tarball ${directory}
         rm -rf $directory
     fi
@@ -139,6 +144,7 @@ then
         rm -rf .git
     fi
     cd ..
+    rm $tarball
     tar cvfz $tarball $directory
     rm -rf $directory
 elif [ $project = IGSTK ]
@@ -158,12 +164,14 @@ then
         rm -rf .git
     fi
     cd ..
+    rm $tarball
     tar cvfz $tarball $directory
     rm -rf $directory
 else
     print_usage
 fi
-
+    
+rm $tarball.md5
 md5sum $tarball > $tarball.md5
-chmod 644 $tarball
-chmod 644 $tarball.md5
+chmod 664 $tarball
+chmod 664 $tarball.md5
