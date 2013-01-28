@@ -82,8 +82,10 @@ ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                      BUILD_ALL ${${PROJECT_NAME}_BUILD_ALL_PLUGINS})
 
 ####################################################################################
-# Add subdirectories, one for each application listed above.
+# Add subdirectories. 
+#   Apps contains full MITK apps using MITK application framework BlueBerry.
+#   HelperApps contains independent stuff like utilities, command line apps etc.
 ####################################################################################
 
-add_subdirectory(Apps)
-
+ADD_SUBDIRECTORY(Apps)
+ADD_SUBDIRECTORY(HelperApps)
