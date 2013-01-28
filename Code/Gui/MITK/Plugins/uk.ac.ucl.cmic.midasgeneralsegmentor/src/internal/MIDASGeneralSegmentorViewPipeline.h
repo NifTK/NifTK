@@ -43,7 +43,6 @@
 class GeneralSegmentorPipelineInterface
 {
 public:
-  virtual void SetParam(GeneralSegmentorPipelineParams& params) = 0;
   virtual void Update(GeneralSegmentorPipelineParams& params) = 0;
 };
 
@@ -85,8 +84,11 @@ public:
 
   // Methods
   GeneralSegmentorPipeline();
-  void SetParam(GeneralSegmentorPipelineParams &params);
+  void SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams &params);
   void Update(GeneralSegmentorPipelineParams &params);
+
+  /// \brief Disconnects the pipeline so that reference counts go to zero for the input image.
+  void DisconnectPipeline();
 
   // Member variables.
   int m_SliceNumber;

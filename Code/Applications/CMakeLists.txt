@@ -70,11 +70,14 @@ IF(SlicerExecutionModel_FOUND)
   SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES
     niftkAdd
     niftkApplyMaskToImage
+    niftkBreastDensityCalculationGivenMRISegmentation
+    niftkConvertImage
     niftkCreateMaskImage
     niftkCropImage
     niftkExtrudeMaskToVolume
     niftkMultiply
     niftkSubtract
+    niftkVotingBinaryIterativeHoleFillingImageFilter
   )
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
@@ -205,7 +208,6 @@ SET(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkConnectedComponents
   niftkContourExtractor2DImageFilter
   #niftkConvertDofToFsl
-  niftkConvertImage
   niftkConvertMidasStrToNii
   niftkConvertToMidasStr
   niftkConvertTransformToRIREFormat

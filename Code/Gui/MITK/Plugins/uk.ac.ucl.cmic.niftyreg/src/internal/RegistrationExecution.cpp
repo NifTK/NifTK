@@ -259,8 +259,14 @@ void RegistrationExecution::ExecuteRegistration()
     nifti_image *controlPointGrid =
       userData->m_RegNonRigid->GetControlPointPositionImage();
 
+    unsigned int controlGridSkipFactor = 
+      niftk::ComputeControlGridSkipFactor( controlPointGrid, 1, 32 );
+    
+    std::cout << "Plotting deformation for every " << controlGridSkipFactor << " control points"
+	      << std::endl;
+
     CreateControlPointVisualisation( controlPointGrid );
-    CreateVectorFieldVisualisation( controlPointGrid );
+    CreateVectorFieldVisualisation( controlPointGrid, controlGridSkipFactor );
 
     reg_bspline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
 					controlPointGrid );
@@ -273,9 +279,20 @@ void RegistrationExecution::ExecuteRegistration()
     reg_spline_getDeformationField( controlPointGrid, referenceImage, deformationFieldImage,
 				    NULL, true, true );
 
-    CreateDeformationVisualisationSurface( niftk::PLANE_XY, deformationFieldImage, 1, 1, 2 );
-    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, deformationFieldImage, 1, 2, 1 );
-    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, deformationFieldImage, 2, 1, 1 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_XY, deformationFieldImage, 
+					   controlGridSkipFactor, 
+					   controlGridSkipFactor, 
+					   2*controlGridSkipFactor );
+
+    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, deformationFieldImage, 
+					   controlGridSkipFactor, 
+					   2*controlGridSkipFactor, 
+					   controlGridSkipFactor );
+
+    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, deformationFieldImage, 
+					   2*controlGridSkipFactor, 
+					   controlGridSkipFactor, 
+					   controlGridSkipFactor );
 
     if ( controlPointGrid      != NULL ) nifti_image_free( controlPointGrid );
     if ( referenceImage        != NULL ) nifti_image_free( referenceImage );
@@ -411,7 +428,8 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *
 // CreateVectorFieldVisualisation();
 // --------------------------------------------------------------------------- 
 
-void RegistrationExecution::CreateVectorFieldVisualisation( nifti_image *controlPointGrid )
+void RegistrationExecution::CreateVectorFieldVisualisation( nifti_image *controlPointGrid,
+							    int controlGridSkipFactor )
 {
   if ( ! userData->m_RegNonRigid )
   {
@@ -427,7 +445,10 @@ void RegistrationExecution::CreateVectorFieldVisualisation( nifti_image *control
 
   vtkSmartPointer<vtkPolyData> vtkVectorField = vtkSmartPointer<vtkPolyData>::New();
   
-  vtkVectorField = niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 1, 1, 1 );
+  vtkVectorField = niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 
+								  controlGridSkipFactor, 
+								  controlGridSkipFactor, 
+								  controlGridSkipFactor );
   
   mitk::Surface::Pointer mitkVectorField = mitk::Surface::New();
 

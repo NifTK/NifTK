@@ -27,11 +27,8 @@
 #include <stack>
 #include <cassert>
 #include <itkImage.h>
-#include <itkSpatialObjectToImageFilter.h>
 #include <itkImageToImageFilter.h>
-#include <itkImageFileWriter.h>
-#include <itkBinaryThresholdImageFilter.h>
-#include <itkBinaryFunctorImageFilter.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkPolyLineParametricPath.h>
 #include <itkContinuousIndex.h>
 

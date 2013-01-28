@@ -195,6 +195,7 @@ SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
   this->has3dLabelImage = has3dLabelImage;
   this->has3dOr4dLabelImage = has3dOr4dLabelImage;
   this->has3dOr4dSurfaceImage = hasSurfaceImage;
+  this->gaussianSmooth = true;
 }
 
 const std::string SurfaceExtractorView::VIEW_ID = "uk.ac.ucl.cmic.SurfaceExtractor";
@@ -556,7 +557,15 @@ void SurfaceExtractorView::updateSurfaceNode()
 
   filter->SetInput(referenceImage);
   filter->SetThreshold(d->threshold); // if( Gauss ) --> TH manipulated for vtkMarchingCube
+  
   filter->SetTargetReduction(d->targetReduction);
+  
+  // If the decimation value is non-zero we set the decimation type
+  // Setting NoDecimation disables the whole processing
+  if (d->targetReduction == 0)
+    filter->SetDecimate(mitk::ImageToSurfaceFilter::NoDecimation);
+  else
+    filter->SetDecimate(mitk::ImageToSurfaceFilter::DecimatePro);
 
   try
   {
@@ -613,6 +622,7 @@ mitk::ImageToSurfaceFilter::Pointer SurfaceExtractorView::createImageToSurfaceFi
   {
     mitk::ManualSegmentationToSurfaceFilter::Pointer filter = mitk::ManualSegmentationToSurfaceFilter::New();
     filter->SetUseGaussianImageSmooth(d->gaussianSmooth);
+    filter->SetSmooth(d->gaussianSmooth);
     filter->SetGaussianStandardDeviation(d->gaussianStdDev);
     mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
     return f;
@@ -621,6 +631,7 @@ mitk::ImageToSurfaceFilter::Pointer SurfaceExtractorView::createImageToSurfaceFi
   {
     mitk::LabeledImageToSurfaceFilter::Pointer filter = mitk::LabeledImageToSurfaceFilter::New();
     filter->SetGaussianStandardDeviation(d->gaussianStdDev);
+    filter->SetSmooth(d->gaussianSmooth);
     mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
     return f;
   }

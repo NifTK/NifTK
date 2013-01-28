@@ -206,7 +206,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
 
         vtkRendererCollection * Renderers;
         Renderers = thisWindow->GetRenderers();
-        vtkRenderer * Renderer;
+        vtkRenderer * Renderer = NULL;
         Renderers->InitTraversal();
         for ( int i = 0 ; i <  Renderers->GetNumberOfItems() ; i ++ )
           Renderer = Renderers->GetNextItem();
