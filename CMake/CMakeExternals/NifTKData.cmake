@@ -41,6 +41,7 @@ IF(BUILD_TESTING)
 
     ExternalProject_Add(${proj}
       SVN_REPOSITORY ${NIFTK_LOCATION_DATA}
+      SVN_TRUST_CERT 1
       UPDATE_COMMAND ""
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
