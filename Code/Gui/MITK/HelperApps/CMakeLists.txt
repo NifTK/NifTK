@@ -42,12 +42,23 @@ SET(HELPER_APP_LIBRARIES
 )
 
 SET(HELPER_APPS
-  niftkCameraCalibration
+  # Add apps that DO NOT depend on BUILD_IGI here.
 )
 
 SET(HELPER_APPS_REQUIRED_MODULES
-  niftkOpenCV
+  # Add modules that DO NOT depend on BUILD_IGI here.
 )
+
+IF(BUILD_IGI)
+  SET(HELPER_APPS
+    ${HELPER_APPS}
+    niftkCameraCalibration
+  )
+  SET(HELPER_APPS_REQUIRED_MODULES
+    ${HELPER_APPS_REQUIRED_MODULES}
+    niftkOpenCV
+  )  
+ENDIF()
 
 # This sets up all the include and library folders using the above macro.
 FOREACH(MOD ${HELPER_APPS_REQUIRED_MODULES})
