@@ -1193,20 +1193,19 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
 {
-  double oldMagnificationFactor = m_PreviousMagnificationFactor;
   double roundedMagnificationFactor = std::floor(magnificationFactor);
 
   // If we are between two integers, we raise a new event:
   if (magnificationFactor != roundedMagnificationFactor)
   {
-    bool hasDecreased = magnificationFactor < oldMagnificationFactor;
     double newMagnificationFactor = roundedMagnificationFactor;
-    if (hasDecreased)
+    // If the value has decreased, we have to increase the rounded value.
+    if (magnificationFactor < m_PreviousMagnificationFactor)
     {
       newMagnificationFactor += 1.0;
     }
 
-    this->m_MIDASSlidersWidget->SetMagnificationFactor(newMagnificationFactor);
+    this->m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(newMagnificationFactor);
   }
   else
   {
