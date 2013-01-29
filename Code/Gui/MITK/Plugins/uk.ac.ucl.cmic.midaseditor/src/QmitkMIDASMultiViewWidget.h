@@ -155,7 +155,7 @@ public:
   void SetSelectedWindowSliceNumber(int sliceNumber);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes magnification.
-  void SetSelectedWindowMagnification(int magnification);
+  void SetSelectedWindowMagnification(double magnification);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches to axial.
   void SetSelectedWindowToAxial();
@@ -414,6 +414,7 @@ private:
   bool                                           m_NavigationControllerEventListening;
   bool                                           m_Dropped;
   bool                                           m_InteractorsEnabled;
+  double                                         m_PreviousMagnificationFactor;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

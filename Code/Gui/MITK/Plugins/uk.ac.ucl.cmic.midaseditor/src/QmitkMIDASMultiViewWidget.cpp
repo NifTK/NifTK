@@ -23,36 +23,41 @@
  ============================================================================*/
 
 #include "QmitkMIDASMultiViewWidget.h"
-#include <QPushButton>
-#include <QGridLayout>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QSpacerItem>
-#include <QSize>
-#include <QSpinBox>
-#include <QDragEnterEvent>
-#include <QDragMoveEvent>
-#include <QDragLeaveEvent>
-#include <QDropEvent>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QLabel>
-#include <QDebug>
-#include <QMessageBox>
-#include <QStackedLayout>
-#include <QButtonGroup>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkGeometry3D.h>
-#include <mitkIRenderWindowPart.h>
-#include <QmitkRenderWindow.h>
-#include <vtkRenderer.h>
-#include <vtkRendererCollection.h>
+
+#include <ctkDoubleSlider.h>
 #include <ctkPopupWidget.h>
 
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QDebug>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSize>
+#include <QSpacerItem>
+#include <QSpinBox>
+#include <QStackedLayout>
+#include <QVBoxLayout>
+
+#include <mitkFocusManager.h>
+#include <mitkGeometry3D.h>
+#include <mitkGlobalInteraction.h>
+#include <QmitkRenderWindow.h>
+#include <mitkIRenderWindowPart.h>
+
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+
+#include "mitkMIDASOrientationUtils.h"
 #include "mitkMIDASViewKeyPressResponder.h"
 #include "QmitkMIDASSingleViewWidget.h"
-#include "mitkMIDASOrientationUtils.h"
 
 //-----------------------------------------------------------------------------
 QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
@@ -861,9 +866,17 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
 {
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(false);
+  // The slider and the spinbox has to be handled independently because the slider should show integer value always.
+  double roundedMagnificationFactor = std::floor(0.5 + magnificationFactor);
+  bool ctkSliderWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
+  bool spinBoxWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(true);
+  bool sliderWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(true);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->setValue(magnificationFactor);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->setValue(roundedMagnificationFactor);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(spinBoxWasBlocked);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(sliderWasBlocked);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(ctkSliderWasBlocked);
+
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -874,6 +887,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
       }
     }
   }
+  m_PreviousMagnificationFactor = magnificationFactor;
 }
 
 
@@ -895,8 +909,16 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   }
 
   int selectedWindow = this->GetSelectedWindowIndex();
-  int magnification = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnification);
+  double magnificationFactor = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
+
+  // The slider and the spinbox has to be handled independently because the slider should show integer value always.
+  double roundedMagnificationFactor = std::floor(0.5 + magnificationFactor);
+  bool spinBoxWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(true);
+  bool sliderWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(true);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->setValue(magnificationFactor);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->setValue(roundedMagnificationFactor);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(spinBoxWasBlocked);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(sliderWasBlocked);
 
   MIDASView view = m_SingleViewWidgets[selectedWindow]->GetView();
   m_MIDASOrientationWidget->SetToView(view);
@@ -948,12 +970,12 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindo
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(currentSlice);
     }
 
-    double minMag = this->m_SingleViewWidgets[selectedViewer]->GetMinMagnification();
-    double maxMag = this->m_SingleViewWidgets[selectedViewer]->GetMaxMagnification();
-    double currentMag = this->m_SingleViewWidgets[selectedViewer]->GetMagnificationFactor();
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMinimum((int)minMag);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMaximum((int)maxMag);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue((int)currentMag);
+    double minMag = std::ceil(this->m_SingleViewWidgets[selectedViewer]->GetMinMagnification());
+    double maxMag = std::floor(this->m_SingleViewWidgets[selectedViewer]->GetMaxMagnification());
+    double currentMag = std::floor(0.5 + this->m_SingleViewWidgets[selectedViewer]->GetMagnificationFactor());
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMinimum(minMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMaximum(maxMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(currentMag);
 
     unsigned int minTime = this->m_SingleViewWidgets[selectedViewer]->GetMinTime();
     unsigned int maxTime = this->m_SingleViewWidgets[selectedViewer]->GetMaxTime();
@@ -1143,7 +1165,7 @@ bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int sli
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnSliceNumberChanged(double sliceNumber)
 {
-  this->SetSelectedWindowSliceNumber((int)sliceNumber);
+  this->SetSelectedWindowSliceNumber(static_cast<int>(sliceNumber));
 }
 
 
@@ -1171,12 +1193,31 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
 {
-  this->SetSelectedWindowMagnification((int)magnificationFactor);
+  double oldMagnificationFactor = m_PreviousMagnificationFactor;
+  double roundedMagnificationFactor = std::floor(magnificationFactor);
+
+  // If we are between two integers, we raise a new event:
+  if (magnificationFactor != roundedMagnificationFactor)
+  {
+    bool hasDecreased = magnificationFactor < oldMagnificationFactor;
+    double newMagnificationFactor = roundedMagnificationFactor;
+    if (hasDecreased)
+    {
+      newMagnificationFactor += 1.0;
+    }
+
+    this->m_MIDASSlidersWidget->SetMagnificationFactor(newMagnificationFactor);
+  }
+  else
+  {
+    this->SetSelectedWindowMagnification(magnificationFactor);
+    m_PreviousMagnificationFactor = magnificationFactor;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnificationFactor)
+void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(double magnificationFactor)
 {
   std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
   for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
@@ -1189,7 +1230,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnification
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnTimeChanged(double timeStep)
 {
-  this->SetSelectedTimeStep((int)timeStep);
+  this->SetSelectedTimeStep(static_cast<int>(timeStep));
 }
 
 
