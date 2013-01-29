@@ -25,7 +25,11 @@
 #include "mitkCameraCalibrationFacade.h"
 #include <iostream>
 
+namespace mitk {
+
 void SomeOpenCVTypeFunction()
 {
   std::cerr << "Matt, SomeOpenCVTypeFunction" << std::endl;
+}
+
 }
