@@ -385,7 +385,7 @@ void QmitkSingleWidgetEditor::OnPreferencesChanged(const berry::IBerryPreference
     lower[2] = secondColor.blue() / color;
   }
   d->m_SingleWidget->SetGradientBackgroundColors(upper, lower);
-  d->m_SingleWidget->EnableGradientBackground();
+  d->m_SingleWidget->DisableGradientBackground();
 
   // Set preferences respecting zooming and padding
   bool constrainedZooming = prefs->GetBool("Use constrained zooming and padding", false);

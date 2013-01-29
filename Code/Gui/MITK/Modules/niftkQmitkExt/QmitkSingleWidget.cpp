@@ -238,14 +238,14 @@ void QmitkSingleWidget::InitializeWidget()
   m_GradientBackground1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
   m_GradientBackground1->SetGradientColors(0.1,0.1,0.1,0.5,0.5,0.5);
-  m_GradientBackground1->Enable();
+  m_GradientBackground1->Disable();
 
   // setup the department logo rendering
   //m_LogoRendering1 = mitk::ManufacturerLogo::New();
   m_LogoRendering1 = CMICLogo::New();
   m_LogoRendering1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
-  m_LogoRendering1->Enable();
+  m_LogoRendering1->Disable();
 
   m_RectangleRendering1 = mitk::RenderWindowFrame::New();
   m_RectangleRendering1->SetRenderWindow(
