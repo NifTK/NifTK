@@ -29,10 +29,7 @@
 
 namespace mitk {
 
-NIFTKOPENCV_EXPORT void SomeOpenCVTypeFunction()
-{
-
-}
+NIFTKOPENCV_EXPORT void SomeOpenCVTypeFunction();
 
 }
 
