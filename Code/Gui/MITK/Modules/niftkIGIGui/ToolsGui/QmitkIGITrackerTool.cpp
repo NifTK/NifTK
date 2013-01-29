@@ -254,19 +254,20 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
       int windowsFound = RenderWindows.size() ;
       for ( int i = 0 ; i < windowsFound ; i ++ )
       {
+        vtkCamera * Camera;
         vtkRenderWindow * thisWindow;
         thisWindow = RenderWindows.at(i);
 
+        //this performs the important function of rotating the logo, it looks really natty.
+        /*
         vtkRendererCollection * Renderers;
         Renderers = thisWindow->GetRenderers();
         vtkRenderer * Renderer = NULL;
         Renderers->InitTraversal();
         for ( int i = 0 ; i <  Renderers->GetNumberOfItems() ; i ++ )
           Renderer = Renderers->GetNextItem();
-        vtkCamera * Camera;
         Camera = Renderer->GetActiveCamera();
-        //this performs the important function of rotating the logo, it looks really natty.
-        Camera->Azimuth( 1);
+        Camera->Azimuth( 1);*/
         Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
         vtkTransform * Transform = vtkTransform::New();
         vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
@@ -276,12 +277,8 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
             viewMatrix->SetElement(row,column,inputTransformMat[row][column]);
           }
         Transform->SetMatrix(viewMatrix);
-        //as the view matrix is not zero, need to zero it, should really only do this once,
-        //when camera tracking is set to true I guess
-        Camera->SetPosition(0,0,0);
-        Camera->SetFocalPoint(0,0,1);
         Camera->SetUserViewTransform(Transform);
-        Camera->Azimuth( 1);
+       // Camera->Azimuth( 1);
       }
     }
 
@@ -710,6 +707,25 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
 void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
 {
    m_LinkCamera = LinkCamera;
+  
+   if ( m_LinkCamera )
+   {
+     mitk::RenderingManager::RenderWindowVector RenderWindows;
+     RenderWindows = mitk::RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
+
+     int windowsFound = RenderWindows.size() ;
+     for ( int i = 0 ; i < windowsFound ; i ++ )
+     {
+       vtkCamera * Camera;
+       vtkRenderWindow * thisWindow;
+       thisWindow = RenderWindows.at(i);
+
+       Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
+
+       Camera->SetPosition(0,0,0);
+       Camera->SetFocalPoint(0,0,1);
+     }
+   }
 }
 //-----------------------------------------------------------------------------
 bool QmitkIGITrackerTool::GetCameraLink()
