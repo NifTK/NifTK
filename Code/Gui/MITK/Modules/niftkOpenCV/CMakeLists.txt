@@ -4,5 +4,9 @@ MITK_CREATE_MODULE(niftkOpenCV
   DEPENDS MitkExt mitkOpenCVVideoSupport
   PACKAGE_DEPENDS OpenCV
 )
-  
+
+TARGET_LINK_LIBRARIES(niftkOpenCV
+  niftkcommon
+  )
+    
 ADD_SUBDIRECTORY(Testing)
