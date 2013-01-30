@@ -37,18 +37,10 @@ if (BUILD_TESTING)
   set(proj_DEPENDENCIES )
   set(NifTKData_DEPENDS ${proj})
 
-  # Valid values: git, svn, tar
+  # Supported values: git, svn, tar
   set(${proj}_archtype "git")
-  set(${proj}_version "d9fe07385c")
-  set(${proj}_location "https://cmicdev.cs.ucl.ac.uk/git/NifTKData")
-
-  #set(${proj}_archtype "svn")
-  #set(${proj}_version "9749")
-  #set(${proj}_location "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData")
-
-  #set(${proj}_archtype "tar")
-  #set(${proj}_version "d9fe07385c")
-  #set(${proj}_location "http://cmicdev.cs.ucl.ac.uk/platform/dependencies/${proj}-${${proj}_version}.tar.gz")
+  set(${proj}_version ${NIFTK_VERSION_DATA})
+  set(${proj}_location ${NIFTK_LOCATION_DATA})
 
   if (NOT DEFINED NIFTK_DATA_DIR)
 
@@ -70,7 +62,7 @@ if (BUILD_TESTING)
         URL_MD5 ${${proj}_checksum}
       )
     else ()
-      message("Unknown archtype. Cannot download ${proj}.")
+      message("Unknown archive type. Valid values are git, svn and tar. Cannot download ${proj}.")
     endif ()
 
     ExternalProject_Add(${proj}
