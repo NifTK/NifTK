@@ -84,7 +84,6 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
 
     double projectionError = CalibrateSingleCameraIntrinsicParameters(*objectPoints, *imagePoints, *pointCounts, imageSize, *intrinsicMatrix, *distortionCoeffs);
     CalibrateSingleCameraExtrinsicParameters(*objectPoints, *imagePoints, *intrinsicMatrix, *distortionCoeffs, *rotationMatrix, *translationVector);
-    //double projectionError = CalibrateSingleCameraParameters(successfullImages.size(), *objectPoints, *imagePoints, *pointCounts, imageSize, *intrinsicMatrix, *distortionCoeffs, *rotationMatrix, *translationVector);
 
     ostream *os = NULL;
     std::ostringstream oss;
