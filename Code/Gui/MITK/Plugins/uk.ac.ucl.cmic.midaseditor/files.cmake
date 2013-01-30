@@ -25,12 +25,14 @@ set(MOC_H_FILES
 # plug-in views in the workbench
 set(CACHED_RESOURCE_FILES
   plugin.xml
+  resources/PushPinIn.png
+  resources/PushPinOut.png
 )
 
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-
+  resources/midaseditor.qrc
 )
 
 set(CPP_FILES )

@@ -40,10 +40,12 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QPalette>
 #include <QSize>
 #include <QSpacerItem>
 #include <QSpinBox>
 #include <QStackedLayout>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 #include <mitkFocusManager.h>
@@ -91,7 +93,9 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DropMultipleRadioButton(NULL)
 , m_DropThumbnailRadioButton(NULL)
 , m_DropAccumulateCheckBox(NULL)
-, m_PopupPushButton(NULL)
+, m_PinButton(NULL)
+, m_ControlWidget(NULL)
+, m_ControlWidgetLayout(NULL)
 , m_PopupWidget(NULL)
 , m_ControlsContainerWidget(NULL)
 , m_VisibilityManager(visibilityManager)
@@ -123,14 +127,14 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_TopLevelLayout->setContentsMargins(0, 0, 0, 0);
   m_TopLevelLayout->setSpacing(0);
 
-  int buttonRowHeight = 10;
-  m_PopupPushButton = new QPushButton(this);
-  m_PopupPushButton->setContentsMargins(0,0,0,0);
-  m_PopupPushButton->setFlat(true);
-  m_PopupPushButton->setMinimumHeight(buttonRowHeight);
-  m_PopupPushButton->setMaximumHeight(buttonRowHeight);
+  m_ControlWidget = new QWidget(this);
+  m_ControlWidget->setContentsMargins(0, 0, 0, 0);
+  m_ControlWidgetLayout = new QVBoxLayout(m_ControlWidget);
+  m_ControlWidgetLayout->setContentsMargins(0, 0, 0, 0);
+  m_ControlWidgetLayout->setSpacing(0);
+  m_ControlWidget->setLayout(m_ControlWidgetLayout);
 
-  m_PopupWidget = new ctkPopupWidget(m_PopupPushButton);
+  m_PopupWidget = new ctkPopupWidget(m_ControlWidget);
   m_PopupWidget->setOrientation(Qt::Vertical);
   m_PopupWidget->setAnimationEffect(ctkBasePopupWidget::ScrollEffect);
   m_PopupWidget->setHorizontalDirection(Qt::LeftToRight);
@@ -138,8 +142,35 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PopupWidget->setAutoShow(true);
   m_PopupWidget->setAutoHide(true);
   m_PopupWidget->setEffectDuration(100);
-  m_PopupWidget->setContentsMargins(0,0,0,0);
+  m_PopupWidget->setContentsMargins(0, 0, 0, 0);
   m_PopupWidget->setLineWidth(0);
+
+  QPalette popupPalette = this->palette();
+  QColor windowColor = popupPalette.color(QPalette::Window);
+  windowColor.setAlpha(128);
+  popupPalette.setColor(QPalette::Window, windowColor);
+  m_PopupWidget->setPalette(popupPalette);
+  m_PopupWidget->setAttribute(Qt::WA_TranslucentBackground, true);
+
+  int buttonRowHeight = 15;
+  m_PinButton = new QToolButton(m_ControlWidget);
+  m_PinButton->setContentsMargins(0, 0, 0, 0);
+  m_PinButton->setCheckable(true);
+  m_PinButton->setAutoRaise(true);
+  m_PinButton->setFixedHeight(16);
+  QSizePolicy pinButtonSizePolicy;
+  pinButtonSizePolicy.setHorizontalPolicy(QSizePolicy::Expanding);
+  m_PinButton->setSizePolicy(pinButtonSizePolicy);
+  m_PinButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+  QIcon pinButtonIcon;
+  pinButtonIcon.addFile(":/PushPinIn.png", QSize(), QIcon::Normal, QIcon::On);
+  pinButtonIcon.addFile(":/PushPinOut.png", QSize(), QIcon::Normal, QIcon::Off);
+  m_PinButton->setIcon(pinButtonIcon);
+
+  QObject::connect(m_PinButton, SIGNAL(toggled(bool)),
+                   this, SLOT(OnPinButtonToggled(bool)));
+  m_ControlWidget->installEventFilter(this);
 
   m_ControlsContainerWidget = new QFrame(m_PopupWidget);
   m_ControlsContainerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -276,8 +307,10 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForTopControls->setColumnStretch(3, 0);
   m_LayoutForTopControls->setColumnStretch(4, 0);
 
+  m_ControlWidgetLayout->addWidget(m_PinButton);
+
   m_LayoutForGroupingControls->addLayout(m_LayoutForTopControls);
-  m_LayoutToPutControlsOnTopOfWindows->addWidget(m_PopupPushButton, 0, 0);
+  m_LayoutToPutControlsOnTopOfWindows->addWidget(m_ControlWidget, 0, 0);
   m_LayoutToPutControlsOnTopOfWindows->setRowMinimumHeight(0, buttonRowHeight);
   m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows, 1, 0);
   m_TopLevelLayout->addLayout(m_LayoutToPutControlsOnTopOfWindows);
@@ -1737,4 +1770,27 @@ void QmitkMIDASMultiViewWidget::SetMagnificationSelectTracking(bool isTracking)
 void QmitkMIDASMultiViewWidget::SetTimeSelectTracking(bool isTracking)
 {
   m_MIDASSlidersWidget->SetTimeTracking(isTracking);
+}
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnPinButtonToggled(bool checked)
+{
+  if (checked)
+  {
+    m_PopupWidget->pinPopup(true);
+  }
+  else
+  {
+    m_PopupWidget->setAutoHide(true);
+  }
+}
+
+//---------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::eventFilter(QObject* object, QEvent* event)
+{
+  if (object == this->m_ControlWidget && event->type() == QEvent::Enter)
+  {
+    this->m_PopupWidget->showPopup();
+  }
+  return this->QObject::eventFilter(object, event);
 }

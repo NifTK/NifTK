@@ -52,6 +52,7 @@ class QStackedLayout;
 class QmitkRenderWindow;
 class QLine;
 class QButtonGroup;
+class QToolButton;
 class ctkPopupWidget;
 
 /**
@@ -243,6 +244,8 @@ public:
    */
   virtual void SetFocus();
 
+  virtual bool eventFilter(QObject* object, QEvent* event);
+
 signals:
 
 public slots:
@@ -272,10 +275,14 @@ protected slots:
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
+  /// \brief Called when the magnification is changed by zooming in a renderer window.
   void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
+
+  /// \brief Called when the pin button is toggled.
+  void OnPinButtonToggled(bool checked);
 
 protected:
 
@@ -380,7 +387,9 @@ private:
   QRadioButton                                  *m_DropThumbnailRadioButton;
   QButtonGroup                                  *m_DropButtonGroup;
   QCheckBox                                     *m_DropAccumulateCheckBox;
-  QPushButton                                   *m_PopupPushButton;
+  QToolButton                                   *m_PinButton;
+  QWidget                                       *m_ControlWidget;
+  QVBoxLayout                                   *m_ControlWidgetLayout;
   ctkPopupWidget                                *m_PopupWidget;
   QFrame                                        *m_ControlsContainerWidget;
 
