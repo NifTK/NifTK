@@ -75,6 +75,7 @@ IF(SlicerExecutionModel_FOUND)
     niftkCreateMaskImage
     niftkCropImage
     niftkExtrudeMaskToVolume
+    niftkExtracellularVolumeFractionFromContrastEnhancedCT
     niftkMultiply
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter

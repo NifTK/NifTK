@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Equilibrium Imaging Tools</category>
+  <title>Extracellular Volume Fraction From Contrast Enhanced CT</title>
+  <description><![CDATA[Computes the extracellular volume fraction from pre- and post-contrast enhanced CT images. Also required are region of interest masks for tissue and the blood pool.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
+
+    <image>
+      <name>fileInputPreContrastImage</name>
+      <longflag>inPre</longflag>
+      <description>Input pre-contrast CT image</description>
+      <label>Input Pre-contrast CT image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileInputPostContrastImage</name>
+      <longflag>inPost</longflag>
+      <description>Input post-contrast CT image</description>
+      <label>Input Post-contrast CT image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileInputTissueMask</name>
+      <longflag>inTissueMask</longflag>
+      <description>Input tissue mask</description>
+      <label>Input Tissue Mask</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileInputBloodMask</name>
+      <longflag>inBloodMask</longflag>
+      <description>Input blood mask</description>
+      <label>Input Blood Mask</label>
+      <channel>input</channel>
+    </image>
+
+    <float>
+      <name>haematocrit</name>
+      <longflag>hct</longflag>
+      <description>Haematocrit (the fraction of red blood cells in blood).</description>
+      <label>Haematocrit</label>                                    
+      <default>0.5</default>                                                         
+      <constraints>
+        <minimum>0</minimum>
+	<maximum>1</maximum>
+        <step>0.01</step>
+      </constraints>
+    </float>                                                                       
+
+    <boolean>
+      <name>flgSliceBreakdown</name>
+      <flag>s</flag>
+      <description>Breakdown the calculation into individual slices.</description>
+      <label>Calculate for each slice?</label>
+      <default>0</default>
+    </boolean>
+
+    <string-enumeration>
+      <name>slice</name>
+      <longflag>slice</longflag>
+      <description>The orientation of the slices for which individual ECV fractions are calculated.</description>
+      <label>Slice orientation</label>
+      <default>axial</default>
+      <element>axial</element>
+      <element>sagittal</element>
+      <element>coronal</element>
+    </string-enumeration>
+
+
+  </parameters>
+
+  <parameters>
+
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+
+    <file>
+      <name>fileOutputECVTextFile</name>
+      <longflag>oECVtxt</longflag>
+      <description>Output extracellular volume text file</description>      
+      <label>Output ECV Text File</label>
+      <default>ECV.csv</default>
+      <channel>output</channel>
+    </file>
+
+    <image>
+      <name>fileOutputECVImage</name>
+      <longflag>oECVmap</longflag>
+      <description>Output extracellular volume fraction map</description>      
+      <label>Output ECV Map Image</label>                     
+      <default>ECV.nii</default>                                            
+      <channel>output</channel>                                      
+    </image>                                                         
+
+
+  </parameters>
+
+</executable>
