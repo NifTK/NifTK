@@ -27,21 +27,54 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NIFTK_DATA_DIR AND NOT EXISTS ${NIFTK_DATA_DIR})
-  MESSAGE(FATAL_ERROR "NIFTK_DATA_DIR variable is defined but corresponds to non-existing directory \"${NIFTK_DATA_DIR}\".")
-ENDIF()
+if (DEFINED NIFTK_DATA_DIR AND NOT EXISTS ${NIFTK_DATA_DIR})
+  message(FATAL_ERROR "NIFTK_DATA_DIR variable is defined but corresponds to non-existing directory \"${NIFTK_DATA_DIR}\".")
+endif ()
 
-IF(BUILD_TESTING)
+if (BUILD_TESTING)
 
-  SET(proj NifTKData)
-  SET(proj_DEPENDENCIES )
-  SET(NifTKData_DEPENDS ${proj})
- 
-  IF(NOT DEFINED NIFTK_DATA_DIR)
+  set(proj NifTKData)
+  set(proj_DEPENDENCIES )
+  set(NifTKData_DEPENDS ${proj})
+
+  # Valid values: git, svn, tar
+  set(${proj}_archtype "git")
+  set(${proj}_version "d9fe07385c")
+  set(${proj}_location "https://cmicdev.cs.ucl.ac.uk/git/NifTKData")
+
+  #set(${proj}_archtype "svn")
+  #set(${proj}_version "9749")
+  #set(${proj}_location "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData")
+
+  #set(${proj}_archtype "tar")
+  #set(${proj}_version "d9fe07385c")
+  #set(${proj}_location "http://cmicdev.cs.ucl.ac.uk/platform/dependencies/${proj}-${${proj}_version}.tar.gz")
+
+  if (NOT DEFINED NIFTK_DATA_DIR)
+
+    if (${proj}_archtype STREQUAL "git")
+      set(${proj}_location_options
+        GIT_REPOSITORY ${${proj}_location}
+        GIT_TAG ${${proj}_version}
+      )
+    elseif (${proj}_archtype STREQUAL "svn")
+      set(${proj}_location_options
+        SVN_REPOSITORY ${${proj}_location}
+        SVN_REVISION ${${proj}_version}
+        SVN_TRUST_CERT 1
+      )
+    elseif (${proj}_archtype STREQUAL "tar")
+      niftkMacroGetChecksum(${proj}_checksum ${${proj}_location})
+      set(${proj}_location_options
+        URL ${${proj}_location}
+        URL_MD5 ${${proj}_checksum}
+      )
+    else ()
+      message("Unknown archtype. Cannot download ${proj}.")
+    endif ()
 
     ExternalProject_Add(${proj}
-      SVN_REPOSITORY ${NIFTK_LOCATION_DATA}
-      SVN_TRUST_CERT 1
+      ${${proj}_location_options}
       UPDATE_COMMAND ""
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
@@ -50,12 +83,12 @@ IF(BUILD_TESTING)
     )
     
     set(NIFTK_DATA_DIR ${EP_BASE}/Source/${proj})
-    MESSAGE("SuperBuild loading NifTKData from ${NIFTK_DATA_DIR}")
+    message("SuperBuild loading ${proj} from ${NIFTK_DATA_DIR}")
     
-  ELSE()
+  else ()
   
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
     
-  ENDIF(NOT DEFINED NIFTK_DATA_DIR)
+  endif (NOT DEFINED NIFTK_DATA_DIR)
 
-ENDIF(BUILD_TESTING) 
+endif (BUILD_TESTING) 
