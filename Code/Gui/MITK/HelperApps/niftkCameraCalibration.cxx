@@ -24,15 +24,21 @@
 
 #include <cstdlib>
 #include "mitkCameraCalibrationFromDirectory.h"
+#include "niftkCameraCalibrationCLP.h"
 
 int main(int argc, char** argv)
 {
-  std::string directoryName = argv[1];
-  std::string outputFile = "calib.txt";
+  PARSE_ARGS;
 
-  mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
-  //calibrationObject->Calibrate(directoryName, 16, 12, 3.5, outputFile);
-  calibrationObject->Calibrate(directoryName, 14, 10, 3, outputFile);
+  if ( inputDirectory.length() == 0 || outputCalibrationData.length() == 0 )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
+
+  mitk::CameraCalibrationFromDirectory* calibrationObject = new mitk::CameraCalibrationFromDirectory();
+  calibrationObject->Calibrate(inputDirectory, xCorners, yCorners, size, outputCalibrationData);
+  delete calibrationObject;
 
   return EXIT_SUCCESS;
 }

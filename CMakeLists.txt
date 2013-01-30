@@ -337,6 +337,7 @@ include(mitkMacroEmptyExternalProject)
 include(niftkMacroCreateApplication)
 include(niftkMacroBuildCLI)
 include(niftkMacroInstallCLI)
+include(niftkMacroConfigureAndBuildCLI)
 
 ######################################################################
 # Test for some required system information. This came from old

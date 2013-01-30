@@ -83,25 +83,11 @@ IF(SlicerExecutionModel_FOUND)
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
   
-  FOREACH(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
-
-    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${APP}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${APP}.xml @ONLY )
-    
-    IF(WIN32) 
-      CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat @ONLY )
-      NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat)
-    ELSE(WIN32)
-      CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh @ONLY )
-      NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh)
-    ENDIF(WIN32)
-
-    SEMMacroBuildNifTKCLI(
-      NAME ${APP}
-      EXECUTABLE_ONLY
-      ${CMAKE_CURRENT_BINARY_DIR}
+  FOREACH(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})    
+    NIFTK_CONFIGURE_AND_BUILD_CLI(
+      NAME ${APP} 
       TARGET_LIBRARIES ${NIFTK_APPLICATION_LINK_LIBRARIES}
     )
- 
   ENDFOREACH()
 
   IF(VTK_FOUND)
@@ -141,14 +127,14 @@ IF(SlicerExecutionModel_FOUND)
     #-------------------------------------------------------------
 
     IF(NIFTYREG_FOUND)
-      SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES 
+      SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
         niftkF3DControlGridToVTKPolyData
-	    )
+      )
 
       if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-	      # OpenMP is disabled when the compiler is based on Clang
-	      find_package(OpenMP)
-	      if(OPENMP_FOUND)
+        # OpenMP is disabled when the compiler is based on Clang
+        find_package(OpenMP)
+        if(OPENMP_FOUND)
           set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
           set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
         endif(OPENMP_FOUND)
@@ -158,36 +144,23 @@ IF(SlicerExecutionModel_FOUND)
       LINK_DIRECTORIES(${NIFTYREG_LIBRARY_DIR})
       INCLUDE_DIRECTORIES(${NIFTYREG_INCLUDE_DIR})
       
+      SET(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
+        ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
+        niftkITK
+        niftkVTK
+        ${NIFTYREG_LIBRARIES}
+      )
+      
       FOREACH(APP ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
-	
-	      CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${APP}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${APP}.xml @ONLY )
-	
-	      IF(WIN32) 
-	        CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat @ONLY )
-	        NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat)
-	      ELSE(WIN32)
-	        CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh @ONLY )
-	        NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh)
-	      ENDIF(WIN32)
-
-	      SET(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
-	        ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
-	        niftkITK
-	        niftkVTK
-	        ${NIFTYREG_LIBRARIES}
-	      )
-	
-	      SEMMacroBuildNifTKCLI(
-	        NAME ${APP}
-	        EXECUTABLE_ONLY
-	        ${CMAKE_CURRENT_BINARY_DIR}
-	        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
-	      )
-	
+        NIFTK_CONFIGURE_AND_BUILD_CLI(
+          NAME ${APP} 
+          TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
+        )
       ENDFOREACH()
     ENDIF(NIFTYREG_FOUND)  
     
   ENDIF(VTK_FOUND)  
+  
 ENDIF()
 
 ###############################################################

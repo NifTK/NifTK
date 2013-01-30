@@ -24,6 +24,8 @@
 
 #include "mitkCameraCalibrationFromDirectory.h"
 #include "mitkCameraCalibrationFacade.h"
+#include <ios>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <cv.h>
@@ -85,14 +87,14 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
     double projectionError = CalibrateSingleCameraIntrinsicParameters(*objectPoints, *imagePoints, *pointCounts, imageSize, *intrinsicMatrix, *distortionCoeffs);
     CalibrateSingleCameraExtrinsicParameters(*objectPoints, *imagePoints, *intrinsicMatrix, *distortionCoeffs, *rotationMatrix, *translationVector);
 
-    ostream *os = NULL;
+    std::ostream *os = NULL;
     std::ostringstream oss;
     std::ofstream fs;
 
     if (outputFile.size() > 0)
     {
       std::string fullOutputFileName = niftk::ConcatenatePath(fullDirectoryName, outputFile);
-      fs.open(fullOutputFileName.c_str(), ios::out);
+      fs.open(fullOutputFileName.c_str(), std::ios::out);
       if (!fs.fail())
       {
         os = &fs;

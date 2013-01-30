@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Calibrate Camera</title>
+  <description><![CDATA[Calibrates a video camera from a directory containing images of a planar chess board style of calibration object.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>inputDirectory</name>
+      <longflag>input</longflag>
+      <description>The directory containing images of a planar chessboard calibration object.</description>
+      <label>Input directory</label>
+    </directory>
+    <file fileExtensions="*.txt">
+      <name>outputCalibrationData</name>
+      <longflag>output</longflag>
+      <description>Output file for calibration data</description>
+      <label>Output calibration data filename</label>
+      <default>calib.txt</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <integer>
+      <name>xCorners</name>
+      <longflag>xcorners</longflag>
+      <description>The number of internal corners in the horizontal (x) direction.</description>
+      <label>Corners in horizontal direction</label>
+      <default>14</default>
+      <constraints>
+        <minimum>5</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>yCorners</name>
+      <longflag>ycorners</longflag>
+      <description>The number of internal corners in the vertical (y) direction.</description>
+      <label>Corners in vertical direction</label>
+      <default>10</default>
+      <constraints>
+        <minimum>5</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <float>
+      <name>size</name>
+      <longflag>squaresize</longflag>
+      <description>The size of each square edge in millimetres.</description>
+      <label>Square size (mm)</label>
+      <default>3</default>
+      <constraints>
+        <minimum>0.1</minimum>
+        <maximum>100</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+  </parameters>
+  
+</executable>
