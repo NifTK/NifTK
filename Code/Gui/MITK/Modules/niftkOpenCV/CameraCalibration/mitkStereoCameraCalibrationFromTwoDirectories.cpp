@@ -145,16 +145,15 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
 
     if (outputFileName.size() > 0)
     {
-      std::string fullOutputFileName = niftk::ConcatenatePath(leftDirectoryName, outputFileName);
-      fs.open(fullOutputFileName.c_str(), std::ios::out);
+      fs.open(outputFileName.c_str(), std::ios::out);
       if (!fs.fail())
       {
         os = &fs;
-        std::cout << "Writing to " << fullOutputFileName << std::endl;
+        std::cout << "Writing to " << outputFileName << std::endl;
       }
       else
       {
-        std::cerr << "ERROR: Writing calibration data to file " << fullOutputFileName << " failed!" << std::endl;
+        std::cerr << "ERROR: Writing calibration data to file " << outputFileName << " failed!" << std::endl;
       }
     }
     else

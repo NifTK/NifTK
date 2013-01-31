@@ -94,16 +94,15 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
 
     if (outputFile.size() > 0)
     {
-      std::string fullOutputFileName = niftk::ConcatenatePath(fullDirectoryName, outputFile);
-      fs.open(fullOutputFileName.c_str(), std::ios::out);
+      fs.open(outputFile.c_str(), std::ios::out);
       if (!fs.fail())
       {
         os = &fs;
-        std::cout << "Writing to " << fullOutputFileName << std::endl;
+        std::cout << "Writing to " << outputFile << std::endl;
       }
       else
       {
-        std::cerr << "ERROR: Writing calibration data to file " << fullOutputFileName << " failed!" << std::endl;
+        std::cerr << "ERROR: Writing calibration data to file " << outputFile << " failed!" << std::endl;
       }
     }
     else
