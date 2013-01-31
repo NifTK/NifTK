@@ -30,15 +30,14 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
 
-  if ( inputDirectory.length() == 0 || outputCalibrationData.length() == 0 )
+  if ( leftCameraInputDirectory.length() == 0 || outputCalibrationData.length() == 0 )
   {
     commandLine.getOutput()->usage(commandLine);
     return EXIT_FAILURE;
   }
 
-  mitk::CameraCalibrationFromDirectory* calibrationObject = new mitk::CameraCalibrationFromDirectory();
-  calibrationObject->Calibrate(inputDirectory, xCorners, yCorners, size, outputCalibrationData);
-  delete calibrationObject;
+  mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
+  calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData);
 
   return EXIT_SUCCESS;
 }

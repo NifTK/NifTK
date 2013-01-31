@@ -14,11 +14,17 @@
     <description><![CDATA[Input/output parameters]]></description>
     
     <directory>
-      <name>inputDirectory</name>
-      <longflag>input</longflag>
-      <description>The directory containing images of a planar chessboard calibration object.</description>
-      <label>Input directory</label>
+      <name>leftCameraInputDirectory</name>
+      <longflag>left</longflag>
+      <description>The directory containing images of a planar chessboard calibration object for a single camera, or the left camera of a stereo pair</description>
+      <label>Left camera input directory</label>
     </directory>
+    <directory>
+      <name>rightCameraInputDirectory</name>
+      <longflag>right</longflag>
+      <description>The directory containing images of a planar chessboard calibration object for the right camera of a stereo pair</description>
+      <label>Right camera input directory</label>
+    </directory>    
     <file fileExtensions="*.txt">
       <name>outputCalibrationData</name>
       <longflag>output</longflag>
