@@ -111,21 +111,26 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
     }
 
     // Output Calibration Data.
-    os->precision(6);
+    os->precision(10);
+    os->width(10);
+    float zero = 0;
+    float one = 1;
+
     *os << CV_MAT_ELEM(*intrinsicMatrix, float, 0, 0) << "," << CV_MAT_ELEM(*intrinsicMatrix, float, 0, 1) << "," << CV_MAT_ELEM(*intrinsicMatrix, float, 0, 2) << std::endl;
     *os << CV_MAT_ELEM(*intrinsicMatrix, float, 1, 0) << "," << CV_MAT_ELEM(*intrinsicMatrix, float, 1, 1) << "," << CV_MAT_ELEM(*intrinsicMatrix, float, 1, 2) << std::endl;
     *os << CV_MAT_ELEM(*intrinsicMatrix, float, 2, 0) << "," << CV_MAT_ELEM(*intrinsicMatrix, float, 2, 1) << "," << CV_MAT_ELEM(*intrinsicMatrix, float, 2, 2) << std::endl;
+    *os << CV_MAT_ELEM(*rotationMatrix, float, 0, 0) << "," << CV_MAT_ELEM(*rotationMatrix, float, 0, 1) << "," << CV_MAT_ELEM(*rotationMatrix, float, 0, 2) << "," << CV_MAT_ELEM(*translationVector, float, 0, 0) << std::endl;
+    *os << CV_MAT_ELEM(*rotationMatrix, float, 1, 0) << "," << CV_MAT_ELEM(*rotationMatrix, float, 1, 1) << "," << CV_MAT_ELEM(*rotationMatrix, float, 1, 2) << "," << CV_MAT_ELEM(*translationVector, float, 1, 0) << std::endl;
+    *os << CV_MAT_ELEM(*rotationMatrix, float, 2, 0) << "," << CV_MAT_ELEM(*rotationMatrix, float, 2, 1) << "," << CV_MAT_ELEM(*rotationMatrix, float, 2, 2) << "," << CV_MAT_ELEM(*translationVector, float, 2, 0) << std::endl;
+    *os << zero << "," << zero << "," << zero << "," << one << std::endl;
     *os << CV_MAT_ELEM(*distortionCoeffs, float, 0, 0) << "," << CV_MAT_ELEM(*distortionCoeffs, float, 1, 0) << "," << CV_MAT_ELEM(*distortionCoeffs, float, 2, 0) << "," << CV_MAT_ELEM(*distortionCoeffs, float, 3, 0) << "," << CV_MAT_ELEM(*distortionCoeffs, float, 4, 0) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrix, float, 0, 0) << "," << CV_MAT_ELEM(*rotationMatrix, float, 0, 1) << "," << CV_MAT_ELEM(*rotationMatrix, float, 0, 2) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrix, float, 1, 0) << "," << CV_MAT_ELEM(*rotationMatrix, float, 1, 1) << "," << CV_MAT_ELEM(*rotationMatrix, float, 1, 2) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrix, float, 2, 0) << "," << CV_MAT_ELEM(*rotationMatrix, float, 2, 1) << "," << CV_MAT_ELEM(*rotationMatrix, float, 2, 2) << std::endl;
-    *os << CV_MAT_ELEM(*translationVector, float, 0, 0) << "," << CV_MAT_ELEM(*translationVector, float, 1, 0) << "," << CV_MAT_ELEM(*translationVector, float, 2, 0) << std::endl;
 
-    *os << projectionError << std::endl;
-    *os << width << " " << height << std::endl;
-    *os << numberCornersX << " " << numberCornersY << std::endl;
+    *os << "projection error:" << projectionError << std::endl;
+    *os << "image size:" << width << " " << height << std::endl;
+    *os << "number of internal corners:" << numberCornersX << " " << numberCornersY << std::endl;
 
-    *os << successfullFileNames.size() << std::endl;
+    *os << "number of files used:" << successfullFileNames.size() << std::endl;
+    *os << "list of files used:" << std::endl;
 
     // Also output files actually used.
     for (unsigned int i = 0; i < successfullFileNames.size(); i++)
