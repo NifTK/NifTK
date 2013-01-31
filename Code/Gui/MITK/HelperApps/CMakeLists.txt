@@ -76,20 +76,22 @@ FOREACH(APP ${HELPER_APPS})
 ENDFOREACH()
 
 # Repeat the same process for slices apps.
-SET(SLICER_HELPER_APPS
-  # Add Slicer apps that DO NOT depend on BUILD_IGI here.
-)
-
-IF(BUILD_IGI)
+IF(SlicerExecutionModel_FOUND)
   SET(SLICER_HELPER_APPS
-    ${SLICER_HELPER_APPS}
-    niftkCameraCalibration
+    # Add Slicer apps that DO NOT depend on BUILD_IGI here.
   )
-ENDIF()  
 
-FOREACH(APP ${SLICER_HELPER_APPS})    
-  NIFTK_CONFIGURE_AND_BUILD_CLI(
-    NAME ${APP} 
-    TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
-  )
-ENDFOREACH()
+  IF(BUILD_IGI)
+    SET(SLICER_HELPER_APPS
+      ${SLICER_HELPER_APPS}
+      niftkCameraCalibration
+    )
+  ENDIF()  
+
+  FOREACH(APP ${SLICER_HELPER_APPS})    
+    NIFTK_CONFIGURE_AND_BUILD_CLI(
+      NAME ${APP} 
+      TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
+    )
+  ENDFOREACH()
+ENDIF()
