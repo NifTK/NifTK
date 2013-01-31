@@ -887,9 +887,9 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
       if (windows.size() == 1 && window == windows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
       {
         // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
-        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
+        bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
         m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
-        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(false);
+        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
       }
     }
   }
@@ -899,16 +899,9 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
 {
-  // The slider and the spinbox has to be handled independently because the slider should show integer value always.
-  double roundedMagnificationFactor = std::floor(0.5 + magnificationFactor);
-  bool ctkSliderWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
-  bool spinBoxWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(true);
-  bool sliderWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(true);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->setValue(magnificationFactor);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->setValue(roundedMagnificationFactor);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(spinBoxWasBlocked);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(sliderWasBlocked);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(ctkSliderWasBlocked);
+  bool wasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(wasBlocked);
 
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
@@ -944,14 +937,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   int selectedWindow = this->GetSelectedWindowIndex();
   double magnificationFactor = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
 
-  // The slider and the spinbox has to be handled independently because the slider should show integer value always.
-  double roundedMagnificationFactor = std::floor(0.5 + magnificationFactor);
-  bool spinBoxWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(true);
-  bool sliderWasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(true);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->setValue(magnificationFactor);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->setValue(roundedMagnificationFactor);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->spinBox()->blockSignals(spinBoxWasBlocked);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->slider()->blockSignals(sliderWasBlocked);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
 
   MIDASView view = m_SingleViewWidgets[selectedWindow]->GetView();
   m_MIDASOrientationWidget->SetToView(view);
@@ -1772,6 +1758,7 @@ void QmitkMIDASMultiViewWidget::SetTimeSelectTracking(bool isTracking)
   m_MIDASSlidersWidget->SetTimeTracking(isTracking);
 }
 
+
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnPinButtonToggled(bool checked)
 {
@@ -1784,6 +1771,7 @@ void QmitkMIDASMultiViewWidget::OnPinButtonToggled(bool checked)
     m_PopupWidget->setAutoHide(true);
   }
 }
+
 
 //---------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::eventFilter(QObject* object, QEvent* event)
