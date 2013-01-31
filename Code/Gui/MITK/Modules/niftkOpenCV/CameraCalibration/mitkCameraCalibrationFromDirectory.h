@@ -27,6 +27,9 @@
 
 #include "niftkOpenCVExports.h"
 #include <string>
+#include <itkObject.h>
+#include <itkObjectFactory.h>
+#include <mitkCommon.h>
 
 namespace mitk {
 
@@ -34,13 +37,13 @@ namespace mitk {
  * \class CameraCalibrationFromDirectory
  * \brief Does a camera calibration from a directory containing a list of image files.
  */
-class NIFTKOPENCV_EXPORT CameraCalibrationFromDirectory
+class NIFTKOPENCV_EXPORT CameraCalibrationFromDirectory : public itk::Object
 {
 
 public:
 
-  CameraCalibrationFromDirectory();
-  virtual ~CameraCalibrationFromDirectory();
+  mitkClassMacro(CameraCalibrationFromDirectory, itk::Object);
+  itkNewMacro(CameraCalibrationFromDirectory);
 
   bool Calibrate(const std::string& fullDirectoryName,
       const int& numberCornersX,
@@ -50,6 +53,9 @@ public:
       );
 
 protected:
+
+  CameraCalibrationFromDirectory();
+  virtual ~CameraCalibrationFromDirectory();
 
   CameraCalibrationFromDirectory(const CameraCalibrationFromDirectory&); // Purposefully not implemented.
   CameraCalibrationFromDirectory& operator=(const CameraCalibrationFromDirectory&); // Purposefully not implemented.
