@@ -53,7 +53,8 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
     const int& numberCornersX,
     const int& numberCornersY,
     const float& sizeSquareMillimeters,
-    const std::string& outputFile
+    const std::string& outputFile,
+    const bool& writeImages
     )
 {
   bool isSuccessful = false;
@@ -82,7 +83,7 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
 
     CvSize imageSize = cvGetSize(images[0]);
 
-    ExtractChessBoardPoints(images, fileNames, numberCornersX, numberCornersY, true, successfullImages, successfullFileNames, imagePoints, objectPoints, pointCounts);
+    ExtractChessBoardPoints(images, fileNames, numberCornersX, numberCornersY, writeImages, successfullImages, successfullFileNames, imagePoints, objectPoints, pointCounts);
 
     double projectionError = CalibrateSingleCameraIntrinsicParameters(*objectPoints, *imagePoints, *pointCounts, imageSize, *intrinsicMatrix, *distortionCoeffs);
     CalibrateSingleCameraExtrinsicParameters(*objectPoints, *imagePoints, *intrinsicMatrix, *distortionCoeffs, *rotationMatrix, *translationVector);

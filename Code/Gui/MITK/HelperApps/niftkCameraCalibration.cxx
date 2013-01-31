@@ -24,11 +24,13 @@
 
 #include <cstdlib>
 #include "mitkCameraCalibrationFromDirectory.h"
+#include "mitkStereoCameraCalibrationFromTwoDirectories.h"
 #include "niftkCameraCalibrationCLP.h"
 
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
+  bool successful = false;
 
   if ( leftCameraInputDirectory.length() == 0 || outputCalibrationData.length() == 0 )
   {
@@ -36,8 +38,32 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
-  calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData);
+  if (   (leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
+      || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
+      )
+  {
+    mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
+    if (rightCameraInputDirectory.length() != 0)
+    {
+      successful = calibrationObject->Calibrate(rightCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
+    }
+    else
+    {
+      successful = calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
+    }
+  }
+  else
+  {
+    mitk::StereoCameraCalibrationFromTwoDirectories::Pointer calibrationObject = mitk::StereoCameraCalibrationFromTwoDirectories::New();
+    successful = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
+  }
 
-  return EXIT_SUCCESS;
+  if (successful)
+  {
+    return EXIT_SUCCESS;
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
 }

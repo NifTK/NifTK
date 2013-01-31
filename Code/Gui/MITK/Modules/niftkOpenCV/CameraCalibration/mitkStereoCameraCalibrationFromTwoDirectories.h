@@ -22,8 +22,8 @@
 
  ============================================================================*/
 
-#ifndef MITKCAMERACALIBRATIONFROMDIRECTORY_H
-#define MITKCAMERACALIBRATIONFROMDIRECTORY_H
+#ifndef MITKSTEREOCAMERACALIBRATIONFROMTWODIRECTORIES_H
+#define MITKSTEREOCAMERACALIBRATIONFROMTWODIRECTORIES_H
 
 #include "niftkOpenCVExports.h"
 #include <string>
@@ -34,32 +34,33 @@
 namespace mitk {
 
 /**
- * \class CameraCalibrationFromDirectory
- * \brief Does a camera calibration from a directory containing a set of image files.
+ * \class StereoCameraCalibrationFromTwoDirectories
+ * \brief Does a stereo camera calibration from two directories, each containing a set of image files.
  */
-class NIFTKOPENCV_EXPORT CameraCalibrationFromDirectory : public itk::Object
+class NIFTKOPENCV_EXPORT StereoCameraCalibrationFromTwoDirectories : public itk::Object
 {
 
 public:
 
-  mitkClassMacro(CameraCalibrationFromDirectory, itk::Object);
-  itkNewMacro(CameraCalibrationFromDirectory);
+  mitkClassMacro(StereoCameraCalibrationFromTwoDirectories, itk::Object);
+  itkNewMacro(StereoCameraCalibrationFromTwoDirectories);
 
-  bool Calibrate(const std::string& fullDirectoryName,
+  bool Calibrate(const std::string& leftDirectoryName,
+      const std::string& rightDirectoryName,
       const int& numberCornersX,
       const int& numberCornersY,
       const float& sizeSquareMillimeters,
-      const std::string& outputFile,
+      const std::string& outputFileName,
       const bool& writeImages
       );
 
 protected:
 
-  CameraCalibrationFromDirectory();
-  virtual ~CameraCalibrationFromDirectory();
+  StereoCameraCalibrationFromTwoDirectories();
+  virtual ~StereoCameraCalibrationFromTwoDirectories();
 
-  CameraCalibrationFromDirectory(const CameraCalibrationFromDirectory&); // Purposefully not implemented.
-  CameraCalibrationFromDirectory& operator=(const CameraCalibrationFromDirectory&); // Purposefully not implemented.
+  StereoCameraCalibrationFromTwoDirectories(const StereoCameraCalibrationFromTwoDirectories&); // Purposefully not implemented.
+  StereoCameraCalibrationFromTwoDirectories& operator=(const StereoCameraCalibrationFromTwoDirectories&); // Purposefully not implemented.
 
 }; // end class
 

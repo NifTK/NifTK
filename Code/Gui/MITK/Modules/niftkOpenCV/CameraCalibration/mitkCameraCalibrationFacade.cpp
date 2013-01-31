@@ -294,5 +294,71 @@ double CalibrateSingleCameraParameters(
   return projError;
 }
 
+
+//-----------------------------------------------------------------------------
+double CalibrateStereoCameraParameters(
+    const int& numberSuccessfulViews,
+    const CvMat& objectPointsLeft,
+    const CvMat& imagePointsLeft,
+    const CvMat& pointCountsLeft,
+    const CvSize& imageSize,
+    const CvMat& objectPointsRight,
+    const CvMat& imagePointsRight,
+    const CvMat& pointCountsRight,
+    CvMat& outputIntrinsicMatrixLeft,
+    CvMat& outputDistortionCoefficientsLeft,
+    CvMat& outputRotationMatrixLeft,
+    CvMat& outputTranslationVectorLeft,
+    CvMat& outputIntrinsicMatrixRight,
+    CvMat& outputDistortionCoefficientsRight,
+    CvMat& outputRotationMatrixRight,
+    CvMat& outputTranslationVectorRight,
+    CvMat& outputLeftToRightRotation,
+    CvMat& outputLeftToRightTranslation
+    )
+{
+  double leftProjectionError = CalibrateSingleCameraIntrinsicParameters(objectPointsLeft, imagePointsLeft, pointCountsLeft, imageSize, outputIntrinsicMatrixLeft, outputDistortionCoefficientsLeft);
+  double rightProjectionError = CalibrateSingleCameraIntrinsicParameters(objectPointsRight, imagePointsRight, pointCountsRight, imageSize, outputIntrinsicMatrixRight, outputDistortionCoefficientsRight);
+
+  std::cout << "Initial intrinsic calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
+
+  double stereoCalibrationProjectionError = cvStereoCalibrate
+      (
+      &objectPointsLeft,
+      &imagePointsLeft,
+      &imagePointsRight,
+      &pointCountsLeft,
+      &outputIntrinsicMatrixLeft,
+      &outputDistortionCoefficientsLeft,
+      &outputIntrinsicMatrixRight,
+      &outputDistortionCoefficientsRight,
+      imageSize,
+      &outputLeftToRightRotation,
+      &outputLeftToRightTranslation
+      );
+
+  std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
+
+  CalibrateSingleCameraExtrinsicParameters(
+      objectPointsLeft,
+      imagePointsLeft,
+      outputIntrinsicMatrixLeft,
+      outputDistortionCoefficientsLeft,
+      outputRotationMatrixLeft,
+      outputTranslationVectorLeft
+      );
+
+  CalibrateSingleCameraExtrinsicParameters(
+      objectPointsRight,
+      imagePointsRight,
+      outputIntrinsicMatrixRight,
+      outputDistortionCoefficientsRight,
+      outputRotationMatrixRight,
+      outputTranslationVectorRight
+      );
+
+  return stereoCalibrationProjectionError;
+}
+
 //-----------------------------------------------------------------------------
 }
