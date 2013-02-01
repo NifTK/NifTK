@@ -70,6 +70,9 @@ protected:
   void MaskThePectoralMuscleOnly( RealType rYHeightOffset, 
 				  typename PointSetType::Pointer &pecPointSet );
 
+  /// Mask at a given distance posterior to the mid-sterum point
+  void MaskAtDistancePosteriorToMidSternum( void );
+
 private:
 
   BreastMaskSegmForModelling(const Self&); //purposely not implemented
