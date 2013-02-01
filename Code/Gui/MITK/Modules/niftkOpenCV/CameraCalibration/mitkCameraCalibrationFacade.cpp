@@ -206,12 +206,10 @@ double CalibrateSingleCameraIntrinsicParameters(
     const CvMat&  pointCounts,
     const CvSize& imageSize,
     CvMat&  outputIntrinsicMatrix,
-    CvMat&  outputDistortionCoefficients
+    CvMat&  outputDistortionCoefficients,
+    const int& flags
     )
 {
-//  CV_MAT_ELEM(outputIntrinsicMatrix, float, 0, 0) = 1.0f;
-//  CV_MAT_ELEM(outputIntrinsicMatrix, float, 1, 1) = 1.0f;
-
   return cvCalibrateCamera2(&objectPoints,
                             &imagePoints,
                             &pointCounts,
@@ -220,9 +218,46 @@ double CalibrateSingleCameraIntrinsicParameters(
                             &outputDistortionCoefficients,
                             NULL,
                             NULL,
-                            0 //CV_CALIB_FIX_ASPECT_RATIO
+                            flags
                             );
 
+}
+
+
+//-----------------------------------------------------------------------------
+double CalibrateSingleCameraIntrinsicUsing3Passes(
+       const CvMat& objectPoints,
+       const CvMat& imagePoints,
+       const CvMat& pointCounts,
+       const CvSize& imageSize,
+       CvMat& outputIntrinsicMatrix,
+       CvMat& outputDistortionCoefficients
+       )
+{
+  CvScalar zero = cvScalar(0);
+  cvSet(&outputIntrinsicMatrix, zero);
+  cvSet(&outputDistortionCoefficients, zero);
+
+  CV_MAT_ELEM(outputIntrinsicMatrix, float, 0, 0) = 1.0f;
+  CV_MAT_ELEM(outputIntrinsicMatrix, float, 1, 1) = 1.0f;
+
+  double reprojectionError1 = CalibrateSingleCameraIntrinsicParameters(
+      objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
+      CV_CALIB_FIX_PRINCIPAL_POINT | CV_CALIB_FIX_ASPECT_RATIO
+      );
+
+  double reprojectionError2 = CalibrateSingleCameraIntrinsicParameters(
+      objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
+      CV_CALIB_FIX_PRINCIPAL_POINT
+      );
+
+  double reprojectionError3 = CalibrateSingleCameraIntrinsicParameters(
+      objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients
+      );
+
+  std::cout << "3 pass intrinsic calibration yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << ", " << reprojectionError3 << std::endl;
+
+  return reprojectionError3;
 }
 
 
@@ -260,38 +295,137 @@ double CalibrateSingleCameraParameters(
      const CvSize& imageSize,
      CvMat& outputIntrinsicMatrix,
      CvMat& outputDistortionCoefficients,
-     CvMat& outputRotationMatrix,
-     CvMat& outputTranslationVector
+     CvMat& outputRotationVectors,
+     CvMat& outputTranslationVectors
      )
 {
-  CvMat *rotationVectors = cvCreateMat(numberSuccessfulViews, 3, CV_32FC1);
-  CvMat *translationVectors = cvCreateMat(numberSuccessfulViews, 3, CV_32FC1);
 
-  double projError = cvCalibrateCamera2(
+  double reprojectionError1 = CalibrateSingleCameraIntrinsicUsing3Passes
+      (
+       objectPoints,
+       imagePoints,
+       pointCounts,
+       imageSize,
+       outputIntrinsicMatrix,
+       outputDistortionCoefficients
+      );
+
+  double reprojectionError2 = cvCalibrateCamera2(
                             &objectPoints,
                             &imagePoints,
                             &pointCounts,
                             imageSize,
                             &outputIntrinsicMatrix,
                             &outputDistortionCoefficients,
-                            rotationVectors,
-                            translationVectors,
-                            0
+                            &outputRotationVectors,
+                            &outputTranslationVectors,
+                            CV_CALIB_USE_INTRINSIC_GUESS // This assumes you have called
+                                                         // CalibrateSingleCameraIntrinsicUsing3Passes
                             );
+  std::cout << "3 pass intrinsic, then intrinsic+extrinsic yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << std::endl;
 
-  CalibrateSingleCameraExtrinsicParameters(
-      objectPoints,
-      imagePoints,
-      outputIntrinsicMatrix,
-      outputDistortionCoefficients,
-      outputRotationMatrix,
-      outputTranslationVector
-      );
+  return reprojectionError2;
+}
 
-  cvReleaseMat(&rotationVectors);
-  cvReleaseMat(&translationVectors);
 
-  return projError;
+//-----------------------------------------------------------------------------
+void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
+    const CvMat& rotationVectors,
+    const CvMat& translationVectors,
+    const int& viewNumber,
+    CvMat& outputExtrinsicMatrix
+    )
+{
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
+  CvMat *translationVector = cvCreateMat(1, 3, CV_32FC1);
+  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+
+  CV_MAT_ELEM(*rotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 0);
+  CV_MAT_ELEM(*rotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 1);
+  CV_MAT_ELEM(*rotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 2);
+
+  CV_MAT_ELEM(*translationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, viewNumber, 0);
+  CV_MAT_ELEM(*translationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, viewNumber, 1);
+  CV_MAT_ELEM(*translationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, viewNumber, 2);
+
+  cvRodrigues2(rotationVector, rotationMatrix);
+
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 0) = CV_MAT_ELEM(*rotationMatrix, float, 0, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 1) = CV_MAT_ELEM(*rotationMatrix, float, 0, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 2) = CV_MAT_ELEM(*rotationMatrix, float, 0, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 0) = CV_MAT_ELEM(*rotationMatrix, float, 1, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 1) = CV_MAT_ELEM(*rotationMatrix, float, 1, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 2) = CV_MAT_ELEM(*rotationMatrix, float, 1, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 0) = CV_MAT_ELEM(*rotationMatrix, float, 2, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 1) = CV_MAT_ELEM(*rotationMatrix, float, 2, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 2) = CV_MAT_ELEM(*rotationMatrix, float, 2, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 3) = CV_MAT_ELEM(*translationVector, float, 0, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 3) = CV_MAT_ELEM(*translationVector, float, 0, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 3) = CV_MAT_ELEM(*translationVector, float, 0, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 0) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 1) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 2) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 3) = 1.0f;
+
+  cvReleaseMat(&rotationVector);
+  cvReleaseMat(&translationVector);
+  cvReleaseMat(&rotationMatrix);
+}
+
+
+//-----------------------------------------------------------------------------
+void ProjectAllPoints(
+    const int& numberSuccessfulViews,
+    const int& pointCount,
+    const CvMat& objectPoints,
+    const CvMat& imagePoints,
+    const CvMat& intrinsicMatrix,
+    const CvMat& distortionCoeffictions,
+    const CvMat& rotationVectors,
+    const CvMat& translationVectors,
+    CvMat& outputImagePoints
+    )
+{
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
+  CvMat *translationVector = cvCreateMat(1, 3, CV_32FC1);
+  CvMat *objectPointsFor1View = cvCreateMat(pointCount, 3, CV_32FC1);
+  CvMat *imagePointsFor1View = cvCreateMat(pointCount, 2, CV_32FC1);
+
+  for (int i = 0; i < numberSuccessfulViews; i++)
+  {
+    for (int j = 0; j < pointCount; j++)
+    {
+      CV_MAT_ELEM(*objectPointsFor1View, float, j, 0) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 0);
+      CV_MAT_ELEM(*objectPointsFor1View, float, j, 1) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 1);
+      CV_MAT_ELEM(*objectPointsFor1View, float, j, 2) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 2);
+    }
+    CV_MAT_ELEM(*rotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, i, 0);
+    CV_MAT_ELEM(*rotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, i, 1);
+    CV_MAT_ELEM(*rotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, i, 2);
+    CV_MAT_ELEM(*translationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, i, 0);
+    CV_MAT_ELEM(*translationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, i, 1);
+    CV_MAT_ELEM(*translationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, i, 2);
+
+    cvProjectPoints2(
+        objectPointsFor1View,
+        rotationVector,
+        translationVector,
+        &intrinsicMatrix,
+        &distortionCoeffictions,
+        imagePointsFor1View
+        );
+
+    for (int j = 0; j < pointCount; j++)
+    {
+      CV_MAT_ELEM(outputImagePoints, float, i*pointCount + j, 0) = CV_MAT_ELEM(*imagePointsFor1View, float, j, 0);
+      CV_MAT_ELEM(outputImagePoints, float, i*pointCount + j, 1) = CV_MAT_ELEM(*imagePointsFor1View, float, j, 1);
+    }
+  }
+
+  cvReleaseMat(&rotationVector);
+  cvReleaseMat(&translationVector);
+  cvReleaseMat(&objectPointsFor1View);
+  cvReleaseMat(&imagePointsFor1View);
 }
 
 
@@ -307,18 +441,34 @@ double CalibrateStereoCameraParameters(
     const CvMat& pointCountsRight,
     CvMat& outputIntrinsicMatrixLeft,
     CvMat& outputDistortionCoefficientsLeft,
-    CvMat& outputRotationMatrixLeft,
-    CvMat& outputTranslationVectorLeft,
+    CvMat& outputRotationVectorsLeft,
+    CvMat& outputTranslationVectorsLeft,
     CvMat& outputIntrinsicMatrixRight,
     CvMat& outputDistortionCoefficientsRight,
-    CvMat& outputRotationMatrixRight,
-    CvMat& outputTranslationVectorRight,
+    CvMat& outputRotationVectorsRight,
+    CvMat& outputTranslationVectorsRight,
     CvMat& outputLeftToRightRotation,
-    CvMat& outputLeftToRightTranslation
+    CvMat& outputLeftToRightTranslation,
+    CvMat& outputEssentialMatrix,
+    CvMat& outputFundamentalMatrix
     )
 {
-  double leftProjectionError = CalibrateSingleCameraIntrinsicParameters(objectPointsLeft, imagePointsLeft, pointCountsLeft, imageSize, outputIntrinsicMatrixLeft, outputDistortionCoefficientsLeft);
-  double rightProjectionError = CalibrateSingleCameraIntrinsicParameters(objectPointsRight, imagePointsRight, pointCountsRight, imageSize, outputIntrinsicMatrixRight, outputDistortionCoefficientsRight);
+  double leftProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+      objectPointsLeft,
+      imagePointsLeft,
+      pointCountsLeft,
+      imageSize,
+      outputIntrinsicMatrixLeft,
+      outputDistortionCoefficientsLeft
+      );
+
+  double rightProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+      objectPointsRight,
+      imagePointsRight,
+      pointCountsRight,
+      imageSize,
+      outputIntrinsicMatrixRight,
+      outputDistortionCoefficientsRight);
 
   std::cout << "Initial intrinsic calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
 
@@ -334,31 +484,146 @@ double CalibrateStereoCameraParameters(
       &outputDistortionCoefficientsRight,
       imageSize,
       &outputLeftToRightRotation,
-      &outputLeftToRightTranslation
+      &outputLeftToRightTranslation,
+      &outputEssentialMatrix,
+      &outputFundamentalMatrix,
+      cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
+      CV_CALIB_USE_INTRINSIC_GUESS // Use the initial guess, but feel free to change optimise it.
       );
 
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
 
-  CalibrateSingleCameraExtrinsicParameters(
-      objectPointsLeft,
-      imagePointsLeft,
-      outputIntrinsicMatrixLeft,
-      outputDistortionCoefficientsLeft,
-      outputRotationMatrixLeft,
-      outputTranslationVectorLeft
-      );
+  double leftProjectError2 = cvCalibrateCamera2(
+                            &objectPointsLeft,
+                            &imagePointsLeft,
+                            &pointCountsLeft,
+                            imageSize,
+                            &outputIntrinsicMatrixLeft,
+                            &outputDistortionCoefficientsLeft,
+                            &outputRotationVectorsLeft,
+                            &outputTranslationVectorsLeft,
+                            CV_CALIB_FIX_INTRINSIC
+                            );
 
-  CalibrateSingleCameraExtrinsicParameters(
-      objectPointsRight,
-      imagePointsRight,
-      outputIntrinsicMatrixRight,
-      outputDistortionCoefficientsRight,
-      outputRotationMatrixRight,
-      outputTranslationVectorRight
-      );
+  double rightProjectError2 = cvCalibrateCamera2(
+                            &objectPointsRight,
+                            &imagePointsRight,
+                            &pointCountsRight,
+                            imageSize,
+                            &outputIntrinsicMatrixRight,
+                            &outputDistortionCoefficientsRight,
+                            &outputRotationVectorsRight,
+                            &outputTranslationVectorsRight,
+                            CV_CALIB_FIX_INTRINSIC
+                            );
+
+  std::cout << "Final extrinsic calibration gave re-projection errors of left=" << leftProjectError2 << ", right=" << rightProjectError2 << std::endl;
 
   return stereoCalibrationProjectionError;
 }
 
+
 //-----------------------------------------------------------------------------
+void OutputCalibrationData(
+    std::ostream& os,
+    const CvMat& objectPoints,
+    const CvMat& imagePoints,
+    const CvMat& pointCounts,
+    const CvMat& intrinsicMatrix,
+    const CvMat& distortionCoeffs,
+    const CvMat& rotationVectors,
+    const CvMat& translationVectors,
+    const float& projectionError,
+    const int& sizeX,
+    const int& sizeY,
+    const int& cornersX,
+    const int& cornersY,
+    std::vector<std::string>& fileNames
+    )
+{
+  int pointCount = cornersX * cornersY;
+  int numberOfFilesUsed = fileNames.size();
+
+  CvMat *extrinsicMatrix = cvCreateMat(4,4,CV_32FC1);
+  CvMat *projectedImagePoints = cvCreateMat(numberOfFilesUsed*pointCount, 2, CV_32FC1);
+
+  ProjectAllPoints(
+      numberOfFilesUsed,
+      pointCount,
+      objectPoints,
+      imagePoints,
+      intrinsicMatrix,
+      distortionCoeffs,
+      rotationVectors,
+      translationVectors,
+      *projectedImagePoints
+      );
+
+  os.precision(10);
+  os.width(10);
+
+  os << "Intrinsic matrix" << std::endl;
+  os << CV_MAT_ELEM(intrinsicMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 0, 2) << std::endl;
+  os << CV_MAT_ELEM(intrinsicMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 2) << std::endl;
+  os << CV_MAT_ELEM(intrinsicMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 2) << std::endl;
+
+  os << "Distortion vector (k1, k2, p1, p2, k3)" << std::endl;
+  os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 4, 0) << std::endl;
+
+  os << "projection error:" << projectionError << std::endl;
+  os << "image size:" << sizeX << " " << sizeY << std::endl;
+  os << "number of internal corners:" << cornersX << " " << cornersY << std::endl;
+
+  os << "number of files used:" << numberOfFilesUsed << std::endl;
+  os << "list of files used:" << std::endl;
+
+  // Also output files actually used.
+  for (unsigned int i = 0; i < fileNames.size(); i++)
+  {
+    os << fileNames[i] << std::endl;
+  }
+
+  // Also output points on a per filename basis
+  os << "points per file" << std::endl;
+  unsigned int numberOfPoints = CV_MAT_ELEM(pointCounts, int, 0, 0);
+  for (unsigned int i = 0; i < fileNames.size(); i++)
+  {
+    os << fileNames[i] << std::endl;
+
+    ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
+        rotationVectors,
+        translationVectors,
+        i,
+        *extrinsicMatrix
+        );
+
+    os << "Extrinsic matrix" << std::endl;
+    for (int a = 0; a < 4; a++)
+    {
+      for (int b = 0; b < 4; b++)
+      {
+        os << CV_MAT_ELEM(*extrinsicMatrix, float, a, b);
+        if (b < 3)
+        {
+          os << ", ";
+        }
+      }
+      os << std::endl;
+    }
+
+    for (unsigned int j = 0; j < numberOfPoints; j++)
+    {
+      os << CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 1) << ", " << CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 2) \
+          << " projects to " << CV_MAT_ELEM(*projectedImagePoints, float, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, float, i*numberOfPoints + j, 1) \
+          << " compared with " << CV_MAT_ELEM(imagePoints, float, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, float, i*numberOfPoints + j, 1) \
+          << " detected in image " \
+          << std::endl;
+    }
+  }
+
+  cvReleaseMat(&extrinsicMatrix);
+  cvReleaseMat(&projectedImagePoints);
 }
+
+//-----------------------------------------------------------------------------
+} // end namespace

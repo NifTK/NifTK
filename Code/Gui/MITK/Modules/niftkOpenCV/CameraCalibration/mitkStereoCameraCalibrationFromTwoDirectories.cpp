@@ -105,21 +105,25 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
       throw std::logic_error("The left and right channel had a different number of images with successfully matched corners.");
     }
 
+    int numberOfSuccessfulViews = successfullImagesLeft.size();
+
     CvMat *intrinsicMatrixLeft = cvCreateMat(3,3,CV_32FC1);
     CvMat *distortionCoeffsLeft = cvCreateMat(5, 1, CV_32FC1);
-    CvMat *rotationMatrixLeft = cvCreateMat(3, 3,CV_32FC1);
-    CvMat *translationVectorLeft = cvCreateMat(3, 1, CV_32FC1);
+    CvMat *rotationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
+    CvMat *translationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
 
     CvMat *intrinsicMatrixRight = cvCreateMat(3,3,CV_32FC1);
     CvMat *distortionCoeffsRight = cvCreateMat(5, 1, CV_32FC1);
-    CvMat *rotationMatrixRight = cvCreateMat(3, 3,CV_32FC1);
-    CvMat *translationVectorRight = cvCreateMat(3, 1, CV_32FC1);
+    CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
+    CvMat *translationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
 
     CvMat *leftToRightRotationMatrix = cvCreateMat(3, 3,CV_32FC1);
-    CvMat *leftToRightTranslationVector = cvCreateMat(3, 1, CV_32FC1);
+    CvMat *leftToRightTranslationVector = cvCreateMat(1, 3, CV_32FC1);
+    CvMat *essentialMatrix = cvCreateMat(3, 3,CV_32FC1);
+    CvMat *fundamentalMatrix = cvCreateMat(3, 3,CV_32FC1);
 
     double projectionError = CalibrateStereoCameraParameters(
-        successfullImagesLeft.size(),
+        numberOfSuccessfulViews,
         *objectPointsLeft,
         *imagePointsLeft,
         *pointCountsLeft,
@@ -129,14 +133,16 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
         *pointCountsRight,
         *intrinsicMatrixLeft,
         *distortionCoeffsLeft,
-        *rotationMatrixLeft,
-        *translationVectorLeft,
+        *rotationVectorsLeft,
+        *translationVectorsLeft,
         *intrinsicMatrixRight,
         *distortionCoeffsRight,
-        *rotationMatrixRight,
-        *translationVectorRight,
+        *rotationVectorsRight,
+        *translationVectorsRight,
         *leftToRightRotationMatrix,
-        *leftToRightTranslationVector
+        *leftToRightTranslationVector,
+        *essentialMatrix,
+        *fundamentalMatrix
         );
 
     std::ostream *os = NULL;
@@ -161,46 +167,60 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
       os = &oss;
     }
 
-    // Output Calibration Data.
+    *os << "Stereo calibration" << std::endl;
+    float zero = 0.0f;
+    float one = 1.0;
 
-    float zero = 0;
-    float one = 1;
+    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 2) << ", " << CV_MAT_ELEM(*leftToRightTranslationVector, float, 0, 0) << std::endl;
+    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 2) << ", " << CV_MAT_ELEM(*leftToRightTranslationVector, float, 0, 1) << std::endl;
+    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 2) << ", " << CV_MAT_ELEM(*leftToRightTranslationVector, float, 0, 2) << std::endl;
+    *os << zero << ", " << zero << ", " << zero << ", " << one << std::endl;
 
-    *os << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 0, 0) << "," << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 0, 1) << "," << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 0, 2) << std::endl;
-    *os << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 1, 0) << "," << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 1, 1) << "," << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 1, 2) << std::endl;
-    *os << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 2, 0) << "," << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 2, 1) << "," << CV_MAT_ELEM(*intrinsicMatrixLeft, float, 2, 2) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrixLeft, float, 0, 0) << "," << CV_MAT_ELEM(*rotationMatrixLeft, float, 0, 1) << "," << CV_MAT_ELEM(*rotationMatrixLeft, float, 0, 2) << "," << CV_MAT_ELEM(*translationVectorLeft, float, 0, 0) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrixLeft, float, 1, 0) << "," << CV_MAT_ELEM(*rotationMatrixLeft, float, 1, 1) << "," << CV_MAT_ELEM(*rotationMatrixLeft, float, 1, 2) << "," << CV_MAT_ELEM(*translationVectorLeft, float, 1, 0) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrixLeft, float, 2, 0) << "," << CV_MAT_ELEM(*rotationMatrixLeft, float, 2, 1) << "," << CV_MAT_ELEM(*rotationMatrixLeft, float, 2, 2) << "," << CV_MAT_ELEM(*translationVectorLeft, float, 2, 0) << std::endl;
-    *os << zero << "," << zero << "," << zero << "," << one << std::endl;
-    *os << CV_MAT_ELEM(*distortionCoeffsLeft, float, 0, 0) << "," << CV_MAT_ELEM(*distortionCoeffsLeft, float, 1, 0) << "," << CV_MAT_ELEM(*distortionCoeffsLeft, float, 2, 0) << "," << CV_MAT_ELEM(*distortionCoeffsLeft, float, 3, 0) << "," << CV_MAT_ELEM(*distortionCoeffsLeft, float, 4, 0) << std::endl;
+    *os << "Essential matrix" << std::endl;
+    *os << CV_MAT_ELEM(*essentialMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 0, 2) << std::endl;
+    *os << CV_MAT_ELEM(*essentialMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 1, 2) << std::endl;
+    *os << CV_MAT_ELEM(*essentialMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 2, 2) << std::endl;
 
-    *os << CV_MAT_ELEM(*intrinsicMatrixRight, float, 0, 0) << "," << CV_MAT_ELEM(*intrinsicMatrixRight, float, 0, 1) << "," << CV_MAT_ELEM(*intrinsicMatrixRight, float, 0, 2) << std::endl;
-    *os << CV_MAT_ELEM(*intrinsicMatrixRight, float, 1, 0) << "," << CV_MAT_ELEM(*intrinsicMatrixRight, float, 1, 1) << "," << CV_MAT_ELEM(*intrinsicMatrixRight, float, 1, 2) << std::endl;
-    *os << CV_MAT_ELEM(*intrinsicMatrixRight, float, 2, 0) << "," << CV_MAT_ELEM(*intrinsicMatrixRight, float, 2, 1) << "," << CV_MAT_ELEM(*intrinsicMatrixRight, float, 2, 2) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrixRight, float, 0, 0) << "," << CV_MAT_ELEM(*rotationMatrixRight, float, 0, 1) << "," << CV_MAT_ELEM(*rotationMatrixRight, float, 0, 2) << "," << CV_MAT_ELEM(*translationVectorRight, float, 0, 0) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrixRight, float, 1, 0) << "," << CV_MAT_ELEM(*rotationMatrixRight, float, 1, 1) << "," << CV_MAT_ELEM(*rotationMatrixRight, float, 1, 2) << "," << CV_MAT_ELEM(*translationVectorRight, float, 1, 0) << std::endl;
-    *os << CV_MAT_ELEM(*rotationMatrixRight, float, 2, 0) << "," << CV_MAT_ELEM(*rotationMatrixRight, float, 2, 1) << "," << CV_MAT_ELEM(*rotationMatrixRight, float, 2, 2) << "," << CV_MAT_ELEM(*translationVectorRight, float, 2, 0) << std::endl;
-    *os << zero << "," << zero << "," << zero << "," << one << std::endl;
-    *os << CV_MAT_ELEM(*distortionCoeffsRight, float, 0, 0) << "," << CV_MAT_ELEM(*distortionCoeffsRight, float, 1, 0) << "," << CV_MAT_ELEM(*distortionCoeffsRight, float, 2, 0) << "," << CV_MAT_ELEM(*distortionCoeffsRight, float, 3, 0) << "," << CV_MAT_ELEM(*distortionCoeffsRight, float, 4, 0) << std::endl;
+    *os << "Fundamental matrix" << std::endl;
+    *os << CV_MAT_ELEM(*fundamentalMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 0, 2) << std::endl;
+    *os << CV_MAT_ELEM(*fundamentalMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 1, 2) << std::endl;
+    *os << CV_MAT_ELEM(*fundamentalMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 2, 2) << std::endl;
 
-    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 0) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 1) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 2) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 0) << std::endl;
-    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 0) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 1) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 2) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 0) << std::endl;
-    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 0) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 1) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 2) << "," << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 0) << std::endl;
-    *os << zero << "," << zero << "," << zero << "," << one << std::endl;
+    *os << "Left camera" << std::endl;
+    OutputCalibrationData(
+        *os,
+        *objectPointsLeft,
+        *imagePointsLeft,
+        *pointCountsLeft,
+        *intrinsicMatrixLeft,
+        *distortionCoeffsLeft,
+        *rotationVectorsLeft,
+        *translationVectorsLeft,
+        projectionError,
+        width,
+        height,
+        numberCornersX,
+        numberCornersY,
+        successfullFileNamesLeft
+        );
 
-    *os << "projection error:" << projectionError << std::endl;
-    *os << "image size:" << width << " " << height << std::endl;
-    *os << "number of internal corners:" << numberCornersX << " " << numberCornersY << std::endl;
-
-    *os << "number of files used:" << allSuccessfulFileNames.size() << std::endl;
-    *os << "list of files used:" << std::endl;
-
-    // Also output files actually used.
-    for (unsigned int i = 0; i < allSuccessfulFileNames.size(); i++)
-    {
-      *os << allSuccessfulFileNames[i] << std::endl;
-    }
+    *os << "Right camera" << std::endl;
+    OutputCalibrationData(
+        *os,
+        *objectPointsRight,
+        *imagePointsRight,
+        *pointCountsRight,
+        *intrinsicMatrixRight,
+        *distortionCoeffsRight,
+        *rotationVectorsRight,
+        *translationVectorsRight,
+        projectionError,
+        width,
+        height,
+        numberCornersX,
+        numberCornersY,
+        successfullFileNamesRight
+        );
 
     // Tidy up.
     if(fs.is_open())
@@ -217,16 +237,18 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
 
     cvReleaseMat(&intrinsicMatrixLeft);
     cvReleaseMat(&distortionCoeffsLeft);
-    cvReleaseMat(&rotationMatrixLeft);
-    cvReleaseMat(&translationVectorLeft);
+    cvReleaseMat(&rotationVectorsLeft);
+    cvReleaseMat(&translationVectorsLeft);
 
     cvReleaseMat(&intrinsicMatrixRight);
     cvReleaseMat(&distortionCoeffsRight);
-    cvReleaseMat(&rotationMatrixRight);
-    cvReleaseMat(&translationVectorRight);
+    cvReleaseMat(&rotationVectorsRight);
+    cvReleaseMat(&translationVectorsRight);
 
     cvReleaseMat(&leftToRightRotationMatrix);
     cvReleaseMat(&leftToRightTranslationVector);
+    cvReleaseMat(&fundamentalMatrix);
+    cvReleaseMat(&essentialMatrix);
 
     for (unsigned int i = 0; i < allImages.size(); i++)
     {
