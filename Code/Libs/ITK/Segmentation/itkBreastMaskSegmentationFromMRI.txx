@@ -1500,44 +1500,6 @@ void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::SmoothMask( void )
 {
-  // Do a final region growing to eliminate any voids inside the breast
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  typename ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
-
-  connectedThreshold->SetInput( thresholder->GetOutput() );
-
-  connectedThreshold->SetLower( 0  );
-  connectedThreshold->SetUpper( 500 );
-
-  connectedThreshold->SetReplaceValue( 1000 );
-
-  typename InternalImageType::IndexType  index;
-
-  index[0] = regGrowXcoord;
-  index[1] = regGrowYcoord;
-  index[2] = regGrowZcoord;
-
-  connectedThreshold->SetSeed( index );
-
-  std::cout << "Region-growing to eliminate voids in the breast" << std::endl;
-  connectedThreshold->Update();
-  
-  imSegmented = connectedThreshold->GetOutput();
-  imSegmented->DisconnectPipeline();
-
-  connectedThreshold = 0;
-
-  // Invert the segmentation
-
-  IteratorType segIterator( imSegmented, imSegmented->GetLargestPossibleRegion() );
-        
-  for ( segIterator.GoToBegin(); ! segIterator.IsAtEnd(); ++segIterator )
-    if ( segIterator.Get() )
-      segIterator.Set( 0 );
-    else
-      segIterator.Set( 1000 );
-
   DerivativeFilterPointer derivativeFilterX = DerivativeFilterType::New();
   DerivativeFilterPointer derivativeFilterY = DerivativeFilterType::New();
   DerivativeFilterPointer derivativeFilterZ = DerivativeFilterType::New();
@@ -1594,6 +1556,46 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 				  fileOutputVTKSurface,
 				  BOTH_BREASTS, flgVerbose, finalSegmThreshold );
  }
+
+
+  // Do a final region growing to eliminate any voids inside the breast
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typename ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
+
+  connectedThreshold->SetInput( thresholder->GetOutput() );
+
+  connectedThreshold->SetLower( 0  );
+  connectedThreshold->SetUpper( 500 );
+
+  connectedThreshold->SetReplaceValue( 1000 );
+
+  typename InternalImageType::IndexType  index;
+
+  index[0] = regGrowXcoord;
+  index[1] = regGrowYcoord;
+  index[2] = regGrowZcoord;
+
+  connectedThreshold->SetSeed( index );
+
+  std::cout << "Region-growing to eliminate voids in the breast" << std::endl;
+  connectedThreshold->Update();
+  
+  imSegmented = connectedThreshold->GetOutput();
+  imSegmented->DisconnectPipeline();
+
+  connectedThreshold = 0;
+
+  // Invert the segmentation
+
+  IteratorType segIterator2( imSegmented, imSegmented->GetLargestPossibleRegion() );
+        
+  for ( segIterator2.GoToBegin(); ! segIterator2.IsAtEnd(); ++segIterator2 )
+    if ( segIterator2.Get() )
+      segIterator2.Set( 0 );
+    else
+      segIterator2.Set( 1000 );
+
 }
 
 
