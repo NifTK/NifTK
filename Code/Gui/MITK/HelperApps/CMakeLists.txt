@@ -65,12 +65,13 @@ IF(BUILD_IGI)
   SET(HELPER_APPS
     ${HELPER_APPS}
     # Add apps that DO depend on BUILD_IGI here.
+    niftkOpenCVTest
   )
 ENDIF()
 
 # Then foreach app, we just build against libraries (modules).
 FOREACH(APP ${HELPER_APPS})
-  ADD_EXECUTABLE(${APP} ${APP}.cpp )
+  ADD_EXECUTABLE(${APP} ${APP}.cxx )
   TARGET_LINK_LIBRARIES(${APP} ${HELPER_APP_LIBRARIES} )
   MITK_INSTALL(TARGETS ${APP})
 ENDFOREACH()
