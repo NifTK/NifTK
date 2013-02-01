@@ -269,16 +269,30 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
         Camera = Renderer->GetActiveCamera();
         Camera->Azimuth( 1);*/
         Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
-        vtkTransform * Transform = vtkTransform::New();
-        vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
-        for ( int row = 0 ; row < 4 ; row ++ )
-          for ( int column = 0 ; column < 4 ; column ++ )
-          {
-            viewMatrix->SetElement(row,column,inputTransformMat[row][column]);
-          }
-        Transform->SetMatrix(viewMatrix);
-        Camera->SetUserViewTransform(Transform);
-       // Camera->Azimuth( 1);
+        Camera->SetPosition(inputTransformMat[0][3],inputTransformMat[1][3],inputTransformMat[2][3]);
+        //manually sort out the focal point, there is presumably an intelegent way to to this
+        //camerausertransform seems pretty useless in this application
+        float fx=0;
+        float fy=0;
+        float fz=2000; 
+        fx = inputTransformMat[0][0] * fx + inputTransformMat[0][1] * fy 
+          + inputTransformMat[0][2] * fz + inputTransformMat[0][3];
+        fy = inputTransformMat[1][0] * fx + inputTransformMat[1][1] * fy
+          + inputTransformMat[1][2] * fz + inputTransformMat[1][3];
+        fz = inputTransformMat[2][0] * fx + inputTransformMat[2][1] * fy
+          + inputTransformMat[2][2] * fz + inputTransformMat[2][3];
+        Camera->SetFocalPoint(fx,fy,fz);
+        float vux=1;
+        float vuy=0;
+        float vuz=0;
+        vux = inputTransformMat[0][0] * vux + inputTransformMat[0][1] * vuy 
+          + inputTransformMat[0][2] * vuz + inputTransformMat[0][3];
+        vuy = inputTransformMat[1][0] * vux + inputTransformMat[1][1] * vuy
+          + inputTransformMat[1][2] * vuz + inputTransformMat[1][3];
+        vuz = inputTransformMat[2][0] * vux + inputTransformMat[2][1] * vuy
+          + inputTransformMat[2][2] * vuz + inputTransformMat[2][3];
+        Camera->SetViewUp(vux,vuy,vuz);
+        Camera->SetClippingRange(0.0, 8000.0);
       }
     }
 
@@ -723,7 +737,38 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
 
        Camera->SetPosition(0,0,0);
-       Camera->SetFocalPoint(0,0,1);
+       Camera->SetFocalPoint(0,0,2000);
+       Camera->SetViewUp(0,1,0);
+       Camera->SetClippingRange(0.0, 8000.0);
+       double far;
+       double near;
+       Camera->GetClippingRange(near, far);
+       qDebug() << "Far : " << far << " Near : " << near;
+     }
+   }
+   else
+   {
+     mitk::RenderingManager::RenderWindowVector RenderWindows;
+     RenderWindows = mitk::RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
+
+     int windowsFound = RenderWindows.size() ;
+     for ( int i = 0 ; i < windowsFound ; i ++ )
+     {
+       vtkCamera * Camera;
+       vtkRenderWindow * thisWindow;
+       thisWindow = RenderWindows.at(i);
+
+       Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
+
+       Camera->SetPosition(0,0,0);
+       Camera->SetFocalPoint(0,0,2000);
+       Camera->SetViewUp(1,0,0);
+       vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
+       vtkTransform * Transform = vtkTransform::New();
+       Transform->SetMatrix(viewMatrix);
+       Camera->SetUserViewTransform(Transform);
+
+       Camera->SetClippingRange(0.0, 4000.0);
      }
    }
 }
