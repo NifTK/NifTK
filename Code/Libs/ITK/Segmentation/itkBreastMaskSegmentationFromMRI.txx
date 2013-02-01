@@ -66,6 +66,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   fMarchingK2   = 15.0;
   fMarchingTime = 5.0;
 
+  cropDistPosteriorToMidSternum = 40.0;
+
   imStructural = 0;
   imFatSat = 0;
   imBIFs = 0;
@@ -1486,48 +1488,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     }
     itSegRightRegion.NextSlice(); 
   }
-}
-
-
-// --------------------------------------------------------------------------
-// Mask at a distance of 40mm posterior to the mid-sterum point
-// --------------------------------------------------------------------------
-
-template <const unsigned int ImageDimension, class InputPixelType>
-void
-BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
-::MaskAtAtFixedDistancePosteriorToMidSternum( void )
-{
-  typename InternalImageType::RegionType region;
-  typename InternalImageType::SizeType size;
-  typename InternalImageType::IndexType start;
-
-  IteratorType itSeg = IteratorType( imSegmented,        
-				     imStructural->GetLargestPossibleRegion() );
-
-  //InternalImageType::SizeType sizeChestSurfaceRegion;
-  region  = imStructural->GetLargestPossibleRegion();
-  
-  const typename InternalImageType::SpacingType& sp = imChestSurfaceVoxels->GetSpacing();
-
-  start    = region.GetIndex();
-  start[0] = 0;
-  start[1] = idxMidSternum[1] + (40. / sp[1]);
-  start[2] = 0;
-  
-  size    = region.GetSize();
-  size[1] = size[1] - start[1];
-
-  region.SetSize( size );
-  region.SetIndex( start );
-
-  itSeg = IteratorType( imSegmented, region );
-
-  for ( itSeg.GoToBegin() ; ( ! itSeg.IsAtEnd() ) ; ++itSeg )
-  {
-    itSeg.Set(0);
-  }
- 
 }
 
 

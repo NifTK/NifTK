@@ -187,6 +187,8 @@ public:
   void SetMarchingK2( float k2 ) { fMarchingK2 = k2; }
   void SetMarchingTime( float t ) { fMarchingTime = t; }
 
+  void SetCropDistancePosteriorToMidSternum( float fDistIn ) { this->cropDistPosteriorToMidSternum = fDistIn; }
+
   void SetOutputBIFS( std::string fn ) { fileOutputBIFs = fn; }
 
   void SetOutputSmoothedStructural( std::string fn ) { fileOutputSmoothedStructural = fn; }
@@ -297,6 +299,8 @@ protected:
   float fMarchingK2;
   float fMarchingTime;
 
+  float cropDistPosteriorToMidSternum;
+
   std::string fileOutputBIFs;
 
   std::string fileOutputSmoothedStructural;
@@ -385,8 +389,6 @@ protected:
   void MaskWithBSplineBreastSurface( void );
   /// Mask with a sphere centered on each breast
   void MaskBreastWithSphere( void );
-  /// Mask at a distance of 40mm posterior to the mid-sterum point
-  void MaskAtAtFixedDistancePosteriorToMidSternum( void );
 
   /// Smooth the mask and threshold to round corners etc.
   void SmoothMask( void );
