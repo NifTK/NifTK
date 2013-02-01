@@ -222,8 +222,8 @@ double CalibrateStereoCameraParameters(
     CvMat& outputDistortionCoefficientsRight,
     CvMat& outputRotationVectorsRight,
     CvMat& outputTranslationVectorsRight,
-    CvMat& outputLeftToRightRotation,
-    CvMat& outputLeftToRightTranslation,
+    CvMat& outputRightToLeftRotation,
+    CvMat& outputRightToLeftTranslation,
     CvMat& outputEssentialMatrix,
     CvMat& outputFundamentalMatrix
     );

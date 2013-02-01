@@ -117,8 +117,8 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
     CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
     CvMat *translationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
 
-    CvMat *leftToRightRotationMatrix = cvCreateMat(3, 3,CV_32FC1);
-    CvMat *leftToRightTranslationVector = cvCreateMat(1, 3, CV_32FC1);
+    CvMat *rightToLeftRotationMatrix = cvCreateMat(3, 3,CV_32FC1);
+    CvMat *rightToLeftTranslationVector = cvCreateMat(3, 1, CV_32FC1);
     CvMat *essentialMatrix = cvCreateMat(3, 3,CV_32FC1);
     CvMat *fundamentalMatrix = cvCreateMat(3, 3,CV_32FC1);
 
@@ -139,8 +139,8 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
         *distortionCoeffsRight,
         *rotationVectorsRight,
         *translationVectorsRight,
-        *leftToRightRotationMatrix,
-        *leftToRightTranslationVector,
+        *rightToLeftRotationMatrix,
+        *rightToLeftTranslationVector,
         *essentialMatrix,
         *fundamentalMatrix
         );
@@ -171,9 +171,9 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
     float zero = 0.0f;
     float one = 1.0;
 
-    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 0, 2) << ", " << CV_MAT_ELEM(*leftToRightTranslationVector, float, 0, 0) << std::endl;
-    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 1, 2) << ", " << CV_MAT_ELEM(*leftToRightTranslationVector, float, 0, 1) << std::endl;
-    *os << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*leftToRightRotationMatrix, float, 2, 2) << ", " << CV_MAT_ELEM(*leftToRightTranslationVector, float, 0, 2) << std::endl;
+    *os << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 2) << ", " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 0, 0) << std::endl;
+    *os << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 2) << ", " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 1, 0) << std::endl;
+    *os << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 2) << ", " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 2, 0) << std::endl;
     *os << zero << ", " << zero << ", " << zero << ", " << one << std::endl;
 
     *os << "Essential matrix" << std::endl;
@@ -245,8 +245,8 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
     cvReleaseMat(&rotationVectorsRight);
     cvReleaseMat(&translationVectorsRight);
 
-    cvReleaseMat(&leftToRightRotationMatrix);
-    cvReleaseMat(&leftToRightTranslationVector);
+    cvReleaseMat(&rightToLeftRotationMatrix);
+    cvReleaseMat(&rightToLeftTranslationVector);
     cvReleaseMat(&fundamentalMatrix);
     cvReleaseMat(&essentialMatrix);
 

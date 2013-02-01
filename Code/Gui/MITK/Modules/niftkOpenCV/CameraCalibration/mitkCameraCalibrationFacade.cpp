@@ -145,7 +145,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
     }
 
     // If we got the right number of corners, add it to our data.
-    if (cornerCount == (int)numberOfCorners)
+    if (found != 0 && cornerCount == (int)numberOfCorners)
     {
       step = successes * numberOfCorners;
       for (int j=step, k=0; k<(int)numberOfCorners; ++j, ++k)
@@ -447,8 +447,8 @@ double CalibrateStereoCameraParameters(
     CvMat& outputDistortionCoefficientsRight,
     CvMat& outputRotationVectorsRight,
     CvMat& outputTranslationVectorsRight,
-    CvMat& outputLeftToRightRotation,
-    CvMat& outputLeftToRightTranslation,
+    CvMat& outputRightToLeftRotation,
+    CvMat& outputRightToLeftTranslation,
     CvMat& outputEssentialMatrix,
     CvMat& outputFundamentalMatrix
     )
@@ -483,12 +483,12 @@ double CalibrateStereoCameraParameters(
       &outputIntrinsicMatrixRight,
       &outputDistortionCoefficientsRight,
       imageSize,
-      &outputLeftToRightRotation,
-      &outputLeftToRightTranslation,
+      &outputRightToLeftRotation,
+      &outputRightToLeftTranslation,
       &outputEssentialMatrix,
       &outputFundamentalMatrix,
       cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
-      CV_CALIB_USE_INTRINSIC_GUESS // Use the initial guess, but feel free to change optimise it.
+      CV_CALIB_FIX_INTRINSIC // Use the initial guess, but feel free to change optimise it.
       );
 
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
