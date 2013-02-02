@@ -182,17 +182,17 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   typename InternalImageType::SizeType size;
   typename InternalImageType::IndexType start;
 
-  IteratorType itSeg = IteratorType( imSegmented,        
-				     imStructural->GetLargestPossibleRegion() );
+  IteratorType itSeg = IteratorType( this->imSegmented,        
+				     this->imStructural->GetLargestPossibleRegion() );
 
   //InternalImageType::SizeType sizeChestSurfaceRegion;
-  region = imSegmented->GetLargestPossibleRegion();
+  region = this->imSegmented->GetLargestPossibleRegion();
   
   const typename InternalImageType::SpacingType& sp = this->imSegmented->GetSpacing();
 
   start    = region.GetIndex();
   start[0] = 0;
-  start[1] = idxMidSternum[1] + ( this->cropDistPosteriorToMidSternum / sp[1]);
+  start[1] = this->idxMidSternum[1] + ( this->cropDistPosteriorToMidSternum / sp[1]);
   start[2] = 0;
   
   size    = region.GetSize();
@@ -201,7 +201,7 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   region.SetSize( size );
   region.SetIndex( start );
 
-  itSeg = IteratorType( imSegmented, region );
+  itSeg = IteratorType( this->imSegmented, region );
 
   for ( itSeg.GoToBegin() ; ( ! itSeg.IsAtEnd() ) ; ++itSeg )
   {
