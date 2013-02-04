@@ -147,7 +147,7 @@ function UsageXML() {
 cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-   <category>MS Tools.Normalization</category>
+   <category>Multiple Sclerosis Tools.Normalization</category>
    <title>N3 Data Normalization</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for doing Boyes et al. Neuroimage 2008 normalization process.<br>
    <ul>
