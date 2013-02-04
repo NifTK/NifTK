@@ -21,6 +21,7 @@ Supported projects:
     NiftySeg
     NiftySim
     NiftyLink
+    NifTKData
     IGSTK
 "
   exit 1
@@ -133,6 +134,21 @@ elif [ $project = NiftyRec ]
 then
     download_from_sourceforge $project $version 
 elif [ $project = NiftyLink ]
+then
+    directory=$project-$version
+    tarball=$directory.tar.gz
+    git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
+    cd $directory
+    git checkout $version
+    if $discard_repo
+    then
+        rm -rf .git
+    fi
+    cd ..
+    rm $tarball
+    tar cvfz $tarball $directory
+    rm -rf $directory
+elif [ $project = NifTKData ]
 then
     directory=$project-$version
     tarball=$directory.tar.gz
