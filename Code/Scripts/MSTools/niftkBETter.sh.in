@@ -247,7 +247,7 @@ function UsageXML() {
 cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-   <category>MS Tools.Segmentation</category>
+   <category>Multiple Sclerosis Tools.Segmentation</category>
    <title>BET Brain segmentation improved</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for BET mask calculation using Pospescu et al. Neuroimage 2012 
    brain extraction process.<br>

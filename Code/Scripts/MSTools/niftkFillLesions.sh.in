@@ -363,7 +363,7 @@ function UsageXML() {
 cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-   <category>MS Tools.Fill lesions</category>
+   <category>Multiple Sclerosis Tools.Fill lesions</category>
    <title>Automated lesion-filling</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, to develop an automated lesion-filling technique (LEAP; LEsion Automated Preprocessing) that would reduce lesion-associated brain tissue segmentation bias (which is known to affect automated brain gray [GM] and white matter [WM] tissue segmentations in people who have multiple sclerosis).<br>
    <ul>
