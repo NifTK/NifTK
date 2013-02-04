@@ -41,11 +41,11 @@
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
-, m_FocusManagerObserverTag(0)
-, m_FocusedWindowWorldGeometryTag(0)
-, m_FocusedWindowDisplayGeometryTag(0)
-, m_FocusedWindowSliceSelectorTag(0)
-, m_FocusedWindowTimeStepSelectorTag(0)
+, m_FocusManagerObserverTag(-1)
+, m_FocusedWindowWorldGeometryTag(-1)
+, m_FocusedWindowDisplayGeometryTag(-1)
+, m_FocusedWindowSliceSelectorTag(-1)
+, m_FocusedWindowTimeStepSelectorTag(-1)
 , m_DataStorage(NULL)
 , m_BoundingBoxNode(NULL)
 , m_BoundingBox(NULL)
@@ -173,6 +173,7 @@ void QmitkThumbnailRenderWindow::Deactivated()
   if (focusManager != NULL)
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
+    m_FocusManagerObserverTag = -1;
   }
 
   if (m_DataStorage.IsNotNull())
@@ -204,24 +205,16 @@ void QmitkThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
   // to the object that it originally promised to listen to.  This will avoid crashes, and the geometry
   // object will go out of scope when it is replaced with a new one, or this object is destroyed.
 
-  if (m_TrackedWorldGeometry.IsNotNull())
+  if (m_TrackedWorldGeometry.IsNotNull() && m_TrackedDisplayGeometry.IsNotNull())
   {
     m_TrackedWorldGeometry->RemoveObserver(m_FocusedWindowWorldGeometryTag);
-  }
-
-  if (m_TrackedDisplayGeometry.IsNotNull())
-  {
+    m_FocusedWindowWorldGeometryTag = -1;
     m_TrackedDisplayGeometry->RemoveObserver(m_FocusedWindowDisplayGeometryTag);
-  }
-
-  if (m_TrackedSliceNavigator.IsNotNull())
-  {
+    m_FocusedWindowDisplayGeometryTag = -1;
     m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowSliceSelectorTag);
-  }
-
-  if (m_TrackedSliceNavigator.IsNotNull())
-  {
+    m_FocusedWindowSliceSelectorTag = -1;
     m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowTimeStepSelectorTag);
+    m_FocusedWindowTimeStepSelectorTag = -1;
   }
 }
 
@@ -503,10 +496,14 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
             // Store pointers to the display and world geometry, and render window
             m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(focusedWindowRenderer->GetWorldGeometry());
             m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(focusedWindowRenderer->GetDisplayGeometry());
+            MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedWorldGeometry not null? " << m_TrackedWorldGeometry.IsNotNull() << std::endl;
+            MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedDisplayGeometry not null? " << m_TrackedDisplayGeometry.IsNotNull() << std::endl;
 
             if (m_TrackedWorldGeometry.IsNotNull()
                 && m_TrackedDisplayGeometry.IsNotNull())
             {
+              MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedWorldGeometry = " << m_TrackedWorldGeometry.GetPointer() << std::endl;
+              MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedDisplayGeometry = " << m_TrackedDisplayGeometry.GetPointer() << std::endl;
 
               m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(focusedWindowRenderer.GetPointer()))->GetSliceNavigationController();
               m_TrackedRenderWindow = focusedWindowRenderWindow;
@@ -521,6 +518,7 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
                 itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
               onDisplayGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnDisplayGeometryChanged );
               m_FocusedWindowDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
+              MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_FocusedWindowDisplayGeometryTag = " << m_FocusedWindowDisplayGeometryTag << std::endl;
 
               itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onSliceChangedCommand =
                 itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
