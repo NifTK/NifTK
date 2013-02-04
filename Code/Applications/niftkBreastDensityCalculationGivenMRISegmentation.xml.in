@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Segmentation</category>
+  <title>Breast Density Calculation Given MRI Segmentation</title>
+  <description><![CDATA[Computes the density of left and right breasts given a breast mask and fat/glandular segmentation.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
+
+    <image>
+      <name>fileInputMask</name>
+      <flag>m</flag>
+      <longflag>inMask</longflag>
+      <description>Input breast mask</description>
+      <label>Input Breast Mask</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileInputSegmentation</name>
+      <flag>s</flag>
+      <longflag>inSeg</longflag>
+      <description>Input segmentation which contains the probability of glandular tissue at each voxel in the breast.</description>
+      <label>Input Breast Segmentation</label>
+      <channel>input</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+
+    <file>
+      <name>fileOutputDensityTextFile</name>
+      <flag>o</flag>
+      <longflag>outDensity</longflag>
+      <description>Output breast density text file</description>      
+      <label>Output Density Text File</label>
+      <default>BreastDensity.csv</default>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+</executable>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Binary Mask Image Operators</category>
+  <title>Iterative Hole Filling</title>
+  <description><![CDATA[This filter implements the ITK VotingBinaryIterativeHoleFillingImageFilter which applies a voting operation in order to fill-in cavities. This can be used for smoothing contours and for filling holes in binary images. The filter runs until no pixels change or the maximum number of iterations has been reached.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>HoleFilledImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Optional Parameters</label>
+    <description><![CDATA[Parameters that control the filter operation]]></description>
+
+    <integer>
+      <name>radius</name>
+      <flag>r</flag>
+      <description>
+	The size of the neighborhood. The value on each dimension is used as the semi-size of a rectangular box. For example, a	value of 1 will result in a 3x3 neighborhood in 2D or 3x3x3 in3D whilst a value of 2 will result in a 5x5 neighborhood in 2D or 5x5x5.
+      </description>
+      <label>Neighbourhood radius</label>
+      <default>1</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>majority</name>
+      <longflag>maj</longflag>
+      <description>
+	The majority threshold is used as the decision criterion for converting a background pixel into a foreground pixel. The rule of conversion is that a background pixel will be converted into a foreground pixel if the number of foreground neighbours surpasses the number of background neighbours by the majority value. For example, in a 2D image, with neighbourhood or radius 1, the neighbourhood will have size 3x3. If we set the majority value to 2, then we are requiring that the number of foreground neighbours should be at least (3x3 - 1)/2 + majority.
+      </description>
+      <label>Voting majority threshold</label>
+      <default>2</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>numberOfIterations</name>
+      <longflag>niters</longflag>
+      <description>
+	The maximum number of iterations that this filter should be run. The number of iterations will determine the maximum size of holes and cavities that this filter will be able to fill-in. The more iterations you run, the larger the cavities that will be filled in.
+      </description>
+      <label>Number of iterations</label>
+      <default>100</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99999</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+  </parameters>
+
+</executable>

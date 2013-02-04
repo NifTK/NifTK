@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+  <title>Convert Image</title>
+  <description><![CDATA[Convert an image to a different data type or modify it's properties (such as pixel resolution).]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Marc Modat, Matt Clarkson, John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>ConvertedImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Image Modification Parameters</label>
+    <description><![CDATA[Parameters that modify the image's properties]]></description>
+
+    <string-enumeration>
+      <name>strOutputType</name>
+      <longflag>ot</longflag>
+      <description>The output image pixel component type</description>
+      <label>String Enumeration Parameter</label>
+      <default>unchanged</default>
+      <element>unchanged</element>
+      <element>uchar</element>
+      <element>char</element>
+      <element>ushort</element>
+      <element>short</element>
+      <element>uint</element>
+      <element>int</element>
+      <element>ulong</element>
+      <element>long</element>
+      <element>float</element>
+      <element>double</element>
+    </string-enumeration>
+
+    <boolean>
+      <name>flg4DScalarImageTo3DVectorImage</name>
+      <flag>v</flag>
+      <description>Try to force 4D scalar data to 3D vectors.</description>
+      <label>4D scalar data to 3D vectors?</label>
+      <default>0</default>
+    </boolean>
+
+    <float>
+      <name>rx</name>
+      <longflag>rx</longflag>
+      <description>
+	The pixel resolution along the 'x' axis in mm. A value of zero indicates that the resolution will remain unchanged.
+      </description>
+      <label>x resolution</label>
+      <default>0</default>
+    </float>
+
+    <float>
+      <name>ry</name>
+      <longflag>ry</longflag>
+      <description>
+	The pixel resolution along the 'y' axis in mm. A value of zero indicates that the resolution will remain unchanged.
+      </description>
+      <label>y resolution</label>
+      <default>0</default>
+    </float>
+
+    <float>
+      <name>rz</name>
+      <longflag>rz</longflag>
+      <description>
+	The pixel resolution along the 'z' axis in mm. A value of zero indicates that the resolution will remain unchanged.
+      </description>
+      <label>z resolution</label>
+      <default>0</default>
+    </float>
+
+    <float>
+      <name>rt</name>
+      <longflag>rt</longflag>
+      <description>
+	The pixel resolution along the time axis. A value of zero indicates that the resolution will remain unchanged.
+      </description>
+      <label>time resolution</label>
+      <default>0</default>
+    </float>
+
+  </parameters>
+
+</executable>

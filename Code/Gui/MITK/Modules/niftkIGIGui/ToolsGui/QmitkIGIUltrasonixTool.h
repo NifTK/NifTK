@@ -27,27 +27,39 @@
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkQImageToMitkImageFilter.h"
-#include "QmitkIGITool.h"
-#include "mitkDataNode.h"
+#include "QmitkIGINiftyLinkDataSource.h"
 #include "mitkImage.h"
+#include "mitkDataNode.h"
 
 /**
  * \class QmitkIGIUltrasonixTool
- * \brief Implements a tool interface to receive and process messages from the Ultrasonix scanner.
+ * \brief Implements a QmitkIGINiftyLinkDataSource interface to receive and process messages from the Ultrasonix scanner.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixTool : public QmitkIGITool
+class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixTool : public QmitkIGINiftyLinkDataSource
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGITool);
+  mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGIUltrasonixTool);
 
+  /**
+   * \brief We store the node name here so other classes can refer to it.
+   */
   static const std::string ULTRASONIX_TOOL_2D_IMAGE_NAME;
-  void SaveImageMessage (OIGTLImageMessage::Pointer imageMsg);
-  float GetMotorPos();
-  void GetImageMatrix(igtl::Matrix4x4&);
+
+  /**
+   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
+   * \see mitk::IGIDataSource::CanHandleData()
+   */
+  virtual bool CanHandleData(mitk::IGIDataType* data) const;
+
+  /**
+   * \brief Defined in base class, this is the method where we do the update based on the available data.
+   * \see mitk::IGIDataSource::Update()
+   */
+  virtual bool Update(mitk::IGIDataType* data);
 
 public slots:
 
@@ -56,20 +68,10 @@ public slots:
    */
   virtual void InterpretMessage(OIGTLMessage::Pointer msg);
 
-  /**
-   * \brief Save message handler routine for this tool.
-   */
-  virtual igtlUint64 SaveMessageByTimeStamp(igtlUint64 id);
-
-  /**
-   * \brief Finds a message which best matches id and handles it
-   * */
-  virtual igtlUint64 HandleMessageByTimeStamp (igtlUint64 id);
-
 signals:
 
   void StatusUpdate(QString statusUpdateMessage);
-  void UpdatePreviewImage(OIGTLMessage::Pointer msg);
+  void UpdatePreviewDisplay(QImage *image, float motorPosition);
 
 protected:
 
@@ -79,15 +81,28 @@ protected:
   QmitkIGIUltrasonixTool(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
 
+  /**
+   * \brief \see IGIDataSource::SaveData();
+   */
+  virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
+
 private:
 
-  void HandleImageData(OIGTLMessage::Pointer msg);
+  /**
+   * \brief Called by the base class Update message, which processes the message
+   * by extracting an image, and converting it appropriate to the associated image
+   * in the data storage.
+   */
+  void HandleImageData(OIGTLMessage* msg);
 
-  mitk::Image::Pointer m_Image;
-  mitk::DataNode::Pointer m_ImageNode;
-  QmitkQImageToMitkImageFilter::Pointer m_Filter;
-  igtl::Matrix4x4 m_ImageMatrix;
-  float m_RadToDeg;
+  /**
+   * \brief Retrieves the motor position from the most recent data available.
+   */
+  float GetMotorPos(igtl::Matrix4x4& matrix);
+
+  mitk::Image::Pointer                  m_Image;
+  mitk::DataNode::Pointer               m_ImageNode;
+  float                                 m_RadToDeg;
 
 }; // end class
 

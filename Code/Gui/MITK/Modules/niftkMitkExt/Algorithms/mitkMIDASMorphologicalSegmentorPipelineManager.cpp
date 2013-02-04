@@ -596,6 +596,7 @@ MIDASMorphologicalSegmentorPipelineManager
     mitk::Image::Pointer& output
     )
 {
+
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
@@ -629,12 +630,6 @@ MIDASMorphologicalSegmentorPipelineManager
     pipeline = new MorphologicalSegmentorPipeline<TPixel, VImageDimension>();
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
-    pipeline->m_ThresholdingFilter->SetInput(itkImage);
-    pipeline->m_ErosionMaskFilter->SetInput(1, erosionsAdditionsToItk->GetOutput());
-    pipeline->m_ErosionMaskFilter->SetInput(2, erosionEditsToItk->GetOutput());
-    pipeline->m_DilationMaskFilter->SetInput(1, dilationsAditionsToItk->GetOutput());
-    pipeline->m_DilationMaskFilter->SetInput(2, dilationsEditsToItk->GetOutput());
-    pipeline->m_DilationFilter->SetConnectionBreakerImage(dilationsEditsToItk->GetOutput());
   }
   else
   {
@@ -643,7 +638,12 @@ MIDASMorphologicalSegmentorPipelineManager
   }
 
   // Set most of the parameters on the pipeline.
-  pipeline->SetParam(params);
+  pipeline->SetParam(itkImage,
+                     erosionsAdditionsToItk->GetOutput(),
+                     erosionEditsToItk->GetOutput(),
+                     dilationsAditionsToItk->GetOutput(),
+                     dilationsEditsToItk->GetOutput(),
+                     params);
 
   // Do the update.
   if (isRestarting)
@@ -651,7 +651,14 @@ MIDASMorphologicalSegmentorPipelineManager
     for (int i = 0; i <= params.m_Stage; i++)
     {
       params.m_Stage = i;
-      pipeline->SetParam(params);
+
+      pipeline->SetParam(itkImage,
+          erosionsAdditionsToItk->GetOutput(),
+          erosionEditsToItk->GetOutput(),
+          dilationsAditionsToItk->GetOutput(),
+          dilationsEditsToItk->GetOutput(),
+          params);
+
       pipeline->Update(editingFlags, editingRegion);
     }
   }
@@ -659,6 +666,9 @@ MIDASMorphologicalSegmentorPipelineManager
   {
     pipeline->Update(editingFlags, editingRegion);
   }
+
+  // To make sure we release all smart pointers.
+  pipeline->DisconnectPipeline();
 
   // Get hold of the output, and make sure we don't re-allocate memory.
   output->InitializeByItk< ImageType >(pipeline->GetOutput(editingFlags).GetPointer());

@@ -23,6 +23,7 @@
  ============================================================================*/
 
 #include "QmitkMIDASSlidersWidget.h"
+#include <QDebug>
 
 //-----------------------------------------------------------------------------
 QmitkMIDASSlidersWidget::QmitkMIDASSlidersWidget(QWidget *parent)
@@ -43,14 +44,14 @@ void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
 {
   Ui_QmitkMIDASSlidersWidget::setupUi(parent);
   m_SliceSelectionWidget->setDecimals(0);
-  m_SliceSelectionWidget->setTickInterval(1);
-  m_SliceSelectionWidget->setSingleStep(1);
-  m_MagnificationFactorWidget->setDecimals(0);
-  m_MagnificationFactorWidget->setTickInterval(1);
-  m_MagnificationFactorWidget->setSingleStep(1);
+  m_SliceSelectionWidget->setTickInterval(1.0);
+  m_SliceSelectionWidget->setSingleStep(1.0);
+  m_MagnificationFactorWidget->setDecimals(2);
+  m_MagnificationFactorWidget->setTickInterval(1.0);
+  m_MagnificationFactorWidget->setSingleStep(1.0);
   m_TimeSelectionWidget->setDecimals(0);
-  m_TimeSelectionWidget->setTickInterval(1);
-  m_TimeSelectionWidget->setSingleStep(1);
+  m_TimeSelectionWidget->setTickInterval(1.0);
+  m_TimeSelectionWidget->setSingleStep(1.0);
 }
 
 

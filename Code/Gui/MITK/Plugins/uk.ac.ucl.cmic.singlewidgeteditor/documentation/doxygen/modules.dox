@@ -1,0 +1,16 @@
+/**
+  \defgroup uk_ac_ucl_cmic_singlewidgeteditor uk.ac.ucl.cmic.singlewidgeteditor
+  \ingroup MITKPlugins
+
+  \brief Contributes a QmitkSingleWidget based render window editor to the MITK Workbench.
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_singlewidgeteditor_internal Internal
+  \ingroup uk_ac_ucl_cmic_singlewidgeteditor
+
+  \brief This subcategory includes the internal classes of the ucl.ac.ucl.cmic.singlewidgeteditor plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

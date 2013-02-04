@@ -728,3 +728,63 @@ function closeprogressXML() {
 	echo "<filter-progress>1</filter-progress>"
 	echo "<filter-end><filter-comment>Finished successfully.</filter-comment></filter-end>"
 }
+
+#####################################################################################
+# Function  : Copy a file to a specific destination file, depending on the format it will be changed or not
+#
+# Param	    : $1 source image
+# Param     : $2 destination image
+#
+# Examples of it uses:
+# copyFileToDestination "img/foo.nii.gz" "/tmp/foo.nii.gz" (it copies it)
+# copyFileToDestination "img/foo.nii.gz" "/tmp/foo.nii" (it copies it and it changes it of format)
+# copyFileToDestination "foo.hdr" "/tmp/foo2.img"  (and it copies foo.hdr and foo.img to /tmp/foo.hdr and /tmp/foo.img)
+#
+#####################################################################################
+function copyFileToDestination() {
+	local source=${1}
+	local destination=${2}
+
+	type1=$(getOutputFileType ${source});
+	type2=$(getOutputFileType ${destination});
+
+	if [ ${type1} = ${type2} ]; then
+		if [ ${type1} = "ANALYZE_GZ" -o  ${type1} = "ANALYZE" ] ; then
+			sourcehdr=${source/\.img/.hdr}
+			sourceimg=${source/\.hdr/.img}
+			desthdr=${destination/\.img/.hdr}
+			destimg=${destination/\.hdr/.img}
+			execute_command_or_else_stop "cp ${sourcehdr} ${desthdr}"
+			execute_command_or_else_stop "cp ${sourceimg} ${destimg}"
+		else
+			execute_command_or_else_stop "cp ${source} ${destination}"
+		fi
+	else
+		execute_command_or_else_stop "fslchfiletype ${type2} ${source} ${destination}"
+	fi
+}
+
+#####################################################################################
+# Function  : Get the type of file
+#
+# Param	    : $1 input image
+#####################################################################################
+function getOutputFileType() {
+	local image=${1}
+	local output_type="NIFTI_GZ";
+	
+	case $image in
+		?*.nii.gz ) output_type="NIFTI_GZ";
+			;;
+		?*.nii ) output_type="NIFTI";
+			;;
+		?*.img.gz | ?*.hdr.gz ) output_type="ANALYZE_GZ";
+			;;
+		?*.img | ?*.hdr ) output_type="ANALYZE";
+			;;
+		*) exitprog "Error: option $1 not recognised" 1
+			 ;;
+	esac	
+	echo "$output_type";
+}
+

@@ -68,6 +68,31 @@ SET(EP_COMMON_ARGS
   -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
 )
 
+SET(NIFTK_APP_OPTIONS)
+FOREACH(NIFTK_APP ${NIFTK_APPS})
+
+  # extract option_name
+  STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+  SET(target_info_list ${target_info})
+  LIST(GET target_info_list 1 option_name)
+  LIST(GET target_info_list 0 app_name)
+  
+  # Set flag.
+  SET(option_string)
+  IF(${option_name})
+    SET(option_string "-D${option_name}:BOOL=ON")
+  ELSE()
+    SET(option_string "-D${option_name}:BOOL=OFF")  
+  ENDIF()
+  
+  SET(NIFTK_APP_OPTIONS
+    ${NIFTK_APP_OPTIONS}
+    ${option_string}
+  )    
+  
+  # Add to list.
+ENDFOREACH()
+
 # Compute -G arg for configuring external projects with the same CMake generator:
 IF(CMAKE_EXTRA_GENERATOR)
   SET(GEN "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
@@ -152,6 +177,8 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      ${NIFTK_APP_OPTIONS}
+      -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}      
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
       -DBUILD_TESTING:BOOL=${BUILD_TESTING} # The value set in EP_COMMON_ARGS normally forces this off, but we may need NifTK to be on.
@@ -177,7 +204,6 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
       -DNIFTK_USE_FFTW:BOOL=${NIFTK_USE_FFTW}
       -DNIFTK_USE_CUDA:BOOL=${NIFTK_USE_CUDA}
-      -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}
       -DNIFTK_WITHIN_SUPERBUILD:BOOL=ON                    # Set this to ON, as some compilation flags rely on knowing if we are doing superbuild.
       -DNIFTK_VERSION_MAJOR:STRING=${NIFTK_VERSION_MAJOR}
       -DNIFTK_VERSION_MINOR:STRING=${NIFTK_VERSION_MINOR}
