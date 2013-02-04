@@ -38,6 +38,7 @@ if (BUILD_TESTING)
   set(NifTKData_DEPENDS ${proj})
 
   # Supported values: git, svn, tar
+  set(${proj}_archtype ${NIFTK_ARCHTYPE_DATA})
   if (NOT DEFINED ${proj}_archtype)
     set(${proj}_archtype "git")
   endif()
@@ -89,4 +90,4 @@ if (BUILD_TESTING)
     
   endif (NOT DEFINED NIFTK_DATA_DIR)
 
-endif (BUILD_TESTING) 
+endif (BUILD_TESTING)
