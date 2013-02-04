@@ -161,6 +161,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   QSizePolicy pinButtonSizePolicy;
   pinButtonSizePolicy.setHorizontalPolicy(QSizePolicy::Expanding);
   m_PinButton->setSizePolicy(pinButtonSizePolicy);
+  // These two lines ensure that the icon appears on the left on each platform.
+  m_PinButton->setText(" ");
   m_PinButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
   QIcon pinButtonIcon;
