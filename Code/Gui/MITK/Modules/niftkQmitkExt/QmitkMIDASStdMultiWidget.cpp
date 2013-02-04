@@ -1259,13 +1259,8 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
     double magnificationFactor = ComputeMagnificationFactor(renderWindow);
     if (magnificationFactor != m_MagnificationFactor)
     {
-      MITK_DEBUG << "New magnification factor: " << magnificationFactor;
       m_MagnificationFactor = magnificationFactor;
       emit MagnificationFactorChanged(renderWindow, magnificationFactor);
-    }
-    else
-    {
-      MITK_DEBUG << "magnification factor not changed: " << magnificationFactor;
     }
   }
 }
@@ -1457,72 +1452,13 @@ double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* w
   mitk::Point2D scaleFactorPixPerMillimetres;
   this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
 
-  // Now we scale these values so we get an integer number of pixels per voxel.
-  mitk::Point2D targetScaleFactorPixPerVoxel;
-  mitk::Point2D targetScaleFactorPixPerMillimetres;
-
-  // Need to round the scale factors.
-  for (int i = 0; i < 2; i++)
-  {
-    // If they are >= than 1, we round down towards 1
-    // so you have less pixels per voxel, so image will appear smaller.
-    if (scaleFactorPixPerVoxel[i] >= 1)
-    {
-      targetScaleFactorPixPerVoxel[i] = scaleFactorPixPerVoxel[i];
-    }
-    else
-    {
-      // Otherwise, we still have to make image smaller to fit it on screen.
-      //
-      // For example, if the scale factor is 0.5, we invert it to get 2, which is an integer, so OK.
-      // If however the scale factor is 0.4, we invert it to get 2.5 voxels per pixel, so we have
-      // to round it up to 3, which means the image gets smaller (3 voxels fit into 1 pixel), and then
-      // invert it to get the scale factor again.
-      double tmp = 1.0 / scaleFactorPixPerVoxel[i];
-      int roundedTmp = (int)(tmp + 0.5);
-      targetScaleFactorPixPerVoxel[i] = 1.0 / roundedTmp;
-    }
-    targetScaleFactorPixPerMillimetres[i] = scaleFactorPixPerMillimetres[i] * (targetScaleFactorPixPerVoxel[i] / scaleFactorPixPerVoxel[i]);
-  }
-
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
-  int axisWithLargestDifference = 0;
-  double largestDifference = -1.0 * std::numeric_limits<double>::max();
-  for(int i = 0; i < 2; i++)
-  {
-    double difference = fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]);
-    if (difference > largestDifference)
-    {
-      largestDifference = fabs(targetScaleFactorPixPerVoxel[i] - scaleFactorPixPerVoxel[i]);
-      axisWithLargestDifference = i;
-    }
-  }
+  double scaleFactor = std::max(scaleFactorPixPerVoxel[0], scaleFactorPixPerVoxel[1]);
 
-  double effectiveMagnificationFactor = targetScaleFactorPixPerVoxel[axisWithLargestDifference];
-
-  /*
-  * Note: The requirements specification for MIDAS style zoom basically says.
-  *
-  * magnification   : actual pixels per voxel.
-  * on MIDAS widget :
-  * 2               : 3
-  * 1               : 2
-  * 0               : 1 (i.e. no magnification).
-  * -1              : 0.5 (i.e. 1 pixel covers 2 voxels).
-  * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
-  */
-
-  // See comments at top of header file
-  double magnificationFactor;
-  if (effectiveMagnificationFactor >= 1.0)
+  double magnificationFactor = scaleFactor - 1.0;
+  if (magnificationFactor < 0.0)
   {
-    // So, if pixels per voxel = 2, midas magnification = 1.
-    // So, if pixels per voxel = 1, midas magnification = 0. etc.
-    magnificationFactor = effectiveMagnificationFactor - 1.0;
-  }
-  else
-  {
-    magnificationFactor = (-1.0 / effectiveMagnificationFactor) + 1.0;
+    magnificationFactor /= scaleFactor;
   }
   return magnificationFactor;
 }
