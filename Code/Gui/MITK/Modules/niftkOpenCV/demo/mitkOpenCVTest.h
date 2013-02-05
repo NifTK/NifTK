@@ -22,11 +22,41 @@
 
  ============================================================================*/
 
-#include <cstdlib>
-#include "mitkCameraCalibrationFacade.h"
+#ifndef MITKOPENCVTEST_H
+#define MITKOPENCVTEST_H
 
-int main(int argc, char** argv)
+#include "niftkOpenCVExports.h"
+#include <string>
+#include <itkObject.h>
+#include <itkObjectFactory.h>
+#include <mitkCommon.h>
+
+namespace mitk {
+
+/**
+ * \class OpenCVTest
+ * \brief Test Class
+ */
+class NIFTKOPENCV_EXPORT OpenCVTest : public itk::Object
 {
-  mitk::SomeOpenCVTypeFunction();
-  return EXIT_SUCCESS;
-}
+
+public:
+
+  mitkClassMacro(OpenCVTest, itk::Object);
+  itkNewMacro(OpenCVTest);
+
+  void Run(const std::string& fileName);
+
+protected:
+
+  OpenCVTest();
+  virtual ~OpenCVTest();
+
+  OpenCVTest(const OpenCVTest&); // Purposefully not implemented.
+  OpenCVTest& operator=(const OpenCVTest&); // Purposefully not implemented.
+
+}; // end class
+
+} // end namespace
+
+#endif

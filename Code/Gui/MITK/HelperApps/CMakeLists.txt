@@ -41,19 +41,11 @@ SET(HELPER_APP_LIBRARIES
   ${ALL_LIBRARIES}
 )
 
-SET(HELPER_APPS
-  # Add apps that DO NOT depend on BUILD_IGI here.
-)
-
 SET(HELPER_APPS_REQUIRED_MODULES
   # Add modules that DO NOT depend on BUILD_IGI here.
 )
 
 IF(BUILD_IGI)
-  SET(HELPER_APPS
-    ${HELPER_APPS}
-    niftkCameraCalibration
-  )
   SET(HELPER_APPS_REQUIRED_MODULES
     ${HELPER_APPS_REQUIRED_MODULES}
     niftkOpenCV
@@ -65,9 +57,42 @@ FOREACH(MOD ${HELPER_APPS_REQUIRED_MODULES})
   NIFTK_ADD_MODULE(${MOD})
 ENDFOREACH()
 
+SET(HELPER_APPS
+  # Add apps that DO NOT depend on BUILD_IGI here.
+)
+
+IF(BUILD_IGI)
+  SET(HELPER_APPS
+    ${HELPER_APPS}
+    # Add apps that DO depend on BUILD_IGI here.
+    niftkOpenCVTest
+  )
+ENDIF()
+
 # Then foreach app, we just build against libraries (modules).
 FOREACH(APP ${HELPER_APPS})
-  ADD_EXECUTABLE(${APP} ${APP}.cpp )
+  ADD_EXECUTABLE(${APP} ${APP}.cxx )
   TARGET_LINK_LIBRARIES(${APP} ${HELPER_APP_LIBRARIES} )
   MITK_INSTALL(TARGETS ${APP})
 ENDFOREACH()
+
+# Repeat the same process for slices apps.
+IF(SlicerExecutionModel_FOUND)
+  SET(SLICER_HELPER_APPS
+    # Add Slicer apps that DO NOT depend on BUILD_IGI here.
+  )
+
+  IF(BUILD_IGI)
+    SET(SLICER_HELPER_APPS
+      ${SLICER_HELPER_APPS}
+      niftkCameraCalibration
+    )
+  ENDIF()  
+
+  FOREACH(APP ${SLICER_HELPER_APPS})    
+    NIFTK_CONFIGURE_AND_BUILD_CLI(
+      NAME ${APP} 
+      TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
+    )
+  ENDFOREACH()
+ENDIF()
