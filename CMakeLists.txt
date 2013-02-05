@@ -1058,6 +1058,36 @@ INCLUDE(CPackSetup)
 #    and additional file, that we can politely ask cpack to include, in addition to all the
 #    cmake_install.cmake files.
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Configuring the Start Menu and Desktop icon strings for NSIS
+
+if (WIN32)
+  SET(ICONS_SETUP_STRING "")
+  SET(ICONS_REMOVE_STRING "")
+  SET(DESKTOP_ICONS_SETUP_STRING "")
+  SET(DESKTOP_ICONS_REMOVE_STRING "")
+  SET(DESKTOP_ICONS_REMOVE_STRING "")
+ 
+  FOREACH(NIFTK_APP ${NIFTK_APPS})  
+    # extract option_name
+    STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+    SET(target_info_list ${target_info})
+    LIST(GET target_info_list 1 option_name)
+    LIST(GET target_info_list 0 app_name)
+
+	message("Current App Name: ${app_name}")
+	
+	if(EXISTS "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/${app_name}.exe")
+	  SET(ICONS_SETUP_STRING "${ICONS_SETUP_STRING}CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n")
+      SET(ICONS_REMOVE_STRING "${ICONS_REMOVE_STRING}Delete '$SMPROGRAMS\\\\$MUI_TEMP\\\\${app_name}.lnk'\n")
+	
+      SET(DESKTOP_ICONS_SETUP_STRING "${DESKTOP_ICONS_SETUP_STRING}CreateShortCut '$DESKTOP\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n") 
+      SET(DESKTOP_ICONS_REMOVE_STRING "${DESKTOP_ICONS_REMOVE_STRING}Delete '$DESKTOP\\\\${app_name}.lnk'\n")
+	endif()
+  ENDFOREACH()
+endif()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CPackOptions.cmake.in
                ${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake)
 
