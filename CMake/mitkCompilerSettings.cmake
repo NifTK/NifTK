@@ -27,10 +27,13 @@
 INCLUDE(mitkFunctionCheckCompilerFlags)
 INCLUDE(mitkFunctionGetGccVersion)
 INCLUDE(mitkFunctionGetVersion)
+INCLUDE(niftkMacroGetGitDateTime)
 
 # Retrieve some software versions
 mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK)
-MESSAGE("NIFTK version=${NIFTK_REVISION_ID}")
+niftkMacroGetGitDateTime(${CMAKE_SOURCE_DIR} NIFTK)
+
+MESSAGE("NIFTK version=${NIFTK_REVISION_SHORTID}, from ${NIFTK_DATE_TIME}")
 
 IF(BUILD_GUI)
   MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
