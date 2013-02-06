@@ -740,10 +740,6 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        Camera->SetFocalPoint(0,0,2000);
        Camera->SetViewUp(0,1,0);
        Camera->SetClippingRange(0.0, 8000.0);
-       double far;
-       double near;
-       Camera->GetClippingRange(near, far);
-       qDebug() << "Far : " << far << " Near : " << near;
      }
    }
    else
