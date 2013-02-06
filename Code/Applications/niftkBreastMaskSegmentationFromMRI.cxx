@@ -90,6 +90,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH, "cropfit",  NULL,       "Crop the final mask with a fitted B-Spline surface."},
   {OPT_STRING, "ofitsurf", "filename", "Output fitted skin surface mask to file."},
   {OPT_SWITCH, "cropPS",  NULL,        "Crop for prone-supine simulations."},
+  {OPT_FLOAT,  "cropPSMidSternumDist",  NULL,  "Crop distance posterior to mid sternum given in mm for prone-supine scheme [40]."},
 
   {OPT_STRING, "ovtk", "filename", "Output a VTK surface (PolyData) representation of the segmentation."},
   
@@ -153,6 +154,7 @@ enum {
   O_CROP_FIT,
   O_OUTPUT_BREAST_FITTED_SURF_MASK,
   O_CROP_PRONE_SUPINE_SCHEME,
+  O_CROP_PRONE_SUPINE_DIST_POST_MIDSTERNUM,
 
   O_OUTPUT_VTK_SURFACE,
 
@@ -190,6 +192,8 @@ int main( int argc, char *argv[] )
   float fMarchingK1   = 30.0;
   float fMarchingK2   = 15.0;
   float fMarchingTime = 5.0;
+
+  float cropProneSupineDistPostMidSternum  = 40.0;
 
   std::string fileBIFs;
   std::string fileOutputBIFs;
@@ -296,7 +300,9 @@ int main( int argc, char *argv[] )
   
   CommandLineOptions.GetArgument( O_CROP_FIT,                       flgCropWithFittedSurface     );
   CommandLineOptions.GetArgument( O_OUTPUT_BREAST_FITTED_SURF_MASK, fileOutputFittedBreastMask );
+  
   CommandLineOptions.GetArgument( O_CROP_PRONE_SUPINE_SCHEME,       flgProneSupineBoundary     );
+  CommandLineOptions.GetArgument( O_CROP_PRONE_SUPINE_DIST_POST_MIDSTERNUM, cropProneSupineDistPostMidSternum );
 
   CommandLineOptions.GetArgument( O_OUTPUT_VTK_SURFACE, fileOutputVTKSurface);
 
@@ -372,10 +378,12 @@ int main( int argc, char *argv[] )
   
   breastMaskSegmentor->SetOutputPectoralSurf( fileOutputPectoralSurfaceVoxels );
   
+  breastMaskSegmentor->SetCropDistancePosteriorToMidSternum( cropProneSupineDistPostMidSternum );
+
   breastMaskSegmentor->SetCropFit( flgCropWithFittedSurface );
   breastMaskSegmentor->SetOutputBreastFittedSurfMask( fileOutputFittedBreastMask );
 
-  breastMaskSegmentor->SetOutputVTKSurface( fileOutputVTKSurface);
+  breastMaskSegmentor->SetOutputVTKSurface( fileOutputVTKSurface );
 
 
   // Read the input images

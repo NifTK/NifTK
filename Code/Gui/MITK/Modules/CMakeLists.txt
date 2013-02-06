@@ -32,6 +32,7 @@ SET(MODULE_DIRS
 IF(BUILD_IGI)
   SET(MODULE_DIRS
     ${MODULE_DIRS}
+    niftkOpenCV
     niftkIGI
     niftkIGIGui    
   )

@@ -94,8 +94,8 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   // OR: for prone-supine scheme: clip at a distance of 40mm 
   //     posterior to the mid sternum point
   else
-    this->MaskAtAtFixedDistancePosteriorToMidSternum();
-  
+    this->MaskAtDistancePosteriorToMidSternum();
+
   // Finally smooth the mask and threshold to round corners etc.
   this->SmoothMask();
 
@@ -138,11 +138,6 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
 
   // Write the chest surface points to a file?
 
-  this->WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
-				     "chest surface points", 
-				     this->imChestSurfaceVoxels, this->flgLeft, this->flgRight );
-
-
   // Discard anything within the pectoral mask (i.e. below the surface fit)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -155,7 +150,7 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   if ( this->flgVerbose ) 
     std::cout << "Discarding segmentation posterior to pectoralis mask. " 
 	      << std::endl;
-
+  
   for ( itSeg.GoToBegin(), itFitPec.GoToBegin(); 
         ( ! itSeg.IsAtEnd() ) && ( ! itFitPec.IsAtEnd() ) ; 
         ++itSeg, ++itFitPec )
@@ -168,6 +163,52 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   this->imPectoralVoxels = 0;
 }
  
+// --------------------------------------------------------------------------
+// Mask at a distance posterior to the mid-sterum point
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+void
+BreastMaskSegmForModelling< ImageDimension, InputPixelType >
+::MaskAtDistancePosteriorToMidSternum( void )
+{
+  
+  std::cout << "Cropping segmented region " 
+            << this->cropDistPosteriorToMidSternum 
+            << "mm posterior to mid sternum location."
+            << std::cout;
+
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
+
+  IteratorType itSeg = IteratorType( this->imSegmented,        
+				     this->imStructural->GetLargestPossibleRegion() );
+
+  //InternalImageType::SizeType sizeChestSurfaceRegion;
+  region = this->imSegmented->GetLargestPossibleRegion();
+  
+  const typename InternalImageType::SpacingType& sp = this->imSegmented->GetSpacing();
+
+  start    = region.GetIndex();
+  start[0] = 0;
+  start[1] = this->idxMidSternum[1] + ( this->cropDistPosteriorToMidSternum / sp[1]);
+  start[2] = 0;
+  
+  size    = region.GetSize();
+  size[1] = size[1] - start[1];
+
+  region.SetSize( size );
+  region.SetIndex( start );
+
+  itSeg = IteratorType( this->imSegmented, region );
+
+  for ( itSeg.GoToBegin() ; ( ! itSeg.IsAtEnd() ) ; ++itSeg )
+  {
+    itSeg.Set(0);
+  }
+ 
+}
 
 
 } // namespace itk

@@ -51,6 +51,8 @@ interpolation=4
 double_window="yes"
 ss_atlas=""
 just_dbc="no"
+kernel_size=5
+dbc_method=1
 
 # Parse command line options
 while [ "$#" -gt 0 ]
@@ -73,6 +75,14 @@ do
       ;; 
     -just_dbc)
       just_dbc=$2
+      shift 1
+      ;;
+    -radius)
+      kernel_size=$2
+      shift 1
+      ;;
+    -mode)
+      dbc_method=$2
       shift 1
       ;;
     *)
@@ -266,7 +276,7 @@ do
     arguments="${arguments} ${output_dir}/${output_prefix}_${i}.hdr ${output_dir}/${output_prefix}_${i}_mask.img ${output_dir}/${output_prefix}_${i}_dbc.hdr"
   fi 
 done  
-niftkMTPDbc -mode 1 ${arguments} 
+niftkMTPDbc -mode ${dbc_method} -radius ${kernel_size} ${arguments} 
 
 # Compute BSI. 
 for ((i=1; i<=${number_of_images}; i++))

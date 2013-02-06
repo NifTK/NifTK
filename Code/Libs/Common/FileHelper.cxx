@@ -33,16 +33,21 @@ namespace fs = boost::filesystem;
 namespace niftk
 {
 
+//-----------------------------------------------------------------------------
 std::string GetFileSeparator()
 {	
   return FILE_SEPARATOR;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConcatenatePath(const std::string& path, const std::string& name)
 {
   return path + GetFileSeparator() + name;
 }
 
+
+//-----------------------------------------------------------------------------
 fs::path ConvertToFullPath(const std::string& pathName)
 {
   if (pathName.length() == 0)
@@ -55,12 +60,16 @@ fs::path ConvertToFullPath(const std::string& pathName)
   return full_path;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToFullNativePath(const std::string& pathName)
 {
   fs::path full_path = ConvertToFullPath(pathName);  
   return full_path.native_file_string();
 }
 
+
+//-----------------------------------------------------------------------------
 fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix) throw (niftk::IOException) {
   fs::path tmpFileName;
   std::string tmpDirName, fileNameTemplate;
@@ -140,6 +149,8 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
 #endif
 }
 
+
+//-----------------------------------------------------------------------------
 bool DirectoryExists(const std::string& directoryPath)
 {
 
@@ -147,23 +158,31 @@ bool DirectoryExists(const std::string& directoryPath)
   return fs::is_directory(full_path);
 }
 
+
+//-----------------------------------------------------------------------------
 bool FileExists(const std::string& fileName)
 {
   fs::path full_path = ConvertToFullPath(fileName);
   return fs::is_regular(full_path);
 }
 
+
+//-----------------------------------------------------------------------------
 int FileSize(const std::string& fileName)
 {
   fs::path full_path = ConvertToFullPath(fileName);
   return (int)fs::file_size(full_path);
 }
 
+
+//-----------------------------------------------------------------------------
 bool FileIsEmpty(const std::string& fileName)
 {
   return FileSize(fileName) == 0;
 }
 
+
+//-----------------------------------------------------------------------------
 bool FilenameHasPrefixAndExtension(
     const std::string& filename,
     const std::string& prefix,
@@ -188,6 +207,8 @@ bool FilenameHasPrefixAndExtension(
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 bool FilenameMatches(
     const std::string& filename,
     const std::string& prefix,
@@ -216,9 +237,38 @@ bool FilenameMatches(
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string GetImagesDirectory()
 {
   return ConcatenatePath(GetNIFTKHome(), "images"); 
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryName)
+{
+  if (!DirectoryExists(fullDirectoryName))
+  {
+    throw std::logic_error("Directory does not exist!");
+  }
+
+  std::vector<std::string> fileNames;
+  fs::path fullDirectoryPath = ConvertToFullPath(fullDirectoryName);
+
+  fs::directory_iterator end_itr; // default construction yields past-the-end
+  for ( fs::directory_iterator itr( fullDirectoryPath );
+        itr != end_itr;
+        ++itr )
+  {
+    if (!fs::is_directory(*itr))
+    {
+      fs::path fullFilePath(fs::initial_path<fs::path>() );
+      fullFilePath = fs::system_complete(itr->path());
+      fileNames.push_back(fullFilePath.native_file_string());
+    }
+  }
+  return fileNames;
 }
 
 }
