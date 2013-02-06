@@ -2,12 +2,12 @@
 package require vtk
 vtkCylinderSource Tip
 Tip SetRadius 5.0
-Tip SetHeight 30.0
+Tip SetHeight 20.0
 Tip CappingOff
 Tip SetResolution 40
 vtkTransform TipTransform
 TipTransform RotateX 90
-TipTransform Translate 0 15 0 
+TipTransform Translate 0 -10 0 
 vtkTransformPolyDataFilter TipTransformer
 TipTransformer SetInput [Tip GetOutput ]
 TipTransformer SetTransform TipTransform
