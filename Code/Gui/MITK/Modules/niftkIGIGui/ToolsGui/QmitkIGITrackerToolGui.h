@@ -68,6 +68,7 @@ private slots:
   void OnManageToolConnection(void);
   void OnAssocClicked(void);
   void OnCameraLinkClicked(void);
+  void OnLHCRHCClicked(void);
   void OnStatusUpdate(QString message);
   void OnRegisterFiducials();
 

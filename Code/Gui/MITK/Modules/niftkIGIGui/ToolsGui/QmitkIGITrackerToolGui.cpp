@@ -73,6 +73,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   m_TrackerControlsWidget->pushButton_GetCurrentPos->setVisible(false);
   m_TrackerControlsWidget->pushButton_FiducialRegistration->setVisible(false);
   m_TrackerControlsWidget->line->setVisible(false);
+  m_TrackerControlsWidget->pushButton_LHCRHC->setText("LHC");
 
   connect(m_TrackerControlsWidget->pushButton_Tracking, SIGNAL(clicked()), this, SLOT(OnStartTrackingClicked()) );
   connect(m_TrackerControlsWidget->pushButton_GetCurrentPos, SIGNAL(clicked()), this, SLOT(OnGetCurrentPosition()) );
@@ -80,6 +81,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->toolButton_Add, SIGNAL(clicked()), this, SLOT(OnManageToolConnection()) );
   connect(m_TrackerControlsWidget->toolButton_Assoc, SIGNAL(clicked()), this, SLOT(OnAssocClicked()) );
   connect(m_TrackerControlsWidget->pushButton_CameraLink, SIGNAL(clicked()), this, SLOT(OnCameraLinkClicked()) );
+  connect(m_TrackerControlsWidget->pushButton_LHCRHC, SIGNAL(clicked()), this, SLOT(OnLHCRHCClicked()) );
 
   if (config != NULL)
   {
@@ -218,7 +220,37 @@ void QmitkIGITrackerToolGui::OnCameraLinkClicked(void)
     }
   }
 }
-
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnLHCRHCClicked(void)
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  double fc = tool->GetfocalPoint();
+  if ( m_TrackerControlsWidget->pushButton_LHCRHC->text() == "LHC" ) 
+  {
+    //switching to LHC coordinate want the camera focal point to be negative
+    //check it's current state
+    if ( fc > 0 ) 
+    {
+      tool->SetfocalPoint(fc*-1.0);
+    }
+    m_TrackerControlsWidget->pushButton_LHCRHC->setText("RHC");
+  }
+  else 
+  {
+    //switching to RHC coordinate want the camera focal point to be positive
+    //check it's current state
+    if ( fc < 0 ) 
+    {
+      tool->SetfocalPoint(fc*-1.0);
+    }
+    m_TrackerControlsWidget->pushButton_LHCRHC->setText("LHC");
+  }
+  //need to update camera position if not associated
+  if ( ! tool->GetCameraLink() ) 
+  {
+    tool->SetCameraLink(false);
+  }
+}
 
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnStatusUpdate(QString message)

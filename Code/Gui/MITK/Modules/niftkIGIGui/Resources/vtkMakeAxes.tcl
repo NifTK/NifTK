@@ -10,7 +10,7 @@ YAxis SetPoint1 0 0 0
 YAxis SetPoint2 0 4000 0 
 
 vtkLineSource ZAxis
-ZAxis SetPoint1 0 0 0 
+ZAxis SetPoint1 0 0 -4000 
 ZAxis SetPoint2  0 0 4000 
 
 

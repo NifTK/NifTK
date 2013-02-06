@@ -87,6 +87,11 @@ public:
   itkGetMacro(UseICP, bool);
 
   /**
+   * \ brief get/set the VTK camera focal point
+   */
+  itkSetMacro(focalPoint, double);
+  itkGetMacro(focalPoint, double);
+  /**
    * \brief Not Widely Used: Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
    */
   void ClearFiducials();
@@ -202,6 +207,7 @@ private:
   
   //store a copy of the init string
   QString                                              m_InitString;
+  double                                               m_focalPoint; //the focal point of the VTK camera used
 }; // end class
 
 #endif

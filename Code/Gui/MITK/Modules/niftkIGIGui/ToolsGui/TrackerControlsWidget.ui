@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>534</width>
-    <height>187</height>
+    <width>562</width>
+    <height>211</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -192,6 +192,16 @@
            <widget class="QPushButton" name="pushButton_CameraLink">
             <property name="text">
              <string>Associate with VTK Camera</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="pushButton_LHCRHC">
+            <property name="toolTip">
+             <string comment="Flips the camera focal point to enable tracking in left or right handed coordinate systems."/>
+            </property>
+            <property name="text">
+             <string>LHC</string>
             </property>
            </widget>
           </item>

@@ -52,6 +52,7 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
 , m_TrackerFiducialsPointSet(NULL)
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
+, m_focalPoint(2000.0)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
@@ -69,6 +70,7 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
 , m_TrackerFiducialsPointSet(NULL)
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
+, m_focalPoint(2000.0)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
@@ -274,7 +276,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
         //camerausertransform seems pretty useless in this application
         float fx=0;
         float fy=0;
-        float fz=2000; 
+        float fz=m_focalPoint; 
         fx = inputTransformMat[0][0] * fx + inputTransformMat[0][1] * fy 
           + inputTransformMat[0][2] * fz + inputTransformMat[0][3];
         fy = inputTransformMat[1][0] * fx + inputTransformMat[1][1] * fy
@@ -737,7 +739,7 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
 
        Camera->SetPosition(0,0,0);
-       Camera->SetFocalPoint(0,0,2000);
+       Camera->SetFocalPoint(0,0,m_focalPoint);
        Camera->SetViewUp(0,1,0);
        Camera->SetClippingRange(0.0, 8000.0);
      }
@@ -757,7 +759,7 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
 
        Camera->SetPosition(0,0,0);
-       Camera->SetFocalPoint(0,0,2000);
+       Camera->SetFocalPoint(0,0,m_focalPoint);
        Camera->SetViewUp(1,0,0);
        vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
        vtkTransform * Transform = vtkTransform::New();
