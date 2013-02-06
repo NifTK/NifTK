@@ -76,6 +76,7 @@ IF(SlicerExecutionModel_FOUND)
     niftkCropImage
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
+    niftkMakeCheckerboardMarker
     niftkMultiply
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
@@ -102,24 +103,10 @@ IF(SlicerExecutionModel_FOUND)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
     
     FOREACH(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
-  
-      CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${APP}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${APP}.xml @ONLY )
-      
-      IF(WIN32) 
-        CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat @ONLY )
-        NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat)
-      ELSE(WIN32)
-        CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh @ONLY )
-        NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh)
-      ENDIF(WIN32)
-  
-      SEMMacroBuildNifTKCLI(
-        NAME ${APP}
-        EXECUTABLE_ONLY
-        ${CMAKE_CURRENT_BINARY_DIR}
+      NIFTK_CONFIGURE_AND_BUILD_CLI(
+        NAME ${APP} 
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
       )
-   
     ENDFOREACH()
 
     #-------------------------------------------------------------
