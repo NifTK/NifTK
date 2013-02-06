@@ -76,7 +76,7 @@ IF(SlicerExecutionModel_FOUND)
     niftkCropImage
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
-    niftkMakeLaparoscopicMarker
+    niftkMakeCheckerboardMarker
     niftkMultiply
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter

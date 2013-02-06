@@ -38,7 +38,6 @@ bool IsOnEvenSquare(const std::vector<int>& vec, const int pixelIndex)
       break;
     }
   }
-  //std::cout << "Matt, pixelIndex=" << pixelIndex << ", chosenIndex=" << chosenIndex << ", result=" << (chosenIndex % 2 == 0) << std::endl;
   return (chosenIndex % 2 == 0);
 }
 

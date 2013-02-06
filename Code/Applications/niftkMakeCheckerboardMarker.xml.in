@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Make Marker</title>
-  <description><![CDATA[Generates a 2D image containing a calibration pattern to help track a Laparoscopic Ultrasound probe.]]></description>
+  <title>Make Checkerboard Marker</title>
+  <description><![CDATA[Generates a 2D image containing a checkerboard calibration pattern.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
