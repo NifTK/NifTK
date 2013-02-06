@@ -24,7 +24,7 @@
 #include "itkLogHelper.h"
 #include "ConversionUtils.h"
 #include "itkCommandLineHelper.h"
-#include "niftkMakeLaparoscopicMarkerCLP.h"
+#include "niftkMakeCheckerboardMarkerCLP.h"
 #include "itkImage.h"
 #include "itkImageFileWriter.h"
 
