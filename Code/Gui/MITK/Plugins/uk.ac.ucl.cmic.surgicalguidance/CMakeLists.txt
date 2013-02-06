@@ -3,5 +3,5 @@ project(uk_ac_ucl_cmic_surgicalguidance)
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE SURGICALGUIDANCE_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES CTK niftkMitkExt niftkIGI niftkIGIGui QmitkExt MitkIGT MitkIGTUI
+  MODULE_DEPENDENCIES CTK niftkMitkExt niftkIGI niftkIGIGui niftkOpenCV QmitkExt MitkIGT MitkIGTUI
 )
