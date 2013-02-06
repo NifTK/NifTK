@@ -47,6 +47,21 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
   m_ImageNode->SetOpacity(1);
 }
 
+QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool( OIGTLSocketObject * socket )
+: QmitkIGINiftyLinkDataSource(socket)
+, m_Image(NULL)
+, m_ImageNode(NULL)
+, m_RadToDeg ( 180 / 3.14159265358979323846)
+{
+  m_Image = mitk::Image::New();
+
+  m_ImageNode = mitk::DataNode::New();
+  m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
+  m_ImageNode->SetVisibility(true);
+  m_ImageNode->SetOpacity(1);
+}
+
+
 
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixTool::~QmitkIGIUltrasonixTool()
