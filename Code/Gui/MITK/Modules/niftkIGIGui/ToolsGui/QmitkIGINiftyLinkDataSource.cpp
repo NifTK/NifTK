@@ -28,18 +28,34 @@
 QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
 : m_Socket(NULL)
 , m_ClientDescriptor(NULL)
+, m_UsingSomeoneElsesSocket(false)
 {
   m_Socket = new OIGTLSocketObject();
   connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
   connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
   connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
 }
+//-----------------------------------------------------------------------------
+QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket)
+: m_Socket(socket)
+, m_ClientDescriptor(NULL)
+, m_UsingSomeoneElsesSocket(true)
+{
+  connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
+  connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
+  connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
+}
+
 
 
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::~QmitkIGINiftyLinkDataSource()
 {
-  if (m_Socket != NULL)
+  if ( m_UsingSomeoneElsesSocket )
+  {
+    m_Socket = NULL;
+  }
+  if (m_Socket != NULL )
   {
     delete m_Socket;
   }
@@ -88,7 +104,6 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
   return isListening;
 }
 
-
 //-----------------------------------------------------------------------------
 void QmitkIGINiftyLinkDataSource::ClientConnected()
 {
@@ -115,8 +130,10 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 
   QString descr = QString("Address=") +  clientInfo->getClientIP()
       + QString(":") + clientInfo->getClientPort();
-
-  this->SetDescription(descr.toStdString());
+  
+  //Don't set description for trackers
+  if ( clientInfo->getDeviceType() != "Tracker" ) 
+    this->SetDescription(descr.toStdString());
 
   QString deviceInfo;
   deviceInfo.append("Client connected:");
@@ -146,4 +163,9 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 
   qDebug() << deviceInfo;
   DataSourceStatusUpdated.Send(this->GetIdentifier());
+}
+//-----------------------------------------------------------------------------
+OIGTLSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
+{
+  return this->m_Socket;
 }

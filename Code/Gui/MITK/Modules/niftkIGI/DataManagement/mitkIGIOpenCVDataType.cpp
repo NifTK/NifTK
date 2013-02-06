@@ -48,7 +48,7 @@ void IGIOpenCVDataType::CloneImage(const IplImage *image)
 {
   if (m_Image != NULL)
   {
-    delete m_Image;
+    cvReleaseImage(&m_Image);
   }
   m_Image = cvCloneImage(image);
 }

@@ -34,5 +34,5 @@ SET params=%params% %1
 GOTO LOOP
 :AFTERLOOP
 
-@APP@ %params%
+..\@APP@ %params%
 

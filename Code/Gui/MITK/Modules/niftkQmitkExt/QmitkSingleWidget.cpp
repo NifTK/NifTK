@@ -61,8 +61,6 @@ m_GradientBackgroundFlag(true),
 m_TimeNavigationController(NULL),
 m_MainSplit(NULL),
 m_LayoutSplit(NULL),
-m_SubSplit1(NULL),
-m_SubSplit2(NULL),
 mitkWidget1Container(NULL),
 m_PendingCrosshairPositionEvent(false),
 m_CrosshairNavigationEnabled(false)
@@ -93,15 +91,7 @@ m_CrosshairNavigationEnabled(false)
   //create main splitter
   m_MainSplit = new QSplitter( this );
   QmitkSingleWidgetLayout->addWidget( m_MainSplit );
-/*
-  //create m_LayoutSplit  and add to the mainSplit
-  m_LayoutSplit = new QSplitter( Qt::Vertical, m_MainSplit );
-  m_MainSplit->addWidget( m_LayoutSplit );
-
-  //create m_SubSplit1 and m_SubSplit2  
-  m_SubSplit1 = new QSplitter( m_LayoutSplit );
-  m_SubSplit2 = new QSplitter( m_LayoutSplit );
-*/
+  
   //creae Widget Container
   mitkWidget1Container = new QWidget(m_MainSplit);
 
@@ -118,9 +108,6 @@ m_CrosshairNavigationEnabled(false)
   //set SizePolicy
   mitkWidget1Container->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-
-  //insert Widget Container into the splitters
-  //m_SubSplit1 
   m_MainSplit->addWidget( mitkWidget1Container );
 
   //  m_RenderingManager->SetGlobalInteraction( mitk::GlobalInteraction::GetInstance() );
@@ -251,20 +238,30 @@ void QmitkSingleWidget::InitializeWidget()
   m_GradientBackground1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
   m_GradientBackground1->SetGradientColors(0.1,0.1,0.1,0.5,0.5,0.5);
-  m_GradientBackground1->Enable();
+  m_GradientBackground1->Disable();
 
   // setup the department logo rendering
-  m_LogoRendering1 = mitk::ManufacturerLogo::New();
+  //m_LogoRendering1 = mitk::ManufacturerLogo::New();
+  m_LogoRendering1 = CMICLogo::New();
   m_LogoRendering1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
-  m_LogoRendering1->Enable();
+  m_LogoRendering1->Disable();
 
   m_RectangleRendering1 = mitk::RenderWindowFrame::New();
   m_RectangleRendering1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
   m_RectangleRendering1->Enable(1.0,0.0,0.0);
 }
-  
+ 
+void QmitkSingleWidget::EnableDepartmentLogo()
+{
+   m_LogoRendering1->Enable();
+}
+void QmitkSingleWidget::DisableDepartmentLogo()
+{
+   m_LogoRendering1->Disable();
+}
+
 QmitkSingleWidget::~QmitkSingleWidget()
 {
   DisablePositionTracking();
@@ -755,9 +752,6 @@ void QmitkSingleWidget::EnableGradientBackground()
 {
   // gradient background is by default only in widget 4, otherwise
   // interferences between 2D rendering and VTK rendering may occur.
-  //m_GradientBackground1->Enable();
-  //m_GradientBackground2->Enable();
-  //m_GradientBackground3->Enable();
   m_GradientBackground1->Enable();
   m_GradientBackgroundFlag = true;
 }
@@ -765,29 +759,10 @@ void QmitkSingleWidget::EnableGradientBackground()
 
 void QmitkSingleWidget::DisableGradientBackground()
 {
-  //m_GradientBackground1->Disable();
-  //m_GradientBackground2->Disable();
-  //m_GradientBackground3->Disable();
   m_GradientBackground1->Disable();
   m_GradientBackgroundFlag = false;
 }
 
-
-void QmitkSingleWidget::EnableDepartmentLogo()
-{
-  m_LogoRendering4->Enable();
-}
-
-
-void QmitkSingleWidget::DisableDepartmentLogo()
-{
-  m_LogoRendering4->Disable();
-}
-
-bool QmitkSingleWidget::IsDepartmentLogoEnabled() const
-{
-  return m_LogoRendering4->IsEnabled();
-}
 
 bool QmitkSingleWidget::IsCrosshairNavigationEnabled() const
 {
@@ -1075,17 +1050,11 @@ void QmitkSingleWidget::ResetCrosshair()
 void QmitkSingleWidget::EnableColoredRectangles()
 {
   m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
-  m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
-  m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
-  m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
 }
 
 void QmitkSingleWidget::DisableColoredRectangles()
 {
   m_RectangleRendering1->Disable();
-  m_RectangleRendering2->Disable();
-  m_RectangleRendering3->Disable();
-  m_RectangleRendering4->Disable();
 }
 
 bool QmitkSingleWidget::IsColoredRectanglesEnabled() const

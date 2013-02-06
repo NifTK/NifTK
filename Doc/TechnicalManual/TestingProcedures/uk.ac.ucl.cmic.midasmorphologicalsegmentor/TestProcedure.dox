@@ -31,14 +31,17 @@ You must have a 3 button mouse for this functionlity.
 \li Use connection breaker to remove the right temporal lobe.
 \li Check the right temporal lobe has disappeared from slices 120+
 \li Click "reset"
+\li Check if you are at the Erosions tab and click "accept".
 \li Check the connection breaker is still present on slice 119
-\li Set the number of dilations to 2
+\li Check if the number of dilations is still set to 2
 \li Check connection breaker has stopped the right temporal lobe expanding beyond slice 119
 \li Click "accept"
 \li Set the re-thresholding box size to 6
 \li Click "ok" to finish the segmentation
 \li Open the Image Statistics View. Window->Show View->Image Statistics
-\li In Datamanager, click on the image, and then the segmentation
+\li In Datamanager, click on the image, and then the segmentation while holding the Ctrl (Window and Linux) or Cmd key (Mac).
+Make sure that you see "16856-002-1" in the "image:" line in the Image Statistics view and the chosen segmentation name after
+"mask:".  
 \li In the Image Statistics View click "update"
 \li Check that the volume is 1178.33 (ml) +/- 0.25
 \li Check that the mean intensity value is 87.9 +/- 0.1

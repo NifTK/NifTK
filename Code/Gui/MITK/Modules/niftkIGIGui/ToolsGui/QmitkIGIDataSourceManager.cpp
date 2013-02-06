@@ -48,10 +48,10 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 : m_DataStorage(NULL)
 , m_StdMultiWidget(NULL)
 , m_GridLayoutClientControls(NULL)
-, m_UpdateTimer(NULL)
 , m_FrameRateTimer(NULL)
 , m_NextSourceIdentifier(0)
 , m_ClearDownThread(NULL)
+, m_GuiUpdateThread(NULL)
 {
   m_OKColour = DEFAULT_OK_COLOUR;
   m_WarningColour = DEFAULT_WARNING_COLOUR;
@@ -63,6 +63,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_SaveInBackground = DEFAULT_SAVE_IN_BACKGROUND;
 
   m_ClearDownThread = new QmitkIGIDataSourceManagerClearDownThread(this, this);
+  m_GuiUpdateThread = new QmitkIGIDataSourceManagerGuiUpdateThread(this, this);
 }
 
 
@@ -75,6 +76,15 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     while(!m_ClearDownThread->isFinished())
     {
       m_ClearDownThread->wait(250);
+    }
+  }
+
+  if (m_GuiUpdateThread->isRunning())
+  {
+    m_GuiUpdateThread->exit(0);
+    while(!m_GuiUpdateThread->isFinished())
+    {
+      m_GuiUpdateThread->wait(250);
     }
   }
 
@@ -160,15 +170,10 @@ void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
 {
   m_FrameRate = framesPerSecond;
 
-  if (m_UpdateTimer != NULL)
+  if (m_GuiUpdateThread != NULL)
   {
     int milliseconds = 1000 / framesPerSecond;
-
-    // This is for the display update.
-    // We have two timers: m_UpdateTimer will process the data,
-    // and m_FrameRateTimer is just to update the frame rate.
-    // This method called by preference page update to set the display rate.
-    m_UpdateTimer->setInterval(milliseconds);
+    m_GuiUpdateThread->SetInterval(milliseconds);
   }
 
   this->Modified();
@@ -234,9 +239,6 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_RecordPushButton->setEnabled(true);
   m_StopPushButton->setEnabled(false);
 
-  m_UpdateTimer =  new QTimer(this);
-  this->SetFramesPerSecond(DEFAULT_FRAME_RATE);
-
   m_FrameRateTimer = new QTimer(this);
   m_FrameRateTimer->setInterval(1000); // every 1 seconds
 
@@ -258,7 +260,6 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
-  connect(m_UpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateDisplay()) );
   connect(m_FrameRateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateFrameRate()) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
   connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
@@ -322,6 +323,84 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
     std::string device = m_Sources[rowNumber]->GetName();
     std::string description = m_Sources[rowNumber]->GetDescription();
 
+    int SubTools = m_Sources[rowNumber]->GetNumberOfTools();
+
+    std::list<std::string> ToolList = m_Sources[rowNumber]->GetSubToolList();
+    std::string Tool;
+    int index=0;
+    if ( SubTools > 0 ) 
+    {
+      foreach ( Tool, ToolList ) 
+      {
+        //this is horrible
+        int thisType = -1;
+        if ( type == "Tracker" || type == "Imager" ) 
+        {
+
+          if ( type == "Tracker" ) 
+          {
+            thisType = 0 ; 
+          }
+          if ( type == "Imager" ) 
+          {
+            thisType = 1;
+          }
+          
+          mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
+          QmitkIGINiftyLinkDataSource::Pointer NLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
+          bool ToolAlreadyAdded = false; 
+          for (int i = 0 ; i <  (int)m_Sources.size() ; i ++ )
+          {
+            //FIXME Tools with the same name being tracked by a different tracker 
+            //(on a separate port) will confuse this
+            if ( m_Sources[i]->GetDescription() == Tool  )
+            {
+              ToolAlreadyAdded = true;
+            }
+          }
+          
+          if ( ! ToolAlreadyAdded ) 
+          {
+            if ( index == 0 ) 
+            {
+              description=Tool;
+              NLSource->SetDescription(Tool);
+              // Force an update.
+              source->DataSourceStatusUpdated.Send(rowNumber);
+            }
+            else
+            {
+              int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
+
+              int tempRowNumber = this->GetRowNumberFromIdentifier(tempToolIdentifier);
+              if ( type == "Tracker" ) 
+              {
+                mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
+                QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
+                QmitkIGITrackerTool* TrackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
+                m_Sources[tempRowNumber]->SetDescription(Tool);
+                TrackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
+              }
+              else
+              {
+                m_Sources[tempRowNumber]->SetType(type);
+                m_Sources[tempRowNumber]->SetName(device);
+                m_Sources[tempRowNumber]->SetDescription(Tool);
+              }
+              // Force an update.
+              //source->DataSourceStatusUpdated.Send(tempRowNumber);
+              
+            }
+          }
+        }
+        index++;
+      }
+    }
+    else 
+    {
+      qDebug() << "there are no sub tools";
+    }
+
     std::vector<std::string> fields;
     fields.push_back(status);
     fields.push_back(type);
@@ -369,8 +448,6 @@ void QmitkIGIDataSourceManager::OnAddSource()
   int sourceType = m_SourceSelectComboBox->currentIndex();
   int portNumber = m_PortNumberSpinBox->value();
 
-  mitk::IGIDataSource::Pointer source = NULL;
-
   if (this->IsPortSpecificType())
   {
     if (m_PortsInUse.contains(portNumber))
@@ -380,6 +457,14 @@ void QmitkIGIDataSourceManager::OnAddSource()
       return;
     }
   }
+  this->AddSource(sourceType, portNumber);
+  return;
+}
+
+int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
+{
+  
+  mitk::IGIDataSource::Pointer source = NULL;
 
   if (sourceType == 0 || sourceType == 1)
   {
@@ -425,20 +510,86 @@ void QmitkIGIDataSourceManager::OnAddSource()
   m_NextSourceIdentifier++;
 
   // Launch timers
-  if (!m_UpdateTimer->isActive())
+  if (!m_ClearDownThread->isRunning())
   {
-    m_UpdateTimer->start();
+    m_ClearDownThread->start();
+  }
+  if (!m_GuiUpdateThread->isRunning())
+  {
+    m_GuiUpdateThread->start();
   }
   if (!m_FrameRateTimer->isActive())
   {
     m_FrameRateTimer->start();
   }
+  return source->GetIdentifier();
+}
+
+//------------------------------------------------
+int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSocketObject* socket)
+{
+  
+  mitk::IGIDataSource::Pointer source = NULL;
+
+  if (sourceType == 0 || sourceType == 1)
+  {
+    QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = NULL;
+    if (sourceType == 0)
+    {
+      niftyLinkSource = QmitkIGITrackerTool::New(socket);
+    }
+    else if (sourceType == 1)
+    {
+      niftyLinkSource = QmitkIGIUltrasonixTool::New(socket);
+    }
+    
+    if (niftyLinkSource->ListenOnPort(portNumber))
+    {
+      m_PortsInUse.insert(portNumber);
+    }
+    source = niftyLinkSource;
+  }
+  else if (sourceType == 2)
+  {
+    source = QmitkIGIOpenCVDataSource::New();
+  }
+  else
+  {
+    std::cerr << "Matt, not implemented yet" << std::endl;
+  }
+
+  source->SetIdentifier(m_NextSourceIdentifier);
+  source->SetDataStorage(m_DataStorage);
+  m_Sources.push_back(source);
+
+  // Registers this class as a listener to any status updates and connects to UpdateToolDisplay.
+  // This means that regardless of the tool type, this class will receive a signal, and then
+  // callback to the tool to ask for the necessary data to update the GUI row.
+  source->DataSourceStatusUpdated
+    += mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
+        this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
+
+  // Force an update.
+  source->DataSourceStatusUpdated.Send(m_NextSourceIdentifier);
+
+  // Increase this so that tools always have new identifier, regardless of what row of the table they are in.
+  m_NextSourceIdentifier++;
+ // Launch timers
   if (!m_ClearDownThread->isRunning())
   {
     m_ClearDownThread->start();
   }
+  if (!m_GuiUpdateThread->isRunning())
+  {
+    m_GuiUpdateThread->start();
+  }
+  if (!m_FrameRateTimer->isActive())
+  {
+    m_FrameRateTimer->start();
+  }
+  
+  return source->GetIdentifier();
 }
-
 
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRemoveSource()
@@ -463,6 +614,33 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   if (niftyLinkSource.IsNotNull())
   {
     int portNumber = niftyLinkSource->GetPort();
+    //scan through the other source looking for any others using the same port, 
+    //and kill them as well
+    for ( int i = 0 ; i < m_TableWidget->rowCount() ; i ++ )
+    {
+      if ( i != rowIndex ) 
+      {
+        mitk::IGIDataSource::Pointer tempSource = m_Sources[i];
+        QmitkIGINiftyLinkDataSource::Pointer tempNiftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(tempSource.GetPointer());
+        if ( tempNiftyLinkSource.IsNotNull() ) 
+        {
+          int tempPortNumber = tempNiftyLinkSource->GetPort();
+          if ( tempPortNumber == portNumber ) 
+          {
+            tempSource->DataSourceStatusUpdated
+             -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
+             this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
+            m_TableWidget->removeRow(i);
+            m_TableWidget->update();
+            m_Sources.erase(m_Sources.begin() + i);
+            if ( i < rowIndex ) 
+            {
+              rowIndex--;
+            }
+          }
+        }
+      }
+    }
     m_PortsInUse.remove(portNumber);
   }
 
@@ -475,7 +653,6 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 
   if (m_TableWidget->rowCount() == 0)
   {
-    m_UpdateTimer->stop();
     m_FrameRateTimer->stop();
   }
 }
@@ -534,6 +711,11 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateDisplay()
 {
+  if (!m_FrameRateTimer->isActive())
+  {
+    return;
+  }
+
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   timeNow->GetTime();
 
@@ -562,6 +744,12 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
       pix.fill(m_OKColour);
       tItem->setIcon(pix);
     }
+
+    double lag = source->GetCurrentTimeLag();
+    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+    lagItem->setTextAlignment(Qt::AlignCenter);
+    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 5, lagItem);
   }
 
   m_TableWidget->update();
@@ -580,19 +768,12 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
     source->UpdateFrameRate();
 
     float rate = source->GetFrameRate();
-    double lag = source->GetCurrentTimeLag();
-
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
 
     QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
     frameRateItem->setTextAlignment(Qt::AlignCenter);
     frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_TableWidget->setItem(rowNumber, 4, frameRateItem);
-
-    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-    lagItem->setTextAlignment(Qt::AlignCenter);
-    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    m_TableWidget->setItem(rowNumber, 5, lagItem);
   }
 
   m_TableWidget->update();
@@ -602,6 +783,11 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnCleanData()
 {
+  if (!m_FrameRateTimer->isActive())
+  {
+    return;
+  }
+
   // This should be done in a separate thread, or a separate thread per source.
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
@@ -726,4 +912,64 @@ void QmitkIGIDataSourceManagerClearDownThread::run()
 void QmitkIGIDataSourceManagerClearDownThread::OnTimeout()
 {
   m_Manager->OnCleanData();
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGIDataSourceManagerGuiUpdateThread::QmitkIGIDataSourceManagerGuiUpdateThread(
+    QObject *parent, QmitkIGIDataSourceManager *manager)
+: QThread(parent)
+, m_TimerInterval(0)
+, m_Timer(NULL)
+, m_Manager(manager)
+{
+  this->setObjectName("QmitkIGIDataSourceManagerGuiUpdateThread");
+  this->m_TimerInterval = 1000/QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGIDataSourceManagerGuiUpdateThread::~QmitkIGIDataSourceManagerGuiUpdateThread()
+{
+  if (m_Timer != NULL)
+  {
+    m_Timer->stop();
+    delete m_Timer;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManagerGuiUpdateThread::SetInterval(unsigned int milliseconds)
+{
+  m_TimerInterval = milliseconds;
+  if (m_Timer != NULL)
+  {
+    m_Timer->setInterval(m_TimerInterval);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManagerGuiUpdateThread::run()
+{
+  m_Timer = new QTimer(); // do not pass in (this)
+
+  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()), Qt::BlockingQueuedConnection);
+
+  m_Timer->setInterval(m_TimerInterval);
+  m_Timer->start();
+
+  this->exec();
+
+  disconnect(m_Timer, 0, 0, 0);
+  delete m_Timer;
+  m_Timer = NULL;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManagerGuiUpdateThread::OnTimeout()
+{
+  m_Manager->OnUpdateDisplay();
 }

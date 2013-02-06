@@ -43,6 +43,7 @@ public:
 
   mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGITrackerTool);
+  mitkNewMacro1Param(QmitkIGITrackerTool,OIGTLSocketObject *);
 
   /**
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
@@ -125,6 +126,27 @@ public:
    */
   mitk::DataNode* GetToolRepresentation(const QString name);
 
+  /**
+   * \brief Initialises the source based on the contents of the passed init string
+   */
+  void ProcessInitString(QString);
+
+  /**
+   * \brief Get the stored init string
+   */
+  QString GetInitString ();
+
+  /**
+   * \sets the state of the VTK camera link variable, 
+   * true will move the vtk camera with the tracking tool
+   */
+  void SetCameraLink (bool);
+  /**
+   * \gets the state of the VTK camera link variable, 
+   * true will move the vtk camera with the tracking tool
+   */
+  bool GetCameraLink ();
+
 public slots:
 
   /**
@@ -142,6 +164,7 @@ protected:
   virtual ~QmitkIGITrackerTool(); // Purposefully hidden.
 
   QmitkIGITrackerTool(const QmitkIGITrackerTool&); // Purposefully not implemented.
+  QmitkIGITrackerTool(OIGTLSocketObject* socket); // Purposefully not implemented.
   QmitkIGITrackerTool& operator=(const QmitkIGITrackerTool&); // Purposefully not implemented.
 
   /**
@@ -176,7 +199,9 @@ private:
   mitk::PointSet::Pointer                              m_TrackerFiducialsPointSet;
   mitk::NavigationDataLandmarkTransformFilter::Pointer m_FiducialRegistrationFilter;   ///< this filter transforms from tracking coordinates into mitk world coordinates
   mitk::NavigationDataLandmarkTransformFilter::Pointer m_PermanentRegistrationFilter;  ///< this filter transforms from tracking coordinates into mitk world coordinates if needed it is interconnected before the FiducialEegistrationFilter
-
+  
+  //store a copy of the init string
+  QString                                              m_InitString;
 }; // end class
 
 #endif

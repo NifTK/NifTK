@@ -23,36 +23,43 @@
  ============================================================================*/
 
 #include "QmitkMIDASMultiViewWidget.h"
-#include <QPushButton>
-#include <QGridLayout>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QSpacerItem>
-#include <QSize>
-#include <QSpinBox>
-#include <QDragEnterEvent>
-#include <QDragMoveEvent>
-#include <QDragLeaveEvent>
-#include <QDropEvent>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QLabel>
-#include <QDebug>
-#include <QMessageBox>
-#include <QStackedLayout>
-#include <QButtonGroup>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkGeometry3D.h>
-#include <mitkIRenderWindowPart.h>
-#include <QmitkRenderWindow.h>
-#include <vtkRenderer.h>
-#include <vtkRendererCollection.h>
+
+#include <ctkDoubleSlider.h>
 #include <ctkPopupWidget.h>
 
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QDebug>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QPalette>
+#include <QSize>
+#include <QSpacerItem>
+#include <QSpinBox>
+#include <QStackedLayout>
+#include <QToolButton>
+#include <QVBoxLayout>
+
+#include <mitkFocusManager.h>
+#include <mitkGeometry3D.h>
+#include <mitkGlobalInteraction.h>
+#include <QmitkRenderWindow.h>
+#include <mitkIRenderWindowPart.h>
+
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+
+#include "mitkMIDASOrientationUtils.h"
 #include "mitkMIDASViewKeyPressResponder.h"
 #include "QmitkMIDASSingleViewWidget.h"
-#include "mitkMIDASOrientationUtils.h"
 
 //-----------------------------------------------------------------------------
 QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
@@ -86,7 +93,9 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DropMultipleRadioButton(NULL)
 , m_DropThumbnailRadioButton(NULL)
 , m_DropAccumulateCheckBox(NULL)
-, m_PopupPushButton(NULL)
+, m_PinButton(NULL)
+, m_ControlWidget(NULL)
+, m_ControlWidgetLayout(NULL)
 , m_PopupWidget(NULL)
 , m_ControlsContainerWidget(NULL)
 , m_VisibilityManager(visibilityManager)
@@ -118,14 +127,14 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_TopLevelLayout->setContentsMargins(0, 0, 0, 0);
   m_TopLevelLayout->setSpacing(0);
 
-  int buttonRowHeight = 10;
-  m_PopupPushButton = new QPushButton(this);
-  m_PopupPushButton->setContentsMargins(0,0,0,0);
-  m_PopupPushButton->setFlat(true);
-  m_PopupPushButton->setMinimumHeight(buttonRowHeight);
-  m_PopupPushButton->setMaximumHeight(buttonRowHeight);
+  m_ControlWidget = new QWidget(this);
+  m_ControlWidget->setContentsMargins(0, 0, 0, 0);
+  m_ControlWidgetLayout = new QVBoxLayout(m_ControlWidget);
+  m_ControlWidgetLayout->setContentsMargins(0, 0, 0, 0);
+  m_ControlWidgetLayout->setSpacing(0);
+  m_ControlWidget->setLayout(m_ControlWidgetLayout);
 
-  m_PopupWidget = new ctkPopupWidget(m_PopupPushButton);
+  m_PopupWidget = new ctkPopupWidget(m_ControlWidget);
   m_PopupWidget->setOrientation(Qt::Vertical);
   m_PopupWidget->setAnimationEffect(ctkBasePopupWidget::ScrollEffect);
   m_PopupWidget->setHorizontalDirection(Qt::LeftToRight);
@@ -133,8 +142,37 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PopupWidget->setAutoShow(true);
   m_PopupWidget->setAutoHide(true);
   m_PopupWidget->setEffectDuration(100);
-  m_PopupWidget->setContentsMargins(0,0,0,0);
+  m_PopupWidget->setContentsMargins(0, 0, 0, 0);
   m_PopupWidget->setLineWidth(0);
+
+  QPalette popupPalette = this->palette();
+  QColor windowColor = popupPalette.color(QPalette::Window);
+  windowColor.setAlpha(128);
+  popupPalette.setColor(QPalette::Window, windowColor);
+  m_PopupWidget->setPalette(popupPalette);
+  m_PopupWidget->setAttribute(Qt::WA_TranslucentBackground, true);
+
+  int buttonRowHeight = 15;
+  m_PinButton = new QToolButton(m_ControlWidget);
+  m_PinButton->setContentsMargins(0, 0, 0, 0);
+  m_PinButton->setCheckable(true);
+  m_PinButton->setAutoRaise(true);
+  m_PinButton->setFixedHeight(16);
+  QSizePolicy pinButtonSizePolicy;
+  pinButtonSizePolicy.setHorizontalPolicy(QSizePolicy::Expanding);
+  m_PinButton->setSizePolicy(pinButtonSizePolicy);
+  // These two lines ensure that the icon appears on the left on each platform.
+  m_PinButton->setText(" ");
+  m_PinButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+  QIcon pinButtonIcon;
+  pinButtonIcon.addFile(":/PushPinIn.png", QSize(), QIcon::Normal, QIcon::On);
+  pinButtonIcon.addFile(":/PushPinOut.png", QSize(), QIcon::Normal, QIcon::Off);
+  m_PinButton->setIcon(pinButtonIcon);
+
+  QObject::connect(m_PinButton, SIGNAL(toggled(bool)),
+                   this, SLOT(OnPinButtonToggled(bool)));
+  m_ControlWidget->installEventFilter(this);
 
   m_ControlsContainerWidget = new QFrame(m_PopupWidget);
   m_ControlsContainerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -271,8 +309,10 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForTopControls->setColumnStretch(3, 0);
   m_LayoutForTopControls->setColumnStretch(4, 0);
 
+  m_ControlWidgetLayout->addWidget(m_PinButton);
+
   m_LayoutForGroupingControls->addLayout(m_LayoutForTopControls);
-  m_LayoutToPutControlsOnTopOfWindows->addWidget(m_PopupPushButton, 0, 0);
+  m_LayoutToPutControlsOnTopOfWindows->addWidget(m_ControlWidget, 0, 0);
   m_LayoutToPutControlsOnTopOfWindows->setRowMinimumHeight(0, buttonRowHeight);
   m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows, 1, 0);
   m_TopLevelLayout->addLayout(m_LayoutToPutControlsOnTopOfWindows);
@@ -849,9 +889,9 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
       if (windows.size() == 1 && window == windows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
       {
         // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
-        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
+        bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
         m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
-        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(false);
+        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
       }
     }
   }
@@ -861,9 +901,10 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *wi
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
 {
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
+  bool wasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(false);
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(wasBlocked);
+
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -874,6 +915,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
       }
     }
   }
+  m_PreviousMagnificationFactor = magnificationFactor;
 }
 
 
@@ -895,8 +937,9 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
   }
 
   int selectedWindow = this->GetSelectedWindowIndex();
-  int magnification = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
-  m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnification);
+  double magnificationFactor = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
+
+  m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
 
   MIDASView view = m_SingleViewWidgets[selectedWindow]->GetView();
   m_MIDASOrientationWidget->SetToView(view);
@@ -948,12 +991,12 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindo
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(currentSlice);
     }
 
-    double minMag = this->m_SingleViewWidgets[selectedViewer]->GetMinMagnification();
-    double maxMag = this->m_SingleViewWidgets[selectedViewer]->GetMaxMagnification();
-    double currentMag = this->m_SingleViewWidgets[selectedViewer]->GetMagnificationFactor();
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMinimum((int)minMag);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMaximum((int)maxMag);
-    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue((int)currentMag);
+    double minMag = std::ceil(this->m_SingleViewWidgets[selectedViewer]->GetMinMagnification());
+    double maxMag = std::floor(this->m_SingleViewWidgets[selectedViewer]->GetMaxMagnification());
+    double currentMag = std::floor(0.5 + this->m_SingleViewWidgets[selectedViewer]->GetMagnificationFactor());
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMinimum(minMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMaximum(maxMag);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(currentMag);
 
     unsigned int minTime = this->m_SingleViewWidgets[selectedViewer]->GetMinTime();
     unsigned int maxTime = this->m_SingleViewWidgets[selectedViewer]->GetMaxTime();
@@ -1143,7 +1186,7 @@ bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int sli
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnSliceNumberChanged(double sliceNumber)
 {
-  this->SetSelectedWindowSliceNumber((int)sliceNumber);
+  this->SetSelectedWindowSliceNumber(static_cast<int>(sliceNumber));
 }
 
 
@@ -1171,12 +1214,30 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
 {
-  this->SetSelectedWindowMagnification((int)magnificationFactor);
+  double roundedMagnificationFactor = std::floor(magnificationFactor);
+
+  // If we are between two integers, we raise a new event:
+  if (magnificationFactor != roundedMagnificationFactor)
+  {
+    double newMagnificationFactor = roundedMagnificationFactor;
+    // If the value has decreased, we have to increase the rounded value.
+    if (magnificationFactor < m_PreviousMagnificationFactor)
+    {
+      newMagnificationFactor += 1.0;
+    }
+
+    this->m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(newMagnificationFactor);
+  }
+  else
+  {
+    this->SetSelectedWindowMagnification(magnificationFactor);
+    m_PreviousMagnificationFactor = magnificationFactor;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnificationFactor)
+void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(double magnificationFactor)
 {
   std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
   for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
@@ -1189,7 +1250,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(int magnification
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnTimeChanged(double timeStep)
 {
-  this->SetSelectedTimeStep((int)timeStep);
+  this->SetSelectedTimeStep(static_cast<int>(timeStep));
 }
 
 
@@ -1697,4 +1758,29 @@ void QmitkMIDASMultiViewWidget::SetMagnificationSelectTracking(bool isTracking)
 void QmitkMIDASMultiViewWidget::SetTimeSelectTracking(bool isTracking)
 {
   m_MIDASSlidersWidget->SetTimeTracking(isTracking);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnPinButtonToggled(bool checked)
+{
+  if (checked)
+  {
+    m_PopupWidget->pinPopup(true);
+  }
+  else
+  {
+    m_PopupWidget->setAutoHide(true);
+  }
+}
+
+
+//---------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::eventFilter(QObject* object, QEvent* event)
+{
+  if (object == this->m_ControlWidget && event->type() == QEvent::Enter)
+  {
+    this->m_PopupWidget->showPopup();
+  }
+  return this->QObject::eventFilter(object, event);
 }

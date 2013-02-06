@@ -79,9 +79,15 @@ public:
    */
   void SendMessage(OIGTLMessage::Pointer msg);
 
+  /**
+   * \brief Get the Associated Socket
+   */
+  OIGTLSocketObject* GetSocket();
+
 protected:
 
   QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
+  QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket); // Purposefully hidden.
   virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
   QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
@@ -113,6 +119,7 @@ private:
 
   OIGTLSocketObject           *m_Socket;
   ClientDescriptorXMLBuilder  *m_ClientDescriptor;
+  bool                        m_UsingSomeoneElsesSocket;
 
 }; // end class
 

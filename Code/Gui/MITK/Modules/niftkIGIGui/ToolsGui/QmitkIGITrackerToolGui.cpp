@@ -79,6 +79,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_FiducialRegistration, SIGNAL(clicked()), this, SLOT(OnFiducialRegistrationClicked()) );
   connect(m_TrackerControlsWidget->toolButton_Add, SIGNAL(clicked()), this, SLOT(OnManageToolConnection()) );
   connect(m_TrackerControlsWidget->toolButton_Assoc, SIGNAL(clicked()), this, SLOT(OnAssocClicked()) );
+  connect(m_TrackerControlsWidget->pushButton_CameraLink, SIGNAL(clicked()), this, SLOT(OnCameraLinkClicked()) );
 
   if (config != NULL)
   {
@@ -87,13 +88,15 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
     TrackerClientDescriptor *trDesc = dynamic_cast<TrackerClientDescriptor*>(config);
     if (trDesc != NULL)
     {
-      QStringList trackerTools = trDesc->getTrackerTools();
-      m_TrackerControlsWidget->InitTrackerTools(trackerTools);
-
-      // Connect to signals from the tool.
       QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
       if (tool != NULL)
       {
+        QStringList trackerTools;
+        QString toolName = QString::fromStdString(tool->GetDescription());
+        trackerTools.append (toolName);
+        m_TrackerControlsWidget->InitTrackerTools(trackerTools);
+
+        // Connect to signals from the tool.
         connect (tool, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
 
         // Instantiate Representations of each tool.
@@ -195,6 +198,25 @@ void QmitkIGITrackerToolGui::OnAssocClicked(void)
  }
      
  //mitk::DataNode::Pointer dataNode = ComboSelector->GetSelectedNode();
+}
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnCameraLinkClicked(void)
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if ( tool != NULL ) 
+  {
+    if ( tool->GetCameraLink() )
+    {
+      tool->SetCameraLink(false);
+      m_TrackerControlsWidget->pushButton_CameraLink->setText("Associate with VTK Camera");
+    }
+    else
+    {
+      tool->SetCameraLink(true);
+      m_TrackerControlsWidget->pushButton_CameraLink->setText("Disassociate with VTK Camera");
+    }
+  }
 }
 
 

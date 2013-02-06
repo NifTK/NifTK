@@ -57,6 +57,24 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
 }
 
+//-----------------------------------------------------------------------------
+QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
+: QmitkIGINiftyLinkDataSource(socket)
+, m_UseICP(false)
+, m_PointSetsInitialized(false)
+, m_LinkCamera(false)
+, m_ImageFiducialsDataNode(NULL)
+, m_ImageFiducialsPointSet(NULL)
+, m_TrackerFiducialsDataNode(NULL)
+, m_TrackerFiducialsPointSet(NULL)
+, m_FiducialRegistrationFilter(NULL)
+, m_PermanentRegistrationFilter(NULL)
+{
+  m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+  m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+}
+
+
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::~QmitkIGITrackerTool()
@@ -80,46 +98,81 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
   if (msg->getMessageType() == QString("STRING"))
   {
     QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
-
     if (str.isEmpty() || str.isNull())
     {
       return;
     }
-
-    QString type = XMLBuilderBase::parseDescriptorType(str);
-    if (type == QString("TrackerClientDescriptor"))
-    {
-      ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
-      clientInfo->setXMLString(str);
-
-      if (!clientInfo->isMessageValid())
-      {
-        delete clientInfo;
-        return;
-      }
-
-      this->ProcessClientInfo(clientInfo);
-    }
-    else
-    {
-      // error?
-    }
+    this->ProcessInitString(str);
   }
   else if (msg.data() != NULL &&
       (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
      )
   {
-    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-    wrapper->SetMessage(msg.data());
-    wrapper->SetDataSource("QmitkIGITrackerTool");
-    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
-    wrapper->SetDuration(1000000000); // nanoseconds
+    //Check the tool name
+    OIGTLTrackingDataMessage::Pointer trMsg;
+    trMsg = static_cast<OIGTLTrackingDataMessage::Pointer>(msg);
 
-    this->AddData(wrapper.GetPointer());
+    QString messageToolName = trMsg->getTrackerToolName();
+    QString sourceToolName = QString::fromStdString(this->GetDescription());
+    if ( messageToolName == sourceToolName ) 
+    {
+      QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+      wrapper->SetMessage(msg.data());
+      wrapper->SetDataSource("QmitkIGITrackerTool");
+      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
+      wrapper->SetDuration(1000000000); // nanoseconds
+
+      this->AddData(wrapper.GetPointer());
+    }
+  }
+}
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::ProcessInitString(QString str)
+{
+  QString type = XMLBuilderBase::parseDescriptorType(str);
+  if (type == QString("TrackerClientDescriptor"))
+  {
+    m_InitString = str;
+    ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
+    clientInfo->setXMLString(str);
+
+    if (!clientInfo->isMessageValid())
+    {
+      delete clientInfo;
+      return;
+    }
+    //A single source can have multiple tracked tools. 
+    QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->getTrackerTools();
+    QString tool;
+    this->SetNumberOfTools(trackerTools.length());
+    std::list<std::string> StringList;
+
+
+    foreach (tool , trackerTools)
+    {
+      std::string String;
+      String = tool.toStdString();
+      StringList.push_back(String);
+    //  qDebug() << tool << trackerTools.length();
+      
+    }
+    if ( StringList.size() > 0 ) 
+    {
+      this->SetToolStringList(StringList);
+    }
+    this->ProcessClientInfo(clientInfo);
+  }
+  else
+  {
+    // error?
   }
 }
 
-
+//-----------------------------------------------------------------------------
+QString QmitkIGITrackerTool::GetInitString()
+{
+  return m_InitString;
+}
 //-----------------------------------------------------------------------------
 bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
 {
@@ -201,34 +254,45 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
       int windowsFound = RenderWindows.size() ;
       for ( int i = 0 ; i < windowsFound ; i ++ )
       {
+        vtkCamera * Camera;
         vtkRenderWindow * thisWindow;
         thisWindow = RenderWindows.at(i);
 
+        //this performs the important function of rotating the logo, it looks really natty.
+        /*
         vtkRendererCollection * Renderers;
         Renderers = thisWindow->GetRenderers();
         vtkRenderer * Renderer = NULL;
         Renderers->InitTraversal();
         for ( int i = 0 ; i <  Renderers->GetNumberOfItems() ; i ++ )
           Renderer = Renderers->GetNextItem();
-        vtkCamera * Camera;
         Camera = Renderer->GetActiveCamera();
-        //this performs the important function of rotating the logo, it looks really natty.
-        Camera->Azimuth( 1);
+        Camera->Azimuth( 1);*/
         Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
-        vtkTransform * Transform = vtkTransform::New();
-        vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
-        for ( int row = 0 ; row < 4 ; row ++ )
-          for ( int column = 0 ; column < 4 ; column ++ )
-          {
-            viewMatrix->SetElement(row,column,inputTransformMat[row][column]);
-          }
-        Transform->SetMatrix(viewMatrix);
-        //as the view matrix is not zero, need to zero it, should really only do this once,
-        //when camera tracking is set to true I guess
-        Camera->SetPosition(0,0,0);
-        Camera->SetFocalPoint(0,0,1);
-        Camera->SetUserViewTransform(Transform);
-        Camera->Azimuth( 1);
+        Camera->SetPosition(inputTransformMat[0][3],inputTransformMat[1][3],inputTransformMat[2][3]);
+        //manually sort out the focal point, there is presumably an intelegent way to to this
+        //camerausertransform seems pretty useless in this application
+        float fx=0;
+        float fy=0;
+        float fz=2000; 
+        fx = inputTransformMat[0][0] * fx + inputTransformMat[0][1] * fy 
+          + inputTransformMat[0][2] * fz + inputTransformMat[0][3];
+        fy = inputTransformMat[1][0] * fx + inputTransformMat[1][1] * fy
+          + inputTransformMat[1][2] * fz + inputTransformMat[1][3];
+        fz = inputTransformMat[2][0] * fx + inputTransformMat[2][1] * fy
+          + inputTransformMat[2][2] * fz + inputTransformMat[2][3];
+        Camera->SetFocalPoint(fx,fy,fz);
+        float vux=1;
+        float vuy=0;
+        float vuz=0;
+        vux = inputTransformMat[0][0] * vux + inputTransformMat[0][1] * vuy 
+          + inputTransformMat[0][2] * vuz + inputTransformMat[0][3];
+        vuy = inputTransformMat[1][0] * vux + inputTransformMat[1][1] * vuy
+          + inputTransformMat[1][2] * vuz + inputTransformMat[1][3];
+        vuz = inputTransformMat[2][0] * vux + inputTransformMat[2][1] * vuy
+          + inputTransformMat[2][2] * vuz + inputTransformMat[2][3];
+        Camera->SetViewUp(vux,vuy,vuz);
+        Camera->SetClippingRange(0.0, 8000.0);
       }
     }
 
@@ -619,7 +683,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
       OIGTLTrackingDataMessage* trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool");
+        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->GetDescription());
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {
@@ -652,4 +716,60 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
     }
   }
   return success;
+}
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
+{
+   m_LinkCamera = LinkCamera;
+  
+   if ( m_LinkCamera )
+   {
+     mitk::RenderingManager::RenderWindowVector RenderWindows;
+     RenderWindows = mitk::RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
+
+     int windowsFound = RenderWindows.size() ;
+     for ( int i = 0 ; i < windowsFound ; i ++ )
+     {
+       vtkCamera * Camera;
+       vtkRenderWindow * thisWindow;
+       thisWindow = RenderWindows.at(i);
+
+       Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
+
+       Camera->SetPosition(0,0,0);
+       Camera->SetFocalPoint(0,0,2000);
+       Camera->SetViewUp(0,1,0);
+       Camera->SetClippingRange(0.0, 8000.0);
+     }
+   }
+   else
+   {
+     mitk::RenderingManager::RenderWindowVector RenderWindows;
+     RenderWindows = mitk::RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
+
+     int windowsFound = RenderWindows.size() ;
+     for ( int i = 0 ; i < windowsFound ; i ++ )
+     {
+       vtkCamera * Camera;
+       vtkRenderWindow * thisWindow;
+       thisWindow = RenderWindows.at(i);
+
+       Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
+
+       Camera->SetPosition(0,0,0);
+       Camera->SetFocalPoint(0,0,2000);
+       Camera->SetViewUp(1,0,0);
+       vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
+       vtkTransform * Transform = vtkTransform::New();
+       Transform->SetMatrix(viewMatrix);
+       Camera->SetUserViewTransform(Transform);
+
+       Camera->SetClippingRange(0.0, 4000.0);
+     }
+   }
+}
+//-----------------------------------------------------------------------------
+bool QmitkIGITrackerTool::GetCameraLink()
+{
+   return m_LinkCamera;
 }
