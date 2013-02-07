@@ -1,28 +1,19 @@
 #!/bin/bash 
 
-#/*=============================================================================
+#/*============================================================================
 #
-# NifTK: An image processing toolkit jointly developed by the
-#             Dementia Research Centre, and the Centre For Medical Image Computing
-#             at University College London.
-# 
-# See:        http://dementia.ion.ucl.ac.uk/
-#             http://cmic.cs.ucl.ac.uk/
-#             http://www.ucl.ac.uk/
+#  NifTK: A software platform for medical image computing.
 #
-# Last Changed      : $Date: 2012-11-05 14:43:44 +0000 (Mon, 05 Nov 2012) $
-# Revision          : $Revision: 1 $
-# Last modified by  : $Author: fp $
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
-# Original author   : f.carrasco@ucl.ac.uk
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
 #
-# Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+#  See LICENSE.txt in the top level directory for details.
 #
-# This software is distributed WITHOUT ANY WARRANTY; without even
-# the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-# PURPOSE.  See the above copyright notices for more information.
-#
-# ============================================================================*/
+#============================================================================*/
+
 #
 # This script is for Fill lesion volume with simulated WM pixel intensities developed by Jonathan S. Jackson 
 # and presented in the JMRI 2010 (Reducing the Impact of White Matter Lesions on Automated Measures of Brain Gray and

@@ -1,16 +1,16 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: A platform for combined medical image analysis and image guided surgery.
-#  
+#  NifTK: A software platform for medical image computing.
+#
 #  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  
+#  PURPOSE.
 #
-#  See LICENSE.txt in the top level directory for details. 
+#  See LICENSE.txt in the top level directory for details.
 #
-#=================================================================================*/
+#============================================================================*/
 
 MACRO(NIFTK_CONFIGURE_AND_BUILD_CLI)
   MACRO_PARSE_ARGUMENTS(_APP
