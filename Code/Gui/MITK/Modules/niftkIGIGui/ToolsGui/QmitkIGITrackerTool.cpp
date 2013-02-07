@@ -36,6 +36,7 @@
 #include "vtkRenderer.h"
 #include "vtkRendererCollection.h"
 #include "vtkRenderWindow.h"
+#include "vtkRenderWindowInteractor.h"
 #include "vtkTransform.h"
 #include "vtkMatrix4x4.h"
 
@@ -294,7 +295,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
         vuz = inputTransformMat[2][0] * vux + inputTransformMat[2][1] * vuy
           + inputTransformMat[2][2] * vuz + inputTransformMat[2][3];
         Camera->SetViewUp(vux,vuy,vuz);
-        Camera->SetClippingRange(0.0, 8000.0);
+        Camera->SetClippingRange(5.0, 8000.0);
       }
     }
 
@@ -735,13 +736,16 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        vtkCamera * Camera;
        vtkRenderWindow * thisWindow;
        thisWindow = RenderWindows.at(i);
+        
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->InteractiveOff();
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->LightFollowCameraOn();
 
        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
 
        Camera->SetPosition(0,0,0);
        Camera->SetFocalPoint(0,0,m_focalPoint);
        Camera->SetViewUp(0,1,0);
-       Camera->SetClippingRange(0.0, 8000.0);
+       Camera->SetClippingRange(5.0, 8000.0);
      }
    }
    else
@@ -757,6 +761,9 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        thisWindow = RenderWindows.at(i);
 
        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
+       
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->InteractiveOn();
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->LightFollowCameraOff();
 
        Camera->SetPosition(0,0,0);
        Camera->SetFocalPoint(0,0,m_focalPoint);
@@ -766,7 +773,7 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        Transform->SetMatrix(viewMatrix);
        Camera->SetUserViewTransform(Transform);
 
-       Camera->SetClippingRange(0.0, 4000.0);
+       Camera->SetClippingRange(5.0, 4000.0);
      }
    }
 }
