@@ -208,6 +208,8 @@ private:
   //store a copy of the init string
   QString                                              m_InitString;
   double                                               m_focalPoint; //the focal point of the VTK camera used
+  double                                               m_ClipNear; //the near clipping plane of the VTK camera used
+  double                                               m_ClipFar; //the far clipping plane of the VTK camera used
 }; // end class
 
 #endif

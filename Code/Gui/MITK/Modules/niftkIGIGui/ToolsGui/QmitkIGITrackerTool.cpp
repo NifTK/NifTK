@@ -54,6 +54,8 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
 , m_focalPoint(2000.0)
+, m_ClipNear(5.0)
+, m_ClipFar(6000.0)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
@@ -72,6 +74,8 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
 , m_focalPoint(2000.0)
+, m_ClipNear(5.0)
+, m_ClipFar(6000.0)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
@@ -295,7 +299,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
         vuz = inputTransformMat[2][0] * vux + inputTransformMat[2][1] * vuy
           + inputTransformMat[2][2] * vuz + inputTransformMat[2][3];
         Camera->SetViewUp(vux,vuy,vuz);
-        Camera->SetClippingRange(5.0, 8000.0);
+        Camera->SetClippingRange(m_ClipNear, m_ClipFar);
       }
     }
 
@@ -745,7 +749,7 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        Camera->SetPosition(0,0,0);
        Camera->SetFocalPoint(0,0,m_focalPoint);
        Camera->SetViewUp(0,1,0);
-       Camera->SetClippingRange(5.0, 8000.0);
+       Camera->SetClippingRange(m_ClipNear, m_ClipFar);
      }
    }
    else
@@ -773,7 +777,7 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        Transform->SetMatrix(viewMatrix);
        Camera->SetUserViewTransform(Transform);
 
-       Camera->SetClippingRange(5.0, 4000.0);
+       Camera->SetClippingRange(m_ClipNear, m_ClipFar);
      }
    }
 }
