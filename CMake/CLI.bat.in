@@ -1,26 +1,17 @@
-REM /*================================================================================
+REM /*=============================================================================
 REM 
-REM   NifTK: An image processing toolkit jointly developed by the
-REM               Dementia Research Centre, and the Centre For Medical Image Computing
-REM               at University College London.
-REM   
-REM   See:        http://dementia.ion.ucl.ac.uk/
-REM               http://cmic.cs.ucl.ac.uk/
-REM               http://www.ucl.ac.uk/
+REM   NifTK: A software platform for medical image computing.
 REM 
-REM   Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-REM 
-REM   Last Changed      : $LastChangedDate: $ 
-REM   Revision          : $Revision: $
-REM   Last modified by  : $Author: $
-REM 
-REM   Original author   : j.hipwell@ucl.ac.uk
+REM   Copyright (c) University College London (UCL). All rights reserved.
 REM 
 REM   This software is distributed WITHOUT ANY WARRANTY; without even
 REM   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-REM   PURPOSE.  See the above copyright notices for more information.
+REM   PURPOSE.
 REM 
-REM =================================================================================*/
+REM   See LICENSE.txt in the top level directory for details.
+REM 
+REM =============================================================================*/
+
 
 REM Throw the first parameter away and retain remainder
 
