@@ -1,19 +1,16 @@
-/*=========================================================================
+/*=============================================================================
 
-Program:   Medical Imaging & Interaction Toolkit
-Language:  C++
-Date:      $Date: 2012-02-16 21:02:48 +0000 (Thu, 16 Feb 2012) $
-Version:   $Revision: 8525 $
+  NifTK: A software platform for medical image computing.
 
-Copyright (c) German Cancer Research Center, Division of Medical and
-Biological Informatics. All rights reserved.
-See MITKCopyright.txt or http://www.mitk.org/copyright.html for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without even
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-=========================================================================*/
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 #include "QmitkMIDASDrawToolGUI.h"
 

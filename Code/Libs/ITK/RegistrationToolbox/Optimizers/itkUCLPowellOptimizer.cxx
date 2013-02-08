@@ -1,19 +1,17 @@
-/*=========================================================================
+/*=============================================================================
 
-  Program:   Insight Segmentation & Registration Toolkit
-  Module:    $RCSfile: itkUCLPowellOptimizer.cxx,v $
-  Language:  C++
-  Date:      $Date: 2009-06-24 12:02:54 $
-  Version:   $Revision: 1.22 $
+  NifTK: A software platform for medical image computing.
 
-  Copyright (c) Insight Software Consortium. All rights reserved.
-  See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-=========================================================================*/
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #ifndef _itkUCLPowellOptimizer_cxx
 #define _itkUCLPowellOptimizer_cxx
 
