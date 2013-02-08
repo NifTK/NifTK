@@ -80,6 +80,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_FiducialRegistration, SIGNAL(clicked()), this, SLOT(OnFiducialRegistrationClicked()) );
   connect(m_TrackerControlsWidget->toolButton_Add, SIGNAL(clicked()), this, SLOT(OnManageToolConnection()) );
   connect(m_TrackerControlsWidget->toolButton_Assoc, SIGNAL(clicked()), this, SLOT(OnAssocClicked()) );
+  connect(m_TrackerControlsWidget->toolButton_disassociate, SIGNAL(clicked()), this, SLOT(OnDisassocClicked()) );
   connect(m_TrackerControlsWidget->pushButton_CameraLink, SIGNAL(clicked()), this, SLOT(OnCameraLinkClicked()) );
   connect(m_TrackerControlsWidget->pushButton_LHCRHC, SIGNAL(clicked()), this, SLOT(OnLHCRHCClicked()) );
 
@@ -110,7 +111,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
       }
     }
   }
-  m_TrackerControlsWidget->comboBox->SetDataStorage(this->GetSource()->GetDataStorage());
+  m_TrackerControlsWidget->comboBox_dataNodes->SetDataStorage(this->GetSource()->GetDataStorage());
 }
 
 
@@ -193,15 +194,30 @@ void QmitkIGITrackerToolGui::OnAssocClicked(void)
  if (tool != NULL)
  {
   QString toolname = m_TrackerControlsWidget->GetCurrentToolName();
-  mitk::DataNode::Pointer dataNode = m_TrackerControlsWidget->comboBox->GetSelectedNode();
-  tool->AddDataNode(toolname, dataNode);
-   //TODO a method to show what data nodes are associated
- ////TODO a method to deassociate a data Node
+  mitk::DataNode::Pointer dataNode = m_TrackerControlsWidget->comboBox_dataNodes->GetSelectedNode();
+  if ( tool->AddDataNode(toolname, dataNode) )
+  {
+    m_TrackerControlsWidget->comboBox_associatedData->AddNode(dataNode);
+    m_TrackerControlsWidget->comboBox_dataNodes->RemoveNode(dataNode);
+  }
  }
-     
- //mitk::DataNode::Pointer dataNode = ComboSelector->GetSelectedNode();
 }
 
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnDisassocClicked(void)
+{
+ QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+ if (tool != NULL)
+ {
+  QString toolname = m_TrackerControlsWidget->GetCurrentToolName();
+  mitk::DataNode::Pointer dataNode = m_TrackerControlsWidget->comboBox_associatedData->GetSelectedNode();
+  if ( tool->RemoveDataNode(toolname, dataNode) )
+  {
+    m_TrackerControlsWidget->comboBox_associatedData->RemoveNode(dataNode);
+    m_TrackerControlsWidget->comboBox_dataNodes->AddNode(dataNode);
+  }
+ }
+}
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnCameraLinkClicked(void)
 {

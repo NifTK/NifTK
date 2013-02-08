@@ -486,11 +486,41 @@ void QmitkIGITrackerTool::GetToolPosition(const QString &toolName)
 
 
 //---------------------------------------------------------------------------
-void QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+bool QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
 {
-  m_AssociatedTools.insertMulti(toolName,dataNode);
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_AssociatedTools.values(toolName);
+  if ( AlreadyAddedNodes.contains(dataNode) )
+  {
+    return false;
+  }
+  else
+  {
+    m_AssociatedTools.insertMulti(toolName,dataNode);
+    return true;
+  }
 }
 
+//---------------------------------------------------------------------------
+bool QmitkIGITrackerTool::RemoveDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_AssociatedTools.values(toolName);
+  int RemovedNodes = AlreadyAddedNodes.removeAll(dataNode);
+
+  m_AssociatedTools.remove(toolName);
+  mitk::DataNode::Pointer tempNode = mitk::DataNode::New();
+  foreach ( tempNode, AlreadyAddedNodes ) 
+  {
+    m_AssociatedTools.insertMulti(toolName,tempNode);
+  }
+  if ( RemovedNodes != 1 ) 
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
 
 //---------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString toolName)

@@ -72,8 +72,15 @@ public:
 
   /**
    * \brief Associates a dataNode with a given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node was successfully added, false if not.
    */
-  void AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+  bool AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+ 
+  /**
+   * \brief Removes a dataNode from the associated list for the  given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node successfully removed
+   */
+  bool RemoveDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
   
   /**
    * \brief Return a QList of the tools associated with a given toolName
