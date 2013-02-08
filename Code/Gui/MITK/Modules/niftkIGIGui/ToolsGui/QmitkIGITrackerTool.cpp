@@ -298,12 +298,6 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
           + inputTransformMat[1][2] * vuzi + inputTransformMat[1][3];
         double vuz = inputTransformMat[2][0] * vuxi + inputTransformMat[2][1] * vuyi
           + inputTransformMat[2][2] * vuzi + inputTransformMat[2][3];
-        for ( int i = 0 ; i < 4 ; i ++ ) 
-        {
-          qDebug() << inputTransformMat[i][0] << " " << inputTransformMat[i][1] << " " << \
-            inputTransformMat[i][2] << " " <<inputTransformMat[i][3] ;
-        }
-        qDebug () << "VU : " << vux << " " << vuy << " " << vuz;
         Camera->SetViewUp(vux,vuy,vuz);
         Camera->SetClippingRange(m_ClipNear, m_ClipFar);
       }
