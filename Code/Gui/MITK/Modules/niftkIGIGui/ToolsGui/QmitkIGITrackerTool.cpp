@@ -289,15 +289,21 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
         float fz = inputTransformMat[2][0] * fxi + inputTransformMat[2][1] * fyi
           + inputTransformMat[2][2] * fzi + inputTransformMat[2][3];
         Camera->SetFocalPoint(fx,fy,fz);
-        float vuxi=0;
-        float vuyi=1000;
-        float vuzi=0;
-        float vux = inputTransformMat[0][0] * vuxi + inputTransformMat[0][1] * vuyi 
+        double vuxi=0;
+        double vuyi=1.0e9;
+        double vuzi=0;
+        double vux = inputTransformMat[0][0] * vuxi + inputTransformMat[0][1] * vuyi 
           + inputTransformMat[0][2] * vuzi + inputTransformMat[0][3];
-        float vuy = inputTransformMat[1][0] * vuxi + inputTransformMat[1][1] * vuyi
+        double vuy = inputTransformMat[1][0] * vuxi + inputTransformMat[1][1] * vuyi
           + inputTransformMat[1][2] * vuzi + inputTransformMat[1][3];
-        float vuz = inputTransformMat[2][0] * vuxi + inputTransformMat[2][1] * vuyi
+        double vuz = inputTransformMat[2][0] * vuxi + inputTransformMat[2][1] * vuyi
           + inputTransformMat[2][2] * vuzi + inputTransformMat[2][3];
+        for ( int i = 0 ; i < 4 ; i ++ ) 
+        {
+          qDebug() << inputTransformMat[i][0] << " " << inputTransformMat[i][1] << " " << \
+            inputTransformMat[i][2] << " " <<inputTransformMat[i][3] ;
+        }
+        qDebug () << "VU : " << vux << " " << vuy << " " << vuz;
         Camera->SetViewUp(vux,vuy,vuz);
         Camera->SetClippingRange(m_ClipNear, m_ClipFar);
       }
@@ -778,7 +784,7 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
 
        Camera->SetPosition(0,0,0);
        Camera->SetFocalPoint(0,0,m_focalPoint);
-       Camera->SetViewUp(0,1,0);
+       Camera->SetViewUp(0,10000,0);
        Camera->SetClippingRange(m_ClipNear, m_ClipFar);
      }
    }
