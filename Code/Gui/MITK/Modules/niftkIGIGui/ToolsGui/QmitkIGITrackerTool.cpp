@@ -290,7 +290,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
           + inputTransformMat[2][2] * fzi + inputTransformMat[2][3];
         Camera->SetFocalPoint(fx,fy,fz);
         float vuxi=0;
-        float vuyi=1;
+        float vuyi=1000;
         float vuzi=0;
         float vux = inputTransformMat[0][0] * vuxi + inputTransformMat[0][1] * vuyi 
           + inputTransformMat[0][2] * vuzi + inputTransformMat[0][3];
@@ -298,7 +298,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
           + inputTransformMat[1][2] * vuzi + inputTransformMat[1][3];
         float vuz = inputTransformMat[2][0] * vuxi + inputTransformMat[2][1] * vuyi
           + inputTransformMat[2][2] * vuzi + inputTransformMat[2][3];
-        //Camera->SetViewUp(vux,vuy,vuz);
+        Camera->SetViewUp(vux,vuy,vuz);
         Camera->SetClippingRange(m_ClipNear, m_ClipFar);
       }
     }
