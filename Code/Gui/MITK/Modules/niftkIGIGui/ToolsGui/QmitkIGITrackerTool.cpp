@@ -279,26 +279,26 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
         Camera->SetPosition(inputTransformMat[0][3],inputTransformMat[1][3],inputTransformMat[2][3]);
         //manually sort out the focal point, there is presumably an intelegent way to to this
         //camerausertransform seems pretty useless in this application
-        float fx=0;
-        float fy=0;
-        float fz=m_focalPoint; 
-        fx = inputTransformMat[0][0] * fx + inputTransformMat[0][1] * fy 
-          + inputTransformMat[0][2] * fz + inputTransformMat[0][3];
-        fy = inputTransformMat[1][0] * fx + inputTransformMat[1][1] * fy
-          + inputTransformMat[1][2] * fz + inputTransformMat[1][3];
-        fz = inputTransformMat[2][0] * fx + inputTransformMat[2][1] * fy
-          + inputTransformMat[2][2] * fz + inputTransformMat[2][3];
+        float fxi=0;
+        float fyi=0;
+        float fzi=m_focalPoint; 
+        float fx = inputTransformMat[0][0] * fxi + inputTransformMat[0][1] * fyi 
+          + inputTransformMat[0][2] * fzi + inputTransformMat[0][3];
+        float fy = inputTransformMat[1][0] * fxi + inputTransformMat[1][1] * fyi
+          + inputTransformMat[1][2] * fzi + inputTransformMat[1][3];
+        float fz = inputTransformMat[2][0] * fxi + inputTransformMat[2][1] * fyi
+          + inputTransformMat[2][2] * fzi + inputTransformMat[2][3];
         Camera->SetFocalPoint(fx,fy,fz);
-        float vux=1;
-        float vuy=0;
-        float vuz=0;
-        vux = inputTransformMat[0][0] * vux + inputTransformMat[0][1] * vuy 
-          + inputTransformMat[0][2] * vuz + inputTransformMat[0][3];
-        vuy = inputTransformMat[1][0] * vux + inputTransformMat[1][1] * vuy
-          + inputTransformMat[1][2] * vuz + inputTransformMat[1][3];
-        vuz = inputTransformMat[2][0] * vux + inputTransformMat[2][1] * vuy
-          + inputTransformMat[2][2] * vuz + inputTransformMat[2][3];
-        Camera->SetViewUp(vux,vuy,vuz);
+        float vuxi=0;
+        float vuyi=1;
+        float vuzi=0;
+        float vux = inputTransformMat[0][0] * vuxi + inputTransformMat[0][1] * vuyi 
+          + inputTransformMat[0][2] * vuzi + inputTransformMat[0][3];
+        float vuy = inputTransformMat[1][0] * vuxi + inputTransformMat[1][1] * vuyi
+          + inputTransformMat[1][2] * vuzi + inputTransformMat[1][3];
+        float vuz = inputTransformMat[2][0] * vuxi + inputTransformMat[2][1] * vuyi
+          + inputTransformMat[2][2] * vuzi + inputTransformMat[2][3];
+        //Camera->SetViewUp(vux,vuy,vuz);
         Camera->SetClippingRange(m_ClipNear, m_ClipFar);
       }
     }
