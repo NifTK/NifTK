@@ -617,5 +617,162 @@ void OutputCalibrationData(
   cvReleaseMat(&projectedImagePoints);
 }
 
+
+//-----------------------------------------------------------------------------
+void CorrectDistortionInVideoFile(
+    const std::string& inputFileName,
+    const std::string& inputIntrinsicsFileName,
+    const std::string& inputDistortionCoefficientsFileName,
+    const std::string& outputFileName
+    )
+{
+  CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
+  if (intrinsic == NULL)
+  {
+    throw std::logic_error("Failed to load intrinsic params");
+  }
+
+  CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
+  if (intrinsic == NULL)
+  {
+    throw std::logic_error("Failed to load distortion params");
+  }
+
+  CorrectDistortionInVideoFile(inputFileName, *intrinsic, *distortion, outputFileName);
+}
+
+
+//-----------------------------------------------------------------------------
+void CorrectDistortionInVideoFile(
+    const std::string& inputFileName,
+    const CvMat& intrinsicParams,
+    const CvMat& distortionCoefficients,
+    const std::string& outputFileName
+    )
+{
+  CvCapture *capture = NULL;
+  capture = cvCreateFileCapture(inputFileName.c_str());
+  if (capture == NULL)
+  {
+    throw std::logic_error("Could not read from video file");
+  }
+
+  IplImage *bgrFrame = cvQueryFrame(capture);
+  double fps = cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
+  CvSize size = cvSize(
+      (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH),
+      (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)
+      );
+
+  CvVideoWriter *writer = cvCreateVideoWriter(outputFileName.c_str(),
+      CV_FOURCC('M','J','P','G'),
+      fps,
+      size
+      );
+
+  IplImage *mapX = cvCreateImage(cvGetSize(bgrFrame), IPL_DEPTH_32F, 1);
+  IplImage *mapY = cvCreateImage(cvGetSize(bgrFrame), IPL_DEPTH_32F, 1);
+  cvInitUndistortMap(&intrinsicParams, &distortionCoefficients, mapX, mapY);
+
+  IplImage *corrected = cvCloneImage(bgrFrame);
+
+  while((bgrFrame = cvQueryFrame(capture)) != NULL)
+  {
+    ApplyDistortionCorrectionMap(*mapX, *mapY, *bgrFrame, *corrected);
+    cvWriteFrame(writer, corrected);
+  }
+
+  cvReleaseImage(&corrected);
+  cvReleaseImage(&mapX);
+  cvReleaseImage(&mapY);
+
+  cvReleaseVideoWriter(&writer);
+  cvReleaseImage(&bgrFrame);
+  cvReleaseCapture(&capture);
+}
+
+
+//-----------------------------------------------------------------------------
+void CorrectDistortionInImageFile(
+    const std::string& inputImageFileName,
+    const std::string& inputIntrinsicsFileName,
+    const std::string& inputDistortionCoefficientsFileName,
+    const std::string& outputImageFileName
+    )
+{
+  CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
+  if (intrinsic == NULL)
+  {
+    throw std::logic_error("Failed to load intrinsic params");
+  }
+
+  CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
+  if (intrinsic == NULL)
+  {
+    throw std::logic_error("Failed to load distortion params");
+  }
+
+  CorrectDistortionInImageFile(inputImageFileName, *intrinsic, *distortion, outputImageFileName);
+}
+
+
+//-----------------------------------------------------------------------------
+void CorrectDistortionInImageFile(
+    const std::string& inputFileName,
+    const CvMat& intrinsicParams,
+    const CvMat& distortionCoefficients,
+    const std::string& outputFileName
+    )
+{
+  IplImage *image = cvLoadImage(inputFileName.c_str());
+  if (image == NULL)
+  {
+    throw std::logic_error("Failed to load image");
+  }
+  CorrectDistortionInSingleImage(intrinsicParams, distortionCoefficients, *image);
+  cvSaveImage(outputFileName.c_str(), image);
+  cvReleaseImage(&image);
+}
+
+
+//-----------------------------------------------------------------------------
+void CorrectDistortionInSingleImage(
+    const CvMat& intrinsicParams,
+    const CvMat& distortionCoefficients,
+    IplImage &image
+    )
+{
+  IplImage *mapX = cvCreateImage(cvGetSize(&image), IPL_DEPTH_32F, 1);
+  IplImage *mapY = cvCreateImage(cvGetSize(&image), IPL_DEPTH_32F, 1);
+
+  cvInitUndistortMap(&intrinsicParams, &distortionCoefficients, mapX, mapY);
+  UndistortImageUsingDistortionMap(*mapX, *mapY, image);
+}
+
+
+//-----------------------------------------------------------------------------
+void UndistortImageUsingDistortionMap(
+    const IplImage &mapX,
+    const IplImage &mapY,
+    IplImage &image
+    )
+{
+  IplImage *tmp = cvCloneImage(&image);
+  ApplyDistortionCorrectionMap(mapX, mapY, *tmp, image);
+  cvReleaseImage(&tmp);
+}
+
+
+//-----------------------------------------------------------------------------
+void ApplyDistortionCorrectionMap(
+    const IplImage &mapX,
+    const IplImage &mapY,
+    const IplImage &inputImage,
+    IplImage &outputImage
+    )
+{
+  cvRemap(&inputImage, &outputImage, &mapX, &mapY);
+}
+
 //-----------------------------------------------------------------------------
 } // end namespace

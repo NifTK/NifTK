@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Correct Video Distortion</title>
+  <description><![CDATA[Distortion corrects a video (.avi) or image (.jpg, .png) file]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>Mandatory I/O Parameters</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <file fileExtensions="*.avi,*.jpg,*.png">
+      <name>inputVideo</name>
+      <longflag>input</longflag>
+      <description>Input video file</description>
+      <label>Input video file</label>
+      <default>input.avi</default>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions="*.xml">
+      <name>inputIntrinsicParams</name>
+      <longflag>intrinsic</longflag>
+      <description>Input intrinsic parameters file</description>
+      <label>Input intrinsic parameters file</label>
+      <default>intrinsics.xml</default>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions="*.xml">
+      <name>inputDistortionParams</name>
+      <longflag>distortion</longflag>
+      <description>Input distortion parameters file</description>
+      <label>Input distortion parameters file</label>
+      <default>distortion.xml</default>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions="*.avi,*.jpg,*.png">
+      <name>outputVideo</name>
+      <longflag>output</longflag>
+      <description>Output video file</description>
+      <label>Output video file</label>
+      <default>output.avi</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+</executable>

@@ -194,6 +194,10 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
         successfullFileNamesLeft
         );
 
+    // Also output these as XML, as they are used in niftkCorrectVideoDistortion
+    cvSave(std::string(outputFileName + ".left.intrinsic.xml").c_str(), intrinsicMatrixLeft);
+    cvSave(std::string(outputFileName + ".left.distortion.xml").c_str(), distortionCoeffsLeft);
+
     *os << "Right camera" << std::endl;
     OutputCalibrationData(
         *os,
@@ -211,6 +215,10 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
         numberCornersY,
         successfullFileNamesRight
         );
+
+    // Also output these as XML, as they are used in niftkCorrectVideoDistortion
+    cvSave(std::string(outputFileName + ".right.intrinsic.xml").c_str(), intrinsicMatrixRight);
+    cvSave(std::string(outputFileName + ".right.distortion.xml").c_str(), distortionCoeffsRight);
 
     // Tidy up.
     if(fs.is_open())
