@@ -112,6 +112,30 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
     }
   }
   m_TrackerControlsWidget->comboBox_dataNodes->SetDataStorage(this->GetSource()->GetDataStorage());
+  
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if (tool != NULL)
+  {
+    QString toolname = m_TrackerControlsWidget->GetCurrentToolName();
+    QList<mitk::DataNode::Pointer> AssociatedTools = tool->GetDataNode(toolname);
+    mitk::DataNode::Pointer tempNode = mitk::DataNode::New();
+    foreach (tempNode, AssociatedTools )
+    {
+      m_TrackerControlsWidget->comboBox_associatedData->AddNode(tempNode);
+      m_TrackerControlsWidget->comboBox_dataNodes->RemoveNode(tempNode);
+    }
+    
+    if ( tool->GetCameraLink() ) 
+    {
+      m_TrackerControlsWidget->pushButton_CameraLink->setText("Disassociate with VTK Camera");
+    }
+
+    if ( tool->GetfocalPoint() < 0.0 ) 
+    {
+      m_TrackerControlsWidget->pushButton_LHCRHC->setText("RHC");
+    }
+  }
+  
 }
 
 
