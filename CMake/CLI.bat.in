@@ -1,3 +1,5 @@
+@ECHO OFF
+
 REM /*=============================================================================
 REM 
 REM   NifTK: A software platform for medical image computing.
@@ -12,10 +14,11 @@ REM   See LICENSE.txt in the top level directory for details.
 REM 
 REM =============================================================================*/
 
+SET BATCH_SCRIPT_FOLDER_PATHNAME=%~dp0
+SET UP_ONE_DIRECTORY=%BATCH_SCRIPT_FOLDER_PATHNAME%\..\
 
 REM Throw the first parameter away and retain remainder
 
-SHIFT
 SET params=%1
 
 :LOOP
@@ -25,5 +28,5 @@ SET params=%params% %1
 GOTO LOOP
 :AFTERLOOP
 
-..\@APP@ %params%
+%UP_ONE_DIRECTORY%\@APP@ %params%
 
