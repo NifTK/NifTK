@@ -130,8 +130,8 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
         );
 
     // Also output these as XML, as they are used in niftkCorrectVideoDistortion
-    cvSave(std::string(outputFile + ".intrinsic.xml").c_str(), &intrinsicMatrix);
-    cvSave(std::string(outputFile + ".distortion.xml").c_str(), &distortionCoeffs);
+    cvSave(std::string(outputFile + ".intrinsic.xml").c_str(), intrinsicMatrix);
+    cvSave(std::string(outputFile + ".distortion.xml").c_str(), distortionCoeffs);
 
     // Tidy up.
     if(fs.is_open())

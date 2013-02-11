@@ -120,7 +120,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   // Iterate over each image, finding corners.
   for (unsigned int i = 0; i < images.size(); i++)
   {
-    std::cout << "Processing file" << fileNames[i] << std::endl;
+    std::cout << "Processing file " << fileNames[i] << std::endl;
 
     int found = cvFindChessboardCorners(images[i], boardSize, corners, &cornerCount,
         CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);

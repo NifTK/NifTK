@@ -21,6 +21,16 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   bool successful = false;
 
+  if ( inputVideo.length() == 0
+      || inputIntrinsicParams.length() == 0
+      || inputDistortionParams.length() == 0
+      || outputVideo.length() == 0
+      )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
+
   if (   inputVideo.size() == 0
       || inputIntrinsicParams.size() == 0
       || inputDistortionParams.size() == 0
@@ -38,9 +48,13 @@ int main(int argc, char** argv)
   mitk::CorrectVideoFileDistortion::Pointer correction = mitk::CorrectVideoFileDistortion::New();
 
   bool isVideo = false;
-  if (inputVideo.find_last_of(".avi") == inputVideo.size() - 4)
+  if (inputVideo.find_last_of(".") != std::string::npos)
   {
-    isVideo = true;
+    std::string extension = inputVideo.substr(inputVideo.find_last_of(".")+1);
+    if (extension == "avi")
+    {
+      isVideo = true;
+    }
   }
 
   successful = correction->Correct(inputVideo, inputIntrinsicParams, inputDistortionParams, outputVideo, isVideo);

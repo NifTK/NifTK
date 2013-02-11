@@ -17,7 +17,6 @@
       <longflag>input</longflag>
       <description>Input video file</description>
       <label>Input video file</label>
-      <default>input.avi</default>
       <channel>input</channel>
     </file>
     <file fileExtensions="*.xml">
@@ -25,7 +24,6 @@
       <longflag>intrinsic</longflag>
       <description>Input intrinsic parameters file</description>
       <label>Input intrinsic parameters file</label>
-      <default>intrinsics.xml</default>
       <channel>input</channel>
     </file>
     <file fileExtensions="*.xml">
@@ -33,7 +31,6 @@
       <longflag>distortion</longflag>
       <description>Input distortion parameters file</description>
       <label>Input distortion parameters file</label>
-      <default>distortion.xml</default>
       <channel>input</channel>
     </file>
     <file fileExtensions="*.avi,*.jpg,*.png">
@@ -41,7 +38,6 @@
       <longflag>output</longflag>
       <description>Output video file</description>
       <label>Output video file</label>
-      <default>output.avi</default>
       <channel>output</channel>
     </file>
   </parameters>
