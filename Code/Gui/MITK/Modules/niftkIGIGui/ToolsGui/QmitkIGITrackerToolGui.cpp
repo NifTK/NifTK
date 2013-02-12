@@ -71,7 +71,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
 
   m_TrackerControlsWidget->pushButton_Tracking->setVisible(false);
   m_TrackerControlsWidget->pushButton_GetCurrentPos->setVisible(false);
-  m_TrackerControlsWidget->pushButton_FiducialRegistration->setVisible(false);
+  m_TrackerControlsWidget->pushButton_FiducialRegistration->setVisible(true);
   m_TrackerControlsWidget->line->setVisible(false);
   m_TrackerControlsWidget->pushButton_LHCRHC->setText("LHC");
 
@@ -172,6 +172,7 @@ void QmitkIGITrackerToolGui::OnFiducialRegistrationClicked(void)
       m_FiducialRegWidgetDialog->setObjectName("FiducialRegistrationWidgetDialog");
       m_FiducialRegWidgetDialog->setWindowTitle("Fiducial Registration Dialog");
       connect(m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget, SIGNAL(PerformFiducialRegistration()), this, SLOT(OnRegisterFiducials()) );
+      connect(m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget, SIGNAL(AddedTrackingFiducial()), this, SLOT(OnGetTipPosition()) );
     }
 
     m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget->SetMultiWidget(this->GetStdMultiWidget());
@@ -183,6 +184,17 @@ void QmitkIGITrackerToolGui::OnFiducialRegistrationClicked(void)
     m_FiducialRegWidgetDialog->activateWindow();
   }
 }
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnGetTipPosition()
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if (tool != NULL)
+  {
+    tool->GetCurrentTipPosition();
+  }
+}
+
+
 
 
 //-----------------------------------------------------------------------------

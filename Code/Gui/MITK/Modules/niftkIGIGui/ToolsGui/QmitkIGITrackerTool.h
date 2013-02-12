@@ -98,6 +98,13 @@ public:
    */
   itkSetMacro(focalPoint, double);
   itkGetMacro(focalPoint, double);
+
+  /** 
+   * \ brief get/set whether to use fiducial transform filter
+   */
+  itkSetMacro(TransformTrackerToMITKCoords, bool);
+  itkGetMacro(TransformTrackerToMITKCoords, bool);
+
   /**
    * \brief Not Widely Used: Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
    */
@@ -127,6 +134,11 @@ public:
    * \brief Not Widely Used: Retrieves the internal point set representing tracker fiducials.
    */
   mitk::DataNode* GetTrackerFiducialsNode() const;
+
+  /**
+   * \brief Called by the add current tracker tip position button on QmitkFiducialRegistrationWidget to add the current position to tracker fiducial set
+   */
+  void GetCurrentTipPosition();
 
   /**
    * \brief Not Widely Used: Called from the "Register" button on the QmitkFiducialRegistrationWidget to register point sets.
@@ -217,6 +229,7 @@ private:
   double                                               m_focalPoint; //the focal point of the VTK camera used
   double                                               m_ClipNear; //the near clipping plane of the VTK camera used
   double                                               m_ClipFar; //the far clipping plane of the VTK camera used
+  bool                                                 m_TransformTrackerToMITKCoords; //Set to true to use m_FiducialRegistrationFilter
 }; // end class
 
 #endif

@@ -72,6 +72,7 @@ private slots:
   void OnLHCRHCClicked(void);
   void OnStatusUpdate(QString message);
   void OnRegisterFiducials();
+  void OnGetTipPosition();
 
 private:
 
