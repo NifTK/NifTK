@@ -754,10 +754,35 @@ void QmitkIGITrackerTool::RegisterFiducials()
   m_FiducialRegistrationFilter->Update();
 
   /* Transform the image data to tracker space */
-  /*m_FiducialRegistrationFilter->SetInput(m_ImageFiducialsDataNode);
-  m_FiducialRegistrationFilter->UpdateOutputData(0);
-  m_ImageFiducialsDataNode = m_FiducialRegistrationFilter->GetOutput();*/
 
+  mitk::NavigationData::Pointer nd_out = m_FiducialRegistrationFilter->GetOutput();
+
+  mitk::NavigationData::OrientationType orientation = nd_out->GetOrientation();
+  // convert mitk::ScalarType quaternion to double quaternion because of itk bug
+  vnl_quaternion<double> doubleQuaternion(orientation.x(), orientation.y(), orientation.z(), orientation.r());
+  //calculate the transform from the quaternions
+  static itk::QuaternionRigidTransform<double>::Pointer quatTransform = itk::QuaternionRigidTransform<double>::New();
+  quatTransform->SetIdentity();
+  quatTransform->SetRotation(doubleQuaternion);
+  quatTransform->Modified();
+
+  /* because of an itk bug, the transform can not be calculated with float data type.
+     To use it in the mitk geometry classes, it has to be transfered to mitk::ScalarType which is float */
+  static mitk::AffineTransform3D::MatrixType m;
+  mitk::TransferMatrix(quatTransform->GetMatrix(), m);
+  mitk::AffineTransform3D::Pointer affineTransform =mitk::AffineTransform3D::New(); 
+  affineTransform->SetMatrix(m);
+
+  ///*set the offset by convert from itkPoint to itkVector and setting offset of transform*/
+  mitk::Vector3D pos;
+  pos.Set_vnl_vector(nd_out->GetPosition().Get_vnl_vector());
+  affineTransform->SetOffset(pos);
+  affineTransform->Modified();
+
+  //set the transform to data
+  m_ImageFiducialsDataNode->GetData()->GetGeometry()->SetIndexToWorldTransform(affineTransform);
+
+  //-------------------
   QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
     "RMS error is %3mm,\n"
     "Minimum registration error (best fitting landmark) is  %4mm,\n"
