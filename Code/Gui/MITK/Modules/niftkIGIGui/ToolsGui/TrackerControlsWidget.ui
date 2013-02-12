@@ -222,6 +222,13 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="pushButton_FidTrack">
+            <property name="text">
+             <string>Fid Trk. On</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>

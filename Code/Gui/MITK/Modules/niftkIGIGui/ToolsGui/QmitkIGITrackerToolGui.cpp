@@ -83,7 +83,9 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->toolButton_disassociate, SIGNAL(clicked()), this, SLOT(OnDisassocClicked()) );
   connect(m_TrackerControlsWidget->pushButton_CameraLink, SIGNAL(clicked()), this, SLOT(OnCameraLinkClicked()) );
   connect(m_TrackerControlsWidget->pushButton_LHCRHC, SIGNAL(clicked()), this, SLOT(OnLHCRHCClicked()) );
+  connect(m_TrackerControlsWidget->pushButton_FidTrack, SIGNAL(clicked()), this, SLOT(OnFidTrackClicked()));
 
+//
   if (config != NULL)
   {
     QString deviceType = config->getDeviceType();
@@ -134,6 +136,16 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
     {
       m_TrackerControlsWidget->pushButton_LHCRHC->setText("RHC");
     }
+
+    if ( tool->GetTransformTrackerToMITKCoords() ) 
+    {
+      m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. On");
+    }
+    else
+    {
+      m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. Off");
+    }
+  
   }
   
 }
@@ -303,7 +315,21 @@ void QmitkIGITrackerToolGui::OnLHCRHCClicked(void)
     tool->SetCameraLink(false);
   }
 }
-
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnFidTrackClicked(void)
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if ( m_TrackerControlsWidget->pushButton_FidTrack->text() == "Fid Trk. On" ) 
+  {
+    tool->SetTransformTrackerToMITKCoords(false);
+    m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. Off");
+  }
+  else 
+  {
+    tool->SetTransformTrackerToMITKCoords(true);
+    m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. On");
+  }
+}
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnStatusUpdate(QString message)
 {
