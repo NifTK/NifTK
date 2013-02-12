@@ -139,11 +139,11 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
 
     if ( tool->GetTransformTrackerToMITKCoords() ) 
     {
-      m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. On");
+      m_TrackerControlsWidget->pushButton_FidTrack->setText("Fid Trk. On");
     }
     else
     {
-      m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. Off");
+      m_TrackerControlsWidget->pushButton_FidTrack->setText("Fid Trk. Off");
     }
   
   }
@@ -322,12 +322,12 @@ void QmitkIGITrackerToolGui::OnFidTrackClicked(void)
   if ( m_TrackerControlsWidget->pushButton_FidTrack->text() == "Fid Trk. On" ) 
   {
     tool->SetTransformTrackerToMITKCoords(false);
-    m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. Off");
+    m_TrackerControlsWidget->pushButton_FidTrack->setText("Fid Trk. Off");
   }
   else 
   {
     tool->SetTransformTrackerToMITKCoords(true);
-    m_TrackerControlsWidget->pushButton_LHCRHC->setText("Fid Trk. On");
+    m_TrackerControlsWidget->pushButton_FidTrack->setText("Fid Trk. On");
   }
 }
 //-----------------------------------------------------------------------------
