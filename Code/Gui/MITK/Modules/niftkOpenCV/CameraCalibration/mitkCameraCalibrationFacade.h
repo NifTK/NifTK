@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef MITKCAMERACALIBRATIONFACADE_H
 #define MITKCAMERACALIBRATIONFACADE_H
@@ -229,8 +219,7 @@ double CalibrateStereoCameraParameters(
     );
 
 /**
- * \brief Method to dump output to a stream.
- *
+ * \brief Utility method to dump output to a stream.
  */
 void OutputCalibrationData(
     std::ostream& outputStream,
@@ -247,6 +236,88 @@ void OutputCalibrationData(
     const int& cornersX,
     const int& cornersY,
     std::vector<std::string>& fileNames
+    );
+
+
+/**
+ * \brief Loads a video file and parameters and writes the distortion corrected video
+ * to the output.  Assumes that both the intrinsic camera params and distortion coefficients
+ * are in OpenCV's xml format.
+ */
+void CorrectDistortionInVideoFile(
+    const std::string& inputFileName,
+    const std::string& inputIntrinsicsFileName,
+    const std::string& inputDistortionCoefficientsFileName,
+    const std::string& outputFileName
+    );
+
+/**
+ * \brief Method that reads an input video file, corrects it using the
+ * intrinsic params and distortion co-efficients, and writes it to the output file.
+ */
+void CorrectDistortionInVideoFile(
+    const std::string& inputFileName,
+    const CvMat& intrinsicParams,
+    const CvMat& distortionCoefficients,
+    const std::string& outputFileName
+    );
+
+/**
+ * \brief Loads an image and parameters and writes the distortion corrected image
+ * to the output. Assumes that both the intrinsic camera params and distortion coefficients
+ * are in OpenCV's xml format.
+ */
+void CorrectDistortionInImageFile(
+    const std::string& inputImageFileName,
+    const std::string& inputIntrinsicsFileName,
+    const std::string& inputDistortionCoefficientsFileName,
+    const std::string& outputImageFileName
+    );
+
+/**
+ * \brief Method that reads a single image (eg. png, jpg or anything that OpenCV recognises)
+ * and corrects it using the intrinsic params and distortion co-efficients, and writes
+ * it to the output file.
+ */
+void CorrectDistortionInImageFile(
+    const std::string& inputFileName,
+    const CvMat& intrinsicParams,
+    const CvMat& distortionCoefficients,
+    const std::string& outputFileName
+    );
+
+
+/**
+ * \brief Assuming image is pre-allocated, will take the intrinsic and distortion parameters
+ * and calculate a pixel-wise undistortion map, and apply it to image.
+ */
+void CorrectDistortionInSingleImage(
+    const CvMat& intrinsicParams,
+    const CvMat& distortionCoefficients,
+    IplImage &image
+    );
+
+
+/**
+ * \brief Assumes all image buffers are pre-allocated and the same size,
+ * and applies mapX and mapY to image.
+ */
+void UndistortImageUsingDistortionMap(
+    const IplImage &mapX,
+    const IplImage &mapY,
+    IplImage &image
+    );
+
+
+/**
+ * \brief Assumes all image buffers are pre-allocated and the same size,
+ * and applies mapX and mapY to the inputImage, and writes to outputImage.
+ */
+void ApplyDistortionCorrectionMap(
+    const IplImage &mapX,
+    const IplImage &mapY,
+    const IplImage &inputImage,
+    IplImage &outputImage
     );
 
 } // end namespace

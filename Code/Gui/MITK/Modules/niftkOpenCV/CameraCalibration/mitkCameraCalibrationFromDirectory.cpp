@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "mitkCameraCalibrationFromDirectory.h"
 #include "mitkCameraCalibrationFacade.h"
@@ -138,6 +128,10 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
         numberCornersY,
         successfullFileNames
         );
+
+    // Also output these as XML, as they are used in niftkCorrectVideoDistortion
+    cvSave(std::string(outputFile + ".intrinsic.xml").c_str(), intrinsicMatrix);
+    cvSave(std::string(outputFile + ".distortion.xml").c_str(), distortionCoeffs);
 
     // Tidy up.
     if(fs.is_open())

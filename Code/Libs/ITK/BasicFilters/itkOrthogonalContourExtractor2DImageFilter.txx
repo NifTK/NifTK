@@ -14,7 +14,6 @@
  The Copyright should therefore still belong to Insight Software Consortium.
 ============================================================================*/
 
-
 /*=========================================================================
 
   Program:   Insight Segmentation & Registration Toolkit

@@ -1,26 +1,16 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
-#  
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
+#  NifTK: A software platform for medical image computing.
 #
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-12-16 14:46:40 +0000 (Fri, 16 Dec 2011) $ 
-#  Revision          : $Revision: 8050 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
 
 ###############################################################
 # Setup variables describing the library requirements.
@@ -76,6 +66,7 @@ IF(SlicerExecutionModel_FOUND)
     niftkCropImage
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
+    niftkMakeCheckerboardMarker
     niftkMultiply
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
@@ -102,24 +93,10 @@ IF(SlicerExecutionModel_FOUND)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
     
     FOREACH(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
-  
-      CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${APP}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${APP}.xml @ONLY )
-      
-      IF(WIN32) 
-        CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat @ONLY )
-        NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat)
-      ELSE(WIN32)
-        CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh @ONLY )
-        NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh)
-      ENDIF(WIN32)
-  
-      SEMMacroBuildNifTKCLI(
-        NAME ${APP}
-        EXECUTABLE_ONLY
-        ${CMAKE_CURRENT_BINARY_DIR}
+      NIFTK_CONFIGURE_AND_BUILD_CLI(
+        NAME ${APP} 
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
       )
-   
     ENDFOREACH()
 
     #-------------------------------------------------------------

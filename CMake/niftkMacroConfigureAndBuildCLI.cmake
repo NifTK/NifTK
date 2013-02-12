@@ -1,16 +1,16 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: A platform for combined medical image analysis and image guided surgery.
-#  
+#  NifTK: A software platform for medical image computing.
+#
 #  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  
+#  PURPOSE.
 #
-#  See LICENSE.txt in the top level directory for details. 
+#  See LICENSE.txt in the top level directory for details.
 #
-#=================================================================================*/
+#============================================================================*/
 
 MACRO(NIFTK_CONFIGURE_AND_BUILD_CLI)
   MACRO_PARSE_ARGUMENTS(_APP
@@ -29,8 +29,13 @@ MACRO(NIFTK_CONFIGURE_AND_BUILD_CLI)
     CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.bat @ONLY )
     NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.bat)
   ELSE(WIN32)
-    CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.sh @ONLY )
-    NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.sh)
+    IF(APPLE)
+      CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI-For-Mac.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.sh @ONLY )
+      NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.sh)
+    ELSE()
+      CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.sh @ONLY )
+      NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.sh)    
+    ENDIF()
   ENDIF(WIN32)
 
   SEMMacroBuildNifTKCLI(

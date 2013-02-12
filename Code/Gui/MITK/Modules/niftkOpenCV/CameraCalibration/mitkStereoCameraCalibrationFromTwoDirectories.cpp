@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "mitkStereoCameraCalibrationFromTwoDirectories.h"
 #include "mitkCameraCalibrationFacade.h"
@@ -204,6 +194,10 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
         successfullFileNamesLeft
         );
 
+    // Also output these as XML, as they are used in niftkCorrectVideoDistortion
+    cvSave(std::string(outputFileName + ".left.intrinsic.xml").c_str(), intrinsicMatrixLeft);
+    cvSave(std::string(outputFileName + ".left.distortion.xml").c_str(), distortionCoeffsLeft);
+
     *os << "Right camera" << std::endl;
     OutputCalibrationData(
         *os,
@@ -221,6 +215,10 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
         numberCornersY,
         successfullFileNamesRight
         );
+
+    // Also output these as XML, as they are used in niftkCorrectVideoDistortion
+    cvSave(std::string(outputFileName + ".right.intrinsic.xml").c_str(), intrinsicMatrixRight);
+    cvSave(std::string(outputFileName + ".right.distortion.xml").c_str(), distortionCoeffsRight);
 
     // Tidy up.
     if(fs.is_open())
