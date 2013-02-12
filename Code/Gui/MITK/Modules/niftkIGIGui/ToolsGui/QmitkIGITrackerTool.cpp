@@ -748,8 +748,17 @@ void QmitkIGITrackerTool::RegisterFiducials()
 
   /* now we have two PointSets with enough points to perform a landmark based transform */
   m_FiducialRegistrationFilter->SetUseICPInitialization(m_UseICP);
-  m_FiducialRegistrationFilter->SetSourceLandmarks(m_ImageFiducialsPointSet);
-  m_FiducialRegistrationFilter->SetTargetLandmarks(m_TrackerFiducialsPointSet);
+  
+  if ( m_TransformTrackerToMITKCoords ) 
+  {
+    m_FiducialRegistrationFilter->SetSourceLandmarks(m_TrackerFiducialsPointSet);
+    m_FiducialRegistrationFilter->SetTargetLandmarks(m_ImageFiducialsPointSet);
+  }
+  else
+  {
+    m_FiducialRegistrationFilter->SetSourceLandmarks(m_ImageFiducialsPointSet);
+    m_FiducialRegistrationFilter->SetTargetLandmarks(m_TrackerFiducialsPointSet);
+  }
   m_FiducialRegistrationFilter->Update();
   QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
     "RMS error is %3mm,\n"
