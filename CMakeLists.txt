@@ -128,10 +128,6 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
       
 ENDFOREACH()
 
-# Print some status stuff to help the user.
-MESSAGE("BUILD_GUI=${BUILD_GUI}")
-MESSAGE("BUILD_IGI=${BUILD_IGI}")
-
 ######################################################################
 # Options. These are set up front, so are available when configuring
 # the SuperBuild, and hence they must also be passed to the normal
