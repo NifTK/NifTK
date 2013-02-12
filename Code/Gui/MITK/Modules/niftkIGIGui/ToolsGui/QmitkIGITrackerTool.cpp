@@ -162,7 +162,6 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
       std::string String;
       String = tool.toStdString();
       StringList.push_back(String);
-    //  qDebug() << tool << trackerTools.length();
       
     }
     if ( StringList.size() > 0 ) 
@@ -749,13 +748,47 @@ void QmitkIGITrackerTool::RegisterFiducials()
 
   /* now we have two PointSets with enough points to perform a landmark based transform */
   m_FiducialRegistrationFilter->SetUseICPInitialization(m_UseICP);
-  m_FiducialRegistrationFilter->SetSourceLandmarks(m_TrackerFiducialsPointSet);
-  m_FiducialRegistrationFilter->SetTargetLandmarks(m_ImageFiducialsPointSet);
+  m_FiducialRegistrationFilter->SetSourceLandmarks(m_ImageFiducialsPointSet);
+  m_FiducialRegistrationFilter->SetTargetLandmarks(m_TrackerFiducialsPointSet);
   m_FiducialRegistrationFilter->Update();
+  QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
+    "RMS error is %3mm,\n"
+    "Minimum registration error (best fitting landmark) is  %4mm,\n"
+    "Maximum registration error (worst fitting landmark) is %5mm.")
+    .arg("Fiducial Registration")
+    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetFREStdDev(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetMinError(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetMaxError(), 3, 'f', 3);
 
+  QString updateMessage = QString("Fiducial Registration complete, FRE: %0, RMS: %1")
+    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3);
+
+  QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
+  emit StatusUpdate(statusUpdate);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::ApplyFiducialTransform(mitk::DataNode::Pointer dataNode)
+{
   /* Transform the image data to tracker space */
+  mitk::NavigationData::Pointer nd_in = mitk::NavigationData::New();
+  //nd_in->SetPosition(p);
 
+ // float * quats = new float[4];
+
+  mitk::Quaternion mitkQuats(0.0 , 0.0 , 0.0 , 1.0);
+  nd_in->SetOrientation(mitkQuats);
+  nd_in->SetDataValid(true);
+
+
+  m_FiducialRegistrationFilter->SetInput(nd_in);
+  m_FiducialRegistrationFilter->UpdateOutputData(0);
   mitk::NavigationData::Pointer nd_out = m_FiducialRegistrationFilter->GetOutput();
+  nd_out->SetDataValid(true);
 
   mitk::NavigationData::OrientationType orientation = nd_out->GetOrientation();
   // convert mitk::ScalarType quaternion to double quaternion because of itk bug
@@ -780,26 +813,7 @@ void QmitkIGITrackerTool::RegisterFiducials()
   affineTransform->Modified();
 
   //set the transform to data
-  m_ImageFiducialsDataNode->GetData()->GetGeometry()->SetIndexToWorldTransform(affineTransform);
-
-  //-------------------
-  QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
-    "RMS error is %3mm,\n"
-    "Minimum registration error (best fitting landmark) is  %4mm,\n"
-    "Maximum registration error (worst fitting landmark) is %5mm.")
-    .arg("Fiducial Registration")
-    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
-    .arg(m_FiducialRegistrationFilter->GetFREStdDev(), 3, 'f', 3)
-    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3)
-    .arg(m_FiducialRegistrationFilter->GetMinError(), 3, 'f', 3)
-    .arg(m_FiducialRegistrationFilter->GetMaxError(), 3, 'f', 3);
-
-  QString updateMessage = QString("Fiducial Registration complete, FRE: %0, RMS: %1")
-    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
-    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3);
-
-  QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
-  emit StatusUpdate(statusUpdate);
+  dataNode->GetData()->GetGeometry()->SetIndexToWorldTransform(affineTransform);
 }
 
 

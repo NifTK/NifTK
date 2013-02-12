@@ -84,7 +84,8 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_CameraLink, SIGNAL(clicked()), this, SLOT(OnCameraLinkClicked()) );
   connect(m_TrackerControlsWidget->pushButton_LHCRHC, SIGNAL(clicked()), this, SLOT(OnLHCRHCClicked()) );
   connect(m_TrackerControlsWidget->pushButton_FidTrack, SIGNAL(clicked()), this, SLOT(OnFidTrackClicked()));
-
+  connect(m_TrackerControlsWidget->pushButton_ApplyFiducialTransform, SIGNAL(clicked()), this, SLOT(OnApplyFidClicked()));
+ 
 //
   if (config != NULL)
   {
@@ -114,6 +115,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
     }
   }
   m_TrackerControlsWidget->comboBox_dataNodes->SetDataStorage(this->GetSource()->GetDataStorage());
+  m_TrackerControlsWidget->comboBox_dataNodes_ApplyFids->SetDataStorage(this->GetSource()->GetDataStorage());
   
   QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
   if (tool != NULL)
@@ -216,6 +218,16 @@ void QmitkIGITrackerToolGui::OnRegisterFiducials()
   if (tool != NULL)
   {
     tool->RegisterFiducials();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnApplyFidClicked()
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if (tool != NULL)
+  {
+    tool->ApplyFiducialTransform(m_TrackerControlsWidget->comboBox_dataNodes_ApplyFids->GetSelectedNode());
   }
 }
 

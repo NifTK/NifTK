@@ -71,6 +71,7 @@ private slots:
   void OnCameraLinkClicked(void);
   void OnLHCRHCClicked(void);
   void OnFidTrackClicked(void);
+  void OnApplyFidClicked(void);
   void OnStatusUpdate(QString message);
   void OnRegisterFiducials();
   void OnGetTipPosition();

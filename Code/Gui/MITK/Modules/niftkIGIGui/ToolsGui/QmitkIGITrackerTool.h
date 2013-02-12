@@ -145,6 +145,11 @@ public:
    */
   void RegisterFiducials();
 
+  /** 
+   * \brief Applies the Fiducial transform to the passed data set
+   */
+  void ApplyFiducialTransform ( mitk::DataNode::Pointer );
+
   /**
    * \brief Not Widely Used: Retrieves / Creates tool, puts it into DataStorage, and returns pointer to the node.
    */
