@@ -13,8 +13,9 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
-#include <iostream>
+#include "mitkDistortionCorrectionVideoProcessor.h"
 #include "FileHelper.h"
+#include <iostream>
 #include <cv.h>
 #include <highgui.h>
 
@@ -650,45 +651,8 @@ void CorrectDistortionInVideoFile(
     const std::string& outputFileName
     )
 {
-  CvCapture *capture = NULL;
-  capture = cvCreateFileCapture(inputFileName.c_str());
-  if (capture == NULL)
-  {
-    throw std::logic_error("Could not read from video file");
-  }
-
-  IplImage *bgrFrame = cvQueryFrame(capture);
-  double fps = cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
-  CvSize size = cvSize(
-      (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH),
-      (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)
-      );
-
-  CvVideoWriter *writer = cvCreateVideoWriter(outputFileName.c_str(),
-      CV_FOURCC('M','J','P','G'),
-      fps,
-      size
-      );
-
-  IplImage *mapX = cvCreateImage(cvGetSize(bgrFrame), IPL_DEPTH_32F, 1);
-  IplImage *mapY = cvCreateImage(cvGetSize(bgrFrame), IPL_DEPTH_32F, 1);
-  cvInitUndistortMap(&intrinsicParams, &distortionCoefficients, mapX, mapY);
-
-  IplImage *corrected = cvCloneImage(bgrFrame);
-
-  while((bgrFrame = cvQueryFrame(capture)) != NULL)
-  {
-    ApplyDistortionCorrectionMap(*mapX, *mapY, *bgrFrame, *corrected);
-    cvWriteFrame(writer, corrected);
-  }
-
-  cvReleaseImage(&corrected);
-  cvReleaseImage(&mapX);
-  cvReleaseImage(&mapY);
-
-  cvReleaseVideoWriter(&writer);
-  cvReleaseImage(&bgrFrame);
-  cvReleaseCapture(&capture);
+  DistortionCorrectionVideoProcessor::Pointer processor = DistortionCorrectionVideoProcessor::New(inputFileName, outputFileName, intrinsicParams, distortionCoefficients);
+  processor->Run();
 }
 
 

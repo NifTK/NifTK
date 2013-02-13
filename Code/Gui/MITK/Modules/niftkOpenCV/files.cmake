@@ -13,6 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
+  VideoProcessing/mitkVideoProcessorTemplateMethod.cpp
+  VideoProcessing/mitkDistortionCorrectionVideoProcessor.cpp
   CameraCalibration/mitkCameraCalibrationFacade.cpp
   CameraCalibration/mitkCameraCalibrationFromDirectory.cpp
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cpp
