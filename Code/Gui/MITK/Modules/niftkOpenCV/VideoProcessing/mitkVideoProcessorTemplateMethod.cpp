@@ -66,11 +66,12 @@ VideoProcessorTemplateMethod::VideoProcessorTemplateMethod(
     std::cout << "Input codec=" << ex << ", " << EXT << ", fps=" << fps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
     std::cout << "Output file=" << outputFile << std::endl;
 
-    m_Writer = cvCreateVideoWriter(outputFile.c_str(), CV_FOURCC('D','I','V','X'), fps, size);
+    m_Writer = cvCreateVideoWriter(outputFile.c_str(), CV_FOURCC('I', 'Y', 'U', 'V'), fps, size);
     if (m_Writer == NULL)
     {
       throw std::logic_error("Could not open video output");
     }
+    std::cout << "Created writer" << std::endl;
   }
 }
 
@@ -98,6 +99,7 @@ void VideoProcessorTemplateMethod::Run()
   while((input = cvQueryFrame(m_Capture)) != NULL)
   {
     this->DoProcessing(*input, *output);
+    std::cerr << "Matt, processing frame" << std::endl;
     cvWriteFrame(m_Writer, output);
   }
 }
