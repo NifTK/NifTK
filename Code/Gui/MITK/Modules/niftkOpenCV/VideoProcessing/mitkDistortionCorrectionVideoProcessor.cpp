@@ -61,7 +61,6 @@ DistortionCorrectionVideoProcessor::DistortionCorrectionVideoProcessor(
     m_MapX = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 1);
     m_MapY = cvCreateImage(cvGetSize(image), IPL_DEPTH_32F, 1);
     cvInitUndistortMap(m_Intrinsic, m_Distortion, m_MapX, m_MapY);
-    cvReleaseImage(&image);
   }
 }
 

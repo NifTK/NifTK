@@ -51,22 +51,32 @@ VideoProcessorTemplateMethod::VideoProcessorTemplateMethod(
     throw std::logic_error("Could not create video file reader.");
   }
 
-  IplImage* image = cvQueryFrame(m_Capture);
-
-  if (outputFile.size() > 0 && image != NULL)
+  m_GrabbedImage = cvQueryFrame(m_Capture);
+  if (m_GrabbedImage == NULL)
   {
-    int ex     = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FOURCC);
-    int fps    = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FPS);
-    int sizeX  = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FRAME_WIDTH);
-    int sizeY  = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FRAME_HEIGHT);
+    throw std::logic_error("Failed to grab image from capture device.");
+  }
+
+  if (outputFile.size() > 0)
+  {
+    int inputCodec = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FOURCC);
+    char inputCodecCode[] = {inputCodec & 0XFF , (inputCodec & 0XFF00) >> 8,(inputCodec & 0XFF0000) >> 16,(inputCodec & 0XFF000000) >> 24, 0};
+
+    int fps        = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FPS);
+    int sizeX      = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FRAME_WIDTH);
+    int sizeY      = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FRAME_HEIGHT);
 
     CvSize size = cvSize(sizeX, sizeY);
-    char EXT[] = {ex & 0XFF , (ex & 0XFF00) >> 8,(ex & 0XFF0000) >> 16,(ex & 0XFF000000) >> 24, 0};
 
-    std::cout << "Input codec=" << ex << ", " << EXT << ", fps=" << fps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
+    int outputFps = 25;
+    int outputCodec = CV_FOURCC('D', 'I', 'V', 'X');
+    char outputCodecCode[] = {outputCodec & 0XFF , (outputCodec & 0XFF00) >> 8,(outputCodec & 0XFF0000) >> 16,(outputCodec & 0XFF000000) >> 24, 0};
+
+    std::cout << "Input codec=" << inputCodec << ", " << inputCodecCode << ", fps=" << fps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
+    std::cout << "Output codec=" << outputCodec << ", " << outputCodecCode << ", fps=" << outputFps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
     std::cout << "Output file=" << outputFile << std::endl;
 
-    m_Writer = cvCreateVideoWriter(outputFile.c_str(), CV_FOURCC('I', 'Y', 'U', 'V'), fps, size);
+    m_Writer = cvCreateVideoWriter(outputFile.c_str(), outputCodec, outputFps, size);
     if (m_Writer == NULL)
     {
       throw std::logic_error("Could not open video output");
@@ -93,26 +103,25 @@ void VideoProcessorTemplateMethod::Run()
     throw std::logic_error("No output writer specified");
   }
 
-  IplImage *input = cvQueryFrame(m_Capture);
-  IplImage *output = cvCloneImage(input);
+  m_GrabbedImage = cvQueryFrame(m_Capture);
+  IplImage *output = cvCloneImage(m_GrabbedImage);
 
-  while((input = cvQueryFrame(m_Capture)) != NULL)
+  int frame = 0;
+  while((m_GrabbedImage = cvQueryFrame(m_Capture)) != NULL)
   {
-    this->DoProcessing(*input, *output);
-    std::cerr << "Matt, processing frame" << std::endl;
+    this->DoProcessing(*m_GrabbedImage, *output);
     cvWriteFrame(m_Writer, output);
+    std::cout << "Processed frame " << frame++ << std::endl;
   }
+
+  cvReleaseImage(&output);
 }
 
 
 //-----------------------------------------------------------------------------
 IplImage* VideoProcessorTemplateMethod::GetImage()
 {
-  if (m_Capture == NULL)
-  {
-    throw std::logic_error("You must initialise the capture device before calling GetImage()");
-  }
-  return cvQueryFrame(m_Capture);
+  return m_GrabbedImage;
 }
 
 } // end namespace

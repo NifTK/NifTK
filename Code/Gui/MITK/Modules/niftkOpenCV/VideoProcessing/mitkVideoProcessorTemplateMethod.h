@@ -58,6 +58,7 @@ private:
 
   CvCapture     *m_Capture;
   CvVideoWriter *m_Writer;
+  IplImage      *m_GrabbedImage;
 
 }; // end class
 
