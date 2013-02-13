@@ -62,8 +62,15 @@ public:
 
   /**
    * \brief Associates a dataNode with a given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node was successfully added, false if not.
    */
-  void AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+  bool AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+ 
+  /**
+   * \brief Removes a dataNode from the associated list for the  given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node successfully removed
+   */
+  bool RemoveDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
   
   /**
    * \brief Return a QList of the tools associated with a given toolName
@@ -75,6 +82,18 @@ public:
    */
   itkSetMacro(UseICP, bool);
   itkGetMacro(UseICP, bool);
+
+  /**
+   * \ brief get/set the VTK camera focal point
+   */
+  itkSetMacro(focalPoint, double);
+  itkGetMacro(focalPoint, double);
+
+  /** 
+   * \ brief get/set whether to use fiducial transform filter
+   */
+  itkSetMacro(TransformTrackerToMITKCoords, bool);
+  itkGetMacro(TransformTrackerToMITKCoords, bool);
 
   /**
    * \brief Not Widely Used: Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
@@ -107,9 +126,19 @@ public:
   mitk::DataNode* GetTrackerFiducialsNode() const;
 
   /**
+   * \brief Called by the add current tracker tip position button on QmitkFiducialRegistrationWidget to add the current position to tracker fiducial set
+   */
+  void GetCurrentTipPosition();
+
+  /**
    * \brief Not Widely Used: Called from the "Register" button on the QmitkFiducialRegistrationWidget to register point sets.
    */
   void RegisterFiducials();
+
+  /** 
+   * \brief Applies the Fiducial transform to the passed data set
+   */
+  void ApplyFiducialTransform ( mitk::DataNode::Pointer );
 
   /**
    * \brief Not Widely Used: Retrieves / Creates tool, puts it into DataStorage, and returns pointer to the node.
@@ -192,6 +221,10 @@ private:
   
   //store a copy of the init string
   QString                                              m_InitString;
+  double                                               m_focalPoint; //the focal point of the VTK camera used
+  double                                               m_ClipNear; //the near clipping plane of the VTK camera used
+  double                                               m_ClipFar; //the far clipping plane of the VTK camera used
+  bool                                                 m_TransformTrackerToMITKCoords; //Set to true to use m_FiducialRegistrationFilter
 }; // end class
 
 #endif

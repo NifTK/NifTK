@@ -54,7 +54,6 @@ SET(MOC_H_FILES
   QmitkMIDASSingleViewWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
   QmitkSingleWidget.h
-  QmitkCmicLogo.cpp
 )
 
 SET(UI_FILES
