@@ -14,8 +14,8 @@ REM   See LICENSE.txt in the top level directory for details.
 REM 
 REM =============================================================================*/
 
-SET BATCH_SCRIPT_FOLDER_PATHNAME=%~dp0
-SET UP_ONE_DIRECTORY=%BATCH_SCRIPT_FOLDER_PATHNAME%\..\
+SET BATCH_SCRIPT_FOLDER_PATHNAME="%~dp0"
+SET UP_ONE_DIRECTORY="%BATCH_SCRIPT_FOLDER_PATHNAME%\..\"
 
 REM Throw the first parameter away and retain remainder
 
@@ -28,5 +28,5 @@ SET params=%params% %1
 GOTO LOOP
 :AFTERLOOP
 
-%UP_ONE_DIRECTORY%\@APP@ %params%
+"%UP_ONE_DIRECTORY%\@APP@" %params%
 
