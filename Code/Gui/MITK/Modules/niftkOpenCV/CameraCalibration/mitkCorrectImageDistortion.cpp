@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkCorrectVideoFileDistortion.h"
+#include "mitkCorrectImageDistortion.h"
 #include "mitkCameraCalibrationFacade.h"
 #include <ios>
 #include <fstream>
@@ -25,41 +25,35 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-CorrectVideoFileDistortion::CorrectVideoFileDistortion()
+CorrectImageDistortion::CorrectImageDistortion()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-CorrectVideoFileDistortion::~CorrectVideoFileDistortion()
+CorrectImageDistortion::~CorrectImageDistortion()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-bool CorrectVideoFileDistortion::Correct(
+bool CorrectImageDistortion::Correct(
     const std::string& inputImageFileName,
-    const std::string& inputIntrinsicsFileNameLeft,
-    const std::string& inputDistortionCoefficientsFileNameLeft,
-    const std::string& inputIntrinsicsFileNameRight,
-    const std::string& inputDistortionCoefficientsFileNameRight,
-    const std::string& outputImageFileName,
-    bool writeInterleaved
+    const std::string& inputIntrinsicsFileName,
+    const std::string& inputDistortionCoefficientsFileName,
+    const std::string& outputImageFileName
     )
 {
   bool isSuccessful = false;
 
   try
   {
-    CorrectDistortionInStereoVideoFile(
+    CorrectDistortionInImageFile(
         inputImageFileName,
-        inputIntrinsicsFileNameLeft,
-        inputDistortionCoefficientsFileNameLeft,
-        inputIntrinsicsFileNameRight,
-        inputDistortionCoefficientsFileNameRight,
-        writeInterleaved,
+        inputIntrinsicsFileName,
+        inputDistortionCoefficientsFileName,
         outputImageFileName);
 
     // No exceptions ... so all OK.
