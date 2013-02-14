@@ -26,6 +26,7 @@
 #include "vtkRenderer.h"
 #include "vtkRendererCollection.h"
 #include "vtkRenderWindow.h"
+#include "vtkRenderWindowInteractor.h"
 #include "vtkTransform.h"
 #include "vtkMatrix4x4.h"
 
@@ -42,6 +43,10 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
 , m_TrackerFiducialsPointSet(NULL)
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
+, m_focalPoint(2000.0)
+, m_ClipNear(5.0)
+, m_ClipFar(6000.0)
+, m_TransformTrackerToMITKCoords(false)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
@@ -59,6 +64,10 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
 , m_TrackerFiducialsPointSet(NULL)
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
+, m_focalPoint(2000.0)
+, m_ClipNear(5.0)
+, m_ClipFar(6000.0)
+, m_TransformTrackerToMITKCoords(false)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
@@ -143,7 +152,6 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
       std::string String;
       String = tool.toStdString();
       StringList.push_back(String);
-    //  qDebug() << tool << trackerTools.length();
       
     }
     if ( StringList.size() > 0 ) 
@@ -262,27 +270,27 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
         Camera->SetPosition(inputTransformMat[0][3],inputTransformMat[1][3],inputTransformMat[2][3]);
         //manually sort out the focal point, there is presumably an intelegent way to to this
         //camerausertransform seems pretty useless in this application
-        float fx=0;
-        float fy=0;
-        float fz=2000; 
-        fx = inputTransformMat[0][0] * fx + inputTransformMat[0][1] * fy 
-          + inputTransformMat[0][2] * fz + inputTransformMat[0][3];
-        fy = inputTransformMat[1][0] * fx + inputTransformMat[1][1] * fy
-          + inputTransformMat[1][2] * fz + inputTransformMat[1][3];
-        fz = inputTransformMat[2][0] * fx + inputTransformMat[2][1] * fy
-          + inputTransformMat[2][2] * fz + inputTransformMat[2][3];
+        float fxi=0;
+        float fyi=0;
+        float fzi=m_focalPoint; 
+        float fx = inputTransformMat[0][0] * fxi + inputTransformMat[0][1] * fyi 
+          + inputTransformMat[0][2] * fzi + inputTransformMat[0][3];
+        float fy = inputTransformMat[1][0] * fxi + inputTransformMat[1][1] * fyi
+          + inputTransformMat[1][2] * fzi + inputTransformMat[1][3];
+        float fz = inputTransformMat[2][0] * fxi + inputTransformMat[2][1] * fyi
+          + inputTransformMat[2][2] * fzi + inputTransformMat[2][3];
         Camera->SetFocalPoint(fx,fy,fz);
-        float vux=1;
-        float vuy=0;
-        float vuz=0;
-        vux = inputTransformMat[0][0] * vux + inputTransformMat[0][1] * vuy 
-          + inputTransformMat[0][2] * vuz + inputTransformMat[0][3];
-        vuy = inputTransformMat[1][0] * vux + inputTransformMat[1][1] * vuy
-          + inputTransformMat[1][2] * vuz + inputTransformMat[1][3];
-        vuz = inputTransformMat[2][0] * vux + inputTransformMat[2][1] * vuy
-          + inputTransformMat[2][2] * vuz + inputTransformMat[2][3];
+        double vuxi=0;
+        double vuyi=1.0e9;
+        double vuzi=0;
+        double vux = inputTransformMat[0][0] * vuxi + inputTransformMat[0][1] * vuyi 
+          + inputTransformMat[0][2] * vuzi + inputTransformMat[0][3];
+        double vuy = inputTransformMat[1][0] * vuxi + inputTransformMat[1][1] * vuyi
+          + inputTransformMat[1][2] * vuzi + inputTransformMat[1][3];
+        double vuz = inputTransformMat[2][0] * vuxi + inputTransformMat[2][1] * vuyi
+          + inputTransformMat[2][2] * vuzi + inputTransformMat[2][3];
         Camera->SetViewUp(vux,vuy,vuz);
-        Camera->SetClippingRange(0.0, 8000.0);
+        Camera->SetClippingRange(m_ClipNear, m_ClipFar);
       }
     }
 
@@ -297,75 +305,102 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
        emit StatusUpdate(message);
        return;
      }
-
+    
      // Get the transform from data
      mitk::BaseData * data = tempNode->GetData();
-     mitk::AffineTransform3D::Pointer affineTransform = data->GetGeometry()->GetIndexToWorldTransform();
 
-     if (affineTransform.IsNull())
+     if ( m_TransformTrackerToMITKCoords ) 
      {
-       QString message("ERROR: QmitkIGITrackerTool, AffineTransform IndexToWorldTransform not initialized!");
-       emit StatusUpdate(message);
-       return;
-     }
+       mitk::AffineTransform3D::Pointer affineTransform = data->GetGeometry()->GetIndexToWorldTransform();
+        
+       if (affineTransform.IsNull())
+       {
+         QString message("ERROR: QmitkIGITrackerTool, AffineTransform IndexToWorldTransform not initialized!");
+         emit StatusUpdate(message);
+         return;
+       }
 
 
-     mitk::NavigationData::Pointer nd_in  = mitk::NavigationData::New();
-     mitk::NavigationData::Pointer nd_out = mitk::NavigationData::New();
-     mitk::NavigationData::PositionType p;
+       mitk::NavigationData::Pointer nd_in  = mitk::NavigationData::New();
+       mitk::NavigationData::Pointer nd_out = mitk::NavigationData::New();
+       mitk::NavigationData::PositionType p;
 
-     mitk::FillVector3D(p, inputTransformMat[0][3], inputTransformMat[1][3], inputTransformMat[2][3]);
-     nd_in->SetPosition(p);
+       mitk::FillVector3D(p, inputTransformMat[0][3], inputTransformMat[1][3], inputTransformMat[2][3]);
+       nd_in->SetPosition(p);
 
-     float * quats = new float[4];
-     igtl::MatrixToQuaternion(inputTransformMat, quats);
+       float * quats = new float[4];
+       igtl::MatrixToQuaternion(inputTransformMat, quats);
 
-     mitk::Quaternion mitkQuats(quats[0], quats[1], quats[2], quats[3]);
-     nd_in->SetOrientation(mitkQuats);
-     nd_in->SetDataValid(true);
+       mitk::Quaternion mitkQuats(quats[0], quats[1], quats[2], quats[3]);
+       nd_in->SetOrientation(mitkQuats);
+       nd_in->SetDataValid(true);
 
-     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-     m_FiducialRegistrationFilter->SetInput(nd_in);
-     m_FiducialRegistrationFilter->UpdateOutputData(0);
-     nd_out = m_FiducialRegistrationFilter->GetOutput();
-     nd_out->SetDataValid(true);
+       //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+       m_FiducialRegistrationFilter->SetInput(nd_in);
+       m_FiducialRegistrationFilter->UpdateOutputData(0);
+       nd_out = m_FiducialRegistrationFilter->GetOutput();
+       nd_out->SetDataValid(true);
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-     //store the current scaling to set it after transformation
-     mitk::Vector3D spacing = data->GetUpdatedTimeSlicedGeometry()->GetSpacing();
-     //clear spacing of data to be able to set it again afterwards
-     float scale[] = {1.0, 1.0, 1.0};
-     data->GetGeometry()->SetSpacing(scale);
+      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+       //store the current scaling to set it after transformation
+       mitk::Vector3D spacing = data->GetUpdatedTimeSlicedGeometry()->GetSpacing();
+       //clear spacing of data to be able to set it again afterwards
+       float scale[] = {1.0, 1.0, 1.0};
+       data->GetGeometry()->SetSpacing(scale);
 
-     /*now bring quaternion to affineTransform by using vnl_Quaternion*/
-     affineTransform->SetIdentity();
+       /*now bring quaternion to affineTransform by using vnl_Quaternion*/
+       affineTransform->SetIdentity();
 
-     //calculate the transform from the quaternions
-     static itk::QuaternionRigidTransform<double>::Pointer quatTransform = itk::QuaternionRigidTransform<double>::New();
+       //calculate the transform from the quaternions
+       static itk::QuaternionRigidTransform<double>::Pointer quatTransform = itk::QuaternionRigidTransform<double>::New();
 
-     mitk::NavigationData::OrientationType orientation = nd_out->GetOrientation();
-     // convert mitk::ScalarType quaternion to double quaternion because of itk bug
-     vnl_quaternion<double> doubleQuaternion(orientation.x(), orientation.y(), orientation.z(), orientation.r());
-     quatTransform->SetIdentity();
-     quatTransform->SetRotation(doubleQuaternion);
-     quatTransform->Modified();
+       mitk::NavigationData::OrientationType orientation = nd_out->GetOrientation();
+       // convert mitk::ScalarType quaternion to double quaternion because of itk bug
+       vnl_quaternion<double> doubleQuaternion(orientation.x(), orientation.y(), orientation.z(), orientation.r());
+       quatTransform->SetIdentity();
+       quatTransform->SetRotation(doubleQuaternion);
+       quatTransform->Modified();
 
-     /* because of an itk bug, the transform can not be calculated with float data type.
-     To use it in the mitk geometry classes, it has to be transfered to mitk::ScalarType which is float */
-     static mitk::AffineTransform3D::MatrixType m;
-     mitk::TransferMatrix(quatTransform->GetMatrix(), m);
-     affineTransform->SetMatrix(m);
+       /* because of an itk bug, the transform can not be calculated with float data type.
+       To use it in the mitk geometry classes, it has to be transfered to mitk::ScalarType which is float */
+       static mitk::AffineTransform3D::MatrixType m;
+       mitk::TransferMatrix(quatTransform->GetMatrix(), m);
+       affineTransform->SetMatrix(m);
 
-     ///*set the offset by convert from itkPoint to itkVector and setting offset of transform*/
-     mitk::Vector3D pos;
-     pos.Set_vnl_vector(nd_out->GetPosition().Get_vnl_vector());
-     affineTransform->SetOffset(pos);
-     affineTransform->Modified();
+       ///*set the offset by convert from itkPoint to itkVector and setting offset of transform*/
+       mitk::Vector3D pos;
+       pos.Set_vnl_vector(nd_out->GetPosition().Get_vnl_vector());
+       affineTransform->SetOffset(pos);
+       affineTransform->Modified();
 
-     //set the transform to data
-     data->GetGeometry()->SetIndexToWorldTransform(affineTransform);
-     //set the original spacing to keep scaling of the geometrical object
-     data->GetGeometry()->SetSpacing(spacing);
+       //set the transform to data
+       data->GetGeometry()->SetIndexToWorldTransform(affineTransform);
+       //set the original spacing to keep scaling of the geometrical object
+       data->GetGeometry()->SetSpacing(spacing);
+      } 
+     else
+     {
+       static itk::Matrix<float,3,3> m;
+       for ( int row = 0 ; row < 3 ; row ++ ) 
+       {
+         for ( int col = 0 ; col < 3 ; col ++ ) 
+         {
+           m[row][col]=inputTransformMat[row][col];
+         }
+       }
+
+       mitk::AffineTransform3D::Pointer affineTransform =mitk::AffineTransform3D::New(); 
+       affineTransform->SetMatrix(m);
+       mitk::Vector3D pos;
+       for ( int i = 0 ; i < 3 ; i ++ )
+       {
+         pos[i] = inputTransformMat[i][3];
+       }
+       affineTransform->SetOffset(pos);
+       affineTransform->Modified();
+       data->GetGeometry()->SetIndexToWorldTransform(affineTransform);
+     }//if m_TransformTrackerToMITKCoords 
+
      data->GetGeometry()->TransferItkToVtkTransform(); // update VTK Transform for rendering too
      data->GetGeometry()->Modified();
      data->Modified();
@@ -467,13 +502,78 @@ void QmitkIGITrackerTool::GetToolPosition(const QString &toolName)
   }
 }
 
-
 //---------------------------------------------------------------------------
-void QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+void QmitkIGITrackerTool::GetCurrentTipPosition()
 {
-  m_AssociatedTools.insertMulti(toolName,dataNode);
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
+
+  igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
+  mitk::IGIDataType* data = this->RequestData(idNow);
+
+  if (data != NULL)
+  {
+    QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
+     if (dataType.IsNotNull())
+     {
+
+        OIGTLMessage* pointerToMessage = dataType->GetMessage();
+        if (pointerToMessage != NULL)
+        {
+          
+          OIGTLTrackingDataMessage* trMsg;
+          trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
+          float inputTransformMat[4][4];
+          trMsg->getMatrix(inputTransformMat);
+          qDebug() << inputTransformMat[0][3] << " " << inputTransformMat[1][3] << " " << inputTransformMat[2][3];
+          mitk::PointSet::PointType point;
+          point[0]=inputTransformMat[0][3];
+          point[1]=inputTransformMat[1][3];
+          point[2]=inputTransformMat[2][3];
+          int Size=m_TrackerFiducialsPointSet->GetSize();
+          m_TrackerFiducialsPointSet->InsertPoint(  Size, point );
+
+        }
+     }
+  }
 }
 
+//---------------------------------------------------------------------------
+bool QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_AssociatedTools.values(toolName);
+  if ( AlreadyAddedNodes.contains(dataNode) )
+  {
+    return false;
+  }
+  else
+  {
+    m_AssociatedTools.insertMulti(toolName,dataNode);
+    return true;
+  }
+}
+
+//---------------------------------------------------------------------------
+bool QmitkIGITrackerTool::RemoveDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_AssociatedTools.values(toolName);
+  int RemovedNodes = AlreadyAddedNodes.removeAll(dataNode);
+
+  m_AssociatedTools.remove(toolName);
+  mitk::DataNode::Pointer tempNode = mitk::DataNode::New();
+  foreach ( tempNode, AlreadyAddedNodes ) 
+  {
+    m_AssociatedTools.insertMulti(toolName,tempNode);
+  }
+  if ( RemovedNodes != 1 ) 
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
 
 //---------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString toolName)
@@ -609,6 +709,10 @@ void QmitkIGITrackerTool::RemoveFiducialsFromDataStorage()
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::RegisterFiducials()
 {
+  m_ImageFiducialsPointSet = dynamic_cast<mitk::PointSet*>(m_ImageFiducialsDataNode->GetData());
+  m_TrackerFiducialsPointSet = dynamic_cast<mitk::PointSet*>(m_TrackerFiducialsDataNode->GetData());
+
+
   if (m_ImageFiducialsPointSet.IsNull() || m_TrackerFiducialsPointSet.IsNull())
   {
     QString warning = QString("WARNING: Registration not possible\n") +
@@ -634,10 +738,18 @@ void QmitkIGITrackerTool::RegisterFiducials()
 
   /* now we have two PointSets with enough points to perform a landmark based transform */
   m_FiducialRegistrationFilter->SetUseICPInitialization(m_UseICP);
-  m_FiducialRegistrationFilter->SetSourceLandmarks(m_TrackerFiducialsPointSet);
-  m_FiducialRegistrationFilter->SetTargetLandmarks(m_ImageFiducialsPointSet);
+  
+  if ( m_TransformTrackerToMITKCoords ) 
+  {
+    m_FiducialRegistrationFilter->SetSourceLandmarks(m_TrackerFiducialsPointSet);
+    m_FiducialRegistrationFilter->SetTargetLandmarks(m_ImageFiducialsPointSet);
+  }
+  else
+  {
+    m_FiducialRegistrationFilter->SetSourceLandmarks(m_ImageFiducialsPointSet);
+    m_FiducialRegistrationFilter->SetTargetLandmarks(m_TrackerFiducialsPointSet);
+  }
   m_FiducialRegistrationFilter->Update();
-
   QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
     "RMS error is %3mm,\n"
     "Minimum registration error (best fitting landmark) is  %4mm,\n"
@@ -655,6 +767,52 @@ void QmitkIGITrackerTool::RegisterFiducials()
 
   QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
   emit StatusUpdate(statusUpdate);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerTool::ApplyFiducialTransform(mitk::DataNode::Pointer dataNode)
+{
+  /* Transform the image data to tracker space */
+  mitk::NavigationData::Pointer nd_in = mitk::NavigationData::New();
+  //nd_in->SetPosition(p);
+
+ // float * quats = new float[4];
+
+  mitk::Quaternion mitkQuats(0.0 , 0.0 , 0.0 , 1.0);
+  nd_in->SetOrientation(mitkQuats);
+  nd_in->SetDataValid(true);
+
+
+  m_FiducialRegistrationFilter->SetInput(nd_in);
+  m_FiducialRegistrationFilter->UpdateOutputData(0);
+  mitk::NavigationData::Pointer nd_out = m_FiducialRegistrationFilter->GetOutput();
+  nd_out->SetDataValid(true);
+
+  mitk::NavigationData::OrientationType orientation = nd_out->GetOrientation();
+  // convert mitk::ScalarType quaternion to double quaternion because of itk bug
+  vnl_quaternion<double> doubleQuaternion(orientation.x(), orientation.y(), orientation.z(), orientation.r());
+  //calculate the transform from the quaternions
+  static itk::QuaternionRigidTransform<double>::Pointer quatTransform = itk::QuaternionRigidTransform<double>::New();
+  quatTransform->SetIdentity();
+  quatTransform->SetRotation(doubleQuaternion);
+  quatTransform->Modified();
+
+  /* because of an itk bug, the transform can not be calculated with float data type.
+     To use it in the mitk geometry classes, it has to be transfered to mitk::ScalarType which is float */
+  static mitk::AffineTransform3D::MatrixType m;
+  mitk::TransferMatrix(quatTransform->GetMatrix(), m);
+  mitk::AffineTransform3D::Pointer affineTransform =mitk::AffineTransform3D::New(); 
+  affineTransform->SetMatrix(m);
+
+  ///*set the offset by convert from itkPoint to itkVector and setting offset of transform*/
+  mitk::Vector3D pos;
+  pos.Set_vnl_vector(nd_out->GetPosition().Get_vnl_vector());
+  affineTransform->SetOffset(pos);
+  affineTransform->Modified();
+
+  //set the transform to data
+  dataNode->GetData()->GetGeometry()->SetIndexToWorldTransform(affineTransform);
 }
 
 
@@ -723,13 +881,16 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        vtkCamera * Camera;
        vtkRenderWindow * thisWindow;
        thisWindow = RenderWindows.at(i);
+        
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->InteractiveOff();
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->LightFollowCameraOn();
 
        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
 
        Camera->SetPosition(0,0,0);
-       Camera->SetFocalPoint(0,0,2000);
-       Camera->SetViewUp(0,1,0);
-       Camera->SetClippingRange(0.0, 8000.0);
+       Camera->SetFocalPoint(0,0,m_focalPoint);
+       Camera->SetViewUp(0,10000,0);
+       Camera->SetClippingRange(m_ClipNear, m_ClipFar);
      }
    }
    else
@@ -745,16 +906,19 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
        thisWindow = RenderWindows.at(i);
 
        Camera = mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->GetActiveCamera();
+       
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->InteractiveOn();
+       mitk::BaseRenderer::GetInstance(thisWindow)->GetVtkRenderer()->LightFollowCameraOff();
 
        Camera->SetPosition(0,0,0);
-       Camera->SetFocalPoint(0,0,2000);
+       Camera->SetFocalPoint(0,0,m_focalPoint);
        Camera->SetViewUp(1,0,0);
        vtkMatrix4x4 * viewMatrix = vtkMatrix4x4::New();
        vtkTransform * Transform = vtkTransform::New();
        Transform->SetMatrix(viewMatrix);
        Camera->SetUserViewTransform(Transform);
 
-       Camera->SetClippingRange(0.0, 4000.0);
+       Camera->SetClippingRange(m_ClipNear, m_ClipFar);
      }
    }
 }

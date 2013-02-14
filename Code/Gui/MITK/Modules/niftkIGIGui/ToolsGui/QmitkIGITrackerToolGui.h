@@ -57,9 +57,14 @@ private slots:
   void OnFiducialRegistrationClicked(void);
   void OnManageToolConnection(void);
   void OnAssocClicked(void);
+  void OnDisassocClicked(void);
   void OnCameraLinkClicked(void);
+  void OnLHCRHCClicked(void);
+  void OnFidTrackClicked(void);
+  void OnApplyFidClicked(void);
   void OnStatusUpdate(QString message);
   void OnRegisterFiducials();
+  void OnGetTipPosition();
 
 private:
 
