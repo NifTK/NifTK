@@ -65,6 +65,7 @@ private slots:
   void OnStatusUpdate(QString message);
   void OnRegisterFiducials();
   void OnGetTipPosition();
+  void OnSetUpFinePositioning();
 
 private:
 

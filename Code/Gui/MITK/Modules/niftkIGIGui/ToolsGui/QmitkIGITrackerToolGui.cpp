@@ -75,6 +75,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_LHCRHC, SIGNAL(clicked()), this, SLOT(OnLHCRHCClicked()) );
   connect(m_TrackerControlsWidget->pushButton_FidTrack, SIGNAL(clicked()), this, SLOT(OnFidTrackClicked()));
   connect(m_TrackerControlsWidget->pushButton_ApplyFiducialTransform, SIGNAL(clicked()), this, SLOT(OnApplyFidClicked()));
+  connect(m_TrackerControlsWidget->pushButton_SetUpPositioning, SIGNAL(clicked()), this, SLOT(OnSetUpFinePositioning()));
  
 //
   if (config != NULL)
@@ -106,6 +107,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   }
   m_TrackerControlsWidget->comboBox_dataNodes->SetDataStorage(this->GetSource()->GetDataStorage());
   m_TrackerControlsWidget->comboBox_dataNodes_ApplyFids->SetDataStorage(this->GetSource()->GetDataStorage());
+  m_TrackerControlsWidget->comboBox_dataNodes_FinePos->SetDataStorage(this->GetSource()->GetDataStorage());
   
   QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
   if (tool != NULL)
@@ -197,6 +199,16 @@ void QmitkIGITrackerToolGui::OnGetTipPosition()
     tool->GetCurrentTipPosition();
   }
 }
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnSetUpFinePositioning()
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if (tool != NULL)
+  {
+    tool->SetUpPositioning(m_TrackerControlsWidget->GetCurrentToolName(), m_TrackerControlsWidget->comboBox_dataNodes_FinePos->GetSelectedNode());
+  }
+}
+
 
 
 

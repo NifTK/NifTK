@@ -207,8 +207,8 @@ void CMICLogo::SetupCamera()
   position[2] = 0;
 
   focalPoint[0] = 0;
-  focalPoint[0] = 0;
-  focalPoint[0] = 1;
+  focalPoint[1] = 0;
+  focalPoint[2] = 1;
 
   m_Camera->SetViewUp (0,1,0);
 

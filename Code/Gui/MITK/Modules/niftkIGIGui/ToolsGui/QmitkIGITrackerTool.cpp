@@ -73,8 +73,6 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
 }
 
-
-
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::~QmitkIGITrackerTool()
 {
@@ -240,7 +238,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
       return;
     }
 
-    float inputTransformMat[4][4];
+    float   inputTransformMat[4][4];
     trMsg->getMatrix(inputTransformMat);
 
     if ( m_LinkCamera )
@@ -927,3 +925,177 @@ bool QmitkIGITrackerTool::GetCameraLink()
 {
    return m_LinkCamera;
 }
+//------------------------------------------------------------------------------
+void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Pointer dataNode)
+{
+/*This does not work, don't know why not. Anyway It looks like I can't set the Landmark
+ * Transform, other than by using source and target fiducials. Lets try and keep this as simple 
+ * as possible.
+ * Want the transform to be the existing position of some datanode (maybe that should be passed)
+ * divided by the current tracking transform. 
+ * Find this then multiply a set of three fiducial points by it (1,0,0)(0,1,0) and (0,0,1);
+ * Register these to set the right transform
+ * Then turn on fid tracking
+ * mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::Pointer LandmarkTransform 
+    =  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::New();
+  LandmarkTransform = m_FiducialRegistrationFilter->GetLandmarkTransform();
+ */ 
+  itk::Matrix<double,4,4> Tracking;
+  itk::Matrix<double,4,4> AssociatedNode;
+  itk::Matrix<double,4,4> Out;
+
+  itk::Vector<double,4> ux;
+  itk::Vector<double,4> uy;
+  itk::Vector<double,4> uz;
+  
+  ux[0] = 1;
+  ux[1] = 0;
+  ux[2] = 0;
+  ux[3] = 1;
+  
+  uy[0] = 0;
+  uy[1] = 1;
+  uy[2] = 0;
+  uy[3] = 1;
+ 
+  uz[0] = 0;
+  uz[1] = 0;
+  uz[2] = 1;
+  uz[3] = 1;
+
+  mitk::AffineTransform3D::Pointer AssociatedNodeTransform =mitk::AffineTransform3D::New(); 
+  AssociatedNodeTransform = dataNode->GetData()->GetGeometry()->GetIndexToWorldTransform();
+
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
+
+  igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
+  mitk::IGIDataType* data = this->RequestData(idNow);
+
+  float inputTransformMat[4][4];
+  if (data != NULL)
+  {
+    QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
+     if (dataType.IsNotNull())
+     {
+
+        OIGTLMessage* pointerToMessage = dataType->GetMessage();
+        if (pointerToMessage != NULL)
+        {
+          
+          OIGTLTrackingDataMessage* trMsg;
+          trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
+          trMsg->getMatrix(inputTransformMat);
+        }
+     }
+  }
+
+  mitk::AffineTransform3D::MatrixType m1;
+  m1=AssociatedNodeTransform->GetMatrix();
+  mitk::Vector3D pos = AssociatedNodeTransform->GetOffset();
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+     for ( int col = 0 ; col < 4 ; col ++ ) 
+     {
+       Tracking[row][col]=inputTransformMat[row][col];
+       if ( (row < 3) && (col < 3) )
+       {
+         AssociatedNode[row][col] = m1[row][col];
+       }
+       if ( row == 3 )
+       {
+         AssociatedNode[row][col] = inputTransformMat[row][col];
+       }
+       if ( col == 3 ) 
+       {
+         if ( row < 3 ) 
+         {
+            AssociatedNode[row][col] = pos[row];
+         }
+       }
+     }
+  }
+  
+  Out=AssociatedNode*Tracking.GetInverse();
+  qDebug() << "Associated Node Matrix";
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+    qDebug() << AssociatedNode[row][0] << " " <<  AssociatedNode[row][1] << " " <<  AssociatedNode[row][2] << " " <<  AssociatedNode[row][3];
+  }
+  qDebug() << "Tracking Matrix";
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+    qDebug() << Tracking[row][0] << " " <<  Tracking[row][1] << " " <<  Tracking[row][2] << " " <<  Tracking[row][3];
+  }
+  qDebug() << "Out Matrix";
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+    qDebug() << Out[row][0] << " " <<  Out[row][1] << " " <<  Out[row][2] << " " <<  Out[row][3];
+  }
+  itk::Vector<double,4> ux1;
+  itk::Vector<double,4> uy1;
+  itk::Vector<double,4> uz1;
+  ux1 = Out * ux;
+  uy1 = Out * uy;
+  uz1 = Out * uz;
+
+  mitk::PointSet::Pointer SourcePointSet = mitk::PointSet::New();
+  mitk::PointSet::Pointer TargetPointSet = mitk::PointSet::New();
+  
+  mitk::PointSet::PointType point11;
+  mitk::PointSet::PointType point21;
+  mitk::PointSet::PointType point31;
+  mitk::PointSet::PointType point12;
+  mitk::PointSet::PointType point22;
+  mitk::PointSet::PointType point32;
+  for ( int i = 0 ; i < 3 ; i ++ )
+  {
+    point11[i] = ux[i];
+    point21[i] = uy[i];
+    point31[i] = uz[i];
+    point12[i] = ux1[i];
+    point22[i] = uy1[i];
+    point32[i] = uz1[i];
+  }
+  SourcePointSet->InsertPoint(0,point11);
+  SourcePointSet->InsertPoint(1,point21);
+  SourcePointSet->InsertPoint(2,point31);
+  TargetPointSet->InsertPoint(0,point12);
+  TargetPointSet->InsertPoint(1,point22);
+  TargetPointSet->InsertPoint(2,point32);
+
+  qDebug() << point11[0] << " " << point11[1] << " " << point11[2];
+  qDebug() << point21[0] << " " << point21[1] << " " << point21[2];
+  qDebug() << point31[0] << " " << point31[1] << " " << point31[2];
+  qDebug() << point12[0] << " " << point12[1] << " " << point12[2];
+  qDebug() << point22[0] << " " << point22[1] << " " << point22[2];
+  qDebug() << point32[0] << " " << point32[1] << " " << point32[2];
+
+  m_FiducialRegistrationFilter->SetUseICPInitialization(m_UseICP);
+  m_FiducialRegistrationFilter->SetSourceLandmarks(SourcePointSet);
+  m_FiducialRegistrationFilter->SetTargetLandmarks(TargetPointSet);
+  
+  m_FiducialRegistrationFilter->Update();
+  QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
+    "RMS error is %3mm,\n"
+    "Minimum registration error (best fitting landmark) is  %4mm,\n"
+    "Maximum registration error (worst fitting landmark) is %5mm.")
+    .arg("Fiducial Registration")
+    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetFREStdDev(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetMinError(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetMaxError(), 3, 'f', 3);
+
+  QString updateMessage = QString("Fiducial Registration complete, FRE: %0, RMS: %1")
+    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3);
+
+  QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
+  qDebug() <<  statusUpdate;
+
+  m_AssociatedTools.clear();
+  m_AssociatedTools.insertMulti(toolName,dataNode);
+  m_TransformTrackerToMITKCoords = true;
+}
+
