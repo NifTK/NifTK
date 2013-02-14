@@ -926,7 +926,7 @@ bool QmitkIGITrackerTool::GetCameraLink()
    return m_LinkCamera;
 }
 //------------------------------------------------------------------------------
-void QmitkIGITrackerTool::SetUpPositioning(mitk::DataNode::Pointer dataNode)
+void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Pointer dataNode)
 {
 /*This does not work, don't know why not. Anyway It looks like I can't set the Landmark
  * Transform, other than by using source and target fiducials. Lets try and keep this as simple 
@@ -940,18 +940,18 @@ void QmitkIGITrackerTool::SetUpPositioning(mitk::DataNode::Pointer dataNode)
     =  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::New();
   LandmarkTransform = m_FiducialRegistrationFilter->GetLandmarkTransform();
  */ 
-  itk::Matrix<float,4,4> Tracking;
-  itk::Matrix<float,4,4> AssociatedNode;
-  itk::Matrix<float,4,4> Out;
+  itk::Matrix<double,4,4> Tracking;
+  itk::Matrix<double,4,4> AssociatedNode;
+  itk::Matrix<double,4,4> Out;
 
-  itk::Vector<float,4> ux;
-  itk::Vector<float,4> uy;
-  itk::Vector<float,4> uz;
+  itk::Vector<double,4> ux;
+  itk::Vector<double,4> uy;
+  itk::Vector<double,4> uz;
   
   ux[0] = 1;
   ux[1] = 0;
   ux[2] = 0;
-  uy[3] = 1;
+  ux[3] = 1;
   
   uy[0] = 0;
   uy[1] = 1;
@@ -1016,7 +1016,6 @@ void QmitkIGITrackerTool::SetUpPositioning(mitk::DataNode::Pointer dataNode)
      }
   }
   
-  //this is the inverse of a 3*3 matrix, surely we can use 4*4 matrices more profitably
   Out=AssociatedNode*Tracking.GetInverse();
   qDebug() << "Associated Node Matrix";
   for ( int row = 0 ; row < 4 ; row ++ ) 
@@ -1033,6 +1032,70 @@ void QmitkIGITrackerTool::SetUpPositioning(mitk::DataNode::Pointer dataNode)
   {
     qDebug() << Out[row][0] << " " <<  Out[row][1] << " " <<  Out[row][2] << " " <<  Out[row][3];
   }
-//mitk::AffineTransform3D::Pointer affineTransform = data->GetGeometry()->GetIndexToWorldTransform();
+  itk::Vector<double,4> ux1;
+  itk::Vector<double,4> uy1;
+  itk::Vector<double,4> uz1;
+  ux1 = Out * ux;
+  uy1 = Out * uy;
+  uz1 = Out * uz;
+
+  mitk::PointSet::Pointer SourcePointSet = mitk::PointSet::New();
+  mitk::PointSet::Pointer TargetPointSet = mitk::PointSet::New();
+  
+  mitk::PointSet::PointType point11;
+  mitk::PointSet::PointType point21;
+  mitk::PointSet::PointType point31;
+  mitk::PointSet::PointType point12;
+  mitk::PointSet::PointType point22;
+  mitk::PointSet::PointType point32;
+  for ( int i = 0 ; i < 3 ; i ++ )
+  {
+    point11[i] = ux[i];
+    point21[i] = uy[i];
+    point31[i] = uz[i];
+    point12[i] = ux1[i];
+    point22[i] = uy1[i];
+    point32[i] = uz1[i];
+  }
+  SourcePointSet->InsertPoint(0,point11);
+  SourcePointSet->InsertPoint(1,point21);
+  SourcePointSet->InsertPoint(2,point31);
+  TargetPointSet->InsertPoint(0,point12);
+  TargetPointSet->InsertPoint(1,point22);
+  TargetPointSet->InsertPoint(2,point32);
+
+  qDebug() << point11[0] << " " << point11[1] << " " << point11[2];
+  qDebug() << point21[0] << " " << point21[1] << " " << point21[2];
+  qDebug() << point31[0] << " " << point31[1] << " " << point31[2];
+  qDebug() << point12[0] << " " << point12[1] << " " << point12[2];
+  qDebug() << point22[0] << " " << point22[1] << " " << point22[2];
+  qDebug() << point32[0] << " " << point32[1] << " " << point32[2];
+
+  m_FiducialRegistrationFilter->SetUseICPInitialization(m_UseICP);
+  m_FiducialRegistrationFilter->SetSourceLandmarks(SourcePointSet);
+  m_FiducialRegistrationFilter->SetTargetLandmarks(TargetPointSet);
+  
+  m_FiducialRegistrationFilter->Update();
+  QString registrationQuality = QString("%0: FRE is %1mm (Std.Dev. %2), \n"
+    "RMS error is %3mm,\n"
+    "Minimum registration error (best fitting landmark) is  %4mm,\n"
+    "Maximum registration error (worst fitting landmark) is %5mm.")
+    .arg("Fiducial Registration")
+    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetFREStdDev(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetMinError(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetMaxError(), 3, 'f', 3);
+
+  QString updateMessage = QString("Fiducial Registration complete, FRE: %0, RMS: %1")
+    .arg(m_FiducialRegistrationFilter->GetFRE(), 3, 'f', 3)
+    .arg(m_FiducialRegistrationFilter->GetRMSError(), 3, 'f', 3);
+
+  QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
+  qDebug() <<  statusUpdate;
+
+  m_AssociatedTools.clear();
+  m_AssociatedTools.insertMulti(toolName,dataNode);
+  m_TransformTrackerToMITKCoords = true;
 }
 

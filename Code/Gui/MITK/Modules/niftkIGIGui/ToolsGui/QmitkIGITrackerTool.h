@@ -171,7 +171,7 @@ public:
    * should be intuitive to use for fine alignment of model to lap lens
    */
 
-  void SetUpPositioning (mitk::DataNode::Pointer) ;
+  void SetUpPositioning (QString, mitk::DataNode::Pointer) ;
 
 public slots:
 

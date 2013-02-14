@@ -107,6 +107,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   }
   m_TrackerControlsWidget->comboBox_dataNodes->SetDataStorage(this->GetSource()->GetDataStorage());
   m_TrackerControlsWidget->comboBox_dataNodes_ApplyFids->SetDataStorage(this->GetSource()->GetDataStorage());
+  m_TrackerControlsWidget->comboBox_dataNodes_FinePos->SetDataStorage(this->GetSource()->GetDataStorage());
   
   QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
   if (tool != NULL)
@@ -204,7 +205,7 @@ void QmitkIGITrackerToolGui::OnSetUpFinePositioning()
   QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
   if (tool != NULL)
   {
-    tool->GetCurrentTipPosition();
+    tool->SetUpPositioning(m_TrackerControlsWidget->GetCurrentToolName(), m_TrackerControlsWidget->comboBox_dataNodes_FinePos->GetSelectedNode());
   }
 }
 
