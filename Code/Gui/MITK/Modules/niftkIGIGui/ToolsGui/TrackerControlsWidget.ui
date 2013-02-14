@@ -245,8 +245,25 @@
              </sizepolicy>
             </property>
            </widget>
-         
+   	</item>
+	<item row="5" column="2">
+           <widget class="QPushButton" name="pushButton_SetUpPositioning">
+            <property name="text">
+             <string>Fine Positioning</string>
+            </property>
+           </widget>
           </item>
+	  <item row="5" column="1">
+	    <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes_FinePos">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+   	</item>
+
          </layout>
         </item>
        </layout>

@@ -75,6 +75,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_LHCRHC, SIGNAL(clicked()), this, SLOT(OnLHCRHCClicked()) );
   connect(m_TrackerControlsWidget->pushButton_FidTrack, SIGNAL(clicked()), this, SLOT(OnFidTrackClicked()));
   connect(m_TrackerControlsWidget->pushButton_ApplyFiducialTransform, SIGNAL(clicked()), this, SLOT(OnApplyFidClicked()));
+  connect(m_TrackerControlsWidget->pushButton_SetUpPositioning, SIGNAL(clicked()), this, SLOT(OnSetUpFinePositioning()));
  
 //
   if (config != NULL)
@@ -197,6 +198,16 @@ void QmitkIGITrackerToolGui::OnGetTipPosition()
     tool->GetCurrentTipPosition();
   }
 }
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnSetUpFinePositioning()
+{
+  QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+  if (tool != NULL)
+  {
+    tool->GetCurrentTipPosition();
+  }
+}
+
 
 
 

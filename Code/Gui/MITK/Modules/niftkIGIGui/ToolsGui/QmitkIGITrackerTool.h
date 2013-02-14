@@ -156,15 +156,22 @@ public:
   QString GetInitString ();
 
   /**
-   * \sets the state of the VTK camera link variable, 
+   * \brief the state of the VTK camera link variable, 
    * true will move the vtk camera with the tracking tool
    */
   void SetCameraLink (bool);
   /**
-   * \gets the state of the VTK camera link variable, 
+   * \brief gets the state of the VTK camera link variable, 
    * true will move the vtk camera with the tracking tool
    */
   bool GetCameraLink ();
+
+  /** 
+   * \brief Sets up the fiducial landmark transform so that tracking transform
+   * should be intuitive to use for fine alignment of model to lap lens
+   */
+
+  void SetUpPositioning (mitk::DataNode::Pointer) ;
 
 public slots:
 

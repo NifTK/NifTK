@@ -73,8 +73,6 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
 }
 
-
-
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::~QmitkIGITrackerTool()
 {
@@ -240,7 +238,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
       return;
     }
 
-    float inputTransformMat[4][4];
+    float   inputTransformMat[4][4];
     trMsg->getMatrix(inputTransformMat);
 
     if ( m_LinkCamera )
@@ -927,3 +925,114 @@ bool QmitkIGITrackerTool::GetCameraLink()
 {
    return m_LinkCamera;
 }
+//------------------------------------------------------------------------------
+void QmitkIGITrackerTool::SetUpPositioning(mitk::DataNode::Pointer dataNode)
+{
+/*This does not work, don't know why not. Anyway It looks like I can't set the Landmark
+ * Transform, other than by using source and target fiducials. Lets try and keep this as simple 
+ * as possible.
+ * Want the transform to be the existing position of some datanode (maybe that should be passed)
+ * divided by the current tracking transform. 
+ * Find this then multiply a set of three fiducial points by it (1,0,0)(0,1,0) and (0,0,1);
+ * Register these to set the right transform
+ * Then turn on fid tracking
+ * mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::Pointer LandmarkTransform 
+    =  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::New();
+  LandmarkTransform = m_FiducialRegistrationFilter->GetLandmarkTransform();
+ */ 
+  itk::Matrix<float,4,4> Tracking;
+  itk::Matrix<float,4,4> AssociatedNode;
+  itk::Matrix<float,4,4> Out;
+
+  itk::Vector<float,4> ux;
+  itk::Vector<float,4> uy;
+  itk::Vector<float,4> uz;
+  
+  ux[0] = 1;
+  ux[1] = 0;
+  ux[2] = 0;
+  uy[3] = 1;
+  
+  uy[0] = 0;
+  uy[1] = 1;
+  uy[2] = 0;
+  uy[3] = 1;
+ 
+  uz[0] = 0;
+  uz[1] = 0;
+  uz[2] = 1;
+  uz[3] = 1;
+
+  mitk::AffineTransform3D::Pointer AssociatedNodeTransform =mitk::AffineTransform3D::New(); 
+  AssociatedNodeTransform = dataNode->GetData()->GetGeometry()->GetIndexToWorldTransform();
+
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
+
+  igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
+  mitk::IGIDataType* data = this->RequestData(idNow);
+
+  float inputTransformMat[4][4];
+  if (data != NULL)
+  {
+    QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
+     if (dataType.IsNotNull())
+     {
+
+        OIGTLMessage* pointerToMessage = dataType->GetMessage();
+        if (pointerToMessage != NULL)
+        {
+          
+          OIGTLTrackingDataMessage* trMsg;
+          trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
+          trMsg->getMatrix(inputTransformMat);
+        }
+     }
+  }
+
+  mitk::AffineTransform3D::MatrixType m1;
+  m1=AssociatedNodeTransform->GetMatrix();
+  mitk::Vector3D pos = AssociatedNodeTransform->GetOffset();
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+     for ( int col = 0 ; col < 4 ; col ++ ) 
+     {
+       Tracking[row][col]=inputTransformMat[row][col];
+       if ( (row < 3) && (col < 3) )
+       {
+         AssociatedNode[row][col] = m1[row][col];
+       }
+       if ( row == 3 )
+       {
+         AssociatedNode[row][col] = inputTransformMat[row][col];
+       }
+       if ( col == 3 ) 
+       {
+         if ( row < 3 ) 
+         {
+            AssociatedNode[row][col] = pos[row];
+         }
+       }
+     }
+  }
+  
+  //this is the inverse of a 3*3 matrix, surely we can use 4*4 matrices more profitably
+  Out=AssociatedNode*Tracking.GetInverse();
+  qDebug() << "Associated Node Matrix";
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+    qDebug() << AssociatedNode[row][0] << " " <<  AssociatedNode[row][1] << " " <<  AssociatedNode[row][2] << " " <<  AssociatedNode[row][3];
+  }
+  qDebug() << "Tracking Matrix";
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+    qDebug() << Tracking[row][0] << " " <<  Tracking[row][1] << " " <<  Tracking[row][2] << " " <<  Tracking[row][3];
+  }
+  qDebug() << "Out Matrix";
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+    qDebug() << Out[row][0] << " " <<  Out[row][1] << " " <<  Out[row][2] << " " <<  Out[row][3];
+  }
+//mitk::AffineTransform3D::Pointer affineTransform = data->GetGeometry()->GetIndexToWorldTransform();
+}
+
