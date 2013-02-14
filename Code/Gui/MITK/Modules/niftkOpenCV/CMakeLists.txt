@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(niftkOpenCV
   EXPORT_DEFINE NIFTKOPENCV_EXPORT
-  INCLUDE_DIRS CameraCalibration demo
+  INCLUDE_DIRS CameraCalibration VideoProcessing demo
   PACKAGE_DEPENDS OpenCV
 )
 

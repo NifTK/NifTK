@@ -37,10 +37,12 @@ public:
 
   bool Correct(
       const std::string& inputImageFileName,
-      const std::string& inputIntrinsicsFileName,
-      const std::string& inputDistortionCoefficientsFileName,
+      const std::string& inputIntrinsicsFileNameLeft,
+      const std::string& inputDistortionCoefficientsFileNameLeft,
+      const std::string& inputIntrinsicsFileNameRight,
+      const std::string& inputDistortionCoefficientsFileNameRight,
       const std::string& outputImageFileName,
-      const bool& isVideo
+      bool writeInterleaved
       );
 
 protected:

@@ -244,10 +244,13 @@ void OutputCalibrationData(
  * to the output.  Assumes that both the intrinsic camera params and distortion coefficients
  * are in OpenCV's xml format.
  */
-void CorrectDistortionInVideoFile(
+void CorrectDistortionInStereoVideoFile(
     const std::string& inputFileName,
-    const std::string& inputIntrinsicsFileName,
-    const std::string& inputDistortionCoefficientsFileName,
+    const std::string& inputIntrinsicsFileNameLeft,
+    const std::string& inputDistortionCoefficientsFileNameLeft,
+    const std::string& inputIntrinsicsFileNameRight,
+    const std::string& inputDistortionCoefficientsFileNameRight,
+    const bool& writeInterleaved,
     const std::string& outputFileName
     );
 
@@ -255,10 +258,13 @@ void CorrectDistortionInVideoFile(
  * \brief Method that reads an input video file, corrects it using the
  * intrinsic params and distortion co-efficients, and writes it to the output file.
  */
-void CorrectDistortionInVideoFile(
+void CorrectDistortionInStereoVideoFile(
     const std::string& inputFileName,
-    const CvMat& intrinsicParams,
-    const CvMat& distortionCoefficients,
+    const CvMat& intrinsicParamsLeft,
+    const CvMat& distortionCoefficientsLeft,
+    const CvMat& intrinsicParamsRight,
+    const CvMat& distortionCoefficientsRight,
+    const bool& writeInterleaved,
     const std::string& outputFileName
     );
 

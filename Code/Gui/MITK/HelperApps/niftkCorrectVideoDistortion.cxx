@@ -15,49 +15,66 @@
 #include <cstdlib>
 #include "niftkCorrectVideoDistortionCLP.h"
 #include "mitkCorrectVideoFileDistortion.h"
+#include "mitkCorrectImageDistortion.h"
 
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
   bool successful = false;
 
-  if ( inputVideo.length() == 0
-      || inputIntrinsicParams.length() == 0
-      || inputDistortionParams.length() == 0
-      || outputVideo.length() == 0
+  if ( input.length() == 0
+      || intrinsicLeft.length() == 0
+      || distortionLeft.length() == 0
+      || output.length() == 0
       )
   {
     commandLine.getOutput()->usage(commandLine);
     return EXIT_FAILURE;
   }
 
-  if (   inputVideo.size() == 0
-      || inputIntrinsicParams.size() == 0
-      || inputDistortionParams.size() == 0
-      || outputVideo.size() == 0
-      )
+  if (input == output)
   {
-    throw std::logic_error("Empty filename supplied");
+    std::cerr << "Output filename is the same as the input ...  I'm giving up." << std::endl;
+    return EXIT_FAILURE;
   }
-
-  if (inputVideo == outputVideo)
-  {
-    throw std::logic_error("Output filename is the same as the input ...  I'm giving up.");
-  }
-
-  mitk::CorrectVideoFileDistortion::Pointer correction = mitk::CorrectVideoFileDistortion::New();
 
   bool isVideo = false;
-  if (inputVideo.find_last_of(".") != std::string::npos)
+  if (input.find_last_of(".") != std::string::npos)
   {
-    std::string extension = inputVideo.substr(inputVideo.find_last_of(".")+1);
+    std::string extension = input.substr(input.find_last_of(".")+1);
     if (extension == "avi")
     {
       isVideo = true;
     }
   }
 
-  successful = correction->Correct(inputVideo, inputIntrinsicParams, inputDistortionParams, outputVideo, isVideo);
+  if (isVideo)
+  {
+    // Only supporting stereo video for now.
+    if (   intrinsicRight.length() == 0
+        || distortionRight.length() == 0
+        )
+    {
+      std::cerr << "For processing stereo video, the right channel must be specified" << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    mitk::CorrectVideoFileDistortion::Pointer correction = mitk::CorrectVideoFileDistortion::New();
+    successful = correction->Correct(
+        input,
+        intrinsicLeft,
+        distortionLeft,
+        intrinsicRight,
+        distortionRight,
+        output,
+        writeInterleaved
+        );
+  }
+  else
+  {
+    mitk::CorrectImageDistortion::Pointer correction = mitk::CorrectImageDistortion::New();
+    successful = correction->Correct(input, intrinsicLeft, distortionLeft, output);
+  }
 
   if (successful)
   {
