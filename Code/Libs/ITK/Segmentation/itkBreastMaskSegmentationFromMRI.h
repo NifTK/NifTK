@@ -418,6 +418,12 @@ protected:
 				    const char *description,
 				    typename InternalImageType::Pointer image, 
 				    bool flgLeft, bool flgRight );
+
+  /// Based on the file extension it will be decided wheter a vtk surface is written or an image is saved. 
+  bool WriteBinaryImageToUCharFileOrVTKSurfaceFile( std::string &fileOutput,
+				    const char *description,
+				    typename InternalImageType::Pointer image, 
+				    bool flgLeft, bool flgRight );
   
   void WriteHistogramToFile( std::string fileOutput,
 			     vnl_vector< double > &xHistIntensity, 
