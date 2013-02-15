@@ -77,6 +77,7 @@ IF(SlicerExecutionModel_FOUND)
       ${SLICER_HELPER_APPS}
       niftkCameraCalibration
       niftkCorrectVideoDistortion
+      niftkTrackLapUSProbe
     )
   ENDIF()  
 

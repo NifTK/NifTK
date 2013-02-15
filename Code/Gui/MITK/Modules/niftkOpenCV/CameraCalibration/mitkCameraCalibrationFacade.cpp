@@ -620,69 +620,6 @@ void OutputCalibrationData(
 
 
 //-----------------------------------------------------------------------------
-void CorrectDistortionInStereoVideoFile(
-    const std::string& inputFileName,
-    const CvMat& intrinsicParamsLeft,
-    const CvMat& distortionCoefficientsLeft,
-    const CvMat& intrinsicParamsRight,
-    const CvMat& distortionCoefficientsRight,
-    const bool& writeInterleaved,
-    const std::string& outputFileName
-    )
-{
-  StereoDistortionCorrectionVideoProcessor::Pointer processor = StereoDistortionCorrectionVideoProcessor::New(writeInterleaved, inputFileName, outputFileName);
-  processor->SetMatrices(intrinsicParamsLeft, distortionCoefficientsLeft, intrinsicParamsRight, distortionCoefficientsRight);
-  processor->Initialize();
-  processor->Run();
-}
-
-
-//-----------------------------------------------------------------------------
-void CorrectDistortionInStereoVideoFile(
-    const std::string& inputImageFileName,
-    const std::string& inputIntrinsicsFileNameLeft,
-    const std::string& inputDistortionCoefficientsFileNameLeft,
-    const std::string& inputIntrinsicsFileNameRight,
-    const std::string& inputDistortionCoefficientsFileNameRight,
-    const bool& writeInterleaved,
-    const std::string& outputImageFileName
-    )
-{
-  CvMat *intrinsicLeft = (CvMat*)cvLoad(inputIntrinsicsFileNameLeft.c_str());
-  if (intrinsicLeft == NULL)
-  {
-    throw std::logic_error("Failed to load left camera intrinsic params");
-  }
-
-  CvMat *distortionLeft = (CvMat*)cvLoad(inputDistortionCoefficientsFileNameLeft.c_str());
-  if (distortionLeft == NULL)
-  {
-    throw std::logic_error("Failed to load left camera distortion params");
-  }
-
-  CvMat *intrinsicRight = (CvMat*)cvLoad(inputIntrinsicsFileNameRight.c_str());
-  if (intrinsicRight == NULL)
-  {
-    throw std::logic_error("Failed to load right camera intrinsic params");
-  }
-
-  CvMat *distortionRight = (CvMat*)cvLoad(inputDistortionCoefficientsFileNameRight.c_str());
-  if (distortionRight == NULL)
-  {
-    throw std::logic_error("Failed to load right camera distortion params");
-  }
-
-  CorrectDistortionInStereoVideoFile(
-      inputImageFileName, *intrinsicLeft, *distortionLeft, *intrinsicRight, *distortionRight, writeInterleaved, outputImageFileName);
-
-  cvReleaseMat(&intrinsicLeft);
-  cvReleaseMat(&distortionLeft);
-  cvReleaseMat(&intrinsicRight);
-  cvReleaseMat(&intrinsicRight);
-}
-
-
-//-----------------------------------------------------------------------------
 void CorrectDistortionInImageFile(
     const std::string& inputFileName,
     const CvMat& intrinsicParams,
