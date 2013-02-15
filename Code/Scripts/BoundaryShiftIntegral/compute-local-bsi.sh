@@ -394,7 +394,7 @@ then
     
     if [ ! -f "${bsi_baseline_image}" ] || [ ! -f "${bsi_repeat_image}" ] 
     then 
-      execute_command "differentialbiascorrect ${baseline_image}.img ${registered_repeat} ${baseline_region} ${registered_repeat_region} ${output_dir} ${kernel_size} ${temp_dir} ${baseline_image_dbc} ${repeat_image_dbc} ${dilation} 0 0 0 0"
+      execute_command "differentialbiascorrect ${baseline_image} ${registered_repeat%.img} ${baseline_region} ${registered_repeat_region} ${output_dir} ${kernel_size} ${temp_dir} ${baseline_image_dbc} ${repeat_image_dbc} ${dilation} 0 0 0 0"
     fi 
     
   fi   
