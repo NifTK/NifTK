@@ -55,6 +55,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   fMarchingK1   = 30.0;
   fMarchingK2   = 15.0;
   fMarchingTime = 5.0;
+  
+  sigmaBIF = 3.0;
 
   cropDistPosteriorToMidSternum = 40.0;
 
@@ -128,7 +130,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   BIFsFilter->SetEpsilon( 1.0e-05 );
   BIFsFilter->CalculateOrientatedBIFs();
 
-  BIFsFilter->SetSigma( 3. );
+  BIFsFilter->SetSigma( sigmaBIF );
 
   typename SliceBySliceImageFilterType::Pointer 
     sliceBySliceFilter = SliceBySliceImageFilterType::New();

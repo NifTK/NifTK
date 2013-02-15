@@ -54,8 +54,9 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_FLOAT, "marchingK2", "value", "Average value of gradient magnitude in middle of structure [15.0]."},
   {OPT_FLOAT, "marchingT",  "value", "Fast marching time [ 5.0]"},
 
-  {OPT_STRING, "bifs", "filename", "A Basic Image Features volume."},
-  {OPT_STRING, "obifs", "filename", "Write the Basic Image Features volume."},
+  {OPT_STRING, "bifs",     "filename", "A Basic Image Features volume."},
+  {OPT_STRING, "obifs",    "filename", "Write the Basic Image Features volume."},
+  {OPT_FLOAT,  "bifsigma", "value",    "Sigma determining the scale of the calculated basic image features [3.0]"},
 
   {OPT_STRING, "osms", "filename", "Write the smoothed structural image to a file."},
   {OPT_STRING, "osmf", "filename", "Write the smoothed FatSat image to a file."},
@@ -120,6 +121,7 @@ enum {
 
   O_BIFS,
   O_OUTPUT_BIFS,
+  O_BIF_SIGMA,
 
   O_OUTPUT_SMOOTHED_STRUCTURAL,
   O_OUTPUT_SMOOTHED_FATSAT,
@@ -181,6 +183,8 @@ int main( int argc, char *argv[] )
   float fMarchingK1   = 30.0;
   float fMarchingK2   = 15.0;
   float fMarchingTime = 5.0;
+
+  float sigmaBIF = 3.0;
 
   float cropProneSupineDistPostMidSternum  = 40.0;
 
@@ -269,6 +273,7 @@ int main( int argc, char *argv[] )
 
   CommandLineOptions.GetArgument( O_BIFS, fileBIFs );
   CommandLineOptions.GetArgument( O_OUTPUT_BIFS, fileOutputBIFs );
+  CommandLineOptions.GetArgument( O_BIF_SIGMA, sigmaBIF );
 
   CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_STRUCTURAL, fileOutputSmoothedStructural );
   CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_FATSAT,     fileOutputSmoothedFatSat );
@@ -349,6 +354,7 @@ int main( int argc, char *argv[] )
   breastMaskSegmentor->SetMarchingTime( fMarchingTime );
 
   breastMaskSegmentor->SetOutputBIFS( fileOutputBIFs );
+  breastMaskSegmentor->SetSigmaBIF( sigmaBIF );
 
   breastMaskSegmentor->SetOutputSmoothedStructural( fileOutputSmoothedStructural );
   breastMaskSegmentor->SetOutputSmoothedFatSat( fileOutputSmoothedFatSat );

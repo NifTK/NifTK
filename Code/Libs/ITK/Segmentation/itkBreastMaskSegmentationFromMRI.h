@@ -178,8 +178,9 @@ public:
   void SetMarchingTime( float t ) { fMarchingTime = t; }
 
   void SetCropDistancePosteriorToMidSternum( float fDistIn ) { this->cropDistPosteriorToMidSternum = fDistIn; }
-
+  
   void SetOutputBIFS( std::string fn ) { fileOutputBIFs = fn; }
+  void SetSigmaBIF( float sig ){ sigmaBIF = sig; }
 
   void SetOutputSmoothedStructural( std::string fn ) { fileOutputSmoothedStructural = fn; }
   void SetOutputSmoothedFatSat( std::string fn ) { fileOutputSmoothedFatSat = fn; }
@@ -288,6 +289,8 @@ protected:
   float fMarchingK1;
   float fMarchingK2;
   float fMarchingTime;
+
+  float sigmaBIF;
 
   float cropDistPosteriorToMidSternum;
 
