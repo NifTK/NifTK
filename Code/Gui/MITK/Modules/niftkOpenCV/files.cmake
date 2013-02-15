@@ -17,10 +17,12 @@ set(CPP_FILES
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cpp
   VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cpp
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cpp
+  VideoProcessing/mitkCorrectVideoFileDistortion.cpp
+  VideoProcessing/mitkTrackLapUSProcessor.cpp
+  VideoProcessing/mitkTrackLapUS.cpp
   CameraCalibration/mitkCameraCalibrationFacade.cpp
   CameraCalibration/mitkCameraCalibrationFromDirectory.cpp
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cpp
   CameraCalibration/mitkCorrectImageDistortion.cpp
-  CameraCalibration/mitkCorrectVideoFileDistortion.cpp
   demo/mitkOpenCVTest.cpp
 )
