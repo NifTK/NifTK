@@ -20,11 +20,6 @@ namespace mitk
 //-----------------------------------------------------------------------------
 StereoVideoProcessorTemplateMethod::~StereoVideoProcessorTemplateMethod()
 {
-  cvReleaseImage(&m_LeftInput);
-  cvReleaseImage(&m_RightInput);
-  cvReleaseImage(&m_LeftOutput);
-  cvReleaseImage(&m_RightOutput);
-  cvReleaseImage(&m_OutputImage);
 }
 
 
@@ -32,12 +27,9 @@ StereoVideoProcessorTemplateMethod::~StereoVideoProcessorTemplateMethod()
 StereoVideoProcessorTemplateMethod::StereoVideoProcessorTemplateMethod(const bool& writeInterleaved, CvCapture *capture, CvVideoWriter *writer
     )
 : BaseVideoProcessor(capture, writer)
-, m_LeftInput(NULL)
-, m_RightInput(NULL)
-, m_LeftOutput(NULL)
-, m_RightOutput(NULL)
-, m_OutputImage(NULL)
 , m_WriteInterleaved(writeInterleaved)
+, m_OutputImage(NULL)
+, m_FrameCount(0)
 {
 }
 
@@ -45,12 +37,9 @@ StereoVideoProcessorTemplateMethod::StereoVideoProcessorTemplateMethod(const boo
 //-----------------------------------------------------------------------------
 StereoVideoProcessorTemplateMethod::StereoVideoProcessorTemplateMethod(const bool& writeInterleaved, const std::string& inputFile, const std::string& outputFile)
 : BaseVideoProcessor(inputFile, outputFile)
-, m_LeftInput(NULL)
-, m_RightInput(NULL)
-, m_LeftOutput(NULL)
-, m_RightOutput(NULL)
-, m_OutputImage(NULL)
 , m_WriteInterleaved(writeInterleaved)
+, m_OutputImage(NULL)
+, m_FrameCount(0)
 {
 }
 
@@ -76,70 +65,50 @@ void StereoVideoProcessorTemplateMethod::Initialize()
   // Mandatory. Important.
   BaseVideoProcessor::Initialize();
 
-  // This provides a reference size and type for the input image.
   // Instead of calling this->GetCurrentImage(), we explicitly force a new grab, so
   // that if we are reading from file, the base class method has read 1 frame, and here we read 1 frame.
   // So we have dropped 2 frames, but at least we are in sequence. (i.e. we wont mix up odd and even frames).
   IplImage *image = this->GrabNewImage();
 
-  // Allocate new buffers as appropriate.
-  m_LeftInput   = cvCloneImage(image);
-  m_RightInput  = cvCloneImage(image);
-  m_LeftOutput  = cvCloneImage(image);
-  m_RightOutput = cvCloneImage(image);
-
+  // Now we allocate the size of the output.
   CvSize outputSize = this->GetOutputImageSize();
   m_OutputImage = cvCreateImage(outputSize, image->depth, image->nChannels);
+
+  // Reset this.
+  m_FrameCount = 0;
 }
 
 
 //-----------------------------------------------------------------------------
-void StereoVideoProcessorTemplateMethod::Run()
+void StereoVideoProcessorTemplateMethod::WriteOutput(IplImage &leftOutput, IplImage &rightOutput)
 {
-  int frame = 0;
-  IplImage *image = NULL;
   CvVideoWriter* writer = this->GetWriter();
 
-  while((image = this->GrabNewImage()) != NULL)
+  if (m_WriteInterleaved)
   {
-    cvCopy(image, m_LeftInput);
-    image = this->GrabNewImage();
+    cvCopy(&leftOutput, m_OutputImage);
+    cvWriteFrame(writer, m_OutputImage);
+    std::cout << "Written output left frame " << ++m_FrameCount << std::endl;
 
-    if (image == NULL)
-    {
-      // Stereo pair failed
-      break;
-    }
+    cvCopy(&rightOutput, m_OutputImage);
+    cvWriteFrame(writer, m_OutputImage);
+    std::cout << "Written output right frame " << ++m_FrameCount << std::endl;
+  }
+  else
+  {
+    // Copy left and right, side by side
+    cvSetImageROI(&leftOutput, cvRect(0,0,leftOutput.width, leftOutput.height));
+    cvSetImageROI(m_OutputImage, cvRect(0,0,leftOutput.width, leftOutput.height));
+    cvCopy(&leftOutput, m_OutputImage);
 
-    cvCopy(image, m_RightInput);
+    cvSetImageROI(&rightOutput, cvRect(0,0,rightOutput.width, rightOutput.height));
+    cvSetImageROI(m_OutputImage, cvRect(rightOutput.width,0,rightOutput.width, rightOutput.height));
+    cvCopy(&rightOutput, m_OutputImage);
 
-    this->DoProcessing(*m_LeftInput, *m_RightInput, *m_LeftOutput, *m_RightOutput);
-
-    if (m_WriteInterleaved)
-    {
-      cvCopy(m_LeftOutput, m_OutputImage);
-      cvWriteFrame(writer, m_OutputImage);
-      std::cout << "Written output left frame " << ++frame << std::endl;
-
-      cvCopy(m_RightOutput, m_OutputImage);
-      cvWriteFrame(writer, m_OutputImage);
-      std::cout << "Written output right frame " << ++frame << std::endl;
-    }
-    else
-    {
-      // Copy left and right, side by side
-      cvSetImageROI(m_LeftOutput, cvRect(0,0,m_LeftOutput->width, m_LeftOutput->height));
-      cvSetImageROI(m_OutputImage, cvRect(0,0,m_LeftOutput->width, m_LeftOutput->height));
-      cvCopy(m_LeftOutput, m_OutputImage);
-
-      cvSetImageROI(m_RightOutput, cvRect(0,0,m_RightOutput->width, m_RightOutput->height));
-      cvSetImageROI(m_OutputImage, cvRect(m_LeftOutput->width,0,m_RightOutput->width, m_RightOutput->height));
-      cvCopy(m_RightOutput, m_OutputImage);
-
-      cvWriteFrame(writer, m_OutputImage);
-      std::cout << "Written output side by-side frame " << ++frame << std::endl;
-    }
+    cvWriteFrame(writer, m_OutputImage);
+    std::cout << "Written output side by-side frame " << ++m_FrameCount << std::endl;
   }
 }
+
 
 } // end namespace

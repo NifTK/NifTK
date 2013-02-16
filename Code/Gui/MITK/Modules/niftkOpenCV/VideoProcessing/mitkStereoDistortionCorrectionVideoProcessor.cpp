@@ -24,6 +24,7 @@ StereoDistortionCorrectionVideoProcessor::~StereoDistortionCorrectionVideoProces
   cvReleaseMat(&m_DistortionLeft);
   cvReleaseImage(&m_MapXLeft);
   cvReleaseImage(&m_MapYLeft);
+
   cvReleaseMat(&m_IntrinsicRight);
   cvReleaseMat(&m_DistortionRight);
   cvReleaseImage(&m_MapXRight);
@@ -33,7 +34,7 @@ StereoDistortionCorrectionVideoProcessor::~StereoDistortionCorrectionVideoProces
 
 //-----------------------------------------------------------------------------
 StereoDistortionCorrectionVideoProcessor::StereoDistortionCorrectionVideoProcessor(const bool& writeInterleaved, CvCapture *capture, CvVideoWriter *writer)
-: StereoVideoProcessorTemplateMethod(writeInterleaved, capture, writer)
+: StereoOneTimePointVideoProcessorTemplateMethod(writeInterleaved, capture, writer)
 {
   throw std::logic_error("DistortionCorrectionVideoProcessor(CvCapture *capture, CvVideoWriter *writer) should not be called!");
 }
@@ -44,7 +45,7 @@ StereoDistortionCorrectionVideoProcessor::StereoDistortionCorrectionVideoProcess
     const bool& writeInterleaved,
     const std::string& inputFile,
     const std::string& outputFile)
-: StereoVideoProcessorTemplateMethod(writeInterleaved, inputFile, outputFile)
+: StereoOneTimePointVideoProcessorTemplateMethod(writeInterleaved, inputFile, outputFile)
 , m_IntrinsicLeft(NULL)
 , m_DistortionLeft(NULL)
 , m_MapXLeft(NULL)
@@ -76,7 +77,7 @@ void StereoDistortionCorrectionVideoProcessor::SetMatrices(
 void StereoDistortionCorrectionVideoProcessor::Initialize()
 {
   // Mandatory. Important.
-  StereoVideoProcessorTemplateMethod::Initialize();
+  StereoOneTimePointVideoProcessorTemplateMethod::Initialize();
 
   IplImage *image = this->GetCurrentImage();
 

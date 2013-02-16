@@ -16,6 +16,8 @@ set(CPP_FILES
   VideoProcessing/mitkBaseVideoProcessor.cpp
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cpp
   VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cpp
+  VideoProcessing/mitkStereoOneTimePointVideoProcessorTemplateMethod.cpp
+  VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cpp
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cpp
   VideoProcessing/mitkCorrectVideoFileDistortion.cpp
   VideoProcessing/mitkTrackLapUSProcessor.cpp
