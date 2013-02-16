@@ -16,20 +16,20 @@
 #define MITKTRACKLAPUSPROCESSOR_H
 
 #include "niftkOpenCVExports.h"
-#include "mitkStereoVideoProcessorTemplateMethod.h"
+#include "mitkStereoTwoTimePointVideoProcessorTemplateMethod.h"
 
 /**
  * class TrackLapUSProcessor
- * \brief Derived from StereoVideoProcessorTemplateMethod to track Laparoscopic Ultrasound in interleaved (flicker) stereo stream.
+ * \brief Derived from StereoTwoTimePointVideoProcessorTemplateMethod to track Laparoscopic Ultrasound in interleaved (flicker) stereo stream.
  */
 namespace mitk {
 
-class NIFTKOPENCV_EXPORT TrackLapUSProcessor : public StereoVideoProcessorTemplateMethod
+class NIFTKOPENCV_EXPORT TrackLapUSProcessor : public StereoTwoTimePointVideoProcessorTemplateMethod
 {
 
 public:
 
-  mitkClassMacro(TrackLapUSProcessor, StereoVideoProcessorTemplateMethod);
+  mitkClassMacro(TrackLapUSProcessor, StereoTwoTimePointVideoProcessorTemplateMethod);
   mitkNewMacro3Param(TrackLapUSProcessor, const bool&, const std::string&, const std::string&);
 
   /**
@@ -56,7 +56,13 @@ protected:
   TrackLapUSProcessor(const TrackLapUSProcessor&); // Purposefully not implemented.
   TrackLapUSProcessor& operator=(const TrackLapUSProcessor&); // Purposefully not implemented.
 
-  virtual void DoProcessing(const IplImage &leftInput, const IplImage &rightInput, IplImage &leftOutput, IplImage &rightOutput);
+  virtual void DoProcessing(
+      const IplImage &leftInputT1,
+      const IplImage &rightInputT1,
+      const IplImage &leftInputT2,
+      const IplImage &rightInputT2,
+      IplImage &leftOutput,
+      IplImage &rightOutput);
 
 private:
 
@@ -64,11 +70,27 @@ private:
   CvMat *m_DistortionLeft;
   IplImage *m_MapXLeft;
   IplImage *m_MapYLeft;
+  IplImage *m_GreyImageLeftT1;
+  IplImage *m_EigImageLeftT1;
+  IplImage *m_EigImageTmpLeftT1;
+  IplImage *m_PyramidLeftT1;
+  IplImage *m_GreyImageLeftT2;
+  IplImage *m_EigImageLeftT2;
+  IplImage *m_EigImageTmpLeftT2;
+  IplImage *m_PyramidLeftT2;
+
   CvMat *m_IntrinsicRight;
   CvMat *m_DistortionRight;
   IplImage *m_MapXRight;
   IplImage *m_MapYRight;
-
+  IplImage *m_GreyImageRightT1;
+  IplImage *m_EigImageRightT1;
+  IplImage *m_EigImageTmpRightT1;
+  IplImage *m_PyramidRightT1;
+  IplImage *m_GreyImageRightT2;
+  IplImage *m_EigImageRightT2;
+  IplImage *m_EigImageTmpRightT2;
+  IplImage *m_PyramidRightT2;
 }; // end class
 
 } // end namespace
