@@ -1901,6 +1901,69 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
 
 // --------------------------------------------------------------------------
+// WriteBinaryImageToUCharFileOrVTKSurfaceFile()
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+bool
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::WriteBinaryImageToUCharFileOrVTKSurfaceFile( std::string &fileOutput,
+			       const char *description,
+			       typename InternalImageType::Pointer image, 
+			       bool flgLeft, 
+			       bool flgRight )
+{
+
+  boost::filesystem::path pathname( fileOutput );
+  std::string extension = pathname.extension().string();
+
+  if ( extension == std::string( ".vtk" ) ) 
+  {
+    // Save mesh
+    if ( flgLeft && flgRight )
+    {
+      WriteImageToVTKSurfaceFile( image, fileOutput, LEFT_BREAST,  flgVerbose, finalSegmThreshold );
+      WriteImageToVTKSurfaceFile( image, fileOutput, RIGHT_BREAST, flgVerbose, finalSegmThreshold );
+      return true;
+    }
+    else if ( flgRight )
+    {
+      WriteImageToVTKSurfaceFile( image, fileOutput, RIGHT_BREAST, flgVerbose, finalSegmThreshold );
+      return true;
+    }
+    else if ( flgLeft )
+    {
+      WriteImageToVTKSurfaceFile( image, fileOutput, LEFT_BREAST, flgVerbose, finalSegmThreshold );
+      return true;
+    }
+    else
+    {
+      WriteImageToVTKSurfaceFile( image, fileOutput, BOTH_BREASTS, flgVerbose, finalSegmThreshold );
+      return true;
+    }
+  }
+  else
+  {
+    // Save as binary image...
+    if ( flgLeft && flgRight )
+      return 
+        WriteBinaryImageToUCharFile( fileOutput, description, image, LEFT_BREAST ) &&
+        WriteBinaryImageToUCharFile( fileOutput, description, image, RIGHT_BREAST );
+    else if ( flgRight )
+      return WriteBinaryImageToUCharFile( fileOutput, description, image, RIGHT_BREAST );
+
+    else if ( flgLeft )
+      return WriteBinaryImageToUCharFile( fileOutput, description, image, LEFT_BREAST );
+
+    else
+      return WriteBinaryImageToUCharFile( fileOutput, description, image, BOTH_BREASTS );
+  }
+}
+
+
+
+
+// --------------------------------------------------------------------------
 // WriteHistogramToFile()
 // --------------------------------------------------------------------------
 

@@ -122,7 +122,7 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
 
   // Write the fitted surface to file
 
-  this->WriteImageToFile( this->fileOutputPectoralSurfaceMask, 
+  this->WriteBinaryImageToUCharFileOrVTKSurfaceFile( this->fileOutputPectoralSurfaceMask, 
 			  "fitted pectoral surface with offset", 
 			  imFittedPectoralis, this->flgLeft, this->flgRight );
 
