@@ -12,17 +12,9 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(MIDAS)
+# tests with no extra command line parameter
+SET(MODULE_TESTS
+)
 
-IF(ITK_FOUND)
-  ADD_SUBDIRECTORY(ITK)
-ENDIF(ITK_FOUND)
-
-IF(VTK_FOUND)
-  ADD_SUBDIRECTORY(VTK)
-ENDIF(VTK_FOUND)
-
-IF(NVAPI_FOUND)
-  ADD_SUBDIRECTORY(NVAPI)
-ENDIF(NVAPI_FOUND)
+set(MODULE_CUSTOM_TESTS
+)

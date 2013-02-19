@@ -12,17 +12,18 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(MIDAS)
+SET(CPP_FILES
+  ToolsGui/QmitkIGINVidiaDataSource.cpp 
+  ToolsGui/QmitkIGINVidiaDataSourceGui.cpp 
+)
 
-IF(ITK_FOUND)
-  ADD_SUBDIRECTORY(ITK)
-ENDIF(ITK_FOUND)
+SET(MOC_H_FILES
+  ToolsGui/QmitkIGINVidiaDataSource.h
+  ToolsGui/QmitkIGINVidiaDataSourceGui.h
+)
 
-IF(VTK_FOUND)
-  ADD_SUBDIRECTORY(VTK)
-ENDIF(VTK_FOUND)
+SET(UI_FILES
+)
 
-IF(NVAPI_FOUND)
-  ADD_SUBDIRECTORY(NVAPI)
-ENDIF(NVAPI_FOUND)
+SET(QRC_FILES
+)
