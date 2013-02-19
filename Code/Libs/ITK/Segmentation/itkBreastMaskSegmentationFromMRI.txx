@@ -1278,7 +1278,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 					 imStructural->GetOrigin(), 
 					 imStructural->GetSpacing(), 
 					 imStructural->GetDirection(),
-					 rYHeightOffset, 3, 15, 3 );
+					 rYHeightOffset, 3, 15, 3, false );
 
   // and now extract surface points of right breast for surface fitting
   lateralRegion = imChestSurfaceVoxels->GetLargestPossibleRegion();
@@ -1330,7 +1330,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 					 imStructural->GetOrigin(), 
 					 imStructural->GetSpacing(), 
 					 imStructural->GetDirection(),
-					 rYHeightOffset, 3, 15, 3 );
+					 rYHeightOffset, 3, 15, 3, false );
     
   // Combine the left and right mask into one
 
@@ -2211,7 +2211,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 				     const RealType rOffset, 
 				     const int splineOrder, 
 				     const int numOfControlPoints,
-				     const int numOfLevels )
+				     const int numOfLevels,
+             bool correctSurfaceOffest )
 {
   
   // Fit the B-Spline surface
@@ -2266,6 +2267,46 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   // Construct the mask
   // ~~~~~~~~~~~~~~~~~~
 
+  // Check if there is a bias between the point set and the fitted surface... if so, correct for it?
+  PointsIterator    pointIt     = pointSet->GetPoints()->Begin(); 
+  PointDataIterator pointDataIt = pointSet->GetPointData()->Begin();
+
+  PointsIterator    end       = pointSet->GetPoints()->End();
+  PointDataIterator ptDataEnd = pointSet->GetPointData()->End();
+
+  RealType rBias = 0.0;
+
+  while( (pointIt != end) && (pointDataIt != ptDataEnd) ) 
+  {    
+    typename PointSetType::PointType p = pointIt.Value();   // access the point
+    
+    bSplineCoord[0] = p[0];
+    bSplineCoord[1] = p[1];
+
+    rBias += pointDataIt.Value()[0] - bSplineSurface->GetPixel( bSplineCoord )[0] ;
+    
+    ++pointIt;
+    ++pointDataIt;
+  }
+
+  rBias /= pointSet->GetNumberOfPoints();
+  
+  if ( this->flgVerbose )
+  {
+    std::cout << "Mean offset between pointset and fitted surface: " << rBias << " [vox]" << std::endl;
+    
+    if ( correctSurfaceOffest )
+      std::cout << "Surface offset will be corrected." << std::endl;
+    else
+      std::cout << "Surface offset will be ignored." << std::endl;
+  }
+
+  // Do not consider the offset 
+  if ( ! correctSurfaceOffest )
+  {
+    rBias = 0.0;
+  }
+
   typename InternalImageType::Pointer imSurfaceMask = InternalImageType::New();
   imSurfaceMask->SetRegions  ( region    );
   imSurfaceMask->SetOrigin   ( origin    );
@@ -2299,7 +2340,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     {
       idx = itSurfaceMaskLinear.GetIndex();
 
-      if ( static_cast<RealType>( idx[1] ) < surfaceHeight + rOffset )
+      if ( static_cast<RealType>( idx[1] ) < surfaceHeight + rOffset + rBias )
         itSurfaceMaskLinear.Set( 0 );
       else
         itSurfaceMaskLinear.Set( 1000 );
