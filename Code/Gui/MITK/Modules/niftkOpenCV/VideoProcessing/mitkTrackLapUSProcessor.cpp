@@ -172,7 +172,7 @@ void TrackLapUSProcessor::DoProcessing(
   //******************
   // Hunt for corners.
   // *****************
-
+/*
   int windowSize = 10;
   int MAX_CORNERS = 500;
 
@@ -214,7 +214,41 @@ void TrackLapUSProcessor::DoProcessing(
     CvPoint p1 = cvPoint(cvRound(cornersRightT2[i].x), cvRound(cornersRightT2[i].y));
     cvLine (&rightOutput, p0, p1, CV_RGB(255, 0, 0), 2);
   }
+*/
 
+  //******************
+  // Hough
+  // *****************
+
+  int i;
+  CvSeq* lines = 0;
+  CvMemStorage* storage = cvCreateMemStorage(0);
+  IplImage *edgesLeft = cvCreateImage(cvGetSize(m_GreyImageLeftT2), IPL_DEPTH_8U, 1);
+
+  cvCanny( m_GreyImageLeftT2, edgesLeft, 50, 150, 3 );
+  lines = cvHoughLines2( edgesLeft,
+                         storage,
+                         CV_HOUGH_STANDARD,
+                         1,
+                         CV_PI/180,
+                         100,
+                         0,
+                         0 );
+
+  for( i = 0; i < MIN(lines->total,100); i++ )
+  {
+      float* line = (float*)cvGetSeqElem(lines,i);
+      float rho = line[0];
+      float theta = line[1];
+      CvPoint pt1, pt2;
+      double a = cos(theta), b = sin(theta);
+      double x0 = a*rho, y0 = b*rho;
+      pt1.x = cvRound(x0 + 1000*(-b));
+      pt1.y = cvRound(y0 + 1000*(a));
+      pt2.x = cvRound(x0 - 1000*(-b));
+      pt2.y = cvRound(y0 - 1000*(a));
+      cvLine( &leftOutput, pt1, pt2, CV_RGB(255,0,0), 3, 8 );
+  }
 }
 
 } // end namespace
