@@ -77,27 +77,43 @@ void StereoTwoTimePointVideoProcessorTemplateMethod::Initialize()
 //-----------------------------------------------------------------------------
 void StereoTwoTimePointVideoProcessorTemplateMethod::Run()
 {
-  IplImage *image1 = NULL;
-  IplImage *image2 = NULL;
+  IplImage *image = NULL;
 
-  image1 = this->GrabNewImage();
-  image2 = this->GrabNewImage();
-
-  while(image1 != NULL && image2 != NULL)
+  image = this->GrabNewImage();
+  if (image != NULL)
   {
-    cvCopy(image1, m_LeftT1);
-    cvCopy(image2, m_RightT1);
+    cvCopy(image, m_LeftT1);
+  }
+  else
+  {
+    return;
+  }
 
-    image1 = this->GrabNewImage();
-    image2 = this->GrabNewImage();
+  image = this->GrabNewImage();
+  if (image != NULL)
+  {
+    cvCopy(image, m_RightT1);
+  }
+  else
+  {
+    return;
+  }
 
-    if (image1 == NULL || image2 == NULL)
+  while(image != NULL)
+  {
+    image = this->GrabNewImage();
+    if (image == NULL)
     {
       break;
     }
+    cvCopy(image, m_LeftT2);
 
-    cvCopy(image1, m_LeftT2);
-    cvCopy(image2, m_RightT2);
+    image = this->GrabNewImage();
+    if (image == NULL)
+    {
+      break;
+    }
+    cvCopy(image, m_RightT2);
 
     this->DoProcessing(
         *m_LeftT1,
@@ -109,6 +125,9 @@ void StereoTwoTimePointVideoProcessorTemplateMethod::Run()
         );
 
     this->WriteOutput(*m_LeftOutput, *m_RightOutput);
+
+    cvCopy(m_LeftT2, m_LeftT1);
+    cvCopy(m_RightT2, m_RightT1);
   }
 }
 
