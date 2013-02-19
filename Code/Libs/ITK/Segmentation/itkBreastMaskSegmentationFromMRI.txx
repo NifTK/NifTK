@@ -2274,12 +2274,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   PointsIterator    end       = pointSet->GetPoints()->End();
   PointDataIterator ptDataEnd = pointSet->GetPointData()->End();
 
-  typedef PointSetType::PointType   PointType;
   RealType rBias = 0.0;
 
   while( (pointIt != end) && (pointDataIt != ptDataEnd) ) 
   {    
-    PointType p = pointIt.Value();   // access the point
+    typename PointSetType::PointType p = pointIt.Value();   // access the point
     
     bSplineCoord[0] = p[0];
     bSplineCoord[1] = p[1];
