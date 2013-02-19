@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "QmitkIGINiftyLinkDataSource.h"
 
@@ -28,18 +18,34 @@
 QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
 : m_Socket(NULL)
 , m_ClientDescriptor(NULL)
+, m_UsingSomeoneElsesSocket(false)
 {
   m_Socket = new OIGTLSocketObject();
   connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
   connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
   connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
 }
+//-----------------------------------------------------------------------------
+QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket)
+: m_Socket(socket)
+, m_ClientDescriptor(NULL)
+, m_UsingSomeoneElsesSocket(true)
+{
+  connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
+  connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
+  connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
+}
+
 
 
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::~QmitkIGINiftyLinkDataSource()
 {
-  if (m_Socket != NULL)
+  if ( m_UsingSomeoneElsesSocket )
+  {
+    m_Socket = NULL;
+  }
+  if (m_Socket != NULL )
   {
     delete m_Socket;
   }
@@ -88,7 +94,6 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
   return isListening;
 }
 
-
 //-----------------------------------------------------------------------------
 void QmitkIGINiftyLinkDataSource::ClientConnected()
 {
@@ -115,8 +120,10 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 
   QString descr = QString("Address=") +  clientInfo->getClientIP()
       + QString(":") + clientInfo->getClientPort();
-
-  this->SetDescription(descr.toStdString());
+  
+  //Don't set description for trackers
+  if ( clientInfo->getDeviceType() != "Tracker" ) 
+    this->SetDescription(descr.toStdString());
 
   QString deviceInfo;
   deviceInfo.append("Client connected:");
@@ -146,4 +153,9 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 
   qDebug() << deviceInfo;
   DataSourceStatusUpdated.Send(this->GetIdentifier());
+}
+//-----------------------------------------------------------------------------
+OIGTLSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
+{
+  return this->m_Socket;
 }

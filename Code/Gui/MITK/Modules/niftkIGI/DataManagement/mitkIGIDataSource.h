@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef MITKIGIDATASOURCE_H
 #define MITKIGIDATASOURCE_H
@@ -96,6 +86,12 @@ public:
   itkSetMacro(Description, std::string);
   itkGetMacro(Description, std::string);
 
+  /**
+  * \brief A single source can have multiple tools attached
+  */
+  itkSetMacro(NumberOfTools, int);
+  itkGetMacro(NumberOfTools, int);
+  
   /**
    * \brief Sets the time tolerance for checking data, implemented in nano-seconds
    * as we are using TAI time format, but in practice platforms such as Windows
@@ -223,6 +219,10 @@ public:
    * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
    */
   double GetCurrentTimeLag();
+  /**
+   * \brief Get the subtool list
+   */
+  std::list<std::string>  GetSubToolList ( ) ;
 
 protected:
 
@@ -262,6 +262,12 @@ protected:
    */
   virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
+  /**
+   * \brief Function to set the list of sub tools
+   */
+  void SetToolStringList ( std::list<std::string> );
+
+
 private:
 
   /**
@@ -290,6 +296,9 @@ private:
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   unsigned long int                               m_TimeStampTolerance;
   mitk::IGIDataType*                              m_ActualData;
+  int                                             m_NumberOfTools;
+  std::list<std::string>                          m_SubTools;
+  std::list<std::string>::iterator                m_SubToolsIterator;
 
 }; // end class
 

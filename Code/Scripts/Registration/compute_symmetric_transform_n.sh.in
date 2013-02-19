@@ -1,28 +1,19 @@
 #!/bin/bash
 
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
-#  
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
+#  NifTK: A software platform for medical image computing.
 #
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2010-08-24 16:48:21 +0100 (Tue, 24 Aug 2010) $ 
-#  Revision          : $Revision: 3748 $
-#  Last modified by  : $Author: kkl $
-#
-#  Original author   : leung@drc.ion.ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 #
 # Script to run a groupwise DBC. 
 # 
@@ -51,6 +42,8 @@ interpolation=4
 double_window="yes"
 ss_atlas=""
 just_dbc="no"
+kernel_size=5
+dbc_method=1
 
 # Parse command line options
 while [ "$#" -gt 0 ]
@@ -73,6 +66,14 @@ do
       ;; 
     -just_dbc)
       just_dbc=$2
+      shift 1
+      ;;
+    -radius)
+      kernel_size=$2
+      shift 1
+      ;;
+    -mode)
+      dbc_method=$2
       shift 1
       ;;
     *)
@@ -266,7 +267,7 @@ do
     arguments="${arguments} ${output_dir}/${output_prefix}_${i}.hdr ${output_dir}/${output_prefix}_${i}_mask.img ${output_dir}/${output_prefix}_${i}_dbc.hdr"
   fi 
 done  
-niftkMTPDbc -mode 1 ${arguments} 
+niftkMTPDbc -mode ${dbc_method} -radius ${kernel_size} ${arguments} 
 
 # Compute BSI. 
 for ((i=1; i<=${number_of_images}; i++))

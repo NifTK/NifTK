@@ -1,26 +1,17 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-10-06 10:55:39 +0100 (Thu, 06 Oct 2011) $
- Revision          : $Revision: 7447 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+=============================================================================*/
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
@@ -142,17 +133,15 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   pipeline->SetForegroundValue((unsigned char)255);
   pipeline->SetBackgroundValue((unsigned char)0);
 
-  pipeline->m_ThresholdingFilter->SetInput(reader->GetOutput());
-  pipeline->m_ErosionMaskFilter->SetInput(1, erodeAdds);
-  pipeline->m_ErosionMaskFilter->SetInput(2, erodeEdits);
-  pipeline->m_DilationMaskFilter->SetInput(1, dilateAdds);
-  pipeline->m_DilationMaskFilter->SetInput(2, dilateEdits);
-  pipeline->m_DilationFilter->SetConnectionBreakerImage(dilateEdits);
-
   for (int i = 0; i <= stage; i++)
   {
     params.m_Stage = i;
-    pipeline->SetParam(params);
+    pipeline->SetParam(reader->GetOutput(),
+                       erodeAdds,
+                       erodeEdits,
+                       dilateAdds,
+                       dilateEdits,
+                       params);
     pipeline->Update(editingFlags, editingRegion);
   }
 

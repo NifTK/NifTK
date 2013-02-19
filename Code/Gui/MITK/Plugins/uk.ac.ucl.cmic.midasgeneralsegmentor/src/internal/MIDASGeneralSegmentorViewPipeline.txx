@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-10-19 11:45:45 +0100 (Wed, 19 Oct 2011) $
- Revision          : $Revision: 7553 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
 #define _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
@@ -57,8 +47,11 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(GeneralSegmentorPipelineParams& p)
+::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
 {
+  m_ExtractGreyRegionOfInterestFilter->SetInput(referenceImage);
+  m_ExtractBinaryRegionOfInterestFilter->SetInput(segmentationImage);
+
   m_SliceNumber = p.m_SliceNumber;
   m_AxisNumber = p.m_AxisNumber;
   m_LowerThreshold = p.m_LowerThreshold;
@@ -257,6 +250,22 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   {
     MITK_ERROR << "GeneralSegmentorPipeline::Update Failed: " << err << std::endl;
   }
+}
+
+template<typename TPixel, unsigned int VImageDimension>
+void
+GeneralSegmentorPipeline<TPixel, VImageDimension>
+::DisconnectPipeline()
+{
+  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
+  m_ExtractGreyRegionOfInterestFilter->SetInput(NULL);
+  m_ExtractBinaryRegionOfInterestFilter->SetInput(NULL);
+
+  m_CastToSegmentationContourFilter->SetInput(NULL);
+  m_CastToManualContourFilter->SetInput(NULL);
+  m_RegionGrowingFilter->SetInput(NULL);
+  m_RegionGrowingFilter->SetSegmentationContourImage(NULL);
+  m_RegionGrowingFilter->SetManualContourImage(NULL);
 }
 
 #endif

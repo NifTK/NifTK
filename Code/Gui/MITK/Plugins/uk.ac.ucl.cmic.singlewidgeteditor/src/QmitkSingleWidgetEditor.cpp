@@ -1,18 +1,16 @@
-/*===================================================================
+/*=============================================================================
 
-The Medical Imaging Interaction Toolkit (MITK)
+  NifTK: A software platform for medical image computing.
 
-Copyright (c) German Cancer Research Center, 
-Division of Medical and Biological Informatics.
-All rights reserved.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-A PARTICULAR PURPOSE.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-See LICENSE.txt or http://www.mitk.org for details.
+  See LICENSE.txt in the top level directory for details.
 
-===================================================================*/
+=============================================================================*/
 
 #include "QmitkSingleWidgetEditor.h"
 
@@ -385,7 +383,7 @@ void QmitkSingleWidgetEditor::OnPreferencesChanged(const berry::IBerryPreference
     lower[2] = secondColor.blue() / color;
   }
   d->m_SingleWidget->SetGradientBackgroundColors(upper, lower);
-  d->m_SingleWidget->EnableGradientBackground();
+  d->m_SingleWidget->DisableGradientBackground();
 
   // Set preferences respecting zooming and padding
   bool constrainedZooming = prefs->GetBool("Use constrained zooming and padding", false);

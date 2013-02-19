@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-08-01 16:14:30 +0100 (Mon, 01 Aug 2011) $
- Revision          : $Revision: 6909 $
- Last modified by  : $Author: ad $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : a.duttaroy@cs.ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include <string>
 
@@ -191,6 +181,10 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
   m_Controls.m_SourceImageComboBox->clear();
   m_Controls.m_TargetImageComboBox->clear();
 
+  m_Controls.m_TargetMaskImageComboBox->clear();
+  m_Controls.m_TargetMaskImageComboBox->insertItem(0, QString("no mask"));
+
+
   if ( nodes ) 
   {    
     for (unsigned int i = 0; i < nodes->size(); i++) 
@@ -200,6 +194,8 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
       
       m_Controls.m_SourceImageComboBox->insertItem(i, QString(name.c_str()));
       m_Controls.m_TargetImageComboBox->insertItem(i, QString(name.c_str()));
+
+      m_Controls.m_TargetMaskImageComboBox->insertItem(i+1, QString(name.c_str()));
     }
   }
 
@@ -210,9 +206,6 @@ void QmitkNiftyRegView::SetGuiToParameterValues()
     m_Controls.m_SourceImageComboBox->setCurrentIndex( 1 );
   }
        
-  m_Controls.m_TargetMaskImageComboBox->clear();
-  m_Controls.m_TargetMaskImageComboBox->insertItem(0, QString("no mask"));
-
 
   // Multi-Scale Options
     

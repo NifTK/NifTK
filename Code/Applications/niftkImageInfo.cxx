@@ -1,26 +1,17 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: 2011-11-24 17:44:42 +0000 (Thu, 24 Nov 2011) $
- Revision          : $Revision: 7864 $
- Last modified by  : $Author: kkl $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Original author   : m.clarkson@ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+=============================================================================*/
 
- ============================================================================*/
 #include "itkLogHelper.h"
 #include "ConversionUtils.h"
 #include "itkConversionUtils.h"
@@ -112,17 +103,20 @@ int PrintHeaderInfo(arguments args)
   
   SizeType size;
   SpacingType spacing;
+  SpacingType sizeInMM;
   OriginType origin;
   
   for (unsigned int i = 0; i < Dimension; i++)
     {
       size[i] = imageIO->GetDimensions(i);
       spacing[i] = imageIO->GetSpacing(i);
+      sizeInMM[i] = size[i]*spacing[i];
       origin[i] = imageIO->GetOrigin(i);
     }
   
   std::cout << "Size            :" << size << std::endl;
   std::cout << "Spacing         :" << spacing << std::endl;
+  std::cout << "Size x Spacing  :" << sizeInMM << std::endl;
   std::cout << "Origin          :" << origin << std::endl;
 
   return EXIT_SUCCESS;
@@ -183,38 +177,38 @@ int PrintImageInfo(arguments args)
   ScalarType value;
   itk::ImageRegionConstIteratorWithIndex<InputImageType> imageIterator(imageReader->GetOutput(), imageReader->GetOutput()->GetLargestPossibleRegion());
   for (imageIterator.GoToBegin(); !imageIterator.IsAtEnd(); ++imageIterator)
+  {
+    value = imageIterator.Get();
+    if (value != args.backgroundValue)
     {
-      value = imageIterator.Get();
-      if (value != args.backgroundValue)
-        {
-          if (value > max) 
-            {
-              max = value;
-              maxIndex = imageIterator.GetIndex();
-            }
-          else if (value < min)
-            {
-              min = value;
-              minIndex = imageIterator.GetIndex();
-            }
-          sum += value;
-          volume += value*volumePerPixel;
-          counter++;
+      if (value > max) 
+      {
+	max = value;
+	maxIndex = imageIterator.GetIndex();
+      }
+      else if (value < min)
+      {
+	min = value;
+	minIndex = imageIterator.GetIndex();
+      }
+      sum += value;
+      volume += value*volumePerPixel;
+      counter++;
           
-          IndexType index = imageIterator.GetIndex(); 
-          for (int i = 0; i < Dimension; i++)
-          {
-            if (index[i] > upperRight[i])
-            {
-              upperRight[i] = index[i]; 
-            }
-            if (index[i] < lowerLeft[i])
-            {
-              lowerLeft[i] = index[i]; 
-            }
-          }
-        }
+      IndexType index = imageIterator.GetIndex(); 
+      for (int i = 0; i < Dimension; i++)
+      {
+	if (index[i] > upperRight[i])
+	{
+	  upperRight[i] = index[i]; 
+	}
+	if (index[i] < lowerLeft[i])
+	{
+	  lowerLeft[i] = index[i]; 
+	}
+      }
     }
+  }
   mean = sum / (double)counter;
   
   std::cout << "Min                     :" << min << ", taken from " << minIndex << std::endl;
@@ -238,15 +232,17 @@ int PrintImageInfo(arguments args)
 
   std::cout << "Image centre            :" << voxelCoordinate << " (vox), " << millimetreCoordinateForITK << " (mm) " << millimetreCoordinateForVTK << " (VTK) " << std::endl;
 
-  voxelCoordinate[0] = 0;
-  voxelCoordinate[1] = 0;
-  voxelCoordinate[2] = 0;
+  for (int i = 0; i < Dimension; i++)
+  {
+    voxelCoordinate[i] = 0;
+  }
   imageReader->GetOutput()->TransformContinuousIndexToPhysicalPoint(voxelCoordinate, millimetreCoordinateForITK);
   std::cout << "Image first voxel       :" << voxelCoordinate << " (vox), " << millimetreCoordinateForITK << std::endl;
 
-  voxelCoordinate[0] = size[0] - 1;
-  voxelCoordinate[1] = size[1] - 1;
-  voxelCoordinate[2] = size[2] - 1;
+  for (int i = 0; i < Dimension; i++)
+  {
+    voxelCoordinate[i] = size[i] - 1;
+  }
   imageReader->GetOutput()->TransformContinuousIndexToPhysicalPoint(voxelCoordinate, millimetreCoordinateForITK);
   std::cout << "Image last voxel        :" << voxelCoordinate << " (vox), " << millimetreCoordinateForITK << std::endl;
   
@@ -294,7 +290,7 @@ int main(int argc, char** argv)
   int dims = itk::PeekAtImageDimension(args.inputImage);
   if (dims != 2 && dims != 3 && dims != 4)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
   
@@ -303,10 +299,21 @@ int main(int argc, char** argv)
   switch (itk::PeekAtComponentType(args.inputImage))
     {
     case itk::ImageIOBase::UCHAR:
+    {
       if (dims == 2)
         {
-          result = PrintHeaderInfo<2, unsigned char>(args);
-          result = PrintImageInfo<2, unsigned char>(args);
+	  result = PrintHeaderInfo<2, unsigned char>(args);
+
+	  if ( itk::PeekAtPixelType(args.inputImage) == itk::ImageIOBase::SCALAR )
+	  {
+	    result = PrintImageInfo<2, unsigned char>(args);
+	  }
+	  else
+	  {
+	    std::cout << std::endl
+		      << "WARNING: Image intensity stats not implemented for non-scalar images" 
+		      << std::endl;
+	  }
         }
       else if (dims == 3)
         {
@@ -320,7 +327,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, unsigned char>(args);
         }
       break;
+    }
     case itk::ImageIOBase::CHAR:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, char>(args);
@@ -338,7 +347,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, char>(args);
         }
       break;
+    }
     case itk::ImageIOBase::USHORT:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, unsigned short>(args);
@@ -356,7 +367,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, unsigned short>(args);
         }
       break;
+    }
     case itk::ImageIOBase::SHORT:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, short>(args);
@@ -374,7 +387,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, short>(args);
         }
       break;
+    }
     case itk::ImageIOBase::UINT:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, unsigned int>(args);
@@ -392,7 +407,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, unsigned int>(args);
         }
       break;
+    }
     case itk::ImageIOBase::INT:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, int>(args);
@@ -410,7 +427,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, int>(args);
         }
       break;
+    }
     case itk::ImageIOBase::ULONG:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, unsigned long>(args);
@@ -428,7 +447,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, unsigned long>(args);
         }
       break;
+    }
     case itk::ImageIOBase::LONG:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, long>(args);
@@ -446,7 +467,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, long>(args);
         }
       break;
+    }
     case itk::ImageIOBase::FLOAT:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, float>(args);
@@ -464,7 +487,9 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, float>(args);
         }
       break;
+    }
     case itk::ImageIOBase::DOUBLE:
+    {
       if (dims == 2)
         {
           result = PrintHeaderInfo<2, double>(args);
@@ -482,6 +507,7 @@ int main(int argc, char** argv)
           result = PrintImageInfo<4, double>(args);
         }
       break;
+    }
     default:
       std::cerr << "non standard pixel format" << std::endl;
       return EXIT_FAILURE;

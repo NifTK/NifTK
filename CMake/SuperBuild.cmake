@@ -1,26 +1,16 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
+#  NifTK: A software platform for medical image computing.
 #
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
-#
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-#
-#  Last Changed      : $LastChangedDate: 2011-05-06 11:40:44 +0100 (Fri, 06 May 2011) $
-#  Revision          : $Revision: 6088 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
 
 INCLUDE(ExternalProject)
 
@@ -67,6 +57,31 @@ SET(EP_COMMON_ARGS
   -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
   -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
 )
+
+SET(NIFTK_APP_OPTIONS)
+FOREACH(NIFTK_APP ${NIFTK_APPS})
+
+  # extract option_name
+  STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+  SET(target_info_list ${target_info})
+  LIST(GET target_info_list 1 option_name)
+  LIST(GET target_info_list 0 app_name)
+  
+  # Set flag.
+  SET(option_string)
+  IF(${option_name})
+    SET(option_string "-D${option_name}:BOOL=ON")
+  ELSE()
+    SET(option_string "-D${option_name}:BOOL=OFF")  
+  ENDIF()
+  
+  SET(NIFTK_APP_OPTIONS
+    ${NIFTK_APP_OPTIONS}
+    ${option_string}
+  )    
+  
+  # Add to list.
+ENDFOREACH()
 
 # Compute -G arg for configuring external projects with the same CMake generator:
 IF(CMAKE_EXTRA_GENERATOR)
@@ -152,6 +167,8 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      ${NIFTK_APP_OPTIONS}
+      -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}      
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
       -DBUILD_TESTING:BOOL=${BUILD_TESTING} # The value set in EP_COMMON_ARGS normally forces this off, but we may need NifTK to be on.
@@ -179,7 +196,6 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNVAPI_LIBRARY:PATH=${NVAPI_LIBRARY}
       -DNIFTK_USE_FFTW:BOOL=${NIFTK_USE_FFTW}
       -DNIFTK_USE_CUDA:BOOL=${NIFTK_USE_CUDA}
-      -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}
       -DNIFTK_WITHIN_SUPERBUILD:BOOL=ON                    # Set this to ON, as some compilation flags rely on knowing if we are doing superbuild.
       -DNIFTK_VERSION_MAJOR:STRING=${NIFTK_VERSION_MAJOR}
       -DNIFTK_VERSION_MINOR:STRING=${NIFTK_VERSION_MINOR}

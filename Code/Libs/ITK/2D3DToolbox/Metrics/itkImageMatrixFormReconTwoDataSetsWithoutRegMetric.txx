@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: 2010-12-09 15:08:50 +0000 (Thu, 09 Dec 2010) $
- Revision          : $Revision: 4493 $
- Last modified by  : $Author: jhh $
- 
- Original author   : j.hipwell@ucl.ac.uk
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+  See LICENSE.txt in the top level directory for details.
 
- ============================================================================*/
+=============================================================================*/
 
 #ifndef __itkImageMatrixFormReconTwoDataSetsWithoutRegMetric_txx
 #define __itkImageMatrixFormReconTwoDataSetsWithoutRegMetric_txx

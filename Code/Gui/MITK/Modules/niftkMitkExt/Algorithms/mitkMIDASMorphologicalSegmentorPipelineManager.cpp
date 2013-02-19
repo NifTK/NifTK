@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date$
- Revision          : $Revision$
- Last modified by  : $Author$
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "mitkMIDASMorphologicalSegmentorPipelineManager.h"
 #include <mitkDataNode.h>
@@ -596,6 +586,7 @@ MIDASMorphologicalSegmentorPipelineManager
     mitk::Image::Pointer& output
     )
 {
+
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
@@ -636,16 +627,13 @@ MIDASMorphologicalSegmentorPipelineManager
     pipeline = static_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
   }
 
-  // Connect input images.
-  pipeline->m_ThresholdingFilter->SetInput(itkImage);
-  pipeline->m_ErosionMaskFilter->SetInput(1, erosionsAdditionsToItk->GetOutput());
-  pipeline->m_ErosionMaskFilter->SetInput(2, erosionEditsToItk->GetOutput());
-  pipeline->m_DilationMaskFilter->SetInput(1, dilationsAditionsToItk->GetOutput());
-  pipeline->m_DilationMaskFilter->SetInput(2, dilationsEditsToItk->GetOutput());
-  pipeline->m_DilationFilter->SetConnectionBreakerImage(dilationsEditsToItk->GetOutput());
-
   // Set most of the parameters on the pipeline.
-  pipeline->SetParam(params);
+  pipeline->SetParam(itkImage,
+                     erosionsAdditionsToItk->GetOutput(),
+                     erosionEditsToItk->GetOutput(),
+                     dilationsAditionsToItk->GetOutput(),
+                     dilationsEditsToItk->GetOutput(),
+                     params);
 
   // Do the update.
   if (isRestarting)
@@ -653,7 +641,14 @@ MIDASMorphologicalSegmentorPipelineManager
     for (int i = 0; i <= params.m_Stage; i++)
     {
       params.m_Stage = i;
-      pipeline->SetParam(params);
+
+      pipeline->SetParam(itkImage,
+          erosionsAdditionsToItk->GetOutput(),
+          erosionEditsToItk->GetOutput(),
+          dilationsAditionsToItk->GetOutput(),
+          dilationsEditsToItk->GetOutput(),
+          params);
+
       pipeline->Update(editingFlags, editingRegion);
     }
   }
@@ -662,13 +657,8 @@ MIDASMorphologicalSegmentorPipelineManager
     pipeline->Update(editingFlags, editingRegion);
   }
 
-  // Disconnect pipeline, or else SmartPointers to ImageToItkType do not seem to deregister.
-  pipeline->m_ThresholdingFilter->SetInput(NULL);
-  pipeline->m_ErosionMaskFilter->SetInput(1, NULL);
-  pipeline->m_ErosionMaskFilter->SetInput(2, NULL);
-  pipeline->m_DilationMaskFilter->SetInput(1, NULL);
-  pipeline->m_DilationMaskFilter->SetInput(2, NULL);
-  pipeline->m_DilationFilter->SetConnectionBreakerImage(NULL);
+  // To make sure we release all smart pointers.
+  pipeline->DisconnectPipeline();
 
   // Get hold of the output, and make sure we don't re-allocate memory.
   output->InitializeByItk< ImageType >(pipeline->GetOutput(editingFlags).GetPointer());

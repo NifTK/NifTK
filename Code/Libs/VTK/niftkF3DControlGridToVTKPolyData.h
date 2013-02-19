@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: $
- Revision          : $Revision: $
- Last modified by  : $Author: $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Original author   : j.hipwell@ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef __NIFTKF3DCONTROLGRIDTOVTKPOLYDATA_H
 #define __NIFTKF3DCONTROLGRIDTOVTKPOLYDATA_H
@@ -48,6 +38,11 @@ namespace niftk
     PLANE_YZ,           //!< Create the 'yz' plane deformation field
   } PlaneType;                                             
   
+  /// Calculate the number of control points to skip when plotting the deformation field
+  extern "C++" NIFTKVTK_WINEXPORT 
+    unsigned int ComputeControlGridSkipFactor( nifti_image *controlPointGrid,
+					       unsigned int subSamplingFactor,
+					       unsigned int maxGridDimension );
 
   /// Create a reference image corresponding to a given control point grid image
   extern "C++" NIFTKVTK_WINEXPORT 
@@ -70,6 +65,7 @@ namespace niftk
   extern "C++" NIFTKVTK_WINEXPORT 
     void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 					      nifti_image *referenceImage,
+					      int controlGridSkipFactor,
 					      vtkSmartPointer<vtkPolyData> &xyDeformation,
 					      vtkSmartPointer<vtkPolyData> &xzDeformation,
 					      vtkSmartPointer<vtkPolyData> &yzDeformation );
@@ -82,7 +78,7 @@ namespace niftk
 								      int zSkip );
 
 
-  /// Create a VTK polydata vector field object to visualise the deformation field
+  /// Create a VTK polydata vector field object to visualise the deformation field (using VTK arrow glyphs)
   extern "C++" NIFTKVTK_WINEXPORT 
     vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image *deformation,
 									 int xSkip,
@@ -102,6 +98,7 @@ namespace niftk
   extern "C++" NIFTKVTK_WINEXPORT 
     void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 					      nifti_image *referenceImage,
+					      int controlGridSkipFactor,
 					      vtkSmartPointer<vtkPolyData> &xyDeformation,
 					      vtkSmartPointer<vtkPolyData> &xzDeformation,
 					      vtkSmartPointer<vtkPolyData> &yzDeformation );

@@ -1,28 +1,19 @@
 #!/bin/bash
 
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
-#  
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
+#  NifTK: A software platform for medical image computing.
 #
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2010-08-20 17:10:20 +0100 (Fri, 20 Aug 2010) $ 
-#  Revision          : $Revision: 3732 $
-#  Last modified by  : $Author: kkl $
-#
-#  Original author   : leung@drc.ion.ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 #
 # Script to run a groupwise DBC. 
 # 
@@ -68,6 +59,8 @@ Optional Arguments:
   -double_window yes/no : double window or not. 
   -ss_atlas dummy       : atlas used to generate img from midas region. 
   -just_dbc yes/no      : just do dbc without transformation if yes. 
+  -kernel i             : specify the size of kernel for DRC, default: 5
+  -dbc_mode i           : mode to run dbc in: 1= from all images, 2= from consective TPs
                         
 EOF
 exit 127 
@@ -85,7 +78,7 @@ function IterateThroughFile()
     then 
       if [ "$mode" != "CHECK" ]; then
         # Generate a file of all commands
-        echo "${script_dir}/compute_symmetric_transform_n.sh ${asym_flag} ${interpolation} ${double_window} ${just_dbc} ${ss_atlas} ${output} ${each_line}" >> $command_file
+        echo "${script_dir}/compute_symmetric_transform_n.sh ${asym_flag} ${interpolation} ${double_window} ${just_dbc} ${kernel_size} ${dbc_method} ${ss_atlas} ${output} ${each_line}" >> $command_file
       fi
     elif [ "${tp3}" == "" ] 
     then 
@@ -161,6 +154,8 @@ double_window="-double_window yes"
 ss_atlas="-ss_atlas dummy"
 pairwise="no"
 just_dbc="-just_dbc no"
+kernel_size="-radius 5"
+dbc_method="-mode 1"
 
 # Parse remaining command line options
 shift $ndefargs
@@ -194,6 +189,14 @@ do
       ;; 
     -just_dbc)
       just_dbc="-just_dbc $2"
+      shift 1
+      ;;
+    -kernel)
+      kernel_size="-radius $2"
+      shift 1
+      ;;
+    -dbc_mode)
+      dbc_method="-mode $2"
       shift 1
       ;;
     -*)

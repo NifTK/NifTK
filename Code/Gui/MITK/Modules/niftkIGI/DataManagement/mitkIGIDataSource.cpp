@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "mitkIGIDataSource.h"
 #include <itkObjectFactory.h>
@@ -49,6 +39,7 @@ IGIDataSource::IGIDataSource()
 , m_ActualTimeStamp(0)
 , m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
+, m_NumberOfTools(0)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_RequestedTimeStamp->GetTime();
@@ -59,6 +50,8 @@ IGIDataSource::IGIDataSource()
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
+  m_SubTools.clear();
+  m_SubToolsIterator = m_SubTools.begin();
 }
 
 
@@ -370,8 +363,15 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 
   return result;
 }
+void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
+{
+  this->m_SubTools = inStringList;
+}
 
-
+std::list<std::string> IGIDataSource::GetSubToolList ()
+{
+  return m_SubTools;
+}
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {

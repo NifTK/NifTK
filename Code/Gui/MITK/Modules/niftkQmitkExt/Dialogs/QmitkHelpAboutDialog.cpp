@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-12-16 09:12:58 +0000 (Fri, 16 Dec 2011) $
- Revision          : $Revision: 8039 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : a.duttaroy@cs.ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "QmitkHelpAboutDialog.h"
 
@@ -72,6 +62,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString ctkVersion(NIFTK_CTK_VERSION);
   QString mitkVersion(NIFTK_MITK_VERSION);
   QString niftkVersion(NIFTK_VERSION);
+  QString niftkDateTime(NIFTK_DATE_TIME);
   QString boostLocation(NIFTK_BOOST_LOCATION);
   QString gdcmLocation(NIFTK_GDCM_LOCATION);
   QString dcmtkLocation(NIFTK_DCMTK_LOCATION);
@@ -189,9 +180,9 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 
   QString licenses = QObject::tr(
       "<p>"
-      "The licenses can be found online and are additionally included in the installation folder. This version of %1 was built with our git hash <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/niftk\">%2</a>."
+      "The licenses can be found online and are additionally included in the installation folder. This version of %1 was built with our git hash <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/niftk\">%2</a>, from %3."
       "</p>"
-      ).arg(applicationName).arg(niftkVersion);
+      ).arg(applicationName).arg(niftkVersion).arg(niftkDateTime);
 
   // Over time, insert more platforms that we have tested on,
   // (but these should be backed up with a Dashboard or else it ain't worth diddly-squat).

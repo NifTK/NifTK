@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-07-19 12:16:16 +0100 (Tue, 19 Jul 2011) $
- Revision          : $Revision: 6802 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKMIDASMULTIVIEWWIDGET_H_
 #define QMITKMIDASMULTIVIEWWIDGET_H_
@@ -52,6 +42,7 @@ class QStackedLayout;
 class QmitkRenderWindow;
 class QLine;
 class QButtonGroup;
+class QToolButton;
 class ctkPopupWidget;
 
 /**
@@ -155,7 +146,7 @@ public:
   void SetSelectedWindowSliceNumber(int sliceNumber);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes magnification.
-  void SetSelectedWindowMagnification(int magnification);
+  void SetSelectedWindowMagnification(double magnification);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches to axial.
   void SetSelectedWindowToAxial();
@@ -243,6 +234,8 @@ public:
    */
   virtual void SetFocus();
 
+  virtual bool eventFilter(QObject* object, QEvent* event);
+
 signals:
 
 public slots:
@@ -272,10 +265,14 @@ protected slots:
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
+  /// \brief Called when the magnification is changed by zooming in a renderer window.
   void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
+
+  /// \brief Called when the pin button is toggled.
+  void OnPinButtonToggled(bool checked);
 
 protected:
 
@@ -380,7 +377,9 @@ private:
   QRadioButton                                  *m_DropThumbnailRadioButton;
   QButtonGroup                                  *m_DropButtonGroup;
   QCheckBox                                     *m_DropAccumulateCheckBox;
-  QPushButton                                   *m_PopupPushButton;
+  QToolButton                                   *m_PinButton;
+  QWidget                                       *m_ControlWidget;
+  QVBoxLayout                                   *m_ControlWidgetLayout;
   ctkPopupWidget                                *m_PopupWidget;
   QFrame                                        *m_ControlsContainerWidget;
 
@@ -414,6 +413,7 @@ private:
   bool                                           m_NavigationControllerEventListening;
   bool                                           m_Dropped;
   bool                                           m_InteractorsEnabled;
+  double                                         m_PreviousMagnificationFactor;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

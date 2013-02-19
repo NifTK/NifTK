@@ -1,28 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $LastChangedDate$
- Revision          : $Revision$
- Last modified by  : $Author$
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : $Author$
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
- 
-
+=============================================================================*/
 
 // Blueberry
 #include <berryISelectionService.h>
@@ -316,13 +304,15 @@ void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
 void ImageStatisticsView::InitializeTable()
 {
   m_Controls.m_Table->clear();
-  m_Controls.m_Table->setColumnCount(7);
+  m_Controls.m_Table->setColumnCount(9);
 
   // The order of these columns must match the order in AddTableRow.
   QStringList headers;
   headers << "value";
   headers << "volume (ml)";
   headers << "mean";
+  headers << "mean 60%";
+  headers << "mean 70%";
   headers << "std dev";
   headers << "min";
   headers << "max";
@@ -346,17 +336,23 @@ ImageStatisticsView
   QTableWidgetItem *meanItem = new QTableWidgetItem(tr("%1").arg(mean));
   m_Controls.m_Table->setItem(row, 2, meanItem);
 
+  QTableWidgetItem *mean60Item = new QTableWidgetItem(tr("%1").arg(mean * 0.6));
+  m_Controls.m_Table->setItem(row, 3, mean60Item);
+
+  QTableWidgetItem *mean70Item = new QTableWidgetItem(tr("%1").arg(mean * 0.7));
+  m_Controls.m_Table->setItem(row, 4, mean70Item);
+
   QTableWidgetItem *stdDevItem = new QTableWidgetItem(tr("%1").arg(stdDev));
-  m_Controls.m_Table->setItem(row, 3, stdDevItem);
+  m_Controls.m_Table->setItem(row, 5, stdDevItem);
 
   QTableWidgetItem *minItem = new QTableWidgetItem(tr("%1").arg(min));
-  m_Controls.m_Table->setItem(row, 4, minItem);
+  m_Controls.m_Table->setItem(row, 6, minItem);
 
   QTableWidgetItem *maxItem = new QTableWidgetItem(tr("%1").arg(max));
-  m_Controls.m_Table->setItem(row, 5, maxItem);
+  m_Controls.m_Table->setItem(row, 7, maxItem);
 
   QTableWidgetItem *countItem = new QTableWidgetItem(tr("%1").arg(count));
-  m_Controls.m_Table->setItem(row, 6, countItem);
+  m_Controls.m_Table->setItem(row, 8, countItem);
 
 }
 

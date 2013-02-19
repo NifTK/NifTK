@@ -1,19 +1,16 @@
-/*=========================================================================
+/*=============================================================================
 
-  Program:   Insight Segmentation & Registration Toolkit
-  Module:    $RCSfile: itkMultiScaleHessianBasedMeasureImageFilterTest.cxx,v $
-  Language:  C++
-  Date:      $Date: 2011-11-24 17:44:42 +0000 (Thu, 24 Nov 2011) $
-  Version:   $Revision: 7864 $
+  NifTK: A software platform for medical image computing.
 
-  Copyright (c) Insight Software Consortium. All rights reserved.
-  See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-=========================================================================*/
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 #include "ConversionUtils.h"
 #include "CommandLineParser.h"

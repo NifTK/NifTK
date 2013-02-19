@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-07-19 17:52:47 +0100 (Tue, 19 Jul 2011) $
- Revision          : $Revision: 6804 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "SurfaceExtractorView.h"
 #include "SurfaceExtractorPreferencePage.h"
@@ -195,6 +185,7 @@ SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
   this->has3dLabelImage = has3dLabelImage;
   this->has3dOr4dLabelImage = has3dOr4dLabelImage;
   this->has3dOr4dSurfaceImage = hasSurfaceImage;
+  this->gaussianSmooth = true;
 }
 
 const std::string SurfaceExtractorView::VIEW_ID = "uk.ac.ucl.cmic.SurfaceExtractor";
@@ -556,7 +547,15 @@ void SurfaceExtractorView::updateSurfaceNode()
 
   filter->SetInput(referenceImage);
   filter->SetThreshold(d->threshold); // if( Gauss ) --> TH manipulated for vtkMarchingCube
+  
   filter->SetTargetReduction(d->targetReduction);
+  
+  // If the decimation value is non-zero we set the decimation type
+  // Setting NoDecimation disables the whole processing
+  if (d->targetReduction == 0)
+    filter->SetDecimate(mitk::ImageToSurfaceFilter::NoDecimation);
+  else
+    filter->SetDecimate(mitk::ImageToSurfaceFilter::DecimatePro);
 
   try
   {
@@ -613,6 +612,7 @@ mitk::ImageToSurfaceFilter::Pointer SurfaceExtractorView::createImageToSurfaceFi
   {
     mitk::ManualSegmentationToSurfaceFilter::Pointer filter = mitk::ManualSegmentationToSurfaceFilter::New();
     filter->SetUseGaussianImageSmooth(d->gaussianSmooth);
+    filter->SetSmooth(d->gaussianSmooth);
     filter->SetGaussianStandardDeviation(d->gaussianStdDev);
     mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
     return f;
@@ -621,6 +621,7 @@ mitk::ImageToSurfaceFilter::Pointer SurfaceExtractorView::createImageToSurfaceFi
   {
     mitk::LabeledImageToSurfaceFilter::Pointer filter = mitk::LabeledImageToSurfaceFilter::New();
     filter->SetGaussianStandardDeviation(d->gaussianStdDev);
+    filter->SetSmooth(d->gaussianSmooth);
     mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
     return f;
   }

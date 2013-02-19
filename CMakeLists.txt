@@ -1,34 +1,24 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
+#  NifTK: A software platform for medical image computing.
 #
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
-#
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-12-17 14:35:07 +0000 (Sat, 17 Dec 2011) $ 
-#  Revision          : $Revision: 8065 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
 
 ###########################################################################
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
-SET(NIFTK_VERSION_MAJOR 12 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 12 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
+SET(NIFTK_VERSION_MINOR 02 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -138,10 +128,6 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
       
 ENDFOREACH()
 
-# Print some status stuff to help the user.
-MESSAGE("BUILD_GUI=${BUILD_GUI}")
-MESSAGE("BUILD_IGI=${BUILD_IGI}")
-
 ######################################################################
 # Options. These are set up front, so are available when configuring
 # the SuperBuild, and hence they must also be passed to the normal
@@ -208,6 +194,10 @@ SET(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING 
 SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
 SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
+SET(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or tar)" FORCE)
+SET(NIFTK_VERSION_DATA_GIT "d9fe07385c" CACHE STRING "Version of NifTKData in git" FORCE)
+SET(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
+SET(NIFTK_VERSION_DATA_TAR "d9fe07385c" CACHE STRING "Version of NifTKData in tarball" FORCE)
 SET(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
@@ -216,15 +206,18 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 SET(NIFTK_VERSION_CTK "dd4386a4b0" CACHE STRING "Version of CTK" FORCE)
-SET(NIFTK_VERSION_MITK "a5924029b0" CACHE STRING "Version of MITK" FORCE)
+SET(NIFTK_VERSION_MITK "e4e8dbec92" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
-SET(NIFTK_VERSION_NIFTYLINK "819d1c25c9" CACHE STRING "Version of NiftyLink" FORCE)
+SET(NIFTK_VERSION_NIFTYLINK "f87aa369bc" CACHE STRING "Version of NiftyLink" FORCE)
 SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg" FORCE)
 SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim" FORCE)
 SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
 SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
+SET(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
+SET(NIFTK_LOCATION_DATA_SVN "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING "Version of NifTKData in svn" FORCE)
+SET(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE) 
 SET(NIFTK_LOCATION_BOOST "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost-${NIFTK_VERSION_BOOST}.tar.gz" CACHE STRING "Location of Boost" FORCE)
 SET(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
 SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
@@ -235,7 +228,6 @@ SET(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MI
 SET(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.zip" CACHE STRING "Location of curl" FORCE)
 SET(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
 SET(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "https://cmicdev.cs.ucl.ac.uk/git/NiftyLink" CACHE STRING "Location of NiftyLink repository")
-SET(NIFTK_LOCATION_DATA "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING  "Location of NifTK unit test data")
 SET(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only)")
 SET(NIFTK_LOCATION_NIFTYREG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyReg-${NIFTK_VERSION_NIFTYREG}.tar.gz" CACHE STRING  "Location of NiftyReg" FORCE)
 SET(NIFTK_LOCATION_NIFTYSEG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySeg-${NIFTK_VERSION_NIFTYSEG}.tar.gz" CACHE STRING  "Location of NiftySeg" FORCE)
@@ -271,6 +263,10 @@ MARK_AS_ADVANCED(NIFTK_GENERATE_DOXYGEN_HELP)
 MARK_AS_ADVANCED(NIFTK_NIGHTLY_DOCS)
 MARK_AS_ADVANCED(NIFTK_BUILD_INSTRUCTIONS)
 MARK_AS_ADVANCED(NIFTK_INSTALL_INSTRUCTIONS)
+MARK_AS_ADVANCED(NIFTK_ARCHTYPE_DATA)
+MARK_AS_ADVANCED(NIFTK_VERSION_DATA_GIT)
+MARK_AS_ADVANCED(NIFTK_VERSION_DATA_SVN)
+MARK_AS_ADVANCED(NIFTK_VERSION_DATA_TAR)
 MARK_AS_ADVANCED(NIFTK_VERSION_BOOST)
 MARK_AS_ADVANCED(NIFTK_VERSION_GDCM)
 MARK_AS_ADVANCED(NIFTK_VERSION_DCMTK)
@@ -286,6 +282,9 @@ MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_VERSION_CGAL)
 MARK_AS_ADVANCED(NIFTK_VERSION_SEM)
+MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_GIT)
+MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_SVN)
+MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_TAR)
 MARK_AS_ADVANCED(NIFTK_LOCATION_BOOST)
 MARK_AS_ADVANCED(NIFTK_LOCATION_GDCM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DCMTK)
@@ -296,7 +295,6 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_MITK)
 MARK_AS_ADVANCED(NIFTK_LOCATION_curl)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYLINK_TARBALL)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYLINK_REPOSITORY)
-MARK_AS_ADVANCED(NIFTK_LOCATION_DATA)
 MARK_AS_ADVANCED(NIFTK_LOCATION_PROTOTYPE)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREG)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSEG)
@@ -325,6 +323,7 @@ include(mitkMacroEmptyExternalProject)
 include(niftkMacroCreateApplication)
 include(niftkMacroBuildCLI)
 include(niftkMacroInstallCLI)
+include(niftkMacroConfigureAndBuildCLI)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -1056,6 +1055,36 @@ INCLUDE(CPackSetup)
 #    and generates all the cmake_install.cmake.  So this command will use cmake to generate
 #    and additional file, that we can politely ask cpack to include, in addition to all the
 #    cmake_install.cmake files.
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Configuring the Start Menu and Desktop icon strings for NSIS
+
+if (WIN32)
+  SET(ICONS_SETUP_STRING "")
+  SET(ICONS_REMOVE_STRING "")
+  SET(DESKTOP_ICONS_SETUP_STRING "")
+  SET(DESKTOP_ICONS_REMOVE_STRING "")
+  SET(DESKTOP_ICONS_REMOVE_STRING "")
+ 
+  FOREACH(NIFTK_APP ${NIFTK_APPS})  
+    # extract option_name
+    STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+    SET(target_info_list ${target_info})
+    LIST(GET target_info_list 1 option_name)
+    LIST(GET target_info_list 0 app_name)
+
+	message("Current App Name: ${app_name}")
+	
+	if(EXISTS "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/${app_name}.exe")
+	  SET(ICONS_SETUP_STRING "${ICONS_SETUP_STRING}CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n")
+      SET(ICONS_REMOVE_STRING "${ICONS_REMOVE_STRING}Delete '$SMPROGRAMS\\\\$MUI_TEMP\\\\${app_name}.lnk'\n")
+	
+      SET(DESKTOP_ICONS_SETUP_STRING "${DESKTOP_ICONS_SETUP_STRING}CreateShortCut '$DESKTOP\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n") 
+      SET(DESKTOP_ICONS_REMOVE_STRING "${DESKTOP_ICONS_REMOVE_STRING}Delete '$DESKTOP\\\\${app_name}.lnk'\n")
+	endif()
+  ENDFOREACH()
+endif()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CPackOptions.cmake.in
                ${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake)

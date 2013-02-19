@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "QmitkIGIUltrasonixTool.h"
 #include <QImage>
@@ -37,18 +27,30 @@ const std::string QmitkIGIUltrasonixTool::ULTRASONIX_TOOL_2D_IMAGE_NAME = std::s
 QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
 : m_Image(NULL)
 , m_ImageNode(NULL)
-, m_Filter(NULL)
 , m_RadToDeg ( 180 / 3.14159265358979323846)
 {
-  m_Filter = QmitkQImageToMitkImageFilter::New();
+  m_Image = mitk::Image::New();
 
   m_ImageNode = mitk::DataNode::New();
   m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
   m_ImageNode->SetVisibility(true);
   m_ImageNode->SetOpacity(1);
-
-  m_Image = mitk::Image::New();
 }
+
+QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool( OIGTLSocketObject * socket )
+: QmitkIGINiftyLinkDataSource(socket)
+, m_Image(NULL)
+, m_ImageNode(NULL)
+, m_RadToDeg ( 180 / 3.14159265358979323846)
+{
+  m_Image = mitk::Image::New();
+
+  m_ImageNode = mitk::DataNode::New();
+  m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
+  m_ImageNode->SetVisibility(true);
+  m_ImageNode->SetOpacity(1);
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -58,23 +60,10 @@ QmitkIGIUltrasonixTool::~QmitkIGIUltrasonixTool()
 
 
 //-----------------------------------------------------------------------------
-float QmitkIGIUltrasonixTool::GetMotorPos()
+float QmitkIGIUltrasonixTool::GetMotorPos(igtl::Matrix4x4& matrix)
 {
-  float AcosAngle = m_ImageMatrix[2][2];
+  float AcosAngle = matrix[2][2];
   return acos ( AcosAngle ) * m_RadToDeg;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixTool::GetImageMatrix(igtl::Matrix4x4 &ImageMatrix)
-{
-  for ( int row = 0 ; row < 4 ; row ++)
-  {
-    for ( int col = 0 ; col < 4 ; col ++ )
-    {
-      ImageMatrix[row][col] = m_ImageMatrix[row][col];
-    }
-  }
 }
 
 
@@ -169,30 +158,31 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
 void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage* msg)
 {
   OIGTLImageMessage::Pointer imageMsg;
-
   imageMsg = static_cast<OIGTLImageMessage*>(msg);
 
   if (imageMsg.data() != NULL)
   {
-
     imageMsg->PreserveMatrix();
-    m_QImage = imageMsg->getQImage();
+    QImage qImage = imageMsg->getQImage();
 
-    m_Filter->SetQImage(&m_QImage);
-    m_Filter->SetGeometryImage(m_Image);
-    m_Filter->Update();
+    QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
+	igtl::Matrix4x4 imageMatrix;
 
-    m_Image = m_Filter->GetOutput();
+    filter->SetQImage(&qImage);
+    filter->SetGeometryImage(m_Image);
+    filter->Update();
+
+    m_Image = filter->GetOutput();
     m_ImageNode->SetData(m_Image);
     
-    imageMsg->getMatrix(m_ImageMatrix);
+    imageMsg->getMatrix(imageMatrix);
 
     if (!this->GetDataStorage()->Exists(m_ImageNode))
     {
       this->GetDataStorage()->Add(m_ImageNode);
     }
 
-    emit UpdatePreviewDisplay(&m_QImage, this->GetMotorPos());
+    emit UpdatePreviewDisplay(&qImage, this->GetMotorPos(imageMatrix));
   }
 }
 
@@ -218,8 +208,8 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
         {
           QString fileName = directoryPath + QDir::separator() + tr("%1.motor_position.txt").arg(data->GetTimeStampInNanoSeconds());
 
-          igtl::Matrix4x4 Matrix;
-          this->GetImageMatrix(Matrix);
+          igtl::Matrix4x4 matrix;
+		  imgMsg->getMatrix(matrix);
 
           QFile matrixFile(fileName);
           matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -232,7 +222,7 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           {
             for ( int col = 0 ; col < 4 ; col ++ )
             {
-              matout << Matrix[row][col];
+              matout << matrix[row][col];
               if ( col < 3 )
                 matout << " " ;
             }
@@ -241,15 +231,33 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           }
           matrixFile.close();
 
+		  QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
+	      mitk::Image::Pointer image = mitk::Image::New();
+
+		  QImage qImage = imgMsg->getQImage();
+		  filter->SetQImage(&qImage);
+
           // Save the image
           // Provided the tracker tool has been associated with the
-          // imageNode, this should also save the tracker matrix
+          // imageNode, this should also save the tracker matrix.
+		  // This will only work if we have the preference to save immediately.
+          filter->SetGeometryImage(m_Image);
+
+          filter->Update();
+          image = filter->GetOutput();
 
           fileName = directoryPath + QDir::separator() + tr("%1.ultrasoundImage.nii").arg(data->GetTimeStampInNanoSeconds());
-          CommonFunctionality::SaveImage( m_Image, fileName.toAscii() );
 
-          outputFileName = fileName.toStdString();
-          success = true;
+		  if (image.IsNotNull())
+		  {
+	        CommonFunctionality::SaveImage( image, fileName.toAscii() );
+            outputFileName = fileName.toStdString();
+            success = true;
+		  }
+		  else
+		  {
+		    MITK_ERROR << "QmitkIGIUltrasonixTool: m_Image is NULL. This should not happen" << std::endl;
+		  }
         }
       }
     }

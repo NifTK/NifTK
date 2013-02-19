@@ -1,37 +1,25 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
- Dementia Research Centre, and the Centre For Medical Image Computing
- at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
- http://cmic.cs.ucl.ac.uk/
- http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $LastChangedDate: 2011-10-06 10:55:39 +0100 (Thu, 06 Oct 2011) $
- Revision          : $LastChangedRevision: 7447 $
- Last modified by  : $LastChangedBy: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : stian.johnsen.09@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+=============================================================================*/
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
 #ifndef _itkMIDASRegionGrowingImageFilter_h_
 #define _itkMIDASRegionGrowingImageFilter_h_
 
 #include <stack>
 #include <cassert>
 #include <itkImage.h>
-#include <itkSpatialObjectToImageFilter.h>
 #include <itkImageToImageFilter.h>
-#include <itkImageFileWriter.h>
-#include <itkBinaryThresholdImageFilter.h>
-#include <itkBinaryFunctorImageFilter.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkPolyLineParametricPath.h>
 #include <itkContinuousIndex.h>
 

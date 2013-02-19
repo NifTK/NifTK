@@ -1,26 +1,16 @@
 /*=============================================================================
 
-  NifTK: An image processing toolkit jointly developed by the
-  Dementia Research Centre, and the Centre For Medical Image Computing
-  at University College London.
+  NifTK: A software platform for medical image computing.
 
-  See:        http://dementia.ion.ucl.ac.uk/
-  http://cmic.cs.ucl.ac.uk/
-  http://www.ucl.ac.uk/
-
-  Last Changed      : $Date: 2012-08-13 13:00:32 +0100 (Mon, 13 Aug 2012) $
-  Revision          : $Revision: 9470 $
-  Last modified by  : $Author: jhh $
-
-  Original author   : j.hipwell@ucl.ac.uk
-
-  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.  See the above copyright notices for more information.
+  PURPOSE.
 
-  ============================================================================*/
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 #include <QTimer>
 #include <QMessageBox>
@@ -259,8 +249,14 @@ void RegistrationExecution::ExecuteRegistration()
     nifti_image *controlPointGrid =
       userData->m_RegNonRigid->GetControlPointPositionImage();
 
+    unsigned int controlGridSkipFactor = 
+      niftk::ComputeControlGridSkipFactor( controlPointGrid, 1, 32 );
+    
+    std::cout << "Plotting deformation for every " << controlGridSkipFactor << " control points"
+	      << std::endl;
+
     CreateControlPointVisualisation( controlPointGrid );
-    CreateVectorFieldVisualisation( controlPointGrid );
+    CreateVectorFieldVisualisation( controlPointGrid, controlGridSkipFactor );
 
     reg_bspline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
 					controlPointGrid );
@@ -273,9 +269,20 @@ void RegistrationExecution::ExecuteRegistration()
     reg_spline_getDeformationField( controlPointGrid, referenceImage, deformationFieldImage,
 				    NULL, true, true );
 
-    CreateDeformationVisualisationSurface( niftk::PLANE_XY, deformationFieldImage, 1, 1, 2 );
-    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, deformationFieldImage, 1, 2, 1 );
-    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, deformationFieldImage, 2, 1, 1 );
+    CreateDeformationVisualisationSurface( niftk::PLANE_XY, deformationFieldImage, 
+					   controlGridSkipFactor, 
+					   controlGridSkipFactor, 
+					   2*controlGridSkipFactor );
+
+    CreateDeformationVisualisationSurface( niftk::PLANE_XZ, deformationFieldImage, 
+					   controlGridSkipFactor, 
+					   2*controlGridSkipFactor, 
+					   controlGridSkipFactor );
+
+    CreateDeformationVisualisationSurface( niftk::PLANE_YZ, deformationFieldImage, 
+					   2*controlGridSkipFactor, 
+					   controlGridSkipFactor, 
+					   controlGridSkipFactor );
 
     if ( controlPointGrid      != NULL ) nifti_image_free( controlPointGrid );
     if ( referenceImage        != NULL ) nifti_image_free( referenceImage );
@@ -411,7 +418,8 @@ void RegistrationExecution::CreateControlPointSphereVisualisation( nifti_image *
 // CreateVectorFieldVisualisation();
 // --------------------------------------------------------------------------- 
 
-void RegistrationExecution::CreateVectorFieldVisualisation( nifti_image *controlPointGrid )
+void RegistrationExecution::CreateVectorFieldVisualisation( nifti_image *controlPointGrid,
+							    int controlGridSkipFactor )
 {
   if ( ! userData->m_RegNonRigid )
   {
@@ -427,7 +435,10 @@ void RegistrationExecution::CreateVectorFieldVisualisation( nifti_image *control
 
   vtkSmartPointer<vtkPolyData> vtkVectorField = vtkSmartPointer<vtkPolyData>::New();
   
-  vtkVectorField = niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 1, 1, 1 );
+  vtkVectorField = niftk::F3DControlGridToVTKPolyDataVectorField( controlPointGrid, 
+								  controlGridSkipFactor, 
+								  controlGridSkipFactor, 
+								  controlGridSkipFactor );
   
   mitk::Surface::Pointer mitkVectorField = mitk::Surface::New();
 

@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKIGIDATASOURCEMANAGER_H
 #define QMITKIGIDATASOURCEMANAGER_H
@@ -37,9 +27,11 @@
 #include <QThread>
 #include <mitkDataStorage.h>
 #include "mitkIGIDataSource.h"
+#include <OIGTLSocketObject.h>
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
+class QmitkIGIDataSourceManagerGuiUpdateThread;
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -57,6 +49,7 @@ class NIFTKIGIGUI_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_Q
 public:
 
   friend class QmitkIGIDataSourceManagerClearDownThread;
+  friend class QmitkIGIDataSourceManagerGuiUpdateThread;
 
   mitkClassMacro(QmitkIGIDataSourceManager, itk::Object);
   itkNewMacro(QmitkIGIDataSourceManager);
@@ -162,9 +155,20 @@ private slots:
   void OnCleanData();
 
   /**
-   * \brief Adds a data source to the table.
+   * \brief Adds a data source to the table, using values from UI for sourcetype and portnumbeR
    */
   void OnAddSource();
+
+  /**
+   * \brief Adds a data source to the table.
+   */
+  int AddSource(int sourcetype , int portnumber);
+
+  /**
+   * \brief Adds a data source to the table.
+   * \return the added tool's identifier
+   */
+  int AddSource(int sourcetype , int portnumber, OIGTLSocketObject* socket);
 
   /**
    * \brief Removes a data source from the table, and completely destroys it.
@@ -196,7 +200,6 @@ private:
   mitk::DataStorage                        *m_DataStorage;
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
-  QTimer                                   *m_UpdateTimer;    // Used to make the whole rendered scene update
   QTimer                                   *m_FrameRateTimer; // Used to just update the frame rate
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
@@ -211,6 +214,7 @@ private:
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;
   QmitkIGIDataSourceManagerClearDownThread *m_ClearDownThread;
+  QmitkIGIDataSourceManagerGuiUpdateThread *m_GuiUpdateThread;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
@@ -266,5 +270,27 @@ private:
   QTimer *m_Timer;
   QmitkIGIDataSourceManager *m_Manager;
 };
+
+/**
+ * \brief Separate thread class to run the GUI update at the right rate.
+ */
+class QmitkIGIDataSourceManagerGuiUpdateThread : public QThread {
+  Q_OBJECT
+public:
+  QmitkIGIDataSourceManagerGuiUpdateThread(QObject *parent, QmitkIGIDataSourceManager *manager);
+  ~QmitkIGIDataSourceManagerGuiUpdateThread();
+
+  void SetInterval(unsigned int milliseconds);
+  void run();
+
+public slots:
+  void OnTimeout();
+
+private:
+  unsigned int m_TimerInterval;
+  QTimer *m_Timer;
+  QmitkIGIDataSourceManager *m_Manager;
+};
+
 #endif
 

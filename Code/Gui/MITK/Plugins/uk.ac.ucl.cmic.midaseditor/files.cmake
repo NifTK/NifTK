@@ -1,3 +1,17 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 set(SRC_CPP_FILES
   mitkMIDASDataStorageEditorInput.cpp
   QmitkMIDASMultiViewWidget.cpp
@@ -25,12 +39,14 @@ set(MOC_H_FILES
 # plug-in views in the workbench
 set(CACHED_RESOURCE_FILES
   plugin.xml
+  resources/PushPinIn.png
+  resources/PushPinOut.png
 )
 
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-
+  resources/midaseditor.qrc
 )
 
 set(CPP_FILES )

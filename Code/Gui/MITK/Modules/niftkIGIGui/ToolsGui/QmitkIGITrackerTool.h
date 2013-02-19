@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKIGITRACKERTOOL_H
 #define QMITKIGITRACKERTOOL_H
@@ -43,6 +33,7 @@ public:
 
   mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGITrackerTool);
+  mitkNewMacro1Param(QmitkIGITrackerTool,OIGTLSocketObject *);
 
   /**
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
@@ -71,8 +62,15 @@ public:
 
   /**
    * \brief Associates a dataNode with a given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node was successfully added, false if not.
    */
-  void AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+  bool AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+ 
+  /**
+   * \brief Removes a dataNode from the associated list for the  given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node successfully removed
+   */
+  bool RemoveDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
   
   /**
    * \brief Return a QList of the tools associated with a given toolName
@@ -84,6 +82,18 @@ public:
    */
   itkSetMacro(UseICP, bool);
   itkGetMacro(UseICP, bool);
+
+  /**
+   * \ brief get/set the VTK camera focal point
+   */
+  itkSetMacro(focalPoint, double);
+  itkGetMacro(focalPoint, double);
+
+  /** 
+   * \ brief get/set whether to use fiducial transform filter
+   */
+  itkSetMacro(TransformTrackerToMITKCoords, bool);
+  itkGetMacro(TransformTrackerToMITKCoords, bool);
 
   /**
    * \brief Not Widely Used: Erases the list of image and tracker fiducials, but leaves the nodes in data storage.
@@ -116,14 +126,52 @@ public:
   mitk::DataNode* GetTrackerFiducialsNode() const;
 
   /**
+   * \brief Called by the add current tracker tip position button on QmitkFiducialRegistrationWidget to add the current position to tracker fiducial set
+   */
+  void GetCurrentTipPosition();
+
+  /**
    * \brief Not Widely Used: Called from the "Register" button on the QmitkFiducialRegistrationWidget to register point sets.
    */
   void RegisterFiducials();
+
+  /** 
+   * \brief Applies the Fiducial transform to the passed data set
+   */
+  void ApplyFiducialTransform ( mitk::DataNode::Pointer );
 
   /**
    * \brief Not Widely Used: Retrieves / Creates tool, puts it into DataStorage, and returns pointer to the node.
    */
   mitk::DataNode* GetToolRepresentation(const QString name);
+
+  /**
+   * \brief Initialises the source based on the contents of the passed init string
+   */
+  void ProcessInitString(QString);
+
+  /**
+   * \brief Get the stored init string
+   */
+  QString GetInitString ();
+
+  /**
+   * \brief the state of the VTK camera link variable, 
+   * true will move the vtk camera with the tracking tool
+   */
+  void SetCameraLink (bool);
+  /**
+   * \brief gets the state of the VTK camera link variable, 
+   * true will move the vtk camera with the tracking tool
+   */
+  bool GetCameraLink ();
+
+  /** 
+   * \brief Sets up the fiducial landmark transform so that tracking transform
+   * should be intuitive to use for fine alignment of model to lap lens
+   */
+
+  void SetUpPositioning (QString, mitk::DataNode::Pointer) ;
 
 public slots:
 
@@ -142,6 +190,7 @@ protected:
   virtual ~QmitkIGITrackerTool(); // Purposefully hidden.
 
   QmitkIGITrackerTool(const QmitkIGITrackerTool&); // Purposefully not implemented.
+  QmitkIGITrackerTool(OIGTLSocketObject* socket); // Purposefully not implemented.
   QmitkIGITrackerTool& operator=(const QmitkIGITrackerTool&); // Purposefully not implemented.
 
   /**
@@ -176,7 +225,13 @@ private:
   mitk::PointSet::Pointer                              m_TrackerFiducialsPointSet;
   mitk::NavigationDataLandmarkTransformFilter::Pointer m_FiducialRegistrationFilter;   ///< this filter transforms from tracking coordinates into mitk world coordinates
   mitk::NavigationDataLandmarkTransformFilter::Pointer m_PermanentRegistrationFilter;  ///< this filter transforms from tracking coordinates into mitk world coordinates if needed it is interconnected before the FiducialEegistrationFilter
-
+  
+  //store a copy of the init string
+  QString                                              m_InitString;
+  double                                               m_focalPoint; //the focal point of the VTK camera used
+  double                                               m_ClipNear; //the near clipping plane of the VTK camera used
+  double                                               m_ClipFar; //the far clipping plane of the VTK camera used
+  bool                                                 m_TransformTrackerToMITKCoords; //Set to true to use m_FiducialRegistrationFilter
 }; // end class
 
 #endif
