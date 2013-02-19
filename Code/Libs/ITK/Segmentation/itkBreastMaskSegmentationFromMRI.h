@@ -106,7 +106,12 @@ public:
   typedef itk::Vector<RealType,     DataDimension>        VectorType;
   typedef itk::Image<VectorType,    ParametricDimension>  VectorImageType;
   typedef itk::PointSet<VectorType, ParametricDimension>  PointSetType;
-    
+
+  typedef typename PointSetType::PointsContainer          PointsContainer;
+  typedef typename PointsContainer::Iterator              PointsIterator;
+  typedef typename PointSetType::PointDataContainer       PointDataContainer;
+  typedef typename PointDataContainer::Iterator           PointDataIterator;
+
   typedef itk::ImageRegionIterator< InternalImageType > IteratorType;  
   typedef itk::ImageRegionIteratorWithIndex<InternalImageType> IteratorWithIndexType;
   typedef itk::ImageSliceIteratorWithIndex< InternalImageType > SliceIteratorType;

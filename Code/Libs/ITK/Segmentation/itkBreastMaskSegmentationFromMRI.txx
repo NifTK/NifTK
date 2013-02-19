@@ -2266,6 +2266,33 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   // Construct the mask
   // ~~~~~~~~~~~~~~~~~~
 
+  // Check if there is a bias between the point set and the fitted surface... if so, correct for it?
+  PointsIterator    pointIt     = pointSet->GetPoints()->Begin(); 
+  PointDataIterator pointDataIt = pointSet->GetPointData()->Begin();
+
+  PointsIterator    end       = pointSet->GetPoints()->End();
+  PointDataIterator ptDataEnd = pointSet->GetPointData()->End();
+
+  typedef PointSetType::PointType   PointType;
+  RealType rBias = 0.0;
+
+  while( (pointIt != end) && (pointDataIt != ptDataEnd) ) 
+  {    
+    PointType p = pointIt.Value();   // access the point
+    
+    bSplineCoord[0] = p[0];
+    bSplineCoord[1] = p[1];
+
+    rBias += pointDataIt.Value()[0] - bSplineSurface->GetPixel( bSplineCoord )[0] ;
+    
+    ++pointIt;
+    ++pointDataIt;
+  }
+
+  rBias /= pointSet->GetNumberOfPoints();
+  std::cout << "Bias evaluated [vox]: " << rBias << std::endl;
+
+
   typename InternalImageType::Pointer imSurfaceMask = InternalImageType::New();
   imSurfaceMask->SetRegions  ( region    );
   imSurfaceMask->SetOrigin   ( origin    );
@@ -2299,7 +2326,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     {
       idx = itSurfaceMaskLinear.GetIndex();
 
-      if ( static_cast<RealType>( idx[1] ) < surfaceHeight + rOffset )
+      if ( static_cast<RealType>( idx[1] ) < surfaceHeight + rOffset + rBias )
         itSurfaceMaskLinear.Set( 0 );
       else
         itSurfaceMaskLinear.Set( 1000 );
