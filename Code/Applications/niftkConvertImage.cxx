@@ -39,22 +39,6 @@
  * \section niftkConvertImageCaveat Caveats
  */
 
-void Usage(char *exec)
-{
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-  std::cout << "  " << std::endl;
-  std::cout << "  Converts an input file to an output file. Originally based on Marc Modat's convertImage." << std::endl;
-  std::cout << "  " << std::endl;
-  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-  std::cout << "  " << std::endl;
-  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-  std::cout << "    -i <filename>                 Input file " << std::endl;
-  std::cout << "    -o <filename>                 Output file " << std::endl << std::endl;
-  std::cout << "*** [options]   ***" << std::endl << std::endl;
-  std::cout << "     -v                                Try to force 4D scalar data to 3D vectors" << std::endl;
-  std::cout << "     -ot <uchar|ushort|char|short|int|float|double> Force the output type" << std::endl;
-  return;
-}
 
 typedef struct arguments
 {
