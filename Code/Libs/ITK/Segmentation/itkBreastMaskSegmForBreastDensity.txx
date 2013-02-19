@@ -196,7 +196,7 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 				       this->imStructural->GetSpacing(), 
 				       this->imStructural->GetDirection(), 
 				       rYHeightOffset,
-				       3, 5, 3 );
+				       3, 5, 3, false );
 
   // Write the fitted surface to file
 
