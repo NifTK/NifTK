@@ -35,10 +35,10 @@ namespace mitk {
 Mat src, srcGrey;
 Mat dst, detectedEdges;
 Mat outputHough;
-int cannyBlur = 3;
+int cannyBlur = 1;
 int cannyLowThreshold = 100;
 int cannyUpperThreshold = 150;
-int houghAccumulatorThreshold = 10;
+int houghAccumulatorThreshold = 20;
 int houghMinDistance = 5;
 int houghMaxGap = 5;
 int kernelSize = 3;
@@ -55,19 +55,17 @@ void HoughLines(int, void*)
 {
   outputHough = src.clone();
 
-  /*
+
   vector<Vec4i> p_lines;
   p_lines.clear();
 
-  HoughLinesP( detectedEdges, p_lines, 1, CV_PI/180, houghAccumulatorThreshold, houghMinDistance, houghMaxGap );
-
-  std::cerr << "Matt, t=" << houghAccumulatorThreshold << ", d=" << houghMinDistance << ", g=" << houghMaxGap << ", lines=" << p_lines.size() << std::endl;
+  HoughLinesP( detectedEdges, p_lines, 2, CV_PI/180, houghAccumulatorThreshold, houghMinDistance, houghMaxGap );
   for( size_t i = 0; i < p_lines.size(); i++ )
      {
        Vec4i l = p_lines[i];
        line( outputHough, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255,0,0), 1, CV_AA);
      }
-  */
+/*
   vector<Vec2f> s_lines;
   HoughLines( detectedEdges, s_lines, 1, CV_PI/180, houghAccumulatorThreshold);
 
@@ -82,7 +80,7 @@ void HoughLines(int, void*)
        Point pt2( cvRound(x0 - alpha*(-sin_t)), cvRound(y0 - alpha*cos_t) );
        line( outputHough, pt1, pt2, Scalar(255,0,0), 1, CV_AA);
      }
-
+*/
   imshow( window_name, outputHough );
 }
 
