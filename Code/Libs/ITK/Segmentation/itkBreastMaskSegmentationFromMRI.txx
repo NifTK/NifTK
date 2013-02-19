@@ -1278,7 +1278,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 					 imStructural->GetOrigin(), 
 					 imStructural->GetSpacing(), 
 					 imStructural->GetDirection(),
-					 rYHeightOffset, 3, 15, 3 );
+					 rYHeightOffset, 3, 15, 3, false );
 
   // and now extract surface points of right breast for surface fitting
   lateralRegion = imChestSurfaceVoxels->GetLargestPossibleRegion();
@@ -1330,7 +1330,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 					 imStructural->GetOrigin(), 
 					 imStructural->GetSpacing(), 
 					 imStructural->GetDirection(),
-					 rYHeightOffset, 3, 15, 3 );
+					 rYHeightOffset, 3, 15, 3, false );
     
   // Combine the left and right mask into one
 
@@ -2211,7 +2211,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 				     const RealType rOffset, 
 				     const int splineOrder, 
 				     const int numOfControlPoints,
-				     const int numOfLevels )
+				     const int numOfLevels,
+             bool correctSurfaceOffest )
 {
   
   // Fit the B-Spline surface
@@ -2290,8 +2291,22 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   }
 
   rBias /= pointSet->GetNumberOfPoints();
-  std::cout << "Bias evaluated [vox]: " << rBias << std::endl;
+  
+  if ( this->flgVerbose )
+  {
+    std::cout << "Mean offset between pointset and fitted surface: " << rBias << " [vox]" << std::endl;
+    
+    if ( correctSurfaceOffest )
+      std::cout << "Surface offset will be corrected." << std::endl;
+    else
+      std::cout << "Surface offset will be ignored." << std::endl;
+  }
 
+  // Do not consider the offset 
+  if ( ! correctSurfaceOffest )
+  {
+    rBias = 0.0;
+  }
 
   typename InternalImageType::Pointer imSurfaceMask = InternalImageType::New();
   imSurfaceMask->SetRegions  ( region    );

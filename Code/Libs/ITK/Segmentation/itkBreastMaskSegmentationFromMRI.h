@@ -452,7 +452,8 @@ protected:
 				       const RealType rOffset, 
 				       const int splineOrder, 
 				       const int numOfControlPoints,
-				       const int numOfLevels );
+				       const int numOfLevels,
+               bool correctSurfaceOffest );
 
 
 private:

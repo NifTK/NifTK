@@ -118,7 +118,7 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
 				       this->imStructural->GetSpacing(), 
 				       this->imStructural->GetDirection(), 
 				       rYHeightOffset,
-				       3, 8, 3 );
+				       3, 8, 3, true );
 
   // Write the fitted surface to file
 
