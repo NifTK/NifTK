@@ -297,6 +297,24 @@ void ApplyDistortionCorrectionMap(
     IplImage &outputImage
     );
 
+
+/**
+ * \brief Used to project 3D points into 2D locations for a stereo pair.
+ */
+void ProjectLeftCamera3DPositionToStereo2D(
+    const CvMat& pointsInLeftCamera3D,
+    const CvMat& leftCameraIntrinsic,
+    const CvMat& leftCameraDistortion,
+    const CvMat& leftCameraRotationVector,
+    const CvMat& leftCameraTranslationVector,
+    const CvMat& rightCameraIntrinsic,
+    const CvMat& rightCameraDistortion,
+    const CvMat& leftToRightRotationVector,
+    const CvMat& leftToRightTranslationVector,
+    CvMat& output2DPointsLeft,
+    CvMat& output2DPointsRight
+    );
+
 } // end namespace
 
 #endif // MITKCAMERACALIBRATIONFACADE_H

@@ -538,6 +538,8 @@ void OutputCalibrationData(
   int numberOfFilesUsed = fileNames.size();
 
   CvMat *extrinsicMatrix = cvCreateMat(4,4,CV_32FC1);
+  CvMat *extrinsicRotationVector = cvCreateMat(1,3,CV_32FC1);
+  CvMat *extrinsicTranslationVector = cvCreateMat(1,3,CV_32FC1);
   CvMat *projectedImagePoints = cvCreateMat(numberOfFilesUsed*pointCount, 2, CV_32FC1);
 
   ProjectAllPoints(
@@ -583,12 +585,24 @@ void OutputCalibrationData(
   {
     os << fileNames[i] << std::endl;
 
+    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, i, 0);
+    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, i, 1);
+    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, i, 2);
+
+    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, i, 0);
+    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, i, 1);
+    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, i, 2);
+
     ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
         rotationVectors,
         translationVectors,
         i,
         *extrinsicMatrix
         );
+
+    cvSave(std::string(fileNames[i] + ".extrinsic.xml").c_str(), extrinsicMatrix);
+    cvSave(std::string(fileNames[i] + ".extrinsic.rot.xml").c_str(), extrinsicRotationVector);
+    cvSave(std::string(fileNames[i] + ".extrinsic.trans.xml").c_str(), extrinsicTranslationVector);
 
     os << "Extrinsic matrix" << std::endl;
     for (int a = 0; a < 4; a++)
@@ -615,6 +629,8 @@ void OutputCalibrationData(
   }
 
   cvReleaseMat(&extrinsicMatrix);
+  cvReleaseMat(&extrinsicRotationVector);
+  cvReleaseMat(&extrinsicTranslationVector);
   cvReleaseMat(&projectedImagePoints);
 }
 
@@ -649,7 +665,7 @@ void CorrectDistortionInImageFile(
   CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
   if (intrinsic == NULL)
   {
-    throw std::logic_error("Failed to load amera intrinsic params");
+    throw std::logic_error("Failed to load camera intrinsic params");
   }
 
   CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
@@ -703,6 +719,68 @@ void ApplyDistortionCorrectionMap(
 {
   cvRemap(&inputImage, &outputImage, &mapX, &mapY);
 }
+
+
+//-----------------------------------------------------------------------------
+void ProjectLeftCamera3DPositionToStereo2D(
+    const CvMat& pointsInLeftCamera3D,
+    const CvMat& leftCameraIntrinsic,
+    const CvMat& leftCameraDistortion,
+    const CvMat& leftCameraRotationVector,
+    const CvMat& leftCameraTranslationVector,
+    const CvMat& rightCameraIntrinsic,
+    const CvMat& rightCameraDistortion,
+    const CvMat& leftToRightRotationVector,
+    const CvMat& leftToRightTranslationVector,
+    CvMat& output2DPointsLeft,
+    CvMat& output2DPointsRight
+    )
+{
+  cvProjectPoints2(
+      &pointsInLeftCamera3D,
+      &leftCameraRotationVector,
+      &leftCameraTranslationVector,
+      &leftCameraIntrinsic,
+      &leftCameraDistortion,
+      &output2DPointsLeft
+      );
+
+  // Create storage space for two sets of 3D points, the same size as input 3D points.
+  CvMat *pointsInLeftCamera3DWorldSpace = cvCloneMat(&pointsInLeftCamera3D);
+  CvMat *pointsInRightCamera3DWorldSpace = cvCloneMat(&pointsInLeftCamera3D);
+
+  // Create two new rotation matrices (3x3) as the input is (3x1).
+  CvMat *leftCameraRotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+  CvMat *leftToRightCameraRotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+
+  // Convert the 3x1 rotation vectors to 3x3 rotation matrices.
+  cvRodrigues2(&leftCameraRotationVector, leftCameraRotationMatrix);
+  cvRodrigues2(&leftToRightRotationVector, leftToRightCameraRotationMatrix);
+
+  // tranform points in 3D.
+  cvMatMulAdd(&pointsInLeftCamera3D, leftCameraRotationMatrix, &leftCameraTranslationVector, pointsInLeftCamera3DWorldSpace);
+  cvMatMulAdd(pointsInLeftCamera3DWorldSpace, leftToRightCameraRotationMatrix, &leftToRightTranslationVector, pointsInRightCamera3DWorldSpace);
+
+  CvMat *rightCameraRotationVector = cvCreateMat(3, 3, CV_32FC1);
+  CvMat *rightCameraTranslationVector = cvCreateMat(3, 3, CV_32FC1);
+
+  cvProjectPoints2(
+      pointsInRightCamera3DWorldSpace,
+      rightCameraRotationVector,
+      rightCameraTranslationVector,
+      &rightCameraIntrinsic,
+      &rightCameraDistortion,
+      &output2DPointsRight
+      );
+
+  cvReleaseMat(&pointsInLeftCamera3DWorldSpace);
+  cvReleaseMat(&pointsInRightCamera3DWorldSpace);
+  cvReleaseMat(&leftCameraRotationMatrix);
+  cvReleaseMat(&leftToRightCameraRotationMatrix);
+  cvReleaseMat(&rightCameraRotationVector);
+  cvReleaseMat(&rightCameraTranslationVector);
+}
+
 
 //-----------------------------------------------------------------------------
 } // end namespace
