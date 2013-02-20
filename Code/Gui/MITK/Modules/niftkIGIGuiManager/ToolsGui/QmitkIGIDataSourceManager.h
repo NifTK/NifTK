@@ -15,7 +15,7 @@
 #ifndef QMITKIGIDATASOURCEMANAGER_H
 #define QMITKIGIDATASOURCEMANAGER_H
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIGuiManagerExports.h"
 #include "ui_QmitkIGIDataSourceManager.h"
 #include <itkObject.h>
 #include <QWidget>
