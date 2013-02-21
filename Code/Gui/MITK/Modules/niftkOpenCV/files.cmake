@@ -26,5 +26,6 @@ set(CPP_FILES
   CameraCalibration/mitkCameraCalibrationFromDirectory.cpp
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cpp
   CameraCalibration/mitkCorrectImageDistortion.cpp
+  CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cpp
   demo/mitkOpenCVTest.cpp
 )

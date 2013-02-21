@@ -78,6 +78,7 @@ IF(SlicerExecutionModel_FOUND)
       niftkCameraCalibration
       niftkCorrectVideoDistortion
       niftkTrackLapUSProbe
+      niftkProject3DPointsToStereoPair
     )
   ENDIF()  
 
