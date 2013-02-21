@@ -302,15 +302,15 @@ void ApplyDistortionCorrectionMap(
  * \brief Used to project 3D points into 2D locations for a stereo pair.
  */
 void ProjectLeftCamera3DPositionToStereo2D(
-    const CvMat& pointsInLeftCamera3D,
+    const CvMat& modelPointsIn3D,
     const CvMat& leftCameraIntrinsic,
     const CvMat& leftCameraDistortion,
     const CvMat& leftCameraRotationVector,
     const CvMat& leftCameraTranslationVector,
     const CvMat& rightCameraIntrinsic,
     const CvMat& rightCameraDistortion,
-    const CvMat& leftToRightRotationVector,
-    const CvMat& leftToRightTranslationVector,
+    const CvMat& rightToLeftRotationMatrix,
+    const CvMat& rightToLeftTranslationVector,
     CvMat& output2DPointsLeft,
     CvMat& output2DPointsRight
     );

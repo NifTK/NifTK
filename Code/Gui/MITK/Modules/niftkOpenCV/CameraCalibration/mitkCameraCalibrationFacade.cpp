@@ -723,21 +723,23 @@ void ApplyDistortionCorrectionMap(
 
 //-----------------------------------------------------------------------------
 void ProjectLeftCamera3DPositionToStereo2D(
-    const CvMat& pointsInLeftCamera3D,
+    const CvMat& modelPointsIn3D,
     const CvMat& leftCameraIntrinsic,
     const CvMat& leftCameraDistortion,
     const CvMat& leftCameraRotationVector,
     const CvMat& leftCameraTranslationVector,
     const CvMat& rightCameraIntrinsic,
     const CvMat& rightCameraDistortion,
-    const CvMat& leftToRightRotationVector,
-    const CvMat& leftToRightTranslationVector,
+    const CvMat& rightToLeftRotationMatrix,
+    const CvMat& rightToLeftTranslationVector,
     CvMat& output2DPointsLeft,
     CvMat& output2DPointsRight
     )
 {
+
+  // NOTE: modelPointsIn3D should be [Nx3]. i.e. N rows, 3 columns.
   cvProjectPoints2(
-      &pointsInLeftCamera3D,
+      &modelPointsIn3D,
       &leftCameraRotationVector,
       &leftCameraTranslationVector,
       &leftCameraIntrinsic,
@@ -745,27 +747,46 @@ void ProjectLeftCamera3DPositionToStereo2D(
       &output2DPointsLeft
       );
 
-  // Create storage space for two sets of 3D points, the same size as input 3D points.
-  CvMat *pointsInLeftCamera3DWorldSpace = cvCloneMat(&pointsInLeftCamera3D);
-  CvMat *pointsInRightCamera3DWorldSpace = cvCloneMat(&pointsInLeftCamera3D);
-
-  // Create two new rotation matrices (3x3) as the input is (3x1).
   CvMat *leftCameraRotationMatrix = cvCreateMat(3, 3, CV_32FC1);
-  CvMat *leftToRightCameraRotationMatrix = cvCreateMat(3, 3, CV_32FC1);
-
-  // Convert the 3x1 rotation vectors to 3x3 rotation matrices.
   cvRodrigues2(&leftCameraRotationVector, leftCameraRotationMatrix);
-  cvRodrigues2(&leftToRightRotationVector, leftToRightCameraRotationMatrix);
 
-  // tranform points in 3D.
-  cvMatMulAdd(&pointsInLeftCamera3D, leftCameraRotationMatrix, &leftCameraTranslationVector, pointsInLeftCamera3DWorldSpace);
-  cvMatMulAdd(pointsInLeftCamera3DWorldSpace, leftToRightCameraRotationMatrix, &leftToRightTranslationVector, pointsInRightCamera3DWorldSpace);
+  CvMat *modelPointsIn3DInLeftCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_32FC1);   // So, [3xN] matrix.
+  cvGEMM(leftCameraRotationMatrix, &modelPointsIn3D, 1, NULL, 0, modelPointsIn3DInLeftCameraSpace, CV_GEMM_B_T); // ie. [3x3][Nx3]^T = [3xN].
 
-  CvMat *rightCameraRotationVector = cvCreateMat(3, 3, CV_32FC1);
-  CvMat *rightCameraTranslationVector = cvCreateMat(3, 3, CV_32FC1);
+  // This bit just to add the translation on, to get 3D model points, into 3D camera coordinates for left camera.
+  for (int i = 0; i < modelPointsIn3D.rows; i++)
+  {
+    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 0, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 1, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 1);
+    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 2);
+  }
+
+  CvMat *modelPointsIn3DInRightCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_32FC1);        // So, [3xN] matrix.
+  cvGEMM(&rightToLeftRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
+
+  // Add translation again, to get 3D model points into 3D camera coordinates for right camera.
+  for (int i = 0; i < modelPointsIn3D.rows; i++)
+  {
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 0, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 1, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 2, 0);
+  }
+
+  // Now project those points to 2D
+  CvMat *rightCameraRotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+  CvMat *rightCameraRotationVector = cvCreateMat(1, 3, CV_32FC1);
+
+  cvSetIdentity(rightCameraRotationMatrix);
+  cvRodrigues2(rightCameraRotationMatrix, rightCameraRotationVector);
+
+  CvMat *rightCameraTranslationVector = cvCreateMat(1, 3, CV_32FC1);
+  cvSetZero(rightCameraTranslationVector);
+
+  CvMat *modelPointsIn3DInRightCameraSpaceTransposed = cvCreateMat(modelPointsIn3D.rows, modelPointsIn3D.cols, CV_32FC1);
+  cvTranspose(modelPointsIn3DInRightCameraSpace, modelPointsIn3DInRightCameraSpaceTransposed);
 
   cvProjectPoints2(
-      pointsInRightCamera3DWorldSpace,
+      modelPointsIn3DInRightCameraSpaceTransposed,
       rightCameraRotationVector,
       rightCameraTranslationVector,
       &rightCameraIntrinsic,
@@ -773,12 +794,13 @@ void ProjectLeftCamera3DPositionToStereo2D(
       &output2DPointsRight
       );
 
-  cvReleaseMat(&pointsInLeftCamera3DWorldSpace);
-  cvReleaseMat(&pointsInRightCamera3DWorldSpace);
   cvReleaseMat(&leftCameraRotationMatrix);
-  cvReleaseMat(&leftToRightCameraRotationMatrix);
+  cvReleaseMat(&modelPointsIn3DInLeftCameraSpace);
+  cvReleaseMat(&modelPointsIn3DInRightCameraSpace);
+  cvReleaseMat(&rightCameraRotationMatrix);
   cvReleaseMat(&rightCameraRotationVector);
   cvReleaseMat(&rightCameraTranslationVector);
+  cvReleaseMat(&modelPointsIn3DInRightCameraSpaceTransposed);
 }
 
 
