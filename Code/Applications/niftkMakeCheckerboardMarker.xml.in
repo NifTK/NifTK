@@ -16,7 +16,6 @@
       <longflag>output</longflag>
       <description>Output image</description>
       <label>Output image</label>
-      <default>output.png</default>
       <channel>output</channel>
     </image>
   </parameters>

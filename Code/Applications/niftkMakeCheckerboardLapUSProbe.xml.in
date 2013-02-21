@@ -17,7 +17,6 @@
       <longflag>outputPoints</longflag>
       <description>Output VTK file (vtkPolyData).</description>
       <label>Output point data</label>
-      <default>probe.vtk</default>
       <channel>output</channel>
     </file>
     <file fileExtensions="*.png">
@@ -25,7 +24,6 @@
       <longflag>outputImage</longflag>
       <description>Output image file (PNG image).</description>
       <label>Output image</label>
-      <default>probe.png</default>
       <channel>output</channel>
     </file>    
   </parameters>

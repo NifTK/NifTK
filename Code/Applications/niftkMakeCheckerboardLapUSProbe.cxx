@@ -147,6 +147,14 @@ int main(int argc, char** argv)
   // To parse command line args.
   PARSE_ARGS;
 
+  if ( outputPoints.length() == 0
+      || outputImage.length() == 0
+      )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
+
   double pi = 3.14159265358979;
   double mmPerInch = 25.4;
   double width = pi * diameter * ((pi - asin(surface/diameter))/pi); // distance around probe; ie. section of circumference
