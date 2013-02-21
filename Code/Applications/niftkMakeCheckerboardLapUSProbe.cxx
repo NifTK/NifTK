@@ -115,11 +115,12 @@ void AddPoint(
 {
   Point3DType cornerPointInProbeSpace;
   Point3DType normal;
+  Point3DType intersectionWithZ;
 
   double angleInRadians = maxPhi - (((cornerPointInImageSpace[0] + 0.5) / numberPixelsX) * phiInRadians);
   cornerPointInProbeSpace[0] = probeRadius * cos(angleInRadians);
   cornerPointInProbeSpace[1] = probeRadius * sin(angleInRadians);
-  cornerPointInProbeSpace[2] = (cornerPointInImageSpace[1] + 0.5) * pixSize;
+  cornerPointInProbeSpace[2] = -1 * ((cornerPointInImageSpace[1] + 0.5) * pixSize);
 
   points->InsertNextPoint(cornerPointInProbeSpace[0], cornerPointInProbeSpace[1], cornerPointInProbeSpace[2]);
 
@@ -128,9 +129,13 @@ void AddPoint(
   vertices->InsertNextCell(1);
   vertices->InsertCellPoint(points->GetNumberOfPoints() - 1);
 
-  normal[0] = cornerPointInProbeSpace[0] / probeRadius;
-  normal[1] = cornerPointInProbeSpace[1] / probeRadius;
-  normal[2] = cornerPointInProbeSpace[2] / probeRadius;
+  intersectionWithZ[0] = 0;
+  intersectionWithZ[1] = 0;
+  intersectionWithZ[2] = cornerPointInProbeSpace[2];
+
+  normal[0] = (cornerPointInProbeSpace[0] - intersectionWithZ[0]) / probeRadius;
+  normal[1] = (cornerPointInProbeSpace[1] - intersectionWithZ[1]) / probeRadius;
+  normal[2] = (cornerPointInProbeSpace[2] - intersectionWithZ[2]) / probeRadius;
 
   normals->InsertNextValue(normal[0]);
   normals->InsertNextValue(normal[1]);
