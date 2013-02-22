@@ -205,6 +205,7 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
   mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
   this->RegisterInterpolationProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
   this->RegisterBlackOpacityProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
+  this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
 }
 
 
@@ -354,7 +355,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
       }
 
     } // end if have pref node
-  } // end if node is binary image
+  } // end if node is grey image
 }
 
 
@@ -399,7 +400,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
       node->SetProperty("reslice interpolation", interpolationProperty);
 
     } // end if have pref node
-  } // end if node is binary image
+  } // end if node is grey image
 }
 
 
@@ -426,8 +427,27 @@ void QmitkCommonAppsApplicationPlugin::RegisterBlackOpacityProperty(
       }
 
     } // end if have pref node
+  } // end if node is grey image
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *node)
+{
+  if (mitk::IsNodeABinaryImage(node))
+  {
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
+
+    if (prefNode != NULL && image.IsNotNull())
+    {
+      double defaultBinaryOpacity = prefNode->GetDouble(QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_NAME, QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_VALUE);
+      node->SetOpacity(defaultBinaryOpacity);
+      node->SetBoolProperty("outline binary", true);
+    } // end if have pref node
   } // end if node is binary image
 }
+
 
 //-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)

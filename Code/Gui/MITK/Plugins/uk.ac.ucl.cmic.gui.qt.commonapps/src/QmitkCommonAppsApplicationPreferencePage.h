@@ -22,6 +22,7 @@
 class QWidget;
 class QComboBox;
 class QCheckBox;
+class QDoubleSpinBox;
 
 /**
  * \class QmitkCommonAppsApplicationPreferencePage
@@ -43,6 +44,8 @@ public:
   static const std::string IMAGE_RESLICE_INTERPOLATION;
   static const std::string IMAGE_TEXTURE_INTERPOLATION;
   static const std::string BLACK_OPACITY;
+  static const std::string BINARY_OPACITY_NAME;
+  static const double BINARY_OPACITY_VALUE;
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -73,6 +76,7 @@ protected:
   QComboBox      *m_ResliceInterpolation;
   QComboBox      *m_TextureInterpolation;
   QCheckBox      *m_BlackOpacity;
+  QDoubleSpinBox *m_BinaryOpacity;
 
   berry::IPreferences::Pointer m_PreferencesNode;
 };

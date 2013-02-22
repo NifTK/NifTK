@@ -76,6 +76,9 @@ protected:
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for black opacity property.
   void RegisterBlackOpacityProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
 
+  /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
+  void RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+
   /// \brief Deliberately not virtual method thats called by derived classes, to register any extensions that this plugin knows about.
   void RegisterQmitkCommonAppsExtensions();
 
