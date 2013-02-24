@@ -42,7 +42,7 @@ public:
   /**
    * \brief BaseVideoProcessor::Run()
    */
-  virtual void Run();
+  virtual void Run() = 0;
 
 protected:
 
@@ -61,18 +61,15 @@ protected:
   CvSize GetOutputImageSize();
 
   /**
-   * \brief Derived classes override this method to do their processing.
+   * \brief Utility method, to facilitate writing out a stereo pair.
    */
-  virtual void DoProcessing(const IplImage &leftInput, const IplImage &rightInput, IplImage &leftOutput, IplImage &rightOutput) = 0;
+  virtual void WriteOutput(IplImage &leftOutput, IplImage &rightOutput);
 
 private:
 
-  IplImage      *m_LeftInput;
-  IplImage      *m_RightInput;
-  IplImage      *m_LeftOutput;
-  IplImage      *m_RightOutput;
-  IplImage      *m_OutputImage;
   bool           m_WriteInterleaved;
+  IplImage      *m_OutputImage;
+  int            m_FrameCount;
 
 }; // end class
 

@@ -13,14 +13,9 @@
 =============================================================================*/
 
 #include "mitkCorrectVideoFileDistortion.h"
-#include "mitkCameraCalibrationFacade.h"
-#include <ios>
-#include <fstream>
-#include <iostream>
-#include <sstream>
+#include "mitkStereoDistortionCorrectionVideoProcessor.h"
 #include <cv.h>
 #include <highgui.h>
-#include "FileHelper.h"
 
 namespace mitk {
 
@@ -53,14 +48,40 @@ bool CorrectVideoFileDistortion::Correct(
 
   try
   {
-    CorrectDistortionInStereoVideoFile(
-        inputImageFileName,
-        inputIntrinsicsFileNameLeft,
-        inputDistortionCoefficientsFileNameLeft,
-        inputIntrinsicsFileNameRight,
-        inputDistortionCoefficientsFileNameRight,
-        writeInterleaved,
-        outputImageFileName);
+
+    CvMat *intrinsicLeft = (CvMat*)cvLoad(inputIntrinsicsFileNameLeft.c_str());
+    if (intrinsicLeft == NULL)
+    {
+      throw std::logic_error("Failed to load left camera intrinsic params");
+    }
+
+    CvMat *distortionLeft = (CvMat*)cvLoad(inputDistortionCoefficientsFileNameLeft.c_str());
+    if (distortionLeft == NULL)
+    {
+      throw std::logic_error("Failed to load left camera distortion params");
+    }
+
+    CvMat *intrinsicRight = (CvMat*)cvLoad(inputIntrinsicsFileNameRight.c_str());
+    if (intrinsicRight == NULL)
+    {
+      throw std::logic_error("Failed to load right camera intrinsic params");
+    }
+
+    CvMat *distortionRight = (CvMat*)cvLoad(inputDistortionCoefficientsFileNameRight.c_str());
+    if (distortionRight == NULL)
+    {
+      throw std::logic_error("Failed to load right camera distortion params");
+    }
+
+    StereoDistortionCorrectionVideoProcessor::Pointer processor = StereoDistortionCorrectionVideoProcessor::New(writeInterleaved, inputImageFileName, outputImageFileName);
+    processor->SetMatrices(*intrinsicLeft, *distortionLeft, *intrinsicRight, *distortionRight);
+    processor->Initialize();
+    processor->Run();
+
+    cvReleaseMat(&intrinsicLeft);
+    cvReleaseMat(&distortionLeft);
+    cvReleaseMat(&intrinsicRight);
+    cvReleaseMat(&intrinsicRight);
 
     // No exceptions ... so all OK.
     isSuccessful = true;

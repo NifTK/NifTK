@@ -88,6 +88,7 @@ IF(SlicerExecutionModel_FOUND)
     #-------------------------------------------------------------
     SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
       niftkMakeLaparoscopicUSProbe
+      niftkMakeCheckerboardLapUSProbe
     )
   
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})

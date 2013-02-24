@@ -75,6 +75,13 @@ int main(int argc, char** argv)
   // To parse command line args.
   PARSE_ARGS;
 
+  if ( output.length() == 0
+      )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
+
   std::vector<int> xboundaries;
   std::vector<int> yboundaries;
 
