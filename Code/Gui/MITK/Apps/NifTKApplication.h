@@ -25,6 +25,7 @@
 #include <mitkException.h>
 
 #include "mitkNifTKCoreObjectFactory.h"
+#include "itkPNMImageIOFactory.h"
 
 /**
  * \file NifTKApplication.h
@@ -167,6 +168,10 @@ int ApplicationMain(int argc, char** argv,
   // the ITK based file reader. It then hunts down the ITK based file reader, and kills
   // it, and replaces it with a more NifTK suitable one.
   RegisterNifTKCoreObjectFactory();
+
+  // Register the PNM IO factory
+  itk::PNMImageIOFactory::RegisterOneFactory();
+  //itk::ObjectFactoryBase::RegisterFactory(itk::PNMImageIOFactory::FactoryNew());
 
   int returnStatus = -1;
 

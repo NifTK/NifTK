@@ -105,14 +105,10 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 {
-  // Nothing to do. We don't need the following, if the file extensions are already in mitkCoreObjectFactory.cpp.
-  /*
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze image"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre Analyze image"));
-
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze image"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre compressed Analyze image"));
-  */
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Pixel Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable Pixel Map"));
 }
 
 
