@@ -137,8 +137,6 @@ void PNMImageIO::Read(void* buffer)
   unsigned char *tempImage = static_cast<unsigned char*>(buffer);
 
   memcpy(tempImage, arr->GetPointer(0), arr->GetSize());
-
-  imageData->Delete();
   pnmReader->Delete();
 
 //  unsigned char header[8];
@@ -351,7 +349,6 @@ void PNMImageIO::ReadImageInformation()
   this->SetByteOrderToBigEndian();
 
   // clean up
-  imageData->Delete();
   pnmReader->Delete();
 
   return;
