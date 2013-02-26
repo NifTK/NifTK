@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Binary Mask Image Operators</category>
+  <title>Erode Image</title>
+  <description><![CDATA[This filter implements the ITK BinaryErodeImageFilter, using a BinaryCrossStructuringElement.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell and Bjoern Eiben. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>ErodedImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Optional Parameters</label>
+    <description><![CDATA[Parameters that control the filter operation]]></description>
+
+    <integer>
+      <name>radius</name>
+      <flag>r</flag>
+	  <longflag>radius</longflag>
+      <description>
+	Radius of the binary cross structurung element.
+      </description>
+      <label>Structure element radius</label>
+      <default>1</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+	
+	<integer>
+      <name>iterations</name>
+      <longflag>it</longflag>
+      <description>
+	Number of times the erosion is being performed.
+      </description>
+      <label>Number of erosion iterations.</label>
+      <default>1</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+	
+    <float>
+      <name>erodeValue</name>
+	  <flag>e</flag>
+      <longflag>erodeValue</longflag>
+      <description>
+	The image intensity value that is being eroded.
+      </description>
+      <label>erode value</label>
+      <default>1.0</default>
+    </float>
+	
+	<float>
+    <name>backgroundValue</name>
+	  <flag>b</flag>
+    <longflag>backgroundValue</longflag>
+    <description>
+	The image intensity value that the eroded region is set to.
+    </description>
+    <label>background value</label>
+    <default>0.0</default>
+  </float>
+	
+  </parameters>
+
+</executable>
