@@ -20,12 +20,27 @@ SET(MODULE_DIRS
 )
 
 IF(BUILD_IGI)
+
   SET(MODULE_DIRS
     ${MODULE_DIRS}
     niftkOpenCV
     niftkIGI
-    niftkIGIGui    
+    niftkIGIGui
   )
+
+  IF(NVAPI_FOUND)  
+    SET(MODULE_DIRS
+      ${MODULE_DIRS}
+      niftkNVidia
+      niftkNVidiaGui
+    )
+  ENDIF()
+
+  SET(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkIGIGuiManager    
+  )
+  
 ENDIF()
 
 FOREACH(MODULE_DIR ${MODULE_DIRS})

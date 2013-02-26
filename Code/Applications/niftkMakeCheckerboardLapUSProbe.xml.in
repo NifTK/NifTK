@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Make Probe</title>
+  <description><![CDATA[Generates a 2D image to print out a checkerboard pattern, and a 3D VTK point model to match.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson.</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Output parameters]]></description>
+    <file fileExtensions="*.vtk">
+      <name>outputPoints</name>
+      <longflag>outputPoints</longflag>
+      <description>Output VTK file (vtkPolyData).</description>
+      <label>Output point data</label>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions="*.png">
+      <name>outputImage</name>
+      <longflag>outputImage</longflag>
+      <description>Output image file (PNG image).</description>
+      <label>Output image</label>
+      <channel>output</channel>
+    </file>    
+  </parameters>
+  
+  <parameters>
+    <label>Probe Parameters</label>
+    <description><![CDATA[Parameters for probe geometry]]></description>  
+    <float>
+      <name>diameter</name>
+      <longflag>diameter</longflag>
+      <description>The diameter of the probe (mm).</description>
+      <label>Probe Diameter</label>
+      <default>10</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>length</name>
+      <longflag>length</longflag>
+      <description>The length of the probe (mm).</description>
+      <label>Probe Length</label>
+      <default>63</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>    
+    <float>
+      <name>surface</name>
+      <longflag>surface</longflag>
+      <description>The width of the flat probe sensor (mm).</description>
+      <label>Probe Sensor</label>
+      <default>8</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+  </parameters>
+
+  <parameters>
+    <label>Checkerboard Parameters</label>
+    <description><![CDATA[Parameters for checkerboard pattern]]></description>  
+    <integer>
+      <name>numberX</name>
+      <longflag>numberX</longflag>
+      <description>The number of squares in the X-direction (width).</description>
+      <label>Number Squares X</label>
+      <default>5</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>      
+    <integer>
+      <name>numberY</name>
+      <longflag>numberY</longflag>
+      <description>The number of squares in the Y-direction (length).</description>
+      <label>Number Squares Y</label>
+      <default>7</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>      
+    <float>
+      <name>squareSize</name>
+      <longflag>squareSize</longflag>
+      <description>The minimum square size.</description>
+      <label>Minimum Square Size</label>
+      <default>3</default>
+      <constraints>
+        <minimum>0.1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>gaussianSigma</name>
+      <longflag>gaussianSigma</longflag>
+      <description>The sigma of the Gaussian window around a point.</description>
+      <label>Gaussian Window Sigma</label>
+      <default>0</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <integer>
+      <name>gaussianWindowSize</name>
+      <longflag>gaussianWindowSize</longflag>
+      <description>The half size of the window around a point.</description>
+      <label>Gaussian Window half-Size</label>
+      <default>5</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <integer>
+      <name>dpi</name>
+      <longflag>dpi</longflag>
+      <description>The number of dots per inch to print at</description>
+      <label>DPI</label>
+      <default>300</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>      
+  </parameters>
+</executable>

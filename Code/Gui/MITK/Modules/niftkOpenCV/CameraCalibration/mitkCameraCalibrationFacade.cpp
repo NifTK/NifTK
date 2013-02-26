@@ -13,8 +13,9 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
-#include <iostream>
+#include "mitkStereoDistortionCorrectionVideoProcessor.h"
 #include "FileHelper.h"
+#include <iostream>
 #include <cv.h>
 #include <highgui.h>
 
@@ -537,6 +538,8 @@ void OutputCalibrationData(
   int numberOfFilesUsed = fileNames.size();
 
   CvMat *extrinsicMatrix = cvCreateMat(4,4,CV_32FC1);
+  CvMat *extrinsicRotationVector = cvCreateMat(1,3,CV_32FC1);
+  CvMat *extrinsicTranslationVector = cvCreateMat(1,3,CV_32FC1);
   CvMat *projectedImagePoints = cvCreateMat(numberOfFilesUsed*pointCount, 2, CV_32FC1);
 
   ProjectAllPoints(
@@ -582,12 +585,24 @@ void OutputCalibrationData(
   {
     os << fileNames[i] << std::endl;
 
+    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, i, 0);
+    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, i, 1);
+    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, i, 2);
+
+    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, i, 0);
+    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, i, 1);
+    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, i, 2);
+
     ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
         rotationVectors,
         translationVectors,
         i,
         *extrinsicMatrix
         );
+
+    cvSave(std::string(fileNames[i] + ".extrinsic.xml").c_str(), extrinsicMatrix);
+    cvSave(std::string(fileNames[i] + ".extrinsic.rot.xml").c_str(), extrinsicRotationVector);
+    cvSave(std::string(fileNames[i] + ".extrinsic.trans.xml").c_str(), extrinsicTranslationVector);
 
     os << "Extrinsic matrix" << std::endl;
     for (int a = 0; a < 4; a++)
@@ -614,105 +629,9 @@ void OutputCalibrationData(
   }
 
   cvReleaseMat(&extrinsicMatrix);
+  cvReleaseMat(&extrinsicRotationVector);
+  cvReleaseMat(&extrinsicTranslationVector);
   cvReleaseMat(&projectedImagePoints);
-}
-
-
-//-----------------------------------------------------------------------------
-void CorrectDistortionInVideoFile(
-    const std::string& inputFileName,
-    const std::string& inputIntrinsicsFileName,
-    const std::string& inputDistortionCoefficientsFileName,
-    const std::string& outputFileName
-    )
-{
-  CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
-  if (intrinsic == NULL)
-  {
-    throw std::logic_error("Failed to load intrinsic params");
-  }
-
-  CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
-  if (intrinsic == NULL)
-  {
-    throw std::logic_error("Failed to load distortion params");
-  }
-
-  CorrectDistortionInVideoFile(inputFileName, *intrinsic, *distortion, outputFileName);
-}
-
-
-//-----------------------------------------------------------------------------
-void CorrectDistortionInVideoFile(
-    const std::string& inputFileName,
-    const CvMat& intrinsicParams,
-    const CvMat& distortionCoefficients,
-    const std::string& outputFileName
-    )
-{
-  CvCapture *capture = NULL;
-  capture = cvCreateFileCapture(inputFileName.c_str());
-  if (capture == NULL)
-  {
-    throw std::logic_error("Could not read from video file");
-  }
-
-  IplImage *bgrFrame = cvQueryFrame(capture);
-  double fps = cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
-  CvSize size = cvSize(
-      (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH),
-      (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)
-      );
-
-  CvVideoWriter *writer = cvCreateVideoWriter(outputFileName.c_str(),
-      CV_FOURCC('M','J','P','G'),
-      fps,
-      size
-      );
-
-  IplImage *mapX = cvCreateImage(cvGetSize(bgrFrame), IPL_DEPTH_32F, 1);
-  IplImage *mapY = cvCreateImage(cvGetSize(bgrFrame), IPL_DEPTH_32F, 1);
-  cvInitUndistortMap(&intrinsicParams, &distortionCoefficients, mapX, mapY);
-
-  IplImage *corrected = cvCloneImage(bgrFrame);
-
-  while((bgrFrame = cvQueryFrame(capture)) != NULL)
-  {
-    ApplyDistortionCorrectionMap(*mapX, *mapY, *bgrFrame, *corrected);
-    cvWriteFrame(writer, corrected);
-  }
-
-  cvReleaseImage(&corrected);
-  cvReleaseImage(&mapX);
-  cvReleaseImage(&mapY);
-
-  cvReleaseVideoWriter(&writer);
-  cvReleaseImage(&bgrFrame);
-  cvReleaseCapture(&capture);
-}
-
-
-//-----------------------------------------------------------------------------
-void CorrectDistortionInImageFile(
-    const std::string& inputImageFileName,
-    const std::string& inputIntrinsicsFileName,
-    const std::string& inputDistortionCoefficientsFileName,
-    const std::string& outputImageFileName
-    )
-{
-  CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
-  if (intrinsic == NULL)
-  {
-    throw std::logic_error("Failed to load intrinsic params");
-  }
-
-  CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
-  if (intrinsic == NULL)
-  {
-    throw std::logic_error("Failed to load distortion params");
-  }
-
-  CorrectDistortionInImageFile(inputImageFileName, *intrinsic, *distortion, outputImageFileName);
 }
 
 
@@ -732,6 +651,33 @@ void CorrectDistortionInImageFile(
   CorrectDistortionInSingleImage(intrinsicParams, distortionCoefficients, *image);
   cvSaveImage(outputFileName.c_str(), image);
   cvReleaseImage(&image);
+}
+
+
+//-----------------------------------------------------------------------------
+void CorrectDistortionInImageFile(
+    const std::string& inputImageFileName,
+    const std::string& inputIntrinsicsFileName,
+    const std::string& inputDistortionCoefficientsFileName,
+    const std::string& outputImageFileName
+    )
+{
+  CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
+  if (intrinsic == NULL)
+  {
+    throw std::logic_error("Failed to load camera intrinsic params");
+  }
+
+  CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
+  if (distortion == NULL)
+  {
+    throw std::logic_error("Failed to load camera distortion params");
+  }
+
+  CorrectDistortionInImageFile(inputImageFileName, *intrinsic, *distortion, outputImageFileName);
+
+  cvReleaseMat(&intrinsic);
+  cvReleaseMat(&distortion);
 }
 
 
@@ -773,6 +719,90 @@ void ApplyDistortionCorrectionMap(
 {
   cvRemap(&inputImage, &outputImage, &mapX, &mapY);
 }
+
+
+//-----------------------------------------------------------------------------
+void ProjectLeftCamera3DPositionToStereo2D(
+    const CvMat& modelPointsIn3D,
+    const CvMat& leftCameraIntrinsic,
+    const CvMat& leftCameraDistortion,
+    const CvMat& leftCameraRotationVector,
+    const CvMat& leftCameraTranslationVector,
+    const CvMat& rightCameraIntrinsic,
+    const CvMat& rightCameraDistortion,
+    const CvMat& rightToLeftRotationMatrix,
+    const CvMat& rightToLeftTranslationVector,
+    CvMat& output2DPointsLeft,
+    CvMat& output2DPointsRight
+    )
+{
+
+  // NOTE: modelPointsIn3D should be [Nx3]. i.e. N rows, 3 columns.
+  cvProjectPoints2(
+      &modelPointsIn3D,
+      &leftCameraRotationVector,
+      &leftCameraTranslationVector,
+      &leftCameraIntrinsic,
+      &leftCameraDistortion,
+      &output2DPointsLeft
+      );
+
+  CvMat *leftCameraRotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+  cvRodrigues2(&leftCameraRotationVector, leftCameraRotationMatrix);
+
+  CvMat *modelPointsIn3DInLeftCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_32FC1);   // So, [3xN] matrix.
+  cvGEMM(leftCameraRotationMatrix, &modelPointsIn3D, 1, NULL, 0, modelPointsIn3DInLeftCameraSpace, CV_GEMM_B_T); // ie. [3x3][Nx3]^T = [3xN].
+
+  // This bit just to add the translation on, to get 3D model points, into 3D camera coordinates for left camera.
+  for (int i = 0; i < modelPointsIn3D.rows; i++)
+  {
+    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 0, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 1, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 1);
+    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 2);
+  }
+
+  CvMat *modelPointsIn3DInRightCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_32FC1);        // So, [3xN] matrix.
+  cvGEMM(&rightToLeftRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
+
+  // Add translation again, to get 3D model points into 3D camera coordinates for right camera.
+  for (int i = 0; i < modelPointsIn3D.rows; i++)
+  {
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 0, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 1, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 2, 0);
+  }
+
+  // Now project those points to 2D
+  CvMat *rightCameraRotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+  CvMat *rightCameraRotationVector = cvCreateMat(1, 3, CV_32FC1);
+
+  cvSetIdentity(rightCameraRotationMatrix);
+  cvRodrigues2(rightCameraRotationMatrix, rightCameraRotationVector);
+
+  CvMat *rightCameraTranslationVector = cvCreateMat(1, 3, CV_32FC1);
+  cvSetZero(rightCameraTranslationVector);
+
+  CvMat *modelPointsIn3DInRightCameraSpaceTransposed = cvCreateMat(modelPointsIn3D.rows, modelPointsIn3D.cols, CV_32FC1);
+  cvTranspose(modelPointsIn3DInRightCameraSpace, modelPointsIn3DInRightCameraSpaceTransposed);
+
+  cvProjectPoints2(
+      modelPointsIn3DInRightCameraSpaceTransposed,
+      rightCameraRotationVector,
+      rightCameraTranslationVector,
+      &rightCameraIntrinsic,
+      &rightCameraDistortion,
+      &output2DPointsRight
+      );
+
+  cvReleaseMat(&leftCameraRotationMatrix);
+  cvReleaseMat(&modelPointsIn3DInLeftCameraSpace);
+  cvReleaseMat(&modelPointsIn3DInRightCameraSpace);
+  cvReleaseMat(&rightCameraRotationMatrix);
+  cvReleaseMat(&rightCameraRotationVector);
+  cvReleaseMat(&rightCameraTranslationVector);
+  cvReleaseMat(&modelPointsIn3DInRightCameraSpaceTransposed);
+}
+
 
 //-----------------------------------------------------------------------------
 } // end namespace

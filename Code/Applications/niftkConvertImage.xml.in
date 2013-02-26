@@ -44,7 +44,7 @@
       <name>strOutputType</name>
       <longflag>ot</longflag>
       <description>The output image pixel component type</description>
-      <label>String Enumeration Parameter</label>
+      <label>Output pixel type</label>
       <default>unchanged</default>
       <element>unchanged</element>
       <element>uchar</element>

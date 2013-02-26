@@ -158,23 +158,6 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
     }
 
     *os << "Stereo calibration" << std::endl;
-    float zero = 0.0f;
-    float one = 1.0;
-
-    *os << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 2) << ", " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 0, 0) << std::endl;
-    *os << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 2) << ", " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 1, 0) << std::endl;
-    *os << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 2) << ", " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 2, 0) << std::endl;
-    *os << zero << ", " << zero << ", " << zero << ", " << one << std::endl;
-
-    *os << "Essential matrix" << std::endl;
-    *os << CV_MAT_ELEM(*essentialMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 0, 2) << std::endl;
-    *os << CV_MAT_ELEM(*essentialMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 1, 2) << std::endl;
-    *os << CV_MAT_ELEM(*essentialMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*essentialMatrix, float, 2, 2) << std::endl;
-
-    *os << "Fundamental matrix" << std::endl;
-    *os << CV_MAT_ELEM(*fundamentalMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 0, 2) << std::endl;
-    *os << CV_MAT_ELEM(*fundamentalMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 1, 2) << std::endl;
-    *os << CV_MAT_ELEM(*fundamentalMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(*fundamentalMatrix, float, 2, 2) << std::endl;
 
     *os << "Left camera" << std::endl;
     OutputCalibrationData(
@@ -219,6 +202,14 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
     // Also output these as XML, as they are used in niftkCorrectVideoDistortion
     cvSave(std::string(outputFileName + ".right.intrinsic.xml").c_str(), intrinsicMatrixRight);
     cvSave(std::string(outputFileName + ".right.distortion.xml").c_str(), distortionCoeffsRight);
+
+    // Output the right to left rotation and translation
+    cvSave(std::string(outputFileName + ".r2l.rotation.xml").c_str(), rightToLeftRotationMatrix);
+    cvSave(std::string(outputFileName + ".r2l.translation.xml").c_str(), rightToLeftTranslationVector);
+
+    // Might as well
+    cvSave(std::string(outputFileName + ".essential.xml").c_str(), essentialMatrix);
+    cvSave(std::string(outputFileName + ".fundamental.xml").c_str(), fundamentalMatrix);
 
     // Tidy up.
     if(fs.is_open())

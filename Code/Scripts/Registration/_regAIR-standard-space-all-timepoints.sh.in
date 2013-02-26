@@ -136,7 +136,13 @@ do
   repeat_ss_image_wrong_orientation=${repeat_output_dir}/${baseline_id:0:5}-${repeat_id:0:5}.img
   repeat_ss_image=${output_dir}/${repeat_id}-075-1.img 
   repeat_orient=`imginfo ${input_dir}/${repeat_image}.img -orient`
-  anchange ${repeat_ss_image_wrong_orientation} ${repeat_ss_image} -setorient ${repeat_orient} -study ${repeat_id} -series 75
+  anchange ${repeat_ss_image_wrong_orientation} ${repeat_ss_image_wrong_orientation} -setorient ${repeat_orient} -study ${repeat_id} -series 75
+  extend_header ${repeat_ss_image_wrong_orientation} ${repeat_image}.img ${output_dir} 75 1 ${repeat_id}
+
+  # Preserve the final AIR file.
+  air_file=${repeat_output_dir}/*.second.air
+  cp ${air_file} ${output_dir}/.
+
   # Handle the -ve ID of the region by searching in the reg-tmp output directory and setting the original ID. 
   repeat_ss_region_large_id=`ls ${repeat_output_dir}/reg-tmp/???_*_*`
   dims=`imginfo ${repeat_ss_image} -dims | awk '{printf "%d %d %d", $1, $2, $3}'`
