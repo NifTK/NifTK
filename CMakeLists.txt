@@ -452,6 +452,18 @@ IF(NIFTK_USE_CUDA)
 ENDIF(NIFTK_USE_CUDA)
 
 ######################################################################
+# Find NVidia API: Required for NVidia SDI pipeline in IGI GUI
+######################################################################
+FIND_PACKAGE(NVidiaAPI)
+IF(NVAPI_FOUND)
+  MESSAGE("Found NVidia API")
+  INCLUDE_DIRECTORIES(${NVAPI_INCLUDE_DIR})
+  ADD_DEFINITIONS(-D_USE_NVAPI)
+ELSE()
+  MESSAGE("Did not find NVidia API")
+ENDIF()
+
+######################################################################
 # Now, if required, do the SuperBuild
 # If we are doing SuperBuild 
 #   We configure up to this point (see the return() statement)

@@ -18,5 +18,7 @@ MITK_CREATE_MODULE(niftkIGI
   DEPENDS Mitk MitkExt mitkOpenCVVideoSupport
   PACKAGE_DEPENDS ITK NiftyLink
 )
-  
-ADD_SUBDIRECTORY(Testing)
+
+IF(BUILD_TESTING)  
+  ADD_SUBDIRECTORY(Testing)
+ENDIF()  

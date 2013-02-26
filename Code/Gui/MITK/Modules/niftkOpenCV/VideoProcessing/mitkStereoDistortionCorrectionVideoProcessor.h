@@ -16,7 +16,7 @@
 #define MITKSTEREODISTORTIONCORRECTIONVIDEOPROCESSOR_H
 
 #include "niftkOpenCVExports.h"
-#include "mitkStereoVideoProcessorTemplateMethod.h"
+#include "mitkStereoOneTimePointVideoProcessorTemplateMethod.h"
 
 /**
  * class StereoDistortionCorrectionVideoProcessor
@@ -24,12 +24,12 @@
  */
 namespace mitk {
 
-class NIFTKOPENCV_EXPORT StereoDistortionCorrectionVideoProcessor : public StereoVideoProcessorTemplateMethod
+class NIFTKOPENCV_EXPORT StereoDistortionCorrectionVideoProcessor : public StereoOneTimePointVideoProcessorTemplateMethod
 {
 
 public:
 
-  mitkClassMacro(StereoDistortionCorrectionVideoProcessor, StereoVideoProcessorTemplateMethod);
+  mitkClassMacro(StereoDistortionCorrectionVideoProcessor, StereoOneTimePointVideoProcessorTemplateMethod);
   mitkNewMacro3Param(StereoDistortionCorrectionVideoProcessor, const bool&, const std::string&, const std::string&);
 
   /**
@@ -56,7 +56,11 @@ protected:
   StereoDistortionCorrectionVideoProcessor(const StereoDistortionCorrectionVideoProcessor&); // Purposefully not implemented.
   StereoDistortionCorrectionVideoProcessor& operator=(const StereoDistortionCorrectionVideoProcessor&); // Purposefully not implemented.
 
-  virtual void DoProcessing(const IplImage &leftInput, const IplImage &rightInput, IplImage &leftOutput, IplImage &rightOutput);
+  virtual void DoProcessing(
+      const IplImage &leftInput,
+      const IplImage &rightInput,
+      IplImage &leftOutput,
+      IplImage &rightOutput);
 
 private:
 
@@ -64,6 +68,7 @@ private:
   CvMat *m_DistortionLeft;
   IplImage *m_MapXLeft;
   IplImage *m_MapYLeft;
+
   CvMat *m_IntrinsicRight;
   CvMat *m_DistortionRight;
   IplImage *m_MapXRight;

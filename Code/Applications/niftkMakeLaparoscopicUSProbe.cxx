@@ -30,6 +30,13 @@ int main(int argc, char** argv)
   // To parse command line args.
   PARSE_ARGS;
 
+  if ( outputVTKSurface.length() == 0
+      )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
+
   vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
   sphereSource->SetRadius(radius);
   sphereSource->SetCenter(0, radius, 0);

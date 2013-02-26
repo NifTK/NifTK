@@ -16,7 +16,6 @@
       <longflag>output</longflag>
       <description>Output VTK file (vtkPolyData)</description>
       <label>Output file</label>
-      <default>probe.vtk</default>
       <channel>output</channel>
     </file>
   </parameters>
