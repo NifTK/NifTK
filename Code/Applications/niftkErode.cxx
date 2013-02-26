@@ -62,19 +62,19 @@ int DoMain( arguments &args )
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
   typedef itk::ImageFileWriter< InputImageType > OutputImageWriterType;
 
-  InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
-  OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
+  typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
+  typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
 
   imageReader->SetFileName( args.fileInputImage );
   
   // NOTE: element needs to be created before the radius can be set. 
-  typedef itk::BinaryCrossStructuringElement< InputImageType::PixelType, InputImageType::ImageDimension > StructuringElementType;  
+  typedef typename itk::BinaryCrossStructuringElement< typename InputImageType::PixelType, InputImageType::ImageDimension > StructuringElementType;  
   StructuringElementType element;
   element.CreateStructuringElement();
   element.SetRadius( static_cast<unsigned long>( args.radius ) );
 
-  typedef itk::BinaryErodeImageFilter< InputImageType, InputImageType, StructuringElementType > ErodeImageFilterType;
-  ErodeImageFilterType::Pointer filter = ErodeImageFilterType::New();
+  typedef typename itk::BinaryErodeImageFilter< InputImageType, InputImageType, StructuringElementType > ErodeImageFilterType;
+  typename ErodeImageFilterType::Pointer filter = ErodeImageFilterType::New();
   filter->SetInput( imageReader->GetOutput() );
   filter->SetKernel( element );
   filter->SetErodeValue( static_cast< PixelType >( args.erodeValue ) );
@@ -93,7 +93,7 @@ int DoMain( arguments &args )
         for (int i = 0; i < args.iterations - 1; i++)
           {
             filter->Update();
-            InputImageType::Pointer image = filter->GetOutput();
+            typename InputImageType::Pointer image = filter->GetOutput();
             image->DisconnectPipeline();
             filter->SetInput( image );
           }
