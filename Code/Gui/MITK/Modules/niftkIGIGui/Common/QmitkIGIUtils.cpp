@@ -16,7 +16,7 @@
 #include <QFile>
 #include <mitkSTLFileReader.h>
 #include <igtlStringMessage.h>
-#include <OIGTLSocketObject.h>
+#include <NiftyLinkSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
 
 //-----------------------------------------------------------------------------
@@ -52,16 +52,16 @@ mitk::Surface::Pointer LoadSurfaceFromSTLFile(const QString& surfaceFilename)
 QString CreateTestDeviceDescriptor()
 {
   TrackerClientDescriptor tcld;
-  tcld.setDeviceName("NDI Polaris Vicra");
-  tcld.setDeviceType("Tracker");
-  tcld.setCommunicationType("Serial");
-  tcld.setPortName("Tracker not connected");
-  tcld.setClientIP(getLocalHostAddress());
-  tcld.setClientPort(QString::number(3200));
-  //tcld.addTrackerTool("8700302.rom");
-  tcld.addTrackerTool("8700338.rom");
-  //tcld.addTrackerTool("8700339.rom");
-  tcld.addTrackerTool("8700340.rom");
+  tcld.SetDeviceName("NDI Polaris Vicra");
+  tcld.SetDeviceType("Tracker");
+  tcld.SetCommunicationType("Serial");
+  tcld.SetPortName("Tracker not connected");
+  tcld.SetClientIP(GetLocalHostAddress());
+  tcld.SetClientPort(QString::number(3200));
+  //tcld.AddTrackerTool("8700302.rom");
+  tcld.AddTrackerTool("8700338.rom");
+  //tcld.AddTrackerTool("8700339.rom");
+  tcld.AddTrackerTool("8700340.rom");
 
-  return tcld.getXMLAsString();
+  return tcld.GetXMLAsString();
 }

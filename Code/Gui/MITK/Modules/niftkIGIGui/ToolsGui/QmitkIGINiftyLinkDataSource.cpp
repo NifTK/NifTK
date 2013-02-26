@@ -20,20 +20,20 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
 , m_ClientDescriptor(NULL)
 , m_UsingSomeoneElsesSocket(false)
 {
-  m_Socket = new OIGTLSocketObject();
+  m_Socket = new NiftyLinkSocketObject();
   connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
   connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
-  connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
+  connect(m_Socket, SIGNAL(messageReceived(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
 }
 //-----------------------------------------------------------------------------
-QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket)
+QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *socket)
 : m_Socket(socket)
 , m_ClientDescriptor(NULL)
 , m_UsingSomeoneElsesSocket(true)
 {
   connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
   connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
-  connect(m_Socket, SIGNAL(messageReceived(OIGTLMessage::Pointer )), this, SLOT(InterpretMessage(OIGTLMessage::Pointer )));
+  connect(m_Socket, SIGNAL(messageReceived(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
   this->ClientConnected();
 }
 
@@ -63,18 +63,18 @@ int QmitkIGINiftyLinkDataSource::GetPort() const
   int result = -1;
   if (m_Socket != NULL)
   {
-    result = m_Socket->getPort();
+    result = m_Socket->GetPort();
   }
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGINiftyLinkDataSource::SendMessage(OIGTLMessage::Pointer msg)
+void QmitkIGINiftyLinkDataSource::SendMessage(NiftyLinkMessage::Pointer msg)
 {
   if (m_Socket != NULL)
   {
-    m_Socket->sendMessage(msg);
+    m_Socket->SendMessage(msg);
   }
 }
 
@@ -82,7 +82,7 @@ void QmitkIGINiftyLinkDataSource::SendMessage(OIGTLMessage::Pointer msg)
 //-----------------------------------------------------------------------------
 bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
 {
-  bool isListening = m_Socket->listenOnPort(portNumber);
+  bool isListening = m_Socket->ListenOnPort(portNumber);
   if (isListening)
   {
     this->SetStatus("Listening");
@@ -116,47 +116,47 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 {
   this->SetClientDescriptor(clientInfo);
 
-  this->SetName(clientInfo->getDeviceName().toStdString());
-  this->SetType(clientInfo->getDeviceType().toStdString());
+  this->SetName(clientInfo->GetDeviceName().toStdString());
+  this->SetType(clientInfo->GetDeviceType().toStdString());
 
-  QString descr = QString("Address=") +  clientInfo->getClientIP()
-      + QString(":") + clientInfo->getClientPort();
+  QString descr = QString("Address=") +  clientInfo->GetClientIP()
+      + QString(":") + clientInfo->GetClientPort();
   
   //Don't set description for trackers
-  if ( clientInfo->getDeviceType() != "Tracker" ) 
+  if ( clientInfo->GetDeviceType() != "Tracker" ) 
     this->SetDescription(descr.toStdString());
 
   QString deviceInfo;
   deviceInfo.append("Client connected:");
   deviceInfo.append("  Device name: ");
-  deviceInfo.append(clientInfo->getDeviceName());
+  deviceInfo.append(clientInfo->GetDeviceName());
   deviceInfo.append("\n");
 
   deviceInfo.append("  Device type: ");
-  deviceInfo.append(clientInfo->getDeviceType());
+  deviceInfo.append(clientInfo->GetDeviceType());
   deviceInfo.append("\n");
 
   deviceInfo.append("  Communication type: ");
-  deviceInfo.append(clientInfo->getCommunicationType());
+  deviceInfo.append(clientInfo->GetCommunicationType());
   deviceInfo.append("\n");
 
   deviceInfo.append("  Port name: ");
-  deviceInfo.append(clientInfo->getPortName());
+  deviceInfo.append(clientInfo->GetPortName());
   deviceInfo.append("\n");
 
   deviceInfo.append("  Client ip: ");
-  deviceInfo.append(clientInfo->getClientIP());
+  deviceInfo.append(clientInfo->GetClientIP());
   deviceInfo.append("\n");
 
   deviceInfo.append("  Client port: ");
-  deviceInfo.append(clientInfo->getClientPort());
+  deviceInfo.append(clientInfo->GetClientPort());
   deviceInfo.append("\n");
 
   qDebug() << deviceInfo;
   DataSourceStatusUpdated.Send(this->GetIdentifier());
 }
 //-----------------------------------------------------------------------------
-OIGTLSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
+NiftyLinkSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
 {
   return this->m_Socket;
 }

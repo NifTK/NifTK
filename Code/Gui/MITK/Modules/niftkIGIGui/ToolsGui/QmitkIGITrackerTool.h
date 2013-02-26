@@ -33,10 +33,10 @@ public:
 
   mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGITrackerTool);
-  mitkNewMacro1Param(QmitkIGITrackerTool,OIGTLSocketObject *);
+  mitkNewMacro1Param(QmitkIGITrackerTool,NiftyLinkSocketObject *);
 
   /**
-   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
+   * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
@@ -178,7 +178,7 @@ public slots:
   /**
    * \brief Main message handler routine for this tool, called by the signal from the socket.
    */
-  virtual void InterpretMessage(OIGTLMessage::Pointer msg);
+  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
 
 signals:
 
@@ -190,7 +190,7 @@ protected:
   virtual ~QmitkIGITrackerTool(); // Purposefully hidden.
 
   QmitkIGITrackerTool(const QmitkIGITrackerTool&); // Purposefully not implemented.
-  QmitkIGITrackerTool(OIGTLSocketObject* socket); // Purposefully not implemented.
+  QmitkIGITrackerTool(NiftyLinkSocketObject* socket); // Purposefully not implemented.
   QmitkIGITrackerTool& operator=(const QmitkIGITrackerTool&); // Purposefully not implemented.
 
   /**
@@ -203,13 +203,13 @@ private:
   /**
    * \brief Takes a message and extracts a matrix/transform and applies it.
    */
-  void HandleTrackerData(OIGTLMessage* msg);
+  void HandleTrackerData(NiftyLinkMessage* msg);
 
   /**
    * \brief Used to feedback a message of either coordinates, or matrices to
    * the GUI consolve via the StatusUpdate method, and also writes to console.
    */
-  void DisplayTrackerData(OIGTLMessage* msg);
+  void DisplayTrackerData(NiftyLinkMessage* msg);
 
   QHash<QString, bool>                                 m_EnabledTools;
   QHash<QString, mitk::DataNode::Pointer>              m_ToolRepresentations;

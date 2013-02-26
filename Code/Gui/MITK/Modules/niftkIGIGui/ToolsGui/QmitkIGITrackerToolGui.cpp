@@ -80,7 +80,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
 //
   if (config != NULL)
   {
-    QString deviceType = config->getDeviceType();
+    QString deviceType = config->GetDeviceType();
 
     TrackerClientDescriptor *trDesc = dynamic_cast<TrackerClientDescriptor*>(config);
     if (trDesc != NULL)

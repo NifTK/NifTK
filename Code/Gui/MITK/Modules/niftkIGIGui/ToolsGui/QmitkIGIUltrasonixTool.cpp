@@ -37,7 +37,7 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
   m_ImageNode->SetOpacity(1);
 }
 
-QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool( OIGTLSocketObject * socket )
+QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool( NiftyLinkSocketObject * socket )
 : QmitkIGINiftyLinkDataSource(socket)
 , m_Image(NULL)
 , m_ImageNode(NULL)
@@ -68,24 +68,24 @@ float QmitkIGIUltrasonixTool::GetMotorPos(igtl::Matrix4x4& matrix)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
+void QmitkIGIUltrasonixTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
 {
-  if (msg->getMessageType() == QString("STRING"))
+  if (msg->GetMessageType() == QString("STRING"))
   {
-    QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
+    QString str = static_cast<NiftyLinkStringMessage::Pointer>(msg)->GetString();
 
     if (str.isEmpty() || str.isNull())
     {
       return;
     }
 
-    QString type = XMLBuilderBase::parseDescriptorType(str);
+    QString type = XMLBuilderBase::ParseDescriptorType(str);
     if (type == QString("ClientDescriptor"))
     {
       ClientDescriptorXMLBuilder* clientInfo = new ClientDescriptorXMLBuilder();
-      clientInfo->setXMLString(str);
+      clientInfo->SetXMLString(str);
 
-      if (!clientInfo->isMessageValid())
+      if (!clientInfo->IsMessageValid())
       {
         delete clientInfo;
         return;
@@ -99,13 +99,13 @@ void QmitkIGIUltrasonixTool::InterpretMessage(OIGTLMessage::Pointer msg)
     }
   }
   else if (msg.data() != NULL &&
-      (msg->getMessageType() == QString("IMAGE"))
+      (msg->GetMessageType() == QString("IMAGE"))
      )
   {
     QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
     wrapper->SetMessage(msg.data());
     wrapper->SetDataSource("QmitkIGIUltrasonixTool");
-    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
+    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->GetTimeCreated()));
     wrapper->SetDuration(1000000000); // nanoseconds
 
     this->AddData(wrapper.GetPointer());
@@ -124,9 +124,9 @@ bool QmitkIGIUltrasonixTool::CanHandleData(mitk::IGIDataType* data) const
     QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
     if (dataType.IsNotNull())
     {
-      OIGTLMessage* pointerToMessage = dataType->GetMessage();
+      NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
       if (pointerToMessage != NULL
-          && pointerToMessage->getMessageType() == QString("IMAGE")
+          && pointerToMessage->GetMessageType() == QString("IMAGE")
           )
       {
         canHandle = true;
@@ -145,7 +145,7 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
   QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
   if (dataType.IsNotNull())
   {
-    OIGTLMessage* pointerToMessage = dataType->GetMessage();
+    NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
     this->HandleImageData(pointerToMessage);
     result = true;
   }
@@ -155,15 +155,15 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage* msg)
+void QmitkIGIUltrasonixTool::HandleImageData(NiftyLinkMessage* msg)
 {
-  OIGTLImageMessage::Pointer imageMsg;
-  imageMsg = static_cast<OIGTLImageMessage*>(msg);
+  NiftyLinkImageMessage::Pointer imageMsg;
+  imageMsg = static_cast<NiftyLinkImageMessage*>(msg);
 
   if (imageMsg.data() != NULL)
   {
     imageMsg->PreserveMatrix();
-    QImage qImage = imageMsg->getQImage();
+    QImage qImage = imageMsg->GetQImage();
 
     QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
 	igtl::Matrix4x4 imageMatrix;
@@ -175,7 +175,7 @@ void QmitkIGIUltrasonixTool::HandleImageData(OIGTLMessage* msg)
     m_Image = filter->GetOutput();
     m_ImageNode->SetData(m_Image);
     
-    imageMsg->getMatrix(imageMatrix);
+    imageMsg->GetMatrix(imageMatrix);
 
     if (!this->GetDataStorage()->Exists(m_ImageNode))
     {
@@ -196,10 +196,10 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
   QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
   if (dataType.IsNotNull())
   {
-    OIGTLMessage* pointerToMessage = dataType->GetMessage();
+    NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
     if (pointerToMessage != NULL)
     {
-      OIGTLImageMessage* imgMsg = static_cast<OIGTLImageMessage*>(pointerToMessage);
+      NiftyLinkImageMessage* imgMsg = static_cast<NiftyLinkImageMessage*>(pointerToMessage);
       if (imgMsg != NULL)
       {
         QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGIUltrasonixTool");
@@ -209,7 +209,7 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           QString fileName = directoryPath + QDir::separator() + tr("%1.motor_position.txt").arg(data->GetTimeStampInNanoSeconds());
 
           igtl::Matrix4x4 matrix;
-		  imgMsg->getMatrix(matrix);
+		  imgMsg->GetMatrix(matrix);
 
           QFile matrixFile(fileName);
           matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -234,7 +234,7 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
 		  QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
 	      mitk::Image::Pointer image = mitk::Image::New();
 
-		  QImage qImage = imgMsg->getQImage();
+		  QImage qImage = imgMsg->GetQImage();
 		  filter->SetQImage(&qImage);
 
           // Save the image

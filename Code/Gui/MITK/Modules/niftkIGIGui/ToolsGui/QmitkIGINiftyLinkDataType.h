@@ -17,7 +17,7 @@
 
 #include "niftkIGIGuiExports.h"
 #include "mitkIGIDataType.h"
-#include "OIGTLMessage.h"
+#include "NiftyLinkMessage.h"
 
 /**
  * \class QmitkIGINiftyLinkDataType
@@ -33,8 +33,8 @@ public:
 
   virtual void* GetData() const { return m_Message.data(); }
 
-  OIGTLMessage* GetMessage() const { return m_Message.data(); }
-  void SetMessage(OIGTLMessage* message) { m_Message = message; this->Modified(); }
+  NiftyLinkMessage* GetMessage() const { return m_Message.data(); }
+  void SetMessage(NiftyLinkMessage* message) { m_Message = message; this->Modified(); }
 
 protected:
 
@@ -46,7 +46,7 @@ protected:
 
 private:
 
-  OIGTLMessage::Pointer m_Message;
+  NiftyLinkMessage::Pointer m_Message;
 
 }; // end class
 
