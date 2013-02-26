@@ -206,6 +206,14 @@ void QmitkIGITrackerToolGui::OnSetUpFinePositioning()
   if (tool != NULL)
   {
     tool->SetUpPositioning(m_TrackerControlsWidget->GetCurrentToolName(), m_TrackerControlsWidget->comboBox_dataNodes_FinePos->GetSelectedNode());
+    tool->SetTransformTrackerToMITKCoords(true);
+    m_TrackerControlsWidget->pushButton_FidTrack->setText("Fid Trk. On");
+    if ( tool->AddDataNode(m_TrackerControlsWidget->GetCurrentToolName(), m_TrackerControlsWidget->comboBox_dataNodes_FinePos->GetSelectedNode()) )
+    {
+
+      m_TrackerControlsWidget->comboBox_associatedData->AddNode(m_TrackerControlsWidget->comboBox_dataNodes_FinePos->GetSelectedNode());
+      m_TrackerControlsWidget->comboBox_dataNodes->RemoveNode(m_TrackerControlsWidget->comboBox_dataNodes_FinePos->GetSelectedNode());
+    }
   }
 }
 

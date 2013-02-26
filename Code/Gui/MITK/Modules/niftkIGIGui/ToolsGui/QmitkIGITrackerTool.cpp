@@ -43,7 +43,7 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
 , m_TrackerFiducialsPointSet(NULL)
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
-, m_focalPoint(2000.0)
+, m_focalPoint(-2000.0)
 , m_ClipNear(5.0)
 , m_ClipFar(6000.0)
 , m_TransformTrackerToMITKCoords(false)
@@ -64,7 +64,7 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
 , m_TrackerFiducialsPointSet(NULL)
 , m_FiducialRegistrationFilter(NULL)
 , m_PermanentRegistrationFilter(NULL)
-, m_focalPoint(2000.0)
+, m_focalPoint(-2000.0)
 , m_ClipNear(5.0)
 , m_ClipFar(6000.0)
 , m_TransformTrackerToMITKCoords(false)
@@ -1093,9 +1093,8 @@ void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Po
 
   QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
   qDebug() <<  statusUpdate;
+ 
 
-  m_AssociatedTools.clear();
-  m_AssociatedTools.insertMulti(toolName,dataNode);
-  m_TransformTrackerToMITKCoords = true;
+  dataNode->GetData()->GetGeometry()->GetBoundingBox();
 }
 
