@@ -72,7 +72,7 @@ namespace niftk
    * @param suffix file basename suffix
    * @return a unique file name
    */
-  extern "C++" boost::filesystem::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "") throw (niftk::IOException);
+  NIFTKCOMMON_WINEXPORT boost::filesystem::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "") throw (niftk::IOException);
 
   /**
    * @return True if file exists, and false otherwise.
