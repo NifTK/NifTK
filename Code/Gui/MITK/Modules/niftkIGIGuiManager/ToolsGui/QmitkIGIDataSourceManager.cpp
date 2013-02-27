@@ -531,7 +531,7 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
 }
 
 //------------------------------------------------
-int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSocketObject* socket)
+int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLinkSocketObject* socket)
 {
   
   mitk::IGIDataSource::Pointer source = NULL;
@@ -722,7 +722,6 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
   }
 
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-  timeNow->GetTime();
 
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
@@ -808,13 +807,12 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   QString baseDirectory = m_DirectoryPrefix;
 
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-  timeStamp->GetTime();
 
   igtlUint32 seconds;
   igtlUint32 nanoseconds;
   igtlUint64 millis;
 
-  timeStamp->GetTimeStamp(&seconds, &nanoseconds);
+  timeStamp->GetTime(&seconds, &nanoseconds);
   millis = (igtlUint64)seconds*1000 + nanoseconds/1000000;
 
   QDateTime dateTime;

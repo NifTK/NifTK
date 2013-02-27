@@ -21,9 +21,9 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
 , m_UsingSomeoneElsesSocket(false)
 {
   m_Socket = new NiftyLinkSocketObject();
-  connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
-  connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
-  connect(m_Socket, SIGNAL(messageReceived(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
+  connect(m_Socket, SIGNAL(ClientConnectedSignal()), this, SLOT(ClientConnected()));
+  connect(m_Socket, SIGNAL(ClientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
+  connect(m_Socket, SIGNAL(MessageReceivedSignal(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
 }
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *socket)
@@ -31,9 +31,9 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *
 , m_ClientDescriptor(NULL)
 , m_UsingSomeoneElsesSocket(true)
 {
-  connect(m_Socket, SIGNAL(clientConnectedSignal()), this, SLOT(ClientConnected()));
-  connect(m_Socket, SIGNAL(clientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
-  connect(m_Socket, SIGNAL(messageReceived(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
+  connect(m_Socket, SIGNAL(ClientConnectedSignal()), this, SLOT(ClientConnected()));
+  connect(m_Socket, SIGNAL(ClientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
+  connect(m_Socket, SIGNAL(MessageReceivedSignal(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
   this->ClientConnected();
 }
 
