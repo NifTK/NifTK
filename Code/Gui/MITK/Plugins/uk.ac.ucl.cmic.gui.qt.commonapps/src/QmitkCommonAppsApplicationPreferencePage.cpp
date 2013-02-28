@@ -29,7 +29,7 @@ const std::string QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERP
 const std::string QmitkCommonAppsApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION("default texture interpolation");
 const std::string QmitkCommonAppsApplicationPreferencePage::BLACK_OPACITY("black opacity");
 const std::string QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_NAME("binary opacity");
-const double QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_VALUE = 1;
+const double QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_VALUE = 0.3;
 
 //-----------------------------------------------------------------------------
 QmitkCommonAppsApplicationPreferencePage::QmitkCommonAppsApplicationPreferencePage()
