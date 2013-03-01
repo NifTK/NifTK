@@ -25,6 +25,7 @@ SET(_exclude_plugins
   uk.ac.ucl.cmic.gui.qt.niftyigi
   uk.ac.ucl.cmic.niftyseg
   uk.ac.ucl.cmic.surgicalguidance
+  uk.ac.ucl.cmic.singlewidgeteditor
 )
 
 NIFTK_CREATE_APPLICATION(
