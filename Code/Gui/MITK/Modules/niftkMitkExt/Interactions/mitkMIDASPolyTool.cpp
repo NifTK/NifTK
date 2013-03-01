@@ -174,7 +174,15 @@ void mitk::MIDASPolyTool::Deactivated()
   MIDASTool::Deactivated();
 
   Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  this->AccumulateContourInWorkingData(*feedbackContour, 2);
+
+  if (feedbackContour != NULL && feedbackContour->GetNumberOfPoints() > 0)
+  {
+    int workingDataNodeNumber = 2;
+    if (m_ToolManager->GetWorkingData(workingDataNodeNumber))
+    {
+      this->AccumulateContourInWorkingData(*feedbackContour, workingDataNodeNumber);
+    }
+  }
 
   // Initialize data which sets the contours to zero length, and set properties.
   this->ClearData();
