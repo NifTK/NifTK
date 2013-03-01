@@ -499,6 +499,11 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
   assert(toolManager);
 
   toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
+
+  if (workingDataNodes.size() == 0)
+  {
+    toolManager->ActivateTool(-1);
+  }
   toolManager->SetWorkingData(workingDataNodes);
 
   if (referenceData)
