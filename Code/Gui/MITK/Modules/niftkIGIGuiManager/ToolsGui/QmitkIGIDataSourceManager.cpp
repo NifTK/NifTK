@@ -364,8 +364,6 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
             {
               description=Tool;
               NLSource->SetDescription(Tool);
-              // Force an update.
-              source->DataSourceStatusUpdated.Send(rowNumber);
             }
             else
             {
@@ -386,9 +384,6 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
                 m_Sources[tempRowNumber]->SetName(device);
                 m_Sources[tempRowNumber]->SetDescription(Tool);
               }
-              // Force an update.
-              //source->DataSourceStatusUpdated.Send(tempRowNumber);
-              
             }
           }
         }
