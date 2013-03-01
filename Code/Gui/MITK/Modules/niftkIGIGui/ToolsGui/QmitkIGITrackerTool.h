@@ -78,6 +78,23 @@ public:
   QList<mitk::DataNode::Pointer>  GetDataNode(const QString);
 
   /**
+   * \brief Associates, with a pre-matrix, a dataNode with a given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node was successfully added, false if not.
+   */
+  bool AddPreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+ 
+  /**
+   * \brief Removes a dataNode from the associated (pre-matrix) list for the  given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node successfully removed
+   */
+  bool RemovePreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+  
+  /**
+   * \brief Return a QList of the tools associated (pre-matrix) with a given toolName
+   */
+  QList<mitk::DataNode::Pointer>  GetPreMatrixDataNode(const QString);
+
+  /**
    * \brief Not Widely Used: Set a flag to say we are doing ICP.
    */
   itkSetMacro(UseICP, bool);
@@ -211,9 +228,16 @@ private:
    */
   void DisplayTrackerData(NiftyLinkMessage* msg);
 
+  /**
+   * \brief Initialises m_PreMatrix with default values
+   */
+  void InitPreMatrix();
+  
+
   QHash<QString, bool>                                 m_EnabledTools;
   QHash<QString, mitk::DataNode::Pointer>              m_ToolRepresentations;
   QHash<QString, mitk::DataNode::Pointer>              m_AssociatedTools;
+  QHash<QString, mitk::DataNode::Pointer>              m_PreMatrixAssociatedTools;
 
   /** This lot is currently rarely used. */
   bool                                                 m_UseICP;
@@ -232,6 +256,7 @@ private:
   double                                               m_ClipNear; //the near clipping plane of the VTK camera used
   double                                               m_ClipFar; //the far clipping plane of the VTK camera used
   bool                                                 m_TransformTrackerToMITKCoords; //Set to true to use m_FiducialRegistrationFilter
+  itk::Matrix<double,4,4>                               m_PreMatrix; //Use this to apply a matrix to a data node during tracking.
 }; // end class
 
 #endif

@@ -50,6 +50,7 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+  this->InitPreMatrix();
 }
 
 //-----------------------------------------------------------------------------
@@ -71,6 +72,7 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(NiftyLinkSocketObject * socket)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+  this->InitPreMatrix();
 }
 
 //-----------------------------------------------------------------------------
@@ -403,7 +405,58 @@ void QmitkIGITrackerTool::HandleTrackerData(NiftyLinkMessage* msg)
      data->GetGeometry()->Modified();
      data->Modified();
 
-    } // foreach node
+    } // foreach AssociatedTool
+    ///---
+    foreach ( tempNode, m_PreMatrixAssociatedTools.values(toolName))
+    {
+
+     if (tempNode.IsNull())
+     {
+       QString message = QObject::tr("ERROR: QmitkIGITrackerTool, could not find node %1").arg(toolName);
+       emit StatusUpdate(message);
+       return;
+     }
+    
+     // Get the transform from data
+     mitk::BaseData * data = tempNode->GetData();
+
+     //In world coordinates X is up, in lap Y is up, so rotate -90 around z and
+     //put it 400 in front of the camera
+     itk::Matrix<double,4,4> InMatrix;
+     for ( int row = 0 ; row < 4 ; row ++ ) 
+     {
+       for ( int col = 0 ; col < 4 ; col ++ )
+       {
+         InMatrix[row][col]=inputTransformMat[row][col];
+       }
+     }
+     itk::Matrix<double,4,4> AfterMatrix =InMatrix *  m_PreMatrix ;
+   
+     static itk::Matrix<float,3,3> m;
+     for ( int row = 0 ; row < 3 ; row ++ ) 
+     {
+       for ( int col = 0 ; col < 3 ; col ++ ) 
+       {
+         m[row][col]=AfterMatrix[row][col];
+       }
+     }
+
+     mitk::AffineTransform3D::Pointer affineTransform =mitk::AffineTransform3D::New(); 
+     affineTransform->SetMatrix(m);
+     mitk::Vector3D pos;
+     for ( int i = 0 ; i < 3 ; i ++ )
+     {
+       pos[i] = AfterMatrix[i][3];
+     }
+     affineTransform->SetOffset(pos);
+     affineTransform->Modified();
+     data->GetGeometry()->SetIndexToWorldTransform(affineTransform);
+
+     data->GetGeometry()->TransferItkToVtkTransform(); // update VTK Transform for rendering too
+     data->GetGeometry()->Modified();
+     data->Modified();
+
+    } // foreach CameraAssociated node
   } // if transform data
 }
 
@@ -577,6 +630,49 @@ QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString to
 {
   return m_AssociatedTools.values(toolName);
 }
+//---------------------------------------------------------------------------
+bool QmitkIGITrackerTool::AddPreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_PreMatrixAssociatedTools.values(toolName);
+  if ( AlreadyAddedNodes.contains(dataNode) )
+  {
+    return false;
+  }
+  else
+  {
+    m_PreMatrixAssociatedTools.insertMulti(toolName,dataNode);
+    return true;
+  }
+}
+
+//---------------------------------------------------------------------------
+bool QmitkIGITrackerTool::RemovePreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_PreMatrixAssociatedTools.values(toolName);
+  int RemovedNodes = AlreadyAddedNodes.removeAll(dataNode);
+
+  m_PreMatrixAssociatedTools.remove(toolName);
+  mitk::DataNode::Pointer tempNode = mitk::DataNode::New();
+  foreach ( tempNode, AlreadyAddedNodes ) 
+  {
+    m_PreMatrixAssociatedTools.insertMulti(toolName,tempNode);
+  }
+  if ( RemovedNodes != 1 ) 
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
+
+//---------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetPreMatrixDataNode(const QString toolName)
+{
+  return m_PreMatrixAssociatedTools.values(toolName);
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -924,21 +1020,34 @@ bool QmitkIGITrackerTool::GetCameraLink()
 {
    return m_LinkCamera;
 }
+//----------------------------------------------------------------------------
+void QmitkIGITrackerTool::InitPreMatrix()
+{
+     m_PreMatrix[0][0]=1.0;
+     m_PreMatrix[0][1]=0.0;
+     m_PreMatrix[0][2]=0.0;
+     m_PreMatrix[0][3]=0.0;
+
+     m_PreMatrix[1][0]=0.0;
+     m_PreMatrix[1][1]=1.0;
+     m_PreMatrix[1][2]=0.0;
+     m_PreMatrix[1][3]=0.0;
+
+     m_PreMatrix[2][0]=0.0;
+     m_PreMatrix[2][1]=0.0;
+     m_PreMatrix[2][2]=1.0;
+     m_PreMatrix[2][3]=-380.0;
+
+     m_PreMatrix[3][0]=0.0;
+     m_PreMatrix[3][1]=0.0;
+     m_PreMatrix[3][2]=0.0;
+     m_PreMatrix[3][3]=1.0;
+
+
+}
 //------------------------------------------------------------------------------
 void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Pointer dataNode)
 {
-/*This does not work, don't know why not. Anyway It looks like I can't set the Landmark
- * Transform, other than by using source and target fiducials. Lets try and keep this as simple 
- * as possible.
- * Want the transform to be the existing position of some datanode (maybe that should be passed)
- * divided by the current tracking transform. 
- * Find this then multiply a set of three fiducial points by it (1,0,0)(0,1,0) and (0,0,1);
- * Register these to set the right transform
- * Then turn on fid tracking
- * mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::Pointer LandmarkTransform 
-    =  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::New();
-  LandmarkTransform = m_FiducialRegistrationFilter->GetLandmarkTransform();
- */ 
   itk::Matrix<double,4,4> Tracking;
   itk::Matrix<double,4,4> AssociatedNode;
   itk::Matrix<double,4,4> Out;
@@ -1055,12 +1164,19 @@ void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Po
     point22[i] = uy1[i];
     point32[i] = uz1[i];
   }
+  
   SourcePointSet->InsertPoint(0,point11);
   SourcePointSet->InsertPoint(1,point21);
   SourcePointSet->InsertPoint(2,point31);
   TargetPointSet->InsertPoint(0,point12);
   TargetPointSet->InsertPoint(1,point22);
   TargetPointSet->InsertPoint(2,point32);
+ /* SourcePointSet->InsertPoint(0,point12);
+  SourcePointSet->InsertPoint(1,point22);
+  SourcePointSet->InsertPoint(2,point32);
+  TargetPointSet->InsertPoint(0,point11);
+  TargetPointSet->InsertPoint(1,point21);
+  TargetPointSet->InsertPoint(2,point31);*/
 
   qDebug() << point11[0] << " " << point11[1] << " " << point11[2];
   qDebug() << point21[0] << " " << point21[1] << " " << point21[2];
