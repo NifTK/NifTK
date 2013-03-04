@@ -40,11 +40,13 @@ struct LIBVIDEO_DLL_EXPORTS StreamFormat
 		RR_60		= 60000	// FIXME: never tested!
 	}		refreshrate;
 
+	bool is_interlaced;
+
 	// in hz or fps
 	float get_refreshrate() const;
 
-	StreamFormat(PictureFormat pf = PF_NONE, RefreshRate rr = RR_NONE)
-		: format(pf), refreshrate(rr)
+	StreamFormat(PictureFormat pf = PF_NONE, RefreshRate rr = RR_NONE, bool _is_interlaced = false)
+		: format(pf), refreshrate(rr), is_interlaced(_is_interlaced)
 	{
 	}
 

@@ -78,6 +78,10 @@ public:
 		// frame had to wait because there are no more free slots in the queue
 		// writing out to hdd was too slow
 		bool				had_to_wait_on_io;
+
+        // there are some limits on how many in-flight async io windows can handle
+        // lets see if we ever hit that limit (on my testing on win7 that never happened)
+        bool                was_converted_to_synchronous;
 	};
 
 	std::vector<FramePerfStats>		frameperstats;
@@ -91,16 +95,21 @@ public:
 	//@{
 public:
 	HANDLE				outputfile;
+    // offset of next nal packet in the output file
 	unsigned __int64	outputoffset;
 	struct OutputQueue
 	{
-		unsigned char		buffer[1024 * 1024];
+		unsigned char		buffer[3 * 1024 * 1024];
 		OVERLAPPED			overlapped;
 	}					outputqueue[3];
 	int					currentqueueslot;
 	// encoder docs suggest that frames are always processed in sequential order
 	// we only need this for perf-stats in the bitstream-callbacks, which dont have the frame number on input
 	int					currentframe;
+
+    // a histogram of nal packet sizes supplied by the encoder
+    // slots are in kilobyte: 1, 2, 4, 8, 16, 32, 64, ...
+    unsigned int        nalsizehistogram[32];
 
 	// called when encoder needs a chunk of memory
 	static unsigned char* _stdcall acquirebitstream_callback(int* pBufferSize, void* pUserData)
@@ -134,6 +143,10 @@ public:
 	{
 		CompressorImpl* this_ = (CompressorImpl*) pUserData;
 
+        unsigned int    histindex = std::log(std::max(nBytesInBuffer, 1024) / 1024.0) / std::log(2.0);
+        unsigned int    maxindex = (sizeof(this_->nalsizehistogram) / sizeof(this_->nalsizehistogram[0])) - 1;
+        ++(this_->nalsizehistogram[std::min(histindex, maxindex)]);
+
 		if (this_->outputfile)
 		{
 			// no idea if the encoder ever hands us back internal pointers!
@@ -145,8 +158,20 @@ public:
 
 			BOOL e = WriteFile(this_->outputfile, cb, nBytesInBuffer, 0, overlapped);
 			DWORD c = GetLastError();
-			if ((c != ERROR_IO_PENDING) && (c != ERROR_SUCCESS))
-				// FIXME: should we collect stats on whether our io got converted to synchronous?
+            // if async queueing was successful then we have e==false, c==pending
+            // if it got converted to synchronous then we have e==true, c==success
+            if ((e == FALSE) && (c == ERROR_IO_PENDING))
+            {
+                // awesome, nothing to do
+            }
+            else
+			if ((e == TRUE) && (c == ERROR_SUCCESS))
+            {
+                if ((this_->frameperstats.capacity() - this_->frameperstats.size()) > 1)
+                    this_->frameperstats[this_->currentframe].was_converted_to_synchronous = true;
+            }
+            else
+                // anything else means it really did fail
 				assert(false);
 
 			this_->outputoffset += nBytesInBuffer;
@@ -206,6 +231,7 @@ public:
 
 		// zero-init a few structures so that we can cleanup properly
 		std::memset(&outputqueue, 0, sizeof(outputqueue));
+        std::memset(&nalsizehistogram, 0, sizeof(nalsizehistogram));
 
 		if (cuCtxGetCurrent(&cudacontext) != CUDA_SUCCESS)
 			throw InteropFailedException("Cannot retrieve CUDA context for compression");
@@ -283,6 +309,16 @@ public:
 			if (hr != S_OK)
 				throw CompressorFailedException("Cannot set default parameters", hr);
 
+			// default = baseline=0xff42, try high=0xff64, main=0x__4d
+			// high profile pushes encoding time beyond 150 ms!
+			int		profile = 0xff42;
+			hr = NVSetParamValue(encoder, NVVE_PROFILE_LEVEL, &profile);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot set encoding profile", hr);
+
+            // NVVE_DISABLE_CABAC: default=0 (enabled)
+            // cabac is quite expensive!
+
 			// the encoder requires even (not odd) input dimensions!
 			// ntsc is a format with an odd height (487)
 			// width was previously checked in Compressor constructor
@@ -290,23 +326,39 @@ public:
 			paddedheight = height + height % 2;
 			int		inputsize[] = {width, paddedheight};
 			hr = NVSetParamValue(encoder, NVVE_IN_SIZE, &inputsize);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot set input size", hr);
 			hr = NVSetParamValue(encoder, NVVE_OUT_SIZE, &inputsize);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot set output size", hr);
+
 			int		aspectratio[] = {width, height, ASPECT_RATIO_DAR};
 			hr = NVSetParamValue(encoder, NVVE_ASPECT_RATIO, &aspectratio);
-			int		pinterval = 1;//3;	// default = 1
+			int		pinterval = 1;//3;	// default = 1, baseline profile supports 1 only (fails further down otherwise)
 			hr = NVSetParamValue(encoder, NVVE_P_INTERVAL, &pinterval);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot set p interval", hr);
+
 			int		deinterlace = DI_OFF;	// default = DI_MEDIAN
 			hr = NVSetParamValue(encoder, NVVE_SET_DEINTERLACE, &deinterlace);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot disable deinterlacing", hr);
 
 			// guestimate is: 100kB per frame for 1080p
 			// roughly 0.06 bytes per pixel
 			// for example: 1920 * 1080 * 0.0625 * 25 * 8 = 26 Mbs
 			int		avgbw = BITRATEESTIMATER_BITSPERPIXEL * width * height * ((float) mfps / 1000.0f);
 			hr = NVSetParamValue(encoder, NVVE_AVG_BITRATE, &avgbw);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot set average bitrate", hr);
 			int		peakbw = 2 * avgbw;
 			hr = NVSetParamValue(encoder, NVVE_PEAK_BITRATE, &peakbw);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot set peak bitrate", hr);
 			int		framerate[] = {mfps, 1000};
 			hr = NVSetParamValue(encoder, NVVE_FRAME_RATE, &framerate);
+			if (hr != S_OK)
+				throw CompressorFailedException("Cannot set frame rate", hr);
 
 			// other relevant default parameters are:
 			//  NVVE_FIELD_ENC_MODE		= MODE_FRAME
@@ -315,14 +367,14 @@ public:
 			// profile different values for:
 			//  NVVE_DYNAMIC_GOP		default = 0, try 1
 			//  NVVE_DEBLOCK_MODE		default = 1, try 0
-			//  NVVE_PROFILE_LEVEL		default = baseline=0xff42, try high=0xff64
+
 
 			// FIXME: force gpu selection for encoder?
 			//        should run on the same gpu that has the input buffer
 			//         which would leave copying it from input- to encoder gpu to the user
 
 			// FIXME: profile different offload values!
-			int		offloadlevel = NVVE_GPU_OFFLOAD_DEFAULT;
+			int		offloadlevel = NVVE_GPU_OFFLOAD_DEFAULT;//NVVE_GPU_OFFLOAD_ALL;//;
 			hr = NVSetParamValue(encoder, NVVE_GPU_OFFLOAD_LEVEL, &offloadlevel);
 			// this shouldnt fail normally!
 			if (hr != S_OK)
@@ -451,12 +503,25 @@ public:
 					<< ", processtime=" << relative_systime(frameperstats[i].queued, frameperstats[i].finished)
 					<< ", had2wait4io=" << frameperstats[i].had_to_wait_on_io
 					<< ", formatconversiontime=" << frameperstats[i].formatconversiontime 
+                    << ", ioconverted2sync=" << frameperstats[i].was_converted_to_synchronous 
 					<< ", trylock_tsc=" << frameperstats[i].trylock_tsc
 					<< ", gotlock_tsc=" << frameperstats[i].gotlock_tsc
 					<< ", lock_diff=" << (frameperstats[i].gotlock_tsc - frameperstats[i].trylock_tsc)
 					<< std::endl;
 			}
 		logfile.close();
+
+        std::ofstream   nalhistfile((filename + ".nalsizehistogram.log").c_str());
+        if (nalhistfile)
+        {
+            unsigned int    cumulative = 0;
+            for (unsigned int i = 0; i < (sizeof(nalsizehistogram) / sizeof(nalsizehistogram[0])); ++i)
+            {
+                cumulative += nalsizehistogram[i];
+                nalhistfile << "smallerthan=" << (1u << i) << ", howoften=" << nalsizehistogram[i] << ", cumulative=" << cumulative << std::endl;
+            }
+        }
+        nalhistfile.close();
 	}
 
 

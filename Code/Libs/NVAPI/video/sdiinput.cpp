@@ -36,14 +36,21 @@ public:
 	HDC					dc;
 	std::vector<GLuint>	textures;
 
+    // we have these in case of interlaced video
+    //  which a special drop/stack mode
+    std::vector<GLuint>	pbos;
+    int                 pbo_pitch;      // in bytes
+
 	int					videoslot;
 	HVIDEOINPUTDEVICENV	videodev;
 
 	std::vector<FrameTime>		frametimes;
 
+	int					width;
+	int					height;
 
 	SDIInputImpl()
-		: oglrc(0), dc(0), videoslot(0), videodev(0)
+		: oglrc(0), dc(0), videoslot(0), videodev(0), width(0), height(0), pbo_pitch(0)
 	{
 	}
 };
@@ -86,6 +93,26 @@ FrameInfo SDIInput::capture()
 	pimpl->frametimes.push_back(FrameTime(sequence_num, capture_time));
 	GetSystemTime(&(pimpl->frametimes.back().pickup_time));
 
+    for (int i = 0; i < pimpl->pbos.size(); ++i)
+    {
+        // if we do have pbos then we should also have a texture for each
+        assert(pimpl->textures.size() == pimpl->pbos.size());
+
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pimpl->pbos[i]);
+        glBindTexture(GL_TEXTURE_2D, pimpl->textures[i]);
+        // we have 4 bytes per pixel
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, pimpl->pbo_pitch / 4);
+
+        // using the (possibly halfed) height here takes care of field-drop or stack
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pimpl->width, pimpl->height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    }
+    if (!pimpl->pbos.empty())
+    {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
+
 	for (int i = 0; i < pimpl->textures.size(); ++i)
 	{
 		glBindTexture(GL_TEXTURE_2D, pimpl->textures[i]);
@@ -109,7 +136,7 @@ FrameInfo SDIInput::capture()
 	return fi;
 }
 
-SDIInput::SDIInput(SDIDevice* dev)
+SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced)
 	: pimpl(new SDIInputImpl), logfilename("sdicapture.log")
 {
 	assert(dev != 0);
@@ -133,6 +160,12 @@ SDIInput::SDIInput(SDIDevice* dev)
 	StreamFormat	expectedformat = dev->get_format(0);
 	if (expectedformat.format == StreamFormat::PF_NONE)
 		throw std::runtime_error("Device has no active streams incoming");
+
+	pimpl->width  = expectedformat.get_width();
+	pimpl->height = expectedformat.get_height();
+	// just in case somebody requested some interlaced mode but we are actually capturing progressive
+	if (!expectedformat.is_interlaced)
+		interlaced = DO_NOTHING_SPECIAL;
 
 	// find out what is currently connected and coming in
 	NVVIOSTATUS status = {0};
@@ -279,10 +312,6 @@ SDIInput::SDIInput(SDIDevice* dev)
 				int orientation = GL_LOWER_LEFT;	// this is default and this is how it should be no matter what buffer type is used
 				glVideoCaptureStreamParameterivNV(pimpl->videoslot, i, GL_VIDEO_CAPTURE_SURFACE_ORIGIN_NV,	&orientation);
 
-				// FIXME: not necessary for textures?
-				int internalformat = GL_RGBA8;
-				glVideoCaptureStreamParameterivNV(pimpl->videoslot, i, GL_VIDEO_BUFFER_INTERNAL_FORMAT_NV, &internalformat);
-
 				// we assume it's the same for all channels
 				// the previous nvapi acrobatics demand this
 				int		capture_width = 0;
@@ -298,6 +327,20 @@ SDIInput::SDIInput(SDIDevice* dev)
 				if (glGetError() != GL_NO_ERROR)
 					throw std::runtime_error("Cannot set up stream parameters");
 
+                // note: if format is really progressive then the variable had been reset at the top of the constructor
+                if (interlaced == DROP_ONE_FIELD)
+                {
+                    // ntsc is one of the formats with an odd height
+                    //  for which the top field has 244 lines and the bottom field 243
+                    // so we are rounding towards the top field size here
+                    capture_height = (capture_height + 1) / 2;
+                    pimpl->height = capture_height;
+                }
+
+                // for either interlaced mode we'll always end up with a single texture per channel
+                // do_nothing --> full size
+                // stack --> full size
+                // drop --> half size
 				GLuint tex = 0;
 				glGenTextures(1, &tex);
 				if (glGetError() != GL_NO_ERROR)
@@ -346,9 +389,45 @@ SDIInput::SDIInput(SDIDevice* dev)
 				if (glGetError() != GL_NO_ERROR)
 					throw std::runtime_error("Cannot allocate stream storage");
 
-				glBindVideoCaptureStreamTextureNV(pimpl->videoslot, i, GL_FRAME_NV, GL_TEXTURE_2D, tex);
-				if (glGetError() != GL_NO_ERROR)
-					throw std::runtime_error("Cannot bind stream texture");
+				if (interlaced == DO_NOTHING_SPECIAL)
+                {
+				    glBindVideoCaptureStreamTextureNV(pimpl->videoslot, i, GL_FRAME_NV, GL_TEXTURE_2D, tex);
+				    if (glGetError() != GL_NO_ERROR)
+					    throw std::runtime_error("Cannot bind stream texture");
+                 }
+                else
+                {
+                    // in case of special interlaced-mode
+                    //  we first need to bind a pbo (and copy during capture)
+                    		
+                    GLuint pbo;
+		            glGenBuffers(1, &pbo);
+                    if (glGetError() != GL_NO_ERROR)
+					    throw std::runtime_error("Cannot allocate stream storage");
+
+                    pimpl->pbos.push_back(pbo);
+                    glBindBuffer(GL_VIDEO_BUFFER_NV, pbo);
+
+                    int internalformat = GL_RGBA8;
+                    glVideoCaptureStreamParameterivNV(pimpl->videoslot, i, GL_VIDEO_BUFFER_INTERNAL_FORMAT_NV, &internalformat);
+
+                    // we dump both fields into the same pbo, stacked on top of each other
+                    // and during capture time we decide whether we drop one or not
+                    int     bufferpitch = 0;
+                    glGetVideoCaptureStreamivNV(pimpl->videoslot, i, GL_VIDEO_BUFFER_PITCH_NV, &bufferpitch);
+                    int     fieldheight[2];
+                    glGetVideoCaptureStreamivNV(pimpl->videoslot, i, GL_VIDEO_CAPTURE_FIELD_UPPER_HEIGHT_NV, &fieldheight[0]);
+                    glGetVideoCaptureStreamivNV(pimpl->videoslot, i, GL_VIDEO_CAPTURE_FIELD_LOWER_HEIGHT_NV, &fieldheight[1]);
+                    int     bufferbytes = bufferpitch * (fieldheight[0] + fieldheight[1]);
+                    glBufferData(GL_VIDEO_BUFFER_NV, bufferbytes, 0, GL_STREAM_READ);
+				    
+                    glBindVideoCaptureStreamBufferNV(pimpl->videoslot, i, GL_FIELD_UPPER_NV, 0);
+                    glBindVideoCaptureStreamBufferNV(pimpl->videoslot, i, GL_FIELD_LOWER_NV, bufferpitch * fieldheight[0]);
+				    if (glGetError() != GL_NO_ERROR)
+                        throw std::runtime_error("Cannot bind stream buffer");
+
+                    pimpl->pbo_pitch = bufferpitch;
+                }
 
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
@@ -368,11 +447,22 @@ SDIInput::SDIInput(SDIDevice* dev)
 			if (!wglBindVideoCaptureDeviceNV(pimpl->videoslot, 0))
 				std::cerr << "Warning: cannot unbind capture device from video slot! Subsequent operations might fail." << std::endl;
 
-			assert(std::numeric_limits<GLsizei>::max() > pimpl->textures.size());
-			glDeleteTextures((GLsizei) pimpl->textures.size(), &(pimpl->textures[0]));
-			if (glGetError() != GL_NO_ERROR)
-				std::cerr << "Warning: Failed cleaning up video textures! Leaking memory I guess..." << std::endl;
-			pimpl->textures.clear();
+            if (!pimpl->textures.empty())
+            {
+			    assert(std::numeric_limits<GLsizei>::max() > pimpl->textures.size());
+			    glDeleteTextures((GLsizei) pimpl->textures.size(), &(pimpl->textures[0]));
+			    if (glGetError() != GL_NO_ERROR)
+				    std::cerr << "Warning: Failed cleaning up video textures! Leaking memory I guess..." << std::endl;
+			    pimpl->textures.clear();
+            }
+
+            if (!pimpl->pbos.empty())
+            {
+                glDeleteBuffers((GLsizei) pimpl->pbos.size(), &(pimpl->pbos[0]));
+			    if (glGetError() != GL_NO_ERROR)
+				    std::cerr << "Warning: Failed cleaning up video buffers! Leaking memory I guess..." << std::endl;
+			    pimpl->pbos.clear();
+            }
 
 			throw;
 		}
@@ -397,11 +487,23 @@ SDIInput::~SDIInput()
 		if (!wglReleaseVideoCaptureDeviceNV(pimpl->dc, pimpl->videodev))
 			std::cerr << "Warning: cannot release capture lock! Subsequent operations might fail." << std::endl;
 
-		assert(std::numeric_limits<GLsizei>::max() > pimpl->textures.size());
-		glDeleteTextures((GLsizei) pimpl->textures.size(), &(pimpl->textures[0]));
-		if (glGetError() != GL_NO_ERROR)
-			std::cerr << "Warning: cannot free video textures! Leaking memory." << std::endl;
+        // if we dont have textures then constructor should have never succeeded 
+        assert(!pimpl->textures.empty());
+        // either way, better guard against it
+        if (!pimpl->textures.empty())
+        {
+		    assert(std::numeric_limits<GLsizei>::max() > pimpl->textures.size());
+		    glDeleteTextures((GLsizei) pimpl->textures.size(), &(pimpl->textures[0]));
+		    if (glGetError() != GL_NO_ERROR)
+			    std::cerr << "Warning: cannot free video textures! Leaking memory." << std::endl;
+        }
 
+        if (!pimpl->pbos.empty())
+        {
+            glDeleteBuffers((GLsizei) pimpl->pbos.size(), &(pimpl->pbos[0]));
+	        if (glGetError() != GL_NO_ERROR)
+		        std::cerr << "Warning: Failed cleaning up video buffers! Leaking memory I guess..." << std::endl;
+        }
 
 		std::ofstream	logfile(logfilename);
 		for (int i = 0; i < pimpl->frametimes.size(); ++i)
@@ -411,6 +513,16 @@ SDIInput::~SDIInput()
 
 		delete pimpl;
 	}
+}
+
+int SDIInput::get_width()
+{
+	return pimpl->width;
+}
+
+int SDIInput::get_height()
+{
+	return pimpl->height;
 }
 
 

@@ -12,6 +12,9 @@ namespace video
 {
 
 
+#pragma warning(push)
+#pragma warning(disable: 4275)      // non dll-interface class '...' used as base for dll-interface class '...'
+
 // specifically the compressor engine returned error codes
 //  for functions that should not fail during normal operations
 class LIBVIDEO_DLL_EXPORTS CompressorFailedException : public std::runtime_error
@@ -26,6 +29,8 @@ class LIBVIDEO_DLL_EXPORTS InteropFailedException : public std::runtime_error
 public:
 	InteropFailedException(const std::string& msg);
 };
+
+#pragma warning(pop)
 
 
 // forward-decl for pimpl

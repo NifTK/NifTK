@@ -47,8 +47,14 @@ public:
 	Type get_type() const;
 
 
+#pragma warning(push)
+#pragma warning(disable: 4251)      //  class '...' needs to have dll-interface to be used by clients of class '...'
+
 private:
 	static std::vector<SDIDevice*>		devices;
+
+#pragma warning(pop)
+
 
 public:
 	/**

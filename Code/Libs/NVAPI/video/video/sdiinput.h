@@ -22,13 +22,34 @@ protected:
 
 
 public:
-	SDIInput(SDIDevice* dev);
+	// what to do if format is interlaced
+	// these are ignored if incoming video is progressive
+	enum InterlacedBehaviour
+	{
+		// interlaced video is treated the same way as progressive
+		DO_NOTHING_SPECIAL,
+		// one of the fields (not specifying which one) is dropped
+		DROP_ONE_FIELD,
+		// both fields are captured and stacked vertically
+		STACK_FIELDS
+	};
+
+
+public:
+	SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced = DO_NOTHING_SPECIAL);
 	~SDIInput();
 
 private:
 	// not implemented
 	SDIInput(const SDIInput& copyme);
 	SDIInput& operator=(const SDIInput& assignme);
+
+
+public:
+	// these may be different from the reported capture format
+	//  if we are dropping a field, for example
+	int get_width();
+	int get_height();
 
 
 public:
@@ -53,8 +74,14 @@ public:
 	bool has_frame();
 
 
+#pragma warning(push)
+#pragma warning(disable: 4251)      //  class '...' needs to have dll-interface to be used by clients of class '...'
+
 protected:
 	std::string		logfilename;
+
+#pragma warning(pop)
+
 
 public:
 	void set_log_filename(const std::string& fn);

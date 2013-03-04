@@ -18,6 +18,53 @@ SDIDevice::~SDIDevice()
 }
 
 
+static bool map_nvformat_to_interlaced(NVVIOSIGNALFORMAT signalformat)
+{
+	switch (signalformat)
+	{
+		case NVVIOSIGNALFORMAT_NONE:
+			return false;
+
+		case NVVIOSIGNALFORMAT_487I_59_94_SMPTE259_NTSC:
+		case NVVIOSIGNALFORMAT_576I_50_00_SMPTE259_PAL:
+		case NVVIOSIGNALFORMAT_1080I_59_94_SMPTE274:
+			return true;
+
+		case NVVIOSIGNALFORMAT_720P_60_00_SMPTE296:
+		case NVVIOSIGNALFORMAT_720P_59_94_SMPTE296:
+		case NVVIOSIGNALFORMAT_720P_50_00_SMPTE296:
+		case NVVIOSIGNALFORMAT_720P_30_00_SMPTE296:
+		case NVVIOSIGNALFORMAT_720P_29_97_SMPTE296:
+		case NVVIOSIGNALFORMAT_720P_25_00_SMPTE296:
+		case NVVIOSIGNALFORMAT_720P_24_00_SMPTE296:
+		case NVVIOSIGNALFORMAT_720P_23_98_SMPTE296:
+		case NVVIOSIGNALFORMAT_1080P_30_00_SMPTE274:
+		case NVVIOSIGNALFORMAT_1080P_29_97_SMPTE274:
+		case NVVIOSIGNALFORMAT_1080P_25_00_SMPTE274:
+		case NVVIOSIGNALFORMAT_1080P_24_00_SMPTE274:
+		case NVVIOSIGNALFORMAT_1080P_23_976_SMPTE274:
+		case NVVIOSIGNALFORMAT_1080P_50_00_SMPTE274_3G_LEVEL_A:
+		case NVVIOSIGNALFORMAT_1080P_59_94_SMPTE274_3G_LEVEL_A:
+		case NVVIOSIGNALFORMAT_1080P_60_00_SMPTE274_3G_LEVEL_A:
+		case NVVIOSIGNALFORMAT_1080P_60_00_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_1080P_50_00_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_1080P_30_00_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_1080P_25_00_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_1080P_24_00_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_1080P_59_94_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_1080P_29_97_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_1080P_23_98_SMPTE274_3G_LEVEL_B:
+		case NVVIOSIGNALFORMAT_2048P_30_00_SMPTE372:
+			return false;
+
+		// FIXNE: fill in all the others
+	}
+
+	// FIXME: i want to know when i'm testing combinations that i havent implemented yet
+	assert(false);
+	return false;
+}
+
 static StreamFormat::RefreshRate map_nvformat_to_rr(NVVIOSIGNALFORMAT signalformat)
 {
 	switch (signalformat)
@@ -195,7 +242,7 @@ StreamFormat SDIDevice::get_format(int streamno)
 			if (streamno >= streamcount)
 				return StreamFormat();
 			// FIXME: this should use the actual format of the stream (despite the above mentioned limitation, which could go away with newer hardware revisions)
-			return StreamFormat(map_nvformat_to_pf(foundformat), map_nvformat_to_rr(foundformat));
+			return StreamFormat(map_nvformat_to_pf(foundformat), map_nvformat_to_rr(foundformat), map_nvformat_to_interlaced(foundformat));
 		}
 		case NVVIOCONFIGTYPE_OUT:
 			assert(this->type == OUTPUT);
@@ -203,7 +250,7 @@ StreamFormat SDIDevice::get_format(int streamno)
 			// FIXME: untested what this would return if we do custom-sdi-out with two streams
 			if (streamno >= 1)
 				return StreamFormat();
-			return StreamFormat(map_nvformat_to_pf(config.vioConfig.outConfig.signalFormat), map_nvformat_to_rr(config.vioConfig.outConfig.signalFormat));
+			return StreamFormat(map_nvformat_to_pf(config.vioConfig.outConfig.signalFormat), map_nvformat_to_rr(config.vioConfig.outConfig.signalFormat), map_nvformat_to_interlaced(config.vioConfig.outConfig.signalFormat));
 	}
 
 	return StreamFormat();
