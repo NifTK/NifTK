@@ -918,6 +918,37 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
     this->EnableWidgets(true);
   }
 
+  int selectedWindow = -1;
+
+  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (m_SingleViewWidgets[i]->ContainsWindow(window))
+    {
+      selectedWindow = i;
+      break;
+    }
+  }
+  if (selectedWindow == -1)
+  {
+    MITK_INFO << "QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes) ERROR node dropped on an unknown window \n";
+  }
+  MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
+//  MIDASView view = this->m_SingleViewWidgets[selectedWindow]->GetView();
+  switch (orientation)
+  {
+  case MIDAS_ORIENTATION_AXIAL:
+    window = this->m_SingleViewWidgets[selectedWindow]->GetAxialWindow();
+    break;
+  case MIDAS_ORIENTATION_SAGITTAL:
+    window = this->m_SingleViewWidgets[selectedWindow]->GetSagittalWindow();
+    break;
+  case MIDAS_ORIENTATION_CORONAL:
+    window = this->m_SingleViewWidgets[selectedWindow]->GetCoronalWindow();
+    break;
+  case MIDAS_ORIENTATION_UNKNOWN:
+    break;
+  }
+
   // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
   if (!m_Dropped)
@@ -926,7 +957,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
     m_Dropped = true;
   }
 
-  int selectedWindow = this->GetSelectedWindowIndex();
+//  int selectedWindow = this->GetSelectedWindowIndex();
   double magnificationFactor = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
 
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
