@@ -101,7 +101,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
-, m_Dropped(false)
 , m_InteractorsEnabled(false)
 {
   assert(visibilityManager);
@@ -918,51 +917,42 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
     this->EnableWidgets(true);
   }
 
-  int selectedWindow = -1;
+  QmitkMIDASSingleViewWidget* selectedViewWidget = NULL;
 
   for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    if (m_SingleViewWidgets[i]->ContainsWindow(window))
+    QmitkMIDASSingleViewWidget* viewWidget = m_SingleViewWidgets[i];
+    if (viewWidget->ContainsWindow(window))
     {
-      selectedWindow = i;
+      selectedViewWidget = viewWidget;
+      MIDASOrientation orientation = selectedViewWidget->GetOrientation();
+    //  MIDASView view = selectedView->GetView();
+      switch (orientation)
+      {
+      case MIDAS_ORIENTATION_AXIAL:
+        window = selectedViewWidget->GetAxialWindow();
+        break;
+      case MIDAS_ORIENTATION_SAGITTAL:
+        window = selectedViewWidget->GetSagittalWindow();
+        break;
+      case MIDAS_ORIENTATION_CORONAL:
+        window = selectedViewWidget->GetCoronalWindow();
+        break;
+      case MIDAS_ORIENTATION_UNKNOWN:
+        break;
+      }
       break;
     }
-  }
-  if (selectedWindow == -1)
-  {
-    MITK_INFO << "QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes) ERROR node dropped on an unknown window \n";
-  }
-  MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
-//  MIDASView view = this->m_SingleViewWidgets[selectedWindow]->GetView();
-  switch (orientation)
-  {
-  case MIDAS_ORIENTATION_AXIAL:
-    window = this->m_SingleViewWidgets[selectedWindow]->GetAxialWindow();
-    break;
-  case MIDAS_ORIENTATION_SAGITTAL:
-    window = this->m_SingleViewWidgets[selectedWindow]->GetSagittalWindow();
-    break;
-  case MIDAS_ORIENTATION_CORONAL:
-    window = this->m_SingleViewWidgets[selectedWindow]->GetCoronalWindow();
-    break;
-  case MIDAS_ORIENTATION_UNKNOWN:
-    break;
   }
 
   // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
-  if (!m_Dropped)
-  {
-    this->OnFocusChanged();
-    m_Dropped = true;
-  }
 
-//  int selectedWindow = this->GetSelectedWindowIndex();
-  double magnificationFactor = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
+  double magnificationFactor = selectedViewWidget->GetMagnificationFactor();
 
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
 
-  MIDASView view = m_SingleViewWidgets[selectedWindow]->GetView();
+  MIDASView view = selectedViewWidget->GetView();
   m_MIDASOrientationWidget->SetToView(view);
 
   this->Update2DCursorVisibility();
