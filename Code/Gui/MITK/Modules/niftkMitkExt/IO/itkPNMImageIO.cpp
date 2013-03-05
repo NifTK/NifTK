@@ -269,7 +269,7 @@ void PNMImageIO::WriteSlice(const std::string & fileName, const void * buffer)
     return;
   }
 
-  vtkSmartPointer<vtkImageImport> imageImport = vtkSmartPointer<vtkImageImport>::New();
+  vtkImageImport* imageImport = vtkImageImport::New();
 
   imageImport->SetWholeExtent(0, m_Dimensions[0]-1, 0, m_Dimensions[1]-1, 0, 0);
   imageImport->SetDataExtentToWholeExtent();
@@ -280,7 +280,6 @@ void PNMImageIO::WriteSlice(const std::string & fileName, const void * buffer)
   imageImport->SetDataScalarTypeToUnsignedChar();
 
   imageImport->Update();
-  //m_PixelType
 
   vtkPNMWriter * pnmWriter = vtkPNMWriter::New();
   pnmWriter->SetFileName(fileName.c_str());
