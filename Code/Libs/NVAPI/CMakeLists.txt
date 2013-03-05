@@ -50,7 +50,6 @@ ENDIF(BUILD_SHARED_LIBS)
 
 GET_FILENAME_COMPONENT(cudaencoderpath ${CUDA_CUDART_LIBRARY} PATH)
 
-
 TARGET_LINK_LIBRARIES(niftknvapi  
   ${NVAPI_LIBRARY}
   ${OPENGL_gl_LIBRARY}
@@ -59,5 +58,11 @@ TARGET_LINK_LIBRARIES(niftknvapi
   ${cudaencoderpath}/nvcuvenc.lib
   ${cudaencoderpath}/nvcuvid.lib
 )
+
+# all of the nvidia-driver/cuda dependencies should be delay-loaded
+#  so this library would at least load on a machine that doesnt have nv hardware
+SET_TARGET_PROPERTIES(niftknvapi PROPERTIES LINK_FLAGS 
+    "/DELAYLOAD:nvcuvenc.dll /DELAYLOAD:nvcuvid.dll /DELAYLOAD:nvcuda.dll")
+
 
 MITK_INSTALL(TARGETS niftknvapi)
