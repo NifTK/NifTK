@@ -33,6 +33,7 @@ IF(NIFTYREG_FOUND)
   SET(niftkVTK_SRCS
     ${niftkVTK_SRCS}
     niftkF3DControlGridToVTKPolyData.cxx
+    niftkVTKIterativeClosestPoint.cxx
     )
 ENDIF(NIFTYREG_FOUND)
 
