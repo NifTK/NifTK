@@ -121,7 +121,7 @@ if [ "${TYPE}" = "Release" ]; then
   run_command "make package"
 fi
 
-if [ -z ${NIFTK_INSTALL_PREFIX} ]
+if [ ! -z ${NIFTK_INSTALL_PREFIX} ]
 then
   run_command "make install"
 fi
