@@ -305,54 +305,6 @@ bool QmitkMIDASStdMultiWidget::IsSelected() const
   return m_IsSelected;
 }
 
-//void QmitkMIDASStdMultiWidget::SetSelectedWindow(vtkRenderWindow* window)
-//{
-//  // When we "Select", the selection is at the level of the QmitkMIDASStdMultiWidget
-//  // so the whole of this widget is selected. However, we may have clicked in
-//  // a specific view, so it still helps to highlight the most recently clicked on view.
-//  // Also, if you are displaying orthoview then you actually have 4 windows present,
-//  // then highlighting them all starts to look a bit confusing, so we just highlight the
-//  // most recently focussed window, (eg. axial, sagittal, coronal or 3D).
-//
-//  if (window == this->GetRenderWindow1()->GetVtkRenderWindow())
-//  {
-//    m_IsSelected = true;
-//    m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
-//    m_RectangleRendering2->Disable();
-//    m_RectangleRendering3->Disable();
-//    m_RectangleRendering4->Disable();
-//  }
-//  else if (window == this->GetRenderWindow2()->GetVtkRenderWindow())
-//  {
-//    m_IsSelected = true;
-//    m_RectangleRendering1->Disable();
-//    m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
-//    m_RectangleRendering3->Disable();
-//    m_RectangleRendering4->Disable();
-//  }
-//  else if (window == this->GetRenderWindow3()->GetVtkRenderWindow())
-//  {
-//    m_IsSelected = true;
-//    m_RectangleRendering1->Disable();
-//    m_RectangleRendering2->Disable();
-//    m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
-//    m_RectangleRendering4->Disable();
-//  }
-//  else if (window == this->GetRenderWindow4()->GetVtkRenderWindow())
-//  {
-//    m_IsSelected = true;
-//    m_RectangleRendering1->Disable();
-//    m_RectangleRendering2->Disable();
-//    m_RectangleRendering3->Disable();
-//    m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
-//  }
-//  else
-//  {
-//    this->SetSelected(false);
-//  }
-//  this->ForceImmediateUpdate();
-//}
-
 void QmitkMIDASStdMultiWidget::SetSelectedWindow(QmitkRenderWindow* window)
 {
   // When we "Select", the selection is at the level of the QmitkMIDASStdMultiWidget
