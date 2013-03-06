@@ -174,9 +174,9 @@ bool QmitkMIDASSingleViewWidget::IsSelected() const
   return m_MultiWidget->IsSelected();
 }
 
-void QmitkMIDASSingleViewWidget::SetSelectedWindow(vtkRenderWindow* window)
+void QmitkMIDASSingleViewWidget::SetSelectedWindow(QmitkRenderWindow* renderWindow)
 {
-  m_MultiWidget->SetSelectedWindow(window);
+  m_MultiWidget->SetSelectedWindow(renderWindow);
 }
 
 std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetSelectedWindows() const
@@ -284,14 +284,14 @@ unsigned int QmitkMIDASSingleViewWidget::GetMaxTime() const
   return m_MultiWidget->GetMaxTime();
 }
 
-bool QmitkMIDASSingleViewWidget::ContainsWindow(QmitkRenderWindow *window) const
+bool QmitkMIDASSingleViewWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
 {
-  return m_MultiWidget->ContainsWindow(window);
+  return m_MultiWidget->ContainsRenderWindow(renderWindow);
 }
 
-bool QmitkMIDASSingleViewWidget::ContainsVtkRenderWindow(vtkRenderWindow *window) const
+QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const
 {
-  return m_MultiWidget->ContainsVtkRenderWindow(window);
+  return m_MultiWidget->GetRenderWindow(aVtkRenderWindow);
 }
 
 MIDASOrientation QmitkMIDASSingleViewWidget::GetOrientation()

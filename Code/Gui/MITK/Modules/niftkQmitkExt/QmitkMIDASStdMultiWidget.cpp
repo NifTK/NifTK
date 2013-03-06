@@ -305,7 +305,55 @@ bool QmitkMIDASStdMultiWidget::IsSelected() const
   return m_IsSelected;
 }
 
-void QmitkMIDASStdMultiWidget::SetSelectedWindow(vtkRenderWindow* window)
+//void QmitkMIDASStdMultiWidget::SetSelectedWindow(vtkRenderWindow* window)
+//{
+//  // When we "Select", the selection is at the level of the QmitkMIDASStdMultiWidget
+//  // so the whole of this widget is selected. However, we may have clicked in
+//  // a specific view, so it still helps to highlight the most recently clicked on view.
+//  // Also, if you are displaying orthoview then you actually have 4 windows present,
+//  // then highlighting them all starts to look a bit confusing, so we just highlight the
+//  // most recently focussed window, (eg. axial, sagittal, coronal or 3D).
+//
+//  if (window == this->GetRenderWindow1()->GetVtkRenderWindow())
+//  {
+//    m_IsSelected = true;
+//    m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
+//    m_RectangleRendering2->Disable();
+//    m_RectangleRendering3->Disable();
+//    m_RectangleRendering4->Disable();
+//  }
+//  else if (window == this->GetRenderWindow2()->GetVtkRenderWindow())
+//  {
+//    m_IsSelected = true;
+//    m_RectangleRendering1->Disable();
+//    m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
+//    m_RectangleRendering3->Disable();
+//    m_RectangleRendering4->Disable();
+//  }
+//  else if (window == this->GetRenderWindow3()->GetVtkRenderWindow())
+//  {
+//    m_IsSelected = true;
+//    m_RectangleRendering1->Disable();
+//    m_RectangleRendering2->Disable();
+//    m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
+//    m_RectangleRendering4->Disable();
+//  }
+//  else if (window == this->GetRenderWindow4()->GetVtkRenderWindow())
+//  {
+//    m_IsSelected = true;
+//    m_RectangleRendering1->Disable();
+//    m_RectangleRendering2->Disable();
+//    m_RectangleRendering3->Disable();
+//    m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
+//  }
+//  else
+//  {
+//    this->SetSelected(false);
+//  }
+//  this->ForceImmediateUpdate();
+//}
+
+void QmitkMIDASStdMultiWidget::SetSelectedWindow(QmitkRenderWindow* window)
 {
   // When we "Select", the selection is at the level of the QmitkMIDASStdMultiWidget
   // so the whole of this widget is selected. However, we may have clicked in
@@ -314,38 +362,37 @@ void QmitkMIDASStdMultiWidget::SetSelectedWindow(vtkRenderWindow* window)
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focussed window, (eg. axial, sagittal, coronal or 3D).
 
-  if (this->ContainsVtkRenderWindow(window))
+  if (window == this->GetRenderWindow1())
   {
     m_IsSelected = true;
-
-    if (window == this->GetRenderWindow1()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Disable();
-    }
-    else if (window == this->GetRenderWindow2()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Disable();
-    }
-    else if (window == this->GetRenderWindow3()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
-      m_RectangleRendering4->Disable();
-    }
-    else if (window == this->GetRenderWindow4()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
-    }
+    m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
+    m_RectangleRendering2->Disable();
+    m_RectangleRendering3->Disable();
+    m_RectangleRendering4->Disable();
+  }
+  else if (window == this->GetRenderWindow2())
+  {
+    m_IsSelected = true;
+    m_RectangleRendering1->Disable();
+    m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
+    m_RectangleRendering3->Disable();
+    m_RectangleRendering4->Disable();
+  }
+  else if (window == this->GetRenderWindow3())
+  {
+    m_IsSelected = true;
+    m_RectangleRendering1->Disable();
+    m_RectangleRendering2->Disable();
+    m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
+    m_RectangleRendering4->Disable();
+  }
+  else if (window == this->GetRenderWindow4())
+  {
+    m_IsSelected = true;
+    m_RectangleRendering1->Disable();
+    m_RectangleRendering2->Disable();
+    m_RectangleRendering3->Disable();
+    m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
   }
   else
   {
@@ -579,13 +626,13 @@ void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibility(std::vector<mitk::D
 }
 
 
-bool QmitkMIDASStdMultiWidget::ContainsWindow(QmitkRenderWindow *window) const
+bool QmitkMIDASStdMultiWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
 {
   bool result = false;
-  if (   mitkWidget1 == window
-      || mitkWidget2 == window
-      || mitkWidget3 == window
-      || mitkWidget4 == window
+  if (   mitkWidget1 == renderWindow
+      || mitkWidget2 == renderWindow
+      || mitkWidget3 == renderWindow
+      || mitkWidget4 == renderWindow
       )
   {
     result = true;
@@ -593,18 +640,25 @@ bool QmitkMIDASStdMultiWidget::ContainsWindow(QmitkRenderWindow *window) const
   return result;
 }
 
-bool QmitkMIDASStdMultiWidget::ContainsVtkRenderWindow(vtkRenderWindow *window) const
+QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const
 {
-  bool result = false;
-  if (   mitkWidget1->GetVtkRenderWindow() == window
-      || mitkWidget2->GetVtkRenderWindow() == window
-      || mitkWidget3->GetVtkRenderWindow() == window
-      || mitkWidget4->GetVtkRenderWindow() == window
-      )
+  if (mitkWidget1->GetVtkRenderWindow() == aVtkRenderWindow)
   {
-    result = true;
+    return mitkWidget1;
   }
-  return result;
+  if (mitkWidget2->GetVtkRenderWindow() == aVtkRenderWindow)
+  {
+    return mitkWidget2;
+  }
+  if (mitkWidget3->GetVtkRenderWindow() == aVtkRenderWindow)
+  {
+    return mitkWidget3;
+  }
+  if (mitkWidget4->GetVtkRenderWindow() == aVtkRenderWindow)
+  {
+    return mitkWidget4;
+  }
+  return 0;
 }
 
 std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetAllWindows() const

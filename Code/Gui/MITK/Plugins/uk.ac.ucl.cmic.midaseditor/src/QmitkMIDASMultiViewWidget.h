@@ -101,7 +101,7 @@ public:
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
 
   /// \brief Sets the default view (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultViewType(MIDASView view);
+  void SetDefaultViewType(MIDASView midasView);
 
   /// \brief Sets the default drop type checkbox.
   void SetDropTypeWidget(MIDASDropType dropType);
@@ -252,7 +252,7 @@ protected slots:
   void On2x2ButtonPressed();
   void OnRowsSliderValueChanged(int);
   void OnColumnsSliderValueChanged(int);
-  void OnOrientationSelected(MIDASView view);
+  void OnOrientationSelected(MIDASView midasView);
   void OnDropSingleRadioButtonToggled(bool);
   void OnDropMultipleRadioButtonToggled(bool);
   void OnDropThumbnailRadioButtonToggled(bool);
@@ -278,15 +278,15 @@ protected:
 
 private:
 
-  /// \brief Utility method to get a list of viewers to update.
+  /// \brief Utility method to get a list of views to update.
   /// \param doAllVisible if true will ensure the returned vector contains all visible render window, and if false will return just the currently selected window.
   /// \return vector of integers corresponding to widget numbers.
-  std::vector<unsigned int> GetViewerIndexesToUpdate(bool doAllVisible) const;
+  std::vector<unsigned int> GetViewIndexesToUpdate(bool doAllVisible) const;
 
-  /// \brief Will return m_SelectedWindow, or if m_SelectedWindow < 0 will return 0.
-  int GetSelectedWindowIndex() const;
+  /// \brief Will return m_SelectedView, or if m_SelectedView < 0 will return 0.
+  int GetSelectedViewIndex() const;
 
-  /// \brief Gets the row number, given a viewer index [0, m_MaxRows*m_MaxCols-1]
+  /// \brief Gets the row number, given a view index [0, m_MaxRows*m_MaxCols-1]
   unsigned int GetRowFromIndex(unsigned int i) const;
 
   /// \brief Gets the column number, given a viewer index [0, m_MaxRows*m_MaxCols-1]
@@ -302,10 +302,10 @@ private:
   void SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode);
 
   // Called from the QRadioButtons to set the view.
-  void SwitchView(MIDASView view);
+  void SwitchMIDASView(MIDASView midasView);
 
   /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
-  void SetSelectedWindow(unsigned int i);
+  void SetSelectedViewIndex(unsigned int i);
 
   /// \brief Method to enable, or disable all widgets, for use when GUI is first started, or the whole screen enabled, disabled.
   void EnableWidgets(bool enabled);
@@ -325,14 +325,14 @@ private:
   /// \brief Enables/Disables widgets to control orientation.
   void EnableOrientationWidgets(bool enabled);
 
-  /// \brief Creates a viewer widget.
+  /// \brief Creates a view widget.
   QmitkMIDASSingleViewWidget* CreateSingleViewWidget();
 
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();
 
-  /// \brief Updates focus manager to auto-focus on the 'currently selected' viewer
-  void UpdateFocusManagerToSelectedViewer();
+  /// \brief Updates focus manager to auto-focus on the 'currently selected' view
+  void UpdateFocusManagerToSelectedView();
 
   /// \brief Force all visible viewers to match the 'currently selected' viewers geometry.
   void UpdateBoundGeometry(bool isBoundNow);
@@ -340,7 +340,7 @@ private:
   /// \brief Force all visible viewers to match the 'currently selected' viewers magnification.
   void UpdateBoundMagnification(bool isBoundNow);
 
-  void SwitchWindows(int selectedViewer, vtkRenderWindow *selectedWindow);
+  void SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedWindow);
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -398,7 +398,7 @@ private:
 
   // Member variables for control purposes.
   unsigned long                                  m_FocusManagerObserverTag;
-  int                                            m_SelectedWindow;
+  int                                            m_SelectedViewIndex;
   int                                            m_DefaultNumberOfRows;
   int                                            m_DefaultNumberOfColumns;
   int                                            m_NumberOfRowsInNonThumbnailMode;
@@ -413,6 +413,7 @@ private:
   bool                                           m_NavigationControllerEventListening;
   bool                                           m_InteractorsEnabled;
   double                                         m_PreviousMagnificationFactor;
+  bool                                           m_Dropped;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

@@ -99,7 +99,7 @@ public:
   bool IsSelected() const;
 
   /// \brief More selective, will put the border round just the selected window, but still the whole widget is considered "selected".
-  void SetSelectedWindow(vtkRenderWindow* window);
+  void SetSelectedWindow(QmitkRenderWindow* renderWindow);
 
   /// \brief Returns the specifically selected sub-pane.
   std::vector<QmitkRenderWindow*> GetSelectedWindows() const;
@@ -167,11 +167,11 @@ public:
   /// \brief Gets the maximum time step, or -1 if the widget is currently showing multiple views.
   unsigned int GetMaxTime() const;
 
-  /// \brief Returns true if the widget is fully created and contains the given window, and false otherwise.
-  bool ContainsWindow(QmitkRenderWindow *window) const;
+  /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
+  bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
-  /// \brief Returns true if the widget is fully created and contains the given window, and false otherwise.
-  bool ContainsVtkRenderWindow(vtkRenderWindow *window) const;
+  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
+  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const;
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
