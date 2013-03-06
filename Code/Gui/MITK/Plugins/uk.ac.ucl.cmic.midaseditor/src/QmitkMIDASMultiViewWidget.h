@@ -413,7 +413,6 @@ private:
   bool                                           m_NavigationControllerEventListening;
   bool                                           m_InteractorsEnabled;
   double                                         m_PreviousMagnificationFactor;
-  bool                                           m_Dropped;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

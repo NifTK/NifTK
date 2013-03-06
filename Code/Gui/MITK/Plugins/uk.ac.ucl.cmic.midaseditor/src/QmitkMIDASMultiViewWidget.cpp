@@ -101,7 +101,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
 , m_InteractorsEnabled(false)
-, m_Dropped(false)
 {
   assert(visibilityManager);
 
@@ -660,7 +659,6 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode)
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode)" << std::endl;
   // Work out required number of widgets, and hence if we need to create any new ones.
   unsigned int requiredNumberOfWidgets = numberOfRows * numberOfColumns;
   unsigned int currentNumberOfWidgets = m_SingleViewWidgets.size();
@@ -954,9 +952,6 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
 
   // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
-  if (!m_Dropped) {
-    OnFocusChanged();
-  }
 
   double magnificationFactor = selectedView->GetMagnificationFactor();
 
@@ -1060,8 +1055,6 @@ void QmitkMIDASMultiViewWidget::SetFocus()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::OnFocusChanged()" << std::endl;
-
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer::ConstPointer baseRenderer = focusManager->GetFocused();
 
@@ -1637,7 +1630,6 @@ void QmitkMIDASMultiViewWidget::Deactivated()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableLinkedNavigation(bool enable)
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::EnableLinkedNavigation(bool enable) enable: " << enable << std::endl;
   this->SetNavigationControllerEventListening(enable);
 }
 
@@ -1659,7 +1651,6 @@ bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled)
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled) enabled: " << enabled << std::endl;
   int selectedViewIndex = this->GetSelectedViewIndex();
   if (enabled && !this->m_NavigationControllerEventListening)
   {
@@ -1732,7 +1723,6 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
   {
     for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      MITK_INFO << "QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind) viewWidget: " << i << " on " << std::endl;
       m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
     }
   }
@@ -1742,12 +1732,10 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
     {
       if ((int)i == selectedViewIndex)
       {
-        MITK_INFO << "QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind) viewWidget: " << i << " on " << std::endl;
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
       }
       else
       {
-        MITK_INFO << "QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind) viewWidget: " << i << " off " << std::endl;
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
       }
     }
