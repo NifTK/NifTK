@@ -17,10 +17,24 @@
 #endif
 
 #include <iostream>
-#include "itkTestMain.h"
+#include <cstdlib>
+#include <niftkVTKIterativeClosestPoint.h>
 
-void RegisterTests()
+/**
+ * Runs ICP registration a known data set and checks the error
+ */
+
+int VTKIterativeClosestPointTest ( int argc, char * argv[] ) 
 {
-  REGISTER_TEST(VTKIterativeClosestPointTest);
-}
 
+  niftk::IterativeClosestPoint tester;
+    std::cerr << "Boing";
+  for ( int i = 0 ; i < argc ; i ++ ) 
+  {
+    std::cerr << argv[i] << std::endl;
+  }
+
+  //return EXIT_SUCCESS;
+  return EXIT_FAILURE;
+ // return 0 ;
+}

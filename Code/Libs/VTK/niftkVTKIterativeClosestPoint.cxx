@@ -41,6 +41,16 @@ namespace niftk
     m_icp->SetMaximumNumberOfIterations(m_MaxIterations);
   }
 
+  IterativeClosestPoint::~IterativeClosestPoint()
+  {}
+  void IterativeClosestPoint::SetSource ( vtkSmartPointer<vtkPolyData>  source)
+  {
+    m_Source = source;
+  }
+  void IterativeClosestPoint::SetTarget ( vtkSmartPointer<vtkPolyData>  target)
+  {
+    m_Target = target;
+  } 
   bool IterativeClosestPoint::Run()
   {
    if ( m_Source == NULL || m_Target == NULL ) 
@@ -69,7 +79,7 @@ namespace niftk
     vtkSmartPointer<vtkTransformPolyDataFilter> icpTransformFilter =
           vtkSmartPointer<vtkTransformPolyDataFilter>::New();
 #if VTK_MAJOR_VERSION <= 5
-    icpTransformFilter->SetInputData(m_Source);
+    icpTransformFilter->SetInput(m_Source);
 #else
     icpTransformFilter->SetInputData(m_Source);
 #endif

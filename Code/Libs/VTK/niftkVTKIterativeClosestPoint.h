@@ -38,6 +38,7 @@ namespace niftk
 
     public:
       IterativeClosestPoint();
+      ~IterativeClosestPoint();
     /* \brief
     * Perform a vtkIterative closest point registration on the two data sets
     */
@@ -46,6 +47,8 @@ namespace niftk
       vtkSmartPointer<vtkMatrix4x4> GetTransform();
       bool TransformSource();
       bool TransformTarget();
+      void SetSource (vtkSmartPointer<vtkPolyData>);
+      void SetTarget (vtkSmartPointer<vtkPolyData>);
 
 
     private:
