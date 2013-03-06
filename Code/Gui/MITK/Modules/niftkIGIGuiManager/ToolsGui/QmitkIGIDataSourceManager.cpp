@@ -558,6 +558,12 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSo
   {
     source = QmitkIGIOpenCVDataSource::New();
   }
+#ifdef _USE_NVAPI
+  else if (sourceType == 3)
+  {
+    source = QmitkIGINVidiaDataSource::New();
+  }
+#endif
   else
   {
     std::cerr << "Matt, not implemented yet" << std::endl;
@@ -750,7 +756,11 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
       tItem->setIcon(pix);
     }
 
+    // update the status text
+    m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
+
     double lag = source->GetCurrentTimeLag();
+    // FIXME: does this leak mem?
     QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
     lagItem->setTextAlignment(Qt::AlignCenter);
     lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
