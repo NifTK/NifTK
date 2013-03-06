@@ -102,21 +102,21 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   // We maintain "current slice, current magnification" for both bound and unbound views = 2 of each.
   for (unsigned int i = 0; i < 2; i++)
   {
-    m_CurrentSliceNumbers.push_back(0);
-    m_CurrentTimeSliceNumbers.push_back(0);
-    m_CurrentMagnificationFactors.push_back(minimumMagnification);
-    m_CurrentOrientations.push_back(MIDAS_ORIENTATION_UNKNOWN);
-    m_CurrentViews.push_back(MIDAS_VIEW_UNKNOWN);
+    m_CurrentSliceNumbers[i] = 0;
+    m_CurrentTimeSliceNumbers[i] = 0;
+    m_CurrentMagnificationFactors[i] = minimumMagnification;
+    m_CurrentOrientations[i] = MIDAS_ORIENTATION_UNKNOWN;
+    m_CurrentViews[i] = MIDAS_VIEW_UNKNOWN;
   }
 
   // But we have to remember the slice, magnification and orientation for 3 views unbound, then 3 views bound = 6 of each.
   for (int i = 0; i < 6; i++)
   {
-    m_PreviousSliceNumbers.push_back(0);
-    m_PreviousTimeSliceNumbers.push_back(0);
-    m_PreviousMagnificationFactors.push_back(minimumMagnification);
-    m_PreviousOrientations.push_back(MIDAS_ORIENTATION_UNKNOWN);
-    m_PreviousViews.push_back(MIDAS_VIEW_UNKNOWN);
+    m_PreviousSliceNumbers[i] = 0;
+    m_PreviousTimeSliceNumbers[i] = 0;
+    m_PreviousMagnificationFactors[i] = minimumMagnification;
+    m_PreviousOrientations[i] = MIDAS_ORIENTATION_UNKNOWN;
+    m_PreviousViews[i] = MIDAS_VIEW_UNKNOWN;
   }
 
   // Create the main QmitkMIDASStdMultiWidget

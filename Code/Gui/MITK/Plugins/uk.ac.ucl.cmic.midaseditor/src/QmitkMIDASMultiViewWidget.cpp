@@ -385,8 +385,8 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::RequestUpdateAll()
 {
-  std::vector<unsigned int> listToUpdate = this->GetViewIndexesToUpdate(true);
-  for (unsigned int i = 0; i < listToUpdate.size(); i++)
+  QList<int> listToUpdate = this->GetViewIndexesToUpdate(true);
+  for (int i = 0; i < listToUpdate.size(); i++)
   {
     if (listToUpdate[i] >= 0 && listToUpdate[i] < this->m_SingleViewWidgets.size())
     {
@@ -478,7 +478,7 @@ bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
 void QmitkMIDASMultiViewWidget::SetShow3DViewInOrthoView(bool visible)
 {
   m_Show3DViewInOrthoview = visible;
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->SetDisplay3DViewInOrthoView(visible);
   }
@@ -496,7 +496,7 @@ bool QmitkMIDASMultiViewWidget::GetShow3DViewInOrthoView() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remember)
 {
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->SetRememberViewSettingsPerOrientation(remember);
   }
@@ -647,7 +647,7 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 {
   QColor background(colour[0] * 255, colour[1] * 255, colour[2] * 255);
 
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->SetBackgroundColor(background);
   }
@@ -657,11 +657,11 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode)
+void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColumns, bool isThumbnailMode)
 {
   // Work out required number of widgets, and hence if we need to create any new ones.
-  unsigned int requiredNumberOfWidgets = numberOfRows * numberOfColumns;
-  unsigned int currentNumberOfWidgets = m_SingleViewWidgets.size();
+  int requiredNumberOfWidgets = numberOfRows * numberOfColumns;
+  int currentNumberOfWidgets = m_SingleViewWidgets.size();
 
   // If we have the right number of widgets, there is nothing to do, so early exit.
   if (requiredNumberOfWidgets == currentNumberOfWidgets)
@@ -679,23 +679,23 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   if (requiredNumberOfWidgets > currentNumberOfWidgets)
   {
     // create some more widgets
-    unsigned int additionalWidgets = requiredNumberOfWidgets - m_SingleViewWidgets.size();
-    for (unsigned int i = 0; i < additionalWidgets; i++)
+    int additionalWidgets = requiredNumberOfWidgets - m_SingleViewWidgets.size();
+    for (int i = 0; i < additionalWidgets; i++)
     {
       QmitkMIDASSingleViewWidget *widget = this->CreateSingleViewWidget();
       widget->hide();
 
       this->m_SingleViewWidgets.push_back(widget);
       this->m_VisibilityManager->RegisterWidget(widget);
-      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfWidgets+i, false);
+      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfWidgets + i, false);
     }
   }
   else if (requiredNumberOfWidgets < currentNumberOfWidgets)
   {
     // destroy surplus widgets
-    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfWidgets, m_SingleViewWidgets.size()-1);
+    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfWidgets, m_SingleViewWidgets.size() - 1);
 
-    for (unsigned int i = requiredNumberOfWidgets; i < m_SingleViewWidgets.size(); i++)
+    for (int i = requiredNumberOfWidgets; i < m_SingleViewWidgets.size(); i++)
     {
       delete m_SingleViewWidgets[i];
     }
@@ -720,7 +720,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   }
 
   // Make all current widgets inVisible, as we are going to destroy layout.
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->hide();
   }
@@ -740,10 +740,10 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
 
   m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows, 1, 0);
 
-  unsigned int widgetCounter = 0;
-  for (unsigned int r = 0; r < numberOfRows; r++)
+  int widgetCounter = 0;
+  for (int r = 0; r < numberOfRows; r++)
   {
-    for (unsigned int c = 0; c < numberOfColumns; c++)
+    for (int c = 0; c < numberOfColumns; c++)
     {
       m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[widgetCounter], r, c);
       m_SingleViewWidgets[widgetCounter]->show();
@@ -790,7 +790,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASMultiViewWidget::GetRowFromIndex(unsigned int i) const
+int QmitkMIDASMultiViewWidget::GetRowFromIndex(int i) const
 {
   if (i < 0 || i >= m_MaxRows*m_MaxCols)
   {
@@ -804,7 +804,7 @@ unsigned int QmitkMIDASMultiViewWidget::GetRowFromIndex(unsigned int i) const
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASMultiViewWidget::GetColumnFromIndex(unsigned int i) const
+int QmitkMIDASMultiViewWidget::GetColumnFromIndex(int i) const
 {
   if (i < 0 || i >= m_MaxRows*m_MaxCols)
   {
@@ -818,7 +818,7 @@ unsigned int QmitkMIDASMultiViewWidget::GetColumnFromIndex(unsigned int i) const
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASMultiViewWidget::GetIndexFromRowAndColumn(unsigned int r, unsigned int c) const
+int QmitkMIDASMultiViewWidget::GetIndexFromRowAndColumn(int r, int c) const
 {
   return r*m_MaxCols + c;
 }
@@ -855,14 +855,14 @@ void QmitkMIDASMultiViewWidget::On2x2ButtonPressed()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnRowsSliderValueChanged(int r)
 {
-  this->SetLayoutSize((unsigned int)r, (unsigned int)m_ColumnsSpinBox->value(), false);
+  this->SetLayoutSize(r, m_ColumnsSpinBox->value(), false);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 {
-  this->SetLayoutSize((unsigned int)m_RowsSpinBox->value(), (unsigned int)c, false);
+  this->SetLayoutSize(m_RowsSpinBox->value(), c, false);
 }
 
 
@@ -870,7 +870,7 @@ void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
   bool found = false;
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (m_SingleViewWidgets[i] == view)
     {
@@ -901,7 +901,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
 
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (m_SingleViewWidgets[i] != widget)
       {
@@ -924,12 +924,12 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
 
   QmitkMIDASSingleViewWidget* selectedView = NULL;
 
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    QmitkMIDASSingleViewWidget* viewWidget = m_SingleViewWidgets[i];
-    if (viewWidget->ContainsRenderWindow(renderWindow))
+    QmitkMIDASSingleViewWidget* view = m_SingleViewWidgets[i];
+    if (view->ContainsRenderWindow(renderWindow))
     {
-      selectedView = viewWidget;
+      selectedView = view;
       MIDASOrientation orientation = selectedView->GetOrientation();
       //  MIDASView midasView = selectedView->GetMIDASView();
       switch (orientation)
@@ -968,7 +968,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedWindow)
 {
-  if (selectedViewIndex >= 0 && selectedViewIndex < (int)m_SingleViewWidgets.size())
+  if (selectedViewIndex >= 0 && selectedViewIndex < m_SingleViewWidgets.size())
   {
     QmitkMIDASSingleViewWidget* selectedView = this->m_SingleViewWidgets[selectedViewIndex];
 
@@ -1065,7 +1065,7 @@ void QmitkMIDASMultiViewWidget::OnFocusChanged()
   if (baseRenderer.IsNotNull())
   {
     focusedVtkRenderWindow = baseRenderer->GetRenderWindow();
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       QmitkRenderWindow* renderWindow = m_SingleViewWidgets[i]->GetRenderWindow(focusedVtkRenderWindow);
       if (renderWindow != NULL)
@@ -1131,13 +1131,13 @@ void QmitkMIDASMultiViewWidget::OnDropAccumulateStateChanged(int state)
 
 
 //-----------------------------------------------------------------------------
-std::vector<unsigned int> QmitkMIDASMultiViewWidget::GetViewIndexesToUpdate(bool doAllVisible) const
+QList<int> QmitkMIDASMultiViewWidget::GetViewIndexesToUpdate(bool doAllVisible) const
 {
-  std::vector<unsigned int> result;
+  QList<int> result;
 
   if (doAllVisible)
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (m_SingleViewWidgets[i]->isVisible())
       {
@@ -1148,7 +1148,7 @@ std::vector<unsigned int> QmitkMIDASMultiViewWidget::GetViewIndexesToUpdate(bool
   else
   {
     int windowIndex = this->GetSelectedViewIndex();
-    result.push_back((unsigned int)windowIndex);
+    result.push_back(windowIndex);
   }
   return result;
 }
@@ -1220,8 +1220,8 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    std::vector<unsigned int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
-    for (unsigned int i = 0; i < viewsToUpdate.size(); i++)
+    QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
+    for (int i = 0; i < viewsToUpdate.size(); i++)
     {
       this->m_SingleViewWidgets[viewsToUpdate[i]]->SetSliceNumber(orientation, sliceNumber);
     }
@@ -1261,8 +1261,8 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificatio
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(double magnificationFactor)
 {
-  std::vector<unsigned int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
-  for (unsigned int i = 0; i < viewsToUpdate.size(); i++)
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
+  for (int i = 0; i < viewsToUpdate.size(); i++)
   {
     this->m_SingleViewWidgets[viewsToUpdate[i]]->SetMagnificationFactor(magnificationFactor);
   }
@@ -1279,8 +1279,8 @@ void QmitkMIDASMultiViewWidget::OnTimeChanged(double timeStep)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
-  std::vector<unsigned int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_DropThumbnailRadioButton->isChecked());
-  for (unsigned int i = 0; i < viewsToUpdate.size(); i++)
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_DropThumbnailRadioButton->isChecked());
+  for (int i = 0; i < viewsToUpdate.size(); i++)
   {
     this->m_SingleViewWidgets[viewsToUpdate[i]]->SetTime(timeStep);
   }
@@ -1379,14 +1379,14 @@ void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
 
-  std::vector<unsigned int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
-  for (unsigned int i = 0; i < viewIndexesToUpdate.size(); i++)
+  QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
+  for (int i = 0; i < viewIndexesToUpdate.size(); i++)
   {
-    unsigned int viewIndexToUpdate = viewIndexesToUpdate[i];
+    int viewIndexToUpdate = viewIndexesToUpdate[i];
     QmitkMIDASSingleViewWidget* viewToUpdate = this->m_SingleViewWidgets[viewIndexToUpdate];
     viewToUpdate->SetView(midasView, false);
 
-    if ((int)viewIndexToUpdate == selectedViewIndex)
+    if (viewIndexToUpdate == selectedViewIndex)
     {
       if (midasView == MIDAS_VIEW_AXIAL)
       {
@@ -1408,8 +1408,8 @@ void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
 {
-  std::vector<unsigned int> viewsToUpdate = this->GetViewIndexesToUpdate(true);
-  for (unsigned int i = 0; i < viewsToUpdate.size(); i++)
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(true);
+  for (int i = 0; i < viewsToUpdate.size(); i++)
   {
     bool globalVisibility = false;
     bool localVisibility = m_Show2DCursors;
@@ -1435,10 +1435,10 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
   int magnification                          = selectedView->GetMagnificationFactor();
   int timeStepNumber                         = selectedView->GetTime();
 
-  std::vector<unsigned int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
-  for (unsigned int i = 0; i < viewIndexesToUpdate.size(); i++)
+  QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
+  for (int i = 0; i < viewIndexesToUpdate.size(); i++)
   {
-    unsigned int viewIndexToUpdate = viewIndexesToUpdate[i];
+    int viewIndexToUpdate = viewIndexesToUpdate[i];
     QmitkMIDASSingleViewWidget* viewToUpdate = m_SingleViewWidgets[viewIndexToUpdate];
     viewToUpdate->SetBoundGeometry(selectedGeometry);
     viewToUpdate->SetBoundGeometryActive(isBoundNow);
@@ -1458,10 +1458,10 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification(bool isBoundNow)
     int selectedViewIndex = this->GetSelectedViewIndex();
     int magnification = m_SingleViewWidgets[selectedViewIndex]->GetMagnificationFactor();
 
-    std::vector<unsigned int> viewsToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
-    for (unsigned int i = 0; i < viewsToUpdate.size(); i++)
+    QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
+    for (int i = 0; i < viewsToUpdate.size(); i++)
     {
-      unsigned int viewIndex = viewsToUpdate[i];
+      int viewIndex = viewsToUpdate[i];
       m_SingleViewWidgets[viewIndex]->SetMagnificationFactor(magnification);
     }
   }
@@ -1501,7 +1501,7 @@ MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
 int QmitkMIDASMultiViewWidget::GetSelectedViewIndex() const
 {
   int selectedViewIndex = m_SelectedViewIndex;
-  if (selectedViewIndex < 0 || selectedViewIndex >= (int)m_SingleViewWidgets.size())
+  if (selectedViewIndex < 0 || selectedViewIndex >= m_SingleViewWidgets.size())
   {
     // Default back to first view.
     selectedViewIndex = 0;
@@ -1509,7 +1509,7 @@ int QmitkMIDASMultiViewWidget::GetSelectedViewIndex() const
 
   // Note the following specification.
   assert(selectedViewIndex >= 0);
-  assert(selectedViewIndex < (int)m_SingleViewWidgets.size());
+  assert(selectedViewIndex < m_SingleViewWidgets.size());
 
   // Return a valid selected window index.
   return selectedViewIndex;
@@ -1560,7 +1560,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
   renderWindows.insert("coronal", view->GetCoronalWindow());
   renderWindows.insert("3d", view->Get3DWindow());
 
-  for (int i = 0; i < (int)m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (i != selectedViewIndex)
     {
@@ -1665,13 +1665,13 @@ void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabl
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetSelectedViewIndex(unsigned int selectedViewIndex)
+void QmitkMIDASMultiViewWidget::SetSelectedViewIndex(int selectedViewIndex)
 {
   if (selectedViewIndex >= 0 && selectedViewIndex < m_SingleViewWidgets.size())
   {
     m_SelectedViewIndex = selectedViewIndex;
 
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       int nodesInWindow = m_VisibilityManager->GetNodesInWindow(i);
 
@@ -1721,16 +1721,16 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 
   if (this->m_MIDASBindWidget->AreCursorsBound())
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
     }
   }
   else
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      if ((int)i == selectedViewIndex)
+      if (i == selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
       }
@@ -1750,10 +1750,10 @@ void QmitkMIDASMultiViewWidget::OnPopupOpened(bool opened)
 {
   if (!opened)
   {
-    std::vector<unsigned int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(false);
-    for (unsigned int i = 0; i < viewIndexesToUpdate.size(); i++)
+    QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(false);
+    for (int i = 0; i < viewIndexesToUpdate.size(); i++)
     {
-      unsigned int viewIndexToUpdate = viewIndexesToUpdate[i];
+      int viewIndexToUpdate = viewIndexesToUpdate[i];
       m_SingleViewWidgets[viewIndexToUpdate]->repaint();
     }
   }

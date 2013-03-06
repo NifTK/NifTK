@@ -295,34 +295,34 @@ private:
   void ResetCurrentPosition(unsigned int currentIndex);
   void ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex);
 
-  mitk::DataStorage::Pointer                        m_DataStorage;
-  mitk::RenderingManager::Pointer                   m_RenderingManager;
+  mitk::DataStorage::Pointer           m_DataStorage;
+  mitk::RenderingManager::Pointer      m_RenderingManager;
 
-  QGridLayout                                      *m_Layout;
-  QmitkMIDASStdMultiWidget                         *m_MultiWidget;
+  QGridLayout                         *m_Layout;
+  QmitkMIDASStdMultiWidget            *m_MultiWidget;
 
-  bool                                              m_IsBound;
-  mitk::Geometry3D::Pointer                         m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::Geometry3D::Pointer                         m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
-  mitk::Geometry3D::Pointer                         m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
+  bool                                 m_IsBound;
+  mitk::Geometry3D::Pointer            m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::Geometry3D::Pointer            m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
+  mitk::Geometry3D::Pointer            m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
 
-  double                                            m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
-  double                                            m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                               m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                               m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
 
-  std::vector<int>                                  m_CurrentSliceNumbers;          // length 2, one for unbound, then for bound.
-  std::vector<int>                                  m_CurrentTimeSliceNumbers;      // length 2, one for unbound, then for bound.
-  std::vector<double>                               m_CurrentMagnificationFactors;  // length 2, one for unbound, then for bound.
-  std::vector<MIDASOrientation>                     m_CurrentOrientations;          // length 2, one for unbound, then for bound.
-  std::vector<MIDASView>                            m_CurrentViews;                 // length 2, one for unbound, then for bound.
+  int                                  m_CurrentSliceNumbers[2];          // one for unbound, then for bound.
+  int                                  m_CurrentTimeSliceNumbers[2];      // one for unbound, then for bound.
+  double                               m_CurrentMagnificationFactors[2];  // one for unbound, then for bound.
+  MIDASOrientation                     m_CurrentOrientations[2];          // one for unbound, then for bound.
+  MIDASView                            m_CurrentViews[2];                 // one for unbound, then for bound.
 
-  std::vector<int>                                  m_PreviousSliceNumbers;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<int>                                  m_PreviousTimeSliceNumbers;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<double>                               m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<MIDASOrientation>                     m_PreviousOrientations;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<MIDASView>                            m_PreviousViews;                // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  int                                  m_PreviousSliceNumbers[6];         // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  int                                  m_PreviousTimeSliceNumbers[6];     // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  double                               m_PreviousMagnificationFactors[6]; // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  MIDASOrientation                     m_PreviousOrientations[6];         // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  MIDASView                            m_PreviousViews[6];                // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
 
-  bool                                              m_NavigationControllerEventListening;
-  bool                                              m_RememberViewSettingsPerOrientation;
+  bool                                 m_NavigationControllerEventListening;
+  bool                                 m_RememberViewSettingsPerOrientation;
 };
 
 #endif // QMITKMIDASSINGLEVIEWWIDGET_H

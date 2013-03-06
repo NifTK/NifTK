@@ -17,17 +17,20 @@
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
-#include <QWidget>
 #include <QEvent>
-#include "mitkBaseProperty.h"
-#include "mitkMIDASViewKeyPressResponder.h"
-#include "mitkRenderingManager.h"
-#include "mitkMIDASEnums.h"
-#include "QmitkMIDASSingleViewWidget.h"
-#include "QmitkMIDASMultiViewVisibilityManager.h"
-#include "QmitkMIDASOrientationWidget.h"
-#include "QmitkMIDASBindWidget.h"
-#include "QmitkMIDASSlidersWidget.h"
+#include <QList>
+#include <QWidget>
+
+#include <mitkBaseProperty.h>
+#include <mitkMIDASViewKeyPressResponder.h>
+#include <mitkRenderingManager.h>
+#include <mitkMIDASEnums.h>
+
+#include <QmitkMIDASSingleViewWidget.h>
+#include <QmitkMIDASMultiViewVisibilityManager.h>
+#include <QmitkMIDASOrientationWidget.h>
+#include <QmitkMIDASBindWidget.h>
+#include <QmitkMIDASSlidersWidget.h>
 
 class QSpinBox;
 class QGridLayout;
@@ -281,31 +284,31 @@ private:
   /// \brief Utility method to get a list of views to update.
   /// \param doAllVisible if true will ensure the returned vector contains all visible render window, and if false will return just the currently selected window.
   /// \return vector of integers corresponding to widget numbers.
-  std::vector<unsigned int> GetViewIndexesToUpdate(bool doAllVisible) const;
+  QList<int> GetViewIndexesToUpdate(bool doAllVisible) const;
 
   /// \brief Will return m_SelectedView, or if m_SelectedView < 0 will return 0.
   int GetSelectedViewIndex() const;
 
   /// \brief Gets the row number, given a view index [0, m_MaxRows*m_MaxCols-1]
-  unsigned int GetRowFromIndex(unsigned int i) const;
+  int GetRowFromIndex(int i) const;
 
   /// \brief Gets the column number, given a viewer index [0, m_MaxRows*m_MaxCols-1]
-  unsigned int GetColumnFromIndex(unsigned int i) const;
+  int GetColumnFromIndex(int i) const;
 
   /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
-  unsigned int GetIndexFromRowAndColumn(unsigned int r, unsigned int c) const;
+ int GetIndexFromRowAndColumn(int r, int c) const;
 
   /// \brief Will look at the default view type, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
   MIDASView GetDefaultOrientationForSegmentation() const;
 
   /// \brief Main method to change the number of views.
-  void SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode);
+  void SetLayoutSize(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
   // Called from the QRadioButtons to set the view.
   void SwitchMIDASView(MIDASView midasView);
 
   /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
-  void SetSelectedViewIndex(unsigned int i);
+  void SetSelectedViewIndex(int i);
 
   /// \brief Method to enable, or disable all widgets, for use when GUI is first started, or the whole screen enabled, disabled.
   void EnableWidgets(bool enabled);
@@ -384,11 +387,11 @@ private:
   QFrame                                        *m_ControlsContainerWidget;
 
   // This determines the maximum number of QmitkMIDASSingleViewWidget windows.
-  static const unsigned int m_MaxRows = 5;
-  static const unsigned int m_MaxCols = 5;
+  static const int m_MaxRows = 5;
+  static const int m_MaxCols = 5;
 
   // All the viewer windows.
-  std::vector<QmitkMIDASSingleViewWidget*>       m_SingleViewWidgets;
+  QList<QmitkMIDASSingleViewWidget*>             m_SingleViewWidgets;
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
