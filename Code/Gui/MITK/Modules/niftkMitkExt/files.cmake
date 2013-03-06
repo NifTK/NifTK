@@ -54,4 +54,6 @@ set(CPP_FILES
   IO/itkNiftiImageIO3201.cpp
   IO/mitkNifTKItkImageFileReader.cpp
   IO/mitkNifTKItkImageFileIOFactory.cpp
+  IO/itkPNMImageIOFactory.cpp
+  IO/itkPNMImageIO.cpp
 )
