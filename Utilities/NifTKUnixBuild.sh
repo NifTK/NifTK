@@ -1,28 +1,18 @@
 #!/bin/bash
 
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
-#  
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
+#  NifTK: A software platform for medical image computing.
 #
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-06-01 09:38:00 +0100 (Wed, 01 Jun 2011) $ 
-#  Revision          : $Revision: 6322 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
 
 # If the NIFTK_INSTALL_PREFIX variable is defined then a 'make install'
 # command is executed as well.
@@ -101,7 +91,7 @@ else
   BUILD_COMMAND="make clean ; ctest -D Nightly"
 fi  
 
-if [ -z ${NIFTK_INSTALL_PREFIX} ]
+if [ ! -z ${NIFTK_INSTALL_PREFIX} ]
 then
   NIFTK_INSTALL_OPTIONS="-DCMAKE_INSTALL_PREFIX=${NIFTK_INSTALL_PREFIX}"
 fi
@@ -121,7 +111,7 @@ if [ "${TYPE}" = "Release" ]; then
   run_command "make package"
 fi
 
-if [ -z ${NIFTK_INSTALL_PREFIX} ]
+if [ ! -z ${NIFTK_INSTALL_PREFIX} ]
 then
   run_command "make install"
 fi
