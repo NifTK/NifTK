@@ -60,7 +60,6 @@ namespace itk {
  * can be obtained by setting CalculateThickness to true, calling an Update and then
  * GetCalculatedThicknessImage after the update.
  * 
- * \author Matt Clarkson m.clarkson@ucl.ac.uk
  */
 template < typename TScalarType, unsigned int NDimensions = 3>
 class ITK_EXPORT FourthOrderRungeKuttaVelocityFieldIntegrationFilter : 
