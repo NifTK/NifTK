@@ -101,7 +101,7 @@ else
   BUILD_COMMAND="make clean ; ctest -D Nightly"
 fi  
 
-if [ -z ${NIFTK_INSTALL_PREFIX} ]
+if [ ! -z ${NIFTK_INSTALL_PREFIX} ]
 then
   NIFTK_INSTALL_OPTIONS="-DCMAKE_INSTALL_PREFIX=${NIFTK_INSTALL_PREFIX}"
 fi
