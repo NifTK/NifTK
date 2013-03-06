@@ -21,6 +21,12 @@
 #include <QObject>
 #include <QMetaType>
 
+
+// some forward decls to avoid header pollution
+struct QmitkIGINVidiaDataSourceImpl;
+class QGLContext;
+
+
 /**
  * \class QmitkIGINVidiaDataSource.
  * \brief Data source that provides access to a local NVidia SDI video frame grabber.
@@ -57,6 +63,11 @@ public:
    */
   bool IsCapturing();
 
+
+public:
+  // to be used to share with the preview window, for example
+  QGLContext* get_capturecontext();
+
 signals:
 
   /**
@@ -87,6 +98,8 @@ private slots:
 private:
 
   QTimer *m_Timer;
+
+  QmitkIGINVidiaDataSourceImpl*     pimpl;
 
 }; // end class
 
