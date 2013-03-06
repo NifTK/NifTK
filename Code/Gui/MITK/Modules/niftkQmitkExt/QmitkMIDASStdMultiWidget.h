@@ -140,7 +140,7 @@ public:
 
   /// \brief More specific, will put the border round just the selected window,
   /// but still the whole of this widget is considered "selected".
-  void SetSelectedWindow(vtkRenderWindow* window);
+  void SetSelectedWindow(QmitkRenderWindow* renderWindow);
 
   /// \brief Returns the specifically selected window, which may be 1 if the viewer is
   /// showing a single axial, coronal or sagittal plane, or may be up to 4 if the viewer
@@ -157,10 +157,10 @@ public:
   QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
 
   /// \brief Returns true if this widget contains the provided window and false otherwise.
-  bool ContainsWindow(QmitkRenderWindow *window) const;
+  bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
-  /// \brief Returns true if this widget contains the provided window and false otherwise.
-  bool ContainsVtkRenderWindow(vtkRenderWindow *window) const;
+  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
+  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const;
 
   /// \brief Returns the minimum allowed slice number for a given orientation.
   unsigned int GetMinSlice(MIDASOrientation orientation) const;
