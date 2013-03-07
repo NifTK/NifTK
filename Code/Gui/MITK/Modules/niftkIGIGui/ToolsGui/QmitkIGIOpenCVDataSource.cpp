@@ -112,18 +112,27 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 void QmitkIGIOpenCVDataSource::OnTimeout()
 {
   m_VideoSource->FetchFrame();
+  const IplImage* img = m_VideoSource->GetCurrentFrame();
+  // grapping failed (maybe no webcam present)
+  if (img == 0)
+  {
+      this->SetStatus("Failed");
+      return;
+  }
 
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
   timeCreated->GetTime();
 
   // Aim of this method is to do something like when a NiftyLink message comes in.
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
-  wrapper->CloneImage(m_VideoSource->GetCurrentFrame());
+  wrapper->CloneImage(img);
   wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
   wrapper->SetDuration(1000000000); // nanoseconds
 
   this->AddData(wrapper.GetPointer());
+
+  this->SetStatus("Grabbing");
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();
