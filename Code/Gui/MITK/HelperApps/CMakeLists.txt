@@ -55,7 +55,8 @@ IF(BUILD_IGI)
   SET(HELPER_APPS
     ${HELPER_APPS}
     # Add apps that DO depend on BUILD_IGI here.
-    niftkOpenCVTest
+    niftkTestLineExtraction
+    niftkTestCornerExtraction
   )
 ENDIF()
 
@@ -79,6 +80,7 @@ IF(SlicerExecutionModel_FOUND)
       niftkCorrectVideoDistortion
       niftkTrackLapUSProbe
       niftkProject3DPointsToStereoPair
+      niftkRegisterProbeModelToStereoPair
     )
   ENDIF()  
 

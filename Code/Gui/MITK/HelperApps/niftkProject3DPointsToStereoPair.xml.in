@@ -106,13 +106,6 @@
       <label>Right to left camera translation parameters</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.xml">
-      <name>fundamentalMatrix</name>
-      <longflag>fundamentalMatrix</longflag>
-      <description>Fundamental matrix</description>
-      <label>Fundamental matrix parameters</label>
-      <channel>input</channel>
-    </file>    
   </parameters>
   <parameters>
     <label>Optional Parameters</label>

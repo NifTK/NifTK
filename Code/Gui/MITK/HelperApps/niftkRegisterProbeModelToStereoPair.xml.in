@@ -1,65 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Track Lap US Probe</title>
-  <description><![CDATA[Tracks Laparoscopic Ultrasound probe]]></description>
+  <title>Register Probe model to Stereo Images</title>
+  <description><![CDATA[Given a stereo pair of calibrated video images, will take Lap US probe model and register to the 2x2D images.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
   <contributor>Matt Clarkson</contributor>
   <acknowledgements><![CDATA[]]></acknowledgements>
-  
   <parameters>
-    <label>Mandatory I/O Parameters</label>
-    <description><![CDATA[Input/output parameters]]></description>
-    <file fileExtensions="*.avi">
-      <name>input</name>
-      <longflag>input</longflag>
-      <description>Input file</description>
-      <label>Input file</label>
+    <label>I/O Parameters</label>
+    <description><![CDATA[Image Input/Output]]></description>
+    <file fileExtensions="*.vtk">
+      <name>inputModel</name>
+      <longflag>inputModel</longflag>
+      <description>Input VTK model</description>
+      <label>Input VTK model</label>
+      <channel>input</channel>
+    </file>    
+    <file fileExtensions="*.png">
+      <name>inputLeft</name>
+      <longflag>inputLeft</longflag>
+      <description>Input left camera image</description>
+      <label>Input Left</label>
       <channel>input</channel>
     </file>
+    <file fileExtensions="*.png">
+      <name>inputRight</name>
+      <longflag>inputRight</longflag>
+      <description>Input right camera image</description>
+      <label>Input Right</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions="*.png">
+      <name>outputLeft</name>
+      <longflag>outputLeft</longflag>
+      <description>Output left camera image</description>
+      <label>Output Left</label>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions="*.png">
+      <name>outputRight</name>
+      <longflag>outputRight</longflag>
+      <description>Output right camera image</description>
+      <label>Output Right</label>
+      <channel>output</channel>
+    </file>                            
+  </parameters>
+  <parameters>
+    <label>Camera Parameters</label>
+    <description><![CDATA[Camera Parameters]]></description>
     <file fileExtensions="*.xml">
       <name>intrinsicLeft</name>
       <longflag>intrinsicLeft</longflag>
-      <description>Input left camera intrinsic parameters file</description>
-      <label>Input left camera intrinsics</label>
+      <description>Left camera intrinsic parameters file</description>
+      <label>Left camera intrinsic parameters</label>
       <channel>input</channel>
     </file>
     <file fileExtensions="*.xml">
       <name>distortionLeft</name>
       <longflag>distortionLeft</longflag>
-      <description>Input left camera distortion parameters file</description>
-      <label>Input left camera distortion</label>
+      <description>Left camera distortion parameters file</description>
+      <label>Left camera distortion parameters</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.avi">
-      <name>output</name>
-      <longflag>output</longflag>
-      <description>Output file</description>
-      <label>Output file</label>
-      <channel>output</channel>
+    <file fileExtensions="*.xml">
+      <name>rotationLeft</name>
+      <longflag>rotationLeft</longflag>
+      <description>Left camera rotation parameters file</description>
+      <label>Left camera rotation parameters</label>
+      <channel>input</channel>
     </file>
+    <file fileExtensions="*.xml">
+      <name>translationLeft</name>
+      <longflag>translationLeft</longflag>
+      <description>Left camera translation parameters file</description>
+      <label>Left camera translation parameters</label>
+      <channel>input</channel>
+    </file>    
     <file fileExtensions="*.xml">
       <name>intrinsicRight</name>
       <longflag>intrinsicRight</longflag>
-      <description>Input right camera intrinsic parameters file</description>
-      <label>Input right camera intrinsics</label>
+      <description>Right camera intrinsic parameters file</description>
+      <label>Right camera intrinsics</label>
       <channel>input</channel>
     </file>
     <file fileExtensions="*.xml">
       <name>distortionRight</name>
       <longflag>distortionRight</longflag>
-      <description>Input right camera distortion parameters file</description>
-      <label>Input right camera distortion</label>
+      <description>Right camera distortion parameters file</description>
+      <label>Right camera distortion</label>
       <channel>input</channel>
     </file>
-    <boolean>
-      <name>writeInterleaved</name>
-      <longflag>writeInterleaved</longflag>
-      <description>Write interleaved stereo</description>
-      <label>Write interleaved</label>
+    <file fileExtensions="*.xml">
+      <name>rightToLeftRotation</name>
+      <longflag>rightToLeftRotation</longflag>
+      <description>Right to left camera rotation parameters file</description>
+      <label>Right to left camera rotation parameters</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions="*.xml">
+      <name>rightToLeftTranslation</name>
+      <longflag>rightToLeftTranslation</longflag>
+      <description>Right to left camera translation parameters file</description>
+      <label>Right to left camera translation parameters</label>
+      <channel>input</channel>
+    </file>
+  </parameters>
+  <parameters>
+    <label>Transform Parameters</label>
+    <description><![CDATA[Optional Parameters]]></description>
+    <float>
+      <name>rx</name>
+      <longflag>rx</longflag>
+      <description>Rotation about x axis (degrees)</description>
+      <label>Rx</label>
       <default>0</default>
-    </boolean>    
+      <constraints>
+        <minimum>-90</minimum>
+        <maximum>90</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>ry</name>
+      <longflag>ry</longflag>
+      <description>Rotation about y axis (degrees)</description>
+      <label>Ry</label>
+      <default>0</default>
+      <constraints>
+        <minimum>-90</minimum>
+        <maximum>90</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>rz</name>
+      <longflag>rz</longflag>
+      <description>Rotation about z axis (degrees)</description>
+      <label>Rz</label>
+      <default>0</default>
+      <constraints>
+        <minimum>-90</minimum>
+        <maximum>90</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>tx</name>
+      <longflag>tx</longflag>
+      <description>Translation along x-axis</description>
+      <label>Tx</label>
+      <default>0</default>
+      <constraints>
+        <minimum>-10000</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>ty</name>
+      <longflag>ty</longflag>
+      <description>Translation along y-axis</description>
+      <label>Ty</label>
+      <default>0</default>
+      <constraints>
+        <minimum>-10000</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>tz</name>
+      <longflag>tz</longflag>
+      <description>Translation along z-axis</description>
+      <label>Tz</label>
+      <default>0</default>
+      <constraints>
+        <minimum>-10000</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </float>                                                                                                                                                                          
   </parameters>
 </executable>

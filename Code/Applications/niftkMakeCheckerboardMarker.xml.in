@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Make Checkerboard Marker</title>
+  <title>Make Checkerboard Marker Image</title>
   <description><![CDATA[Generates a 2D image containing a checkerboard calibration pattern.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

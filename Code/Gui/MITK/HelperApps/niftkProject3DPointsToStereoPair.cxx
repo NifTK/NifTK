@@ -59,5 +59,12 @@ int main(int argc, char** argv)
           input2DRight
           );
 
-  return successful;
+  if (successful)
+  {
+    return EXIT_SUCCESS;
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
 }

@@ -220,7 +220,7 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
 void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
 {
   mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
-  assert(baseRenderer);
+  assert(renderer);
 
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
@@ -233,7 +233,7 @@ void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRende
 void QmitkMIDASStdMultiWidget::RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
 {
   mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
-  assert(baseRenderer);
+  assert(renderer);
 
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
