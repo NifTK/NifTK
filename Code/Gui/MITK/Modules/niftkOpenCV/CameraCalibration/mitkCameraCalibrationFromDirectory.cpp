@@ -71,7 +71,7 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
     CheckConstImageSize(images, width, height);
     CvSize imageSize = cvGetSize(images[0]);
 
-    ExtractChessBoardPoints(images, fileNames, numberCornersX, numberCornersY, writeImages, successfullImages, successfullFileNames, imagePoints, objectPoints, pointCounts);
+    ExtractChessBoardPoints(images, fileNames, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImages, successfullFileNames, imagePoints, objectPoints, pointCounts);
 
     int numberOfSuccessfulViews = successfullImages.size();
     CvMat *rotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
