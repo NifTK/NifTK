@@ -40,6 +40,18 @@ namespace niftk
     m_icp->SetMaximumNumberOfLandmarks(m_MaxLandmarks);
     m_icp->SetMaximumNumberOfIterations(m_MaxIterations);
   }
+  
+  void IterativeClosestPoint::SetMaxLandmarks(int MaxLandMarks)
+  {
+    m_MaxLandmarks = MaxLandMarks;
+    m_icp->SetMaximumNumberOfLandmarks(m_MaxLandmarks);
+  }
+
+  void IterativeClosestPoint::SetMaxIterations(int MaxIterations)
+  {
+    m_MaxIterations = MaxIterations;
+    m_icp->SetMaximumNumberOfLandmarks(m_MaxIterations);
+  }
 
   IterativeClosestPoint::~IterativeClosestPoint()
   {}

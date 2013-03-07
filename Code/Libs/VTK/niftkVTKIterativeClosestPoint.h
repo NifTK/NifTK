@@ -49,6 +49,8 @@ namespace niftk
       bool TransformTarget();
       void SetSource (vtkSmartPointer<vtkPolyData>);
       void SetTarget (vtkSmartPointer<vtkPolyData>);
+      void SetMaxLandmarks ( int);
+      void SetMaxIterations(int);
 
 
     private:

@@ -41,7 +41,8 @@ SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 #----------------------------------
 # Dont forget its:  ADD_TEST(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>
 #--------------------------------------------------------------------------------------
-ADD_TEST(VTK-ICP-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest /home/thompson/phd/code/IterativeClosestPointsTransform/build/maskedliver.vtk /home/thompson/phd/code/IterativeClosestPointsTransform/build/liver.vtk)
+ADD_TEST(VTK-ICP-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest /home/thompson/phd/code/IterativeClosestPointsTransform/build/liver.vtk /home/thompson/phd/code/IterativeClosestPointsTransform/build/liver.vtk)
+ADD_TEST(VTK-ICP-Rep-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointRepeatTest /home/thompson/phd/code/IterativeClosestPointsTransform/build/maskedliver.vtk /home/thompson/phd/code/IterativeClosestPointsTransform/build/liver.vtk)
 #################################################################################
 # Build instructions.
 #################################################################################
