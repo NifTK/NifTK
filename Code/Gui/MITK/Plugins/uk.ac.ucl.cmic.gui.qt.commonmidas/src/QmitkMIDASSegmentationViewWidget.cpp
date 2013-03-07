@@ -483,12 +483,12 @@ bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocussedWindowInThisWidget()
   mitk::BaseRenderer* focussedRenderer = this->GetCurrentlyFocussedRenderer();
   if (focussedRenderer != NULL)
   {
-    vtkRenderWindow* focusedWindowRenderWindow = focussedRenderer->GetRenderWindow();
+    vtkRenderWindow* focussedVtkRenderWindow = focussedRenderer->GetRenderWindow();
 
-    std::vector<vtkRenderWindow*> windowsInThisWidget = m_ViewerWidget->GetAllVtkWindows();
-    for (unsigned int i = 0; i < windowsInThisWidget.size(); i++)
+    std::vector<QmitkRenderWindow*> renderWindows = m_ViewerWidget->GetRenderWindows();
+    for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
-      if (windowsInThisWidget[i] == focusedWindowRenderWindow)
+      if (renderWindows[i]->GetVtkRenderWindow() == focussedVtkRenderWindow)
       {
         result = true;
       }

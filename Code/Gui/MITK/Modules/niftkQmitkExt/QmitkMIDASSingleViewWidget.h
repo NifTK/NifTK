@@ -99,16 +99,13 @@ public:
   bool IsSelected() const;
 
   /// \brief More selective, will put the border round just the selected window, but still the whole widget is considered "selected".
-  void SetSelectedWindow(QmitkRenderWindow* renderWindow);
+  void SetSelectedRenderWindow(QmitkRenderWindow* renderWindow);
 
   /// \brief Returns the specifically selected sub-pane.
-  std::vector<QmitkRenderWindow*> GetSelectedWindows() const;
+  std::vector<QmitkRenderWindow*> GetSelectedRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
-  std::vector<QmitkRenderWindow*> GetAllWindows() const;
-
-  /// \brief Returns the list of all vtkRenderWindow contained herein.
-  std::vector<vtkRenderWindow*> GetAllVtkWindows() const;
+  std::vector<QmitkRenderWindow*> GetRenderWindows() const;
 
   /// \brief Returns the Axial Window.
   QmitkRenderWindow* GetAxialWindow() const;
