@@ -17,10 +17,6 @@
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
-#include <vtkRenderer.h>
-#include <vtkCamera.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
 #include <itkMatrix.h>
 #include <itkSpatialOrientationAdapter.h>
 
@@ -174,19 +170,19 @@ bool QmitkMIDASSingleViewWidget::IsSelected() const
   return m_MultiWidget->IsSelected();
 }
 
-void QmitkMIDASSingleViewWidget::SetSelectedWindow(QmitkRenderWindow* renderWindow)
+void QmitkMIDASSingleViewWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
-  m_MultiWidget->SetSelectedWindow(renderWindow);
+  m_MultiWidget->SetSelectedRenderWindow(renderWindow);
 }
 
-std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetSelectedWindows() const
+std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetSelectedRenderWindows() const
 {
-  return m_MultiWidget->GetSelectedWindows();
+  return m_MultiWidget->GetSelectedRenderWindows();
 }
 
-std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetAllWindows() const
+std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetRenderWindows() const
 {
-  return m_MultiWidget->GetAllWindows();
+  return m_MultiWidget->GetRenderWindows();
 }
 
 QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetAxialWindow() const
@@ -207,11 +203,6 @@ QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetCoronalWindow() const
 QmitkRenderWindow* QmitkMIDASSingleViewWidget::Get3DWindow() const
 {
   return m_MultiWidget->GetRenderWindow4();
-}
-
-std::vector<vtkRenderWindow*> QmitkMIDASSingleViewWidget::GetAllVtkWindows() const
-{
-  return m_MultiWidget->GetAllVtkWindows();
 }
 
 void QmitkMIDASSingleViewWidget::SetEnabled(bool enabled)
@@ -630,10 +621,10 @@ void QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D &pos)
 void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
-  std::vector<vtkRenderWindow*> vtkRenderWindows = GetAllVtkWindows();
-  for (unsigned int i = 0; i < vtkRenderWindows.size(); i++)
+  std::vector<QmitkRenderWindow*> renderWindows = GetRenderWindows();
+  for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
-    vtkRenderWindows[i]->Render();
+    renderWindows[i]->GetVtkRenderWindow()->Render();
   }
 }
 

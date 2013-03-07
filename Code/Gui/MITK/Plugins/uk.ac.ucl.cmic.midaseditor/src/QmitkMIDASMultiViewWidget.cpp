@@ -19,7 +19,6 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
-#include <QDebug>
 #include <QDragEnterEvent>
 #include <QDragLeaveEvent>
 #include <QDragMoveEvent>
@@ -43,8 +42,6 @@
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
 #include <mitkIRenderWindowPart.h>
-
-#include <vtkRenderer.h>
 
 #include "mitkMIDASOrientationUtils.h"
 #include "mitkMIDASViewKeyPressResponder.h"
@@ -867,7 +864,7 @@ void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
+void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
   bool found = false;
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -880,8 +877,8 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
   }
   if (found)
   {
-    std::vector<QmitkRenderWindow*> windows = view->GetSelectedWindows();
-    if (windows.size() == 1 && window == windows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
+    std::vector<QmitkRenderWindow*> renderWindows = view->GetSelectedRenderWindows();
+    if (renderWindows.size() == 1 && renderWindow == renderWindows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
     {
       // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
       bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
@@ -966,7 +963,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedWindow)
+void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedRenderWindow)
 {
   if (selectedViewIndex >= 0 && selectedViewIndex < m_SingleViewWidgets.size())
   {
@@ -976,12 +973,12 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
     this->SetSelectedViewIndex(selectedViewIndex);
 
     // This to specifically set the border round one sub-pane for if its an ortho-view.
-    if (selectedWindow != NULL)
+    if (selectedRenderWindow != NULL)
     {
       int numberOfNodes = m_VisibilityManager->GetNodesInWindow(selectedViewIndex);
       if (numberOfNodes > 0)
       {
-        selectedView->SetSelectedWindow(selectedWindow);
+        selectedView->SetSelectedRenderWindow(selectedRenderWindow);
       }
     }
 
@@ -1305,11 +1302,11 @@ void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView midasView)
 void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
-  std::vector<QmitkRenderWindow*> windows = this->m_SingleViewWidgets[selectedViewIndex]->GetSelectedWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = this->m_SingleViewWidgets[selectedViewIndex]->GetSelectedRenderWindows();
 
-  if (windows.size() > 0)
+  if (renderWindows.size() > 0)
   {
-    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(windows[0]->GetRenderer());
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindows[0]->GetRenderer());
   }
 }
 
@@ -1390,15 +1387,15 @@ void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
     {
       if (midasView == MIDAS_VIEW_AXIAL)
       {
-        viewToUpdate->SetSelectedWindow(viewToUpdate->GetAxialWindow());
+        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetAxialWindow());
       }
       else if (midasView == MIDAS_VIEW_SAGITTAL)
       {
-        viewToUpdate->SetSelectedWindow(viewToUpdate->GetSagittalWindow());
+        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetSagittalWindow());
       }
       else if (midasView == MIDAS_VIEW_CORONAL)
       {
-        viewToUpdate->SetSelectedWindow(viewToUpdate->GetCoronalWindow());
+        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetCoronalWindow());
       }
     }
   }
@@ -1522,16 +1519,16 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
   // NOTE: This MUST always return not-null.
 
   QmitkRenderWindow *window = NULL;
-  std::vector<QmitkRenderWindow*> selectedWindows;
+  std::vector<QmitkRenderWindow*> selectedRenderWindows;
 
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
 
-  selectedWindows = selectedView->GetSelectedWindows();
-  if (selectedWindows.size() == 0)
+  selectedRenderWindows = selectedView->GetSelectedRenderWindows();
+  if (selectedRenderWindows.size() == 0)
   {
-    selectedWindows = selectedView->GetAllWindows();
+    selectedRenderWindows = selectedView->GetRenderWindows();
   }
-  window = selectedWindows[0];
+  window = selectedRenderWindows[0];
 
   return window;
 }
