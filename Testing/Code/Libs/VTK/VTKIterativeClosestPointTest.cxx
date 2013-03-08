@@ -29,9 +29,14 @@
  * Runs ICP registration a known data set and checks the error
  */
 
-void PerturbPolyData(vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkBoxMuellerRandomSequence>);
-vtkSmartPointer<vtkTransform> TranslatePolyData(vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkMinimalStandardRandomSequence> rng);
+void PerturbPolyData(vtkSmartPointer<vtkPolyData> polydata, 
+    double xerr, double yerr, double zerr, vtkSmartPointer<vtkRandomSequence>);
 
+vtkSmartPointer<vtkTransform> TranslatePolyData(vtkSmartPointer<vtkPolyData> polydata, 
+    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
+    vtkSmartPointer<vtkRandomSequence> rng);
+
+double NormalisedRNG (vtkSmartPointer<vtkRandomSequence> rng); 
 int VTKIterativeClosestPointTest ( int argc, char * argv[] ) 
 {
   if ( argc != 3 ) 
@@ -62,7 +67,8 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
 
   Uni_Rand->SetSeed(2);
-  vtkSmartPointer<vtkTransform> StartTrans = TranslatePolyData ( source , Uni_Rand);
+  vtkSmartPointer<vtkTransform> StartTrans = 
+      TranslatePolyData ( source , 20.0 , 20.0 , 20.0, 10.0 , 10.0, 10.0 , Uni_Rand);
   vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
   StartTrans->GetInverse(Trans_In);
   std::cerr << "Inverse of start trans " << *Trans_In << std::endl;
@@ -133,6 +139,8 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   niftk::IterativeClosestPoint *  icp = new niftk::IterativeClosestPoint();
   icp->SetMaxLandmarks(300);
   icp->SetMaxIterations(1000);
+  double *StartPoint = new double[4];
+  double * EndPoint = new double [4] ;
   for ( int repeat = 0 ; repeat < Repeats ; repeat ++ )
   {
     vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New(); 
@@ -142,9 +150,10 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     icp->SetSource(source);
     icp->SetTarget(target);
 
-    vtkSmartPointer<vtkTransform> StartTrans = TranslatePolyData ( source , Uni_Rand);
+    vtkSmartPointer<vtkTransform> StartTrans = 
+      TranslatePolyData ( source , 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
 
-    PerturbPolyData(source, Gauss_Rand);
+    PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
     vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->GetInverse(Trans_In);
     icp->Run();
@@ -154,12 +163,10 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     vtkSmartPointer<vtkMatrix4x4> Residual  = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->Concatenate(m);
     StartTrans->GetInverse(Residual);
-    double *StartPoint = new double[4];
     StartPoint [0 ] = 160;
     StartPoint [1] = 80;
     StartPoint [2] = 160;
     StartPoint [3] = 1;
-    double * EndPoint = new double [4] ;
     EndPoint= Residual->MultiplyDoublePoint(StartPoint);
     double MagError = 0 ; 
     for ( int i = 0 ; i < 4 ; i ++ ) 
@@ -176,7 +183,7 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   MeanError /= Repeats;
   std::cerr << "Mean Error = " << MeanError << std::endl;
   std::cerr << "Max Error = " << MaxError << std::endl;
-
+  
   if ( MeanError > 3.0 || MaxError > 10.0 )
   {
     return EXIT_FAILURE;
@@ -187,29 +194,31 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   }
 }
 
-
-
-vtkSmartPointer<vtkTransform> TranslatePolyData(vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkMinimalStandardRandomSequence> rng)
+vtkSmartPointer<vtkTransform> TranslatePolyData(vtkSmartPointer<vtkPolyData> polydata, 
+    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
+    vtkSmartPointer<vtkRandomSequence> rng)
 {
   vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
   double x;
   double y;
   double z;
-  x=rng->GetValue() * 20.0 - 10.0;
+  //want values between - 0.5 xtrans and + 0.5 xtrans.
+  // need to know what sort of rng we have
+  x=xtrans * NormalisedRNG ( rng ) ;
   rng->Next();
-  y=rng->GetValue() * 20.0 - 10.0;
+  y=ytrans * NormalisedRNG ( rng ); 
   rng->Next();
-  z=rng->GetValue() * 20.0 - 10.0;
+  z=ztrans * NormalisedRNG ( rng );
   rng->Next();
   transform->Translate(x,y,z);
   double rot;
-  rot=rng->GetValue() * 10.0 - 5.0;
+  rot=xrot * NormalisedRNG ( rng);
   rng->Next();
   transform->RotateX(rot);
-  rot=rng->GetValue() * 10.0 - 5.0;
+  rot=yrot * NormalisedRNG(rng);
   rng->Next();
   transform->RotateY(rot);
-  rot=rng->GetValue() * 10.0 - 5.0;
+  rot=zrot * NormalisedRNG(rng);
   rng->Next();
   transform->RotateZ(rot);
 
@@ -227,7 +236,8 @@ vtkSmartPointer<vtkTransform> TranslatePolyData(vtkSmartPointer<vtkPolyData> pol
 
   return transform;
 }
-void PerturbPolyData(vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkBoxMuellerRandomSequence> rng)
+void PerturbPolyData(vtkSmartPointer<vtkPolyData> polydata, 
+    double xerr, double yerr, double zerr, vtkSmartPointer<vtkRandomSequence> rng)
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   points->ShallowCopy(polydata->GetPoints());
@@ -237,11 +247,12 @@ void PerturbPolyData(vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkB
     points->GetPoint(i, p);
     double perturb[3];
     rng->Next();
-    for ( int j = 0 ; j < 3 ; j++ )
-    {
-      perturb[j] = rng->GetValue() * 1.0 ; 
-      rng->Next();
-    }
+    perturb[0] = NormalisedRNG(rng) * xerr ; 
+    rng->Next();
+    perturb[1] = NormalisedRNG(rng) * yerr ; 
+    rng->Next();
+    perturb[2] = NormalisedRNG(rng) * zerr ; 
+    rng->Next();
     for(unsigned int j = 0; j < 3; j++)
     {
       p[j] += perturb[j];
@@ -251,4 +262,16 @@ void PerturbPolyData(vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkB
   polydata->SetPoints(points);
 }
 
-
+double NormalisedRNG (vtkSmartPointer<vtkRandomSequence> rng) 
+{
+  if  ( rng->IsA("vtkMinimalStandardRandomSequence") == 1 ) 
+  {
+    return rng->GetValue() - 0.5;
+  }
+  if ( rng->IsA("vtkBoxMuellerRandomSequence") == 1 ) 
+  {
+    return rng->GetValue();
+  }
+  std::cerr << "WARNING: Unknown random number generator encountered, can't normalise." << std::endl;
+  return rng->GetValue();
+}
