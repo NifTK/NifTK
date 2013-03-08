@@ -31,7 +31,7 @@ IF(BUILD_MESHING)
     ######################################################################
 
     IF (WIN32)
-      SET(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-vc90-mt-gd-1_46_2.lib")
+      SET(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-vc90-mt-gd-1_46_1.lib")
       SET(BUILD_SHARED OFF)
     ELSE (WIN32)
       SET(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-mt.a")
