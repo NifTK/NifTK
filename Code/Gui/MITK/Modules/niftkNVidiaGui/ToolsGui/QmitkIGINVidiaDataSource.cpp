@@ -114,6 +114,8 @@ protected:
       if (format.format != video::StreamFormat::PF_NONE)
       {
         sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS);
+
+
       }
     }
 
@@ -146,6 +148,12 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
 
   // FIXME: this should be running in its own thread!
   pimpl->init();
+
+  // FIXME: depends on number of active streams, etc
+  m_ImageNode = mitk::DataNode::New();
+  m_ImageNode->SetName("nvidia sdi input node");
+  m_ImageNode->SetVisibility(true);
+    
 
   this->StartCapturing();
 
@@ -225,6 +233,12 @@ void QmitkIGINVidiaDataSource::OnTimeout()
   //  Grab frame from buffer.
   
 
+  if (!this->GetDataStorage()->Exists(m_ImageNode))
+  {
+    this->GetDataStorage()->Add(m_ImageNode);
+  }
+  m_Image = mitk::Image::New();
+  m_ImageNode->SetData(m_Image);
 
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
   timeCreated->GetTime();
