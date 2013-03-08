@@ -294,6 +294,7 @@ IF(VTK_FOUND)
     niftkMarchingCubes
     niftkSmoothPolyData
     niftkTransformPolyData
+    niftkVTKIterativeClosestPointRegister
   )
 
   FOREACH(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})
