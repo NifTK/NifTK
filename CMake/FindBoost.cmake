@@ -106,7 +106,7 @@
 
 OPTION(Boost_USE_MULTITHREADED "Use the multithreaded versions of the boost libraries" ON)
 
-SET( _boost_TEST_VERSIONS ${Boost_ADDITIONAL_VERSIONS} "1.47.0" "1.46.1" "1.44.0" "1.36.1" "1.36.0" "1.35.1" "1.35.0" "1.35" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" )
+SET( _boost_TEST_VERSIONS ${Boost_ADDITIONAL_VERSIONS} "1.47.0" "1.46.1" "1.46.2" "1.44.0" "1.36.1" "1.36.0" "1.35.1" "1.35.0" "1.35" "1.34.1" "1.34.0" "1.34" "1.33.1" "1.33.0" "1.33" )
 
 
 ############################################
