@@ -30,6 +30,8 @@
 #include <vtkMatrix4x4.h>
 #include <vtkIterativeClosestPointTransform.h>
 
+#define __NIFTTKVTKICPNPOINTS 50
+#define __NIFTTKVTKICPMAXITERATIONS 100
 
 namespace niftk
 {

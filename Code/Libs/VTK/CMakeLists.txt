@@ -14,6 +14,7 @@
 
 SET(niftkVTK_SRCS
   Common/vtkFunctions.cpp
+  niftkVTKIterativeClosestPoint.cxx
 )
 
 if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
@@ -33,7 +34,6 @@ IF(NIFTYREG_FOUND)
   SET(niftkVTK_SRCS
     ${niftkVTK_SRCS}
     niftkF3DControlGridToVTKPolyData.cxx
-    niftkVTKIterativeClosestPoint.cxx
     )
 ENDIF(NIFTYREG_FOUND)
 
