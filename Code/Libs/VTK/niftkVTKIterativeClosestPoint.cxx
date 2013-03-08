@@ -69,11 +69,34 @@ namespace niftk
    {
      return false;
    }
-   m_icp->SetSource(m_Source);
-   m_icp->SetTarget(m_Target);
-   m_icp->Modified();
-   m_icp->Update();
-   m_TransformMatrix = m_icp->GetMatrix();
+   // VTK ICP is point to surface, the source only needs points, 
+   // but the target needs a surface
+  
+   if ( m_Target->GetNumberOfCells() == 0 )
+   {
+     if ( m_Source->GetNumberOfCells() == 0 ) 
+     {
+       std::cerr << "Neither source not target have a surface, cannot run ICP";
+       return false;
+     }
+     m_icp->SetSource(m_Target);
+     m_icp->SetTarget(m_Source);
+     m_icp->Modified();
+     m_icp->Update();
+     //doing this runs the reg again
+     //m_icp->Inverse();
+   //  m_TransformMatrix->Invert(m_icp->GetMatrix(), m_TransformMatrix);
+     m_TransformMatrix = m_icp->GetMatrix();
+     m_TransformMatrix->Invert();
+   }
+   else
+   {
+     m_icp->SetSource(m_Source);
+     m_icp->SetTarget(m_Target);
+     m_icp->Modified();
+     m_icp->Update();
+     m_TransformMatrix = m_icp->GetMatrix();
+   }
    return true;
   }
 

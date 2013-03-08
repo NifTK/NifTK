@@ -38,8 +38,8 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
     return EXIT_FAILURE;
   }
   niftk::IterativeClosestPoint *  icp = new niftk::IterativeClosestPoint();
-  std::string strSource = argv[1];
-  std::string strTarget = argv[2];
+  std::string strTarget = argv[1];
+  std::string strSource = argv[2];
 
   vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New(); 
   vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New(); 
@@ -53,7 +53,7 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   targetReader->Update();
   target->ShallowCopy(targetReader->GetOutput());
 
-  icp->SetMaxLandmarks(1000);
+  icp->SetMaxLandmarks(10);
   icp->SetMaxIterations(500);
   icp->SetSource(source);
   icp->SetTarget(target);
@@ -68,7 +68,10 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
   StartTrans->GetInverse(Trans_In);
   std::cerr << "Inverse of start trans " << *Trans_In << std::endl;
-  icp->Run();
+  if ( ! icp->Run() ) 
+  {
+    return EXIT_FAILURE;
+  }
  
   vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
   std::cerr << "The resulting matrix is: " << *m << std::endl;
@@ -109,8 +112,8 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     std::cerr << "Usage VTKIterativeClosestPointTest source target" << std::endl;
     return EXIT_FAILURE;
   }
-  std::string strSource = argv[1];
-  std::string strTarget = argv[2];
+  std::string strTarget = argv[1];
+  std::string strSource = argv[2];
 
   vtkSmartPointer<vtkPolyData> c_source = vtkSmartPointer<vtkPolyData>::New(); 
   vtkSmartPointer<vtkPolyData> c_target = vtkSmartPointer<vtkPolyData>::New(); 
@@ -150,10 +153,13 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
     TranslatePolyData ( source , StartTrans);
 
-    PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
+    PerturbPolyData(target, 1.0, 1.0 , 1.0, Gauss_Rand);
     vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->GetInverse(Trans_In);
-    icp->Run();
+    if ( ! icp->Run() )
+    {
+      return EXIT_FAILURE;
+    }
  
     vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
   

@@ -39,7 +39,7 @@ void Usage(char *exec)
     std::cout << "    --target    <filename>        Target VTK Poly Data." << std::endl;
     std::cout << "    --source    <filename>        Source VTK Poly Data." << std::endl << std::endl;      
     std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    --visualise                   Visualise registration." << std::endl;
+    std::cout << "    --novisualise                 Turn off visualisation" << std::endl;
     std::cout << "    --maxpoints <pointstouse>     Set the maximum number of points to use in the registration, default is " << __NIFTTKVTKICPNPOINTS <<  std::endl;
     std::cout << "    --maxit     <maxiterations>   Set the maximum number of iterations to use, default is " << __NIFTTKVTKICPMAXITERATIONS << std::endl << std::endl;
     std::cout << "*** [for testing]   ***" << std::endl << std::endl;
@@ -67,6 +67,11 @@ int main(int argc, char** argv)
 {
   // To pass around command line args
   struct arguments args;
+  args.maxIterations = __NIFTTKVTKICPMAXITERATIONS;
+  args.maxPoints = __NIFTTKVTKICPNPOINTS;
+  args.visualise = true;
+  args.randomTransform = false;
+  args.perturbTarget = false;
   
 
   // Parse command line args
@@ -83,9 +88,9 @@ int main(int argc, char** argv)
       args.sourcePolyDataFile=argv[++i];
       std::cout << "Set --source=" << args.sourcePolyDataFile << std::endl;
     }
-    else if(strcmp(argv[i], "--visualise") == 0){
-      args.visualise = true;
-      std::cout << "Set Visualise on" << std::endl;
+    else if(strcmp(argv[i], "--novisualise") == 0){
+      args.visualise = false;
+      std::cout << "Set Visualise off" << std::endl;
     }    
     else if(strcmp(argv[i], "--maxpoints") == 0){
       args.maxPoints = atoi(argv[++i]);
@@ -116,16 +121,45 @@ int main(int argc, char** argv)
       return EXIT_FAILURE;
     }
 
+  vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
+  
   std::cout << "Loading PolyData:" << args.sourcePolyDataFile << std::endl;
-  
-  vtkPolyDataReader *reader = vtkPolyDataReader::New();
-  reader->SetFileName(args.sourcePolyDataFile.c_str());
-  reader->Update();
-  
+  vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
+  sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
+  sourceReader->Update();
+  source->ShallowCopy (sourceReader->GetOutput()); 
   std::cout << "Loaded PolyData:" << args.sourcePolyDataFile << std::endl;
   
+  std::cout << "Loading PolyData:" << args.targetPolyDataFile << std::endl;
+  vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
+  targetReader->SetFileName(args.targetPolyDataFile.c_str());
+  targetReader->Update();
+  target->ShallowCopy (targetReader->GetOutput()); 
+  std::cout << "Loaded PolyData:" << args.targetPolyDataFile << std::endl;
   
-  vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
+  niftk::IterativeClosestPoint * icp = new niftk::IterativeClosestPoint(); 
+  icp->SetMaxLandmarks(args.maxPoints);
+  icp->SetMaxIterations(args.maxIterations);
+  icp->SetSource(source);
+  icp->SetTarget(target);
+  
+  if ( args.randomTransform )
+  {
+    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+    Uni_Rand->SetSeed(time());
+    vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
+    RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
+    TranslatePolyData ( source , StartTrans);
+  }
+  if ( args.perturbTarget ) 
+  {
+    vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+    //should set a seed for this, not sure how
+    PerturbPolyData(target, 1.0, 1.0 , 1.0, Gauss_Rand);
+  }
+  icp->Run();
+//  vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
  // writer->SetInput(filter->GetOutput());
  // writer->SetFileName(args.outputPolyDataFile.c_str());
  // writer->Update();
