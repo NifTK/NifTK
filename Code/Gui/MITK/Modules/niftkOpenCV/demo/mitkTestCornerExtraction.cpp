@@ -66,8 +66,8 @@ cv::Mat R1, R2, P1, P2, Q;
 cv::Mat cornerSrcLeft,  cornerSrcLeftUndistorted,  cornerSrcLeftRectified, cornerSrcLeftRectifiedGrey, cornerSrcGreyLeft, cornerSrcGreyBlurLeft, cornerSrcGreyBlurThreshLeft, cornersSrcGreyBlurThreshDilateLeft, cornerDstLeft, cornerDetectedEdgesLeft;
 cv::Mat cornerSrcRight, cornerSrcRightUndistorted, cornerSrcRightRectified, cornerSrcRightRectifiedGrey, cornerSrcGreyRight, cornerSrcGreyBlurRight, cornerSrcGreyBlurThreshRight, cornersSrcGreyBlurThreshDilateRight, cornerDstRight, cornerDetectedEdgesRight;
 
-char* leftWindowName = "Left Window";
-char* rightWindowName = "Right Window";
+std::string leftWindowName = "Left Window";
+std::string rightWindowName = "Right Window";
 
 #define MAX_CONTOUR_APPROX  7
 
@@ -260,7 +260,7 @@ int icvGenerateQuads( CvCBQuad **out_quads, CvCBCorner **out_corners,
 
   return quad_count;
 }
-
+/*
 static void icvFindQuadNeighbors( CvCBQuad *quads, int quad_count )
 {
     const float thresh_scale = 1.f;
@@ -397,7 +397,7 @@ static void icvFindQuadNeighbors( CvCBQuad *quads, int quad_count )
         }
     }
 }
-
+*/
 //-----------------------------------------------------------------------------
 std::vector<Point2f> RemoveClosePoints(const std::vector<Point2f> &input)
 {
@@ -472,7 +472,7 @@ void ExtractCorners(int, void*)
   cv::cornerSubPix(cornerSrcGreyBlurLeft, filteredFeaturesLeft, Size(5,5), Size(2,2), cv::TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 40, 0.001 ));
 
   int numberOfFilteredPointsLeft = filteredFeaturesLeft.size();
-  for (unsigned int i = 0; i < numberOfFilteredPointsLeft; i++)
+  for (int i = 0; i < numberOfFilteredPointsLeft; i++)
   {
     cv::circle(cornerDstLeft, filteredFeaturesLeft[i], 8, CV_RGB(255, 0, 0), 1);
   }
@@ -484,7 +484,7 @@ void ExtractCorners(int, void*)
   cv::cornerSubPix(cornerSrcGreyBlurRight, filteredFeaturesRight, Size(5,5), Size(2,2), cv::TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 40, 0.001 ));
 
   int numberOfFilteredPointsRight = filteredFeaturesRight.size();
-  for (unsigned int i = 0; i < numberOfFilteredPointsRight; i++)
+  for (int i = 0; i < numberOfFilteredPointsRight; i++)
   {
     cv::circle(cornerDstRight, filteredFeaturesRight[i], 8, CV_RGB(255, 0, 0), 1);
   }
@@ -492,7 +492,7 @@ void ExtractCorners(int, void*)
   std::cerr << "Matt, feature count, left=" << numberOfFilteredPointsLeft << ", right=" << numberOfFilteredPointsRight << std::endl;
 
   cv::Mat leftPointsInMatrix = cv::Mat(numberOfFilteredPointsLeft, 2, CV_32FC1);
-  for (unsigned int i = 0; i < numberOfFilteredPointsLeft; i++)
+  for (int i = 0; i < numberOfFilteredPointsLeft; i++)
   {
     leftPointsInMatrix.at<float>(i,0) = filteredFeaturesLeft[i].x;
     leftPointsInMatrix.at<float>(i,1) = filteredFeaturesLeft[i].y;
@@ -598,7 +598,7 @@ void ExtractCorners(int, void*)
   points->SetDataTypeToDouble();
   points->Initialize();
 
-  for (int i = 0; i < features3D.size(); i++)
+  for (unsigned int i = 0; i < features3D.size(); i++)
   {
     points->InsertNextPoint(features3D[i].x, features3D[i].y, features3D[i].z);
   }
@@ -611,8 +611,8 @@ void ExtractCorners(int, void*)
   polyWriter->Write();
 
 
-  imshow( leftWindowName, cornerDstLeft );
-  imshow( rightWindowName, cornerDstRight );
+  imshow( leftWindowName.c_str(), cornerDstLeft );
+  imshow( rightWindowName.c_str(), cornerDstRight );
 
 
   /*
@@ -826,7 +826,7 @@ void TestCornerExtraction::Run(const std::string& fileNameLeft, const std::strin
   r2lTranslation.at<double>(2,0) = -9.18434143e-01;
 
   // Quick hack to work round interlacing, on colour images, before we undistort them.
-  uint8_t* pixelPtr = (uint8_t*)cornerSrcLeft.data;
+  unsigned char* pixelPtr = (unsigned char*)cornerSrcLeft.data;
   for(int i = 0; i < cornerSrcLeft.rows; i+=2)
   {
       for(int j = 0; j < cornerSrcLeft.cols; j++)
@@ -836,7 +836,7 @@ void TestCornerExtraction::Run(const std::string& fileNameLeft, const std::strin
           pixelPtr[(i+1)*cornerSrcLeft.cols*3 + j*3 + 2] = pixelPtr[i*cornerSrcLeft.cols*3 + j*3 + 2];
       }
   }
-  pixelPtr = (uint8_t*)cornerSrcRight.data;
+  pixelPtr = (unsigned char*)cornerSrcRight.data;
   for(int i = 0; i < cornerSrcRight.rows; i+=2)
   {
       for(int j = 0; j < cornerSrcRight.cols; j++)
@@ -886,8 +886,8 @@ void TestCornerExtraction::Run(const std::string& fileNameLeft, const std::strin
   */
 
   // Create the windows
-  namedWindow( leftWindowName );
-  namedWindow( rightWindowName );
+  namedWindow( leftWindowName.c_str() );
+  namedWindow( rightWindowName.c_str() );
 
   // These create sliders.
 
@@ -895,12 +895,12 @@ void TestCornerExtraction::Run(const std::string& fileNameLeft, const std::strin
   //createTrackbar( "Mean Window", cornerWindowName, &meanWindow, 255, ExtractCorners );
   //createTrackbar( "Mean C", cornerWindowName, &meanC, 255, ExtractCorners );
   //createTrackbar( "Dilations", cornerWindowName, &dilations, 255, ExtractCorners );
-  createTrackbar( "Max corners", leftWindowName, &cornerMaxCorners, 255, ExtractCorners );
-  createTrackbar( "Quality Level", leftWindowName, &qualityLevel, 100, ExtractCorners );
-  createTrackbar( "Min Distance", leftWindowName, &minDistance, 255, ExtractCorners );
-  createTrackbar( "Average Distance", leftWindowName, &averagingDistance, 255, ExtractCorners );
-  createTrackbar( "Epi Distance", leftWindowName, &epiPolarDistance, 255, ExtractCorners );
-  createTrackbar( "Line choice", leftWindowName, &lineChoice, 255, ExtractCorners );
+  createTrackbar( "Max corners", leftWindowName.c_str(), &cornerMaxCorners, 255, ExtractCorners );
+  createTrackbar( "Quality Level", leftWindowName.c_str(), &qualityLevel, 100, ExtractCorners );
+  createTrackbar( "Min Distance", leftWindowName.c_str(), &minDistance, 255, ExtractCorners );
+  createTrackbar( "Average Distance", leftWindowName.c_str(), &averagingDistance, 255, ExtractCorners );
+  createTrackbar( "Epi Distance", leftWindowName.c_str(), &epiPolarDistance, 255, ExtractCorners );
+  createTrackbar( "Line choice", leftWindowName.c_str(), &lineChoice, 255, ExtractCorners );
 
   // Call this at least once to get an initial rendering.
   ExtractCorners(0,0);
