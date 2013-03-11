@@ -26,6 +26,7 @@ INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
 # stuffing this into DEPENDS above doesnt work for some reason
 TARGET_LINK_LIBRARIES(niftkNVidiaGui
   niftknvapi
+  mitkOpenCVVideoSupport
   )
   
 IF(BUILD_TESTING)  

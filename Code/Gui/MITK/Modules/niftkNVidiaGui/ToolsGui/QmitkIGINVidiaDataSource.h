@@ -20,11 +20,15 @@
 #include "mitkIGINVidiaDataType.h"
 #include <QObject>
 #include <QMetaType>
+#include <opencv2/core/types_c.h>
+#include <mitkOpenCVToMitkImageFilter.h>
 
 
 // some forward decls to avoid header pollution
 struct QmitkIGINVidiaDataSourceImpl;
 class QGLContext;
+class QGLWidget;
+//struct IplImage;
 
 
 /**
@@ -66,13 +70,18 @@ public:
 
 public:
   // to be used to share with the preview window, for example
-  QGLContext* get_capturecontext();
+  QGLWidget* get_capturecontext();
 
 
   int get_number_of_streams();
   int get_capture_width();
   int get_capture_height();
   int get_refresh_rate();
+  int get_texture_id(int stream);
+
+  // caller needs to cleanup!
+  // exists only for integration with mitk, otherwise: do not use!
+  IplImage* get_bgr_image();
 
 signals:
 
@@ -114,6 +123,8 @@ private:
   // it's also hooked up to m_ImageNode
   // BUT: every time there's a new frame, a new image is allocated. cow-style.
   mitk::Image::Pointer              m_Image;
+
+  mitk::OpenCVToMitkImageFilter::Pointer    filter;
 
 }; // end class
 
