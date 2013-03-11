@@ -68,6 +68,12 @@ public:
   // to be used to share with the preview window, for example
   QGLContext* get_capturecontext();
 
+
+  int get_number_of_streams();
+  int get_capture_width();
+  int get_capture_height();
+  int get_refresh_rate();
+
 signals:
 
   /**
