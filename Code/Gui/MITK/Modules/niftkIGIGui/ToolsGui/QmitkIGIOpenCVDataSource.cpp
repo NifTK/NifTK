@@ -14,6 +14,7 @@
 
 #include "QmitkIGIOpenCVDataSource.h"
 #include "mitkIGIOpenCVDataType.h"
+#include <mitkDataNode.h>
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
 #include <cv.h>
@@ -27,13 +28,15 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 {
   qRegisterMetaType<mitk::VideoSource*>();
 
-  this->SetName("Video");
+  this->SetName("QmitkIGIOpenCVDataSource");
   this->SetType("Frame Grabber");
   this->SetDescription("OpenCV");
   this->SetStatus("Initialised");
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoSource->SetVideoCameraInput(0);
+
+  m_OpenCVToMITKFilter = mitk::OpenCVToMitkImageFilter::New();
 
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
@@ -113,13 +116,36 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
 {
   m_VideoSource->FetchFrame();
   const IplImage* img = m_VideoSource->GetCurrentFrame();
-  // grapping failed (maybe no webcam present)
+  mitk::DataNode::Pointer node = NULL;
+
+  // grabbing failed (maybe no webcam present)
   if (img == 0)
   {
-      this->SetStatus("Failed");
-      return;
+    MITK_ERROR << "QmitkIGIOpenCVDataSource failed to retrieve the video frame" << std::endl;
+    this->SetStatus("Failed");
+    return;
   }
 
+  // Make sure we have exactly 1 data node.
+  std::vector<mitk::DataNode::Pointer> dataNodes = this->GetDataNodes();
+  if (dataNodes.size() > 1)
+  {
+    MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
+    this->SetStatus("Failed");
+    return;
+  }
+  if (dataNodes.size() == 0)
+  {
+    node = mitk::DataNode::New();
+    node->SetName(this->GetName());
+    this->SetDataNode(node);
+  }
+  if (dataNodes.size() == 1)
+  {
+    node = dataNodes[0];
+  }
+
+  // Now process the data.
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
   timeCreated->GetTime();
 
@@ -129,10 +155,15 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
   wrapper->SetDuration(1000000000); // nanoseconds
-
   this->AddData(wrapper.GetPointer());
-
   this->SetStatus("Grabbing");
+
+  // For each frame, we run in through the conversion filter.
+  m_OpenCVToMITKFilter->SetOpenCVImage(img);
+  m_OpenCVToMITKFilter->Update();
+
+  // And then we stuff it into the DataNode.
+  node->SetData(m_OpenCVToMITKFilter->GetOutput(0));
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();

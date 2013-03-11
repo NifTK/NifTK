@@ -18,6 +18,7 @@
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGILocalDataSource.h"
 #include <mitkOpenCVVideoSource.h>
+#include <mitkOpenCVToMitkImageFilter.h>
 #include <mitkMessage.h>
 #include <mitkVideoSource.h>
 
@@ -97,6 +98,7 @@ private slots:
 private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
+  mitk::OpenCVToMitkImageFilter::Pointer m_OpenCVToMITKFilter;
   QTimer *m_Timer;
 
 }; // end class
