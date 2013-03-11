@@ -135,6 +135,12 @@ public:
     QMutexLocker    l(&lock);
     return sdiin != 0;
   }
+
+  video::StreamFormat get_format() const
+  {
+    QMutexLocker    l(&lock);
+    return format;
+  }
 };
 
 //-----------------------------------------------------------------------------
@@ -230,6 +236,8 @@ void QmitkIGINVidiaDataSource::OnTimeout()
     return;
   }
 
+  this->SetStatus("Grabbing");
+
   //  Grab frame from buffer.
   
 
@@ -270,4 +278,36 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
   }
 
   return success;
+}
+
+int QmitkIGINVidiaDataSource::get_number_of_streams()
+{
+    return 0;
+}
+
+int QmitkIGINVidiaDataSource::get_capture_width()
+{
+  if (pimpl == 0)
+    return 0;
+
+  video::StreamFormat format = pimpl->get_format();
+  return format.get_width();
+}
+
+int QmitkIGINVidiaDataSource::get_capture_height()
+{
+  if (pimpl == 0)
+    return 0;
+
+  video::StreamFormat format = pimpl->get_format();
+  return format.get_height();
+}
+
+int QmitkIGINVidiaDataSource::get_refresh_rate()
+{
+  if (pimpl == 0)
+    return 0;
+
+  video::StreamFormat format = pimpl->get_format();
+  return format.get_refreshrate();
 }

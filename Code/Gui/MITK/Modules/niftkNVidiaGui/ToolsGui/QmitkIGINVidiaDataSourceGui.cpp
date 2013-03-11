@@ -55,6 +55,8 @@ QmitkIGINVidiaDataSource* QmitkIGINVidiaDataSourceGui::GetQmitkIGINVidiaDataSour
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
 {
+  setupUi(this);
+  /*
   this->setParent(parent);
 
   m_Layout = new QGridLayout(this);
@@ -64,21 +66,41 @@ void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
   m_DisplayWidget = new QLabel(this);
   m_DisplayWidget->setText("Update me, to show some kind of preview picture");
   m_Layout->addWidget(m_DisplayWidget, 0, 0);
+  */
 
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
   {
+
+    // query for ogl context, etc
+
     connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
   }
   else
   {
     MITK_ERROR << "QmitkIGINVidiaDataSourceGui: source is NULL, which suggests a programming bug" << std::endl;
   }
+
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
 {
-  // To do.
+  QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
+  if (source != NULL)
+  {
+      int width = source->get_capture_width();
+      int height = source->get_capture_height();
+      float rr = source->get_refresh_rate();
+
+      std::ostringstream    s;
+      s << width << " x " << height << " @ " << rr << " Hz";
+
+      QString   ss = QString::fromStdString(s.str());
+      // only change text if it's actually different
+      // otherwise the window is resetting a selection all the time: annoying as hell
+      if (signal_tb->text().compare(ss) != 0)
+        signal_tb->setText(ss);
+  }
 }
