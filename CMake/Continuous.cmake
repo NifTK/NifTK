@@ -12,6 +12,7 @@
 #
 #============================================================================*/
 
+##################################################################################
 # The assumption here is that the overnight build runs 21:00 - 05:59 (at
 # the latest). We then run the Continuous build throughout the day
 # on a pre-existing SuperBuild, so we can avoid re-building the whole lot.
@@ -20,6 +21,7 @@
 # A second assumption, is that the variable BASE is defined as the directory
 # containing the SuperBuild, and should therefore be specified in any cron
 # that runs this script. 
+##################################################################################
 
 SET (CTEST_BRANCH_NAME "dev")
 SET (CTEST_SOURCE_DIRECTORY "$ENV{BASE}/NifTK")
@@ -31,8 +33,8 @@ SET(CTEST_UPDATE_COMMAND "${CTEST_GIT_COMMAND} pull origin ${CTEST_BRANCH_NAME}"
 SET(NIFTK_CACHE_FILE "${CTEST_BINARY_DIRECTORY}/CMakeCache.txt")
 SET(INITIAL_CMAKECACHE_OPTIONS "${INITIAL_CMAKECACHE_OPTIONS} NIFTK_CACHE_FILE:INTERNAL=${NIFTK_CACHE_FILE}")
 
-# build for 900 minutes eg. 06:00 am to 21:00 pm, 15 hours.
-SET (CTEST_CONTINUOUS_DURATION 900)
+# build for 720 minutes eg. 06:00 am to 18:00 pm, 12 hours.
+SET (CTEST_CONTINUOUS_DURATION 720)
 
 # check every 5 minutes
 SET (CTEST_CONTINUOUS_MINIMUM_INTERVAL 5)
