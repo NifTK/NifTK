@@ -18,6 +18,7 @@
 #include "niftkIGIExports.h"
 #include <NiftyLinkUtils.h>
 #include <mitkDataStorage.h>
+#include <mitkDataNode.h>
 #include <mitkMessage.h>
 #include <itkVersion.h>
 #include <itkObject.h>
@@ -219,6 +220,7 @@ public:
    * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
    */
   double GetCurrentTimeLag();
+
   /**
    * \brief Get the subtool list
    */
@@ -267,6 +269,20 @@ protected:
    */
   void SetToolStringList ( std::list<std::string> );
 
+  /**
+   * \brief Returns the list of contained DataNodes.
+   */
+  std::vector<mitk::DataNode::Pointer> GetDataNodes() const;
+
+  /**
+   * \brief Sets the list of data nodes, which will add them to the Data Storage.
+   */
+  void SetDataNodes(std::vector<mitk::DataNode::Pointer>& nodes);
+
+  /**
+   * \brief Calls SetDataNodes.
+   */
+  void SetDataNode(mitk::DataNode::Pointer& node);
 
 private:
 
@@ -299,6 +315,7 @@ private:
   int                                             m_NumberOfTools;
   std::list<std::string>                          m_SubTools;
   std::list<std::string>::iterator                m_SubToolsIterator;
+  std::vector<mitk::DataNode::Pointer>            m_DataNodes;
 
 }; // end class
 

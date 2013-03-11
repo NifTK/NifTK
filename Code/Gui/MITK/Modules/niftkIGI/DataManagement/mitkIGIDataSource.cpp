@@ -59,7 +59,18 @@ IGIDataSource::IGIDataSource()
 IGIDataSource::~IGIDataSource()
 {
   // We don't own the m_DataStorage, so don't delete it.
+  // However, we do own any DataNodes created.
+
+  if (m_DataStorage != NULL)
+  {
+    std::vector<mitk::DataNode::Pointer>::iterator iter;
+    for (iter = m_DataNodes.begin(); iter != m_DataNodes.end(); iter++)
+    {
+      m_DataStorage->Remove(*iter);
+    }
+  }
 }
+
 
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetSavingMessages(bool isSaving)
@@ -481,6 +492,44 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
   }
 
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNodes() const
+{
+  return m_DataNodes;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetDataNodes(std::vector<mitk::DataNode::Pointer>& nodes)
+{
+  std::vector<mitk::DataNode::Pointer>::iterator iter;
+
+  for (iter = nodes.begin(); iter != nodes.end(); iter++)
+  {
+    (*iter)->SetBoolProperty("helper object", true);
+    (*iter)->SetVisibility(true);
+    (*iter)->SetOpacity(1);
+
+    if (m_DataStorage != NULL && m_DataStorage->GetNamedNode((*iter)->GetName()) == NULL)
+    {
+      m_DataStorage->Add(*iter);
+    }
+  }
+
+  this->m_DataNodes = nodes;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetDataNode(mitk::DataNode::Pointer& node)
+{
+  std::vector<mitk::DataNode::Pointer> nodes;
+  nodes.push_back(node);
+  this->SetDataNodes(nodes);
 }
 
 } // end namespace
