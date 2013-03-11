@@ -20,6 +20,7 @@
 #include <QGLContext>
 #include <QMutex>
 #include <QGLWidget>
+#include <mitkOpenCVToMitkImageFilter.h>
 
 #include "video/sdiinput.h"
 
@@ -123,6 +124,27 @@ protected:
     //  we now have texture objects that will receive video data everytime we call capture()
   }
 
+public: // FIXME: should be protected
+  bool capture()
+  {
+    QMutexLocker    l(&lock);
+    if (sdiin)
+    {
+      try
+      {
+        oglwin->makeCurrent();
+        sdiin->capture();
+
+        return true;
+      }
+      catch (...)
+      {
+          return false;
+      }
+    }
+    return false;
+  }
+
 public:
   bool has_hardware() const
   {
@@ -136,10 +158,55 @@ public:
     return sdiin != 0;
   }
 
+  // this is the format reported by sdi
+  // the actual capture format might be different!
   video::StreamFormat get_format() const
   {
     QMutexLocker    l(&lock);
     return format;
+  }
+
+  // might be different from advertised stream format
+  std::pair<int, int> get_capture_dimensions() const
+  {
+    QMutexLocker    l(&lock);
+    if (sdiin == 0)
+        return std::make_pair(0, 0);
+    return std::make_pair(sdiin->get_width(), sdiin->get_height());
+  }
+
+  // FIXME: one channel only
+  bool copy_out_bgr(char* buffer, std::size_t bufferpitch, int width, int height)
+  {
+    QMutexLocker    l(&lock);
+
+    if (sdiin)
+    {
+      // FIXME: this will change quite a bit once it runs in its own thread
+
+      oglwin->makeCurrent();
+
+      // unfortunately we have 3 bytes per pixel
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      assert((bufferpitch % 3) == 0);
+      glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 3);
+
+      glBindTexture(GL_TEXTURE_2D, sdiin->get_texture_id(0));
+      glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, buffer);
+      assert(glGetError() == GL_NO_ERROR);
+
+      return true;
+    }
+    
+    return false;
+  }
+
+  int get_texture_id(int stream)
+  {
+    QMutexLocker    l(&lock);
+    if (sdiin == 0)
+        return 0;
+    return sdiin->get_texture_id(stream);
   }
 };
 
@@ -155,6 +222,9 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
   // FIXME: this should be running in its own thread!
   pimpl->init();
 
+
+  filter = mitk::OpenCVToMitkImageFilter::New();
+
   // FIXME: depends on number of active streams, etc
   m_ImageNode = mitk::DataNode::New();
   m_ImageNode->SetName("nvidia sdi input node");
@@ -164,7 +234,7 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
   this->StartCapturing();
 
   m_Timer = new QTimer();
-  m_Timer->setInterval(50); // milliseconds
+  m_Timer->setInterval(20); // milliseconds
   m_Timer->setSingleShot(false);
 
   connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()));
@@ -218,6 +288,19 @@ bool QmitkIGINVidiaDataSource::IsCapturing()
   return result;
 }
 
+IplImage* QmitkIGINVidiaDataSource::get_bgr_image()
+{
+  std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
+  IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second), IPL_DEPTH_8U, 3);
+
+  bool ok = pimpl->copy_out_bgr(frame->imageData, frame->widthStep, frame->width, frame->height);
+  if (ok)
+    return frame;
+
+  // failed somewhere
+  cvReleaseImage(&frame);
+  return 0;
+}
 
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::OnTimeout()
@@ -236,29 +319,48 @@ void QmitkIGINVidiaDataSource::OnTimeout()
     return;
   }
 
-  this->SetStatus("Grabbing");
+  bool captureok = pimpl->capture();
 
-  //  Grab frame from buffer.
-  
-
-  if (!this->GetDataStorage()->Exists(m_ImageNode))
+#if 0
+  // FIXME: bad idea to use that mitk filter
+  //        it only works with rgb, no alpha
+  //        and it assumes layout is bgr, ie. desktop webcams dumping data to gdi
+  IplImage* frame = get_bgr_image();
+  // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
+  if (frame)
   {
-    this->GetDataStorage()->Add(m_ImageNode);
+    filter->SetCopyBuffer(true);   // FIXME: dont know what that is supposed to do, if i set it to true we get massive mem leak
+    filter->SetOpenCVImage(frame);
+    filter->Update();
+    m_Image = filter->GetOutput(0);
+    if (!this->GetDataStorage()->Exists(m_ImageNode))
+    {
+      this->GetDataStorage()->Add(m_ImageNode);
+    }
+    m_ImageNode->SetData(m_Image);
+    // disconnect temporary image?
+    filter->SetOpenCVImage(0); 
+    cvReleaseImage(&frame);
+#else
+  if (captureok)
+  {
+#endif
+    this->SetStatus("Grabbing");
+
+    igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+    timeCreated->GetTime();
+
+    // Aim of this method is to do something like when a NiftyLink message comes in.
+    mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
+    //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
+    wrapper->SetDataSource("QmitkIGINVidiaDataSource");
+    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
+    wrapper->SetDuration(1000000000); // nanoseconds
+
+    this->AddData(wrapper.GetPointer());
   }
-  m_Image = mitk::Image::New();
-  m_ImageNode->SetData(m_Image);
-
-  igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-  timeCreated->GetTime();
-
-  // Aim of this method is to do something like when a NiftyLink message comes in.
-  mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
-  //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
-  wrapper->SetDataSource("QmitkIGINVidiaDataSource");
-  wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-  wrapper->SetDuration(1000000000); // nanoseconds
-
-  this->AddData(wrapper.GetPointer());
+  else
+    this->SetStatus("Failed");
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();
@@ -310,4 +412,16 @@ int QmitkIGINVidiaDataSource::get_refresh_rate()
 
   video::StreamFormat format = pimpl->get_format();
   return format.get_refreshrate();
+}
+
+QGLWidget* QmitkIGINVidiaDataSource::get_capturecontext()
+{
+    assert(pimpl != 0);
+    assert(pimpl->oglwin != 0);
+    return pimpl->oglwin;
+}
+
+int QmitkIGINVidiaDataSource::get_texture_id(int stream)
+{
+    return pimpl->get_texture_id(stream);
 }
