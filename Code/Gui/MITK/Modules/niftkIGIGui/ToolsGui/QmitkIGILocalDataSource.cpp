@@ -75,6 +75,9 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateMitkImage(const IplImage* im
   }
   else
   {
+    // if that is not true then something is seriously borked
+    assert(image->widthStep >= numberOfBytesPerLine);
+
     // "slow" path: copy line by line
     for (int y = 0; y < image->height; ++y)
     {
