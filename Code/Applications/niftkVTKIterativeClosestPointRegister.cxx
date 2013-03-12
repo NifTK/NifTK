@@ -85,20 +85,33 @@ class KeyPressInteractorStyle : public vtkInteractorStyleTrackballCamera
       vtkRenderWindowInteractor *rwi = this->Interactor;
       std::string key = rwi->GetKeySym();
       
-      // Output the key that was pressed
-      std::cout << "Pressed " << key << std::endl;
-      
       if(key == "Right")
       {
         if ( target->GetProperty()->GetOpacity() == 0.0 )
         {
           target->GetProperty()->SetOpacity(1.0);
+          source->GetProperty()->SetOpacity(0.2);
         }
         else
         {
           if ( solution->GetProperty()->GetOpacity() == 0.0 )
           {
-            solution->GetProperty()->SetOpacity(1.0);
+            solution->GetProperty()->SetOpacity(0.5);
+          }
+        }
+      }
+      if(key == "Left")
+      {
+        if ( solution->GetProperty()->GetOpacity() == 0.5 )
+        {
+          solution->GetProperty()->SetOpacity(0.0);
+        }
+        else
+        {
+          if ( target->GetProperty()->GetOpacity() == 1.0 )
+          {
+            target->GetProperty()->SetOpacity(0.0);
+            source->GetProperty()->SetOpacity(1.0);
           }
         }
       }
@@ -179,14 +192,12 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
   
-  std::cout << "Loading PolyData:" << args.sourcePolyDataFile << std::endl;
   vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
   sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
   sourceReader->Update();
   source->ShallowCopy (sourceReader->GetOutput()); 
   std::cout << "Loaded PolyData:" << args.sourcePolyDataFile << std::endl;
   
-  std::cout << "Loading PolyData:" << args.targetPolyDataFile << std::endl;
   vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
   targetReader->SetFileName(args.targetPolyDataFile.c_str());
   targetReader->Update();
@@ -198,19 +209,42 @@ int main(int argc, char** argv)
   icp->SetMaxIterations(args.maxIterations);
   icp->SetSource(source);
   icp->SetTarget(target);
-  
+ 
+
+  vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New(); 
   if ( args.randomTransform )
   {
-    vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New(); 
     RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 );
     TranslatePolyData ( source , StartTrans);
-
   }
   if ( args.perturbTarget ) 
   {
     PerturbPolyData(target, 1.0, 1.0 , 1.0);
   }
   icp->Run();
+
+  //If testing with random transform put out an error metric
+  if ( args.randomTransform )
+  {
+    vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
+    vtkSmartPointer<vtkMatrix4x4> Residual  = vtkSmartPointer<vtkMatrix4x4>::New();
+    StartTrans->Concatenate(m);
+    StartTrans->GetInverse(Residual);
+    double * StartPoint = new double [4];
+    double * EndPoint = new double [4];
+    StartPoint [0 ] = 160;
+    StartPoint [1] = 80;
+    StartPoint [2] = 160;
+    StartPoint [3] = 1;
+    EndPoint= Residual->MultiplyDoublePoint(StartPoint);
+    double MagError = 0 ;
+    for ( int i = 0 ; i < 4 ; i ++ )
+    {
+      MagError += (EndPoint[i] - StartPoint[i]) * ( EndPoint[i] - StartPoint[i]);
+    }
+    MagError = sqrt(MagError) ;
+    std::cout << "Residual Error = "  << MagError << std::endl;
+  }
 
   if ( args.visualise ) 
   {
@@ -243,8 +277,6 @@ int main(int argc, char** argv)
     sourceActor->GetProperty()->SetColor(1,0,0);
     sourceActor->GetProperty()->SetPointSize(4);
 
-    sourceActor->GetProperty()->SetRepresentationToWireframe();
-
     vtkSmartPointer<vtkPolyDataMapper> targetMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     if ( target->GetNumberOfCells() == 0 )
     {
@@ -274,7 +306,7 @@ int main(int argc, char** argv)
     targetActor->GetProperty()->SetColor(0,1,0);
     targetActor->GetProperty()->SetPointSize(4);
     targetActor->GetProperty()->SetOpacity(0.0);
-   // targetActor->GetProperty()->SetRepresentationToWireframe();
+    targetActor->GetProperty()->SetRepresentationToPoints();
   
     vtkSmartPointer<vtkPolyDataMapper> solutionMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
