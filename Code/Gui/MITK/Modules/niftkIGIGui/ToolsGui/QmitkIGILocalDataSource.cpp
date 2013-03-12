@@ -80,7 +80,8 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateMitkImage(const IplImage* im
   itkOutput->DisconnectPipeline();
 
   // We then convert it to MITK, and this conversion takes responsibility for the memory.
-  mitk::Image::Pointer mitkImage = mitk::ImportItkImage(itkOutput);
+  mitk::Image::Pointer mitkImage;
+  mitk::CastToMitkImage(itkOutput, mitkImage);
 
   // Delete local buffer, as even though the output object is disconnected, it does not manage data.
   delete [] localBuffer;
