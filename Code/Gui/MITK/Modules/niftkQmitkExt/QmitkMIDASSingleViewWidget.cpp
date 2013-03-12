@@ -95,8 +95,8 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
 
   this->setAcceptDrops(true);
 
-  // We maintain "current slice, current magnification" for both bound and unbound views = 2 of each.
-  for (unsigned int i = 0; i < 2; i++)
+  // We maintain "current slice, current magnification" for both unbound and bound views = 2 of each.
+  for (int i = 0; i < 2; i++)
   {
     m_CurrentSliceNumbers[i] = 0;
     m_CurrentTimeSliceNumbers[i] = 0;
@@ -105,7 +105,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
     m_CurrentViews[i] = MIDAS_VIEW_UNKNOWN;
   }
 
-  // But we have to remember the slice, magnification and orientation for 3 views unbound, then 3 views bound = 6 of each.
+  // But we have to remember the slice, magnification and orientation for 3 views. Unbound, then bound, alternatingly.
   for (int i = 0; i < 6; i++)
   {
     m_PreviousSliceNumbers[i] = 0;
@@ -356,54 +356,24 @@ void QmitkMIDASSingleViewWidget::RequestUpdate()
   m_MultiWidget->RequestUpdate();
 }
 
-unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundOffset() const
-{
-  // So we have arrays of length 2, index=0 corresponds to 'Un-bound', and index=1 corresponds to 'Bound'.
-  if (m_IsBound)
-  {
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-unsigned int QmitkMIDASSingleViewWidget::GetBoundUnboundPreviousArrayOffset() const
-{
-  // So we have arrays of length 6, index=0-2 corresponds to 'Un-bound' for axial, sagittal, coronal,
-  // and index=3-5 corresponds to 'Bound' for axial, sagittal, coronal.
-  if (m_IsBound)
-  {
-    return 3;
-  }
-  else
-  {
-    return 0;
-  }
-}
-
 void QmitkMIDASSingleViewWidget::StorePosition()
 {
-  unsigned int currentArrayOffset = this->GetBoundUnboundOffset();
-  unsigned int previousArrayOffset = this->GetBoundUnboundPreviousArrayOffset();
+  MIDASView view = m_CurrentViews[Index(0)];
+  MIDASOrientation orientation = m_CurrentOrientations[Index(0)];
 
-  MIDASView view = m_CurrentViews[currentArrayOffset];
-  MIDASOrientation orientation = m_CurrentOrientations[currentArrayOffset];
-
-  int sliceNumber = m_CurrentSliceNumbers[currentArrayOffset];
-  int timeSliceNumber = m_CurrentTimeSliceNumbers[currentArrayOffset];
-  double magnificationFactor = m_CurrentMagnificationFactors[currentArrayOffset];
+  int sliceNumber = m_CurrentSliceNumbers[Index(0)];
+  int timeSliceNumber = m_CurrentTimeSliceNumbers[Index(0)];
+  double magnificationFactor = m_CurrentMagnificationFactors[Index(0)];
 
   if (view != MIDAS_VIEW_UNKNOWN && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     // Dodgy style: orientation is an enum, being used as an array index.
 
-    m_PreviousSliceNumbers[previousArrayOffset + orientation] = sliceNumber;
-    m_PreviousTimeSliceNumbers[previousArrayOffset + orientation] = timeSliceNumber;
-    m_PreviousMagnificationFactors[previousArrayOffset + orientation] = magnificationFactor;
-    m_PreviousOrientations[previousArrayOffset + orientation] = orientation;
-    m_PreviousViews[previousArrayOffset + orientation] = view;
+    m_PreviousSliceNumbers[Index(orientation)] = sliceNumber;
+    m_PreviousTimeSliceNumbers[Index(orientation)] = timeSliceNumber;
+    m_PreviousMagnificationFactors[Index(orientation)] = magnificationFactor;
+    m_PreviousOrientations[Index(orientation)] = orientation;
+    m_PreviousViews[Index(orientation)] = view;
 
     MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
         << ", current orientation=" << orientation \
@@ -414,36 +384,24 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   }
 }
 
-void QmitkMIDASSingleViewWidget::ResetCurrentPosition(unsigned int currentIndex)
+void QmitkMIDASSingleViewWidget::ResetCurrentPosition()
 {
-  assert(currentIndex >=0);
-  assert(currentIndex <=1);
-
-  m_CurrentSliceNumbers[currentIndex] = 0;
-  m_CurrentTimeSliceNumbers[currentIndex] = 0;
-  m_CurrentMagnificationFactors[currentIndex] = this->m_MinimumMagnification;
-  m_CurrentOrientations[currentIndex] = MIDAS_ORIENTATION_UNKNOWN;
-  m_CurrentViews[currentIndex] = MIDAS_VIEW_UNKNOWN;
+  m_CurrentSliceNumbers[Index(0)] = 0;
+  m_CurrentTimeSliceNumbers[Index(0)] = 0;
+  m_CurrentMagnificationFactors[Index(0)] = this->m_MinimumMagnification;
+  m_CurrentOrientations[Index(0)] = MIDAS_ORIENTATION_UNKNOWN;
+  m_CurrentViews[Index(0)] = MIDAS_VIEW_UNKNOWN;
 }
 
-void QmitkMIDASSingleViewWidget::ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex)
+void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
 {
-  // NOTE: The positions array is off length 6, corresponding to
-  // Unbound (axial, sagittal, coronal), Bound (axial, sagittal, coronal).
-
-  assert(startIndex >= 0);
-  assert(stopIndex >= 0);
-  assert(startIndex <= 5);
-  assert(stopIndex <= 5);
-  assert(startIndex <= stopIndex);
-
-  for (unsigned int i = startIndex; i <= stopIndex; i++)
+  for (int i = 0; i < 3; i++)
   {
-    m_PreviousSliceNumbers[i] = 0;
-    m_PreviousTimeSliceNumbers[i] = 0;
-    m_PreviousMagnificationFactors[i] = this->m_MinimumMagnification;
-    m_PreviousOrientations[i] = MIDAS_ORIENTATION_UNKNOWN;
-    m_PreviousViews[i] = MIDAS_VIEW_UNKNOWN;
+    m_PreviousSliceNumbers[Index(i)] = 0;
+    m_PreviousTimeSliceNumbers[Index(i)] = 0;
+    m_PreviousMagnificationFactors[Index(i)] = this->m_MinimumMagnification;
+    m_PreviousOrientations[Index(i)] = MIDAS_ORIENTATION_UNKNOWN;
+    m_PreviousViews[Index(i)] = MIDAS_VIEW_UNKNOWN;
   }
 }
 
@@ -452,11 +410,8 @@ void QmitkMIDASSingleViewWidget::SetGeometry(mitk::Geometry3D::Pointer geometry)
   assert(geometry);
   this->m_UnBoundGeometry = geometry;
 
-  if (!this->m_IsBound)
-  {
-    this->ResetRememberedPositions(0, 2);
-    this->ResetCurrentPosition(0);
-  }
+  this->ResetRememberedPositions();
+  this->ResetCurrentPosition();
 }
 
 mitk::Geometry3D::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
@@ -470,11 +425,8 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::Geometry3D::Pointer geom
   assert(geometry);
   this->m_BoundGeometry = geometry;
 
-  if (this->m_IsBound)
-  {
-    this->ResetRememberedPositions(3, 5);
-    this->ResetCurrentPosition(1);
-  }
+  this->ResetRememberedPositions();
+  this->ResetCurrentPosition();
 }
 
 bool QmitkMIDASSingleViewWidget::GetBoundGeometryActive()
@@ -491,7 +443,7 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometryActive(bool isBound)
   }
 
   this->m_IsBound = isBound;
-  this->m_CurrentViews[this->GetBoundUnboundOffset()] = MIDAS_VIEW_UNKNOWN; // to force a reset.
+  this->m_CurrentViews[Index(0)] = MIDAS_VIEW_UNKNOWN; // to force a reset.
 }
 
 void QmitkMIDASSingleViewWidget::SetActiveGeometry()
@@ -513,7 +465,7 @@ unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber(MIDASOrientation orienta
 
 void QmitkMIDASSingleViewWidget::SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber)
 {
-  this->m_CurrentSliceNumbers[this->GetBoundUnboundOffset()] = sliceNumber;
+  this->m_CurrentSliceNumbers[Index(0)] = sliceNumber;
   this->m_MultiWidget->SetSliceNumber(orientation, sliceNumber);
 }
 
@@ -524,13 +476,13 @@ unsigned int QmitkMIDASSingleViewWidget::GetTime() const
 
 void QmitkMIDASSingleViewWidget::SetTime(unsigned int timeSliceNumber)
 {
-  this->m_CurrentTimeSliceNumbers[this->GetBoundUnboundOffset()] = timeSliceNumber;
+  this->m_CurrentTimeSliceNumbers[Index(0)] = timeSliceNumber;
   this->m_MultiWidget->SetTime(timeSliceNumber);
 }
 
 MIDASView QmitkMIDASSingleViewWidget::GetView() const
 {
-  return this->m_CurrentViews[this->GetBoundUnboundOffset()];
+  return this->m_CurrentViews[Index(0)];
 }
 
 void QmitkMIDASSingleViewWidget::SwitchView(MIDASView view)
@@ -565,19 +517,19 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 
 
     // Now store the current view/orientation.
-    this->m_CurrentViews[this->GetBoundUnboundOffset()] = view;
+    this->m_CurrentViews[Index(0)] = view;
     MIDASOrientation orientation = this->GetOrientation();
-    this->m_CurrentOrientations[this->GetBoundUnboundOffset()] = orientation;
+    this->m_CurrentOrientations[Index(0)] = orientation;
 
     // Now, in MIDAS, which only shows 2D views, if we revert to a previous view,
     // we should go back to the same slice, time, magnification.
     if (this->m_RememberViewSettingsPerOrientation
         && this->m_MultiWidget->IsSingle2DView()
-        && m_PreviousOrientations[this->GetBoundUnboundPreviousArrayOffset() + orientation] != MIDAS_ORIENTATION_UNKNOWN)
+        && m_PreviousOrientations[Index(orientation)] != MIDAS_ORIENTATION_UNKNOWN)
     {
-      this->SetSliceNumber(orientation, m_PreviousSliceNumbers[this->GetBoundUnboundPreviousArrayOffset() + orientation]);
-      this->SetTime(m_PreviousTimeSliceNumbers[this->GetBoundUnboundPreviousArrayOffset() + orientation]);
-      this->SetMagnificationFactor(m_PreviousMagnificationFactors[this->GetBoundUnboundPreviousArrayOffset() + orientation]);
+      this->SetSliceNumber(orientation, m_PreviousSliceNumbers[Index(orientation)]);
+      this->SetTime(m_PreviousTimeSliceNumbers[Index(orientation)]);
+      this->SetMagnificationFactor(m_PreviousMagnificationFactors[Index(orientation)]);
     }
     else
     {
@@ -599,12 +551,12 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 
 double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
 {
-  return this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()];
+  return this->m_CurrentMagnificationFactors[Index(0)];
 }
 
 void QmitkMIDASSingleViewWidget::SetMagnificationFactor(double magnificationFactor)
 {
-  this->m_CurrentMagnificationFactors[this->GetBoundUnboundOffset()] = magnificationFactor;
+  this->m_CurrentMagnificationFactors[Index(0)] = magnificationFactor;
   this->m_MultiWidget->SetMagnificationFactor(magnificationFactor);
 }
 
@@ -622,7 +574,7 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
   std::vector<QmitkRenderWindow*> renderWindows = GetRenderWindows();
-  for (unsigned int i = 0; i < renderWindows.size(); i++)
+  for (int i = 0; i < renderWindows.size(); i++)
   {
     renderWindows[i]->GetVtkRenderWindow()->Render();
   }

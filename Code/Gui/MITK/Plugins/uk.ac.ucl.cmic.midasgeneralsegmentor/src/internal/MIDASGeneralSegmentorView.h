@@ -416,9 +416,9 @@ private:
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
   void UpdateCurrentSliceContours(bool updateRendering=true);
 
-  /// \brief Takes the currently focussed window, and makes sure the segmented volume
-  /// is not visible in the currently focussed window and takes the global visibility value in the previously
-  /// focussed window, unless overrideToOn=true whereby both renderer specific properties are removed to revert to the global one.
+  /// \brief Takes the currently focused window, and makes sure the segmented volume
+  /// is not visible in the currently focused window and takes the global visibility value in the previously
+  /// focused window, unless overrideToOn=true whereby both renderer specific properties are removed to revert to the global one.
   void UpdateSegmentationImageVisibility(bool overrideToGlobal);
 
   /// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.

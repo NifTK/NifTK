@@ -286,11 +286,13 @@ private:
                  );
 
   void SetActiveGeometry();
-  unsigned int GetBoundUnboundOffset() const;
-  unsigned int GetBoundUnboundPreviousArrayOffset() const;
+  int Index(int index) const
+  {
+    return (index << 1) + m_IsBound;
+  }
   void StorePosition();
-  void ResetCurrentPosition(unsigned int currentIndex);
-  void ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex);
+  void ResetCurrentPosition();
+  void ResetRememberedPositions();
 
   mitk::DataStorage::Pointer           m_DataStorage;
   mitk::RenderingManager::Pointer      m_RenderingManager;
@@ -303,20 +305,20 @@ private:
   mitk::Geometry3D::Pointer            m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
   mitk::Geometry3D::Pointer            m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
 
-  double                               m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
-  double                               m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                               m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
+  double                               m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  int                                  m_CurrentSliceNumbers[2];          // one for unbound, then for bound.
-  int                                  m_CurrentTimeSliceNumbers[2];      // one for unbound, then for bound.
-  double                               m_CurrentMagnificationFactors[2];  // one for unbound, then for bound.
-  MIDASOrientation                     m_CurrentOrientations[2];          // one for unbound, then for bound.
-  MIDASView                            m_CurrentViews[2];                 // one for unbound, then for bound.
+  int                                  m_CurrentSliceNumbers[2];          // One for unbound, then for bound.
+  int                                  m_CurrentTimeSliceNumbers[2];      // One for unbound, then for bound.
+  double                               m_CurrentMagnificationFactors[2];  // One for unbound, then for bound.
+  MIDASOrientation                     m_CurrentOrientations[2];          // One for unbound, then for bound.
+  MIDASView                            m_CurrentViews[2];                 // One for unbound, then for bound.
 
-  int                                  m_PreviousSliceNumbers[6];         // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  int                                  m_PreviousTimeSliceNumbers[6];     // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  double                               m_PreviousMagnificationFactors[6]; // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  MIDASOrientation                     m_PreviousOrientations[6];         // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  MIDASView                            m_PreviousViews[6];                // one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  int                                  m_PreviousSliceNumbers[6];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  int                                  m_PreviousTimeSliceNumbers[6];     // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  double                               m_PreviousMagnificationFactors[6]; // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  MIDASOrientation                     m_PreviousOrientations[6];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  MIDASView                            m_PreviousViews[6];                // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
 
   bool                                 m_NavigationControllerEventListening;
   bool                                 m_RememberViewSettingsPerOrientation;

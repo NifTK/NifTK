@@ -193,7 +193,7 @@ public:
   /// \brief Returns the orientation from the orientation widgets, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. 3D view selected).
   MIDASOrientation GetOrientation() const;
 
-  // Callback method that gets called by the mitk::FocusManager to indicate the currently focussed window.
+  // Callback method that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
   /**
