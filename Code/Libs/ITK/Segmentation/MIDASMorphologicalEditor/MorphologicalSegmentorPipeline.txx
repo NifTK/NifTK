@@ -42,6 +42,12 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 }
 
 template<typename TPixel, unsigned int VImageDimension>
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::~MorphologicalSegmentorPipeline()
+{
+}
+
+template<typename TPixel, unsigned int VImageDimension>
 void 
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::SetForegroundValue(unsigned char foregroundValue)

@@ -24,156 +24,158 @@ namespace itk
 
 std::string ConvertSpatialOrientationToString(const SpatialOrientation::ValidCoordinateOrientationFlags &code)
 {
+  std::string result;
   switch(code)
   {
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_INVALID:
-      return "INVALID";
+      result = "INVALID";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP:
-      return "RIP";
+      result = "RIP";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP:
-      return "RSP";
+      result = "RSP";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP:
-      return "LSP";
+      result = "LSP";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA:
-      return "RIA";
+      result = "RIA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA:
-      return "LIA";
+      result = "LIA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA:
-      return "RSA";
+      result = "RSA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA:
-      return "LSA";
+      result = "LSA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP:
-      return "IRP";
+      result = "IRP";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP:
-      return "ILP";
+      result = "ILP";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP:
-      return "SRP";
+      result = "SRP";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP:
-      return "SLP";
+      result = "SLP";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA:
-      return "IRA";
+      result = "IRA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA:
-      return "ILA";
+      result = "ILA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA:
-      return "SRA";
+      result = "SRA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA:
-      return "SLA";
+      result = "SLA";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI:
-      return "RPI";
+      result = "RPI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI:
-      return "LPI";
+      result = "LPI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI:
-      return "RAI";
+      result = "RAI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI:
-      return "LAI";
+      result = "LAI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS:
-      return "RPS";
+      result = "RPS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS:
-      return "LPS";
+      result = "LPS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS:
-      return "RAS";
+      result = "RAS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS:
-      return "LAS";
+      result = "LAS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI:
-      return "PRI";
+      result = "PRI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI:
-      return "PLI";
+      result = "PLI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI:
-      return "ARI";
+      result = "ARI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI:
-      return "ALI";
+      result = "ALI";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS:
-      return "PRS";
+      result = "PRS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS:
-      return "PLS";
+      result = "PLS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS:
-      return "ARS";
+      result = "ARS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS:
-      return "ALS";
+      result = "ALS";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR:
-      return "IPR";
+      result = "IPR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR:
-      return "SPR";
+      result = "SPR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR:
-      return "IAR";
+      result = "IAR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR:
-      return "SAR";
+      result = "SAR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL:
-      return "IPL";
+      result = "IPL";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL:
-      return "SPL";
+      result = "SPL";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL:
-      return "IAL";
+      result = "IAL";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL:
-      return "SAL";
+      result = "SAL";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR:
-      return "PIR";
+      result = "PIR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR:
-      return "PSR";
+      result = "PSR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR:
-      return "AIR";
+      result = "AIR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR:
-      return "ASR";
+      result = "ASR";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL:
-      return "PIL";
+      result = "PIL";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL:
-      return "PSL";
+      result = "PSL";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL:
-      return "AIL";
+      result = "AIL";
       break;
     case SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL:
-      return "ASL";
+      result = "ASL";
       break;
     default:
-      return "UNKNOWN";
+      result = "UNKNOWN";
       break;
   }
+  return result;
 }
 
 SpatialOrientation::ValidCoordinateOrientationFlags ConvertStringToSpatialOrientation(std::string code)

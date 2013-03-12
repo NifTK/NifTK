@@ -28,10 +28,10 @@ class MorphologicalSegmentorPipelineInterface
 public:
 
   /// \brief Default no-op constructor.
-  MorphologicalSegmentorPipelineInterface() {};
+  MorphologicalSegmentorPipelineInterface() {}
 
   /// \brief Default no-op destructor.
-  ~MorphologicalSegmentorPipelineInterface() {};
+  virtual ~MorphologicalSegmentorPipelineInterface() {}
 
   /// \brief Update the pipeline.
   ///

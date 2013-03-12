@@ -42,7 +42,7 @@ int houghAccumulatorThreshold = 20;
 int houghMinDistance = 5;
 int houghMaxGap = 5;
 int kernelSize = 3;
-char* window_name = "Edge Map";
+const char* window_name = "Edge Map";
 
 void CannyThreshold(int, void*)
 {

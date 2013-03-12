@@ -121,7 +121,7 @@ LookupTableManager::~LookupTableManager()
 
 unsigned int LookupTableManager::GetNumberOfLookupTables()
 {
-	return m_List.size();;
+	return m_List.size();
 }
 
 const LookupTableContainer* LookupTableManager::GetLookupTableContainer(const unsigned int& n)
