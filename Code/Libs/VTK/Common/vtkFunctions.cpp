@@ -21,6 +21,9 @@
 #include "vtkFunctions.h"
 #include "vtkSmartPointer.h"
 #include "vtkTransformPolyDataFilter.h"
+#include "vtkBoxMuellerRandomSequence.h"
+#include "vtkMinimalStandardRandomSequence.h"
+#include "boost/nondet_random.hpp"
 
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
@@ -214,6 +217,23 @@ void PerturbPolyData(vtkPolyData* polydata,
     points->SetPoint(i, p);
   }
   polydata->SetPoints(points);
+}
+void PerturbPolyData(vtkPolyData* polydata, 
+    double xerr, double yerr, double zerr)
+{
+   vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+   Uni_Rand->SetSeed(boost::random_device()());
+   Gauss_Rand->SetUniformSequence(Uni_Rand);
+   PerturbPolyData(polydata,xerr, yerr,zerr, Gauss_Rand);
+}
+
+void RandomTransform ( vtkTransform * transform,
+    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot)
+{
+   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+   Uni_Rand->SetSeed(boost::random_device()());
+   RandomTransform(transform,xtrans,ytrans,ztrans,xrot,yrot,zrot,Uni_Rand);
 }
 
 double NormalisedRNG (vtkRandomSequence* rng) 

@@ -61,19 +61,27 @@ extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, do
 #include "vtkPolyData.h"
 #include "vtkTransform.h"
 #include "vtkRandomSequence.h"
-/** Perturbs the points in a polydata object by with random values */
+/** Perturbs the points in a polydata object by with random values, using existing random number generator */
 extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
         double xerr, double yerr, double zerr, vtkRandomSequence * rng);
+/** Perturbs the points in a polydata object by with random values */
+extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
+        double xerr, double yerr, double zerr);
 
 /** Transforms a polydata object */
 extern "C++" NIFTKVTK_WINEXPORT void TranslatePolyData
   (vtkPolyData  * polydata, vtkTransform * transform);
 
-/** Creates a randomly determined vtktransform */
+/** Creates a randomly determined vtktransform, using existing random number geneterator */
 extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
   (vtkTransform  * transform,
   double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
   vtkRandomSequence * rng);
+
+/** Creates a randomly determined vtktransform */
+extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
+  (vtkTransform  * transform,
+  double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot);
 
 /** Normalises the values returned by a vtk random sequence to be centred on zero */
 extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);

@@ -21,6 +21,17 @@
 #include "vtkTransform.h"
 #include "vtkTransformPolyDataFilter.h"
 #include "niftkVTKIterativeClosestPoint.h"
+#include "vtkFunctions.h"
+
+#include <vtkActor.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkProperty.h>
+#include <vtkDelaunay2D.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkObjectFactory.h>
 
 /*!
  * \file niftkVTKIterativeClosestPointRegister.cxx
@@ -60,8 +71,52 @@ struct arguments
   bool perturbTarget;
 };
 
+
+// Define interaction style
+class KeyPressInteractorStyle : public vtkInteractorStyleTrackballCamera
+{
+  public:
+    static KeyPressInteractorStyle* New();
+    vtkTypeMacro(KeyPressInteractorStyle, vtkInteractorStyleTrackballCamera);
+
+    virtual void OnKeyPress() 
+    {
+      // Get the keypress
+      vtkRenderWindowInteractor *rwi = this->Interactor;
+      std::string key = rwi->GetKeySym();
+      
+      // Output the key that was pressed
+      std::cout << "Pressed " << key << std::endl;
+      
+      if(key == "Right")
+      {
+        if ( target->GetProperty()->GetOpacity() == 0.0 )
+        {
+          target->GetProperty()->SetOpacity(1.0);
+        }
+        else
+        {
+          if ( solution->GetProperty()->GetOpacity() == 0.0 )
+          {
+            solution->GetProperty()->SetOpacity(1.0);
+          }
+        }
+      }
+      // Forward events
+      vtkInteractorStyleTrackballCamera::OnKeyPress();
+      this->GetCurrentRenderer()->GetRenderWindow()->Render();
+    }
+ 
+    vtkActor *source;
+    vtkActor *solution;
+    vtkActor *target;
+};
+vtkStandardNewMacro(KeyPressInteractorStyle);
+
+
+
 /**
- * \brief Transform's VTK poly data file by any number of affine transformations.
+ * \brief Run a VTK ICP on two poly data
  */
 int main(int argc, char** argv)
 {
@@ -146,19 +201,140 @@ int main(int argc, char** argv)
   
   if ( args.randomTransform )
   {
-    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-    Uni_Rand->SetSeed(time());
-    vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
-    RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
+    vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New(); 
+    RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 );
     TranslatePolyData ( source , StartTrans);
+
   }
   if ( args.perturbTarget ) 
   {
-    vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
-    //should set a seed for this, not sure how
-    PerturbPolyData(target, 1.0, 1.0 , 1.0, Gauss_Rand);
+    PerturbPolyData(target, 1.0, 1.0 , 1.0);
   }
   icp->Run();
+
+  if ( args.visualise ) 
+  {
+    
+    vtkSmartPointer<vtkPolyDataMapper> sourceMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    if ( source->GetNumberOfCells() == 0 )
+    {
+      std::cerr << "There are no cells in the source data, running delaunay filter\n";
+      vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
+#if VTK_MAJOR_VERSION <= 5
+      delaunay->SetInput(source);
+      sourceMapper->SetInputConnection(delaunay->GetOutputPort());
+      delaunay->Update();
+#else
+      delaunay->SetInputData(source);
+      sourceMapper->SetInputData(delaunay);
+      delaunay->Update();
+#endif
+    }
+    else
+    {
+#if VTK_MAJOR_VERSION <= 5
+      sourceMapper->SetInputConnection(source->GetProducerPort());
+#else
+      sourceMapper->SetInputData(source);
+#endif
+    }
+    vtkSmartPointer<vtkActor> sourceActor = vtkSmartPointer<vtkActor>::New();
+    sourceActor->SetMapper(sourceMapper);
+    sourceActor->GetProperty()->SetColor(1,0,0);
+    sourceActor->GetProperty()->SetPointSize(4);
+
+    sourceActor->GetProperty()->SetRepresentationToWireframe();
+
+    vtkSmartPointer<vtkPolyDataMapper> targetMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    if ( target->GetNumberOfCells() == 0 )
+    {
+      std::cerr << "There are no cells in the target data, running delaunay filter\n";
+      vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
+#if VTK_MAJOR_VERSION <= 5
+      delaunay->SetInput(target);
+      targetMapper->SetInputConnection(delaunay->GetOutputPort());
+      delaunay->Update();
+#else
+      delaunay->SetInputData(target);
+      targetMapper->SetInputData(delaunay);
+      delaunay->Update();
+#endif
+    }
+    else
+    {
+#if VTK_MAJOR_VERSION <= 5
+      targetMapper->SetInputConnection(target->GetProducerPort());
+#else
+      targetMapper->SetInputData(target);
+#endif
+    }
+  
+    vtkSmartPointer<vtkActor> targetActor = vtkSmartPointer<vtkActor>::New();
+    targetActor->SetMapper(targetMapper);
+    targetActor->GetProperty()->SetColor(0,1,0);
+    targetActor->GetProperty()->SetPointSize(4);
+    targetActor->GetProperty()->SetOpacity(0.0);
+   // targetActor->GetProperty()->SetRepresentationToWireframe();
+  
+    vtkSmartPointer<vtkPolyDataMapper> solutionMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
+
+    icp->ApplyTransform(solution);
+    if ( solution->GetNumberOfCells() == 0 ) 
+    {
+      vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
+#if VTK_MAJOR_VERSION <= 5
+      delaunay->SetInput(solution);
+      solutionMapper->SetInputConnection(delaunay->GetOutputPort());
+      delaunay->Update();
+#else
+      delaunay->SetInputData(solution);
+      solutionMapper->SetInputData(delaunay);
+      delaunay->Update();
+#endif
+    }
+    else
+    {
+#if VTK_MAJOR_VERSION <= 5
+      solutionMapper->SetInputConnection(solution->GetProducerPort());
+#else
+      solutionMapper->SetInputData(solution);
+#endif
+    }
+    vtkSmartPointer<vtkActor> solutionActor =
+    vtkSmartPointer<vtkActor>::New();
+    solutionActor->SetMapper(solutionMapper);
+    solutionActor->GetProperty()->SetColor(0,0,1);
+    solutionActor->GetProperty()->SetOpacity(0.0);
+    solutionActor->GetProperty()->SetPointSize(3);
+  
+    // Create a renderer, render window, and interactor
+    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
+    renderWindow->AddRenderer(renderer);
+    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
+    vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    renderWindowInteractor->SetRenderWindow(renderWindow);
+
+    vtkSmartPointer<KeyPressInteractorStyle> style = vtkSmartPointer<KeyPressInteractorStyle>::New();
+    style->target = targetActor;
+    style->source = sourceActor;
+    style->solution = solutionActor;
+    renderWindowInteractor->SetInteractorStyle(style);
+    style->SetCurrentRenderer(renderer);
+
+    // Add the actor to the scene
+    renderer->AddActor(sourceActor);
+    renderer->AddActor(targetActor);
+    renderer->AddActor(solutionActor);
+    renderer->SetBackground(.3, .6, .3); // Background color green
+
+    // Render and interact
+    renderWindow->Render();
+    renderWindowInteractor->Start();
+  
+  }
+
 //  vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
  // writer->SetInput(filter->GetOutput());
  // writer->SetFileName(args.outputPolyDataFile.c_str());

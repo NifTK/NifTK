@@ -47,8 +47,7 @@ namespace niftk
       bool Run();
 
       vtkSmartPointer<vtkMatrix4x4> GetTransform();
-      bool TransformSource();
-      bool TransformTarget();
+      bool ApplyTransform(vtkPolyData * solution);
       void SetSource (vtkSmartPointer<vtkPolyData>);
       void SetTarget (vtkSmartPointer<vtkPolyData>);
       void SetMaxLandmarks ( int);

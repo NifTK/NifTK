@@ -18,6 +18,7 @@
 #include <vtkPolyData.h>
 #include <vtkIterativeClosestPointTransform.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkTransform.h>
 
 namespace niftk
 {
@@ -85,9 +86,6 @@ namespace niftk
      m_icp->SetTarget(m_Source);
      m_icp->Modified();
      m_icp->Update();
-     //doing this runs the reg again
-     //m_icp->Inverse();
-   //  m_TransformMatrix->Invert(m_icp->GetMatrix(), m_TransformMatrix);
      m_TransformMatrix = m_icp->GetMatrix();
      m_TransformMatrix->Invert();
    }
@@ -107,29 +105,27 @@ namespace niftk
     return m_TransformMatrix;
   }
 
-  bool IterativeClosestPoint::TransformSource()
+  bool IterativeClosestPoint::ApplyTransform(vtkPolyData * solution)
   {
    if ( m_Source == NULL && m_TransformMatrix == NULL ) 
    {
     return false;
    }
-    vtkSmartPointer<vtkTransformPolyDataFilter> icpTransformFilter =
-          vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    vtkSmartPointer<vtkTransformPolyDataFilter> icpTransformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    vtkSmartPointer<vtkTransform> icpTransform = vtkSmartPointer<vtkTransform>::New();
+    icpTransform->SetMatrix(m_TransformMatrix);
+    
 #if VTK_MAJOR_VERSION <= 5
     icpTransformFilter->SetInput(m_Source);
+    icpTransformFilter->SetOutput(solution);
 #else
     icpTransformFilter->SetInputData(m_Source);
+    icpTransformFilter->SetOutputData(solution);
 #endif
-    icpTransformFilter->SetTransform(m_icp);
+    icpTransformFilter->SetTransform(icpTransform);
     icpTransformFilter->Update();
     return true;
   }
-
-  bool IterativeClosestPoint::TransformTarget()
-  {
-    return true;
-  }
-
 
 
 } // end namespace niftk
