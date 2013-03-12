@@ -532,4 +532,39 @@ void IGIDataSource::SetDataNode(mitk::DataNode::Pointer& node)
   this->SetDataNodes(nodes);
 }
 
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode()
+{
+  std::vector<mitk::DataNode::Pointer> dataNodes = this->GetDataNodes();
+  mitk::DataNode::Pointer node = NULL;
+
+  if (dataNodes.size() > 1)
+  {
+    MITK_ERROR << "IGIDataSource::GetDataNode should only have a single node. This means a derived class is incorrectly implemented!" << std::endl;
+    return dataNodes;
+  }
+
+  if (dataNodes.size() == 0)
+  {
+    // Create a new one.
+    node = mitk::DataNode::New();
+    node->SetName(this->GetName());
+
+    // Make sure we store the newly created node.
+    this->SetDataNode(node);
+  }
+  else
+  {
+    // Else, we already have one, so just return that.
+    node = dataNodes[0];
+  }
+
+  // Return a single node.
+  std::vector<mitk::DataNode::Pointer> result;
+  result.push_back(node);
+  return result;
+}
+
+//-----------------------------------------------------------------------------
 } // end namespace

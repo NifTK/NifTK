@@ -36,8 +36,6 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoSource->SetVideoCameraInput(0);
 
-  m_OpenCVToMITKFilter = mitk::OpenCVToMitkImageFilter::New();
-
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
 
@@ -114,35 +112,26 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSource::OnTimeout()
 {
-  m_VideoSource->FetchFrame();
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
-  mitk::DataNode::Pointer node = NULL;
-
-  // grabbing failed (maybe no webcam present)
-  if (img == 0)
-  {
-    MITK_ERROR << "QmitkIGIOpenCVDataSource failed to retrieve the video frame" << std::endl;
-    this->SetStatus("Failed");
-    return;
-  }
-
   // Make sure we have exactly 1 data node.
-  std::vector<mitk::DataNode::Pointer> dataNodes = this->GetDataNodes();
-  if (dataNodes.size() > 1)
+  std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode();
+  if (dataNode.size() != 1)
   {
     MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
     this->SetStatus("Failed");
     return;
   }
-  if (dataNodes.size() == 0)
+  mitk::DataNode::Pointer node = dataNode[0];
+
+  // Grab a video image.
+  m_VideoSource->FetchFrame();
+  const IplImage* img = m_VideoSource->GetCurrentFrame();
+
+  // Check if grabbing failed (maybe no webcam present)
+  if (img == 0)
   {
-    node = mitk::DataNode::New();
-    node->SetName(this->GetName());
-    this->SetDataNode(node);
-  }
-  if (dataNodes.size() == 1)
-  {
-    node = dataNodes[0];
+    MITK_ERROR << "QmitkIGIOpenCVDataSource failed to retrieve the video frame" << std::endl;
+    this->SetStatus("Failed");
+    return;
   }
 
   // Now process the data.
@@ -158,12 +147,15 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   this->AddData(wrapper.GetPointer());
   this->SetStatus("Grabbing");
 
-  // For each frame, we run in through the conversion filter.
-  m_OpenCVToMITKFilter->SetOpenCVImage(img);
-  m_OpenCVToMITKFilter->Update();
+  IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
+  cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
 
-  // And then we stuff it into the DataNode.
-  node->SetData(m_OpenCVToMITKFilter->GetOutput(0));
+  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
+  mitk::Image::Pointer outputImage = this->CreateMitkImage(rgbOpenCVImage);
+  node->SetData(outputImage);
+
+  // Tidy up
+  cvReleaseImage(&rgbOpenCVImage);
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();
