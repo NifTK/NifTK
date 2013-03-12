@@ -151,8 +151,17 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
 
   // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-  mitk::Image::Pointer outputImage = this->CreateMitkImage(rgbOpenCVImage);
-  node->SetData(outputImage);
+  mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
+  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+  if (imageInNode.IsNull())
+  {
+    node->SetData(convertedImage);
+  }
+  else
+  {
+    memcpy(imageInNode->GetData(), convertedImage->GetData(), img->width * img->height * 3);
+  }
+  node->Modified();
 
   // Tidy up
   cvReleaseImage(&rgbOpenCVImage);

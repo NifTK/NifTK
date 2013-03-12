@@ -36,7 +36,6 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateMitkImage(const IplImage* im
   ImportFilterType::SizeType size;
   size[0] = image->width;
   size[1] = image->height;
-  size[2] = 1;
 
   ImportFilterType::IndexType start;
   start.Fill( 0 );
@@ -45,15 +44,13 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateMitkImage(const IplImage* im
   region.SetIndex( start );
   region.SetSize(  size  );
 
-  double origin[ 3 ];
+  double origin[ 2 ];
   origin[0] = 0.0;    // X coordinate
   origin[1] = 0.0;    // Y coordinate
-  origin[2] = 0.0;    // Z coordinate
 
-  double spacing[ 3 ];
+  double spacing[ 2 ];
   spacing[0] = 1.0;    // along X direction
   spacing[1] = 1.0;    // along Y direction
-  spacing[2] = 1.0;    // along Z direction
 
   const unsigned int numberOfPixels = size[0] * size[1];
 

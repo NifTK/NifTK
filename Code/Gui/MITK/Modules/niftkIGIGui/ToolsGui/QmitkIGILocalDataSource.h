@@ -37,8 +37,8 @@ public:
   mitkClassMacro(QmitkIGILocalDataSource, QmitkIGIDataSource);
 
   typedef itk::RGBPixel< unsigned char > UCRGBPixelType;
-  typedef itk::Image< UCRGBPixelType, 3 > ItkImage;
-  typedef itk::ImportImageFilter< UCRGBPixelType, 3 > ImportFilterType;
+  typedef itk::Image< UCRGBPixelType, 2 > ItkImage;
+  typedef itk::ImportImageFilter< UCRGBPixelType, 2 > ImportFilterType;
 
 protected:
 
