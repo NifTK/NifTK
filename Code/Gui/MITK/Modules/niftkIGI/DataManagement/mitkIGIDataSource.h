@@ -288,8 +288,9 @@ protected:
   /**
    * \brief Helper method to get exactly one data node, creating it if it does not exist, returning
    * empty list if it failed.
+   * \param name if supplied, the name must match, otherwise the node is created using the tool name as default.
    */
-  std::vector<mitk::DataNode::Pointer> GetDataNode();
+  std::vector<mitk::DataNode::Pointer> GetDataNode(const std::string& name=std::string());
 
 private:
 

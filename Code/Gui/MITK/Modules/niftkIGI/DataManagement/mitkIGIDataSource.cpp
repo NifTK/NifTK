@@ -534,30 +534,64 @@ void IGIDataSource::SetDataNode(mitk::DataNode::Pointer& node)
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode()
+std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode(const std::string& name)
 {
-  std::vector<mitk::DataNode::Pointer> dataNodes = this->GetDataNodes();
+  std::vector<mitk::DataNode::Pointer> allDataNodes = this->GetDataNodes();
+  std::vector<mitk::DataNode::Pointer> dataNodes;
   mitk::DataNode::Pointer node = NULL;
+
+  if (allDataNodes.size() > 1 && name.size() > 0)
+  {
+    // See if we can filter by name
+    for (unsigned int i = 0; i < allDataNodes.size(); i++)
+    {
+      if (allDataNodes[i]->GetName() == name)
+      {
+        dataNodes.push_back(allDataNodes[i]);
+      }
+    }
+  }
+  else
+  {
+    dataNodes = allDataNodes;
+  }
 
   if (dataNodes.size() > 1)
   {
-    MITK_ERROR << "IGIDataSource::GetDataNode should only have a single node. This means a derived class is incorrectly implemented!" << std::endl;
+    MITK_ERROR << "IGIDataSource::GetDataNode should only return a single node. This means a derived class is incorrectly implemented!" << std::endl;
     return dataNodes;
   }
 
-  if (dataNodes.size() == 0)
+  if (dataNodes.size() == 1 && name.size() > 0 && dataNodes[0]->GetName() != name)
+  {
+    MITK_ERROR << "IGIDataSource::GetDataNode name filter was specified, and yet the existing node has the wrong name. This means a derived class is incorrectly implemented!" << std::endl;
+    return dataNodes;
+  }
+
+  if (dataNodes.size() == 1)
+  {
+    node = dataNodes[0];
+  }
+  else if (dataNodes.size() == 0)
   {
     // Create a new one.
     node = mitk::DataNode::New();
-    node->SetName(this->GetName());
+    if (name.size() > 0)
+    {
+      node->SetName(name);
+    }
+    else
+    {
+      node->SetName(this->GetName());
+    }
 
     // Make sure we store the newly created node.
     this->SetDataNode(node);
   }
   else
   {
-    // Else, we already have one, so just return that.
-    node = dataNodes[0];
+    MITK_ERROR << "IGIDataSource::GetDataNode unexpected number of nodes returned. This is a bug." << std::endl;
+    return dataNodes;
   }
 
   // Return a single node.

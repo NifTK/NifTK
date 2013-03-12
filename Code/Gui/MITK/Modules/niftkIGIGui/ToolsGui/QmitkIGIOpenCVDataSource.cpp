@@ -21,6 +21,8 @@
 #include <QTimer>
 #include <QCoreApplication>
 
+const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
+
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 : m_VideoSource(NULL)
@@ -113,7 +115,7 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 void QmitkIGIOpenCVDataSource::OnTimeout()
 {
   // Make sure we have exactly 1 data node.
-  std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode();
+  std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(OPENCV_IMAGE_NAME);
   if (dataNode.size() != 1)
   {
     MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
