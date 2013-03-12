@@ -30,6 +30,9 @@ QmitkIGILocalDataSource::~QmitkIGILocalDataSource()
 //-----------------------------------------------------------------------------
 mitk::Image::Pointer QmitkIGILocalDataSource::CreateMitkImage(const IplImage* image) const
 {
+  // the buffer copy below breaks otherwise
+  assert(image->nChannels == 3);
+
   ImportFilterType::Pointer importFilter = ImportFilterType::New();
   mitk::ITKImageImport<ItkImage>::Pointer mitkFilter = mitk::ITKImageImport<ItkImage>::New();
 
@@ -63,7 +66,22 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateMitkImage(const IplImage* im
   // artefacts as the framebuffer is written to.
   const unsigned int numberOfBytes = numberOfPixels * sizeof( UCRGBPixelType );
   UCRGBPixelType* localBuffer = new UCRGBPixelType[numberOfPixels];
-  memcpy(localBuffer, image->imageData, numberOfBytes);
+  // if the image pitch is the same as its width then everything is peachy
+  //  but if not we need to take care of that
+  const unsigned int numberOfBytesPerLine = image->width * image->nChannels;
+  if (numberOfBytesPerLine == image->widthStep)
+  {
+    memcpy(localBuffer, image->imageData, numberOfBytes);
+  }
+  else
+  {
+    // "slow" path: copy line by line
+    for (int y = 0; y < image->height; ++y)
+    {
+      // widthStep is in bytes while width is in pixels
+      std::memcpy(&(((char*) localBuffer)[y * numberOfBytesPerLine]), &(image->imageData[y * image->widthStep]), numberOfBytesPerLine); 
+    }
+  }
 
   // This will tell the importFilter to use the supplied buffer,
   // and the output of this filter, references the same buffer.
