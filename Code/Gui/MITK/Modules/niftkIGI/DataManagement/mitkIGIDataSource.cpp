@@ -509,7 +509,6 @@ void IGIDataSource::SetDataNodes(std::vector<mitk::DataNode::Pointer>& nodes)
 
   for (iter = nodes.begin(); iter != nodes.end(); iter++)
   {
-    (*iter)->SetBoolProperty("helper object", true);
     (*iter)->SetVisibility(true);
     (*iter)->SetOpacity(1);
 
