@@ -54,6 +54,8 @@ Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE:FILEPATH=C:/install/boost/boost_1_47/lib/l
 Boost_SYSTEM_LIBRARY:PATH=optimized;C:/install/boost/boost_1_47/lib/libboost_system-vc90-mt-1_47.lib;debug;C:/install/boost/boost_1_47/lib/libboost_system-vc90-mt-gd-1_47.lib
 Boost_SYSTEM_LIBRARY_DEBUG:FILEPATH=C:/install/boost/boost_1_47/lib/libboost_system-vc90-mt-gd-1_47.lib
 Boost_SYSTEM_LIBRARY_RELEASE:FILEPATH=C:/install/boost/boost_1_47/lib/libboost_system-vc90-mt-1_47.lib 
+Boost_RANDOM_LIBRARY_DEBUG:FILEPATH=C:/install/boost/boost_1_47/lib/libboost_random-vc90-mt-gd-1_47.lib
+Boost_RANDOM_LIBRARY_RELEASE:FILEPATH=C:/install/boost/boost_1_47/lib/libboost_random-vc90-mt-1_47.lib 
 Boost_USE_MULTITHREADED:BOOL=ON
 Boost_USE_STATIC_LIBS:BOOL=ON
 ")

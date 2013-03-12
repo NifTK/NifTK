@@ -555,7 +555,7 @@ ENDIF (BUILD_MESHING)
 # Find Boost.
 ######################################################################
 #FIND_PACKAGE( Boost 1.35.0 COMPONENTS filesystem system date_time REQUIRED)
-FIND_PACKAGE( Boost COMPONENTS filesystem system date_time REQUIRED)
+FIND_PACKAGE( Boost COMPONENTS filesystem system date_time random REQUIRED)
 IF(Boost_FOUND)
   MESSAGE("Found Boost")
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})

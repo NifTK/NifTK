@@ -53,6 +53,8 @@ Boost_PROGRAM_OPTIONS_LIBRARY:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboos
 Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost_program_options.a
 Boost_SYSTEM_LIBRARY:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost_system.a
 Boost_SYSTEM_LIBRARY_RELEASE:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost_system.a
+Boost_RANDOM_LIBRARY:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost_random.a
+Boost_RANDOM_LIBRARY_RELEASE:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost_random.a
 ")
 
 
