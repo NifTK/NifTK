@@ -306,7 +306,7 @@ void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* render
   // a specific view, so it still helps to highlight the most recently clicked on view.
   // Also, if you are displaying orthoview then you actually have 4 windows present,
   // then highlighting them all starts to look a bit confusing, so we just highlight the
-  // most recently focussed window, (eg. axial, sagittal, coronal or 3D).
+  // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
   if (renderWindow == this->GetRenderWindow1())
   {

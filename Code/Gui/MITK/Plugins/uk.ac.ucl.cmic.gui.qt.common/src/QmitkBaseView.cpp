@@ -41,14 +41,14 @@ public:
   /// \brief Stores the visible status.
   bool m_IsVisible;
 
-  /// \brief Used for the mitkFocusManager to register callbacks to track the currently focussed window.
+  /// \brief Used for the mitkFocusManager to register callbacks to track the currently focused window.
   unsigned long m_FocusManagerObserverTag;
 
-  /// \brief Used to track the currently focussed renderer.
-  mitk::BaseRenderer* m_Focussed2DRenderer;
+  /// \brief Used to track the currently focused renderer.
+  mitk::BaseRenderer* m_Focused2DRenderer;
 
-  /// \brief Used to track the previously focussed renderer.
-  mitk::BaseRenderer* m_PreviouslyFocussed2DRenderer;
+  /// \brief Used to track the previously focused renderer.
+  mitk::BaseRenderer* m_PreviouslyFocused2DRenderer;
 };
 
 
@@ -59,8 +59,8 @@ QmitkBaseViewPrivate::QmitkBaseViewPrivate()
   m_IsActivated = false;
   m_IsVisible = false;
   m_FocusManagerObserverTag = 0;
-  m_Focussed2DRenderer = NULL;
-  m_PreviouslyFocussed2DRenderer = NULL;
+  m_Focused2DRenderer = NULL;
+  m_PreviouslyFocused2DRenderer = NULL;
 }
 
 
@@ -207,29 +207,29 @@ void QmitkBaseView::OnFocusChanged()
     mitk::BaseRenderer* base = focusManager->GetFocused();
     if (base != NULL && base->GetMapperID() == mitk::BaseRenderer::Standard2D)
     {
-      if (d->m_Focussed2DRenderer != NULL)
+      if (d->m_Focused2DRenderer != NULL)
       {
-        d->m_PreviouslyFocussed2DRenderer = d->m_Focussed2DRenderer;
+        d->m_PreviouslyFocused2DRenderer = d->m_Focused2DRenderer;
       }
-      d->m_Focussed2DRenderer = base;
+      d->m_Focused2DRenderer = base;
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetCurrentlyFocussedRenderer()
+mitk::BaseRenderer* QmitkBaseView::GetCurrentlyFocusedRenderer()
 {
   Q_D(QmitkBaseView);
-  return d->m_Focussed2DRenderer;
+  return d->m_Focused2DRenderer;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetPreviouslyFocussedRenderer()
+mitk::BaseRenderer* QmitkBaseView::GetPreviouslyFocusedRenderer()
 {
   Q_D(QmitkBaseView);
-  return d->m_PreviouslyFocussed2DRenderer;
+  return d->m_PreviouslyFocused2DRenderer;
 }
 
 
@@ -246,9 +246,9 @@ mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInte
   mitk::SliceNavigationController::Pointer result = NULL;
 
   Q_D(QmitkBaseView);
-  if (d->m_Focussed2DRenderer != NULL)
+  if (d->m_Focused2DRenderer != NULL)
   {
-    result = d->m_Focussed2DRenderer->GetSliceNavigationController();
+    result = d->m_Focused2DRenderer->GetSliceNavigationController();
   }
   if (result.IsNull())
   {

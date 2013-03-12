@@ -683,20 +683,20 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
  *
   mitk::DataNode::Pointer segmentationNode = nodes[0];
 
-  if (this->GetPreviouslyFocussedRenderer() != NULL)
+  if (this->GetPreviouslyFocusedRenderer() != NULL)
   {
-    mitk::PropertyList* list = segmentationNode->GetPropertyList(this->GetPreviouslyFocussedRenderer());
+    mitk::PropertyList* list = segmentationNode->GetPropertyList(this->GetPreviouslyFocusedRenderer());
     if (list != NULL)
     {
       list->DeleteProperty("visible");
     }
   }
 
-  if (this->GetCurrentlyFocussedRenderer() != NULL)
+  if (this->GetCurrentlyFocusedRenderer() != NULL)
   {
     if (overrideToGlobal)
     {
-      mitk::PropertyList* list = segmentationNode->GetPropertyList(GetCurrentlyFocussedRenderer());
+      mitk::PropertyList* list = segmentationNode->GetPropertyList(GetCurrentlyFocusedRenderer());
       if (list != NULL)
       {
         list->DeleteProperty("visible");
@@ -704,7 +704,7 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
     }
     else
     {
-      segmentationNode->SetVisibility(false, this->GetCurrentlyFocussedRenderer());
+      segmentationNode->SetVisibility(false, this->GetCurrentlyFocusedRenderer());
     }
   }
 */
@@ -1125,9 +1125,9 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
 {
   QmitkBaseView::OnFocusChanged();
 
-  mitk::BaseRenderer* currentFocussedRenderer = this->GetCurrentlyFocussedRenderer();
+  mitk::BaseRenderer* currentFocusedRenderer = this->GetCurrentlyFocusedRenderer();
 
-  if (currentFocussedRenderer != NULL)
+  if (currentFocusedRenderer != NULL)
   {
 
     if (m_SliceNavigationController.IsNotNull())

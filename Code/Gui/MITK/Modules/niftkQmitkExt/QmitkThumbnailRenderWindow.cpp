@@ -547,7 +547,7 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
             }
           } // end if focused window is not thumbnail window.
         } // end if 2D mapper
-      } // end if we do actually have a focussed window
+      } // end if we do actually have a focused window
     } // end if we have a focus manager
   } // end if we have a data storage
 }

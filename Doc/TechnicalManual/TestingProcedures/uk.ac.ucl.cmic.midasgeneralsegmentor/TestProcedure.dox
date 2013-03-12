@@ -9,7 +9,7 @@
 \li Make sure you are using the MIDAS "Drag and Drop Display" as your main editor window and not the MITK "Display".
 \li Open the "MIDAS Irregular Volume Editor" view. Window->Show View->MIDAS Irregular Volume Editor, or the big Yellow M icon.
 \li Select the brain segmentation image in the Datamanager that you have just created.
-\li Click "start/re-start" segmentation on the view. Check the currently focussed window has orange contours, and that crosses appear on each disjoint 4-connected region on the current slice.
+\li Click "start/re-start" segmentation on the view. Check the currently focused window has orange contours, and that crosses appear on each disjoint 4-connected region on the current slice.
 \li Move to slice 119, (or stay at 119 if you finished the MIDAS Morphological Editor on slice 119). There should be 1 red cross (a seed). See Figure 1.
 
 \image html TestProcedureSlice119Start.png "Figure 1. The starting point for the segmentation, slice 119, 1 single red cross (a seed)."

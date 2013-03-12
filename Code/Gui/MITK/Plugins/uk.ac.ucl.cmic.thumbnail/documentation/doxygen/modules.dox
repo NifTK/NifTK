@@ -2,7 +2,7 @@
   \defgroup uk_ac_ucl_cmic_thumbnail uk.ac.ucl.cmic.thumbnail Plugin
   \ingroup CMICPlugins
 
-  \brief Plugin that tracks the currently focussed QmitkRenderWindow in the main editor,
+  \brief Plugin that tracks the currently focused QmitkRenderWindow in the main editor,
   and provides a zoomed-out view, always displaying the whole scene
   with a bounding box to inform the user of the focused view's region of interest.
   
