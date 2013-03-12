@@ -37,6 +37,12 @@ TwinThresholdBoundaryFilter<TImageType>
 }
 
 template <typename TImageType>
+TwinThresholdBoundaryFilter<TImageType>
+::~TwinThresholdBoundaryFilter()
+{
+}
+
+template <typename TImageType>
 void 
 TwinThresholdBoundaryFilter<TImageType>
 ::PrintSelf(std::ostream& os, itk::Indent indent) const

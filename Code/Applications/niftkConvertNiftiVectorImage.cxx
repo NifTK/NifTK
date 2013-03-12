@@ -215,7 +215,7 @@ int main(int argc, char ** argv)
 	{
 		reader->Update();
 	}
-	catch (itk::ExceptionObject e)
+	catch (itk::ExceptionObject& e)
 	{
 		std::cerr << std::string( e.GetDescription() );
 		return EXIT_FAILURE;
@@ -308,7 +308,7 @@ int main(int argc, char ** argv)
 	{
 		writer->Update();
 	}
-	catch (itk::ExceptionObject e)
+	catch (itk::ExceptionObject& e)
 	{
 		std::cerr << std::string( e.GetDescription() );
 		return EXIT_FAILURE;

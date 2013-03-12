@@ -109,6 +109,7 @@ public:
 protected:
 
   ExtendedBrainMaskWithSmoothDropOffCompositeFilter();
+  virtual ~ExtendedBrainMaskWithSmoothDropOffCompositeFilter();
   void GenerateData();
 
 private:

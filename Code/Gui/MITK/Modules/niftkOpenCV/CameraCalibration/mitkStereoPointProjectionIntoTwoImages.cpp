@@ -312,7 +312,7 @@ bool StereoPointProjectionIntoTwoImages::Project(
 
     isSuccessful = true;
   }
-  catch(std::logic_error e)
+  catch(std::logic_error& e)
   {
     std::cerr << "StereoPointProjectionIntoTwoImages::Project: exception thrown e=" << e.what() << std::endl;
   }

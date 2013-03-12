@@ -1522,8 +1522,9 @@ unsigned Partition(std::vector<double>& array, std::vector<unsigned>& array2, un
       array2[j] = tmp2;
     }
     else
-      return j;
+      break;
   }
+  return j;
 }
 
 void MedianHybridQuickSortImpl(std::vector<double>& array, std::vector<unsigned>& array2, unsigned f, unsigned l)

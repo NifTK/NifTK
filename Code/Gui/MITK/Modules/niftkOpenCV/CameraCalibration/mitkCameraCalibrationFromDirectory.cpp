@@ -153,7 +153,7 @@ bool CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryN
 
     isSuccessful = true;
   }
-  catch(std::logic_error e)
+  catch(std::logic_error& e)
   {
     std::cerr << "CameraCalibrationFromDirectory::Calibrate: exception thrown e=" << e.what() << std::endl;
   }

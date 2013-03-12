@@ -225,7 +225,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
       this->SetControlsByParameterValues();
       this->m_PipelineManager->UpdateSegmentation();
     }
-    catch (std::bad_alloc)
+    catch (std::bad_alloc&)
     {
       QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
     }

@@ -93,7 +93,7 @@ public:
 
 protected:
   FluidVelocityToDeformationFilter();
-  ~FluidVelocityToDeformationFilter() {};
+  virtual ~FluidVelocityToDeformationFilter() {}
   void PrintSelf(std::ostream& os, Indent indent) const;
   
   // Check before we start.

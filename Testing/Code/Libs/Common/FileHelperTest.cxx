@@ -26,7 +26,7 @@ int testCheckDirectoryEmptyInput()
   try {
     niftk::DirectoryExists("");
     return EXIT_FAILURE;
-  } catch (std::exception)
+  } catch (std::exception&)
     {
       return EXIT_SUCCESS;
     }
