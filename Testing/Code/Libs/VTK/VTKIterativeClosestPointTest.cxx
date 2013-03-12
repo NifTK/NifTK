@@ -32,7 +32,7 @@
 
 int VTKIterativeClosestPointTest ( int argc, char * argv[] ) 
 {
-  if ( argc != 3 ) 
+  if ( argc != 4 ) 
   {
     std::cerr << "Usage VTKIterativeClosestPointTest source target" << std::endl;
     return EXIT_FAILURE;
@@ -41,6 +41,13 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   std::string strTarget = argv[1];
   std::string strSource = argv[2];
 
+  bool Perturb = false;
+  if ( ( strcmp(argv[3], "perturb" ) == 0 ) )
+  {
+    std::cerr << "Perturbing Source" << std::endl;
+    Perturb = true;
+  }
+  
   vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New(); 
   vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New(); 
   
@@ -53,12 +60,12 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   targetReader->Update();
   target->ShallowCopy(targetReader->GetOutput());
 
-  icp->SetMaxLandmarks(10);
-  icp->SetMaxIterations(500);
+  icp->SetMaxLandmarks(10000);
+  icp->SetMaxIterations(1000);
   icp->SetSource(source);
   icp->SetTarget(target);
+  
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-
   Uni_Rand->SetSeed(2);
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
   
@@ -68,6 +75,17 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
   StartTrans->GetInverse(Trans_In);
   std::cerr << "Inverse of start trans " << *Trans_In << std::endl;
+
+  if ( Perturb )
+  {
+    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand2 = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+    Uni_Rand2->SetSeed(3);
+
+    vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+    Gauss_Rand->SetUniformSequence(Uni_Rand2);
+    PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
+  }
+
   if ( ! icp->Run() ) 
   {
     return EXIT_FAILURE;
@@ -129,7 +147,11 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   Uni_Rand->SetSeed(2);
+  //use uni_rand2 to seed Gauss_Rand
+  vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand2 = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+  Uni_Rand2->SetSeed(3);
   vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+  Gauss_Rand->SetUniformSequence(Uni_Rand2);
   int Repeats=1000;
 
   double *Errors = new double [Repeats];
