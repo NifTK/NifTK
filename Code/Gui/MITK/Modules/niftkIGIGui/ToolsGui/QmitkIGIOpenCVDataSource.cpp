@@ -149,10 +149,17 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
   wrapper->SetDuration(1000000000); // nanoseconds
   this->AddData(wrapper.GetPointer());
+  // update status in the igi-data-source-manager gui 
+  //  (which is different from the mitk data manager!)
   this->SetStatus("Grabbing");
 
   IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
+  // opencv's cannonical channel layout is bgr (instead of rgb)
+  //  while everything usually else expects rgb...
   cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
+  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
+  //  we should make sure we got the layout right. (opencv itself does not use this in any way.)
+  std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
 
   // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
   mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
