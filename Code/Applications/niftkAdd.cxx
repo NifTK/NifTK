@@ -78,7 +78,7 @@ int DoMain(arguments args)
 }
 
 /**
- * \brief Takes image1 and image2 and adds them together
+ * \brief Takes image1 and image2 and adds them together using itk::AddImageFilter.
  */
 int main(int argc, char** argv)
 {
