@@ -28,7 +28,7 @@
     </property>
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="Line" name="line_4">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -58,7 +58,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="Line" name="line_5">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -69,17 +69,17 @@
        <widget class="QComboBox" name="comboBox">
         <item>
          <property name="text">
+          <string extracomment="Both fields are stacked on top of each other.">Stack</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string extracomment="Interlaced video is treated as progressive.">Treat as if progressive</string>
          </property>
         </item>
         <item>
          <property name="text">
           <string extracomment="One field of the video is discarded, reducing the effective vertical resolution.">Drop one field</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string extracomment="Both fields are stacked on top of each other.">Stack</string>
          </property>
         </item>
        </widget>
@@ -188,21 +188,21 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="2">
+      <item row="8" column="2">
        <widget class="Line" name="line_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="9" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Capturing as:</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="9" column="1">
        <widget class="QLineEdit" name="actualcaptureformat_tb">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -227,6 +227,16 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Capture every nth frame:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QSpinBox" name="spinBox"/>
       </item>
      </layout>
     </item>
