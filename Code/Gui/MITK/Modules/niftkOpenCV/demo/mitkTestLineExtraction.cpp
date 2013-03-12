@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkOpenCVTest.h"
+#include "mitkTestLineExtraction.h"
 #include <ios>
 #include <fstream>
 #include <iostream>
@@ -42,13 +42,13 @@ int houghAccumulatorThreshold = 20;
 int houghMinDistance = 5;
 int houghMaxGap = 5;
 int kernelSize = 3;
-const char* window_name = "Edge Map";
+std::string window_name = "Edge Map";
 
 void CannyThreshold(int, void*)
 {
   blur( srcGrey, detectedEdges, Size(cannyBlur,cannyBlur) );
   Canny( detectedEdges, detectedEdges, cannyLowThreshold, cannyUpperThreshold, kernelSize );
-  imshow( window_name, detectedEdges );
+  imshow( window_name.c_str(), detectedEdges );
  }
 
 void HoughLines(int, void*)
@@ -81,24 +81,24 @@ void HoughLines(int, void*)
        line( outputHough, pt1, pt2, Scalar(255,0,0), 1, CV_AA);
      }
 */
-  imshow( window_name, outputHough );
+  imshow( window_name.c_str(), outputHough );
 }
 
 //-----------------------------------------------------------------------------
-OpenCVTest::OpenCVTest()
+TestLineExtraction::TestLineExtraction()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-OpenCVTest::~OpenCVTest()
+TestLineExtraction::~TestLineExtraction()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void OpenCVTest::Run(const std::string& fileName)
+void TestLineExtraction::Run(const std::string& fileName)
 {
   /// Load data.
   src = imread( fileName );
@@ -114,15 +114,15 @@ void OpenCVTest::Run(const std::string& fileName)
   cvtColor( src, srcGrey, CV_RGB2GRAY );
 
   /// Create a window
-  namedWindow( window_name );
+  namedWindow( window_name.c_str() );
 
   /// Create a Trackbar for user to enter threshold
-  createTrackbar( "Blur", window_name, &cannyBlur, 255, CannyThreshold );
-  createTrackbar( "Min Threshold:", window_name, &cannyLowThreshold, 255, CannyThreshold );
-  createTrackbar( "Max Threshold:", window_name, &cannyUpperThreshold, 255, CannyThreshold );
-  createTrackbar( "Hough Acc Threshold:", window_name, &houghAccumulatorThreshold, 255, HoughLines );
-  createTrackbar( "Hough Min Dist:", window_name, &houghMinDistance, 255, HoughLines );
-  createTrackbar( "Hough Max Gap:", window_name, &houghMaxGap, 255, HoughLines );
+  createTrackbar( "Blur", window_name.c_str(), &cannyBlur, 255, CannyThreshold );
+  createTrackbar( "Min Threshold:", window_name.c_str(), &cannyLowThreshold, 255, CannyThreshold );
+  createTrackbar( "Max Threshold:", window_name.c_str(), &cannyUpperThreshold, 255, CannyThreshold );
+  createTrackbar( "Hough Acc Threshold:", window_name.c_str(), &houghAccumulatorThreshold, 255, HoughLines );
+  createTrackbar( "Hough Min Dist:", window_name.c_str(), &houghMinDistance, 255, HoughLines );
+  createTrackbar( "Hough Max Gap:", window_name.c_str(), &houghMaxGap, 255, HoughLines );
 
   /// Show the image
   CannyThreshold(0,0);

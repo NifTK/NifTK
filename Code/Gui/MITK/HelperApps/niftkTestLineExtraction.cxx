@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include "mitkOpenCVTest.h"
+#include "mitkTestLineExtraction.h"
 
 int main(int argc, char** argv)
 {
-  mitk::OpenCVTest::Pointer testObject = mitk::OpenCVTest::New();
+  mitk::TestLineExtraction::Pointer testObject = mitk::TestLineExtraction::New();
   std::string fileName;
   if (argc >= 2)
   {

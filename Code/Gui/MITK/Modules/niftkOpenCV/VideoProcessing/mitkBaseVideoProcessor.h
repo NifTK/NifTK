@@ -26,7 +26,7 @@
 #include <mitkCommon.h>
 
 /**
- * class BaseVideoProcessor
+ * \class BaseVideoProcessor
  * \brief Abstract base class that provides methods to read from a capture device,
  * do some processing by calling the virtual Run() method and provides access to a cvVideoWriter object,
  * while managing the memory buffer for each grabbed image.

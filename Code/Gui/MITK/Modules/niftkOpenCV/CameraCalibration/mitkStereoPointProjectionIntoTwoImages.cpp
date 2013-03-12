@@ -246,7 +246,7 @@ bool StereoPointProjectionIntoTwoImages::Project(
     CvMat *output2DPointsRight = cvCreateMat(numberOfPoints, 2, CV_32FC1);
 
     // Main method to project points to both left and right images.
-    ProjectLeftCamera3DPositionToStereo2D
+    Project3DModelPositionsToStereo2D
       (
       *points,
       *intrinsicLeft,

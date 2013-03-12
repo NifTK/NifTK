@@ -382,6 +382,13 @@ IF(NOT DEFINED MITK_DIR)
     #
     #     Giving f4dfc10c4d on NifTK/MITK/niftk branch.
     # 
+    # 26. Trac 2120 - New MITK version to pull in fixes for bug 14640.
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 0a7828eaa1 from Fri Mar 8 07:55:49 2013 +0100
+    #
+    #       + 4 bugs as listed above.
+    #
+    #     Giving 62e2e5ba98 on NifTK/MITK/niftk branch.
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})

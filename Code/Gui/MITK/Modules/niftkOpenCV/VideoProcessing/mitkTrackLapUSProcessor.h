@@ -19,7 +19,7 @@
 #include "mitkStereoTwoTimePointVideoProcessorTemplateMethod.h"
 
 /**
- * class TrackLapUSProcessor
+ * \class TrackLapUSProcessor
  * \brief Derived from StereoTwoTimePointVideoProcessorTemplateMethod to track Laparoscopic Ultrasound in interleaved (flicker) stereo stream.
  */
 namespace mitk {
