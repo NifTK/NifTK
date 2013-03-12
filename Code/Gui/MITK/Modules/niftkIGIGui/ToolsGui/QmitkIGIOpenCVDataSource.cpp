@@ -15,6 +15,8 @@
 #include "QmitkIGIOpenCVDataSource.h"
 #include "mitkIGIOpenCVDataType.h"
 #include <mitkDataNode.h>
+#include <mitkImageReadAccessor.h>
+#include <mitkImageWriteAccessor.h>
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
 #include <cv.h>
@@ -161,7 +163,22 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   }
   else
   {
-    memcpy(imageInNode->GetData(), convertedImage->GetData(), img->width * img->height * 3);
+    try
+    {
+      mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
+      const void* cPointer = readAccess.GetData();
+
+      mitk::ImageWriteAccessor writeAccess(imageInNode);
+      void* vPointer = writeAccess.GetData();
+
+      memcpy(vPointer, cPointer, img->width * img->height * 3);
+    }
+    catch(mitk::Exception& e)
+    {
+      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+    }
+
+
   }
   node->Modified();
 
