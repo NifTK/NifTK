@@ -45,6 +45,8 @@ namespace niftk
   {
     m_MaxLandmarks = MaxLandMarks;
     m_icp->SetMaximumNumberOfLandmarks(m_MaxLandmarks);
+    //TODO I'm not sure this works, changing the number of landmarks 
+    //doesn't seem to alter the performance of the algorithm.
   }
 
   void IterativeClosestPoint::SetMaxIterations(int MaxIterations)
