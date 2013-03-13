@@ -65,7 +65,7 @@ void QmitkVideoPreviewWidget::paintGL()
   glColor4f(1, 1, 1, 1);
   glBegin(GL_QUADS);
     glTexCoord2f(0, 1);
-	glVertex2f(-1,  1);
+    glVertex2f(-1,  1);
     glTexCoord2f(0, 0);
     glVertex2f(-1, -1);
     glTexCoord2f(1, 0);
