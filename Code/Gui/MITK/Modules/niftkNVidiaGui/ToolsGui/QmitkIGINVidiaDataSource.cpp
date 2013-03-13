@@ -20,44 +20,89 @@
 #include <QGLContext>
 #include <QMutex>
 #include <QGLWidget>
+#include <QWaitCondition>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include "video/sdiinput.h"
 
 
-struct QmitkIGINVidiaDataSourceImpl
+struct QmitkIGINVidiaDataSourceImpl : public QThread
 {
+  // all the sdi stuff needs an opengl context
+  //  so we'll create our own
+  QGLWidget*              oglwin;
+
+  enum CaptureThreadState
+  {
+    PRE_INIT,
+    HW_ENUM,
+    FAILED,     // something is broken. signal dropout is not failed!
+    RUNNING,    // trying to capture
+    DEAD
+  };
+  // no need to lock this one
+  volatile CaptureThreadState   current_state;
+
+  // any access to the capture bits needs to be locked
+  mutable QMutex          lock;
   video::SDIDevice*       sdidev;
   video::SDIInput*        sdiin;
   video::StreamFormat     format;
   int                     streamcount;
 
-  // all the sdi stuff needs an opengl context
-  //  so we'll create our own
-  QGLContext*             oglctx;
-  QGLWidget*              oglwin;
-  mutable QMutex          lock;
+  volatile IplImage*      copyoutasap;
+  QWaitCondition          copyoutfinished;
+  QMutex                  copyoutmutex;
 
 public:
   QmitkIGINVidiaDataSourceImpl()
-    : sdidev(0), sdiin(0), streamcount(0), oglctx(0), oglwin(0), lock(QMutex::Recursive)
+    : sdidev(0), sdiin(0), streamcount(0), oglwin(0), lock(QMutex::Recursive), 
+      current_state(PRE_INIT), copyoutasap(0)
   {
-  }
-
-
-  void init()
-  {
-    QMutexLocker    l(&lock);
-
-    // we dont need much flags, there's no actual rendering on this context
-    //  (for now)
+    // we create the opengl widget on the ui thread once
+    // and then never modify or signal/etc again
     oglwin = new QGLWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
     oglwin->hide();
     assert(oglwin->isValid());
+  }
+
+
+protected:
+  virtual void run()
+  {
     oglwin->makeCurrent();
 
-    // libvideo does its own glew init, so we can get cracking straight away
+    // initial hardware check
+    init();
+    if (has_hardware())
+    {
+      bool  captureok = false;
+      while (current_state != FAILED)
+      {
+        captureok &= has_input();
+        if (!captureok)
+        {
+          // sleep
+          QThread::msleep(500);
+          // try again
+          init();
+        }
 
+        current_state = RUNNING;
+        captureok = capture();
+      }
+    }
+
+    current_state = DEAD;
+  }
+
+  void init()
+  {
+    current_state = HW_ENUM;
+
+    QMutexLocker    l(&lock);
+
+    // libvideo does its own glew init, so we can get cracking straight away
     try
     {
       check_video();
@@ -66,6 +111,7 @@ public:
     {
       // FIXME: need to report this back to gui somehow
       std::cerr << "Whoops" << std::endl;
+      current_state = FAILED;
     }
   }
 
@@ -75,7 +121,7 @@ protected:
   void check_video()
   {
     // make sure nobody messes around with contexts
-//    assert(QGLContext::currentContext() == oglctx);
+    assert(QGLContext::currentContext() == oglwin->context());
 
     QMutexLocker    l(&lock);
 
@@ -115,8 +161,6 @@ protected:
       if (format.format != video::StreamFormat::PF_NONE)
       {
         sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS);
-
-
       }
     }
 
@@ -124,16 +168,35 @@ protected:
     //  we now have texture objects that will receive video data everytime we call capture()
   }
 
-public: // FIXME: should be protected
   bool capture()
   {
-    QMutexLocker    l(&lock);
+    // make sure nobody messes around with contexts
+    assert(QGLContext::currentContext() == oglwin->context());
+
+    
+    // it's only our thread that ever writes to sdiin
+    //  in check_video()
     if (sdiin)
     {
       try
       {
-        oglwin->makeCurrent();
         sdiin->capture();
+
+        // scoping for lock
+        {
+          QMutexLocker    l(&lock);
+          // however, other threads might supply us with a new pointer!
+          if (copyoutasap)
+          {
+            readback_rgb(0, copyoutasap->imageData, copyoutasap->widthStep, copyoutasap->width, copyoutasap->height);
+
+            // and reset pointer
+            // so that we dont do it again unless explicitly requested
+            copyoutasap = 0;
+
+            copyoutfinished.wakeOne();
+          }
+        }
 
         return true;
       }
@@ -145,7 +208,34 @@ public: // FIXME: should be protected
     return false;
   }
 
+  // FIXME: one channel only
+  void readback_rgb(int stream, char* buffer, std::size_t bufferpitch, int width, int height)
+  {
+    assert(sdiin != 0);
+    assert(bufferpitch >= width * 3);
+
+    QMutexLocker    l(&lock);
+
+    // unfortunately we have 3 bytes per pixel
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    assert((bufferpitch % 3) == 0);
+    glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 3);
+
+    int texid = sdiin->get_texture_id(stream);
+    if (texid != 0)
+    {
+      glBindTexture(GL_TEXTURE_2D, texid);
+      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+      assert(glGetError() == GL_NO_ERROR);
+    }
+  }
+
 public:
+  bool is_running() const
+  {
+    return current_state == RUNNING;
+  }
+
   bool has_hardware() const
   {
     QMutexLocker    l(&lock);
@@ -175,42 +265,14 @@ public:
     return std::make_pair(sdiin->get_width(), sdiin->get_height());
   }
 
-  // FIXME: one channel only
-  bool copy_out(char* buffer, std::size_t bufferpitch, int width, int height, int layout)
+  bool copy_out_rgb(IplImage* img)
   {
-    QMutexLocker    l(&lock);
-
-    if (sdiin)
-    {
-      // FIXME: this will change quite a bit once it runs in its own thread
-
-      oglwin->makeCurrent();
-
-      // unfortunately we have 3 bytes per pixel
-      glPixelStorei(GL_PACK_ALIGNMENT, 1);
-      assert((bufferpitch % 3) == 0);
-      glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 3);
-
-      glBindTexture(GL_TEXTURE_2D, sdiin->get_texture_id(0));
-      glGetTexImage(GL_TEXTURE_2D, 0, layout, GL_UNSIGNED_BYTE, buffer);
-      assert(glGetError() == GL_NO_ERROR);
-
-      return true;
-    }
-    
-    return false;
+    QMutexLocker    l(&copyoutmutex);
+    copyoutasap = img;
+    return copyoutfinished.wait(&copyoutmutex, 500000000);
   }
 
-  bool copy_out_bgr(char* buffer, std::size_t bufferpitch, int width, int height)
-  {
-      return copy_out(buffer, bufferpitch, width, height, GL_BGR_EXT);
-  }
-  bool copy_out_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
-  {
-      return copy_out(buffer, bufferpitch, width, height, GL_RGB);
-  }
-
-  int get_texture_id(int stream)
+  int get_texture_id(int stream) const
   {
     QMutexLocker    l(&lock);
     if (sdiin == 0)
@@ -228,10 +290,7 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialising...");
 
-  // FIXME: this should be running in its own thread!
-  pimpl->init();
-
-  this->StartCapturing();
+  pimpl->start();
 
   m_Timer = new QTimer();
   m_Timer->setInterval(20); // milliseconds
@@ -293,7 +352,7 @@ IplImage* QmitkIGINVidiaDataSource::get_rgb_image()
   // mark layout as rgb instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGB\0", 4);
 
-  bool ok = pimpl->copy_out_rgb(frame->imageData, frame->widthStep, frame->width, frame->height);
+  bool ok = pimpl->copy_out_rgb(frame);
   if (ok)
     return frame;
 
@@ -319,9 +378,7 @@ void QmitkIGINVidiaDataSource::OnTimeout()
     return;
   }
 
-  bool captureok = pimpl->capture();
-
-  if (captureok)
+  if (pimpl->is_running())
   {
     IplImage* frame = get_rgb_image();
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
@@ -384,7 +441,7 @@ void QmitkIGINVidiaDataSource::OnTimeout()
       this->SetStatus("Failed");
   }
   else
-    this->SetStatus("Failed");
+    this->SetStatus("...");
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();

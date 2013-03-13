@@ -48,14 +48,14 @@ private:
 public:
 	// these may be different from the reported capture format
 	//  if we are dropping a field, for example
-	int get_width();
-	int get_height();
+	int get_width() const;
+	int get_height() const;
 
 
 public:
 	// format is always RGBA!
 	// returns zero if no stream with that index
-	int get_texture_id(int streamno);
+	int get_texture_id(int streamno) const;
 
 	/**
 	 * @brief Transfers one set of frames over all streams into texture objects.
@@ -71,7 +71,7 @@ public:
 	 * it will simply continue returning false! So if too much time has passed since last frame
 	 * you may want to call capture() anyway to see whether there still is anything connected.
 	 */
-	bool has_frame();
+	bool has_frame() const;
 
 
 #pragma warning(push)

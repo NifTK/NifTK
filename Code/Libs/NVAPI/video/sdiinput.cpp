@@ -61,7 +61,7 @@ void SDIInput::set_log_filename(const std::string& fn)
 	logfilename = fn;
 }
 
-int SDIInput::get_texture_id(int streamno)
+int SDIInput::get_texture_id(int streamno) const
 {
 	assert(wglGetCurrentContext() == pimpl->oglrc);
 
@@ -70,7 +70,7 @@ int SDIInput::get_texture_id(int streamno)
 	return pimpl->textures[streamno];
 }
 
-bool SDIInput::has_frame()
+bool SDIInput::has_frame() const
 {
 	assert(wglGetCurrentContext() == pimpl->oglrc);
 
@@ -515,12 +515,12 @@ SDIInput::~SDIInput()
 	}
 }
 
-int SDIInput::get_width()
+int SDIInput::get_width() const
 {
 	return pimpl->width;
 }
 
-int SDIInput::get_height()
+int SDIInput::get_height() const
 {
 	return pimpl->height;
 }
