@@ -82,8 +82,8 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
 
     CvSize imageSize = cvGetSize(allImages[0]);
 
-    ExtractChessBoardPoints(imagesLeft, fileNamesLeft, numberCornersX, numberCornersY, writeImages, successfullImagesLeft, successfullFileNamesLeft, imagePointsLeft, objectPointsLeft, pointCountsLeft);
-    ExtractChessBoardPoints(imagesRight, fileNamesRight, numberCornersX, numberCornersY, writeImages, successfullImagesRight, successfullFileNamesRight, imagePointsRight, objectPointsRight, pointCountsRight);
+    ExtractChessBoardPoints(imagesLeft, fileNamesLeft, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImagesLeft, successfullFileNamesLeft, imagePointsLeft, objectPointsLeft, pointCountsLeft);
+    ExtractChessBoardPoints(imagesRight, fileNamesRight, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImagesRight, successfullFileNamesRight, imagePointsRight, objectPointsRight, pointCountsRight);
 
     std::vector<std::string> allSuccessfulFileNames;
     allSuccessfulFileNames.insert(allSuccessfulFileNames.begin(), successfullFileNamesLeft.begin(), successfullFileNamesLeft.end());
@@ -109,6 +109,10 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
 
     CvMat *rightToLeftRotationMatrix = cvCreateMat(3, 3,CV_32FC1);
     CvMat *rightToLeftTranslationVector = cvCreateMat(3, 1, CV_32FC1);
+    CvMat *rightToLeftRotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
+    CvMat *rightToLeftTranslationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
+    CvMat *r2LRot = cvCreateMat(1, 3, CV_32FC1);
+    CvMat *r2LTrans = cvCreateMat(1, 3, CV_32FC1);
     CvMat *essentialMatrix = cvCreateMat(3, 3,CV_32FC1);
     CvMat *fundamentalMatrix = cvCreateMat(3, 3,CV_32FC1);
 
@@ -203,9 +207,30 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
     cvSave(std::string(outputFileName + ".right.intrinsic.xml").c_str(), intrinsicMatrixRight);
     cvSave(std::string(outputFileName + ".right.distortion.xml").c_str(), distortionCoeffsRight);
 
-    // Output the right to left rotation and translation
+    // Output the right to left rotation and translation.
+    // This is the MEDIAN of all the views.
     cvSave(std::string(outputFileName + ".r2l.rotation.xml").c_str(), rightToLeftRotationMatrix);
     cvSave(std::string(outputFileName + ".r2l.translation.xml").c_str(), rightToLeftTranslationVector);
+
+    // Also calculate specific right to left transformations for each view.
+    ComputeRightToLeftTransformations(
+        *rotationVectorsLeft,
+        *translationVectorsLeft,
+        *rotationVectorsRight,
+        *translationVectorsRight,
+        *rightToLeftRotationVectors,
+        *rightToLeftTranslationVectors
+        );
+    for (unsigned int i = 0; i < successfullFileNamesLeft.size(); i++)
+    {
+      for (int j = 0; j < 3; j++)
+      {
+        CV_MAT_ELEM(*r2LRot, float, 0, j) = CV_MAT_ELEM(*rightToLeftRotationVectors, float, i, j);
+        CV_MAT_ELEM(*r2LTrans, float, 0, j) = CV_MAT_ELEM(*rightToLeftTranslationVectors, float, i, j);
+      }
+      cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.rotation.xml").c_str(), r2LRot);
+      cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.translation.xml").c_str(), r2LTrans);
+    }
 
     // Might as well
     cvSave(std::string(outputFileName + ".essential.xml").c_str(), essentialMatrix);
@@ -236,6 +261,10 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
 
     cvReleaseMat(&rightToLeftRotationMatrix);
     cvReleaseMat(&rightToLeftTranslationVector);
+    cvReleaseMat(&rightToLeftRotationVectors);
+    cvReleaseMat(&rightToLeftTranslationVectors);
+    cvReleaseMat(&r2LRot);
+    cvReleaseMat(&r2LTrans);
     cvReleaseMat(&fundamentalMatrix);
     cvReleaseMat(&essentialMatrix);
 
@@ -246,7 +275,7 @@ bool StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& lef
 
     isSuccessful = true;
   }
-  catch(std::logic_error e)
+  catch(std::logic_error& e)
   {
     std::cerr << "CameraCalibrationFromDirectory::Calibrate: exception thrown e=" << e.what() << std::endl;
   }

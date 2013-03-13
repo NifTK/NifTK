@@ -12,20 +12,20 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASStdMultiWidget.h"
-#include "QmitkRenderWindow.h"
-#include "vtkRenderWindow.h"
-#include "vtkSmartPointer.h"
-#include "vtkMatrix4x4.h"
-#include "vtkLinearTransform.h"
+#include <cmath>
+#include <itkConversionUtils.h>
+#include <itkMatrix.h>
+#include <itkSpatialOrientationAdapter.h>
+#include <vtkCamera.h>
+#include <vtkRenderWindow.h>
+#include <vtkMatrix4x4.h>
+#include <vtkLinearTransform.h>
+#include <QmitkMIDASStdMultiWidget.h>
+#include <QmitkRenderWindow.h>
 #include <QStackedLayout>
 #include <QGridLayout>
 #include <QFrame>
-#include "itkConversionUtils.h"
-#include "itkMatrix.h"
-#include "itkSpatialOrientationAdapter.h"
-#include <cmath>
-#include "mitkMIDASOrientationUtils.h"
+#include <mitkMIDASOrientationUtils.h>
 
 /**
  * This class is to notify the SingleViewWidget about the display geometry changes of a render window.
@@ -178,7 +178,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 
   // Listen to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetAllWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (int i = 0; i < 3; ++i)
   {
     AddDisplayGeometryModificationObserver(renderWindows[i]);
@@ -210,8 +210,8 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
 
   // Stop listening to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetAllWindows();
-  for (int i = 0; i < 3; ++i)
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
+  for (unsigned i = 0; i < 3; ++i)
   {
     RemoveDisplayGeometryModificationObserver(renderWindows[i]);
   }
@@ -219,13 +219,10 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
 
 void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
 {
-  mitk::VtkPropRenderer* vtkPropRenderer = renderWindow->GetRenderer();
-  assert(vtkPropRenderer);
+  mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+  assert(renderer);
 
-  mitk::BaseRenderer* baseRenderer = dynamic_cast<mitk::BaseRenderer*>(vtkPropRenderer);
-  assert(baseRenderer);
-
-  mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
 
   DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, renderWindow, displayGeometry);
@@ -235,22 +232,19 @@ void QmitkMIDASStdMultiWidget::AddDisplayGeometryModificationObserver(QmitkRende
 
 void QmitkMIDASStdMultiWidget::RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
 {
-  mitk::VtkPropRenderer* vtkPropRenderer = renderWindow->GetRenderer();
-  assert(vtkPropRenderer);
+  mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+  assert(renderer);
 
-  mitk::BaseRenderer* baseRenderer = dynamic_cast<mitk::BaseRenderer*>(vtkPropRenderer);
-  assert(baseRenderer);
-
-  mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
 
   displayGeometry->RemoveObserver(m_DisplayGeometryModificationObservers[renderWindow]);
   m_DisplayGeometryModificationObservers.erase(renderWindow);
 }
 
-void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
 {
-  emit NodesDropped(this, window, nodes);
+  emit NodesDropped(this, renderWindow, nodes);
 }
 
 void QmitkMIDASStdMultiWidget::OnAxialSliceChanged(const itk::EventObject & geometrySliceEvent)
@@ -305,47 +299,46 @@ bool QmitkMIDASStdMultiWidget::IsSelected() const
   return m_IsSelected;
 }
 
-void QmitkMIDASStdMultiWidget::SetSelectedWindow(vtkRenderWindow* window)
+void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   // When we "Select", the selection is at the level of the QmitkMIDASStdMultiWidget
   // so the whole of this widget is selected. However, we may have clicked in
   // a specific view, so it still helps to highlight the most recently clicked on view.
   // Also, if you are displaying orthoview then you actually have 4 windows present,
   // then highlighting them all starts to look a bit confusing, so we just highlight the
-  // most recently focussed window, (eg. axial, sagittal, coronal or 3D).
+  // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
-  if (this->ContainsVtkRenderWindow(window))
+  if (renderWindow == this->GetRenderWindow1())
   {
     m_IsSelected = true;
-
-    if (window == this->GetRenderWindow1()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Disable();
-    }
-    else if (window == this->GetRenderWindow2()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Disable();
-    }
-    else if (window == this->GetRenderWindow3()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
-      m_RectangleRendering4->Disable();
-    }
-    else if (window == this->GetRenderWindow4()->GetVtkRenderWindow())
-    {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
-    }
+    m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
+    m_RectangleRendering2->Disable();
+    m_RectangleRendering3->Disable();
+    m_RectangleRendering4->Disable();
+  }
+  else if (renderWindow == this->GetRenderWindow2())
+  {
+    m_IsSelected = true;
+    m_RectangleRendering1->Disable();
+    m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
+    m_RectangleRendering3->Disable();
+    m_RectangleRendering4->Disable();
+  }
+  else if (renderWindow == this->GetRenderWindow3())
+  {
+    m_IsSelected = true;
+    m_RectangleRendering1->Disable();
+    m_RectangleRendering2->Disable();
+    m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
+    m_RectangleRendering4->Disable();
+  }
+  else if (renderWindow == this->GetRenderWindow4())
+  {
+    m_IsSelected = true;
+    m_RectangleRendering1->Disable();
+    m_RectangleRendering2->Disable();
+    m_RectangleRendering3->Disable();
+    m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
   }
   else
   {
@@ -354,28 +347,27 @@ void QmitkMIDASStdMultiWidget::SetSelectedWindow(vtkRenderWindow* window)
   this->ForceImmediateUpdate();
 }
 
-std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetSelectedWindows() const
+std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetSelectedRenderWindows() const
 {
-
-  std::vector<QmitkRenderWindow*> result;
+  std::vector<QmitkRenderWindow*> selectedRenderWindows;
 
   if (m_RectangleRendering1->IsEnabled())
   {
-    result.push_back(this->GetRenderWindow1());
+    selectedRenderWindows.push_back(this->GetRenderWindow1());
   }
   if (m_RectangleRendering2->IsEnabled())
   {
-    result.push_back(this->GetRenderWindow2());
+    selectedRenderWindows.push_back(this->GetRenderWindow2());
   }
   if (m_RectangleRendering3->IsEnabled())
   {
-    result.push_back(this->GetRenderWindow3());
+    selectedRenderWindows.push_back(this->GetRenderWindow3());
   }
   if (m_RectangleRendering4->IsEnabled())
   {
-    result.push_back(this->GetRenderWindow4());
+    selectedRenderWindows.push_back(this->GetRenderWindow4());
   }
-  return result;
+  return selectedRenderWindows;
 }
 
 void QmitkMIDASStdMultiWidget::RequestUpdate()
@@ -505,8 +497,7 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
 {
   if (this->m_DataStorage.IsNotNull())
   {
-    vtkRenderWindow *axialVtkRenderWindow = this->mitkWidget1->GetVtkRenderWindow();
-    mitk::BaseRenderer* axialRenderer = mitk::BaseRenderer::GetInstance(axialVtkRenderWindow);
+    mitk::BaseRenderer* axialRenderer = this->mitkWidget1->GetRenderer();
 
     bool show3DPlanes = false;
 
@@ -545,23 +536,19 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
   }
 }
 
-void QmitkMIDASStdMultiWidget::SetVisibility(QmitkRenderWindow *window, mitk::DataNode *node, bool visible)
+void QmitkMIDASStdMultiWidget::SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible)
 {
-  if (window != NULL && node != NULL)
+  if (renderWindow != NULL && node != NULL)
   {
-    vtkRenderWindow *vtkRenderWindow = window->GetVtkRenderWindow();
-    if (vtkRenderWindow != NULL)
+    mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+    if (renderer != NULL)
     {
-      mitk::BaseRenderer* renderer = mitk::BaseRenderer::GetInstance(vtkRenderWindow);
-      if (renderer != NULL)
-      {
-        bool currentVisibility = false;
-        node->GetVisibility(currentVisibility, renderer);
+      bool currentVisibility = false;
+      node->GetVisibility(currentVisibility, renderer);
 
-        if (visible != currentVisibility)
-        {
-          node->SetVisibility(visible, renderer);
-        }
+      if (visible != currentVisibility)
+      {
+        node->SetVisibility(visible, renderer);
       }
     }
   }
@@ -579,13 +566,13 @@ void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibility(std::vector<mitk::D
 }
 
 
-bool QmitkMIDASStdMultiWidget::ContainsWindow(QmitkRenderWindow *window) const
+bool QmitkMIDASStdMultiWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
 {
   bool result = false;
-  if (   mitkWidget1 == window
-      || mitkWidget2 == window
-      || mitkWidget3 == window
-      || mitkWidget4 == window
+  if (   mitkWidget1 == renderWindow
+      || mitkWidget2 == renderWindow
+      || mitkWidget3 == renderWindow
+      || mitkWidget4 == renderWindow
       )
   {
     result = true;
@@ -593,38 +580,36 @@ bool QmitkMIDASStdMultiWidget::ContainsWindow(QmitkRenderWindow *window) const
   return result;
 }
 
-bool QmitkMIDASStdMultiWidget::ContainsVtkRenderWindow(vtkRenderWindow *window) const
+QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(vtkRenderWindow *vtkRenderWindow) const
 {
-  bool result = false;
-  if (   mitkWidget1->GetVtkRenderWindow() == window
-      || mitkWidget2->GetVtkRenderWindow() == window
-      || mitkWidget3->GetVtkRenderWindow() == window
-      || mitkWidget4->GetVtkRenderWindow() == window
-      )
+  QmitkRenderWindow* renderWindow = 0;
+  if (mitkWidget1->GetVtkRenderWindow() == vtkRenderWindow)
   {
-    result = true;
+    renderWindow = mitkWidget1;
   }
-  return result;
+  else if (mitkWidget2->GetVtkRenderWindow() == vtkRenderWindow)
+  {
+    renderWindow = mitkWidget2;
+  }
+  else if (mitkWidget3->GetVtkRenderWindow() == vtkRenderWindow)
+  {
+    renderWindow = mitkWidget3;
+  }
+  else if (mitkWidget4->GetVtkRenderWindow() == vtkRenderWindow)
+  {
+    renderWindow = mitkWidget4;
+  }
+  return renderWindow;
 }
 
-std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetAllWindows() const
+std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetRenderWindows() const
 {
-  std::vector<QmitkRenderWindow*> result;
-  result.push_back(this->GetRenderWindow1());
-  result.push_back(this->GetRenderWindow2());
-  result.push_back(this->GetRenderWindow3());
-  result.push_back(this->GetRenderWindow4());
-  return result;
-}
-
-std::vector<vtkRenderWindow*> QmitkMIDASStdMultiWidget::GetAllVtkWindows() const
-{
-  std::vector<vtkRenderWindow*> result;
-  result.push_back(this->GetRenderWindow1()->GetVtkRenderWindow());
-  result.push_back(this->GetRenderWindow2()->GetVtkRenderWindow());
-  result.push_back(this->GetRenderWindow3()->GetVtkRenderWindow());
-  result.push_back(this->GetRenderWindow4()->GetVtkRenderWindow());
-  return result;
+  std::vector<QmitkRenderWindow*> renderWindows;
+  renderWindows.push_back(this->GetRenderWindow1());
+  renderWindows.push_back(this->GetRenderWindow2());
+  renderWindows.push_back(this->GetRenderWindow3());
+  renderWindows.push_back(this->GetRenderWindow4());
+  return renderWindows;
 }
 
 MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
@@ -671,11 +656,10 @@ MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
 
 void QmitkMIDASStdMultiWidget::FitToDisplay()
 {
-  std::vector<vtkRenderWindow*> vtkWindows = this->GetAllVtkWindows();
-  for (unsigned int window = 0; window < vtkWindows.size(); window++)
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
+  for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
-    mitk::BaseRenderer *baseRenderer = mitk::BaseRenderer::GetInstance(vtkWindows[window]);
-    baseRenderer->GetDisplayGeometry()->Fit();
+    renderWindows[i]->GetRenderer()->GetDisplayGeometry()->Fit();
   }
 }
 
@@ -796,11 +780,11 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       MITK_DEBUG << permutedMatrix[i][0] << " " << permutedMatrix[i][1] << " " << permutedMatrix[i][2];
     }
 
-    std::vector<vtkRenderWindow*> vtkWindows = this->GetAllVtkWindows();
-    for (unsigned int window = 0; window < vtkWindows.size(); window++)
+    std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
+    for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
-      vtkRenderWindow* vtkWindow = vtkWindows[window];
-      mitk::BaseRenderer *baseRenderer = mitk::BaseRenderer::GetInstance(vtkWindow);
+      QmitkRenderWindow* renderWindow = renderWindows[i];
+      mitk::BaseRenderer *baseRenderer = renderWindow->GetRenderer();
       int id = baseRenderer->GetMapperID();
 
       // Get access to slice navigation controller, as this sorts out most of the process.
@@ -810,7 +794,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       // Get the view/orientation flags.
       mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
 
-      if (window < 3)
+      if (i < 3)
       {
 
         mitk::Point3D    originVoxels;
@@ -965,7 +949,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         planeGeometry->SetOrigin(originOfSlice);
         planeGeometry->SetMatrixByVectors(rightDV, bottomDV, normal.two_norm());
 
-        for (unsigned int i = 0; i < numberOfTimeSteps; i++)
+        for (unsigned int j = 0; j < numberOfTimeSteps; j++)
         {
           // Then we create the SlicedGeometry3D from an initial plane, and a given number of slices.
           mitk::SlicedGeometry3D::Pointer slicedGeometry = mitk::SlicedGeometry3D::New();
@@ -976,20 +960,20 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
 
           if (inputTimeSlicedGeometry.IsNotNull())
           {
-            slicedGeometry->SetTimeBounds(inputTimeSlicedGeometry->GetGeometry3D(i)->GetTimeBounds());
+            slicedGeometry->SetTimeBounds(inputTimeSlicedGeometry->GetGeometry3D(j)->GetTimeBounds());
           }
-          createdTimeSlicedGeometry->SetGeometry3D(slicedGeometry, i);
+          createdTimeSlicedGeometry->SetGeometry3D(slicedGeometry, j);
         }
         createdTimeSlicedGeometry->UpdateInformation();
 
         MITK_DEBUG << "Matt - final geometry=" << createdTimeSlicedGeometry << std::endl;
         MITK_DEBUG << "Matt - final geometry origin=" << createdTimeSlicedGeometry->GetOrigin() << std::endl;
         MITK_DEBUG << "Matt - final geometry center=" << createdTimeSlicedGeometry->GetCenter() << std::endl;
-        for(int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
         {
-          MITK_DEBUG << "Matt - final geometry i=" << i << ", p=" << createdTimeSlicedGeometry->GetCornerPoint(i) << std::endl;
+          MITK_DEBUG << "Matt - final geometry j=" << j << ", p=" << createdTimeSlicedGeometry->GetCornerPoint(j) << std::endl;
         }
-        m_CreatedGeometries[window] = createdTimeSlicedGeometry;
+        m_CreatedGeometries[i] = createdTimeSlicedGeometry;
         sliceNavigationController->SetInputWorldGeometry(createdTimeSlicedGeometry);
         sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
         sliceNavigationController->SetViewDirection(viewDirection);
@@ -1268,20 +1252,20 @@ void QmitkMIDASStdMultiWidget::OnPositionChanged(MIDASOrientation orientation)
     geometry->WorldToIndex(millimetrePoint, voxelPoint);
     sliceNumber = voxelPoint[axis];
 
-    QmitkRenderWindow *window = NULL;
+    QmitkRenderWindow *renderWindow = NULL;
     if (orientation == MIDAS_ORIENTATION_AXIAL)
     {
-      window = this->mitkWidget1;
+      renderWindow = this->mitkWidget1;
     }
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
-      window = this->mitkWidget2;
+      renderWindow = this->mitkWidget2;
     }
     else if (orientation == MIDAS_ORIENTATION_CORONAL)
     {
-      window = this->mitkWidget3;
+      renderWindow = this->mitkWidget3;
     }
-    emit PositionChanged(window, voxelPoint, millimetrePoint, sliceNumber, orientation);
+    emit PositionChanged(renderWindow, voxelPoint, millimetrePoint, sliceNumber, orientation);
   }
 }
 
@@ -1374,13 +1358,13 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
   // that corresponds to the rules given at the top of the header file.
 
   // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-  std::vector<QmitkRenderWindow*> windows = this->GetAllWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (unsigned int i = 0; i < 3; i++)
   {
-    QmitkRenderWindow *window = windows[i];
+    QmitkRenderWindow *renderWindow = renderWindows[i];
 
-    double zoomScaleFactor = ComputeScaleFactor(window, magnificationFactor);
-    this->ZoomDisplayAboutCentre(window, zoomScaleFactor);
+    double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnificationFactor);
+    this->ZoomDisplayAboutCentre(renderWindow, zoomScaleFactor);
   }
 
   m_MagnificationFactor = magnificationFactor;
@@ -1389,11 +1373,11 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
   m_BlockDisplayGeometryEvents = false;
 }
 
-double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* window, double magnificationFactor)
+double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor)
 {
   mitk::Point2D scaleFactorPixPerVoxel;
   mitk::Point2D scaleFactorPixPerMillimetres;
-  this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+  this->GetScaleFactors(renderWindow, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
 
   double effectiveMagnificationFactor = 0.0;
   if (magnificationFactor >= 0.0)
@@ -1429,7 +1413,7 @@ double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* window, d
   return targetScaleFactor[axisWithLeastDifference];
 }
 
-double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* window)
+double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* renderWindow)
 {
   if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN)
   {
@@ -1440,7 +1424,7 @@ double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* w
   // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
   mitk::Point2D scaleFactorPixPerVoxel;
   mitk::Point2D scaleFactorPixPerMillimetres;
-  this->GetScaleFactors(window, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+  this->GetScaleFactors(renderWindow, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
 
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
   double scaleFactor = std::max(scaleFactorPixPerVoxel[0], scaleFactorPixPerVoxel[1]);
@@ -1462,10 +1446,10 @@ double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
   {
     // Note, that this method should only be called for MIDAS purposes, when the view is a 2D
     // view, so it will either be Axial, Coronal, Sagittal, and not 3D or OthoView.
-    QmitkRenderWindow *window = this->GetRenderWindow(orientation);
+    QmitkRenderWindow *renderWindow = this->GetRenderWindow(orientation);
 
     // Given the above comment, this means, we MUST have a window from this choice of 3.
-    assert(window);
+    assert(renderWindow);
 
     //////////////////////////////////////////////////////////////////////////
     // Use the current window to work out a reasonable magnification factor.
@@ -1473,14 +1457,14 @@ double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
     // due to the user manually (right click + mouse move) zooming the window.
     //////////////////////////////////////////////////////////////////////////
 
-    magnificationFactor = ComputeMagnificationFactor(window);
+    magnificationFactor = ComputeMagnificationFactor(renderWindow);
     magnificationFactor = static_cast<int>(magnificationFactor);
   }
   return magnificationFactor;
 }
 
 void QmitkMIDASStdMultiWidget::GetScaleFactors(
-    QmitkRenderWindow *window,
+    QmitkRenderWindow *renderWindow,
     mitk::Point2D &scaleFactorPixPerVoxel,
     mitk::Point2D &scaleFactorPixPerMillimetres)
 {
@@ -1490,9 +1474,9 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
   scaleFactorPixPerMillimetres[0] = 1;
   scaleFactorPixPerMillimetres[1] = 1;
 
-  if (window != NULL)
+  if (renderWindow != NULL)
   {
-    mitk::SliceNavigationController* sliceNavigationController = window->GetSliceNavigationController();
+    mitk::SliceNavigationController* sliceNavigationController = renderWindow->GetSliceNavigationController();
     assert(sliceNavigationController);
 
     mitk::BaseRenderer::Pointer baseRenderer = sliceNavigationController->GetRenderer();
@@ -1501,7 +1485,7 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
     mitk::DisplayGeometry::Pointer displayGeometry = baseRenderer->GetDisplayGeometry();
     assert(displayGeometry);
 
-    const mitk::Geometry3D *geometry = window->GetSliceNavigationController()->GetInputWorldGeometry();
+    const mitk::Geometry3D *geometry = renderWindow->GetSliceNavigationController()->GetInputWorldGeometry();
     if (geometry != NULL && geometry->GetBoundingBox() != NULL)
     {
       mitk::Point3D cornerPointsInImage[8];
@@ -1585,15 +1569,15 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
         }
       }
     } // end geometry and bounding box != NULL
-  } // end window != NULL
+  } // end renderWindow != NULL
 }
 
-void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *window, double scaleFactor)
+void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor)
 {
-  if (window != NULL)
+  if (renderWindow != NULL)
   {
-    // I'm using assert statements, because fundamentally, if the window exists, so should all the other objects.
-    mitk::SliceNavigationController* sliceNavigationController = window->GetSliceNavigationController();
+    // I'm using assert statements, because fundamentally, if the render window exists, so should all the other objects.
+    mitk::SliceNavigationController* sliceNavigationController = renderWindow->GetSliceNavigationController();
     assert(sliceNavigationController);
 
     mitk::BaseRenderer* baseRenderer = sliceNavigationController->GetRenderer();
@@ -1638,10 +1622,10 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *window,
 
 void QmitkMIDASStdMultiWidget::StoreCameras()
 {
-  std::vector<QmitkRenderWindow*> windows = this->GetAllWindows();
-  for (unsigned int i = 0; i < windows.size(); i++)
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
+  for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
-    vtkCamera* camera = windows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
+    vtkCamera* camera = renderWindows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
     this->m_Cameras[i]->SetPosition(camera->GetPosition());
     this->m_Cameras[i]->SetFocalPoint(camera->GetFocalPoint());
     this->m_Cameras[i]->SetViewUp(camera->GetViewUp());
@@ -1651,10 +1635,10 @@ void QmitkMIDASStdMultiWidget::StoreCameras()
 
 void QmitkMIDASStdMultiWidget::RestoreCameras()
 {
-  std::vector<QmitkRenderWindow*> windows = this->GetAllWindows();
-  for (unsigned int i = 0; i < windows.size(); i++)
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
+  for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
-    vtkCamera* camera = windows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
+    vtkCamera* camera = renderWindows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
     camera->SetPosition(this->m_Cameras[i]->GetPosition());
     camera->SetFocalPoint(this->m_Cameras[i]->GetFocalPoint());
     camera->SetViewUp(this->m_Cameras[i]->GetViewUp());
@@ -1664,20 +1648,20 @@ void QmitkMIDASStdMultiWidget::RestoreCameras()
 
 QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(const MIDASOrientation& orientation) const
 {
-  QmitkRenderWindow *window = NULL;
+  QmitkRenderWindow *renderWindow = NULL;
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {
-    window = this->GetRenderWindow1();
+    renderWindow = this->GetRenderWindow1();
   }
   else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
   {
-    window = this->GetRenderWindow2();
+    renderWindow = this->GetRenderWindow2();
   }
   else if (orientation == MIDAS_ORIENTATION_CORONAL)
   {
-    window = this->GetRenderWindow3();
+    renderWindow = this->GetRenderWindow3();
   }
-  return window;
+  return renderWindow;
 }
 
 int QmitkMIDASStdMultiWidget::GetSliceUpDirection(MIDASOrientation orientation) const

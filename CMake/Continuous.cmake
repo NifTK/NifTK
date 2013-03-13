@@ -12,13 +12,24 @@
 #
 #============================================================================*/
 
+##################################################################################
+# The assumption here is that the overnight build runs 21:00 - 05:59 (at
+# the latest). We then run the Continuous build throughout the day
+# on a pre-existing SuperBuild, so we can avoid re-building the whole lot.
+# As a result, we can assume we are running off a fully configured CMakeCache.txt.
+#
+# A second assumption, is that the variable BASE is defined as the directory
+# containing the SuperBuild, and should therefore be specified in any cron
+# that runs this script. 
+##################################################################################
 
-SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/wc/static/NifTK")
-SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/wc/static/NifTK-build")
-SET (CTEST_COMMAND "$ENV{HOME}/niftk/cmake/bin/ctest -D Nightly")
-SET (CTEST_CMAKE_COMMAND "$ENV{HOME}/niftk/cmake/bin/cmake")
-SET (CTEST_SVN_COMMAND "/usr/bin/svn")
+FIND_PROGRAM(CTEST_GIT_COMMAND NAMES git)
+FIND_PROGRAM(CTEST_MAKE_COMMAND NAMES make)
 
+SET(CTEST_BRANCH_NAME "dev")
+SET(CTEST_MAKE_OPTIONS "-j 4")
+
+<<<<<<< HEAD
 # If you switch from Debug to Release, the tests arent built!
 SET (CTEST_INITIAL_CACHE "
 BUILDNAME:STRING=Linux-Centos-g++-4.1.2-20080704-static
@@ -56,13 +67,23 @@ Boost_SYSTEM_LIBRARY_RELEASE:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost
 Boost_RANDOM_LIBRARY:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost_random.a
 Boost_RANDOM_LIBRARY_RELEASE:FILEPATH=$ENV{HOME}/niftk/static/boost/lib/libboost_random.a
 ")
+=======
+SET(CTEST_SOURCE_DIRECTORY "$ENV{BASE}/NifTK")
+SET(CTEST_BINARY_DIRECTORY "$ENV{BASE}/NifTK-SuperBuild-Release/NifTK-build")
+SET(NIFTK_CACHE_FILE "${CTEST_BINARY_DIRECTORY}/CMakeCache.txt")
+SET(INITIAL_CMAKECACHE_OPTIONS "${INITIAL_CMAKECACHE_OPTIONS} NIFTK_CACHE_FILE:INTERNAL=${NIFTK_CACHE_FILE}")
+>>>>>>> 5c51d8dfbe3ff80cae1a31bb9fa3094663e17be4
 
+SET(CTEST_COMMAND "ctest -D Continuous")
+SET(CTEST_CMAKE_COMMAND "cmake")
+SET(CTEST_UPDATE_COMMAND "${CTEST_GIT_COMMAND} pull origin ${CTEST_BRANCH_NAME}")
+SET(CTEST_BUILD_COMMAND "${CTEST_MAKE_COMMAND} ${CTEST_MAKE_OPTIONS}")
 
-# build for 15 minutes
-SET (CTEST_CONTINUOUS_DURATION 15)
+# build for 720 minutes eg. 06:00 am to 18:00 pm, 12 hours.
+SET (CTEST_CONTINUOUS_DURATION 720)
 
-# check every 15 minutes
-SET (CTEST_CONTINUOUS_MINIMUM_INTERVAL 15)
+# check every 5 minutes
+SET (CTEST_CONTINUOUS_MINIMUM_INTERVAL 5)
 
 # Wipe binaries each time
 SET (CTEST_START_WITH_EMPTY_BINARY_DIRECTORY FALSE)

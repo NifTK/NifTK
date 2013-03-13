@@ -19,7 +19,7 @@
 #include "mitkBaseVideoProcessor.h"
 
 /**
- * class MonoVideoProcessorTemplateMethod
+ * \class MonoVideoProcessorTemplateMethod
  * \brief Base class providing methods to read images from a capture device,
  * process each one sequentially, and then write to the video writer.
  * \see BaseVideoProcessor

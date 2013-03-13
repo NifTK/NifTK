@@ -38,7 +38,7 @@ class QmitkRenderWindow;
  * \brief Qt Widget to provide a single QmitkMIDASSingleViewWidget, and some associated
  * buttons controlling 2/3 view, vertical/horizontal and axial/coronal/sagittal/ortho.
  *
- * The widget will display whatever data nodes are visible in the currently focussed
+ * The widget will display whatever data nodes are visible in the currently focused
  * render window, not including this widget. This means:
  *
  * <pre>
@@ -135,17 +135,17 @@ private:
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
 
-  /// \brief Works out the MIDASOrientation of the currently focussed window.
+  /// \brief Works out the MIDASOrientation of the currently focused window.
   MIDASOrientation GetCurrentMainWindowOrientation();
 
-  /// \brief Works out the MIDASView of the currently focussed window.
+  /// \brief Works out the MIDASView of the currently focused window.
   MIDASView GetCurrentMainWindowView();
 
-  /// \brief Returns true if the currently focussed window is in this widget.
-  bool IsCurrentlyFocussedWindowInThisWidget();
+  /// \brief Returns true if the currently focused window is in this widget.
+  bool IsCurrentlyFocusedWindowInThisWidget();
 
-  /// \brief Returns the currently focussed window.
-  mitk::BaseRenderer* GetCurrentlyFocussedRenderer() const;
+  /// \brief Returns the currently focused window.
+  mitk::BaseRenderer* GetCurrentlyFocusedRenderer() const;
 
   QmitkMIDASBaseSegmentationFunctionality *m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;

@@ -35,11 +35,10 @@ public:
   itkNewMacro(QmitkIGIUltrasonixTool);
   mitkNewMacro1Param(QmitkIGIUltrasonixTool,OIGTLSocketObject *);
 
-
   /**
    * \brief We store the node name here so other classes can refer to it.
    */
-  static const std::string ULTRASONIX_TOOL_2D_IMAGE_NAME;
+  static const std::string ULTRASONIX_IMAGE_NAME;
 
   /**
    * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.

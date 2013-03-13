@@ -124,32 +124,32 @@ protected:
   virtual void SetParent(QWidget*);
 
   /**
-   * \brief Retrieve the current slice navigation controller from the currently focussed render window.
+   * \brief Retrieve the current slice navigation controller from the currently focused render window.
    *
-   * \return mitk::SliceNavigationController* The slice navigation controller for the currenty focussed render window, or <code>NULL</code> if it can't be determined.
+   * \return mitk::SliceNavigationController* The slice navigation controller for the currenty focused render window, or <code>NULL</code> if it can't be determined.
    */
   mitk::SliceNavigationController* GetSliceNavigationController();
 
   /**
-   * \brief Returns the slice number from the slice navigatiob controller from the currently focussed render window.
+   * \brief Returns the slice number from the slice navigatiob controller from the currently focused render window.
    *
    * \return int The slice number or -1 if it can't be found.
    */
   int GetSliceNumberFromSliceNavigationController();
 
   /**
-   * \brief Returns the currently focussed renderer, as this class is tracking the focus changes.
+   * \brief Returns the currently focused renderer, as this class is tracking the focus changes.
    *
-   * \return mitk::BaseRenderer* The currently focussed renderer, or NULL if it has not been set.
+   * \return mitk::BaseRenderer* The currently focused renderer, or NULL if it has not been set.
    */
-  mitk::BaseRenderer* GetCurrentlyFocussedRenderer();
+  mitk::BaseRenderer* GetCurrentlyFocusedRenderer();
 
   /**
-   * \brief Returns the previously focussed renderer (the one before the currently focussed renderer), as this class is tracking the focus changes.
+   * \brief Returns the previously focused renderer (the one before the currently focused renderer), as this class is tracking the focus changes.
    *
-   * \return mitk::BaseRenderer* The previously focussed renderer, or NULL if it has not been set.
+   * \return mitk::BaseRenderer* The previously focused renderer, or NULL if it has not been set.
    */
-  mitk::BaseRenderer* GetPreviouslyFocussedRenderer();
+  mitk::BaseRenderer* GetPreviouslyFocusedRenderer();
 
   /**
    * \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.

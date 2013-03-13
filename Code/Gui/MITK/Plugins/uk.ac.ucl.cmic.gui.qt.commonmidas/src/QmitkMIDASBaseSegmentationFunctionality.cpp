@@ -439,7 +439,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentation
 
             } // have got a new segmentation
           }
-          catch (std::bad_alloc)
+          catch (std::bad_alloc&)
           {
             QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
           }
@@ -499,6 +499,11 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
   assert(toolManager);
 
   toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
+
+  if (workingDataNodes.size() == 0)
+  {
+    toolManager->ActivateTool(-1);
+  }
   toolManager->SetWorkingData(workingDataNodes);
 
   if (referenceData)

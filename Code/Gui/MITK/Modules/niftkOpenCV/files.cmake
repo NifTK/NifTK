@@ -27,5 +27,10 @@ set(CPP_FILES
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cpp
   CameraCalibration/mitkCorrectImageDistortion.cpp
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cpp
-  demo/mitkOpenCVTest.cpp
+  Registration/mitkRegistrationHelper.cpp
+  Registration/mitkStereoImageToModelMetric.cpp
+  Registration/mitkStereoImageToModelSSD.cpp
+  Registration/mitkRegisterProbeModelToStereoPair.cpp
+  demo/mitkTestLineExtraction.cpp
+  demo/mitkTestCornerExtraction.cpp
 )

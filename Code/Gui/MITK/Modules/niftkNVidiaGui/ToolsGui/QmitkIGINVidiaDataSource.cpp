@@ -22,7 +22,7 @@
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
 : m_Timer(NULL)
 {
-  this->SetName("Video");
+  this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialised");

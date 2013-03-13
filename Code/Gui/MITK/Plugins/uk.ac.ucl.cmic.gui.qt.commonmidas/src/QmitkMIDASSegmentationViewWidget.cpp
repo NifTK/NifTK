@@ -365,8 +365,8 @@ void QmitkMIDASSegmentationViewWidget::EnableWidgets()
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 {
-  // If the newly focussed window is this widget, nothing to update. Stop early.
-  if (this->IsCurrentlyFocussedWindowInThisWidget())
+  // If the newly focused window is this widget, nothing to update. Stop early.
+  if (this->IsCurrentlyFocusedWindowInThisWidget())
   {
     return;
   }
@@ -401,7 +401,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     mainWindowChanged = true;
   }
 
-  // This will only be valid if we are not currently focussed on THIS widget.
+  // This will only be valid if we are not currently focused on THIS widget.
   // This should always be true at this point due to early exit above.
   MIDASView mainWindowView = this->GetCurrentMainWindowView();
 
@@ -412,7 +412,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     this->m_MainWindowView = mainWindowView;
   }
 
-  mitk::BaseRenderer* currentlyFocussedRenderer = this->GetCurrentlyFocussedRenderer();
+  mitk::BaseRenderer* currentlyFocusedRenderer = this->GetCurrentlyFocusedRenderer();
 
   if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowView != MIDAS_VIEW_UNKNOWN && this->m_View == MIDAS_VIEW_UNKNOWN))
   {
@@ -456,13 +456,13 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   {
     this->ChangeLayout(false);
   }
-  this->m_CurrentRenderer = currentlyFocussedRenderer;
+  this->m_CurrentRenderer = currentlyFocusedRenderer;
   this->m_ViewerWidget->RequestUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkMIDASSegmentationViewWidget::GetCurrentlyFocussedRenderer() const
+mitk::BaseRenderer* QmitkMIDASSegmentationViewWidget::GetCurrentlyFocusedRenderer() const
 {
   mitk::BaseRenderer* result = NULL;
 
@@ -476,19 +476,19 @@ mitk::BaseRenderer* QmitkMIDASSegmentationViewWidget::GetCurrentlyFocussedRender
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocussedWindowInThisWidget()
+bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocusedWindowInThisWidget()
 {
   bool result = false;
 
-  mitk::BaseRenderer* focussedRenderer = this->GetCurrentlyFocussedRenderer();
-  if (focussedRenderer != NULL)
+  mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
+  if (focusedRenderer != NULL)
   {
-    vtkRenderWindow* focusedWindowRenderWindow = focussedRenderer->GetRenderWindow();
+    vtkRenderWindow* focusedVtkRenderWindow = focusedRenderer->GetRenderWindow();
 
-    std::vector<vtkRenderWindow*> windowsInThisWidget = m_ViewerWidget->GetAllVtkWindows();
-    for (unsigned int i = 0; i < windowsInThisWidget.size(); i++)
+    std::vector<QmitkRenderWindow*> renderWindows = m_ViewerWidget->GetRenderWindows();
+    for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
-      if (windowsInThisWidget[i] == focusedWindowRenderWindow)
+      if (renderWindows[i]->GetVtkRenderWindow() == focusedVtkRenderWindow)
       {
         result = true;
       }
@@ -503,10 +503,10 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientati
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
 
-  mitk::BaseRenderer* focussedRenderer = this->GetCurrentlyFocussedRenderer();
-  if (focussedRenderer != NULL)
+  mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
+  if (focusedRenderer != NULL)
   {
-    vtkRenderWindow* focusedWindowRenderWindow = focussedRenderer->GetRenderWindow();
+    vtkRenderWindow* focusedWindowRenderWindow = focusedRenderer->GetRenderWindow();
 
     QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
     QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");

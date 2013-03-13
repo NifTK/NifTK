@@ -19,7 +19,7 @@
 #include "mitkStereoOneTimePointVideoProcessorTemplateMethod.h"
 
 /**
- * class StereoDistortionCorrectionVideoProcessor
+ * \class StereoDistortionCorrectionVideoProcessor
  * \brief Derived from StereoVideoProcessorTemplateMethod to correct distortion in interleaved (flicker) stereo stream.
  */
 namespace mitk {

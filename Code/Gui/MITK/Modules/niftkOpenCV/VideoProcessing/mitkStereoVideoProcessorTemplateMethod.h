@@ -19,7 +19,7 @@
 #include "mitkBaseVideoProcessor.h"
 
 /**
- * class StereoVideoProcessorTemplateMethod
+ * \class StereoVideoProcessorTemplateMethod
  * \brief Base class providing methods to read images from a capture device,
  * that provides flicker stereo (interleaved left, then right, then left, then right),
  * process pairs sequentially, and then write to the video writer.

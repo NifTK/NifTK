@@ -50,7 +50,7 @@ public:
   MorphologicalSegmentorPipeline();
 
   /// \brief No-op destructor, as all objects will be destroyed by smart pointers.
-  ~MorphologicalSegmentorPipeline() {};
+  virtual ~MorphologicalSegmentorPipeline();
 
   /// \brief Disconnects the pipeline so that reference counts go to zero for the input image.
   void DisconnectPipeline();

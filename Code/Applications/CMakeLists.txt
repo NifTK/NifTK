@@ -65,6 +65,8 @@ IF(SlicerExecutionModel_FOUND)
     niftkConvertImage
     niftkCreateMaskImage
     niftkCropImage
+	niftkDilate
+    niftkErode
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
     niftkMakeCheckerboardMarker
@@ -213,11 +215,9 @@ SET(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkDecomposeAffineMatrix
   niftkDeformationFieldTargetRegistrationError
   niftkDicomSeriesReadImageWrite
-  niftkDilate
   niftkDilateMaskAndCrop
   niftkDistanceTransform
   niftkDoubleWindowBSI
-  niftkErode
   niftkExtract2DSliceFrom3DImage
   niftkExtractCurvatures
   niftkExtractRegion

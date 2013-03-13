@@ -87,6 +87,7 @@ class ITK_EXPORT TwinThresholdBoundaryFilter : public ImageToImageFilter<TImageT
   protected:
 
     TwinThresholdBoundaryFilter();
+    ~TwinThresholdBoundaryFilter();
     void GenerateData();
     void PrintSelf(std::ostream& os, Indent indent) const;
     

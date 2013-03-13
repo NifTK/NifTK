@@ -33,6 +33,9 @@
 class GeneralSegmentorPipelineInterface
 {
 public:
+  GeneralSegmentorPipelineInterface() {}
+  virtual ~GeneralSegmentorPipelineInterface() {}
+
   virtual void Update(GeneralSegmentorPipelineParams& params) = 0;
 };
 

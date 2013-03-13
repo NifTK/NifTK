@@ -184,13 +184,13 @@ void QmitkMIDASMultiViewVisibilityManager::SetNodeVisibilityForWindow(mitk::Data
   m_Widgets[widgetIndex]->SetRendererSpecificVisibility(nodes, visibility);
 }
 
-int QmitkMIDASMultiViewVisibilityManager::GetIndexFromWindow(QmitkRenderWindow* window)
+int QmitkMIDASMultiViewVisibilityManager::GetIndexFromWindow(QmitkRenderWindow* renderWindow)
 {
   int result = -1;
 
   for (unsigned int i = 0; i < m_Widgets.size(); i++)
   {
-    bool contains = m_Widgets[i]->ContainsWindow(window);
+    bool contains = m_Widgets[i]->ContainsRenderWindow(renderWindow);
     if (contains)
     {
       result = i;

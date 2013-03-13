@@ -40,6 +40,12 @@ ExtendedBrainMaskWithSmoothDropOffCompositeFilter<TImageType>
 }
 
 template <typename TImageType>
+ExtendedBrainMaskWithSmoothDropOffCompositeFilter<TImageType>
+::~ExtendedBrainMaskWithSmoothDropOffCompositeFilter()
+{
+}
+
+template <typename TImageType>
 void 
 ExtendedBrainMaskWithSmoothDropOffCompositeFilter<TImageType>
 ::GenerateData()

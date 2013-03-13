@@ -22,6 +22,7 @@
 #include "mitkVolumeDataVtkMapper3D.h"
 #include "mitkImageVtkMapper2D.h"
 #include "mitkItkImageFileIOFactory.h"
+#include "itkPNMImageIOFactory.h"
 
 #include "itkObjectFactory.h"
 
@@ -54,6 +55,9 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
     // Load our specific factory, which will be used to load all ITK images, just like the MITK one,
     // but then in addition, will load DRC Analyze files differently.
     mitk::NifTKItkImageFileIOFactory::RegisterOneFactory();
+
+    // Register the PNM IO factory
+    itk::PNMImageIOFactory::RegisterOneFactory();
 
     // Carry on as per normal.
     CreateFileExtensionsMap();
@@ -105,14 +109,17 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 {
-  // Nothing to do. We don't need the following, if the file extensions are already in mitkCoreObjectFactory.cpp.
-  /*
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze image"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre Analyze image"));
+  MITK_INFO << "Registering additional file extensions." << std::endl;
 
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img", "Dementia Research Centre Analyze image"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.img.gz", "Dementia Research Centre compressed Analyze image"));
-  */
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
+
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
 }
 
 

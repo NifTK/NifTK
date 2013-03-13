@@ -160,7 +160,7 @@ private:
   // When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void UpdateWorldGeometry(bool fitToDisplay);
 
-  // Updates the bounding box by taking the 4 corners of the focussed render window, by Get3DPoint().
+  // Updates the bounding box by taking the 4 corners of the focused render window, by Get3DPoint().
   void UpdateBoundingBox();
 
   // Updates the slice and time step on the SliceNavigationController.
@@ -185,7 +185,7 @@ private:
   // Used for the mitkFocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
 
-  // Used for when the focussed window world geometry changes
+  // Used for when the focused window world geometry changes
   unsigned long m_FocusedWindowWorldGeometryTag;
 
   // Used for when the focused window display geometry changes.

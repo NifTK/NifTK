@@ -19,7 +19,7 @@
 #include "mitkStereoVideoProcessorTemplateMethod.h"
 
 /**
- * class StereoTwoTimePointVideoProcessorTemplateMethod
+ * \class StereoTwoTimePointVideoProcessorTemplateMethod
  * \brief Base class providing stereo processing for two time points.
  * \see StereoVideoProcessorTemplateMethod
  */

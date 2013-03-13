@@ -19,7 +19,6 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
-#include <QDebug>
 #include <QDragEnterEvent>
 #include <QDragLeaveEvent>
 #include <QDragMoveEvent>
@@ -43,9 +42,6 @@
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
 #include <mitkIRenderWindowPart.h>
-
-#include <vtkRenderer.h>
-#include <vtkRendererCollection.h>
 
 #include "mitkMIDASOrientationUtils.h"
 #include "mitkMIDASViewKeyPressResponder.h"
@@ -92,7 +88,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DataStorage(dataStorage)
 , m_RenderingManager(renderingManager)
 , m_FocusManagerObserverTag(0)
-, m_SelectedWindow(0)
+, m_SelectedViewIndex(0)
 , m_DefaultNumberOfRows(defaultNumberOfRows)
 , m_DefaultNumberOfColumns(defaultNumberOfColumns)
 , m_InteractionEnabled(false)
@@ -101,7 +97,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
-, m_Dropped(false)
 , m_InteractorsEnabled(false)
 {
   assert(visibilityManager);
@@ -387,8 +382,8 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::RequestUpdateAll()
 {
-  std::vector<unsigned int> listToUpdate = this->GetViewerIndexesToUpdate(true);
-  for (unsigned int i = 0; i < listToUpdate.size(); i++)
+  QList<int> listToUpdate = this->GetViewIndexesToUpdate(true);
+  for (int i = 0; i < listToUpdate.size(); i++)
   {
     if (listToUpdate[i] >= 0 && listToUpdate[i] < this->m_SingleViewWidgets.size())
     {
@@ -406,9 +401,9 @@ void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(MIDASDefaultInterpol
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetDefaultViewType(MIDASView view)
+void QmitkMIDASMultiViewWidget::SetDefaultViewType(MIDASView midasView)
 {
-  m_VisibilityManager->SetDefaultViewType(view);
+  m_VisibilityManager->SetDefaultViewType(midasView);
 }
 
 
@@ -480,7 +475,7 @@ bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
 void QmitkMIDASMultiViewWidget::SetShow3DViewInOrthoView(bool visible)
 {
   m_Show3DViewInOrthoview = visible;
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->SetDisplay3DViewInOrthoView(visible);
   }
@@ -498,7 +493,7 @@ bool QmitkMIDASMultiViewWidget::GetShow3DViewInOrthoView() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remember)
 {
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->SetRememberViewSettingsPerOrientation(remember);
   }
@@ -606,8 +601,8 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
     this->EnableLayoutWidgets(false);
     this->EnableBindWidgets(false);
     this->SetLayoutSize(1, 1, false);
-    this->SetSelectedWindow(0);
-    this->UpdateFocusManagerToSelectedViewer();
+    this->SetSelectedViewIndex(0);
+    this->UpdateFocusManagerToSelectedView();
   }
   else
   {
@@ -649,7 +644,7 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 {
   QColor background(colour[0] * 255, colour[1] * 255, colour[2] * 255);
 
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->SetBackgroundColor(background);
   }
@@ -659,11 +654,11 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigned int numberOfColumns, bool isThumbnailMode)
+void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColumns, bool isThumbnailMode)
 {
   // Work out required number of widgets, and hence if we need to create any new ones.
-  unsigned int requiredNumberOfWidgets = numberOfRows * numberOfColumns;
-  unsigned int currentNumberOfWidgets = m_SingleViewWidgets.size();
+  int requiredNumberOfWidgets = numberOfRows * numberOfColumns;
+  int currentNumberOfWidgets = m_SingleViewWidgets.size();
 
   // If we have the right number of widgets, there is nothing to do, so early exit.
   if (requiredNumberOfWidgets == currentNumberOfWidgets)
@@ -681,23 +676,23 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   if (requiredNumberOfWidgets > currentNumberOfWidgets)
   {
     // create some more widgets
-    unsigned int additionalWidgets = requiredNumberOfWidgets - m_SingleViewWidgets.size();
-    for (unsigned int i = 0; i < additionalWidgets; i++)
+    int additionalWidgets = requiredNumberOfWidgets - m_SingleViewWidgets.size();
+    for (int i = 0; i < additionalWidgets; i++)
     {
       QmitkMIDASSingleViewWidget *widget = this->CreateSingleViewWidget();
       widget->hide();
 
       this->m_SingleViewWidgets.push_back(widget);
       this->m_VisibilityManager->RegisterWidget(widget);
-      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfWidgets+i, false);
+      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfWidgets + i, false);
     }
   }
   else if (requiredNumberOfWidgets < currentNumberOfWidgets)
   {
     // destroy surplus widgets
-    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfWidgets, m_SingleViewWidgets.size()-1);
+    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfWidgets, m_SingleViewWidgets.size() - 1);
 
-    for (unsigned int i = requiredNumberOfWidgets; i < m_SingleViewWidgets.size(); i++)
+    for (int i = requiredNumberOfWidgets; i < m_SingleViewWidgets.size(); i++)
     {
       delete m_SingleViewWidgets[i];
     }
@@ -722,7 +717,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   }
 
   // Make all current widgets inVisible, as we are going to destroy layout.
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     m_SingleViewWidgets[i]->hide();
   }
@@ -742,10 +737,10 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
 
   m_LayoutToPutControlsOnTopOfWindows->addLayout(m_LayoutForRenderWindows, 1, 0);
 
-  unsigned int widgetCounter = 0;
-  for (unsigned int r = 0; r < numberOfRows; r++)
+  int widgetCounter = 0;
+  for (int r = 0; r < numberOfRows; r++)
   {
-    for (unsigned int c = 0; c < numberOfColumns; c++)
+    for (int c = 0; c < numberOfColumns; c++)
     {
       m_LayoutForRenderWindows->addWidget(m_SingleViewWidgets[widgetCounter], r, c);
       m_SingleViewWidgets[widgetCounter]->show();
@@ -767,15 +762,15 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
   m_ColumnsSpinBox->blockSignals(false);
 
   // Test the current m_Selected window, and reset to 0 if it now points to an invisible window.
-  int selectedWindow = this->GetSelectedWindowIndex();
-  if (this->GetRowFromIndex(selectedWindow) >= numberOfRows || this->GetColumnFromIndex(selectedWindow) >= numberOfColumns)
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  if (this->GetRowFromIndex(selectedViewIndex) >= numberOfRows || this->GetColumnFromIndex(selectedViewIndex) >= numberOfColumns)
   {
-    selectedWindow = 0;
+    selectedViewIndex = 0;
   }
   // Pass NULL for the selected vtkRenderWindow, to make sure that new windows don't look selected
-  this->SwitchWindows(selectedWindow, NULL);
+  this->SwitchWindows(selectedViewIndex, NULL);
 
-  // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
+  // Now the number of views has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
   this->SetShow3DViewInOrthoView(this->m_Show3DViewInOrthoview);
 
@@ -792,7 +787,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(unsigned int numberOfRows, unsigne
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASMultiViewWidget::GetRowFromIndex(unsigned int i) const
+int QmitkMIDASMultiViewWidget::GetRowFromIndex(int i) const
 {
   if (i < 0 || i >= m_MaxRows*m_MaxCols)
   {
@@ -806,7 +801,7 @@ unsigned int QmitkMIDASMultiViewWidget::GetRowFromIndex(unsigned int i) const
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASMultiViewWidget::GetColumnFromIndex(unsigned int i) const
+int QmitkMIDASMultiViewWidget::GetColumnFromIndex(int i) const
 {
   if (i < 0 || i >= m_MaxRows*m_MaxCols)
   {
@@ -820,7 +815,7 @@ unsigned int QmitkMIDASMultiViewWidget::GetColumnFromIndex(unsigned int i) const
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASMultiViewWidget::GetIndexFromRowAndColumn(unsigned int r, unsigned int c) const
+int QmitkMIDASMultiViewWidget::GetIndexFromRowAndColumn(int r, int c) const
 {
   return r*m_MaxCols + c;
 }
@@ -857,32 +852,38 @@ void QmitkMIDASMultiViewWidget::On2x2ButtonPressed()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnRowsSliderValueChanged(int r)
 {
-  this->SetLayoutSize((unsigned int)r, (unsigned int)m_ColumnsSpinBox->value(), false);
+  this->SetLayoutSize(r, m_ColumnsSpinBox->value(), false);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 {
-  this->SetLayoutSize((unsigned int)m_RowsSpinBox->value(), (unsigned int)c, false);
+  this->SetLayoutSize(m_RowsSpinBox->value(), c, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
+void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
-  for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+  bool found = false;
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    if (m_SingleViewWidgets[i] == widget)
+    if (m_SingleViewWidgets[i] == view)
     {
-      std::vector<QmitkRenderWindow*> windows = m_SingleViewWidgets[i]->GetSelectedWindows();
-      if (windows.size() == 1 && window == windows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
-      {
-        // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
-        bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
-        m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
-        m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
-      }
+      found = true;
+      break;
+    }
+  }
+  if (found)
+  {
+    std::vector<QmitkRenderWindow*> renderWindows = view->GetSelectedRenderWindows();
+    if (renderWindows.size() == 1 && renderWindow == renderWindows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
+    {
+      // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
+      bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
+      m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
+      m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
     }
   }
 }
@@ -897,7 +898,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
 
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (m_SingleViewWidgets[i] != widget)
       {
@@ -910,7 +911,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
 {
   // See also QmitkMIDASMultiViewVisibilityManager::OnNodesDropped which should trigger first.
   if (!this->m_DropThumbnailRadioButton->isChecked())
@@ -918,21 +919,43 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
     this->EnableWidgets(true);
   }
 
-  // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
-  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(window->GetRenderer());
-  if (!m_Dropped)
+  QmitkMIDASSingleViewWidget* selectedView = NULL;
+
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    this->OnFocusChanged();
-    m_Dropped = true;
+    QmitkMIDASSingleViewWidget* view = m_SingleViewWidgets[i];
+    if (view->ContainsRenderWindow(renderWindow))
+    {
+      selectedView = view;
+      MIDASOrientation orientation = selectedView->GetOrientation();
+      //  MIDASView midasView = selectedView->GetMIDASView();
+      switch (orientation)
+      {
+      case MIDAS_ORIENTATION_AXIAL:
+        renderWindow = selectedView->GetAxialWindow();
+        break;
+      case MIDAS_ORIENTATION_SAGITTAL:
+        renderWindow = selectedView->GetSagittalWindow();
+        break;
+      case MIDAS_ORIENTATION_CORONAL:
+        renderWindow = selectedView->GetCoronalWindow();
+        break;
+      case MIDAS_ORIENTATION_UNKNOWN:
+        break;
+      }
+      break;
+    }
   }
 
-  int selectedWindow = this->GetSelectedWindowIndex();
-  double magnificationFactor = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
+  // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first widget already has focus.
+  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
+
+  double magnificationFactor = selectedView->GetMagnificationFactor();
 
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
 
-  MIDASView view = m_SingleViewWidgets[selectedWindow]->GetView();
-  m_MIDASOrientationWidget->SetToView(view);
+  MIDASView midasView = selectedView->GetView();
+  m_MIDASOrientationWidget->SetToView(midasView);
 
   this->Update2DCursorVisibility();
   this->RequestUpdateAll();
@@ -940,57 +963,59 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *window, std::v
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindow *selectedWindow)
+void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedRenderWindow)
 {
-  if (selectedViewer >= 0 && selectedViewer < (int)m_SingleViewWidgets.size())
+  if (selectedViewIndex >= 0 && selectedViewIndex < m_SingleViewWidgets.size())
   {
+    QmitkMIDASSingleViewWidget* selectedView = this->m_SingleViewWidgets[selectedViewIndex];
+
     // This, to turn off borders on all other windows.
-    this->SetSelectedWindow(selectedViewer);
+    this->SetSelectedViewIndex(selectedViewIndex);
 
     // This to specifically set the border round one sub-pane for if its an ortho-view.
-    if (selectedWindow != NULL)
+    if (selectedRenderWindow != NULL)
     {
-      int numberOfNodes = m_VisibilityManager->GetNodesInWindow(selectedViewer);
+      int numberOfNodes = m_VisibilityManager->GetNodesInWindow(selectedViewIndex);
       if (numberOfNodes > 0)
       {
-        this->m_SingleViewWidgets[selectedViewer]->SetSelectedWindow(selectedWindow);
+        selectedView->SetSelectedRenderWindow(selectedRenderWindow);
       }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
     /////////////////////////////////////////////////////////////////////////////////////////////
-    MIDASOrientation orientation = this->m_SingleViewWidgets[selectedViewer]->GetOrientation();
-    MIDASView view = this->m_SingleViewWidgets[selectedViewer]->GetView();
+    MIDASOrientation orientation = selectedView->GetOrientation();
+    MIDASView midasView = selectedView->GetView();
 
     m_MIDASSlidersWidget->SetBlockSignals(true);
     m_MIDASOrientationWidget->SetBlockSignals(true);
 
-    if (view != MIDAS_VIEW_UNKNOWN)
+    if (midasView != MIDAS_VIEW_UNKNOWN)
     {
-      m_MIDASOrientationWidget->SetToView(view);
+      m_MIDASOrientationWidget->SetToView(midasView);
     }
     if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
-      unsigned int minSlice = this->m_SingleViewWidgets[selectedViewer]->GetMinSlice(orientation);
-      unsigned int maxSlice = this->m_SingleViewWidgets[selectedViewer]->GetMaxSlice(orientation);
-      unsigned int currentSlice = this->m_SingleViewWidgets[selectedViewer]->GetSliceNumber(orientation);
+      unsigned int minSlice = selectedView->GetMinSlice(orientation);
+      unsigned int maxSlice = selectedView->GetMaxSlice(orientation);
+      unsigned int currentSlice = selectedView->GetSliceNumber(orientation);
 
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setMinimum(minSlice);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setMaximum(maxSlice);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(currentSlice);
     }
 
-    double minMag = std::ceil(this->m_SingleViewWidgets[selectedViewer]->GetMinMagnification());
-    double maxMag = std::floor(this->m_SingleViewWidgets[selectedViewer]->GetMaxMagnification());
-    double currentMag = std::floor(0.5 + this->m_SingleViewWidgets[selectedViewer]->GetMagnificationFactor());
+    double minMag = std::ceil(selectedView->GetMinMagnification());
+    double maxMag = std::floor(selectedView->GetMaxMagnification());
+    double currentMag = std::floor(0.5 + selectedView->GetMagnificationFactor());
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMinimum(minMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMaximum(maxMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(currentMag);
 
-    unsigned int minTime = this->m_SingleViewWidgets[selectedViewer]->GetMinTime();
-    unsigned int maxTime = this->m_SingleViewWidgets[selectedViewer]->GetMaxTime();
-    unsigned int currentTime = this->m_SingleViewWidgets[selectedViewer]->GetTime();
+    unsigned int minTime = selectedView->GetMinTime();
+    unsigned int maxTime = selectedView->GetMaxTime();
+    unsigned int currentTime = selectedView->GetTime();
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setMinimum(minTime);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setMaximum(maxTime);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setValue(currentTime);
@@ -1012,9 +1037,9 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewer, vtkRenderWindo
 void QmitkMIDASMultiViewWidget::SetFocus()
 {
   /*
-  if (m_SelectedWindow != -1)
+  if (m_SelectedViewIndex != -1)
   {
-    m_SingleViewWidgets[m_SelectedWindow]->setFocus();
+    m_SingleViewWidgets[m_SelectedViewIndex]->setFocus();
   }
   else
   {
@@ -1027,26 +1052,28 @@ void QmitkMIDASMultiViewWidget::SetFocus()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
 {
-
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer::ConstPointer baseRenderer = focusManager->GetFocused();
 
-  vtkRenderWindow* focusedRenderWindow = NULL;
-  int selectedWindow = -1;
+  int selectedViewIndex = -1;
+  vtkRenderWindow* focusedVtkRenderWindow = NULL;
+  QmitkRenderWindow* focusedRenderWindow = NULL;
 
   if (baseRenderer.IsNotNull())
   {
-    focusedRenderWindow = baseRenderer->GetRenderWindow();
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    focusedVtkRenderWindow = baseRenderer->GetRenderWindow();
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      if (m_SingleViewWidgets[i]->ContainsVtkRenderWindow(focusedRenderWindow))
+      QmitkRenderWindow* renderWindow = m_SingleViewWidgets[i]->GetRenderWindow(focusedVtkRenderWindow);
+      if (renderWindow != NULL)
       {
-        selectedWindow = i;
+        selectedViewIndex = i;
+        focusedRenderWindow = renderWindow;
         break;
       }
     }
   }
-  this->SwitchWindows(selectedWindow, focusedRenderWindow);
+  this->SwitchWindows(selectedViewIndex, focusedRenderWindow);
 }
 
 
@@ -1101,13 +1128,13 @@ void QmitkMIDASMultiViewWidget::OnDropAccumulateStateChanged(int state)
 
 
 //-----------------------------------------------------------------------------
-std::vector<unsigned int> QmitkMIDASMultiViewWidget::GetViewerIndexesToUpdate(bool doAllVisible) const
+QList<int> QmitkMIDASMultiViewWidget::GetViewIndexesToUpdate(bool doAllVisible) const
 {
-  std::vector<unsigned int> result;
+  QList<int> result;
 
   if (doAllVisible)
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (m_SingleViewWidgets[i]->isVisible())
       {
@@ -1117,8 +1144,8 @@ std::vector<unsigned int> QmitkMIDASMultiViewWidget::GetViewerIndexesToUpdate(bo
   }
   else
   {
-    int windowIndex = this->GetSelectedWindowIndex();
-    result.push_back((unsigned int)windowIndex);
+    int windowIndex = this->GetSelectedViewIndex();
+    result.push_back(windowIndex);
   }
   return result;
 }
@@ -1142,16 +1169,18 @@ bool QmitkMIDASMultiViewWidget::MovePosterior()
 bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int slices)
 {
   bool actuallyDidSomething = false;
-  int selectedWindow = this->GetSelectedWindowIndex();
+  int selectedViewIndex = this->GetSelectedViewIndex();
 
-  if (selectedWindow != -1)
+  if (selectedViewIndex != -1)
   {
-    MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
-    unsigned int currentSlice = this->m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
-    unsigned int minSlice = this->m_SingleViewWidgets[selectedWindow]->GetMinSlice(orientation);
-    unsigned int maxSlice = this->m_SingleViewWidgets[selectedWindow]->GetMaxSlice(orientation);
+    QmitkMIDASSingleViewWidget* selectedView = this->m_SingleViewWidgets[selectedViewIndex];
 
-    int upDirection = this->m_SingleViewWidgets[selectedWindow]->GetSliceUpDirection(orientation);
+    MIDASOrientation orientation = selectedView->GetOrientation();
+    unsigned int currentSlice = selectedView->GetSliceNumber(orientation);
+    unsigned int minSlice = selectedView->GetMinSlice(orientation);
+    unsigned int maxSlice = selectedView->GetMaxSlice(orientation);
+
+    int upDirection = selectedView->GetSliceUpDirection(orientation);
     int nextSlice = currentSlice;
 
     if (moveAnterior)
@@ -1183,20 +1212,20 @@ void QmitkMIDASMultiViewWidget::OnSliceNumberChanged(double sliceNumber)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 {
-  int selectedWindow = this->GetSelectedWindowIndex();
-  MIDASOrientation orientation = this->m_SingleViewWidgets[selectedWindow]->GetOrientation();
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  MIDASOrientation orientation = this->m_SingleViewWidgets[selectedViewIndex]->GetOrientation();
 
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
-    for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+    QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
+    for (int i = 0; i < viewsToUpdate.size(); i++)
     {
-      this->m_SingleViewWidgets[viewersToUpdate[i]]->SetSliceNumber(orientation, sliceNumber);
+      this->m_SingleViewWidgets[viewsToUpdate[i]]->SetSliceNumber(orientation, sliceNumber);
     }
   }
   else
   {
-    MITK_WARN << "Found an invalid orientation in widget " << selectedWindow << ", so ignoring request to change to slice " << sliceNumber << std::endl;
+    MITK_WARN << "Found an invalid orientation in view widget " << selectedViewIndex << ", so ignoring request to change to slice " << sliceNumber << std::endl;
   }
 }
 
@@ -1229,10 +1258,10 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificatio
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(double magnificationFactor)
 {
-  std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
-  for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
+  for (int i = 0; i < viewsToUpdate.size(); i++)
   {
-    this->m_SingleViewWidgets[viewersToUpdate[i]]->SetMagnificationFactor(magnificationFactor);
+    this->m_SingleViewWidgets[viewsToUpdate[i]]->SetMagnificationFactor(magnificationFactor);
   }
 }
 
@@ -1247,37 +1276,37 @@ void QmitkMIDASMultiViewWidget::OnTimeChanged(double timeStep)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
-  std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_DropThumbnailRadioButton->isChecked());
-  for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_DropThumbnailRadioButton->isChecked());
+  for (int i = 0; i < viewsToUpdate.size(); i++)
   {
-    this->m_SingleViewWidgets[viewersToUpdate[i]]->SetTime(timeStep);
+    this->m_SingleViewWidgets[viewsToUpdate[i]]->SetTime(timeStep);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView view)
+void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView midasView)
 {
-  if (view != MIDAS_VIEW_UNKNOWN)
+  if (midasView != MIDAS_VIEW_UNKNOWN)
   {
-    this->SwitchView(view);
+    this->SwitchMIDASView(midasView);
 
     // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
     // (or indeed anything that's listening to the FocusManager).
-    this->UpdateFocusManagerToSelectedViewer();
+    this->UpdateFocusManagerToSelectedView();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedViewer()
+void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
 {
-  int selectedWindow = this->GetSelectedWindowIndex();
-  std::vector<QmitkRenderWindow*> windows = this->m_SingleViewWidgets[selectedWindow]->GetSelectedWindows();
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  std::vector<QmitkRenderWindow*> renderWindows = this->m_SingleViewWidgets[selectedViewIndex]->GetSelectedRenderWindows();
 
-  if (windows.size() > 0)
+  if (renderWindows.size() > 0)
   {
-    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(windows[0]->GetRenderer());
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindows[0]->GetRenderer());
   }
 }
 
@@ -1290,7 +1319,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToAxial()
   m_MIDASOrientationWidget->SetBlockSignals(true);
   m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_AXIAL);
   m_MIDASOrientationWidget->SetBlockSignals(false);
-  this->UpdateFocusManagerToSelectedViewer();
+  this->UpdateFocusManagerToSelectedView();
   return true;
 }
 
@@ -1298,7 +1327,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToAxial()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToAxial()
 {
-  this->SwitchView(MIDAS_VIEW_AXIAL);
+  this->SwitchMIDASView(MIDAS_VIEW_AXIAL);
 }
 
 
@@ -1310,7 +1339,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
   m_MIDASOrientationWidget->SetBlockSignals(true);
   m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_SAGITTAL);
   m_MIDASOrientationWidget->SetBlockSignals(false);
-  this->UpdateFocusManagerToSelectedViewer();
+  this->UpdateFocusManagerToSelectedView();
   return true;
 }
 
@@ -1318,7 +1347,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToSagittal()
 {
-  this->SwitchView(MIDAS_VIEW_SAGITTAL);
+  this->SwitchMIDASView(MIDAS_VIEW_SAGITTAL);
 }
 
 
@@ -1330,7 +1359,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
   m_MIDASOrientationWidget->SetBlockSignals(true);
   m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_CORONAL);
   m_MIDASOrientationWidget->SetBlockSignals(false);
-  this->UpdateFocusManagerToSelectedViewer();
+  this->UpdateFocusManagerToSelectedView();
   return true;
 }
 
@@ -1338,37 +1367,35 @@ bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 {
-  this->SwitchView(MIDAS_VIEW_CORONAL);
+  this->SwitchMIDASView(MIDAS_VIEW_CORONAL);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SwitchView(MIDASView view)
+void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
 {
-  int selectedWindow = this->GetSelectedWindowIndex();
+  int selectedViewIndex = this->GetSelectedViewIndex();
 
-  std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
-  for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+  QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
+  for (int i = 0; i < viewIndexesToUpdate.size(); i++)
   {
-    unsigned int viewerNumber = viewersToUpdate[i];
-    this->m_SingleViewWidgets[viewerNumber]->SetView(view, false);
+    int viewIndexToUpdate = viewIndexesToUpdate[i];
+    QmitkMIDASSingleViewWidget* viewToUpdate = this->m_SingleViewWidgets[viewIndexToUpdate];
+    viewToUpdate->SetView(midasView, false);
 
-    if ((int)viewerNumber == selectedWindow)
+    if (viewIndexToUpdate == selectedViewIndex)
     {
-      if (view == MIDAS_VIEW_AXIAL)
+      if (midasView == MIDAS_VIEW_AXIAL)
       {
-        this->m_SingleViewWidgets[viewerNumber]
-              ->SetSelectedWindow(this->m_SingleViewWidgets[viewerNumber]->GetAxialWindow()->GetVtkRenderWindow());
+        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetAxialWindow());
       }
-      else if (view == MIDAS_VIEW_SAGITTAL)
+      else if (midasView == MIDAS_VIEW_SAGITTAL)
       {
-        this->m_SingleViewWidgets[viewerNumber]
-              ->SetSelectedWindow(this->m_SingleViewWidgets[viewerNumber]->GetSagittalWindow()->GetVtkRenderWindow());
+        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetSagittalWindow());
       }
-      else if (view == MIDAS_VIEW_CORONAL)
+      else if (midasView == MIDAS_VIEW_CORONAL)
       {
-        this->m_SingleViewWidgets[viewerNumber]
-              ->SetSelectedWindow(this->m_SingleViewWidgets[viewerNumber]->GetCoronalWindow()->GetVtkRenderWindow());
+        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetCoronalWindow());
       }
     }
   }
@@ -1378,14 +1405,14 @@ void QmitkMIDASMultiViewWidget::SwitchView(MIDASView view)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
 {
-  std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(true);
-  for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(true);
+  for (int i = 0; i < viewsToUpdate.size(); i++)
   {
     bool globalVisibility = false;
     bool localVisibility = m_Show2DCursors;
 
-    m_SingleViewWidgets[viewersToUpdate[i]]->SetDisplay2DCursorsGlobally(globalVisibility);
-    m_SingleViewWidgets[viewersToUpdate[i]]->SetDisplay2DCursorsLocally(localVisibility);
+    m_SingleViewWidgets[viewsToUpdate[i]]->SetDisplay2DCursorsGlobally(globalVisibility);
+    m_SingleViewWidgets[viewsToUpdate[i]]->SetDisplay2DCursorsLocally(localVisibility);
   }
 
   this->RequestUpdateAll();
@@ -1395,26 +1422,28 @@ void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
 {
-  int selectedWindow = this->GetSelectedWindowIndex();
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
 
-  mitk::Geometry3D::Pointer selectedGeometry = m_SingleViewWidgets[selectedWindow]->GetGeometry();
-  MIDASOrientation orientation               = m_SingleViewWidgets[selectedWindow]->GetOrientation();
-  MIDASView view                             = m_SingleViewWidgets[selectedWindow]->GetView();
-  int sliceNumber                            = m_SingleViewWidgets[selectedWindow]->GetSliceNumber(orientation);
-  int magnification                          = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
-  int timeStepNumber                         = m_SingleViewWidgets[selectedWindow]->GetTime();
+  mitk::Geometry3D::Pointer selectedGeometry = selectedView->GetGeometry();
+  MIDASOrientation orientation               = selectedView->GetOrientation();
+  MIDASView midasView                        = selectedView->GetView();
+  int sliceNumber                            = selectedView->GetSliceNumber(orientation);
+  int magnification                          = selectedView->GetMagnificationFactor();
+  int timeStepNumber                         = selectedView->GetTime();
 
-  std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(isBoundNow);
-  for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+  QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
+  for (int i = 0; i < viewIndexesToUpdate.size(); i++)
   {
-    unsigned int viewerIndex = viewersToUpdate[i];
-    m_SingleViewWidgets[viewerIndex]->SetBoundGeometry(selectedGeometry);
-    m_SingleViewWidgets[viewerIndex]->SetBoundGeometryActive(isBoundNow);
-    m_SingleViewWidgets[viewerIndex]->SetView(view, false);
-    m_SingleViewWidgets[viewerIndex]->SetSliceNumber(orientation, sliceNumber);
-    m_SingleViewWidgets[viewerIndex]->SetMagnificationFactor(magnification);
-    m_SingleViewWidgets[viewerIndex]->SetTime(timeStepNumber);
-  } // end for each viewer
+    int viewIndexToUpdate = viewIndexesToUpdate[i];
+    QmitkMIDASSingleViewWidget* viewToUpdate = m_SingleViewWidgets[viewIndexToUpdate];
+    viewToUpdate->SetBoundGeometry(selectedGeometry);
+    viewToUpdate->SetBoundGeometryActive(isBoundNow);
+    viewToUpdate->SetView(midasView, false);
+    viewToUpdate->SetSliceNumber(orientation, sliceNumber);
+    viewToUpdate->SetMagnificationFactor(magnification);
+    viewToUpdate->SetTime(timeStepNumber);
+  }
 }
 
 
@@ -1423,15 +1452,15 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification(bool isBoundNow)
 {
   if (isBoundNow)
   {
-    int selectedWindow = this->GetSelectedWindowIndex();
-    int magnification = m_SingleViewWidgets[selectedWindow]->GetMagnificationFactor();
+    int selectedViewIndex = this->GetSelectedViewIndex();
+    int magnification = m_SingleViewWidgets[selectedViewIndex]->GetMagnificationFactor();
 
-    std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(isBoundNow);
-    for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+    QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
+    for (int i = 0; i < viewsToUpdate.size(); i++)
     {
-      unsigned int viewerIndex = viewersToUpdate[i];
-      m_SingleViewWidgets[viewerIndex]->SetMagnificationFactor(magnification);
-    } // end for each viewer
+      int viewIndex = viewsToUpdate[i];
+      m_SingleViewWidgets[viewIndex]->SetMagnificationFactor(magnification);
+    }
   }
 }
 
@@ -1466,25 +1495,21 @@ MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidget::GetSelectedWindowIndex() const
+int QmitkMIDASMultiViewWidget::GetSelectedViewIndex() const
 {
-  int windowNumber = m_SelectedWindow;
-  if (windowNumber < 0)
+  int selectedViewIndex = m_SelectedViewIndex;
+  if (selectedViewIndex < 0 || selectedViewIndex >= m_SingleViewWidgets.size())
   {
-    windowNumber = 0;
-  }
-  if (windowNumber >= (int)m_SingleViewWidgets.size())
-  {
-    // Default back to first viewer.
-    windowNumber = 0;
+    // Default back to first view.
+    selectedViewIndex = 0;
   }
 
   // Note the following specification.
-  assert(windowNumber >= 0);
-  assert(windowNumber < (int)m_SingleViewWidgets.size());
+  assert(selectedViewIndex >= 0);
+  assert(selectedViewIndex < m_SingleViewWidgets.size());
 
   // Return a valid selected window index.
-  return windowNumber;
+  return selectedViewIndex;
 }
 
 
@@ -1494,16 +1519,16 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
   // NOTE: This MUST always return not-null.
 
   QmitkRenderWindow *window = NULL;
-  std::vector<QmitkRenderWindow*> selectedWindows;
+  std::vector<QmitkRenderWindow*> selectedRenderWindows;
 
-  int windowNumber = this->GetSelectedWindowIndex();
+  QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
 
-  selectedWindows = m_SingleViewWidgets[windowNumber]->GetSelectedWindows();
-  if (selectedWindows.size() == 0)
+  selectedRenderWindows = selectedView->GetSelectedRenderWindows();
+  if (selectedRenderWindows.size() == 0)
   {
-    selectedWindows = m_SingleViewWidgets[windowNumber]->GetAllWindows();
+    selectedRenderWindows = selectedView->GetRenderWindows();
   }
-  window = selectedWindows[0];
+  window = selectedRenderWindows[0];
 
   return window;
 }
@@ -1514,7 +1539,7 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
 {
   // NOTE: This MUST always return a non-empty map.
 
-  QHash<QString, QmitkRenderWindow*> wnds;
+  QHash<QString, QmitkRenderWindow*> renderWindows;
 
   // See org.mitk.gui.qt.imagenavigator plugin.
   //
@@ -1524,36 +1549,38 @@ QHash<QString,QmitkRenderWindow*> QmitkMIDASMultiViewWidget::GetRenderWindows() 
   // So, if we take the currently selected widget, and name these render windows
   // accordingly, then the MITK imagenavigator can be used to update it.
 
-  int windowNumber = this->GetSelectedWindowIndex();
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  QmitkMIDASSingleViewWidget* view = m_SingleViewWidgets[selectedViewIndex];
 
-  wnds.insert("axial", m_SingleViewWidgets[windowNumber]->GetAxialWindow());
-  wnds.insert("sagittal", m_SingleViewWidgets[windowNumber]->GetSagittalWindow());
-  wnds.insert("coronal", m_SingleViewWidgets[windowNumber]->GetCoronalWindow());
-  wnds.insert("3d", m_SingleViewWidgets[windowNumber]->Get3DWindow());
+  renderWindows.insert("axial", view->GetAxialWindow());
+  renderWindows.insert("sagittal", view->GetSagittalWindow());
+  renderWindows.insert("coronal", view->GetCoronalWindow());
+  renderWindows.insert("3d", view->Get3DWindow());
 
-  for (int i = 0; i < (int)m_SingleViewWidgets.size(); i++)
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    if (i != windowNumber)
+    if (i != selectedViewIndex)
     {
       QString id = tr(".%1").arg(i);
 
-      wnds.insert("axial" + id, m_SingleViewWidgets[i]->GetAxialWindow());
-      wnds.insert("sagittal" + id, m_SingleViewWidgets[i]->GetSagittalWindow());
-      wnds.insert("coronal" + id, m_SingleViewWidgets[i]->GetCoronalWindow());
-      wnds.insert("3d" + id, m_SingleViewWidgets[i]->Get3DWindow());
+      view = m_SingleViewWidgets[i];
+      renderWindows.insert("axial" + id, view->GetAxialWindow());
+      renderWindows.insert("sagittal" + id, view->GetSagittalWindow());
+      renderWindows.insert("coronal" + id, view->GetCoronalWindow());
+      renderWindows.insert("3d" + id, view->Get3DWindow());
     }
   }
 
-  return wnds;
+  return renderWindows;
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetRenderWindow(const QString& id) const
 {
-  QHash<QString,QmitkRenderWindow*> windows = this->GetRenderWindows();
-  QHash<QString,QmitkRenderWindow*>::iterator iter = windows.find(id);
-  if (iter != windows.end())
+  QHash<QString,QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
+  QHash<QString,QmitkRenderWindow*>::iterator iter = renderWindows.find(id);
+  if (iter != renderWindows.end())
   {
     return iter.value();
   }
@@ -1567,8 +1594,8 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetRenderWindow(const QString& id)
 //-----------------------------------------------------------------------------
 mitk::Point3D QmitkMIDASMultiViewWidget::GetSelectedPosition(const QString& /*id*/) const
 {
-  int windowNumber = this->GetSelectedWindowIndex();
-  mitk::Point3D position = m_SingleViewWidgets[windowNumber]->GetSelectedPosition();
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  mitk::Point3D position = m_SingleViewWidgets[selectedViewIndex]->GetSelectedPosition();
   return position;
 }
 
@@ -1576,8 +1603,8 @@ mitk::Point3D QmitkMIDASMultiViewWidget::GetSelectedPosition(const QString& /*id
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, const QString& /*id*/)
 {
-  int windowNumber = this->GetSelectedWindowIndex();
-  m_SingleViewWidgets[windowNumber]->SetSelectedPosition(pos);
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  m_SingleViewWidgets[selectedViewIndex]->SetSelectedPosition(pos);
 }
 
 
@@ -1621,31 +1648,31 @@ bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled)
 {
-  int selectedWindow = this->GetSelectedWindowIndex();
+  int selectedViewIndex = this->GetSelectedViewIndex();
   if (enabled && !this->m_NavigationControllerEventListening)
   {
-    m_SingleViewWidgets[selectedWindow]->SetNavigationControllerEventListening(true);
+    m_SingleViewWidgets[selectedViewIndex]->SetNavigationControllerEventListening(true);
   }
   else if (!enabled && this->m_NavigationControllerEventListening)
   {
-    m_SingleViewWidgets[selectedWindow]->SetNavigationControllerEventListening(false);
+    m_SingleViewWidgets[selectedViewIndex]->SetNavigationControllerEventListening(false);
   }
   this->m_NavigationControllerEventListening = enabled;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
+void QmitkMIDASMultiViewWidget::SetSelectedViewIndex(int selectedViewIndex)
 {
-  if (selectedIndex >= 0 && selectedIndex < m_SingleViewWidgets.size())
+  if (selectedViewIndex >= 0 && selectedViewIndex < m_SingleViewWidgets.size())
   {
-    m_SelectedWindow = selectedIndex;
+    m_SelectedViewIndex = selectedViewIndex;
 
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       int nodesInWindow = m_VisibilityManager->GetNodesInWindow(i);
 
-      if (i == selectedIndex && nodesInWindow > 0)
+      if (i == selectedViewIndex && nodesInWindow > 0)
       {
         m_SingleViewWidgets[i]->SetSelected(true);
       }
@@ -1655,7 +1682,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
       }
 
       if (  this->m_MIDASBindWidget->AreCursorsBound()
-          || (!this->m_MIDASBindWidget->AreCursorsBound() && i == selectedIndex)
+          || (!this->m_MIDASBindWidget->AreCursorsBound() && i == selectedViewIndex)
           )
       {
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
@@ -1670,7 +1697,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindow(unsigned int selectedIndex)
   }
   else
   {
-    MITK_WARN << "Ignoring request to set the selected window to window number " << selectedIndex << std::endl;
+    MITK_WARN << "Ignoring request to set the selected window to window number " << selectedViewIndex << std::endl;
   }
 }
 
@@ -1680,7 +1707,7 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 {
   bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
   bool requestedGeometryBound = this->m_MIDASBindWidget->IsGeometryBound();
-  int selectedWindow = this->GetSelectedWindowIndex();
+  int selectedViewIndex = this->GetSelectedViewIndex();
 
   if (currentGeometryBound != requestedGeometryBound)
   {
@@ -1691,16 +1718,16 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 
   if (this->m_MIDASBindWidget->AreCursorsBound())
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
     }
   }
   else
   {
-    for (unsigned int i = 0; i < m_SingleViewWidgets.size(); i++)
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      if ((int)i == selectedWindow)
+      if (i == selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
       }
@@ -1720,12 +1747,12 @@ void QmitkMIDASMultiViewWidget::OnPopupOpened(bool opened)
 {
   if (!opened)
   {
-    std::vector<unsigned int> viewersToUpdate = this->GetViewerIndexesToUpdate(false);
-    for (unsigned int i = 0; i < viewersToUpdate.size(); i++)
+    QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(false);
+    for (int i = 0; i < viewIndexesToUpdate.size(); i++)
     {
-      unsigned int viewerIndex = viewersToUpdate[i];
-      m_SingleViewWidgets[viewerIndex]->repaint();
-    } // end for each viewer
+      int viewIndexToUpdate = viewIndexesToUpdate[i];
+      m_SingleViewWidgets[viewIndexToUpdate]->repaint();
+    }
   }
 }
 

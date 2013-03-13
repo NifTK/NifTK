@@ -18,6 +18,7 @@
 #include "niftkIGIExports.h"
 #include <NiftyLinkUtils.h>
 #include <mitkDataStorage.h>
+#include <mitkDataNode.h>
 #include <mitkMessage.h>
 #include <itkVersion.h>
 #include <itkObject.h>
@@ -60,37 +61,37 @@ public:
    * \brief Sets the identifier, which is just a tag to identify the tool by (i.e. item number in a list).
    */
   itkSetMacro(Identifier, int);
-  itkGetMacro(Identifier, int);
+  itkGetConstMacro(Identifier, int);
 
   /**
    * \brief Sets a name, useful for display purposes.
    */
   itkSetMacro(Name, std::string);
-  itkGetMacro(Name, std::string);
+  itkGetConstMacro(Name, std::string);
 
   /**
    * \brief Sets a type, useful for display purposes.
    */
   itkSetMacro(Type, std::string);
-  itkGetMacro(Type, std::string);
+  itkGetConstMacro(Type, std::string);
 
   /**
    * \brief Sets a status message, useful for display purposes.
    */
   itkSetMacro(Status, std::string);
-  itkGetMacro(Status, std::string);
+  itkGetConstMacro(Status, std::string);
 
   /**
    * \brief Sets a description, useful for display purposes.
    */
   itkSetMacro(Description, std::string);
-  itkGetMacro(Description, std::string);
+  itkGetConstMacro(Description, std::string);
 
   /**
   * \brief A single source can have multiple tools attached
   */
   itkSetMacro(NumberOfTools, int);
-  itkGetMacro(NumberOfTools, int);
+  itkGetConstMacro(NumberOfTools, int);
   
   /**
    * \brief Sets the time tolerance for checking data, implemented in nano-seconds
@@ -98,7 +99,7 @@ public:
    * do not properly store nano-seconds, so the best you can probably rely on is milliseconds.
    */
   itkSetMacro(TimeStampTolerance, unsigned long int);
-  itkGetMacro(TimeStampTolerance, unsigned long int);
+  itkGetConstMacro(TimeStampTolerance, unsigned long int);
 
   /**
    * \brief Sets the data storage, as each data source can put items into the storage.
@@ -111,7 +112,7 @@ public:
    * source can decide where and how to dump data to disk.
    */
   itkSetMacro(SavePrefix, std::string);
-  itkGetMacro(SavePrefix, std::string);
+  itkGetConstMacro(SavePrefix, std::string);
 
   /**
    * \brief Returns true if we are saving messages and false otherwise.
@@ -123,19 +124,19 @@ public:
    * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously immediately.
    */
   itkSetMacro(SaveInBackground, bool);
-  itkGetMacro(SaveInBackground, bool);
+  itkGetConstMacro(SaveInBackground, bool);
 
   /**
    * \brief If set to true, we save when the data is received, and if false, only when we
    * update the GUI, which may be at a different refresh rate to the incoming data.
    */
   itkSetMacro(SaveOnReceipt, bool);
-  itkGetMacro(SaveOnReceipt, bool);
+  itkGetConstMacro(SaveOnReceipt, bool);
 
   /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
    */
-  itkGetMacro(FrameRate, float);
+  itkGetConstMacro(FrameRate, float);
 
   /**
    * \brief Get the time stamp of the most recently requested time-point.
@@ -219,6 +220,7 @@ public:
    * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
    */
   double GetCurrentTimeLag();
+
   /**
    * \brief Get the subtool list
    */
@@ -267,6 +269,28 @@ protected:
    */
   void SetToolStringList ( std::list<std::string> );
 
+  /**
+   * \brief Returns the list of contained mitk::DataNodes.
+   */
+  std::vector<mitk::DataNode::Pointer> GetDataNodes() const;
+
+  /**
+   * \brief Sets the list of mitk::DataNodes, which will add them to the Data Storage.
+   */
+  void SetDataNodes(std::vector<mitk::DataNode::Pointer>& nodes);
+
+  /**
+   * \brief Helper method to set the list of mitk::DataNodes by calling SetDataNodes with a vector
+   * of length one, containing the supplied single node.
+   */
+  void SetDataNode(mitk::DataNode::Pointer& node);
+
+  /**
+   * \brief Helper method to get exactly one data node, creating it if it does not exist, returning
+   * empty list if it failed.
+   * \param name if supplied, the name must match, otherwise the node is created using the tool name as default.
+   */
+  std::vector<mitk::DataNode::Pointer> GetDataNode(const std::string& name=std::string());
 
 private:
 
@@ -299,6 +323,7 @@ private:
   int                                             m_NumberOfTools;
   std::list<std::string>                          m_SubTools;
   std::list<std::string>::iterator                m_SubToolsIterator;
+  std::vector<mitk::DataNode::Pointer>            m_DataNodes;
 
 }; // end class
 

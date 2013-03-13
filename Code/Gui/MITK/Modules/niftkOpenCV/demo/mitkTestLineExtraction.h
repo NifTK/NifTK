@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKOPENCVTEST_H
-#define MITKOPENCVTEST_H
+#ifndef MITKTESTLINEEXTRACTION_H
+#define MITKTESTLINEEXTRACTION_H
 
 #include "niftkOpenCVExports.h"
 #include <string>
@@ -24,26 +24,26 @@
 namespace mitk {
 
 /**
- * \class OpenCVTest
+ * \class TestLineExtraction
  * \brief Test Class
  */
-class NIFTKOPENCV_EXPORT OpenCVTest : public itk::Object
+class NIFTKOPENCV_EXPORT TestLineExtraction : public itk::Object
 {
 
 public:
 
-  mitkClassMacro(OpenCVTest, itk::Object);
-  itkNewMacro(OpenCVTest);
+  mitkClassMacro(TestLineExtraction, itk::Object);
+  itkNewMacro(TestLineExtraction);
 
   void Run(const std::string& fileName);
 
 protected:
 
-  OpenCVTest();
-  virtual ~OpenCVTest();
+  TestLineExtraction();
+  virtual ~TestLineExtraction();
 
-  OpenCVTest(const OpenCVTest&); // Purposefully not implemented.
-  OpenCVTest& operator=(const OpenCVTest&); // Purposefully not implemented.
+  TestLineExtraction(const TestLineExtraction&); // Purposefully not implemented.
+  TestLineExtraction& operator=(const TestLineExtraction&); // Purposefully not implemented.
 
 }; // end class
 

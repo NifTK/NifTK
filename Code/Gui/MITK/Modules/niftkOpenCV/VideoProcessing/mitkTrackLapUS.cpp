@@ -86,7 +86,7 @@ bool TrackLapUS::Track(
     // No exceptions ... so all OK.
     isSuccessful = true;
   }
-  catch(std::logic_error e)
+  catch(std::logic_error& e)
   {
     std::cerr << "TrackLapUS::Track: exception thrown e=" << e.what() << std::endl;
   }

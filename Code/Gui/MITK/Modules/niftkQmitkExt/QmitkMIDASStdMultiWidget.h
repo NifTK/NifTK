@@ -22,9 +22,10 @@
 #include "mitkGeometry3D.h"
 #include "mitkMIDASEnums.h"
 #include "QmitkStdMultiWidget.h"
-#include "vtkCamera.h"
 #include "itkConversionUtils.h"
 #include <niftkQmitkExtExports.h>
+
+class vtkCamera;
 
 class QGridLayout;
 class QStackedLayout;
@@ -140,27 +141,24 @@ public:
 
   /// \brief More specific, will put the border round just the selected window,
   /// but still the whole of this widget is considered "selected".
-  void SetSelectedWindow(vtkRenderWindow* window);
+  void SetSelectedRenderWindow(QmitkRenderWindow* renderWindow);
 
-  /// \brief Returns the specifically selected window, which may be 1 if the viewer is
+  /// \brief Returns the specifically selected render window, which may be 1 if the viewer is
   /// showing a single axial, coronal or sagittal plane, or may be up to 4 if the viewer
   /// is displaying the ortho view.
-  std::vector<QmitkRenderWindow*> GetSelectedWindows() const;
+  std::vector<QmitkRenderWindow*> GetSelectedRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
-  std::vector<QmitkRenderWindow*> GetAllWindows() const;
-
-  /// \brief Returns the list of all vtkRenderWindow contained herein.
-  std::vector<vtkRenderWindow*> GetAllVtkWindows() const;
+  std::vector<QmitkRenderWindow*> GetRenderWindows() const;
 
   /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
   QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
 
   /// \brief Returns true if this widget contains the provided window and false otherwise.
-  bool ContainsWindow(QmitkRenderWindow *window) const;
+  bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
-  /// \brief Returns true if this widget contains the provided window and false otherwise.
-  bool ContainsVtkRenderWindow(vtkRenderWindow *window) const;
+  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
+  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const;
 
   /// \brief Returns the minimum allowed slice number for a given orientation.
   unsigned int GetMinSlice(MIDASOrientation orientation) const;
@@ -191,11 +189,11 @@ public:
 
   /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   void SetMagnificationFactor(double magnificationFactor);
-  double ComputeScaleFactor(QmitkRenderWindow* window, double magnificationFactor);
+  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
   double FitMagnificationFactor();
-  double ComputeMagnificationFactor(QmitkRenderWindow* window);
+  double ComputeMagnificationFactor(QmitkRenderWindow* renderWindow);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -220,14 +218,14 @@ public:
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *thisWindow, std::vector<mitk::DataNode*> nodes);
-  void PositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
-  void MagnificationFactorChanged(QmitkRenderWindow *window, double magnificationFactor);
+  void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+  void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void MagnificationFactorChanged(QmitkRenderWindow *renderWindow, double magnificationFactor);
 
 protected slots:
 
   /// \brief The 4 individual render windows get connected to this slot, and then all emit NodesDropped.
-  void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
 private:
 
@@ -250,18 +248,18 @@ private:
   mitk::SliceNavigationController::Pointer GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
-  void SetVisibility(QmitkRenderWindow *window, mitk::DataNode *node, bool visible);
+  void SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible);
 
-  /// \brief Scales a specific window about it's centre.
-  void ZoomDisplayAboutCentre(QmitkRenderWindow *window, double scaleFactor);
+  /// \brief Scales a specific render window about it's centre.
+  void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
-  void GetScaleFactors(QmitkRenderWindow *window, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
+  void GetScaleFactors(QmitkRenderWindow *renderWindow, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
   void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
-  void OnScaleFactorChanged(QmitkRenderWindow *window);
+  void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
 
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;

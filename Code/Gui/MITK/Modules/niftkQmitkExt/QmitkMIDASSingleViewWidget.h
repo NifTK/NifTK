@@ -99,16 +99,13 @@ public:
   bool IsSelected() const;
 
   /// \brief More selective, will put the border round just the selected window, but still the whole widget is considered "selected".
-  void SetSelectedWindow(vtkRenderWindow* window);
+  void SetSelectedRenderWindow(QmitkRenderWindow* renderWindow);
 
   /// \brief Returns the specifically selected sub-pane.
-  std::vector<QmitkRenderWindow*> GetSelectedWindows() const;
+  std::vector<QmitkRenderWindow*> GetSelectedRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
-  std::vector<QmitkRenderWindow*> GetAllWindows() const;
-
-  /// \brief Returns the list of all vtkRenderWindow contained herein.
-  std::vector<vtkRenderWindow*> GetAllVtkWindows() const;
+  std::vector<QmitkRenderWindow*> GetRenderWindows() const;
 
   /// \brief Returns the Axial Window.
   QmitkRenderWindow* GetAxialWindow() const;
@@ -167,11 +164,11 @@ public:
   /// \brief Gets the maximum time step, or -1 if the widget is currently showing multiple views.
   unsigned int GetMaxTime() const;
 
-  /// \brief Returns true if the widget is fully created and contains the given window, and false otherwise.
-  bool ContainsWindow(QmitkRenderWindow *window) const;
+  /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
+  bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
-  /// \brief Returns true if the widget is fully created and contains the given window, and false otherwise.
-  bool ContainsVtkRenderWindow(vtkRenderWindow *window) const;
+  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
+  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const;
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
@@ -289,40 +286,42 @@ private:
                  );
 
   void SetActiveGeometry();
-  unsigned int GetBoundUnboundOffset() const;
-  unsigned int GetBoundUnboundPreviousArrayOffset() const;
+  int Index(int index) const
+  {
+    return (index << 1) + m_IsBound;
+  }
   void StorePosition();
-  void ResetCurrentPosition(unsigned int currentIndex);
-  void ResetRememberedPositions(unsigned int startIndex, unsigned int stopIndex);
+  void ResetCurrentPosition();
+  void ResetRememberedPositions();
 
-  mitk::DataStorage::Pointer                        m_DataStorage;
-  mitk::RenderingManager::Pointer                   m_RenderingManager;
+  mitk::DataStorage::Pointer           m_DataStorage;
+  mitk::RenderingManager::Pointer      m_RenderingManager;
 
-  QGridLayout                                      *m_Layout;
-  QmitkMIDASStdMultiWidget                         *m_MultiWidget;
+  QGridLayout                         *m_Layout;
+  QmitkMIDASStdMultiWidget            *m_MultiWidget;
 
-  bool                                              m_IsBound;
-  mitk::Geometry3D::Pointer                         m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::Geometry3D::Pointer                         m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
-  mitk::Geometry3D::Pointer                         m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
+  bool                                 m_IsBound;
+  mitk::Geometry3D::Pointer            m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::Geometry3D::Pointer            m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
+  mitk::Geometry3D::Pointer            m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
 
-  double                                            m_MinimumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
-  double                                            m_MaximumMagnification;         // passed in as constructor arguments, so this class unaware of where it came from.
+  double                               m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
+  double                               m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  std::vector<int>                                  m_CurrentSliceNumbers;          // length 2, one for unbound, then for bound.
-  std::vector<int>                                  m_CurrentTimeSliceNumbers;      // length 2, one for unbound, then for bound.
-  std::vector<double>                               m_CurrentMagnificationFactors;  // length 2, one for unbound, then for bound.
-  std::vector<MIDASOrientation>                     m_CurrentOrientations;          // length 2, one for unbound, then for bound.
-  std::vector<MIDASView>                            m_CurrentViews;                 // length 2, one for unbound, then for bound.
+  int                                  m_CurrentSliceNumbers[2];          // One for unbound, then for bound.
+  int                                  m_CurrentTimeSliceNumbers[2];      // One for unbound, then for bound.
+  double                               m_CurrentMagnificationFactors[2];  // One for unbound, then for bound.
+  MIDASOrientation                     m_CurrentOrientations[2];          // One for unbound, then for bound.
+  MIDASView                            m_CurrentViews[2];                 // One for unbound, then for bound.
 
-  std::vector<int>                                  m_PreviousSliceNumbers;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<int>                                  m_PreviousTimeSliceNumbers;     // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<double>                               m_PreviousMagnificationFactors; // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<MIDASOrientation>                     m_PreviousOrientations;         // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
-  std::vector<MIDASView>                            m_PreviousViews;                // length 6, one each for axial, sagittal, coronal, first 3 unbound, then 3 bound.
+  int                                  m_PreviousSliceNumbers[6];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  int                                  m_PreviousTimeSliceNumbers[6];     // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  double                               m_PreviousMagnificationFactors[6]; // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  MIDASOrientation                     m_PreviousOrientations[6];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  MIDASView                            m_PreviousViews[6];                // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
 
-  bool                                              m_NavigationControllerEventListening;
-  bool                                              m_RememberViewSettingsPerOrientation;
+  bool                                 m_NavigationControllerEventListening;
+  bool                                 m_RememberViewSettingsPerOrientation;
 };
 
 #endif // QMITKMIDASSINGLEVIEWWIDGET_H

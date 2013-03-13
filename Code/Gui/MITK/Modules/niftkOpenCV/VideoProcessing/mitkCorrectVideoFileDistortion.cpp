@@ -86,7 +86,7 @@ bool CorrectVideoFileDistortion::Correct(
     // No exceptions ... so all OK.
     isSuccessful = true;
   }
-  catch(std::logic_error e)
+  catch(std::logic_error& e)
   {
     std::cerr << "CorrectVideoFileDistortion::Correct: exception thrown e=" << e.what() << std::endl;
   }

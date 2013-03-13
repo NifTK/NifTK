@@ -51,6 +51,7 @@ IF(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_org.mitk.gui.qt.stdmultiwidgeteditor ON CACHE BOOL \"Build the MITK ortho-viewer plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.segmentation OFF CACHE BOOL \"Build the MITK segmentation plugin\")
       set(MITK_BUILD_org.mitk.gui.qt.cmdlinemodules ON CACHE BOOL \"Build the Command Line Modules plugin. \")
+      set(MITK_BUILD_org.mitk.gui.qt.dicom ON CACHE BOOL \"Build the Command Line Modules plugin. \")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
@@ -356,6 +357,38 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (Slicer Command Line Modules)
     #
     #     Giving e065d2cecb on NifTK/MITK/niftk branch.
+    #
+    # 24. Trac 2099 - New MITK version to pull in latest updates.
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK aeeeafd7f8 from Wed, 27 Feb 2013 22:17:02.
+    #              
+    #       + Trac 853,  MITK 10174 = https://github.com/NifTK/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)  (this was fixed using an alternative method in MITK 13321, but we leave this change intact in our NifTK version rather than backing it out).
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 1871, MITK 13504 = https://github.com/NifTK/MITK/commit/c874a341335812cf4c38b5c5daea4db4f4444c0d (CTK Designer plugin deployment)
+    #       + Trac 1588, MITK 12506 = https://github.com/NifTK/MITK/commit/acffcb4f1f3a483026b891ae49f45688d597cff8 (Slicer Command Line Modules)
+    #
+    #     Giving 28c721b9ff on NifTK/MITK/niftk branch.
+    #
+    # 25. Trac 2107 - New MITK version to pull in merged CLI and Poco Fix.
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 626784deb8 from Fri, 1 Mar 2013 17:43:55 .
+    #
+    #       + Trac 853,  MITK 10174 = https://github.com/NifTK/MITK/commit/5d11b54efc00cd8ddf086b2c6cbac5f6a6eae315 (Opacity for black)
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)  (this was fixed using an alternative method in MITK 13321, but we leave this change intact in our NifTK version rather than backing it out).
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #
+    #     Giving f4dfc10c4d on NifTK/MITK/niftk branch.
+    # 
+    # 26. Trac 2120 - New MITK version to pull in fixes for bug 14640.
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 0a7828eaa1 from Fri Mar 8 07:55:49 2013 +0100
+    #
+    #       + 4 bugs as listed above.
+    #
+    #     Giving 62e2e5ba98 on NifTK/MITK/niftk branch.
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
