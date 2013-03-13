@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>562</width>
-    <height>211</height>
+    <width>559</width>
+    <height>266</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -237,7 +237,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-	    <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes_ApplyFids">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes_ApplyFids">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -245,16 +245,16 @@
              </sizepolicy>
             </property>
            </widget>
-   	</item>
-	<item row="5" column="2">
+          </item>
+          <item row="7" column="2">
            <widget class="QPushButton" name="pushButton_SetUpPositioning">
             <property name="text">
              <string>Fine Positioning</string>
             </property>
            </widget>
           </item>
-	  <item row="5" column="1">
-	    <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes_FinePos">
+          <item row="7" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes_FinePos">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -262,8 +262,48 @@
              </sizepolicy>
             </property>
            </widget>
-   	</item>
-
+          </item>
+          <item row="5" column="2">
+           <widget class="QToolButton" name="toolButton_PM_Assoc">
+            <property name="text">
+             <string>Assoc. with PM.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QToolButton" name="toolButton_PM_disassociate">
+            <property name="text">
+             <string>Disassociate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_PM_dataNodes">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_PM_associatedData">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Pre Matrix</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>

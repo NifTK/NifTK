@@ -140,7 +140,6 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
 
   // Now process the data.
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-  timeCreated->GetTime();
 
   // Aim of this method is to do something like when a NiftyLink message comes in.
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();

@@ -16,7 +16,7 @@
 #include <mitkTestingMacros.h>
 #include "QmitkIGITrackerTool.h"
 #include "QmitkIGINiftyLinkDataType.h"
-#include "OIGTLTrackingDataMessage.h"
+#include "NiftyLinkTrackingDataMessage.h"
 
 /**
  * \brief This test is simply so we can run through valgrind and check
@@ -26,7 +26,7 @@ int QmitkIGINiftyLinkDataSourceMemoryTest(int /*argc*/, char* /*argv*/[])
 {
 
   // Message comes in. Here we create a local pointer, not a smart pointer.
-  OIGTLTrackingDataMessage* msg = new OIGTLTrackingDataMessage();
+  NiftyLinkTrackingDataMessage* msg = new NiftyLinkTrackingDataMessage();
 
   // It gets wrapped in a data type. Here we create a local pointer, not a smart pointer.
   QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();

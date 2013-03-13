@@ -33,10 +33,10 @@ public:
 
   mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGITrackerTool);
-  mitkNewMacro1Param(QmitkIGITrackerTool,OIGTLSocketObject *);
+  mitkNewMacro1Param(QmitkIGITrackerTool,NiftyLinkSocketObject *);
 
   /**
-   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
+   * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
@@ -76,6 +76,23 @@ public:
    * \brief Return a QList of the tools associated with a given toolName
    */
   QList<mitk::DataNode::Pointer>  GetDataNode(const QString);
+
+  /**
+   * \brief Associates, with a pre-matrix, a dataNode with a given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node was successfully added, false if not.
+   */
+  bool AddPreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+ 
+  /**
+   * \brief Removes a dataNode from the associated (pre-matrix) list for the  given tool name, where many nodes can be associated with a single tool.
+   * \return True if data node successfully removed
+   */
+  bool RemovePreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode);
+  
+  /**
+   * \brief Return a QList of the tools associated (pre-matrix) with a given toolName
+   */
+  QList<mitk::DataNode::Pointer>  GetPreMatrixDataNode(const QString);
 
   /**
    * \brief Not Widely Used: Set a flag to say we are doing ICP.
@@ -178,7 +195,7 @@ public slots:
   /**
    * \brief Main message handler routine for this tool, called by the signal from the socket.
    */
-  virtual void InterpretMessage(OIGTLMessage::Pointer msg);
+  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
 
 signals:
 
@@ -190,7 +207,7 @@ protected:
   virtual ~QmitkIGITrackerTool(); // Purposefully hidden.
 
   QmitkIGITrackerTool(const QmitkIGITrackerTool&); // Purposefully not implemented.
-  QmitkIGITrackerTool(OIGTLSocketObject* socket); // Purposefully not implemented.
+  QmitkIGITrackerTool(NiftyLinkSocketObject* socket); // Purposefully not implemented.
   QmitkIGITrackerTool& operator=(const QmitkIGITrackerTool&); // Purposefully not implemented.
 
   /**
@@ -203,17 +220,24 @@ private:
   /**
    * \brief Takes a message and extracts a matrix/transform and applies it.
    */
-  void HandleTrackerData(OIGTLMessage* msg);
+  void HandleTrackerData(NiftyLinkMessage* msg);
 
   /**
    * \brief Used to feedback a message of either coordinates, or matrices to
    * the GUI consolve via the StatusUpdate method, and also writes to console.
    */
-  void DisplayTrackerData(OIGTLMessage* msg);
+  void DisplayTrackerData(NiftyLinkMessage* msg);
+
+  /**
+   * \brief Initialises m_PreMatrix with default values
+   */
+  void InitPreMatrix();
+  
 
   QHash<QString, bool>                                 m_EnabledTools;
   QHash<QString, mitk::DataNode::Pointer>              m_ToolRepresentations;
   QHash<QString, mitk::DataNode::Pointer>              m_AssociatedTools;
+  QHash<QString, mitk::DataNode::Pointer>              m_PreMatrixAssociatedTools;
 
   /** This lot is currently rarely used. */
   bool                                                 m_UseICP;
@@ -232,6 +256,7 @@ private:
   double                                               m_ClipNear; //the near clipping plane of the VTK camera used
   double                                               m_ClipFar; //the far clipping plane of the VTK camera used
   bool                                                 m_TransformTrackerToMITKCoords; //Set to true to use m_FiducialRegistrationFilter
+  itk::Matrix<double,4,4>                               m_PreMatrix; //Use this to apply a matrix to a data node during tracking.
 }; // end class
 
 #endif

@@ -33,7 +33,7 @@ public:
 
   mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGINiftyLinkDataSource);
   itkNewMacro(QmitkIGIUltrasonixTool);
-  mitkNewMacro1Param(QmitkIGIUltrasonixTool,OIGTLSocketObject *);
+  mitkNewMacro1Param(QmitkIGIUltrasonixTool,NiftyLinkSocketObject *);
 
   /**
    * \brief We store the node name here so other classes can refer to it.
@@ -41,7 +41,7 @@ public:
   static const std::string ULTRASONIX_IMAGE_NAME;
 
   /**
-   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
+   * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
@@ -57,7 +57,7 @@ public slots:
   /**
    * \brief Main message handler routine for this tool.
    */
-  virtual void InterpretMessage(OIGTLMessage::Pointer msg);
+  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
 
 signals:
 
@@ -71,7 +71,7 @@ protected:
 
   QmitkIGIUltrasonixTool(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
-  QmitkIGIUltrasonixTool(OIGTLSocketObject*); // Purposefully not implemented.
+  QmitkIGIUltrasonixTool(NiftyLinkSocketObject*); // Purposefully not implemented.
 
   /**
    * \brief \see IGIDataSource::SaveData();
@@ -85,7 +85,7 @@ private:
    * by extracting an image, and converting it appropriate to the associated image
    * in the data storage.
    */
-  void HandleImageData(OIGTLMessage* msg);
+  void HandleImageData(NiftyLinkMessage* msg);
 
   /**
    * \brief Retrieves the motor position from the most recent data available.

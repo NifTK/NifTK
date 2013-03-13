@@ -18,7 +18,7 @@
 #include "niftkIGIGuiExports.h"
  #include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGIUltrasonixToolGui.h"
-#include <OIGTLMessage.h>
+#include <NiftyLinkMessage.h>
 
 class QmitkIGIUltrasonixTool;
 class ClientDescriptorXMLBuilder;
