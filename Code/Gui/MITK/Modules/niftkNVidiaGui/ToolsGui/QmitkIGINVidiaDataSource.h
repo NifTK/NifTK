@@ -21,7 +21,6 @@
 #include <QObject>
 #include <QMetaType>
 #include <opencv2/core/types_c.h>
-#include <mitkOpenCVToMitkImageFilter.h>
 
 
 // some forward decls to avoid header pollution
@@ -81,7 +80,7 @@ public:
 
   // caller needs to cleanup!
   // exists only for integration with mitk, otherwise: do not use!
-  IplImage* get_bgr_image();
+  IplImage* get_rgb_image();
 
 signals:
 
@@ -116,17 +115,11 @@ private:
 
   QmitkIGINVidiaDataSourceImpl*     pimpl;
 
-  // for single stream only, atm
-  // this gets added to the global data manager (for the gui)
-  mitk::DataNode::Pointer           m_ImageNode;
   // and this receives the captured video frames (not necessarily at full frame rate though)
   // it's also hooked up to m_ImageNode
   // BUT: every time there's a new frame, a new image is allocated. cow-style.
   mitk::Image::Pointer              m_Image;
 
-  mitk::OpenCVToMitkImageFilter::Pointer    filter;
-
 }; // end class
 
 #endif // QMITKIGINVIDIADATASOURCE_H
-

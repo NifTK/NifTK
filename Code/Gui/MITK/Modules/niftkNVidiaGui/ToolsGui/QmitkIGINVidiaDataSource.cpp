@@ -20,8 +20,8 @@
 #include <QGLContext>
 #include <QMutex>
 #include <QGLWidget>
-#include <mitkOpenCVToMitkImageFilter.h>
-
+#include <mitkImageReadAccessor.h>
+#include <mitkImageWriteAccessor.h>
 #include "video/sdiinput.h"
 
 
@@ -176,7 +176,7 @@ public:
   }
 
   // FIXME: one channel only
-  bool copy_out_bgr(char* buffer, std::size_t bufferpitch, int width, int height)
+  bool copy_out(char* buffer, std::size_t bufferpitch, int width, int height, int layout)
   {
     QMutexLocker    l(&lock);
 
@@ -192,13 +192,22 @@ public:
       glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 3);
 
       glBindTexture(GL_TEXTURE_2D, sdiin->get_texture_id(0));
-      glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, buffer);
+      glGetTexImage(GL_TEXTURE_2D, 0, layout, GL_UNSIGNED_BYTE, buffer);
       assert(glGetError() == GL_NO_ERROR);
 
       return true;
     }
     
     return false;
+  }
+
+  bool copy_out_bgr(char* buffer, std::size_t bufferpitch, int width, int height)
+  {
+      return copy_out(buffer, bufferpitch, width, height, GL_BGR_EXT);
+  }
+  bool copy_out_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
+  {
+      return copy_out(buffer, bufferpitch, width, height, GL_RGB);
   }
 
   int get_texture_id(int stream)
@@ -222,15 +231,6 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
   // FIXME: this should be running in its own thread!
   pimpl->init();
 
-
-  filter = mitk::OpenCVToMitkImageFilter::New();
-
-  // FIXME: depends on number of active streams, etc
-  m_ImageNode = mitk::DataNode::New();
-  m_ImageNode->SetName("nvidia sdi input node");
-  m_ImageNode->SetVisibility(true);
-    
-
   this->StartCapturing();
 
   m_Timer = new QTimer();
@@ -238,8 +238,6 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
   m_Timer->setSingleShot(false);
 
   connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()));
-
-
 
   m_Timer->start();
 }
@@ -288,12 +286,14 @@ bool QmitkIGINVidiaDataSource::IsCapturing()
   return result;
 }
 
-IplImage* QmitkIGINVidiaDataSource::get_bgr_image()
+IplImage* QmitkIGINVidiaDataSource::get_rgb_image()
 {
   std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
   IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second), IPL_DEPTH_8U, 3);
+  // mark layout as rgb instead of the opencv-default bgr
+  std::memcpy(&frame->channelSeq[0], "RGB\0", 4);
 
-  bool ok = pimpl->copy_out_bgr(frame->imageData, frame->widthStep, frame->width, frame->height);
+  bool ok = pimpl->copy_out_rgb(frame->imageData, frame->widthStep, frame->width, frame->height);
   if (ok)
     return frame;
 
@@ -321,43 +321,67 @@ void QmitkIGINVidiaDataSource::OnTimeout()
 
   bool captureok = pimpl->capture();
 
-#if 0
-  // FIXME: bad idea to use that mitk filter
-  //        it only works with rgb, no alpha
-  //        and it assumes layout is bgr, ie. desktop webcams dumping data to gdi
-  IplImage* frame = get_bgr_image();
-  // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
-  if (frame)
-  {
-    filter->SetCopyBuffer(true);   // FIXME: dont know what that is supposed to do, if i set it to true we get massive mem leak
-    filter->SetOpenCVImage(frame);
-    filter->Update();
-    m_Image = filter->GetOutput(0);
-    if (!this->GetDataStorage()->Exists(m_ImageNode))
-    {
-      this->GetDataStorage()->Add(m_ImageNode);
-    }
-    m_ImageNode->SetData(m_Image);
-    // disconnect temporary image?
-    filter->SetOpenCVImage(0); 
-    cvReleaseImage(&frame);
-#else
   if (captureok)
   {
-#endif
-    this->SetStatus("Grabbing");
+    IplImage* frame = get_rgb_image();
+    // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
+    if (frame)
+    {
+      std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode("nvidia sdi");
+      // FIXME: this is wrong of course
+      if (dataNode.size() != 1)
+      {
+        MITK_ERROR << "QmitkIGINVidiaDataSource only supports a single video image feed" << std::endl;
+        this->SetStatus("Failed");
+        cvReleaseImage(&frame);
+        return;
+      }
+      mitk::DataNode::Pointer node = dataNode[0];
 
-    igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-    timeCreated->GetTime();
+      mitk::Image::Pointer convertedImage = this->CreateMitkImage(frame);
+      mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+      if (imageInNode.IsNull())
+      {
+        node->SetData(convertedImage);
+      }
+      else
+      {
+        try
+        {
+          mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
+          const void* cPointer = readAccess.GetData();
 
-    // Aim of this method is to do something like when a NiftyLink message comes in.
-    mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
-    //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
-    wrapper->SetDataSource("QmitkIGINVidiaDataSource");
-    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-    wrapper->SetDuration(1000000000); // nanoseconds
+          mitk::ImageWriteAccessor writeAccess(imageInNode);
+          void* vPointer = writeAccess.GetData();
 
-    this->AddData(wrapper.GetPointer());
+          assert(frame->nChannels == 3);
+          std::memcpy(vPointer, cPointer, frame->width * frame->height * 3);
+        }
+        catch(mitk::Exception& e)
+        {
+          MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+        }
+      }
+      node->Modified();
+
+      cvReleaseImage(&frame);
+
+      this->SetStatus("Grabbing");
+
+      igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+      timeCreated->GetTime();
+
+      // Aim of this method is to do something like when a NiftyLink message comes in.
+      mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
+      //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
+      wrapper->SetDataSource("QmitkIGINVidiaDataSource");
+      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
+      wrapper->SetDuration(1000000000); // nanoseconds
+
+      this->AddData(wrapper.GetPointer());
+    }
+    else
+      this->SetStatus("Failed");
   }
   else
     this->SetStatus("Failed");
