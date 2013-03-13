@@ -204,7 +204,7 @@ int main(int argc, char** argv)
   target->ShallowCopy (targetReader->GetOutput()); 
   std::cout << "Loaded PolyData:" << args.targetPolyDataFile << std::endl;
   
-  niftk::IterativeClosestPoint * icp = new niftk::IterativeClosestPoint(); 
+  niftkVTKIterativeClosestPoint * icp = new niftkVTKIterativeClosestPoint(); 
   icp->SetMaxLandmarks(args.maxPoints);
   icp->SetMaxIterations(args.maxIterations);
   icp->SetSource(source);

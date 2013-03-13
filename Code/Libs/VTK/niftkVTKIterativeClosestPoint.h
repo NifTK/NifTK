@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __NIFTKVTKITERATIVECLOSESTPOINT_H
-#define __NIFTKVTKITERATIVECLOSESTPOINT_H
+#ifndef __niftkVTKIterativeClosestPoint_h
+#define __niftkVTKIterativeClosestPoint_h
 
 
 #include "NifTKConfigure.h"
@@ -33,38 +33,31 @@
 #define __NIFTTKVTKICPNPOINTS 50
 #define __NIFTTKVTKICPMAXITERATIONS 100
 
-namespace niftk
-{
+class NIFTKVTK_WINEXPORT niftkVTKIterativeClosestPoint {
 
-  class NIFTKVTK_WINEXPORT IterativeClosestPoint {
+public:
+  niftkVTKIterativeClosestPoint();
+  ~niftkVTKIterativeClosestPoint();
+  /* \brief
+  * Perform a vtkIterative closest point registration on the two data sets
+  */
+  bool Run();
 
-    public:
-      IterativeClosestPoint();
-      ~IterativeClosestPoint();
-    /* \brief
-    * Perform a vtkIterative closest point registration on the two data sets
-    */
-      bool Run();
-
-      vtkSmartPointer<vtkMatrix4x4> GetTransform();
-      bool ApplyTransform(vtkPolyData * solution);
-      void SetSource (vtkSmartPointer<vtkPolyData>);
-      void SetTarget (vtkSmartPointer<vtkPolyData>);
-      void SetMaxLandmarks ( int);
-      void SetMaxIterations(int);
+  vtkSmartPointer<vtkMatrix4x4> GetTransform();
+  bool ApplyTransform(vtkPolyData * solution);
+  void SetSource (vtkSmartPointer<vtkPolyData>);
+  void SetTarget (vtkSmartPointer<vtkPolyData>);
+  void SetMaxLandmarks ( int);
+  void SetMaxIterations(int);
 
 
-    private:
-      vtkSmartPointer<vtkIterativeClosestPointTransform> m_icp;
-      vtkSmartPointer<vtkPolyData> m_Source;
-      vtkSmartPointer<vtkPolyData> m_Target;
-      vtkSmartPointer<vtkMatrix4x4> m_TransformMatrix;
-      unsigned int m_MaxLandmarks;
-      unsigned int m_MaxIterations;
-  };
+private:
+  vtkSmartPointer<vtkIterativeClosestPointTransform>  m_Icp;
+  vtkSmartPointer<vtkPolyData>                        m_Source;
+  vtkSmartPointer<vtkPolyData>                        m_Target;
+  vtkSmartPointer<vtkMatrix4x4>                       m_TransformMatrix;
+  unsigned int                                        m_MaxLandmarks;
+  unsigned int                                        m_MaxIterations;
+};
 
-
-
-} // end namespace niftk
-
-#endif  //__NIFTKVTKITERATIVECLOSESTPOINT_H
+#endif  //__NniftkVTKIterativeClosestPoint_h

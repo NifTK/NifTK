@@ -37,7 +37,7 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
     std::cerr << "Usage VTKIterativeClosestPointTest source target" << std::endl;
     return EXIT_FAILURE;
   }
-  niftk::IterativeClosestPoint *  icp = new niftk::IterativeClosestPoint();
+  niftkVTKIterativeClosestPoint *  icp = new niftkVTKIterativeClosestPoint();
   std::string strTarget = argv[1];
   std::string strSource = argv[2];
 
@@ -157,7 +157,7 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   double *Errors = new double [Repeats];
   double MeanError = 0.0;
   double MaxError = 0.0;
-  niftk::IterativeClosestPoint *  icp = new niftk::IterativeClosestPoint();
+  niftkVTKIterativeClosestPoint *  icp = new niftkVTKIterativeClosestPoint();
   icp->SetMaxLandmarks(300);
   icp->SetMaxIterations(1000);
   double *StartPoint = new double[4];
