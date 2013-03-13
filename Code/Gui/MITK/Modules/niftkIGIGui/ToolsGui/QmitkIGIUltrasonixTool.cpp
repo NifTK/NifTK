@@ -21,7 +21,7 @@
 
 NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
-const std::string QmitkIGIUltrasonixTool::ULTRASONIX_TOOL_2D_IMAGE_NAME = std::string("QmitkIGIUltrasonixTool image");
+const std::string QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME = std::string("Ultrasonix image");
 
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
@@ -32,7 +32,7 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
   m_Image = mitk::Image::New();
 
   m_ImageNode = mitk::DataNode::New();
-  m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
+  m_ImageNode->SetName(ULTRASONIX_IMAGE_NAME);
   m_ImageNode->SetVisibility(true);
   m_ImageNode->SetOpacity(1);
 }
@@ -46,7 +46,7 @@ QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool( OIGTLSocketObject * socket )
   m_Image = mitk::Image::New();
 
   m_ImageNode = mitk::DataNode::New();
-  m_ImageNode->SetName(ULTRASONIX_TOOL_2D_IMAGE_NAME);
+  m_ImageNode->SetName(ULTRASONIX_IMAGE_NAME);
   m_ImageNode->SetVisibility(true);
   m_ImageNode->SetOpacity(1);
 }
