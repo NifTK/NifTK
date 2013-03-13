@@ -31,6 +31,13 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
   // all the sdi stuff needs an opengl context
   //  so we'll create our own
   QGLWidget*              oglwin;
+  // we want to share our capture context with other render contexts (e.g. the preview widget)
+  // but for that to work we need a hack because for sharing to work, the share-source cannot
+  //  be current at the time of call. but our capture context is current (to the capture thread)
+  //  all the time! so we just create a dummy context that shares with capture-context but itself
+  //  is never ever current to any thread and hance can be shared with new widgets while capture-context
+  //  is happily working away. and tada it works :)
+  QGLWidget*              oglshare;
 
   enum CaptureThreadState
   {
@@ -50,20 +57,33 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
   video::StreamFormat     format;
   int                     streamcount;
 
+  // we keep our own copy of the texture ids (instead of relying on sdiin)
+  //  so that another thread can easily get these
+  // SDIInput is actively enforcing an opengl context check that's incompatible
+  //  with the current threading situation
+  int                     textureids[4];
+
   volatile IplImage*      copyoutasap;
   QWaitCondition          copyoutfinished;
   QMutex                  copyoutmutex;
 
 public:
   QmitkIGINVidiaDataSourceImpl()
-    : sdidev(0), sdiin(0), streamcount(0), oglwin(0), lock(QMutex::Recursive), 
+    : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), lock(QMutex::Recursive), 
       current_state(PRE_INIT), copyoutasap(0)
   {
+    std::memset(&textureids[0], 0, sizeof(textureids));
     // we create the opengl widget on the ui thread once
     // and then never modify or signal/etc again
     oglwin = new QGLWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
     oglwin->hide();
     assert(oglwin->isValid());
+
+    // hack to get context sharing to work while the capture thread is cracking away
+    oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+    oglshare->hide();
+    assert(oglshare->isValid());
+    assert(oglwin->isSharing());
   }
 
 
@@ -162,6 +182,9 @@ protected:
       {
         sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS);
       }
+
+      for (int i = 0; i < 4; ++i)
+        textureids[i] = sdiin->get_texture_id(i);
     }
 
     // assuming everything went fine
@@ -272,12 +295,14 @@ public:
     return copyoutfinished.wait(&copyoutmutex, 500000000);
   }
 
-  int get_texture_id(int stream) const
+  int get_texture_id(unsigned int stream) const
   {
     QMutexLocker    l(&lock);
     if (sdiin == 0)
         return 0;
-    return sdiin->get_texture_id(stream);
+    if (stream >= 4)
+        return 0;
+    return textureids[stream];
   }
 };
 
@@ -498,8 +523,8 @@ int QmitkIGINVidiaDataSource::get_refresh_rate()
 QGLWidget* QmitkIGINVidiaDataSource::get_capturecontext()
 {
     assert(pimpl != 0);
-    assert(pimpl->oglwin != 0);
-    return pimpl->oglwin;
+    assert(pimpl->oglshare != 0);
+    return pimpl->oglshare;
 }
 
 int QmitkIGINVidiaDataSource::get_texture_id(int stream)

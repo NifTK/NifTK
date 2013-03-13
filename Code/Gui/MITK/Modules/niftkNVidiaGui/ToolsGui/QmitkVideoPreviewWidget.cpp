@@ -21,6 +21,7 @@
   : QGLWidget(parent, sharewith),
     textureid(0)
 {
+  assert(this->isSharing());
 }
 
 void QmitkVideoPreviewWidget::set_video_dimensions(int width, int height)
@@ -29,7 +30,7 @@ void QmitkVideoPreviewWidget::set_video_dimensions(int width, int height)
 
 void QmitkVideoPreviewWidget::set_texture_id(int id)
 {
-    textureid = id;
+  textureid = id;
 }
 
 void QmitkVideoPreviewWidget::initializeGL()
@@ -52,7 +53,7 @@ void QmitkVideoPreviewWidget::resizeGL(int width, int height)
 
 void QmitkVideoPreviewWidget::paintGL()
 {
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
