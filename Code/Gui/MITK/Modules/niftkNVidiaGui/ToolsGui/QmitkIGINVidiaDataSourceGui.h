@@ -23,6 +23,7 @@
 class QmitkIGINVidiaDataSource;
 class QLabel;
 class QGridLayout;
+class QmitkVideoPreviewWidget;
 
 /**
  * \class QmitkIGIOpenCVDataSourceGui
@@ -61,9 +62,8 @@ private:
 
   QmitkIGINVidiaDataSource* GetQmitkIGINVidiaDataSource() const;
 
-  QLabel      *m_DisplayWidget;
-  QGridLayout *m_Layout;
-
+  // init'd by Initialize()
+  QmitkVideoPreviewWidget* oglwin;
 }; // end class
 
 #endif

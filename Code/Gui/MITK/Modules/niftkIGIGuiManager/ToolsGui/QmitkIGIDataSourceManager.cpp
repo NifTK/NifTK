@@ -104,9 +104,18 @@ void QmitkIGIDataSourceManager::DeleteCurrentGuiWidget()
         widget->setVisible(false);
       }
       m_GridLayoutClientControls->removeItem(item);
+      // this gets rid of the layout item
       delete item;
+      // we should kill off the actual widget too
+      // side note: that may not be the best way of doing it. currently everytime you
+      //  double-click on a source it creates a new gui for it and deletes the previously
+      //  active gui. it would be better if guis are cached for as long as the underlying
+      //  data source is alive.
+      // but for now this.
+      delete widget;
     }
     delete m_GridLayoutClientControls;
+    m_GridLayoutClientControls = 0;
   }
 }
 
@@ -657,6 +666,10 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 
   m_TableWidget->removeRow(rowIndex);
   m_TableWidget->update();
+
+  // FIXME: this should not delete the gui if it doesnt belong to the to-be-removed source!
+  //        but this should be a safe way of cleaning up for now
+  this->DeleteCurrentGuiWidget();
 
   // This destroys the source. It is up to the source to correctly destroy itself,
   // as this class has no idea what the source is or what it contains etc.
