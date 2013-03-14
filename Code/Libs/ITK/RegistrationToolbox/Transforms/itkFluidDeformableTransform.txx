@@ -185,7 +185,6 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
   typedef Point< TDeformationScalar, NDimensions > DeformationOutputPointType; 
   typedef Point< double, NDimensions > DoubleDeformationOutputPointType; 
   typename DeformationFieldType::RegionType region = this->m_DeformationField->GetLargestPossibleRegion(); 
-  typename DeformationFieldType::SizeType size = this->m_DeformationField->GetLargestPossibleRegion().GetSize();
   typename DeformationFieldType::PointType origin = this->m_DeformationField->GetOrigin();
   
   // niftkitkDebugMacro(<< "FluidDeformableTransform::UpdateRegriddedDeformationParameters - Looping");
@@ -194,6 +193,8 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
     typename DeformationFieldType::IndexType index = iterator.GetIndex(); 
     
 #if 0
+    typename DeformationFieldType::SizeType size = this->m_DeformationField->GetLargestPossibleRegion().GetSize();
+
     // Skip the boundary. 
     bool isBoundary = false; 
     for (unsigned int i = 0; i < NDimensions; i++)

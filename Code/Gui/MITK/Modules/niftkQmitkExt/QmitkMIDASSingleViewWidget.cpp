@@ -574,7 +574,7 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
   std::vector<QmitkRenderWindow*> renderWindows = GetRenderWindows();
-  for (int i = 0; i < renderWindows.size(); i++)
+  for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
     renderWindows[i]->GetVtkRenderWindow()->Render();
   }

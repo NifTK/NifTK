@@ -69,7 +69,7 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateMitkImage(const IplImage* im
   // if the image pitch is the same as its width then everything is peachy
   //  but if not we need to take care of that
   const unsigned int numberOfBytesPerLine = image->width * image->nChannels;
-  if (numberOfBytesPerLine == image->widthStep)
+  if (numberOfBytesPerLine == static_cast<unsigned int>(image->widthStep))
   {
     memcpy(localBuffer, image->imageData, numberOfBytes);
   }
