@@ -50,6 +50,8 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
   // no need to lock this one
   volatile CaptureThreadState   current_state;
 
+  volatile bool           stop_asap;
+
   // any access to the capture bits needs to be locked
   mutable QMutex          lock;
   video::SDIDevice*       sdidev;
@@ -70,7 +72,7 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
 public:
   QmitkIGINVidiaDataSourceImpl()
     : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), lock(QMutex::Recursive), 
-      current_state(PRE_INIT), copyoutasap(0)
+      current_state(PRE_INIT), copyoutasap(0), stop_asap(false)
   {
     std::memset(&textureids[0], 0, sizeof(textureids));
     // we create the opengl widget on the ui thread once
@@ -86,6 +88,31 @@ public:
     assert(oglwin->isSharing());
   }
 
+  ~QmitkIGINVidiaDataSourceImpl()
+  {
+    // we dont really support concurrant destruction
+    // if some other thread is still holding on to a pointer
+    //  while we are cleaning up here then things are going to blow up anyway
+    // might as well fail fast
+    bool wasnotlocked = lock.tryLock();
+    assert(wasnotlocked);
+    wasnotlocked = copyoutmutex.tryLock();
+    assert(wasnotlocked);
+
+    delete sdiin;
+    // we do not own sdidev!
+    sdidev = 0;
+    
+    delete oglshare;
+    delete oglwin;
+
+    // they'll get cleaned up now
+    // if someone else is currently waiting on these
+    //  deleting but not unlocking does what to their waiting?
+    copyoutmutex.unlock();
+    lock.unlock();
+  }
+
 
 protected:
   virtual void run()
@@ -97,7 +124,7 @@ protected:
     if (has_hardware())
     {
       bool  captureok = false;
-      while (current_state != FAILED)
+      while ((current_state != FAILED) && (stop_asap == false))
       {
         captureok &= has_input();
         if (!captureok)
@@ -331,6 +358,10 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
 QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
 {
   this->StopCapturing();
+
+  pimpl->stop_asap = true;
+  pimpl->wait(5000);
+  delete pimpl;
 }
 
 
