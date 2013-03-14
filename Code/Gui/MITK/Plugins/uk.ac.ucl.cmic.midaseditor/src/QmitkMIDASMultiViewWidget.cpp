@@ -988,8 +988,8 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
     MIDASOrientation orientation = selectedView->GetOrientation();
     MIDASView midasView = selectedView->GetView();
 
-    m_MIDASSlidersWidget->SetBlockSignals(true);
-    m_MIDASOrientationWidget->SetBlockSignals(true);
+    bool slidersWidgetWasBlocked = m_MIDASSlidersWidget->BlockSignals(true);
+    bool orientationWidgetWasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
 
     if (midasView != MIDAS_VIEW_UNKNOWN)
     {
@@ -1024,8 +1024,8 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setEnabled(true);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
 
-    m_MIDASSlidersWidget->SetBlockSignals(false);
-    m_MIDASOrientationWidget->SetBlockSignals(false);
+    m_MIDASSlidersWidget->BlockSignals(slidersWidgetWasBlocked);
+    m_MIDASOrientationWidget->BlockSignals(orientationWidgetWasBlocked);
 
     this->Update2DCursorVisibility();
   }
@@ -1316,9 +1316,9 @@ bool QmitkMIDASMultiViewWidget::SwitchToAxial()
 {
   this->SetSelectedWindowToAxial();
 
-  m_MIDASOrientationWidget->SetBlockSignals(true);
+  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
   m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_AXIAL);
-  m_MIDASOrientationWidget->SetBlockSignals(false);
+  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
   this->UpdateFocusManagerToSelectedView();
   return true;
 }
@@ -1336,9 +1336,9 @@ bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
 {
   this->SetSelectedWindowToSagittal();
 
-  m_MIDASOrientationWidget->SetBlockSignals(true);
+  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
   m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_SAGITTAL);
-  m_MIDASOrientationWidget->SetBlockSignals(false);
+  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
   this->UpdateFocusManagerToSelectedView();
   return true;
 }
@@ -1356,9 +1356,9 @@ bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
 {
   this->SetSelectedWindowToCoronal();
 
-  m_MIDASOrientationWidget->SetBlockSignals(true);
+  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
   m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_CORONAL);
-  m_MIDASOrientationWidget->SetBlockSignals(false);
+  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
   this->UpdateFocusManagerToSelectedView();
   return true;
 }
