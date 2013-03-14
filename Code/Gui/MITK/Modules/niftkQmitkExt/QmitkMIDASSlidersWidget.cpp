@@ -46,11 +46,13 @@ void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetBlockSignals(bool block)
+bool QmitkMIDASSlidersWidget::BlockSignals(bool block)
 {
+  bool wasBlocked = m_MagnificationFactorWidget->signalsBlocked();
   m_MagnificationFactorWidget->blockSignals(block);
   m_SliceSelectionWidget->blockSignals(block);
   m_TimeSelectionWidget->blockSignals(block);
+  return wasBlocked;
 }
 
 

@@ -43,8 +43,8 @@ public:
   /// \brief Creates the GUI, called from within constructor.
   void setupUi(QWidget*);
 
-  /// \brief Calls setBlockSignals(block) on all contained widgets.
-  void SetBlockSignals(bool block);
+  /// \brief Calls blockSignals(block) on all contained widgets.
+  bool BlockSignals(bool block);
 
   /// \brief Calls setEnabled(enabled) on all contained widgets.
   void SetEnabled(bool enabled);
@@ -59,10 +59,10 @@ signals:
 
 protected slots:
 
-  void OnAxialRadioButtonPressed(bool b);
-  void OnCoronalRadioButtonPressed(bool b);
-  void OnSagittalRadioButtonPressed(bool b);
-  void OnOtherRadioButtonPressed(bool b);
+  void OnAxialRadioButtonToggled(bool checked);
+  void OnCoronalRadioButtonToggled(bool checked);
+  void OnSagittalRadioButtonToggled(bool checked);
+  void OnOtherRadioButtonToggled(bool checked);
   void OnComboBoxIndexChanged(int i);
 
 protected:
