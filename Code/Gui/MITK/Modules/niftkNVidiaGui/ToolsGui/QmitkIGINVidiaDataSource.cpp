@@ -99,10 +99,24 @@ public:
     wasnotlocked = copyoutmutex.tryLock();
     assert(wasnotlocked);
 
-    delete sdiin;
-    // we do not own sdidev!
-    sdidev = 0;
+    QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
+    try
+    {
+      // we need the capture context for proper cleanup
+      oglwin->makeCurrent();
+
+      delete sdiin;
+      // we do not own sdidev!
+      sdidev = 0;
     
+      if (ctx)
+        ctx->makeCurrent();
+    }
+    catch (...)
+    {
+        std::cerr << "sdi cleanup threw exception" << std::endl;
+    }
+
     delete oglshare;
     delete oglwin;
 
@@ -208,10 +222,9 @@ protected:
       if (format.format != video::StreamFormat::PF_NONE)
       {
         sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS);
+        for (int i = 0; i < 4; ++i)
+          textureids[i] = sdiin->get_texture_id(i);
       }
-
-      for (int i = 0; i < 4; ++i)
-        textureids[i] = sdiin->get_texture_id(i);
     }
 
     // assuming everything went fine
