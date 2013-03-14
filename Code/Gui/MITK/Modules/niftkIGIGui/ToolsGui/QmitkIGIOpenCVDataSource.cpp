@@ -14,11 +14,16 @@
 
 #include "QmitkIGIOpenCVDataSource.h"
 #include "mitkIGIOpenCVDataType.h"
+#include <mitkDataNode.h>
+#include <mitkImageReadAccessor.h>
+#include <mitkImageWriteAccessor.h>
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
 #include <cv.h>
 #include <QTimer>
 #include <QCoreApplication>
+
+const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
@@ -27,7 +32,7 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 {
   qRegisterMetaType<mitk::VideoSource*>();
 
-  this->SetName("Video");
+  this->SetName("QmitkIGIOpenCVDataSource");
   this->SetType("Frame Grabber");
   this->SetDescription("OpenCV");
   this->SetStatus("Initialised");
@@ -111,17 +116,30 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSource::OnTimeout()
 {
+  // Make sure we have exactly 1 data node.
+  std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(OPENCV_IMAGE_NAME);
+  if (dataNode.size() != 1)
+  {
+    MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
+    this->SetStatus("Failed");
+    return;
+  }
+  mitk::DataNode::Pointer node = dataNode[0];
+
+  // Grab a video image.
   m_VideoSource->FetchFrame();
   const IplImage* img = m_VideoSource->GetCurrentFrame();
-  // grapping failed (maybe no webcam present)
+
+  // Check if grabbing failed (maybe no webcam present)
   if (img == 0)
   {
-      this->SetStatus("Failed");
-      return;
+    MITK_ERROR << "QmitkIGIOpenCVDataSource failed to retrieve the video frame" << std::endl;
+    this->SetStatus("Failed");
+    return;
   }
 
+  // Now process the data.
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-  timeCreated->GetTime();
 
   // Aim of this method is to do something like when a NiftyLink message comes in.
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
@@ -129,10 +147,49 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
   wrapper->SetDuration(1000000000); // nanoseconds
-
   this->AddData(wrapper.GetPointer());
-
+  // update status in the igi-data-source-manager gui 
+  //  (which is different from the mitk data manager!)
   this->SetStatus("Grabbing");
+
+  IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
+  // opencv's cannonical channel layout is bgr (instead of rgb)
+  //  while everything usually else expects rgb...
+  cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
+  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
+  //  we should make sure we got the layout right. (opencv itself does not use this in any way.)
+  std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
+
+  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
+  mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
+  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+  if (imageInNode.IsNull())
+  {
+    node->SetData(convertedImage);
+  }
+  else
+  {
+    try
+    {
+      mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
+      const void* cPointer = readAccess.GetData();
+
+      mitk::ImageWriteAccessor writeAccess(imageInNode);
+      void* vPointer = writeAccess.GetData();
+
+      memcpy(vPointer, cPointer, img->width * img->height * 3);
+    }
+    catch(mitk::Exception& e)
+    {
+      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+    }
+
+
+  }
+  node->Modified();
+
+  // Tidy up
+  cvReleaseImage(&rgbOpenCVImage);
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();

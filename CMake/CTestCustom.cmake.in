@@ -95,11 +95,6 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   # Trac #1277 suppress gdcmWin32.h warnings
   ".*gdcmWin32.h.*" 
   
-  # Trac #1277, suppress ITK warnings on basic primatives such as points and vectors.
-  ".*itk::Point.*may be used uninitialized in this function.*" 
-  ".*itk::Index.*may be used uninitialized in this function.*"
-  ".*itk::Vector.*may be used uninitialized in this function.*"
-  
   # Trac #1405, various suppressions.
   ".*itkBlockMatchingMethod.*variable.*set but not used.*" 
   ".*itkBSplineTransform.txx.*variable.*set but not used.*" 
@@ -148,4 +143,12 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*niftysim.*"
   ".*niftylink.*"
   ".*openigtlink.*"
+  
+  # Trac 2137: Tidying dashboard
+  "OpenCV-build"
+  "itk.*Point.*may be used uninitialized in this function" 
+  "itk.*Index.*may be used uninitialized in this function"
+  "itk.*Vector.*may be used uninitialized in this function"
+  "itk.*Size.*may be used uninitialized in this function"
+  
   )

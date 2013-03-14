@@ -33,7 +33,8 @@ Additional Libraries
 --------------------
 
 This platform uses these libraries/projects listed below. 
-Please check the Doc/Licenses directory for licenses.
+Please check the NifTK/Doc/Licenses directory for licenses.
+These libraries should also be installed with the packaged binaries.
      
 Library : Boost
 Website : http://www.boost.org/
@@ -50,10 +51,20 @@ Website : http://www.creatis.insa-lyon.fr/software/public/Gdcm/
 Purpose : DICOM file loading library
 License : Doc/Licenses/GDCM.txt (BSD license)
 
+Library : DCMTK
+Website : http://dicom.offis.de/
+Purpose : DICOM file loading and networking
+License : Doc/Licenses/DCMTK.txt (mainly BSD, but a mixture)
+
 Library : ITK
 Website : http://www.itk.org
 Purpose : Image processing algorithms
 License : Doc/Licenses/ITK.txt (BSD license)
+
+Library : OpenCV
+Website : http://opencv.willowgarage.com/wiki/
+Purpose : Computer Vision
+License : Doc/Licences/OpenCV.txt (BSD 2-clause)
 
 Library : MITK
 Website : http://www.mitk.org

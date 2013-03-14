@@ -41,6 +41,11 @@ public:
   itkNewMacro(QmitkIGIOpenCVDataSource);
 
   /**
+   * \brief We store the node name here so other classes can refer to it.
+   */
+  static const std::string OPENCV_IMAGE_NAME;
+
+  /**
    * \brief Defined in base class, so we check that the data type is in fact
    * a mitk::IGIOpenCVDataType, returning true if it is and false otherwise.
    * \see mitk::IGIDataSource::CanHandleData()

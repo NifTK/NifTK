@@ -42,10 +42,8 @@ IGIDataSource::IGIDataSource()
 , m_NumberOfTools(0)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
-  m_RequestedTimeStamp->GetTime();
 
   m_ActualTimeStamp = igtl::TimeStamp::New();
-  m_ActualTimeStamp->GetTime();
 
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
@@ -59,7 +57,18 @@ IGIDataSource::IGIDataSource()
 IGIDataSource::~IGIDataSource()
 {
   // We don't own the m_DataStorage, so don't delete it.
+  // However, we do own any DataNodes created.
+
+  if (m_DataStorage != NULL)
+  {
+    std::vector<mitk::DataNode::Pointer>::iterator iter;
+    for (iter = m_DataNodes.begin(); iter != m_DataNodes.end(); iter++)
+    {
+      m_DataStorage->Remove(*iter);
+    }
+  }
 }
+
 
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetSavingMessages(bool isSaving)
@@ -259,7 +268,6 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 double IGIDataSource::GetCurrentTimeLag()
 {
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-  timeStamp->GetTime();
 
   double lag = 0;
   igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);
@@ -483,4 +491,110 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNodes() const
+{
+  return m_DataNodes;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetDataNodes(std::vector<mitk::DataNode::Pointer>& nodes)
+{
+  std::vector<mitk::DataNode::Pointer>::iterator iter;
+
+  for (iter = nodes.begin(); iter != nodes.end(); iter++)
+  {
+    (*iter)->SetVisibility(true);
+    (*iter)->SetOpacity(1);
+
+    if (m_DataStorage != NULL && m_DataStorage->GetNamedNode((*iter)->GetName()) == NULL)
+    {
+      m_DataStorage->Add(*iter);
+    }
+  }
+
+  this->m_DataNodes = nodes;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetDataNode(mitk::DataNode::Pointer& node)
+{
+  std::vector<mitk::DataNode::Pointer> nodes;
+  nodes.push_back(node);
+  this->SetDataNodes(nodes);
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode(const std::string& name)
+{
+  std::vector<mitk::DataNode::Pointer> allDataNodes = this->GetDataNodes();
+  std::vector<mitk::DataNode::Pointer> dataNodes;
+  mitk::DataNode::Pointer node = NULL;
+
+  if (allDataNodes.size() > 1 && name.size() > 0)
+  {
+    // See if we can filter by name
+    for (unsigned int i = 0; i < allDataNodes.size(); i++)
+    {
+      if (allDataNodes[i]->GetName() == name)
+      {
+        dataNodes.push_back(allDataNodes[i]);
+      }
+    }
+  }
+  else
+  {
+    dataNodes = allDataNodes;
+  }
+
+  if (dataNodes.size() > 1)
+  {
+    MITK_ERROR << "IGIDataSource::GetDataNode should only return a single node. This means a derived class is incorrectly implemented!" << std::endl;
+    return dataNodes;
+  }
+
+  if (dataNodes.size() == 1 && name.size() > 0 && dataNodes[0]->GetName() != name)
+  {
+    MITK_ERROR << "IGIDataSource::GetDataNode name filter was specified, and yet the existing node has the wrong name. This means a derived class is incorrectly implemented!" << std::endl;
+    return dataNodes;
+  }
+
+  if (dataNodes.size() == 1)
+  {
+    node = dataNodes[0];
+  }
+  else if (dataNodes.size() == 0)
+  {
+    // Create a new one.
+    node = mitk::DataNode::New();
+    if (name.size() > 0)
+    {
+      node->SetName(name);
+    }
+    else
+    {
+      node->SetName(this->GetName());
+    }
+
+    // Make sure we store the newly created node.
+    this->SetDataNode(node);
+  }
+  else
+  {
+    MITK_ERROR << "IGIDataSource::GetDataNode unexpected number of nodes returned. This is a bug." << std::endl;
+    return dataNodes;
+  }
+
+  // Return a single node.
+  std::vector<mitk::DataNode::Pointer> result;
+  result.push_back(node);
+  return result;
+}
+
+//-----------------------------------------------------------------------------
 } // end namespace
