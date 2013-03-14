@@ -34,31 +34,38 @@
 #include <vtkObjectFactory.h>
 
 /*!
- * \file niftkVTKIterativeClosestPointRegister.cxx
- * \page niftkVTKIterativeClosestPointRegister
- * \section niftkVTKIterativeClosestPointRegsisterSummary Uses vtkIterativeClosestPointTransform to register to VTK poly data sets
- */
+* \file niftkVTKIterativeClosestPointRegister.cxx
+* \page niftkVTKIterativeClosestPointRegister
+* \section niftkVTKIterativeClosestPointRegsisterSummary Uses vtkIterativeClosestPointTransform to register two vtk polydata sets
+*
+* This program uses vtkIterativeClosestPointTransform via niftkVTKIterativeClosestPoint.
+* Optionally the transformed source may be written to a vtkpolydata file.
+*
+* \section niftkVTKIterativeClosestPointRegisterCaveat Caveats
+* \li vtkIterativeClosestPointTransform is a point to surface iterative closest point algorithm.
+* Therefore at least one of the input polydata must contain surfaces.
+*
+*/
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Register two VTK polydata objects using iterative closest points." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -t targetPolyData.vtk -s sourcePolyData.vtk [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    --target    <filename>        Target VTK Poly Data." << std::endl;
-    std::cout << "    --source    <filename>        Source VTK Poly Data." << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    --novisualise                 Turn off visualisation" << std::endl;
-    std::cout << "    --maxpoints <pointstouse>     Set the maximum number of points to use in the registration, default is " << __NIFTTKVTKICPNPOINTS <<  std::endl;
-    std::cout << "    --maxit     <maxiterations>   Set the maximum number of iterations to use, default is " << __NIFTTKVTKICPMAXITERATIONS << std::endl << std::endl;
-    std::cout << "*** [for testing]   ***" << std::endl << std::endl;
-    std::cout << "    --rndtrans                    Transform the source with random transform prior to running" << std::endl;
-    std::cout << "    --perturb                     randomly perturb the target points prior to registration" << std::endl << std::endl;
-
-
-  }
+{
+  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Register two VTK polydata objects using iterative closest points." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -t targetPolyData.vtk -s sourcePolyData.vtk [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    --target    <filename>        Target VTK Poly Data." << std::endl;
+  std::cout << "    --source    <filename>        Source VTK Poly Data." << std::endl << std::endl;
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    --out       <filename>        Write the transformed source to file" << std::endl;
+  std::cout << "    --novisualise                 Turn off visualisation" << std::endl;
+  std::cout << "    --maxpoints <pointstouse>     Set the maximum number of points to use, default is " << __NIFTTKVTKICPNPOINTS << std::endl;
+  std::cout << "    --maxit     <maxiterations>   Set the maximum iterations to use, default is " << __NIFTTKVTKICPMAXITERATIONS << std::endl << std::endl;
+  std::cout << "*** [for testing]   ***" << std::endl << std::endl;
+  std::cout << "    --rndtrans                    Transform the source with random transform prior to running" << std::endl;
+  std::cout << "    --perturb                     randomly perturb the target points prior to registration" << std::endl << std::endl;
+}
 
 struct arguments
 {
@@ -69,64 +76,64 @@ struct arguments
   bool visualise;
   bool randomTransform;
   bool perturbTarget;
+  bool writeout;
+  std::string outPolyDataFile;
 };
 
 
 // Define interaction style
 class KeyPressInteractorStyle : public vtkInteractorStyleTrackballCamera
 {
-  public:
-    static KeyPressInteractorStyle* New();
-    vtkTypeMacro(KeyPressInteractorStyle, vtkInteractorStyleTrackballCamera);
+public:
+  static KeyPressInteractorStyle* New();
+  vtkTypeMacro(KeyPressInteractorStyle, vtkInteractorStyleTrackballCamera);
 
-    virtual void OnKeyPress() 
+  virtual void OnKeyPress()
+  {
+    // Get the keypress
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    std::string key = rwi->GetKeySym();
+
+    if(key == "Right")
     {
-      // Get the keypress
-      vtkRenderWindowInteractor *rwi = this->Interactor;
-      std::string key = rwi->GetKeySym();
-      
-      if(key == "Right")
+      if ( target->GetProperty()->GetOpacity() == 0.0 )
       {
-        if ( target->GetProperty()->GetOpacity() == 0.0 )
+        target->GetProperty()->SetOpacity(1.0);
+        source->GetProperty()->SetOpacity(0.2);
+      }
+      else
+      {
+        if ( solution->GetProperty()->GetOpacity() == 0.0 )
         {
-          target->GetProperty()->SetOpacity(1.0);
-          source->GetProperty()->SetOpacity(0.2);
-        }
-        else
-        {
-          if ( solution->GetProperty()->GetOpacity() == 0.0 )
-          {
-            solution->GetProperty()->SetOpacity(0.5);
-          }
+          solution->GetProperty()->SetOpacity(0.5);
         }
       }
-      if(key == "Left")
-      {
-        if ( solution->GetProperty()->GetOpacity() == 0.5 )
-        {
-          solution->GetProperty()->SetOpacity(0.0);
-        }
-        else
-        {
-          if ( target->GetProperty()->GetOpacity() == 1.0 )
-          {
-            target->GetProperty()->SetOpacity(0.0);
-            source->GetProperty()->SetOpacity(1.0);
-          }
-        }
-      }
-      // Forward events
-      vtkInteractorStyleTrackballCamera::OnKeyPress();
-      this->GetCurrentRenderer()->GetRenderWindow()->Render();
     }
- 
-    vtkActor *source;
-    vtkActor *solution;
-    vtkActor *target;
+    if(key == "Left")
+    {
+      if ( solution->GetProperty()->GetOpacity() == 0.5 )
+      {
+        solution->GetProperty()->SetOpacity(0.0);
+      }
+      else
+      {
+        if ( target->GetProperty()->GetOpacity() == 1.0 )
+        {
+          target->GetProperty()->SetOpacity(0.0);
+          source->GetProperty()->SetOpacity(1.0);
+        }
+      }
+    }
+    // Forward events
+    vtkInteractorStyleTrackballCamera::OnKeyPress();
+    this->GetCurrentRenderer()->GetRenderWindow()->Render();
+  }
+
+  vtkActor *source;
+  vtkActor *solution;
+  vtkActor *target;
 };
 vtkStandardNewMacro(KeyPressInteractorStyle);
-
-
 
 /**
  * \brief Run a VTK ICP on two poly data
@@ -140,11 +147,13 @@ int main(int argc, char** argv)
   args.visualise = true;
   args.randomTransform = false;
   args.perturbTarget = false;
-  
+  args.writeout = false;
+
 
   // Parse command line args
   for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
+    if(strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-Help") == 0
+        || strcmp(argv[i], "-HELP") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--h") == 0){
       Usage(argv[0]);
       return -1;
     }
@@ -159,29 +168,34 @@ int main(int argc, char** argv)
     else if(strcmp(argv[i], "--novisualise") == 0){
       args.visualise = false;
       std::cout << "Set Visualise off" << std::endl;
-    }    
+    }
     else if(strcmp(argv[i], "--maxpoints") == 0){
       args.maxPoints = atoi(argv[++i]);
       std::cout << "Set max points to " << args.maxPoints << std::endl;
-    }    
+    }
     else if(strcmp(argv[i], "--maxit") == 0){
       args.maxIterations = atoi(argv[++i]);
       std::cout << "Set max iterations to " << args.maxIterations << std::endl;
-    }    
+    }
+    else if(strcmp(argv[i], "--out") == 0){
+      args.outPolyDataFile=argv[++i];
+      std::cout << "Set --out=" << args.outPolyDataFile << std::endl;
+      args.writeout = true;
+    }
     else if(strcmp(argv[i], "--rndtrans") == 0){
       args.randomTransform = true;
       std::cout << "Set random transform on" << std::endl;
-    }    
+    }
     else if(strcmp(argv[i], "--perturb") == 0){
       args.perturbTarget = true;
       std::cout << "Set perturb target on" << std::endl;
-    }    
+    }
     else {
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
       return -1;
-    }            
+    }
   }
-  
+
   // Validate command line args
   if (args.sourcePolyDataFile.length() == 0 || args.targetPolyDataFile.length() == 0)
     {
@@ -191,42 +205,43 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
-  
+
   vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
   sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
   sourceReader->Update();
-  source->ShallowCopy (sourceReader->GetOutput()); 
+  source->ShallowCopy (sourceReader->GetOutput());
   std::cout << "Loaded PolyData:" << args.sourcePolyDataFile << std::endl;
-  
+
   vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
   targetReader->SetFileName(args.targetPolyDataFile.c_str());
   targetReader->Update();
-  target->ShallowCopy (targetReader->GetOutput()); 
+  target->ShallowCopy (targetReader->GetOutput());
   std::cout << "Loaded PolyData:" << args.targetPolyDataFile << std::endl;
-  
-  niftkVTKIterativeClosestPoint * icp = new niftkVTKIterativeClosestPoint(); 
+
+  niftkVTKIterativeClosestPoint * icp = new niftkVTKIterativeClosestPoint();
   icp->SetMaxLandmarks(args.maxPoints);
   icp->SetMaxIterations(args.maxIterations);
   icp->SetSource(source);
   icp->SetTarget(target);
- 
 
-  vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New(); 
+
+  vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
   if ( args.randomTransform )
   {
     RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 );
     TranslatePolyData ( source , StartTrans);
   }
-  if ( args.perturbTarget ) 
+  if ( args.perturbTarget )
   {
     PerturbPolyData(target, 1.0, 1.0 , 1.0);
   }
   icp->Run();
 
+  vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
+  std::cout << "The Resulting transform is " << *m << std::endl;
   //If testing with random transform put out an error metric
   if ( args.randomTransform )
   {
-    vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
     vtkSmartPointer<vtkMatrix4x4> Residual  = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->Concatenate(m);
     StartTrans->GetInverse(Residual);
@@ -237,18 +252,28 @@ int main(int argc, char** argv)
     StartPoint [2] = 160;
     StartPoint [3] = 1;
     EndPoint= Residual->MultiplyDoublePoint(StartPoint);
-    double MagError = 0 ;
-    for ( int i = 0 ; i < 4 ; i ++ )
+    double MagError = 0;
+    for ( int i = 0; i < 4; i ++ )
     {
       MagError += (EndPoint[i] - StartPoint[i]) * ( EndPoint[i] - StartPoint[i]);
     }
-    MagError = sqrt(MagError) ;
+    MagError = sqrt(MagError);
     std::cout << "Residual Error = "  << MagError << std::endl;
+    std::cout << "Residual Transform = " << *Residual;
   }
 
-  if ( args.visualise ) 
+  if ( args.writeout == true )
   {
-    
+     vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
+     icp->ApplyTransform(solution);
+     vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
+     writer->SetInput(solution);
+     writer->SetFileName(args.outPolyDataFile.c_str());
+     writer->Update();
+  }
+  if ( args.visualise )
+  {
+
     vtkSmartPointer<vtkPolyDataMapper> sourceMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     if ( source->GetNumberOfCells() == 0 )
     {
@@ -300,19 +325,19 @@ int main(int argc, char** argv)
       targetMapper->SetInputData(target);
 #endif
     }
-  
+
     vtkSmartPointer<vtkActor> targetActor = vtkSmartPointer<vtkActor>::New();
     targetActor->SetMapper(targetMapper);
     targetActor->GetProperty()->SetColor(0,1,0);
     targetActor->GetProperty()->SetPointSize(4);
     targetActor->GetProperty()->SetOpacity(0.0);
     targetActor->GetProperty()->SetRepresentationToPoints();
-  
+
     vtkSmartPointer<vtkPolyDataMapper> solutionMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
 
     icp->ApplyTransform(solution);
-    if ( solution->GetNumberOfCells() == 0 ) 
+    if ( solution->GetNumberOfCells() == 0 )
     {
       vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
 #if VTK_MAJOR_VERSION <= 5
@@ -339,7 +364,7 @@ int main(int argc, char** argv)
     solutionActor->GetProperty()->SetColor(0,0,1);
     solutionActor->GetProperty()->SetOpacity(0.0);
     solutionActor->GetProperty()->SetPointSize(3);
-  
+
     // Create a renderer, render window, and interactor
     vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
@@ -364,12 +389,6 @@ int main(int argc, char** argv)
     // Render and interact
     renderWindow->Render();
     renderWindowInteractor->Start();
-  
+
   }
-
-//  vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
- // writer->SetInput(filter->GetOutput());
- // writer->SetFileName(args.outputPolyDataFile.c_str());
- // writer->Update();
 }
-

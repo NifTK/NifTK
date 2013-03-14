@@ -30,9 +30,9 @@
  * Runs ICP registration a known data set and checks the error
  */
 
-int VTKIterativeClosestPointTest ( int argc, char * argv[] ) 
+int VTKIterativeClosestPointTest ( int argc, char * argv[] )
 {
-  if ( argc != 4 ) 
+  if ( argc != 4 )
   {
     std::cerr << "Usage VTKIterativeClosestPointTest source target" << std::endl;
     return EXIT_FAILURE;
@@ -47,10 +47,10 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
     std::cerr << "Perturbing Source" << std::endl;
     Perturb = true;
   }
-  
-  vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New(); 
-  vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New(); 
-  
+
+  vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
+
   vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
   sourceReader->SetFileName(strSource.c_str());
   sourceReader->Update();
@@ -64,11 +64,11 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   icp->SetMaxIterations(1000);
   icp->SetSource(source);
   icp->SetTarget(target);
-  
+
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   Uni_Rand->SetSeed(2);
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
-  
+
   RandomTransform ( StartTrans, 20.0 , 20.0 , 20.0, 10.0 , 10.0, 10.0 , Uni_Rand);
   TranslatePolyData ( source , StartTrans);
 
@@ -86,34 +86,34 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
     PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
   }
 
-  if ( ! icp->Run() ) 
+  if ( ! icp->Run() )
   {
     return EXIT_FAILURE;
   }
- 
+
   vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
   std::cerr << "The resulting matrix is: " << *m << std::endl;
-  
+
   vtkSmartPointer<vtkMatrix4x4> Residual  = vtkSmartPointer<vtkMatrix4x4>::New();
   StartTrans->Concatenate(m);
   StartTrans->GetInverse(Residual);
   std::cerr << "Residual " << *Residual << std::endl;
   //what's the success criteria, the residual should be very close to identity.
-  
+
   double MaxError=0.0;
   vtkSmartPointer<vtkMatrix4x4> idmat  = vtkSmartPointer<vtkMatrix4x4>::New();
-  for ( int row = 0 ; row < 4 ; row ++ ) 
+  for ( int row = 0; row < 4; row ++ )
   {
-    for ( int col = 0 ; col < 4 ; col ++ ) 
+    for ( int col = 0; col < 4; col ++ )
       {
-        MaxError = (Residual->Element[row][col] - idmat->Element[row][col] > MaxError) ? 
+        MaxError = (Residual->Element[row][col] - idmat->Element[row][col] > MaxError) ?
           Residual->Element[row][col] - idmat->Element[row][col] : MaxError;
       }
   }
   std::cerr << "Max Error = " << MaxError << std::endl;
   delete icp;
 
-  if  ( MaxError > 1e-3 ) 
+  if  ( MaxError > 1e-3 )
   {
     return EXIT_FAILURE;
   }
@@ -123,9 +123,9 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   }
 }
 
-int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] ) 
+int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
 {
-  if ( argc != 3 ) 
+  if ( argc != 3 )
   {
     std::cerr << "Usage VTKIterativeClosestPointTest source target" << std::endl;
     return EXIT_FAILURE;
@@ -133,9 +133,9 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   std::string strTarget = argv[1];
   std::string strSource = argv[2];
 
-  vtkSmartPointer<vtkPolyData> c_source = vtkSmartPointer<vtkPolyData>::New(); 
-  vtkSmartPointer<vtkPolyData> c_target = vtkSmartPointer<vtkPolyData>::New(); 
-  
+  vtkSmartPointer<vtkPolyData> c_source = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkPolyData> c_target = vtkSmartPointer<vtkPolyData>::New();
+
   vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
   sourceReader->SetFileName(strSource.c_str());
   sourceReader->Update();
@@ -144,7 +144,7 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   targetReader->SetFileName(strTarget.c_str());
   targetReader->Update();
   c_target->ShallowCopy(targetReader->GetOutput());
-  
+
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   Uni_Rand->SetSeed(2);
   //use uni_rand2 to seed Gauss_Rand
@@ -161,11 +161,11 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   icp->SetMaxLandmarks(300);
   icp->SetMaxIterations(1000);
   double *StartPoint = new double[4];
-  double * EndPoint = new double [4] ;
-  for ( int repeat = 0 ; repeat < Repeats ; repeat ++ )
+  double * EndPoint = new double [4];
+  for ( int repeat = 0; repeat < Repeats; repeat ++ )
   {
-    vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New(); 
-    vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New(); 
+    vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
     source->DeepCopy(c_source);
     target->DeepCopy(c_target);
     icp->SetSource(source);
@@ -182,9 +182,9 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     {
       return EXIT_FAILURE;
     }
- 
+
     vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
-  
+
     vtkSmartPointer<vtkMatrix4x4> Residual  = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->Concatenate(m);
     StartTrans->GetInverse(Residual);
@@ -193,22 +193,22 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     StartPoint [2] = 160;
     StartPoint [3] = 1;
     EndPoint= Residual->MultiplyDoublePoint(StartPoint);
-    double MagError = 0 ; 
-    for ( int i = 0 ; i < 4 ; i ++ ) 
+    double MagError = 0;
+    for ( int i = 0; i < 4; i ++ )
     {
       MagError += (EndPoint[i] - StartPoint[i]) * ( EndPoint[i] - StartPoint[i]);
     }
-    MagError = sqrt(MagError) ;
+    MagError = sqrt(MagError);
     Errors[repeat] = MagError;
     MeanError += MagError;
     MaxError = MagError > MaxError ? MagError : MaxError;
     std::cerr << repeat << "\t"  << MagError << std::endl;
-  
+
   }
   MeanError /= Repeats;
   std::cerr << "Mean Error = " << MeanError << std::endl;
   std::cerr << "Max Error = " << MaxError << std::endl;
-  
+
   if ( MeanError > 3.0 || MaxError > 10.0 )
   {
     return EXIT_FAILURE;
@@ -218,4 +218,3 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     return EXIT_SUCCESS;
   }
 }
-
