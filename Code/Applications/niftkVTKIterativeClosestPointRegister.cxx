@@ -32,6 +32,10 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkObjectFactory.h>
+#include <vtkDoubleArray.h>
+#include <vtkLookupTable.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkPointData.h>
 
 /*!
 * \file niftkVTKIterativeClosestPointRegister.cxx
@@ -103,17 +107,17 @@ public:
       }
       else
       {
-        if ( solution->GetProperty()->GetOpacity() == 0.0 )
+        if ( solution->GetProperty()->GetOpacity() < 1.0 )
         {
-          solution->GetProperty()->SetOpacity(0.5);
+          solution->GetProperty()->SetOpacity(solution->GetProperty()->GetOpacity() + 0.5);
         }
       }
     }
     if(key == "Left")
     {
-      if ( solution->GetProperty()->GetOpacity() == 0.5 )
+      if ( solution->GetProperty()->GetOpacity() > 0.0 )
       {
-        solution->GetProperty()->SetOpacity(0.0);
+        solution->GetProperty()->SetOpacity(solution->GetProperty()->GetOpacity() - 0.5);
       }
       else
       {
@@ -205,12 +209,18 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkPolyData> c_source = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
 
   vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
   sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
   sourceReader->Update();
   source->ShallowCopy (sourceReader->GetOutput());
   std::cout << "Loaded PolyData:" << args.sourcePolyDataFile << std::endl;
+  if ( args.randomTransform )
+  {
+    c_source->DeepCopy (source);
+  }
 
   vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
   targetReader->SetFileName(args.targetPolyDataFile.c_str());
@@ -239,6 +249,10 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
   std::cout << "The Resulting transform is " << *m << std::endl;
+  if ( args.randomTransform || args.visualise )
+  {
+    icp->ApplyTransform(solution);
+  }
   //If testing with random transform put out an error metric
   if ( args.randomTransform )
   {
@@ -260,6 +274,94 @@ int main(int argc, char** argv)
     MagError = sqrt(MagError);
     std::cout << "Residual Error = "  << MagError << std::endl;
     std::cout << "Residual Transform = " << *Residual;
+    //do a difference image
+    vtkSmartPointer<vtkDoubleArray> differences = vtkSmartPointer<vtkDoubleArray>::New();
+    differences->SetNumberOfComponents(1);
+    differences->SetName("Differences");
+   
+    double min_dist=0;
+    double max_dist=0;
+    for ( int i = 0 ; i < c_source->GetNumberOfPoints() ; i ++ ) 
+    {
+      double p[3];
+      solution->GetPoint(i,p);
+      double q[3];
+      c_source->GetPoint(i,q);
+      double dist = 0;
+
+      for ( int j = 0 ; j < 3 ; j++ )
+      {
+        dist += (p[j]-q[j])*(p[j]-q[j]);
+      }
+      dist = sqrt(dist);
+      //differences->InsertNextTupleValue(&dist);
+      differences->InsertNextValue(dist);
+      if ( i == 0 )
+      {
+        min_dist=dist;
+        max_dist=dist;
+      }
+      else
+      {
+        min_dist = dist < min_dist ? dist : min_dist;
+        max_dist = dist > max_dist ? dist : max_dist;
+      }
+    }
+
+    vtkSmartPointer<vtkLookupTable> colorLookupTable = vtkSmartPointer<vtkLookupTable>::New();
+    std::cerr << "Max Error = " << max_dist << " mm. Min Error = " << min_dist << " mm." << std::endl;
+    colorLookupTable->SetTableRange(min_dist, max_dist);
+    colorLookupTable->Build();
+
+    vtkSmartPointer<vtkUnsignedCharArray> colors =vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3);
+    colors->SetName("Colors");
+  
+    unsigned char color[3];
+    double dcolor[3];
+
+    for ( int i = 0 ; i < c_source->GetNumberOfPoints() ; i ++ )
+    {
+      colorLookupTable->GetColor(differences->GetValue(i),dcolor);
+      for ( int j = 0 ; j < 3 ; j++ )
+      {
+        color[j] = static_cast<unsigned char>(255.0 * dcolor[j]);
+      }
+      colors->InsertNextTupleValue(color);
+    }
+
+    colorLookupTable->GetColor(min_dist,dcolor);
+    for ( int i = 0 ; i < 3 ; i ++ )
+    {
+      color[i] = static_cast<unsigned char>(255.0 * dcolor[i]);
+    }
+    std::cout << "Min Error Color = " << static_cast<unsigned int>(color[0]) << " : " \
+      << static_cast<unsigned int> (color[1]) << " : " << static_cast<unsigned int>(color[2]) \
+      << std::endl;
+
+    colorLookupTable->GetColor(max_dist,dcolor);
+    for ( int i = 0 ; i < 3 ; i ++ )
+    {
+      color[i] = static_cast<unsigned char>(255.0 * dcolor[i]);
+    }
+    std::cout << "Max Error Color = " << static_cast<unsigned int>(color[0]) << " : " \
+      << static_cast<unsigned int> (color[1]) << " : " << static_cast<unsigned int>(color[2]) \
+      << std::endl;
+
+    colorLookupTable->GetColor( (max_dist + min_dist) / 2 ,dcolor);
+    for ( int i = 0 ; i < 3 ; i ++ )
+    {
+      color[i] = static_cast<unsigned char>(255.0 * dcolor[i]);
+    }
+    std::cout << "Mid Error Color = " << static_cast<unsigned int>(color[0]) << " : " \
+      << static_cast<unsigned int> (color[1]) << " : " << static_cast<unsigned int>(color[2]) \
+      << std::endl;
+
+
+
+    c_source->GetPointData()->SetScalars(colors);
+    solution->GetPointData()->SetScalars(colors);
+
   }
 
   if ( args.writeout == true )
@@ -334,9 +436,6 @@ int main(int argc, char** argv)
     targetActor->GetProperty()->SetRepresentationToPoints();
 
     vtkSmartPointer<vtkPolyDataMapper> solutionMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
-
-    icp->ApplyTransform(solution);
     if ( solution->GetNumberOfCells() == 0 )
     {
       vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
