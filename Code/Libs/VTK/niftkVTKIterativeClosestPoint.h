@@ -39,17 +39,34 @@ public:
   niftkVTKIterativeClosestPoint();
   ~niftkVTKIterativeClosestPoint();
   /* \brief
-  * Perform a vtkIterative closest point registration on the two data sets
+  * Perform a vtk Iterative closest point registration on the two data sets
   */
   bool Run();
 
+  /* 
+   * \brief returns the transform to move the source to the target
+   */
   vtkSmartPointer<vtkMatrix4x4> GetTransform();
+  /* 
+   * \brief Transform the source to the target, placing the result in solution
+   */
   bool ApplyTransform(vtkPolyData * solution);
+  /* 
+   * \brief Set the source poly data
+   */
   void SetSource (vtkSmartPointer<vtkPolyData>);
+  /*
+   * \brief Set the target polydata
+   */
   void SetTarget (vtkSmartPointer<vtkPolyData>);
+  /*
+   * \brief Set the maximum number of landmarks, NOT WORKING
+   */
   void SetMaxLandmarks ( int);
+  /* 
+   * \brief Set the maximum number of iterations.
+   */
   void SetMaxIterations(int);
-
 
 private:
   vtkSmartPointer<vtkIterativeClosestPointTransform>  m_Icp;

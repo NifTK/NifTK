@@ -23,6 +23,11 @@
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkBoxMuellerRandomSequence.h"
 #include "vtkMinimalStandardRandomSequence.h"
+#include <vtkDoubleArray.h>
+#include <vtkLookupTable.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkPointData.h>
+
 #include "boost/nondet_random.hpp"
 
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
@@ -249,5 +254,69 @@ double NormalisedRNG (vtkRandomSequence* rng)
   std::cerr << "WARNING: Unknown random number generator encountered, can't normalise." << std::endl;
   return rng->GetValue();
 }
+
+bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
+{
+  if ( source->GetNumberOfPoints() != target->GetNumberOfPoints() )
+  {
+    return false;
+  }
+  vtkSmartPointer<vtkDoubleArray> differences = vtkSmartPointer<vtkDoubleArray>::New();
+  differences->SetNumberOfComponents(1);
+  differences->SetName("Differences");
+  double min_dist=0;
+  double max_dist=0;
+  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ )
+  {
+    double p[3];
+    source->GetPoint(i,p);
+    double q[3];
+    target->GetPoint(i,q);
+    double dist = 0;
+    for ( int j = 0 ; j < 3 ; j++ )
+    {
+      dist += (p[j]-q[j])*(p[j]-q[j]);
+    }
+    dist = sqrt(dist);
+    differences->InsertNextValue(dist);
+    if ( i == 0 )
+    {
+      min_dist=dist;
+      max_dist=dist;
+    }
+    else
+    {
+      min_dist = dist < min_dist ? dist : min_dist;
+      max_dist = dist > max_dist ? dist : max_dist;
+    }
+   }
+   vtkSmartPointer<vtkLookupTable> colorLookupTable = vtkSmartPointer<vtkLookupTable>::New();
+   std::cerr << "Max Error = " << max_dist << " mm. Min Error = " << min_dist << " mm." << std::endl;
+   colorLookupTable->SetTableRange(min_dist, max_dist);
+   colorLookupTable->Build();
+   vtkSmartPointer<vtkUnsignedCharArray> colors =vtkSmartPointer<vtkUnsignedCharArray>::New();
+   colors->SetNumberOfComponents(3);
+   colors->SetName("Colors");
+
+   unsigned char color[3];
+   double dcolor[3];
+
+   for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ )
+   {
+     colorLookupTable->GetColor(differences->GetValue(i),dcolor);
+     for ( int j = 0 ; j < 3 ; j++ )
+     {
+       color[j] = static_cast<unsigned char>(255.0 * dcolor[j]);
+     }
+     colors->InsertNextTupleValue(color);
+   }
+
+   source->GetPointData()->SetScalars(colors);
+   target->GetPointData()->SetScalars(colors);
+   return true;
+}
+                           
+
+                                                                      
 
 #endif
