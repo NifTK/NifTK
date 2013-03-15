@@ -286,7 +286,7 @@ private:
                  );
 
   void SetActiveGeometry();
-  int Index(int index) const
+  inline int Index(int index) const
   {
     return (index << 1) + m_IsBound;
   }
@@ -308,17 +308,13 @@ private:
   double                               m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double                               m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  int                                  m_CurrentSliceNumbers[2];          // One for unbound, then for bound.
-  int                                  m_CurrentTimeSliceNumbers[2];      // One for unbound, then for bound.
-  double                               m_CurrentMagnificationFactors[2];  // One for unbound, then for bound.
-  MIDASOrientation                     m_CurrentOrientations[2];          // One for unbound, then for bound.
-  MIDASView                            m_CurrentViews[2];                 // One for unbound, then for bound.
+  MIDASView                            m_CurrentView;
+  MIDASOrientation                     m_CurrentOrientation;
 
-  int                                  m_PreviousSliceNumbers[6];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  int                                  m_PreviousTimeSliceNumbers[6];     // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  double                               m_PreviousMagnificationFactors[6]; // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  MIDASOrientation                     m_PreviousOrientations[6];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  MIDASView                            m_PreviousViews[6];                // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  int                                  m_PreviousSliceNumbers[8];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  int                                  m_PreviousTimeSliceNumbers[8];     // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  double                               m_PreviousMagnificationFactors[8]; // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
+  bool                                 m_Initialised[8];
 
   bool                                 m_NavigationControllerEventListening;
   bool                                 m_RememberViewSettingsPerOrientation;

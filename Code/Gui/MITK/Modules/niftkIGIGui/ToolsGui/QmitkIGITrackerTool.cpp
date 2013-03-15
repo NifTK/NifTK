@@ -50,10 +50,11 @@ QmitkIGITrackerTool::QmitkIGITrackerTool()
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+  this->InitPreMatrix();
 }
 
 //-----------------------------------------------------------------------------
-QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
+QmitkIGITrackerTool::QmitkIGITrackerTool(NiftyLinkSocketObject * socket)
 : QmitkIGINiftyLinkDataSource(socket)
 , m_UseICP(false)
 , m_PointSetsInitialized(false)
@@ -71,6 +72,7 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(OIGTLSocketObject * socket)
 {
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+  this->InitPreMatrix();
 }
 
 //-----------------------------------------------------------------------------
@@ -90,11 +92,11 @@ QmitkIGITrackerTool::~QmitkIGITrackerTool()
 }
 
 //-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
+void QmitkIGITrackerTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
 {
-  if (msg->getMessageType() == QString("STRING"))
+  if (msg->GetMessageType() == QString("STRING"))
   {
-    QString str = static_cast<OIGTLStringMessage::Pointer>(msg)->getString();
+    QString str = static_cast<NiftyLinkStringMessage::Pointer>(msg)->GetString();
     if (str.isEmpty() || str.isNull())
     {
       return;
@@ -102,21 +104,21 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
     this->ProcessInitString(str);
   }
   else if (msg.data() != NULL &&
-      (msg->getMessageType() == QString("TRANSFORM") || msg->getMessageType() == QString("TDATA"))
+      (msg->GetMessageType() == QString("TRANSFORM") || msg->GetMessageType() == QString("TDATA"))
      )
   {
     //Check the tool name
-    OIGTLTrackingDataMessage::Pointer trMsg;
-    trMsg = static_cast<OIGTLTrackingDataMessage::Pointer>(msg);
+    NiftyLinkTrackingDataMessage::Pointer trMsg;
+    trMsg = static_cast<NiftyLinkTrackingDataMessage::Pointer>(msg);
 
-    QString messageToolName = trMsg->getTrackerToolName();
+    QString messageToolName = trMsg->GetTrackerToolName();
     QString sourceToolName = QString::fromStdString(this->GetDescription());
     if ( messageToolName == sourceToolName ) 
     {
       QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
       wrapper->SetMessage(msg.data());
       wrapper->SetDataSource("QmitkIGITrackerTool");
-      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->getTimeCreated()));
+      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->GetTimeCreated()));
       wrapper->SetDuration(1000000000); // nanoseconds
 
       this->AddData(wrapper.GetPointer());
@@ -126,20 +128,20 @@ void QmitkIGITrackerTool::InterpretMessage(OIGTLMessage::Pointer msg)
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::ProcessInitString(QString str)
 {
-  QString type = XMLBuilderBase::parseDescriptorType(str);
+  QString type = XMLBuilderBase::ParseDescriptorType(str);
   if (type == QString("TrackerClientDescriptor"))
   {
     m_InitString = str;
     ClientDescriptorXMLBuilder* clientInfo = new TrackerClientDescriptor();
-    clientInfo->setXMLString(str);
+    clientInfo->SetXMLString(str);
 
-    if (!clientInfo->isMessageValid())
+    if (!clientInfo->IsMessageValid())
     {
       delete clientInfo;
       return;
     }
     //A single source can have multiple tracked tools. 
-    QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->getTrackerTools();
+    QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->GetTrackerTools();
     QString tool;
     this->SetNumberOfTools(trackerTools.length());
     std::list<std::string> StringList;
@@ -180,10 +182,10 @@ bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
     QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
     if (dataType.IsNotNull())
     {
-      OIGTLMessage* pointerToMessage = dataType->GetMessage();
+      NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
       if (pointerToMessage != NULL
-          && (pointerToMessage->getMessageType() == QString("TRANSFORM")
-              || pointerToMessage->getMessageType() == QString("TDATA"))
+          && (pointerToMessage->GetMessageType() == QString("TRANSFORM")
+              || pointerToMessage->GetMessageType() == QString("TDATA"))
           )
       {
         canHandle = true;
@@ -204,7 +206,7 @@ bool QmitkIGITrackerTool::Update(mitk::IGIDataType* data)
   if (dataType.IsNotNull())
   {
 
-    OIGTLMessage* pointerToMessage = dataType->GetMessage();
+    NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
     if (pointerToMessage != NULL)
     {
       this->HandleTrackerData(pointerToMessage);
@@ -221,14 +223,14 @@ bool QmitkIGITrackerTool::Update(mitk::IGIDataType* data)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
+void QmitkIGITrackerTool::HandleTrackerData(NiftyLinkMessage* msg)
 {
-  if (msg->getMessageType() == QString("TDATA"))
+  if (msg->GetMessageType() == QString("TDATA"))
   {
-    OIGTLTrackingDataMessage* trMsg;
-    trMsg = static_cast<OIGTLTrackingDataMessage*>(msg);
+    NiftyLinkTrackingDataMessage* trMsg;
+    trMsg = static_cast<NiftyLinkTrackingDataMessage*>(msg);
 
-    QString toolName = trMsg->getTrackerToolName();
+    QString toolName = trMsg->GetTrackerToolName();
 
     mitk::DataStorage* ds = this->GetDataStorage();
     if (ds == NULL)
@@ -239,7 +241,7 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
     }
 
     float   inputTransformMat[4][4];
-    trMsg->getMatrix(inputTransformMat);
+    trMsg->GetMatrix(inputTransformMat);
 
     if ( m_LinkCamera )
     {
@@ -403,30 +405,81 @@ void QmitkIGITrackerTool::HandleTrackerData(OIGTLMessage* msg)
      data->GetGeometry()->Modified();
      data->Modified();
 
-    } // foreach node
+    } // foreach AssociatedTool
+    ///---
+    foreach ( tempNode, m_PreMatrixAssociatedTools.values(toolName))
+    {
+
+     if (tempNode.IsNull())
+     {
+       QString message = QObject::tr("ERROR: QmitkIGITrackerTool, could not find node %1").arg(toolName);
+       emit StatusUpdate(message);
+       return;
+     }
+    
+     // Get the transform from data
+     mitk::BaseData * data = tempNode->GetData();
+
+     //In world coordinates X is up, in lap Y is up, so rotate -90 around z and
+     //put it 400 in front of the camera
+     itk::Matrix<double,4,4> InMatrix;
+     for ( int row = 0 ; row < 4 ; row ++ ) 
+     {
+       for ( int col = 0 ; col < 4 ; col ++ )
+       {
+         InMatrix[row][col]=inputTransformMat[row][col];
+       }
+     }
+     itk::Matrix<double,4,4> AfterMatrix =InMatrix *  m_PreMatrix ;
+   
+     static itk::Matrix<float,3,3> m;
+     for ( int row = 0 ; row < 3 ; row ++ ) 
+     {
+       for ( int col = 0 ; col < 3 ; col ++ ) 
+       {
+         m[row][col]=AfterMatrix[row][col];
+       }
+     }
+
+     mitk::AffineTransform3D::Pointer affineTransform =mitk::AffineTransform3D::New(); 
+     affineTransform->SetMatrix(m);
+     mitk::Vector3D pos;
+     for ( int i = 0 ; i < 3 ; i ++ )
+     {
+       pos[i] = AfterMatrix[i][3];
+     }
+     affineTransform->SetOffset(pos);
+     affineTransform->Modified();
+     data->GetGeometry()->SetIndexToWorldTransform(affineTransform);
+
+     data->GetGeometry()->TransferItkToVtkTransform(); // update VTK Transform for rendering too
+     data->GetGeometry()->Modified();
+     data->Modified();
+
+    } // foreach CameraAssociated node
   } // if transform data
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
+void QmitkIGITrackerTool::DisplayTrackerData(NiftyLinkMessage* msg)
 {
-  if (msg->getMessageType() == QString("TRANSFORM"))
+  if (msg->GetMessageType() == QString("TRANSFORM"))
   {
-    OIGTLTransformMessage* trMsg;
-    trMsg = static_cast<OIGTLTransformMessage*>(msg);
+    NiftyLinkTransformMessage* trMsg;
+    trMsg = static_cast<NiftyLinkTransformMessage*>(msg);
 
     if (trMsg != NULL)
     {
       // Print stuff
       QString header;
       header.append("Message from: ");
-      header.append(trMsg->getHostName());
+      header.append(trMsg->GetHostName());
       header.append(", messageId=");
-      header.append(QString::number(trMsg->getId()));
+      header.append(QString::number(trMsg->GetId()));
       header.append("\n");
 
-      QString matrix = trMsg->getMatrixAsString();
+      QString matrix = trMsg->GetMatrixAsString();
       matrix.append("\n");
 
       QString message = header + matrix;
@@ -434,24 +487,24 @@ void QmitkIGITrackerTool::DisplayTrackerData(OIGTLMessage* msg)
       emit StatusUpdate(message);
     }
   }
-  else if (msg->getMessageType() == QString("TDATA"))
+  else if (msg->GetMessageType() == QString("TDATA"))
   {
-    OIGTLTrackingDataMessage* trMsg;
-    trMsg = static_cast<OIGTLTrackingDataMessage*>(msg);
+    NiftyLinkTrackingDataMessage* trMsg;
+    trMsg = static_cast<NiftyLinkTrackingDataMessage*>(msg);
 
     if (trMsg != NULL)
     {
       // Print stuff
       QString header;
       header.append("Message from: ");
-      header.append(trMsg->getHostName());
+      header.append(trMsg->GetHostName());
       header.append(", messageId=");
-      header.append(QString::number(trMsg->getId()));
+      header.append(QString::number(trMsg->GetId()));
       header.append(", toolId=");
-      header.append(trMsg->getTrackerToolName());
+      header.append(trMsg->GetTrackerToolName());
       header.append("\n");
 
-      QString matrix = trMsg->getMatrixAsString();
+      QString matrix = trMsg->GetMatrixAsString();
       matrix.append("\n");
 
       QString message = header + matrix;
@@ -473,10 +526,10 @@ void QmitkIGITrackerTool::EnableTool(const QString &toolName, const bool& enable
 //  attachToolCmd.addParameter("ToolName", "QString", toolName);
 //  attachToolCmd.addParameter("Enabled", "bool", QString::number(enable));
 //
-//  OIGTLStringMessage::Pointer cmdMsg(new OIGTLStringMessage());
-//  cmdMsg->setString(attachToolCmd.getXMLAsString());
+//  NiftyLinkStringMessage::Pointer cmdMsg(new NiftyLinkStringMessage());
+//  cmdMsg->setString(attachToolCmd.GetXMLAsString());
 //
-//  qDebug() << "TODO: send message " << attachToolCmd.getXMLAsString();
+//  qDebug() << "TODO: send message " << attachToolCmd.GetXMLAsString();
 
   QString statusMessage = QString("STATUS: tool ") + toolName + QString(", set to enabled=") + QString::number(enable) + QString("\n");
   emit StatusUpdate(statusMessage);
@@ -488,10 +541,10 @@ void QmitkIGITrackerTool::GetToolPosition(const QString &toolName)
 {
   if (m_EnabledTools.contains(toolName) && m_EnabledTools.value(toolName))
   {
-//    OIGTLMessage::Pointer getPos;
+//    NiftyLinkMessage::Pointer getPos;
 //    getPos.reset();
 //
-//    OIGTLTrackingDataMessage::Create_GET(getPos);
+//    NiftyLinkTrackingDataMessage::Create_GET(getPos);
 //
 //    qDebug() << "TODO: send get current position message " << toolName;
 
@@ -504,7 +557,6 @@ void QmitkIGITrackerTool::GetToolPosition(const QString &toolName)
 void QmitkIGITrackerTool::GetCurrentTipPosition()
 {
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-  timeNow->GetTime();
 
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
   mitk::IGIDataType* data = this->RequestData(idNow);
@@ -515,14 +567,14 @@ void QmitkIGITrackerTool::GetCurrentTipPosition()
      if (dataType.IsNotNull())
      {
 
-        OIGTLMessage* pointerToMessage = dataType->GetMessage();
+        NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
         if (pointerToMessage != NULL)
         {
           
-          OIGTLTrackingDataMessage* trMsg;
-          trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
+          NiftyLinkTrackingDataMessage* trMsg;
+          trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
           float inputTransformMat[4][4];
-          trMsg->getMatrix(inputTransformMat);
+          trMsg->GetMatrix(inputTransformMat);
           qDebug() << inputTransformMat[0][3] << " " << inputTransformMat[1][3] << " " << inputTransformMat[2][3];
           mitk::PointSet::PointType point;
           point[0]=inputTransformMat[0][3];
@@ -578,6 +630,49 @@ QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString to
 {
   return m_AssociatedTools.values(toolName);
 }
+//---------------------------------------------------------------------------
+bool QmitkIGITrackerTool::AddPreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_PreMatrixAssociatedTools.values(toolName);
+  if ( AlreadyAddedNodes.contains(dataNode) )
+  {
+    return false;
+  }
+  else
+  {
+    m_PreMatrixAssociatedTools.insertMulti(toolName,dataNode);
+    return true;
+  }
+}
+
+//---------------------------------------------------------------------------
+bool QmitkIGITrackerTool::RemovePreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
+{
+  QList<mitk::DataNode::Pointer> AlreadyAddedNodes = m_PreMatrixAssociatedTools.values(toolName);
+  int RemovedNodes = AlreadyAddedNodes.removeAll(dataNode);
+
+  m_PreMatrixAssociatedTools.remove(toolName);
+  mitk::DataNode::Pointer tempNode = mitk::DataNode::New();
+  foreach ( tempNode, AlreadyAddedNodes ) 
+  {
+    m_PreMatrixAssociatedTools.insertMulti(toolName,tempNode);
+  }
+  if ( RemovedNodes != 1 ) 
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
+
+//---------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetPreMatrixDataNode(const QString toolName)
+{
+  return m_PreMatrixAssociatedTools.values(toolName);
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -823,10 +918,10 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
   QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
   if (dataType.IsNotNull())
   {
-    OIGTLMessage* pointerToMessage = dataType->GetMessage();
+    NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
     if (pointerToMessage != NULL)
     {
-      OIGTLTrackingDataMessage* trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
+      NiftyLinkTrackingDataMessage* trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
         QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->GetDescription());
@@ -836,7 +931,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
           QString fileName =  directoryPath + QDir::separator() + tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
 
           float matrix[4][4];
-          trMsg->getMatrix(matrix);
+          trMsg->GetMatrix(matrix);
 
           QFile matrixFile(fileName);
           matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -925,21 +1020,34 @@ bool QmitkIGITrackerTool::GetCameraLink()
 {
    return m_LinkCamera;
 }
+//----------------------------------------------------------------------------
+void QmitkIGITrackerTool::InitPreMatrix()
+{
+     m_PreMatrix[0][0]=1.0;
+     m_PreMatrix[0][1]=0.0;
+     m_PreMatrix[0][2]=0.0;
+     m_PreMatrix[0][3]=0.0;
+
+     m_PreMatrix[1][0]=0.0;
+     m_PreMatrix[1][1]=1.0;
+     m_PreMatrix[1][2]=0.0;
+     m_PreMatrix[1][3]=0.0;
+
+     m_PreMatrix[2][0]=0.0;
+     m_PreMatrix[2][1]=0.0;
+     m_PreMatrix[2][2]=1.0;
+     m_PreMatrix[2][3]=-380.0;
+
+     m_PreMatrix[3][0]=0.0;
+     m_PreMatrix[3][1]=0.0;
+     m_PreMatrix[3][2]=0.0;
+     m_PreMatrix[3][3]=1.0;
+
+
+}
 //------------------------------------------------------------------------------
 void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Pointer dataNode)
 {
-/*This does not work, don't know why not. Anyway It looks like I can't set the Landmark
- * Transform, other than by using source and target fiducials. Lets try and keep this as simple 
- * as possible.
- * Want the transform to be the existing position of some datanode (maybe that should be passed)
- * divided by the current tracking transform. 
- * Find this then multiply a set of three fiducial points by it (1,0,0)(0,1,0) and (0,0,1);
- * Register these to set the right transform
- * Then turn on fid tracking
- * mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::Pointer LandmarkTransform 
-    =  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::New();
-  LandmarkTransform = m_FiducialRegistrationFilter->GetLandmarkTransform();
- */ 
   itk::Matrix<double,4,4> Tracking;
   itk::Matrix<double,4,4> AssociatedNode;
   itk::Matrix<double,4,4> Out;
@@ -967,7 +1075,6 @@ void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Po
   AssociatedNodeTransform = dataNode->GetData()->GetGeometry()->GetIndexToWorldTransform();
 
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-  timeNow->GetTime();
 
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
   mitk::IGIDataType* data = this->RequestData(idNow);
@@ -979,13 +1086,13 @@ void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Po
      if (dataType.IsNotNull())
      {
 
-        OIGTLMessage* pointerToMessage = dataType->GetMessage();
+        NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
         if (pointerToMessage != NULL)
         {
           
-          OIGTLTrackingDataMessage* trMsg;
-          trMsg = static_cast<OIGTLTrackingDataMessage*>(pointerToMessage);
-          trMsg->getMatrix(inputTransformMat);
+          NiftyLinkTrackingDataMessage* trMsg;
+          trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
+          trMsg->GetMatrix(inputTransformMat);
         }
      }
   }
@@ -1057,12 +1164,19 @@ void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Po
     point22[i] = uy1[i];
     point32[i] = uz1[i];
   }
+  
   SourcePointSet->InsertPoint(0,point11);
   SourcePointSet->InsertPoint(1,point21);
   SourcePointSet->InsertPoint(2,point31);
   TargetPointSet->InsertPoint(0,point12);
   TargetPointSet->InsertPoint(1,point22);
   TargetPointSet->InsertPoint(2,point32);
+ /* SourcePointSet->InsertPoint(0,point12);
+  SourcePointSet->InsertPoint(1,point22);
+  SourcePointSet->InsertPoint(2,point32);
+  TargetPointSet->InsertPoint(0,point11);
+  TargetPointSet->InsertPoint(1,point21);
+  TargetPointSet->InsertPoint(2,point31);*/
 
   qDebug() << point11[0] << " " << point11[1] << " " << point11[2];
   qDebug() << point21[0] << " " << point21[1] << " " << point21[2];

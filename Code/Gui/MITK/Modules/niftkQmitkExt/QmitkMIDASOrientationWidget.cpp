@@ -16,6 +16,8 @@
 #include <QtDebug>
 #include <QButtonGroup>
 
+#include <mitkLogMacros.h>
+
 QmitkMIDASOrientationWidget::QmitkMIDASOrientationWidget(QWidget *parent)
 {
   m_CurrentView = MIDAS_VIEW_UNKNOWN;
@@ -44,15 +46,16 @@ void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
   m_ButtonGroup->addButton(m_SagittalRadioButton);
   m_ButtonGroup->addButton(m_OtherRadioButton);
 
-  connect(m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialRadioButtonPressed(bool)));
-  connect(m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalRadioButtonPressed(bool)));
-  connect(m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonPressed(bool)));
-  connect(m_OtherRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOtherRadioButtonPressed(bool)));
+  connect(m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialRadioButtonToggled(bool)));
+  connect(m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalRadioButtonToggled(bool)));
+  connect(m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonToggled(bool)));
+  connect(m_OtherRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOtherRadioButtonToggled(bool)));
   connect(m_OtherOrientationComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnComboBoxIndexChanged(int)));
 }
 
-void QmitkMIDASOrientationWidget::SetBlockSignals(bool block)
+bool QmitkMIDASOrientationWidget::BlockSignals(bool block)
 {
+  bool wasBlocked = m_AxialRadioButton->signalsBlocked();
   m_AxialRadioButton->blockSignals(block);
   m_AxialLabel->blockSignals(block);
   m_CoronalRadioButton->blockSignals(block);
@@ -61,6 +64,7 @@ void QmitkMIDASOrientationWidget::SetBlockSignals(bool block)
   m_SagittalLabel->blockSignals(block);
   m_OtherRadioButton->blockSignals(block);
   m_OtherOrientationComboBox->blockSignals(block);
+  return wasBlocked;
 }
 
 void QmitkMIDASOrientationWidget::SetEnabled(bool enabled)
@@ -83,7 +87,7 @@ void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
     return;
   }
 
-  this->SetBlockSignals(true);
+  bool wasBlocked = this->BlockSignals(true);
 
   switch(view)
   {
@@ -114,46 +118,56 @@ void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
     break;
   default:
     qWarning() << "QmitkMIDASOrientationWidget::SetToView, unrecognised view, can't set radio button";
+    break;
   }
 
   m_CurrentView = view;
 
-  this->SetBlockSignals(false);
+  this->BlockSignals(wasBlocked);
 }
 
-void QmitkMIDASOrientationWidget::OnAxialRadioButtonPressed(bool b)
+void QmitkMIDASOrientationWidget::OnAxialRadioButtonToggled(bool checked)
 {
-  this->SetBlockSignals(true);
-  m_OtherOrientationComboBox->setCurrentIndex(0);
-  m_CurrentView = MIDAS_VIEW_AXIAL;
-  this->SetBlockSignals(false);
+  if (checked)
+  {
+    bool wasBlocked = this->BlockSignals(true);
+    m_OtherOrientationComboBox->setCurrentIndex(0);
+    m_CurrentView = MIDAS_VIEW_AXIAL;
+    this->BlockSignals(wasBlocked);
 
-  emit ViewChanged(m_CurrentView);
+    emit ViewChanged(m_CurrentView);
+  }
 }
 
-void QmitkMIDASOrientationWidget::OnCoronalRadioButtonPressed(bool b)
+void QmitkMIDASOrientationWidget::OnCoronalRadioButtonToggled(bool checked)
 {
-  this->SetBlockSignals(true);
-  m_OtherOrientationComboBox->setCurrentIndex(0);
-  m_CurrentView = MIDAS_VIEW_CORONAL;
-  this->SetBlockSignals(false);
+  if (checked)
+  {
+    bool wasBlocked = this->BlockSignals(true);
+    m_OtherOrientationComboBox->setCurrentIndex(0);
+    m_CurrentView = MIDAS_VIEW_CORONAL;
+    this->BlockSignals(wasBlocked);
 
-  emit ViewChanged(m_CurrentView);
+    emit ViewChanged(m_CurrentView);
+  }
 }
 
-void QmitkMIDASOrientationWidget::OnSagittalRadioButtonPressed(bool b)
+void QmitkMIDASOrientationWidget::OnSagittalRadioButtonToggled(bool checked)
 {
-  this->SetBlockSignals(true);
-  m_OtherOrientationComboBox->setCurrentIndex(0);
-  m_CurrentView = MIDAS_VIEW_SAGITTAL;
-  this->SetBlockSignals(false);
+  if (checked)
+  {
+    bool wasBlocked = this->BlockSignals(true);
+    m_OtherOrientationComboBox->setCurrentIndex(0);
+    m_CurrentView = MIDAS_VIEW_SAGITTAL;
+    this->BlockSignals(wasBlocked);
 
-  emit ViewChanged(m_CurrentView);
+    emit ViewChanged(m_CurrentView);
+  }
 }
 
-void QmitkMIDASOrientationWidget::OnOtherRadioButtonPressed(bool b)
+void QmitkMIDASOrientationWidget::OnOtherRadioButtonToggled(bool checked)
 {
-  if (b)
+  if (checked)
   {
     this->m_OtherOrientationComboBox->setCurrentIndex(1);
   }

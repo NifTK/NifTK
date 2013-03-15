@@ -42,10 +42,8 @@ IGIDataSource::IGIDataSource()
 , m_NumberOfTools(0)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
-  m_RequestedTimeStamp->GetTime();
 
   m_ActualTimeStamp = igtl::TimeStamp::New();
-  m_ActualTimeStamp->GetTime();
 
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
@@ -270,7 +268,6 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 double IGIDataSource::GetCurrentTimeLag()
 {
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-  timeStamp->GetTime();
 
   double lag = 0;
   igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);

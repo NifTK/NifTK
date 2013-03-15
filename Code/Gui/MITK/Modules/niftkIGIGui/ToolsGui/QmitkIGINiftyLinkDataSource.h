@@ -17,7 +17,7 @@
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGIDataSource.h"
-#include <OIGTLSocketObject.h>
+#include <NiftyLinkSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
 
 /**
@@ -37,12 +37,12 @@ public:
   /**
    * \brief Sets the socket pointer.
    */
-  itkSetObjectMacro(Socket, OIGTLSocketObject);
+  itkSetObjectMacro(Socket, NiftyLinkSocketObject);
 
   /**
    * \brief Gets the socket pointer.
    */
-  itkGetConstMacro(Socket, OIGTLSocketObject*);
+  itkGetConstMacro(Socket, NiftyLinkSocketObject*);
 
   /**
    * \brief Sets the Client Descriptor XML.
@@ -67,17 +67,17 @@ public:
   /**
    * \brief If there is a socket associated with this tool, will send the message.
    */
-  void SendMessage(OIGTLMessage::Pointer msg);
+  void SendMessage(NiftyLinkMessage::Pointer msg);
 
   /**
    * \brief Get the Associated Socket
    */
-  OIGTLSocketObject* GetSocket();
+  NiftyLinkSocketObject* GetSocket();
 
 protected:
 
   QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
-  QmitkIGINiftyLinkDataSource(OIGTLSocketObject *socket); // Purposefully hidden.
+  QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *socket); // Purposefully hidden.
   virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
   QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
@@ -103,11 +103,11 @@ protected slots:
   /**
    * \brief Main message handler routine for this tool, that subclasses must implement.
    */
-  virtual void InterpretMessage(OIGTLMessage::Pointer msg) {};
+  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg) {};
 
 private:
 
-  OIGTLSocketObject           *m_Socket;
+  NiftyLinkSocketObject           *m_Socket;
   ClientDescriptorXMLBuilder  *m_ClientDescriptor;
   bool                        m_UsingSomeoneElsesSocket;
 

@@ -37,8 +37,8 @@ public:
   /// \brief Creates the GUI.
   void setupUi(QWidget*);
 
-  /// \brief Calls setBlockSignals(block) on all contained widgets.
-  void SetBlockSignals(bool block);
+  /// \brief Calls blockSignals(block) on all contained widgets.
+  bool BlockSignals(bool block);
 
   /// \brief Calls setEnabled(enabled) on all contained widgets.
   void SetEnabled(bool enabled);

@@ -15,14 +15,18 @@
 MITK_CREATE_MODULE(niftkNVidiaGui
   EXPORT_DEFINE NIFTKNVIDIAGUI_EXPORT
   INCLUDE_DIRS ToolsGui
-  DEPENDS niftkIGIGui niftkNVidia 
+  DEPENDS niftkIGIGui niftkNVidia
   PACKAGE_DEPENDS QT
   QT_MODULE 
 )
 
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
+INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
+
+# stuffing this into DEPENDS above doesnt work for some reason
 TARGET_LINK_LIBRARIES(niftkNVidiaGui
-  ${NVAPI_LIBRARY}
   niftknvapi
+  mitkOpenCVVideoSupport
   )
   
 IF(BUILD_TESTING)  

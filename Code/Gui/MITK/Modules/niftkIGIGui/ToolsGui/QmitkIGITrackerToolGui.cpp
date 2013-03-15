@@ -71,6 +71,8 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->toolButton_Add, SIGNAL(clicked()), this, SLOT(OnManageToolConnection()) );
   connect(m_TrackerControlsWidget->toolButton_Assoc, SIGNAL(clicked()), this, SLOT(OnAssocClicked()) );
   connect(m_TrackerControlsWidget->toolButton_disassociate, SIGNAL(clicked()), this, SLOT(OnDisassocClicked()) );
+  connect(m_TrackerControlsWidget->toolButton_PM_Assoc, SIGNAL(clicked()), this, SLOT(OnPMAssocClicked()) );
+  connect(m_TrackerControlsWidget->toolButton_PM_disassociate, SIGNAL(clicked()), this, SLOT(OnPMDisassocClicked()) );
   connect(m_TrackerControlsWidget->pushButton_CameraLink, SIGNAL(clicked()), this, SLOT(OnCameraLinkClicked()) );
   connect(m_TrackerControlsWidget->pushButton_LHCRHC, SIGNAL(clicked()), this, SLOT(OnLHCRHCClicked()) );
   connect(m_TrackerControlsWidget->pushButton_FidTrack, SIGNAL(clicked()), this, SLOT(OnFidTrackClicked()));
@@ -80,7 +82,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
 //
   if (config != NULL)
   {
-    QString deviceType = config->getDeviceType();
+    QString deviceType = config->GetDeviceType();
 
     TrackerClientDescriptor *trDesc = dynamic_cast<TrackerClientDescriptor*>(config);
     if (trDesc != NULL)
@@ -106,6 +108,7 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
     }
   }
   m_TrackerControlsWidget->comboBox_dataNodes->SetDataStorage(this->GetSource()->GetDataStorage());
+  m_TrackerControlsWidget->comboBox_PM_dataNodes->SetDataStorage(this->GetSource()->GetDataStorage());
   m_TrackerControlsWidget->comboBox_dataNodes_ApplyFids->SetDataStorage(this->GetSource()->GetDataStorage());
   m_TrackerControlsWidget->comboBox_dataNodes_FinePos->SetDataStorage(this->GetSource()->GetDataStorage());
   
@@ -120,7 +123,12 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
       m_TrackerControlsWidget->comboBox_associatedData->AddNode(tempNode);
       m_TrackerControlsWidget->comboBox_dataNodes->RemoveNode(tempNode);
     }
-    
+    QList<mitk::DataNode::Pointer> PMAssociatedTools = tool->GetPreMatrixDataNode(toolname);
+    foreach (tempNode, PMAssociatedTools )
+    {
+      m_TrackerControlsWidget->comboBox_PM_associatedData->AddNode(tempNode);
+      m_TrackerControlsWidget->comboBox_PM_dataNodes->RemoveNode(tempNode);
+    }
     if ( tool->GetCameraLink() ) 
     {
       m_TrackerControlsWidget->pushButton_CameraLink->setText("Disassociate with VTK Camera");
@@ -285,6 +293,37 @@ void QmitkIGITrackerToolGui::OnDisassocClicked(void)
   {
     m_TrackerControlsWidget->comboBox_associatedData->RemoveNode(dataNode);
     m_TrackerControlsWidget->comboBox_dataNodes->AddNode(dataNode);
+  }
+ }
+}
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnPMAssocClicked(void)
+{
+ QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+ if (tool != NULL)
+ {
+  QString toolname = m_TrackerControlsWidget->GetCurrentToolName();
+  mitk::DataNode::Pointer dataNode = m_TrackerControlsWidget->comboBox_PM_dataNodes->GetSelectedNode();
+  if ( tool->AddPreMatrixDataNode(toolname, dataNode) )
+  {
+    m_TrackerControlsWidget->comboBox_PM_associatedData->AddNode(dataNode);
+    m_TrackerControlsWidget->comboBox_PM_dataNodes->RemoveNode(dataNode);
+  }
+ }
+}
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerToolGui::OnPMDisassocClicked(void)
+{
+ QmitkIGITrackerTool *tool = this->GetQmitkIGITrackerTool();
+ if (tool != NULL)
+ {
+  QString toolname = m_TrackerControlsWidget->GetCurrentToolName();
+  mitk::DataNode::Pointer dataNode = m_TrackerControlsWidget->comboBox_PM_associatedData->GetSelectedNode();
+  if ( tool->RemovePreMatrixDataNode(toolname, dataNode) )
+  {
+    m_TrackerControlsWidget->comboBox_PM_associatedData->RemoveNode(dataNode);
+    m_TrackerControlsWidget->comboBox_PM_dataNodes->AddNode(dataNode);
   }
  }
 }

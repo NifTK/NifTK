@@ -41,7 +41,8 @@ protected:
   IGINVidiaDataType& operator=(const IGINVidiaDataType&); // Purposefully not implemented.
 
 private:
-
+  // FIXME: dont know yet what should go here...
+  //        sequence number, gpu-arrival time?, size of frame?
 };
 
 } // end namespace

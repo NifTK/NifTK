@@ -58,6 +58,8 @@ private slots:
   void OnManageToolConnection(void);
   void OnAssocClicked(void);
   void OnDisassocClicked(void);
+  void OnPMAssocClicked(void);
+  void OnPMDisassocClicked(void);
   void OnCameraLinkClicked(void);
   void OnLHCRHCClicked(void);
   void OnFidTrackClicked(void);

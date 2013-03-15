@@ -20,6 +20,15 @@
 #include "mitkIGINVidiaDataType.h"
 #include <QObject>
 #include <QMetaType>
+#include <opencv2/core/types_c.h>
+
+
+// some forward decls to avoid header pollution
+struct QmitkIGINVidiaDataSourceImpl;
+class QGLContext;
+class QGLWidget;
+//struct IplImage;
+
 
 /**
  * \class QmitkIGINVidiaDataSource.
@@ -57,6 +66,22 @@ public:
    */
   bool IsCapturing();
 
+
+public:
+  // to be used to share with the preview window, for example
+  QGLWidget* get_capturecontext();
+
+
+  int get_number_of_streams();
+  int get_capture_width();
+  int get_capture_height();
+  int get_refresh_rate();
+  int get_texture_id(int stream);
+
+  // caller needs to cleanup!
+  // exists only for integration with mitk, otherwise: do not use!
+  IplImage* get_rgb_image();
+
 signals:
 
   /**
@@ -88,7 +113,13 @@ private:
 
   QTimer *m_Timer;
 
+  QmitkIGINVidiaDataSourceImpl*     pimpl;
+
+  // and this receives the captured video frames (not necessarily at full frame rate though)
+  // it's also hooked up to m_ImageNode
+  // BUT: every time there's a new frame, a new image is allocated. cow-style.
+  mitk::Image::Pointer              m_Image;
+
 }; // end class
 
 #endif // QMITKIGINVIDIADATASOURCE_H
-

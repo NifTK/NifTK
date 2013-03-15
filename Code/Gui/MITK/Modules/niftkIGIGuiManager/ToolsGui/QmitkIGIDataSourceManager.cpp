@@ -104,9 +104,18 @@ void QmitkIGIDataSourceManager::DeleteCurrentGuiWidget()
         widget->setVisible(false);
       }
       m_GridLayoutClientControls->removeItem(item);
+      // this gets rid of the layout item
       delete item;
+      // we should kill off the actual widget too
+      // side note: that may not be the best way of doing it. currently everytime you
+      //  double-click on a source it creates a new gui for it and deletes the previously
+      //  active gui. it would be better if guis are cached for as long as the underlying
+      //  data source is alive.
+      // but for now this.
+      delete widget;
     }
     delete m_GridLayoutClientControls;
+    m_GridLayoutClientControls = 0;
   }
 }
 
@@ -364,8 +373,6 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
             {
               description=Tool;
               NLSource->SetDescription(Tool);
-              // Force an update.
-              source->DataSourceStatusUpdated.Send(rowNumber);
             }
             else
             {
@@ -386,9 +393,6 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
                 m_Sources[tempRowNumber]->SetName(device);
                 m_Sources[tempRowNumber]->SetDescription(Tool);
               }
-              // Force an update.
-              //source->DataSourceStatusUpdated.Send(tempRowNumber);
-              
             }
           }
         }
@@ -531,7 +535,7 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
 }
 
 //------------------------------------------------
-int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSocketObject* socket)
+int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLinkSocketObject* socket)
 {
   
   mitk::IGIDataSource::Pointer source = NULL;
@@ -558,6 +562,12 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, OIGTLSo
   {
     source = QmitkIGIOpenCVDataSource::New();
   }
+#ifdef _USE_NVAPI
+  else if (sourceType == 3)
+  {
+    source = QmitkIGINVidiaDataSource::New();
+  }
+#endif
   else
   {
     std::cerr << "Matt, not implemented yet" << std::endl;
@@ -652,6 +662,10 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   m_TableWidget->removeRow(rowIndex);
   m_TableWidget->update();
 
+  // FIXME: this should not delete the gui if it doesnt belong to the to-be-removed source!
+  //        but this should be a safe way of cleaning up for now
+  this->DeleteCurrentGuiWidget();
+
   // This destroys the source. It is up to the source to correctly destroy itself,
   // as this class has no idea what the source is or what it contains etc.
   m_Sources.erase(m_Sources.begin() + rowIndex);
@@ -722,7 +736,6 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
   }
 
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-  timeNow->GetTime();
 
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
@@ -750,7 +763,11 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
       tItem->setIcon(pix);
     }
 
+    // update the status text
+    m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
+
     double lag = source->GetCurrentTimeLag();
+    // FIXME: does this leak mem?
     QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
     lagItem->setTextAlignment(Qt::AlignCenter);
     lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
@@ -808,13 +825,12 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   QString baseDirectory = m_DirectoryPrefix;
 
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-  timeStamp->GetTime();
 
   igtlUint32 seconds;
   igtlUint32 nanoseconds;
   igtlUint64 millis;
 
-  timeStamp->GetTimeStamp(&seconds, &nanoseconds);
+  timeStamp->GetTime(&seconds, &nanoseconds);
   millis = (igtlUint64)seconds*1000 + nanoseconds/1000000;
 
   QDateTime dateTime;

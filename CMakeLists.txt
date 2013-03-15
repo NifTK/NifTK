@@ -208,7 +208,7 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 SET(NIFTK_VERSION_CTK "dd4386a4b0" CACHE STRING "Version of CTK" FORCE)
 SET(NIFTK_VERSION_MITK "62e2e5ba98" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
-SET(NIFTK_VERSION_NIFTYLINK "f87aa369bc" CACHE STRING "Version of NiftyLink" FORCE)
+SET(NIFTK_VERSION_NIFTYLINK "d45564da4a" CACHE STRING "Version of NiftyLink" FORCE)
 SET(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
 SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
@@ -801,6 +801,13 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbo
 IF (BUILD_MESHING) 
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing)
 ENDIF (BUILD_MESHING) 
+
+IF(NVAPI_FOUND)
+  #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
+  # libvideo depends on an active opengl context
+  #  which niftknvidiagui manages
+  #INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
+ENDIF(NVAPI_FOUND)
 
 ######################################################################
 # Output directories, for when compiling, not installing.
