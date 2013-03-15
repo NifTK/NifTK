@@ -11,6 +11,19 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
+/*!
+* \file niftkVTKIterativeClosestPointRegister.cxx
+* \page niftkVTKIterativeClosestPointRegister
+* \section niftkVTKIterativeClosestPointRegsisterSummary Uses vtkIterativeClosestPointTransform to register two vtk polydata sets
+*
+* This program uses vtkIterativeClosestPointTransform via niftkVTKIterativeClosestPoint.
+* Optionally the transformed source may be written to a vtkpolydata file.
+*
+* \section niftkVTKIterativeClosestPointRegisterCaveat Caveats
+* \li vtkIterativeClosestPointTransform is a point to surface iterative closest point algorithm.
+* Therefore at least one of the input polydata must contain surfaces.
+*
+*/
 
 #include "itkLogHelper.h"
 #include "ConversionUtils.h"
@@ -21,6 +34,7 @@
 #include "vtkTransform.h"
 #include "vtkTransformPolyDataFilter.h"
 #include "niftkVTKIterativeClosestPoint.h"
+#include "niftkvtk4PointsReader.h"
 #include "vtkFunctions.h"
 
 #include <vtkActor.h>
@@ -37,19 +51,8 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 
-/*!
-* \file niftkVTKIterativeClosestPointRegister.cxx
-* \page niftkVTKIterativeClosestPointRegister
-* \section niftkVTKIterativeClosestPointRegsisterSummary Uses vtkIterativeClosestPointTransform to register two vtk polydata sets
-*
-* This program uses vtkIterativeClosestPointTransform via niftkVTKIterativeClosestPoint.
-* Optionally the transformed source may be written to a vtkpolydata file.
-*
-* \section niftkVTKIterativeClosestPointRegisterCaveat Caveats
-* \li vtkIterativeClosestPointTransform is a point to surface iterative closest point algorithm.
-* Therefore at least one of the input polydata must contain surfaces.
-*
-*/
+#include <boost/algorithm/string/predicate.hpp>
+
 void Usage(char *exec)
 {
   niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
@@ -222,11 +225,22 @@ int main(int argc, char** argv)
     c_source->DeepCopy (source);
   }
 
-  vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
-  targetReader->SetFileName(args.targetPolyDataFile.c_str());
-  targetReader->Update();
-  target->ShallowCopy (targetReader->GetOutput());
-  std::cout << "Loaded PolyData:" << args.targetPolyDataFile << std::endl;
+  if ( boost::algorithm::ends_with(args.targetPolyDataFile , ".txt") )
+  {
+    vtkSmartPointer<niftkvtk4PointsReader> targetReader = vtkSmartPointer<niftkvtk4PointsReader>::New();
+    targetReader->SetFileName(args.targetPolyDataFile.c_str());
+    targetReader->Update();
+    target->ShallowCopy (targetReader->GetOutput());
+    std::cout << "Loaded text file:" << args.targetPolyDataFile << std::endl;
+  }
+  else
+  {
+    vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
+    targetReader->SetFileName(args.targetPolyDataFile.c_str());
+    targetReader->Update();
+    target->ShallowCopy (targetReader->GetOutput());
+    std::cout << "Loaded PolyData:" << args.targetPolyDataFile << std::endl;
+  }
 
   niftkVTKIterativeClosestPoint * icp = new niftkVTKIterativeClosestPoint();
   icp->SetMaxLandmarks(args.maxPoints);

@@ -12,6 +12,14 @@
 
 =============================================================================*/
 
+/*!
+ * \file niftkVTKIterativeClosestPoint.h
+ * \page niftkVTKIterativeClosestPoint
+ * \section niftkVTKIterativeClosestPointSummary Uses vtkIterativeClosestPointTransform to register two vtk polydata sets
+ *
+ * This is an interface to vtkIterativeClosestPointTransform.
+ */
+
 #ifndef __niftkVTKIterativeClosestPoint_h
 #define __niftkVTKIterativeClosestPoint_h
 
