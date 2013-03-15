@@ -15,14 +15,17 @@
 SET(CPP_FILES
   ToolsGui/QmitkIGINVidiaDataSource.cpp 
   ToolsGui/QmitkIGINVidiaDataSourceGui.cpp 
+  ToolsGui/QmitkVideoPreviewWidget.cpp
 )
 
 SET(MOC_H_FILES
   ToolsGui/QmitkIGINVidiaDataSource.h
   ToolsGui/QmitkIGINVidiaDataSourceGui.h
+  ToolsGui/QmitkVideoPreviewWidget.h
 )
 
 SET(UI_FILES
+  ToolsGui/QmitkIGINVidiaDataSourceGui.ui
 )
 
 SET(QRC_FILES

@@ -41,8 +41,19 @@ QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 {
+  // FIXME: what exactly are these disconnecting?
   m_Background->disconnect();
   this->disconnect();
+
+  // gui is destroyed before data source (by igi data manager)
+  // so disconnect ourselfs from source
+  QmitkIGIOpenCVDataSource* source = GetOpenCVDataSource();
+  if (source)
+  {
+    // this is receiver
+    // and source is sender
+    this->disconnect(source);
+  }
 
   // delete render window first.
   if (m_RenderWindow != NULL)

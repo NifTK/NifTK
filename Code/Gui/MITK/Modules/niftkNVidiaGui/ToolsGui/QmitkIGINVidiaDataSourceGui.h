@@ -18,16 +18,18 @@
 #include "niftkNVidiaGuiExports.h"
 #include <QWidget>
 #include "QmitkIGIDataSourceGui.h"
+#include "ui_QmitkIGINVidiaDataSourceGui.h"
 
 class QmitkIGINVidiaDataSource;
 class QLabel;
 class QGridLayout;
+class QmitkVideoPreviewWidget;
 
 /**
  * \class QmitkIGIOpenCVDataSourceGui
  * \brief Implements a GUI interface to display live video from NVidia SDI in the Surgical Guidance plugin.
  */
-class NIFTKNVIDIAGUI_EXPORT QmitkIGINVidiaDataSourceGui : public QmitkIGIDataSourceGui
+class NIFTKNVIDIAGUI_EXPORT QmitkIGINVidiaDataSourceGui : public QmitkIGIDataSourceGui, public Ui_QmitkIGINVidiaDataSourceGui
 {
   Q_OBJECT
 
@@ -60,9 +62,8 @@ private:
 
   QmitkIGINVidiaDataSource* GetQmitkIGINVidiaDataSource() const;
 
-  QLabel      *m_DisplayWidget;
-  QGridLayout *m_Layout;
-
+  // init'd by Initialize()
+  QmitkVideoPreviewWidget* oglwin;
 }; // end class
 
 #endif

@@ -19,7 +19,6 @@ MITK_CREATE_MODULE(niftkNVidia
 )
 
 TARGET_LINK_LIBRARIES(niftkNVidia
-  ${NVAPI_LIBRARY}
   niftknvapi
   )
 
