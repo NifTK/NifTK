@@ -521,56 +521,6 @@ int main( int argc, char *argv[] )
   
   switch ( dims )
   {
-  case 2: 
-  {
-    switch ( itk::PeekAtComponentType( args.fileInputMask ) )
-    {
-    case itk::ImageIOBase::UCHAR:
-      result = DoMain<2, unsigned char>( args );
-      break;
-      
-    case itk::ImageIOBase::CHAR:
-      result = DoMain<2, char>( args );
-      break;
-      
-    case itk::ImageIOBase::USHORT:
-      result = DoMain<2, unsigned short>( args );
-      break;
-      
-    case itk::ImageIOBase::SHORT:
-      result = DoMain<2, short>( args );
-      break;
-      
-    case itk::ImageIOBase::UINT:
-      result = DoMain<2, unsigned int>( args );
-      break;
-      
-    case itk::ImageIOBase::INT:
-      result = DoMain<2, int>( args );
-      break;
-      
-    case itk::ImageIOBase::ULONG:
-      result = DoMain<2, unsigned long>( args );
-      break;
-      
-    case itk::ImageIOBase::LONG:
-      result = DoMain<2, long>( args );
-      break;
-      
-    case itk::ImageIOBase::FLOAT:
-      result = DoMain<2, float>( args );
-      break;
-      
-    case itk::ImageIOBase::DOUBLE:
-      result = DoMain<2, double>( args );
-      break;
-      
-    default:
-      std::cerr << "ERROR: Non standard pixel format" << std::endl;
-      return EXIT_FAILURE;
-    }
-    break;
-  }
 
   case 3:
   {

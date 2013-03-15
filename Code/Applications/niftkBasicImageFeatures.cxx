@@ -521,7 +521,7 @@ int main( int argc, char *argv[] )
       pMaskImage->SetOrigin( pInputImage->GetOrigin() );
 
       pMaskImage->Allocate( );
-      pMaskImage->FillBuffer( 1. );
+      pMaskImage->FillBuffer( 1 );
     }
 
     typedef itk::ImageRegionConstIterator< InputImageType > InputIteratorType;
@@ -538,7 +538,7 @@ int main( int argc, char *argv[] )
 
       if ( itInput.Get() < threshold )
 
-	pMaskImage->SetPixel( index, 0.);
+	pMaskImage->SetPixel( index, 0);
 
       ++itInput;
     }
@@ -1052,8 +1052,8 @@ int main( int argc, char *argv[] )
 
       for ( iDim=0; iDim<ImageDimension; iDim++) {
 	
-	nPixelsResampled[iDim] = ceil( ((float) nPixelsInput[iDim])
-				       / scaleFactorRelativeToInput );
+	nPixelsResampled[iDim] = static_cast<InputImageType::SizeValueType>( ceil( ((float) nPixelsInput[iDim])
+									      / scaleFactorRelativeToInput ) );
 
 	actualSamplingFactor = ((float) nPixelsInput[iDim]) / ((float) nPixelsResampled[iDim] );
 
