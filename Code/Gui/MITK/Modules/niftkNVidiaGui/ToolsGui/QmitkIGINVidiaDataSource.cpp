@@ -495,7 +495,6 @@ void QmitkIGINVidiaDataSource::OnTimeout()
       this->SetStatus("Grabbing");
 
       igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-      timeCreated->GetTime();
 
       // Aim of this method is to do something like when a NiftyLink message comes in.
       mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
