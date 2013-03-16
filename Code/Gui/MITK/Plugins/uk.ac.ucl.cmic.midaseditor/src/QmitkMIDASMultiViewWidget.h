@@ -17,6 +17,7 @@
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
+#include <QColor>
 #include <QEvent>
 #include <QList>
 #include <QWidget>
@@ -98,7 +99,7 @@ public:
   void RequestUpdateAll();
 
   /// \brief Set the background colour on all contained widgets, and we don't currently provide gradient backgrounds.
-  void SetBackgroundColour(mitk::Color colour);
+  void SetBackgroundColour(QColor backgroundColour);
 
   /// \brief Sets the default interpolation type, which only takes effect when a node is next dropped into a given window.
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);

@@ -646,9 +646,9 @@ MIDASView QmitkMIDASMultiViewWidget::GetDefaultOrientationForSegmentation() cons
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
+void QmitkMIDASMultiViewWidget::SetBackgroundColour(QColor backgroundColour)
 {
-  m_BackgroundColour = QColor(colour[0] * 255, colour[1] * 255, colour[2] * 255);
+  m_BackgroundColour = backgroundColour;
 
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
