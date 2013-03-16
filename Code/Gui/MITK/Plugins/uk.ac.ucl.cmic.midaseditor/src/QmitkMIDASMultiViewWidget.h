@@ -131,7 +131,7 @@ public:
   void SetShowMagnificationSlider(bool visible);
 
   /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch orientation between axial, coronal, sagittal.
-  void SetRememberViewSettingsPerOrientation(bool remember);
+  void SetRememberViewSettingsPerOrientation(bool rememberViewSettingsPerOrientation);
 
   /// \brief Sets the slice select slider to be tracking.
   void SetSliceSelectTracking(bool isTracking);
@@ -411,6 +411,8 @@ private:
   bool                                           m_InteractionEnabled;
   bool                                           m_Show2DCursors;
   bool                                           m_Show3DViewInOrthoview;
+  QColor                                         m_BackgroundColour;
+  bool                                           m_RememberViewSettingsPerOrientation;
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
