@@ -1350,7 +1350,6 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
   {
     return;
   }
-  m_BlockDisplayGeometryEvents = true;
 
   // The aim of this method, is that when a magnificationFactor is passed in,
   // all 2D views update to an equivalent zoom, even if they were different beforehand.
@@ -1369,8 +1368,6 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
 
   m_MagnificationFactor = magnificationFactor;
   this->RequestUpdate();
-
-  m_BlockDisplayGeometryEvents = false;
 }
 
 double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor)
