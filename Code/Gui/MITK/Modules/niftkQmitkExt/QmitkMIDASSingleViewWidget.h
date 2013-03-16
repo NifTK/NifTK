@@ -311,10 +311,10 @@ private:
   MIDASView                            m_CurrentView;
   MIDASOrientation                     m_CurrentOrientation;
 
-  int                                  m_PreviousSliceNumbers[8];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  int                                  m_PreviousTimeSliceNumbers[8];     // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  double                               m_PreviousMagnificationFactors[8]; // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  bool                                 m_Initialised[8];
+  int                                  m_PreviousSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
+  int                                  m_PreviousTimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
+  double                               m_PreviousMagnificationFactors[MIDAS_VIEW_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
+  bool                                 m_Initialised[MIDAS_VIEW_NUMBER * 2];                     // Two each for view. Unbound, then bound, alternatingly.
 
   bool                                 m_NavigationControllerEventListening;
   bool                                 m_RememberViewSettingsPerOrientation;
