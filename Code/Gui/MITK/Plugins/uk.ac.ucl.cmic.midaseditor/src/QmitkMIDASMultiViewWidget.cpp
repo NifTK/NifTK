@@ -1014,7 +1014,7 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
 
     double minMag = std::ceil(selectedView->GetMinMagnification());
     double maxMag = std::floor(selectedView->GetMaxMagnification());
-    double currentMag = std::floor(0.5 + selectedView->GetMagnificationFactor());
+    double currentMag = selectedView->GetMagnificationFactor();
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMinimum(minMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMaximum(maxMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(currentMag);
