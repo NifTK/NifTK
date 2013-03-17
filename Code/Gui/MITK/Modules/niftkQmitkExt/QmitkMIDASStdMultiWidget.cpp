@@ -1355,15 +1355,17 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
   // that corresponds to the rules given at the top of the header file.
 
   m_BlockDisplayGeometryEvents = true;
-  // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
-  for (unsigned int i = 0; i < 3; i++)
-  {
-    QmitkRenderWindow *renderWindow = renderWindows[i];
 
-    double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnificationFactor);
-    this->ZoomDisplayAboutCentre(renderWindow, zoomScaleFactor);
-  }
+  // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+  double zoomScaleFactor = ComputeScaleFactor(mitkWidget1, magnificationFactor);
+  this->ZoomDisplayAboutCentre(mitkWidget1, zoomScaleFactor);
+
+  zoomScaleFactor = ComputeScaleFactor(mitkWidget2, magnificationFactor);
+  this->ZoomDisplayAboutCentre(mitkWidget2, zoomScaleFactor);
+
+  zoomScaleFactor = ComputeScaleFactor(mitkWidget3, magnificationFactor);
+  this->ZoomDisplayAboutCentre(mitkWidget3, zoomScaleFactor);
+
   m_BlockDisplayGeometryEvents = false;
 
   m_MagnificationFactor = magnificationFactor;
