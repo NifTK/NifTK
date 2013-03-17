@@ -122,7 +122,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(PositionChanged(QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkRenderWindow*,mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
-  connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(QmitkRenderWindow*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkRenderWindow*, double)));
+  connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(double)), this, SLOT(OnMagnificationFactorChanged(double)));
 }
 
 QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
@@ -140,9 +140,10 @@ void QmitkMIDASSingleViewWidget::OnPositionChanged(QmitkRenderWindow *window, mi
   emit PositionChanged(this, window, voxelLocation, millimetreLocation, sliceNumber, orientation);
 }
 
-void QmitkMIDASSingleViewWidget::OnMagnificationFactorChanged(QmitkRenderWindow *window, double magnificationFactor)
+void QmitkMIDASSingleViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
 {
-  emit MagnificationFactorChanged(this, window, magnificationFactor);
+//  this->m_MagnificationFactors[Index(m_View)] = magnificationFactor;
+  emit MagnificationFactorChanged(this, magnificationFactor);
 }
 
 bool QmitkMIDASSingleViewWidget::IsSingle2DView() const
@@ -545,12 +546,11 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 
 double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
 {
-  return this->m_MagnificationFactors[Index(m_View)];
+  return m_MultiWidget->GetMagnificationFactor();
 }
 
 void QmitkMIDASSingleViewWidget::SetMagnificationFactor(double magnificationFactor)
 {
-  this->m_MagnificationFactors[Index(m_View)] = magnificationFactor;
   this->m_MultiWidget->SetMagnificationFactor(magnificationFactor);
 }
 

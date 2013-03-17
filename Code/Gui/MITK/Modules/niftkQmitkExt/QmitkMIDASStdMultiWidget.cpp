@@ -997,6 +997,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
 
 void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
 {
+  m_BlockDisplayGeometryEvents = true;
   if (rebuildLayout)
   {
     if (m_GridLayout != NULL)
@@ -1146,6 +1147,7 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
   m_View = view;
   this->Update3DWindowVisibility();
   this->m_GridLayout->activate();
+  m_BlockDisplayGeometryEvents = false;
 }
 
 MIDASView QmitkMIDASStdMultiWidget::GetMIDASView() const
@@ -1231,11 +1233,7 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
   if (!m_BlockDisplayGeometryEvents)
   {
     double magnificationFactor = ComputeMagnificationFactor(renderWindow);
-    if (magnificationFactor != m_MagnificationFactor)
-    {
-      m_MagnificationFactor = magnificationFactor;
-      emit MagnificationFactorChanged(renderWindow, magnificationFactor);
-    }
+    SetMagnificationFactor(magnificationFactor);
   }
 }
 
@@ -1356,6 +1354,7 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
   // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
   // that corresponds to the rules given at the top of the header file.
 
+  m_BlockDisplayGeometryEvents = true;
   // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (unsigned int i = 0; i < 3; i++)
@@ -1365,9 +1364,11 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
     double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnificationFactor);
     this->ZoomDisplayAboutCentre(renderWindow, zoomScaleFactor);
   }
+  m_BlockDisplayGeometryEvents = false;
 
   m_MagnificationFactor = magnificationFactor;
   this->RequestUpdate();
+  emit MagnificationFactorChanged(magnificationFactor);
 }
 
 double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor)
