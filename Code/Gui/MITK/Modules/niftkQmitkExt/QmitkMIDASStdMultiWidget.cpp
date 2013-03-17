@@ -1456,7 +1456,6 @@ double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
     //////////////////////////////////////////////////////////////////////////
 
     magnificationFactor = ComputeMagnificationFactor(renderWindow);
-    magnificationFactor = static_cast<int>(magnificationFactor);
   }
   return magnificationFactor;
 }
