@@ -378,7 +378,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(PositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
-  connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, double)));
+  connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 
   return widget;
 }
@@ -896,7 +896,7 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
+void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, double magnificationFactor)
 {
   bool wasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);

@@ -270,7 +270,7 @@ protected slots:
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
+  void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *view, double magnificationFactor);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);

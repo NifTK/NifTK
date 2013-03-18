@@ -38,6 +38,11 @@ enum MIDASOrientation
 };
 
 /*!
+ * \brief The number of the possible orientations.
+ */
+const int MIDAS_ORIENTATION_NUMBER = 4;
+
+/*!
  * \enum MIDASView
  * \brief Describes the different window layouts that can be achieved in
  * the MIDAS style Display window. So one MIDASView could have
@@ -63,6 +68,11 @@ enum MIDASView
   MIDAS_VIEW_AX_SAG_H = 13,
   MIDAS_VIEW_AX_SAG_V = 14
 };
+
+/*!
+ * \brief The number of the possible views.
+ */
+const int MIDAS_VIEW_NUMBER = 15;
 
 /*!
  * \enum MIDASDropType
