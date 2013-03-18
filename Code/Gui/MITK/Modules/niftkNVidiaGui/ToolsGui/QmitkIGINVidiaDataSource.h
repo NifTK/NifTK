@@ -80,7 +80,8 @@ public:
 
   // caller needs to cleanup!
   // exists only for integration with mitk, otherwise: do not use!
-  IplImage* get_rgb_image();
+  // note: input streams are stacked! all streams transfered at the same time
+  std::pair<IplImage*, int> get_rgb_image();
 
 signals:
 

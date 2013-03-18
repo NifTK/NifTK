@@ -35,7 +35,7 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
   // but for that to work we need a hack because for sharing to work, the share-source cannot
   //  be current at the time of call. but our capture context is current (to the capture thread)
   //  all the time! so we just create a dummy context that shares with capture-context but itself
-  //  is never ever current to any thread and hance can be shared with new widgets while capture-context
+  //  is never ever current to any thread and hence can be shared with new widgets while capture-context
   //  is happily working away. and tada it works :)
   QGLWidget*              oglshare;
 
@@ -90,7 +90,7 @@ public:
 
   ~QmitkIGINVidiaDataSourceImpl()
   {
-    // we dont really support concurrant destruction
+    // we dont really support concurrent destruction
     // if some other thread is still holding on to a pointer
     //  while we are cleaning up here then things are going to blow up anyway
     // might as well fail fast
@@ -248,10 +248,10 @@ protected:
         // scoping for lock
         {
           QMutexLocker    l(&lock);
-          // however, other threads might supply us with a new pointer!
+          // other threads might supply us with a new pointer!
           if (copyoutasap)
           {
-            readback_rgb(0, copyoutasap->imageData, copyoutasap->widthStep, copyoutasap->width, copyoutasap->height);
+            readback_rgb(copyoutasap->imageData, copyoutasap->widthStep, copyoutasap->width, copyoutasap->height);
 
             // and reset pointer
             // so that we dont do it again unless explicitly requested
@@ -271,24 +271,42 @@ protected:
     return false;
   }
 
-  // FIXME: one channel only
-  void readback_rgb(int stream, char* buffer, std::size_t bufferpitch, int width, int height)
+
+  void readback_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
   {
     assert(sdiin != 0);
     assert(bufferpitch >= width * 3);
 
+    // lock here first, before querying dimensions so that there's no gap
     QMutexLocker    l(&lock);
+
+    std::pair<int, int> dim = get_capture_dimensions();
+    if (dim.first > width)
+      // FIXME: should somehow communicate failure to the requester
+      return;
 
     // unfortunately we have 3 bytes per pixel
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     assert((bufferpitch % 3) == 0);
     glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 3);
 
-    int texid = sdiin->get_texture_id(stream);
-    if (texid != 0)
+    for (int i = 0; i < 4; ++i)
     {
+      int texid = sdiin->get_texture_id(i);
+      if (texid == 0)
+        break;
+
+      // while we have the lock, texture dimensions are not going to change
+     // if ((i * dim.second) >= height)
+     //   return;
+      // remaining buffer too small?
+      if (height - (i * dim.second) < dim.second)
+        return;
+
+      char*   subbuf = &buffer[i * height * bufferpitch];
+
       glBindTexture(GL_TEXTURE_2D, texid);
-      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, subbuf);
       assert(glGetError() == GL_NO_ERROR);
     }
   }
@@ -332,7 +350,7 @@ public:
   {
     QMutexLocker    l(&copyoutmutex);
     copyoutasap = img;
-    return copyoutfinished.wait(&copyoutmutex, 500000000);
+    return copyoutfinished.wait(&copyoutmutex, 1000);
   }
 
   int get_texture_id(unsigned int stream) const
@@ -343,6 +361,12 @@ public:
     if (stream >= 4)
         return 0;
     return textureids[stream];
+  }
+
+  int get_stream_count() const
+  {
+    QMutexLocker    l(&lock);
+    return streamcount;
   }
 };
 
@@ -414,20 +438,26 @@ bool QmitkIGINVidiaDataSource::IsCapturing()
   return result;
 }
 
-IplImage* QmitkIGINVidiaDataSource::get_rgb_image()
+// FIXME: this will lock onto the sdi input refresh rate!
+//        because it has to wait
+std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 {
+  // race condition: these two could be inconsistent
+  //  but capture thread will check and simply not do anything then
   std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
-  IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second), IPL_DEPTH_8U, 3);
+  int                   streamcount = pimpl->get_stream_count();
+
+  IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second * streamcount), IPL_DEPTH_8U, 3);
   // mark layout as rgb instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGB\0", 4);
 
   bool ok = pimpl->copy_out_rgb(frame);
   if (ok)
-    return frame;
+    return std::make_pair(frame, streamcount);
 
   // failed somewhere
   cvReleaseImage(&frame);
-  return 0;
+  return std::make_pair(0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -449,62 +479,70 @@ void QmitkIGINVidiaDataSource::OnTimeout()
 
   if (pimpl->is_running())
   {
-    IplImage* frame = get_rgb_image();
+    // one massive image, with all streams stacked in
+    std::pair<IplImage*, int> frame = get_rgb_image();
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
-    if (frame)
+    if (frame.first)
     {
-      std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode("nvidia sdi");
-      // FIXME: this is wrong of course
-      if (dataNode.size() != 1)
+      // max 4 streams
+      const int streamcount = frame.second;
+      for (int i = 0; i < streamcount; ++i)
       {
-        MITK_ERROR << "QmitkIGINVidiaDataSource only supports a single video image feed" << std::endl;
-        this->SetStatus("Failed");
-        cvReleaseImage(&frame);
-        return;
-      }
-      mitk::DataNode::Pointer node = dataNode[0];
-
-      mitk::Image::Pointer convertedImage = this->CreateMitkImage(frame);
-      mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-      if (imageInNode.IsNull())
-      {
-        node->SetData(convertedImage);
-      }
-      else
-      {
-        try
+        std::ostringstream  nodename;
+        nodename << "NVIDIA SDI stream " << i;
+        std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(nodename.str());
+        if (dataNode.size() != 1)
         {
-          mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
-          const void* cPointer = readAccess.GetData();
-
-          mitk::ImageWriteAccessor writeAccess(imageInNode);
-          void* vPointer = writeAccess.GetData();
-
-          assert(frame->nChannels == 3);
-          std::memcpy(vPointer, cPointer, frame->width * frame->height * 3);
+          MITK_ERROR << "QmitkIGINVidiaDataSource only supports a single video image per feed" << std::endl;
+          this->SetStatus("Failed");
+          cvReleaseImage(&frame.first);
+          return;
         }
-        catch(mitk::Exception& e)
+        mitk::DataNode::Pointer node = dataNode[0];
+
+        // FIXME: chop!
+        mitk::Image::Pointer convertedImage = this->CreateMitkImage(frame.first);
+        mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+        if (imageInNode.IsNull())
         {
-          MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+          node->SetData(convertedImage);
         }
-      }
-      node->Modified();
+        else
+        {
+          try
+          {
+            mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
+            const void* cPointer = readAccess.GetData();
 
-      cvReleaseImage(&frame);
+            mitk::ImageWriteAccessor writeAccess(imageInNode);
+            void* vPointer = writeAccess.GetData();
 
-      this->SetStatus("Grabbing");
+            assert(frame.first->nChannels == 3);
+            std::memcpy(vPointer, cPointer, frame.first->width * frame.first->height * 3);
+          }
+          catch(mitk::Exception& e)
+          {
+            MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+          }
+        }
+        node->Modified();
 
-      igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+        cvReleaseImage(&frame.first);
 
-      // Aim of this method is to do something like when a NiftyLink message comes in.
-      mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
-      //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
-      wrapper->SetDataSource("QmitkIGINVidiaDataSource");
-      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-      wrapper->SetDuration(1000000000); // nanoseconds
+        this->SetStatus("Grabbing");
 
-      this->AddData(wrapper.GetPointer());
-    }
+        igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+
+        // Aim of this method is to do something like when a NiftyLink message comes in.
+        mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
+        //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
+        wrapper->SetDataSource("QmitkIGINVidiaDataSource");
+        wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
+        wrapper->SetDuration(1000000000); // nanoseconds
+
+        this->AddData(wrapper.GetPointer());
+      } // for
+    } 
     else
       this->SetStatus("Failed");
   }
