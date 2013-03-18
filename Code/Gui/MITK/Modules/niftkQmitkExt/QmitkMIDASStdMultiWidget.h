@@ -261,6 +261,7 @@ private:
 
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
 
+  QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
   unsigned int          m_AxialSliceTag;

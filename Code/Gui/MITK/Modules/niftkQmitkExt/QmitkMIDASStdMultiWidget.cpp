@@ -98,6 +98,11 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
 {
+  m_RenderWindows[0] = this->GetRenderWindow1();
+  m_RenderWindows[1] = this->GetRenderWindow2();
+  m_RenderWindows[2] = this->GetRenderWindow3();
+  m_RenderWindows[3] = this->GetRenderWindow4();
+
   m_CreatedGeometries[0] = NULL;
   m_CreatedGeometries[1] = NULL;
   m_CreatedGeometries[2] = NULL;
@@ -604,12 +609,7 @@ QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(vtkRenderWindow *vt
 
 std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetRenderWindows() const
 {
-  std::vector<QmitkRenderWindow*> renderWindows;
-  renderWindows.push_back(this->GetRenderWindow1());
-  renderWindows.push_back(this->GetRenderWindow2());
-  renderWindows.push_back(this->GetRenderWindow3());
-  renderWindows.push_back(this->GetRenderWindow4());
-  return renderWindows;
+  return std::vector<QmitkRenderWindow*>(m_RenderWindows, m_RenderWindows + 4);
 }
 
 MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
@@ -1233,7 +1233,32 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
   if (!m_BlockDisplayGeometryEvents)
   {
     double magnificationFactor = ComputeMagnificationFactor(renderWindow);
-    SetMagnificationFactor(magnificationFactor);
+    if (magnificationFactor != m_MagnificationFactor)
+    {
+      // The aim of this method, is that when a magnificationFactor is passed in,
+      // all 2D views update to an equivalent zoom, even if they were different beforehand.
+      // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
+      // that corresponds to the rules given at the top of the header file.
+
+      m_BlockDisplayGeometryEvents = true;
+
+      // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+      for (int i = 0; i < 3; ++i)
+      {
+        QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
+        if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
+        {
+          double zoomScaleFactor = ComputeScaleFactor(otherRenderWindow, magnificationFactor);
+          this->ZoomDisplayAboutCentre(otherRenderWindow, zoomScaleFactor);
+        }
+      }
+
+      m_BlockDisplayGeometryEvents = false;
+
+      m_MagnificationFactor = magnificationFactor;
+      this->RequestUpdate();
+      emit MagnificationFactorChanged(magnificationFactor);
+    }
   }
 }
 
@@ -1357,14 +1382,15 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
   m_BlockDisplayGeometryEvents = true;
 
   // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-  double zoomScaleFactor = ComputeScaleFactor(mitkWidget1, magnificationFactor);
-  this->ZoomDisplayAboutCentre(mitkWidget1, zoomScaleFactor);
-
-  zoomScaleFactor = ComputeScaleFactor(mitkWidget2, magnificationFactor);
-  this->ZoomDisplayAboutCentre(mitkWidget2, zoomScaleFactor);
-
-  zoomScaleFactor = ComputeScaleFactor(mitkWidget3, magnificationFactor);
-  this->ZoomDisplayAboutCentre(mitkWidget3, zoomScaleFactor);
+  for (int i = 0; i < 3; ++i)
+  {
+    QmitkRenderWindow* renderWindow = m_RenderWindows[i];
+    if (renderWindow->isVisible())
+    {
+      double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnificationFactor);
+      this->ZoomDisplayAboutCentre(renderWindow, zoomScaleFactor);
+    }
+  }
 
   m_BlockDisplayGeometryEvents = false;
 
