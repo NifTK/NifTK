@@ -40,7 +40,7 @@ const CoordinateAxesData* CoordinateAxesVtkMapper3D::GetInput()
 //-----------------------------------------------------------------------------
 vtkProp* CoordinateAxesVtkMapper3D::GetVtkProp(mitk::BaseRenderer *renderer)
 {
-  CoordinateAxesLocalStorage *ls = m_LSH.GetLocalStorage(renderer);
+  LocalStorage *ls = m_LocalStorage.GetLocalStorage(renderer);
   return ls->m_Actor;
 }
 
@@ -48,7 +48,7 @@ vtkProp* CoordinateAxesVtkMapper3D::GetVtkProp(mitk::BaseRenderer *renderer)
 //-----------------------------------------------------------------------------
 void CoordinateAxesVtkMapper3D::ResetMapper( mitk::BaseRenderer* renderer )
 {
-  CoordinateAxesLocalStorage *ls = m_LSH.GetLocalStorage(renderer);
+  LocalStorage *ls = m_LocalStorage.GetLocalStorage(renderer);
   ls->m_Actor->VisibilityOff();
 }
 
@@ -56,7 +56,7 @@ void CoordinateAxesVtkMapper3D::ResetMapper( mitk::BaseRenderer* renderer )
 //-----------------------------------------------------------------------------
 void CoordinateAxesVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* renderer)
 {
-  CoordinateAxesLocalStorage *ls = m_LSH.GetLocalStorage(renderer);
+  LocalStorage *ls = m_LocalStorage.GetLocalStorage(renderer);
 
   bool visible = true;
   this->GetDataNode()->GetVisibility(visible, renderer, "visible");
@@ -81,21 +81,7 @@ void CoordinateAxesVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* rend
 
 
 //-----------------------------------------------------------------------------
-void ApplyMitkPropertiesToVtkProperty(mitk::DataNode *node, vtkProperty* property, mitk::BaseRenderer* renderer)
-{
-
-}
-
-
-//-----------------------------------------------------------------------------
-void SetDefaultPropertiesForVtkProperty(mitk::DataNode* node, mitk::BaseRenderer* renderer, bool overwrite)
-{
-
-}
-
-
-//-----------------------------------------------------------------------------
-CoordinateAxesLocalStorage::CoordinateAxesLocalStorage()
+CoordinateAxesVtkMapper3D::LocalStorage::LocalStorage()
   : m_Actor(NULL)
 {
   m_Actor = vtkAxesActor::New();
@@ -110,7 +96,7 @@ CoordinateAxesLocalStorage::CoordinateAxesLocalStorage()
 
 
 //-----------------------------------------------------------------------------
-CoordinateAxesLocalStorage::~CoordinateAxesLocalStorage()
+CoordinateAxesVtkMapper3D::LocalStorage::~LocalStorage()
 {
   m_Actor->Delete();
 }

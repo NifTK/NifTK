@@ -41,30 +41,27 @@ protected:
   CoordinateAxesVtkMapper3D();
   ~CoordinateAxesVtkMapper3D();
 
+  /**
+   * \class LocalStorage
+   * \brief Contains the VTK objects necessary to render the mitk::CoordinateAxesData via mitk::CoordinateAxesVtkMapper3D.
+   */
+  class LocalStorage : public mitk::Mapper::BaseLocalStorage
+  {
+    public:
+
+      vtkAxesActor* m_Actor;
+      itk::TimeStamp m_ShaderTimestampUpdate;
+
+      LocalStorage();
+      ~LocalStorage();
+  };
+
+  mitk::Mapper::LocalStorageHandler<LocalStorage> m_LocalStorage;
+
   virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer);
   virtual void ResetMapper( mitk::BaseRenderer* renderer );
-};
 
-
-/**
- * \class CoordinateAxesLocalStorage
- * \brief Contains the VTK objects necessary to render the mitk::CoordinateAxesData via mitk::CoordinateAxesVtkMapper3D.
- */
-class CoordinateAxesLocalStorage : public mitk::Mapper::BaseLocalStorage
-{
-  public:
-
-    vtkAxesActor* m_Actor;
-    itk::TimeStamp m_ShaderTimestampUpdate;
-
-    CoordinateAxesLocalStorage();
-    ~CoordinateAxesLocalStorage();
-};
-
-mitk::Mapper::LocalStorageHandler<CoordinateAxesLocalStorage> m_LSH;
-
-static void ApplyMitkPropertiesToVtkProperty(mitk::DataNode *node, vtkProperty* property, mitk::BaseRenderer* renderer);
-static void SetDefaultPropertiesForVtkProperty(mitk::DataNode* node, mitk::BaseRenderer* renderer, bool overwrite);
+}; // end class
 
 } // end namespace
 
