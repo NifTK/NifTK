@@ -44,6 +44,23 @@ public:
   vtkSetStringMacro(FileName);
   vtkGetStringMacro(FileName);
 
+  /*
+   * \brief turn on range clipping (discards points that fall outside the set range)
+   * \params 
+   * Direction to clip in (0 = x, 1 = y , 2 = z, 3 = weight)
+   * The minimum clipping value
+   * The maximum clipping value 
+   */
+  void SetClippingOn ( int direction, double min, double max );
+  /*
+   * \brief turn off range clipping (discards points that fall outside the set range)
+   * \params 
+   * Direction to clip in (0 = x, 1 = y , 2 = z, 3 = weight)
+   */
+  void SetClippingOff ( int direction );
+  
+
+
 protected:
   niftkvtk4PointsReader();
   ~niftkvtk4PointsReader();
@@ -53,6 +70,9 @@ protected:
   int RequestData(vtkInformation*,
                   vtkInformationVector**,
                   vtkInformationVector*);
+  bool          m_Clipping[4]; 
+  double        m_Min[4];
+  double        m_Max[4];
 };
 
 #endif

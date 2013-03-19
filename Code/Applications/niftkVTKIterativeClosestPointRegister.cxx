@@ -215,11 +215,23 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkPolyData> c_source = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
 
-  vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
-  sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
-  sourceReader->Update();
-  source->ShallowCopy (sourceReader->GetOutput());
-  std::cout << "Loaded PolyData:" << args.sourcePolyDataFile << std::endl;
+  if ( boost::algorithm::ends_with(args.sourcePolyDataFile , ".txt") )
+  {
+    vtkSmartPointer<niftkvtk4PointsReader> sourceReader = vtkSmartPointer<niftkvtk4PointsReader>::New();
+    sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
+    sourceReader->SetClippingOn(2,50, 200);
+    sourceReader->Update();
+    source->ShallowCopy (sourceReader->GetOutput());
+    std::cout << "Loaded text file:" << args.sourcePolyDataFile << std::endl;
+  }
+  else
+  {
+    vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
+    sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
+    sourceReader->Update();
+    source->ShallowCopy (sourceReader->GetOutput());
+    std::cout << "Loaded PolyData:" << args.sourcePolyDataFile << std::endl;
+  }
   if ( args.randomTransform )
   {
     c_source->DeepCopy (source);
@@ -229,6 +241,7 @@ int main(int argc, char** argv)
   {
     vtkSmartPointer<niftkvtk4PointsReader> targetReader = vtkSmartPointer<niftkvtk4PointsReader>::New();
     targetReader->SetFileName(args.targetPolyDataFile.c_str());
+    targetReader->SetClippingOn(2,50, 200);
     targetReader->Update();
     target->ShallowCopy (targetReader->GetOutput());
     std::cout << "Loaded text file:" << args.targetPolyDataFile << std::endl;

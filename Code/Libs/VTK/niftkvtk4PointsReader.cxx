@@ -27,6 +27,11 @@ niftkvtk4PointsReader::niftkvtk4PointsReader()
 {
   this->FileName = 0;
   this->SetNumberOfInputPorts(0);
+  for ( int i = 0 ; i < 4 ; i ++ ) 
+  {
+    m_Clipping[i] = false;
+  }
+
 }
 
 //----------------------------------------------------------------------------
@@ -74,8 +79,24 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
   double weight;
   while(fin >> x[0] >> x[1] >> x[2] >> weight)
   {
-    vtkIdType id = points->InsertNextPoint(x);
-    verts->InsertNextCell(1, &id);
+    bool ok=true;
+    for ( int i = 0 ; i < 3 ; i++)
+    {
+      if ( m_Clipping[i] && ( ( x[i] < m_Min[i] ) || ( x[i] > m_Max[i] )) )
+      {
+        ok = false;
+      }
+    }
+    if ( m_Clipping[3] && ( ( weight < m_Min[3] ) || ( weight > m_Max[3] )) )
+    {
+      ok = false;
+    }
+
+    if ( ok )
+    {
+      vtkIdType id = points->InsertNextPoint(x);
+      verts->InsertNextCell(1, &id);
+    }
   }
   vtkDebugMacro("Read " << points->GetNumberOfPoints() << " points.");
 
@@ -85,4 +106,16 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
   output->SetVerts(verts);
 
   return 1;
+}
+//-------------------------------------------------------------------------------
+void niftkvtk4PointsReader::SetClippingOn (int direction, double min, double max)
+{
+  m_Clipping[direction] = true;
+  m_Min[direction] = min;
+  m_Max[direction] = max;
+}
+//-------------------------------------------------------------------------------
+void niftkvtk4PointsReader::SetClippingOff (int direction)
+{
+  m_Clipping[direction]=false;
 }
