@@ -27,6 +27,7 @@ set(CPP_FILES
   DataManagement/mitkMIDASNodeAddedVisibilitySetter.cpp
   DataManagement/mitkMIDASDataNodeNameStringFilter.cpp
   DataManagement/mitkCoordinateAxesData.cpp
+  Rendering/mitkCoordinateAxesVtkMapper3D.cpp
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cpp
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cpp
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cpp

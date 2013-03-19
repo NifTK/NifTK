@@ -96,6 +96,7 @@ void CoordinateAxesData::GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const
     itk::Matrix<mitk::ScalarType, 3,3> matrix = itkTrans->GetMatrix();
     itk::Vector<mitk::ScalarType, 3> offset = itkTrans->GetOffset();
 
+    matrixToWriteTo.Identity();
     for (int i = 0; i < 3; i++)
     {
       for (int j = 0; j < 3; j++)
