@@ -27,12 +27,14 @@ CoordinateAxesData::CoordinateAxesData()
   i.Fill(0);
 
   SizeType s;
-  s.Fill(0);
+  s.Fill(10);
 
   m_LargestPossibleRegion.SetSize(s);
   m_LargestPossibleRegion.SetIndex(i);
   m_RequestedRegion.SetSize(s);
   m_RequestedRegion.SetIndex(i);
+
+  Superclass::InitializeTimeSlicedGeometry();
 }
 
 
@@ -74,7 +76,7 @@ void CoordinateAxesData::SetRequestedRegion(itk::DataObject *data)
 const CoordinateAxesData::RegionType& CoordinateAxesData::GetLargestPossibleRegion() const
 {
   m_LargestPossibleRegion.SetIndex(3, 0);
-  m_LargestPossibleRegion.SetSize(3, GetTimeSlicedGeometry()->GetTimeSteps());
+  m_LargestPossibleRegion.SetSize(3, 1);
   return m_LargestPossibleRegion;
 }
 
