@@ -247,8 +247,9 @@ protected:
 
         // scoping for lock
         {
-          QMutexLocker    l(&lock);
           // other threads might supply us with a new pointer!
+          QMutexLocker    l(&lock);
+          
           if (copyoutasap)
           {
             readback_rgb(copyoutasap->imageData, copyoutasap->widthStep, copyoutasap->width, copyoutasap->height);
@@ -303,7 +304,7 @@ protected:
       if (height - (i * dim.second) < dim.second)
         return;
 
-      char*   subbuf = &buffer[i * height * bufferpitch];
+      char*   subbuf = &buffer[i * dim.second * bufferpitch];
 
       glBindTexture(GL_TEXTURE_2D, texid);
       glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, subbuf);
@@ -350,7 +351,9 @@ public:
   {
     QMutexLocker    l(&copyoutmutex);
     copyoutasap = img;
-    return copyoutfinished.wait(&copyoutmutex, 1000);
+    // cannot time out here! otherwise the caller may 
+    //  free the img buffer while our capture thread is writing into it
+    return copyoutfinished.wait(&copyoutmutex);
   }
 
   int get_texture_id(unsigned int stream) const
@@ -457,7 +460,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 
   // failed somewhere
   cvReleaseImage(&frame);
-  return std::make_pair(0, 0);
+  return std::make_pair((IplImage*) 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -527,8 +530,6 @@ void QmitkIGINVidiaDataSource::OnTimeout()
         }
         node->Modified();
 
-        cvReleaseImage(&frame.first);
-
         this->SetStatus("Grabbing");
 
         igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
@@ -542,6 +543,8 @@ void QmitkIGINVidiaDataSource::OnTimeout()
 
         this->AddData(wrapper.GetPointer());
       } // for
+
+      cvReleaseImage(&frame.first);
     } 
     else
       this->SetStatus("Failed");

@@ -536,7 +536,8 @@ std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode(const std::strin
   std::vector<mitk::DataNode::Pointer> dataNodes;
   mitk::DataNode::Pointer node = NULL;
 
-  if (allDataNodes.size() > 1 && name.size() > 0)
+  // FIXME: hack to get a new node for a new name! but will also give a new node for an old name!
+  if (allDataNodes.size() > 0 && name.size() > 0)
   {
     // See if we can filter by name
     for (unsigned int i = 0; i < allDataNodes.size(); i++)
@@ -547,10 +548,10 @@ std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode(const std::strin
       }
     }
   }
-  else
-  {
-    dataNodes = allDataNodes;
-  }
+//  else
+//  {
+//    dataNodes = allDataNodes;
+//  }
 
   if (dataNodes.size() > 1)
   {
