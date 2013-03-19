@@ -20,6 +20,8 @@
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 
+#include <sstream>
+
 vtkStandardNewMacro(niftkvtk4PointsReader);
 
 //----------------------------------------------------------------------------
@@ -56,18 +58,18 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
 {
   // Make sure we have a file to read.
   if(!this->FileName)
-    {
+  {
     vtkErrorMacro("A FileName must be specified.");
     return 0;
-    }
+  }
 
   // Open the input file.
   ifstream fin(this->FileName);
   if(!fin)
-    {
+  {
     vtkErrorMacro("Error opening file " << this->FileName);
     return 0;
-    }
+  }
 
   // Allocate objects to hold points and vertex cells.
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -77,25 +79,38 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
   vtkDebugMacro("Reading points from file " << this->FileName);
   double x[3];
   double weight;
-  while(fin >> x[0] >> x[1] >> x[2] >> weight)
+  std::string line;
+  int counter = 0 ;
+  while ( getline(fin,line) )
   {
-    bool ok=true;
-    for ( int i = 0 ; i < 3 ; i++)
+    if ( line[0] != '#' )
     {
-      if ( m_Clipping[i] && ( ( x[i] < m_Min[i] ) || ( x[i] > m_Max[i] )) )
+      std::stringstream linestream(line);
+      if ( linestream >> x[0] >> x[1] >> x[2] >> weight) 
       {
-        ok = false;
+        bool ok=true;
+        for ( int i = 0 ; i < 3 ; i++)
+        {
+          if ( m_Clipping[i] && ( ( x[i] < m_Min[i] ) || ( x[i] > m_Max[i] )) )
+          {
+           ok = false;
+          }
+        }
+        if ( m_Clipping[3] && ( ( weight < m_Min[3] ) || ( weight > m_Max[3] )) )
+        {
+          ok = false;
+        } 
+
+        if ( ok )
+        {
+          vtkIdType id = points->InsertNextPoint(x);
+          verts->InsertNextCell(1, &id);
+        }
       }
     }
-    if ( m_Clipping[3] && ( ( weight < m_Min[3] ) || ( weight > m_Max[3] )) )
+    else
     {
-      ok = false;
-    }
-
-    if ( ok )
-    {
-      vtkIdType id = points->InsertNextPoint(x);
-      verts->InsertNextCell(1, &id);
+      std::cerr << "Skippinng Comments" << line << std::endl;
     }
   }
   vtkDebugMacro("Read " << points->GetNumberOfPoints() << " points.");
