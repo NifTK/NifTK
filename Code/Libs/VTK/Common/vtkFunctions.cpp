@@ -28,8 +28,6 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 
-#include "boost/nondet_random.hpp"
-
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
   double distance = 0;
@@ -228,7 +226,7 @@ void PerturbPolyData(vtkPolyData* polydata,
 {
    vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-   Uni_Rand->SetSeed(boost::random_device()());
+   Uni_Rand->SetSeed(time(NULL));
    Gauss_Rand->SetUniformSequence(Uni_Rand);
    PerturbPolyData(polydata,xerr, yerr,zerr, Gauss_Rand);
 }
@@ -237,7 +235,7 @@ void RandomTransform ( vtkTransform * transform,
     double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot)
 {
    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-   Uni_Rand->SetSeed(boost::random_device()());
+   Uni_Rand->SetSeed(time(NULL));
    RandomTransform(transform,xtrans,ytrans,ztrans,xrot,yrot,zrot,Uni_Rand);
 }
 

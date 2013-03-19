@@ -80,7 +80,6 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
   double x[3];
   double weight;
   std::string line;
-  int counter = 0 ;
   while ( getline(fin,line) )
   {
     if ( line[0] != '#' )
