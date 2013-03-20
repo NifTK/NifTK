@@ -375,22 +375,16 @@ public:
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
-: m_Timer(NULL), pimpl(new QmitkIGINVidiaDataSourceImpl)
+: pimpl(new QmitkIGINVidiaDataSourceImpl)
 {
   this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialising...");
 
-  pimpl->start();
+//  pimpl->start();
 
-  m_Timer = new QTimer();
-  m_Timer->setInterval(20); // milliseconds
-  m_Timer->setSingleShot(false);
-
-  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()));
-
-  m_Timer->start();
+  this->InitializeAndRunGrabbingThread(40);
 }
 
 
@@ -445,6 +439,7 @@ bool QmitkIGINVidiaDataSource::IsCapturing()
 //        because it has to wait
 std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 {
+/*
   // race condition: these two could be inconsistent
   //  but capture thread will check and simply not do anything then
   std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
@@ -460,6 +455,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 
   // failed somewhere
   cvReleaseImage(&frame);
+*/
   return std::make_pair((IplImage*) 0, 0);
 }
 
@@ -482,6 +478,30 @@ void QmitkIGINVidiaDataSource::GrabData()
 
   if (pimpl->is_running())
   {
+    igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+
+    // Aim of this method is to do something like when a NiftyLink message comes in.
+    mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
+    //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
+    wrapper->SetDataSource("QmitkIGINVidiaDataSource");
+    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
+    wrapper->SetDuration(1000000000); // nanoseconds
+
+    this->AddData(wrapper.GetPointer());
+
+    this->SetStatus("Grabbing");
+  }
+
+}
+
+
+bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
+{
+  bool result = false;
+
+  mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
+  if (dataType.IsNotNull())
+  {
     // one massive image, with all streams stacked in
     std::pair<IplImage*, int> frame = get_rgb_image();
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
@@ -499,7 +519,7 @@ void QmitkIGINVidiaDataSource::GrabData()
           MITK_ERROR << "QmitkIGINVidiaDataSource only supports a single video image per feed" << std::endl;
           this->SetStatus("Failed");
           cvReleaseImage(&frame.first);
-          return;
+          return false;
         }
         mitk::DataNode::Pointer node = dataNode[0];
 
@@ -529,19 +549,6 @@ void QmitkIGINVidiaDataSource::GrabData()
           }
         }
         node->Modified();
-
-        this->SetStatus("Grabbing");
-
-        igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-
-        // Aim of this method is to do something like when a NiftyLink message comes in.
-        mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
-        //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
-        wrapper->SetDataSource("QmitkIGINVidiaDataSource");
-        wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-        wrapper->SetDuration(1000000000); // nanoseconds
-
-        this->AddData(wrapper.GetPointer());
       } // for
 
       cvReleaseImage(&frame.first);
@@ -554,6 +561,8 @@ void QmitkIGINVidiaDataSource::GrabData()
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();
+
+  return result;
 }
 
 

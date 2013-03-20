@@ -69,6 +69,7 @@ public:
 
 protected:
   virtual void GrabData();
+  virtual bool Update(mitk::IGIDataType* data);
 
 
 public:
@@ -110,7 +111,6 @@ protected:
 
 private:
 
-  QTimer *m_Timer;
 
   QmitkIGINVidiaDataSourceImpl*     pimpl;
 
