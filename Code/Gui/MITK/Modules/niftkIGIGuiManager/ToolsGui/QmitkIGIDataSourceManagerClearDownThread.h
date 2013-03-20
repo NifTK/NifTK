@@ -12,19 +12,21 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
-#define QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#ifndef QMITKIGIDATASOURCEMANAGERCLEARDOWNTHREAD_H
+#define QMITKIGIDATASOURCEMANAGERCLEARDOWNTHREAD_H
 
 #include "QmitkIGITimerBasedThread.h"
-#include "QmitkIGILocalDataSource.h"
+#include "QmitkIGIDataSourceManager.h"
 
-class QmitkIGILocalDataSourceGrabbingThread : public QmitkIGITimerBasedThread
+/**
+ * \class QmitkIGIDataSourceManagerClearDownThread
+ * \brief Class thats triggered from a QTimer in its own thread, to call QmitkIGIDataSourceManager::OnCleanData.
+ */
+class QmitkIGIDataSourceManagerClearDownThread : public QmitkIGITimerBasedThread
 {
-  Q_OBJECT
-
 public:
-  QmitkIGILocalDataSourceGrabbingThread(QObject *parent, QmitkIGILocalDataSource *source);
-  ~QmitkIGILocalDataSourceGrabbingThread();
+  QmitkIGIDataSourceManagerClearDownThread(QObject *parent, QmitkIGIDataSourceManager *manager);
+  ~QmitkIGIDataSourceManagerClearDownThread() {}
 
   /**
    * \see QmitkIGITimerBasedThread::OnTimeoutImpl()
@@ -32,7 +34,7 @@ public:
   virtual void OnTimeoutImpl();
 
 private:
-  QmitkIGILocalDataSource *m_Source;
+  QmitkIGIDataSourceManager *m_Manager;
 };
 
-#endif // QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#endif // QMITKIGIDATASOURCEMANAGERCLEARDOWNTHREAD_H

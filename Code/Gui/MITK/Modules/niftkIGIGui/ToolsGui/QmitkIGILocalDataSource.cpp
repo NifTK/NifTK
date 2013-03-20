@@ -28,6 +28,7 @@ QmitkIGILocalDataSource::~QmitkIGILocalDataSource()
 {
   if (m_GrabbingThread != NULL)
   {
+    m_GrabbingThread->ForciblyStop();
     delete m_GrabbingThread;
   }
 }

@@ -28,25 +28,26 @@ QmitkIGITimerBasedThread::QmitkIGITimerBasedThread(QObject *parent) : QThread(pa
 //-----------------------------------------------------------------------------
 QmitkIGITimerBasedThread::~QmitkIGITimerBasedThread()
 {
-  this->ForciblyStop();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITimerBasedThread::ForciblyStop()
-{
   if (m_Timer != NULL)
   {
     m_Timer->stop();
     delete m_Timer;
     m_Timer = NULL;
   }
+}
 
+
+//-----------------------------------------------------------------------------
+void QmitkIGITimerBasedThread::ForciblyStop()
+{
   // Try this first to get a clean exit.
   this->quit();
 
+  // Wait up to a second.
+  bool isFinished = this->wait(1000);
+
   // If that failed, try to forcible terminate.
-  if (!this->isFinished())
+  if (!isFinished)
   {
     qDebug() << "Forcibly terminating a QmitkIGITimerBasedThread";
     this->terminate();

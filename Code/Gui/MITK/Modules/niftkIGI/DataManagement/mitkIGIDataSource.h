@@ -134,6 +134,11 @@ public:
   itkGetConstMacro(SaveOnReceipt, bool);
 
   /**
+   * \brief Each time ProcessData is called, we store a field to denote if all was well, and this method will retrieve the most recent.
+   */
+  itkGetConstMacro(SuccessfullyProcessing, bool);
+
+  /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
    */
   itkGetConstMacro(FrameRate, float);
@@ -324,6 +329,7 @@ private:
   std::list<std::string>                          m_SubTools;
   std::list<std::string>::iterator                m_SubToolsIterator;
   std::vector<mitk::DataNode::Pointer>            m_DataNodes;
+  bool                                            m_SuccessfullyProcessing;
 
 }; // end class
 

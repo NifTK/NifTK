@@ -13,7 +13,9 @@
 #============================================================================*/
 
 SET(CPP_FILES
-  ToolsGui/QmitkIGIDataSourceManager.cpp    
+  ToolsGui/QmitkIGIDataSourceManager.cpp
+  ToolsGui/QmitkIGIDataSourceManagerClearDownThread.cpp
+  ToolsGui/QmitkIGIDataSourceManagerGuiUpdateThread.cpp
 )
 
 SET(MOC_H_FILES
