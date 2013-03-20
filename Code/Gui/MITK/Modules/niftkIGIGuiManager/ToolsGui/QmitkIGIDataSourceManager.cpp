@@ -736,7 +736,6 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
   }
 
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
@@ -763,14 +762,17 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
       tItem->setIcon(pix);
     }
 
-    // update the status text
+    // Update the status text
     m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
 
+    // Update the lag number.
     double lag = source->GetCurrentTimeLag();
-    // FIXME: does this leak mem?
     QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
     lagItem->setTextAlignment(Qt::AlignCenter);
     lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+    // Documentation says that setItem takes ownership of QTableWidgetItem
+    // i.e. is responsible for deleting it.
     m_TableWidget->setItem(rowNumber, 5, lagItem);
   }
 
