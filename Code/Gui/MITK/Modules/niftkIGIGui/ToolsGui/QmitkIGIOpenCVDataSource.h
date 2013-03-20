@@ -24,8 +24,6 @@
 #include <QObject>
 #include <QMetaType>
 
-class QTimer;
-
 /**
  * \class IGIOpenCVDataSource
  * \brief Data source that provides access to a local video frame grabber using OpenCV
@@ -88,21 +86,18 @@ protected:
   QmitkIGIOpenCVDataSource& operator=(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
 
   /**
+   * \see QmitkIGILocalDataSource::GrabData()
+   */
+  virtual void GrabData();
+
+  /**
    * \brief \see IGIDataSource::SaveData();
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
-private slots:
-
-  /**
-   * \brief Call this to process a new frame.
-   */
-  void OnTimeout();
-
 private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
-  QTimer *m_Timer;
 
 }; // end class
 

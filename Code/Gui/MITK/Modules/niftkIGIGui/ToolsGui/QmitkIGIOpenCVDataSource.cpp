@@ -20,7 +20,6 @@
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
 #include <cv.h>
-#include <QTimer>
 #include <QCoreApplication>
 
 const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
@@ -28,7 +27,6 @@ const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("Ope
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 : m_VideoSource(NULL)
-, m_Timer(NULL)
 {
   qRegisterMetaType<mitk::VideoSource*>();
 
@@ -43,13 +41,8 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
 
-  m_Timer = new QTimer();
-  m_Timer->setInterval(50); // milliseconds
-  m_Timer->setSingleShot(false);
-
-  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()));
-
-  m_Timer->start();
+  // This creates and starts up the thread.
+  this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
 }
 
 
@@ -114,7 +107,7 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSource::OnTimeout()
+void QmitkIGIOpenCVDataSource::GrabData()
 {
   // Make sure we have exactly 1 data node.
   std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(OPENCV_IMAGE_NAME);
@@ -141,23 +134,26 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   // Now process the data.
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
 
-  // Aim of this method is to do something like when a NiftyLink message comes in.
+  // Aim of this bit is to do something like when a NiftyLink message comes in.
+  // We are essentially just wrapping the data, and stuffing it in a buffer (std::list).
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
   wrapper->CloneImage(img);
   wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
   wrapper->SetDuration(1000000000); // nanoseconds
   this->AddData(wrapper.GetPointer());
-  // update status in the igi-data-source-manager gui 
-  //  (which is different from the mitk data manager!)
+
+  // Update status in the igi-data-source-manager gui
+  // (which is different from the mitk data manager!)
   this->SetStatus("Grabbing");
 
+  // OpenCV's cannonical channel layout is bgr (instead of rgb)
+  // while everything usually else expects rgb...
   IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
-  // opencv's cannonical channel layout is bgr (instead of rgb)
-  //  while everything usually else expects rgb...
   cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
+
   // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-  //  we should make sure we got the layout right. (opencv itself does not use this in any way.)
+  // we should make sure we got the layout right. (opencv itself does not use this in any way.)
   std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
 
   // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
@@ -183,8 +179,6 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
     {
       MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
     }
-
-
   }
   node->Modified();
 
