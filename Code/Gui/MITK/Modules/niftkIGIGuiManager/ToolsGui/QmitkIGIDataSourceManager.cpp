@@ -24,6 +24,8 @@
 #include "QmitkIGIUltrasonixTool.h"
 #include "QmitkIGIOpenCVDataSource.h"
 #include "QmitkIGIDataSourceGui.h"
+#include "QmitkIGIDataSourceManagerClearDownThread.h"
+#include "QmitkIGIDataSourceManagerGuiUpdateThread.h"
 
 #ifdef _USE_NVAPI
 #include "QmitkIGINVidiaDataSource.h"
@@ -64,23 +66,9 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 {
-  if (m_ClearDownThread->isRunning())
-  {
-    m_ClearDownThread->exit(0);
-    while(!m_ClearDownThread->isFinished())
-    {
-      m_ClearDownThread->wait(250);
-    }
-  }
-
-  if (m_GuiUpdateThread->isRunning())
-  {
-    m_GuiUpdateThread->exit(0);
-    while(!m_GuiUpdateThread->isFinished())
-    {
-      m_GuiUpdateThread->wait(250);
-    }
-  }
+  // The destructor takes care of stopping everything correctly (or at least it 'should do').
+  delete m_ClearDownThread;
+  delete m_GuiUpdateThread;
 
   // Must delete the current GUI before the sources.
   this->DeleteCurrentGuiWidget();
@@ -120,7 +108,6 @@ void QmitkIGIDataSourceManager::DeleteCurrentGuiWidget()
 }
 
 
-
 //-----------------------------------------------------------------------------
 QString QmitkIGIDataSourceManager::GetDefaultPath()
 {
@@ -153,7 +140,6 @@ QString QmitkIGIDataSourceManager::GetDefaultPath()
 }
 
 
-
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::SetDataStorage(mitk::DataStorage* dataStorage)
 {
@@ -171,14 +157,13 @@ void QmitkIGIDataSourceManager::SetDataStorage(mitk::DataStorage* dataStorage)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
 {
-  m_FrameRate = framesPerSecond;
-
   if (m_GuiUpdateThread != NULL)
   {
     int milliseconds = 1000 / framesPerSecond;
     m_GuiUpdateThread->SetInterval(milliseconds);
   }
 
+  m_FrameRate = framesPerSecond;
   this->Modified();
 }
 
@@ -186,14 +171,13 @@ void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::SetClearDataRate(int numberOfSeconds)
 {
-  m_ClearDataRate = numberOfSeconds;
-
   if (m_ClearDownThread != NULL)
   {
     int milliseconds = 1000 * numberOfSeconds;
     m_ClearDownThread->SetInterval(milliseconds);
   }
 
+  m_ClearDataRate = numberOfSeconds;
   this->Modified();
 }
 
@@ -222,6 +206,7 @@ void QmitkIGIDataSourceManager::SetWarningColour(QColor &colour)
 }
 
 
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::SetOKColour(QColor &colour)
 {
   m_OKColour = colour;
@@ -464,6 +449,8 @@ void QmitkIGIDataSourceManager::OnAddSource()
   return;
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
 {
   
@@ -533,6 +520,7 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
   }
   return source->GetIdentifier();
 }
+
 
 //------------------------------------------------
 int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLinkSocketObject* socket)
@@ -605,6 +593,7 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
   
   return source->GetIdentifier();
 }
+
 
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRemoveSource()
@@ -786,7 +775,6 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateFrameRate()
 {
-  // This should be done in a separate thread, or a separate thread per source.
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
     source->UpdateFrameRate();
@@ -812,7 +800,6 @@ void QmitkIGIDataSourceManager::OnCleanData()
     return;
   }
 
-  // This should be done in a separate thread, or a separate thread per source.
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
     source->CleanBuffer();
@@ -875,124 +862,4 @@ void QmitkIGIDataSourceManager::PrintStatusMessage(const QString& message) const
 {
   m_ToolManagerConsole->appendPlainText(message + "\n");
   MITK_INFO << "QmitkIGIDataSourceManager:" << message.toStdString() << std::endl;
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkIGIDataSourceManagerClearDownThread::QmitkIGIDataSourceManagerClearDownThread(
-    QObject *parent, QmitkIGIDataSourceManager *manager)
-: QThread(parent)
-, m_TimerInterval(0)
-, m_Timer(NULL)
-, m_Manager(manager)
-{
-  this->setObjectName("QmitkIGIDataSourceManagerClearDownThread");
-  this->m_TimerInterval = QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE*1000;
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkIGIDataSourceManagerClearDownThread::~QmitkIGIDataSourceManagerClearDownThread()
-{
-  if (m_Timer != NULL)
-  {
-    m_Timer->stop();
-    delete m_Timer;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManagerClearDownThread::SetInterval(unsigned int milliseconds)
-{
-  m_TimerInterval = milliseconds;
-  if (m_Timer != NULL)
-  {
-    m_Timer->setInterval(m_TimerInterval);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManagerClearDownThread::run()
-{
-  m_Timer = new QTimer(); // do not pass in (this)
-
-  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()), Qt::DirectConnection);
-
-  m_Timer->setInterval(m_TimerInterval);
-  m_Timer->start();
-
-  this->exec();
-
-  disconnect(m_Timer, 0, 0, 0);
-  delete m_Timer;
-  m_Timer = NULL;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManagerClearDownThread::OnTimeout()
-{
-  m_Manager->OnCleanData();
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkIGIDataSourceManagerGuiUpdateThread::QmitkIGIDataSourceManagerGuiUpdateThread(
-    QObject *parent, QmitkIGIDataSourceManager *manager)
-: QThread(parent)
-, m_TimerInterval(0)
-, m_Timer(NULL)
-, m_Manager(manager)
-{
-  this->setObjectName("QmitkIGIDataSourceManagerGuiUpdateThread");
-  this->m_TimerInterval = 1000/QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE;
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkIGIDataSourceManagerGuiUpdateThread::~QmitkIGIDataSourceManagerGuiUpdateThread()
-{
-  if (m_Timer != NULL)
-  {
-    m_Timer->stop();
-    delete m_Timer;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManagerGuiUpdateThread::SetInterval(unsigned int milliseconds)
-{
-  m_TimerInterval = milliseconds;
-  if (m_Timer != NULL)
-  {
-    m_Timer->setInterval(m_TimerInterval);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManagerGuiUpdateThread::run()
-{
-  m_Timer = new QTimer(); // do not pass in (this)
-
-  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()), Qt::BlockingQueuedConnection);
-
-  m_Timer->setInterval(m_TimerInterval);
-  m_Timer->start();
-
-  this->exec();
-
-  disconnect(m_Timer, 0, 0, 0);
-  delete m_Timer;
-  m_Timer = NULL;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManagerGuiUpdateThread::OnTimeout()
-{
-  m_Manager->OnUpdateDisplay();
 }

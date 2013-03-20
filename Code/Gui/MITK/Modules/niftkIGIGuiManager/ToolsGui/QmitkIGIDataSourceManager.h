@@ -250,47 +250,5 @@ private:
 
 }; // end class
 
-/**
- * \brief Separate thread class to run the clear down.
- */
-class QmitkIGIDataSourceManagerClearDownThread : public QThread {
-  Q_OBJECT
-public:
-  QmitkIGIDataSourceManagerClearDownThread(QObject *parent, QmitkIGIDataSourceManager *manager);
-  ~QmitkIGIDataSourceManagerClearDownThread();
-
-  void SetInterval(unsigned int milliseconds);
-  void run();
-
-public slots:
-  void OnTimeout();
-
-private:
-  unsigned int m_TimerInterval;
-  QTimer *m_Timer;
-  QmitkIGIDataSourceManager *m_Manager;
-};
-
-/**
- * \brief Separate thread class to run the GUI update at the right rate.
- */
-class QmitkIGIDataSourceManagerGuiUpdateThread : public QThread {
-  Q_OBJECT
-public:
-  QmitkIGIDataSourceManagerGuiUpdateThread(QObject *parent, QmitkIGIDataSourceManager *manager);
-  ~QmitkIGIDataSourceManagerGuiUpdateThread();
-
-  void SetInterval(unsigned int milliseconds);
-  void run();
-
-public slots:
-  void OnTimeout();
-
-private:
-  unsigned int m_TimerInterval;
-  QTimer *m_Timer;
-  QmitkIGIDataSourceManager *m_Manager;
-};
-
 #endif
 

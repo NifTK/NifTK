@@ -12,19 +12,21 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
-#define QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#ifndef QMITKIGIDATASOURCEMANAGERGUIUPDATETHREAD_H
+#define QMITKIGIDATASOURCEMANAGERGUIUPDATETHREAD_H
 
 #include "QmitkIGITimerBasedThread.h"
-#include "QmitkIGILocalDataSource.h"
+#include "QmitkIGIDataSourceManager.h"
 
-class QmitkIGILocalDataSourceGrabbingThread : public QmitkIGITimerBasedThread
+/**
+ * \class QmitkIGIDataSourceManagerGuiUpdateThread
+ * \brief Class thats triggered from a QTimer in its own thread, to call QmitkIGIDataSourceManager::OnUpdateDisplay.
+ */
+class QmitkIGIDataSourceManagerGuiUpdateThread : public QmitkIGITimerBasedThread
 {
-  Q_OBJECT
-
 public:
-  QmitkIGILocalDataSourceGrabbingThread(QObject *parent, QmitkIGILocalDataSource *source);
-  ~QmitkIGILocalDataSourceGrabbingThread();
+  QmitkIGIDataSourceManagerGuiUpdateThread(QObject *parent, QmitkIGIDataSourceManager *manager);
+  ~QmitkIGIDataSourceManagerGuiUpdateThread() {}
 
   /**
    * \see QmitkIGITimerBasedThread::OnTimeoutImpl()
@@ -32,7 +34,7 @@ public:
   virtual void OnTimeoutImpl();
 
 private:
-  QmitkIGILocalDataSource *m_Source;
+  QmitkIGIDataSourceManager *m_Manager;
 };
 
-#endif // QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#endif // QMITKIGIDATASOURCEMANAGERGUIUPDATETHREAD_H
