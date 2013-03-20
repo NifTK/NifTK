@@ -12,22 +12,22 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
-#define QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#ifndef QMITKIGIDATASOURCEBACKGROUNDSAVETHREAD_H
+#define QMITKIGIDATASOURCEBACKGROUNDSAVETHREAD_H
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGITimerBasedThread.h"
-#include "QmitkIGILocalDataSource.h"
+#include "QmitkIGIDataSource.h"
 
 /**
- * \class QmitkIGILocalDataSourceGrabbingThread
- * \brief Thread simply to call back onto QmitkIGILocalDataSource and call QmitkIGILocalDataSource::GrabData().
+ * \class QmitkIGIDataSourceBackgroundSaveThread
+ * \brief Thread class, based on QmitkIGITimerBasedThread to simply call "Save" on the mitk::IGIDataSource's buffer.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSourceGrabbingThread : public QmitkIGITimerBasedThread
+class NIFTKIGIGUI_EXPORT QmitkIGIDataSourceBackgroundSaveThread : public QmitkIGITimerBasedThread
 {
 public:
-  QmitkIGILocalDataSourceGrabbingThread(QObject *parent, QmitkIGILocalDataSource *source);
-  ~QmitkIGILocalDataSourceGrabbingThread();
+  QmitkIGIDataSourceBackgroundSaveThread(QObject *parent, QmitkIGIDataSource *source);
+  ~QmitkIGIDataSourceBackgroundSaveThread();
 
   /**
    * \see QmitkIGITimerBasedThread::OnTimeoutImpl()
@@ -35,7 +35,7 @@ public:
   virtual void OnTimeoutImpl();
 
 private:
-  QmitkIGILocalDataSource *m_Source;
+  QmitkIGIDataSource *m_Source;
 };
 
-#endif // QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#endif // QMITKIGIDATASOURCEBACKGROUNDSAVETHREAD_H

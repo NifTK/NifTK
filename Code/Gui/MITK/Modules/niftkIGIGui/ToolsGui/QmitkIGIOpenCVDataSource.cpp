@@ -131,10 +131,8 @@ void QmitkIGIOpenCVDataSource::GrabData()
   wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
   wrapper->SetDuration(1000000000); // nanoseconds
-  this->AddData(wrapper.GetPointer());
 
-  // Update status in the igi-data-source-manager gui
-  // (which is different from the mitk data manager!)
+  this->AddData(wrapper.GetPointer());
   this->SetStatus("Grabbing");
 }
 

@@ -256,7 +256,7 @@ private:
   double                                               m_ClipNear; //the near clipping plane of the VTK camera used
   double                                               m_ClipFar; //the far clipping plane of the VTK camera used
   bool                                                 m_TransformTrackerToMITKCoords; //Set to true to use m_FiducialRegistrationFilter
-  itk::Matrix<double,4,4>                               m_PreMatrix; //Use this to apply a matrix to a data node during tracking.
+  itk::Matrix<double,4,4>                              m_PreMatrix; //Use this to apply a matrix to a data node during tracking.
 }; // end class
 
 #endif
