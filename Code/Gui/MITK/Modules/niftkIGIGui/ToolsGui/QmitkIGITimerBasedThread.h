@@ -17,8 +17,9 @@
 
 #include <QThread>
 #include <QTimer>
+#include "niftkIGIGuiExports.h"
 
-class QmitkIGITimerBasedThread : public QThread
+class NIFTKIGIGUI_EXPORT QmitkIGITimerBasedThread : public QThread
 {
   Q_OBJECT
 

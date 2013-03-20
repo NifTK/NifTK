@@ -26,7 +26,7 @@
 #include "video/sdiinput.h"
 
 
-struct QmitkIGINVidiaDataSourceImpl : public QThread
+struct QmitkIGINVidiaDataSourceImpl// : public QThread
 {
   // all the sdi stuff needs an opengl context
   //  so we'll create our own
@@ -39,7 +39,7 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
   //  is happily working away. and tada it works :)
   QGLWidget*              oglshare;
 
-  enum CaptureThreadState
+  enum CaptureState
   {
     PRE_INIT,
     HW_ENUM,
@@ -48,7 +48,7 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
     DEAD
   };
   // no need to lock this one
-  volatile CaptureThreadState   current_state;
+  volatile CaptureState   current_state;
 
   volatile bool           stop_asap;
 
@@ -58,6 +58,8 @@ struct QmitkIGINVidiaDataSourceImpl : public QThread
   video::SDIInput*        sdiin;
   video::StreamFormat     format;
   int                     streamcount;
+
+  video::FrameInfo      last_successful_frame;
 
   // we keep our own copy of the texture ids (instead of relying on sdiin)
   //  so that another thread can easily get these
@@ -86,6 +88,8 @@ public:
     oglshare->hide();
     assert(oglshare->isValid());
     assert(oglwin->isSharing());
+
+    last_successful_frame.sequence_number = 0;
   }
 
   ~QmitkIGINVidiaDataSourceImpl()
@@ -127,14 +131,11 @@ public:
     lock.unlock();
   }
 
-
-protected:
   virtual void run()
   {
-    oglwin->makeCurrent();
-
+    
+#if 0
     // initial hardware check
-    init();
     if (has_hardware())
     {
       bool  captureok = false;
@@ -144,47 +145,27 @@ protected:
         if (!captureok)
         {
           // sleep
-          QThread::msleep(500);
+        //  QThread::msleep(500);
           // try again
-          init();
+ //         init();
         }
 
         current_state = RUNNING;
-        captureok = capture();
+//        captureok = capture();
       }
     }
 
     current_state = DEAD;
-  }
-
-  void init()
-  {
-    current_state = HW_ENUM;
-
-    QMutexLocker    l(&lock);
-
-    // libvideo does its own glew init, so we can get cracking straight away
-    try
-    {
-      check_video();
-    }
-    catch (...)
-    {
-      // FIXME: need to report this back to gui somehow
-      std::cerr << "Whoops" << std::endl;
-      current_state = FAILED;
-    }
+#endif
   }
 
 
-protected:
+
   // FIXME: needs cfg param to decide which channel to capture, format, etc
   void check_video()
   {
     // make sure nobody messes around with contexts
     assert(QGLContext::currentContext() == oglwin->context());
-
-    QMutexLocker    l(&lock);
 
     // we do not own the device!
     sdidev = 0;
@@ -222,6 +203,8 @@ protected:
       if (format.format != video::StreamFormat::PF_NONE)
       {
         sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS);
+
+        // FIXME: these might not be constant throughout a single capture sessions!
         for (int i = 0; i < 4; ++i)
           textureids[i] = sdiin->get_texture_id(i);
       }
@@ -230,21 +213,8 @@ protected:
     // assuming everything went fine
     //  we now have texture objects that will receive video data everytime we call capture()
   }
-
-  bool capture()
-  {
-    // make sure nobody messes around with contexts
-    assert(QGLContext::currentContext() == oglwin->context());
-
     
-    // it's only our thread that ever writes to sdiin
-    //  in check_video()
-    if (sdiin)
-    {
-      try
-      {
-        sdiin->capture();
-
+/*
         // scoping for lock
         {
           // other threads might supply us with a new pointer!
@@ -261,16 +231,7 @@ protected:
             copyoutfinished.wakeOne();
           }
         }
-
-        return true;
-      }
-      catch (...)
-      {
-          return false;
-      }
-    }
-    return false;
-  }
+*/
 
 
   void readback_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
@@ -382,9 +343,7 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialising...");
 
-//  pimpl->start();
-
-  this->InitializeAndRunGrabbingThread(40);
+  this->InitializeAndRunGrabbingThread(20);
 }
 
 
@@ -394,7 +353,7 @@ QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
   this->StopCapturing();
 
   pimpl->stop_asap = true;
-  pimpl->wait(5000);
+  //pimpl->wait(5000);
   delete pimpl;
 }
 
@@ -464,34 +423,121 @@ void QmitkIGINVidiaDataSource::GrabData()
 {
   assert(pimpl != 0);
 
+  assert(m_GrabbingThread == (QmitkIGILocalDataSourceGrabbingThread*) QThread::currentThread());
+
+
+  // FIXME: currently the grabbing thread's sole purpose is to call into this method
+  //        so we could just block it here with a while loop and do our capture stuff
+
+  QMutexLocker    l(&pimpl->lock);
+
+  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::FAILED)
+  {
+    return;
+  }
+  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::DEAD)
+  {
+    return;
+  }
+
+  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::PRE_INIT)
+  {
+    pimpl->oglwin->makeCurrent();
+    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+  }
+
+  // make sure nobody messes around with contexts
+  assert(QGLContext::currentContext() == pimpl->oglwin->context());
+
+  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::HW_ENUM)
+  {
+    try
+    {
+      // libvideo does its own glew init, so we can get cracking straight away
+      pimpl->check_video();
+
+      // once we have an input setup
+      //  grab at least one frame, there seems to be some glitch in the driver
+      //  where has_frame() always returns false
+      if (pimpl->sdiin)
+      {
+        pimpl->sdiin->capture();
+      }
+    }
+    // getting an exception means something is broken
+    // during normal operation this should never happen
+    //  even if there's no hardware or signal
+    catch (const std::exception& e)
+    {
+      this->SetStatus(std::string("Failed: ") + e.what());
+      pimpl->current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
+      return;
+    }
+    catch (...)
+    {
+      this->SetStatus("Failed");
+      pimpl->current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
+      return;
+    }
+  }
+
   if (!pimpl->has_hardware())
   {
     this->SetStatus("No SDI hardware");
+    // no hardware then nothing to do
+    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::DEAD;
     return;
   }
 
   if (!pimpl->has_input())
   {
     this->SetStatus("No input signal");
+    // no signal, try again next round
+    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
     return;
   }
 
-  if (pimpl->is_running())
+  // if we get to here then we should be good to go!
+  pimpl->current_state = QmitkIGINVidiaDataSourceImpl::RUNNING;
+
+  try
   {
-    igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+    bool hasframe = pimpl->sdiin->has_frame();
+    // note: has_frame() will not throw an exception in case setup is broken
+    
+    if (hasframe)
+    {
+      // note: capture() will block for a frame to arrive
+      // that's why we have hasframe above
+      video::FrameInfo fi = pimpl->sdiin->capture();
 
-    // Aim of this method is to do something like when a NiftyLink message comes in.
-    mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
-    //wrapper->CloneImage(m_VideoSource->GetCurrentFrame()); either copy/clone the data or, just store some kind of frame count.
-    wrapper->SetDataSource("QmitkIGINVidiaDataSource");
-    wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-    wrapper->SetDuration(1000000000); // nanoseconds
+      igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
 
-    this->AddData(wrapper.GetPointer());
+      // Aim of this method is to do something like when a NiftyLink message comes in.
+      mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
 
-    this->SetStatus("Grabbing");
+      wrapper->set_values(1, fi.sequence_number, fi.arrival_time);
+
+      wrapper->SetDataSource("QmitkIGINVidiaDataSource");
+      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
+      wrapper->SetDuration(1000000000); // nanoseconds
+
+      this->AddData(wrapper.GetPointer());
+
+      this->SetStatus("Grabbing");
+    }
+  }
+  // capture() might throw if the capture setup has become invalid
+  // e.g. a mode change or signal lost
+  catch (...)
+  {
+    this->SetStatus("Glitched out");
+    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+    return;
   }
 
+  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
+  emit UpdateDisplay();
 }
 
 
@@ -559,8 +605,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   else
     this->SetStatus("...");
 
-  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
-  emit UpdateDisplay();
+
 
   return result;
 }

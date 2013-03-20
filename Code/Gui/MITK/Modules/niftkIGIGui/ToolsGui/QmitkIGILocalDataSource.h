@@ -69,7 +69,7 @@ protected:
    */
   virtual void GrabData() = 0;
 
-private:
+protected:
   QmitkIGILocalDataSourceGrabbingThread *m_GrabbingThread;
 
 }; // end class
