@@ -66,9 +66,17 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 {
-  // The destructor takes care of stopping everything correctly (or at least it 'should do').
-  delete m_ClearDownThread;
-  delete m_GuiUpdateThread;
+  if (m_ClearDownThread != NULL)
+  {
+    m_ClearDownThread->ForciblyStop();
+    delete m_ClearDownThread;
+  }
+
+  if (m_GuiUpdateThread != NULL)
+  {
+    m_GuiUpdateThread->ForciblyStop();
+    delete m_GuiUpdateThread;
+  }
 
   // Must delete the current GUI before the sources.
   this->DeleteCurrentGuiWidget();

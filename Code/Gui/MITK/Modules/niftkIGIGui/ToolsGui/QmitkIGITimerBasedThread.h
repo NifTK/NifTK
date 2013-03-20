@@ -38,12 +38,13 @@ public:
    */
   virtual void run();
 
-protected:
 
   /**
-   * \brief Called during destructor to make sure everything is stopped and cleaned up.
+   * \brief Make sure everything is stopped and cleaned up.
    */
   virtual void ForciblyStop();
+
+protected:
 
   /**
    * \brief Derived classes implement this.
