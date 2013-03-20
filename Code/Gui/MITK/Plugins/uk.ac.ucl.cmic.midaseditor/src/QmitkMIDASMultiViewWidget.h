@@ -17,6 +17,7 @@
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
+#include <QColor>
 #include <QEvent>
 #include <QList>
 #include <QWidget>
@@ -98,7 +99,7 @@ public:
   void RequestUpdateAll();
 
   /// \brief Set the background colour on all contained widgets, and we don't currently provide gradient backgrounds.
-  void SetBackgroundColour(mitk::Color colour);
+  void SetBackgroundColour(QColor backgroundColour);
 
   /// \brief Sets the default interpolation type, which only takes effect when a node is next dropped into a given window.
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
@@ -131,7 +132,7 @@ public:
   void SetShowMagnificationSlider(bool visible);
 
   /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch orientation between axial, coronal, sagittal.
-  void SetRememberViewSettingsPerOrientation(bool remember);
+  void SetRememberViewSettingsPerOrientation(bool rememberViewSettingsPerOrientation);
 
   /// \brief Sets the slice select slider to be tracking.
   void SetSliceSelectTracking(bool isTracking);
@@ -269,7 +270,7 @@ protected slots:
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
+  void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *view, double magnificationFactor);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
@@ -411,6 +412,8 @@ private:
   bool                                           m_InteractionEnabled;
   bool                                           m_Show2DCursors;
   bool                                           m_Show3DViewInOrthoview;
+  QColor                                         m_BackgroundColour;
+  bool                                           m_RememberViewSettingsPerOrientation;
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;

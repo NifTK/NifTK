@@ -260,22 +260,9 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
 {
   if (d->m_MIDASMultiViewWidget != NULL)
   {
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR, ""));
+    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR, "black"));
     QColor backgroundColour(backgroundColourName);
-    mitk::Color bgColour;
-    if (backgroundColourName=="") // default values
-    {
-      bgColour[0] = 0;
-      bgColour[1] = 0;
-      bgColour[2] = 0;
-    }
-    else
-    {
-      bgColour[0] = backgroundColour.red() / 255.0;
-      bgColour[1] = backgroundColour.green() / 255.0;
-      bgColour[2] = backgroundColour.blue() / 255.0;
-    }
-    d->m_MIDASMultiViewWidget->SetBackgroundColour(bgColour);
+    d->m_MIDASMultiViewWidget->SetBackgroundColour(backgroundColour);
     d->m_MIDASMultiViewWidget->SetDefaultInterpolationType((MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2)));
     d->m_MIDASMultiViewWidget->SetDefaultViewType((MIDASView)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW, 2))); // default coronal
     d->m_MIDASMultiViewWidget->SetDropTypeWidget((MIDASDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE, 0)));

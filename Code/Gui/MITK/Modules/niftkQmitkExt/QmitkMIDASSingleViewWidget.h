@@ -262,14 +262,14 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
-  void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor);
+  void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, double magnificationFactor);
 
 protected slots:
 
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   virtual void OnPositionChanged(QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
-  virtual void OnMagnificationFactorChanged(QmitkRenderWindow* window, double magnificationFactor);
+  virtual void OnMagnificationFactorChanged(double magnificationFactor);
 
 private:
 
@@ -279,8 +279,6 @@ private:
 
   /// \brief This method is called from both constructors to do the construction.
   void Initialize(QString windowName,
-                  double minimumMagnification,
-                  double maximumMagnification,
                   mitk::RenderingManager* renderingManager = 0,
                   mitk::DataStorage* dataStorage = 0
                  );
@@ -308,13 +306,13 @@ private:
   double                               m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double                               m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  MIDASView                            m_CurrentView;
-  MIDASOrientation                     m_CurrentOrientation;
+  MIDASView                            m_View;
+  MIDASOrientation                     m_Orientation;
 
-  int                                  m_PreviousSliceNumbers[8];         // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  int                                  m_PreviousTimeSliceNumbers[8];     // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  double                               m_PreviousMagnificationFactors[8]; // Two each for axial, sagittal, coronal. Unbound, then bound, alternatingly.
-  bool                                 m_Initialised[8];
+  int                                  m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
+  int                                  m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
+  double                               m_MagnificationFactors[MIDAS_VIEW_NUMBER * 2];           // Two each for view. Unbound, then bound, alternatingly.
+  bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
 
   bool                                 m_NavigationControllerEventListening;
   bool                                 m_RememberViewSettingsPerOrientation;

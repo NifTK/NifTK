@@ -14,17 +14,17 @@
 
 #include "mitkNifTKCoreObjectFactory.h"
 
-#include "mitkProperties.h"
-#include "mitkBaseRenderer.h"
-#include "mitkDataNode.h"
-#include "mitkImage.h"
-#include "mitkNifTKItkImageFileIOFactory.h"
-#include "mitkVolumeDataVtkMapper3D.h"
-#include "mitkImageVtkMapper2D.h"
-#include "mitkItkImageFileIOFactory.h"
+#include <mitkItkImageFileIOFactory.h>
+#include <itkObjectFactory.h>
+#include <mitkProperties.h>
+#include <mitkBaseRenderer.h>
+#include <mitkDataNode.h>
+#include <mitkImage.h>
+#include <mitkVolumeDataVtkMapper3D.h>
+#include <mitkImageVtkMapper2D.h>
 #include "itkPNMImageIOFactory.h"
-
-#include "itkObjectFactory.h"
+#include "mitkNifTKItkImageFileIOFactory.h"
+#include "mitkCoordinateAxesVtkMapper3D.h"
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
@@ -79,6 +79,11 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
     if((dynamic_cast<Image*>(data) != NULL))
     {
       newMapper = mitk::VolumeDataVtkMapper3D::New();
+      newMapper->SetDataNode(node);
+    }
+    else if ((dynamic_cast<CoordinateAxesData*>(data) != NULL))
+    {
+      newMapper = mitk::CoordinateAxesVtkMapper3D::New();
       newMapper->SetDataNode(node);
     }
   }

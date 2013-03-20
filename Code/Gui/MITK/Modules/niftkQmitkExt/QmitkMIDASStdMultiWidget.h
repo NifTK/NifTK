@@ -220,7 +220,7 @@ signals:
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
-  void MagnificationFactorChanged(QmitkRenderWindow *renderWindow, double magnificationFactor);
+  void MagnificationFactorChanged(double magnificationFactor);
 
 protected slots:
 
@@ -261,6 +261,7 @@ private:
 
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
 
+  QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
   QGridLayout          *m_GridLayout;
   unsigned int          m_AxialSliceTag;

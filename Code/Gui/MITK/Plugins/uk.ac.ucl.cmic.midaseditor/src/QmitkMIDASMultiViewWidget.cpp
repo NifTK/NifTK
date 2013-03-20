@@ -94,6 +94,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_InteractionEnabled(false)
 , m_Show2DCursors(false)
 , m_Show3DViewInOrthoview(false)
+, m_RememberViewSettingsPerOrientation(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
@@ -370,10 +371,14 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->setObjectName(tr("QmitkMIDASSingleViewWidget"));
   widget->setVisible(false);
 
+  widget->SetBackgroundColor(m_BackgroundColour);
+  widget->SetDisplay3DViewInOrthoView(m_Show3DViewInOrthoview);
+  widget->SetRememberViewSettingsPerOrientation(m_RememberViewSettingsPerOrientation);
+
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(PositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
-  connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, double)));
+  connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 
   return widget;
 }
@@ -491,11 +496,12 @@ bool QmitkMIDASMultiViewWidget::GetShow3DViewInOrthoView() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remember)
+void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool rememberViewSettingsPerOrientation)
 {
+  m_RememberViewSettingsPerOrientation = rememberViewSettingsPerOrientation;
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    m_SingleViewWidgets[i]->SetRememberViewSettingsPerOrientation(remember);
+    m_SingleViewWidgets[i]->SetRememberViewSettingsPerOrientation(rememberViewSettingsPerOrientation);
   }
 }
 
@@ -640,13 +646,13 @@ MIDASView QmitkMIDASMultiViewWidget::GetDefaultOrientationForSegmentation() cons
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
+void QmitkMIDASMultiViewWidget::SetBackgroundColour(QColor backgroundColour)
 {
-  QColor background(colour[0] * 255, colour[1] * 255, colour[2] * 255);
+  m_BackgroundColour = backgroundColour;
 
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    m_SingleViewWidgets[i]->SetBackgroundColor(background);
+    m_SingleViewWidgets[i]->SetBackgroundColor(m_BackgroundColour);
   }
 
   this->RequestUpdateAll();
@@ -657,11 +663,11 @@ void QmitkMIDASMultiViewWidget::SetBackgroundColour(mitk::Color colour)
 void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColumns, bool isThumbnailMode)
 {
   // Work out required number of widgets, and hence if we need to create any new ones.
-  int requiredNumberOfWidgets = numberOfRows * numberOfColumns;
-  int currentNumberOfWidgets = m_SingleViewWidgets.size();
+  int requiredNumberOfViews = numberOfRows * numberOfColumns;
+  int currentNumberOfViews = m_SingleViewWidgets.size();
 
   // If we have the right number of widgets, there is nothing to do, so early exit.
-  if (requiredNumberOfWidgets == currentNumberOfWidgets)
+  if (requiredNumberOfViews == currentNumberOfViews)
   {
     return;
   }
@@ -673,31 +679,31 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
   //        m_VisibilityManager must match.
   /////////////////////////////////////////
 
-  if (requiredNumberOfWidgets > currentNumberOfWidgets)
+  if (requiredNumberOfViews > currentNumberOfViews)
   {
     // create some more widgets
-    int additionalWidgets = requiredNumberOfWidgets - m_SingleViewWidgets.size();
-    for (int i = 0; i < additionalWidgets; i++)
+    int additionalViews = requiredNumberOfViews - m_SingleViewWidgets.size();
+    for (int i = 0; i < additionalViews; i++)
     {
-      QmitkMIDASSingleViewWidget *widget = this->CreateSingleViewWidget();
-      widget->hide();
+      QmitkMIDASSingleViewWidget *view = this->CreateSingleViewWidget();
+      view->hide();
 
-      this->m_SingleViewWidgets.push_back(widget);
-      this->m_VisibilityManager->RegisterWidget(widget);
-      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfWidgets + i, false);
+      this->m_SingleViewWidgets.push_back(view);
+      this->m_VisibilityManager->RegisterWidget(view);
+      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfViews + i, false);
     }
   }
-  else if (requiredNumberOfWidgets < currentNumberOfWidgets)
+  else if (requiredNumberOfViews < currentNumberOfViews)
   {
     // destroy surplus widgets
-    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfWidgets, m_SingleViewWidgets.size() - 1);
+    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfViews, m_SingleViewWidgets.size() - 1);
 
-    for (int i = requiredNumberOfWidgets; i < m_SingleViewWidgets.size(); i++)
+    for (int i = requiredNumberOfViews; i < m_SingleViewWidgets.size(); i++)
     {
       delete m_SingleViewWidgets[i];
     }
 
-    m_SingleViewWidgets.erase(m_SingleViewWidgets.begin() + requiredNumberOfWidgets,
+    m_SingleViewWidgets.erase(m_SingleViewWidgets.begin() + requiredNumberOfViews,
                               m_SingleViewWidgets.end()
                              );
   }
@@ -890,7 +896,7 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, double magnificationFactor)
+void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, double magnificationFactor)
 {
   bool wasBlocked = m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(true);
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
@@ -1008,7 +1014,7 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
 
     double minMag = std::ceil(selectedView->GetMinMagnification());
     double maxMag = std::floor(selectedView->GetMaxMagnification());
-    double currentMag = std::floor(0.5 + selectedView->GetMagnificationFactor());
+    double currentMag = selectedView->GetMagnificationFactor();
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMinimum(minMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setMaximum(maxMag);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(currentMag);
