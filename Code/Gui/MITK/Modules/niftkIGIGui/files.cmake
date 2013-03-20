@@ -22,6 +22,7 @@ SET(CPP_FILES
   ToolsGui/QmitkIGINiftyLinkDataSource.cpp
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.cpp
   ToolsGui/QmitkIGIDataSource.cpp
+  ToolsGui/QmitkIGIDataSourceBackgroundSaveThread.cpp
   ToolsGui/QmitkIGIDataSourceGui.cpp
   ToolsGui/QmitkIGILocalDataSource.cpp
   ToolsGui/QmitkIGILocalDataSourceGrabbingThread.cpp
@@ -42,7 +43,6 @@ SET(MOC_H_FILES
   ToolsGui/QmitkIGIDataSource.h
   ToolsGui/QmitkIGIDataSourceGui.h
   ToolsGui/QmitkIGILocalDataSource.h
-  ToolsGui/QmitkIGILocalDataSourceGrabbingThread.h
   ToolsGui/QmitkIGITrackerTool.h
   ToolsGui/QmitkIGITrackerToolGui.h  
   ToolsGui/QmitkIGIUltrasonixTool.h

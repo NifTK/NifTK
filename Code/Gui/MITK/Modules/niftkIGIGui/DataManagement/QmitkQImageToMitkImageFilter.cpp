@@ -140,11 +140,11 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
   output->DisconnectPipeline();
 
   mitkImage = mitk::ImportItkImage( output , GeomImage->GetGeometry());
-
-
   return mitkImage;
 }
-	
+
+
+//-----------------------------------------------------------------------------
 template <typename TPixel, unsigned int VImageDimension>
 mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage)
 {
@@ -193,23 +193,26 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
 
   importFilter->SetImportPointer( localBuffer, numberOfPixels, false);
   importFilter->Update();
-/*	if ( image.format() == QImage::Indexed_8)
+
+/*
+	if ( image.format() == QImage::Indexed_8)
 	{
 		QVector<QRgb> colors=QVector<QRgb> (256);
 		for ( int i = 0 ; i < 256 ; i ++)
 		  colors[i] = qRgb(i,i,i);
 			image.setColorTable(colors);
-	}*/
+	}
+*/
 
   typename OutputItkImage::Pointer output = importFilter->GetOutput();
   output->DisconnectPipeline();
 
-		mitkImage = mitk::ImportItkImage( output, GeomImage->GetGeometry() );
-
+  mitkImage = mitk::ImportItkImage( output, GeomImage->GetGeometry() );
   return mitkImage;
 }
 
 
+//-----------------------------------------------------------------------------
 void QmitkQImageToMitkImageFilter::SetGeometryImage( mitk::Image::Pointer GeomImage)
 {
 	this->m_GeomImage = GeomImage;

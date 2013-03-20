@@ -107,9 +107,9 @@ protected slots:
 
 private:
 
-  NiftyLinkSocketObject           *m_Socket;
+  NiftyLinkSocketObject       *m_Socket;
   ClientDescriptorXMLBuilder  *m_ClientDescriptor;
-  bool                        m_UsingSomeoneElsesSocket;
+  bool                         m_UsingSomeoneElsesSocket;
 
 }; // end class
 

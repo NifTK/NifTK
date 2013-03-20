@@ -372,15 +372,8 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 
   return result;
 }
-void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
-{
-  this->m_SubTools = inStringList;
-}
 
-std::list<std::string> IGIDataSource::GetSubToolList ()
-{
-  return m_SubTools;
-}
+
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
@@ -598,6 +591,21 @@ std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode(const std::strin
   result.push_back(node);
   return result;
 }
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
+{
+  this->m_SubTools = inStringList;
+}
+
+
+//-----------------------------------------------------------------------------
+std::list<std::string> IGIDataSource::GetSubToolList ()
+{
+  return m_SubTools;
+}
+
 
 //-----------------------------------------------------------------------------
 } // end namespace

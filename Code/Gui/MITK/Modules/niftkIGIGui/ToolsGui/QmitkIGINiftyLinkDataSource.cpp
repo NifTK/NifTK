@@ -25,6 +25,8 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
   connect(m_Socket, SIGNAL(ClientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
   connect(m_Socket, SIGNAL(MessageReceivedSignal(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
 }
+
+
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *socket)
 : m_Socket(socket)
@@ -36,7 +38,6 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *
   connect(m_Socket, SIGNAL(MessageReceivedSignal(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
   this->ClientConnected();
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -94,6 +95,7 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
   DataSourceStatusUpdated.Send(this->GetIdentifier());
   return isListening;
 }
+
 
 //-----------------------------------------------------------------------------
 void QmitkIGINiftyLinkDataSource::ClientConnected()
@@ -155,6 +157,8 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
   qDebug() << deviceInfo;
   DataSourceStatusUpdated.Send(this->GetIdentifier());
 }
+
+
 //-----------------------------------------------------------------------------
 NiftyLinkSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
 {
