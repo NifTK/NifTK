@@ -91,6 +91,10 @@ protected:
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
   virtual QString GetHelpHomePageURL() const { return QString(); }
 
+  // \brief Sets a preference whether to reinitialise the rendering manager after opening a file.
+  // It is suggested to set this to 'false' with the DnD display.
+  void SetFileOpenTriggersReinit(bool openEditor);
+
 private:
 
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()

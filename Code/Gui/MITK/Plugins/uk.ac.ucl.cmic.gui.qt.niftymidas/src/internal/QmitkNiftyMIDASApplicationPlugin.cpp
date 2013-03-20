@@ -51,6 +51,7 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
   this->RegisterHelpSystem();
   this->RegisterMIDASGlobalInteractionPatterns();
   this->RegisterDataStorageListener();
+  this->SetFileOpenTriggersReinit(false);
 }
 
 
