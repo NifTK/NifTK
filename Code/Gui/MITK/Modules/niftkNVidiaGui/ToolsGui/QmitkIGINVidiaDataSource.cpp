@@ -131,36 +131,6 @@ public:
     lock.unlock();
   }
 
-  virtual void run()
-  {
-    
-#if 0
-    // initial hardware check
-    if (has_hardware())
-    {
-      bool  captureok = false;
-      while ((current_state != FAILED) && (stop_asap == false))
-      {
-        captureok &= has_input();
-        if (!captureok)
-        {
-          // sleep
-        //  QThread::msleep(500);
-          // try again
- //         init();
-        }
-
-        current_state = RUNNING;
-//        captureok = capture();
-      }
-    }
-
-    current_state = DEAD;
-#endif
-  }
-
-
-
   // FIXME: needs cfg param to decide which channel to capture, format, etc
   void check_video()
   {
@@ -222,7 +192,7 @@ public:
           
           if (copyoutasap)
           {
-            readback_rgb(copyoutasap->imageData, copyoutasap->widthStep, copyoutasap->width, copyoutasap->height);
+            
 
             // and reset pointer
             // so that we dont do it again unless explicitly requested
@@ -308,14 +278,7 @@ public:
     return std::make_pair(sdiin->get_width(), sdiin->get_height());
   }
 
-  bool copy_out_rgb(IplImage* img)
-  {
-    QMutexLocker    l(&copyoutmutex);
-    copyoutasap = img;
-    // cannot time out here! otherwise the caller may 
-    //  free the img buffer while our capture thread is writing into it
-    return copyoutfinished.wait(&copyoutmutex);
-  }
+
 
   int get_texture_id(unsigned int stream) const
   {
@@ -394,13 +357,13 @@ bool QmitkIGINVidiaDataSource::IsCapturing()
   return result;
 }
 
-// FIXME: this will lock onto the sdi input refresh rate!
-//        because it has to wait
+
 std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 {
-/*
-  // race condition: these two could be inconsistent
-  //  but capture thread will check and simply not do anything then
+  // i dont like this way of unstructured locking
+  pimpl->lock.lock();
+  // but the waitcondition stuff doesnt work otherwise
+
   std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
   int                   streamcount = pimpl->get_stream_count();
 
@@ -408,14 +371,19 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
   // mark layout as rgb instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGB\0", 4);
 
-  bool ok = pimpl->copy_out_rgb(frame);
-  if (ok)
-    return std::make_pair(frame, streamcount);
+  pimpl->copyoutasap = frame;
+
+  pimpl->copyoutmutex.lock();
+  // until here, capture thread would be stuck waiting for the lock
+  pimpl->lock.unlock();
+
+  pimpl->copyoutfinished.wait(&pimpl->copyoutmutex);
+  pimpl->copyoutmutex.unlock();
+  return std::make_pair(frame, streamcount);
 
   // failed somewhere
-  cvReleaseImage(&frame);
-*/
-  return std::make_pair((IplImage*) 0, 0);
+//  cvReleaseImage(&frame);
+//  return std::make_pair((IplImage*) 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -525,6 +493,13 @@ void QmitkIGINVidiaDataSource::GrabData()
       this->AddData(wrapper.GetPointer());
 
       this->SetStatus("Grabbing");
+
+      if (pimpl->copyoutasap)
+      {
+        pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+        pimpl->copyoutasap = 0;
+        pimpl->copyoutfinished.wakeOne();
+      }
     }
   }
   // capture() might throw if the capture setup has become invalid
@@ -548,6 +523,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
   if (dataType.IsNotNull())
   {
+    // FIXME: need to pass in the requested timestamp etc!
+
     // one massive image, with all streams stacked in
     std::pair<IplImage*, int> frame = get_rgb_image();
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
