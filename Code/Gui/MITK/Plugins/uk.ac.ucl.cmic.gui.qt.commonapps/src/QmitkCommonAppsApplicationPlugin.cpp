@@ -450,4 +450,17 @@ void QmitkCommonAppsApplicationPlugin::RegisterBinaryImageProperties(const std::
 
 
 //-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::SetFileOpenTriggersReinit(bool openEditor)
+{
+  // Blank the departmental logo for now.
+  berry::IPreferencesService::Pointer prefService =
+  berry::Platform::GetServiceRegistry()
+    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+
+  berry::IPreferences::Pointer generalPrefs = prefService->GetSystemPreferences()->Node("/General");
+  generalPrefs->PutBool("OpenEditor", openEditor);
+}
+
+
+//-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)
