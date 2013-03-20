@@ -21,5 +21,7 @@
 
 void RegisterTests()
 {
+  REGISTER_TEST(VTKIterativeClosestPointTest);
+  REGISTER_TEST(VTKIterativeClosestPointRepeatTest);
 }
 

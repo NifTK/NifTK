@@ -19,6 +19,14 @@
 #include "iostream"
 #include "ConversionUtils.h"
 #include "vtkFunctions.h"
+#include "vtkSmartPointer.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkBoxMuellerRandomSequence.h"
+#include "vtkMinimalStandardRandomSequence.h"
+#include <vtkDoubleArray.h>
+#include <vtkLookupTable.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkPointData.h>
 
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
@@ -146,5 +154,167 @@ void CopyDoubleVector(int n, const double *a, double *b)
     b[i] = a[i];
   }
 }
+
+void RandomTransform ( vtkTransform * transform,
+    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
+    vtkRandomSequence* rng)
+{
+  double x;
+  double y;
+  double z;
+  x=xtrans * NormalisedRNG ( rng ) ;
+  rng->Next();
+  y=ytrans * NormalisedRNG ( rng ); 
+  rng->Next();
+  z=ztrans * NormalisedRNG ( rng );
+  rng->Next();
+  transform->Translate(x,y,z);
+  double rot;
+  rot=xrot * NormalisedRNG ( rng);
+  rng->Next();
+  transform->RotateX(rot);
+  rot=yrot * NormalisedRNG(rng);
+  rng->Next();
+  transform->RotateY(rot);
+  rot=zrot * NormalisedRNG(rng);
+  rng->Next();
+  transform->RotateZ(rot);
+}
+
+void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
+{
+  vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter =
+        vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+#if VTK_MAJOR_VERSION <= 5
+  transformFilter->SetInputConnection(polydata->GetProducerPort());
+#else
+  transformFilter->SetInputData(polydata);
+#endif
+  transformFilter->SetTransform(transform);
+  transformFilter->Update();
+
+  polydata->ShallowCopy(transformFilter->GetOutput());
+
+}
+void PerturbPolyData(vtkPolyData* polydata, 
+    double xerr, double yerr, double zerr, vtkRandomSequence* rng)
+{
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  points->ShallowCopy(polydata->GetPoints());
+  for(vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
+  {
+    double p[3];
+    points->GetPoint(i, p);
+    double perturb[3];
+    rng->Next();
+    perturb[0] = NormalisedRNG(rng) * xerr ; 
+    rng->Next();
+    perturb[1] = NormalisedRNG(rng) * yerr ; 
+    rng->Next();
+    perturb[2] = NormalisedRNG(rng) * zerr ; 
+    rng->Next();
+    for(unsigned int j = 0; j < 3; j++)
+    {
+      p[j] += perturb[j];
+    }
+    points->SetPoint(i, p);
+  }
+  polydata->SetPoints(points);
+}
+void PerturbPolyData(vtkPolyData* polydata, 
+    double xerr, double yerr, double zerr)
+{
+   vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+   Uni_Rand->SetSeed(time(NULL));
+   Gauss_Rand->SetUniformSequence(Uni_Rand);
+   PerturbPolyData(polydata,xerr, yerr,zerr, Gauss_Rand);
+}
+
+void RandomTransform ( vtkTransform * transform,
+    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot)
+{
+   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+   Uni_Rand->SetSeed(time(NULL));
+   RandomTransform(transform,xtrans,ytrans,ztrans,xrot,yrot,zrot,Uni_Rand);
+}
+
+double NormalisedRNG (vtkRandomSequence* rng) 
+{
+  if  ( rng->IsA("vtkMinimalStandardRandomSequence") == 1 ) 
+  {
+    return rng->GetValue() - 0.5;
+  }
+  if ( rng->IsA("vtkBoxMuellerRandomSequence") == 1 ) 
+  {
+    return rng->GetValue();
+  }
+  std::cerr << "WARNING: Unknown random number generator encountered, can't normalise." << std::endl;
+  return rng->GetValue();
+}
+
+bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
+{
+  if ( source->GetNumberOfPoints() != target->GetNumberOfPoints() )
+  {
+    return false;
+  }
+  vtkSmartPointer<vtkDoubleArray> differences = vtkSmartPointer<vtkDoubleArray>::New();
+  differences->SetNumberOfComponents(1);
+  differences->SetName("Differences");
+  double min_dist=0;
+  double max_dist=0;
+  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ )
+  {
+    double p[3];
+    source->GetPoint(i,p);
+    double q[3];
+    target->GetPoint(i,q);
+    double dist = 0;
+    for ( int j = 0 ; j < 3 ; j++ )
+    {
+      dist += (p[j]-q[j])*(p[j]-q[j]);
+    }
+    dist = sqrt(dist);
+    differences->InsertNextValue(dist);
+    if ( i == 0 )
+    {
+      min_dist=dist;
+      max_dist=dist;
+    }
+    else
+    {
+      min_dist = dist < min_dist ? dist : min_dist;
+      max_dist = dist > max_dist ? dist : max_dist;
+    }
+   }
+   vtkSmartPointer<vtkLookupTable> colorLookupTable = vtkSmartPointer<vtkLookupTable>::New();
+   std::cerr << "Max Error = " << max_dist << " mm. Min Error = " << min_dist << " mm." << std::endl;
+   colorLookupTable->SetTableRange(min_dist, max_dist);
+   colorLookupTable->Build();
+   vtkSmartPointer<vtkUnsignedCharArray> colors =vtkSmartPointer<vtkUnsignedCharArray>::New();
+   colors->SetNumberOfComponents(3);
+   colors->SetName("Colors");
+
+   unsigned char color[3];
+   double dcolor[3];
+
+   for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ )
+   {
+     colorLookupTable->GetColor(differences->GetValue(i),dcolor);
+     for ( int j = 0 ; j < 3 ; j++ )
+     {
+       color[j] = static_cast<unsigned char>(255.0 * dcolor[j]);
+     }
+     colors->InsertNextTupleValue(color);
+   }
+
+   source->GetPointData()->SetScalars(colors);
+   target->GetPointData()->SetScalars(colors);
+   return true;
+}
+                           
+
+                                                                      
 
 #endif

@@ -14,6 +14,8 @@
 
 SET(niftkVTK_SRCS
   Common/vtkFunctions.cpp
+  niftkVTKIterativeClosestPoint.cxx
+  niftkvtk4PointsReader.cxx
 )
 
 if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")

@@ -32,6 +32,7 @@ SET(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
 SET(NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
   ${NIFTK_APPLICATION_LINK_LIBRARIES}
+  niftkVTK
 )
 
 # Note: vtkRendering seems to force a dependency on Qt. See above.
@@ -106,38 +107,37 @@ IF(SlicerExecutionModel_FOUND)
     # Add new programs which link to VTK and NiftyReg to this list.
     #-------------------------------------------------------------
 
-#    IF(NIFTYREG_FOUND)
-#      SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
-#        niftkF3DControlGridToVTKPolyData
-#      )
-#
-#      if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-#        # OpenMP is disabled when the compiler is based on Clang
-#        find_package(OpenMP)
-#        if(OPENMP_FOUND)
-#          set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#        endif(OPENMP_FOUND)
-#      endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-#      
-#      ADD_DEFINITIONS(-DUSE_NIFTYREG)
-#      LINK_DIRECTORIES(${NIFTYREG_LIBRARY_DIR})
-#      INCLUDE_DIRECTORIES(${NIFTYREG_INCLUDE_DIR})
-#      
-#      SET(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
-#        ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
-#        niftkITK
-#        niftkVTK
-#        ${NIFTYREG_LIBRARIES}
-#      )
-#      
-#      FOREACH(APP ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
-#        NIFTK_CONFIGURE_AND_BUILD_CLI(
-#          NAME ${APP} 
-#          TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
-#        )
-#      ENDFOREACH()
-#    ENDIF(NIFTYREG_FOUND)  
+    IF(NIFTYREG_FOUND)
+      SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
+        niftkF3DControlGridToVTKPolyData
+      )
+
+      if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+        # OpenMP is disabled when the compiler is based on Clang
+        find_package(OpenMP)
+        if(OPENMP_FOUND)
+          set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        endif(OPENMP_FOUND)
+      endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+      
+      ADD_DEFINITIONS(-DUSE_NIFTYREG)
+      LINK_DIRECTORIES(${NIFTYREG_LIBRARY_DIR})
+      INCLUDE_DIRECTORIES(${NIFTYREG_INCLUDE_DIR})
+      
+      SET(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
+        ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
+        niftkITK
+        ${NIFTYREG_LIBRARIES}
+      )
+      
+      FOREACH(APP ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
+        NIFTK_CONFIGURE_AND_BUILD_CLI(
+          NAME ${APP} 
+          TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
+        )
+      ENDFOREACH()
+    ENDIF(NIFTYREG_FOUND)  
     
   ENDIF(VTK_FOUND)  
   
@@ -294,6 +294,7 @@ IF(VTK_FOUND)
     niftkMarchingCubes
     niftkSmoothPolyData
     niftkTransformPolyData
+    niftkVTKIterativeClosestPointRegister
   )
 
   FOREACH(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})

@@ -915,7 +915,7 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_
 #############################################################################################
 
 SET(NIFTK_ITK_LIB ITKCommon ITKIO ITKBasicFilters ITKAlgorithms itkzlib)
-SET(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIO vtkCommon vtkGraphics vtkRendering )
+SET(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIO vtkCommon vtkGraphics vtkRendering vtkHybrid )
 SET(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 
 ######################################################################
