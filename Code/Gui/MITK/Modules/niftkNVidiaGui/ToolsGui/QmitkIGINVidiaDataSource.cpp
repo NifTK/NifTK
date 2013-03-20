@@ -464,7 +464,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 }
 
 //-----------------------------------------------------------------------------
-void QmitkIGINVidiaDataSource::OnTimeout()
+void QmitkIGINVidiaDataSource::GrabData()
 {
   assert(pimpl != 0);
 

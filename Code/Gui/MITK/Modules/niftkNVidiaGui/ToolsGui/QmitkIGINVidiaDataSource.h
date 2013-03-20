@@ -67,6 +67,10 @@ public:
   bool IsCapturing();
 
 
+protected:
+  virtual void GrabData();
+
+
 public:
   // to be used to share with the preview window, for example
   QGLWidget* get_capturecontext();
@@ -103,12 +107,6 @@ protected:
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
-private slots:
-
-  /**
-   * \brief Call this to process a new frame.
-   */
-  void OnTimeout();
 
 private:
 
