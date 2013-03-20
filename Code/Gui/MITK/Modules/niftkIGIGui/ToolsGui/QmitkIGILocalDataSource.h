@@ -22,6 +22,8 @@
 #include <itkRGBPixel.h>
 #include <cv.h>
 
+class QmitkIGILocalDataSourceGrabbingThread;
+
 /**
  * \class QmitkIGILocalDataSource
  * \brief Base class for IGI Data Sources that are not receiving networked input,
@@ -33,6 +35,8 @@ class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSource : public QmitkIGIDataSource
   Q_OBJECT
 
 public:
+
+  friend class QmitkIGILocalDataSourceGrabbingThread;
 
   mitkClassMacro(QmitkIGILocalDataSource, QmitkIGIDataSource);
 
@@ -54,7 +58,19 @@ protected:
    */
   mitk::Image::Pointer CreateMitkImage(const IplImage* image) const;
 
+  /**
+   * \brief Derived classes call this when they are ready for the updates to start,
+   * and this method instantiates the thread and laumches it.
+   */
+  void InitializeAndRunGrabbingThread(const int& intervalInMilliseconds);
+
+  /**
+   * \brief Called by QmitkIGILocalDataSourceGrabbingThread.
+   */
+  virtual void GrabData() = 0;
+
 private:
+  QmitkIGILocalDataSourceGrabbingThread *m_GrabbingThread;
 
 }; // end class
 
