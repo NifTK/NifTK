@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "QmitkNiftyViewAppWorkbenchAdvisor.h"
+#include "QmitkNiftyViewWorkbenchWindowAdvisor.h"
 
 //-----------------------------------------------------------------------------
 std::string QmitkNiftyViewAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
@@ -24,4 +25,11 @@ std::string QmitkNiftyViewAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 std::string QmitkNiftyViewAppWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
   return ":/QmitkNiftyViewApplication/icon_ucl.xpm";
+}
+
+//-----------------------------------------------------------------------------
+QmitkBaseWorkbenchWindowAdvisor* QmitkNiftyViewAppWorkbenchAdvisor::CreateQmitkBaseWorkbenchWindowAdvisor(
+    berry::IWorkbenchWindowConfigurer::Pointer configurer)
+{
+  return new QmitkNiftyViewWorkbenchWindowAdvisor(this, configurer);
 }

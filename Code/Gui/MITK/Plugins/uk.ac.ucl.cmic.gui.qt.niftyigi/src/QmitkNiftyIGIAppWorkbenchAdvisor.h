@@ -39,6 +39,15 @@ public:
 
   /// \brief Gets the resource name of the window icon.
   virtual std::string GetWindowIconResourcePath() const;
+
+protected:
+
+  /**
+   * \brief Actually creates the derived WorkbenchWindowAdvisor.
+   */
+  virtual QmitkBaseWorkbenchWindowAdvisor* CreateQmitkBaseWorkbenchWindowAdvisor(
+      berry::IWorkbenchWindowConfigurer::Pointer configurer);
+
 };
 
 #endif /*QMITKNIFTYIGIAPPWORKBENCHADVISOR_H_*/
