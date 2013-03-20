@@ -109,16 +109,6 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSource::GrabData()
 {
-  // Make sure we have exactly 1 data node.
-  std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(OPENCV_IMAGE_NAME);
-  if (dataNode.size() != 1)
-  {
-    MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
-    this->SetStatus("Failed");
-    return;
-  }
-  mitk::DataNode::Pointer node = dataNode[0];
-
   // Grab a video image.
   m_VideoSource->FetchFrame();
   const IplImage* img = m_VideoSource->GetCurrentFrame();
@@ -147,46 +137,78 @@ void QmitkIGIOpenCVDataSource::GrabData()
   // (which is different from the mitk data manager!)
   this->SetStatus("Grabbing");
 
-  // OpenCV's cannonical channel layout is bgr (instead of rgb)
-  // while everything usually else expects rgb...
-  IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
-  cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
-
-  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-  // we should make sure we got the layout right. (opencv itself does not use this in any way.)
-  std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
-
-  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-  mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
-  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-  if (imageInNode.IsNull())
-  {
-    node->SetData(convertedImage);
-  }
-  else
-  {
-    try
-    {
-      mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
-      const void* cPointer = readAccess.GetData();
-
-      mitk::ImageWriteAccessor writeAccess(imageInNode);
-      void* vPointer = writeAccess.GetData();
-
-      memcpy(vPointer, cPointer, img->width * img->height * 3);
-    }
-    catch(mitk::Exception& e)
-    {
-      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
-    }
-  }
-  node->Modified();
-
-  // Tidy up
-  cvReleaseImage(&rgbOpenCVImage);
-
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
   emit UpdateDisplay();
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
+{
+  bool result = false;
+
+  mitk::IGIOpenCVDataType::Pointer dataType = static_cast<mitk::IGIOpenCVDataType*>(data);
+  if (dataType.IsNotNull())
+  {
+    // Make sure we have exactly 1 data node.
+    std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(OPENCV_IMAGE_NAME);
+    if (dataNode.size() != 1)
+    {
+      MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
+      this->SetStatus("Failed");
+      return result;
+    }
+    mitk::DataNode::Pointer node = dataNode[0];
+
+    // Get Image from the dataType;
+    const IplImage* img = dataType->GetImage();
+    if (img == NULL)
+    {
+      MITK_ERROR << "Failed to extract OpenCV image from buffer" << std::endl;
+      this->SetStatus("Failed");
+      return result;
+    }
+
+    // OpenCV's cannonical channel layout is bgr (instead of rgb)
+    // while everything usually else expects rgb...
+    IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
+    cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
+
+    // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
+    // we should make sure we got the layout right. (opencv itself does not use this in any way.)
+    std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
+
+    // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
+    mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
+    mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+    if (imageInNode.IsNull())
+    {
+      node->SetData(convertedImage);
+    }
+    else
+    {
+      try
+      {
+        mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
+        const void* cPointer = readAccess.GetData();
+
+        mitk::ImageWriteAccessor writeAccess(imageInNode);
+        void* vPointer = writeAccess.GetData();
+
+        memcpy(vPointer, cPointer, img->width * img->height * 3);
+      }
+      catch(mitk::Exception& e)
+      {
+        MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+      }
+    }
+    node->Modified();
+    result = true;
+
+    // Tidy up
+    cvReleaseImage(&rgbOpenCVImage);
+  }
+  return result;
 }
 
 

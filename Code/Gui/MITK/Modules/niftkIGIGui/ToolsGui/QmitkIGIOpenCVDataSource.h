@@ -95,6 +95,11 @@ protected:
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
+  /**
+   * \brief Updates data storage with the image.
+   */
+  virtual bool Update(mitk::IGIDataType* data);
+
 private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
