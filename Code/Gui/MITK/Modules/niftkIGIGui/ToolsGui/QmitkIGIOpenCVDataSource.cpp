@@ -136,9 +136,6 @@ void QmitkIGIOpenCVDataSource::GrabData()
   // Update status in the igi-data-source-manager gui
   // (which is different from the mitk data manager!)
   this->SetStatus("Grabbing");
-
-  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
-  emit UpdateDisplay();
 }
 
 
@@ -202,7 +199,16 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
         MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
       }
     }
+
+    // We tell the node that it is modified so the next rendering event
+    // will redraw it. Triggering this does not in itself guarantee a re-rendering.
     node->Modified();
+
+    // We emit this, so that the GUI class associated with this tool (i.e.
+    // containing a preview of this data) also knows to update.
+    emit UpdateDisplay();
+
+    // So by this point, we are all done.
     result = true;
 
     // Tidy up
