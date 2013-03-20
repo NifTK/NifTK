@@ -36,8 +36,8 @@ namespace mitk {
  *
  * NOTE: All timestamps should be in UTC format. Also, take care NOT to expose a pointer to the
  * igtl::TimeStamp object. You should only ever expose a copy of this data, or an equivalent
- * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the timestamp
- * and set the time to TAI for example.
+ * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the
+ * timestamp and set the time to TAI for example.
  */
 class NIFTKIGI_EXPORT IGIDataSource : public itk::Object
 {
@@ -48,7 +48,7 @@ public:
 
   /**
    * \brief Each tool should signal when the status has updated by
-   * emitting its internal identiier, so that for example the GUI can redraw.
+   * emitting its internal identifier, so that for example the GUI can redraw.
    */
   Message1<int> DataSourceStatusUpdated;
 
@@ -94,9 +94,9 @@ public:
   itkGetConstMacro(NumberOfTools, int);
   
   /**
-   * \brief Sets the time tolerance for checking data, implemented in nano-seconds
-   * as we are using TAI time format, but in practice platforms such as Windows
-   * do not properly store nano-seconds, so the best you can probably rely on is milliseconds.
+   * \brief Sets the time tolerance for checking data, implemented in nano-seconds, but
+   * in practice platforms such as Windows do not properly store nano-seconds,
+   * so the best you can probably rely on is milliseconds.
    */
   itkSetMacro(TimeStampTolerance, unsigned long int);
   itkGetConstMacro(TimeStampTolerance, unsigned long int);
@@ -139,6 +139,11 @@ public:
   itkGetConstMacro(FrameRate, float);
 
   /**
+   * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
+   */
+  virtual void UpdateFrameRate();
+
+  /**
    * \brief Get the time stamp of the most recently requested time-point.
    */
   igtlUint64 GetRequestedTimeStamp() const { return GetTimeInNanoSeconds(m_RequestedTimeStamp); }
@@ -160,12 +165,6 @@ public:
    * with this class providing a default, do-nothing implementation.
    */
   virtual void Initialize() {};
-
-  /**
-   * \brief Derived classes can update the frame rate, as they receive data,
-   * and the units should be in frames per second.
-   */
-  virtual void UpdateFrameRate();
 
   /**
    * \brief Clears the internal buffer, which means completely destroying all the contents.
@@ -208,6 +207,7 @@ public:
   /**
    * \brief Processes the data for a given timestamp, returning true if
    * the current data is processed successfully and within time tolerance.
+
    */
   bool ProcessData(igtlUint64 requestedTimeStamp);
 
