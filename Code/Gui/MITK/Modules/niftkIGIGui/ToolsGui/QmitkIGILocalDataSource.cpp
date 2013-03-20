@@ -13,10 +13,12 @@
 =============================================================================*/
 
 #include "QmitkIGILocalDataSource.h"
+#include "QmitkIGILocalDataSourceGrabbingThread.h"
 #include "mitkITKImageImport.h"
 
 //-----------------------------------------------------------------------------
 QmitkIGILocalDataSource::QmitkIGILocalDataSource()
+: m_GrabbingThread(NULL)
 {
 }
 
@@ -24,6 +26,23 @@ QmitkIGILocalDataSource::QmitkIGILocalDataSource()
 //-----------------------------------------------------------------------------
 QmitkIGILocalDataSource::~QmitkIGILocalDataSource()
 {
+  if (m_GrabbingThread != NULL)
+  {
+    delete m_GrabbingThread;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGILocalDataSource::InitializeAndRunGrabbingThread(const int& intervalInMilliseconds)
+{
+  // Only do this once, as m_GrabbingThread initialised to NULL in constructor.
+  if (m_GrabbingThread == NULL)
+  {
+    m_GrabbingThread = new QmitkIGILocalDataSourceGrabbingThread(this, this);
+    m_GrabbingThread->SetInterval(intervalInMilliseconds);
+    m_GrabbingThread->start();
+  }
 }
 
 
