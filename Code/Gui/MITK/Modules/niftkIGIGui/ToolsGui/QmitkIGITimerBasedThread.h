@@ -15,10 +15,18 @@
 #ifndef QMITKIGITIMERBASEDTHREAD_H
 #define QMITKIGITIMERBASEDTHREAD_H
 
+#include "niftkIGIGuiExports.h"
 #include <QThread>
 #include <QTimer>
 
-class QmitkIGITimerBasedThread : public QThread
+/**
+ * \class QmitkIGITimerBasedThread
+ * \brief Base class for threads that are simply triggered off of a QTimer.
+ * \see QmitkIGILocalDataSourceGrabbingThread
+ * \see QmitkIGIDataSourceManagerClearDownThread
+ * \see QmitkIGIDataSourceManagerGuiUpdateThread
+ */
+class NIFTKIGIGUI_EXPORT QmitkIGITimerBasedThread : public QThread
 {
   Q_OBJECT
 

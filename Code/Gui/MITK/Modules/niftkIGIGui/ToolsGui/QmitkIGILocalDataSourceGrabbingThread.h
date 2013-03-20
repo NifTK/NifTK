@@ -15,10 +15,15 @@
 #ifndef QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
 #define QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
 
+#include "niftkIGIGuiExports.h"
 #include "QmitkIGITimerBasedThread.h"
 #include "QmitkIGILocalDataSource.h"
 
-class QmitkIGILocalDataSourceGrabbingThread : public QmitkIGITimerBasedThread
+/**
+ * \class QmitkIGILocalDataSourceGrabbingThread
+ * \brief Thread simply to call back onto QmitkIGILocalDataSource and call QmitkIGILocalDataSource::GrabData().
+ */
+class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSourceGrabbingThread : public QmitkIGITimerBasedThread
 {
   Q_OBJECT
 
