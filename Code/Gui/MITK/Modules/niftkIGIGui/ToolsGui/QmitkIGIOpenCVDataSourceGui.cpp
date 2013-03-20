@@ -100,7 +100,7 @@ void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
     m_Background->AddRenderWindow(m_RenderWindow->GetVtkRenderWindow());
     m_Background->UpdateVideo();
 
-    connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
+    connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()), Qt::QueuedConnection);
   }
   else
   {

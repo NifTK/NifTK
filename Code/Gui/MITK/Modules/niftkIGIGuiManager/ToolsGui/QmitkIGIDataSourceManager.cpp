@@ -44,7 +44,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 : m_DataStorage(NULL)
 , m_StdMultiWidget(NULL)
 , m_GridLayoutClientControls(NULL)
-, m_FrameRateTimer(NULL)
+, m_WidgetUpdateTimer(NULL)
 , m_NextSourceIdentifier(0)
 , m_ClearDownThread(NULL)
 , m_GuiUpdateThread(NULL)
@@ -227,8 +227,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_RecordPushButton->setEnabled(true);
   m_StopPushButton->setEnabled(false);
 
-  m_FrameRateTimer = new QTimer(this);
-  m_FrameRateTimer->setInterval(1000); // every 1 seconds
+  m_WidgetUpdateTimer = new QTimer(this);
+  m_WidgetUpdateTimer->setInterval(1000); // every 1 seconds
 
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
@@ -244,7 +244,6 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("local NVidia SDI");
 #endif
 
-
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
   m_ToolManagerConsole->setMaximumHeight(100);
   m_TableWidget->setMaximumHeight(150);
@@ -253,7 +252,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
-  connect(m_FrameRateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateFrameRate()) );
+  connect(m_WidgetUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateWidgets()) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
   connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
 
@@ -514,9 +513,9 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
   {
     m_GuiUpdateThread->start();
   }
-  if (!m_FrameRateTimer->isActive())
+  if (!m_WidgetUpdateTimer->isActive())
   {
-    m_FrameRateTimer->start();
+    m_WidgetUpdateTimer->start();
   }
   return source->GetIdentifier();
 }
@@ -577,7 +576,8 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
 
   // Increase this so that tools always have new identifier, regardless of what row of the table they are in.
   m_NextSourceIdentifier++;
- // Launch timers
+
+   // Launch timers
   if (!m_ClearDownThread->isRunning())
   {
     m_ClearDownThread->start();
@@ -586,9 +586,9 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
   {
     m_GuiUpdateThread->start();
   }
-  if (!m_FrameRateTimer->isActive())
+  if (!m_WidgetUpdateTimer->isActive())
   {
-    m_FrameRateTimer->start();
+    m_WidgetUpdateTimer->start();
   }
   
   return source->GetIdentifier();
@@ -661,7 +661,7 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 
   if (m_TableWidget->rowCount() == 0)
   {
-    m_FrameRateTimer->stop();
+    m_WidgetUpdateTimer->stop();
   }
 }
 
@@ -717,23 +717,38 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnUpdateDisplay()
+void QmitkIGIDataSourceManager::OnUpdateData()
 {
-  if (!m_FrameRateTimer->isActive())
-  {
-    return;
-  }
-
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
-    // This is the main callback method to tell the source to update.
-    // Each source will then inform its own GUI (if present) to update.
-    bool isValid = source->ProcessData(idNow);
+    source->ProcessData(idNow);
+  }
 
+  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
+  renderer->RequestUpdateAll();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnUpdateWidgets()
+{
+  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  {
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
+
+    source->UpdateFrameRate();
+    float rate = source->GetFrameRate();
+    bool isValid = source->GetSuccessfullyProcessing();
+    double lag = source->GetCurrentTimeLag();
+
+    QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
+    frameRateItem->setTextAlignment(Qt::AlignCenter);
+    frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 4, frameRateItem);
+
     QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
 
     if (!isValid)
@@ -751,11 +766,7 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
       tItem->setIcon(pix);
     }
 
-    // Update the status text
-    m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
-
     // Update the lag number.
-    double lag = source->GetCurrentTimeLag();
     QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
     lagItem->setTextAlignment(Qt::AlignCenter);
     lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
@@ -763,31 +774,12 @@ void QmitkIGIDataSourceManager::OnUpdateDisplay()
     // Documentation says that setItem takes ownership of QTableWidgetItem
     // i.e. is responsible for deleting it.
     m_TableWidget->setItem(rowNumber, 5, lagItem);
+
+    // Update the status text
+    m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
   }
 
-  m_TableWidget->update();
-
-  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
-  renderer->RequestUpdateAll();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnUpdateFrameRate()
-{
-  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
-  {
-    source->UpdateFrameRate();
-
-    float rate = source->GetFrameRate();
-    int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
-
-    QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
-    frameRateItem->setTextAlignment(Qt::AlignCenter);
-    frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    m_TableWidget->setItem(rowNumber, 4, frameRateItem);
-  }
-
+  // Try and make sure refreshes are happening ok.
   m_TableWidget->update();
 }
 
@@ -795,7 +787,7 @@ void QmitkIGIDataSourceManager::OnUpdateFrameRate()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnCleanData()
 {
-  if (!m_FrameRateTimer->isActive())
+  if (!m_WidgetUpdateTimer->isActive())
   {
     return;
   }

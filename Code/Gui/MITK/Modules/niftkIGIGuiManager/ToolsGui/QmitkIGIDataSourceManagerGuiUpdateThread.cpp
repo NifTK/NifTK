@@ -25,5 +25,5 @@ QmitkIGIDataSourceManagerGuiUpdateThread::QmitkIGIDataSourceManagerGuiUpdateThre
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManagerGuiUpdateThread::OnTimeoutImpl()
 {
-  m_Manager->OnUpdateDisplay();
+  m_Manager->OnUpdateData();
 }
