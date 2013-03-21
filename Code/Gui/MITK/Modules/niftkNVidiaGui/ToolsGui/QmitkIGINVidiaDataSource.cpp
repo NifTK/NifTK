@@ -373,17 +373,17 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 
   pimpl->copyoutasap = frame;
 
+  // this smells like deadlock...
   pimpl->copyoutmutex.lock();
   // until here, capture thread would be stuck waiting for the lock
   pimpl->lock.unlock();
 
+  // FIXME: we should bump m_GrabbingThread so it wakes up early from its message loop sleep
+  //        otherwise we are locking in on its refresh rate
+
   pimpl->copyoutfinished.wait(&pimpl->copyoutmutex);
   pimpl->copyoutmutex.unlock();
   return std::make_pair(frame, streamcount);
-
-  // failed somewhere
-//  cvReleaseImage(&frame);
-//  return std::make_pair((IplImage*) 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -493,13 +493,6 @@ void QmitkIGINVidiaDataSource::GrabData()
       this->AddData(wrapper.GetPointer());
 
       this->SetStatus("Grabbing");
-
-      if (pimpl->copyoutasap)
-      {
-        pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
-        pimpl->copyoutasap = 0;
-        pimpl->copyoutfinished.wakeOne();
-      }
     }
   }
   // capture() might throw if the capture setup has become invalid
@@ -509,6 +502,15 @@ void QmitkIGINVidiaDataSource::GrabData()
     this->SetStatus("Glitched out");
     pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
     return;
+  }
+
+  // dont put the copy-out bits in the has_frame condition
+  // otherwise we are again locking the datastorage-update-thread onto the sdi refresh rate
+  if (pimpl->copyoutasap)
+  {
+    pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+    pimpl->copyoutasap = 0;
+    pimpl->copyoutfinished.wakeOne();
   }
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
