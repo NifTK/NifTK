@@ -31,7 +31,7 @@
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
-class QmitkIGIDataSourceManagerGuiUpdateThread;
+class QTimer;
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -142,12 +142,7 @@ private slots:
   /**
    * \brief Updates the whole rendered scene, based on the available messages.
    */
-  void OnUpdateData();
-
-  /**
-   * \brief Updates the widgets that live within the GUI thread.
-   */
-  void OnUpdateWidgets();
+  void OnUpdateGui();
 
   /**
    * \brief Tells each data source to clean data, see mitk::IGIDataSource::CleanData().
@@ -195,7 +190,6 @@ private:
   mitk::DataStorage                        *m_DataStorage;
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
-  QTimer                                   *m_WidgetUpdateTimer;
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
   unsigned int                              m_NextSourceIdentifier;
@@ -208,8 +202,8 @@ private:
   QString                                   m_DirectoryPrefix;
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;
-  QmitkIGIDataSourceManagerClearDownThread *m_ClearDownThread;
-  QmitkIGIDataSourceManagerGuiUpdateThread *m_GuiUpdateThread;
+  QTimer                                   *m_GuiUpdateTimer;
+  QTimer                                   *m_ClearDownTimer;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
