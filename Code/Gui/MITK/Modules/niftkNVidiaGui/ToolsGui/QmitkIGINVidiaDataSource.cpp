@@ -51,8 +51,6 @@ struct QmitkIGINVidiaDataSourceImpl
   // no need to lock this one
   volatile CaptureState   current_state;
 
-  volatile bool           stop_asap;
-
   // any access to the capture bits needs to be locked
   mutable QMutex          lock;
   video::SDIDevice*       sdidev;
@@ -81,7 +79,7 @@ struct QmitkIGINVidiaDataSourceImpl
 public:
   QmitkIGINVidiaDataSourceImpl()
     : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), lock(QMutex::Recursive), 
-      current_state(PRE_INIT), copyoutasap(0), stop_asap(false)
+      current_state(PRE_INIT), copyoutasap(0)
   {
     std::memset(&textureids[0], 0, sizeof(textureids));
     // we create the opengl widget on the ui thread once
@@ -349,8 +347,6 @@ QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
 {
   this->StopCapturing();
 
-  pimpl->stop_asap = true;
-  //pimpl->wait(5000);
   delete pimpl;
 }
 
