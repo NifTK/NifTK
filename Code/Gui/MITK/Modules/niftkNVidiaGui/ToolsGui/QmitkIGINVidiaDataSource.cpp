@@ -531,7 +531,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
     if (frame.first)
     {
       // max 4 streams
-      const int streamcount = frame.second;
+      const int streamcount = 1;//frame.second;
       for (int i = 0; i < streamcount; ++i)
       {
         std::ostringstream  nodename;
