@@ -297,6 +297,11 @@ public:
   }
 };
 
+
+// note the trailing space
+const char* QmitkIGINVidiaDataSource::NODE_NAME = "NVIDIA SDI stream ";
+
+
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
@@ -306,6 +311,17 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
   this->SetType("Frame Grabber");
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialising...");
+
+/*
+  // pre-create any number of datastorage nodes to avoid threading issues
+  for (int i = 0; i < 4; ++i)
+  {
+    std::ostringstream  nodename;
+    nodename << NODE_NAME << i;
+
+    mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
+  }
+*/
 
   this->InitializeAndRunGrabbingThread(20);
 }
@@ -374,17 +390,17 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
 
   pimpl->copyoutasap = frame;
 
+  // this smells like deadlock...
   pimpl->copyoutmutex.lock();
   // until here, capture thread would be stuck waiting for the lock
   pimpl->lock.unlock();
 
+  // FIXME: we should bump m_GrabbingThread so it wakes up early from its message loop sleep
+  //        otherwise we are locking in on its refresh rate
+
   pimpl->copyoutfinished.wait(&pimpl->copyoutmutex);
   pimpl->copyoutmutex.unlock();
   return std::make_pair(frame, streamcount);
-
-  // failed somewhere
-//  cvReleaseImage(&frame);
-//  return std::make_pair((IplImage*) 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -494,13 +510,6 @@ void QmitkIGINVidiaDataSource::GrabData()
       this->AddData(wrapper.GetPointer());
 
       this->SetStatus("Grabbing");
-
-      if (pimpl->copyoutasap)
-      {
-        pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
-        pimpl->copyoutasap = 0;
-        pimpl->copyoutfinished.wakeOne();
-      }
     }
   }
   // capture() might throw if the capture setup has become invalid
@@ -510,6 +519,15 @@ void QmitkIGINVidiaDataSource::GrabData()
     this->SetStatus("Glitched out");
     pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
     return;
+  }
+
+  // dont put the copy-out bits in the has_frame condition
+  // otherwise we are again locking the datastorage-update-thread onto the sdi refresh rate
+  if (pimpl->copyoutasap)
+  {
+    pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+    pimpl->copyoutasap = 0;
+    pimpl->copyoutfinished.wakeOne();
   }
 
   // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
@@ -533,10 +551,10 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
     {
       // max 4 streams
       const int streamcount = frame.second;
-      for (int i = 0; i < streamcount; ++i)
+      for (int i = 0; i < 1/*streamcount*/; ++i)
       {
         std::ostringstream  nodename;
-        nodename << "NVIDIA SDI stream " << i;
+        nodename << NODE_NAME << i;
 
         mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
         if (node.IsNull())
@@ -547,8 +565,13 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           return false;
         }
 
+        int   subimagheight = frame.first->height / streamcount;
+        IplImage  subimg;
+				cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, 3);
+        cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
+
         // FIXME: chop!
-        mitk::Image::Pointer convertedImage = this->CreateMitkImage(frame.first);
+        mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
         mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
         if (imageInNode.IsNull())
         {
@@ -565,7 +588,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             void* vPointer = writeAccess.GetData();
 
             assert(frame.first->nChannels == 3);
-            std::memcpy(vPointer, cPointer, frame.first->width * frame.first->height * 3);
+            std::memcpy(vPointer, cPointer, subimg.width * subimg.height * 3);
           }
           catch(mitk::Exception& e)
           {
