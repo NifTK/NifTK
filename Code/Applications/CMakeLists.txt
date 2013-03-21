@@ -32,7 +32,6 @@ SET(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
 SET(NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
   ${NIFTK_APPLICATION_LINK_LIBRARIES}
-  niftkVTK
 )
 
 # Note: vtkRendering seems to force a dependency on Qt. See above.
@@ -65,7 +64,7 @@ IF(SlicerExecutionModel_FOUND)
     niftkConvertImage
     niftkCreateMaskImage
     niftkCropImage
-	niftkDilate
+    niftkDilate
     niftkErode
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
@@ -110,6 +109,7 @@ IF(SlicerExecutionModel_FOUND)
     IF(NIFTYREG_FOUND)
       SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
         niftkF3DControlGridToVTKPolyData
+        niftkVTKIterativeClosestPointRegister
       )
 
       if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
@@ -128,6 +128,7 @@ IF(SlicerExecutionModel_FOUND)
       SET(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
         ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
         niftkITK
+        niftkVTK
         ${NIFTYREG_LIBRARIES}
       )
       
@@ -294,7 +295,6 @@ IF(VTK_FOUND)
     niftkMarchingCubes
     niftkSmoothPolyData
     niftkTransformPolyData
-    niftkVTKIterativeClosestPointRegister
   )
 
   FOREACH(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})

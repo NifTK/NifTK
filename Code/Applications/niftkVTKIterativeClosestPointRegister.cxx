@@ -27,6 +27,7 @@
 
 #include "itkLogHelper.h"
 #include "ConversionUtils.h"
+#include "niftkVTKIterativeClosestPointRegisterCLP.h"
 #include "vtkPolyData.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -52,27 +53,6 @@
 #include <vtkPointData.h>
 
 #include <boost/algorithm/string/predicate.hpp>
-
-void Usage(char *exec)
-{
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-  std::cout << "  " << std::endl;
-  std::cout << "  Register two VTK polydata objects using iterative closest points." << std::endl;
-  std::cout << "  " << std::endl;
-  std::cout << "  " << exec << " -t targetPolyData.vtk -s sourcePolyData.vtk [options]" << std::endl;
-  std::cout << "  " << std::endl;
-  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-  std::cout << "    --target    <filename>        Target VTK Poly Data." << std::endl;
-  std::cout << "    --source    <filename>        Source VTK Poly Data." << std::endl << std::endl;
-  std::cout << "*** [options]   ***" << std::endl << std::endl;
-  std::cout << "    --out       <filename>        Write the transformed source to file" << std::endl;
-  std::cout << "    --novisualise                 Turn off visualisation" << std::endl;
-  std::cout << "    --maxpoints <pointstouse>     Set the maximum number of points to use, default is " << __NIFTTKVTKICPNPOINTS << std::endl;
-  std::cout << "    --maxit     <maxiterations>   Set the maximum iterations to use, default is " << __NIFTTKVTKICPMAXITERATIONS << std::endl << std::endl;
-  std::cout << "*** [for testing]   ***" << std::endl << std::endl;
-  std::cout << "    --rndtrans                    Transform the source with random transform prior to running" << std::endl;
-  std::cout << "    --perturb                     randomly perturb the target points prior to registration" << std::endl << std::endl;
-}
 
 struct arguments
 {
@@ -147,66 +127,25 @@ vtkStandardNewMacro(KeyPressInteractorStyle);
  */
 int main(int argc, char** argv)
 {
+  // To parse command line args.
+  PARSE_ARGS;
+
   // To pass around command line args
   struct arguments args;
-  args.maxIterations = __NIFTTKVTKICPMAXITERATIONS;
-  args.maxPoints = __NIFTTKVTKICPNPOINTS;
-  args.visualise = true;
-  args.randomTransform = false;
-  args.perturbTarget = false;
-  args.writeout = false;
-
-
-  // Parse command line args
-  for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-Help") == 0
-        || strcmp(argv[i], "-HELP") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--h") == 0){
-      Usage(argv[0]);
-      return -1;
-    }
-    else if(strcmp(argv[i], "--target") == 0){
-      args.targetPolyDataFile=argv[++i];
-      std::cout << "Set --target=" << args.targetPolyDataFile << std::endl;
-    }
-    else if(strcmp(argv[i], "--source") == 0){
-      args.sourcePolyDataFile=argv[++i];
-      std::cout << "Set --source=" << args.sourcePolyDataFile << std::endl;
-    }
-    else if(strcmp(argv[i], "--novisualise") == 0){
-      args.visualise = false;
-      std::cout << "Set Visualise off" << std::endl;
-    }
-    else if(strcmp(argv[i], "--maxpoints") == 0){
-      args.maxPoints = atoi(argv[++i]);
-      std::cout << "Set max points to " << args.maxPoints << std::endl;
-    }
-    else if(strcmp(argv[i], "--maxit") == 0){
-      args.maxIterations = atoi(argv[++i]);
-      std::cout << "Set max iterations to " << args.maxIterations << std::endl;
-    }
-    else if(strcmp(argv[i], "--out") == 0){
-      args.outPolyDataFile=argv[++i];
-      std::cout << "Set --out=" << args.outPolyDataFile << std::endl;
-      args.writeout = true;
-    }
-    else if(strcmp(argv[i], "--rndtrans") == 0){
-      args.randomTransform = true;
-      std::cout << "Set random transform on" << std::endl;
-    }
-    else if(strcmp(argv[i], "--perturb") == 0){
-      args.perturbTarget = true;
-      std::cout << "Set perturb target on" << std::endl;
-    }
-    else {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
-      return -1;
-    }
-  }
+  args.maxIterations = maxNumberOfIterations;
+  args.maxPoints = maxNumberOfPoints;
+  args.visualise = !noVisualisation;
+  args.randomTransform = rndTrans;
+  args.perturbTarget = rndPerturb;
+  args.writeout = outputTransformedSource.length() > 0;
+  args.sourcePolyDataFile = sourcePolyData;
+  args.targetPolyDataFile = targetPolyData;
+  args.outPolyDataFile = outputTransformedSource;
 
   // Validate command line args
   if (args.sourcePolyDataFile.length() == 0 || args.targetPolyDataFile.length() == 0)
     {
-      Usage(argv[0]);
+      commandLine.getOutput()->usage(commandLine);
       return EXIT_FAILURE;
     }
 
