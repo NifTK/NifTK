@@ -42,7 +42,7 @@ class NIFTKNVIDIAGUI_EXPORT QmitkIGINVidiaDataSource : public QmitkIGILocalDataS
 public:
 
   mitkClassMacro(QmitkIGINVidiaDataSource, QmitkIGILocalDataSource);
-  itkNewMacro1Param(QmitkIGINVidiaDataSource, mitk::DataStorage*);
+  mitkNewMacro1Param(QmitkIGINVidiaDataSource, mitk::DataStorage*);
 
   /**
    * \brief Defined in base class, so we check that the data type is in fact

@@ -172,7 +172,7 @@ public:
 
       if (format.format != video::StreamFormat::PF_NONE)
       {
-        sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS);
+        sdiin = new video::SDIInput(sdidev);//, video::SDIInput::STACK_FIELDS);
 
         // FIXME: these might not be constant throughout a single capture sessions!
         for (int i = 0; i < 4; ++i)
@@ -312,7 +312,6 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialising...");
 
-/*
   // pre-create any number of datastorage nodes to avoid threading issues
   for (int i = 0; i < 4; ++i)
   {
@@ -321,7 +320,6 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 
     mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
   }
-*/
 
   this->InitializeAndRunGrabbingThread(20);
 }
@@ -551,7 +549,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
     {
       // max 4 streams
       const int streamcount = frame.second;
-      for (int i = 0; i < 1/*streamcount*/; ++i)
+      for (int i = 0; i < streamcount; ++i)
       {
         std::ostringstream  nodename;
         nodename << NODE_NAME << i;
@@ -567,10 +565,9 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 
         int   subimagheight = frame.first->height / streamcount;
         IplImage  subimg;
-				cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, 3);
+        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, 3);
         cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
 
-        // FIXME: chop!
         mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
         mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
         if (imageInNode.IsNull())
