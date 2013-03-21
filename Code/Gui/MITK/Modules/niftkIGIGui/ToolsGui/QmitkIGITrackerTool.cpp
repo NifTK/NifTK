@@ -33,27 +33,6 @@
 //NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 
 //-----------------------------------------------------------------------------
-QmitkIGITrackerTool::QmitkIGITrackerTool(mitk::DataStorage* storage)
-: QmitkIGINiftyLinkDataSource(storage)
-, m_UseICP(false)
-, m_PointSetsInitialized(false)
-, m_LinkCamera(false)
-, m_ImageFiducialsDataNode(NULL)
-, m_ImageFiducialsPointSet(NULL)
-, m_TrackerFiducialsDataNode(NULL)
-, m_TrackerFiducialsPointSet(NULL)
-, m_FiducialRegistrationFilter(NULL)
-, m_PermanentRegistrationFilter(NULL)
-, m_focalPoint(-2000.0)
-, m_ClipNear(5.0)
-, m_ClipFar(6000.0)
-, m_TransformTrackerToMITKCoords(false)
-{
-  this->DoInitialisation();
-}
-
-
-//-----------------------------------------------------------------------------
 QmitkIGITrackerTool::QmitkIGITrackerTool(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
 : QmitkIGINiftyLinkDataSource(storage, socket)
 , m_UseICP(false)
@@ -70,18 +49,10 @@ QmitkIGITrackerTool::QmitkIGITrackerTool(mitk::DataStorage* storage, NiftyLinkSo
 , m_ClipFar(6000.0)
 , m_TransformTrackerToMITKCoords(false)
 {
-  this->DoInitialisation();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerTool::DoInitialisation()
-{
   m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
   this->InitPreMatrix();
 }
-
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerTool::~QmitkIGITrackerTool()

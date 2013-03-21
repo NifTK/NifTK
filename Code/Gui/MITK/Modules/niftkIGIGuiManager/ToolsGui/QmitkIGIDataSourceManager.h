@@ -161,14 +161,9 @@ private slots:
 
   /**
    * \brief Adds a data source to the table.
-   */
-  int AddSource(int sourcetype , int portnumber);
-
-  /**
-   * \brief Adds a data source to the table.
    * \return the added tool's identifier
    */
-  int AddSource(int sourcetype , int portnumber, NiftyLinkSocketObject* socket);
+  int AddSource(int sourcetype , int portnumber, NiftyLinkSocketObject* socket=NULL);
 
   /**
    * \brief Removes a data source from the table, and completely destroys it.

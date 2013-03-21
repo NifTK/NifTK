@@ -457,78 +457,6 @@ void QmitkIGIDataSourceManager::OnAddSource()
 }
 
 
-//-----------------------------------------------------------------------------
-int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
-{
-  
-  mitk::IGIDataSource::Pointer source = NULL;
-
-  if (sourceType == 0 || sourceType == 1)
-  {
-    QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = NULL;
-    if (sourceType == 0)
-    {
-      niftyLinkSource = QmitkIGITrackerTool::New(m_DataStorage);
-    }
-    else if (sourceType == 1)
-    {
-      niftyLinkSource = QmitkIGIUltrasonixTool::New(m_DataStorage);
-    }
-    if (niftyLinkSource->ListenOnPort(portNumber))
-    {
-      m_PortsInUse.insert(portNumber);
-    }
-    source = niftyLinkSource;
-  }
-  else if (sourceType == 2)
-  {
-    source = QmitkIGIOpenCVDataSource::New(m_DataStorage);
-  }
-#ifdef _USE_NVAPI
-  else if (sourceType == 3)
-  {
-    source = QmitkIGINVidiaDataSource::New(m_DataStorage);
-  }
-#endif
-  else
-  {
-    std::cerr << "Matt, not implemented yet" << std::endl;
-  }
-
-  source->SetIdentifier(m_NextSourceIdentifier);
-  source->SetDataStorage(m_DataStorage);
-  m_Sources.push_back(source);
-
-  // Registers this class as a listener to any status updates and connects to UpdateToolDisplay.
-  // This means that regardless of the tool type, this class will receive a signal, and then
-  // callback to the tool to ask for the necessary data to update the GUI row.
-  source->DataSourceStatusUpdated
-    += mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
-        this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
-
-  // Force an update.
-  source->DataSourceStatusUpdated.Send(m_NextSourceIdentifier);
-
-  // Increase this so that tools always have new identifier, regardless of what row of the table they are in.
-  m_NextSourceIdentifier++;
-
-  // Launch timers
-  if (!m_ClearDownThread->isRunning())
-  {
-    m_ClearDownThread->start();
-  }
-  if (!m_GuiUpdateThread->isRunning())
-  {
-    m_GuiUpdateThread->start();
-  }
-  if (!m_WidgetUpdateTimer->isActive())
-  {
-    m_WidgetUpdateTimer->start();
-  }
-  return source->GetIdentifier();
-}
-
-
 //------------------------------------------------
 int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLinkSocketObject* socket)
 {
@@ -569,7 +497,6 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
   }
 
   source->SetIdentifier(m_NextSourceIdentifier);
-  source->SetDataStorage(m_DataStorage);
   m_Sources.push_back(source);
 
   // Registers this class as a listener to any status updates and connects to UpdateToolDisplay.

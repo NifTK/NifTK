@@ -76,7 +76,10 @@ public:
 
 protected:
 
-  QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage); // Purposefully hidden.
+  /**
+   * \brief Constructor where socket creation is optional.
+   * \param socket if NULL a new socket will be created.
+   */
   QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, NiftyLinkSocketObject *socket); // Purposefully hidden.
   virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
@@ -106,11 +109,6 @@ protected slots:
   virtual void InterpretMessage(NiftyLinkMessage::Pointer msg) {};
 
 private:
-
-  /**
-   * \brief Called from both constructors.
-   */
-  void                         DoInitialisation();
 
   NiftyLinkSocketObject       *m_Socket;
   ClientDescriptorXMLBuilder  *m_ClientDescriptor;

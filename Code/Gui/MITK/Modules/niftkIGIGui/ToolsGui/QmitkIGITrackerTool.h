@@ -32,7 +32,6 @@ class NIFTKIGIGUI_EXPORT QmitkIGITrackerTool : public QmitkIGINiftyLinkDataSourc
 public:
 
   mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
-  mitkNewMacro1Param(QmitkIGITrackerTool, mitk::DataStorage*);
   mitkNewMacro2Param(QmitkIGITrackerTool, mitk::DataStorage*, NiftyLinkSocketObject *);
 
   /**
@@ -203,7 +202,6 @@ signals:
 
 protected:
 
-  QmitkIGITrackerTool(mitk::DataStorage* storage); // Purposefully hidden.
   QmitkIGITrackerTool(mitk::DataStorage* storage, NiftyLinkSocketObject* socket); // Purposefully hidden.
   virtual ~QmitkIGITrackerTool(); // Purposefully hidden.
 
@@ -216,11 +214,6 @@ protected:
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
 private:
-
-  /**
-   * \brief Called from both constructors.
-   */
-  void DoInitialisation();
 
   /**
    * \brief Takes a message and extracts a matrix/transform and applies it.

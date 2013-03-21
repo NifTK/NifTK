@@ -32,7 +32,6 @@ class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixTool : public QmitkIGINiftyLinkDataSo
 public:
 
   mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGINiftyLinkDataSource);
-  mitkNewMacro1Param(QmitkIGIUltrasonixTool, mitk::DataStorage*);
   mitkNewMacro2Param(QmitkIGIUltrasonixTool, mitk::DataStorage*, NiftyLinkSocketObject *);
 
   /**
@@ -66,7 +65,6 @@ signals:
 
 protected:
 
-  QmitkIGIUltrasonixTool(mitk::DataStorage* storage); // Purposefully hidden.
   QmitkIGIUltrasonixTool(mitk::DataStorage* storage, NiftyLinkSocketObject*); // Purposefully hidden.
   virtual ~QmitkIGIUltrasonixTool(); // Purposefully hidden.
 
@@ -79,11 +77,6 @@ protected:
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
 private:
-
-  /**
-   * \brief Called from both constructors.
-   */
-  void DoInitialisation();
 
   /**
    * \brief Called by the base class Update message, which processes the message

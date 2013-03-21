@@ -24,29 +24,11 @@
 const std::string QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME = std::string("Ultrasonix image");
 
 //-----------------------------------------------------------------------------
-QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage)
-: QmitkIGINiftyLinkDataSource(storage)
-, m_Image(NULL)
-, m_ImageNode(NULL)
-, m_RadToDeg ( 180 / 3.14159265358979323846)
-{
-  this->DoInitialisation();
-}
-
-
-//-----------------------------------------------------------------------------
 QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage,  NiftyLinkSocketObject * socket )
 : QmitkIGINiftyLinkDataSource(storage, socket)
 , m_Image(NULL)
 , m_ImageNode(NULL)
 , m_RadToDeg ( 180 / 3.14159265358979323846)
-{
-  this->DoInitialisation();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixTool::DoInitialisation()
 {
   m_Image = mitk::Image::New();
   m_ImageNode = mitk::DataNode::New();
