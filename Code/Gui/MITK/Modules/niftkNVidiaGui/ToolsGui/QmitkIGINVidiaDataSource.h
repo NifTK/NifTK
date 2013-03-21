@@ -119,6 +119,9 @@ private:
   // BUT: every time there's a new frame, a new image is allocated. cow-style.
   mitk::Image::Pointer              m_Image;
 
+
+  static const char*      NODE_NAME;
+
 }; // end class
 
 #endif // QMITKIGINVIDIADATASOURCE_H

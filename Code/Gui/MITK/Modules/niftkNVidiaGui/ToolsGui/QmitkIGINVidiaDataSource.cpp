@@ -297,6 +297,11 @@ public:
   }
 };
 
+
+// note the trailing space
+const char* QmitkIGINVidiaDataSource::NODE_NAME = "NVIDIA SDI stream ";
+
+
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
 : pimpl(new QmitkIGINVidiaDataSourceImpl)
@@ -305,6 +310,17 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
   this->SetType("Frame Grabber");
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialising...");
+
+/*
+  // pre-create any number of datastorage nodes to avoid threading issues
+  for (int i = 0; i < 4; ++i)
+  {
+    std::ostringstream  nodename;
+    nodename << NODE_NAME << i;
+
+    mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
+  }
+*/
 
   this->InitializeAndRunGrabbingThread(20);
 }
@@ -537,7 +553,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
       for (int i = 0; i < streamcount; ++i)
       {
         std::ostringstream  nodename;
-        nodename << "NVIDIA SDI stream " << i;
+        nodename << NODE_NAME << i;
 
         mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
         if (node.IsNull())
