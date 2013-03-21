@@ -25,6 +25,7 @@
 #include <itkObjectFactoryBase.h>
 #include <itkFastMutexLock.h>
 #include <list>
+#include <set>
 #include "mitkIGIDataType.h"
 
 namespace mitk {
@@ -275,27 +276,12 @@ protected:
   void SetToolStringList ( std::list<std::string> );
 
   /**
-   * \brief Returns the list of contained mitk::DataNodes.
+   * \brief Derived classes request a node for a given name. If the node does not exist, it will
+   * be created with some default properties.
+   * \param name if supplied the node will be assigned that name, and if empty, the node
+   * will be given the name this->GetName().
    */
-  std::vector<mitk::DataNode::Pointer> GetDataNodes() const;
-
-  /**
-   * \brief Sets the list of mitk::DataNodes, which will add them to the Data Storage.
-   */
-  void SetDataNodes(std::vector<mitk::DataNode::Pointer>& nodes);
-
-  /**
-   * \brief Helper method to set the list of mitk::DataNodes by calling SetDataNodes with a vector
-   * of length one, containing the supplied single node.
-   */
-  void SetDataNode(mitk::DataNode::Pointer& node);
-
-  /**
-   * \brief Helper method to get exactly one data node, creating it if it does not exist, returning
-   * empty list if it failed.
-   * \param name if supplied, the name must match, otherwise the node is created using the tool name as default.
-   */
-  std::vector<mitk::DataNode::Pointer> GetDataNode(const std::string& name=std::string());
+  mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string());
 
 private:
 
@@ -306,7 +292,7 @@ private:
   bool DoSaveData(mitk::IGIDataType* data);
 
   itk::FastMutexLock::Pointer                     m_Mutex;
-  mitk::DataStorage                              *m_DataStorage;
+  mitk::DataStorage*                              m_DataStorage;
   int                                             m_Identifier;
   float                                           m_FrameRate;
   unsigned long int                               m_CurrentFrameId;
@@ -326,9 +312,9 @@ private:
   unsigned long int                               m_TimeStampTolerance;
   mitk::IGIDataType*                              m_ActualData;
   int                                             m_NumberOfTools;
+  std::set<mitk::DataNode::Pointer>               m_DataNodes;
   std::list<std::string>                          m_SubTools;
   std::list<std::string>::iterator                m_SubToolsIterator;
-  std::vector<mitk::DataNode::Pointer>            m_DataNodes;
   bool                                            m_SuccessfullyProcessing;
 
 }; // end class

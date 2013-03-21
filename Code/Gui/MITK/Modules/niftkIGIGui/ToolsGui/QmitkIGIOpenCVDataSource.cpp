@@ -145,15 +145,12 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
   mitk::IGIOpenCVDataType::Pointer dataType = static_cast<mitk::IGIOpenCVDataType*>(data);
   if (dataType.IsNotNull())
   {
-    // Make sure we have exactly 1 data node.
-    std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(OPENCV_IMAGE_NAME);
-    if (dataNode.size() != 1)
+    // Get Data Node.
+    mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+    if (node.IsNull())
     {
-      MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
-      this->SetStatus("Failed");
-      return result;
+      mitkThrow() << "node is NULL!";
     }
-    mitk::DataNode::Pointer node = dataNode[0];
 
     // Get Image from the dataType;
     const IplImage* img = dataType->GetImage();
