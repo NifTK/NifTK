@@ -264,12 +264,9 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 
 
 //-----------------------------------------------------------------------------
-double IGIDataSource::GetCurrentTimeLag()
+double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 {
-  igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-
   double lag = 0;
-  igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);
 
   if (m_ActualData != NULL)
   {

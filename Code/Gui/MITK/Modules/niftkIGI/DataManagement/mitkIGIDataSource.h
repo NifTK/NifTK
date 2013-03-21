@@ -223,9 +223,9 @@ public:
   bool IsCurrentWithinTimeTolerance() const;
 
   /**
-   * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
+   * \brief Returns the difference between the current time and the GetActualTimeStamp(), and converts to seconds.
    */
-  double GetCurrentTimeLag();
+  double GetCurrentTimeLag(const igtlUint64& nowTime );
 
   /**
    * \brief Get the subtool list

@@ -670,6 +670,9 @@ void QmitkIGIDataSourceManager::OnUpdateData()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateWidgets()
 {
+  igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
+  igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);
+
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
@@ -677,7 +680,7 @@ void QmitkIGIDataSourceManager::OnUpdateWidgets()
     source->UpdateFrameRate();
     float rate = source->GetFrameRate();
     bool isValid = source->GetSuccessfullyProcessing();
-    double lag = source->GetCurrentTimeLag();
+    double lag = source->GetCurrentTimeLag(nowTime);
 
     QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
     frameRateItem->setTextAlignment(Qt::AlignCenter);
