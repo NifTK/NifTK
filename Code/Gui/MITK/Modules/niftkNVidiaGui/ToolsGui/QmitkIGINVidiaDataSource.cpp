@@ -146,10 +146,10 @@ public:
     // find our capture card
     for (int i = 0; ; ++i)
     {
-      video::SDIDevice*	d = video::SDIDevice::get_device(i);
+      video::SDIDevice* d = video::SDIDevice::get_device(i);
       if (d == 0)
         break;
-					
+
       if (d->get_type() == video::SDIDevice::INPUT)
       {
         sdidev = d;
@@ -183,26 +183,6 @@ public:
     // assuming everything went fine
     //  we now have texture objects that will receive video data everytime we call capture()
   }
-    
-/*
-        // scoping for lock
-        {
-          // other threads might supply us with a new pointer!
-          QMutexLocker    l(&lock);
-          
-          if (copyoutasap)
-          {
-            
-
-            // and reset pointer
-            // so that we dont do it again unless explicitly requested
-            copyoutasap = 0;
-
-            copyoutfinished.wakeOne();
-          }
-        }
-*/
-
 
   void readback_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
   {
@@ -229,8 +209,7 @@ public:
         break;
 
       // while we have the lock, texture dimensions are not going to change
-     // if ((i * dim.second) >= height)
-     //   return;
+
       // remaining buffer too small?
       if (height - (i * dim.second) < dim.second)
         return;
@@ -239,6 +218,43 @@ public:
 
       glBindTexture(GL_TEXTURE_2D, texid);
       glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, subbuf);
+      assert(glGetError() == GL_NO_ERROR);
+    }
+  }
+  void readback_rgba(char* buffer, std::size_t bufferpitch, int width, int height)
+  {
+    assert(sdiin != 0);
+    assert(bufferpitch >= width * 4);
+
+    // lock here first, before querying dimensions so that there's no gap
+    QMutexLocker    l(&lock);
+
+    std::pair<int, int> dim = get_capture_dimensions();
+    if (dim.first > width)
+      // FIXME: should somehow communicate failure to the requester
+      return;
+
+    // fortunately we have 4 bytes per pixel
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    assert((bufferpitch % 4) == 0);
+    glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 4);
+
+    for (int i = 0; i < 4; ++i)
+    {
+      int texid = sdiin->get_texture_id(i);
+      if (texid == 0)
+        break;
+
+      // while we have the lock, texture dimensions are not going to change
+
+      // remaining buffer too small?
+      if (height - (i * dim.second) < dim.second)
+        return;
+
+      char*   subbuf = &buffer[i * dim.second * bufferpitch];
+
+      glBindTexture(GL_TEXTURE_2D, texid);
+      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, subbuf);
       assert(glGetError() == GL_NO_ERROR);
     }
   }
@@ -401,6 +417,34 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
   return std::make_pair(frame, streamcount);
 }
 
+std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgba_image()
+{
+  // i dont like this way of unstructured locking
+  pimpl->lock.lock();
+  // but the waitcondition stuff doesnt work otherwise
+
+  std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
+  int                   streamcount = pimpl->get_stream_count();
+
+  IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second * streamcount), IPL_DEPTH_8U, 4);
+  // mark layout as rgba instead of the opencv-default bgr
+  std::memcpy(&frame->channelSeq[0], "RGBA", 4);
+
+  pimpl->copyoutasap = frame;
+
+  // this smells like deadlock...
+  pimpl->copyoutmutex.lock();
+  // until here, capture thread would be stuck waiting for the lock
+  pimpl->lock.unlock();
+
+  // FIXME: we should bump m_GrabbingThread so it wakes up early from its message loop sleep
+  //        otherwise we are locking in on its refresh rate
+
+  pimpl->copyoutfinished.wait(&pimpl->copyoutmutex);
+  pimpl->copyoutmutex.unlock();
+  return std::make_pair(frame, streamcount);
+}
+
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::GrabData()
 {
@@ -508,6 +552,9 @@ void QmitkIGINVidiaDataSource::GrabData()
       this->AddData(wrapper.GetPointer());
 
       this->SetStatus("Grabbing");
+
+      // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
+      //emit UpdateDisplay();
     }
   }
   // capture() might throw if the capture setup has become invalid
@@ -523,19 +570,28 @@ void QmitkIGINVidiaDataSource::GrabData()
   // otherwise we are again locking the datastorage-update-thread onto the sdi refresh rate
   if (pimpl->copyoutasap)
   {
-    pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+    if (pimpl->copyoutasap->nChannels == 3)
+    {
+      pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+    }
+    else
+    if (pimpl->copyoutasap->nChannels == 4)
+    {
+      pimpl->readback_rgba(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+    }
+    else
+    {
+      assert(false);
+    }
     pimpl->copyoutasap = 0;
     pimpl->copyoutfinished.wakeOne();
   }
-
-  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
-  emit UpdateDisplay();
 }
 
 
 bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 {
-  bool result = false;
+  bool result = true;
 
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
   if (dataType.IsNotNull())
@@ -543,7 +599,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
     // FIXME: need to pass in the requested timestamp etc!
 
     // one massive image, with all streams stacked in
-    std::pair<IplImage*, int> frame = get_rgb_image();
+    std::pair<IplImage*, int> frame = get_rgba_image();
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
     if (frame.first)
     {
@@ -565,7 +621,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 
         int   subimagheight = frame.first->height / streamcount;
         IplImage  subimg;
-        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, 3);
+        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, frame.first->nChannels);
         cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
 
         mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
@@ -584,8 +640,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             mitk::ImageWriteAccessor writeAccess(imageInNode);
             void* vPointer = writeAccess.GetData();
 
-            assert(frame.first->nChannels == 3);
-            std::memcpy(vPointer, cPointer, subimg.width * subimg.height * 3);
+            std::memcpy(vPointer, cPointer, subimg.width * subimg.height * subimg.nChannels);
           }
           catch(mitk::Exception& e)
           {
@@ -602,6 +657,9 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   }
   else
     this->SetStatus("...");
+
+  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
+  emit UpdateDisplay();
 
   return result;
 }
