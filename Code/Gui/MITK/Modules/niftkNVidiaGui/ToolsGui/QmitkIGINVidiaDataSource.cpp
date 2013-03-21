@@ -149,7 +149,7 @@ public:
       video::SDIDevice*	d = video::SDIDevice::get_device(i);
       if (d == 0)
         break;
-					
+
       if (d->get_type() == video::SDIDevice::INPUT)
       {
         sdidev = d;
@@ -183,26 +183,6 @@ public:
     // assuming everything went fine
     //  we now have texture objects that will receive video data everytime we call capture()
   }
-    
-/*
-        // scoping for lock
-        {
-          // other threads might supply us with a new pointer!
-          QMutexLocker    l(&lock);
-          
-          if (copyoutasap)
-          {
-            
-
-            // and reset pointer
-            // so that we dont do it again unless explicitly requested
-            copyoutasap = 0;
-
-            copyoutfinished.wakeOne();
-          }
-        }
-*/
-
 
   void readback_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
   {
@@ -508,6 +488,9 @@ void QmitkIGINVidiaDataSource::GrabData()
       this->AddData(wrapper.GetPointer());
 
       this->SetStatus("Grabbing");
+
+      // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
+      emit UpdateDisplay();
     }
   }
   // capture() might throw if the capture setup has become invalid
@@ -527,9 +510,6 @@ void QmitkIGINVidiaDataSource::GrabData()
     pimpl->copyoutasap = 0;
     pimpl->copyoutfinished.wakeOne();
   }
-
-  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
-  emit UpdateDisplay();
 }
 
 
