@@ -549,8 +549,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
     if (frame.first)
     {
       // max 4 streams
-      const int streamcount = 1;//frame.second;
-      for (int i = 0; i < streamcount; ++i)
+      const int streamcount = frame.second;
+      for (int i = 0; i < 1/*streamcount*/; ++i)
       {
         std::ostringstream  nodename;
         nodename << NODE_NAME << i;
@@ -564,8 +564,13 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           return false;
         }
 
+        int   subimagheight = frame.first->height / streamcount;
+        IplImage  subimg;
+				cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, 3);
+        cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
+
         // FIXME: chop!
-        mitk::Image::Pointer convertedImage = this->CreateMitkImage(frame.first);
+        mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
         mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
         if (imageInNode.IsNull())
         {
@@ -582,7 +587,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             void* vPointer = writeAccess.GetData();
 
             assert(frame.first->nChannels == 3);
-            std::memcpy(vPointer, cPointer, frame.first->width * frame.first->height * 3);
+            std::memcpy(vPointer, cPointer, subimg.width * subimg.height * 3);
           }
           catch(mitk::Exception& e)
           {
