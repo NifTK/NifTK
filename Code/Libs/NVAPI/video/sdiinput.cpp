@@ -37,6 +37,7 @@ public:
     std::vector<GLuint>   textures;
 
     int                   num_streams;
+    // number of texture objects per stream
     int                   ringbuffer_size;
     int                   current_ringbuffer_index;
 
@@ -65,14 +66,26 @@ void SDIInput::set_log_filename(const std::string& fn)
     logfilename = fn;
 }
 
-int SDIInput::get_texture_id(int streamno) const
+int SDIInput::get_texture_id(int streamno, int ringbufferslot) const
 {
     assert(wglGetCurrentContext() == pimpl->oglrc);
 
     if (streamno >= pimpl->num_streams)
         return 0;
-    int texindex = streamno * pimpl->ringbuffer_size + pimpl->current_ringbuffer_index;
+    if (ringbufferslot < 0)
+        ringbufferslot = pimpl->current_ringbuffer_index;
+
+    assert(ringbufferslot < pimpl->ringbuffer_size);
+    ringbufferslot = ringbufferslot % pimpl->ringbuffer_size;
+
+    int texindex = streamno * pimpl->ringbuffer_size + ringbufferslot;
     return pimpl->textures[texindex];
+}
+
+int SDIInput::get_current_ringbuffer_slot() const
+{
+    assert(wglGetCurrentContext() == pimpl->oglrc);
+    return pimpl->current_ringbuffer_index;
 }
 
 bool SDIInput::has_frame() const

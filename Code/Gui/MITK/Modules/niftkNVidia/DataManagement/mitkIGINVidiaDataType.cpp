@@ -28,6 +28,13 @@ IGINVidiaDataType::~IGINVidiaDataType()
 {
 }
 
+
+unsigned int IGINVidiaDataType::get_sequence_number() const
+{
+  return sequence_number;
+}
+
+
 void IGINVidiaDataType::set_values(unsigned int cookie, unsigned int sn, unsigned __int64 gputime)
 {
   magic_cookie = cookie;

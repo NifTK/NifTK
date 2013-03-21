@@ -87,7 +87,7 @@ public:
   // exists only for integration with mitk, otherwise: do not use!
   // note: input streams are stacked! all streams transfered at the same time
   std::pair<IplImage*, int> get_rgb_image();
-  std::pair<IplImage*, int> get_rgba_image();
+  std::pair<IplImage*, int> get_rgba_image(unsigned int sequencenumber);
 
 signals:
 

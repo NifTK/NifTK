@@ -58,9 +58,12 @@ protected:
 
 
 public:
+    /** @brief Returns the most up-to-date index into the ring buffer. */
+    int get_current_ringbuffer_slot() const;
+
     // format is always RGBA!
     // returns zero if no stream with that index
-    int get_texture_id(int streamno) const;
+    int get_texture_id(int streamno, int ringbufferslot = -1) const;
 
     /**
      * @brief Transfers one set of frames over all streams into texture objects.

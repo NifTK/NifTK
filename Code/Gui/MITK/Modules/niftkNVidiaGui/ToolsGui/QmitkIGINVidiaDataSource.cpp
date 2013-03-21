@@ -26,7 +26,8 @@
 #include "video/sdiinput.h"
 
 
-struct QmitkIGINVidiaDataSourceImpl// : public QThread
+// FIXME: this needs tidying up
+struct QmitkIGINVidiaDataSourceImpl
 {
   // all the sdi stuff needs an opengl context
   //  so we'll create our own
@@ -70,6 +71,12 @@ struct QmitkIGINVidiaDataSourceImpl// : public QThread
   volatile IplImage*      copyoutasap;
   QWaitCondition          copyoutfinished;
   QMutex                  copyoutmutex;
+  int                     copyoutslot;      // which slot in the ringbuffer
+
+  // maps sequence numbers to ringbuffer slots
+  std::map<unsigned int, int>   sn2slot_map;
+  // maps ringbuffer slots to sequence numbers
+  std::map<int, unsigned int>   slot2sn_map;
 
 public:
   QmitkIGINVidiaDataSourceImpl()
@@ -172,11 +179,7 @@ public:
 
       if (format.format != video::StreamFormat::PF_NONE)
       {
-        sdiin = new video::SDIInput(sdidev);//, video::SDIInput::STACK_FIELDS);
-
-        // FIXME: these might not be constant throughout a single capture sessions!
-        for (int i = 0; i < 4; ++i)
-          textureids[i] = sdiin->get_texture_id(i);
+        sdiin = new video::SDIInput(sdidev, video::SDIInput::DO_NOTHING_SPECIAL, format.get_refreshrate());
       }
     }
 
@@ -204,7 +207,7 @@ public:
 
     for (int i = 0; i < 4; ++i)
     {
-      int texid = sdiin->get_texture_id(i);
+      int texid = sdiin->get_texture_id(i, copyoutslot);
       if (texid == 0)
         break;
 
@@ -241,7 +244,7 @@ public:
 
     for (int i = 0; i < 4; ++i)
     {
-      int texid = sdiin->get_texture_id(i);
+      int texid = sdiin->get_texture_id(i, copyoutslot);
       if (texid == 0)
         break;
 
@@ -417,11 +420,18 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
   return std::make_pair(frame, streamcount);
 }
 
-std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgba_image()
+std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgba_image(unsigned int sequencenumber)
 {
   // i dont like this way of unstructured locking
   pimpl->lock.lock();
   // but the waitcondition stuff doesnt work otherwise
+
+  // check if we ever have received any frames yet
+  if (pimpl->sn2slot_map.empty())
+  {
+    pimpl->lock.unlock();
+    return std::make_pair((IplImage*) 0, 0);
+  }
 
   std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
   int                   streamcount = pimpl->get_stream_count();
@@ -431,6 +441,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgba_image()
   std::memcpy(&frame->channelSeq[0], "RGBA", 4);
 
   pimpl->copyoutasap = frame;
+  pimpl->copyoutslot = pimpl->sn2slot_map.lower_bound(sequencenumber)->second;
 
   // this smells like deadlock...
   pimpl->copyoutmutex.lock();
@@ -538,6 +549,26 @@ void QmitkIGINVidiaDataSource::GrabData()
       // that's why we have hasframe above
       video::FrameInfo fi = pimpl->sdiin->capture();
 
+      // keep the most recent set of texture ids around
+      // this is mainly for the preview window
+      for (int i = 0; i < 4; ++i)
+        pimpl->textureids[i] = pimpl->sdiin->get_texture_id(i, -1);
+
+      int newest_slot = pimpl->sdiin->get_current_ringbuffer_slot();
+      // whatever we had in this slot is now obsolete
+      std::map<int, unsigned int>::iterator oldsni = pimpl->slot2sn_map.find(newest_slot);
+      if (oldsni != pimpl->slot2sn_map.end())
+      {
+        std::map<unsigned int, int>::iterator oldsloti = pimpl->sn2slot_map.find(oldsni->second);
+        if (oldsloti != pimpl->sn2slot_map.end())
+        {
+          pimpl->sn2slot_map.erase(oldsloti);
+        }
+        pimpl->slot2sn_map.erase(oldsni);
+      }
+      pimpl->slot2sn_map[newest_slot] = fi.sequence_number;
+      pimpl->sn2slot_map[fi.sequence_number] = newest_slot;
+
       igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
 
       // Aim of this method is to do something like when a NiftyLink message comes in.
@@ -596,10 +627,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
   if (dataType.IsNotNull())
   {
-    // FIXME: need to pass in the requested timestamp etc!
-
     // one massive image, with all streams stacked in
-    std::pair<IplImage*, int> frame = get_rgba_image();
+    std::pair<IplImage*, int> frame = get_rgba_image(dataType->get_sequence_number());
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
     if (frame.first)
     {

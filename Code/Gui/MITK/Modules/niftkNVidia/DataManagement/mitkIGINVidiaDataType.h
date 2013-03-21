@@ -35,6 +35,7 @@ public:
   // FIXME: i wish these were constructor parameters
   void set_values(unsigned int cookie, unsigned int sn, unsigned __int64 gputime);
 
+  unsigned int get_sequence_number() const;
 
 protected:
 
