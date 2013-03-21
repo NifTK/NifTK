@@ -40,9 +40,13 @@ public:
 
   mitkClassMacro(QmitkIGILocalDataSource, QmitkIGIDataSource);
 
-  typedef itk::RGBPixel< unsigned char > UCRGBPixelType;
-  typedef itk::Image< UCRGBPixelType, 2 > ItkImage;
-  typedef itk::ImportImageFilter< UCRGBPixelType, 2 > ImportFilterType;
+  typedef itk::RGBPixel< unsigned char >  UCRGBPixelType;
+  typedef itk::Image< UCRGBPixelType, 2 >  RGBItkImage;
+  typedef itk::ImportImageFilter< UCRGBPixelType, 2 >  RGBImportFilterType;
+
+  typedef itk::RGBAPixel< unsigned char > UCRGBAPixelType;
+  typedef itk::Image< UCRGBAPixelType, 2 > RGBAItkImage;
+  typedef itk::ImportImageFilter< UCRGBAPixelType, 2 > RGBAImportFilterType;
 
 protected:
 
@@ -52,11 +56,15 @@ protected:
   QmitkIGILocalDataSource(const QmitkIGILocalDataSource&); // Purposefully not implemented.
   QmitkIGILocalDataSource& operator=(const QmitkIGILocalDataSource&); // Purposefully not implemented.
 
+
+  mitk::Image::Pointer CreateMitkImage(const IplImage* image) const;
+
   /**
    * \brief Helper method for sub-classes, that will instantiate a
    * new MITK image from an RGB OpenCV IplImage.
    */
-  mitk::Image::Pointer CreateMitkImage(const IplImage* image) const;
+  mitk::Image::Pointer CreateRGBMitkImage(const IplImage* image) const;
+  mitk::Image::Pointer CreateRGBAMitkImage(const IplImage* image) const;
 
   /**
    * \brief Derived classes call this when they are ready for the updates to start,
