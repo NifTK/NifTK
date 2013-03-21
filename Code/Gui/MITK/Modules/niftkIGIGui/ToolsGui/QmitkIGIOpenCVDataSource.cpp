@@ -25,8 +25,9 @@
 const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
 
 //-----------------------------------------------------------------------------
-QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
-: m_VideoSource(NULL)
+QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
+: QmitkIGILocalDataSource(storage)
+, m_VideoSource(NULL)
 {
   qRegisterMetaType<mitk::VideoSource*>();
 
@@ -40,6 +41,13 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
 
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
+
+  // Create this node up front, so that the Update doesn't have to (and risk triggering GUI update events).
+  mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+  if (node.IsNull())
+  {
+    MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+  }
 
   // This creates and starts up the thread.
   this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
@@ -202,6 +210,11 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
 
     // We emit this, so that the GUI class associated with this tool (i.e.
     // containing a preview of this data) also knows to update.
+    //
+    // This Update method is called from a Non-GUI thread.
+    //
+    // So clients binding to this signal should be updating the GUI from the GUI thread (i.e. a different thread).
+    // This means that clients connecting should be using a Qt::QueuedConnection.
     emit UpdateDisplay();
 
     // So by this point, we are all done.

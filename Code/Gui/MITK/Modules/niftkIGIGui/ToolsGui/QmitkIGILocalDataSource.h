@@ -46,7 +46,7 @@ public:
 
 protected:
 
-  QmitkIGILocalDataSource(); // Purposefully hidden.
+  QmitkIGILocalDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGILocalDataSource(); // Purposefully hidden.
 
   QmitkIGILocalDataSource(const QmitkIGILocalDataSource&); // Purposefully not implemented.

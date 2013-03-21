@@ -49,7 +49,7 @@ public:
 
 protected:
 
-  QmitkIGIDataSource(); // Purposefully hidden.
+  QmitkIGIDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGIDataSource(); // Purposefully hidden.
 
   QmitkIGIDataSource(const QmitkIGIDataSource&); // Purposefully not implemented.

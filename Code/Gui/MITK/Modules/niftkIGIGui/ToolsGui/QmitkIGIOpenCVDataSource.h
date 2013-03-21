@@ -36,7 +36,7 @@ class NIFTKIGIGUI_EXPORT QmitkIGIOpenCVDataSource : public QmitkIGILocalDataSour
 public:
 
   mitkClassMacro(QmitkIGIOpenCVDataSource, QmitkIGILocalDataSource);
-  itkNewMacro(QmitkIGIOpenCVDataSource);
+  mitkNewMacro1Param(QmitkIGIOpenCVDataSource, mitk::DataStorage*);
 
   /**
    * \brief We store the node name here so other classes can refer to it.
@@ -74,12 +74,13 @@ signals:
 
   /**
    * \brief We signal to the GUI that it should be updated.
+   * GUI Clients should register to this signal using a Qt::QueuedConnection.
    */
   void UpdateDisplay();
 
 protected:
 
-  QmitkIGIOpenCVDataSource(); // Purposefully hidden.
+  QmitkIGIOpenCVDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGIOpenCVDataSource(); // Purposefully hidden.
 
   QmitkIGIOpenCVDataSource(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.

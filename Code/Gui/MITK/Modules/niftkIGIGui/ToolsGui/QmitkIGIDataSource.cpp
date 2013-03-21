@@ -16,8 +16,9 @@
 #include "QmitkIGIDataSourceBackgroundSaveThread.h"
 
 //-----------------------------------------------------------------------------
-QmitkIGIDataSource::QmitkIGIDataSource()
-: m_SaveThread(NULL)
+QmitkIGIDataSource::QmitkIGIDataSource(mitk::DataStorage* storage)
+: mitk::IGIDataSource(storage)
+, m_SaveThread(NULL)
 {
   m_SaveThread = new QmitkIGIDataSourceBackgroundSaveThread(this, this);
 }

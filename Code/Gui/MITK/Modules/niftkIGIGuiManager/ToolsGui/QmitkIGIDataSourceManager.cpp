@@ -468,11 +468,11 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
     QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = NULL;
     if (sourceType == 0)
     {
-      niftyLinkSource = QmitkIGITrackerTool::New();
+      niftyLinkSource = QmitkIGITrackerTool::New(m_DataStorage);
     }
     else if (sourceType == 1)
     {
-      niftyLinkSource = QmitkIGIUltrasonixTool::New();
+      niftyLinkSource = QmitkIGIUltrasonixTool::New(m_DataStorage);
     }
     if (niftyLinkSource->ListenOnPort(portNumber))
     {
@@ -482,12 +482,12 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber)
   }
   else if (sourceType == 2)
   {
-    source = QmitkIGIOpenCVDataSource::New();
+    source = QmitkIGIOpenCVDataSource::New(m_DataStorage);
   }
 #ifdef _USE_NVAPI
   else if (sourceType == 3)
   {
-    source = QmitkIGINVidiaDataSource::New();
+    source = QmitkIGINVidiaDataSource::New(m_DataStorage);
   }
 #endif
   else
@@ -540,11 +540,11 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
     QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = NULL;
     if (sourceType == 0)
     {
-      niftyLinkSource = QmitkIGITrackerTool::New(socket);
+      niftyLinkSource = QmitkIGITrackerTool::New(m_DataStorage, socket);
     }
     else if (sourceType == 1)
     {
-      niftyLinkSource = QmitkIGIUltrasonixTool::New(socket);
+      niftyLinkSource = QmitkIGIUltrasonixTool::New(m_DataStorage, socket);
     }
     
     if (niftyLinkSource->ListenOnPort(portNumber))
@@ -555,12 +555,12 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
   }
   else if (sourceType == 2)
   {
-    source = QmitkIGIOpenCVDataSource::New();
+    source = QmitkIGIOpenCVDataSource::New(m_DataStorage);
   }
 #ifdef _USE_NVAPI
   else if (sourceType == 3)
   {
-    source = QmitkIGINVidiaDataSource::New();
+    source = QmitkIGINVidiaDataSource::New(m_DataStorage);
   }
 #endif
   else

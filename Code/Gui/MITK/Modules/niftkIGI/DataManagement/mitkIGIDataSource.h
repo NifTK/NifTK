@@ -234,7 +234,7 @@ public:
 
 protected:
 
-  IGIDataSource(); // Purposefully hidden.
+  IGIDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~IGIDataSource(); // Purposefully hidden.
 
   IGIDataSource(const IGIDataSource&); // Purposefully not implemented.

@@ -76,8 +76,8 @@ public:
 
 protected:
 
-  QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
-  QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *socket); // Purposefully hidden.
+  QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage); // Purposefully hidden.
+  QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, NiftyLinkSocketObject *socket); // Purposefully hidden.
   virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
   QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
@@ -106,6 +106,11 @@ protected slots:
   virtual void InterpretMessage(NiftyLinkMessage::Pointer msg) {};
 
 private:
+
+  /**
+   * \brief Called from both constructors.
+   */
+  void                         DoInitialisation();
 
   NiftyLinkSocketObject       *m_Socket;
   ClientDescriptorXMLBuilder  *m_ClientDescriptor;

@@ -32,8 +32,8 @@ class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixTool : public QmitkIGINiftyLinkDataSo
 public:
 
   mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGINiftyLinkDataSource);
-  itkNewMacro(QmitkIGIUltrasonixTool);
-  mitkNewMacro1Param(QmitkIGIUltrasonixTool,NiftyLinkSocketObject *);
+  mitkNewMacro1Param(QmitkIGIUltrasonixTool, mitk::DataStorage*);
+  mitkNewMacro2Param(QmitkIGIUltrasonixTool, mitk::DataStorage*, NiftyLinkSocketObject *);
 
   /**
    * \brief We store the node name here so other classes can refer to it.
@@ -66,12 +66,12 @@ signals:
 
 protected:
 
-  QmitkIGIUltrasonixTool(); // Purposefully hidden.
+  QmitkIGIUltrasonixTool(mitk::DataStorage* storage); // Purposefully hidden.
+  QmitkIGIUltrasonixTool(mitk::DataStorage* storage, NiftyLinkSocketObject*); // Purposefully hidden.
   virtual ~QmitkIGIUltrasonixTool(); // Purposefully hidden.
 
   QmitkIGIUltrasonixTool(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
-  QmitkIGIUltrasonixTool(NiftyLinkSocketObject*); // Purposefully not implemented.
 
   /**
    * \brief \see IGIDataSource::SaveData();
@@ -79,6 +79,11 @@ protected:
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
 private:
+
+  /**
+   * \brief Called from both constructors.
+   */
+  void DoInitialisation();
 
   /**
    * \brief Called by the base class Update message, which processes the message

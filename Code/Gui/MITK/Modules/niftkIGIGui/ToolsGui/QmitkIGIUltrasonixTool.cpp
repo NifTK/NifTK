@@ -19,38 +19,41 @@
 #include "QmitkIGIDataSourceMacro.h"
 #include <QCoreApplication>
 
-NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
+//NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
 
 const std::string QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME = std::string("Ultrasonix image");
 
 //-----------------------------------------------------------------------------
-QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool()
-: m_Image(NULL)
-, m_ImageNode(NULL)
-, m_RadToDeg ( 180 / 3.14159265358979323846)
-{
-  m_Image = mitk::Image::New();
-
-  m_ImageNode = mitk::DataNode::New();
-  m_ImageNode->SetName(ULTRASONIX_IMAGE_NAME);
-  m_ImageNode->SetVisibility(true);
-  m_ImageNode->SetOpacity(1);
-}
-
-QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool( NiftyLinkSocketObject * socket )
-: QmitkIGINiftyLinkDataSource(socket)
+QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage)
+: QmitkIGINiftyLinkDataSource(storage)
 , m_Image(NULL)
 , m_ImageNode(NULL)
 , m_RadToDeg ( 180 / 3.14159265358979323846)
 {
-  m_Image = mitk::Image::New();
+  this->DoInitialisation();
+}
 
+
+//-----------------------------------------------------------------------------
+QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage,  NiftyLinkSocketObject * socket )
+: QmitkIGINiftyLinkDataSource(storage, socket)
+, m_Image(NULL)
+, m_ImageNode(NULL)
+, m_RadToDeg ( 180 / 3.14159265358979323846)
+{
+  this->DoInitialisation();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::DoInitialisation()
+{
+  m_Image = mitk::Image::New();
   m_ImageNode = mitk::DataNode::New();
   m_ImageNode->SetName(ULTRASONIX_IMAGE_NAME);
   m_ImageNode->SetVisibility(true);
   m_ImageNode->SetOpacity(1);
 }
-
 
 
 //-----------------------------------------------------------------------------

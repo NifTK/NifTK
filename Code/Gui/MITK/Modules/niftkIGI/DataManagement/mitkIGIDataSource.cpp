@@ -21,9 +21,9 @@ namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSource::IGIDataSource()
+IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 : m_Mutex(itk::FastMutexLock::New())
-, m_DataStorage(NULL)
+, m_DataStorage(storage)
 , m_Identifier(-1)
 , m_FrameRate(0)
 , m_CurrentFrameId(0)
@@ -43,9 +43,7 @@ IGIDataSource::IGIDataSource()
 , m_SuccessfullyProcessing(false)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
-
   m_ActualTimeStamp = igtl::TimeStamp::New();
-
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();

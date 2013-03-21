@@ -17,8 +17,9 @@
 #include "mitkITKImageImport.h"
 
 //-----------------------------------------------------------------------------
-QmitkIGILocalDataSource::QmitkIGILocalDataSource()
-: m_GrabbingThread(NULL)
+QmitkIGILocalDataSource::QmitkIGILocalDataSource(mitk::DataStorage* storage)
+: QmitkIGIDataSource(storage)
+, m_GrabbingThread(NULL)
 {
 }
 

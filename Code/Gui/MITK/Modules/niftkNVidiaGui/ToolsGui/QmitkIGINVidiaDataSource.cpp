@@ -298,8 +298,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource()
-: pimpl(new QmitkIGINVidiaDataSourceImpl)
+QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
+: QmitkIGILocalDataSource(storage)
+, pimpl(new QmitkIGINVidiaDataSourceImpl)
 {
   this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
