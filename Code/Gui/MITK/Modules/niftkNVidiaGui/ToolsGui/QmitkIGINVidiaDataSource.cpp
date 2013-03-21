@@ -536,15 +536,15 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
       {
         std::ostringstream  nodename;
         nodename << "NVIDIA SDI stream " << i;
-        std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(nodename.str());
-        if (dataNode.size() != 1)
+
+        mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
+        if (node.IsNull())
         {
-          MITK_ERROR << "QmitkIGINVidiaDataSource only supports a single video image per feed" << std::endl;
+          MITK_ERROR << "Can't find mitk::DataNode with name " << nodename.str() << std::endl;
           this->SetStatus("Failed");
           cvReleaseImage(&frame.first);
           return false;
         }
-        mitk::DataNode::Pointer node = dataNode[0];
 
         // FIXME: chop!
         mitk::Image::Pointer convertedImage = this->CreateMitkImage(frame.first);
@@ -581,8 +581,6 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   }
   else
     this->SetStatus("...");
-
-
 
   return result;
 }

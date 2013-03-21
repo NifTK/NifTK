@@ -149,7 +149,8 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
     mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
     if (node.IsNull())
     {
-      mitkThrow() << "node is NULL!";
+      MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+      return result;
     }
 
     // Get Image from the dataType;
@@ -158,7 +159,7 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
     {
       MITK_ERROR << "Failed to extract OpenCV image from buffer" << std::endl;
       this->SetStatus("Failed");
-      return result;
+      return false;
     }
 
     // OpenCV's cannonical channel layout is bgr (instead of rgb)
