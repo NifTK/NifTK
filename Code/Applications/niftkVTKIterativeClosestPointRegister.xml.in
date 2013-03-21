@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>ICP</title>
+  <description><![CDATA[Register two VTK polydata objects using iterative closest points.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
+    <file>
+      <name>targetPolyData</name>
+      <flag>t</flag>
+      <longflag>target</longflag>
+      <description>Target VTK Poly Data.</description>
+      <label>Target</label>
+      <channel>input</channel>
+    </file>
+    <file>
+      <name>sourcePolyData</name>
+      <flag>s</flag>
+      <longflag>source</longflag>
+      <description>Source VTK Poly Data.</description>
+      <label>Source</label>
+      <channel>input</channel>
+    </file>
+    <integer>
+      <name>maxNumberOfPoints</name>
+      <longflag>maxpoints</longflag>
+      <description>Set the maximum number of points to use.</description>
+      <label>Max. #Points.</label>
+      <default>50</default>
+      <constraints>
+        <minimum>3</minimum>
+        <maximum>100000</maximum>
+        <step>1</step>
+      </constraints>
+      <channel>input</channel>
+    </integer>
+    <integer>
+      <name>maxNumberOfIterations</name>
+      <longflag>maxit</longflag>
+      <description>Set the maximum iterations to use.</description>
+      <label>Max. #Iterations.</label>
+      <default>100</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>100000</maximum>
+        <step>1</step>
+      </constraints>
+      <channel>input</channel>
+    </integer>
+    <boolean>
+      <name>noVisualisation</name>
+      <longflag>novisualise</longflag>
+      <description>Turn off visualisation.</description>
+      <label>No Visualisation</label>
+      <channel>input</channel>
+    </boolean>
+    <boolean>
+      <name>rndTrans</name>
+      <longflag>rndtrans</longflag>
+      <description>Transform the source with random transform prior to running.</description>
+      <label>Random Trans.</label>
+      <channel>input</channel>
+    </boolean>
+    <boolean>
+      <name>rndPerturb</name>
+      <longflag>perturb</longflag>
+      <description>Randomly perturb the target points prior to registration.</description>
+      <label>Random Perturb.</label>
+      <channel>input</channel>
+    </boolean>
+  </parameters>
+
+  <parameters>
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+    <file>
+      <name>outputTransformedSource</name>
+      <longflag>out</longflag>
+      <description>Write the transformed source to file.</description>
+      <label>Output</label>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+</executable>
