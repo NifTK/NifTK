@@ -12,44 +12,26 @@
 
 =============================================================================*/
 
-#include "mitkIGIOpenCVDataType.h"
-
-namespace mitk
-{
+#include "QmitkIGILocalDataSourceGrabbingThread.h"
 
 //-----------------------------------------------------------------------------
-IGIOpenCVDataType::IGIOpenCVDataType()
-: m_Image(NULL)
+QmitkIGILocalDataSourceGrabbingThread::QmitkIGILocalDataSourceGrabbingThread(QObject *parent,  QmitkIGILocalDataSource *source)
+  : QmitkIGITimerBasedThread(parent)
+, m_Source(source)
 {
+  this->setObjectName("QmitkIGILocalDataSourceGrabbingThread");
 }
 
 
 //-----------------------------------------------------------------------------
-IGIOpenCVDataType::~IGIOpenCVDataType()
+QmitkIGILocalDataSourceGrabbingThread::~QmitkIGILocalDataSourceGrabbingThread()
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
+
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOpenCVDataType::CloneImage(const IplImage *image)
+void QmitkIGILocalDataSourceGrabbingThread::OnTimeoutImpl()
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-  m_Image = cvCloneImage(image);
+  m_Source->GrabData();
 }
-
-
-//-----------------------------------------------------------------------------
-const IplImage* IGIOpenCVDataType::GetImage()
-{
-  return m_Image;
-}
-
-} // end namespace
-

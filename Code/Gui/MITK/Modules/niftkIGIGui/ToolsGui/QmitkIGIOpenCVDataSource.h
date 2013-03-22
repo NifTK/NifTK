@@ -24,8 +24,6 @@
 #include <QObject>
 #include <QMetaType>
 
-class QTimer;
-
 /**
  * \class IGIOpenCVDataSource
  * \brief Data source that provides access to a local video frame grabber using OpenCV
@@ -38,7 +36,7 @@ class NIFTKIGIGUI_EXPORT QmitkIGIOpenCVDataSource : public QmitkIGILocalDataSour
 public:
 
   mitkClassMacro(QmitkIGIOpenCVDataSource, QmitkIGILocalDataSource);
-  itkNewMacro(QmitkIGIOpenCVDataSource);
+  mitkNewMacro1Param(QmitkIGIOpenCVDataSource, mitk::DataStorage*);
 
   /**
    * \brief We store the node name here so other classes can refer to it.
@@ -76,33 +74,36 @@ signals:
 
   /**
    * \brief We signal to the GUI that it should be updated.
+   * GUI Clients should register to this signal using a Qt::QueuedConnection.
    */
   void UpdateDisplay();
 
 protected:
 
-  QmitkIGIOpenCVDataSource(); // Purposefully hidden.
+  QmitkIGIOpenCVDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGIOpenCVDataSource(); // Purposefully hidden.
 
   QmitkIGIOpenCVDataSource(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
   QmitkIGIOpenCVDataSource& operator=(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
 
   /**
+   * \see QmitkIGILocalDataSource::GrabData()
+   */
+  virtual void GrabData();
+
+  /**
    * \brief \see IGIDataSource::SaveData();
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
-private slots:
-
   /**
-   * \brief Call this to process a new frame.
+   * \brief Updates data storage with the image.
    */
-  void OnTimeout();
+  virtual bool Update(mitk::IGIDataType* data);
 
 private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
-  QTimer *m_Timer;
 
 }; // end class
 

@@ -20,15 +20,14 @@
 #include <igtlTimeStamp.h>
 #include <NiftyLinkUtils.h>
 #include <cv.h>
-#include <QTimer>
 #include <QCoreApplication>
 
 const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
 
 //-----------------------------------------------------------------------------
-QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
-: m_VideoSource(NULL)
-, m_Timer(NULL)
+QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
+: QmitkIGILocalDataSource(storage)
+, m_VideoSource(NULL)
 {
   qRegisterMetaType<mitk::VideoSource*>();
 
@@ -43,13 +42,15 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource()
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
 
-  m_Timer = new QTimer();
-  m_Timer->setInterval(50); // milliseconds
-  m_Timer->setSingleShot(false);
+  // Create this node up front, so that the Update doesn't have to (and risk triggering GUI update events).
+  mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+  if (node.IsNull())
+  {
+    MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+  }
 
-  connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()));
-
-  m_Timer->start();
+  // This creates and starts up the thread.
+  this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
 }
 
 
@@ -114,18 +115,8 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOpenCVDataSource::OnTimeout()
+void QmitkIGIOpenCVDataSource::GrabData()
 {
-  // Make sure we have exactly 1 data node.
-  std::vector<mitk::DataNode::Pointer> dataNode = this->GetDataNode(OPENCV_IMAGE_NAME);
-  if (dataNode.size() != 1)
-  {
-    MITK_ERROR << "QmitkIGIOpenCVDataSource only supports a single video image feed" << std::endl;
-    this->SetStatus("Failed");
-    return;
-  }
-  mitk::DataNode::Pointer node = dataNode[0];
-
   // Grab a video image.
   m_VideoSource->FetchFrame();
   const IplImage* img = m_VideoSource->GetCurrentFrame();
@@ -141,58 +132,98 @@ void QmitkIGIOpenCVDataSource::OnTimeout()
   // Now process the data.
   igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
 
-  // Aim of this method is to do something like when a NiftyLink message comes in.
+  // Aim of this bit is to do something like when a NiftyLink message comes in.
+  // We are essentially just wrapping the data, and stuffing it in a buffer (std::list).
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
   wrapper->CloneImage(img);
   wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
   wrapper->SetDuration(1000000000); // nanoseconds
+
   this->AddData(wrapper.GetPointer());
-  // update status in the igi-data-source-manager gui 
-  //  (which is different from the mitk data manager!)
   this->SetStatus("Grabbing");
+}
 
-  IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
-  // opencv's cannonical channel layout is bgr (instead of rgb)
-  //  while everything usually else expects rgb...
-  cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
-  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-  //  we should make sure we got the layout right. (opencv itself does not use this in any way.)
-  std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
 
-  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-  mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
-  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-  if (imageInNode.IsNull())
+//-----------------------------------------------------------------------------
+bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
+{
+  bool result = false;
+
+  mitk::IGIOpenCVDataType::Pointer dataType = static_cast<mitk::IGIOpenCVDataType*>(data);
+  if (dataType.IsNotNull())
   {
-    node->SetData(convertedImage);
-  }
-  else
-  {
-    try
+    // Get Data Node.
+    mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+    if (node.IsNull())
     {
-      mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
-      const void* cPointer = readAccess.GetData();
-
-      mitk::ImageWriteAccessor writeAccess(imageInNode);
-      void* vPointer = writeAccess.GetData();
-
-      memcpy(vPointer, cPointer, img->width * img->height * 3);
-    }
-    catch(mitk::Exception& e)
-    {
-      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+      MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+      return result;
     }
 
+    // Get Image from the dataType;
+    const IplImage* img = dataType->GetImage();
+    if (img == NULL)
+    {
+      MITK_ERROR << "Failed to extract OpenCV image from buffer" << std::endl;
+      this->SetStatus("Failed");
+      return false;
+    }
 
+    // OpenCV's cannonical channel layout is bgr (instead of rgb)
+    // while everything usually else expects rgb...
+    IplImage* rgbOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, img->nChannels );
+    cvCvtColor( img, rgbOpenCVImage,  CV_BGR2RGB );
+
+    // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
+    // we should make sure we got the layout right. (opencv itself does not use this in any way.)
+    std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
+
+    // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
+    mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
+    mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+    if (imageInNode.IsNull())
+    {
+      node->SetData(convertedImage);
+    }
+    else
+    {
+      try
+      {
+        mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
+        const void* cPointer = readAccess.GetData();
+
+        mitk::ImageWriteAccessor writeAccess(imageInNode);
+        void* vPointer = writeAccess.GetData();
+
+        memcpy(vPointer, cPointer, img->width * img->height * 3);
+      }
+      catch(mitk::Exception& e)
+      {
+        MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+      }
+    }
+
+    // We tell the node that it is modified so the next rendering event
+    // will redraw it. Triggering this does not in itself guarantee a re-rendering.
+    node->Modified();
+
+    // We emit this, so that the GUI class associated with this tool (i.e.
+    // containing a preview of this data) also knows to update.
+    //
+    // This Update method is called from a Non-GUI thread.
+    //
+    // So clients binding to this signal should be updating the GUI from the GUI thread (i.e. a different thread).
+    // This means that clients connecting should be using a Qt::QueuedConnection.
+    emit UpdateDisplay();
+
+    // So by this point, we are all done.
+    result = true;
+
+    // Tidy up
+    cvReleaseImage(&rgbOpenCVImage);
   }
-  node->Modified();
-
-  // Tidy up
-  cvReleaseImage(&rgbOpenCVImage);
-
-  // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
-  emit UpdateDisplay();
+  return result;
 }
 
 

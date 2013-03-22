@@ -15,28 +15,28 @@
 #include "QmitkIGINiftyLinkDataSource.h"
 
 //-----------------------------------------------------------------------------
-QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource()
-: m_Socket(NULL)
+QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, NiftyLinkSocketObject *socket)
+: QmitkIGIDataSource(storage)
+, m_Socket(socket)
 , m_ClientDescriptor(NULL)
-, m_UsingSomeoneElsesSocket(false)
 {
-  m_Socket = new NiftyLinkSocketObject();
+  if (m_Socket == NULL)
+  {
+    m_Socket = new NiftyLinkSocketObject();
+    m_UsingSomeoneElsesSocket = false;
+  }
+  else
+  {
+    m_UsingSomeoneElsesSocket = true;
+  }
   connect(m_Socket, SIGNAL(ClientConnectedSignal()), this, SLOT(ClientConnected()));
   connect(m_Socket, SIGNAL(ClientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
   connect(m_Socket, SIGNAL(MessageReceivedSignal(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
-}
-//-----------------------------------------------------------------------------
-QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(NiftyLinkSocketObject *socket)
-: m_Socket(socket)
-, m_ClientDescriptor(NULL)
-, m_UsingSomeoneElsesSocket(true)
-{
-  connect(m_Socket, SIGNAL(ClientConnectedSignal()), this, SLOT(ClientConnected()));
-  connect(m_Socket, SIGNAL(ClientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
-  connect(m_Socket, SIGNAL(MessageReceivedSignal(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
+  if (socket != NULL)
+  {
   this->ClientConnected();
+  }
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -94,6 +94,7 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
   DataSourceStatusUpdated.Send(this->GetIdentifier());
   return isListening;
 }
+
 
 //-----------------------------------------------------------------------------
 void QmitkIGINiftyLinkDataSource::ClientConnected()
@@ -155,6 +156,8 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
   qDebug() << deviceInfo;
   DataSourceStatusUpdated.Send(this->GetIdentifier());
 }
+
+
 //-----------------------------------------------------------------------------
 NiftyLinkSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
 {

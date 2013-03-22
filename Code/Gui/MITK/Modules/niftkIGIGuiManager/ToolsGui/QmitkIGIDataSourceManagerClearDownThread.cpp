@@ -12,44 +12,18 @@
 
 =============================================================================*/
 
-#include "mitkIGIOpenCVDataType.h"
-
-namespace mitk
-{
+#include "QmitkIGIDataSourceManagerClearDownThread.h"
 
 //-----------------------------------------------------------------------------
-IGIOpenCVDataType::IGIOpenCVDataType()
-: m_Image(NULL)
+QmitkIGIDataSourceManagerClearDownThread::QmitkIGIDataSourceManagerClearDownThread(QObject *parent, QmitkIGIDataSourceManager *manager)
+: QmitkIGITimerBasedThread(parent)
+, m_Manager(manager)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIOpenCVDataType::~IGIOpenCVDataType()
+void QmitkIGIDataSourceManagerClearDownThread::OnTimeoutImpl()
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
+  m_Manager->OnCleanData();
 }
-
-
-//-----------------------------------------------------------------------------
-void IGIOpenCVDataType::CloneImage(const IplImage *image)
-{
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-  m_Image = cvCloneImage(image);
-}
-
-
-//-----------------------------------------------------------------------------
-const IplImage* IGIOpenCVDataType::GetImage()
-{
-  return m_Image;
-}
-
-} // end namespace
-

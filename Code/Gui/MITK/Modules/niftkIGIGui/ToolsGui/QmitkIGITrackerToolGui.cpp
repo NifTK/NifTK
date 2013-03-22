@@ -79,7 +79,6 @@ void QmitkIGITrackerToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuil
   connect(m_TrackerControlsWidget->pushButton_ApplyFiducialTransform, SIGNAL(clicked()), this, SLOT(OnApplyFidClicked()));
   connect(m_TrackerControlsWidget->pushButton_SetUpPositioning, SIGNAL(clicked()), this, SLOT(OnSetUpFinePositioning()));
  
-//
   if (config != NULL)
   {
     QString deviceType = config->GetDeviceType();
@@ -198,6 +197,8 @@ void QmitkIGITrackerToolGui::OnFiducialRegistrationClicked(void)
     m_FiducialRegWidgetDialog->activateWindow();
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnGetTipPosition()
 {
@@ -207,6 +208,8 @@ void QmitkIGITrackerToolGui::OnGetTipPosition()
     tool->GetCurrentTipPosition();
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnSetUpFinePositioning()
 {
@@ -226,9 +229,6 @@ void QmitkIGITrackerToolGui::OnSetUpFinePositioning()
 }
 
 
-
-
-
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnRegisterFiducials()
 {
@@ -238,6 +238,7 @@ void QmitkIGITrackerToolGui::OnRegisterFiducials()
     tool->RegisterFiducials();
   }
 }
+
 
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnApplyFidClicked()
@@ -281,6 +282,7 @@ void QmitkIGITrackerToolGui::OnAssocClicked(void)
  }
 }
 
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnDisassocClicked(void)
 {
@@ -296,6 +298,8 @@ void QmitkIGITrackerToolGui::OnDisassocClicked(void)
   }
  }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnPMAssocClicked(void)
 {
@@ -312,6 +316,7 @@ void QmitkIGITrackerToolGui::OnPMAssocClicked(void)
  }
 }
 
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnPMDisassocClicked(void)
 {
@@ -327,6 +332,8 @@ void QmitkIGITrackerToolGui::OnPMDisassocClicked(void)
   }
  }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnCameraLinkClicked(void)
 {
@@ -345,6 +352,8 @@ void QmitkIGITrackerToolGui::OnCameraLinkClicked(void)
     }
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnLHCRHCClicked(void)
 {
@@ -376,6 +385,8 @@ void QmitkIGITrackerToolGui::OnLHCRHCClicked(void)
     tool->SetCameraLink(false);
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnFidTrackClicked(void)
 {
@@ -391,6 +402,8 @@ void QmitkIGITrackerToolGui::OnFidTrackClicked(void)
     m_TrackerControlsWidget->pushButton_FidTrack->setText("Fid Trk. On");
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerToolGui::OnStatusUpdate(QString message)
 {

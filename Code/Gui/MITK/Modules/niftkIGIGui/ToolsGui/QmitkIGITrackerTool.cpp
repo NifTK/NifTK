@@ -30,32 +30,11 @@
 #include "vtkTransform.h"
 #include "vtkMatrix4x4.h"
 
-NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
+//NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 
 //-----------------------------------------------------------------------------
-QmitkIGITrackerTool::QmitkIGITrackerTool()
-: m_UseICP(false)
-, m_PointSetsInitialized(false)
-, m_LinkCamera(false)
-, m_ImageFiducialsDataNode(NULL)
-, m_ImageFiducialsPointSet(NULL)
-, m_TrackerFiducialsDataNode(NULL)
-, m_TrackerFiducialsPointSet(NULL)
-, m_FiducialRegistrationFilter(NULL)
-, m_PermanentRegistrationFilter(NULL)
-, m_focalPoint(-2000.0)
-, m_ClipNear(5.0)
-, m_ClipFar(6000.0)
-, m_TransformTrackerToMITKCoords(false)
-{
-  m_FiducialRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
-  m_PermanentRegistrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
-  this->InitPreMatrix();
-}
-
-//-----------------------------------------------------------------------------
-QmitkIGITrackerTool::QmitkIGITrackerTool(NiftyLinkSocketObject * socket)
-: QmitkIGINiftyLinkDataSource(socket)
+QmitkIGITrackerTool::QmitkIGITrackerTool(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
+: QmitkIGINiftyLinkDataSource(storage, socket)
 , m_UseICP(false)
 , m_PointSetsInitialized(false)
 , m_LinkCamera(false)
@@ -91,6 +70,7 @@ QmitkIGITrackerTool::~QmitkIGITrackerTool()
   }
 }
 
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
 {
@@ -122,9 +102,12 @@ void QmitkIGITrackerTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
       wrapper->SetDuration(1000000000); // nanoseconds
 
       this->AddData(wrapper.GetPointer());
+      this->SetStatus("Receiving");
     }
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::ProcessInitString(QString str)
 {
@@ -166,11 +149,14 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
   }
 }
 
+
 //-----------------------------------------------------------------------------
 QString QmitkIGITrackerTool::GetInitString()
 {
   return m_InitString;
 }
+
+
 //-----------------------------------------------------------------------------
 bool QmitkIGITrackerTool::CanHandleData(mitk::IGIDataType* data) const
 {
@@ -588,6 +574,7 @@ void QmitkIGITrackerTool::GetCurrentTipPosition()
   }
 }
 
+
 //---------------------------------------------------------------------------
 bool QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
 {
@@ -602,6 +589,7 @@ bool QmitkIGITrackerTool::AddDataNode(const QString toolName, mitk::DataNode::Po
     return true;
   }
 }
+
 
 //---------------------------------------------------------------------------
 bool QmitkIGITrackerTool::RemoveDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
@@ -625,11 +613,14 @@ bool QmitkIGITrackerTool::RemoveDataNode(const QString toolName, mitk::DataNode:
   }
 }
 
+
 //---------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetDataNode(const QString toolName)
 {
   return m_AssociatedTools.values(toolName);
 }
+
+
 //---------------------------------------------------------------------------
 bool QmitkIGITrackerTool::AddPreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
 {
@@ -644,6 +635,7 @@ bool QmitkIGITrackerTool::AddPreMatrixDataNode(const QString toolName, mitk::Dat
     return true;
   }
 }
+
 
 //---------------------------------------------------------------------------
 bool QmitkIGITrackerTool::RemovePreMatrixDataNode(const QString toolName, mitk::DataNode::Pointer dataNode)
@@ -667,12 +659,12 @@ bool QmitkIGITrackerTool::RemovePreMatrixDataNode(const QString toolName, mitk::
   }
 }
 
+
 //---------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> QmitkIGITrackerTool::GetPreMatrixDataNode(const QString toolName)
 {
   return m_PreMatrixAssociatedTools.values(toolName);
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -958,6 +950,8 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
   }
   return success;
 }
+
+
 //-----------------------------------------------------------------------------
 void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
 {
@@ -1015,11 +1009,15 @@ void QmitkIGITrackerTool::SetCameraLink(bool LinkCamera)
      }
    }
 }
+
+
 //-----------------------------------------------------------------------------
 bool QmitkIGITrackerTool::GetCameraLink()
 {
    return m_LinkCamera;
 }
+
+
 //----------------------------------------------------------------------------
 void QmitkIGITrackerTool::InitPreMatrix()
 {
@@ -1042,9 +1040,9 @@ void QmitkIGITrackerTool::InitPreMatrix()
      m_PreMatrix[3][1]=0.0;
      m_PreMatrix[3][2]=0.0;
      m_PreMatrix[3][3]=1.0;
-
-
 }
+
+
 //------------------------------------------------------------------------------
 void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Pointer dataNode)
 {
@@ -1207,7 +1205,6 @@ void QmitkIGITrackerTool::SetUpPositioning(QString toolName , mitk::DataNode::Po
 
   QString statusUpdate = registrationQuality + "\n" + updateMessage + "\n";
   qDebug() <<  statusUpdate;
- 
 
   dataNode->GetData()->GetGeometry()->GetBoundingBox();
 }

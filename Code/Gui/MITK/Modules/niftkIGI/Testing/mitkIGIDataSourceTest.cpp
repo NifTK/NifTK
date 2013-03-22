@@ -23,14 +23,14 @@ class TestIGIDataSource : public IGIDataSource
 {
 public:
   mitkClassMacro(TestIGIDataSource, IGIDataSource);
-  itkNewMacro(TestIGIDataSource);
+  mitkNewMacro1Param(TestIGIDataSource, mitk::DataStorage*);
   virtual void Initialize(){};
   mitk::IGIDataType::Pointer TestRequestData(igtlUint64 requestedTimeStamp)
   {
     return IGIDataSource::RequestData(requestedTimeStamp);
   }
 protected:
-  TestIGIDataSource() {};
+  TestIGIDataSource(mitk::DataStorage* storage) : IGIDataSource(storage){};
   virtual ~TestIGIDataSource() {};
   virtual bool CanHandleData(mitk::IGIDataType* data) const { return true; }
 };
@@ -40,7 +40,7 @@ protected:
 int mitkIGIDataSourceTest(int /*argc*/, char* /*argv*/[])
 {
 
-  mitk::TestIGIDataSource::Pointer dataSource = mitk::TestIGIDataSource::New();
+  mitk::TestIGIDataSource::Pointer dataSource = mitk::TestIGIDataSource::New(NULL);
 
   dataSource->SetIdentifier(1);
   MITK_TEST_CONDITION_REQUIRED(dataSource->GetIdentifier() == 1, ".. Testing Setter/Getter Identifier");

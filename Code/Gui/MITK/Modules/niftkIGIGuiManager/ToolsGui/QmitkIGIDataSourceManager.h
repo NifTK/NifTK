@@ -31,7 +31,7 @@
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
-class QmitkIGIDataSourceManagerGuiUpdateThread;
+class QTimer;
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -142,12 +142,7 @@ private slots:
   /**
    * \brief Updates the whole rendered scene, based on the available messages.
    */
-  void OnUpdateDisplay();
-
-  /**
-   * \brief Updates the frame rate.
-   */
-  void OnUpdateFrameRate();
+  void OnUpdateGui();
 
   /**
    * \brief Tells each data source to clean data, see mitk::IGIDataSource::CleanData().
@@ -161,14 +156,9 @@ private slots:
 
   /**
    * \brief Adds a data source to the table.
-   */
-  int AddSource(int sourcetype , int portnumber);
-
-  /**
-   * \brief Adds a data source to the table.
    * \return the added tool's identifier
    */
-  int AddSource(int sourcetype , int portnumber, NiftyLinkSocketObject* socket);
+  int AddSource(int sourcetype , int portnumber, NiftyLinkSocketObject* socket=NULL);
 
   /**
    * \brief Removes a data source from the table, and completely destroys it.
@@ -200,7 +190,6 @@ private:
   mitk::DataStorage                        *m_DataStorage;
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
-  QTimer                                   *m_FrameRateTimer; // Used to just update the frame rate
   QSet<int>                                 m_PortsInUse;
   std::vector<mitk::IGIDataSource::Pointer> m_Sources;
   unsigned int                              m_NextSourceIdentifier;
@@ -213,8 +202,8 @@ private:
   QString                                   m_DirectoryPrefix;
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;
-  QmitkIGIDataSourceManagerClearDownThread *m_ClearDownThread;
-  QmitkIGIDataSourceManagerGuiUpdateThread *m_GuiUpdateThread;
+  QTimer                                   *m_GuiUpdateTimer;
+  QTimer                                   *m_ClearDownTimer;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
@@ -249,48 +238,6 @@ private:
   void DeleteCurrentGuiWidget();
 
 }; // end class
-
-/**
- * \brief Separate thread class to run the clear down.
- */
-class QmitkIGIDataSourceManagerClearDownThread : public QThread {
-  Q_OBJECT
-public:
-  QmitkIGIDataSourceManagerClearDownThread(QObject *parent, QmitkIGIDataSourceManager *manager);
-  ~QmitkIGIDataSourceManagerClearDownThread();
-
-  void SetInterval(unsigned int milliseconds);
-  void run();
-
-public slots:
-  void OnTimeout();
-
-private:
-  unsigned int m_TimerInterval;
-  QTimer *m_Timer;
-  QmitkIGIDataSourceManager *m_Manager;
-};
-
-/**
- * \brief Separate thread class to run the GUI update at the right rate.
- */
-class QmitkIGIDataSourceManagerGuiUpdateThread : public QThread {
-  Q_OBJECT
-public:
-  QmitkIGIDataSourceManagerGuiUpdateThread(QObject *parent, QmitkIGIDataSourceManager *manager);
-  ~QmitkIGIDataSourceManagerGuiUpdateThread();
-
-  void SetInterval(unsigned int milliseconds);
-  void run();
-
-public slots:
-  void OnTimeout();
-
-private:
-  unsigned int m_TimerInterval;
-  QTimer *m_Timer;
-  QmitkIGIDataSourceManager *m_Manager;
-};
 
 #endif
 

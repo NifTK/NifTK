@@ -42,7 +42,7 @@ class NIFTKNVIDIAGUI_EXPORT QmitkIGINVidiaDataSource : public QmitkIGILocalDataS
 public:
 
   mitkClassMacro(QmitkIGINVidiaDataSource, QmitkIGILocalDataSource);
-  itkNewMacro(QmitkIGINVidiaDataSource);
+  mitkNewMacro1Param(QmitkIGINVidiaDataSource, mitk::DataStorage*);
 
   /**
    * \brief Defined in base class, so we check that the data type is in fact
@@ -67,6 +67,11 @@ public:
   bool IsCapturing();
 
 
+protected:
+  virtual void GrabData();
+  virtual bool Update(mitk::IGIDataType* data);
+
+
 public:
   // to be used to share with the preview window, for example
   QGLWidget* get_capturecontext();
@@ -80,7 +85,9 @@ public:
 
   // caller needs to cleanup!
   // exists only for integration with mitk, otherwise: do not use!
-  IplImage* get_rgb_image();
+  // note: input streams are stacked! all streams transfered at the same time
+  std::pair<IplImage*, int> get_rgb_image();
+  std::pair<IplImage*, int> get_rgba_image(unsigned int sequencenumber);
 
 signals:
 
@@ -91,7 +98,7 @@ signals:
 
 protected:
 
-  QmitkIGINVidiaDataSource(); // Purposefully hidden.
+  QmitkIGINVidiaDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGINVidiaDataSource(); // Purposefully hidden.
 
   QmitkIGINVidiaDataSource(const QmitkIGINVidiaDataSource&); // Purposefully not implemented.
@@ -102,16 +109,9 @@ protected:
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
-private slots:
-
-  /**
-   * \brief Call this to process a new frame.
-   */
-  void OnTimeout();
 
 private:
 
-  QTimer *m_Timer;
 
   QmitkIGINVidiaDataSourceImpl*     pimpl;
 
@@ -119,6 +119,9 @@ private:
   // it's also hooked up to m_ImageNode
   // BUT: every time there's a new frame, a new image is allocated. cow-style.
   mitk::Image::Pointer              m_Image;
+
+
+  static const char*      NODE_NAME;
 
 }; // end class
 

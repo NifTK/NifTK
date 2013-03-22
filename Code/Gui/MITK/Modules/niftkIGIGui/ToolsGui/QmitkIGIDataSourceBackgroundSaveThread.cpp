@@ -12,44 +12,28 @@
 
 =============================================================================*/
 
-#include "mitkIGIOpenCVDataType.h"
-
-namespace mitk
-{
+#include "QmitkIGIDataSourceBackgroundSaveThread.h"
 
 //-----------------------------------------------------------------------------
-IGIOpenCVDataType::IGIOpenCVDataType()
-: m_Image(NULL)
+QmitkIGIDataSourceBackgroundSaveThread::QmitkIGIDataSourceBackgroundSaveThread(QObject *parent, QmitkIGIDataSource *source)
+  : QmitkIGITimerBasedThread(parent)
+, m_Source(source)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIOpenCVDataType::~IGIOpenCVDataType()
+QmitkIGIDataSourceBackgroundSaveThread::~QmitkIGIDataSourceBackgroundSaveThread()
 {
-  if (m_Image != NULL)
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceBackgroundSaveThread::OnTimeoutImpl()
+{
+  if (m_Source->GetSaveInBackground())
   {
-    cvReleaseImage(&m_Image);
+    m_Source->SaveBuffer();
   }
 }
-
-
-//-----------------------------------------------------------------------------
-void IGIOpenCVDataType::CloneImage(const IplImage *image)
-{
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-  m_Image = cvCloneImage(image);
-}
-
-
-//-----------------------------------------------------------------------------
-const IplImage* IGIOpenCVDataType::GetImage()
-{
-  return m_Image;
-}
-
-} // end namespace
 
