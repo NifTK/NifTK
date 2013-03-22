@@ -22,6 +22,7 @@
 #include "mitkSlicesSwiveller.h"
 #include "mitkRenderWindowFrame.h"
 #include "QmitkCmicLogo.h"
+#include "QmitkBitmapOverlay.h"
 //#include "mitkManufacturerLogo.h"
 #include "mitkGradientBackground.h"
 #include "mitkCoordinateSupplier.h"
@@ -267,6 +268,7 @@ protected:
 
  // mitk::ManufacturerLogo::Pointer m_LogoRendering1;
   CMICLogo::Pointer m_LogoRendering1;
+  BitmapOverlay::Pointer m_BitmapOverlay1;
 
   mitk::GradientBackground::Pointer m_GradientBackground1;
   bool m_GradientBackgroundFlag;
