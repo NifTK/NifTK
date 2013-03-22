@@ -138,6 +138,19 @@ FrameInfo SDIInput::capture()
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     }
+    else
+    {
+        // there are no pbos se we are capturing straight into texture
+        // that means the texture update above was never called.
+        // do it now
+        for (int i = 0; i < pimpl->textures.size(); ++i)
+        {
+            // not having any pbos also means we are not using a ringbuffer
+            // so all textures need to be updated (not just the current slot ones)
+            glBindTexture(GL_TEXTURE_2D, pimpl->textures[i]);
+            glGenerateMipmapEXT(GL_TEXTURE_2D);
+        }
+    }
 
     glBindTexture(GL_TEXTURE_2D, 0);
     if (glGetError() != GL_NO_ERROR)
