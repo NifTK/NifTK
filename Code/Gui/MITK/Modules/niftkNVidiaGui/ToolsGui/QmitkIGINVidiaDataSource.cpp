@@ -649,23 +649,43 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, frame.first->nChannels);
         cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
 
-        mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
+        // Check if we already have an image on the node.
+        // We dont want to create a new one in that case (there is a lot of stuff going on
+        // for allocating a new image).
         mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
         if (imageInNode.IsNull())
         {
+          mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
           node->SetData(convertedImage);
         }
         else
         {
+          // FIXME: check size of image that is already attached to data node!
+
           try
           {
-            mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
-            const void* cPointer = readAccess.GetData();
-
             mitk::ImageWriteAccessor writeAccess(imageInNode);
             void* vPointer = writeAccess.GetData();
 
-            std::memcpy(vPointer, cPointer, subimg.width * subimg.height * subimg.nChannels);
+            // the mitk image is tightly packed
+            // but the opencv image might not
+            const unsigned int numberOfBytesPerLine = subimg.width * subimg.nChannels;
+            if (numberOfBytesPerLine == static_cast<unsigned int>(subimg.widthStep))
+            {
+              std::memcpy(vPointer, subimg.imageData, numberOfBytesPerLine * subimg.height);
+            }
+            else
+            {
+              // if that is not true then something is seriously borked
+              assert(subimg.widthStep >= numberOfBytesPerLine);
+
+              // "slow" path: copy line by line
+              for (int y = 0; y < subimg.height; ++y)
+              {
+                // widthStep is in bytes while width is in pixels
+                std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(subimg.imageData[y * subimg.widthStep]), numberOfBytesPerLine); 
+              }
+            }
           }
           catch(mitk::Exception& e)
           {
