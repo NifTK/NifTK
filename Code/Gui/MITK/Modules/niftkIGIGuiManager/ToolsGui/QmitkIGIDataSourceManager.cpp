@@ -24,8 +24,6 @@
 #include "QmitkIGIUltrasonixTool.h"
 #include "QmitkIGIOpenCVDataSource.h"
 #include "QmitkIGIDataSourceGui.h"
-#include "QmitkIGIDataSourceManagerClearDownThread.h"
-#include "QmitkIGIDataSourceManagerGuiUpdateThread.h"
 
 #ifdef _USE_NVAPI
 #include "QmitkIGINVidiaDataSource.h"
@@ -44,10 +42,9 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 : m_DataStorage(NULL)
 , m_StdMultiWidget(NULL)
 , m_GridLayoutClientControls(NULL)
-, m_WidgetUpdateTimer(NULL)
 , m_NextSourceIdentifier(0)
-, m_ClearDownThread(NULL)
-, m_GuiUpdateThread(NULL)
+, m_GuiUpdateTimer(NULL)
+, m_ClearDownTimer(NULL)
 {
   m_OKColour = DEFAULT_OK_COLOUR;
   m_WarningColour = DEFAULT_WARNING_COLOUR;
@@ -57,25 +54,21 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_DirectoryPrefix = GetDefaultPath();
   m_SaveOnReceipt = DEFAULT_SAVE_ON_RECEIPT;
   m_SaveInBackground = DEFAULT_SAVE_IN_BACKGROUND;
-
-  m_ClearDownThread = new QmitkIGIDataSourceManagerClearDownThread(this, this);
-  m_GuiUpdateThread = new QmitkIGIDataSourceManagerGuiUpdateThread(this, this);
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 {
-  if (m_ClearDownThread != NULL)
+  // Stop both timers, to make sure nothing is triggering as we destroy.
+  if (m_GuiUpdateTimer != NULL)
   {
-    m_ClearDownThread->ForciblyStop();
-    delete m_ClearDownThread;
+    m_GuiUpdateTimer->stop();
   }
 
-  if (m_GuiUpdateThread != NULL)
+  if (m_ClearDownTimer != NULL)
   {
-    m_GuiUpdateThread->ForciblyStop();
-    delete m_GuiUpdateThread;
+    m_ClearDownTimer->stop();
   }
 
   // Must delete the current GUI before the sources.
@@ -165,10 +158,10 @@ void QmitkIGIDataSourceManager::SetDataStorage(mitk::DataStorage* dataStorage)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
 {
-  if (m_GuiUpdateThread != NULL)
+  if (m_GuiUpdateTimer != NULL)
   {
     int milliseconds = 1000 / framesPerSecond;
-    m_GuiUpdateThread->SetInterval(milliseconds);
+    m_GuiUpdateTimer->setInterval(milliseconds);
   }
 
   m_FrameRate = framesPerSecond;
@@ -179,10 +172,10 @@ void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::SetClearDataRate(int numberOfSeconds)
 {
-  if (m_ClearDownThread != NULL)
+  if (m_ClearDownTimer != NULL)
   {
     int milliseconds = 1000 * numberOfSeconds;
-    m_ClearDownThread->SetInterval(milliseconds);
+    m_ClearDownTimer->setInterval(milliseconds);
   }
 
   m_ClearDataRate = numberOfSeconds;
@@ -235,8 +228,11 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_RecordPushButton->setEnabled(true);
   m_StopPushButton->setEnabled(false);
 
-  m_WidgetUpdateTimer = new QTimer(this);
-  m_WidgetUpdateTimer->setInterval(1000); // every 1 seconds
+  m_GuiUpdateTimer = new QTimer(this);
+  m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
+
+  m_ClearDownTimer = new QTimer(this);
+  m_ClearDownTimer->setInterval(1000*(int)DEFAULT_CLEAR_RATE);
 
   m_GridLayoutClientControls = new QGridLayout(m_Frame);
   m_GridLayoutClientControls->setSpacing(0);
@@ -260,9 +256,10 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
-  connect(m_WidgetUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateWidgets()) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
   connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
+  connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()) );
+  connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()) );
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 }
@@ -513,19 +510,15 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
   m_NextSourceIdentifier++;
 
    // Launch timers
-  if (!m_ClearDownThread->isRunning())
+  if (!m_GuiUpdateTimer->isActive())
   {
-    m_ClearDownThread->start();
+    m_GuiUpdateTimer->start();
   }
-  if (!m_GuiUpdateThread->isRunning())
+  if (!m_ClearDownTimer->isActive())
   {
-    m_GuiUpdateThread->start();
+    m_ClearDownTimer->start();
   }
-  if (!m_WidgetUpdateTimer->isActive())
-  {
-    m_WidgetUpdateTimer->start();
-  }
-  
+
   return source->GetIdentifier();
 }
 
@@ -596,7 +589,8 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 
   if (m_TableWidget->rowCount() == 0)
   {
-    m_WidgetUpdateTimer->stop();
+    m_GuiUpdateTimer->stop();
+    m_ClearDownTimer->stop();
   }
 }
 
@@ -652,44 +646,44 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnUpdateData()
+void QmitkIGIDataSourceManager::OnUpdateGui()
 {
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
-    source->ProcessData(idNow);
-  }
-
-  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
-  renderer->RequestUpdateAll();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnUpdateWidgets()
-{
-  igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-  igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);
-
-  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
-  {
+    // Work out row number of source.
     int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
 
+    // First tell each source to update data.
+    // For example, sources could copy to data storage.
+    source->ProcessData(idNow);
+
+    // Now calculate the stats.
     source->UpdateFrameRate();
     float rate = source->GetFrameRate();
     bool isValid = source->GetSuccessfullyProcessing();
-    double lag = source->GetCurrentTimeLag(nowTime);
+    double lag = source->GetCurrentTimeLag(idNow);
 
+    // Update the frame rate number.
     QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
     frameRateItem->setTextAlignment(Qt::AlignCenter);
     frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_TableWidget->setItem(rowNumber, 4, frameRateItem);
 
-    QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+    // Update the lag number.
+    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+    lagItem->setTextAlignment(Qt::AlignCenter);
+    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 5, lagItem);
 
-    if (!isValid)
+    // Update the status text.
+    m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
+
+    // Update the status icon.
+    QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+    if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
     {
       // Highlight that current row is in error.
       QPixmap pix(22, 22);
@@ -703,33 +697,30 @@ void QmitkIGIDataSourceManager::OnUpdateWidgets()
       pix.fill(m_OKColour);
       tItem->setIcon(pix);
     }
-
-    // Update the lag number.
-    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-    lagItem->setTextAlignment(Qt::AlignCenter);
-    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-
-    // Documentation says that setItem takes ownership of QTableWidgetItem
-    // i.e. is responsible for deleting it.
-    m_TableWidget->setItem(rowNumber, 5, lagItem);
-
-    // Update the status text
-    m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
   }
 
-  // Try and make sure refreshes are happening ok.
+  // Make sure table is refreshing.
   m_TableWidget->update();
+
+  // Make sure scene rendered.
+  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
+  renderer->RequestUpdateAll();
+
+  // Try to encourage rest of event loop to process before the timer swamps it.
+  QCoreApplication::processEvents();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnCleanData()
 {
-  if (!m_WidgetUpdateTimer->isActive())
+  // If gui timer is not running, we probably have no sources active.
+  if (!m_GuiUpdateTimer->isActive())
   {
     return;
   }
 
+  // If we are active, then simply ask each buffer to clean up in turn.
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
     source->CleanBuffer();
@@ -762,7 +753,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
-    source->ClearBuffer(); // for now, until we have a background thread to sort this out.
+    source->ClearBuffer();
     source->SetSavePrefix(directory.absolutePath().toStdString());
     source->SetSavingMessages(true);
     source->SetSaveInBackground(this->m_SaveInBackground);
