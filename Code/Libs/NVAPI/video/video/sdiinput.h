@@ -12,6 +12,7 @@ namespace video
 {
 
 
+/** @brief Holds nvapi related stuff, pimpl'd to avoid header pollution. */
 class SDIInputImpl;
 class LIBVIDEO_DLL_EXPORTS SDIInput
 {
@@ -36,6 +37,14 @@ public:
 
 
 public:
+    /**
+     * @brief Initialises SDI capture into texture memory.
+     * @param dev the device on which to capture
+     * @param interlaced what to do with interlaced video, ignored of format is progressive
+     * @param ringbuffersize how may slots to allocate in the texture ringbuffer
+     * @throws std::runtime_error if anything goes wrong with setup
+     * @throws std::logic_error if you passed in the wrong parameters
+     */
     SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced = DO_NOTHING_SPECIAL, int ringbuffersize = 0);
     ~SDIInput();
 
@@ -45,11 +54,17 @@ private:
     SDIInput& operator=(const SDIInput& assignme);
 
 
+    /** 
+     * @name Actual video dimensions. 
+     * @detail These may be different from the reported capture format if we are dropping a field, for example.
+     */
+    //@{
 public:
-    // these may be different from the reported capture format
-    //  if we are dropping a field, for example
+    /** @brief Returns the width in pixels of the texture object that receives video data. */
     int get_width() const;
+    /** @brief Returns the height in pixels of the texture object that receives video data. */
     int get_height() const;
+    //@}
 
 
 protected:
@@ -61,8 +76,14 @@ public:
     /** @brief Returns the most up-to-date index into the ring buffer. */
     int get_current_ringbuffer_slot() const;
 
-    // format is always RGBA!
-    // returns zero if no stream with that index
+    /**
+     * @brief Returns the texture ID for a specific ring buffer slot, or for the current slot.
+     * @detail The texture has always RGBA format, and dimensions reported by get_width()/get_height().
+     * @param streamno the index of the stream, counting from zero
+     * @param ringbufferslot a specific ringbuffer slot, otherwise the currently active slot
+     * @throws nothing should not throw
+     * @returns The OpenGL object name (i.e. ID) of the requested texture map; or zero if there is none for the requested stream.
+     */
     int get_texture_id(int streamno, int ringbufferslot = -1) const;
 
     /**

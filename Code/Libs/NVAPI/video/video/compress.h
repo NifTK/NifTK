@@ -20,14 +20,14 @@ namespace video
 class LIBVIDEO_DLL_EXPORTS CompressorFailedException : public std::runtime_error
 {
 public:
-	CompressorFailedException(const std::string& msg, int errorcode = 1);
+    CompressorFailedException(const std::string& msg, int errorcode = 1);
 };
 
 // functionality required to map buffers/textures/etc for compression failed
 class LIBVIDEO_DLL_EXPORTS InteropFailedException : public std::runtime_error
 {
 public:
-	InteropFailedException(const std::string& msg);
+    InteropFailedException(const std::string& msg);
 };
 
 #pragma warning(pop)
@@ -48,34 +48,34 @@ class CompressorImpl;
 class LIBVIDEO_DLL_EXPORTS Compressor
 {
 private:
-	CompressorImpl*		pimpl;
+    CompressorImpl*     pimpl;
 
 public:
-	/**
-	 * @param mfps Refresh rate in milli-Hz, e.g. for NTSC 29.97 Hz this would be 29970.
-	 * @param width The input and output width of the video. Needs to be even! All formats in StreamFormat have even widths.
-	 * @param height The input and output height of the video. If it's not even then this class automatically pads it. This is because NTSC has an odd height (487) and this class should be able to take it directly.
-	 * @throws InteropFailedException if there are problems with CUDA
-	 * @throws CompressorFailedException if the compressor engine specifically returns unexpected errors
-	 * @throws std::logic_error if there's no CUDA or OpenGL context, or both are not on the same device
-	 */
-	Compressor(int width, int height, int mfps, const std::string& filename);	
-	~Compressor();
+    /**
+     * @param mfps Refresh rate in milli-Hz, e.g. for NTSC 29.97 Hz this would be 29970.
+     * @param width The input and output width of the video. Needs to be even! All formats in StreamFormat have even widths.
+     * @param height The input and output height of the video. If it's not even then this class automatically pads it. This is because NTSC has an odd height (487) and this class should be able to take it directly.
+     * @throws InteropFailedException if there are problems with CUDA
+     * @throws CompressorFailedException if the compressor engine specifically returns unexpected errors
+     * @throws std::logic_error if there's no CUDA or OpenGL context, or both are not on the same device
+     */
+    Compressor(int width, int height, int mfps, const std::string& filename);
+    ~Compressor();
 
 private:
-	// not implemented
-	Compressor(const Compressor& copyme);
-	Compressor& operator=(const Compressor& assignme);
+    // not implemented
+    Compressor(const Compressor& copyme);
+    Compressor& operator=(const Compressor& assignme);
 
 
 public:
 
-	/**
-	 * @throws std::logic_error if you did not call preparetexture() beforehand
-	 */
-	void compresstexture(int gltexture);
+    /**
+     * @throws std::logic_error if you did not call preparetexture() beforehand
+     */
+    void compresstexture(int gltexture);
 
-	void preparetexture(int gltexture);
+    void preparetexture(int gltexture);
 };
 
 
