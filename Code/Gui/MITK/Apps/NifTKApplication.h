@@ -112,13 +112,11 @@ public:
  * \param appName the application name - for example "NiftyView", "MIDAS" etc.
  * \param orgName the organisation name - should be "CMIC"
  * \param applicationPlugin the application plugin - for example "uk.ac.ucl.cmic.gui.qt.niftyview"
- * \param libraryPreLoadString a library to pre-load to speed up cache starts - for example "libuk_ac_ucl_cmic_gui_qt_niftyview"
  */
 int ApplicationMain(int argc, char** argv,
     QString appName,
     QString orgName,
-    QString applicationPlugin,
-    QString libraryPreLoadString)
+    QString applicationPlugin)
 {
   // Create a QApplication instance first
   QtSafeApplication myApp(argc, argv);
@@ -150,12 +148,14 @@ int ApplicationMain(int argc, char** argv,
   sbConfig->setString(berry::Platform::ARG_PROVISIONING, provFile.toString());
   sbConfig->setString(berry::Platform::ARG_APPLICATION, applicationPlugin.toStdString());
 
-  // Preload the org.mitk.gui.qt.ext plug-in (and hence also QmitkExt) to speed
+#ifndef Q_OS_WIN
+  // Preload the org.mitk.gui.qt.ext plug-in (and hence also QmitkExt) and DICOM libs to speed
   // up a clean-cache start. This also works around bugs in older gcc and glibc implementations,
   // which have difficulties with multiple dynamic opening and closing of shared libraries with
   // many global static initializers. It also helps if dependent libraries have weird static
   // initialization methods and/or missing de-initialization code.
-  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, libraryPreLoadString.toStdString());
+  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "liborg_mitk_gui_qt_ext,libCTKDICOMCore:0.1");
+#endif
 
   // VTK errors cause problem on windows, as it brings up an annoying error window.
   // We get VTK errors from the Thumbnail widget, as it switches orientation (axial, coronal, sagittal).
