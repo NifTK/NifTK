@@ -303,6 +303,12 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
         windowMin = 0;
         windowMax = 255;
 
+        // Given that the above values are initial defaults, they must be stored on image.
+        node->SetFloatProperty("image data min", minDataLimit);
+        node->SetFloatProperty("image data max", maxDataLimit);
+        node->SetFloatProperty("image data mean", meanData);
+        node->SetFloatProperty("image data std dev", stdDevData);
+
         // We don't have a policy for non-scalar images.
         // For example, how do you default Window/Level for RGB, HSV?
         // So, this stuff below, only valid for scalar images.
@@ -335,6 +341,8 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
             node->SetFloatProperty("image data max", maxDataLimit);
             node->SetFloatProperty("image data mean", meanData);
             node->SetFloatProperty("image data std dev", stdDevData);
+            windowMin = minDataLimit;
+            windowMax = maxDataLimit;
           }
           catch(const mitk::AccessByItkException& e)
           {
