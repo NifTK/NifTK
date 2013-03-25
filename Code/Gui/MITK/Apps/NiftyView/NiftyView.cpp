@@ -19,7 +19,7 @@
  */
 int main(int argc, char** argv)
 {
-  return ApplicationMain(argc, argv, "NiftyView", "CMIC", "uk.ac.ucl.cmic.gui.qt.niftyview", "liborg_mitk_gui_qt_ext");
+  return ApplicationMain(argc, argv, "NiftyView", "CMIC", "uk.ac.ucl.cmic.gui.qt.niftyview");
 }
 
 
