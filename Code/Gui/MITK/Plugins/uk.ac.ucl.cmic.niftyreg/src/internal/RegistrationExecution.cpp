@@ -226,7 +226,7 @@ void RegistrationExecution::ExecuteRegistration()
     userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, 
 							  userData );
 
-    userData->m_RegNonRigid->Run_f3d();
+    userData->m_RegNonRigid->Run();
 
     mitkTransformedImage = ConvertNiftiImageToMitk( userData->m_RegNonRigid->GetWarpedImage()[0] );
 
@@ -258,7 +258,7 @@ void RegistrationExecution::ExecuteRegistration()
     CreateControlPointVisualisation( controlPointGrid );
     CreateVectorFieldVisualisation( controlPointGrid, controlGridSkipFactor );
 
-    reg_bspline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
+    reg_spline_refineControlPointGrid( userData->m_RegParameters.m_ReferenceImage,
 					controlPointGrid );
 
     nifti_image *referenceImage = niftk::AllocateReferenceImageGivenControlPointGrid( controlPointGrid );
@@ -266,7 +266,7 @@ void RegistrationExecution::ExecuteRegistration()
     nifti_image *deformationFieldImage = niftk::AllocateDeformationGivenReferenceImage( referenceImage );
     reg_getDeformationFromDisplacement( deformationFieldImage );
 
-    reg_spline_getDeformationField( controlPointGrid, referenceImage, deformationFieldImage,
+    reg_spline_getDeformationField( controlPointGrid, deformationFieldImage,
 				    NULL, true, true );
 
     CreateDeformationVisualisationSurface( niftk::PLANE_XY, deformationFieldImage, 
