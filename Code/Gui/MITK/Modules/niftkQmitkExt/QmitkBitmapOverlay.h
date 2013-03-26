@@ -47,10 +47,6 @@ public:
 
   itkNewMacro( Self );
 
-  enum LogoPosition{ UpperLeft, UpperRight, LowerLeft, LowerRight, Middle };
-
-
-
   /**
    * Sets the renderwindow, in which the logo
    * will be shown. Make sure, you have called this function
@@ -59,18 +55,9 @@ public:
   virtual void SetRenderWindow( vtkRenderWindow* renderWindow );
 
   /**
-   * Sets the source file for the logo.
-   */
-  virtual void SetLogoSource(const char* filename);
-  /**
    * Sets the opacity level of the logo.
    */
   virtual void SetOpacity(double opacity);
-  /**
-   * Specifies the logo size, values from 0...10,
-   * where 1 is a nice little logo
-   */
-  virtual void SetZoomFactor( double factor );
 
   /**
    * Enables drawing of the logo.
@@ -138,12 +125,6 @@ public:
   virtual vtkImageMapper* GetMapper();
 
   /**
-   * If set true, this method forces the logo rendering mechanism that it always
-   * renders the MBI department logo, independent from mainapp option settings.
-   */
-  virtual void ForceMBILogoVisible(bool visible);
-
-  /**
    * Set a pointer to a data node containing image data for the overlay
    */
   void SetDataNode (mitk::DataNode::Pointer);
@@ -153,7 +134,7 @@ public:
   void SetDataStorage (mitk::DataStorage::Pointer);
 
  /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
-   void NodeChangedProxy(const mitk::DataNode* node);
+  void NodeChanged(const mitk::DataNode* node);
 protected:
   void SetupCamera();
   void SetupPosition();
@@ -174,18 +155,11 @@ protected:
   vtkImageActor*              m_BackActor;
   vtkImageActor*              m_FrontActor;
   vtkImageMapper*             m_Mapper;
-  vtkPNGReader*               m_PngReader;
   vtkCamera*                  m_BackCamera;
   vtkCamera*                  m_FrontCamera;
-  vtkImageImport*             m_VtkImageImport;
-
-  std::string                 m_FileName;
 
   bool                        m_IsEnabled;
-  bool                        m_ForceShowMBIDepartmentLogo;
 
-  LogoPosition                m_LogoPosition;
-  double                      m_ZoomFactor;
   double                      m_Opacity;
 
   char *                      m_ImageData;

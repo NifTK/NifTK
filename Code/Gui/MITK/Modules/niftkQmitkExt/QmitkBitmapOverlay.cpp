@@ -34,10 +34,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkCamera.h>
 #include <vtkObjectFactory.h>
 #include <vtkRendererCollection.h>
-#include <vtkPNGReader.h>
 #include <vtkImageData.h>
 #include <vtkConfigure.h>
-#include <vtkImageFlip.h>
 
 #include <mbilogo.h>
 
@@ -48,25 +46,16 @@ BitmapOverlay::BitmapOverlay()
 :m_ImageData(NULL)
 ,m_ImageDataNode(NULL)
 {
-  m_RenderWindow      = NULL;
-  m_BackRenderer          = vtkRenderer::New();
-  m_FrontRenderer          = vtkRenderer::New();
-  m_BackActor             = vtkImageActor::New();
-  m_FrontActor             = vtkImageActor::New();
-  m_Mapper            = vtkImageMapper::New();
-  m_PngReader         = vtkPNGReader::New();
-  m_VtkImageImport    = vtkImageImport::New();
-
-  m_LogoPosition  = BitmapOverlay::LowerRight;
+  m_RenderWindow        = NULL;
+  m_BackRenderer        = vtkRenderer::New();
+  m_FrontRenderer       = vtkRenderer::New();
+  m_BackActor           = vtkImageActor::New();
+  m_FrontActor          = vtkImageActor::New();
+  m_Mapper              = vtkImageMapper::New();
 
   m_IsEnabled                  = false;
-  m_ForceShowMBIDepartmentLogo = false;
 
-  m_ZoomFactor = 1.15;
   m_Opacity    = 0.5;
-
-  m_FileName  = "";
-  m_PngReader->SetFileName(m_FileName.c_str());
 }
 
 BitmapOverlay::~BitmapOverlay()
@@ -87,12 +76,6 @@ BitmapOverlay::~BitmapOverlay()
     m_BackRenderer->Delete();
   if ( m_FrontRenderer != NULL )
     m_FrontRenderer->Delete();
-
-  if ( m_PngReader != NULL )
-    m_PngReader->Delete();
-
-  if ( m_VtkImageImport != NULL )
-    m_VtkImageImport->Delete();
 
   if ( m_ImageData != NULL)
     delete[] m_ImageData;
@@ -144,16 +127,6 @@ vtkImageMapper* BitmapOverlay::GetMapper()
   return m_Mapper;
 }
 
-void BitmapOverlay::SetLogoSource(const char* filename)
-{
-  std::string file = filename;
-  if(file.length() != 0)
-  {
-    m_FileName  = filename;
-    m_PngReader->SetFileName(m_FileName.c_str());
-  }
-}
-
 /**
  * Enables drawing of the overlay
  * If you want to disable it, call the Disable() function.
@@ -168,47 +141,48 @@ void BitmapOverlay::Enable()
     //check the data storage for a suitable target
     if (!  m_ImageDataNode.IsNull() )
     {
-     // mitk::BaseData * data = m_ImageDataNode->GetData();
       mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
     
       if ( ! imageInNode.IsNull() )
       {
-        m_BackActor->SetInput(imageInNode->GetVtkImageData());
         m_FrontActor->SetInput(imageInNode->GetVtkImageData());
+        m_BackActor->SetInput(imageInNode->GetVtkImageData());
         if ( ! m_DataStorage.IsNull() )
         {
           m_DataStorage->ChangedNodeEvent.AddListener (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*> 
-            (this, &BitmapOverlay::NodeChangedProxy ) );
+            (this, &BitmapOverlay::NodeChanged ) );
          }
+
+        m_BackActor->SetOpacity(1.0);
+        m_FrontActor->SetOpacity(m_Opacity);
+
+        m_BackRenderer->AddActor( m_BackActor );
+        m_FrontRenderer->AddActor( m_FrontActor );
+        m_BackRenderer->InteractiveOff();
+        m_FrontRenderer->InteractiveOff();
+
+        SetupCamera();
+        SetupPosition();
+
+        mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
+        mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
+
+        m_IsEnabled = true;
       }
 
     }
 
-    m_BackActor->SetOpacity(1.0);
-    m_FrontActor->SetOpacity(m_Opacity);
-
-    m_BackRenderer->AddActor( m_BackActor );
-    m_FrontRenderer->AddActor( m_FrontActor );
-    m_BackRenderer->InteractiveOff();
-    m_FrontRenderer->InteractiveOff();
-
-    SetupCamera();
-    SetupPosition();
-
-    mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
-    mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
-
-    m_IsEnabled = true;
   }
 }
 
-void BitmapOverlay::NodeChangedProxy (const mitk::DataNode * node)
+void BitmapOverlay::NodeChanged (const mitk::DataNode * node)
 {
   if ( node == m_ImageDataNode ) 
   {
     mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
     if ( ! imageInNode.IsNull() )
     {
+
        m_BackActor->SetInput(imageInNode->GetVtkImageData());
        m_FrontActor->SetInput(imageInNode->GetVtkImageData());
     }
@@ -247,11 +221,11 @@ void BitmapOverlay::SetupCamera()
   }
 
 
-  m_BackCamera->SetViewUp (0,1,0);
-  m_FrontCamera->SetViewUp (0,1,0);
+  m_BackCamera->SetViewUp (0,-1,0);
+  m_FrontCamera->SetViewUp (0,-1,0);
   int idx = 2;
   const double distanceToFocalPoint = 1000;
-  position[idx] = distanceToFocalPoint;
+  position[idx] = -distanceToFocalPoint;
 
   m_BackCamera->ParallelProjectionOn();
   m_BackCamera->SetPosition (position);
@@ -285,22 +259,13 @@ void BitmapOverlay::SetupPosition()
 
   newPos[0] = (0 + buffer);
   newPos[1] = (0 + buffer);
-  newPos[2] = 1.0 * normX * m_ZoomFactor;
-  newPos[3] = 1.0 * normY * m_ZoomFactor;
+  newPos[2] = 1.0 * normX;
+  newPos[3] = 1.0 * normY;
 
   m_BackRenderer->SetViewport(newPos);
   m_FrontRenderer->SetViewport(newPos);
 }
 
-void BitmapOverlay::ForceMBILogoVisible(bool visible)
-{
-  m_ForceShowMBIDepartmentLogo = visible;
-}
-
-void BitmapOverlay::SetZoomFactor( double factor )
-{
-  m_ZoomFactor = factor;
-}
 void BitmapOverlay::SetOpacity(double opacity)
 {
   m_Opacity = opacity;
@@ -312,7 +277,7 @@ void BitmapOverlay::SetOpacity(double opacity)
  */
 void BitmapOverlay::Disable()
 {
-  if ( this->IsEnabled() && !m_ForceShowMBIDepartmentLogo )
+  if ( this->IsEnabled() )
   {
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_FrontRenderer);
