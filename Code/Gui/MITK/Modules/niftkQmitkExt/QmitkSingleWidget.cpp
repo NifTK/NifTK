@@ -365,11 +365,7 @@ void QmitkSingleWidget::SetDataStorage( mitk::DataStorage* ds )
   m_DataStorage = ds;
   //see if we can find a suitable data node
   mitk::DataNode::Pointer dataNode;
-  if ( m_DataStorage.IsNull())
-  {
-    std::cerr << "Data storage not set";
-  }
-  else
+  if ( ! m_DataStorage.IsNull())
   {
      m_BitmapOverlay1->SetDataStorage (m_DataStorage);
   }
