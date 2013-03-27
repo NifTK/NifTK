@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Segmentation</category>
+  <category>Breast Cancer Imaging Tools . MRI</category>
   <title>Breast Density Calculation Given MRI Segmentation</title>
   <description><![CDATA[Computes the density of left and right breasts given a breast mask and fat/glandular segmentation.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
