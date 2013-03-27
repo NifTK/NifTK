@@ -12,8 +12,9 @@
 
 =============================================================================*/
 
-#include "niftkMakeCheckerboardLapUSProbeCLP.h"
+#include "niftkMakeLapUSProbeModelCLP.h"
 #include <cmath>
+#include <itkRGBPixel.h>
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
 #include <vtkPolyData.h>
@@ -23,7 +24,8 @@
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
 
-typedef itk::Image<unsigned char, 2>    ImageType;
+typedef itk::RGBPixel< unsigned char >  UCRGBPixelType;
+typedef itk::Image<UCRGBPixelType, 2>   ImageType;
 typedef itk::ImageFileWriter<ImageType> ImageWriterType;
 typedef ImageType::RegionType           RegionType;
 typedef ImageType::SizeType             SizeType;
@@ -31,6 +33,8 @@ typedef ImageType::IndexType            IndexType;
 typedef ImageType::PointType            Point2DType;
 typedef itk::Point<double, 3>           Point3DType;
 
+
+//-----------------------------------------------------------------------------
 bool IsOnEvenSquare(const std::vector<int>& vec, const int pixelIndex)
 {
   unsigned int chosenIndex = 0;
@@ -44,6 +48,8 @@ bool IsOnEvenSquare(const std::vector<int>& vec, const int pixelIndex)
   return (chosenIndex % 2 == 0);
 }
 
+
+//-----------------------------------------------------------------------------
 double CalculateBoundingArray(const double &a, const double &b, const int& squares, const int& pixels, std::vector<int>& vec)
 {
   vec.clear();
@@ -66,11 +72,11 @@ double CalculateBoundingArray(const double &a, const double &b, const int& squar
       vec.push_back(vec[vec.size()-1] + next);
     }
   }
-
-//  std::cout << "Matt, a=" << a << ", b=" << b << ", pixels=" << pixels << ", squares=" << squares << ", total=" << total << std::endl;
   return total;
 }
 
+
+//-----------------------------------------------------------------------------
 double GenerateBoundaryArray(const int& dotsPerInch, const double& squareSize, const int& pixels, const int& squares, std::vector<int>& vec)
 {
   double a = squareSize/25.4 * dotsPerInch;
@@ -99,6 +105,7 @@ double GenerateBoundaryArray(const int& dotsPerInch, const double& squareSize, c
 }
 
 
+//-----------------------------------------------------------------------------
 void AddPoint(
     const Point2DType& cornerPointInImageSpace,
     const int& numberPixelsX,
@@ -143,6 +150,56 @@ void AddPoint(
 }
 
 
+//-----------------------------------------------------------------------------
+UCRGBPixelType GetColor(
+    const int& colourNumber,
+    UCRGBPixelType colours[],
+    const bool& writeColours,
+    const bool& blackBackground
+    )
+{
+  UCRGBPixelType blackPixel;
+  blackPixel.Set(0,0,0);
+
+  UCRGBPixelType whitePixel;
+  whitePixel.Set(255,255,255);
+
+  UCRGBPixelType result;
+  if (writeColours)
+  {
+    result[0] = colours[colourNumber][0];
+    result[1] = colours[colourNumber][1];
+    result[2] = colours[colourNumber][2];
+  }
+  else
+  {
+    if (blackBackground)
+    {
+      result = whitePixel;
+    }
+    else
+    {
+      result = blackPixel;
+    }
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void AddColor(
+    vtkUnsignedCharArray *colourScalars,
+    const int& colourNumber,
+    UCRGBPixelType colours[],
+    const bool& writeColours,
+    const bool& blackBackground
+    )
+{
+  UCRGBPixelType colour = GetColor(colourNumber, colours, writeColours, blackBackground);
+  colourScalars->InsertNextTuple3(colour[0], colour[1], colour[2]);
+}
+
+
 /**
  * \brief Generates a 2D image of a pattern to print, and a 3D model to match
  * for a calibrated laparoscopic ultrasound probe.
@@ -160,6 +217,20 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
+  UCRGBPixelType blackPixel;
+  blackPixel.Set(0,0,0);
+
+  UCRGBPixelType whitePixel;
+  whitePixel.Set(255,255,255);
+
+  UCRGBPixelType colours[6];
+  colours[0].Set(255,0,0);
+  colours[1].Set(255,0,255);
+  colours[2].Set(0,0,255);
+  colours[3].Set(0,255,255);
+  colours[4].Set(0,255,0);
+  colours[5].Set(255,255,0);
+
   double pi = 3.14159265358979;
   double mmPerInch = 25.4;
   double width = pi * diameter * ((pi - asin(surface/diameter))/pi); // distance around probe; ie. section of circumference
@@ -170,7 +241,6 @@ int main(int argc, char** argv)
   int pixelsX = (int)(theoreticalPixelsX);
   int pixelsY = (int)(theoreticalPixelsY);
   int actualWidth = pixelsX * pixSize;
-  //int actualHeight = pixelsY * pixSize;
 
   std::vector<int> xboundaries;
   std::vector<int> yboundaries;
@@ -184,6 +254,7 @@ int main(int argc, char** argv)
   double theta = 2.0*pi - phiInRadians;
   double maxPhi = pi+ (pi/2.0 - theta/2.0);
   double minPhi = - (pi/2.0 - theta/2.0);
+  int    dotRadiusInPixels = dotRadius / pixSize;
 
   std::cout << "Distance around circ=" << width << " (mm)" << std::endl;
   std::cout << "Pixels x = " << pixelsX << std::endl;
@@ -196,6 +267,9 @@ int main(int argc, char** argv)
   std::cout << "Phi = " << phiInDegrees << " degrees " << std::endl;
   std::cout << "Max phi = " << maxPhi/pi*180 << " degrees " << std::endl;
   std::cout << "Min phi = " << minPhi/pi*180 << " degrees " << std::endl;
+  std::cout << "Dot radius = " << dotRadiusInPixels << " pixels " << std::endl;
+  std::cout << "Write colours = " << writeColours << std::endl;
+  std::cout << "Black background = " << blackBackground << std::endl;
 
   double threeSigma = 3 * gaussianSigma;
   double halfThreeSigma = threeSigma/2.0;
@@ -212,6 +286,7 @@ int main(int argc, char** argv)
   size[0] = pixelsX;
   size[1] = pixelsY;
   IndexType imageIndex;
+  IndexType offsetIndex;
   IndexType nextImageIndexX;
   IndexType nextImageIndexY;
   imageIndex[0] = 0;
@@ -220,16 +295,28 @@ int main(int argc, char** argv)
   region.SetSize(size);
   region.SetIndex(imageIndex);
 
-  ImageType::Pointer image = ImageType::New();
-  image->SetRegions(region);
-  image->Allocate();
-  image->FillBuffer(0);
+  ImageType::Pointer checkerBoardImage = ImageType::New();
+  checkerBoardImage->SetRegions(region);
+  checkerBoardImage->Allocate();
+  checkerBoardImage->FillBuffer(blackPixel);
+
+  ImageType::Pointer dotImage = ImageType::New();
+  dotImage->SetRegions(region);
+  dotImage->Allocate();
+  if (blackBackground)
+  {
+    dotImage->FillBuffer(blackPixel);
+  }
+  else
+  {
+    dotImage->FillBuffer(whitePixel);
+  }
 
   for (int x = 0; x < pixelsX; x++)
   {
     for (int y = 0; y < pixelsY; y++)
     {
-      imageIndex[0] = x;
+      imageIndex[0] = pixelsX - 1 - x; // Flip image in x, to make it suitable for right handed probe.
       imageIndex[1] = y;
 
       bool xEven = IsOnEvenSquare(xboundaries, x);
@@ -237,21 +324,16 @@ int main(int argc, char** argv)
 
       if ((xEven && !yEven) || (yEven && !xEven))
       {
-        image->SetPixel(imageIndex, 255);
+        checkerBoardImage->SetPixel(imageIndex, whitePixel);
       }
       else
       {
-        image->SetPixel(imageIndex, 0);
+        checkerBoardImage->SetPixel(imageIndex, blackPixel);
       }
     }
   }
 
-  ImageWriterType::Pointer writer = ImageWriterType::New();
-  writer->SetInput(image);
-  writer->SetFileName(outputImage);
-  writer->Update();
-
-  // Iterate through image.
+  // Calculate point set. First, iterate through image.
   // When we find a corner, calculate the millimetre coordinate of that corner in image space.
   // The y-coordinate in the image, is along the probe, so defines the z-coordinate of the 3D geometry.
   // The x-coordinate in the image, is around circumference, so we can calculate a distance around the edge,
@@ -260,7 +342,7 @@ int main(int argc, char** argv)
   // a Gaussian weighted window in image space, and do similar conversion into probe space.
 
   Point2DType cornerPointInImageSpace;
-  Point2DType pointInPointCloud;
+  Point2DType offSetPoint;
 
   vtkPolyData *polyData = vtkPolyData::New();
 
@@ -278,9 +360,15 @@ int main(int argc, char** argv)
   weights->SetName("Weights");
   weights->Initialize();
 
+  vtkUnsignedCharArray *colourScalars = vtkUnsignedCharArray::New();
+  colourScalars->SetNumberOfComponents(3);
+  colourScalars->SetName("Colours");
+  colourScalars->Initialize();
+
   vtkCellArray *vertices = vtkCellArray::New();
   vertices->Initialize();
 
+  int pointCounter = 0;
   for (int x = 0; x < pixelsX-1; x++)
   {
     for (int y = 0; y < pixelsY-1; y++)
@@ -295,60 +383,126 @@ int main(int argc, char** argv)
       nextImageIndexY[1] = y + 1;
 
       // Its a corner if the pixel to the right and pixel to the left are different colour.
-      if (   image->GetPixel(imageIndex) != image->GetPixel(nextImageIndexX)
-          && image->GetPixel(imageIndex) != image->GetPixel(nextImageIndexY)
+      if (   checkerBoardImage->GetPixel(imageIndex) != checkerBoardImage->GetPixel(nextImageIndexX)
+          && checkerBoardImage->GetPixel(imageIndex) != checkerBoardImage->GetPixel(nextImageIndexY)
          )
       {
         // And half to get the intersection of pixels.
         cornerPointInImageSpace[0] = x + 0.5;
         cornerPointInImageSpace[1] = y + 0.5;
 
+        // Add point to output
+        double weight = 1;
+        AddPoint(cornerPointInImageSpace,
+            pixelsX, pixSize, phiInRadians, phiInRadians, probeRadius, weight,
+            points, normals, weights, vertices
+            );
+
+        int colourNumber = pointCounter % 6;
+
+        // Add dots, if rendering dots.
+        if (writeDots && dotRadiusInPixels > 0)
+        {
+          AddColor(colourScalars, colourNumber, colours, writeColours, blackBackground);
+
+          for (int i = -dotRadiusInPixels; i <= dotRadiusInPixels; i++)
+          {
+            for (int j = -dotRadiusInPixels; j <= dotRadiusInPixels; j++)
+            {
+              double distance = sqrt(i*i + j*j);
+              if (distance < dotRadiusInPixels)
+              {
+                if (i < 0)
+                {
+                  offsetIndex[0] = (int)(cornerPointInImageSpace[0] + i + 0.5);
+                }
+                else
+                {
+                  offsetIndex[0] = (int)(cornerPointInImageSpace[0] + i - 0.5);
+                }
+                if (j < 0)
+                {
+                  offsetIndex[1] = (int)(cornerPointInImageSpace[1] + j + 0.5);
+                }
+                else
+                {
+                  offsetIndex[1] = (int)(cornerPointInImageSpace[1] + j - 0.5);
+                }
+
+                UCRGBPixelType colour = GetColor(colourNumber, colours, writeColours, blackBackground);
+                dotImage->SetPixel(offsetIndex, colour);
+
+              } // end if (distance < dotRadiusInPixels)
+            } // end for j
+          } // end for i
+        } // end if writeDots...
+
+        pointCounter++;
+
         // If we are doing weighted point cloud, we iterate around a square window,
         // calculating a weighting based on millimetre distance, but pass the image
         // coordinate to the AddPoint function.
 
-        double weight = 1;
         if (gaussianSigma > 0 && gaussianWindowSize > 0)
         {
           for (int i = -gaussianWindowSize; i <= gaussianWindowSize; i++)
           {
             for (int j = -gaussianWindowSize; j <= gaussianWindowSize; j++)
             {
-              pointInPointCloud[0] = cornerPointInImageSpace[0] + i *  stepSizePix;
-              pointInPointCloud[1] = cornerPointInImageSpace[1] + j *  stepSizePix;
+              if (i != 0 && j != 0)
+              {
+                offSetPoint[0] = cornerPointInImageSpace[0] + i *  stepSizePix;
+                offSetPoint[1] = cornerPointInImageSpace[1] + j *  stepSizePix;
 
-              double distance = sqrt((i*stepSizeMM)*(i*stepSizeMM) + (j*stepSizeMM)*(j*stepSizeMM));
-              weight = exp(-(distance*distance/(2*gaussianSigma*gaussianSigma)));
+                double distance = sqrt((i*stepSizeMM)*(i*stepSizeMM) + (j*stepSizeMM)*(j*stepSizeMM));
+                weight = exp(-(distance*distance/(2*gaussianSigma*gaussianSigma)));
 
-              AddPoint(pointInPointCloud,
-                  pixelsX, pixSize, phiInRadians, phiInRadians, probeRadius, weight,
-                  points, normals, weights, vertices
-                  );
+                AddPoint(offSetPoint,
+                    pixelsX, pixSize, phiInRadians, phiInRadians, probeRadius, weight,
+                    points, normals, weights, vertices
+                    );
+
+                AddColor(colourScalars, colourNumber, colours, writeColours, blackBackground);
+              }
             }
           }
-
-        }
-        else
-        {
-          AddPoint(cornerPointInImageSpace,
-              pixelsX, pixSize, phiInRadians, phiInRadians, probeRadius, weight,
-              points, normals, weights, vertices
-              );
-        }
-      }
-    }
-  }
+        } // end if gaussian
+      } // end if on corner
+    } // end for y
+  } // end for x
 
   polyData->SetPoints(points);
   polyData->SetVerts(vertices);
   polyData->GetPointData()->SetNormals(normals);
-  polyData->GetPointData()->SetScalars(weights);
+  if (writeDots)
+  {
+    polyData->GetPointData()->AddArray(weights);
+    polyData->GetPointData()->AddArray(colourScalars);
+    polyData->GetPointData()->SetActiveScalars("Weights");
+  }
+  else
+  {
+    polyData->GetPointData()->SetScalars(weights);
+  }
 
   vtkPolyDataWriter *polyWriter = vtkPolyDataWriter::New();
   polyWriter->SetFileName(outputPoints.c_str());
   polyWriter->SetInput(polyData);
   polyWriter->SetFileTypeToASCII();
   polyWriter->Write();
+
+  // Write out image.
+  ImageWriterType::Pointer writer = ImageWriterType::New();
+  if (!writeDots)
+  {
+    writer->SetInput(checkerBoardImage);
+  }
+  else
+  {
+    writer->SetInput(dotImage);
+  }
+  writer->SetFileName(outputImage);
+  writer->Update();
 
   // Ta da.
   return EXIT_SUCCESS;
