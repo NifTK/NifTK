@@ -290,70 +290,101 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
 
       if (!minDataLimitFound || !maxDataLimitFound || !meanDataFound || !stdDevDataFound)
       {
-        try
-        {
-          if (image->GetDimension() == 2)
-          {
-            AccessFixedDimensionByItk_n(image,
-                ITKGetStatistics, 2,
-                (minDataLimit, maxDataLimit, meanData, stdDevData)
-              );
-          }
-          else if (image->GetDimension() == 3)
-          {
-            AccessFixedDimensionByItk_n(image,
-                ITKGetStatistics, 3,
-                (minDataLimit, maxDataLimit, meanData, stdDevData)
-              );
-          }
-          else if (image->GetDimension() == 4)
-          {
-            AccessFixedDimensionByItk_n(image,
-                ITKGetStatistics, 4,
-                (minDataLimit, maxDataLimit, meanData, stdDevData)
-              );
-          }
-          node->SetFloatProperty("image data min", minDataLimit);
-          node->SetFloatProperty("image data max", maxDataLimit);
-          node->SetFloatProperty("image data mean", meanData);
-          node->SetFloatProperty("image data std dev", stdDevData);
-        }
-        catch(const mitk::AccessByItkException& e)
-        {
-          MITK_ERROR << "Caught exception during QmitkNiftyViewApplicationPlugin::ITKGetStatistics, so image statistics will be wrong." << e.what();
-        }
-      }
+        // Provide some defaults.
+        minDataLimit = 0;
+        maxDataLimit = 255;
+        meanData = 15;
+        stdDevData = 22;
 
-      if (!minDataLimitFound || !maxDataLimitFound || !meanDataFound || !stdDevDataFound)
-      {
+        // Given that the above values are initial defaults, they must be stored on image.
+        node->SetFloatProperty("image data min", minDataLimit);
+        node->SetFloatProperty("image data max", maxDataLimit);
+        node->SetFloatProperty("image data mean", meanData);
+        node->SetFloatProperty("image data std dev", stdDevData);
+
+        // Working data.
         double windowMin = 0;
-        double windowMax = 0;
+        double windowMax = 255;
         mitk::LevelWindow levelWindow;
 
-        // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
-        // i.e. we haven't seen it before. So we have a choice of how to initialise the Level/Window.
-        if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS)
+        // We don't have a policy for non-scalar images.
+        // For example, how do you default Window/Level for RGB, HSV?
+        // So, this stuff below, only valid for scalar images.
+        if (image->GetPixelType().GetNumberOfComponents() == 1)
         {
-          double centre = (minDataLimit + 4.51*stdDevData)/2.0;
-          double width = 4.5*stdDevData;
-          windowMin = centre - width/2.0;
-          windowMax = centre + width/2.0;
-        }
-        else if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE)
-        {
-          windowMin = minDataLimit;
-          windowMax = minDataLimit + (maxDataLimit - minDataLimit)*percentageOfRange/100.0;
+          try
+          {
+            if (image->GetDimension() == 2)
+            {
+              AccessFixedDimensionByItk_n(image,
+                  ITKGetStatistics, 2,
+                  (minDataLimit, maxDataLimit, meanData, stdDevData)
+                );
+            }
+            else if (image->GetDimension() == 3)
+            {
+              AccessFixedDimensionByItk_n(image,
+                  ITKGetStatistics, 3,
+                  (minDataLimit, maxDataLimit, meanData, stdDevData)
+                );
+            }
+            else if (image->GetDimension() == 4)
+            {
+              AccessFixedDimensionByItk_n(image,
+                  ITKGetStatistics, 4,
+                  (minDataLimit, maxDataLimit, meanData, stdDevData)
+                );
+            }
+            node->SetFloatProperty("image data min", minDataLimit);
+            node->SetFloatProperty("image data max", maxDataLimit);
+            node->SetFloatProperty("image data mean", meanData);
+            node->SetFloatProperty("image data std dev", stdDevData);
+            windowMin = minDataLimit;
+            windowMax = maxDataLimit;
+          }
+          catch(const mitk::AccessByItkException& e)
+          {
+            MITK_ERROR << "Caught exception during QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty, so image statistics will be wrong." << e.what();
+          }
+
+          // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
+          // i.e. we haven't seen it before. So we have a choice of how to initialise the Level/Window.
+          if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS)
+          {
+            double centre = (minDataLimit + 4.51*stdDevData)/2.0;
+            double width = 4.5*stdDevData;
+            windowMin = centre - width/2.0;
+            windowMax = centre + width/2.0;
+
+            if (windowMin < minDataLimit)
+            {
+              windowMin = minDataLimit;
+            }
+            if (windowMax > maxDataLimit)
+            {
+              windowMax = maxDataLimit;
+            }
+          }
+          else if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE)
+          {
+            windowMin = minDataLimit;
+            windowMax = minDataLimit + (maxDataLimit - minDataLimit)*percentageOfRange/100.0;
+          }
+          else
+          {
+            // Do nothing, which means the MITK framework will pick one.
+          }
         }
         else
         {
-          // Do nothing, which means the MITK framework will pick one.
+          MITK_WARN << "QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty: Using default Window/Level properties. " << std::endl;
         }
 
         levelWindow.SetRangeMinMax(minDataLimit, maxDataLimit);
         levelWindow.SetWindowBounds(windowMin, windowMax);
         node->SetLevelWindow(levelWindow);
-      }
 
+      } // end if we haven't retrieved the data from the node.
     } // end if have pref node
   } // end if node is grey image
 }

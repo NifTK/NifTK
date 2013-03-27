@@ -72,8 +72,8 @@ private slots:
 private:
 
   QmitkIGITrackerTool* GetQmitkIGITrackerTool() const;
-
   QmitkFiducialRegistrationWidgetDialog *m_FiducialRegWidgetDialog;
+
 }; // end class
 
 #endif

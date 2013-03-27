@@ -21,9 +21,9 @@ namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSource::IGIDataSource()
+IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 : m_Mutex(itk::FastMutexLock::New())
-, m_DataStorage(NULL)
+, m_DataStorage(storage)
 , m_Identifier(-1)
 , m_FrameRate(0)
 , m_CurrentFrameId(0)
@@ -40,11 +40,10 @@ IGIDataSource::IGIDataSource()
 , m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
 , m_NumberOfTools(0)
+, m_SuccessfullyProcessing(false)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
-
   m_ActualTimeStamp = igtl::TimeStamp::New();
-
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
@@ -61,7 +60,7 @@ IGIDataSource::~IGIDataSource()
 
   if (m_DataStorage != NULL)
   {
-    std::vector<mitk::DataNode::Pointer>::iterator iter;
+    std::set<mitk::DataNode::Pointer>::iterator iter;
     for (iter = m_DataNodes.begin(); iter != m_DataNodes.end(); iter++)
     {
       m_DataStorage->Remove(*iter);
@@ -265,12 +264,9 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 
 
 //-----------------------------------------------------------------------------
-double IGIDataSource::GetCurrentTimeLag()
+double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 {
-  igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
-
   double lag = 0;
-  igtlUint64 nowTime = GetTimeInNanoSeconds(timeStamp);
 
   if (m_ActualData != NULL)
   {
@@ -371,15 +367,8 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 
   return result;
 }
-void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
-{
-  this->m_SubTools = inStringList;
-}
 
-std::list<std::string> IGIDataSource::GetSubToolList ()
-{
-  return m_SubTools;
-}
+
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
@@ -488,113 +477,58 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
     MITK_DEBUG << "IGIDataSource::ProcessData did not process data at requestedTimeStamp=" << requestedTimeStamp << ", as the data was NULL" << std::endl;
   }
 
+  m_SuccessfullyProcessing = result;
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNodes() const
+mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
 {
-  return m_DataNodes;
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSource::SetDataNodes(std::vector<mitk::DataNode::Pointer>& nodes)
-{
-  std::vector<mitk::DataNode::Pointer>::iterator iter;
-
-  for (iter = nodes.begin(); iter != nodes.end(); iter++)
+  if (m_DataStorage == NULL)
   {
-    (*iter)->SetVisibility(true);
-    (*iter)->SetOpacity(1);
-
-    if (m_DataStorage != NULL && m_DataStorage->GetNamedNode((*iter)->GetName()) == NULL)
-    {
-      m_DataStorage->Add(*iter);
-    }
+    mitkThrow() << "m_DataStorage is NULL.";
   }
 
-  this->m_DataNodes = nodes;
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSource::SetDataNode(mitk::DataNode::Pointer& node)
-{
-  std::vector<mitk::DataNode::Pointer> nodes;
-  nodes.push_back(node);
-  this->SetDataNodes(nodes);
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode::Pointer> IGIDataSource::GetDataNode(const std::string& name)
-{
-  std::vector<mitk::DataNode::Pointer> allDataNodes = this->GetDataNodes();
-  std::vector<mitk::DataNode::Pointer> dataNodes;
-  mitk::DataNode::Pointer node = NULL;
-
-  if (allDataNodes.size() > 1 && name.size() > 0)
+  // If name is not specified, use the data source name itself.
+  std::string nodeName = name;
+  if (nodeName.size() == 0)
   {
-    // See if we can filter by name
-    for (unsigned int i = 0; i < allDataNodes.size(); i++)
-    {
-      if (allDataNodes[i]->GetName() == name)
-      {
-        dataNodes.push_back(allDataNodes[i]);
-      }
-    }
-  }
-  else
-  {
-    dataNodes = allDataNodes;
+    nodeName = this->GetName();
   }
 
-  if (dataNodes.size() > 1)
+  // Try and get existing node.
+  mitk::DataNode::Pointer result = m_DataStorage->GetNamedNode(nodeName.c_str());
+
+  // If that fails, make one with the right properties.
+  if (result.IsNull())
   {
-    MITK_ERROR << "IGIDataSource::GetDataNode should only return a single node. This means a derived class is incorrectly implemented!" << std::endl;
-    return dataNodes;
+    result = mitk::DataNode::New();
+    result->SetVisibility(true);
+    result->SetOpacity(1);
+    result->SetName(nodeName);
+
+    m_DataStorage->Add(result);
+    m_DataNodes.insert(result);
   }
 
-  if (dataNodes.size() == 1 && name.size() > 0 && dataNodes[0]->GetName() != name)
-  {
-    MITK_ERROR << "IGIDataSource::GetDataNode name filter was specified, and yet the existing node has the wrong name. This means a derived class is incorrectly implemented!" << std::endl;
-    return dataNodes;
-  }
-
-  if (dataNodes.size() == 1)
-  {
-    node = dataNodes[0];
-  }
-  else if (dataNodes.size() == 0)
-  {
-    // Create a new one.
-    node = mitk::DataNode::New();
-    if (name.size() > 0)
-    {
-      node->SetName(name);
-    }
-    else
-    {
-      node->SetName(this->GetName());
-    }
-
-    // Make sure we store the newly created node.
-    this->SetDataNode(node);
-  }
-  else
-  {
-    MITK_ERROR << "IGIDataSource::GetDataNode unexpected number of nodes returned. This is a bug." << std::endl;
-    return dataNodes;
-  }
-
-  // Return a single node.
-  std::vector<mitk::DataNode::Pointer> result;
-  result.push_back(node);
   return result;
 }
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
+{
+  this->m_SubTools = inStringList;
+}
+
+
+//-----------------------------------------------------------------------------
+std::list<std::string> IGIDataSource::GetSubToolList ()
+{
+  return m_SubTools;
+}
+
 
 //-----------------------------------------------------------------------------
 } // end namespace

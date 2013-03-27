@@ -126,7 +126,7 @@ bool IsImage(const mitk::DataNode* node)
   {
     result = true;
   }
-  return true;
+  return result;
 }
 
 

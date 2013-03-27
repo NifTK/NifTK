@@ -49,7 +49,7 @@ public:
 
 protected:
 
-  QmitkIGIDataSource(); // Purposefully hidden.
+  QmitkIGIDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGIDataSource(); // Purposefully hidden.
 
   QmitkIGIDataSource(const QmitkIGIDataSource&); // Purposefully not implemented.
@@ -61,25 +61,5 @@ private:
 
 }; // end class
 
-/**
- * \brief Separate thread class to run the background save
- */
-class QmitkIGIDataSourceBackgroundSaveThread : public QThread {
-  Q_OBJECT
-public:
-  QmitkIGIDataSourceBackgroundSaveThread(QObject *parent, QmitkIGIDataSource *source);
-  ~QmitkIGIDataSourceBackgroundSaveThread();
-
-  void SetInterval(unsigned int milliseconds);
-  void run();
-
-public slots:
-  void OnTimeout();
-
-private:
-  unsigned int        m_TimerInterval;
-  QTimer             *m_Timer;
-  QmitkIGIDataSource *m_Source;
-};
 #endif
 

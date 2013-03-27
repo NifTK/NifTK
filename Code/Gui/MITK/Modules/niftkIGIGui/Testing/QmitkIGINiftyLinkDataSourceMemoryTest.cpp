@@ -14,6 +14,8 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
+#include <mitkDataStorage.h>
+#include <mitkStandaloneDataStorage.h>
 #include "QmitkIGITrackerTool.h"
 #include "QmitkIGINiftyLinkDataType.h"
 #include "NiftyLinkTrackingDataMessage.h"
@@ -32,8 +34,9 @@ int QmitkIGINiftyLinkDataSourceMemoryTest(int /*argc*/, char* /*argv*/[])
   QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
   dataType->SetMessage(msg);
 
-  // It gets added to the buffer of the data storage.
-  QmitkIGITrackerTool::Pointer tool = QmitkIGITrackerTool::New();
+  // It gets added to the buffer of the data source.
+  mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
+  QmitkIGITrackerTool::Pointer tool = QmitkIGITrackerTool::New(dataStorage, NULL);
   tool->AddData(dataType);
 
   // When we call delete, the tool should correctly tidy up all memory.

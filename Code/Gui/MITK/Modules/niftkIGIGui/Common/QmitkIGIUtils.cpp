@@ -19,6 +19,7 @@
 #include <NiftyLinkSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
 
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer LoadSurfaceFromSTLFile(const QString& surfaceFilename)
 {

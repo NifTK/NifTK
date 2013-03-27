@@ -24,6 +24,6 @@ for arg in "$@"
 do
   # Here we are wrapping every argument in quotes, as we are in effect passing it back
   # through the shell interpreter, when calling the eval command below.
-  command_string=" $command_string \"${arg}\" "
+  command_string=" $command_string \"${arg//\"/\\\"}\" "
 done
 eval "${command_string}"

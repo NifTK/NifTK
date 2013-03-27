@@ -32,8 +32,7 @@ class NIFTKIGIGUI_EXPORT QmitkIGITrackerTool : public QmitkIGINiftyLinkDataSourc
 public:
 
   mitkClassMacro(QmitkIGITrackerTool, QmitkIGINiftyLinkDataSource);
-  itkNewMacro(QmitkIGITrackerTool);
-  mitkNewMacro1Param(QmitkIGITrackerTool,NiftyLinkSocketObject *);
+  mitkNewMacro2Param(QmitkIGITrackerTool, mitk::DataStorage*, NiftyLinkSocketObject *);
 
   /**
    * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
@@ -203,11 +202,10 @@ signals:
 
 protected:
 
-  QmitkIGITrackerTool(); // Purposefully hidden.
+  QmitkIGITrackerTool(mitk::DataStorage* storage, NiftyLinkSocketObject* socket); // Purposefully hidden.
   virtual ~QmitkIGITrackerTool(); // Purposefully hidden.
 
   QmitkIGITrackerTool(const QmitkIGITrackerTool&); // Purposefully not implemented.
-  QmitkIGITrackerTool(NiftyLinkSocketObject* socket); // Purposefully not implemented.
   QmitkIGITrackerTool& operator=(const QmitkIGITrackerTool&); // Purposefully not implemented.
 
   /**
@@ -256,7 +254,7 @@ private:
   double                                               m_ClipNear; //the near clipping plane of the VTK camera used
   double                                               m_ClipFar; //the far clipping plane of the VTK camera used
   bool                                                 m_TransformTrackerToMITKCoords; //Set to true to use m_FiducialRegistrationFilter
-  itk::Matrix<double,4,4>                               m_PreMatrix; //Use this to apply a matrix to a data node during tracking.
+  itk::Matrix<double,4,4>                              m_PreMatrix; //Use this to apply a matrix to a data node during tracking.
 }; // end class
 
 #endif

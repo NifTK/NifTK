@@ -32,6 +32,11 @@ public:
   mitkClassMacro(IGINVidiaDataType, IGIDataType);
   itkNewMacro(IGINVidiaDataType);
 
+  // FIXME: i wish these were constructor parameters
+  void set_values(unsigned int cookie, unsigned int sn, unsigned __int64 gputime);
+
+  unsigned int get_sequence_number() const;
+
 protected:
 
   IGINVidiaDataType(); // Purposefully hidden.
@@ -41,8 +46,19 @@ protected:
   IGINVidiaDataType& operator=(const IGINVidiaDataType&); // Purposefully not implemented.
 
 private:
-  // FIXME: dont know yet what should go here...
-  //        sequence number, gpu-arrival time?, size of frame?
+  // Used internally by QmitkIGINVidiaDataSource to make sure this data item comes from a valid
+  // capture session. Otherwise what could happen is that when signal drops out (e.g. due to
+  // interference on the wire) the old capture context is destroyed and a new one is created 
+  // (fairly quickly) but any in-flight IGINVidiaDataType hanging around in the QmitkIGIDataSourceManager
+  // might still reference the previous one.
+  unsigned int    magic_cookie;
+
+  // SDI sequence number. Starts counting at 1 and increases for every set of captured images.
+  unsigned int    sequence_number;
+
+  // The SDI card keeps a time stamp for each frame coming out of the wire.
+  // This is in some arbitrary unit (nanoseconds?) in reference to some arbitrary clock.
+  unsigned __int64  gpu_arrival_time;
 };
 
 } // end namespace

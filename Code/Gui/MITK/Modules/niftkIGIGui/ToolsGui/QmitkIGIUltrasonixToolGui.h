@@ -16,7 +16,7 @@
 #define QMITKIGIULTRASONIXTOOLGUI_H
 
 #include "niftkIGIGuiExports.h"
- #include "QmitkIGINiftyLinkDataSourceGui.h"
+#include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGIUltrasonixToolGui.h"
 #include <NiftyLinkMessage.h>
 

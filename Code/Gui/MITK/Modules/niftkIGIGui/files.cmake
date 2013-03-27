@@ -16,13 +16,16 @@ SET(CPP_FILES
   Common/QmitkIGIUtils.cpp
   DataManagement/QmitkQImageToMitkImageFilter.cpp
   ToolsGui/TrackerControlsWidget.cpp
+  ToolsGui/QmitkIGITimerBasedThread.cpp
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.cpp
   ToolsGui/QmitkIGINiftyLinkDataType.cpp
   ToolsGui/QmitkIGINiftyLinkDataSource.cpp
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.cpp
   ToolsGui/QmitkIGIDataSource.cpp
+  ToolsGui/QmitkIGIDataSourceBackgroundSaveThread.cpp
   ToolsGui/QmitkIGIDataSourceGui.cpp
   ToolsGui/QmitkIGILocalDataSource.cpp
+  ToolsGui/QmitkIGILocalDataSourceGrabbingThread.cpp
   ToolsGui/QmitkIGITrackerTool.cpp
   ToolsGui/QmitkIGITrackerToolGui.cpp
   ToolsGui/QmitkIGIUltrasonixTool.cpp
@@ -33,6 +36,7 @@ SET(CPP_FILES
 
 SET(MOC_H_FILES
   ToolsGui/TrackerControlsWidget.h
+  ToolsGui/QmitkIGITimerBasedThread.h
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.h
   ToolsGui/QmitkIGINiftyLinkDataSource.h
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.h

@@ -2381,7 +2381,7 @@ ITK_THREAD_RETURN_TYPE ExecuteRegistration( void *param )
     userData->m_RegNonRigid->SetProgressCallbackFunction( &UpdateProgressBar, 
 							  userData );
 
-    userData->m_RegNonRigid->Run_f3d();
+    userData->m_RegNonRigid->Run();
 
     mitkTransformedImage = ConvertNiftiImageToMitk( userData->m_RegNonRigid->GetWarpedImage()[0] );
 
