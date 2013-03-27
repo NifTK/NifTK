@@ -45,6 +45,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 BitmapOverlay::BitmapOverlay()
 :m_ImageData(NULL)
 ,m_ImageDataNode(NULL)
+,m_DataStorage(NULL)
+,m_ImageInNode(NULL)
 {
   m_RenderWindow        = NULL;
   m_BackRenderer        = vtkRenderer::New();
@@ -136,40 +138,55 @@ void BitmapOverlay::Enable()
   if(m_IsEnabled)
     return;
 
-  if(m_RenderWindow != NULL)
+ if(m_RenderWindow != NULL)
   {
     //check the data storage for a suitable target
-    if (!  m_ImageDataNode.IsNull() )
+    //if (!  m_ImageDataNode.IsNull() )
+    if ( ! m_DataStorage.IsNull() )
     {
-      mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
-    
-      if ( ! imageInNode.IsNull() )
+      m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
+      if ( ! m_ImageDataNode.IsNull() )
       {
-        m_FrontActor->SetInput(imageInNode->GetVtkImageData());
-        m_BackActor->SetInput(imageInNode->GetVtkImageData());
-        if ( ! m_DataStorage.IsNull() )
+        m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
+    
+        if ( ! m_ImageInNode.IsNull() )
         {
-          m_DataStorage->ChangedNodeEvent.AddListener (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*> 
+          m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
+          m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
+
+
+          m_BackActor->SetOpacity(1.0);
+          m_FrontActor->SetOpacity(m_Opacity);
+
+          m_BackRenderer->AddActor( m_BackActor );
+          m_FrontRenderer->AddActor( m_FrontActor );
+          m_BackRenderer->InteractiveOff();
+          m_FrontRenderer->InteractiveOff();
+
+          SetupCamera();
+          SetupPosition();
+
+         // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
+          mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
+
+          m_IsEnabled = true;
+          m_DataStorage->ChangedNodeEvent.AddListener 
+            (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*>
             (this, &BitmapOverlay::NodeChanged ) );
-         }
-
-        m_BackActor->SetOpacity(1.0);
-        m_FrontActor->SetOpacity(m_Opacity);
-
-        m_BackRenderer->AddActor( m_BackActor );
-        m_FrontRenderer->AddActor( m_FrontActor );
-        m_BackRenderer->InteractiveOff();
-        m_FrontRenderer->InteractiveOff();
-
-        SetupCamera();
-        SetupPosition();
-
-        mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
-        mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
-
-        m_IsEnabled = true;
+        }
+      }
+      else 
+      {
+          std::cerr << "Failed to find data node suitable for bit map overlay";
       }
 
+      m_DataStorage->AddNodeEvent.AddListener 
+        (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*>
+         (this, &BitmapOverlay::NodeAdded ) );
+
+      m_DataStorage->RemoveNodeEvent.AddListener 
+        (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*> 
+         (this, &BitmapOverlay::NodeRemoved ) );
     }
 
   }
@@ -179,17 +196,147 @@ void BitmapOverlay::NodeChanged (const mitk::DataNode * node)
 {
   if ( node == m_ImageDataNode ) 
   {
-    mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
-    if ( ! imageInNode.IsNull() )
+    if ( ! m_ImageInNode.IsNull() )
     {
-
-       m_BackActor->SetInput(imageInNode->GetVtkImageData());
-       m_FrontActor->SetInput(imageInNode->GetVtkImageData());
+      m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
+      if ( ! m_ImageInNode.IsNull() )
+      {
+        m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
+        m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
+      }
+      m_ImageInNode->GetVtkImageData()->Modified();
     }
-    imageInNode->GetVtkImageData()->Modified();
+    else 
+    {
+      m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
+      if ( ! m_ImageInNode.IsNull() )
+      {
+         m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
+         m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
+
+         m_BackActor->SetOpacity(1.0);
+         m_FrontActor->SetOpacity(m_Opacity);
+
+         m_BackRenderer->AddActor( m_BackActor );
+         m_FrontRenderer->AddActor( m_FrontActor );
+         m_BackRenderer->InteractiveOff();
+         m_FrontRenderer->InteractiveOff();
+
+         SetupCamera();
+         SetupPosition();
+
+        // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
+         mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
+
+         m_IsEnabled = true;
+      }
+    }
   }
 }
+//-----------------------------------------------------------------------------
+void BitmapOverlay::NodeAdded (const mitk::DataNode * node)
+{
+  std::cerr << "Node added " << std::endl;
+  if ( m_ImageDataNode.IsNull() )
+  {
+    std::cerr << "m_ImageDataNode is null, looking for a new one" << std::endl;
+    m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
+    if ( ! m_ImageDataNode.IsNull() )
+    {
+      std::cerr << "Found Suitable Node" << std::endl;
+      mitk::Image::Pointer imageInNode; 
+      m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
+    
+      if ( ! m_ImageInNode.IsNull() )
+      {
+         m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
+         m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
 
+         m_BackActor->SetOpacity(1.0);
+         m_FrontActor->SetOpacity(m_Opacity);
+
+         m_BackRenderer->AddActor( m_BackActor );
+         m_FrontRenderer->AddActor( m_FrontActor );
+         m_BackRenderer->InteractiveOff();
+         m_FrontRenderer->InteractiveOff();
+
+         SetupCamera();
+         SetupPosition();
+
+       //  mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
+         mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
+
+         m_IsEnabled = true;
+       }
+      else
+      {
+        std::cerr << "Failed to convert node to image" << std::endl;
+      }
+
+      m_DataStorage->ChangedNodeEvent.AddListener 
+        (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*>
+        (this, &BitmapOverlay::NodeChanged ) );
+     }
+     else 
+     {
+       std::cerr << "Failed to find data node suitable for bit map overlay";
+     }
+  }
+}
+//-----------------------------------------------------------------------------
+void BitmapOverlay::NodeRemoved (const mitk::DataNode * node )
+{
+  std::cerr << "Node removed " << std::endl;
+  if ( node == m_ImageDataNode )
+  {
+    std::cerr << "It's the node " << std::endl;
+    m_DataStorage->ChangedNodeEvent.RemoveListener 
+      (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*>
+      (this, &BitmapOverlay::NodeChanged ) );
+   // mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
+    mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_FrontRenderer);
+    m_ImageDataNode = NULL; 
+   // std::cerr << "Look for a new suitable new node....";
+   /* m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
+    if ( ! m_ImageDataNode.IsNull() )
+    {
+      //TODO There is a lag between the signal and the actual data being removed,
+      //a bit stupid really
+      std::cerr << "Found One " << std::endl;
+      m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
+    
+      if ( ! m_ImageInNode.IsNull() )
+      {
+         m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
+         m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
+
+         m_BackActor->SetOpacity(1.0);
+         m_FrontActor->SetOpacity(m_Opacity);
+
+         m_BackRenderer->AddActor( m_BackActor );
+         m_FrontRenderer->AddActor( m_FrontActor );
+         m_BackRenderer->InteractiveOff();
+         m_FrontRenderer->InteractiveOff();
+
+         SetupCamera();
+         SetupPosition();
+
+         mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
+         mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
+
+         m_IsEnabled = true;
+
+         m_DataStorage->ChangedNodeEvent.AddListener 
+            (mitk::MessageDelegate1<BitmapOverlay, const mitk::DataNode*>
+            (this, &BitmapOverlay::NodeChanged ) );
+       }
+     }
+     else 
+     {
+       std::cerr << "Didn't find one";
+     }*/
+  }
+}
 void BitmapOverlay::SetupCamera()
 {
   // set the vtk camera in way that stretches the logo all over the renderwindow
@@ -279,7 +426,7 @@ void BitmapOverlay::Disable()
 {
   if ( this->IsEnabled() )
   {
-    mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
+   // mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_FrontRenderer);
     m_IsEnabled = false;
   }
@@ -315,10 +462,6 @@ void BitmapOverlay::SetRequestedRegion(itk::DataObject*)
     //nothing to do
 }
 
-void BitmapOverlay::SetDataNode (mitk::DataNode::Pointer dataNode)
-{
-  this->m_ImageDataNode = dataNode;
-}
 void BitmapOverlay::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
 {
   this->m_DataStorage = dataStorage;

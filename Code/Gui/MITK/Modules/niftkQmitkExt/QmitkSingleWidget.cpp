@@ -371,20 +371,9 @@ void QmitkSingleWidget::SetDataStorage( mitk::DataStorage* ds )
   }
   else
   {
-    dataNode =m_DataStorage->GetNamedNode("OpenCV image");
-    if ( dataNode.IsNull() )
-    {
-     std::cerr << "Failed to find data node suitable for bit map overlay";
-    }
-    else
-    {
-     m_BitmapOverlay1->SetDataNode (dataNode);
      m_BitmapOverlay1->SetDataStorage (m_DataStorage);
-    }
   }
   m_BitmapOverlay1->Enable();
-
-
 }
 
 

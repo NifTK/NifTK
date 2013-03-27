@@ -125,16 +125,18 @@ public:
   virtual vtkImageMapper* GetMapper();
 
   /**
-   * Set a pointer to a data node containing image data for the overlay
-   */
-  void SetDataNode (mitk::DataNode::Pointer);
-  /**
    * Set a pointer to a data storage  for the overlay
    */
   void SetDataStorage (mitk::DataStorage::Pointer);
 
- /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
+ /// \brief Called when a DataStorage Change Event was emmitted.
   void NodeChanged(const mitk::DataNode* node);
+
+ /// \brief Called when a DataStorage Node Added Event was emmitted.
+  void NodeAdded(const mitk::DataNode* node);
+ /// \brief Called when a DataStorage Node Added Event was emmitted.
+  void NodeRemoved(const mitk::DataNode* node);
+protected:
 protected:
   void SetupCamera();
   void SetupPosition();
@@ -166,6 +168,7 @@ protected:
 
   mitk::DataNode::Pointer     m_ImageDataNode;
   mitk::DataStorage::Pointer  m_DataStorage;
+  mitk::Image::Pointer        m_ImageInNode;
 
 };
 
