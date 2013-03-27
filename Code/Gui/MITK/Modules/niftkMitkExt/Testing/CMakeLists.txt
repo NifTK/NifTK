@@ -55,6 +55,8 @@ mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-matt    mitkMIDASOri
 mitkAddCustomModuleTest(MIDAS-mitkMIDASImageUtilsTest-16856 mitkMIDASImageUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
 
 # Trac 2170 - Adding test for rendering a VTK axis view.
-mitkAddCustomModuleTest(mitkCoordinateAxesDataRenderingTest mitkCoordinateAxesDataRenderingTest
-                        -V ${NIFTK_DATA_DIR}/Baseline/mitkCoordinateAxesDataRenderingTestBaseline.png
-)
+IF(BUILD_SLS_TESTING)
+  mitkAddCustomModuleTest(SLS-mitkCoordinateAxesDataRenderingTest mitkCoordinateAxesDataRenderingTest
+                          -V ${NIFTK_DATA_DIR}/Baseline/mitkCoordinateAxesDataRenderingTestBaseline.png
+  )
+ENDIF()
