@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Breast Cancer Imaging Tools</category>
+  <category>Breast Cancer Imaging Tools . MG</category>
   <title>Anonymise DICOM Mammograms</title>
   <description><![CDATA[Search for DICOM mammograms in a directory and anonymise them by removing patient information from the DICOM header and/or applying a rectangular mask to remove the label.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
@@ -24,11 +24,26 @@
 
     <directory>
       <name>dcmDirectoryOut</name>
-      <longflag>oytDir</longflag>
+      <longflag>outDir</longflag>
       <description>Output top-level directory to write images to</description>
       <label>Output directory to write to</label>
       <channel>output</channel>
     </directory>
+
+    <string>
+      <name>strAdd2Suffix</name>
+      <longflag>add2suffix</longflag>
+      <description>Add this text to the filename suffix to generate a new file name.</description>
+      <label>Add text to file name suffix</label>
+      <default>_Anon</default>
+    </string>
+
+    <boolean>
+      <name>flgOverwrite</name>
+      <longflag>overwrite</longflag>
+      <description>If the anonymised image already exists then overwrite it.</description>
+      <label>Overwrite output image if it exists?</label>
+    </boolean>
 
   </parameters>
 
@@ -42,8 +57,354 @@
       <longflag>anonHeader</longflag>
       <description>Anonymise the DICOM header by removing the patient name tag.</description>
       <label>Anonymise DICOM header</label>
-      <default>true</default>
     </boolean>
+
+    <boolean>
+      <name>flgDontAnonPatientsName</name>
+      <longflag>flgDontAnonPatientsName</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0010) "Patient's Name"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0010) "Patient's Name"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsName</name>
+      <longflag>strPatientsName</longflag>
+      <description>Set the value of DICOM tag (0010|0010) "Patient's Name".</description>
+      <label>Set DICOM tag (0010|0010) "Patient's Name" to</label>
+      <default>Anonymous</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientID</name>
+      <longflag>flgDontAnonPatientID</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0020) "Patient ID"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0020) "Patient ID"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientID</name>
+      <longflag>strPatientID</longflag>
+      <description>Set the value of DICOM tag (0010|0020) "Patient ID".</description>
+      <label>Set DICOM tag (0010|0020) "Patient ID" to</label>
+      <default>No Identifier</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonIssuerofPatientID</name>
+      <longflag>flgDontAnonIssuerofPatientID</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0021) "Issuer of Patient ID"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0021) "Issuer of Patient ID"?</label>
+    </boolean>
+
+    <string>
+      <name>strIssuerofPatientID</name>
+      <longflag>strIssuerofPatientID</longflag>
+      <description>Set the value of DICOM tag (0010|0021) "Issuer of Patient ID".</description>
+      <label>Set DICOM tag (0010|0021) "Issuer of Patient ID" to</label>
+      <default>No Issuer</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsBirthDate</name>
+      <longflag>flgDontAnonPatientsBirthDate</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0030) "Patient's Birth Date"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0030) "Patient's Birth Date"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsBirthDate</name>
+      <longflag>strPatientsBirthDate</longflag>
+      <description>Set the value of DICOM tag (0010|0030) "Patient's Birth Date".</description>
+      <label>Set DICOM tag (0010|0030) "Patient's Birth Date" to</label>
+      <default>00-00-00</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsBirthTime</name>
+      <longflag>flgDontAnonPatientsBirthTime</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0032) "Patient's Birth Time"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0032) "Patient's Birth Time"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsBirthTime</name>
+      <longflag>strPatientsBirthTime</longflag>
+      <description>Set the value of DICOM tag (0010|0032) "Patient's Birth Time".</description>
+      <label>Set DICOM tag (0010|0032) "Patient's Birth Time" to</label>
+      <default>00:00</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsSex</name>
+      <longflag>flgDontAnonPatientsSex</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0040) "Patient's Sex"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0040) "Patient's Sex"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsSex</name>
+      <longflag>strPatientsSex</longflag>
+      <description>Set the value of DICOM tag (0010|0040) "Patient's Sex".</description>
+      <label>Set DICOM tag (0010|0040) "Patient's Sex" to</label>
+      <default>M/F</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsInsurancePlanCodeSequence</name>
+      <longflag>flgDontAnonPatientsInsurancePlanCodeSequence</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0050) "Patient's Insurance Plan Code Sequence"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0050) "Patient's Insurance Plan Code Sequence"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsInsurancePlanCodeSequence</name>
+      <longflag>strPatientsInsurancePlanCodeSequence</longflag>
+      <description>Set the value of DICOM tag (0010|0050) "Patient's Insurance Plan Code Sequence".</description>
+      <label>Set DICOM tag (0010|0050) "Patient's Insurance Plan Code Sequence" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsPrimaryLanguageCodeSequence</name>
+      <longflag>flgDontAnonPatientsPrimaryLanguageCodeSequence</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0101) "Patient's Primary Language Code Sequence"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0101) "Patient's Primary Language Code Sequence"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsPrimaryLanguageCodeSequence</name>
+      <longflag>strPatientsPrimaryLanguageCodeSequence</longflag>
+      <description>Set the value of DICOM tag (0010|0101) "Patient's Primary Language Code Sequence".</description>
+      <label>Set DICOM tag (0010|0101) "Patient's Primary Language Code Sequence" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsPrimaryLanguageCodeModifierSequence</name>
+      <longflag>flgDontAnonPatientsPrimaryLanguageCodeModifierSequence</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|0102) "Patient's Primary Language Code Modifier Sequence"?</description>
+      <label>Don't Anonymise DICOM tag (0010|0102) "Patient's Primary Language Code Modifier Sequence"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsPrimaryLanguageCodeModifierSequence</name>
+      <longflag>strPatientsPrimaryLanguageCodeModifierSequence</longflag>
+      <description>Set the value of DICOM tag (0010|0102) "Patient's Primary Language Code Modifier Sequence".</description>
+      <label>Set DICOM tag (0010|0102) "Patient's Primary Language Code Modifier Sequence" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonOtherPatientIDs</name>
+      <longflag>flgDontAnonOtherPatientIDs</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1000) "Other Patient IDs"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1000) "Other Patient IDs"?</label>
+    </boolean>
+
+    <string>
+      <name>strOtherPatientIDs</name>
+      <longflag>strOtherPatientIDs</longflag>
+      <description>Set the value of DICOM tag (0010|1000) "Other Patient IDs".</description>
+      <label>Set DICOM tag (0010|1000) "Other Patient IDs" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonOtherPatientNames</name>
+      <longflag>flgDontAnonOtherPatientNames</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1001) "Other Patient Names"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1001) "Other Patient Names"?</label>
+    </boolean>
+
+    <string>
+      <name>strOtherPatientNames</name>
+      <longflag>strOtherPatientNames</longflag>
+      <description>Set the value of DICOM tag (0010|1001) "Other Patient Names".</description>
+      <label>Set DICOM tag (0010|1001) "Other Patient Names" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsBirthName</name>
+      <longflag>flgDontAnonPatientsBirthName</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1005) "Patient's Birth Name"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1005) "Patient's Birth Name"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsBirthName</name>
+      <longflag>strPatientsBirthName</longflag>
+      <description>Set the value of DICOM tag (0010|1005) "Patient's Birth Name".</description>
+      <label>Set DICOM tag (0010|1005) "Patient's Birth Name" to</label>
+      <default>Anonymous</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsAge</name>
+      <longflag>flgDontAnonPatientsAge</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1010) "Patient's Age"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1010) "Patient's Age"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsAge</name>
+      <longflag>strPatientsAge</longflag>
+      <description>Set the value of DICOM tag (0010|1010) "Patient's Age".</description>
+      <label>Set DICOM tag (0010|1010) "Patient's Age" to</label>
+      <default>0</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsSize</name>
+      <longflag>flgDontAnonPatientsSize</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1020) "Patient's Size"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1020) "Patient's Size"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsSize</name>
+      <longflag>strPatientsSize</longflag>
+      <description>Set the value of DICOM tag (0010|1020) "Patient's Size".</description>
+      <label>Set DICOM tag (0010|1020) "Patient's Size" to</label>
+      <default>0</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsWeight</name>
+      <longflag>flgDontAnonPatientsWeight</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1030) "Patient's Weight"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1030) "Patient's Weight"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsWeight</name>
+      <longflag>strPatientsWeight</longflag>
+      <description>Set the value of DICOM tag (0010|1030) "Patient's Weight".</description>
+      <label>Set DICOM tag (0010|1030) "Patient's Weight" to</label>
+      <default>0</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsAddress</name>
+      <longflag>flgDontAnonPatientsAddress</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1040) "Patient's Address"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1040) "Patient's Address"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsAddress</name>
+      <longflag>strPatientsAddress</longflag>
+      <description>Set the value of DICOM tag (0010|1040) "Patient's Address".</description>
+      <label>Set DICOM tag (0010|1040) "Patient's Address" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsMothersBirthName</name>
+      <longflag>flgDontAnonPatientsMothersBirthName</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|1060) "Patient's Mother's Birth Name"?</description>
+      <label>Don't Anonymise DICOM tag (0010|1060) "Patient's Mother's Birth Name"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsMothersBirthName</name>
+      <longflag>strPatientsMothersBirthName</longflag>
+      <description>Set the value of DICOM tag (0010|1060) "Patient's Mother's Birth Name".</description>
+      <label>Set DICOM tag (0010|1060) "Patient's Mother's Birth Name" to</label>
+      <default>Anonymous</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsTelephoneNumbers</name>
+      <longflag>flgDontAnonPatientsTelephoneNumbers</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|2154) "Patient's Telephone Numbers"?</description>
+      <label>Don't Anonymise DICOM tag (0010|2154) "Patient's Telephone Numbers"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsTelephoneNumbers</name>
+      <longflag>strPatientsTelephoneNumbers</longflag>
+      <description>Set the value of DICOM tag (0010|2154) "Patient's Telephone Numbers".</description>
+      <label>Set DICOM tag (0010|2154) "Patient's Telephone Numbers" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonAdditionalPatientHistory</name>
+      <longflag>flgDontAnonAdditionalPatientHistory</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|21b0) "Additional Patient History"?</description>
+      <label>Don't Anonymise DICOM tag (0010|21b0) "Additional Patient History"?</label>
+    </boolean>
+
+    <string>
+      <name>strAdditionalPatientHistory</name>
+      <longflag>strAdditionalPatientHistory</longflag>
+      <description>Set the value of DICOM tag (0010|21b0) "Additional Patient History".</description>
+      <label>Set DICOM tag (0010|21b0) "Additional Patient History" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientsReligiousPreference</name>
+      <longflag>flgDontAnonPatientsReligiousPreference</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|21f0) "Patient's Religious Preference"?</description>
+      <label>Don't Anonymise DICOM tag (0010|21f0) "Patient's Religious Preference"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientsReligiousPreference</name>
+      <longflag>strPatientsReligiousPreference</longflag>
+      <description>Set the value of DICOM tag (0010|21f0) "Patient's Religious Preference".</description>
+      <label>Set DICOM tag (0010|21f0) "Patient's Religious Preference" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientComments</name>
+      <longflag>flgDontAnonPatientComments</longflag>
+      <description>Skip anonymisation of DICOM tag (0010|4000) "Patient Comments"?</description>
+      <label>Don't Anonymise DICOM tag (0010|4000) "Patient Comments"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientComments</name>
+      <longflag>strPatientComments</longflag>
+      <description>Set the value of DICOM tag (0010|4000) "Patient Comments".</description>
+      <label>Set DICOM tag (0010|4000) "Patient Comments" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientState</name>
+      <longflag>flgDontAnonPatientState</longflag>
+      <description>Skip anonymisation of DICOM tag (0038|0500) "Patient State"?</description>
+      <label>Don't Anonymise DICOM tag (0038|0500) "Patient State"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientState</name>
+      <longflag>strPatientState</longflag>
+      <description>Set the value of DICOM tag (0038|0500) "Patient State".</description>
+      <label>Set DICOM tag (0038|0500) "Patient State" to</label>
+      <default>None</default>
+    </string>
+
+    <boolean>
+      <name>flgDontAnonPatientTransportArrangements</name>
+      <longflag>flgDontAnonPatientTransportArrangements</longflag>
+      <description>Skip anonymisation of DICOM tag (0040|1004) "Patient Transport Arrangements"?</description>
+      <label>Don't Anonymise DICOM tag (0040|1004) "Patient Transport Arrangements"?</label>
+    </boolean>
+
+    <string>
+      <name>strPatientTransportArrangements</name>
+      <longflag>strPatientTransportArrangements</longflag>
+      <description>Set the value of DICOM tag (0040|1004) "Patient Transport Arrangements".</description>
+      <label>Set DICOM tag (0040|1004) "Patient Transport Arrangements" to</label>
+      <default>None</default>
+    </string>
+
+
 
   </parameters>
 
@@ -57,7 +418,6 @@
       <longflag>anonLabel</longflag>
       <description>Anonymise the image by setting the rectangular region of the label in the image to zero.</description>
       <label>Remove image label</label>
-      <default>true</default>
     </boolean>
 
     <float>

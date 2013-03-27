@@ -67,6 +67,13 @@ namespace niftk
   NIFTKCOMMON_WINEXPORT bool DirectoryExists(const std::string& directoryPath);
 
   /**
+   * Creates a directory including all parents that don't exist.
+   * @param the directory name
+   * @return true if creation was successfull
+   */
+  NIFTKCOMMON_WINEXPORT bool CreateDirectoryAndParents(const std::string& directoryPath);
+
+  /**
    * Creates a unique file name for a file located in the O/S temporary directory.
    * @param prefix file basename prefix
    * @param suffix file basename suffix
@@ -140,7 +147,8 @@ namespace niftk
    * @param fileNames The list of files found
    * @throw logic_error if directory name is invalid
    */
-  NIFTKCOMMON_WINEXPORT void GetRecursiveFileNamesInDirectory(const std::string& fullDirectoryName, std::vector<std::string> &fileNames);
+  NIFTKCOMMON_WINEXPORT void GetRecursiveFilesInDirectory(const std::string& fullDirectoryName, 
+							  std::vector<std::string> &fileNames);
 
   
 

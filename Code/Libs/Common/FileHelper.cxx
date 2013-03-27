@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <algorithm>
 #include <fstream>
+#include <deque>
 #include "FileHelper.h"
 #include "EnvironmentHelper.h"
 
@@ -34,7 +35,18 @@ std::string GetFileSeparator()
 //-----------------------------------------------------------------------------
 std::string ConcatenatePath(const std::string& path, const std::string& name)
 {
-  return path + GetFileSeparator() + name;
+  if ( ( path.length() > 0 ) && 
+       ( path.substr( path.length() - 1 ) != GetFileSeparator() ) &&
+       ( name.length() > 0 ) && 
+       ( name.substr( 0, 1 ) != GetFileSeparator() ) )
+    
+  {
+    return path + GetFileSeparator() + name;
+  }
+  else
+  {
+    return path + name;
+  }
 }
 
 
@@ -144,9 +156,42 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
 //-----------------------------------------------------------------------------
 bool DirectoryExists(const std::string& directoryPath)
 {
-
   fs::path full_path = ConvertToFullPath(directoryPath);
   return fs::is_directory(full_path);
+}
+
+
+//-----------------------------------------------------------------------------
+bool CreateDirectoryAndParents(const std::string& directoryPath)
+{
+  std::deque< fs::path > directoryTree;
+  std::deque< fs::path >::iterator iterDirectoryTree;       
+
+  fs::path full_path = ConvertToFullPath(directoryPath);
+  fs::path branch = full_path;
+
+  while ( ! branch.empty() )
+  {
+    directoryTree.push_front( branch );
+    branch = branch.branch_path();
+  }
+
+  for ( iterDirectoryTree = directoryTree.begin(); 
+	iterDirectoryTree < directoryTree.end(); 
+	++iterDirectoryTree )
+  {
+    std::cout << (*iterDirectoryTree).string() << std::endl;
+
+    if ( ! fs::exists( *iterDirectoryTree ) )
+    {
+      if ( ! fs::create_directory( *iterDirectoryTree ) )
+      {
+	return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 
@@ -263,8 +308,8 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
 }
 
 //  -------------------------------------------------------------------------
-void GetRecursiveFileNamesInDirectory( const std::string &directoryName, 
-					       std::vector<std::string> &fileNames )
+void GetRecursiveFilesInDirectory( const std::string &directoryName, 
+				   std::vector<std::string> &fileNames )
 {
   fs::path full_path( directoryName );
 
@@ -286,7 +331,7 @@ void GetRecursiveFileNamesInDirectory( const std::string &directoryName,
       {
         if ( fs::is_directory( dir_itr->status() ) )
         {
-	  GetRecursiveFileNamesInDirectory( dir_itr->path().string(), fileNames );
+	  GetRecursiveFilesInDirectory( dir_itr->path().string(), fileNames );
         }
         else if ( fs::is_regular_file( dir_itr->status() ) )
         {
