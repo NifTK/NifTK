@@ -236,7 +236,7 @@ void QmitkSingleWidget::InitializeWidget()
   m_GradientBackground1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
   m_GradientBackground1->SetGradientColors(0.1,0.1,0.1,0.5,0.5,0.5);
-  m_GradientBackground1->Disable();
+  m_GradientBackground1->Enable();
 
   // setup the department logo rendering
   //m_LogoRendering1 = mitk::ManufacturerLogo::New();
@@ -244,6 +244,10 @@ void QmitkSingleWidget::InitializeWidget()
   m_LogoRendering1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
   m_LogoRendering1->Disable();
+
+  m_BitmapOverlay1 = BitmapOverlay::New();
+  m_BitmapOverlay1->SetRenderWindow(
+    mitkWidget1->GetRenderWindow() );
 
   m_RectangleRendering1 = mitk::RenderWindowFrame::New();
   m_RectangleRendering1->SetRenderWindow(
@@ -359,6 +363,13 @@ void QmitkSingleWidget::SetDataStorage( mitk::DataStorage* ds )
 {
   mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())->SetDataStorage(ds);
   m_DataStorage = ds;
+  //see if we can find a suitable data node
+  mitk::DataNode::Pointer dataNode;
+  if ( ! m_DataStorage.IsNull())
+  {
+     m_BitmapOverlay1->SetDataStorage (m_DataStorage);
+  }
+  m_BitmapOverlay1->Enable();
 }
 
 
@@ -616,63 +627,9 @@ void QmitkSingleWidget::HandleCrosshairPositionEvent()
 
 void QmitkSingleWidget::HandleCrosshairPositionEventDelayed()
 {
-  m_PendingCrosshairPositionEvent = false;
-
-  // find image with highest layer
-  mitk::Point3D crosshairPos = this->GetCrossPosition();
-
-  mitk::TNodePredicateDataType<mitk::Image>::Pointer isImageData = mitk::TNodePredicateDataType<mitk::Image>::New();
-
-  mitk::DataStorage::SetOfObjects::ConstPointer nodes = this->m_DataStorage->GetSubset(isImageData).GetPointer();
   std::string statusText;
-  mitk::Image::Pointer image;
-  int  maxlayer = -32768;
-
-  mitk::BaseRenderer* baseRenderer = this->mitkWidget1->GetSliceNavigationController()->GetRenderer();
-  // find image with largest layer, that is the image shown on top in the render window
-  for (unsigned int x = 0; x < nodes->size(); x++)
-  {
-    if ( (nodes->at(x)->GetData()->GetGeometry() != NULL) &&
-         nodes->at(x)->GetData()->GetGeometry()->IsInside(crosshairPos) )
-    {
-      int layer = 0;
-      if(!(nodes->at(x)->GetIntProperty("layer", layer))) continue;
-      if(layer > maxlayer)
-      {
-        if( static_cast<mitk::DataNode::Pointer>(nodes->at(x))->IsVisible( baseRenderer ) )
-        {
-          image = dynamic_cast<mitk::Image*>(nodes->at(x)->GetData());
-          maxlayer = layer;
-        }
-      }
-    }
-  }
-
   std::stringstream stream;
-
-  mitk::Index3D p;
-  unsigned int timestep = baseRenderer->GetTimeStep();
-
-  if(image.IsNotNull() && (image->GetTimeSteps() > timestep ))
-  {
-    image->GetGeometry()->WorldToIndex(crosshairPos, p);
-    stream.precision(2);
-    stream<<"Position: <" << std::fixed <<crosshairPos[0] << ", " << std::fixed << crosshairPos[1] << ", " << std::fixed << crosshairPos[2] << "> mm";
-    stream<<"; Index: <"<<p[0] << ", " << p[1] << ", " << p[2] << "> ";
-    mitk::ScalarType pixelValue = image->GetPixelValueByIndex(p, timestep);
-    if (fabs(pixelValue)>1000000)
-    {
-      stream<<"; Time: " << baseRenderer->GetTime() << " ms; Pixelvalue: "<<std::scientific<<image->GetPixelValueByIndex(p, timestep)<<"  ";
-    }
-    else
-    {
-      stream<<"; Time: " << baseRenderer->GetTime() << " ms; Pixelvalue: "<<image->GetPixelValueByIndex(p, timestep)<<"  ";
-    }
-  }
-  else
-  {
-    stream << "No image information at this position!";
-  }
+  stream << "Cross hair position event";
 
   statusText = stream.str();
   mitk::StatusBar::GetInstance()->DisplayGreyValueText(statusText.c_str());

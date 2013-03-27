@@ -34,6 +34,7 @@ SET(CPP_FILES
   QmitkMIDASSingleViewWidgetListDropManager.cpp
   QmitkSingleWidget.cpp
   QmitkCmicLogo.cpp
+  QmitkBitmapOverlay.cpp
 )
 
 SET(MOC_H_FILES 
