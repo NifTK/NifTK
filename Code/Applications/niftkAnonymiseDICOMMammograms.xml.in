@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools</category>
+  <title>Anonymise DICOM Mammograms</title>
+  <description><![CDATA[Search for DICOM mammograms in a directory and anonymise them by removing patient information from the DICOM header and/or applying a rectangular mask to remove the label.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <directory>
+      <name>dcmDirectoryIn</name>
+      <longflag>inDir</longflag>
+      <description>Input top-level directory to search</description>
+      <label>Input directory to search</label>
+      <channel>input</channel>
+    </directory>
+
+    <directory>
+      <name>dcmDirectoryOut</name>
+      <longflag>oytDir</longflag>
+      <description>Output top-level directory to write images to</description>
+      <label>Output directory to write to</label>
+      <channel>output</channel>
+    </directory>
+
+  </parameters>
+
+  <parameters>
+
+    <label>DICOM Tag Anonymisation</label>
+    <description><![CDATA[By default the DICOM header will be anonymised by removing the patient name from the DICOM header.]]></description>
+
+    <boolean>
+      <name>flgAnonymiseDICOMHeader</name>
+      <longflag>anonHeader</longflag>
+      <description>Anonymise the DICOM header by removing the patient name tag.</description>
+      <label>Anonymise DICOM header</label>
+      <default>true</default>
+    </boolean>
+
+  </parameters>
+
+  <parameters>
+
+    <label>DICOM Image Label Anonymisation</label>
+    <description><![CDATA[By default the image will be anonymised by setting a user specified rectangular region to zero to remove a patient label.]]></description>
+
+    <boolean>
+      <name>flgAnonymiseImageLabel</name>
+      <longflag>anonLabel</longflag>
+      <description>Anonymise the image by setting the rectangular region of the label in the image to zero.</description>
+      <label>Remove image label</label>
+      <default>true</default>
+    </boolean>
+
+    <float>
+      <name>labelWidth</name>
+      <longflag>labelWidth</longflag>
+      <description>The width of the label as a percentage of the image width.</description>
+      <label>Label width (% of image)</label>
+      <default>20</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+
+    <float>
+      <name>labelHeight</name>
+      <longflag>labelHeight</longflag>
+      <description>The height of the label as a percentage of the image height.</description>
+      <label>Label height (% of image)</label>
+      <default>40</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+
+    <string-enumeration>
+      <name>labelPosition</name>
+      <longflag>labelPosn</longflag>
+      <description>The position/quadrant of the label.</description>
+      <label>Label position</label>
+      <default>Top-Right</default>
+      <element>Top-Right</element>
+      <element>Top-Left</element>
+      <element>Bottom-Right</element>
+      <element>Bottom-Left</element>
+    </string-enumeration>
+
+  </parameters>
+
+</executable>
