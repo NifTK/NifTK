@@ -139,7 +139,6 @@ public:
 protected:
 protected:
   void SetupCamera();
-  void SetupPosition();
 
   /**
    * Constructor
@@ -169,6 +168,7 @@ protected:
   mitk::DataNode::Pointer     m_ImageDataNode;
   mitk::DataStorage::Pointer  m_DataStorage;
   mitk::Image::Pointer        m_ImageInNode;
+  bool                        m_UsingNVIDIA;
 
 };
 
