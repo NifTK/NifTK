@@ -68,7 +68,6 @@ IF(SlicerExecutionModel_FOUND)
     niftkErode
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
-    niftkMakeCheckerboardMarker
     niftkMultiply
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
@@ -89,8 +88,7 @@ IF(SlicerExecutionModel_FOUND)
     # Add new programs to this list.
     #-------------------------------------------------------------
     SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
-      niftkMakeLaparoscopicUSProbe
-      niftkMakeCheckerboardLapUSProbe
+      niftkMakeLapUSProbeModel
     )
   
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
