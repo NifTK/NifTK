@@ -33,6 +33,8 @@ typedef ImageType::IndexType            IndexType;
 typedef ImageType::PointType            Point2DType;
 typedef itk::Point<double, 3>           Point3DType;
 
+
+//-----------------------------------------------------------------------------
 bool IsOnEvenSquare(const std::vector<int>& vec, const int pixelIndex)
 {
   unsigned int chosenIndex = 0;
@@ -46,6 +48,8 @@ bool IsOnEvenSquare(const std::vector<int>& vec, const int pixelIndex)
   return (chosenIndex % 2 == 0);
 }
 
+
+//-----------------------------------------------------------------------------
 double CalculateBoundingArray(const double &a, const double &b, const int& squares, const int& pixels, std::vector<int>& vec)
 {
   vec.clear();
@@ -71,6 +75,8 @@ double CalculateBoundingArray(const double &a, const double &b, const int& squar
   return total;
 }
 
+
+//-----------------------------------------------------------------------------
 double GenerateBoundaryArray(const int& dotsPerInch, const double& squareSize, const int& pixels, const int& squares, std::vector<int>& vec)
 {
   double a = squareSize/25.4 * dotsPerInch;
@@ -99,6 +105,7 @@ double GenerateBoundaryArray(const int& dotsPerInch, const double& squareSize, c
 }
 
 
+//-----------------------------------------------------------------------------
 void AddPoint(
     const Point2DType& cornerPointInImageSpace,
     const int& numberPixelsX,
@@ -141,6 +148,7 @@ void AddPoint(
   normals->InsertNextValue(normal[1]);
   normals->InsertNextValue(normal[2]);
 }
+
 
 //-----------------------------------------------------------------------------
 UCRGBPixelType GetColor(
@@ -308,7 +316,7 @@ int main(int argc, char** argv)
   {
     for (int y = 0; y < pixelsY; y++)
     {
-      imageIndex[0] = x;
+      imageIndex[0] = pixelsX - 1 - x; // Flip image in x, to make it suitable for right handed probe.
       imageIndex[1] = y;
 
       bool xEven = IsOnEvenSquare(xboundaries, x);
