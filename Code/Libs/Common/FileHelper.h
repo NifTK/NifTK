@@ -126,12 +126,23 @@ namespace niftk
   NIFTKCOMMON_WINEXPORT std::string GetImagesDirectory();
 
   /**
-   * Returns all files in a given directory, or empty list if non found.
+   * Returns all files in a given directory, or empty list if none found.
    * @param fullDirectoryName Directory name
    * @throw logic_error if directory name is invalid
    * @return a list of files within that folder.
    */
   NIFTKCOMMON_WINEXPORT std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryName);
+
+
+  /**
+   * Returns all files in a given directory and recursively in all sub-directories, or empty list if none found.
+   * @param fullDirectoryName Directory name
+   * @param fileNames The list of files found
+   * @throw logic_error if directory name is invalid
+   */
+  NIFTKCOMMON_WINEXPORT void GetRecursiveFileNamesInDirectory(const std::string& fullDirectoryName, std::vector<std::string> &fileNames);
+
+  
 
 } // end namespace
 

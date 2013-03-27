@@ -262,4 +262,47 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
   return fileNames;
 }
 
+//  -------------------------------------------------------------------------
+void GetRecursiveFileNamesInDirectory( const std::string &directoryName, 
+					       std::vector<std::string> &fileNames )
+{
+  fs::path full_path( directoryName );
+
+  if (!DirectoryExists(directoryName))
+  {
+    throw std::logic_error("Directory does not exist!");
+    return;
+  }
+
+  if ( fs::is_directory( full_path ) )
+  {
+    fs::directory_iterator end_iter;
+
+    for ( fs::directory_iterator dir_itr( full_path );
+          dir_itr != end_iter;
+          ++dir_itr )
+    {
+      try
+      {
+        if ( fs::is_directory( dir_itr->status() ) )
+        {
+	  GetRecursiveFileNamesInDirectory( dir_itr->path().string(), fileNames );
+        }
+        else if ( fs::is_regular_file( dir_itr->status() ) )
+        {
+	  fileNames.push_back( dir_itr->path().string() );
+	}
+      }
+      catch ( const std::exception & ex )
+      {
+        std::cout << dir_itr->path() << " " << ex.what() << std::endl;
+      }
+    }
+  }
+  else // must be a file
+  {
+    fileNames.push_back( full_path.string() );    
+  }
+}
+
 }
