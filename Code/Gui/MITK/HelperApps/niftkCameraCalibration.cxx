@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <cstdlib>
+#include <limits>
 #include "mitkCameraCalibrationFromDirectory.h"
 #include "mitkStereoCameraCalibrationFromTwoDirectories.h"
 #include "niftkCameraCalibrationCLP.h"
