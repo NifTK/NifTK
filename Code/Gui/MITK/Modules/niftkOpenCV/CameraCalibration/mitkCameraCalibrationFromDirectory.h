@@ -35,7 +35,10 @@ public:
   mitkClassMacro(CameraCalibrationFromDirectory, itk::Object);
   itkNewMacro(CameraCalibrationFromDirectory);
 
-  bool Calibrate(const std::string& fullDirectoryName,
+  /**
+   * \brief Calibration function that returns the reprojection error (squared error).
+   */
+  double Calibrate(const std::string& fullDirectoryName,
       const int& numberCornersX,
       const int& numberCornersY,
       const float& sizeSquareMillimeters,
