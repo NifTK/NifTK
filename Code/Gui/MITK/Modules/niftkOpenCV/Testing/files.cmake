@@ -12,11 +12,10 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCV)
+# tests with no extra command line parameter
+SET(MODULE_TESTS
+)
 
-# Trac:
-# Using OpenCV calibration, and example data from the Laparoscope, here we
-# provide a regression test for the stereo camera calibration.
-IF(BUILD_SLS_TESTING)
-  mitkAddCustomModuleTest(SLS-CameraCalib mitkCameraCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibLeft ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibRight ${CMAKE_BINARY_DIR}/Testing/Temporary/CameraCalibration 14 10 3 0.577703 0.888462)
-ENDIF(BUILD_SLS_TESTING)
+set(MODULE_CUSTOM_TESTS
+  mitkCameraCalibrationTest.cpp
+)
