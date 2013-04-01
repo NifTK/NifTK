@@ -13,9 +13,9 @@
 #============================================================================*/
 
 SET(CPP_FILES
-  ToolsGui/QmitkIGINVidiaDataSource.cpp 
-  ToolsGui/QmitkIGINVidiaDataSourceGui.cpp 
-  ToolsGui/QmitkVideoPreviewWidget.cpp
+  ToolsGui/QmitkIGINVidiaDataSource.cxx
+  ToolsGui/QmitkIGINVidiaDataSourceGui.cxx
+  ToolsGui/QmitkVideoPreviewWidget.cxx
 )
 
 SET(MOC_H_FILES

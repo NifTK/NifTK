@@ -79,6 +79,7 @@ MACRO(NIFTK_CREATE_APPLICATION)
   
   FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
+    SOURCES ${MY_APP_NAME}.cxx
     PLUGINS ${_include_plugins}
     EXCLUDE_PLUGINS ${_exclude_plugins}
     LINK_LIBRARIES ${_link_libraries}

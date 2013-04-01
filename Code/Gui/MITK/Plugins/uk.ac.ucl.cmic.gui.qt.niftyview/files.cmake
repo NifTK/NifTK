@@ -13,13 +13,13 @@
 #============================================================================*/
 
 SET(SRC_CPP_FILES
-  QmitkNiftyViewApplication.cpp
-  QmitkNiftyViewAppWorkbenchAdvisor.cpp
-  QmitkNiftyViewWorkbenchWindowAdvisor.cpp
+  QmitkNiftyViewApplication.cxx
+  QmitkNiftyViewAppWorkbenchAdvisor.cxx
+  QmitkNiftyViewWorkbenchWindowAdvisor.cxx
 )
 
 SET(INTERNAL_CPP_FILES
-  QmitkNiftyViewApplicationPlugin.cpp
+  QmitkNiftyViewApplicationPlugin.cxx
 )
 
 SET(MOC_H_FILES

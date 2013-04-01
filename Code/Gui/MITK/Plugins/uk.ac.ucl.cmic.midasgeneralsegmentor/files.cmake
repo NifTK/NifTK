@@ -16,12 +16,12 @@ SET(SRC_CPP_FILES
 )
 
 SET(INTERNAL_CPP_FILES
-  MIDASGeneralSegmentorViewActivator.cpp
-  MIDASGeneralSegmentorViewPreferencePage.cpp
-  MIDASGeneralSegmentorViewHelper.cpp
-  MIDASGeneralSegmentorViewControlsWidget.cpp
-  MIDASGeneralSegmentorViewEventInterface.cpp
-  MIDASGeneralSegmentorView.cpp
+  MIDASGeneralSegmentorViewActivator.cxx
+  MIDASGeneralSegmentorViewPreferencePage.cxx
+  MIDASGeneralSegmentorViewHelper.cxx
+  MIDASGeneralSegmentorViewControlsWidget.cxx
+  MIDASGeneralSegmentorViewEventInterface.cxx
+  MIDASGeneralSegmentorView.cxx
 )
 
 SET(UI_FILES

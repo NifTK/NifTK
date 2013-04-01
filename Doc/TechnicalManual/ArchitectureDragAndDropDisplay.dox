@@ -49,7 +49,7 @@ The editor is contained within its own CTK plugin at the path shown above. The p
 and the editor is registered in the plugin activator class.
 
 \verbatim
-Plugins/uk.ac.ucl.cmic.midaseditor/src/internal/uk_ac_ucl_cmic_midaseditor_Activator.cpp
+Plugins/uk.ac.ucl.cmic.midaseditor/src/internal/uk_ac_ucl_cmic_midaseditor_Activator.cxx
 \endverbatim
 
 using

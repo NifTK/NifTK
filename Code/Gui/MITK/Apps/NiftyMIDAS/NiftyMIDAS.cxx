@@ -14,7 +14,7 @@
 
 #include "../NifTKApplication.h"
 /**
- * \file NiftyMIDAS.cpp
+ * \file NiftyMIDAS.cxx
  * \brief Main entry point for NiftyMIDAS application.
  */
 int main(int argc, char** argv)

@@ -14,18 +14,18 @@
 
 # tests with no extra command line parameter
 SET(MODULE_TESTS
-  mitkITKRegionParametersDataNodePropertyTest.cpp
-  mitkPointUtilsTest.cpp
-  mitkCoordinateAxesDataTest.cpp
+  mitkITKRegionParametersDataNodePropertyTest.cxx
+  mitkPointUtilsTest.cxx
+  mitkCoordinateAxesDataTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
-  mitkMIDASAsAcquiredOrientationTest.cpp
-  mitkMIDASCompareImagesForEqualityTest.cpp
-  mitkMIDASPaintbrushToolTest.cpp
-  mitkMIDASSegmentationNodeAddedVisibilityTest.cpp
-  mitkMIDASMorphologicalSegmentorPipelineManagerTest.cpp
-  mitkMIDASOrientationUtilsTest.cpp
-  mitkMIDASImageUtilsTest.cpp
-  mitkCoordinateAxesDataRenderingTest.cpp
+  mitkMIDASAsAcquiredOrientationTest.cxx
+  mitkMIDASCompareImagesForEqualityTest.cxx
+  mitkMIDASPaintbrushToolTest.cxx
+  mitkMIDASSegmentationNodeAddedVisibilityTest.cxx
+  mitkMIDASMorphologicalSegmentorPipelineManagerTest.cxx
+  mitkMIDASOrientationUtilsTest.cxx
+  mitkMIDASImageUtilsTest.cxx
+  mitkCoordinateAxesDataRenderingTest.cxx
 )

@@ -17,8 +17,8 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  BreastSegmentationViewActivator.cpp
-  BreastSegmentationView.cpp
+  BreastSegmentationViewActivator.cxx
+  BreastSegmentationView.cxx
 )
 
 set(UI_FILES

@@ -13,5 +13,5 @@
 #============================================================================*/
 
 set(MODULE_TESTS
-  XnatRestTest.cpp
+  XnatRestTest.cxx
 )

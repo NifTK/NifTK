@@ -13,28 +13,28 @@
 #============================================================================*/
 
 SET(CPP_FILES
-  LookupTables/LookupTableContainer.cpp
-  LookupTables/LookupTableSaxHandler.cpp
-  LookupTables/LookupTableManager.cpp
-  Dialogs/QmitkHelpAboutDialog.cpp
-  Dialogs/QmitkMIDASNewSegmentationDialog.cpp
-  QmitkThumbnailRenderWindow.cpp
-  QmitkMIDASToolSelectorWidget.cpp
-  QmitkMIDASImageAndSegmentationSelectorWidget.cpp  
-  QmitkMIDASDrawToolGUI.cpp
-  QmitkMIDASPaintbrushToolGUI.cpp
-  QmitkMIDASBindWidget.cpp
-  QmitkMIDASSlidersWidget.cpp
-  QmitkMIDASOrientationWidget.cpp
-  QmitkMIDASStdMultiWidget.cpp
-  QmitkMIDASSingleViewWidget.cpp
-  QmitkMIDASMultiViewVisibilityManager.cpp
-  QmitkMIDASSingleViewWidgetListManager.cpp
-  QmitkMIDASSingleViewWidgetListVisibilityManager.cpp
-  QmitkMIDASSingleViewWidgetListDropManager.cpp
-  QmitkSingleWidget.cpp
-  QmitkCmicLogo.cpp
-  QmitkBitmapOverlay.cpp
+  LookupTables/LookupTableContainer.cxx
+  LookupTables/LookupTableSaxHandler.cxx
+  LookupTables/LookupTableManager.cxx
+  Dialogs/QmitkHelpAboutDialog.cxx
+  Dialogs/QmitkMIDASNewSegmentationDialog.cxx
+  QmitkThumbnailRenderWindow.cxx
+  QmitkMIDASToolSelectorWidget.cxx
+  QmitkMIDASImageAndSegmentationSelectorWidget.cxx
+  QmitkMIDASDrawToolGUI.cxx
+  QmitkMIDASPaintbrushToolGUI.cxx
+  QmitkMIDASBindWidget.cxx
+  QmitkMIDASSlidersWidget.cxx
+  QmitkMIDASOrientationWidget.cxx
+  QmitkMIDASStdMultiWidget.cxx
+  QmitkMIDASSingleViewWidget.cxx
+  QmitkMIDASMultiViewVisibilityManager.cxx
+  QmitkMIDASSingleViewWidgetListManager.cxx
+  QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
+  QmitkMIDASSingleViewWidgetListDropManager.cxx
+  QmitkSingleWidget.cxx
+  QmitkCmicLogo.cxx
+  QmitkBitmapOverlay.cxx
 )
 
 SET(MOC_H_FILES 

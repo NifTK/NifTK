@@ -14,7 +14,7 @@
 
 #include "../NifTKApplication.h"
 /**
- * \file NiftyView.cpp
+ * \file NiftyView.cxx
  * \brief Main entry point for NiftyView application.
  */
 int main(int argc, char** argv)

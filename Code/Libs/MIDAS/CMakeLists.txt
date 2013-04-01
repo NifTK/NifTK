@@ -13,8 +13,8 @@
 #============================================================================*/
 
 SET(niftkMIDAS_SRCS
-MidasCommon.cpp
-MidasIO.cpp
+MidasCommon.cxx
+MidasIO.cxx
 )
 
 ADD_LIBRARY(niftkmidas ${niftkMIDAS_SRCS})
