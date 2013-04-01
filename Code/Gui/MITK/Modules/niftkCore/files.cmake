@@ -13,4 +13,27 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Algorithms/mitkNifTKCoreObjectFactory.cxx
+  Common/mitkMIDASImageUtils.cxx
+  Common/mitkMIDASOrientationUtils.cxx
+  Common/mitkPointUtils.cxx
+  DataManagement/mitkDataNodeBoolPropertyFilter.cxx
+  DataManagement/mitkDataNodeStringPropertyFilter.cxx
+  DataManagement/mitkDataStorageUtils.cxx
+  DataManagement/mitkDataStorageListener.cxx
+  DataManagement/mitkDataStoragePropertyListener.cxx
+  DataManagement/mitkDataStorageVisibilityTracker.cxx
+  DataManagement/mitkCoordinateAxesData.cxx
+  Rendering/mitkCoordinateAxesVtkMapper3D.cxx
+  DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
+  DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
+  DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
+  DataNodeProperties/mitkNamedLookupTableProperty.cxx
+  IO/itkAnalyzeImageIO3160.cxx
+  IO/itkDRCAnalyzeImageIO3160.cxx
+  IO/itkNiftiImageIO3201.cxx
+  IO/mitkNifTKItkImageFileReader.cxx
+  IO/mitkNifTKItkImageFileIOFactory.cxx
+  IO/itkPNMImageIOFactory.cxx
+  IO/itkPNMImageIO.cxx
 )

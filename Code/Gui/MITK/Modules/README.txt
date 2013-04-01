@@ -3,15 +3,11 @@ Notes:
 
 The increasing number of Modules can be explained as follows:
 
-1. niftMitkExt = represents extensions to Mitk. 
-                 Named analagously to MitkExt. 
-                 Also contains MIDAS stuff.
-                 Does not contain GUI widgets.
+1. niftCore = represents extensions to Mitk. 
+              Does not contain GUI widgets.
                  
-2. niftkQmitkExt = represents extension to Qmitk.
-                   Named analagously to QmitkExt.
-                   Also contains MIDAS stuff.
-                   Contains GUI widgets.
+2. niftkCoreGui = represents extension to Qmitk.
+                  Contains GUI widgets.
                      
 3. XnatRest = XNat API, independent of GUI widgets
 4. XNatRest = XNat widgets.

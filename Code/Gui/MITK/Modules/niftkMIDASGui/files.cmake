@@ -13,12 +13,44 @@
 #============================================================================*/
 
 SET(CPP_FILES
+  Dialogs/QmitkMIDASNewSegmentationDialog.cxx
+  QmitkMIDASToolSelectorWidget.cxx
+  QmitkMIDASImageAndSegmentationSelectorWidget.cxx
+  QmitkMIDASDrawToolGUI.cxx
+  QmitkMIDASPaintbrushToolGUI.cxx
+  QmitkMIDASBindWidget.cxx
+  QmitkMIDASSlidersWidget.cxx
+  QmitkMIDASOrientationWidget.cxx
+  QmitkMIDASStdMultiWidget.cxx
+  QmitkMIDASMultiViewVisibilityManager.cxx
+  QmitkMIDASSingleViewWidget.cxx
+  QmitkMIDASSingleViewWidgetListManager.cxx
+  QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
+  QmitkMIDASSingleViewWidgetListDropManager.cxx
+  QmitkThumbnailRenderWindow.cxx
 )
 
 SET(MOC_H_FILES 
+  Dialogs/QmitkMIDASNewSegmentationDialog.h
+  QmitkMIDASToolSelectorWidget.h
+  QmitkMIDASImageAndSegmentationSelectorWidget.h
+  QmitkMIDASDrawToolGUI.h
+  QmitkMIDASPaintbrushToolGUI.h
+  QmitkMIDASBindWidget.h
+  QmitkMIDASSlidersWidget.h
+  QmitkMIDASOrientationWidget.h
+  QmitkMIDASStdMultiWidget.h
+  QmitkMIDASSingleViewWidget.h
+  QmitkMIDASMultiViewVisibilityManager.h
+  QmitkThumbnailRenderWindow.h
 )
 
 SET(UI_FILES
+  Resources/UI/QmitkMIDASImageAndSegmentationSelector.ui
+  Resources/UI/QmitkMIDASToolSelector.ui
+  Resources/UI/QmitkMIDASBindWidget.ui
+  Resources/UI/QmitkMIDASOrientationWidget.ui
+  Resources/UI/QmitkMIDASSlidersWidget.ui
 )
 
 SET(QRC_FILES
