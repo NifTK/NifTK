@@ -44,10 +44,6 @@ mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-matt    mitkMIDASOri
 # Trac 1706 - Dilations break through connection breaker image.
 mitkAddCustomModuleTest(MIDAS-mitkMIDASImageUtilsTest-16856 mitkMIDASImageUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
 
-# Trac 1683 - When nodes created via segmentation tools, the data sets much be visible in viewers
-#             such as the thumbnail viewer, and the segmentation views.
-mitkAddCustomModuleTest(MIDAS-mitkSegmentationNodeAddedVisibilityTest mitkMIDASSegmentationNodeAddedVisibilityTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)
-
 # Trac 2170 - Adding test for rendering a VTK axis view.
 IF(BUILD_SLS_TESTING)
   mitkAddCustomModuleTest(SLS-mitkCoordinateAxesDataRenderingTest mitkCoordinateAxesDataRenderingTest

@@ -24,6 +24,5 @@ set(MODULE_CUSTOM_TESTS
   mitkMIDASAsAcquiredOrientationTest.cxx
   mitkMIDASImageUtilsTest.cxx
   mitkMIDASCompareImagesForEqualityTest.cxx
-  mitkMIDASSegmentationNodeAddedVisibilityTest.cxx
   mitkCoordinateAxesDataRenderingTest.cxx
 )
