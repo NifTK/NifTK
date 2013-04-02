@@ -14,7 +14,7 @@
 
 
 SET (CTEST_EXTRA_COVERAGE_GLOB ${CTEST_EXTRA_COVERAGE_GLOB})
-FOREACH (E IN ITEMS .c .cc .cpp .cxx .h .hh .hpp .hxx .txx)
+FOREACH (E IN ITEMS .c .cxx .h .txx)
   LIST (APPEND CTEST_EXTRA_COVERAGE_GLOB
     "Code/*/*${E}"
 )

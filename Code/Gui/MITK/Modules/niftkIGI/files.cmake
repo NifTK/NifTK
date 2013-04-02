@@ -13,8 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
-  DataManagement/mitkIGITestDataUtils.cpp
-  DataManagement/mitkIGIDataType.cpp
-  DataManagement/mitkIGIDataSource.cpp
-  DataManagement/mitkIGIOpenCVDataType.cpp
+  DataManagement/mitkIGITestDataUtils.cxx
+  DataManagement/mitkIGIDataType.cxx
+  DataManagement/mitkIGIDataSource.cxx
+  DataManagement/mitkIGIOpenCVDataType.cxx
 )

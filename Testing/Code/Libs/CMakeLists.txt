@@ -13,7 +13,7 @@
 #============================================================================*/
 
 ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(MIDAS)
+#ADD_SUBDIRECTORY(MIDAS)
 ADD_SUBDIRECTORY(ITK)
 
 IF(VTK_FOUND)

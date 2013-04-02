@@ -45,7 +45,7 @@ public:
   virtual ~MITKSegmentationView();
 
   /// \brief Each View for a plugin has its own globally unique ID, this one is
-  /// "uk.ac.ucl.cmic.mitksegmentation" and the .cpp file and plugin.xml should match.
+  /// "uk.ac.ucl.cmic.mitksegmentation" and the .cxx file and plugin.xml should match.
   static const std::string VIEW_ID;
 
   /// \brief Returns the VIEW_ID = "uk.ac.ucl.cmic.mitksegmentation".

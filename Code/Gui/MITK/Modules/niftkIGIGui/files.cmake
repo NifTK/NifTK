@@ -13,25 +13,25 @@
 #============================================================================*/
 
 SET(CPP_FILES
-  Common/QmitkIGIUtils.cpp
-  DataManagement/QmitkQImageToMitkImageFilter.cpp
-  ToolsGui/TrackerControlsWidget.cpp
-  ToolsGui/QmitkIGITimerBasedThread.cpp
-  ToolsGui/QmitkFiducialRegistrationWidgetDialog.cpp
-  ToolsGui/QmitkIGINiftyLinkDataType.cpp
-  ToolsGui/QmitkIGINiftyLinkDataSource.cpp
-  ToolsGui/QmitkIGINiftyLinkDataSourceGui.cpp
-  ToolsGui/QmitkIGIDataSource.cpp
-  ToolsGui/QmitkIGIDataSourceBackgroundSaveThread.cpp
-  ToolsGui/QmitkIGIDataSourceGui.cpp
-  ToolsGui/QmitkIGILocalDataSource.cpp
-  ToolsGui/QmitkIGILocalDataSourceGrabbingThread.cpp
-  ToolsGui/QmitkIGITrackerTool.cpp
-  ToolsGui/QmitkIGITrackerToolGui.cpp
-  ToolsGui/QmitkIGIUltrasonixTool.cpp
-  ToolsGui/QmitkIGIUltrasonixToolGui.cpp   
-  ToolsGui/QmitkIGIOpenCVDataSource.cpp 
-  ToolsGui/QmitkIGIOpenCVDataSourceGui.cpp 
+  Common/QmitkIGIUtils.cxx
+  DataManagement/QmitkQImageToMitkImageFilter.cxx
+  ToolsGui/TrackerControlsWidget.cxx
+  ToolsGui/QmitkIGITimerBasedThread.cxx
+  ToolsGui/QmitkFiducialRegistrationWidgetDialog.cxx
+  ToolsGui/QmitkIGINiftyLinkDataType.cxx
+  ToolsGui/QmitkIGINiftyLinkDataSource.cxx
+  ToolsGui/QmitkIGINiftyLinkDataSourceGui.cxx
+  ToolsGui/QmitkIGIDataSource.cxx
+  ToolsGui/QmitkIGIDataSourceBackgroundSaveThread.cxx
+  ToolsGui/QmitkIGIDataSourceGui.cxx
+  ToolsGui/QmitkIGILocalDataSource.cxx
+  ToolsGui/QmitkIGILocalDataSourceGrabbingThread.cxx
+  ToolsGui/QmitkIGITrackerTool.cxx
+  ToolsGui/QmitkIGITrackerToolGui.cxx
+  ToolsGui/QmitkIGIUltrasonixTool.cxx
+  ToolsGui/QmitkIGIUltrasonixToolGui.cxx
+  ToolsGui/QmitkIGIOpenCVDataSource.cxx
+  ToolsGui/QmitkIGIOpenCVDataSourceGui.cxx
 )
 
 SET(MOC_H_FILES

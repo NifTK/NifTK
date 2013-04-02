@@ -17,9 +17,9 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  uk_ac_ucl_cmic_imagestatistics_Activator.cpp
-  ImageStatisticsView.cpp
-  ImageStatisticsViewPreferencesPage.cpp
+  uk_ac_ucl_cmic_imagestatistics_Activator.cxx
+  ImageStatisticsView.cxx
+  ImageStatisticsViewPreferencesPage.cxx
 )
 
 set(UI_FILES

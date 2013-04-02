@@ -15,14 +15,14 @@
 FIND_PACKAGE(CUDA REQUIRED)
  
 SET(niftknvapi_SRCS
-  niftkNVAPICommon.cpp
+  niftkNVAPICommon.cxx
   glew/glew.c
-  video/compress.cpp
-  video/device.cpp
-  video/deviceimpl.cpp
-  video/frame.cpp
-  video/sdiinput.cpp
-  video/sdioutput.cpp
+  video/compress.cxx
+  video/device.cxx
+  video/deviceimpl.cxx
+  video/frame.cxx
+  video/sdiinput.cxx
+  video/sdioutput.cxx
   video/rgba2nv12.cu
 )
 

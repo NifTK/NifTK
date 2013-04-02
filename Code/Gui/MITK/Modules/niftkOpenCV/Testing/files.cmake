@@ -17,5 +17,5 @@ SET(MODULE_TESTS
 )
 
 set(MODULE_CUSTOM_TESTS
-  mitkCameraCalibrationTest.cpp
+  mitkCameraCalibrationTest.cxx
 )

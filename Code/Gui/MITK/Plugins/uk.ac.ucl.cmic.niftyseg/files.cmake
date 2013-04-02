@@ -17,8 +17,8 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  NiftySegPluginActivator.cpp
-  QmitkNiftySegView.cpp
+  NiftySegPluginActivator.cxx
+  QmitkNiftySegView.cxx
 )
 
 set(UI_FILES

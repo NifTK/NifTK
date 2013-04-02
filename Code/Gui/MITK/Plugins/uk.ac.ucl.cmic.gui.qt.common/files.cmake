@@ -13,13 +13,13 @@
 #============================================================================*/
 
 SET(SRC_CPP_FILES
-  QmitkBaseView.cpp
+  QmitkBaseView.cxx
 )
 
 SET(INTERNAL_CPP_FILES
-  CommonActivator.cpp
-  VisibilityChangedCommand.cpp
-  VisibilityChangeObserver.cpp
+  CommonActivator.cxx
+  VisibilityChangedCommand.cxx
+  VisibilityChangeObserver.cxx
 )
 
 SET(UI_FILES
