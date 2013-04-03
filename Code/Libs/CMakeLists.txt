@@ -13,7 +13,6 @@
 #============================================================================*/
 
 ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(MIDAS)
 
 IF(ITK_FOUND)
   ADD_SUBDIRECTORY(ITK)
