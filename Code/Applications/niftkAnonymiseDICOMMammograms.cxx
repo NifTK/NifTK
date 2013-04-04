@@ -45,6 +45,9 @@
 
 namespace fs = boost::filesystem;
 
+typedef itk::MetaDataDictionary DictionaryType;
+typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
 
 
 // -------------------------------------------------------------------------
@@ -99,6 +102,45 @@ std::string AddAnonymousFileSuffix( std::string fileName, std::string strAdd2Suf
   {
     return fileName;
   }
+};
+
+
+// -------------------------------------------------------------------------
+// AnonymiseTag()
+// -------------------------------------------------------------------------
+
+void AnonymiseTag( bool flgDontAnonymise, 
+		    DictionaryType &dictionary,
+		    std::string tagID,
+		    std::string newTagValue )
+{
+  if ( flgDontAnonymise )
+    return;
+
+  // Search for the tag
+  
+  std::string tagModalityValue;
+  
+  DictionaryType::ConstIterator tagItr = dictionary.Find( tagID );
+  DictionaryType::ConstIterator end = dictionary.End();
+   
+  if ( tagItr != end )
+  {
+    MetaDataStringType::ConstPointer entryvalue = 
+      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
+    
+    if ( entryvalue )
+    {
+      std::string tagModalityValue = entryvalue->GetMetaDataObjectValue();
+      
+      std::cout << "Anonymising tag (" << tagID <<  ") "
+		<< " from: " << tagModalityValue 
+		<< " to: " << newTagValue << std::endl;
+      
+      itk::EncapsulateMetaData<std::string>( dictionary, tagID, newTagValue );
+    }
+  }
+
 };
 
 
@@ -223,13 +265,10 @@ int main( int argc, char *argv[] )
     image = reader->GetOutput();
     image->DisconnectPipeline();
 
-    typedef itk::MetaDataDictionary DictionaryType;
     DictionaryType &dictionary = image->GetMetaDataDictionary();
 
 
     // Check that the modality DICOM tag is 'MG'
-
-    typedef itk::MetaDataObject< std::string > MetaDataStringType;
 
     std::string tagModalityID = "0008|0060";
     std::string tagModalityValue;
@@ -348,30 +387,13 @@ int main( int argc, char *argv[] )
 
     if ( flgAnonymiseDICOMHeader )
     {
-
-      if ( ! flgDontAnonPatientsName )                                itk::EncapsulateMetaData<std::string>( dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
-      if ( ! flgDontAnonPatientID ) 				      itk::EncapsulateMetaData<std::string>( dictionary, "0010|0020", "No Identifier"); // Patient ID                                  
-      if ( ! flgDontAnonIssuerofPatientID ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|0021", "No Issuer"    ); // Issuer of Patient ID                        
-      if ( ! flgDontAnonPatientsBirthDate ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|0030", "00-00-00"     ); // Patient's Birth Date                        
-      if ( ! flgDontAnonPatientsBirthTime ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|0032", "00:00"        ); // Patient's Birth Time                        
-      if ( ! flgDontAnonPatientsSex ) 				      itk::EncapsulateMetaData<std::string>( dictionary, "0010|0040", "M/F"          ); // Patient's Sex                               
-      if ( ! flgDontAnonPatientsInsurancePlanCodeSequence ) 	      itk::EncapsulateMetaData<std::string>( dictionary, "0010|0050", "None"         ); // Patient's Insurance Plan Code Sequence      
-      if ( ! flgDontAnonPatientsPrimaryLanguageCodeSequence ) 	      itk::EncapsulateMetaData<std::string>( dictionary, "0010|0101", "None"         ); // Patient's Primary Language Code Sequence    
-      if ( ! flgDontAnonPatientsPrimaryLanguageCodeModifierSequence ) itk::EncapsulateMetaData<std::string>( dictionary, "0010|0102", "None"         ); // Patient's Primary Language Code Modifier Seq
-      if ( ! flgDontAnonOtherPatientIDs ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1000", "None"         ); // Other Patient IDs                           
-      if ( ! flgDontAnonOtherPatientNames ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1001", "None"         ); // Other Patient Names                         
-      if ( ! flgDontAnonPatientsBirthName ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
-      if ( ! flgDontAnonPatientsAge ) 				      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1010", "0"            ); // Patient's Age                               
-      if ( ! flgDontAnonPatientsSize ) 				      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1020", "0"            ); // Patient's Size                              
-      if ( ! flgDontAnonPatientsWeight ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1030", "0"            ); // Patient's Weight                            
-      if ( ! flgDontAnonPatientsAddress ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1040", "None"         ); // Patient's Address                           
-      if ( ! flgDontAnonPatientsMothersBirthName ) 		      itk::EncapsulateMetaData<std::string>( dictionary, "0010|1060", "Anonymous"    ); // Patient's Mother's Birth Name               
-      if ( ! flgDontAnonPatientsTelephoneNumbers ) 		      itk::EncapsulateMetaData<std::string>( dictionary, "0010|2154", "None"         ); // Patient's Telephone Numbers                 
-      if ( ! flgDontAnonAdditionalPatientHistory ) 		      itk::EncapsulateMetaData<std::string>( dictionary, "0010|21b0", "None"         ); // Additional Patient History                  
-      if ( ! flgDontAnonPatientsReligiousPreference ) 		      itk::EncapsulateMetaData<std::string>( dictionary, "0010|21f0", "None"         ); // Patient's Religious Preference              
-      if ( ! flgDontAnonPatientComments ) 			      itk::EncapsulateMetaData<std::string>( dictionary, "0010|4000", "None"         ); // Patient Comments                            
-      if ( ! flgDontAnonPatientState ) 				      itk::EncapsulateMetaData<std::string>( dictionary, "0038|0500", "None"         ); // Patient State                               
-      if ( ! flgDontAnonPatientTransportArrangements ) 		      itk::EncapsulateMetaData<std::string>( dictionary, "0040|1004", "None"         ); // Patient Transport Arrangements              
+      AnonymiseTag( flgDontAnonPatientsName,  			              dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
+      AnonymiseTag( flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00-00-00"     ); // Patient's Birth Date                        
+      AnonymiseTag( flgDontAnonOtherPatientNames, 			      dictionary, "0010|1001", "None"         ); // Other Patient Names                         
+      AnonymiseTag( flgDontAnonPatientsBirthName, 			      dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
+      AnonymiseTag( flgDontAnonPatientsAddress, 			      dictionary, "0010|1040", "None"         ); // Patient's Address                           
+      AnonymiseTag( flgDontAnonPatientsMothersBirthName, 		      dictionary, "0010|1060", "Anonymous"    ); // Patient's Mother's Birth Name               
+      AnonymiseTag( flgDontAnonPatientsTelephoneNumbers, 		      dictionary, "0010|2154", "None"         ); // Patient's Telephone Numbers                 
     }
       
 

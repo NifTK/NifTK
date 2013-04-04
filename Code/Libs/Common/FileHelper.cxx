@@ -17,6 +17,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <ostream>
 #include <deque>
 #include "FileHelper.h"
 #include "EnvironmentHelper.h"
