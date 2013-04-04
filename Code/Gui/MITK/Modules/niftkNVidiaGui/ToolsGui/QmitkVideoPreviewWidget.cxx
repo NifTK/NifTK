@@ -17,20 +17,20 @@
 #include "QmitkVideoPreviewWidget.h"
 
 
- QmitkVideoPreviewWidget::QmitkVideoPreviewWidget(QWidget* parent, QGLWidget* sharewith)
+QmitkVideoPreviewWidget::QmitkVideoPreviewWidget(QWidget* parent, QGLWidget* sharewith)
   : QGLWidget(parent, sharewith),
-    textureid(0)
+    m_TextureId(0)
 {
   assert(this->isSharing());
 }
 
-void QmitkVideoPreviewWidget::set_video_dimensions(int width, int height)
+void QmitkVideoPreviewWidget::SetVideoDimensions(int width, int height)
 {
 }
 
-void QmitkVideoPreviewWidget::set_texture_id(int id)
+void QmitkVideoPreviewWidget::SetTextureId(int id)
 {
-  textureid = id;
+  m_TextureId = id;
 }
 
 void QmitkVideoPreviewWidget::initializeGL()
@@ -61,7 +61,7 @@ void QmitkVideoPreviewWidget::paintGL()
   glLoadIdentity();
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, textureid);
+  glBindTexture(GL_TEXTURE_2D, m_TextureId);
 
   glColor4f(1, 1, 1, 1);
   glBegin(GL_QUADS);

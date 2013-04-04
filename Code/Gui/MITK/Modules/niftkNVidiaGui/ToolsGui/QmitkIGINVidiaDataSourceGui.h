@@ -63,7 +63,7 @@ private:
   QmitkIGINVidiaDataSource* GetQmitkIGINVidiaDataSource() const;
 
   // init'd by Initialize()
-  QmitkVideoPreviewWidget* oglwin;
+  QmitkVideoPreviewWidget* m_OglWin;
 }; // end class
 
 #endif

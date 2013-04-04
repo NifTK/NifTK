@@ -19,7 +19,7 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 IGINVidiaDataType::IGINVidiaDataType()
-  : magic_cookie(0), sequence_number(0), gpu_arrival_time(0)
+  : m_MagicCookie(0), m_SequenceNumber(0), m_GpuArrivalTime(0)
 {
 }
 
@@ -29,17 +29,17 @@ IGINVidiaDataType::~IGINVidiaDataType()
 }
 
 
-unsigned int IGINVidiaDataType::get_sequence_number() const
+unsigned int IGINVidiaDataType::GetSequenceNumber() const
 {
-  return sequence_number;
+  return m_SequenceNumber;
 }
 
 
-void IGINVidiaDataType::set_values(unsigned int cookie, unsigned int sn, unsigned __int64 gputime)
+void IGINVidiaDataType::SetValues(unsigned int cookie, unsigned int sn, unsigned __int64 gputime)
 {
-  magic_cookie = cookie;
-  sequence_number = sn;
-  gpu_arrival_time = gputime;
+  m_MagicCookie = cookie;
+  m_SequenceNumber = sn;
+  m_GpuArrivalTime = gputime;
 }
 
 } // end namespace
