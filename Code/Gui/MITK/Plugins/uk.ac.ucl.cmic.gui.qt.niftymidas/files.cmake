@@ -13,13 +13,13 @@
 #============================================================================*/
 
 SET(SRC_CPP_FILES
-  QmitkNiftyMIDASApplication.cpp
-  QmitkNiftyMIDASAppWorkbenchAdvisor.cpp
-  QmitkNiftyMIDASWorkbenchWindowAdvisor.cpp
+  QmitkNiftyMIDASApplication.cxx
+  QmitkNiftyMIDASAppWorkbenchAdvisor.cxx
+  QmitkNiftyMIDASWorkbenchWindowAdvisor.cxx
 )
 
 SET(INTERNAL_CPP_FILES
-  QmitkNiftyMIDASApplicationPlugin.cpp
+  QmitkNiftyMIDASApplicationPlugin.cxx
 )
 
 SET(MOC_H_FILES

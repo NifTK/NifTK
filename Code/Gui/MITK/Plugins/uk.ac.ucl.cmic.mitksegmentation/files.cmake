@@ -17,10 +17,10 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  uk_ac_ucl_cmic_mitksegmentation_Activator.cpp
-  MITKSegmentationView.cpp
-  QmitkSegmentationPreferencePage.cpp
-  QmitkCreatePolygonModelAction.cpp
+  uk_ac_ucl_cmic_mitksegmentation_Activator.cxx
+  MITKSegmentationView.cxx
+  QmitkSegmentationPreferencePage.cxx
+  QmitkCreatePolygonModelAction.cxx
 )
 
 set(UI_FILES

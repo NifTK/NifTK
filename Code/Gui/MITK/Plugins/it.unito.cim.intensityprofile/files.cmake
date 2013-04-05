@@ -2,10 +2,10 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  it_unito_cim_intensityprofile_Activator.cpp
-  IntensityProfileView.cpp
-  PropagateSegmentationAlongTimeAction.cpp
-  ItkProcessObserver.cpp
+  it_unito_cim_intensityprofile_Activator.cxx
+  IntensityProfileView.cxx
+  PropagateSegmentationAlongTimeAction.cxx
+  ItkProcessObserver.cxx
 )
 
 set(UI_FILES

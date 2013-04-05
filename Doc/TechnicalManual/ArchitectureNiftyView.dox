@@ -64,7 +64,7 @@ So several Editors are providing different views of the data and can be consider
 to this, for those readers familiar with the 
 <a href="http://www.eclipse.org/home/categories/rcp.php">Eclipse RCP project</a>, and the OSGi specification concerning how the 
 workbench is assembled, the term Editor is more appropriate. When a file is selected, the file type determines what
-editor can be used to view and edit it.  For example in Eclipse, a .cpp file is known to be C++, and so a text editor
+editor can be used to view and edit it.  For example in Eclipse, a .cxx file is known to be C++, and so a text editor
 with C++ formatting is opened. In the case of NiftyView, the data is typically images, surfaces, meshes or points, all of which
 need rendering. So, both the default editor and the MIDAS Drag and Drop editor all display these types of data.
 But the concept is also naturally extensible to things like a python console.  So if a python text file was loaded 

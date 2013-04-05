@@ -13,12 +13,12 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkSingleWidgetEditor.cpp
+  QmitkSingleWidgetEditor.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  uk_ac_ucl_cmic_singlewidgeteditor_Activator.cpp
-  QmitkSingleWidgetEditorPreferencePage.cpp
+  uk_ac_ucl_cmic_singlewidgeteditor_Activator.cxx
+  QmitkSingleWidgetEditorPreferencePage.cxx
 )
 
 set(MOC_H_FILES

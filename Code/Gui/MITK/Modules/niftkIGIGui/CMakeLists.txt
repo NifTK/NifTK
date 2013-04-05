@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkIGIGui
   EXPORT_DEFINE NIFTKIGIGUI_EXPORT
   INCLUDE_DIRS ToolsGui Common DataManagement
-  DEPENDS MitkExt QmitkExt MitkIGTUI niftkMitkExt niftkIGI
+  DEPENDS MitkExt QmitkExt MitkIGTUI niftkCore niftkIGI
   PACKAGE_DEPENDS QT QVTK CTK
   QT_MODULE 
 )

@@ -26,13 +26,13 @@ MACRO(NIFTK_CREATE_APPLICATION)
   SET(MY_APP_NAME ${_APP_NAME})
 
   # The MITK_USE_MODULE sets up the include path for compile time...
-  MITK_USE_MODULE(niftkMitkExt)
+  MITK_USE_MODULE(niftkCore)
   MITK_USE_MODULE(qtsingleapplication)
   INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
   
   # ... and here we are specifying additional link time dependencies.
   SET(_link_libraries
-    niftkMitkExt
+    niftkCore
     qtsingleapplication
   )
 
@@ -79,6 +79,7 @@ MACRO(NIFTK_CREATE_APPLICATION)
   
   FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
+    SOURCES ${MY_APP_NAME}.cxx
     PLUGINS ${_include_plugins}
     EXCLUDE_PLUGINS ${_exclude_plugins}
     LINK_LIBRARIES ${_link_libraries}

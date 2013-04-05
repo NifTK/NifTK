@@ -17,9 +17,9 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  AffineTransformViewActivator.cpp
-  AffineTransformView.cpp
-  AffineTransformInteractor3D.cpp
+  AffineTransformViewActivator.cxx
+  AffineTransformView.cxx
+  AffineTransformInteractor3D.cxx
 )
 
 set(UI_FILES

@@ -13,8 +13,10 @@
 #============================================================================*/
 
 SET(MODULE_DIRS
-  niftkMitkExt
-  niftkQmitkExt
+  niftkCore
+  niftkCoreGui
+  niftkMIDAS
+  niftkMIDASGui
   XnatRest
   XnatRestWidgets
 )

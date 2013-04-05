@@ -16,9 +16,9 @@ SET(SRC_CPP_FILES
 )
 
 SET(INTERNAL_CPP_FILES
-  SurfaceExtractorView.cpp
-  SurfaceExtractorPreferencePage.cpp
-  SurfaceExtractorPluginActivator.cpp
+  SurfaceExtractorView.cxx
+  SurfaceExtractorPreferencePage.cxx
+  SurfaceExtractorPluginActivator.cxx
 )
 
 SET(UI_FILES

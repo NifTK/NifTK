@@ -13,11 +13,11 @@
 #============================================================================*/
 
 SET(SRC_CPP_FILES
-  QmitkBaseLegacyView.cpp
+  QmitkBaseLegacyView.cxx
 )
 
 SET(INTERNAL_CPP_FILES
-  CommonLegacyActivator.cpp
+  CommonLegacyActivator.cxx
 )
 
 SET(UI_FILES

@@ -14,7 +14,7 @@
 
 # tests with no extra command line parameter
 SET(MODULE_TESTS
-  mitkIGIDataSourceTest.cpp
+  mitkIGIDataSourceTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

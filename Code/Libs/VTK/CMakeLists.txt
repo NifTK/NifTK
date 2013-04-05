@@ -13,7 +13,7 @@
 #============================================================================*/
 
 SET(niftkVTK_SRCS
-  Common/vtkFunctions.cpp
+  Common/vtkFunctions.cxx
   niftkVTKIterativeClosestPoint.cxx
   niftkvtk4PointsReader.cxx
 )

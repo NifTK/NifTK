@@ -16,12 +16,12 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  NiftyRegPluginActivator.cpp
-  QmitkNiftyRegView.cpp
-  niftiImageToMitk.cpp
-  RegistrationExecution.cpp
-  RegAladinParameters.cpp
-  NiftyRegCommon.cpp
+  NiftyRegPluginActivator.cxx
+  QmitkNiftyRegView.cxx
+  niftiImageToMitk.cxx
+  RegistrationExecution.cxx
+  RegAladinParameters.cxx
+  NiftyRegCommon.cxx
 )
 
 set(UI_FILES
