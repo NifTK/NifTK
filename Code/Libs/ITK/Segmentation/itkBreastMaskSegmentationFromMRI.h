@@ -453,7 +453,7 @@ protected:
 				       const int splineOrder, 
 				       const int numOfControlPoints,
 				       const int numOfLevels,
-               bool correctSurfaceOffest );
+				       bool correctSurfaceOffest );
 
 
 private:
