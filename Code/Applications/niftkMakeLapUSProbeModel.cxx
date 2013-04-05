@@ -409,7 +409,7 @@ int main(int argc, char** argv)
           {
             for (int j = -dotRadiusInPixels; j <= dotRadiusInPixels; j++)
             {
-              double distance = sqrt(i*i + j*j);
+              double distance = sqrt(static_cast<double>(i*i + j*j));
               if (distance < dotRadiusInPixels)
               {
                 if (i < 0)
