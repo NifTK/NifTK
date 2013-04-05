@@ -17,15 +17,30 @@
 namespace mitk
 {
 
+
+//-----------------------------------------------------------------------------
 ITKRegionParametersDataNodeProperty::ITKRegionParametersDataNodeProperty()
 {
   this->Identity();
 }
 
+
+//-----------------------------------------------------------------------------
+ITKRegionParametersDataNodeProperty::ITKRegionParametersDataNodeProperty(const ITKRegionParametersDataNodeProperty& other)
+: Superclass(other)
+, m_IsValid(other.m_IsValid)
+{
+  m_Parameters = other.GetITKRegionParameters();
+}
+
+
+//-----------------------------------------------------------------------------
 ITKRegionParametersDataNodeProperty::~ITKRegionParametersDataNodeProperty()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void ITKRegionParametersDataNodeProperty::Identity()
 {
   m_IsValid = false;
@@ -38,6 +53,8 @@ void ITKRegionParametersDataNodeProperty::Identity()
   m_Parameters[5] = 0;
 }
 
+
+//-----------------------------------------------------------------------------
 void ITKRegionParametersDataNodeProperty::SetSize(int x, int y, int z)
 {
   m_Parameters[0] = x;
@@ -45,6 +62,8 @@ void ITKRegionParametersDataNodeProperty::SetSize(int x, int y, int z)
   m_Parameters[2] = z;
 }
 
+
+//-----------------------------------------------------------------------------
 bool ITKRegionParametersDataNodeProperty::HasVolume() const
 {
   if (m_Parameters[0] > 0 && m_Parameters[1] > 0 && m_Parameters[2] > 0)
@@ -57,11 +76,15 @@ bool ITKRegionParametersDataNodeProperty::HasVolume() const
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool ITKRegionParametersDataNodeProperty::IsValid() const
 {
   return m_IsValid;
 }
 
+
+//-----------------------------------------------------------------------------
 void ITKRegionParametersDataNodeProperty::SetValid(bool valid)
 {
   if (valid != m_IsValid)
@@ -71,11 +94,15 @@ void ITKRegionParametersDataNodeProperty::SetValid(bool valid)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 const ITKRegionParametersDataNodeProperty::ParametersType& ITKRegionParametersDataNodeProperty::GetITKRegionParameters() const
 {
   return m_Parameters;
 }
 
+
+//-----------------------------------------------------------------------------
 void ITKRegionParametersDataNodeProperty::SetITKRegionParameters(const ParametersType& parameters)
 {
   if (m_Parameters != parameters)
@@ -85,6 +112,8 @@ void ITKRegionParametersDataNodeProperty::SetITKRegionParameters(const Parameter
   }
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ITKRegionParametersDataNodeProperty::GetValueAsString() const
 {
   std::stringstream myStr;
@@ -99,6 +128,8 @@ std::string ITKRegionParametersDataNodeProperty::GetValueAsString() const
   return myStr.str();
 }
 
+
+//-----------------------------------------------------------------------------
 bool ITKRegionParametersDataNodeProperty::IsEqual(const BaseProperty& property) const
 {
   const Self *other = dynamic_cast<const Self*>(&property);
@@ -111,6 +142,8 @@ bool ITKRegionParametersDataNodeProperty::IsEqual(const BaseProperty& property) 
   return (m_Parameters == otherParameters && m_IsValid == other->IsValid());
 }
 
+
+//-----------------------------------------------------------------------------
 bool ITKRegionParametersDataNodeProperty::Assign(const BaseProperty& property)
 {
   const Self *other = dynamic_cast<const Self*>(&property);
@@ -122,6 +155,22 @@ bool ITKRegionParametersDataNodeProperty::Assign(const BaseProperty& property)
   this->m_IsValid = other->IsValid();
 
   return true;
+}
+
+
+//-----------------------------------------------------------------------------
+ITKRegionParametersDataNodeProperty::Pointer ITKRegionParametersDataNodeProperty::Clone() const
+{
+  ITKRegionParametersDataNodeProperty::Pointer result = static_cast<Self*>(this->InternalClone().GetPointer());
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+itk::LightObject::Pointer ITKRegionParametersDataNodeProperty::InternalClone() const
+{
+  itk::LightObject::Pointer result(new Self(*this));
+  return result;
 }
 
 } // end namespace
