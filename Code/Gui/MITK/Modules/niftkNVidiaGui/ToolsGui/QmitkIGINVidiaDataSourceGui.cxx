@@ -26,7 +26,7 @@ NIFTK_IGISOURCE_GUI_MACRO(NIFTKNVIDIAGUI_EXPORT, QmitkIGINVidiaDataSourceGui, "I
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSourceGui::QmitkIGINVidiaDataSourceGui()
-  : oglwin(0)
+  : m_OglWin(0)
 {
   // To do.
 }
@@ -47,7 +47,7 @@ QmitkIGINVidiaDataSourceGui::~QmitkIGINVidiaDataSourceGui()
 
   // FIXME: not sure how to properly cleanup qt
   
-  delete oglwin;
+  delete m_OglWin;
 }
 
 
@@ -73,17 +73,17 @@ void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
   {
-    if (oglwin == 0)
+    if (m_OglWin == 0)
     {
       // query for ogl context, etc
       // this should never fail, even if there's no sdi hardware
-      QGLWidget* capturecontext = source->get_capturecontext();
+      QGLWidget* capturecontext = source->GetCaptureContext();
       assert(capturecontext != 0);
 
       // FIXME: one for each channel?
-      oglwin = new QmitkVideoPreviewWidget(this, capturecontext);
-      previewgridlayout->addWidget(oglwin);
-      oglwin->show();
+      m_OglWin = new QmitkVideoPreviewWidget(this, capturecontext);
+      previewgridlayout->addWidget(m_OglWin);
+      m_OglWin->show();
 
       connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
     }
@@ -102,9 +102,9 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
   {
-    int width = source->get_capture_width();
-    int height = source->get_capture_height();
-    float rr = source->get_refresh_rate();
+    int width = source->GetCaptureWidth();
+    int height = source->GetCaptureHeight();
+    float rr = source->GetRefreshRate();
 
     std::ostringstream    s;
     s << width << " x " << height << " @ " << rr << " Hz";
@@ -127,7 +127,7 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
         QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
         if (g)
         {
-          g->set_texture_id(source->get_texture_id(0));
+          g->SetTextureId(source->GetTextureId(0));
           g->updateGL();
         }
       }

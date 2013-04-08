@@ -316,13 +316,13 @@ public:
 
 
 // note the trailing space
-const char* QmitkIGINVidiaDataSource::NODE_NAME = "NVIDIA SDI stream ";
+const char* QmitkIGINVidiaDataSource::s_NODE_NAME = "NVIDIA SDI stream ";
 
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
-, pimpl(new QmitkIGINVidiaDataSourceImpl)
+, m_Pimpl(new QmitkIGINVidiaDataSourceImpl)
 {
   this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
@@ -333,7 +333,7 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
   for (int i = 0; i < 4; ++i)
   {
     std::ostringstream  nodename;
-    nodename << NODE_NAME << i;
+    nodename << s_NODE_NAME << i;
 
     mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
   }
@@ -347,7 +347,7 @@ QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
 {
   this->StopCapturing();
 
-  delete pimpl;
+  delete m_Pimpl;
 }
 
 
@@ -387,75 +387,78 @@ bool QmitkIGINVidiaDataSource::IsCapturing()
   return result;
 }
 
-
-std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgb_image()
+/*
+std::pair<IplImage*, int> QmitkIGINVidiaDataSource::GetRgbImage()
 {
   // i dont like this way of unstructured locking
-  pimpl->lock.lock();
+  m_Pimpl->lock.lock();
   // but the waitcondition stuff doesnt work otherwise
 
-  std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
-  int                   streamcount = pimpl->get_stream_count();
+  std::pair<int, int>   imgdim = m_Pimpl->get_capture_dimensions();
+  int                   streamcount = m_Pimpl->get_stream_count();
 
   IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second * streamcount), IPL_DEPTH_8U, 3);
   // mark layout as rgb instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGB\0", 4);
 
-  pimpl->copyoutasap = frame;
+  m_Pimpl->copyoutasap = frame;
 
   // this smells like deadlock...
-  pimpl->copyoutmutex.lock();
+  m_Pimpl->copyoutmutex.lock();
   // until here, capture thread would be stuck waiting for the lock
-  pimpl->lock.unlock();
+  m_Pimpl->lock.unlock();
 
   // FIXME: we should bump m_GrabbingThread so it wakes up early from its message loop sleep
   //        otherwise we are locking in on its refresh rate
 
-  pimpl->copyoutfinished.wait(&pimpl->copyoutmutex);
-  pimpl->copyoutmutex.unlock();
+  m_Pimpl->copyoutfinished.wait(&m_Pimpl->copyoutmutex);
+  m_Pimpl->copyoutmutex.unlock();
   return std::make_pair(frame, streamcount);
 }
+*/
 
-std::pair<IplImage*, int> QmitkIGINVidiaDataSource::get_rgba_image(unsigned int sequencenumber)
+//-----------------------------------------------------------------------------
+std::pair<IplImage*, int> QmitkIGINVidiaDataSource::GetRgbaImage(unsigned int sequencenumber)
 {
   // i dont like this way of unstructured locking
-  pimpl->lock.lock();
+  m_Pimpl->lock.lock();
   // but the waitcondition stuff doesnt work otherwise
 
   // check if we ever have received any frames yet
-  if (pimpl->sn2slot_map.empty())
+  if (m_Pimpl->sn2slot_map.empty())
   {
-    pimpl->lock.unlock();
+    m_Pimpl->lock.unlock();
     return std::make_pair((IplImage*) 0, 0);
   }
 
-  std::pair<int, int>   imgdim = pimpl->get_capture_dimensions();
-  int                   streamcount = pimpl->get_stream_count();
+  std::pair<int, int>   imgdim = m_Pimpl->get_capture_dimensions();
+  int                   streamcount = m_Pimpl->get_stream_count();
 
   IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second * streamcount), IPL_DEPTH_8U, 4);
   // mark layout as rgba instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGBA", 4);
 
-  pimpl->copyoutasap = frame;
-  pimpl->copyoutslot = pimpl->sn2slot_map.lower_bound(sequencenumber)->second;
+  m_Pimpl->copyoutasap = frame;
+  m_Pimpl->copyoutslot = m_Pimpl->sn2slot_map.lower_bound(sequencenumber)->second;
 
   // this smells like deadlock...
-  pimpl->copyoutmutex.lock();
+  m_Pimpl->copyoutmutex.lock();
   // until here, capture thread would be stuck waiting for the lock
-  pimpl->lock.unlock();
+  m_Pimpl->lock.unlock();
 
   // FIXME: we should bump m_GrabbingThread so it wakes up early from its message loop sleep
   //        otherwise we are locking in on its refresh rate
 
-  pimpl->copyoutfinished.wait(&pimpl->copyoutmutex);
-  pimpl->copyoutmutex.unlock();
+  m_Pimpl->copyoutfinished.wait(&m_Pimpl->copyoutmutex);
+  m_Pimpl->copyoutmutex.unlock();
   return std::make_pair(frame, streamcount);
 }
+
 
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::GrabData()
 {
-  assert(pimpl != 0);
+  assert(m_Pimpl != 0);
 
   assert(m_GrabbingThread == (QmitkIGILocalDataSourceGrabbingThread*) QThread::currentThread());
 
@@ -463,39 +466,39 @@ void QmitkIGINVidiaDataSource::GrabData()
   // FIXME: currently the grabbing thread's sole purpose is to call into this method
   //        so we could just block it here with a while loop and do our capture stuff
 
-  QMutexLocker    l(&pimpl->lock);
+  QMutexLocker    l(&m_Pimpl->lock);
 
-  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::FAILED)
+  if (m_Pimpl->current_state == QmitkIGINVidiaDataSourceImpl::FAILED)
   {
     return;
   }
-  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::DEAD)
+  if (m_Pimpl->current_state == QmitkIGINVidiaDataSourceImpl::DEAD)
   {
     return;
   }
 
-  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::PRE_INIT)
+  if (m_Pimpl->current_state == QmitkIGINVidiaDataSourceImpl::PRE_INIT)
   {
-    pimpl->oglwin->makeCurrent();
-    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+    m_Pimpl->oglwin->makeCurrent();
+    m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
   }
 
   // make sure nobody messes around with contexts
-  assert(QGLContext::currentContext() == pimpl->oglwin->context());
+  assert(QGLContext::currentContext() == m_Pimpl->oglwin->context());
 
-  if (pimpl->current_state == QmitkIGINVidiaDataSourceImpl::HW_ENUM)
+  if (m_Pimpl->current_state == QmitkIGINVidiaDataSourceImpl::HW_ENUM)
   {
     try
     {
       // libvideo does its own glew init, so we can get cracking straight away
-      pimpl->check_video();
+      m_Pimpl->check_video();
 
       // once we have an input setup
       //  grab at least one frame, there seems to be some glitch in the driver
       //  where has_frame() always returns false
-      if (pimpl->sdiin)
+      if (m_Pimpl->sdiin)
       {
-        pimpl->sdiin->capture();
+        m_Pimpl->sdiin->capture();
       }
     }
     // getting an exception means something is broken
@@ -504,73 +507,73 @@ void QmitkIGINVidiaDataSource::GrabData()
     catch (const std::exception& e)
     {
       this->SetStatus(std::string("Failed: ") + e.what());
-      pimpl->current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
+      m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
       return;
     }
     catch (...)
     {
       this->SetStatus("Failed");
-      pimpl->current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
+      m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
       return;
     }
   }
 
-  if (!pimpl->has_hardware())
+  if (!m_Pimpl->has_hardware())
   {
     this->SetStatus("No SDI hardware");
     // no hardware then nothing to do
-    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::DEAD;
+    m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::DEAD;
     return;
   }
 
-  if (!pimpl->has_input())
+  if (!m_Pimpl->has_input())
   {
     this->SetStatus("No input signal");
     // no signal, try again next round
-    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+    m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
     return;
   }
 
   // if we get to here then we should be good to go!
-  pimpl->current_state = QmitkIGINVidiaDataSourceImpl::RUNNING;
+  m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::RUNNING;
 
   try
   {
-    bool hasframe = pimpl->sdiin->has_frame();
+    bool hasframe = m_Pimpl->sdiin->has_frame();
     // note: has_frame() will not throw an exception in case setup is broken
     
     if (hasframe)
     {
       // note: capture() will block for a frame to arrive
       // that's why we have hasframe above
-      video::FrameInfo fi = pimpl->sdiin->capture();
+      video::FrameInfo fi = m_Pimpl->sdiin->capture();
 
       // keep the most recent set of texture ids around
       // this is mainly for the preview window
       for (int i = 0; i < 4; ++i)
-        pimpl->textureids[i] = pimpl->sdiin->get_texture_id(i, -1);
+        m_Pimpl->textureids[i] = m_Pimpl->sdiin->get_texture_id(i, -1);
 
-      int newest_slot = pimpl->sdiin->get_current_ringbuffer_slot();
+      int newest_slot = m_Pimpl->sdiin->get_current_ringbuffer_slot();
       // whatever we had in this slot is now obsolete
-      std::map<int, unsigned int>::iterator oldsni = pimpl->slot2sn_map.find(newest_slot);
-      if (oldsni != pimpl->slot2sn_map.end())
+      std::map<int, unsigned int>::iterator oldsni = m_Pimpl->slot2sn_map.find(newest_slot);
+      if (oldsni != m_Pimpl->slot2sn_map.end())
       {
-        std::map<unsigned int, int>::iterator oldsloti = pimpl->sn2slot_map.find(oldsni->second);
-        if (oldsloti != pimpl->sn2slot_map.end())
+        std::map<unsigned int, int>::iterator oldsloti = m_Pimpl->sn2slot_map.find(oldsni->second);
+        if (oldsloti != m_Pimpl->sn2slot_map.end())
         {
-          pimpl->sn2slot_map.erase(oldsloti);
+          m_Pimpl->sn2slot_map.erase(oldsloti);
         }
-        pimpl->slot2sn_map.erase(oldsni);
+        m_Pimpl->slot2sn_map.erase(oldsni);
       }
-      pimpl->slot2sn_map[newest_slot] = fi.sequence_number;
-      pimpl->sn2slot_map[fi.sequence_number] = newest_slot;
+      m_Pimpl->slot2sn_map[newest_slot] = fi.sequence_number;
+      m_Pimpl->sn2slot_map[fi.sequence_number] = newest_slot;
 
       igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
 
       // Aim of this method is to do something like when a NiftyLink message comes in.
       mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
 
-      wrapper->set_values(1, fi.sequence_number, fi.arrival_time);
+      wrapper->SetValues(1, fi.sequence_number, fi.arrival_time);
 
       wrapper->SetDataSource("QmitkIGINVidiaDataSource");
       wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
@@ -589,33 +592,34 @@ void QmitkIGINVidiaDataSource::GrabData()
   catch (...)
   {
     this->SetStatus("Glitched out");
-    pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+    m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
     return;
   }
 
   // dont put the copy-out bits in the has_frame condition
   // otherwise we are again locking the datastorage-update-thread onto the sdi refresh rate
-  if (pimpl->copyoutasap)
+  if (m_Pimpl->copyoutasap)
   {
-    if (pimpl->copyoutasap->nChannels == 3)
+    if (m_Pimpl->copyoutasap->nChannels == 3)
     {
-      pimpl->readback_rgb(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+      m_Pimpl->readback_rgb(m_Pimpl->copyoutasap->imageData, m_Pimpl->copyoutasap->widthStep, m_Pimpl->copyoutasap->width, m_Pimpl->copyoutasap->height);
     }
     else
-    if (pimpl->copyoutasap->nChannels == 4)
+    if (m_Pimpl->copyoutasap->nChannels == 4)
     {
-      pimpl->readback_rgba(pimpl->copyoutasap->imageData, pimpl->copyoutasap->widthStep, pimpl->copyoutasap->width, pimpl->copyoutasap->height);
+      m_Pimpl->readback_rgba(m_Pimpl->copyoutasap->imageData, m_Pimpl->copyoutasap->widthStep, m_Pimpl->copyoutasap->width, m_Pimpl->copyoutasap->height);
     }
     else
     {
       assert(false);
     }
-    pimpl->copyoutasap = 0;
-    pimpl->copyoutfinished.wakeOne();
+    m_Pimpl->copyoutasap = 0;
+    m_Pimpl->copyoutfinished.wakeOne();
   }
 }
 
 
+//-----------------------------------------------------------------------------
 bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 {
   bool result = true;
@@ -624,7 +628,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   if (dataType.IsNotNull())
   {
     // one massive image, with all streams stacked in
-    std::pair<IplImage*, int> frame = get_rgba_image(dataType->get_sequence_number());
+    std::pair<IplImage*, int> frame = GetRgbaImage(dataType->GetSequenceNumber());
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
     if (frame.first)
     {
@@ -633,7 +637,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
       for (int i = 0; i < streamcount; ++i)
       {
         std::ostringstream  nodename;
-        nodename << NODE_NAME << i;
+        nodename << s_NODE_NAME << i;
 
         mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
         if (node.IsNull())
@@ -725,46 +729,58 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
   return success;
 }
 
-int QmitkIGINVidiaDataSource::get_number_of_streams()
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSource::GetNumberOfStreams()
 {
-    return 0;
+  return 0;
 }
 
-int QmitkIGINVidiaDataSource::get_capture_width()
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSource::GetCaptureWidth()
 {
-  if (pimpl == 0)
+  if (m_Pimpl == 0)
     return 0;
 
-  video::StreamFormat format = pimpl->get_format();
+  video::StreamFormat format = m_Pimpl->get_format();
   return format.get_width();
 }
 
-int QmitkIGINVidiaDataSource::get_capture_height()
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSource::GetCaptureHeight()
 {
-  if (pimpl == 0)
+  if (m_Pimpl == 0)
     return 0;
 
-  video::StreamFormat format = pimpl->get_format();
+  video::StreamFormat format = m_Pimpl->get_format();
   return format.get_height();
 }
 
-int QmitkIGINVidiaDataSource::get_refresh_rate()
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSource::GetRefreshRate()
 {
-  if (pimpl == 0)
+  if (m_Pimpl == 0)
     return 0;
 
-  video::StreamFormat format = pimpl->get_format();
+  video::StreamFormat format = m_Pimpl->get_format();
   return format.get_refreshrate();
 }
 
-QGLWidget* QmitkIGINVidiaDataSource::get_capturecontext()
+
+//-----------------------------------------------------------------------------
+QGLWidget* QmitkIGINVidiaDataSource::GetCaptureContext()
 {
-    assert(pimpl != 0);
-    assert(pimpl->oglshare != 0);
-    return pimpl->oglshare;
+    assert(m_Pimpl != 0);
+    assert(m_Pimpl->oglshare != 0);
+    return m_Pimpl->oglshare;
 }
 
-int QmitkIGINVidiaDataSource::get_texture_id(int stream)
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 {
-    return pimpl->get_texture_id(stream);
+    return m_Pimpl->get_texture_id(stream);
 }
