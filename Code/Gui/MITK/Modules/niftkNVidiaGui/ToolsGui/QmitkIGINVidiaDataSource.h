@@ -66,11 +66,6 @@ public:
   bool IsCapturing();
 
 
-protected:
-  virtual void GrabData();
-  virtual bool Update(mitk::IGIDataType* data);
-
-
 public:
   // to be used to share with the preview window, for example
   QGLWidget* GetCaptureContext();
@@ -87,6 +82,10 @@ public:
   // note: input streams are stacked! all streams transfered at the same time
 //std::pair<IplImage*, int> GetRgbImage();
   std::pair<IplImage*, int> GetRgbaImage(unsigned int sequencenumber);
+
+protected:
+  virtual void GrabData();
+  virtual bool Update(mitk::IGIDataType* data);
 
 signals:
 
