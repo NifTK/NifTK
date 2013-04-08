@@ -66,6 +66,11 @@ Website : http://opencv.willowgarage.com/wiki/
 Purpose : Computer Vision
 License : Doc/Licences/OpenCV.txt (BSD 2-clause)
 
+Library : Aruco
+Website : http://www.uco.es/investiga/grupos/ava/node/26
+Purpose : AR marker tracking
+License : Doc/Licenses/Aruco.txt (BSD license)
+
 Library : MITK
 Website : http://www.mitk.org
 Purpose : Application framework, common medical imaging specific classes.
