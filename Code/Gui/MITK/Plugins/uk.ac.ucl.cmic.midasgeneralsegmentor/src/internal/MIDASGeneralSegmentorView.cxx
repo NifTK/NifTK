@@ -134,24 +134,29 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
   if (!m_GeneralControls)
   {
     m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(0,0,0,0);
-    m_Layout->setSpacing(0);
-    m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 10);
-    m_Layout->setRowStretch(2, 0);
-    m_Layout->setRowStretch(3, 0);
-
-    m_ContainerForControlsWidget = new QWidget(parent);
-
-    m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget();
-    m_GeneralControls->setupUi(m_ContainerForControlsWidget);
+    m_Layout->setContentsMargins(9, 9, 9, 0);
+    m_Layout->setSpacing(6);
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
+
+    m_ContainerForControlsWidget = new QWidget(parent);
+    m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
+
+    m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(m_ContainerForControlsWidget);
+//    m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(parent);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
     m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
     m_Layout->addWidget(m_ContainerForToolWidget,             2, 0);
     m_Layout->addWidget(m_ContainerForControlsWidget,         3, 0);
+//    m_Layout->addWidget(m_GeneralControls, 3, 0);
+
+    m_ContainerForSegmentationViewWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+    m_Layout->setRowStretch(0, 0);
+    m_Layout->setRowStretch(1, 4);
+    m_Layout->setRowStretch(2, 0);
+    m_Layout->setRowStretch(3, 0);
 
     m_GeneralControls->SetEnableThresholdingWidgets(false);
     m_GeneralControls->SetEnableThresholdingCheckbox(false);

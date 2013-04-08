@@ -358,7 +358,7 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnClearButtonClicked()
+void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
@@ -417,6 +417,9 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
+    m_Layout->setMargin(9);
+    m_Layout->setSpacing(6);
+
     m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
     m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
     m_Layout->addWidget(m_ContainerForToolWidget,             2, 0);
@@ -455,7 +458,7 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
     connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), this, SLOT(OnTabChanged(int)));
     connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), this, SLOT(OnOKButtonClicked()));
     connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
-    connect(m_MorphologicalControls, SIGNAL(ClearButtonClicked()), this, SLOT(OnClearButtonClicked()));
+    connect(m_MorphologicalControls, SIGNAL(RestartButtonClicked()), this, SLOT(OnRestartButtonClicked()));
   }
 }
 

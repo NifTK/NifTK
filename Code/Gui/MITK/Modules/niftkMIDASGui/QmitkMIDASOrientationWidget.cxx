@@ -57,11 +57,8 @@ bool QmitkMIDASOrientationWidget::BlockSignals(bool block)
 {
   bool wasBlocked = m_AxialRadioButton->signalsBlocked();
   m_AxialRadioButton->blockSignals(block);
-  m_AxialLabel->blockSignals(block);
   m_CoronalRadioButton->blockSignals(block);
-  m_CoronalLabel->blockSignals(block);
   m_SagittalRadioButton->blockSignals(block);
-  m_SagittalLabel->blockSignals(block);
   m_OtherRadioButton->blockSignals(block);
   m_OtherOrientationComboBox->blockSignals(block);
   return wasBlocked;
@@ -70,11 +67,8 @@ bool QmitkMIDASOrientationWidget::BlockSignals(bool block)
 void QmitkMIDASOrientationWidget::SetEnabled(bool enabled)
 {
   m_AxialRadioButton->setEnabled(enabled);
-  m_AxialLabel->setEnabled(enabled);
   m_CoronalRadioButton->setEnabled(enabled);
-  m_CoronalLabel->setEnabled(enabled);
   m_SagittalRadioButton->setEnabled(enabled);
-  m_SagittalLabel->setEnabled(enabled);
   m_OtherRadioButton->setEnabled(enabled);
   m_OtherOrientationComboBox->setEnabled(enabled);
 }

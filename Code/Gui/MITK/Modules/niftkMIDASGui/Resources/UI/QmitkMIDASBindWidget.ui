@@ -6,15 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>125</width>
-    <height>143</height>
+    <width>112</width>
+    <height>79</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
     <widget class="QCheckBox" name="m_BindNoneCheckBox">
      <property name="toolTip">
       <string>unbind windows</string>
@@ -24,7 +30,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item>
     <widget class="QCheckBox" name="m_BindCursorsCheckBox">
      <property name="toolTip">
       <string>bind cursors across multiple views</string>
@@ -34,7 +40,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item>
     <widget class="QCheckBox" name="m_BindMagnificationCheckBox">
      <property name="toolTip">
       <string>bind magnification across multiple views</string>
@@ -44,7 +50,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item>
     <widget class="QCheckBox" name="m_BindGeometryCheckBox">
      <property name="toolTip">
       <string>bind magnification across multiple views</string>
