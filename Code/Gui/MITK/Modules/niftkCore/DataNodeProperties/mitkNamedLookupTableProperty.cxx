@@ -16,26 +16,57 @@
 
 namespace mitk {
 
+//-----------------------------------------------------------------------------
 NamedLookupTableProperty::NamedLookupTableProperty()
 : Superclass()
 , m_Name("n/a")
 {
 }
 
+
+//-----------------------------------------------------------------------------
+NamedLookupTableProperty::NamedLookupTableProperty(const NamedLookupTableProperty& other)
+: Superclass(other)
+, m_Name(other.m_Name)
+{
+
+}
+
+
+//-----------------------------------------------------------------------------
 NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut)
 : Superclass(lut)
 , m_Name(name)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 NamedLookupTableProperty::~NamedLookupTableProperty()
 {
 }
 
-std::string
-NamedLookupTableProperty::GetValueAsString() const
+
+//-----------------------------------------------------------------------------
+std::string NamedLookupTableProperty::GetValueAsString() const
 {
   return m_Name;
+}
+
+
+//-----------------------------------------------------------------------------
+NamedLookupTableProperty::Pointer NamedLookupTableProperty::Clone() const
+{
+  NamedLookupTableProperty::Pointer result = static_cast<Self*>(this->InternalClone().GetPointer());
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+itk::LightObject::Pointer NamedLookupTableProperty::InternalClone() const
+{
+  itk::LightObject::Pointer result(new Self(*this));
+  return result;
 }
 
 } // namespace mitk
