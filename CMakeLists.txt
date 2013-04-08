@@ -215,6 +215,7 @@ SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim" FORCE)
 SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
+SET(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of ARUCO" FORCE)
 SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 SET(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 SET(NIFTK_LOCATION_DATA_SVN "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING "Version of NifTKData in svn" FORCE)
@@ -236,6 +237,7 @@ SET(NIFTK_LOCATION_NIFTYREC "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nift
 SET(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySim-${NIFTK_VERSION_NIFTYSIM}.tar.gz" CACHE STRING  "Location of NiftyRec" FORCE)
 SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
 SET(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
+SET(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -283,6 +285,7 @@ MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_VERSION_CGAL)
 MARK_AS_ADVANCED(NIFTK_VERSION_SEM)
+MARK_AS_ADVANCED(NIFTK_VERSION_ARUCO)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_GIT)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_SVN)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_TAR)
@@ -303,6 +306,7 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CGAL)
 MARK_AS_ADVANCED(NIFTK_LOCATION_SEM)
+MARK_AS_ADVANCED(NIFTK_LOCATION_ARUCO)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
 MARK_AS_ADVANCED(BUILD_SLS_TESTING)
@@ -497,6 +501,15 @@ MESSAGE("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 
 ######################################################################
+# Add additional entries to the CMAKE_MODULE_PATH, now all externals
+# are already built.
+######################################################################
+SET(CMAKE_MODULE_PATH
+    ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/ARUCO/lib/cmake
+    ${CMAKE_MODULE_PATH}
+   )
+
+######################################################################
 # Check each GUI application to set up MACOSX_BUNDLE_NAMES
 # as libraries are copied into each bundle.
 ######################################################################
@@ -640,16 +653,22 @@ IF (BUILD_IGI)
     MESSAGE("Found NiftyLink")
     INCLUDE(${NiftyLink_USE_FILE})
     ADD_DEFINITIONS(-DBUILD_IGI)
-    MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
-    SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
-  ELSE (NOT NiftyLink_FOUND)
-    MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
-    SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
-  ENDIF(NiftyLink_FOUND)
-ELSE (BUILD_IGI)
-  MESSAGE("BUILD_IGI=OFF, so turning surgical guidance plugin OFF.")
+  ENDIF()
+
+  FIND_PACKAGE(aruco)
+  IF(aruco_FOUND)
+    MESSAGE("Found ARUCO")
+    LINK_DIRECTORIES(${ARUCO_DIR}/lib)
+    INCLUDE_DIRECTORIES(${ARUCO_DIR}/include)
+  ENDIF()
+ENDIF()
+
+IF(BUILD_IGI AND NiftyLink_FOUND AND aruco_FOUND)
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
+ELSE()
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
-ENDIF (BUILD_IGI)
+  SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
+ENDIF()
 
 ######################################################################
 # Find FFTW.
