@@ -417,6 +417,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::GetRgbImage()
 }
 */
 
+//-----------------------------------------------------------------------------
 std::pair<IplImage*, int> QmitkIGINVidiaDataSource::GetRgbaImage(unsigned int sequencenumber)
 {
   // i dont like this way of unstructured locking
@@ -452,6 +453,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::GetRgbaImage(unsigned int se
   m_Pimpl->copyoutmutex.unlock();
   return std::make_pair(frame, streamcount);
 }
+
 
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::GrabData()
@@ -617,6 +619,7 @@ void QmitkIGINVidiaDataSource::GrabData()
 }
 
 
+//-----------------------------------------------------------------------------
 bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 {
   bool result = true;
@@ -726,11 +729,15 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
   return success;
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetNumberOfStreams()
 {
   return 0;
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetCaptureWidth()
 {
   if (m_Pimpl == 0)
@@ -740,6 +747,8 @@ int QmitkIGINVidiaDataSource::GetCaptureWidth()
   return format.get_width();
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetCaptureHeight()
 {
   if (m_Pimpl == 0)
@@ -749,6 +758,8 @@ int QmitkIGINVidiaDataSource::GetCaptureHeight()
   return format.get_height();
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetRefreshRate()
 {
   if (m_Pimpl == 0)
@@ -758,6 +769,8 @@ int QmitkIGINVidiaDataSource::GetRefreshRate()
   return format.get_refreshrate();
 }
 
+
+//-----------------------------------------------------------------------------
 QGLWidget* QmitkIGINVidiaDataSource::GetCaptureContext()
 {
     assert(m_Pimpl != 0);
@@ -765,6 +778,8 @@ QGLWidget* QmitkIGINVidiaDataSource::GetCaptureContext()
     return m_Pimpl->oglshare;
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 {
     return m_Pimpl->get_texture_id(stream);

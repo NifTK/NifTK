@@ -17,6 +17,7 @@
 #include "QmitkVideoPreviewWidget.h"
 
 
+//-----------------------------------------------------------------------------
 QmitkVideoPreviewWidget::QmitkVideoPreviewWidget(QWidget* parent, QGLWidget* sharewith)
   : QGLWidget(parent, sharewith),
     m_TextureId(0)
@@ -24,15 +25,21 @@ QmitkVideoPreviewWidget::QmitkVideoPreviewWidget(QWidget* parent, QGLWidget* sha
   assert(this->isSharing());
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkVideoPreviewWidget::SetVideoDimensions(int width, int height)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkVideoPreviewWidget::SetTextureId(int id)
 {
   m_TextureId = id;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkVideoPreviewWidget::initializeGL()
 {
   glDisable(GL_DEPTH_TEST);
@@ -41,6 +48,8 @@ void QmitkVideoPreviewWidget::initializeGL()
   assert(glGetError() == GL_NO_ERROR);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkVideoPreviewWidget::resizeGL(int width, int height)
 {
   // dimensions can be smaller than zero (which would trigger an opengl error)
@@ -51,6 +60,8 @@ void QmitkVideoPreviewWidget::resizeGL(int width, int height)
   assert(glGetError() == GL_NO_ERROR);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkVideoPreviewWidget::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
