@@ -155,6 +155,10 @@ int ApplicationMain(int argc, char** argv,
   // many global static initializers. It also helps if dependent libraries have weird static
   // initialization methods and/or missing de-initialization code.
   sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "liborg_mitk_gui_qt_ext,libCTKDICOMCore:0.1");
+#else
+  // On Windows, preload the PlanarFigure.dll, otherwise there's some weird unload cycle
+  // that crashes our process.
+  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "PlanarFigure");
 #endif
 
   // VTK errors cause problem on windows, as it brings up an annoying error window.
