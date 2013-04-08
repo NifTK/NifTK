@@ -6,405 +6,319 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>510</width>
-    <height>705</height>
+    <width>547</width>
+    <height>316</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Midas Morphological Segmentor</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>0</number>
+    <number>6</number>
    </property>
    <property name="margin">
-    <number>2</number>
+    <number>0</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QTabWidget" name="m_TabWidget">
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <widget class="QWidget" name="m_ThresholdingTab">
-        <attribute name="title">
-         <string>Thresholding</string>
-        </attribute>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <layout class="QVBoxLayout" name="m_ThresholdingVerticalLayout">
-           <item>
-            <layout class="QGridLayout" name="m_ThresholdingGridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="m_ThresholdingLowerThresholdLabel">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Lower Threshold</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1" colspan="2">
-              <widget class="ctkSliderWidget" name="m_ThresholdingLowerThresholdSlider" native="true"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="m_ThresholdingUpperThresholdLabel">
-               <property name="text">
-                <string>Upper Threshold</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1" colspan="2">
-              <widget class="ctkSliderWidget" name="m_ThresholdingUpperThresholdSlider" native="true"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="m_ThresholdingAxialCutoffLabel">
-               <property name="text">
-                <string>Axial cut-off slice</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="3">
-              <widget class="QPushButton" name="m_ThresholdingAcceptButton">
-               <property name="text">
-                <string>Accept</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QSlider" name="m_ThresholdingAxialCutoffSlider">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="2">
-              <widget class="QSpinBox" name="m_ThresholdingAxialCutoffSpinBox"/>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="m_ErosionsTab">
-        <attribute name="title">
-         <string>Erosions</string>
-        </attribute>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <layout class="QVBoxLayout" name="m_ErosionsVerticalLayout">
-           <item>
-            <layout class="QGridLayout" name="m_ErosionsGridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="m_ErosionsUpperThresholdLabel">
-               <property name="text">
-                <string>Upper threshold</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1" colspan="2">
-              <widget class="ctkSliderWidget" name="m_ErosionsUpperThresholdSlider" native="true"/>
-             </item>
-             <item row="0" column="3">
-              <widget class="QPushButton" name="m_ErosionsResetButton">
-               <property name="text">
-                <string>Reset</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="m_ErosionsNumerOfErosionsLabel">
-               <property name="text">
-                <string>Erosions</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QSlider" name="m_ErosionsNumberOfErosionsSlider">
-               <property name="toolTip">
-                <string>Break connections between brain and non-brain</string>
-               </property>
-               <property name="maximum">
-                <number>10</number>
-               </property>
-               <property name="tracking">
-                <bool>false</bool>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBothSides</enum>
-               </property>
-               <property name="tickInterval">
-                <number>1</number>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QLineEdit" name="m_ErosionsNumberOfErosionsLineEdit">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>31</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>31</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="3">
-              <widget class="QPushButton" name="m_ErosionsAcceptButton">
-               <property name="text">
-                <string>Accept</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="m_DilationsTab">
-        <attribute name="title">
-         <string>Dilations</string>
-        </attribute>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
-           <item>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <layout class="QHBoxLayout" name="horizontalLayout_4">
-               <item>
-                <widget class="QLabel" name="m_DilationsLowerThresholdLabel">
-                 <property name="text">
-                  <string>Lower threshold (% of mean)</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="ctkSliderWidget" name="m_DilationsLowerThresholdSlider" native="true"/>
-               </item>
-              </layout>
-             </item>
-             <item row="1" column="0">
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
-               <item>
-                <widget class="QLabel" name="m_DilationsUpperThresholdLabel">
-                 <property name="text">
-                  <string>Upper threshold (% of mean)</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="ctkSliderWidget" name="m_DilationsUpperThresholdSlider" native="true"/>
-               </item>
-               <item>
-                <widget class="QPushButton" name="m_DilationsResetButton">
-                 <property name="text">
-                  <string>Reset</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item row="2" column="0">
-              <layout class="QHBoxLayout" name="horizontalLayout_7">
-               <item>
-                <widget class="QLabel" name="m_DilationsNumberOfDilationsLabel">
-                 <property name="text">
-                  <string>Dilations</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSlider" name="m_DilationsNumberOfDilationsSlider">
-                 <property name="toolTip">
-                  <string>Restore any lost brain</string>
-                 </property>
-                 <property name="maximum">
-                  <number>10</number>
-                 </property>
-                 <property name="tracking">
-                  <bool>false</bool>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="tickPosition">
-                  <enum>QSlider::TicksBothSides</enum>
-                 </property>
-                 <property name="tickInterval">
-                  <number>1</number>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="m_DilationsNumberOfDilationsLineEdit">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>31</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>31</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="m_DilationsAcceptButton">
-                 <property name="text">
-                  <string>Accept</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="m_RethresholdingTab">
-        <attribute name="title">
-         <string>Rethresholding</string>
-        </attribute>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <layout class="QVBoxLayout" name="m_RethresholdingVerticalLayout">
-           <item>
-            <layout class="QGridLayout" name="m_RethresholdingGridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="m_RethresholdingLabel">
-               <property name="text">
-                <string>box size</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QSlider" name="m_RethresholdingHorizontalSlider">
-               <property name="toolTip">
-                <string>Restore brain inside region</string>
-               </property>
-               <property name="maximum">
-                <number>10</number>
-               </property>
-               <property name="tracking">
-                <bool>false</bool>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBothSides</enum>
-               </property>
-               <property name="tickInterval">
-                <number>1</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLineEdit" name="m_RethresholdingLineEdit">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>31</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>31</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="3">
-              <widget class="QPushButton" name="m_RethresholdingResetButton">
-               <property name="text">
-                <string>Reset</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-     </item>
-     <item>
-      <layout class="QGridLayout" name="m_ButtomButtonsLayout">
+    <widget class="QTabWidget" name="m_TabWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="m_ThresholdingTab">
+      <attribute name="title">
+       <string>Thresholding</string>
+      </attribute>
+      <layout class="QGridLayout" name="m_ThresholdingGridLayout" rowstretch="0,0,0" columnstretch="0,1,0">
+       <item row="1" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_ThresholdingUpperThresholdSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_ThresholdingLowerThresholdSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_ThresholdingAxialCutoffLabel">
+         <property name="text">
+          <string>Axial cut-off slice:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="m_ThresholdingUpperThresholdLabel">
+         <property name="text">
+          <string>Upper threshold:</string>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0">
-        <widget class="QDialogButtonBox" name="m_segmentationDialogButtonBox">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+        <widget class="QLabel" name="m_ThresholdingLowerThresholdLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="standardButtons">
-          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         <property name="text">
+          <string>Lower threshold:</string>
          </property>
         </widget>
        </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_ThresholdingAxialCutoffSlider" native="true"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="m_ErosionsTab">
+      <attribute name="title">
+       <string>Erosions</string>
+      </attribute>
+      <layout class="QGridLayout" name="m_ErosionsGridLayout" columnstretch="0,1,0">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_ErosionsUpperThresholdLabel">
+         <property name="text">
+          <string>Upper threshold:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="m_ErosionsNumerOfErosionsLabel">
+         <property name="text">
+          <string>Erosions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_ErosionsUpperThresholdSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_ErosionsNumberOfErosionsSlider" native="true"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="m_DilationsTab">
+      <attribute name="title">
+       <string>Dilations</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_DilationsLowerThresholdLabel">
+         <property name="text">
+          <string>Lower threshold (%):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="m_DilationsUpperThresholdLabel">
+         <property name="text">
+          <string>Upper threshold (%):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_DilationsNumberOfDilationsLabel">
+         <property name="text">
+          <string>Dilations:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_DilationsLowerThresholdSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_DilationsUpperThresholdSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="ctkSliderWidget" name="m_DilationsNumberOfDilationsSlider" native="true"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="m_RethresholdingTab">
+      <attribute name="title">
+       <string>Rethresholding</string>
+      </attribute>
+      <layout class="QGridLayout" name="m_RethresholdingGridLayout" columnstretch="0,1">
+       <property name="spacing">
+        <number>-1</number>
+       </property>
        <item row="0" column="1">
-        <widget class="QPushButton" name="m_segmentationDialogClearPushButton">
-         <property name="text">
-          <string>Go To Start</string>
+        <widget class="ctkSliderWidget" name="m_RethresholdingBoxSizeSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="m_segmentationDialogHelpPushButton">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_RethresholdingLabel">
          <property name="text">
-          <string>Help</string>
+          <string>Box size:</string>
          </property>
         </widget>
        </item>
       </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="m_CancelButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>90</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>90</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_RestartButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Go To Start</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_BackButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>90</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>90</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>&lt; Back</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_NextButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>90</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>90</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Next &gt;</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

@@ -18,6 +18,7 @@
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
 #include <iostream>
 #include <cmath>
+#include <ctkDoubleSlider.h>
 
 MIDASMorphologicalSegmentorViewControlsImpl::MIDASMorphologicalSegmentorViewControlsImpl()
 {
@@ -33,95 +34,95 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 {
   Ui_MIDASMorphologicalSegmentorViewControls::setupUi(parent);
 
+  m_ThresholdingAxialCutoffSlider->setSingleStep(1.0);
+  m_ThresholdingAxialCutoffSlider->setDecimals(0);
+  // Trick alert!
+  // So that the width of the spinbox is equal to the other spinboxes:
+  m_ThresholdingAxialCutoffSlider->setMaximum(100.0);
+
   m_ErosionsUpperThresholdSlider->setTracking(false);
-  m_ErosionsNumberOfErosionsSlider->setValue(0);
-  m_ErosionsNumberOfErosionsLineEdit->setText(QString::number(0));
+  m_ErosionsNumberOfErosionsSlider->setMinimum(0.0);
+  m_ErosionsNumberOfErosionsSlider->setMaximum(6.0);
+  m_ErosionsNumberOfErosionsSlider->setValue(0.0);
+  m_ErosionsNumberOfErosionsSlider->setSingleStep(1.0);
+  m_ErosionsNumberOfErosionsSlider->setDecimals(0);
+  m_ErosionsNumberOfErosionsSlider->setTickInterval(1.0);
+//  m_ErosionsNumberOfErosionsSlider->setTickPosition(QSlider::TicksBelow);
+
   m_DilationsLowerThresholdSlider->setMinimum(0);
   m_DilationsLowerThresholdSlider->setMaximum(100);
   m_DilationsLowerThresholdSlider->setValue(60);
   m_DilationsLowerThresholdSlider->setTickInterval(1);
+
   m_DilationsUpperThresholdSlider->setMinimum(100);
   m_DilationsUpperThresholdSlider->setMaximum(300);
   m_DilationsUpperThresholdSlider->setValue(160);
   m_DilationsUpperThresholdSlider->setTickInterval(1);
 
-  m_segmentationDialogButtonBox->button(QDialogButtonBox::Ok)->setObjectName(QString::fromUtf8("OkButton"));
-  m_segmentationDialogButtonBox->button(QDialogButtonBox::Cancel)->setObjectName(QString::fromUtf8("CancelButton"));
+  m_DilationsNumberOfDilationsSlider->setMinimum(0.0);
+  m_DilationsNumberOfDilationsSlider->setMaximum(10.0);
+  m_DilationsNumberOfDilationsSlider->setValue(0.0);
+  m_DilationsNumberOfDilationsSlider->setSingleStep(1.0);
+  m_DilationsNumberOfDilationsSlider->setDecimals(0);
+  m_DilationsNumberOfDilationsSlider->setTickInterval(1.0);
+//  m_DilationsNumberOfDilationsSlider->setTickPosition(QSlider::TicksBelow);
 
-  // TODO: Decide how we will provide help.
-  m_segmentationDialogHelpPushButton->setVisible(false);
+  m_RethresholdingBoxSizeSlider->setSingleStep(1.0);
+  m_RethresholdingBoxSizeSlider->setDecimals(0);
+  m_RethresholdingBoxSizeSlider->setTickInterval(1.0);
+  m_RethresholdingBoxSizeSlider->setMinimum(0.0);
+  m_RethresholdingBoxSizeSlider->setMaximum(10.0);
+  m_RethresholdingBoxSizeSlider->setValue(0.0);
+//  m_RethresholdingBoxSizeSlider->setTickPosition(QSlider::TicksBelow);
 
   connect(m_ThresholdingLowerThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdLowerValueChanged(double)));
   connect(m_ThresholdingUpperThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdUpperValueChanged(double)));
-  connect(m_ThresholdingAxialCutoffSlider, SIGNAL(valueChanged(int)), this, SLOT(OnAxialCuttoffSliderChanged(int)));
-  connect(m_ThresholdingAxialCutoffSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAxialCuttoffSpinBoxChanged(int)));
-  connect(m_ThresholdingAcceptButton, SIGNAL(pressed()), this, SLOT(OnThresholdAcceptButtonClicked()));
-  connect(m_ErosionsUpperThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnErosionsUpperThresholdChanged(double)));
-  connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(sliderMoved(int)), this, SLOT(OnErosionsSliderMoved(int)));
-  connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(valueChanged(int)), this, SLOT(OnErosionsSliderChanged(int)));
-  connect(m_ErosionsResetButton, SIGNAL(pressed()), this, SLOT(OnErosionsResetButtonClicked()));
-  connect(m_ErosionsAcceptButton, SIGNAL(pressed()), this, SLOT(OnErosionsAcceptButtonClicked()));
-  connect(m_DilationsNumberOfDilationsSlider, SIGNAL(sliderMoved(int)), this, SLOT(OnDilationsSliderMoved(int)));
-  connect(m_DilationsNumberOfDilationsSlider, SIGNAL(valueChanged(int)), this, SLOT(OnDilationsSliderChanged(int)));
-  connect(m_DilationsResetButton, SIGNAL(pressed()), this, SLOT(OnDilationsResetButtonClicked()));
-  connect(m_DilationsAcceptButton, SIGNAL(pressed()), this, SLOT(OnDilationsAcceptButtonClicked()));
-  connect(m_RethresholdingHorizontalSlider, SIGNAL(sliderMoved(int)), this, SLOT(OnRethresholdingSliderMoved(int)));
-  connect(m_RethresholdingHorizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(OnRethresholdingSliderChanged(int)));
-  connect(m_RethresholdingResetButton, SIGNAL(pressed()), this, SLOT(OnRethresholdingResetButtonClicked()));
-  connect(m_segmentationDialogButtonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(OnOKCancelClicked(QAbstractButton*)));
-  connect(m_segmentationDialogClearPushButton, SIGNAL(clicked()), this, SLOT(OnClearButtonClicked()));
+  connect(m_ThresholdingAxialCutoffSlider, SIGNAL(valueChanged(double)), this, SLOT(OnAxialCuttoffSliderChanged()));
+  connect(m_BackButton, SIGNAL(clicked()), this, SLOT(OnBackButtonClicked()));
+  connect(m_NextButton, SIGNAL(clicked()), this, SLOT(OnNextButtonClicked()));
+  connect(m_ErosionsUpperThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnErosionsUpperThresholdChanged()));
+  connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(valueChanged(double)), this, SLOT(OnErosionsSliderChanged()));
+  connect(m_DilationsNumberOfDilationsSlider, SIGNAL(valueChanged(double)), this, SLOT(OnDilationsSliderChanged()));
+  connect(m_RethresholdingBoxSizeSlider, SIGNAL(valueChanged(double)), this, SLOT(OnRethresholdingSliderChanged()));
+  connect(m_CancelButton, SIGNAL(clicked()), this, SIGNAL(CancelButtonClicked()));
+  connect(m_RestartButton, SIGNAL(clicked()), this, SLOT(OnRestartButtonClicked()));
 
   this->EnableControls(false);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab1Thresholding(bool enable)
 {
-  m_ThresholdingAcceptButton->setEnabled(enable);
   m_ThresholdingAxialCutoffSlider->setEnabled(enable);
-  m_ThresholdingAxialCutoffSpinBox->setEnabled(enable);
   m_ThresholdingLowerThresholdSlider->setEnabled(enable);
   m_ThresholdingUpperThresholdSlider->setEnabled(enable);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab2Erosions(bool enable)
 {
-  m_ErosionsAcceptButton->setEnabled(enable);
   m_ErosionsNumberOfErosionsSlider->setEnabled(enable);
-  m_ErosionsNumberOfErosionsLineEdit->setEnabled(enable);
-  m_ErosionsResetButton->setEnabled(enable);
   m_ErosionsUpperThresholdSlider->setEnabled(enable);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab3Dilations(bool enable)
 {
-  m_DilationsAcceptButton->setEnabled(enable);
-  m_DilationsResetButton->setEnabled(enable);
   m_DilationsLowerThresholdSlider->setEnabled(enable);
-  m_DilationsNumberOfDilationsSlider->setEnabled(enable);
-  m_DilationsNumberOfDilationsLineEdit->setEnabled(enable);
   m_DilationsUpperThresholdSlider->setEnabled(enable);
+  m_DilationsNumberOfDilationsSlider->setEnabled(enable);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab4ReThresholding(bool enable)
 {
-  m_RethresholdingHorizontalSlider->setEnabled(enable);
-  m_RethresholdingResetButton->setEnabled(enable);
-  m_RethresholdingLineEdit->setEnabled(enable);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::EnableOKButton(bool enable)
-{
-  m_segmentationDialogButtonBox->button(QDialogButtonBox::Ok)->setEnabled(enable);
+  m_RethresholdingBoxSizeSlider->setEnabled(enable);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableCancelButton(bool enable)
 {
-  m_segmentationDialogButtonBox->button(QDialogButtonBox::Cancel)->setEnabled(enable);
+  m_CancelButton->setEnabled(enable);
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::EnableResetButton(bool enable)
+void MIDASMorphologicalSegmentorViewControlsImpl::EnableRestartButton(bool enable)
 {
-    m_segmentationDialogClearPushButton->setEnabled(enable);
+    m_RestartButton->setEnabled(enable);
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
@@ -132,9 +133,11 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
-    this->EnableOKButton(false);
+    this->m_BackButton->setEnabled(false);
+    this->m_NextButton->setEnabled(true);
+    this->m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
-    this->EnableResetButton(false);
+    this->EnableRestartButton(false);
   }
   else if (i == 1)
   {
@@ -142,9 +145,11 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(true);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
-    this->EnableOKButton(false);
+    this->m_BackButton->setEnabled(true);
+    this->m_NextButton->setEnabled(true);
+    this->m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
-    this->EnableResetButton(true);
+    this->EnableRestartButton(true);
   }
   else if (i == 2)
   {
@@ -152,9 +157,11 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(true);
     this->EnableTab4ReThresholding(false);
-    this->EnableOKButton(false);
+    this->m_BackButton->setEnabled(true);
+    this->m_NextButton->setEnabled(true);
+    this->m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
-    this->EnableResetButton(true);
+    this->EnableRestartButton(true);
   }
   else if (i == 3)
   {
@@ -162,9 +169,11 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(true);
-    this->EnableOKButton(true);
+    this->m_BackButton->setEnabled(true);
+    this->m_NextButton->setEnabled(true);
+    this->m_NextButton->setText("Finish");
     this->EnableCancelButton(true);
-    this->EnableResetButton(true);
+    this->EnableRestartButton(true);
   }
 }
 
@@ -180,9 +189,11 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableControls(bool b)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
-    this->EnableOKButton(false);
     this->EnableCancelButton(false);
-    this->EnableResetButton(false);
+    this->m_BackButton->setEnabled(false);
+    this->m_NextButton->setText("Next >");
+    this->m_NextButton->setEnabled(false);
+    this->EnableRestartButton(false);
   }
 }
 
@@ -209,9 +220,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
   m_ThresholdingUpperThresholdSlider->setSingleStep(stepSize);
   m_ThresholdingUpperThresholdSlider->setPageStep(pageSize);
   m_ThresholdingAxialCutoffSlider->setMinimum(0);
-  m_ThresholdingAxialCutoffSlider->setMaximum(numberAxialSlices-1);
-  m_ThresholdingAxialCutoffSpinBox->setMinimum(0);
-  m_ThresholdingAxialCutoffSpinBox->setMaximum(numberAxialSlices-1);
+  m_ThresholdingAxialCutoffSlider->setMaximum(numberAxialSlices - 1);
 
   m_ErosionsUpperThresholdSlider->setSingleStep(stepSize);
   m_ErosionsUpperThresholdSlider->setPageStep(pageSize);
@@ -230,17 +239,13 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(M
 
   m_ThresholdingLowerThresholdSlider->setValue(params.m_LowerIntensityThreshold);
   m_ThresholdingUpperThresholdSlider->setValue(params.m_UpperIntensityThreshold);
-  m_ThresholdingAxialCutoffSpinBox->setValue(params.m_AxialCutoffSlice);
   m_ThresholdingAxialCutoffSlider->setValue(params.m_AxialCutoffSlice);
   m_ErosionsUpperThresholdSlider->setValue(params.m_UpperErosionsThreshold);
   m_ErosionsNumberOfErosionsSlider->setValue(params.m_NumberOfErosions);
-  m_ErosionsNumberOfErosionsLineEdit->setText(QString::number(params.m_NumberOfErosions));
   m_DilationsLowerThresholdSlider->setValue(params.m_LowerPercentageThresholdForDilations);
   m_DilationsUpperThresholdSlider->setValue(params.m_UpperPercentageThresholdForDilations);
-  m_DilationsNumberOfDilationsLineEdit->setText(QString::number(params.m_NumberOfDilations));
   m_DilationsNumberOfDilationsSlider->setValue(params.m_NumberOfDilations);
-  m_RethresholdingHorizontalSlider->setValue(params.m_BoxSize);
-  m_RethresholdingLineEdit->setText(QString::number(params.m_BoxSize));
+  m_RethresholdingBoxSizeSlider->setValue(params.m_BoxSize);
 
   this->blockSignals(false);
 
@@ -254,6 +259,9 @@ int MIDASMorphologicalSegmentorViewControlsImpl::GetTabNumber()
 
 void MIDASMorphologicalSegmentorViewControlsImpl::SetTabNumber(int i)
 {
+  if (i == 0)
+  {
+  }
   if (i == 1)
   {
     this->m_ErosionsUpperThresholdSlider->setMinimum(this->m_ThresholdingLowerThresholdSlider->value());
@@ -272,7 +280,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitThresholdingValues()
   emit ThresholdingValuesChanged(
          m_ThresholdingLowerThresholdSlider->value(),
          m_ThresholdingUpperThresholdSlider->value(),
-         m_ThresholdingAxialCutoffSpinBox->value()
+         m_ThresholdingAxialCutoffSlider->value()
        );
 }
 
@@ -280,7 +288,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitErosionValues()
 {
   emit ErosionsValuesChanged(
          m_ErosionsUpperThresholdSlider->value(),
-         m_ErosionsNumberOfErosionsLineEdit->text().toInt()
+         static_cast<int>(m_ErosionsNumberOfErosionsSlider->value())
        );
 }
 
@@ -289,14 +297,14 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitDilationValues()
   emit DilationValuesChanged(
          m_DilationsLowerThresholdSlider->value(),
          m_DilationsUpperThresholdSlider->value(),
-         m_DilationsNumberOfDilationsLineEdit->text().toInt()
+         static_cast<int>(m_DilationsNumberOfDilationsSlider->value())
        );
 }
 
 void MIDASMorphologicalSegmentorViewControlsImpl::EmitRethresholdingValues()
 {
   emit RethresholdingValuesChanged(
-         m_RethresholdingLineEdit->text().toInt()
+         static_cast<int>(m_RethresholdingBoxSizeSlider->value())
       );
 }
 
@@ -322,117 +330,53 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdUpperValueChanged(d
   this->EmitThresholdingValues();
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCuttoffSliderChanged(int i)
+void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCuttoffSliderChanged()
 {
-  this->m_ThresholdingAxialCutoffSpinBox->blockSignals(true);
-  this->m_ThresholdingAxialCutoffSpinBox->setValue(i);
-  this->m_ThresholdingAxialCutoffSpinBox->blockSignals(false);
   this->EmitThresholdingValues();
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCuttoffSpinBoxChanged(int i)
+void MIDASMorphologicalSegmentorViewControlsImpl::OnBackButtonClicked()
 {
-  this->m_ThresholdingAxialCutoffSlider->blockSignals(true);
-  this->m_ThresholdingAxialCutoffSlider->setValue(i);
-  this->m_ThresholdingAxialCutoffSlider->blockSignals(false);
-  this->EmitThresholdingValues();
+  int tabNumber = this->GetTabNumber();
+  this->SetTabNumber(tabNumber - 1);
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdAcceptButtonClicked()
+void MIDASMorphologicalSegmentorViewControlsImpl::OnNextButtonClicked()
 {
-  this->SetTabNumber(1);
+  int tabNumber = this->GetTabNumber();
+  if (tabNumber < 3)
+  {
+    this->SetTabNumber(tabNumber + 1);
+  }
+  else
+  {
+    emit this->OKButtonClicked();
+  }
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsSliderMoved(int i)
-{
-  this->m_ErosionsNumberOfErosionsLineEdit->blockSignals(true);
-  this->m_ErosionsNumberOfErosionsLineEdit->setText(QString::number(i));
-  this->m_ErosionsNumberOfErosionsLineEdit->blockSignals(false);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsSliderChanged(int i)
-{
-  this->m_ErosionsNumberOfErosionsLineEdit->blockSignals(true);
-  this->m_ErosionsNumberOfErosionsLineEdit->setText(QString::number(i));
-  this->m_ErosionsNumberOfErosionsLineEdit->blockSignals(false);
-  this->EmitErosionValues();
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsUpperThresholdChanged(double)
+void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsSliderChanged()
 {
   this->EmitErosionValues();
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsAcceptButtonClicked()
+void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsUpperThresholdChanged()
 {
-  this->SetTabNumber(2);
+  this->EmitErosionValues();
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsResetButtonClicked()
+void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsSliderChanged()
 {
-  this->SetTabNumber(0);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsSliderMoved(int i)
-{
-  this->m_DilationsNumberOfDilationsLineEdit->blockSignals(true);
-  this->m_DilationsNumberOfDilationsLineEdit->setText(QString::number(i));
-  this->m_DilationsNumberOfDilationsLineEdit->blockSignals(false);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsSliderChanged(int i)
-{
-  this->m_DilationsNumberOfDilationsLineEdit->blockSignals(true);
-  this->m_DilationsNumberOfDilationsLineEdit->setText(QString::number(i));
-  this->m_DilationsNumberOfDilationsLineEdit->blockSignals(false);
   this->EmitDilationValues();
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsAcceptButtonClicked()
+void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingSliderChanged()
 {
-  this->SetTabNumber(3);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsResetButtonClicked()
-{
-  this->SetTabNumber(1);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingSliderMoved(int i)
-{
-  this->m_RethresholdingLineEdit->blockSignals(true);
-  this->m_RethresholdingLineEdit->setText(QString::number(i));
-  this->m_RethresholdingLineEdit->blockSignals(false);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingSliderChanged(int i)
-{
-  this->m_RethresholdingLineEdit->blockSignals(true);
-  this->m_RethresholdingLineEdit->setText(QString::number(i));
-  this->m_RethresholdingLineEdit->blockSignals(false);
   this->EmitRethresholdingValues();
 }
 
-void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingResetButtonClicked()
+void MIDASMorphologicalSegmentorViewControlsImpl::OnRestartButtonClicked()
 {
-  this->SetTabNumber(2);
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnOKCancelClicked(QAbstractButton *button)
-{
-  if (button->objectName() == QString("OkButton"))
-  {
-    emit OKButtonClicked();
-  }
-  else if (button->objectName() == QString("CancelButton"))
-  {
-    emit CancelButtonClicked();
-  }
-}
-
-void MIDASMorphologicalSegmentorViewControlsImpl::OnClearButtonClicked()
-{
-  emit ClearButtonClicked();
+  emit RestartButtonClicked();
 }
 
 #endif

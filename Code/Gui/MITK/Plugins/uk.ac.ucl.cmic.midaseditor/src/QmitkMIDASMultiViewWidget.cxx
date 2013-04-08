@@ -128,7 +128,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PopupWidget->setAutoShow(true);
   m_PopupWidget->setAutoHide(true);
   m_PopupWidget->setEffectDuration(100);
-  m_PopupWidget->setContentsMargins(0, 0, 0, 0);
+  m_PopupWidget->setContentsMargins(5, 5, 5, 5);
   m_PopupWidget->setLineWidth(0);
 
   QPalette popupPalette = this->palette();
@@ -178,23 +178,22 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForRenderWindows = new QGridLayout();
   m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForRenderWindows"));
   m_LayoutForRenderWindows->setContentsMargins(0, 0, 0, 0);
-  m_LayoutForRenderWindows->setVerticalSpacing(0);
-  m_LayoutForRenderWindows->setHorizontalSpacing(0);
+  m_LayoutForRenderWindows->setSpacing(0);
 
   m_LayoutForDropWidgets = new QVBoxLayout();
   m_LayoutForDropWidgets->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForDropWidgets"));
-  m_LayoutForDropWidgets->setContentsMargins(2, 0, 2, 0);
+  m_LayoutForDropWidgets->setContentsMargins(0, 0, 0, 0);
   m_LayoutForDropWidgets->setSpacing(0);
 
   m_LayoutForLayoutWidgets = new QGridLayout();
   m_LayoutForLayoutWidgets->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForLayoutWidgets"));
-  m_LayoutForLayoutWidgets->setContentsMargins(2, 0, 2, 0);
+  m_LayoutForLayoutWidgets->setContentsMargins(0, 0, 0, 0);
   m_LayoutForLayoutWidgets->setVerticalSpacing(0);
   m_LayoutForLayoutWidgets->setHorizontalSpacing(2);
 
   m_LayoutForTopControls = new QGridLayout();
   m_LayoutForTopControls->setObjectName(QString::fromUtf8("QmitkMIDASMultiViewWidget::m_LayoutForTopControls"));
-  m_LayoutForTopControls->setContentsMargins(5, 0, 5, 0);
+  m_LayoutForTopControls->setContentsMargins(0, 0, 0, 0);
   m_LayoutForTopControls->setVerticalSpacing(0);
   m_LayoutForTopControls->setHorizontalSpacing(5);
 
@@ -282,11 +281,11 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForLayoutWidgets->addWidget(m_ColumnsLabel,     3, 0);
   m_LayoutForLayoutWidgets->addWidget(m_ColumnsSpinBox,   3, 1);
 
-  m_LayoutForTopControls->addWidget(m_MIDASSlidersWidget,     0, 0, 3, 1);
-  m_LayoutForTopControls->addLayout(m_LayoutForLayoutWidgets, 0, 1, 3, 1);
-  m_LayoutForTopControls->addWidget(m_MIDASOrientationWidget, 0, 2, 3, 1);
-  m_LayoutForTopControls->addLayout(m_LayoutForDropWidgets,   0, 3, 3, 1);
-  m_LayoutForTopControls->addWidget(m_MIDASBindWidget,        0, 4, 3, 1);
+  m_LayoutForTopControls->addWidget(m_MIDASSlidersWidget,     0, 0);
+  m_LayoutForTopControls->addLayout(m_LayoutForLayoutWidgets, 0, 1);
+  m_LayoutForTopControls->addWidget(m_MIDASOrientationWidget, 0, 2);
+  m_LayoutForTopControls->addLayout(m_LayoutForDropWidgets,   0, 3);
+  m_LayoutForTopControls->addWidget(m_MIDASBindWidget,        0, 4);
 
   m_LayoutForTopControls->setColumnMinimumWidth(0, 50);
   m_LayoutForTopControls->setColumnStretch(0, 5);
