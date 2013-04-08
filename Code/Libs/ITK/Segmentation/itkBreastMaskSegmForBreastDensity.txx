@@ -190,25 +190,25 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
  typename  InternalImageType::Pointer imFittedPectoralis;
 
   imFittedPectoralis = 
-    MaskImageFromBSplineFittedSurface( pecPointSet, 
-				       this->imStructural->GetLargestPossibleRegion(), 
-				       this->imStructural->GetOrigin(), 
-				       this->imStructural->GetSpacing(), 
-				       this->imStructural->GetDirection(), 
-				       rYHeightOffset,
-				       3, 5, 3, false );
+    this->MaskImageFromBSplineFittedSurface( pecPointSet, 
+					     this->imStructural->GetLargestPossibleRegion(), 
+					     this->imStructural->GetOrigin(), 
+					     this->imStructural->GetSpacing(), 
+					     this->imStructural->GetDirection(), 
+					     rYHeightOffset,
+					     3, 5, 3, false );
 
   // Write the fitted surface to file
 
-  WriteImageToFile( this->fileOutputPectoralSurfaceMask, 
-                    "fitted pectoral surface with offset", 
-                    imFittedPectoralis, this->flgLeft, this->flgRight );
-
+  this->WriteImageToFile( this->fileOutputPectoralSurfaceMask, 
+			  "fitted pectoral surface with offset", 
+			  imFittedPectoralis, this->flgLeft, this->flgRight );
+  
   // Write the chest surface points to a file?
 
-  WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
-                               "chest surface points", 
-                               this->imChestSurfaceVoxels, this->flgLeft, this->flgRight );
+  this->WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
+				     "chest surface points", 
+				     this->imChestSurfaceVoxels, this->flgLeft, this->flgRight );
 
 
  // Discard anything within the pectoral mask (i.e. below the surface fit)
