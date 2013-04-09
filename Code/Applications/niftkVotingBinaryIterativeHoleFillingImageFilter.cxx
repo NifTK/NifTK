@@ -24,16 +24,13 @@
 /*!
  * \file niftkVotingBinaryIterativeHoleFillingImageFilter.cxx
  * \page niftkVotingBinaryIterativeHoleFillingImageFilter
- * \section niftkVotingBinaryIterativeHoleFillingImageFilterSummary 
- *  The \doxygen{VotingBinaryIterativeHoleFillingImageFilter} applies a voting
- *  operation in order to fill-in cavities. This can be used for smoothing
- *  contours and for filling holes in binary images. This filter runs
- *  internally a \doxygen{VotingBinaryHoleFillingImageFilter} until no
- *  pixels change or the maximum number of iterations has been reached.
+ * \section niftkVotingBinaryIterativeHoleFillingImageFilterSummary  niftkVotingBinaryIterativeHoleFillingImageFilter
+ *
+ * The VotingBinaryIterativeHoleFillingImageFilter applies a voting operation in order to fill-in cavities. This can be used for smoothing contours and for filling holes in binary images. This filter runs internally a VotingBinaryHoleFillingImageFilter until no pixels change or the maximum number of iterations has been reached.
  *
  * \li Dimensions: 2,3
  *
- * \section niftkVotingBinaryIterativeHoleFillingImageFilter Caveats
+ * \section niftkVotingBinaryIterativeHoleFillingImageFilterCaveats Caveats
  *
  * \li Input image is assumed to be binary
  *

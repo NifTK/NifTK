@@ -15,10 +15,9 @@
 /*!
  * \file niftkAnonymiseDICOMMammograms.cxx 
  * \page niftkAnonymiseDICOMMammograms
- * \section niftkAnonymiseDICOMMammograms Search for DICOM mammograms in a
- * directory and anonymise them by removing patient information from
- * the DICOM header and/or applying a rectangular mask to remove the
- * label.
+ * \section niftkAnonymiseDICOMMammogramsSummary niftkAnonymiseDICOMMammograms
+ * 
+ * Search for DICOM mammograms in a directory and anonymise them by removing patient information from the DICOM header and/or applying a rectangular mask to remove the label.
  *
  */
 

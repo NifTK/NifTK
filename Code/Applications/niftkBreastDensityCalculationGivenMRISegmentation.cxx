@@ -29,15 +29,14 @@
  * \file niftkBreastDensityCalculationGivenMRISegmentation.cxx
  * \page niftkBreastDensityCalculationGivenMRISegmentation
  *                                           
- * \section niftkBreastDensityCalculationGivenMRISegmentation Uses ITK
- * ImageFileReader to load a breast mask and glandular tissue
- * segmentation, calculates the breast density fraction and writes the
- * result to a text file.
+ * \section niftkBreastDensityCalculationGivenMRISegmentationSummary niftkBreastDensityCalculationGivenMRISegmentation
+ *
+ * Uses ITK ImageFileReader to load a breast mask and glandular tissue segmentation, calculates the breast density fraction and writes the result to a text file.
  *                                                                     
  * \li Dimensions: 3                                                 
  * \li Pixel type: All input images are converted to float on input.   
  *                                                                     
- * \section niftkBreastDensityCalculationGivenMRISegmentation Caveats             
+ * \section niftkBreastDensityCalculationGivenMRISegmentationCaveats Caveats             
  * \li All images must have the same size, determined by an ITK Region, which checks the Region Size and Index.
  */                                                                                                            
 
