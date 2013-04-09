@@ -16,7 +16,7 @@
 #define TagTrackerView_h
 
 #include "QmitkBaseView.h"
-#include <ctkDictionary.h>
+#include <service/event/ctkEvent.h>
 
 /**
  * \class TagTrackerView
@@ -63,6 +63,11 @@ protected:
 
 private slots:
   
+  /**
+   * \brief We listen to the event bus to trigger updates.
+   */
+  void OnUpdate(const ctkEvent& event);
+
 private:
 
   /**

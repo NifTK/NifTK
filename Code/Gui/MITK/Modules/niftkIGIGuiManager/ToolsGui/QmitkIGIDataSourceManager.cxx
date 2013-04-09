@@ -653,67 +653,70 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
   emit UpdateGuiStart(idNow);
 
-  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  if (m_Sources.size() > 0)
   {
-    // Work out row number of source.
-    int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
-
-    // First tell each source to update data.
-    // For example, sources could copy to data storage.
-    source->ProcessData(idNow);
-
-    // Now calculate the stats.
-    source->UpdateFrameRate();
-    float rate = source->GetFrameRate();
-    bool isValid = source->GetSuccessfullyProcessing();
-    double lag = source->GetCurrentTimeLag(idNow);
-
-    // Update the frame rate number.
-    QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
-    frameRateItem->setTextAlignment(Qt::AlignCenter);
-    frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    m_TableWidget->setItem(rowNumber, 4, frameRateItem);
-
-    // Update the lag number.
-    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-    lagItem->setTextAlignment(Qt::AlignCenter);
-    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    m_TableWidget->setItem(rowNumber, 5, lagItem);
-
-    // Update the status text.
-    m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
-
-    // Update the status icon.
-    QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
-    if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
+    foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
     {
-      // Highlight that current row is in error.
-      QPixmap pix(22, 22);
-      pix.fill(m_ErrorColour);
-      tItem->setIcon(pix);
+      // Work out row number of source.
+      int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
+
+      // First tell each source to update data.
+      // For example, sources could copy to data storage.
+      source->ProcessData(idNow);
+
+      // Now calculate the stats.
+      source->UpdateFrameRate();
+      float rate = source->GetFrameRate();
+      bool isValid = source->GetSuccessfullyProcessing();
+      double lag = source->GetCurrentTimeLag(idNow);
+
+      // Update the frame rate number.
+      QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
+      frameRateItem->setTextAlignment(Qt::AlignCenter);
+      frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(rowNumber, 4, frameRateItem);
+
+      // Update the lag number.
+      QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+      lagItem->setTextAlignment(Qt::AlignCenter);
+      lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(rowNumber, 5, lagItem);
+
+      // Update the status text.
+      m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
+
+      // Update the status icon.
+      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+      if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
+      {
+        // Highlight that current row is in error.
+        QPixmap pix(22, 22);
+        pix.fill(m_ErrorColour);
+        tItem->setIcon(pix);
+      }
+      else
+      {
+        // Highlight that current row is OK.
+        QPixmap pix(22, 22);
+        pix.fill(m_OKColour);
+        tItem->setIcon(pix);
+      }
     }
-    else
-    {
-      // Highlight that current row is OK.
-      QPixmap pix(22, 22);
-      pix.fill(m_OKColour);
-      tItem->setIcon(pix);
-    }
+
+    emit UpdateGuiFinishedDataSources(idNow);
+
+    // Make sure table is refreshing.
+    m_TableWidget->update();
+
+    // Make sure scene rendered.
+    mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
+    renderer->RequestUpdateAll();
+
+    emit UpdateGuiFinishedFinishedRendering(idNow);
+
+    // Try to encourage rest of event loop to process before the timer swamps it.
+    QCoreApplication::processEvents();
   }
-
-  emit UpdateGuiFinishedDataSources(idNow);
-
-  // Make sure table is refreshing.
-  m_TableWidget->update();
-
-  // Make sure scene rendered.
-  mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
-  renderer->RequestUpdateAll();
-
-  emit UpdateGuiFinishedFinishedRendering(idNow);
-
-  // Try to encourage rest of event loop to process before the timer swamps it.
-  QCoreApplication::processEvents();
 
   emit UpdateGuiEnd(idNow);
 }

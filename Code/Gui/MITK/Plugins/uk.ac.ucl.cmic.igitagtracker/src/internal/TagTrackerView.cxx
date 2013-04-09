@@ -14,8 +14,10 @@
 
 // Qmitk
 #include "TagTrackerView.h"
+#include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
+#include <service/event/ctkEventConstants.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include "TagTrackerViewActivator.h"
@@ -44,6 +46,15 @@ std::string TagTrackerView::GetViewID() const
 //-----------------------------------------------------------------------------
 void TagTrackerView::CreateQtPartControl( QWidget *parent )
 {
+  ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
+  if (ref)
+  {
+    ctkEventAdmin* eventAdmin = mitk::TagTrackerViewActivator::getContext()->getService<ctkEventAdmin>(ref);
+    ctkDictionary properties;
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+    eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+  }
+
 }
 
 
@@ -68,4 +79,11 @@ void TagTrackerView::RetrievePreferenceValues()
 void TagTrackerView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackerView::OnUpdate(const ctkEvent& event)
+{
+  std::cerr << "Matt, TagTrackerView::OnUpdate(event)" << std::endl;
 }
