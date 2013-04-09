@@ -1,3 +1,17 @@
+/*=============================================================================
+
+  libvideo: a library for SDI video processing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #include "stdafx.h"
 #include <video/compress.h>
 
@@ -75,6 +89,11 @@ public:
         unsigned __int64    trylock_tsc;
         unsigned __int64    gotlock_tsc;
 
+        // 1 = i-frame
+        // 2 = p-frame
+        // 3 = b-frame
+        unsigned char       frametype;
+
         // frame had to wait because there are no more free slots in the queue
         // writing out to hdd was too slow
         bool                had_to_wait_on_io;
@@ -106,6 +125,11 @@ public:
     // encoder docs suggest that frames are always processed in sequential order
     // we only need this for perf-stats in the bitstream-callbacks, which dont have the frame number on input
     int                 currentframe;
+
+    // accumulated size of the current nal packet
+    // the encoder will ask for one or more chunks of storage
+    //  and we just add it up
+    unsigned int        currentnalsize;
 
     // a histogram of nal packet sizes supplied by the encoder
     // slots are in kilobyte: 1, 2, 4, 8, 16, 32, 64, ...
@@ -143,9 +167,8 @@ public:
     {
         CompressorImpl* this_ = (CompressorImpl*) pUserData;
 
-        unsigned int    histindex = std::log(std::max(nBytesInBuffer, 1024) / 1024.0) / std::log(2.0);
-        unsigned int    maxindex = (sizeof(this_->nalsizehistogram) / sizeof(this_->nalsizehistogram[0])) - 1;
-        ++(this_->nalsizehistogram[std::min(histindex, maxindex)]);
+        // add up the size of multiple chunks until endframe_callback()
+        this_->currentnalsize += nBytesInBuffer;
 
         if (this_->outputfile)
         {
@@ -182,6 +205,9 @@ public:
     {
         CompressorImpl* this_ = (CompressorImpl*) pUserdata;
         this_->currentframe = pbfi->nFrameNumber;
+
+        // starting a new nal packet
+        this_->currentnalsize = 0;
     }
 
     static void _stdcall endframe_callback(const NVVE_EndFrameInfo *pefi, void *pUserdata)
@@ -192,12 +218,20 @@ public:
 
         if ((this_->frameperstats.capacity() - this_->frameperstats.size()) > 1)
         {
+            FramePerfStats&     fps = this_->frameperstats[pefi->nFrameNumber];
             // doing this without sync is a bit dodgy
             // but it works because the vector is never resized/reallocd
-            assert(this_->frameperstats[pefi->nFrameNumber].frameno == pefi->nFrameNumber);
+            assert(fps.frameno == pefi->nFrameNumber);
 
-            GetSystemTime(&this_->frameperstats[pefi->nFrameNumber].finished);
+            GetSystemTime(&fps.finished);
+
+            // keep track of i and p-frames, just for curiosity
+            fps.frametype = pefi->nPicType;
         }
+
+        unsigned int    histindex = std::log(std::max(this_->currentnalsize, 1024u) / 1024.0) / std::log(2.0);
+        unsigned int    maxindex = (sizeof(this_->nalsizehistogram) / sizeof(this_->nalsizehistogram[0])) - 1;
+        ++(this_->nalsizehistogram[std::min(histindex, maxindex)]);
     }
     //@}
 
@@ -316,8 +350,11 @@ public:
             if (hr != S_OK)
                 throw CompressorFailedException("Cannot set encoding profile", hr);
 
-            // NVVE_DISABLE_CABAC: default=0 (enabled)
             // cabac is quite expensive!
+            int     cabacdisabled = 1;      //default = 0 (enabled)
+            hr = NVSetParamValue(encoder, NVVE_DISABLE_CABAC, &cabacdisabled);
+            if (hr != S_OK)
+                throw CompressorFailedException("Cannot set CABAC", hr);
 
             // the encoder requires even (not odd) input dimensions!
             // ntsc is a format with an odd height (487)
@@ -334,12 +371,15 @@ public:
 
             int     aspectratio[] = {width, height, ASPECT_RATIO_DAR};
             hr = NVSetParamValue(encoder, NVVE_ASPECT_RATIO, &aspectratio);
-            int     pinterval = 1;//3;	// default = 1, baseline profile supports 1 only (fails further down otherwise)
+            // interval between p-frames. these are b-frames!
+            // default = 1, baseline profile supports 1 only (fails further down otherwise)
+            // never produces more than 2 b-frames though
+            int     pinterval = 1;
             hr = NVSetParamValue(encoder, NVVE_P_INTERVAL, &pinterval);
             if (hr != S_OK)
                 throw CompressorFailedException("Cannot set p interval", hr);
 
-            int     deinterlace = DI_OFF;	// default = DI_MEDIAN
+            int     deinterlace = DI_OFF;   // default = DI_MEDIAN
             hr = NVSetParamValue(encoder, NVVE_SET_DEINTERLACE, &deinterlace);
             if (hr != S_OK)
                 throw CompressorFailedException("Cannot disable deinterlacing", hr);
@@ -355,6 +395,8 @@ public:
             hr = NVSetParamValue(encoder, NVVE_PEAK_BITRATE, &peakbw);
             if (hr != S_OK)
                 throw CompressorFailedException("Cannot set peak bitrate", hr);
+            std::clog << "Bit rate for " << width << 'x' << height << '@' << ((float) mfps / 1000.0f) << " Hz "
+                      << " (avg, peak): " << avgbw << ", " << peakbw << " bps" << std::endl;
             int     framerate[] = {mfps, 1000};
             hr = NVSetParamValue(encoder, NVVE_FRAME_RATE, &framerate);
             if (hr != S_OK)
@@ -365,8 +407,21 @@ public:
             //  NVVE_RC_TYPE			= RC_VBR
             //
             // profile different values for:
-            //  NVVE_DYNAMIC_GOP		default = 0, try 1
             //  NVVE_DEBLOCK_MODE		default = 1, try 0
+
+            // if fixed gop then encoder always produces a fixed number of p-frames
+            int     dynamicgop = 1;     // default 0
+            hr = NVSetParamValue(encoder, NVVE_DYNAMIC_GOP, &dynamicgop);
+            if (hr != S_OK)
+                throw CompressorFailedException("Cannot set dynamic GOP mode", hr);
+
+            // IDR is like a barrier where no other p-frame can ref across
+            // so by default every 15th i-frame is an idr? that's quite long...
+            // looks like every i-frame is an idr-frame.
+            int     idrperiod = 15;     // default 15
+            hr = NVSetParamValue(encoder, NVVE_IDR_PERIOD, &idrperiod);
+            if (hr != S_OK)
+                throw CompressorFailedException("Cannot set IDR period", hr);
 
 
             // FIXME: force gpu selection for encoder?
@@ -380,9 +435,6 @@ public:
             if (hr != S_OK)
                 throw CompressorFailedException("Cannot set GPU offloading", hr);
 
-            // FIXME: set more params here!
-            // NVVE_IDR_PERIOD (default 15): 15
-            
             if (NVGetHWEncodeCaps() == S_OK)
             {
                 // mem copies have to be locked
@@ -494,10 +546,13 @@ public:
         // FIXME: this should go somewhere else, really
         std::ofstream   logfile((filename + ".compressorperformance.log").c_str());
         if (logfile)
+        {
+            char*   frametype[] = {"???", "I", "P", "B", "???"};
             for (int i = 0; i < frameperstats.size(); ++i)
             {
                 logfile 
                     << "frameno=" << frameperstats[i].frameno 
+                    << ", frametype=" << frametype[std::min((std::size_t) frameperstats[i].frametype, sizeof(frametype) / sizeof(frametype[0]))]
                     << ", queued=" << frameperstats[i].queued 
                     << ", finished=" << frameperstats[i].finished 
                     << ", processtime=" << relative_systime(frameperstats[i].queued, frameperstats[i].finished)
@@ -509,6 +564,7 @@ public:
                     << ", lock_diff=" << (frameperstats[i].gotlock_tsc - frameperstats[i].trylock_tsc)
                     << std::endl;
             }
+        }
         logfile.close();
 
         std::ofstream   nalhistfile((filename + ".nalsizehistogram.log").c_str());
