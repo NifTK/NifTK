@@ -72,6 +72,9 @@ protected:
    */
   void InitializeAndRunGrabbingThread(const int& intervalInMilliseconds);
 
+
+  void StopGrabbingThread();
+
   /**
    * \brief Called by QmitkIGILocalDataSourceGrabbingThread.
    */

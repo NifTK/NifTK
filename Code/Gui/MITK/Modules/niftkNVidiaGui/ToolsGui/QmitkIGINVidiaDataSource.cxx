@@ -338,13 +338,16 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
     mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
   }
 
-  this->InitializeAndRunGrabbingThread(20);
+  StartCapturing();
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
 {
+  // Try stop grabbing and threading etc.
+  // We do need quite a bit of control over the actual threading setup because
+  // we need to manage which thread is currently in charge of the capture context!
   this->StopCapturing();
 
   delete m_Pimpl;
@@ -366,14 +369,14 @@ bool QmitkIGINVidiaDataSource::CanHandleData(mitk::IGIDataType* data) const
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::StartCapturing()
 {
-  // To do.
+  this->InitializeAndRunGrabbingThread(20);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::StopCapturing()
 {
-  // To do.
+  StopGrabbingThread();
 }
 
 
