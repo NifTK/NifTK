@@ -676,6 +676,21 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         // We dont want to create a new one in that case (there is a lot of stuff going on
         // for allocating a new image).
         mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+
+        if (!imageInNode.IsNull())
+        {
+          // check size of image that is already attached to data node!
+          bool haswrongsize = false;
+          haswrongsize |= imageInNode->GetDimension(0) != subimg.width;
+          haswrongsize |= imageInNode->GetDimension(1) != subimg.height;
+          haswrongsize |= imageInNode->GetDimension(2) != 1;
+
+          if (haswrongsize)
+          {
+            imageInNode = mitk::Image::Pointer();
+          }
+        }
+
         if (imageInNode.IsNull())
         {
           mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
@@ -683,8 +698,6 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         }
         else
         {
-          // FIXME: check size of image that is already attached to data node!
-
           try
           {
             mitk::ImageWriteAccessor writeAccess(imageInNode);
