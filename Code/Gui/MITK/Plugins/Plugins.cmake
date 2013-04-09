@@ -39,7 +39,8 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/it.unito.cim.intensityprofile:ON
-  
+  Plugins/uk.ac.ucl.cmic.igitagtracker:ON
+
 # This 'commonmidas' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.  
   Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON            
   Plugins/uk.ac.ucl.cmic.mitksegmentation:ON  
