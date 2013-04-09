@@ -806,12 +806,6 @@ IF (BUILD_MESHING)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing)
 ENDIF (BUILD_MESHING) 
 
-IF(NVAPI_FOUND)
-  #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
-  # libvideo depends on an active opengl context
-  #  which niftknvidiagui manages
-  #INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
-ENDIF(NVAPI_FOUND)
 
 ######################################################################
 # Output directories, for when compiling, not installing.

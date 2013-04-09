@@ -27,6 +27,7 @@ INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(niftkNVidiaGui
   niftknvapi
   mitkOpenCVVideoSupport
+  Winmm.lib
   )
   
 IF(BUILD_TESTING)  

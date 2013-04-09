@@ -1,3 +1,16 @@
+/*=============================================================================
+
+  libvideo: a library for SDI video processing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 #pragma once
 #ifndef LIBVIDEO_DLLEXPORT_H_4669DD5453A942E5914ACAF8788444C9
@@ -9,9 +22,9 @@
 #ifdef _MSC_VER
 
 #ifdef LIBVIDEO_BUILDING_DLL
-#define LIBVIDEO_DLL_EXPORTS	__declspec(dllexport)	
+#define LIBVIDEO_DLL_EXPORTS    __declspec(dllexport)
 #else
-#define LIBVIDEO_DLL_EXPORTS	__declspec(dllimport)
+#define LIBVIDEO_DLL_EXPORTS    __declspec(dllimport)
 #endif
 
 

@@ -110,13 +110,8 @@ protected:
 
 private:
 
-
+  // holds internals to prevent header pollution
   QmitkIGINVidiaDataSourceImpl*     m_Pimpl;
-
-  // and this receives the captured video frames (not necessarily at full frame rate though)
-  // it's also hooked up to m_ImageNode
-  // BUT: every time there's a new frame, a new image is allocated. cow-style.
-  mitk::Image::Pointer              m_Image;
 
 
   static const char*      s_NODE_NAME;

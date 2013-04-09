@@ -31,7 +31,7 @@ public:
 			std::cerr << "Cannot create CUDA driver context!" << std::endl;
 
 		boost::gil::rgba8_image_t	noiseimg(1920, 1080);
-		compressor = new video::Compressor(noiseimg.width(), noiseimg.height(), 25, "dummy.264");
+		compressor = new video::Compressor(noiseimg.width(), noiseimg.height(), 25000, "testcompressor.264");
 
 		for (int t = 0; t < (sizeof(noiseinput) / sizeof(noiseinput[0])); ++t)
 		{
