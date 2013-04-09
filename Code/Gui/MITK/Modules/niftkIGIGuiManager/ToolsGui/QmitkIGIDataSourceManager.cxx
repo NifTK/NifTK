@@ -651,6 +651,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
+  emit UpdateGuiStart(idNow);
+
   foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
   {
     // Work out row number of source.
@@ -699,6 +701,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     }
   }
 
+  emit UpdateGuiFinishedDataSources(idNow);
+
   // Make sure table is refreshing.
   m_TableWidget->update();
 
@@ -706,8 +710,12 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
   renderer->RequestUpdateAll();
 
+  emit UpdateGuiFinishedFinishedRendering(idNow);
+
   // Try to encourage rest of event loop to process before the timer swamps it.
   QCoreApplication::processEvents();
+
+  emit UpdateGuiEnd(idNow);
 }
 
 
