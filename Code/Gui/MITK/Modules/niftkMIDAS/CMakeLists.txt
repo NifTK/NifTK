@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkMIDAS
   EXPORT_DEFINE NIFTKMIDAS_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
-  DEPENDS Mitk Segmentation PlanarFigure ImageStatistics niftkCore
+  DEPENDS niftkCore Segmentation 
   PACKAGE_DEPENDS ITK
 )
 

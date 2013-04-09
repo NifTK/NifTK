@@ -65,29 +65,20 @@ signals:
   void TabChanged(int tabNumber);
   void OKButtonClicked();
   void CancelButtonClicked();
-  void ClearButtonClicked();
+  void RestartButtonClicked();
 
 protected slots:
 
   void OnThresholdLowerValueChanged(double);
   void OnThresholdUpperValueChanged(double);
-  void OnAxialCuttoffSliderChanged(int);
-  void OnAxialCuttoffSpinBoxChanged(int);
-  void OnThresholdAcceptButtonClicked();
-  void OnErosionsUpperThresholdChanged(double);
-  void OnErosionsSliderChanged(int);
-  void OnErosionsSliderMoved(int);
-  void OnErosionsAcceptButtonClicked();
-  void OnErosionsResetButtonClicked();
-  void OnDilationsSliderChanged(int);
-  void OnDilationsSliderMoved(int);
-  void OnDilationsAcceptButtonClicked();
-  void OnDilationsResetButtonClicked();
-  void OnRethresholdingSliderChanged(int);
-  void OnRethresholdingSliderMoved(int);
-  void OnRethresholdingResetButtonClicked();
-  void OnOKCancelClicked(QAbstractButton*);
-  void OnClearButtonClicked();
+  void OnAxialCuttoffSliderChanged();
+  void OnBackButtonClicked();
+  void OnNextButtonClicked();
+  void OnErosionsUpperThresholdChanged();
+  void OnErosionsSliderChanged();
+  void OnDilationsSliderChanged();
+  void OnRethresholdingSliderChanged();
+  void OnRestartButtonClicked();
 
 protected:
 
@@ -97,9 +88,8 @@ private:
   void EnableTab2Erosions(bool enable);
   void EnableTab3Dilations(bool enable);
   void EnableTab4ReThresholding(bool enable);
-  void EnableOKButton(bool enable);
   void EnableCancelButton(bool enable);
-  void EnableResetButton(bool enable);
+  void EnableRestartButton(bool enable);
   void EnableByTabNumber(int i);
 
   void EmitThresholdingValues();

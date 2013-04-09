@@ -389,6 +389,19 @@ IF(NOT DEFINED MITK_DIR)
     #       + 4 bugs as listed above.
     #
     #     Giving 62e2e5ba98 on NifTK/MITK/niftk branch.
+    #
+    # 27. Trac 2219 - New MITK version to synch with version v2013.03.00.
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 1fd96dffa5 from Sun Mar 31 17:36:31 2013 +0200, tagged with v2013.03.00
+    #
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)  (this was fixed using an alternative method in MITK 13321, but we leave this change intact in our NifTK version rather than backing it out).
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #
+    #       Bug 10174 was finished by MITK, making our changes obselete.
+    #
+    #     Giving d5eb05f63b on NifTK/MITK/niftk branch.
+    #
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})

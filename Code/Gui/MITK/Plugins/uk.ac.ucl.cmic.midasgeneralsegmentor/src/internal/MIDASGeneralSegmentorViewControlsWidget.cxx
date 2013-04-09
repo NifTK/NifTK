@@ -19,7 +19,12 @@
 
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget(QWidget *parent)
+: QWidget(parent)
 {
+  if (parent)
+  {
+    setupUi(parent);
+  }
 }
 
 
@@ -34,24 +39,6 @@ MIDASGeneralSegmentorViewControlsWidget::~MIDASGeneralSegmentorViewControlsWidge
 void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
 {
   Ui_MIDASGeneralSegmentorViewControls::setupUi(parent);
-
-  int margin=10;
-  int spacing=5;
-
-  m_GridLayoutButtomButtons->setContentsMargins(margin,margin,margin,margin);
-  m_GridLayoutThresholdSliders->setContentsMargins(margin,margin,margin,margin);
-  m_GridLayoutSeedValues->setContentsMargins(margin,margin,margin,margin);
-  m_GridLayoutToggleButtons->setContentsMargins(margin,margin,margin,margin);
-  m_GridLayoutPropagateButtons->setContentsMargins(margin,margin,margin,margin);
-
-  m_GridLayoutButtomButtons->setSpacing(spacing);
-  m_GridLayoutThresholdSliders->setSpacing(spacing);
-  m_GridLayoutSeedValues->setSpacing(spacing);
-  m_GridLayoutToggleButtons->setSpacing(spacing);
-  m_GridLayoutPropagateButtons->setSpacing(spacing);
-
-  // TODO: Decide how we will provide help.
-  m_HelpButton->setVisible(false);
 
   this->SetEnableAllWidgets(false);
 }
@@ -105,7 +92,6 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
   m_WipeButton->setEnabled(enabled);
   m_WipePlusButton->setEnabled(enabled);
   m_WipeMinusButton->setEnabled(enabled);
-  m_HelpButton->setEnabled(enabled);
 }
 
 

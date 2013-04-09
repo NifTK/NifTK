@@ -17,20 +17,36 @@
 namespace mitk
 {
 
+
+//-----------------------------------------------------------------------------
 AffineTransformParametersDataNodeProperty::AffineTransformParametersDataNodeProperty()
 {
   this->Identity();
 }
 
+
+//-----------------------------------------------------------------------------
+AffineTransformParametersDataNodeProperty::AffineTransformParametersDataNodeProperty(const AffineTransformParametersDataNodeProperty& other)
+: Superclass(other)
+{
+  m_Parameters = other.m_Parameters;
+}
+
+
+//-----------------------------------------------------------------------------
 AffineTransformParametersDataNodeProperty::AffineTransformParametersDataNodeProperty(const ParametersType& parameters)
 {
   SetAffineTransformParameters(parameters);
 }
 
+
+//-----------------------------------------------------------------------------
 AffineTransformParametersDataNodeProperty::~AffineTransformParametersDataNodeProperty()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void AffineTransformParametersDataNodeProperty::Identity()
 {
   m_Parameters.resize(13);  // extra element at the end to tell if we are rotating about centre
@@ -44,11 +60,15 @@ void AffineTransformParametersDataNodeProperty::Identity()
   m_Parameters[8] = 100;
 }
 
+
+//-----------------------------------------------------------------------------
 const AffineTransformParametersDataNodeProperty::ParametersType& AffineTransformParametersDataNodeProperty::GetAffineTransformParameters() const
 {
     return m_Parameters;
 }
 
+
+//-----------------------------------------------------------------------------
 void AffineTransformParametersDataNodeProperty::SetAffineTransformParameters(const ParametersType& parameters)
 {
   if (m_Parameters != parameters)
@@ -58,6 +78,8 @@ void AffineTransformParametersDataNodeProperty::SetAffineTransformParameters(con
   }
 }
 
+
+//-----------------------------------------------------------------------------
 std::string AffineTransformParametersDataNodeProperty::GetValueAsString() const
 {
   std::stringstream myStr;
@@ -77,6 +99,8 @@ std::string AffineTransformParametersDataNodeProperty::GetValueAsString() const
   return myStr.str();
 }
 
+
+//-----------------------------------------------------------------------------
 bool AffineTransformParametersDataNodeProperty::IsEqual(const BaseProperty& property) const
 {
   const Self *other = dynamic_cast<const Self*>(&property);
@@ -89,6 +113,8 @@ bool AffineTransformParametersDataNodeProperty::IsEqual(const BaseProperty& prop
   return m_Parameters == otherParameters;
 }
 
+
+//-----------------------------------------------------------------------------
 bool AffineTransformParametersDataNodeProperty::Assign(const BaseProperty& property)
 {
   const Self *other = dynamic_cast<const Self*>(&property);
@@ -99,6 +125,22 @@ bool AffineTransformParametersDataNodeProperty::Assign(const BaseProperty& prope
   this->m_Parameters = otherParameters;
 
   return true;
+}
+
+
+//-----------------------------------------------------------------------------
+AffineTransformParametersDataNodeProperty::Pointer AffineTransformParametersDataNodeProperty::Clone() const
+{
+  AffineTransformParametersDataNodeProperty::Pointer result = static_cast<Self*>(this->InternalClone().GetPointer());
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+itk::LightObject::Pointer AffineTransformParametersDataNodeProperty::InternalClone() const
+{
+  itk::LightObject::Pointer result(new Self(*this));
+  return result;
 }
 
 } // end namespace

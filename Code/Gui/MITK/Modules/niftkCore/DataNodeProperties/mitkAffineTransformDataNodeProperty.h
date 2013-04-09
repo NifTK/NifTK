@@ -35,6 +35,8 @@ public:
   mitkClassMacro(AffineTransformDataNodeProperty, mitk::BaseProperty);
   itkNewMacro(Self);
 
+  Pointer Clone() const;
+
   /**
    * \return R/W access to transform.
    */
@@ -61,10 +63,14 @@ public:
     msp_Transform->DeepCopy(&transform.Element[0][0]);
   }
 
-  /// \brief Defined in base class, returns the current value as a string for display in property view.
+  /**
+   * \brief Defined in base class, returns the current value as a string for display in property view.
+   */
   virtual std::string GetValueAsString() const;
 
-  /// \brief Method to set these parameters back to identity.
+  /**
+   * \brief Method to set these parameters back to identity.
+   */
   virtual void Identity() {
     msp_Transform->Identity();
   }
@@ -84,24 +90,22 @@ public:
 
 protected:
 
-  AffineTransformDataNodeProperty(void) { msp_Transform = vtkMatrix4x4::New(); }
   virtual ~AffineTransformDataNodeProperty(void) {}
+  AffineTransformDataNodeProperty(void);                                         // Purposefully hidden.
+  AffineTransformDataNodeProperty(const AffineTransformDataNodeProperty& other); // Purposefully hidden.
 
 private:
 
-  /*!
-    Override this method in subclasses to implement a meaningful comparison. The property
-    argument is guaranteed to be castable to the type of the implementing subclass.
+  AffineTransformDataNodeProperty& operator=(const AffineTransformDataNodeProperty&); // Purposefully not implemented.
+  itk::LightObject::Pointer InternalClone() const;
+
+  /**
+   * \see mitk::BaseProperty::IsEqual()
    */
   virtual bool IsEqual(const BaseProperty& property) const;
 
-  /*!
-    Override this method in subclasses to implement a meaningful assignment. The property
-    argument is guaranteed to be castable to the type of the implementing subclass.
-    @warning This is not yet exception aware/safe and if this method returns false,
-            this property's state might be undefined.
-
-    @return True if the argument could be assigned to this property.
+  /**
+   * \see mitk::BaseProperty::Assign()
    */
   virtual bool Assign(const BaseProperty& );
 

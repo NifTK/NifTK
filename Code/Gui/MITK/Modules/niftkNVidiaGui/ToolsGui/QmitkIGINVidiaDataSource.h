@@ -27,7 +27,6 @@
 struct QmitkIGINVidiaDataSourceImpl;
 class QGLContext;
 class QGLWidget;
-//struct IplImage;
 
 
 /**
@@ -67,27 +66,26 @@ public:
   bool IsCapturing();
 
 
-protected:
-  virtual void GrabData();
-  virtual bool Update(mitk::IGIDataType* data);
-
-
 public:
   // to be used to share with the preview window, for example
-  QGLWidget* get_capturecontext();
+  QGLWidget* GetCaptureContext();
 
 
-  int get_number_of_streams();
-  int get_capture_width();
-  int get_capture_height();
-  int get_refresh_rate();
-  int get_texture_id(int stream);
+  int GetNumberOfStreams();
+  int GetCaptureWidth();
+  int GetCaptureHeight();
+  int GetRefreshRate();
+  int GetTextureId(int stream);
 
   // caller needs to cleanup!
   // exists only for integration with mitk, otherwise: do not use!
   // note: input streams are stacked! all streams transfered at the same time
-  std::pair<IplImage*, int> get_rgb_image();
-  std::pair<IplImage*, int> get_rgba_image(unsigned int sequencenumber);
+//std::pair<IplImage*, int> GetRgbImage();
+  std::pair<IplImage*, int> GetRgbaImage(unsigned int sequencenumber);
+
+protected:
+  virtual void GrabData();
+  virtual bool Update(mitk::IGIDataType* data);
 
 signals:
 
@@ -113,7 +111,7 @@ protected:
 private:
 
 
-  QmitkIGINVidiaDataSourceImpl*     pimpl;
+  QmitkIGINVidiaDataSourceImpl*     m_Pimpl;
 
   // and this receives the captured video frames (not necessarily at full frame rate though)
   // it's also hooked up to m_ImageNode
@@ -121,7 +119,7 @@ private:
   mitk::Image::Pointer              m_Image;
 
 
-  static const char*      NODE_NAME;
+  static const char*      s_NODE_NAME;
 
 }; // end class
 

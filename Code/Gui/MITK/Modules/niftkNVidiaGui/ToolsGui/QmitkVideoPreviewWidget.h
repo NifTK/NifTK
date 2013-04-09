@@ -29,8 +29,8 @@ public:
 
 
 public:
-  void set_video_dimensions(int width, int height);
-  void set_texture_id(int id);
+  void SetVideoDimensions(int width, int height);
+  void SetTextureId(int id);
 
 
 protected:
@@ -38,7 +38,7 @@ protected:
   virtual void resizeGL(int width, int height);
   virtual void paintGL();
 
-  int   textureid;
+  int   m_TextureId;
 };
 
 #endif // QMITKVIDEOPREVIEWWIDGET_H

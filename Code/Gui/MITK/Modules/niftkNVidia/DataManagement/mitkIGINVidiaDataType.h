@@ -33,9 +33,9 @@ public:
   itkNewMacro(IGINVidiaDataType);
 
   // FIXME: i wish these were constructor parameters
-  void set_values(unsigned int cookie, unsigned int sn, unsigned __int64 gputime);
+  void SetValues(unsigned int cookie, unsigned int sn, unsigned __int64 gputime);
 
-  unsigned int get_sequence_number() const;
+  unsigned int GetSequenceNumber() const;
 
 protected:
 
@@ -51,14 +51,14 @@ private:
   // interference on the wire) the old capture context is destroyed and a new one is created 
   // (fairly quickly) but any in-flight IGINVidiaDataType hanging around in the QmitkIGIDataSourceManager
   // might still reference the previous one.
-  unsigned int    magic_cookie;
+  unsigned int    m_MagicCookie;
 
   // SDI sequence number. Starts counting at 1 and increases for every set of captured images.
-  unsigned int    sequence_number;
+  unsigned int    m_SequenceNumber;
 
   // The SDI card keeps a time stamp for each frame coming out of the wire.
   // This is in some arbitrary unit (nanoseconds?) in reference to some arbitrary clock.
-  unsigned __int64  gpu_arrival_time;
+  unsigned __int64  m_GpuArrivalTime;
 };
 
 } // end namespace

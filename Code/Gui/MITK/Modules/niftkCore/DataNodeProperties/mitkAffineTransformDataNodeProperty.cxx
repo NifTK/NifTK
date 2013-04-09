@@ -17,6 +17,23 @@
 namespace mitk
 {
 
+//-----------------------------------------------------------------------------
+AffineTransformDataNodeProperty::AffineTransformDataNodeProperty()
+{
+  msp_Transform = vtkMatrix4x4::New();
+}
+
+
+//-----------------------------------------------------------------------------
+AffineTransformDataNodeProperty::AffineTransformDataNodeProperty(const AffineTransformDataNodeProperty& other)
+: Superclass(other)
+{
+  msp_Transform = vtkMatrix4x4::New();
+  msp_Transform->DeepCopy(msp_Transform);
+}
+
+
+//-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> AffineTransformDataNodeProperty::LoadTransformFromNode(const std::string propertyName, const mitk::DataNode &node) {
   vtkSmartPointer<vtkMatrix4x4> sp_transform;
   AffineTransformDataNodeProperty *p_property;
@@ -31,6 +48,8 @@ vtkSmartPointer<vtkMatrix4x4> AffineTransformDataNodeProperty::LoadTransformFrom
   return sp_transform;
 }
 
+
+//-----------------------------------------------------------------------------
 void AffineTransformDataNodeProperty::StoreTransformInNode(const std::string propertyName, const vtkMatrix4x4 &transform, mitk::DataNode &r_node) {
   AffineTransformDataNodeProperty::Pointer sp_property;
 
@@ -39,6 +58,8 @@ void AffineTransformDataNodeProperty::StoreTransformInNode(const std::string pro
   r_node.AddProperty(propertyName.c_str(), sp_property, NULL, true);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string AffineTransformDataNodeProperty::GetValueAsString() const
 {
   std::stringstream myStr;
@@ -62,6 +83,8 @@ std::string AffineTransformDataNodeProperty::GetValueAsString() const
   return myStr.str();
 }
 
+
+//-----------------------------------------------------------------------------
 bool AffineTransformDataNodeProperty::IsEqual(const BaseProperty& property) const
 {
   const Self *pc_affineProp = dynamic_cast<const Self*>(&property);
@@ -71,6 +94,8 @@ bool AffineTransformDataNodeProperty::IsEqual(const BaseProperty& property) cons
   return (std::equal(&pc_affineProp->GetTransform().Element[0][0], &pc_affineProp->GetTransform().Element[0][0] + 16, &GetTransform().Element[0][0]));
 }
 
+
+//-----------------------------------------------------------------------------
 bool AffineTransformDataNodeProperty::Assign(const BaseProperty& property)
 {
   const Self *pc_affineProp = dynamic_cast<const Self*>(&property);
@@ -80,6 +105,22 @@ bool AffineTransformDataNodeProperty::Assign(const BaseProperty& property)
   msp_Transform->DeepCopy(&pc_affineProp->GetTransform().Element[0][0]);
 
   return true;
+}
+
+
+//-----------------------------------------------------------------------------
+AffineTransformDataNodeProperty::Pointer AffineTransformDataNodeProperty::Clone() const
+{
+  AffineTransformDataNodeProperty::Pointer result = static_cast<Self*>(this->InternalClone().GetPointer());
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+itk::LightObject::Pointer AffineTransformDataNodeProperty::InternalClone() const
+{
+  itk::LightObject::Pointer result(new Self(*this));
+  return result;
 }
 
 } //end namespace

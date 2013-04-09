@@ -28,22 +28,28 @@ namespace mitk {
 class NIFTKCORE_EXPORT NamedLookupTableProperty : public mitk::LookupTableProperty
 {
 
-protected:
-  NamedLookupTableProperty();
-
-  NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut);
-
 public:
-  mitkClassMacro(NamedLookupTableProperty, mitk::LookupTableProperty);
 
+  mitkClassMacro(NamedLookupTableProperty, mitk::LookupTableProperty);
   itkNewMacro(NamedLookupTableProperty);
   mitkNewMacro2Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer);
 
-  virtual ~NamedLookupTableProperty();
+  Pointer Clone() const;
 
   virtual std::string GetValueAsString() const;
 
+protected:
+
+  virtual ~NamedLookupTableProperty();
+  NamedLookupTableProperty();
+  NamedLookupTableProperty(const NamedLookupTableProperty& other);
+  NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut);
+
 private:
+
+  NamedLookupTableProperty& operator=(const NamedLookupTableProperty&); // Purposefully not implemented
+  itk::LightObject::Pointer InternalClone() const;
+
   std::string m_Name;
 };
 
