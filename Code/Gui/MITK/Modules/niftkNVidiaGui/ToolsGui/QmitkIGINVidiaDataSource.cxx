@@ -24,6 +24,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include "video/sdiinput.h"
+#include <Mmsystem.h>
 
 
 // FIXME: this needs tidying up
@@ -76,10 +77,16 @@ struct QmitkIGINVidiaDataSourceImpl
   // maps ringbuffer slots to sequence numbers
   std::map<int, unsigned int>   slot2sn_map;
 
+
+  // time stamp of the previous successfully captured frame.
+  // this is used to detect a capture glitch without unconditionally blocking for new frames.
+  // see QmitkIGINVidiaDataSource::GrabData().
+  DWORD     m_LastSuccessfulFrame;
+
 public:
   QmitkIGINVidiaDataSourceImpl()
     : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), lock(QMutex::Recursive), 
-      current_state(PRE_INIT), copyoutasap(0)
+      current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0)
   {
     std::memset(&textureids[0], 0, sizeof(textureids));
     // we create the opengl widget on the ui thread once
@@ -147,6 +154,7 @@ public:
     // but we gotta clear up this one
     delete sdiin;
     sdiin = 0;
+    format = video::StreamFormat();
 
     // find our capture card
     for (int i = 0; ; ++i)
@@ -170,7 +178,9 @@ public:
       {
         video::StreamFormat f = sdidev->get_format(i);
         if (f.format == video::StreamFormat::PF_NONE)
+        {
           break;
+        }
 
         format = f;
       }
@@ -497,8 +507,7 @@ void QmitkIGINVidiaDataSource::GrabData()
       m_Pimpl->check_video();
 
       // once we have an input setup
-      //  grab at least one frame, there seems to be some glitch in the driver
-      //  where has_frame() always returns false
+      //  grab at least one frame (not quite sure why)
       if (m_Pimpl->sdiin)
       {
         m_Pimpl->sdiin->capture();
@@ -544,12 +553,19 @@ void QmitkIGINVidiaDataSource::GrabData()
   {
     bool hasframe = m_Pimpl->sdiin->has_frame();
     // note: has_frame() will not throw an exception in case setup is broken
-    
+
+    // make sure we try to capture a frame if the previous one was too long ago.
+    // that will check for errors and throw an exception if necessary, which will then allow us to restart.
+    if ((timeGetTime() - m_Pimpl->m_LastSuccessfulFrame) > 1000)
+      hasframe = true;
+
+
     if (hasframe)
     {
       // note: capture() will block for a frame to arrive
       // that's why we have hasframe above
       video::FrameInfo fi = m_Pimpl->sdiin->capture();
+      m_Pimpl->m_LastSuccessfulFrame = timeGetTime();
 
       // keep the most recent set of texture ids around
       // this is mainly for the preview window
