@@ -31,6 +31,7 @@ set(CPP_FILES
   Registration/mitkStereoImageToModelMetric.cxx
   Registration/mitkStereoImageToModelSSD.cxx
   Registration/mitkRegisterProbeModelToStereoPair.cxx
+  Tracking/mitkTagTrackingFacade.cxx
   demo/mitkTestLineExtraction.cxx
   demo/mitkTestCornerExtraction.cxx
 )
