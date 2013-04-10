@@ -25,6 +25,8 @@
 #include <QmitkStdMultiWidget.h>
 #include <itkConversionUtils.h>
 
+#include <mitkMIDASDisplayInteractor.h>
+
 class vtkCamera;
 
 class QGridLayout;
@@ -284,6 +286,14 @@ private:
   friend class DisplayGeometryModificationCommand;
 
   mitk::Geometry3D::Pointer m_CreatedGeometries[3];
+
+  mitk::MIDASDisplayInteractor::Pointer m_DisplayInteractor;
+
+  /**
+   * Reference to the service registration of the display interactor.
+   * It is needed to unregister the observer on unload.
+   */
+  mitk::ServiceRegistration m_DisplayInteractorService;
 };
 
 #endif

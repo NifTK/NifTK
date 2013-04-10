@@ -27,6 +27,8 @@
 #include <QFrame>
 #include <mitkMIDASOrientationUtils.h>
 
+#include <mitkGetModuleContext.h>
+
 /**
  * This class is to notify the SingleViewWidget about the display geometry changes of a render window.
  */
@@ -188,10 +190,28 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   {
     AddDisplayGeometryModificationObserver(renderWindows[i]);
   }
+
+  // The mouse mode switcher is declared and initialised in QmitkStdMultiWidget. It creates an
+  // mitk::DisplayInteractor. This line decreases the reference counter of the mouse mode switcher
+  // so that it is destructed and it unregisters and destructs its display interactor as well.
+  m_MouseModeSwitcher = 0;
+
+  // Here we create our own display interactor...
+  m_DisplayInteractor = mitk::MIDASDisplayInteractor::New();
+  m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml");
+  m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
+
+  // ... and register it as listener via the micro services.
+  mitk::ServiceProperties props;
+  props["name"] = std::string("DisplayInteractor");
+  m_DisplayInteractorService = mitk::GetModuleContext()->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
 }
 
 QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
 {
+  // Unregister the display interactor.
+  m_DisplayInteractorService.Unregister();
+
   if (mitkWidget1 != NULL && m_AxialSliceTag != 0)
   {
     mitkWidget1->GetSliceNavigationController()->RemoveObserver(m_AxialSliceTag);

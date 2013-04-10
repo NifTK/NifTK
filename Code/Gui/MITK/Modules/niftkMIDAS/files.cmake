@@ -35,4 +35,5 @@ set(CPP_FILES
   Interactions/mitkMIDASPaintbrushTool.cxx
   Interactions/mitkMIDASViewKeyPressStateMachine.cxx
   Interactions/mitkMIDASToolKeyPressStateMachine.cxx
+  Interactions/mitkMIDASDisplayInteractor.cxx
 )
