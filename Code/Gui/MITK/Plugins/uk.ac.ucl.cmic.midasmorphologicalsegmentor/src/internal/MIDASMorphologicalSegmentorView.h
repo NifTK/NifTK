@@ -91,8 +91,8 @@ protected slots:
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when OK button is clicked, which should finalise / finish and accept the segmentation.
   void OnOKButtonClicked();
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when Clear button is clicked, which means "back to start", like a "reset" button.
-  void OnClearButtonClicked();
+  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when Restart button is clicked, which means "back to start", like a "reset" button.
+  void OnRestartButtonClicked();
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
   void OnCancelButtonClicked();

@@ -1,3 +1,16 @@
+/*=============================================================================
+
+  libvideo: a library for SDI video processing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 #pragma once
 #ifndef LIBVIDEO_COMPRESS_H_51C60B61F0E2444388408FB2BD1F737A

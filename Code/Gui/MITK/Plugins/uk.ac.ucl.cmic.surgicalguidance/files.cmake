@@ -17,9 +17,9 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  uk_ac_ucl_cmic_surgicalguidance_Activator.cpp
-  SurgicalGuidanceView.cpp
-  SurgicalGuidanceViewPreferencePage.cpp
+  uk_ac_ucl_cmic_surgicalguidance_Activator.cxx
+  SurgicalGuidanceView.cxx
+  SurgicalGuidanceViewPreferencePage.cxx
 )
 
 set(UI_FILES

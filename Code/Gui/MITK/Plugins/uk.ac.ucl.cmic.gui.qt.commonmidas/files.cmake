@@ -13,12 +13,12 @@
 #============================================================================*/
 
 SET(SRC_CPP_FILES
-  QmitkMIDASBaseSegmentationFunctionality.cpp
-  QmitkMIDASSegmentationViewWidget.cpp
+  QmitkMIDASBaseSegmentationFunctionality.cxx
+  QmitkMIDASSegmentationViewWidget.cxx
 )
 
 SET(INTERNAL_CPP_FILES
-  MIDASActivator.cpp
+  MIDASActivator.cxx
 )
 
 SET(UI_FILES

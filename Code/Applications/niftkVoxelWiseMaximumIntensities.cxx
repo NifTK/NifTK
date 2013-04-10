@@ -25,15 +25,11 @@
  * \file niftkVoxelWiseMaximumIntensities.cxx
  * \page niftkVoxelWiseMaximumIntensities
  *
- * \section niftkVoxelWiseMaximumIntensities Uses ITK ImageFileReader
- * to load any number of input images, calculates the maximum intensity
- * on a voxel by voxel basis and writes the output with ITK
- * ImageFileWriter.
+ * \section niftkVoxelWiseMaximumIntensitiesSummary niftkVoxelWiseMaximumIntensities
  *
- * This program uses ITK ImageFileReaders to load any number of
- * images, and then uses simple ITK iterators to calculate the maximum
- * intensity of each voxel. The output is written using ITK
- * ImageFileWriter.
+ * Uses ITK ImageFileReader to load any number of input images, calculates the maximum intensity on a voxel by voxel basis and writes the output with ITK ImageFileWriter.
+ *
+ * This program uses ITK ImageFileReaders to load any number of images, and then uses simple ITK iterators to calculate the maximum intensity of each voxel. The output is written using ITK ImageFileWriter.
  *
  * \li Dimensions: 2,3
  * \li Pixel type: All input images are converted to float on input.

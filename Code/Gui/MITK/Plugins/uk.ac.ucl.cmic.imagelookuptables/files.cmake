@@ -2,9 +2,9 @@ SET(SRC_CPP_FILES
 )
 
 SET(INTERNAL_CPP_FILES
-  QmitkImageLookupTablesPreferencePage.cpp
-  ImageLookupTablesViewActivator.cpp
-  ImageLookupTablesView.cpp
+  QmitkImageLookupTablesPreferencePage.cxx
+  ImageLookupTablesViewActivator.cxx
+  ImageLookupTablesView.cxx
 )
 
 SET(UI_FILES

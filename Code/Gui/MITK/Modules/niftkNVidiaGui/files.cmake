@@ -13,19 +13,19 @@
 #============================================================================*/
 
 SET(CPP_FILES
-  ToolsGui/QmitkIGINVidiaDataSource.cpp 
-  ToolsGui/QmitkIGINVidiaDataSourceGui.cpp 
-  ToolsGui/QmitkVideoPreviewWidget.cpp
+  DataSources/QmitkIGINVidiaDataSource.cxx
+  DataSources/QmitkIGINVidiaDataSourceGui.cxx
+  DataSources/QmitkVideoPreviewWidget.cxx
 )
 
 SET(MOC_H_FILES
-  ToolsGui/QmitkIGINVidiaDataSource.h
-  ToolsGui/QmitkIGINVidiaDataSourceGui.h
-  ToolsGui/QmitkVideoPreviewWidget.h
+  DataSources/QmitkIGINVidiaDataSource.h
+  DataSources/QmitkIGINVidiaDataSourceGui.h
+  DataSources/QmitkVideoPreviewWidget.h
 )
 
 SET(UI_FILES
-  ToolsGui/QmitkIGINVidiaDataSourceGui.ui
+  DataSources/QmitkIGINVidiaDataSourceGui.ui
 )
 
 SET(QRC_FILES

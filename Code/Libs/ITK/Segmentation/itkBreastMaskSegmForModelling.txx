@@ -112,13 +112,13 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   // We require smaller kernel support for the prone-supine case 
 
   imFittedPectoralis = 
-    MaskImageFromBSplineFittedSurface( pecPointSet, 
-				       this->imStructural->GetLargestPossibleRegion(), 
-				       this->imStructural->GetOrigin(), 
-				       this->imStructural->GetSpacing(), 
-				       this->imStructural->GetDirection(), 
-				       rYHeightOffset,
-				       3, 8, 3, true );
+    this->MaskImageFromBSplineFittedSurface( pecPointSet, 
+					     this->imStructural->GetLargestPossibleRegion(), 
+					     this->imStructural->GetOrigin(), 
+					     this->imStructural->GetSpacing(), 
+					     this->imStructural->GetDirection(), 
+					     rYHeightOffset,
+					     3, 8, 3, true );
 
   // Write the fitted surface to file
 

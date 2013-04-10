@@ -16,11 +16,11 @@ SET(SRC_CPP_FILES
 )
 
 SET(INTERNAL_CPP_FILES
-  XnatBrowserView.cpp
-  XnatBrowserWidget.cpp
-  XnatPluginActivator.cpp
-  XnatPluginPreferencePage.cpp
-  XnatPluginSettings.cpp
+  XnatBrowserView.cxx
+  XnatBrowserWidget.cxx
+  XnatPluginActivator.cxx
+  XnatPluginPreferencePage.cxx
+  XnatPluginSettings.cxx
 )
 
 SET(UI_FILES

@@ -13,24 +13,24 @@
 #============================================================================*/
 
 set(CPP_FILES
-  VideoProcessing/mitkBaseVideoProcessor.cpp
-  VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cpp
-  VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cpp
-  VideoProcessing/mitkStereoOneTimePointVideoProcessorTemplateMethod.cpp
-  VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cpp
-  VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cpp
-  VideoProcessing/mitkCorrectVideoFileDistortion.cpp
-  VideoProcessing/mitkTrackLapUSProcessor.cpp
-  VideoProcessing/mitkTrackLapUS.cpp
-  CameraCalibration/mitkCameraCalibrationFacade.cpp
-  CameraCalibration/mitkCameraCalibrationFromDirectory.cpp
-  CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cpp
-  CameraCalibration/mitkCorrectImageDistortion.cpp
-  CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cpp
-  Registration/mitkRegistrationHelper.cpp
-  Registration/mitkStereoImageToModelMetric.cpp
-  Registration/mitkStereoImageToModelSSD.cpp
-  Registration/mitkRegisterProbeModelToStereoPair.cpp
-  demo/mitkTestLineExtraction.cpp
-  demo/mitkTestCornerExtraction.cpp
+  VideoProcessing/mitkBaseVideoProcessor.cxx
+  VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
+  VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cxx
+  VideoProcessing/mitkStereoOneTimePointVideoProcessorTemplateMethod.cxx
+  VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
+  VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
+  VideoProcessing/mitkCorrectVideoFileDistortion.cxx
+  VideoProcessing/mitkTrackLapUSProcessor.cxx
+  VideoProcessing/mitkTrackLapUS.cxx
+  CameraCalibration/mitkCameraCalibrationFacade.cxx
+  CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
+  CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
+  CameraCalibration/mitkCorrectImageDistortion.cxx
+  CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
+  Registration/mitkRegistrationHelper.cxx
+  Registration/mitkStereoImageToModelMetric.cxx
+  Registration/mitkStereoImageToModelSSD.cxx
+  Registration/mitkRegisterProbeModelToStereoPair.cxx
+  demo/mitkTestLineExtraction.cxx
+  demo/mitkTestCornerExtraction.cxx
 )

@@ -142,7 +142,8 @@ OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
 OPTION(BUILD_NIFTYSEG "Build NiftySeg." ON)
 OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
-OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code." OFF)
+OPTION(BUILD_TESTING "Build Unit tests." OFF)
+OPTION(BUILD_SLS_TESTING "Build Smart Liver Surgery additional tests." OFF)
 OPTION(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 IF(CMAKE_BUILD_TYPE MATCHES "Debug")
   SET(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
@@ -195,9 +196,9 @@ SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 SET(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or tar)" FORCE)
-SET(NIFTK_VERSION_DATA_GIT "9eb56e2d35" CACHE STRING "Version of NifTKData in git" FORCE)
+SET(NIFTK_VERSION_DATA_GIT "6b380c592f" CACHE STRING "Version of NifTKData in git" FORCE)
 SET(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
-SET(NIFTK_VERSION_DATA_TAR "9eb56e2d35" CACHE STRING "Version of NifTKData in tarball" FORCE)
+SET(NIFTK_VERSION_DATA_TAR "6b380c592f" CACHE STRING "Version of NifTKData in tarball" FORCE)
 SET(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
@@ -206,9 +207,9 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 SET(NIFTK_VERSION_CTK "fef76cef38" CACHE STRING "Version of CTK" FORCE)
-SET(NIFTK_VERSION_MITK "62e2e5ba98" CACHE STRING "Version of MITK" FORCE)
+SET(NIFTK_VERSION_MITK "d5eb05f63b" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
-SET(NIFTK_VERSION_NIFTYLINK "d45564da4a" CACHE STRING "Version of NiftyLink" FORCE)
+SET(NIFTK_VERSION_NIFTYLINK "d5fa20c1d9" CACHE STRING "Version of NiftyLink" FORCE)
 SET(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
 SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
@@ -304,6 +305,9 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_CGAL)
 MARK_AS_ADVANCED(NIFTK_LOCATION_SEM)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
+MARK_AS_ADVANCED(BUILD_SLS_TESTING)
+MARK_AS_ADVANCED(NIFTK_NIFTYLINK_DEV)
+MARK_AS_ADVANCED(BUILD_SHARED_LIBS)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
@@ -802,12 +806,6 @@ IF (BUILD_MESHING)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing)
 ENDIF (BUILD_MESHING) 
 
-IF(NVAPI_FOUND)
-  #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
-  # libvideo depends on an active opengl context
-  #  which niftknvidiagui manages
-  #INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
-ENDIF(NVAPI_FOUND)
 
 ######################################################################
 # Output directories, for when compiling, not installing.

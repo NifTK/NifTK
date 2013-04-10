@@ -17,8 +17,8 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  SnapshotViewActivator.cpp
-  SnapshotView.cpp
+  SnapshotViewActivator.cxx
+  SnapshotView.cxx
 )
 
 set(UI_FILES

@@ -13,14 +13,14 @@
 #============================================================================*/
 
 SET(SRC_CPP_FILES
-  QmitkCommonAppsApplicationPlugin.cpp
-  QmitkCommonAppsApplicationPreferencePage.cpp
-  QmitkBaseApplication.cpp   
-  QmitkBaseAppWorkbenchAdvisor.cpp    
-  QmitkBaseWorkbenchWindowAdvisor.cpp
-  QmitkNiftyViewApplicationPreferencePage.cpp
-  QmitkNiftyViewIGIPerspective.cpp
-  QmitkNiftyViewMIDASPerspective.cpp
+  QmitkCommonAppsApplicationPlugin.cxx
+  QmitkCommonAppsApplicationPreferencePage.cxx
+  QmitkBaseApplication.cxx
+  QmitkBaseAppWorkbenchAdvisor.cxx
+  QmitkBaseWorkbenchWindowAdvisor.cxx
+  QmitkNiftyViewApplicationPreferencePage.cxx
+  QmitkNiftyViewIGIPerspective.cxx
+  QmitkNiftyViewMIDASPerspective.cxx
 )
 
 SET(INTERNAL_CPP_FILES

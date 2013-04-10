@@ -14,7 +14,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
 "<executable>\n"
 
-"  <category>Segmentation</category>\n"
+"  <category>Breast Cancer Imaging Tools . MRI</category>\n"
 "  <title>Breast Mask Segmentation from MRI</title>\n"
 "  <description>Executable to segment left and right breasts from a 3D MR volume.</description>\n"
 "  <version>0.1</version>\n"

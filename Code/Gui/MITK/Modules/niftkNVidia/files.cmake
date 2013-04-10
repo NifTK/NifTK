@@ -13,5 +13,5 @@
 #============================================================================*/
 
 set(CPP_FILES
-  DataManagement/mitkIGINVidiaDataType.cpp
+  DataSources/mitkIGINVidiaDataType.cxx
 )

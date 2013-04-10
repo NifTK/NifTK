@@ -16,9 +16,9 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  QmitkThumbnailViewPreferencePage.cpp
-  ThumbnailViewActivator.cpp
-  ThumbnailView.cpp
+  QmitkThumbnailViewPreferencePage.cxx
+  ThumbnailViewActivator.cxx
+  ThumbnailView.cxx
 )
 
 set(UI_FILES
