@@ -54,13 +54,14 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
-
+  this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void TagTrackerView::SetFocus()
+void TagTrackerView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
+  this->RetrievePreferenceValues();
 }
 
 
@@ -76,14 +77,12 @@ void TagTrackerView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
-void TagTrackerView::OnPreferencesChanged(const berry::IBerryPreferences*)
+void TagTrackerView::SetFocus()
 {
-  this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
 void TagTrackerView::OnUpdate(const ctkEvent& event)
 {
-  std::cerr << "Matt, TagTrackerView::OnUpdate(event)" << std::endl;
 }
