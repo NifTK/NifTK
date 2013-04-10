@@ -133,6 +133,8 @@ public:
 
     if (prevctx)
       prevctx->makeCurrent();
+    else
+      oglwin->doneCurrent();
   }
 
   ~QmitkIGINVidiaDataSourceImpl()
@@ -152,12 +154,15 @@ public:
       // we need the capture context for proper cleanup
       oglwin->makeCurrent();
 
+      delete compressor;
       delete sdiin;
       // we do not own sdidev!
       sdidev = 0;
     
       if (ctx)
         ctx->makeCurrent();
+      else
+        oglwin->doneCurrent();
     }
     catch (...)
     {
@@ -839,7 +844,23 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
       assert(ctx == m_Pimpl->cuContext);
     }
 
-    // FIXME: look up ringbuffer entry for the requested data item
+    // find out which ringbuffer slot the request sequence number is in, if any
+    unsigned int requestedSN = dataType->GetSequenceNumber();
+    std::map<unsigned int, int>::iterator sloti = m_Pimpl->sn2slot_map.find(requestedSN);
+    if (sloti != m_Pimpl->sn2slot_map.end())
+    {
+      // compress each stream
+      for (int i = 0; i < m_Pimpl->streamcount; ++i)
+      {
+        int tid = m_Pimpl->sdiin->get_texture_id(i, sloti->second);
+        // would need to do prepare() only once
+        // but more often is ok too
+        m_Pimpl->compressor->preparetexture(tid);
+        m_Pimpl->compressor->compresstexture(tid);
+      }
+
+      success = true;
+    }
   }
 
   return success;
