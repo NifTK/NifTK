@@ -13,17 +13,17 @@
 #============================================================================*/
 
 SET(CPP_FILES
-  ToolsGui/QmitkIGIDataSourceManager.cxx
-  ToolsGui/QmitkIGIDataSourceManagerClearDownThread.cxx
-  ToolsGui/QmitkIGIDataSourceManagerGuiUpdateThread.cxx
+  DataSources/QmitkIGIDataSourceManager.cxx
+  DataSources/QmitkIGIDataSourceManagerClearDownThread.cxx
+  DataSources/QmitkIGIDataSourceManagerGuiUpdateThread.cxx
 )
 
 SET(MOC_H_FILES
-  ToolsGui/QmitkIGIDataSourceManager.h
+  DataSources/QmitkIGIDataSourceManager.h
 )
 
 SET(UI_FILES
-  ToolsGui/QmitkIGIDataSourceManager.ui
+  DataSources/QmitkIGIDataSourceManager.ui
 )
 
 SET(QRC_FILES
