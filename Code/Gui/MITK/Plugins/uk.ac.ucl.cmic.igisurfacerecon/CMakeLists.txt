@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  DataSources/mitkIGITestDataUtils.cxx
-  DataSources/mitkIGIDataType.cxx
-  DataSources/mitkIGIDataSource.cxx
-  DataSources/mitkIGIOpenCVDataType.cxx
-  SurfaceReconstruction/mitkSurfaceReconstruction.cxx
+project(uk_ac_ucl_cmic_igisurfacerecon)
+
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE SURFACERECON_EXPORT
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDENCIES niftkIGIGui
 )

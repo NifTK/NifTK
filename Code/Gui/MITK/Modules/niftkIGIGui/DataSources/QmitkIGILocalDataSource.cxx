@@ -117,7 +117,7 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateRGBAMitkImage(const IplImage
   else
   {
     // if that is not true then something is seriously borked
-    assert(image->widthStep >= numberOfBytesPerLine);
+    assert(image->widthStep >= static_cast<int>(numberOfBytesPerLine));
 
     // "slow" path: copy line by line
     for (int y = 0; y < image->height; ++y)
@@ -197,7 +197,7 @@ mitk::Image::Pointer QmitkIGILocalDataSource::CreateRGBMitkImage(const IplImage*
   else
   {
     // if that is not true then something is seriously borked
-    assert(image->widthStep >= numberOfBytesPerLine);
+    assert(image->widthStep >= static_cast<int>(numberOfBytesPerLine));
 
     // "slow" path: copy line by line
     for (int y = 0; y < image->height; ++y)

@@ -10,7 +10,7 @@
 
   <extension point="org.blueberry.ui.preferencePages">
     <page id="uk.ac.ucl.cmic.TagTrackerViewPreferencePage" name="Tag Tracker" class="TagTrackerViewPreferencePage">
-      <keywordreference id="uk.ac.ucl.cmic.TagTrackerView"></keywordreference>
+      <keywordreference id="uk.ac.ucl.cmic.TagTrackerViewKeywords"></keywordreference>
     </page>
   </extension>
 
