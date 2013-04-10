@@ -524,12 +524,8 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::GetRgbaImage(unsigned int se
 void QmitkIGINVidiaDataSource::GrabData()
 {
   assert(m_Pimpl != 0);
-
   assert(m_GrabbingThread == (QmitkIGILocalDataSourceGrabbingThread*) QThread::currentThread());
 
-
-  // FIXME: currently the grabbing thread's sole purpose is to call into this method
-  //        so we could just block it here with a while loop and do our capture stuff
 
   QMutexLocker    l(&m_Pimpl->lock);
 
@@ -867,10 +863,14 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     std::map<unsigned int, int>::iterator sloti = m_Pimpl->sn2slot_map.find(requestedSN);
     if (sloti != m_Pimpl->sn2slot_map.end())
     {
+      // sanity check
+      assert(m_Pimpl->slot2sn_map.find(sloti->second)->second == requestedSN);
+
       // compress each stream
       for (int i = 0; i < m_Pimpl->streamcount; ++i)
       {
         int tid = m_Pimpl->sdiin->get_texture_id(i, sloti->second);
+        assert(tid != 0);
         // would need to do prepare() only once
         // but more often is ok too
         m_Pimpl->compressor->preparetexture(tid);
@@ -878,6 +878,10 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
       }
 
       success = true;
+    }
+    else
+    {
+      assert(false);
     }
   }
 
