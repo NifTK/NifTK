@@ -191,6 +191,10 @@ private:
   // If m_ErosionMode is true, we update WorkingData 0 and 1, if m_ErosionMode is false, we update WorkingData 2 and 3.
   bool m_ErosionMode;
 
+  // Stores the current display interactor configurations when this tool is activated.
+  // The configurations are restored when the tool is deactivated.
+  std::map<mitk::ServiceReference, mitk::EventConfig> m_DisplayInteractorConfigs;
+
 };//class
 
 }//namespace

@@ -17,6 +17,13 @@
 #include "mitkGlobalInteraction.h"
 #include "itkCommand.h"
 
+// MicroServices
+#include "mitkGetModuleContext.h"
+#include "mitkModule.h"
+#include "mitkModuleRegistry.h"
+
+#include "mitkMIDASDisplayInteractor.h"
+
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
 const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
 const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = std::string("MIDAS_PRIOR_CONTOURS");
@@ -247,27 +254,6 @@ const char* mitk::MIDASTool::GetGroup() const
   return "MIDAS";
 }
 
-void mitk::MIDASTool::Deactivated()
-{
-  Superclass::Deactivated();
-  m_IsActivated = false;
-
-  if (m_AddToPointSetInteractor.IsNotNull())
-  {
-    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
-  }
-
-  mitk::PointSet* pointSet = NULL;
-  mitk::DataNode* pointSetNode = NULL;
-
-  this->FindPointSet(pointSet, pointSetNode);
-
-  if (pointSet != NULL)
-  {
-    pointSet->RemoveObserver(m_SeedsChangedTag);
-  }
-}
-
 void mitk::MIDASTool::Activated()
 {
   Superclass::Activated();
@@ -294,6 +280,62 @@ void mitk::MIDASTool::Activated()
 
     m_LastSeenNumberOfSeeds = pointSet->GetSize();
   }
+
+  // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
+  // Note: this only affects InteractionEventObservers (formerly known as Listeners) all DataNode specific interaction will still be enabled
+  m_DisplayInteractorConfigs.clear();
+  std::list<mitk::ServiceReference> listEventObserver = GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
+  for (std::list<mitk::ServiceReference>::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
+  {
+    MIDASDisplayInteractor* displayInteractor = dynamic_cast<MIDASDisplayInteractor*>(
+                                                    GetModuleContext()->GetService<InteractionEventObserver>(*it));
+    if (displayInteractor != NULL)
+    {
+      // remember the original configuration
+      m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
+      // here the alternative configuration is loaded
+      displayInteractor->SetEventConfig("DisplayConfigMIDASTool.xml", GetModuleContext()->GetModule());
+    }
+  }
+}
+
+void mitk::MIDASTool::Deactivated()
+{
+  Superclass::Deactivated();
+  m_IsActivated = false;
+
+  if (m_AddToPointSetInteractor.IsNotNull())
+  {
+    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
+  }
+
+  mitk::PointSet* pointSet = NULL;
+  mitk::DataNode* pointSetNode = NULL;
+
+  this->FindPointSet(pointSet, pointSetNode);
+
+  if (pointSet != NULL)
+  {
+    pointSet->RemoveObserver(m_SeedsChangedTag);
+  }
+
+  // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
+  // in new interaction framework
+  for (std::map<mitk::ServiceReference, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
+       it != m_DisplayInteractorConfigs.end(); ++it)
+  {
+    if (it->first)
+    {
+      MIDASDisplayInteractor* displayInteractor = static_cast<MIDASDisplayInteractor*>(
+                                               GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
+      if (displayInteractor != NULL)
+      {
+        // here the regular configuration is loaded again
+        displayInteractor->SetEventConfig(it->second);
+      }
+    }
+  }
+  m_DisplayInteractorConfigs.clear();
 }
 
 void mitk::MIDASTool::RenderCurrentWindow(const PositionEvent& positionEvent)
@@ -384,4 +426,3 @@ float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
     return mitk::FeedbackContourTool::CanHandleEvent(event);
   }
 }
-
