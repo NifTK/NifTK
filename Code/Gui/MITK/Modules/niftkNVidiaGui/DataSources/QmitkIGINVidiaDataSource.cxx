@@ -89,10 +89,16 @@ struct QmitkIGINVidiaDataSourceImpl
   // see QmitkIGINVidiaDataSource::GrabData().
   DWORD     m_LastSuccessfulFrame;
 
+  // used to detect whether record has stopped or not.
+  // there's no notification when the user clicked stop-record.
+  // QmitkIGINVidiaDataSource::GrabData(), bottom
+  bool  m_WasSavingMessagesPreviously;
+
+
 public:
   QmitkIGINVidiaDataSourceImpl()
     : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
-      current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0)
+      current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), m_WasSavingMessagesPreviously(false)
   {
     std::memset(&textureids[0], 0, sizeof(textureids));
     // we create the opengl widget on the ui thread once
@@ -676,6 +682,15 @@ void QmitkIGINVidiaDataSource::GrabData()
     m_Pimpl->copyoutasap = 0;
     m_Pimpl->copyoutfinished.wakeOne();
   }
+
+  // because there's currently no notification when the user clicked stop-record
+  // we need to check this way to clean up the compressor.
+  if (m_Pimpl->m_WasSavingMessagesPreviously && !GetSavingMessages())
+  {
+    delete m_Pimpl->compressor;
+    m_Pimpl->compressor = 0;
+    m_Pimpl->m_WasSavingMessagesPreviously = false;
+  }
 }
 
 
@@ -803,6 +818,9 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
 
     // make sure nobody messes around with contexts
     assert(QGLContext::currentContext() == m_Pimpl->oglwin->context());
+
+    // no record-stop-notification work around
+    m_Pimpl->m_WasSavingMessagesPreviously = true;
 
     if (m_Pimpl->compressor == 0)
     {
