@@ -14,6 +14,11 @@
 
 // Qmitk
 #include "SurgicalGuidanceView.h"
+#include <ctkPluginContext.h>
+#include <ctkServiceReference.h>
+#include <service/event/ctkEventAdmin.h>
+#include <service/event/ctkEvent.h>
+#include "uk_ac_ucl_cmic_surgicalguidance_Activator.h"
 
 const std::string SurgicalGuidanceView::VIEW_ID = "uk.ac.ucl.cmic.surgicalguidance";
 
@@ -45,6 +50,16 @@ void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
   m_DataSourceManager->SetDataStorage(this->GetDataStorage());
 
   this->RetrievePreferenceValues();
+
+  connect(m_DataSourceManager, SIGNAL(UpdateGuiEnd(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
+
+  ctkPluginContext* context = mitk::uk_ac_ucl_cmic_surgicalguidance_Activator::getContext();
+  ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
+  if (ref)
+  {
+    ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
+    eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
+  }
 }
 
 
@@ -124,3 +139,11 @@ void SurgicalGuidanceView::OnPreferencesChanged(const berry::IBerryPreferences*)
   this->RetrievePreferenceValues();
 }
 
+
+//-----------------------------------------------------------------------------
+void SurgicalGuidanceView::OnUpdateGuiEnd(igtlUint64 timeStamp)
+{
+  ctkDictionary properties;
+  properties["timeStamp"] = timeStamp;
+  emit Updated(properties);
+}

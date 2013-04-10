@@ -27,10 +27,18 @@ QmitkIGILocalDataSource::QmitkIGILocalDataSource(mitk::DataStorage* storage)
 //-----------------------------------------------------------------------------
 QmitkIGILocalDataSource::~QmitkIGILocalDataSource()
 {
+  StopGrabbingThread();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGILocalDataSource::StopGrabbingThread()
+{
   if (m_GrabbingThread != NULL)
   {
     m_GrabbingThread->ForciblyStop();
     delete m_GrabbingThread;
+    m_GrabbingThread = NULL;
   }
 }
 

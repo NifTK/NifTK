@@ -160,6 +160,10 @@ namespace mitk {
     // To control if we block the NumberOfSeedsHasChanged signal.
     bool m_BlockNumberOfSeedsSignal;
 
+    // Stores the current display interactor configurations when this tool is activated.
+    // The configurations are restored when the tool is deactivated.
+    std::map<mitk::ServiceReference, mitk::EventConfig> m_DisplayInteractorConfigs;
+
   };//class
 
 }//namespace
