@@ -38,6 +38,7 @@ QmitkIGIDataSource::~QmitkIGIDataSource()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSource::SetSavingMessages(bool isSaving)
 {
+  // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!
   mitk::IGIDataSource::SetSavingMessages(isSaving);
   if (!m_SaveThread->isRunning())
   {
