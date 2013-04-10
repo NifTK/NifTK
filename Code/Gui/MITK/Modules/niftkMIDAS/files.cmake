@@ -37,3 +37,8 @@ set(CPP_FILES
   Interactions/mitkMIDASToolKeyPressStateMachine.cxx
   Interactions/mitkMIDASDisplayInteractor.cxx
 )
+
+set(RESOURCE_FILES
+  Interactions/DisplayConfigMIDASTool.xml
+  Interactions/DisplayConfigMIDASPaintbrushTool.xml
+)
