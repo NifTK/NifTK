@@ -138,7 +138,7 @@ The steps required for this are:
 protected:
   Ui::SnapshotViewControls *m_Controls;
 \endcode
-and then in SnapshotView.cpp we have
+and then in SnapshotView.cxx we have
 \code
 void SnapshotView::CreateQtPartControl( QWidget *parent )
 {
@@ -212,7 +212,7 @@ point for methods. Here are some guiding principals, and hopefully this list can
 The central data storage is shared, and lots of things listen to updates. This is the model, plugins are controllers 
 that take user input, and update the model. 
 \li Try to keep a clear focus on the purpose of the plugin, prefering to do a small number of things in a well defined manner.
-\li Data storage can be retrieved simply by (in ThumbnailView.cpp)
+\li Data storage can be retrieved simply by (in ThumbnailView.cxx)
 \code
 mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDataStorage();
 \endcode
@@ -220,7 +220,7 @@ mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDa
 of that plugin. For example, the MIDAS Morphological Editor has a preference page MIDASMorphologicalSegmentorViewPreferencePage
 defined in
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor/src/MIDASMorphologicalSegmentorViewPreferencePage.h/.cpp
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor/src/MIDASMorphologicalSegmentorViewPreferencePage.h/.cxx.
 \endverbatim
 and this page is added to files.cmake to compile it, plugin.xml to run it at run-time and registered with the framework in 
 MIDASMorphologicalSegmentorViewActivator.

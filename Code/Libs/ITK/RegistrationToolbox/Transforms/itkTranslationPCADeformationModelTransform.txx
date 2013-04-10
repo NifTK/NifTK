@@ -1,19 +1,17 @@
-/*=========================================================================
+/*=============================================================================
 
-  Program:   Insight Segmentation & Registration Toolkit
-  Module:    $RCSfile: itkTranslationPCADeformationModelTransform.txx,v $
-  Language:  C++
-  Date:      $Date: 2011-01-13 17:22:21 +0000 (Thu, 13 Jan 2011) $
-  Version:   $Revision: 4743 $
+  NifTK: A software platform for medical image computing.
 
-  Copyright (c) Insight Software Consortium. All rights reserved.
-  See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-     PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-=========================================================================*/
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #ifndef _itkTranslationPCADeformationModelTransform_txx
 #define _itkTranslationPCADeformationModelTransform_txx
 

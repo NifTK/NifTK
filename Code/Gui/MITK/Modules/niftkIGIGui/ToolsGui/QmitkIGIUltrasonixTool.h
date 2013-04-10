@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKIGIULTRASONIXTOOL_H
 #define QMITKIGIULTRASONIXTOOL_H
@@ -42,15 +32,15 @@ class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixTool : public QmitkIGINiftyLinkDataSo
 public:
 
   mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGINiftyLinkDataSource);
-  itkNewMacro(QmitkIGIUltrasonixTool);
+  mitkNewMacro2Param(QmitkIGIUltrasonixTool, mitk::DataStorage*, NiftyLinkSocketObject *);
 
   /**
    * \brief We store the node name here so other classes can refer to it.
    */
-  static const std::string ULTRASONIX_TOOL_2D_IMAGE_NAME;
+  static const std::string ULTRASONIX_IMAGE_NAME;
 
   /**
-   * \brief Defined in base class, so we check that the data is in fact a OIGTLMessageType containing tracking data.
+   * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
@@ -66,7 +56,7 @@ public slots:
   /**
    * \brief Main message handler routine for this tool.
    */
-  virtual void InterpretMessage(OIGTLMessage::Pointer msg);
+  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
 
 signals:
 
@@ -75,7 +65,7 @@ signals:
 
 protected:
 
-  QmitkIGIUltrasonixTool(); // Purposefully hidden.
+  QmitkIGIUltrasonixTool(mitk::DataStorage* storage, NiftyLinkSocketObject*); // Purposefully hidden.
   virtual ~QmitkIGIUltrasonixTool(); // Purposefully hidden.
 
   QmitkIGIUltrasonixTool(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
@@ -93,7 +83,7 @@ private:
    * by extracting an image, and converting it appropriate to the associated image
    * in the data storage.
    */
-  void HandleImageData(OIGTLMessage* msg);
+  void HandleImageData(NiftyLinkMessage* msg);
 
   /**
    * \brief Retrieves the motor position from the most recent data available.

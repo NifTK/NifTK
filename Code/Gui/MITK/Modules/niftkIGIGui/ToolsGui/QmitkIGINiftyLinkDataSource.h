@@ -1,33 +1,23 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKIGINIFTYLINKDATASOURCE_H
 #define QMITKIGINIFTYLINKDATASOURCE_H
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGIDataSource.h"
-#include <OIGTLSocketObject.h>
+#include <NiftyLinkSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
 
 /**
@@ -47,12 +37,12 @@ public:
   /**
    * \brief Sets the socket pointer.
    */
-  itkSetObjectMacro(Socket, OIGTLSocketObject);
+  itkSetObjectMacro(Socket, NiftyLinkSocketObject);
 
   /**
    * \brief Gets the socket pointer.
    */
-  itkGetConstMacro(Socket, OIGTLSocketObject*);
+  itkGetConstMacro(Socket, NiftyLinkSocketObject*);
 
   /**
    * \brief Sets the Client Descriptor XML.
@@ -77,11 +67,20 @@ public:
   /**
    * \brief If there is a socket associated with this tool, will send the message.
    */
-  void SendMessage(OIGTLMessage::Pointer msg);
+  void SendMessage(NiftyLinkMessage::Pointer msg);
+
+  /**
+   * \brief Get the Associated Socket
+   */
+  NiftyLinkSocketObject* GetSocket();
 
 protected:
 
-  QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
+  /**
+   * \brief Constructor where socket creation is optional.
+   * \param socket if NULL a new socket will be created.
+   */
+  QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, NiftyLinkSocketObject *socket); // Purposefully hidden.
   virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
   QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
@@ -107,12 +106,13 @@ protected slots:
   /**
    * \brief Main message handler routine for this tool, that subclasses must implement.
    */
-  virtual void InterpretMessage(OIGTLMessage::Pointer msg) {};
+  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg) {};
 
 private:
 
-  OIGTLSocketObject           *m_Socket;
+  NiftyLinkSocketObject       *m_Socket;
   ClientDescriptorXMLBuilder  *m_ClientDescriptor;
+  bool                         m_UsingSomeoneElsesSocket;
 
 }; // end class
 

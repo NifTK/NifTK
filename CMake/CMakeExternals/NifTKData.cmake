@@ -1,26 +1,17 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
+#  NifTK: A software platform for medical image computing.
 #
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
-#
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-12-17 14:35:07 +0000 (Sat, 17 Dec 2011) $ 
-#  Revision          : $Revision: 8065 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 
 #-----------------------------------------------------------------------------
 # NifTKData - Downloads the unit-testing data as a separate project.
@@ -38,6 +29,7 @@ if (BUILD_TESTING)
   set(NifTKData_DEPENDS ${proj})
 
   # Supported values: git, svn, tar
+  set(${proj}_archtype ${NIFTK_ARCHTYPE_DATA})
   if (NOT DEFINED ${proj}_archtype)
     set(${proj}_archtype "git")
   endif()
@@ -89,4 +81,4 @@ if (BUILD_TESTING)
     
   endif (NOT DEFINED NIFTK_DATA_DIR)
 
-endif (BUILD_TESTING) 
+endif (BUILD_TESTING)

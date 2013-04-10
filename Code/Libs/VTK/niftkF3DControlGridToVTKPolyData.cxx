@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: $
- Revision          : $Revision: $
- Last modified by  : $Author: $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Original author   : j.hipwell@ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "niftkF3DControlGridToVTKPolyData.h"
 
@@ -326,7 +316,6 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
 
 
   reg_spline_getDeformationField( controlPointGrid,
-				  referenceImage,
 				  deformation,
 				  NULL, // mask
 				  true, //composition
@@ -458,7 +447,6 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
 
 
   reg_spline_getDeformationField( controlPointGrid,
-				  referenceImage,
 				  deformation,
 				  NULL, // mask
 				  true, //composition
@@ -592,7 +580,7 @@ void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
   memcpy( refinedGrid->data, controlPointGrid->data,
 	  refinedGrid->nvox * refinedGrid->nbyper);
 
-  reg_bspline_refineControlPointGrid( referenceImage, refinedGrid );
+  reg_spline_refineControlPointGrid( referenceImage, refinedGrid );
 
   xyDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XY, refinedGrid, 
 						      controlGridSkipFactor, 
@@ -777,7 +765,7 @@ void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
   memcpy( refinedGrid->data, controlPointGrid->data,
 	  refinedGrid->nvox * refinedGrid->nbyper);
   
-  reg_bspline_refineControlPointGrid( targetImage, refinedGrid );
+  reg_spline_refineControlPointGrid( targetImage, refinedGrid );
 
   // Generate the deformation field
 
@@ -791,7 +779,6 @@ void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 
 
   reg_spline_getDeformationField( refinedGrid,
-				  referenceImage,
 				  deformationFieldImage,
 				  NULL, // mask
 				  true, //composition

@@ -121,6 +121,20 @@ configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql
 \endverbatim 
 
 The last two paramters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2008 or -platform win32-msvc2010). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.<br><br>
+
+If you need symbols (to be able to debug a crashed release-build, for example, or to performance-profile your code), you'll need to hack mkspec: You need to edit
+\verbatim
+qtsrc/mkspecs/win32-msvc2010/qmake.conf
+\endverbatim
+Add to QMAKE_CFLAGS_RELEASE the -Zi flag, and to QMAKE_LFLAGS_RELEASE the /debug flag. For example:
+\verbatim
+...
+QMAKE_CFLAGS_RELEASE = -O2 -MD -Zi
+...
+QMAKE_LFLAGS_RELEASE = /INCREMENTAL:NO /DEBUG /OPT:REF
+...
+\endverbatim
+
 Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.2").  
 <br><br>If you later need to reconfigure and rebuild Qt from the same location, ensure that all traces of the previous configuration are removed by entering the build directory and typing "nmake distclean" before running configure again.<br>
 

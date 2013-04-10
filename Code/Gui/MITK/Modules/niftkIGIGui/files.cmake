@@ -1,27 +1,43 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 SET(CPP_FILES
-  Common/QmitkIGIUtils.cpp
-  DataManagement/QmitkQImageToMitkImageFilter.cpp
-  ToolsGui/TrackerControlsWidget.cpp
-  ToolsGui/QmitkFiducialRegistrationWidgetDialog.cpp
-  ToolsGui/QmitkIGIDataSourceManager.cpp    
-  ToolsGui/QmitkIGINiftyLinkDataType.cpp
-  ToolsGui/QmitkIGINiftyLinkDataSource.cpp
-  ToolsGui/QmitkIGINiftyLinkDataSourceGui.cpp
-  ToolsGui/QmitkIGIDataSource.cpp
-  ToolsGui/QmitkIGIDataSourceGui.cpp
-  ToolsGui/QmitkIGILocalDataSource.cpp
-  ToolsGui/QmitkIGITrackerTool.cpp
-  ToolsGui/QmitkIGITrackerToolGui.cpp
-  ToolsGui/QmitkIGIUltrasonixTool.cpp
-  ToolsGui/QmitkIGIUltrasonixToolGui.cpp   
-  ToolsGui/QmitkIGIOpenCVDataSource.cpp 
-  ToolsGui/QmitkIGIOpenCVDataSourceGui.cpp 
+  Common/QmitkIGIUtils.cxx
+  DataManagement/QmitkQImageToMitkImageFilter.cxx
+  ToolsGui/TrackerControlsWidget.cxx
+  ToolsGui/QmitkIGITimerBasedThread.cxx
+  ToolsGui/QmitkFiducialRegistrationWidgetDialog.cxx
+  ToolsGui/QmitkIGINiftyLinkDataType.cxx
+  ToolsGui/QmitkIGINiftyLinkDataSource.cxx
+  ToolsGui/QmitkIGINiftyLinkDataSourceGui.cxx
+  ToolsGui/QmitkIGIDataSource.cxx
+  ToolsGui/QmitkIGIDataSourceBackgroundSaveThread.cxx
+  ToolsGui/QmitkIGIDataSourceGui.cxx
+  ToolsGui/QmitkIGILocalDataSource.cxx
+  ToolsGui/QmitkIGILocalDataSourceGrabbingThread.cxx
+  ToolsGui/QmitkIGITrackerTool.cxx
+  ToolsGui/QmitkIGITrackerToolGui.cxx
+  ToolsGui/QmitkIGIUltrasonixTool.cxx
+  ToolsGui/QmitkIGIUltrasonixToolGui.cxx
+  ToolsGui/QmitkIGIOpenCVDataSource.cxx
+  ToolsGui/QmitkIGIOpenCVDataSourceGui.cxx
 )
 
 SET(MOC_H_FILES
   ToolsGui/TrackerControlsWidget.h
+  ToolsGui/QmitkIGITimerBasedThread.h
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.h
-  ToolsGui/QmitkIGIDataSourceManager.h
   ToolsGui/QmitkIGINiftyLinkDataSource.h
   ToolsGui/QmitkIGINiftyLinkDataSourceGui.h
   ToolsGui/QmitkIGIDataSource.h
@@ -40,9 +56,8 @@ SET(UI_FILES
   ToolsGui/QmitkFiducialRegistrationWidgetDialog.ui  
   ToolsGui/QmitkIGITrackerToolGui.ui
   ToolsGui/QmitkIGIUltrasonixToolGui.ui
-  ToolsGui/QmitkIGIDataSourceManager.ui
 )
 
 SET(QRC_FILES
-  Resources/niftkIGIGui.qrc
+  #Resources/niftkIGIGui.qrc
 )

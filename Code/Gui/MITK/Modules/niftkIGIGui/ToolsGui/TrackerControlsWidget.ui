@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>558</width>
-    <height>181</height>
+    <width>559</width>
+    <height>266</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -165,16 +165,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QmitkDataStorageComboBox" name="comboBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="2">
            <widget class="QToolButton" name="toolButton_Assoc">
             <property name="minimumSize">
@@ -185,6 +175,132 @@
             </property>
             <property name="text">
              <string>associate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="pushButton_CameraLink">
+            <property name="text">
+             <string>Associate with VTK Camera</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="pushButton_LHCRHC">
+            <property name="toolTip">
+             <string comment="Flips the camera focal point to enable tracking in left or right handed coordinate systems."/>
+            </property>
+            <property name="text">
+             <string>LHC</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_associatedData">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QToolButton" name="toolButton_disassociate">
+            <property name="text">
+             <string>Disassoc.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="pushButton_FidTrack">
+            <property name="text">
+             <string>Fid Trk. On</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QPushButton" name="pushButton_ApplyFiducialTransform">
+            <property name="text">
+             <string>Apply Fid. Trn.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes_ApplyFids">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QPushButton" name="pushButton_SetUpPositioning">
+            <property name="text">
+             <string>Fine Positioning</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_dataNodes_FinePos">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QToolButton" name="toolButton_PM_Assoc">
+            <property name="text">
+             <string>Assoc. with PM.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QToolButton" name="toolButton_PM_disassociate">
+            <property name="text">
+             <string>Disassociate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_PM_dataNodes">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QmitkDataStorageComboBox" name="comboBox_PM_associatedData">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Pre Matrix</string>
             </property>
            </widget>
           </item>

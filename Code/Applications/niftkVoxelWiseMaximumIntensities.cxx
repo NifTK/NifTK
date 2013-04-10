@@ -1,26 +1,17 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: 2011-11-21 14:43:44 +0000 (Mon, 21 Nov 2011) $
- Revision          : $Revision: 7828 $
- Last modified by  : $Author: kkl $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Original author   : m.clarkson@ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+=============================================================================*/
 
- ============================================================================*/
 #include "itkLogHelper.h"
 #include "ConversionUtils.h"
 #include "itkCommandLineHelper.h"
@@ -34,15 +25,11 @@
  * \file niftkVoxelWiseMaximumIntensities.cxx
  * \page niftkVoxelWiseMaximumIntensities
  *
- * \section niftkVoxelWiseMaximumIntensities Uses ITK ImageFileReader
- * to load any number of input images, calculates the maximum intensity
- * on a voxel by voxel basis and writes the output with ITK
- * ImageFileWriter.
+ * \section niftkVoxelWiseMaximumIntensitiesSummary niftkVoxelWiseMaximumIntensities
  *
- * This program uses ITK ImageFileReaders to load any number of
- * images, and then uses simple ITK iterators to calculate the maximum
- * intensity of each voxel. The output is written using ITK
- * ImageFileWriter.
+ * Uses ITK ImageFileReader to load any number of input images, calculates the maximum intensity on a voxel by voxel basis and writes the output with ITK ImageFileWriter.
+ *
+ * This program uses ITK ImageFileReaders to load any number of images, and then uses simple ITK iterators to calculate the maximum intensity of each voxel. The output is written using ITK ImageFileWriter.
  *
  * \li Dimensions: 2,3
  * \li Pixel type: All input images are converted to float on input.

@@ -1,32 +1,28 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKIGILOCALDATASOURCE_H
 #define QMITKIGILOCALDATASOURCE_H
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGIDataSource.h"
+#include <mitkITKImageImport.txx>
+#include <itkImportImageFilter.h>
+#include <itkRGBPixel.h>
+#include <cv.h>
+
+class QmitkIGILocalDataSourceGrabbingThread;
 
 /**
  * \class QmitkIGILocalDataSource
@@ -40,17 +36,52 @@ class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSource : public QmitkIGIDataSource
 
 public:
 
+  friend class QmitkIGILocalDataSourceGrabbingThread;
+
   mitkClassMacro(QmitkIGILocalDataSource, QmitkIGIDataSource);
+
+  typedef itk::RGBPixel< unsigned char >  UCRGBPixelType;
+  typedef itk::Image< UCRGBPixelType, 2 >  RGBItkImage;
+  typedef itk::ImportImageFilter< UCRGBPixelType, 2 >  RGBImportFilterType;
+
+  typedef itk::RGBAPixel< unsigned char > UCRGBAPixelType;
+  typedef itk::Image< UCRGBAPixelType, 2 > RGBAItkImage;
+  typedef itk::ImportImageFilter< UCRGBAPixelType, 2 > RGBAImportFilterType;
 
 protected:
 
-  QmitkIGILocalDataSource(); // Purposefully hidden.
+  QmitkIGILocalDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGILocalDataSource(); // Purposefully hidden.
 
   QmitkIGILocalDataSource(const QmitkIGILocalDataSource&); // Purposefully not implemented.
   QmitkIGILocalDataSource& operator=(const QmitkIGILocalDataSource&); // Purposefully not implemented.
 
-private:
+
+  mitk::Image::Pointer CreateMitkImage(const IplImage* image) const;
+
+  /**
+   * \brief Helper method for sub-classes, that will instantiate a
+   * new MITK image from an RGB OpenCV IplImage.
+   */
+  mitk::Image::Pointer CreateRGBMitkImage(const IplImage* image) const;
+  mitk::Image::Pointer CreateRGBAMitkImage(const IplImage* image) const;
+
+  /**
+   * \brief Derived classes call this when they are ready for the updates to start,
+   * and this method instantiates the thread and laumches it.
+   */
+  void InitializeAndRunGrabbingThread(const int& intervalInMilliseconds);
+
+
+  void StopGrabbingThread();
+
+  /**
+   * \brief Called by QmitkIGILocalDataSourceGrabbingThread.
+   */
+  virtual void GrabData() = 0;
+
+protected:
+  QmitkIGILocalDataSourceGrabbingThread *m_GrabbingThread;
 
 }; // end class
 

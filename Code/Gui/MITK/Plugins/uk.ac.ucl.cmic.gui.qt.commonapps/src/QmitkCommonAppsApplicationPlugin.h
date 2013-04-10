@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-11-18 09:05:48 +0000 (Fri, 18 Nov 2011) $
- Revision          : $Revision: 7804 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_
 #define QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_
@@ -86,6 +76,9 @@ protected:
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for black opacity property.
   void RegisterBlackOpacityProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
 
+  /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
+  void RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+
   /// \brief Deliberately not virtual method thats called by derived classes, to register any extensions that this plugin knows about.
   void RegisterQmitkCommonAppsExtensions();
 
@@ -97,6 +90,10 @@ protected:
 
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
   virtual QString GetHelpHomePageURL() const { return QString(); }
+
+  // \brief Sets a preference whether to reinitialise the rendering manager after opening a file.
+  // It is suggested to set this to 'false' with the DnD display.
+  void SetFileOpenTriggersReinit(bool openEditor);
 
 private:
 

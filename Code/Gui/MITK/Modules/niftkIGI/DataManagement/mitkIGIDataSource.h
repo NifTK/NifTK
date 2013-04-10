@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef MITKIGIDATASOURCE_H
 #define MITKIGIDATASOURCE_H
@@ -28,12 +18,14 @@
 #include "niftkIGIExports.h"
 #include <NiftyLinkUtils.h>
 #include <mitkDataStorage.h>
+#include <mitkDataNode.h>
 #include <mitkMessage.h>
 #include <itkVersion.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <itkFastMutexLock.h>
 #include <list>
+#include <set>
 #include "mitkIGIDataType.h"
 
 namespace mitk {
@@ -45,8 +37,8 @@ namespace mitk {
  *
  * NOTE: All timestamps should be in UTC format. Also, take care NOT to expose a pointer to the
  * igtl::TimeStamp object. You should only ever expose a copy of this data, or an equivalent
- * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the timestamp
- * and set the time to TAI for example.
+ * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the
+ * timestamp and set the time to TAI for example.
  */
 class NIFTKIGI_EXPORT IGIDataSource : public itk::Object
 {
@@ -57,7 +49,7 @@ public:
 
   /**
    * \brief Each tool should signal when the status has updated by
-   * emitting its internal identiier, so that for example the GUI can redraw.
+   * emitting its internal identifier, so that for example the GUI can redraw.
    */
   Message1<int> DataSourceStatusUpdated;
 
@@ -70,39 +62,45 @@ public:
    * \brief Sets the identifier, which is just a tag to identify the tool by (i.e. item number in a list).
    */
   itkSetMacro(Identifier, int);
-  itkGetMacro(Identifier, int);
+  itkGetConstMacro(Identifier, int);
 
   /**
    * \brief Sets a name, useful for display purposes.
    */
   itkSetMacro(Name, std::string);
-  itkGetMacro(Name, std::string);
+  itkGetConstMacro(Name, std::string);
 
   /**
    * \brief Sets a type, useful for display purposes.
    */
   itkSetMacro(Type, std::string);
-  itkGetMacro(Type, std::string);
+  itkGetConstMacro(Type, std::string);
 
   /**
    * \brief Sets a status message, useful for display purposes.
    */
   itkSetMacro(Status, std::string);
-  itkGetMacro(Status, std::string);
+  itkGetConstMacro(Status, std::string);
 
   /**
    * \brief Sets a description, useful for display purposes.
    */
   itkSetMacro(Description, std::string);
-  itkGetMacro(Description, std::string);
+  itkGetConstMacro(Description, std::string);
 
   /**
-   * \brief Sets the time tolerance for checking data, implemented in nano-seconds
-   * as we are using TAI time format, but in practice platforms such as Windows
-   * do not properly store nano-seconds, so the best you can probably rely on is milliseconds.
+  * \brief A single source can have multiple tools attached
+  */
+  itkSetMacro(NumberOfTools, int);
+  itkGetConstMacro(NumberOfTools, int);
+  
+  /**
+   * \brief Sets the time tolerance for checking data, implemented in nano-seconds, but
+   * in practice platforms such as Windows do not properly store nano-seconds,
+   * so the best you can probably rely on is milliseconds.
    */
   itkSetMacro(TimeStampTolerance, unsigned long int);
-  itkGetMacro(TimeStampTolerance, unsigned long int);
+  itkGetConstMacro(TimeStampTolerance, unsigned long int);
 
   /**
    * \brief Sets the data storage, as each data source can put items into the storage.
@@ -115,7 +113,7 @@ public:
    * source can decide where and how to dump data to disk.
    */
   itkSetMacro(SavePrefix, std::string);
-  itkGetMacro(SavePrefix, std::string);
+  itkGetConstMacro(SavePrefix, std::string);
 
   /**
    * \brief Returns true if we are saving messages and false otherwise.
@@ -127,19 +125,29 @@ public:
    * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously immediately.
    */
   itkSetMacro(SaveInBackground, bool);
-  itkGetMacro(SaveInBackground, bool);
+  itkGetConstMacro(SaveInBackground, bool);
 
   /**
    * \brief If set to true, we save when the data is received, and if false, only when we
    * update the GUI, which may be at a different refresh rate to the incoming data.
    */
   itkSetMacro(SaveOnReceipt, bool);
-  itkGetMacro(SaveOnReceipt, bool);
+  itkGetConstMacro(SaveOnReceipt, bool);
+
+  /**
+   * \brief Each time ProcessData is called, we store a field to denote if all was well, and this method will retrieve the most recent.
+   */
+  itkGetConstMacro(SuccessfullyProcessing, bool);
 
   /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
    */
-  itkGetMacro(FrameRate, float);
+  itkGetConstMacro(FrameRate, float);
+
+  /**
+   * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
+   */
+  virtual void UpdateFrameRate();
 
   /**
    * \brief Get the time stamp of the most recently requested time-point.
@@ -163,12 +171,6 @@ public:
    * with this class providing a default, do-nothing implementation.
    */
   virtual void Initialize() {};
-
-  /**
-   * \brief Derived classes can update the frame rate, as they receive data,
-   * and the units should be in frames per second.
-   */
-  virtual void UpdateFrameRate();
 
   /**
    * \brief Clears the internal buffer, which means completely destroying all the contents.
@@ -211,6 +213,7 @@ public:
   /**
    * \brief Processes the data for a given timestamp, returning true if
    * the current data is processed successfully and within time tolerance.
+
    */
   bool ProcessData(igtlUint64 requestedTimeStamp);
 
@@ -220,13 +223,18 @@ public:
   bool IsCurrentWithinTimeTolerance() const;
 
   /**
-   * \brief Returns the difference between the currentTimeStamp, and the GetActualTimeStamp(), and converts to seconds.
+   * \brief Returns the difference between the current time and the GetActualTimeStamp(), and converts to seconds.
    */
-  double GetCurrentTimeLag();
+  double GetCurrentTimeLag(const igtlUint64& nowTime );
+
+  /**
+   * \brief Get the subtool list
+   */
+  std::list<std::string>  GetSubToolList ( ) ;
 
 protected:
 
-  IGIDataSource(); // Purposefully hidden.
+  IGIDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~IGIDataSource(); // Purposefully hidden.
 
   IGIDataSource(const IGIDataSource&); // Purposefully not implemented.
@@ -262,6 +270,19 @@ protected:
    */
   virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
+  /**
+   * \brief Function to set the list of sub tools
+   */
+  void SetToolStringList ( std::list<std::string> );
+
+  /**
+   * \brief Derived classes request a node for a given name. If the node does not exist, it will
+   * be created with some default properties.
+   * \param name if supplied the node will be assigned that name, and if empty, the node
+   * will be given the name this->GetName().
+   */
+  mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string());
+
 private:
 
   /**
@@ -271,7 +292,7 @@ private:
   bool DoSaveData(mitk::IGIDataType* data);
 
   itk::FastMutexLock::Pointer                     m_Mutex;
-  mitk::DataStorage                              *m_DataStorage;
+  mitk::DataStorage*                              m_DataStorage;
   int                                             m_Identifier;
   float                                           m_FrameRate;
   unsigned long int                               m_CurrentFrameId;
@@ -290,6 +311,11 @@ private:
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   unsigned long int                               m_TimeStampTolerance;
   mitk::IGIDataType*                              m_ActualData;
+  int                                             m_NumberOfTools;
+  std::set<mitk::DataNode::Pointer>               m_DataNodes;
+  std::list<std::string>                          m_SubTools;
+  std::list<std::string>::iterator                m_SubToolsIterator;
+  bool                                            m_SuccessfullyProcessing;
 
 }; // end class
 

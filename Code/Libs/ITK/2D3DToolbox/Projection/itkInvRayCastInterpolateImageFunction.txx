@@ -1,19 +1,16 @@
-/*=========================================================================
+/*=============================================================================
 
-Program:   Insight Segmentation & Registration Toolkit
-Module:    $RCSfile: itkRayCastInterpolateImageFunction.txx,v $
-Language:  C++
-Date:      $Date: 2009-01-26 21:45:56 $
-Version:   $Revision: 1.21 $
+  NifTK: A software platform for medical image computing.
 
-Copyright (c) Insight Software Consortium. All rights reserved.
-See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without even
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-=========================================================================*/
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 #ifndef __itkInvRayCastInterpolateImageFunction_txx
 #define __itkInvRayCastInterpolateImageFunction_txx

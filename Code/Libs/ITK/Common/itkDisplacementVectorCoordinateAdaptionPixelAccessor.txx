@@ -1,9 +1,17 @@
-/*
- * itkDisplacementVectorCoordinateAdaptionPixelAccessor.cxx
- *
- *  Created on: 02.12.2010
- *      Author: b-eiben
- */
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #ifndef ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_CXX_
 #define ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_CXX_
 

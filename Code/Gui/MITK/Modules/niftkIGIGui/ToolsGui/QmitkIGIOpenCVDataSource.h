@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2012-07-25 07:31:59 +0100 (Wed, 25 Jul 2012) $
- Revision          : $Revision: 9401 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef MITKIGIOPENCVDATASOURCE_H
 #define MITKIGIOPENCVDATASOURCE_H
@@ -34,8 +24,6 @@
 #include <QObject>
 #include <QMetaType>
 
-class QTimer;
-
 /**
  * \class IGIOpenCVDataSource
  * \brief Data source that provides access to a local video frame grabber using OpenCV
@@ -48,7 +36,12 @@ class NIFTKIGIGUI_EXPORT QmitkIGIOpenCVDataSource : public QmitkIGILocalDataSour
 public:
 
   mitkClassMacro(QmitkIGIOpenCVDataSource, QmitkIGILocalDataSource);
-  itkNewMacro(QmitkIGIOpenCVDataSource);
+  mitkNewMacro1Param(QmitkIGIOpenCVDataSource, mitk::DataStorage*);
+
+  /**
+   * \brief We store the node name here so other classes can refer to it.
+   */
+  static const std::string OPENCV_IMAGE_NAME;
 
   /**
    * \brief Defined in base class, so we check that the data type is in fact
@@ -81,33 +74,36 @@ signals:
 
   /**
    * \brief We signal to the GUI that it should be updated.
+   * GUI Clients should register to this signal using a Qt::QueuedConnection.
    */
   void UpdateDisplay();
 
 protected:
 
-  QmitkIGIOpenCVDataSource(); // Purposefully hidden.
+  QmitkIGIOpenCVDataSource(mitk::DataStorage* storage); // Purposefully hidden.
   virtual ~QmitkIGIOpenCVDataSource(); // Purposefully hidden.
 
   QmitkIGIOpenCVDataSource(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
   QmitkIGIOpenCVDataSource& operator=(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
 
   /**
+   * \see QmitkIGILocalDataSource::GrabData()
+   */
+  virtual void GrabData();
+
+  /**
    * \brief \see IGIDataSource::SaveData();
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
-private slots:
-
   /**
-   * \brief Call this to process a new frame.
+   * \brief Updates data storage with the image.
    */
-  void OnTimeout();
+  virtual bool Update(mitk::IGIDataType* data);
 
 private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
-  QTimer *m_Timer;
 
 }; // end class
 

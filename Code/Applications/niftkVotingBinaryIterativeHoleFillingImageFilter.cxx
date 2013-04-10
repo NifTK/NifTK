@@ -1,27 +1,16 @@
 /*=============================================================================
 
-  NifTK: An image processing toolkit jointly developed by the
-  Dementia Research Centre, and the Centre For Medical Image Computing
-  at University College London.
+  NifTK: A software platform for medical image computing.
 
-  See:        http://dementia.ion.ucl.ac.uk/
-  http://cmic.cs.ucl.ac.uk/
-  http://www.ucl.ac.uk/
-
-  Last Changed      : $Date: 2011-09-20 20:35:56 +0100 (Tue, 20 Sep 2011) $
-  Revision          : $Revision: 7340 $
-  Last modified by  : $Author: ad $
-
-  Original author   : j.hipwell@ucl.ac.uk
-
-  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.  See the above copyright notices for more information.
+  PURPOSE.
 
-  ============================================================================*/
+  See LICENSE.txt in the top level directory for details.
 
+=============================================================================*/
 
 #include "itkCommandLineHelper.h"
 
@@ -35,16 +24,13 @@
 /*!
  * \file niftkVotingBinaryIterativeHoleFillingImageFilter.cxx
  * \page niftkVotingBinaryIterativeHoleFillingImageFilter
- * \section niftkVotingBinaryIterativeHoleFillingImageFilterSummary 
- *  The \doxygen{VotingBinaryIterativeHoleFillingImageFilter} applies a voting
- *  operation in order to fill-in cavities. This can be used for smoothing
- *  contours and for filling holes in binary images. This filter runs
- *  internally a \doxygen{VotingBinaryHoleFillingImageFilter} until no
- *  pixels change or the maximum number of iterations has been reached.
+ * \section niftkVotingBinaryIterativeHoleFillingImageFilterSummary  niftkVotingBinaryIterativeHoleFillingImageFilter
+ *
+ * The VotingBinaryIterativeHoleFillingImageFilter applies a voting operation in order to fill-in cavities. This can be used for smoothing contours and for filling holes in binary images. This filter runs internally a VotingBinaryHoleFillingImageFilter until no pixels change or the maximum number of iterations has been reached.
  *
  * \li Dimensions: 2,3
  *
- * \section niftkVotingBinaryIterativeHoleFillingImageFilter Caveats
+ * \section niftkVotingBinaryIterativeHoleFillingImageFilterCaveats Caveats
  *
  * \li Input image is assumed to be binary
  *

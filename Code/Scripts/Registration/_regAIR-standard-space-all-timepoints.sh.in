@@ -1,28 +1,19 @@
 #!/bin/bash
 
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
-#  
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
+#  NifTK: A software platform for medical image computing.
 #
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-02-22 10:40:40 +0000 (Tue, 22 Feb 2011) $ 
-#  Revision          : $Revision: 5284 $
-#  Last modified by  : $Author: kkl $
-#
-#  Original author   : leung@drc.ion.ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 set -x
 
 function Usage()
@@ -145,7 +136,13 @@ do
   repeat_ss_image_wrong_orientation=${repeat_output_dir}/${baseline_id:0:5}-${repeat_id:0:5}.img
   repeat_ss_image=${output_dir}/${repeat_id}-075-1.img 
   repeat_orient=`imginfo ${input_dir}/${repeat_image}.img -orient`
-  anchange ${repeat_ss_image_wrong_orientation} ${repeat_ss_image} -setorient ${repeat_orient} -study ${repeat_id} -series 75
+  anchange ${repeat_ss_image_wrong_orientation} ${repeat_ss_image_wrong_orientation} -setorient ${repeat_orient} -study ${repeat_id} -series 75
+  extend_header ${repeat_ss_image_wrong_orientation} ${repeat_image}.img ${output_dir} 75 1 ${repeat_id}
+
+  # Preserve the final AIR file.
+  air_file=${repeat_output_dir}/*.second.air
+  cp ${air_file} ${output_dir}/.
+
   # Handle the -ve ID of the region by searching in the reg-tmp output directory and setting the original ID. 
   repeat_ss_region_large_id=`ls ${repeat_output_dir}/reg-tmp/???_*_*`
   dims=`imginfo ${repeat_ss_image} -dims | awk '{printf "%d %d %d", $1, $2, $3}'`

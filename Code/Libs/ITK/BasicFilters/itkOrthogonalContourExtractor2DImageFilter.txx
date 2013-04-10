@@ -1,8 +1,6 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+ NifTK: A software platform for medical image computing.
 
  NOTE: This class has been modified from itkContourExtractor2DImageFilter.h/.txx
  The original class would produce diagonal lines at corners. This class aims
@@ -13,7 +11,6 @@
 
  The Copyright should therefore still belong to Insight Software Consortium.
 ============================================================================*/
-
 
 /*=========================================================================
 

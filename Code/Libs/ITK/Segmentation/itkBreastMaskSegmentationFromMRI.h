@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: $
- Revision          : $Revision: $
- Last modified by  : $Author: $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Original author   : j.hipwell@ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef __itkBreastMaskSegmentationFromMRI_h
 #define __itkBreastMaskSegmentationFromMRI_h
@@ -116,7 +106,12 @@ public:
   typedef itk::Vector<RealType,     DataDimension>        VectorType;
   typedef itk::Image<VectorType,    ParametricDimension>  VectorImageType;
   typedef itk::PointSet<VectorType, ParametricDimension>  PointSetType;
-    
+
+  typedef typename PointSetType::PointsContainer          PointsContainer;
+  typedef typename PointsContainer::Iterator              PointsIterator;
+  typedef typename PointSetType::PointDataContainer       PointDataContainer;
+  typedef typename PointDataContainer::Iterator           PointDataIterator;
+
   typedef itk::ImageRegionIterator< InternalImageType > IteratorType;  
   typedef itk::ImageRegionIteratorWithIndex<InternalImageType> IteratorWithIndexType;
   typedef itk::ImageSliceIteratorWithIndex< InternalImageType > SliceIteratorType;
@@ -188,8 +183,9 @@ public:
   void SetMarchingTime( float t ) { fMarchingTime = t; }
 
   void SetCropDistancePosteriorToMidSternum( float fDistIn ) { this->cropDistPosteriorToMidSternum = fDistIn; }
-
+  
   void SetOutputBIFS( std::string fn ) { fileOutputBIFs = fn; }
+  void SetSigmaBIF( float sig ){ sigmaBIF = sig; }
 
   void SetOutputSmoothedStructural( std::string fn ) { fileOutputSmoothedStructural = fn; }
   void SetOutputSmoothedFatSat( std::string fn ) { fileOutputSmoothedFatSat = fn; }
@@ -298,6 +294,8 @@ protected:
   float fMarchingK1;
   float fMarchingK2;
   float fMarchingTime;
+
+  float sigmaBIF;
 
   float cropDistPosteriorToMidSternum;
 
@@ -425,6 +423,12 @@ protected:
 				    const char *description,
 				    typename InternalImageType::Pointer image, 
 				    bool flgLeft, bool flgRight );
+
+  /// Based on the file extension it will be decided wheter a vtk surface is written or an image is saved. 
+  bool WriteBinaryImageToUCharFileOrVTKSurfaceFile( std::string &fileOutput,
+				    const char *description,
+				    typename InternalImageType::Pointer image, 
+				    bool flgLeft, bool flgRight );
   
   void WriteHistogramToFile( std::string fileOutput,
 			     vnl_vector< double > &xHistIntensity, 
@@ -448,7 +452,8 @@ protected:
 				       const RealType rOffset, 
 				       const int splineOrder, 
 				       const int numOfControlPoints,
-				       const int numOfLevels );
+				       const int numOfLevels,
+				       bool correctSurfaceOffest );
 
 
 private:

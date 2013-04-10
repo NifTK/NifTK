@@ -1,26 +1,16 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
+#  NifTK: A software platform for medical image computing.
 #
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
-#
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-#
-#  Last Changed      : $LastChangedDate: 2011-05-06 11:40:44 +0100 (Fri, 06 May 2011) $
-#  Revision          : $Revision: 6088 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
 
 INCLUDE(ExternalProject)
 
@@ -33,8 +23,12 @@ SET(EP_BUILD_EXAMPLES OFF)
 SET(EP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
 IF(MSVC90 OR MSVC10)
-  SET(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0")
-  SET(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0")
+  SET(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0 /Zi")
+  SET(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0 /Zi")
+  # we want symbols, even for release builds!
+  SET(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /debug")
+  SET(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /debug")
+  SET(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /debug")
   SET(CMAKE_CXX_WARNING_LEVEL 0)
 ELSE()
   IF(${BUILD_SHARED_LIBS})
@@ -44,6 +38,11 @@ ELSE()
     SET(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -DLINUX_EXTRA")
     SET(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DLINUX_EXTRA")
   ENDIF()
+  # These are not relevant for linux but we set them anyway to keep
+  # the variable bits below symmetric.
+  SET(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+  SET(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
+  SET(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")  
 ENDIF()
 
 SET(EP_COMMON_ARGS
@@ -57,6 +56,9 @@ SET(EP_COMMON_ARGS
   -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
   -DCMAKE_C_FLAGS:STRING=${EP_COMMON_C_FLAGS}
   -DCMAKE_CXX_FLAGS:STRING=${EP_COMMON_CXX_FLAGS}
+  -DCMAKE_EXE_LINKER_FLAGS:STRING=${EP_COMMON_EXE_LINKER_FLAGS}
+  -DCMAKE_MODULE_LINKER_FLAGS:STRING=${EP_COMMON_MODULE_LINKER_FLAGS}
+  -DCMAKE_SHARED_LINKER_FLAGS:STRING=${EP_COMMON_SHARED_LINKER_FLAGS}
   #debug flags
   -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG}
   -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG}
@@ -187,6 +189,7 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=${BUILD_COMMAND_LINE_SCRIPTS}
       -DBUILD_GUI:BOOL=${BUILD_GUI}
       -DBUILD_IGI:BOOL=${BUILD_IGI}
+      -DBUILD_SLS_TESTING:BOOL=${BUILD_SLS_TESTING}
       -DBUILD_PROTOTYPE:BOOL=${BUILD_PROTOTYPE}
       -DBUILD_PROTOTYPE_JHH:BOOL=${BUILD_PROTOTYPE_JHH}
       -DBUILD_PROTOTYPE_TM:BOOL=${BUILD_PROTOTYPE_TM}
@@ -202,6 +205,8 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_NIFTYSEG:BOOL=${BUILD_NIFTYSEG}
       -DCUDA_SDK_ROOT_DIR:PATH=${CUDA_SDK_ROOT_DIR}
       -DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
+      -DNVAPI_INCLUDE_DIR:PATH=${NVAPI_INCLUDE_DIR}
+      -DNVAPI_LIBRARY:PATH=${NVAPI_LIBRARY}
       -DNIFTK_USE_FFTW:BOOL=${NIFTK_USE_FFTW}
       -DNIFTK_USE_CUDA:BOOL=${NIFTK_USE_CUDA}
       -DNIFTK_WITHIN_SUPERBUILD:BOOL=ON                    # Set this to ON, as some compilation flags rely on knowing if we are doing superbuild.
