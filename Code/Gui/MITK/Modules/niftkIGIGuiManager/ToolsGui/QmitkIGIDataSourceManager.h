@@ -129,6 +129,28 @@ public:
    */
   itkSetMacro(SaveInBackground, bool);
 
+signals:
+
+  /**
+   * \brief Emmitted as soon as the OnUpdateGui method has acquired a timestamp.
+   */
+  void UpdateGuiStart(igtlUint64 timeStamp);
+
+  /**
+   * \brief Emmitted when the OnUpdateGui method has asked each data source to update.
+   */
+  void UpdateGuiFinishedDataSources(igtlUint64 timeStamp);
+
+  /**
+   * \brief Emmitted when the OnUpdateGui method has updated a few widgets, and called the rendering manager.
+   */
+  void UpdateGuiFinishedFinishedRendering(igtlUint64 timeStamp);
+
+  /**
+   * \brief Emmitted when the OnUpdateGui method has finished, after the QCoreApplication::processEvents() has been called.
+   */
+  void UpdateGuiEnd(igtlUint64 timeStamp);
+
 protected:
 
   QmitkIGIDataSourceManager();

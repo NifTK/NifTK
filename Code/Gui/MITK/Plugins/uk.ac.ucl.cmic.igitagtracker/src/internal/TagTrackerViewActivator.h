@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef uk_ac_ucl_cmic_surgicalguidance_Activator_h
-#define uk_ac_ucl_cmic_surgicalguidance_Activator_h
+#ifndef TagTrackerViewActivator_h
+#define TagTrackerViewActivator_h
 
 #include <ctkPluginActivator.h>
 
 namespace mitk {
 
-class uk_ac_ucl_cmic_surgicalguidance_Activator :
+class TagTrackerViewActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT
@@ -34,8 +34,8 @@ public:
 private:
   static ctkPluginContext* m_PluginContext;
 
-}; // uk_ac_ucl_cmic_surgicalguidance_Activator
+}; // end class
 
-}
+} // end namespace
 
-#endif // uk_ac_ucl_cmic_surgicalguidance_Activator_h
+#endif // TagTrackerViewActivator_h

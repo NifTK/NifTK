@@ -12,26 +12,26 @@
 
 =============================================================================*/
 
-#include "uk_ac_ucl_cmic_surgicalguidance_Activator.h"
+#include "TagTrackerViewActivator.h"
 #include <QtPlugin>
-#include "SurgicalGuidanceView.h"
-#include "SurgicalGuidanceViewPreferencePage.h"
+#include "TagTrackerView.h"
+#include "TagTrackerViewPreferencePage.h"
 
 namespace mitk {
 
-ctkPluginContext* uk_ac_ucl_cmic_surgicalguidance_Activator::m_PluginContext = 0;
+ctkPluginContext* TagTrackerViewActivator::m_PluginContext = 0;
 
 //-----------------------------------------------------------------------------
-void uk_ac_ucl_cmic_surgicalguidance_Activator::start(ctkPluginContext* context)
+void TagTrackerViewActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(SurgicalGuidanceView, context)
-  BERRY_REGISTER_EXTENSION_CLASS(SurgicalGuidanceViewPreferencePage, context)
+  BERRY_REGISTER_EXTENSION_CLASS(TagTrackerView, context)
+  BERRY_REGISTER_EXTENSION_CLASS(TagTrackerViewPreferencePage, context)
   m_PluginContext = context;
 }
 
 
 //-----------------------------------------------------------------------------
-void uk_ac_ucl_cmic_surgicalguidance_Activator::stop(ctkPluginContext* context)
+void TagTrackerViewActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
   m_PluginContext = NULL;
@@ -39,11 +39,11 @@ void uk_ac_ucl_cmic_surgicalguidance_Activator::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* uk_ac_ucl_cmic_surgicalguidance_Activator::getContext()
+ctkPluginContext* TagTrackerViewActivator::getContext()
 {
   return m_PluginContext;
 }
 
 } // end namespace
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_surgicalguidance, mitk::uk_ac_ucl_cmic_surgicalguidance_Activator)
+Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igitagtracker, mitk::TagTrackerViewActivator)
