@@ -723,9 +723,11 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           return false;
         }
 
+        // subimagheight counts for both fields, stacked on top of each other...
         int   subimagheight = frame.first->height / streamcount;
         IplImage  subimg;
-        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, frame.first->nChannels);
+        // ...while subimg will have half the height only, i.e. the top field only
+        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight / 2), IPL_DEPTH_8U, frame.first->nChannels);
         cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
 
         // Check if we already have an image on the node.
@@ -750,6 +752,12 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         if (imageInNode.IsNull())
         {
           mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
+          // our image is only half the pixel height!
+          // so tell the renderer/mitk/whatever that each pixel is actually two units tall
+          mitk::Vector3D  s = convertedImage->GetGeometry()->GetSpacing();
+          s[1] *= 2;
+          convertedImage->GetGeometry()->SetSpacing(s);
+
           node->SetData(convertedImage);
         }
         else
