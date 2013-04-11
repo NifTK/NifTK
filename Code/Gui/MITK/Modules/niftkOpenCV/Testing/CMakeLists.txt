@@ -25,4 +25,4 @@ ENDIF(BUILD_SLS_TESTING)
 
 # Trac: 2227
 # Using ARUCO and OpenCV we detect AR-Tag style markers.
-mitkAddCustomModuleTest(SLS-TagTracking mitkTagTrackingTest ${NIFTK_DATA_DIR}/Input/TagTracking/model.tag.regular.left-1355.png ${NIFTK_DATA_DIR}/Input/TagTracking/model.tag.regular.right-1355.png ${NIFTK_DATA_DIR}/Input/TagTracking/calib.txt.left.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/calib.txt.right.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/calib.txt.r2l.rotation.xml ${NIFTK_DATA_DIR}/Input/TagTracking/calib.txt.r2l.translation.xml)
+mitkAddCustomModuleTest(SLS-TagTracking mitkTagTrackingTest ${NIFTK_DATA_DIR}/Input/TagTracking/left.png ${NIFTK_DATA_DIR}/Input/TagTracking/right.png ${NIFTK_DATA_DIR}/Input/TagTracking/left.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/right.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.rot.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.trn.xml)
