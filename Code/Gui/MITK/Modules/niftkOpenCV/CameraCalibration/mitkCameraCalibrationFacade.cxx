@@ -1036,9 +1036,8 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     const cv::Mat& rightToLeftTranslationVector
     )
 {
-  /*
-  int numberOfPoints = inputUndistortedPoints.size();
   std::vector< cv::Point3f > outputPoints;
+  int numberOfPoints = inputUndistortedPoints.size();
 
   cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
@@ -1121,18 +1120,13 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     VNorm = sqrt(p2normalised.at<double>(0,0)*p2normalised.at<double>(0,0)
                + p2normalised.at<double>(1,0)*p2normalised.at<double>(1,0)
                + p2normalised.at<double>(2,0)*p2normalised.at<double>(2,0));
-    std::cerr << "Matt, VNorm=" << VNorm << std::endl;
 
     rhsRay.at<double>(0,0) = p2normalised.at<double>(0,0) / VNorm;
     rhsRay.at<double>(1,0) = p2normalised.at<double>(1,0) / VNorm;
     rhsRay.at<double>(2,0) = p2normalised.at<double>(2,0) / VNorm;
 
     // Rotate unit vector by rotation matrix between left and right camera.
-    std::cerr << "Matt, beforeRay" << std::endl;
-    std::cerr << "Matt, rhsRay=" << rhsRay << std::endl;
-    std::cerr << "Matt, R2LRot64=" << R2LRot64 << std::endl;
     rhsRayTransformed = R2LRot64 * rhsRay;
-    std::cerr << "Matt, afterRay" << std::endl;
 
     // Origin of RH camera, in LH normalised coordinates.
     Q0.x = R2LTrn64.at<double>(0,0);
@@ -1186,7 +1180,6 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     }
   }
   return outputPoints;
-    */
 }
 
 

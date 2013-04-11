@@ -97,7 +97,7 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
       std::vector<std::pair<cv::Point2f, cv::Point2f> > pairs;
       pairs.push_back(pair);
 
-      std::vector<cv::Point3f> pointIn3D = mitk::TriangulatePointPairs(
+      std::vector<cv::Point3f> pointsIn3D = mitk::TriangulatePointPairs(
           pairs,
           intrinsicParamsLeft,
           intrinsicParamsRight,
@@ -105,7 +105,13 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
           rightToLeftTranslationVector
           );
 
-      result.insert(std::pair<int, cv::Point3f>(leftId, pointIn3D[0]));
+      if (pointsIn3D.size() > 0) // should only ever be 1, as we are doing 1 at a time.
+      {
+        cv::Point3f pointIn3D = pointsIn3D[0];
+        result.insert(std::pair<int, cv::Point3f>(leftId, pointIn3D));
+
+        std::cout << "Marker id=" << leftId << ", Left=(" << leftPoint.x << ", " << leftPoint.y << "), Right=(" << rightPoint.x << ", " << rightPoint.y << "), 3D=(" << pointIn3D.x << ", " << pointIn3D.y << ", " << pointIn3D.z << ")" << std::endl;
+      }
     }
   }
   return result;
