@@ -57,6 +57,7 @@ std::map<int, cv::Point2f> DetectMarkers(
   {
     result.insert(std::pair<int, cv::Point2f>(markers[i].id, markers[i].getCenter()));
   }
+
   return result;
 }
 
