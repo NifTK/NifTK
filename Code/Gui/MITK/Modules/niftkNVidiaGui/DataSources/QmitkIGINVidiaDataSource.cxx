@@ -94,11 +94,13 @@ struct QmitkIGINVidiaDataSourceImpl
   // QmitkIGINVidiaDataSource::GrabData(), bottom
   bool  m_WasSavingMessagesPreviously;
 
+  // used in a log file to correlate times stamps, frame index and sequence number
+  unsigned int    m_NumFramesCompressed;
 
 public:
   QmitkIGINVidiaDataSourceImpl()
     : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
-      current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), m_WasSavingMessagesPreviously(false)
+      current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), m_WasSavingMessagesPreviously(false), m_NumFramesCompressed(0)
   {
     std::memset(&textureids[0], 0, sizeof(textureids));
     // we create the opengl widget on the ui thread once
@@ -686,6 +688,8 @@ void QmitkIGINVidiaDataSource::GrabData()
     delete m_Pimpl->compressor;
     m_Pimpl->compressor = 0;
     m_Pimpl->m_WasSavingMessagesPreviously = false;
+
+    m_FrameMapLogFile.close();
   }
 }
 
@@ -836,12 +840,30 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
       if (directory.mkpath(QString::fromStdString(directoryPath)))
       {
         std::ostringstream    filename;
-        filename << directoryPath << "/capture-" << now.wYear << '_' << now.wMonth << '_' << now.wDay << '-' << now.wHour << '_' << now.wMinute << '_' << now.wSecond;
+        filename << directoryPath << "/capture-" 
+          << now.wYear << '_' << now.wMonth << '_' << now.wDay << '-' << now.wHour << '_' << now.wMinute << '_' << now.wSecond;
 
         std::string filenamebase = filename.str();
 
+        // we need a map for frame number -> wall clock
+        assert(!m_FrameMapLogFile.is_open());
+        m_FrameMapLogFile.open((filenamebase + ".framemap.log").c_str());
+        if (!m_FrameMapLogFile.is_open())
+        {
+          // should we continue if we dont have a frame map?
+          std::cerr << "WARNING: could not create frame map file!" << std::endl;
+        }
+        else
+        {
+          // dump a header line
+          m_FrameMapLogFile << "#framenumber sequencenumber channel timestamp" << std::endl;
+        }
+
         // also keep sdi logs
         m_Pimpl->sdiin->set_log_filename(filenamebase + ".sdicapture.log");
+
+        // when we get a new compressor we want to start counting from zero again
+        m_Pimpl->m_NumFramesCompressed = 0;
 
         m_Pimpl->compressor = new video::Compressor(dim.first, dim.second, m_Pimpl->format.refreshrate * m_Pimpl->streamcount, filenamebase + ".264");
       }
@@ -875,6 +897,18 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
         // but more often is ok too
         m_Pimpl->compressor->preparetexture(tid);
         m_Pimpl->compressor->compresstexture(tid);
+
+        if (m_FrameMapLogFile.is_open())
+        {
+          m_FrameMapLogFile 
+            << m_Pimpl->m_NumFramesCompressed << '\t' 
+            << requestedSN << '\t'
+            << i << '\t'
+            << dataType->GetTimeStampInNanoSeconds() << '\t'
+            << std::endl;
+        }
+
+        m_Pimpl->m_NumFramesCompressed++;
       }
 
       success = true;
