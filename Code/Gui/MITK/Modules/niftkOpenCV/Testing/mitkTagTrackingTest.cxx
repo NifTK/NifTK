@@ -81,6 +81,8 @@ public:
 
     std::map<int, cv::Point3f> result = mitk::DetectMarkerPairs(li, ri, liMat, riMat, r2lRotVector, r2lTrans);
 
+    MITK_TEST_CONDITION_REQUIRED(result.size() == 2,".. Testing we got 2 points out");
+
     MITK_TEST_OUTPUT(<< "Finished Test3DReconstruction...");
   }
 
