@@ -118,6 +118,7 @@ public:
   /**
    * \brief Returns true if we are saving messages and false otherwise.
    */
+  // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!
   itkGetMacro(SavingMessages, bool);
   virtual void SetSavingMessages(bool isSaving);
 

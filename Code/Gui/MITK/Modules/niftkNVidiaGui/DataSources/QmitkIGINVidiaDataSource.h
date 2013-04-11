@@ -114,6 +114,10 @@ private:
   QmitkIGINVidiaDataSourceImpl*     m_Pimpl;
 
 
+  // used to correlate clock, frame numbers and other events
+  std::ofstream           m_FrameMapLogFile;
+
+
   static const char*      s_NODE_NAME;
 
 }; // end class

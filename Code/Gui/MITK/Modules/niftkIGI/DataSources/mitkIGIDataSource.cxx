@@ -396,6 +396,7 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
       m_FrameRateBufferIterator = m_BufferIterator;
     }
 
+    // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!
     if (   m_SavingMessages     // recording/saving is turned on.
         && !m_SaveInBackground  // we are doing it immediately as opposed to some background thread.
         && m_SaveOnReceipt      // we are saving every message that came in, regardless of display refresh rate.
