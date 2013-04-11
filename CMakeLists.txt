@@ -215,7 +215,7 @@ SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim" FORCE)
 SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
-SET(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of ARUCO" FORCE)
+SET(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 SET(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 SET(NIFTK_LOCATION_DATA_SVN "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING "Version of NifTKData in svn" FORCE)
@@ -505,7 +505,7 @@ MESSAGE("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 # are already built.
 ######################################################################
 SET(CMAKE_MODULE_PATH
-    ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/ARUCO/lib/cmake
+    ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/aruco/lib/cmake
     ${CMAKE_MODULE_PATH}
    )
 
@@ -657,9 +657,9 @@ IF (BUILD_IGI)
 
   FIND_PACKAGE(aruco)
   IF(aruco_FOUND)
-    MESSAGE("Found ARUCO")
-    LINK_DIRECTORIES(${ARUCO_DIR}/lib)
-    INCLUDE_DIRECTORIES(${ARUCO_DIR}/include)
+    MESSAGE("Found aruco in ${aruco_DIR}")
+    LINK_DIRECTORIES(${aruco_DIR}/lib)
+    INCLUDE_DIRECTORIES(${aruco_DIR}/include)
   ENDIF()
 ENDIF()
 

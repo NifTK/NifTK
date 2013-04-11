@@ -18,15 +18,15 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED ARUCO_DIR AND NOT EXISTS ${ARUCO_DIR})
-  MESSAGE(FATAL_ERROR "ARUCO_DIR variable is defined but corresponds to non-existing directory \"${ARUCO_DIR}\".")
+IF(DEFINED aruco_DIR AND NOT EXISTS ${aruco_DIR})
+  MESSAGE(FATAL_ERROR "aruco_DIR variable is defined but corresponds to non-existing directory \"${aruco_DIR}\".")
 ENDIF()
 
-SET(proj ARUCO)
+SET(proj aruco)
 SET(proj_DEPENDENCIES MITK)
-SET(ARUCO_DEPENDS ${proj})
+SET(aruco_DEPENDS ${proj})
 
-IF(NOT DEFINED ARUCO_DIR)
+IF(NOT DEFINED aruco_DIR)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ARUCO ${NIFTK_LOCATION_ARUCO})
 
@@ -42,11 +42,11 @@ IF(NOT DEFINED ARUCO_DIR)
      DEPENDS ${proj_DEPENDENCIES}
     )
 
-  SET(ARUCO_DIR ${EP_BASE}/Install/${proj})
-  MESSAGE("SuperBuild loading ARUCO from ${ARUCO_DIR}")
+  SET(aruco_DIR ${EP_BASE}/Install/${proj})
+  MESSAGE("SuperBuild loading ARUCO from ${aruco_DIR}")
 
-ELSE(NOT DEFINED ARUCO_DIR)
+ELSE(NOT DEFINED aruco_DIR)
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF(NOT DEFINED ARUCO_DIR)
+ENDIF(NOT DEFINED aruco_DIR)
