@@ -48,7 +48,7 @@ public:
   void ExtractPoints(const mitk::Image::Pointer image,
                      const float& minSize,
                      const float& maxSize,
-                     const CvMat* cameraIntrinsics,
+                     const CvMat& cameraIntrinsics,
                      mitk::PointSet::Pointer pointSet
                      );
 

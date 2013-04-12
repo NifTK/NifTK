@@ -24,6 +24,7 @@
 #include <mitkNodePredicateDataType.h>
 #include <mitkPointSet.h>
 #include "TagTrackerViewActivator.h"
+#include "TagTrackerViewPreferencePage.h"
 #include "mitkMonoTagExtractor.h"
 #include "mitkStereoTagExtractor.h"
 
@@ -265,7 +266,7 @@ void TagTrackerView::UpdateTags()
           image,
           m_MinSize,
           m_MaxSize,
-          intrinsics,
+          *intrinsics,
           pointSet
           );
     }
@@ -312,16 +313,16 @@ void TagTrackerView::UpdateTags()
           rightImage,
           m_MinSize,
           m_MaxSize,
-          m_LeftIntrinsicMatrix,
-          m_RightIntrinsicMatrix,
-          m_RightToLeftRotationVector,
-          m_RightToLeftTranslationVector,
+          *m_LeftIntrinsicMatrix,
+          *m_RightIntrinsicMatrix,
+          *m_RightToLeftRotationVector,
+          *m_RightToLeftTranslationVector,
           pointSet
           );
     } // end if mono/stereo
 
-    int numberOfTrackedPoints = pointSet->GetNumberOfPoints();
-    m_NumberOfTagsEdit->setText(QString(numberOfTrackedPoints));
+    int numberOfTrackedPoints = pointSet->GetSize();
+    m_Controls->m_NumberOfTagsEdit->setText(QString(numberOfTrackedPoints));
 
   } // end if we have at least one node specified
 }

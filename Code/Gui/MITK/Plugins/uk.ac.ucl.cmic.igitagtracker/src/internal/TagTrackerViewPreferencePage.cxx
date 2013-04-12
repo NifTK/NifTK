@@ -20,7 +20,8 @@
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QPushButton>
-
+#include <QRadioButton>
+#include <QDoubleSpinBox>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
@@ -87,10 +88,10 @@ void TagTrackerViewPreferencePage::CreateQtControl(QWidget* parent)
   m_ManualUpdate = new QRadioButton();
   formLayout->addRow("manual update", m_ManualUpdate);
 
-  m_MinSize = new QSpinBox();
+  m_MinSize = new QDoubleSpinBox();
   formLayout->addRow("min size", m_MinSize);
 
-  m_MaxSize = new QSpinBox();
+  m_MaxSize = new QDoubleSpinBox();
   formLayout->addRow("max size", m_MaxSize);
 
   m_MainControl->setLayout(formLayout);
@@ -137,7 +138,7 @@ void TagTrackerViewPreferencePage::Update()
   m_MinSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MIN_SIZE_NAME, MIN_SIZE));
   m_MaxSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MAX_SIZE_NAME, MAX_SIZE));
 
-  bool listenEventBus = m_TagTrackerViewPreferencesNode->GetBool(LISTEN_TO_EVENT_BUS_NAME, LISTEN_TO_EVENT_BUS);
+  bool listenToEventBus = m_TagTrackerViewPreferencesNode->GetBool(LISTEN_TO_EVENT_BUS_NAME, LISTEN_TO_EVENT_BUS);
   if (listenToEventBus)
   {
     m_ListenToEventBusPulse->setChecked(true);

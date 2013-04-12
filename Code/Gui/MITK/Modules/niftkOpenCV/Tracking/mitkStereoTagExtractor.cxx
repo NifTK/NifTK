@@ -14,7 +14,7 @@
 
 #include "mitkStereoTagExtractor.h"
 
-namespace {
+namespace mitk {
 
 //-----------------------------------------------------------------------------
 StereoTagExtractor::StereoTagExtractor()
