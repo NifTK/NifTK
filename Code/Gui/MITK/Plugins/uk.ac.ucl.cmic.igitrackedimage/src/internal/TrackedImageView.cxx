@@ -26,6 +26,7 @@ const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
 //-----------------------------------------------------------------------------
 TrackedImageView::TrackedImageView()
+: m_Controls(NULL)
 {
 }
 
@@ -33,6 +34,10 @@ TrackedImageView::TrackedImageView()
 //-----------------------------------------------------------------------------
 TrackedImageView::~TrackedImageView()
 {
+  if (m_Controls != NULL)
+  {
+    delete m_Controls;
+  }
 }
 
 
@@ -46,15 +51,22 @@ std::string TrackedImageView::GetViewID() const
 //-----------------------------------------------------------------------------
 void TrackedImageView::CreateQtPartControl( QWidget *parent )
 {
-  ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
-  if (ref)
+  if (!m_Controls)
   {
-    ctkEventAdmin* eventAdmin = mitk::TrackedImageViewActivator::getContext()->getService<ctkEventAdmin>(ref);
-    ctkDictionary properties;
-    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-    eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+    m_Controls = new Ui::TrackedImageView();
+    m_Controls->setupUi(parent);
+
+    RetrievePreferenceValues();
+
+    ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = mitk::TrackedImageViewActivator::getContext()->getService<ctkEventAdmin>(ref);
+      ctkDictionary properties;
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+    }
   }
-  this->RetrievePreferenceValues();
 }
 
 

@@ -17,6 +17,7 @@
 
 #include "QmitkBaseView.h"
 #include <service/event/ctkEvent.h>
+#include "ui_TrackedImageView.h"
 
 /**
  * \class TrackedImageView
@@ -80,6 +81,11 @@ private:
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
    */
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+
+  /**
+   * \brief All the controls for the main view part.
+   */
+  Ui::TrackedImageView *m_Controls;
 };
 
 #endif // TrackedImageView_h
