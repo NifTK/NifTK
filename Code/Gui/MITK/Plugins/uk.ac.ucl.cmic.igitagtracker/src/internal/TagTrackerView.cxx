@@ -262,33 +262,28 @@ void TagTrackerView::UpdateTags()
     }
 
     // Now use the data to extract points, and update the point set.
+    QString modeName;
 
     if ((leftNode.IsNotNull() && rightNode.IsNull())
         || (leftNode.IsNull() && rightNode.IsNotNull())
         )
     {
       mitk::Image::Pointer image;
-      CvMat *intrinsics;
 
       if (leftNode.IsNotNull())
       {
         image = dynamic_cast<mitk::Image*>(leftNode->GetData());
-        intrinsics = m_LeftIntrinsicMatrix;
+        modeName = "left";
       }
       else
       {
         image = dynamic_cast<mitk::Image*>(rightNode->GetData());
-        intrinsics = m_RightIntrinsicMatrix;
+        modeName = "right";
       }
 
       if (image.IsNull())
       {
         MITK_ERROR << "TagTrackerView::OnUpdate, mono case, image node is NULL" << std::endl;
-        return;
-      }
-      if (intrinsics == NULL)
-      {
-        MITK_ERROR << "TagTrackerView::OnUpdate, mono case, camera intrinsic matrix is NULL" << std::endl;
         return;
       }
 
@@ -298,7 +293,6 @@ void TagTrackerView::UpdateTags()
           image,
           m_MinSize,
           m_MaxSize,
-          *intrinsics,
           pointSet
           );
     }
@@ -306,6 +300,7 @@ void TagTrackerView::UpdateTags()
     {
       mitk::Image::Pointer leftImage = dynamic_cast<mitk::Image*>(leftNode->GetData());
       mitk::Image::Pointer rightImage = dynamic_cast<mitk::Image*>(rightNode->GetData());
+      modeName = "stereo";
 
       if (leftImage.IsNull())
       {
@@ -354,7 +349,11 @@ void TagTrackerView::UpdateTags()
     } // end if mono/stereo
 
     int numberOfTrackedPoints = pointSet->GetSize();
-    m_Controls->m_NumberOfTagsLabel->setText(QString("tags:") + QString(numberOfTrackedPoints));
+
+    QString numberString;
+    numberString.setNum(numberOfTrackedPoints);
+
+    m_Controls->m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
 
   } // end if we have at least one node specified
 }

@@ -42,13 +42,11 @@ public:
    * \param image RGB colour image
    * \param minSize the minimum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
    * \param maxSize the maximum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
-   * \param cameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param pointSet a point set object, allocated outside of this method. i.e. pointer must be non-null when calling this method.
    */
   void ExtractPoints(const mitk::Image::Pointer image,
                      const float& minSize,
                      const float& maxSize,
-                     const CvMat& cameraIntrinsics,
                      mitk::PointSet::Pointer pointSet
                      );
 
