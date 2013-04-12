@@ -14,6 +14,7 @@
 
 // Qmitk
 #include "TagTrackerView.h"
+#include <QFile>
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -34,12 +35,6 @@ const std::string TagTrackerView::NODE_ID = "Tag Locations";
 //-----------------------------------------------------------------------------
 TagTrackerView::TagTrackerView()
 : m_Controls(NULL)
-, m_LeftNode(NULL)
-, m_RightNode(NULL)
-, m_LeftIntrinsicFileName("")
-, m_RightIntrinsicFileName("")
-, m_RightToLeftRotationFileName("")
-, m_RightToLeftTranslationFileName("")
 , m_LeftIntrinsicMatrix(NULL)
 , m_RightIntrinsicMatrix(NULL)
 , m_RightToLeftRotationVector(NULL)
@@ -158,16 +153,23 @@ void TagTrackerView::SetFocus()
 //-----------------------------------------------------------------------------
 void TagTrackerView::LoadMatrix(const QString& fileName, CvMat *matrixToWriteTo)
 {
-  if (matrixToWriteTo != NULL)
+  QFile file(fileName);
+  if (file.exists())
   {
-    cvReleaseMat(&matrixToWriteTo);
-  }
+    if (matrixToWriteTo != NULL)
+    {
+      cvReleaseMat(&matrixToWriteTo);
+    }
 
-  matrixToWriteTo = (CvMat*)cvLoad(fileName.toStdString().c_str());
-  if (matrixToWriteTo == NULL)
+    matrixToWriteTo = (CvMat*)cvLoad(fileName.toStdString().c_str());
+    if (matrixToWriteTo == NULL)
+    {
+      MITK_ERROR << "TagTrackerView::LoadMatrix failed to load from file:" << fileName.toStdString() << std::endl;
+    }
+  }
+  else
   {
-    std::string message = std::string("Failed to load matrix ") + fileName.toStdString();
-    throw std::logic_error(message);
+    MITK_ERROR << "TagTrackerView::LoadMatrix cannot load from file:" << fileName.toStdString() << std::endl;
   }
 }
 
@@ -195,24 +197,36 @@ void TagTrackerView::UpdateTags()
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   assert(dataStorage);
 
-  if (m_LeftNode.IsNotNull() || m_RightNode.IsNotNull())
+  mitk::DataNode::Pointer leftNode = m_Controls->m_LeftComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer rightNode = m_Controls->m_RightComboBox->GetSelectedNode();
+  QString leftIntrinsicFileName = m_Controls->m_LeftIntrinsicFileNameEdit->currentPath();
+  QString rightIntrinsicFileName = m_Controls->m_RightIntrinsicFileNameEdit->currentPath();
+  QString r2lRotationVectorFileName = m_Controls->m_RightToLeftRotationFileNameEdit->currentPath();
+  QString r2lTranslationVectorFileName = m_Controls->m_RightToLeftTranslationFileNameEdit->currentPath();
+
+  qDebug() << "leftIntrinsicFileName=" << leftIntrinsicFileName;
+  qDebug() << "rightIntrinsicFileName=" << rightIntrinsicFileName;
+  qDebug() << "r2lRotationVectorFileName=" << r2lRotationVectorFileName;
+  qDebug() << "r2lTranslationVectorFileName=" << r2lTranslationVectorFileName;
+
+  if (leftNode.IsNotNull() || rightNode.IsNotNull())
   {
     // Make sure all specified matrices are loaded.
-    if (m_LeftIntrinsicFileName.size() > 0 && m_LeftIntrinsicMatrix == NULL)
+    if (leftIntrinsicFileName.size() > 0 && m_LeftIntrinsicMatrix == NULL)
     {
-      this->LoadMatrix(m_LeftIntrinsicFileName, m_LeftIntrinsicMatrix);
+      this->LoadMatrix(leftIntrinsicFileName, m_LeftIntrinsicMatrix);
     }
-    if (m_RightIntrinsicFileName.size() > 0 && m_RightIntrinsicMatrix == NULL)
+    if (rightIntrinsicFileName.size() > 0 && m_RightIntrinsicMatrix == NULL)
     {
-      this->LoadMatrix(m_RightIntrinsicFileName, m_RightIntrinsicMatrix);
+      this->LoadMatrix(rightIntrinsicFileName, m_RightIntrinsicMatrix);
     }
-    if (m_RightToLeftRotationFileName.size() > 0 && m_RightToLeftRotationVector == NULL)
+    if (r2lRotationVectorFileName.size() > 0 && m_RightToLeftRotationVector == NULL)
     {
-      this->LoadMatrix(m_RightToLeftRotationFileName, m_RightToLeftTranslationVector);
+      this->LoadMatrix(r2lRotationVectorFileName, m_RightToLeftTranslationVector);
     }
-    if (m_RightToLeftTranslationFileName.size() > 0 && m_RightToLeftTranslationVector == NULL)
+    if (r2lTranslationVectorFileName.size() > 0 && m_RightToLeftTranslationVector == NULL)
     {
-      this->LoadMatrix(m_RightToLeftTranslationFileName, m_RightToLeftTranslationVector);
+      this->LoadMatrix(r2lTranslationVectorFileName, m_RightToLeftTranslationVector);
     }
 
     // Retrieve the node from data storage, or create it if it does not exist.
@@ -238,7 +252,7 @@ void TagTrackerView::UpdateTags()
     }
     else
     {
-      pointSet = static_cast<mitk::PointSet*>(pointSetNode->GetData());
+      pointSet = dynamic_cast<mitk::PointSet*>(pointSetNode->GetData());
       if (pointSet.IsNull())
       {
         // Give up, as the node has the wrong data.
@@ -249,21 +263,21 @@ void TagTrackerView::UpdateTags()
 
     // Now use the data to extract points, and update the point set.
 
-    if ((m_LeftNode.IsNotNull() && m_RightNode.IsNull())
-        || (m_LeftNode.IsNull() && m_RightNode.IsNotNull())
+    if ((leftNode.IsNotNull() && rightNode.IsNull())
+        || (leftNode.IsNull() && rightNode.IsNotNull())
         )
     {
       mitk::Image::Pointer image;
       CvMat *intrinsics;
 
-      if (m_LeftNode.IsNotNull())
+      if (leftNode.IsNotNull())
       {
-        image = static_cast<mitk::Image*>(m_LeftNode->GetData());
+        image = dynamic_cast<mitk::Image*>(leftNode->GetData());
         intrinsics = m_LeftIntrinsicMatrix;
       }
       else
       {
-        image = static_cast<mitk::Image*>(m_RightNode->GetData());
+        image = dynamic_cast<mitk::Image*>(rightNode->GetData());
         intrinsics = m_RightIntrinsicMatrix;
       }
 
@@ -290,8 +304,8 @@ void TagTrackerView::UpdateTags()
     }
     else
     {
-      mitk::Image::Pointer leftImage = static_cast<mitk::Image*>(m_LeftNode->GetData());
-      mitk::Image::Pointer rightImage = static_cast<mitk::Image*>(m_RightNode->GetData());
+      mitk::Image::Pointer leftImage = dynamic_cast<mitk::Image*>(leftNode->GetData());
+      mitk::Image::Pointer rightImage = dynamic_cast<mitk::Image*>(rightNode->GetData());
 
       if (leftImage.IsNull())
       {

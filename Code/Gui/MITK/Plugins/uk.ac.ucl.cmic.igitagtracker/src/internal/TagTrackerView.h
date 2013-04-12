@@ -107,12 +107,6 @@ private:
   Ui::TagTrackerViewControls *m_Controls;
 
   /** The Member Variables. */
-  mitk::DataNode::Pointer m_LeftNode;
-  mitk::DataNode::Pointer m_RightNode;
-  QString m_LeftIntrinsicFileName;
-  QString m_RightIntrinsicFileName;
-  QString m_RightToLeftRotationFileName;
-  QString m_RightToLeftTranslationFileName;
   CvMat *m_LeftIntrinsicMatrix;
   CvMat *m_RightIntrinsicMatrix;
   CvMat *m_RightToLeftRotationVector;
