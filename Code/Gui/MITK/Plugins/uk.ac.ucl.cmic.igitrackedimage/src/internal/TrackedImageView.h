@@ -18,6 +18,9 @@
 #include "QmitkBaseView.h"
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedImageView.h"
+#include <vtkSmartPointer.h>
+
+class vtkMatrix4x4;
 
 /**
  * \class TrackedImageView
@@ -70,6 +73,11 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
+  /**
+   * \brief When the user selects a new image to probe matrix, we load the transformation.
+   */
+  void OnImageToProbeChanged();
+
 private:
 
   /**
@@ -83,9 +91,20 @@ private:
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   /**
+   * \brief Loads the image to probe transform, and stores it internally.
+   */
+  void LoadImageToProbeTransform(const QString& fileName);
+
+  /**
    * \brief All the controls for the main view part.
    */
   Ui::TrackedImageView *m_Controls;
+
+  /**
+   * \brief Member variables for keeping state between button clicks.
+   */
+  vtkSmartPointer<vtkMatrix4x4> m_ImageToProbeTransform;
+  std::string m_ImageToProbeFileName;
 };
 
 #endif // TrackedImageView_h
