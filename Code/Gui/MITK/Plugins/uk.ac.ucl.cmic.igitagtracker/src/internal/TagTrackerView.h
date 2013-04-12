@@ -81,6 +81,11 @@ private slots:
    */
   void OnManualUpdate();
 
+  /**
+   * \brief If any of the matrix file names change, we try to reload all matrices.
+   */
+  void OnFileNameChanged();
+
 private:
 
   /**
@@ -112,6 +117,7 @@ private:
   CvMat *m_RightToLeftRotationVector;
   CvMat *m_RightToLeftTranslationVector;
   bool m_ListenToEventBusPulse;
+  bool m_MonoLeftCameraOnly;
   float m_MinSize;
   float m_MaxSize;
 };

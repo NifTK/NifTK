@@ -65,7 +65,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>r2l rotation</string>
+          <string>rotation</string>
          </property>
         </widget>
        </item>
@@ -81,7 +81,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>r2l translation</string>
+          <string>translation</string>
          </property>
         </widget>
        </item>

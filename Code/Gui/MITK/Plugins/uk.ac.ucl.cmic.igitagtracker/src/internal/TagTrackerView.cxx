@@ -40,6 +40,7 @@ TagTrackerView::TagTrackerView()
 , m_RightToLeftRotationVector(NULL)
 , m_RightToLeftTranslationVector(NULL)
 , m_ListenToEventBusPulse(true)
+, m_MonoLeftCameraOnly(false)
 , m_MinSize(0.01)
 , m_MaxSize(0.0125)
 {
@@ -100,7 +101,13 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_RightComboBox->SetAutoSelectNewItems(false);
     m_Controls->m_RightComboBox->SetPredicate(rightIsImage);
 
+    this->RetrievePreferenceValues();
+
     connect(m_Controls->m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
+    connect(m_Controls->m_LeftIntrinsicFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
+    connect(m_Controls->m_RightIntrinsicFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
+    connect(m_Controls->m_RightToLeftRotationFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
+    connect(m_Controls->m_RightToLeftTranslationFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
 
     ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
@@ -110,7 +117,6 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
     }
-    this->RetrievePreferenceValues();
   }
 }
 
@@ -141,12 +147,14 @@ void TagTrackerView::RetrievePreferenceValues()
   {
     m_Controls->m_UpdateButton->setEnabled(true);
   }
+  m_MonoLeftCameraOnly = prefs->GetBool(TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA_NAME, TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA);
 }
 
 
 //-----------------------------------------------------------------------------
 void TagTrackerView::SetFocus()
 {
+  m_Controls->m_LeftComboBox->setFocus();
 }
 
 
@@ -154,22 +162,51 @@ void TagTrackerView::SetFocus()
 void TagTrackerView::LoadMatrix(const QString& fileName, CvMat*& matrixToWriteTo)
 {
   QFile file(fileName);
-  if (file.exists())
+  if (!file.exists())
   {
     if (matrixToWriteTo != NULL)
     {
       cvReleaseMat(&matrixToWriteTo);
+      matrixToWriteTo = NULL;
     }
-
-    matrixToWriteTo = (CvMat*)cvLoad(fileName.toStdString().c_str());
-    if (matrixToWriteTo == NULL)
-    {
-      MITK_ERROR << "TagTrackerView::LoadMatrix failed to load from file:" << fileName.toStdString() << std::endl;
-    }
-  }
-  else
-  {
     MITK_ERROR << "TagTrackerView::LoadMatrix cannot load from file:" << fileName.toStdString() << std::endl;
+  }
+
+  if (matrixToWriteTo != NULL)
+  {
+    cvReleaseMat(&matrixToWriteTo);
+  }
+  matrixToWriteTo = (CvMat*)cvLoad(fileName.toStdString().c_str());
+  if (matrixToWriteTo == NULL)
+  {
+    MITK_ERROR << "TagTrackerView::LoadMatrix failed to load from file:" << fileName.toStdString() << std::endl;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackerView::OnFileNameChanged()
+{
+  QString leftIntrinsicFileName = m_Controls->m_LeftIntrinsicFileNameEdit->currentPath();
+  QString rightIntrinsicFileName = m_Controls->m_RightIntrinsicFileNameEdit->currentPath();
+  QString r2lRotationVectorFileName = m_Controls->m_RightToLeftRotationFileNameEdit->currentPath();
+  QString r2lTranslationVectorFileName = m_Controls->m_RightToLeftTranslationFileNameEdit->currentPath();
+
+  if (leftIntrinsicFileName.size() > 0)
+  {
+    this->LoadMatrix(leftIntrinsicFileName, m_LeftIntrinsicMatrix);
+  }
+  if (rightIntrinsicFileName.size() > 0)
+  {
+    this->LoadMatrix(rightIntrinsicFileName, m_RightIntrinsicMatrix);
+  }
+  if (r2lRotationVectorFileName.size() > 0)
+  {
+    this->LoadMatrix(r2lRotationVectorFileName, m_RightToLeftRotationVector);
+  }
+  if (r2lTranslationVectorFileName.size() > 0)
+  {
+    this->LoadMatrix(m_Controls->m_RightToLeftTranslationFileNameEdit->currentPath(), m_RightToLeftTranslationVector);
   }
 }
 
@@ -264,12 +301,15 @@ void TagTrackerView::UpdateTags()
 
     // Now use the data to extract points, and update the point set.
     QString modeName;
+    bool isMono = false;
 
     if ((leftNode.IsNotNull() && rightNode.IsNull())
         || (leftNode.IsNull() && rightNode.IsNotNull())
+        || m_MonoLeftCameraOnly
         )
     {
       mitk::Image::Pointer image;
+      isMono = true;
 
       if (leftNode.IsNotNull())
       {
@@ -355,6 +395,11 @@ void TagTrackerView::UpdateTags()
     numberString.setNum(numberOfTrackedPoints);
 
     m_Controls->m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
+    m_Controls->m_LeftIntrinsicFileNameEdit->setEnabled(!isMono);
+    m_Controls->m_RightComboBox->setEnabled(!isMono);
+    m_Controls->m_RightIntrinsicFileNameEdit->setEnabled(!isMono);
+    m_Controls->m_RightToLeftRotationFileNameEdit->setEnabled(!isMono);
+    m_Controls->m_RightToLeftTranslationFileNameEdit->setEnabled(!isMono);
 
   } // end if we have at least one node specified
 }

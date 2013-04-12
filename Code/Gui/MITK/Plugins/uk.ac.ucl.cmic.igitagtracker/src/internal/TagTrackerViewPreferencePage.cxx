@@ -32,6 +32,8 @@ const bool TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS(true);
 const std::string TagTrackerViewPreferencePage::MIN_SIZE_NAME("min size");
 const std::string TagTrackerViewPreferencePage::MAX_SIZE_NAME("max size");
 const std::string TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS_NAME("listen to event bus");
+const bool TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA(false);
+const std::string TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA_NAME("mono left camera");
 
 //-----------------------------------------------------------------------------
 TagTrackerViewPreferencePage::TagTrackerViewPreferencePage()
@@ -40,6 +42,7 @@ TagTrackerViewPreferencePage::TagTrackerViewPreferencePage()
 , m_ManualUpdate(0)
 , m_MinSize(0)
 , m_MaxSize(0)
+, m_DoMonoLeftCamera(0)
 , m_Initializing(false)
 , m_TagTrackerViewPreferencesNode(0)
 {
@@ -100,6 +103,9 @@ void TagTrackerViewPreferencePage::CreateQtControl(QWidget* parent)
   m_MaxSize->setDecimals(3);
   formLayout->addRow("max size", m_MaxSize);
 
+  m_DoMonoLeftCamera = new QCheckBox();
+  formLayout->addRow("mono left camera only", m_DoMonoLeftCamera);
+
   m_MainControl->setLayout(formLayout);
   this->Update();
 
@@ -127,6 +133,7 @@ bool TagTrackerViewPreferencePage::PerformOk()
   {
     m_TagTrackerViewPreferencesNode->PutBool(LISTEN_TO_EVENT_BUS_NAME, false);
   }
+  m_TagTrackerViewPreferencesNode->PutBool(DO_MONO_LEFT_CAMERA_NAME, m_DoMonoLeftCamera->isChecked());
   return true;
 }
 
@@ -143,7 +150,6 @@ void TagTrackerViewPreferencePage::Update()
 {
   m_MinSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MIN_SIZE_NAME, MIN_SIZE));
   m_MaxSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MAX_SIZE_NAME, MAX_SIZE));
-
   bool listenToEventBus = m_TagTrackerViewPreferencesNode->GetBool(LISTEN_TO_EVENT_BUS_NAME, LISTEN_TO_EVENT_BUS);
   if (listenToEventBus)
   {
@@ -153,4 +159,5 @@ void TagTrackerViewPreferencePage::Update()
   {
     m_ManualUpdate->setChecked(true);
   }
+  m_DoMonoLeftCamera->setChecked(m_TagTrackerViewPreferencesNode->GetBool(DO_MONO_LEFT_CAMERA_NAME, DO_MONO_LEFT_CAMERA));
 }
