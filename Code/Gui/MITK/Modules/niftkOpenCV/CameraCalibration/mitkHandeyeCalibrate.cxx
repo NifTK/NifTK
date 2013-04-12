@@ -101,7 +101,8 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   
   }
   
-
+  cv::Mat PseudoInverse = cvCreateMat(3,3,CV_32FC1);
+  cv::invert(A,PseudoInverse,CV_SVD);
   return 0.0;
 }
 } // end namespace
