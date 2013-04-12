@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TagTrackerViewControls</class>
+ <widget class="QWidget" name="TagTrackerViewControls">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>408</width>
+    <height>418</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_LeftComboBoxLabel">
+         <property name="text">
+          <string>left</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_LeftComboBox"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="ctkPathLineEdit" name="m_LeftIntrinsicFileNameEdit" native="true"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_RightComboBoxLabel">
+         <property name="text">
+          <string>right</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_RightComboBox"/>
+       </item>
+       <item row="3" column="1">
+        <widget class="ctkPathLineEdit" name="m_RightIntrinsicFileNameEdit" native="true"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="m_RightToLeftRotationLabel">
+         <property name="text">
+          <string>r2l rotation</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="ctkPathLineEdit" name="m_RightToLeftRotationFileNameEdit" native="true"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="m_RightToLeftTranslationLabel">
+         <property name="text">
+          <string>r2l translation</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="ctkPathLineEdit" name="m_RightToLeftTranslationFileNameEdit" native="true"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="m_NumberOfTagsLabel">
+         <property name="text">
+          <string>tags</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="m_NumberOfTagsEdit"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_UpdateButton">
+         <property name="text">
+          <string>update</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPlainTextEdit" name="m_TagPositionDisplay"/>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QmitkDataStorageComboBox</class>
+   <extends>QComboBox</extends>
+   <header>QmitkDataStorageComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QWidget</extends>
+   <header>ctkPathLineEdit.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

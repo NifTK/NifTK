@@ -20,7 +20,8 @@
 #include <QString>
 
 class QWidget;
-class QPushButton;
+class QRadioButton;
+class QDoubleSpinBox;
 
 /**
  * \class TagTrackerViewPreferencePage
@@ -35,18 +36,48 @@ class TagTrackerViewPreferencePage : public QObject, public berry::IQtPreference
 
 public:
 
-  /// \brief Stores the name of the preferences node.
-  static const std::string PREFERENCES_NODE_NAME;
-
   TagTrackerViewPreferencePage();
   TagTrackerViewPreferencePage(const TagTrackerViewPreferencePage& other);
   ~TagTrackerViewPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
-
   void CreateQtControl(QWidget* widget);
-
   QWidget* GetQtControl() const;
+
+  /**
+   * \brief Stores the name of the preferences node.
+   */
+  static const std::string PREFERENCES_NODE_NAME;
+
+  /**
+   * \brief Stores the minimum size of the tag as a fraction [0..1] of the maximum of the number of rows and columns.
+   */
+  static const float MIN_SIZE;
+
+  /**
+   * \brief Stores the name of the preferences node used to store the MIN_SIZE.
+   */
+  static const std::string MIN_SIZE_NAME;
+
+  /**
+   * \brief Stores the maximum size of the tag as a fraction [0..1] of the maximum of the number of rows and columns.
+   */
+  static const float MAX_SIZE;
+
+  /**
+   * \brief Stores the name of the preferences node used to store the MAX_SIZE.
+   */
+  static const std::string MAX_SIZE_NAME;
+
+  /**
+   * \brief Stores the boolean as to whether we listen to event bus.
+   */
+  static const bool LISTEN_TO_EVENT_BUS;
+
+  /**
+   * \brief Stores the name of the preferences node used to store LISTEN_TO_EVENT_BUS.
+   */
+  static const std::string LISTEN_TO_EVENT_BUS_NAME;
 
   /**
    * \see IPreferencePage::PerformOk()
@@ -68,7 +99,10 @@ private slots:
 private:
 
   QWidget        *m_MainControl;
-  QPushButton    *m_DummyButton;
+  QRadioButton   *m_ListenToEventBusPulse;
+  QRadioButton   *m_ManualUpdate;
+  QDoubleSpinBox *m_MinSize;
+  QDoubleSpinBox *m_MaxSize;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_TagTrackerViewPreferencesNode;

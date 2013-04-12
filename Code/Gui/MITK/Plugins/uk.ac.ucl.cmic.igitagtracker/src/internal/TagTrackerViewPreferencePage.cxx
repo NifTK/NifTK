@@ -25,11 +25,20 @@
 #include <berryPlatform.h>
 
 const std::string TagTrackerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitagtracker");
+const float TagTrackerViewPreferencePage::MIN_SIZE = 0.01;
+const float TagTrackerViewPreferencePage::MAX_SIZE = 0.125;
+const bool TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS(true);
+const std::string TagTrackerViewPreferencePage::MIN_SIZE_NAME("min size");
+const std::string TagTrackerViewPreferencePage::MAX_SIZE_NAME("max size");
+const std::string TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS_NAME("listen to event bus");
 
 //-----------------------------------------------------------------------------
 TagTrackerViewPreferencePage::TagTrackerViewPreferencePage()
 : m_MainControl(0)
-, m_DummyButton(0)
+, m_ListenToEventBusPulse()
+, m_ManualUpdate(0)
+, m_MinSize(0)
+, m_MaxSize(0)
 , m_Initializing(false)
 , m_TagTrackerViewPreferencesNode(0)
 {
@@ -72,8 +81,17 @@ void TagTrackerViewPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;
 
-  m_DummyButton = new QPushButton();
-  formLayout->addRow("dummy", m_DummyButton);
+  m_ListenToEventBusPulse = new QRadioButton();
+  formLayout->addRow("listen to event bus", m_ListenToEventBusPulse);
+
+  m_ManualUpdate = new QRadioButton();
+  formLayout->addRow("manual update", m_ManualUpdate);
+
+  m_MinSize = new QSpinBox();
+  formLayout->addRow("min size", m_MinSize);
+
+  m_MaxSize = new QSpinBox();
+  formLayout->addRow("max size", m_MaxSize);
 
   m_MainControl->setLayout(formLayout);
   this->Update();
@@ -92,6 +110,16 @@ QWidget* TagTrackerViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool TagTrackerViewPreferencePage::PerformOk()
 {
+  m_TagTrackerViewPreferencesNode->PutDouble(MIN_SIZE_NAME, m_MinSize->value());
+  m_TagTrackerViewPreferencesNode->PutDouble(MAX_SIZE_NAME, m_MaxSize->value());
+  if (m_ListenToEventBusPulse->isChecked())
+  {
+    m_TagTrackerViewPreferencesNode->PutBool(LISTEN_TO_EVENT_BUS_NAME, true);
+  }
+  else
+  {
+    m_TagTrackerViewPreferencesNode->PutBool(LISTEN_TO_EVENT_BUS_NAME, false);
+  }
   return true;
 }
 
@@ -106,4 +134,16 @@ void TagTrackerViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void TagTrackerViewPreferencePage::Update()
 {
+  m_MinSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MIN_SIZE_NAME, MIN_SIZE));
+  m_MaxSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MAX_SIZE_NAME, MAX_SIZE));
+
+  bool listenEventBus = m_TagTrackerViewPreferencesNode->GetBool(LISTEN_TO_EVENT_BUS_NAME, LISTEN_TO_EVENT_BUS);
+  if (listenToEventBus)
+  {
+    m_ListenToEventBusPulse->setChecked(true);
+  }
+  else
+  {
+    m_ManualUpdate->setChecked(true);
+  }
 }
