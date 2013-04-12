@@ -105,4 +105,78 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::invert(A,PseudoInverse,CV_SVD);
   return 0.0;
 }
+  
+//-----------------------------------------------------------------------------
+std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromDirectory (const std::string& fullDirectoryName)
+{
+  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::vector<cv::Mat> myMatrices;
+
+  if (files.size() > 0)
+  {
+    for(unsigned int i = 0; i < files.size();i++)
+    {
+      cv::Mat Matrix = cvCreateMat(4,4,CV_32FC1);
+      std::ifstream fin(files[i].c_str());
+      std::cout << "Reading Matrix from " << files[i].c_str() << std::endl;
+      for ( int row = 0 ; row < 4 ; row ++ ) 
+      {
+        for ( int col = 0 ; col < 4 ; col ++ ) 
+        {
+          fin >> Matrix.at<double>(row,col);
+          std::cout <<  Matrix.at<double>(row,col) << " " ;
+        }
+        std::cout << std::endl;
+      }
+      myMatrices.push_back(Matrix);
+    }
+  }
+  else
+  {
+    throw std::logic_error("No files found in directory!");
+  }
+
+  if (myMatrices.size() == 0)
+  {
+    throw std::logic_error("No images found in directory!");
+  }
+  std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
+  return myMatrices;
+}
+
+//-----------------------------------------------------------------------------
+std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromExtrinsicFile (const std::string& fullFileName)
+{
+
+  std::vector<cv::Mat> myMatrices;
+  std::ifstream fin(fullFileName.c_str());
+
+  cv::Mat RotationVector = cvCreateMat(3,1,CV_32FC1);
+  cv::Mat TranslationVector = cvCreateMat(3,1,CV_32FC1);
+  int i = 1;
+  while ( fin >> RotationVector.at<double>(0,0) \
+      >> RotationVector.at<double>(1,0) \
+      >> RotationVector.at<double>(2,0) \
+      >> TranslationVector.at<double>(0,0) \
+      >> TranslationVector.at<double>(1,0) \
+      >> TranslationVector.at<double>(2,0) )
+  {
+    cv::Mat Matrix = cvCreateMat(4,4,CV_32FC1);
+    cv::Mat RotationMatrix = cvCreateMat(3,3,CV_32FC1);
+    cv::Rodrigues (RotationVector, RotationMatrix);
+    std::cout << "Got Extrinsic " << i++ << std::endl;
+    for ( int row = 0 ; row < 3 ; row ++ ) 
+    {
+      for ( int col = 0 ; col < 3 ; col ++ ) 
+      {
+         std::cout <<  RotationMatrix.at<double>(row,col) << " " ;
+      }
+      std::cout << std::endl;
+    }
+   myMatrices.push_back(Matrix);
+  }
+  return myMatrices;
+}
+
+
 } // end namespace

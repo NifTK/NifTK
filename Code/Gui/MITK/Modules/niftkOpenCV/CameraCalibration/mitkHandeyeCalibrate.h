@@ -45,6 +45,18 @@ public:
       cv::Mat CameraToMarker
       );
 
+  /**
+   * \brief Read a set of matrices from a directory and 
+   * put them in a vector of 4x4 cvMats
+   */
+  std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName);
+
+  /**
+   * \brief Load a set of matrices from a file describing the 
+   * extrinsic parameters of a standard camera calibration
+   */
+  std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
+
 protected:
 
   HandeyeCalibrate();
