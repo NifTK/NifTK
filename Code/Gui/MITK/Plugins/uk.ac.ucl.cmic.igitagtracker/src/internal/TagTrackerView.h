@@ -76,6 +76,11 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
+  /**
+   * \brief Or we can listed to a manual update button.
+   */
+  void OnManualUpdate();
+
 private:
 
   /**

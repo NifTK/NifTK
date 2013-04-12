@@ -105,6 +105,8 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_RightComboBox->SetAutoSelectNewItems(false);
     m_Controls->m_RightComboBox->SetPredicate(rightIsImage);
 
+    connect(m_Controls->m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
+
     ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
     {
@@ -168,6 +170,13 @@ void TagTrackerView::OnUpdate(const ctkEvent& event)
   {
     this->UpdateTags();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackerView::OnManualUpdate()
+{
+  this->UpdateTags();
 }
 
 
