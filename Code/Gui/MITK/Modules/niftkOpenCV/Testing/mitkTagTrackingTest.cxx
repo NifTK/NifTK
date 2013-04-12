@@ -18,9 +18,11 @@
 
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
+#include <mitkIOUtil.h>
 #include <cv.h>
 #include <highgui.h>
-#include "mitkTagTrackingFacade.h"
+#include "mitkMonoTagExtractor.h"
+#include "mitkStereoTagExtractor.h"
 
 /**
  * \class TagTrackingTest
@@ -42,50 +44,48 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting Test3DReconstruction...");
 
-    cv::Mat li = cv::imread(leftImage, CV_LOAD_IMAGE_COLOR);
-    if(!li.data )
-    {
-      MITK_TEST_FAILED_MSG(<< "Could not open or find the image:" << leftImage);
-    }
-    cv::Mat ri = cv::imread(rightImage, CV_LOAD_IMAGE_COLOR);
-    if(!ri.data )
-    {
-      MITK_TEST_FAILED_MSG(<< "Could not open or find the image:" << rightImage);
-    }
+    mitk::Image::Pointer leftMitkImage = mitk::IOUtil::LoadImage(leftImage);
+    MITK_TEST_CONDITION_REQUIRED(leftMitkImage.IsNotNull(), "Checking leftMitkImage is not null");
 
-    cv::Mat liMat = cv::Mat(3, 3, CV_32FC1);
-    cv::FileStorage fsli(leftIntrinsics, cv::FileStorage::READ);
-    fsli["calib_txt_left_intrinsic"] >> liMat;
-    fsli.release();
+    mitk::Image::Pointer rightMitkImage = mitk::IOUtil::LoadImage(rightImage);
+    MITK_TEST_CONDITION_REQUIRED(rightMitkImage.IsNotNull(), "Checking rightMitkImage is not null");
 
-    cv::Mat riMat = cv::Mat(3, 3, CV_32FC1);
-    cv::FileStorage fsri(rightIntrinsics, cv::FileStorage::READ);
-    fsri["calib_txt_right_intrinsic"] >> riMat;
-    fsri.release();
+    CvMat *leftIntMat = (CvMat*)cvLoad(leftIntrinsics.c_str());
+    MITK_TEST_CONDITION_REQUIRED(leftIntMat != NULL, "Checking leftIntMat is not null");
 
-    cv::Mat r2lRotVector = cv::Mat(1, 3, CV_32FC1);
-    cv::FileStorage fsr2lr(rightToLeftRotationVector, cv::FileStorage::READ);
-    fsr2lr["left-1095_png_r2l_rotation"] >> r2lRotVector;
-    fsr2lr.release();
+    CvMat *rightIntMat = (CvMat*)cvLoad(rightIntrinsics.c_str());
+    MITK_TEST_CONDITION_REQUIRED(rightIntMat != NULL, "Checking rightIntMat is not null");
 
-    cv::Mat r2lTrans = cv::Mat(1, 3, CV_32FC1);
-    cv::FileStorage fsr2lt(rightToLeftTranslationVector, cv::FileStorage::READ);
-    fsr2lt["left-1095_png_r2l_translation"] >> r2lTrans;
-    fsr2lt.release();
+    CvMat *r2lRotMat = (CvMat*)cvLoad(rightToLeftRotationVector.c_str());
+    MITK_TEST_CONDITION_REQUIRED(r2lRotMat != NULL, "Checking r2lRotMat is not null");
 
-    MITK_TEST_OUTPUT(<< "Loaded data...");
-    MITK_TEST_OUTPUT(<< "left intrinsic=" << liMat);
-    MITK_TEST_OUTPUT(<< "right intrinsic=" << riMat);
-    MITK_TEST_OUTPUT(<< "r2l rot=" << r2lRotVector);
-    MITK_TEST_OUTPUT(<< "r2l trans=" << r2lTrans);
+    CvMat *r2lTrnMat = (CvMat*)cvLoad(rightToLeftTranslationVector.c_str());
+    MITK_TEST_CONDITION_REQUIRED(r2lTrnMat != NULL, "Checking r2lTrnMat is not null");
 
-    std::map<int, cv::Point3f> result = mitk::DetectMarkerPairs(li, ri, liMat, riMat, r2lRotVector, r2lTrans);
+    mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+    mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
+    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, pointSet);
 
-    MITK_TEST_CONDITION_REQUIRED(result.size() == 2,".. Testing we got 2 points out");
-
+    MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 2,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
     MITK_TEST_OUTPUT(<< "Finished Test3DReconstruction...");
   }
 
+
+  //-----------------------------------------------------------------------------
+  static void TestMono(const std::string& image)
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestMono...");
+
+    mitk::Image::Pointer mitkImage = mitk::IOUtil::LoadImage(image);
+    MITK_TEST_CONDITION_REQUIRED(mitkImage.IsNotNull(), "Checking mitkImage is not null");
+
+    mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+    mitk::MonoTagExtractor::Pointer extractor = mitk::MonoTagExtractor::New();
+    extractor->ExtractPoints(mitkImage, 0.01, 0.125, pointSet);
+
+    MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 5,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
+    MITK_TEST_OUTPUT(<< "Finished TestMono...");
+  }
 }; // end class
 
 
@@ -105,6 +105,7 @@ int mitkTagTrackingTest(int argc, char * argv[])
   std::string rightToLeftTranslationVector = argv[6];
 
   TagTrackingTest::Test3DReconstruction(leftImage, rightImage, leftIntrinsics, rightIntrinsics, rightToLeftRotationVector, rightToLeftTranslationVector);
+  TagTrackingTest::TestMono(leftImage);
 
   MITK_TEST_END();
 }
