@@ -89,9 +89,15 @@ void TagTrackerViewPreferencePage::CreateQtControl(QWidget* parent)
   formLayout->addRow("manual update", m_ManualUpdate);
 
   m_MinSize = new QDoubleSpinBox();
+  m_MinSize->setMinimum(0);
+  m_MinSize->setMaximum(1);
+  m_MinSize->setDecimals(3);
   formLayout->addRow("min size", m_MinSize);
 
   m_MaxSize = new QDoubleSpinBox();
+  m_MaxSize->setMinimum(0);
+  m_MaxSize->setMaximum(1);
+  m_MaxSize->setDecimals(3);
   formLayout->addRow("max size", m_MaxSize);
 
   m_MainControl->setLayout(formLayout);
