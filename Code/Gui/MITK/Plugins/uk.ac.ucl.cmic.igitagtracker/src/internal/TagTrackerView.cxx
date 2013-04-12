@@ -242,6 +242,7 @@ void TagTrackerView::UpdateTags()
       pointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
       pointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
       pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
+      pointSetNode->SetVisibility(true);
       pointSetNode->SetBoolProperty("helper object", false);
       pointSetNode->SetBoolProperty("show distant lines", false);
       pointSetNode->SetBoolProperty("show distant points", false);
