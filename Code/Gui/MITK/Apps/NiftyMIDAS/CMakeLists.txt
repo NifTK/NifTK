@@ -26,6 +26,8 @@ SET(_exclude_plugins
   uk.ac.ucl.cmic.niftyseg
   uk.ac.ucl.cmic.surgicalguidance
   uk.ac.ucl.cmic.singlewidgeteditor
+  uk.ac.ucl.cmic.igisurfacerecon
+  uk.ac.ucl.cmic.igitagtracker
 )
 
 NIFTK_CREATE_APPLICATION(
