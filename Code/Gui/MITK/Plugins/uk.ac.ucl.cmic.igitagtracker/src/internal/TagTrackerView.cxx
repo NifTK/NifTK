@@ -148,6 +148,11 @@ void TagTrackerView::RetrievePreferenceValues()
     m_Controls->m_UpdateButton->setEnabled(true);
   }
   m_MonoLeftCameraOnly = prefs->GetBool(TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA_NAME, TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA);
+  m_Controls->m_LeftIntrinsicFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
+  m_Controls->m_RightComboBox->setEnabled(!m_MonoLeftCameraOnly);
+  m_Controls->m_RightIntrinsicFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
+  m_Controls->m_RightToLeftRotationFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
+  m_Controls->m_RightToLeftTranslationFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
 }
 
 
@@ -241,11 +246,6 @@ void TagTrackerView::UpdateTags()
   QString r2lRotationVectorFileName = m_Controls->m_RightToLeftRotationFileNameEdit->currentPath();
   QString r2lTranslationVectorFileName = m_Controls->m_RightToLeftTranslationFileNameEdit->currentPath();
 
-  qDebug() << "leftIntrinsicFileName=" << leftIntrinsicFileName;
-  qDebug() << "rightIntrinsicFileName=" << rightIntrinsicFileName;
-  qDebug() << "r2lRotationVectorFileName=" << r2lRotationVectorFileName;
-  qDebug() << "r2lTranslationVectorFileName=" << r2lTranslationVectorFileName;
-
   if (leftNode.IsNotNull() || rightNode.IsNotNull())
   {
     // Make sure all specified matrices are loaded.
@@ -301,7 +301,6 @@ void TagTrackerView::UpdateTags()
 
     // Now use the data to extract points, and update the point set.
     QString modeName;
-    bool isMono = false;
 
     if ((leftNode.IsNotNull() && rightNode.IsNull())
         || (leftNode.IsNull() && rightNode.IsNotNull())
@@ -309,7 +308,6 @@ void TagTrackerView::UpdateTags()
         )
     {
       mitk::Image::Pointer image;
-      isMono = true;
 
       if (leftNode.IsNotNull())
       {
@@ -393,13 +391,7 @@ void TagTrackerView::UpdateTags()
 
     QString numberString;
     numberString.setNum(numberOfTrackedPoints);
-
     m_Controls->m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
-    m_Controls->m_LeftIntrinsicFileNameEdit->setEnabled(!isMono);
-    m_Controls->m_RightComboBox->setEnabled(!isMono);
-    m_Controls->m_RightIntrinsicFileNameEdit->setEnabled(!isMono);
-    m_Controls->m_RightToLeftRotationFileNameEdit->setEnabled(!isMono);
-    m_Controls->m_RightToLeftTranslationFileNameEdit->setEnabled(!isMono);
 
   } // end if we have at least one node specified
 }
