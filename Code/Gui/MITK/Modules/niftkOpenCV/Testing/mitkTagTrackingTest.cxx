@@ -67,6 +67,12 @@ public:
     extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, pointSet);
 
     MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 2,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
+
+    cvReleaseMat(&leftIntMat);
+    cvReleaseMat(&rightIntMat);
+    cvReleaseMat(&r2lRotMat);
+    cvReleaseMat(&r2lTrnMat);
+
     MITK_TEST_OUTPUT(<< "Finished Test3DReconstruction...");
   }
 
