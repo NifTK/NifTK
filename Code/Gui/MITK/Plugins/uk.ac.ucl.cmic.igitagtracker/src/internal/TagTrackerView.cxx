@@ -322,7 +322,7 @@ void TagTrackerView::UpdateTags()
     } // end if mono/stereo
 
     int numberOfTrackedPoints = pointSet->GetSize();
-    m_Controls->m_NumberOfTagsEdit->setText(QString(numberOfTrackedPoints));
+    m_Controls->m_NumberOfTagsLabel->setText(QString("tags:") + QString(numberOfTrackedPoints));
 
   } // end if we have at least one node specified
 }
