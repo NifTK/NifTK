@@ -151,7 +151,7 @@ void TagTrackerView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void TagTrackerView::LoadMatrix(const QString& fileName, CvMat *matrixToWriteTo)
+void TagTrackerView::LoadMatrix(const QString& fileName, CvMat*& matrixToWriteTo)
 {
   QFile file(fileName);
   if (file.exists())
@@ -222,7 +222,7 @@ void TagTrackerView::UpdateTags()
     }
     if (r2lRotationVectorFileName.size() > 0 && m_RightToLeftRotationVector == NULL)
     {
-      this->LoadMatrix(r2lRotationVectorFileName, m_RightToLeftTranslationVector);
+      this->LoadMatrix(r2lRotationVectorFileName, m_RightToLeftRotationVector);
     }
     if (r2lTranslationVectorFileName.size() > 0 && m_RightToLeftTranslationVector == NULL)
     {

@@ -96,7 +96,7 @@ private:
   /**
    * \brief Loads a matrix.
    */
-  void LoadMatrix(const QString& fileName, CvMat *matrixToWriteTo);
+  void LoadMatrix(const QString& fileName, CvMat*& matrixToWriteTo);
 
   /**
    * \brief Main method to update tag positions.
