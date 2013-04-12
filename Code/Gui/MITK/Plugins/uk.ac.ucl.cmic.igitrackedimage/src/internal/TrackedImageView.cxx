@@ -144,8 +144,6 @@ void TrackedImageView::LoadImageToProbeTransform(const QString& fileName)
       double tmp;
       matrixIn >> tmp;
       matrix->SetElement(row, col, tmp);
-
-      std::cerr << "Matt, loaded r=" << row << ", c=" << col << ", tmp=" << tmp << std::endl;
     }
   }
   matrixFile.close();
