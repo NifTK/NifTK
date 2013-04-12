@@ -137,6 +137,15 @@ void TagTrackerView::RetrievePreferenceValues()
     m_MinSize = static_cast<float>(prefs->GetDouble(TagTrackerViewPreferencePage::MIN_SIZE_NAME, TagTrackerViewPreferencePage::MIN_SIZE));
     m_MaxSize = static_cast<float>(prefs->GetDouble(TagTrackerViewPreferencePage::MAX_SIZE_NAME, TagTrackerViewPreferencePage::MAX_SIZE));
   }
+
+  if (m_ListenToEventBusPulse)
+  {
+    m_Controls->m_UpdateButton->setEnabled(false);
+  }
+  else
+  {
+    m_Controls->m_UpdateButton->setEnabled(true);
+  }
 }
 
 
