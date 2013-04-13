@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igitrackedimage} The Tracked Image View
+
+\image html icon.png "The Icon for Tracked Image View"
+
+\section TrackedImageIntro Introduction
+
+Do an introduction here.
+
+\section TrackedImageUsage Usage
+
+Put all usage information here.
+
+\section TrackedImagePreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section TrackedImageReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+

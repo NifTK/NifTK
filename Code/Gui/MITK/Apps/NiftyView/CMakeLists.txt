@@ -23,6 +23,7 @@ SET(_exclude_plugins
   uk.ac.ucl.cmic.singlewidgeteditor
   uk.ac.ucl.cmic.igisurfacerecon
   uk.ac.ucl.cmic.igitagtracker
+  uk.ac.ucl.cmic.igitrackedimage
 )
 
 NIFTK_CREATE_APPLICATION(
