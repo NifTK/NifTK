@@ -93,7 +93,13 @@ void BaseVideoProcessor::Initialize()
   if (m_Writer == NULL)
   {
     int inputCodec = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FOURCC);
-    char inputCodecCode[] = {inputCodec & 0XFF , (inputCodec & 0XFF00) >> 8,(inputCodec & 0XFF0000) >> 16,(inputCodec & 0XFF000000) >> 24, 0};
+
+    char codec1 = static_cast<char>(inputCodec & 0XFF);
+    char codec2 = static_cast<char>((inputCodec & 0XFF00) >> 8);
+    char codec3 = static_cast<char>((inputCodec & 0XFF0000) >> 16);
+    char codec4 = static_cast<char>((inputCodec & 0XFF000000) >> 24);
+
+    char inputCodecCode[] = {codec1, codec2, codec3, codec4, 0};
 
     int fps        = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FPS);
     int sizeX      = (int)cvGetCaptureProperty(m_Capture,CV_CAP_PROP_FRAME_WIDTH);
@@ -103,7 +109,13 @@ void BaseVideoProcessor::Initialize()
 
     int outputFps = 25;
     int outputCodec = CV_FOURCC('D', 'I', 'V', 'X');
-    char outputCodecCode[] = {outputCodec & 0XFF , (outputCodec & 0XFF00) >> 8,(outputCodec & 0XFF0000) >> 16,(outputCodec & 0XFF000000) >> 24, 0};
+
+    codec1 = static_cast<char>(outputCodec & 0XFF);
+    codec2 = static_cast<char>((outputCodec & 0XFF00) >> 8);
+    codec3 = static_cast<char>((outputCodec & 0XFF0000) >> 16);
+    codec4 = static_cast<char>((outputCodec & 0XFF000000) >> 24);
+
+    char outputCodecCode[] = {codec1, codec2, codec3, codec4, 0};
 
     std::cout << "Input codec=" << inputCodec << ", " << inputCodecCode << ", fps=" << fps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
     std::cout << "Output codec=" << outputCodec << ", " << outputCodecCode << ", fps=" << outputFps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;

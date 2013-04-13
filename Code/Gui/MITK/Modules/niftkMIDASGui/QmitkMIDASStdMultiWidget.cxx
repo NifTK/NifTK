@@ -830,12 +830,9 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         bool             isFlipped;
 
         float voxelOffset = 0;
-        float boundingBoxOffset = 0;
-
         if(geometry->GetImageGeometry())
         {
           voxelOffset = 0.5;
-          boundingBoxOffset = 0.5;
         }
 
         originVoxels[0] = 0;
@@ -959,7 +956,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         }
 
         // For the PlaneGeometry.
-        mitk::ScalarType bounds[6]= { 0, width, 0, height, 0, 1 };
+        mitk::ScalarType bounds[6]= { 0, static_cast<float>(width), 0, static_cast<float>(height), 0, 1 };
 
         // A SlicedGeometry3D is initialised from a 2D PlaneGeometry, plus the number of slices.
         mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
