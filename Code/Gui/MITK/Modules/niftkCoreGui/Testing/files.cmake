@@ -14,8 +14,8 @@
 
 # tests with no extra command line parameter
 SET(MODULE_TESTS
+  QmitkFileIOUtilsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
-  QmitkFileIOUtilsTest.cxx
 )
