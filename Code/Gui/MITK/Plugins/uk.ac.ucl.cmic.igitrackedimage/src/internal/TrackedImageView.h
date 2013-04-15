@@ -91,11 +91,6 @@ private:
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   /**
-   * \brief Loads the image to probe transform, and stores it internally.
-   */
-  void LoadImageToProbeTransform(const QString& fileName);
-
-  /**
    * \brief All the controls for the main view part.
    */
   Ui::TrackedImageView *m_Controls;

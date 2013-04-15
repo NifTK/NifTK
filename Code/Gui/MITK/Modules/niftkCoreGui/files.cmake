@@ -20,6 +20,7 @@ SET(CPP_FILES
   QmitkSingleWidget.cxx
   QmitkCmicLogo.cxx
   QmitkBitmapOverlay.cxx
+  QmitkFileIOUtils.cxx
 )
 
 SET(MOC_H_FILES

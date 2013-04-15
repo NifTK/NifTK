@@ -24,9 +24,10 @@
 #include <mitkImage.h>
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
-#include "mitkCoordinateAxesData.h"
 #include "TrackedImageViewActivator.h"
+#include "mitkCoordinateAxesData.h"
 #include "mitkTrackedImageCommand.h"
+#include "QmitkFileIOUtils.h"
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
@@ -124,37 +125,9 @@ void TrackedImageView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::LoadImageToProbeTransform(const QString& fileName)
-{
-  QFile matrixFile(fileName);
-  if (!matrixFile.open(QIODevice::ReadOnly | QIODevice::Text))
-  {
-    MITK_ERROR << "TrackedImageView::LoadImageToProbeTransform, failed to open file:" << fileName.toStdString() << std::endl;
-    return;
-  }
-
-  QTextStream matrixIn(&matrixFile);
-
-  vtkMatrix4x4 *matrix = vtkMatrix4x4::New();
-
-  for ( int row = 0 ; row < 4 ; row ++ )
-  {
-    for ( int col = 0 ; col < 4 ; col ++ )
-    {
-      double tmp;
-      matrixIn >> tmp;
-      matrix->SetElement(row, col, tmp);
-    }
-  }
-  matrixFile.close();
-  m_ImageToProbeTransform = matrix;
-}
-
-
-//-----------------------------------------------------------------------------
 void TrackedImageView::OnImageToProbeChanged()
 {
-  this->LoadImageToProbeTransform(m_Controls->m_ImageToProbeCalibrationFile->currentPath());
+  m_ImageToProbeTransform = Load4x4MatrixFromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath());
 }
 
 

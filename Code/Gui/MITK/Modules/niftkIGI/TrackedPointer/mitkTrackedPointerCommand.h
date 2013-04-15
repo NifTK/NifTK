@@ -39,10 +39,9 @@ public:
    * \brief Write My Documentation
    */
   void Update(const mitk::DataStorage::Pointer dataStorage,
-           const mitk::DataNode::Pointer imageNode,
            const mitk::DataNode::Pointer surfaceNode,
-           const mitk::DataNode::Pointer probeToWorldNode,
-           const vtkMatrix4x4* imageToProbeTransform);
+           const mitk::DataNode::Pointer pointerToWorldNode,
+           const vtkMatrix4x4* tipToPointerTransform);
 
 protected:
 

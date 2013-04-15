@@ -25,8 +25,9 @@
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
 #include "mitkCoordinateAxesData.h"
-#include "TrackedPointerViewActivator.h"
 #include "mitkTrackedPointerCommand.h"
+#include "TrackedPointerViewActivator.h"
+#include "QmitkFileIOUtils.h"
 
 const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
@@ -65,11 +66,6 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
-    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-    m_Controls->m_ImageNode->SetDataStorage(dataStorage);
-    m_Controls->m_ImageNode->SetAutoSelectNewItems(false);
-    m_Controls->m_ImageNode->SetPredicate(isImage);
-
     mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
     m_Controls->m_ProbeSurfaceNode->SetDataStorage(dataStorage);
     m_Controls->m_ProbeSurfaceNode->SetAutoSelectNewItems(false);
@@ -80,7 +76,7 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
 
-    connect(m_Controls->m_ImageToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnImageToProbeChanged()));
+    connect(m_Controls->m_TipToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnTipToProbeChanged()));
 
     RetrievePreferenceValues();
 
@@ -117,42 +113,14 @@ void TrackedPointerView::RetrievePreferenceValues()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::SetFocus()
 {
-  m_Controls->m_ImageNode->setFocus();
+  m_Controls->m_TipToProbeCalibrationFile->setFocus();
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerView::LoadImageToProbeTransform(const QString& fileName)
+void TrackedPointerView::OnTipToProbeChanged()
 {
-  QFile matrixFile(fileName);
-  if (!matrixFile.open(QIODevice::ReadOnly | QIODevice::Text))
-  {
-    MITK_ERROR << "TrackedPointerView::LoadImageToProbeTransform, failed to open file:" << fileName.toStdString() << std::endl;
-    return;
-  }
-
-  QTextStream matrixIn(&matrixFile);
-
-  vtkMatrix4x4 *matrix = vtkMatrix4x4::New();
-
-  for ( int row = 0 ; row < 4 ; row ++ )
-  {
-    for ( int col = 0 ; col < 4 ; col ++ )
-    {
-      double tmp;
-      matrixIn >> tmp;
-      matrix->SetElement(row, col, tmp);
-    }
-  }
-  matrixFile.close();
-  m_ImageToProbeTransform = matrix;
-}
-
-
-//-----------------------------------------------------------------------------
-void TrackedPointerView::OnImageToProbeChanged()
-{
-  this->LoadImageToProbeTransform(m_Controls->m_ImageToProbeCalibrationFile->currentPath());
+  m_TipToProbeTransform = Load4x4MatrixFromFile(m_Controls->m_TipToProbeCalibrationFile->currentPath());
 }
 
 
@@ -160,9 +128,13 @@ void TrackedPointerView::OnImageToProbeChanged()
 void TrackedPointerView::OnUpdate(const ctkEvent& event)
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
   mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
 
   mitk::TrackedPointerCommand::Pointer command = mitk::TrackedPointerCommand::New();
+  command->Update(dataStorage,
+                  surfaceNode,
+                  probeToWorldTransform,
+                  m_TipToProbeTransform
+                  );
 }

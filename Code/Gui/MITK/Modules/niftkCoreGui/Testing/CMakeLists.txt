@@ -12,10 +12,4 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_igitrackedimage)
-
-MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE TRACKEDIMAGE_EXPORT
-  EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES niftkIGIGui niftkCoreGui
-)
+MITK_CREATE_MODULE_TESTS(LABELS niftkCoreGui)

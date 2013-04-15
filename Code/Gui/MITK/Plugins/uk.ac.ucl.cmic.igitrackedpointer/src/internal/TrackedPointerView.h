@@ -73,9 +73,9 @@ private slots:
   void OnUpdate(const ctkEvent& event);
 
   /**
-   * \brief When the user selects a new image to probe matrix, we load the transformation.
+   * \brief When the user selects a new tip to probe matrix, we update the internal transform.
    */
-  void OnImageToProbeChanged();
+  void OnTipToProbeChanged();
 
 private:
 
@@ -90,11 +90,6 @@ private:
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   /**
-   * \brief Loads the image to probe transform, and stores it internally.
-   */
-  void LoadImageToProbeTransform(const QString& fileName);
-
-  /**
    * \brief All the controls for the main view part.
    */
   Ui::TrackedPointerView *m_Controls;
@@ -102,8 +97,8 @@ private:
   /**
    * \brief Member variables for keeping state between button clicks.
    */
-  vtkSmartPointer<vtkMatrix4x4> m_ImageToProbeTransform;
-  std::string m_ImageToProbeFileName;
+  vtkSmartPointer<vtkMatrix4x4> m_TipToProbeTransform;
+  std::string m_TipToProbeFileName;
 };
 
 #endif // TrackedPointerView_h
