@@ -13,7 +13,7 @@
 =============================================================================*/
 
 // Qmitk
-#include "TrackedImageView.h"
+#include "TrackedPointerView.h"
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -24,24 +24,22 @@
 #include <mitkImage.h>
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
-#include "TrackedImageViewActivator.h"
 #include "mitkCoordinateAxesData.h"
-#include "mitkTrackedImageCommand.h"
+#include "mitkTrackedPointerCommand.h"
+#include "TrackedPointerViewActivator.h"
 #include "QmitkFileIOUtils.h"
 
-const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
+const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
 //-----------------------------------------------------------------------------
-TrackedImageView::TrackedImageView()
+TrackedPointerView::TrackedPointerView()
 : m_Controls(NULL)
-, m_ImageToProbeTransform(NULL)
-, m_ImageToProbeFileName("")
 {
 }
 
 
 //-----------------------------------------------------------------------------
-TrackedImageView::~TrackedImageView()
+TrackedPointerView::~TrackedPointerView()
 {
   if (m_Controls != NULL)
   {
@@ -51,27 +49,22 @@ TrackedImageView::~TrackedImageView()
 
 
 //-----------------------------------------------------------------------------
-std::string TrackedImageView::GetViewID() const
+std::string TrackedPointerView::GetViewID() const
 {
   return VIEW_ID;
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::CreateQtPartControl( QWidget *parent )
+void TrackedPointerView::CreateQtPartControl( QWidget *parent )
 {
   if (!m_Controls)
   {
-    m_Controls = new Ui::TrackedImageView();
+    m_Controls = new Ui::TrackedPointerView();
     m_Controls->setupUi(parent);
 
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
-
-    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-    m_Controls->m_ImageNode->SetDataStorage(dataStorage);
-    m_Controls->m_ImageNode->SetAutoSelectNewItems(false);
-    m_Controls->m_ImageNode->SetPredicate(isImage);
 
     mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
     m_Controls->m_ProbeSurfaceNode->SetDataStorage(dataStorage);
@@ -83,14 +76,14 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
 
-    connect(m_Controls->m_ImageToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnImageToProbeChanged()));
+    connect(m_Controls->m_TipToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnTipToProbeChanged()));
 
     RetrievePreferenceValues();
 
-    ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
+    ctkServiceReference ref = mitk::TrackedPointerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
     {
-      ctkEventAdmin* eventAdmin = mitk::TrackedImageViewActivator::getContext()->getService<ctkEventAdmin>(ref);
+      ctkEventAdmin* eventAdmin = mitk::TrackedPointerViewActivator::getContext()->getService<ctkEventAdmin>(ref);
       ctkDictionary properties;
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
@@ -100,14 +93,14 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::OnPreferencesChanged(const berry::IBerryPreferences*)
+void TrackedPointerView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::RetrievePreferenceValues()
+void TrackedPointerView::RetrievePreferenceValues()
 {
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
@@ -118,32 +111,30 @@ void TrackedImageView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::SetFocus()
+void TrackedPointerView::SetFocus()
 {
-  m_Controls->m_ImageNode->setFocus();
+  m_Controls->m_TipToProbeCalibrationFile->setFocus();
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::OnImageToProbeChanged()
+void TrackedPointerView::OnTipToProbeChanged()
 {
-  m_ImageToProbeTransform = Load4x4MatrixFromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath());
+  m_TipToProbeTransform = Load4x4MatrixFromFile(m_Controls->m_TipToProbeCalibrationFile->currentPath());
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::OnUpdate(const ctkEvent& event)
+void TrackedPointerView::OnUpdate(const ctkEvent& event)
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
   mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
 
-  mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
+  mitk::TrackedPointerCommand::Pointer command = mitk::TrackedPointerCommand::New();
   command->Update(dataStorage,
-                  imageNode,
                   surfaceNode,
                   probeToWorldTransform,
-                  m_ImageToProbeTransform
+                  m_TipToProbeTransform
                   );
 }

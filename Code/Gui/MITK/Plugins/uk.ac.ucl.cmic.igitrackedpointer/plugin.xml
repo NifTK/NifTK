@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igitrackedpointer"
+          name="Tracked Pointer"
+          class="TrackedPointerView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.TrackedPointerViewPreferencePage" name="Tracked Image" class="TrackedPointerViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.TrackedPointerViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

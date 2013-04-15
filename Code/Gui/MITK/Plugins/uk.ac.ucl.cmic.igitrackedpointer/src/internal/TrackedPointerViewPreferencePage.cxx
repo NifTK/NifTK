@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "TrackedImageViewPreferencePage.h"
+#include "TrackedPointerViewPreferencePage.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -24,20 +24,20 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string TrackedImageViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedimage");
+const std::string TrackedPointerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedpointer");
 
 //-----------------------------------------------------------------------------
-TrackedImageViewPreferencePage::TrackedImageViewPreferencePage()
+TrackedPointerViewPreferencePage::TrackedPointerViewPreferencePage()
 : m_MainControl(0)
 , m_DummyButton(0)
 , m_Initializing(false)
-, m_TrackedImageViewPreferencesNode(0)
+, m_TrackedPointerViewPreferencesNode(0)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-TrackedImageViewPreferencePage::TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other)
+TrackedPointerViewPreferencePage::TrackedPointerViewPreferencePage(const TrackedPointerViewPreferencePage& other)
 : berry::Object(), QObject()
 {
   Q_UNUSED(other)
@@ -46,20 +46,20 @@ TrackedImageViewPreferencePage::TrackedImageViewPreferencePage(const TrackedImag
 
 
 //-----------------------------------------------------------------------------
-TrackedImageViewPreferencePage::~TrackedImageViewPreferencePage()
+TrackedPointerViewPreferencePage::~TrackedPointerViewPreferencePage()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageViewPreferencePage::Init(berry::IWorkbench::Pointer )
+void TrackedPointerViewPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
+void TrackedPointerViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
@@ -67,7 +67,7 @@ void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
     = berry::Platform::GetServiceRegistry()
       .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
-  m_TrackedImageViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_TrackedPointerViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;
@@ -83,27 +83,27 @@ void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* TrackedImageViewPreferencePage::GetQtControl() const
+QWidget* TrackedPointerViewPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool TrackedImageViewPreferencePage::PerformOk()
+bool TrackedPointerViewPreferencePage::PerformOk()
 {
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageViewPreferencePage::PerformCancel()
+void TrackedPointerViewPreferencePage::PerformCancel()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageViewPreferencePage::Update()
+void TrackedPointerViewPreferencePage::Update()
 {
 }

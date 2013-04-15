@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_igitrackedimage)
+# tests with no extra command line parameter
+SET(MODULE_TESTS
+  QmitkFileIOUtilsTest.cxx
+)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE TRACKEDIMAGE_EXPORT
-  EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES niftkIGIGui niftkCoreGui
+set(MODULE_CUSTOM_TESTS
 )

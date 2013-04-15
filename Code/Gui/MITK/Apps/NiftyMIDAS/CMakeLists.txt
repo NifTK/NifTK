@@ -29,6 +29,7 @@ SET(_exclude_plugins
   uk.ac.ucl.cmic.igisurfacerecon
   uk.ac.ucl.cmic.igitagtracker
   uk.ac.ucl.cmic.igitrackedimage
+  uk.ac.ucl.cmic.igitrackedpointer
 )
 
 NIFTK_CREATE_APPLICATION(
