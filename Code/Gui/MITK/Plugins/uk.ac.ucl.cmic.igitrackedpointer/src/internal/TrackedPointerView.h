@@ -12,23 +12,22 @@
 
 =============================================================================*/
  
-#ifndef TrackedImageView_h
-#define TrackedImageView_h
+#ifndef TrackedPointerView_h
+#define TrackedPointerView_h
 
 #include "QmitkBaseView.h"
 #include <service/event/ctkEvent.h>
-#include "ui_TrackedImageView.h"
+#include "ui_TrackedPointerView.h"
 #include <vtkSmartPointer.h>
 
 class vtkMatrix4x4;
 
 /**
- * \class TrackedImageView
- * \brief User interface to coordinate an image, surface and calibration transform to
- * enable the view of a tracked image probe, such as a tracked ultrasound probe.
- * \ingroup uk_ac_ucl_cmic_igitrackedimage_internal
+ * \class TrackedPointerView
+ * \brief User interface to provide controls for a tracked pointer.
+ * \ingroup uk_ac_ucl_cmic_igitrackedpointer_internal
 */
-class TrackedImageView : public QmitkBaseView
+class TrackedPointerView : public QmitkBaseView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -36,11 +35,11 @@ class TrackedImageView : public QmitkBaseView
 
 public:
 
-  TrackedImageView();
-  virtual ~TrackedImageView();
+  TrackedPointerView();
+  virtual ~TrackedPointerView();
 
   /**
-   * \brief Static view ID = uk.ac.ucl.cmic.igitrackedimage
+   * \brief Static view ID = uk.ac.ucl.cmic.igitrackedpointer
    */
   static const std::string VIEW_ID;
 
@@ -98,7 +97,7 @@ private:
   /**
    * \brief All the controls for the main view part.
    */
-  Ui::TrackedImageView *m_Controls;
+  Ui::TrackedPointerView *m_Controls;
 
   /**
    * \brief Member variables for keeping state between button clicks.
@@ -107,4 +106,4 @@ private:
   std::string m_ImageToProbeFileName;
 };
 
-#endif // TrackedImageView_h
+#endif // TrackedPointerView_h

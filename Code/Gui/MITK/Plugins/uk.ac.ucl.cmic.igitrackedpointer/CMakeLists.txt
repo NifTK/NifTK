@@ -12,13 +12,10 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(niftkIGI
-  EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer
-  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport
-  PACKAGE_DEPENDS ITK NiftyLink
-)
+project(uk_ac_ucl_cmic_igitrackedpointer)
 
-IF(BUILD_TESTING)
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()  
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE TRACKEDPOINTER_EXPORT
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDENCIES niftkIGIGui
+)
