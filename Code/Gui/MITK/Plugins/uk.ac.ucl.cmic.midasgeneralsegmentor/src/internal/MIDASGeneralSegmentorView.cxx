@@ -1906,12 +1906,19 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
 
               if (thisSliceHasUnenclosedSeeds)
               {
-                mitk::OpWipe::ProcessorPointer processor = mitk::OpWipe::ProcessorType::New();
-                mitk::OpWipe *doWipeOp = new mitk::OpWipe(OP_WIPE, true, beforeSliceNumber, axisNumber, outputRegion, propagatedSeeds, processor);
-                mitk::OpWipe *undoWipeOp = new mitk::OpWipe(OP_WIPE, false, beforeSliceNumber, axisNumber, outputRegion, copyOfCurrentSeeds, processor);
-                mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doWipeOp, undoWipeOp, "Wipe command");
-                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-                ExecuteOperation(doWipeOp);
+                int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+                                                                 tr("There are unenclosed seeds - slice will be wiped\n"
+                                                                    "Are you sure?"),
+                                                                 QMessageBox::Yes | QMessageBox::No);
+                if (returnValue == QMessageBox::Yes)
+                {
+                  mitk::OpWipe::ProcessorPointer processor = mitk::OpWipe::ProcessorType::New();
+                  mitk::OpWipe *doWipeOp = new mitk::OpWipe(OP_WIPE, true, beforeSliceNumber, axisNumber, outputRegion, propagatedSeeds, processor);
+                  mitk::OpWipe *undoWipeOp = new mitk::OpWipe(OP_WIPE, false, beforeSliceNumber, axisNumber, outputRegion, copyOfCurrentSeeds, processor);
+                  mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doWipeOp, undoWipeOp, "Wipe command");
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+                  ExecuteOperation(doWipeOp);
+                }
               }
               else // so, we don't have unenclosed seeds
               {
@@ -2000,11 +2007,11 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
 
   if (!thresholdCheckBox)
   {
-    bool hasUnEnclosedPoints = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceNumber);
-    if (hasUnEnclosedPoints)
+    bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceNumber);
+    if (hasUnenclosedSeeds)
     {
       int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                       tr("There are unenclosed points - slice will be wiped\n"
+                                                       tr("There are unenclosed seeds - slice will be wiped\n"
                                                           "Are you sure?"),
                                                        QMessageBox::Yes | QMessageBox::No);
       if (returnValue == QMessageBox::Yes)
