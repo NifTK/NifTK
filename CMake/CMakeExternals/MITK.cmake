@@ -402,6 +402,12 @@ IF(NOT DEFINED MITK_DIR)
     #
     #     Giving d5eb05f63b on NifTK/MITK/niftk branch.
     #
+    # 28. Trac 2255: New MITK version to pick up bug 14355, fix usResourceCompiler path.
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 48573155e7 from Sun Apr 14 15:44:12 2013 +0200,
+    #       + bugs listed above.
+    #     
+    #     Giving c46b74d625 on NifTK/MITK/niftk branch.
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
