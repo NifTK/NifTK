@@ -192,9 +192,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
-  // If the plugin is not visible, then we have nothing to do.
-  if (!this->GetParent() || !this->GetParent()->isVisible()) return;
-
   // By default, assume we are not going to enable the controls.
   bool valid = false;
 
@@ -498,12 +495,17 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
-
-  if (workingDataNodes.size() == 0)
+  if ((workingDataNodes.size() == 0 )
+   || ((toolManager->GetWorkingData().size() > 0)
+       && (workingDataNodes.size() > 0)
+       && (toolManager->GetWorkingData(0) != workingDataNodes[0])
+       )
+      )
   {
     toolManager->ActivateTool(-1);
   }
+
+  toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
   toolManager->SetWorkingData(workingDataNodes);
 
   if (referenceData)
