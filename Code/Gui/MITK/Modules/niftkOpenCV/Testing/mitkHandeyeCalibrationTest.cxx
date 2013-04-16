@@ -36,18 +36,18 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
 
   std::vector<cv::Mat> FlippedTrackMatrices = Calibrator->FlipMatrices(TrackMatrices);
 
-  for ( unsigned int i = 0 ; i < TrackMatrices.size() ; i ++ )
+/*  for ( unsigned int i = 0 ; i < TrackMatrices.size() ; i ++ )
   {
-    std::cout << "Flipping Matrix Number " << i << std::endl;
-  /*  for ( int row = 0 ; row < 4 ; row ++ )
+    std::cout << "Extrinsic Matrix Number " << i << std::endl;
+    for ( int row = 0 ; row < 4 ; row ++ )
     {
       for ( int col = 0 ; col < 4 ; col ++ )
       {
-        std::cout << TrackMatrices[i].at<double>(row,col) << " ";
+        std::cout << ExtMatrices[i].at<double>(row,col) << " ";
       }
       std::cout << std::endl;
     }
-    std::cout << "To: "<< std::endl;*/
+    std::cout << "Tracking: "<< std::endl;
     for ( int row = 0 ; row < 4 ; row ++ )
     {
       for ( int col = 0 ; col < 4 ; col ++ )
@@ -57,7 +57,8 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
       std::cout << std::endl;
     }
 
-  }
+      std::cout << std::endl;
+  }*/
 
   cv::Mat CamToMarker = cvCreateMat(4,4,CV_32FC1);
   Calibrator->Calibrate(ExtMatrices, FlippedTrackMatrices, CamToMarker);

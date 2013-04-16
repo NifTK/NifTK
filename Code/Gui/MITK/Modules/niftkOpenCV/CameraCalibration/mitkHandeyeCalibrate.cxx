@@ -79,8 +79,8 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
     double norm1 = cv::norm(rotationVector1);
     double norm2 = cv::norm(rotationVector2);
 
-    rotationVector1 *= 2*sin(norm1/2);
-    rotationVector2 *= 2*sin(norm2/2);
+    rotationVector1 *= 2*sin(norm1/2) / norm1;
+    rotationVector2 *= 2*sin(norm2/2) / norm2;
 
     cv::Mat sum = rotationVector1 + rotationVector2;
     cv::Mat diff = rotationVector2 - rotationVector1;
@@ -98,11 +98,31 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
     b.at<double>(i*3+0,0)=diff.at<double>(0,0);
     b.at<double>(i*3+1,0)=diff.at<double>(1,0);
     b.at<double>(i*3+2,0)=diff.at<double>(2,0);
-  
+   
   }
-  
+   
+  std::cout << " A : " << std::endl;
+  for ( int i = 0 ; i < (NumberOfViews - 1) * 3 ; i ++ )
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      std::cout << A.at<double>(i,col) << "\t";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << " b : " << std::endl;
+  for ( int i = 0 ; i < (NumberOfViews - 1) * 3 ; i ++ )
+  {
+    for ( int col = 0 ; col < 1 ; col ++ ) 
+    {
+      std::cout << b.at<double>(i,col) << " ";
+    }
+    std::cout << std::endl;
+  }
   cv::Mat PseudoInverse = cvCreateMat(3,3,CV_64FC1);
   cv::invert(A,PseudoInverse,CV_SVD);
+
+
   for ( int row = 0 ; row < 3 ; row ++ ) 
   {
     for ( int col = 0 ; col < 3 ; col ++ ) 
