@@ -57,6 +57,17 @@ public:
    */
   std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
 
+  /**
+   * \brief Flips the matrices in the vector from left handed coordinate 
+   * system to right handed and vice versa
+   */
+  std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices);
+
+ /**
+   * \brief Sorts the matrices , and returns the order
+   */
+  std::vector<int> SortMatrices (const std::vector<cv::Mat> Matrices);
+
 protected:
 
   HandeyeCalibrate();

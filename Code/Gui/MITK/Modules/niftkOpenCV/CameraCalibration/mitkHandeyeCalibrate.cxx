@@ -51,20 +51,20 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   }
   int NumberOfViews = MarkerToWorld.size();
   
-  cv::Mat A = cvCreateMat ( 3 * NumberOfViews, 3, CV_32FC1 );
-  cv::Mat b = cvCreateMat ( 3 * NumberOfViews, 1, CV_32FC1 );
+  cv::Mat A = cvCreateMat ( 3 * NumberOfViews, 3, CV_64FC1 );
+  cv::Mat b = cvCreateMat ( 3 * NumberOfViews, 1, CV_64FC1 );
 
   for ( int i = 0 ; i < NumberOfViews - 1 ; i ++ )
   {
-    cv::Mat mat1 = cvCreateMat(4,4,CV_32FC1);
-    cv::Mat mat2 = cvCreateMat(4,4,CV_32FC1);
+    cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
+    cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
     mat1 = MarkerToWorld[i+1].inv() * MarkerToWorld[i];
     mat2 = GridToCamera[i+1] * GridToCamera[i].inv();
 
-    cv::Mat rotationMat1 = cvCreateMat(3,3,CV_32FC1);
-    cv::Mat rotationMat2 = cvCreateMat(3,3,CV_32FC1);
-    cv::Mat rotationVector1 = cvCreateMat(3,1,CV_32FC1);
-    cv::Mat rotationVector2 = cvCreateMat(3,1,CV_32FC1);
+    cv::Mat rotationMat1 = cvCreateMat(3,3,CV_64FC1);
+    cv::Mat rotationMat2 = cvCreateMat(3,3,CV_64FC1);
+    cv::Mat rotationVector1 = cvCreateMat(3,1,CV_64FC1);
+    cv::Mat rotationVector2 = cvCreateMat(3,1,CV_64FC1);
     for ( int row = 0 ; row < 3 ; row ++ )
     {
       for ( int col = 0 ; col < 3 ; col ++ )
@@ -101,8 +101,18 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   
   }
   
-  cv::Mat PseudoInverse = cvCreateMat(3,3,CV_32FC1);
+  cv::Mat PseudoInverse = cvCreateMat(3,3,CV_64FC1);
   cv::invert(A,PseudoInverse,CV_SVD);
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      std::cout << PseudoInverse.at<double>(row,col) << " ";
+    }
+    std::cout << std::endl;
+  }
+
+        
   return 0.0;
 }
   
@@ -110,13 +120,14 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
 std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromDirectory (const std::string& fullDirectoryName)
 {
   std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::sort(files.begin(),files.end());
   std::vector<cv::Mat> myMatrices;
 
   if (files.size() > 0)
   {
     for(unsigned int i = 0; i < files.size();i++)
     {
-      cv::Mat Matrix = cvCreateMat(4,4,CV_32FC1);
+      cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
       std::ifstream fin(files[i].c_str());
       std::cout << "Reading Matrix from " << files[i].c_str() << std::endl;
       for ( int row = 0 ; row < 4 ; row ++ ) 
@@ -124,9 +135,7 @@ std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromDirectory (const std::str
         for ( int col = 0 ; col < 4 ; col ++ ) 
         {
           fin >> Matrix.at<double>(row,col);
-          std::cout <<  Matrix.at<double>(row,col) << " " ;
         }
-        std::cout << std::endl;
       }
       myMatrices.push_back(Matrix);
     }
@@ -151,32 +160,75 @@ std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromExtrinsicFile (const std:
   std::vector<cv::Mat> myMatrices;
   std::ifstream fin(fullFileName.c_str());
 
-  cv::Mat RotationVector = cvCreateMat(3,1,CV_32FC1);
-  cv::Mat TranslationVector = cvCreateMat(3,1,CV_32FC1);
-  int i = 1;
-  while ( fin >> RotationVector.at<double>(0,0) \
-      >> RotationVector.at<double>(1,0) \
-      >> RotationVector.at<double>(2,0) \
-      >> TranslationVector.at<double>(0,0) \
-      >> TranslationVector.at<double>(1,0) \
-      >> TranslationVector.at<double>(2,0) )
+  cv::Mat RotationVector = cvCreateMat(3,1,CV_64FC1);
+  cv::Mat TranslationVector = cvCreateMat(3,1,CV_64FC1);
+  double temp_d[6];
+  while ( fin >> temp_d[0] >> temp_d[1] >> temp_d[2] >> temp_d[3] >> temp_d[4] >> temp_d[5] )
   {
-    cv::Mat Matrix = cvCreateMat(4,4,CV_32FC1);
-    cv::Mat RotationMatrix = cvCreateMat(3,3,CV_32FC1);
+    RotationVector.at<double>(0,0) = temp_d[0];
+    RotationVector.at<double>(1,0) = temp_d[1];
+    RotationVector.at<double>(2,0) = temp_d[2];
+    TranslationVector.at<double>(0,0) = temp_d[3];
+    TranslationVector.at<double>(1,0) = temp_d[4];
+    TranslationVector.at<double>(2,0) = temp_d[5];
+    
+    cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
+    cv::Mat RotationMatrix = cvCreateMat(3,3,CV_64FC1);
     cv::Rodrigues (RotationVector, RotationMatrix);
-    std::cout << "Got Extrinsic " << i++ << std::endl;
+
     for ( int row = 0 ; row < 3 ; row ++ ) 
     {
       for ( int col = 0 ; col < 3 ; col ++ ) 
       {
-         std::cout <<  RotationMatrix.at<double>(row,col) << " " ;
+        Matrix.at<double>(row,col) = RotationMatrix.at<double>(row,col);
       }
-      std::cout << std::endl;
     }
-   myMatrices.push_back(Matrix);
+   
+    for ( int row = 0 ; row < 3 ; row ++ )
+    {
+      Matrix.at<double>(row,3) = TranslationVector.at<double>(row,0);
+    }
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      Matrix.at<double>(3,col) = 0.0;
+    }
+    Matrix.at<double>(3,3) = 1.0;
+    myMatrices.push_back(Matrix);
   }
   return myMatrices;
 }
 
+//-----------------------------------------------------------------------------
+std::vector<cv::Mat> HandeyeCalibrate::FlipMatrices (const std::vector<cv::Mat> Matrices)
+{
+  
+  std::vector<cv::Mat>  OutMatrices;
+  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ )
+  {
+    cv::Mat FlipMat = cvCreateMat(4,4,CV_64FC1);
+    FlipMat.at<double>(0,0) = Matrices[i].at<double>(0,0);
+    FlipMat.at<double>(0,1) = Matrices[i].at<double>(0,1);
+    FlipMat.at<double>(0,2) = Matrices[i].at<double>(0,2) * -1;
+    FlipMat.at<double>(0,3) = Matrices[i].at<double>(0,3);
+
+    FlipMat.at<double>(1,0) = Matrices[i].at<double>(1,0);
+    FlipMat.at<double>(1,1) = Matrices[i].at<double>(1,1);
+    FlipMat.at<double>(1,2) = Matrices[i].at<double>(1,2) * -1;
+    FlipMat.at<double>(1,3) = Matrices[i].at<double>(1,3);
+
+    FlipMat.at<double>(2,0) = Matrices[i].at<double>(2,0) * -1;
+    FlipMat.at<double>(2,1) = Matrices[i].at<double>(2,1) * -1;
+    FlipMat.at<double>(2,2) = Matrices[i].at<double>(2,2);
+    FlipMat.at<double>(2,3) = Matrices[i].at<double>(2,3) * -1;
+
+    FlipMat.at<double>(3,0) = Matrices[i].at<double>(3,0);
+    FlipMat.at<double>(3,1) = Matrices[i].at<double>(3,1);
+    FlipMat.at<double>(3,2) = Matrices[i].at<double>(3,2);
+    FlipMat.at<double>(3,3) = Matrices[i].at<double>(3,3);
+
+    OutMatrices.push_back(FlipMat);
+  }
+  return OutMatrices;
+}
 
 } // end namespace

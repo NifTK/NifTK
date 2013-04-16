@@ -18,4 +18,5 @@ SET(MODULE_TESTS
 
 set(MODULE_CUSTOM_TESTS
   mitkCameraCalibrationTest.cxx
+  mitkHandeyeCalibrationTest.cxx
 )
