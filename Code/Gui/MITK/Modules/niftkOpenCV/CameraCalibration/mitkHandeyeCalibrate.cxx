@@ -144,8 +144,9 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   pcg_crossproduct.at<double>(2,2)=0.0;
   
   cv::Mat pcg_mulTransposed = cvCreateMat(pcg.rows, pcg.rows, CV_64FC1);
-  std::cout << pcg_mulTransposed;
-  cv::Mat rcg = ( 1 - cv::norm(pcg) * norm(pcg) /2 ) * id3 ;
+  cv::mulTransposed (pcg, pcg_mulTransposed, false);
+  cv::Mat rcg = ( 1 - cv::norm(pcg) * norm(pcg) /2 ) * id3  
+    + 0.5 * ( pcg_mulTransposed + sqrt(4 - norm(pcg) * norm(pcg))*pcg_crossproduct) ;
   std::cout << rcg << std::endl;
         
   return 0.0;
