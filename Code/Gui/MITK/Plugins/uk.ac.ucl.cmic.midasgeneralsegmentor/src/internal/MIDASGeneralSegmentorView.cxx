@@ -2217,6 +2217,10 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
             mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
             ExecuteOperation(doApplyOp);
+
+            // We should update the current slice contours, as the green contours
+            // are the current segmentation that will be applied when we change slice.
+            this->UpdateCurrentSliceContours();
           }
 
           drawTool->Clean(sliceNumber, axisNumber);
