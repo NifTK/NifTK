@@ -113,7 +113,6 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::mulTransposed (Error, ErrorTransMult, true);
       
   double RotationResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
-  std::cout << RotationResidual << std::endl;
   
   cv::Mat pcg = 2 * pcgPrime / ( sqrt(1 + cv::norm(pcgPrime) * cv::norm(pcgPrime)) );
   cv::Mat id3 = cvCreateMat(3,3,CV_64FC1);
@@ -147,8 +146,59 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::mulTransposed (pcg, pcg_mulTransposed, false);
   cv::Mat rcg = ( 1 - cv::norm(pcg) * norm(pcg) /2 ) * id3  
     + 0.5 * ( pcg_mulTransposed + sqrt(4 - norm(pcg) * norm(pcg))*pcg_crossproduct) ;
-  std::cout << rcg << std::endl;
+  std::cout << "Rotation  = " << std::endl << rcg << std::endl;
+
+  //now do the translation
+  for ( int i = 0 ; i < NumberOfViews - 1 ; i ++ )
+  {
+    cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
+    cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
+    mat1 = MarkerToWorld[i+1].inv() * MarkerToWorld[i];
+    mat2 = GridToCamera[i+1] * GridToCamera[i].inv();
+
+    A.at<double>(i*3+0,0)=mat1.at<double>(0,0) - 1.0;
+    A.at<double>(i*3+0,1)=mat1.at<double>(0,1) - 0.0;
+    A.at<double>(i*3+0,2)=mat1.at<double>(0,2) - 0.0;
+    A.at<double>(i*3+1,0)=mat1.at<double>(1,0) - 0.0;
+    A.at<double>(i*3+1,1)=mat1.at<double>(1,1) - 1.0;
+    A.at<double>(i*3+1,2)=mat1.at<double>(1,2) - 0.0;
+    A.at<double>(i*3+2,0)=mat1.at<double>(2,0) - 0.0;
+    A.at<double>(i*3+2,1)=mat1.at<double>(2,1) - 0.0;
+    A.at<double>(i*3+2,2)=mat1.at<double>(2,2) - 1.0;
+  
+    cv::Mat m1_t = cvCreateMat(3,1,CV_64FC1);
+    cv::Mat m2_t = cvCreateMat(3,1,CV_64FC1);
+    for ( int j = 0 ; j < 3 ; j ++ ) 
+    {
+      m1_t.at<double>(j,0) = mat1.at<double>(j,3);
+      m2_t.at<double>(j,0) = mat2.at<double>(j,3);
+    }
+    cv::Mat b_t = rcg * m2_t - m1_t;
+   
+    b.at<double>(i*3+0,0)=b_t.at<double>(0,0);
+    b.at<double>(i*3+1,0)=b_t.at<double>(1,0);
+    b.at<double>(i*3+2,0)=b_t.at<double>(2,0);
+
+   
+  }
         
+  cv::invert(A,PseudoInverse,CV_SVD);
+  
+  cv::Mat tcg = PseudoInverse * b;
+
+  std::cout << "tcg = " << std::endl << tcg << std::endl;
+
+  Error = A * tcg -b;
+  
+  cv::mulTransposed (Error, ErrorTransMult, true);
+      
+  double TransResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
+
+  std::cout << "Rotational Residual = " << RotationResidual << std::endl;
+  std::cout << "Translation Residual = " << TransResidual << std::endl ;
+
+
+
   return 0.0;
 }
   
