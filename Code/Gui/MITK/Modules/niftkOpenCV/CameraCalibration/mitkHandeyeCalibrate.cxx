@@ -51,8 +51,8 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   }
   int NumberOfViews = MarkerToWorld.size();
   
-  cv::Mat A = cvCreateMat ( 3 * NumberOfViews, 3, CV_64FC1 );
-  cv::Mat b = cvCreateMat ( 3 * NumberOfViews, 1, CV_64FC1 );
+  cv::Mat A = cvCreateMat ( 3 * (NumberOfViews - 1), 3, CV_64FC1 );
+  cv::Mat b = cvCreateMat ( 3 * (NumberOfViews - 1), 1, CV_64FC1 );
 
   for ( int i = 0 ; i < NumberOfViews - 1 ; i ++ )
   {
@@ -101,37 +101,52 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
    
   }
    
-  std::cout << " A : " << std::endl;
-  for ( int i = 0 ; i < (NumberOfViews - 1) * 3 ; i ++ )
-  {
-    for ( int col = 0 ; col < 3 ; col ++ ) 
-    {
-      std::cout << A.at<double>(i,col) << "\t";
-    }
-    std::cout << std::endl;
-  }
-  std::cout << " b : " << std::endl;
-  for ( int i = 0 ; i < (NumberOfViews - 1) * 3 ; i ++ )
-  {
-    for ( int col = 0 ; col < 1 ; col ++ ) 
-    {
-      std::cout << b.at<double>(i,col) << " ";
-    }
-    std::cout << std::endl;
-  }
   cv::Mat PseudoInverse = cvCreateMat(3,3,CV_64FC1);
   cv::invert(A,PseudoInverse,CV_SVD);
+  
+  cv::Mat pcgPrime = PseudoInverse * b;
 
-
-  for ( int row = 0 ; row < 3 ; row ++ ) 
+  cv::Mat Error = A * pcgPrime-b;
+  
+  cv::Mat ErrorTransMult = cvCreateMat(Error.cols, Error.cols, CV_64FC1);
+  
+  cv::mulTransposed (Error, ErrorTransMult, true);
+      
+  double RotationResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
+  std::cout << RotationResidual << std::endl;
+  
+  cv::Mat pcg = 2 * pcgPrime / ( sqrt(1 + cv::norm(pcgPrime) * cv::norm(pcgPrime)) );
+  cv::Mat id3 = cvCreateMat(3,3,CV_64FC1);
+  for ( int row = 0 ; row < 3 ; row ++ )
   {
-    for ( int col = 0 ; col < 3 ; col ++ ) 
+    for ( int col = 0 ; col < 3 ; col ++ )
     {
-      std::cout << PseudoInverse.at<double>(row,col) << " ";
+      if ( row == col )
+      {
+        id3.at<double>(row,col) = 1.0;
+      }
+      else
+      {
+        id3.at<double>(row,col) = 0.0;
+      }
     }
-    std::cout << std::endl;
   }
-
+       
+  cv::Mat pcg_crossproduct = cvCreateMat(3,3,CV_64FC1);
+  pcg_crossproduct.at<double>(0,0)=0.0;
+  pcg_crossproduct.at<double>(0,1)=-(pcg.at<double>(2,0));
+  pcg_crossproduct.at<double>(0,2)=(pcg.at<double>(1,0));
+  pcg_crossproduct.at<double>(1,0)=(pcg.at<double>(2,0));
+  pcg_crossproduct.at<double>(1,1)=0.0;
+  pcg_crossproduct.at<double>(1,2)=-(pcg.at<double>(0,0));
+  pcg_crossproduct.at<double>(2,0)=-(pcg.at<double>(1,0));
+  pcg_crossproduct.at<double>(2,1)=(pcg.at<double>(0,0));
+  pcg_crossproduct.at<double>(2,2)=0.0;
+  
+  cv::Mat pcg_mulTransposed = cvCreateMat(pcg.rows, pcg.rows, CV_64FC1);
+  std::cout << pcg_mulTransposed;
+  cv::Mat rcg = ( 1 - cv::norm(pcg) * norm(pcg) /2 ) * id3 ;
+  std::cout << rcg << std::endl;
         
   return 0.0;
 }
