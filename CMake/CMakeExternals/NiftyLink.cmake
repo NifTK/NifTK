@@ -29,7 +29,7 @@ IF(BUILD_IGI)
   SET(NIFTYLINK_DEPENDS ${proj})
 
   IF(NOT DEFINED NiftyLink_DIR)
-  
+
     SET(revision_tag development)
 
     IF (NIFTK_NIFTYLINK_DEV)
@@ -44,7 +44,7 @@ IF(BUILD_IGI)
         URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
       )
     ENDIF ()
-        
+
     IF(DEFINED NIFTYLINK_OIGTLINK_DEV)
       SET(NiftyLink_options
         -DNIFTYLINK_OIGTLINK_DEV:BOOL=${NIFTYLINK_OIGTLINK_DEV}
@@ -52,9 +52,9 @@ IF(BUILD_IGI)
     ELSE()
       SET(NiftyLink_options
         -DNIFTYLINK_OIGTLINK_DEV:BOOL=${NIFTK_NIFTYLINK_DEV}
-      )    
+      )
     ENDIF()
-        
+
     IF(NIFTYLINK_OPENIGTLINK_VERSION)
       LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_VERSION=${NIFTYLINK_OPENIGTLINK_VERSION} )
     ENDIF()
@@ -67,15 +67,16 @@ IF(BUILD_IGI)
     IF(NIFTYLINK_OPENIGTLINK_LOCATION_DEV)
       LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_LOCATION_DEV=${NIFTYLINK_OPENIGTLINK_LOCATION_DEV} )
     ENDIF()
-         
+
     ExternalProject_Add(${proj}
       ${NiftyLink_location_options}
       BINARY_DIR ${proj}-build
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYLINK}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        ${NiftyLink_options}       
+        ${NiftyLink_options}
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
