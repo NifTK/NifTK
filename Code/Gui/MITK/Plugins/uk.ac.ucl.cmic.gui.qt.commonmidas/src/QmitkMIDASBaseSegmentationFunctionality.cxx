@@ -41,7 +41,6 @@
 #include "NifTKConfigure.h"
 #include "QmitkMIDASNewSegmentationDialog.h"
 #include "mitkMIDASTool.h"
-#include "mitkMIDASTool.h"
 #include "mitkMIDASDrawTool.h"
 #include "mitkMIDASPolyTool.h"
 #include "mitkMIDASSeedTool.h"
@@ -101,6 +100,7 @@ void QmitkMIDASBaseSegmentationFunctionality::Hidden()
 {
   QmitkBaseView::Hidden();
 }
+
 
 //-----------------------------------------------------------------------------
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality(
@@ -224,11 +224,9 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
       segmentedData = node;
     }
 
-    bool test1 = mitk::IsNodeABinaryImage(node);
-    bool test2 = this->CanStartSegmentationForBinaryNode(node);
-    bool test3 = !this->IsNodeASegmentationImage(node);
-
-    if (test1 && test2 && test3)
+    if (mitk::IsNodeABinaryImage(node) &&
+        this->CanStartSegmentationForBinaryNode(node) &&
+        !this->IsNodeASegmentationImage(node))
     {
       segmentedData = node;
     }
@@ -488,19 +486,16 @@ void QmitkMIDASBaseSegmentationFunctionality::ApplyDisplayOptions(mitk::DataNode
 }
 
 
-
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  if ((workingDataNodes.size() == 0 )
-   || ((toolManager->GetWorkingData().size() > 0)
-       && (workingDataNodes.size() > 0)
-       && (toolManager->GetWorkingData(0) != workingDataNodes[0])
-       )
-      )
+  if (workingDataNodes.size() == 0 ||
+      ( toolManager->GetWorkingData().size() > 0 &&
+        workingDataNodes.size() > 0 &&
+        toolManager->GetWorkingData(0) != workingDataNodes[0] ))
   {
     toolManager->ActivateTool(-1);
   }
@@ -618,7 +613,6 @@ int QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageSagittalAxis()
 }
 
 
-
 //-----------------------------------------------------------------------------
 int QmitkMIDASBaseSegmentationFunctionality::GetViewAxis()
 {
@@ -679,7 +673,7 @@ void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
 
   QString defaultColorName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, ""));
   m_DefaultSegmentationColor = QColor(defaultColorName);
-  if (defaultColorName=="") // default values
+  if (defaultColorName == "") // default values
   {
     m_DefaultSegmentationColor = QColor(0, 255, 0);
   }
