@@ -26,25 +26,34 @@ namespace mitk{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
 }
 
+//-----------------------------------------------------------------------------
 mitk::MIDASSeedTool::~MIDASSeedTool()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::MIDASSeedTool::MIDASSeedTool() : MIDASTool("dummy")
 , m_PointSetInteractor(NULL)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 const char* mitk::MIDASSeedTool::GetName() const
 {
   return "Seed";
 }
 
+
+//-----------------------------------------------------------------------------
 const char** mitk::MIDASSeedTool::GetXPM() const
 {
   return mitkMIDASSeedTool_xpm;
 }
 
+
+//-----------------------------------------------------------------------------
 float mitk::MIDASSeedTool::CanHandleEvent(const StateEvent *event) const
 {
   // See StateMachine.xml for event Ids.
@@ -66,6 +75,8 @@ float mitk::MIDASSeedTool::CanHandleEvent(const StateEvent *event) const
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASSeedTool::Deactivated()
 {
   Superclass::Deactivated();
@@ -74,8 +85,11 @@ void mitk::MIDASSeedTool::Deactivated()
   {
     mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
   }
+  m_PointSetInteractor = NULL;
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASSeedTool::Activated()
 {
   Superclass::Activated();
