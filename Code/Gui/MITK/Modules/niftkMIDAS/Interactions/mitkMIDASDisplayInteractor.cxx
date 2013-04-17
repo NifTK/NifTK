@@ -13,15 +13,40 @@
 =============================================================================*/
 
 #include "mitkMIDASDisplayInteractor.h"
-#include "mitkBaseRenderer.h"
-#include "mitkInteractionPositionEvent.h"
-#include "mitkPropertyList.h"
+
 #include <string.h>
-// level window
-#include "mitkStandaloneDataStorage.h"
-#include "mitkNodePredicateDataType.h"
-#include "mitkLevelWindowProperty.h"
-#include "mitkLevelWindow.h"
+
+#include <mitkBaseRenderer.h>
+#include <mitkInteractionPositionEvent.h>
+#include <mitkLevelWindow.h>
+#include <mitkLevelWindowProperty.h>
+#include <mitkLine.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkPropertyList.h>
+#include <mitkSliceNavigationController.h>
+#include <mitkStandaloneDataStorage.h>
+
+mitk::MIDASDisplayInteractor::MIDASDisplayInteractor(const std::vector<mitk::SliceNavigationController*>& sliceNavigationControllers)
+: m_IndexToSliceModifier(4)
+, m_AutoRepeat(false)
+, m_AlwaysReact(false)
+,  m_ZoomFactor(2)
+, m_SliceNavigationControllers(sliceNavigationControllers)
+{
+  // MIDAS customisation:
+  // This interactor works with the MIDASStdMultiWidget, but it is decoupled from it.
+  // (No GUI dependence.) The slice navigation controllers should be the axial, sagittal
+  // and coronal SNCs of the MIDASStdMultiWidget.
+  assert(sliceNavigationControllers.size() == 3);
+
+  m_StartDisplayCoordinate.Fill(0);
+  m_LastDisplayCoordinate.Fill(0);
+  m_CurrentDisplayCoordinate.Fill(0);
+}
+
+mitk::MIDASDisplayInteractor::~MIDASDisplayInteractor()
+{
+}
 
 void mitk::MIDASDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
 {
@@ -44,18 +69,6 @@ void mitk::MIDASDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("levelWindow", AdjustLevelWindow);
 }
 
-mitk::MIDASDisplayInteractor::MIDASDisplayInteractor() :
-    m_IndexToSliceModifier(4),m_AutoRepeat(false), m_AlwaysReact(false),  m_ZoomFactor(2)
-{
-  m_StartDisplayCoordinate.Fill(0);
-  m_LastDisplayCoordinate.Fill(0);
-  m_CurrentDisplayCoordinate.Fill(0);
-}
-
-mitk::MIDASDisplayInteractor::~MIDASDisplayInteractor()
-{
-}
-
 bool mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* interactionEvent)
 {
   BaseRenderer* sender = interactionEvent->GetSender();
@@ -66,13 +79,66 @@ bool mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* i
     return false;
   }
 
-  Vector2D origin = sender->GetDisplayGeometry()->GetOriginInMM();
-  double scaleFactorMMPerDisplayUnit = sender->GetDisplayGeometry()->GetScaleFactorMMPerDisplayUnit();
-  m_StartDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
-  m_LastDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
-  m_CurrentDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+  // --------------------------------------------------------------------------
+  // MIDAS customisation starts.
+  //
+  // Selects the point under the mouse pointer in the slice navigation controllers.
+  // In the MIDASStdMultiWidget this puts the crosshair to the mouse position, and
+  // selects the slice in the two other render window.
+  const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
+  m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);
+  m_SliceNavigationControllers[1]->SelectSliceByPoint(positionInWorld);
+  m_SliceNavigationControllers[2]->SelectSliceByPoint(positionInWorld);
+
+  // Although the code above puts the crosshair to the mouse pointer position,
+  // the two positions are not completely equal because the crosshair is always in
+  // the middle of the voxel that contains the mouse position. This slight difference
+  // causes that in strong zooming the crosshair moves away from the focus point.
+  // So that we zoom around the crosshair, we have to calculate the crosshair position
+  // (in world coordinates) and then its projection to the displayed region (in pixels).
+  // This will be the focus point during the zooming.
+  const mitk::PlaneGeometry *plane1 = m_SliceNavigationControllers[0]->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry *plane2 = m_SliceNavigationControllers[1]->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry *plane3 = m_SliceNavigationControllers[2]->GetCurrentPlaneGeometry();
+
+  mitk::Line3D line;
+  mitk::Point3D point;
+  mitk::Point3D focusPoint;
+  if (plane1 && plane2 && plane1->IntersectionLine(plane2, line) &&
+      plane3 && plane3->IntersectionPoint(line, point))
+  {
+    focusPoint = point;
+  }
+  else
+  {
+    focusPoint = positionInWorld;
+  }
+
+  mitk::Point2D projectedFocusInMillimeters;
+  mitk::Point2D projectedFocusInPixels;
+
+  mitk::DisplayGeometry* displayGeometry = sender->GetDisplayGeometry();
+  displayGeometry->Map(focusPoint, projectedFocusInMillimeters);
+  displayGeometry->WorldToDisplay(projectedFocusInMillimeters, projectedFocusInPixels);
+
+  m_StartDisplayCoordinate = projectedFocusInPixels;
+  m_LastDisplayCoordinate = projectedFocusInPixels;
+  m_CurrentDisplayCoordinate = projectedFocusInPixels;
+
+  // MIDAS customisation ends.
+  // --------------------------------------------------------------------------
+
+  // Original MITK code:
+//  m_StartDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+//  m_LastDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+//  m_CurrentDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+
+  Vector2D origin = displayGeometry->GetOriginInMM();
+  double scaleFactorMMPerDisplayUnit = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+
   m_StartCoordinateInMM = mitk::Point2D(
       (origin + m_StartDisplayCoordinate.GetVectorFromOrigin() * scaleFactorMMPerDisplayUnit).GetDataPointer());
+
   return true;
 }
 

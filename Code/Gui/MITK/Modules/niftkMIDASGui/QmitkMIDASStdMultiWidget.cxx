@@ -196,8 +196,13 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   // so that it is destructed and it unregisters and destructs its display interactor as well.
   m_MouseModeSwitcher = 0;
 
+  std::vector<mitk::SliceNavigationController*> sliceNavigationControllers(3);
+  sliceNavigationControllers[0] = GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  sliceNavigationControllers[1] = GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+  sliceNavigationControllers[2] = GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+
   // Here we create our own display interactor...
-  m_DisplayInteractor = mitk::MIDASDisplayInteractor::New();
+  m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(sliceNavigationControllers);
   m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml");
   m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
 
@@ -1266,7 +1271,7 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
           double zoomScaleFactor = ComputeScaleFactor(otherRenderWindow, magnificationFactor);
-          this->ZoomDisplayAboutCentre(otherRenderWindow, zoomScaleFactor);
+          this->ZoomDisplayAboutCrosshair(otherRenderWindow, zoomScaleFactor);
         }
       }
 
@@ -1405,7 +1410,7 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
     if (renderWindow->isVisible())
     {
       double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnificationFactor);
-      this->ZoomDisplayAboutCentre(renderWindow, zoomScaleFactor);
+      this->ZoomDisplayAboutCrosshair(renderWindow, zoomScaleFactor);
     }
   }
 
@@ -1659,6 +1664,33 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *renderW
       difference[1] = projectedCentreInPixels[1] - centreOfDisplayInDisplayUnits[1];
       displayGeometry->MoveBy(difference);
     }
+  }
+}
+
+void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor)
+{
+  if (renderWindow != NULL)
+  {
+    // I'm using assert statements, because fundamentally, if the render window exists, so should all the other objects.
+    mitk::SliceNavigationController* sliceNavigationController = renderWindow->GetSliceNavigationController();
+    assert(sliceNavigationController);
+
+    mitk::BaseRenderer* baseRenderer = sliceNavigationController->GetRenderer();
+    assert(baseRenderer);
+
+    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+    assert(displayGeometry);
+
+    const mitk::Point3D& crossPosition = this->GetCrossPosition();
+
+    mitk::Point2D projectedCentreInMillimeters;
+    mitk::Point2D projectedCentreInPixels;
+
+    displayGeometry->Map(crossPosition, projectedCentreInMillimeters);
+    displayGeometry->WorldToDisplay(projectedCentreInMillimeters, projectedCentreInPixels);
+
+    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
+    displayGeometry->Zoom(scaleFactor, projectedCentreInPixels);
   }
 }
 

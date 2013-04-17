@@ -255,6 +255,9 @@ private:
   /// \brief Scales a specific render window about it's centre.
   void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
 
+  /// \brief Scales a specific render window about the crosshair.
+  void ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor);
+
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *renderWindow, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
