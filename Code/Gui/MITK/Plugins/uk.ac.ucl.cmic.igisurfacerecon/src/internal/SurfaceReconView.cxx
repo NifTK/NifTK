@@ -47,6 +47,8 @@ std::string SurfaceReconView::GetViewID() const
 //-----------------------------------------------------------------------------
 void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 {
+  setupUi(parent);
+
   ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
   {

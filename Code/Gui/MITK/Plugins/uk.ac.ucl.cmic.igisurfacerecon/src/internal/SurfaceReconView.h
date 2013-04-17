@@ -18,13 +18,14 @@
 #include "QmitkBaseView.h"
 #include "mitkSurfaceReconstruction.h"
 #include <service/event/ctkEvent.h>
+#include "ui_SurfaceReconViewWidget.h"
 
 /**
  * \class SurfaceReconView
  * \brief User interface to provide a reconstructed surface from video images.
  * \ingroup uk_ac_ucl_cmic_igisurfacerecon_internal
 */
-class SurfaceReconView : public QmitkBaseView
+class SurfaceReconView : public QmitkBaseView, public Ui::SurfaceReconViewWidget
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
