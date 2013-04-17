@@ -18,9 +18,14 @@
 #include <niftkMIDASExports.h>
 
 #include <mitkInteractionEventObserver.h>
+#include <mitkCommon.h>
+
+#include <vector>
 
 namespace mitk
 {
+  class SliceNavigationController;
+
   /**
    *\class MIDASDisplayInteractor
    *@brief Observer that manages the interaction with the display.
@@ -45,7 +50,9 @@ namespace mitk
   {
   public:
     mitkClassMacro(MIDASDisplayInteractor, EventStateMachine)
-    itkNewMacro(Self)
+    // MIDAS customisation: slice navigation controllers passed as arguments
+    mitkNewMacro1Param(Self, const std::vector<mitk::SliceNavigationController*>&);
+
     /**
      * By this function the Observer gets notifier about new events.
      * Here it is adapted to pass the events to the state machine in order to use
@@ -53,8 +60,10 @@ namespace mitk
      * It also checks if event is to be accepted when i already has been processed by a DataInteractor.
      */
     virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
+
   protected:
-    MIDASDisplayInteractor();
+    // MIDAS customisation: slice navigation controllers passed as arguments
+    MIDASDisplayInteractor(const std::vector<mitk::SliceNavigationController*>& sliceNavigationControllers);
     virtual ~MIDASDisplayInteractor();
     /**
      * Derived function.
@@ -146,25 +155,37 @@ namespace mitk
      *  If set to true it will restart at end of data set from the beginning.
      */
     bool m_AutoRepeat;
+
     /**
      * Defines scroll behavior.
      * Default is up/down movement of pointer performs scrolling
      */
     std::string m_ScrollDirection;
+
     /**
      * Defines scroll behavior.
      * Default is up/down movement of pointer performs zooming
      */
     std::string m_ZoomDirection;
+
     /**
      * Determines if the Observer reacts to events that already have been processed by a DataInteractor.
      * The default value is false.
      */
     bool m_AlwaysReact;
+
     /**
      * Factor to adjust zooming speed.
      */
     float m_ZoomFactor;
+
+    // MIDAS customisation: slice navigation controllers for zooming around the crosshair
+    /**
+     * Slice navigation controllers of the MIDASStdMultiWidget that this display interactor belongs to.
+     * At start of the zooming the crosshair has to
+     */
+    std::vector<mitk::SliceNavigationController*> m_SliceNavigationControllers;
+
   };
 }
 #endif
