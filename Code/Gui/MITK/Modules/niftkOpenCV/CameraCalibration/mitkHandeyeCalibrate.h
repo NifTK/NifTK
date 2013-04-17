@@ -40,10 +40,8 @@ public:
   /**
    * \brief Calibration function that returns the reprojection error (squared error).
    */
-  double Calibrate(const std::vector<cv::Mat> MarkerToWorld,
-      const std::vector <cv::Mat> GridToCamera,
-      cv::Mat CameraToMarker
-      );
+  cv::Mat Calibrate(const std::vector<cv::Mat> MarkerToWorld,
+      const std::vector <cv::Mat> GridToCamera);
 
   /**
    * \brief Read a set of matrices from a directory and 
@@ -64,9 +62,14 @@ public:
   std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices);
 
  /**
-   * \brief Sorts the matrices , and returns the order
+   * \brief Sorts the matrices based on the translations , and returns the order
    */
-  std::vector<int> SortMatrices (const std::vector<cv::Mat> Matrices);
+  std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> Matrices);
+ 
+  /**
+   * \brief Sorts the matrices based on the rotations, and returns the order
+   */
+  std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
 
 protected:
 

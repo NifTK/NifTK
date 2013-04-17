@@ -60,7 +60,7 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
       std::cout << std::endl;
   }*/
 
-  cv::Mat CamToMarker = cvCreateMat(4,4,CV_32FC1);
-  Calibrator->Calibrate( FlippedTrackMatrices, ExtMatrices, CamToMarker);
+  cv::Mat CamToMarker = Calibrator->Calibrate( FlippedTrackMatrices, ExtMatrices);
+  std::cout << "Camera to Marker Matrix = " << std::endl << CamToMarker << std::endl;
   return EXIT_SUCCESS;
 }

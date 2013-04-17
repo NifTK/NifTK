@@ -39,15 +39,14 @@ HandeyeCalibrate::~HandeyeCalibrate()
 
 
 //-----------------------------------------------------------------------------
-double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld, 
-    const std::vector<cv::Mat> GridToCamera,
-    cv::Mat CameraToMarker
-    )
+cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld, 
+    const std::vector<cv::Mat> GridToCamera)
 {
   if ( MarkerToWorld.size() != GridToCamera.size() )
   {
     std::cerr << "ERROR: Called HandeyeCalibrate with unequal number of views and tracking matrices" << std::endl;
-    return 0.0;
+    cv::Mat empty = cvCreateMat(0,0,CV_64FC1);
+    return empty;
   }
   int NumberOfViews = MarkerToWorld.size();
   
@@ -146,7 +145,6 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::mulTransposed (pcg, pcg_mulTransposed, false);
   cv::Mat rcg = ( 1 - cv::norm(pcg) * norm(pcg) /2 ) * id3  
     + 0.5 * ( pcg_mulTransposed + sqrt(4 - norm(pcg) * norm(pcg))*pcg_crossproduct) ;
-  std::cout << "Rotation  = " << std::endl << rcg << std::endl;
 
   //now do the translation
   for ( int i = 0 ; i < NumberOfViews - 1 ; i ++ )
@@ -186,8 +184,6 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   
   cv::Mat tcg = PseudoInverse * b;
 
-  std::cout << "tcg = " << std::endl << tcg << std::endl;
-
   Error = A * tcg -b;
   
   cv::mulTransposed (Error, ErrorTransMult, true);
@@ -197,9 +193,25 @@ double HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   std::cout << "Rotational Residual = " << RotationResidual << std::endl;
   std::cout << "Translation Residual = " << TransResidual << std::endl ;
 
+  cv::Mat CameraToMarker = cvCreateMat(4,4,CV_64FC1);
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      CameraToMarker.at<double>(row,col) = rcg.at<double>(row,col);
+    }
+  }
+  for ( int row = 0 ; row < 3 ; row ++ )
+  {
+    CameraToMarker.at<double>(row,3) = tcg.at<double>(row,0);
+  }
+  for ( int col = 0 ; col < 3 ; col ++ )
+  {
+    CameraToMarker.at<double>(3,col) = 0.0;
+  }
+  CameraToMarker.at<double>(3,3)=1.0;
+  return CameraToMarker;
 
-
-  return 0.0;
 }
   
 //-----------------------------------------------------------------------------
@@ -316,5 +328,52 @@ std::vector<cv::Mat> HandeyeCalibrate::FlipMatrices (const std::vector<cv::Mat> 
   }
   return OutMatrices;
 }
+//-----------------------------------------------------------------------------
+std::vector<int> HandeyeCalibrate::SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
+{
+  int NumberOfViews = Matrices.size();
+
+  std::vector<int> used;
+  std::vector<int> index;
+  for ( int i = 0 ; i < NumberOfViews ; i++ )
+  {
+    used.push_back(i);
+    index.push_back(0);
+  }
+
+  int counter = 0;
+  int startIndex = 0;
+  double distance = 1e-10;
+
+  while ( fabs(distance) > 0 ) 
+  {
+    cv::Mat t1 = cvCreateMat(3,1,CV_64FC1);
+    cv::Mat t2 = cvCreateMat(3,1,CV_64FC1);
+    
+    for ( int row = 0 ; row < 3 ; row ++ )
+    {
+      t1.at<double>(row,0) = Matrices[startIndex].at<double>(row,3);
+    }
+    used [startIndex] = 0 ;
+    index [counter] = startIndex;
+    counter++;
+    distance = 0.0;
+    for ( int i = 0 ; i < NumberOfViews ; i ++ )
+    {
+      if ( ( startIndex != i ) && ( used[i] != 0 ))
+      {
+        for ( int row = 0 ; row < 3 ; row ++ )
+        {
+          t2.at<double>(row,0) = Matrices[i].at<double>(row,3);
+          double d = cv::norm(t1-t2);
+        }
+      }
+    }
+
+    
+  }
+  return used;
+}
+ 
 
 } // end namespace
