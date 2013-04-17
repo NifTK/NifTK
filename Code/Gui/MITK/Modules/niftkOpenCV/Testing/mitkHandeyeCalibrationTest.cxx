@@ -60,6 +60,14 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
       std::cout << std::endl;
   }*/
 
+  std::vector<int> indexes = Calibrator->SortMatricesByDistance(FlippedTrackMatrices);
+  std::cout << "Sorted by distances " << std::endl;
+  for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
+  {
+    std::cout << indexes[i] << " " ;
+  }
+  std::cout << std::endl;
+
   cv::Mat CamToMarker = Calibrator->Calibrate( FlippedTrackMatrices, ExtMatrices);
   std::cout << "Camera to Marker Matrix = " << std::endl << CamToMarker << std::endl;
   return EXIT_SUCCESS;

@@ -358,6 +358,7 @@ std::vector<int> HandeyeCalibrate::SortMatricesByDistance(const std::vector<cv::
     index [counter] = startIndex;
     counter++;
     distance = 0.0;
+    int CurrentIndex=0;
     for ( int i = 0 ; i < NumberOfViews ; i ++ )
     {
       if ( ( startIndex != i ) && ( used[i] != 0 ))
@@ -365,14 +366,24 @@ std::vector<int> HandeyeCalibrate::SortMatricesByDistance(const std::vector<cv::
         for ( int row = 0 ; row < 3 ; row ++ )
         {
           t2.at<double>(row,0) = Matrices[i].at<double>(row,3);
-          double d = cv::norm(t1-t2);
+        }
+        double d = cv::norm(t1-t2);
+        if ( d > distance ) 
+        {
+          distance = d;
+          CurrentIndex=i;
         }
       }
     }
+    if ( counter < NumberOfViews )
+    {
+      index[counter] = CurrentIndex;
+    }
+    startIndex = CurrentIndex;
 
     
   }
-  return used;
+  return index;
 }
  
 
