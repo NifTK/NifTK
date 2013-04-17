@@ -42,8 +42,8 @@ public:
   , m_StdMultiWidget(stdMultiWidget)
   , m_RenderWindow(renderWindow)
   , m_DisplayGeometry(displayGeometry)
+  , m_LastOrigin(displayGeometry->GetOriginInMM())
   , m_LastScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
-//  , m_LastOriginInMM(displayGeometry->GetOriginInMM())
   {
   }
 
@@ -54,29 +54,33 @@ public:
 
   void Execute(const itk::Object * object, const itk::EventObject & event)
   {
+    // Note that the scaling changes the scale factor *and* the origin,
+    // while the moving changes the origin only.
+    mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
     double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
-    // Here we could distinguish the different kinds of geometry changes.
+
+    // Zooming the image.
     if (scaleFactor != m_LastScaleFactor)
     {
+      m_StdMultiWidget->OnOriginChanged(m_RenderWindow);
       m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow);
+      m_LastOrigin = origin;
       m_LastScaleFactor = scaleFactor;
     }
-
-    // Not sure if we need this:
-//    mitk::Vector2D originInMM = m_DisplayGeometry->GetOriginInMM();
-//    if (originInMM != m_LastOriginInMM)
-//    {
-//      m_StdMultiWidget->OnOriginChanged(m_RenderWindow);
-//      m_LastOriginInMM = originInMM;
-//    }
+    // Moving the image. Note the "else" keyword.
+    else if (origin != m_LastOrigin)
+    {
+      m_StdMultiWidget->OnOriginChanged(m_RenderWindow, origin[0] - m_LastOrigin[0], origin[1] - m_LastOrigin[1]);
+      m_LastOrigin = origin;
+    }
   }
 
 private:
   QmitkMIDASStdMultiWidget* const m_StdMultiWidget;
   QmitkRenderWindow* const m_RenderWindow;
   mitk::DisplayGeometry* const m_DisplayGeometry;
+  mitk::Vector2D m_LastOrigin;
   double m_LastScaleFactor;
-//  mitk::Vector2D m_LastOriginInMM;
 };
 
 QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
@@ -1250,6 +1254,48 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
   return result;
 }
 
+void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, double horizontalShift, double verticalShift)
+{
+  if (!m_BlockDisplayGeometryEvents)
+  {
+    // Remembering the origin per render window.
+    mitk::BaseRenderer* baseRenderer = renderWindow->GetRenderer();
+    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+    const mitk::Vector2D& origin = displayGeometry->GetOriginInMM();
+    m_Origins[renderWindow] = origin;
+
+    // If the image was shifted we shift it in the two other render windows accordingly.
+    if (horizontalShift != 0.0 || verticalShift != 0.0)
+    {
+      // horizontal movement in axial <-> horizontal movement in coronal
+      // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
+      // vertical movement in sagittal <-> vertical movement in coronal
+
+      m_BlockDisplayGeometryEvents = true;
+
+      if (renderWindow == this->GetRenderWindow1())
+      {
+        this->MoveBy(this->GetRenderWindow2(), -verticalShift, 0.0);
+        this->MoveBy(this->GetRenderWindow3(), horizontalShift, 0.0);
+      }
+      else if (renderWindow == this->GetRenderWindow2())
+      {
+        this->MoveBy(this->GetRenderWindow1(), 0.0, -horizontalShift);
+        this->MoveBy(this->GetRenderWindow3(), 0.0, verticalShift);
+      }
+      else if (renderWindow == this->GetRenderWindow3())
+      {
+        this->MoveBy(this->GetRenderWindow1(), horizontalShift, 0.0);
+        this->MoveBy(this->GetRenderWindow2(), 0.0, verticalShift);
+      }
+
+      m_BlockDisplayGeometryEvents = false;
+
+      this->RequestUpdate();
+    }
+  }
+}
+
 void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWindow)
 {
   if (!m_BlockDisplayGeometryEvents)
@@ -1691,6 +1737,26 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *rend
 
     // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
     displayGeometry->Zoom(scaleFactor, projectedCentreInPixels);
+  }
+}
+
+void QmitkMIDASStdMultiWidget::MoveBy(QmitkRenderWindow *renderWindow, double horizontalShift, double verticalShift)
+{
+  if (renderWindow != NULL)
+  {
+    // I'm using assert statements, because fundamentally, if the render window exists, so should all the other objects.
+    mitk::BaseRenderer* baseRenderer = renderWindow->GetRenderer();
+    assert(baseRenderer);
+
+    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+    assert(displayGeometry);
+
+    mitk::Vector2D shift;
+    shift[0] = horizontalShift;
+    shift[1] = verticalShift;
+
+    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
+    displayGeometry->MoveBy(shift);
   }
 }
 
