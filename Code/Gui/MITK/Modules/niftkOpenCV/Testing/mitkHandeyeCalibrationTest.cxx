@@ -31,7 +31,11 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
   std::string sort = argv[3];
   std::string result = argv[4];
 
+  std::vector<double> ResultResiduals;
+  cv::Mat ResultMatrix = cvCreateMat(4,4,CV_64FC1);
+  
   mitk::HandeyeCalibrate::Pointer Calibrator = mitk::HandeyeCalibrate::New();
+  Calibrator->LoadResult(result, ResultMatrix, ResultResiduals);
   
   std::vector<cv::Mat> ExtMatrices = Calibrator->LoadMatricesFromExtrinsicFile(inputExtrinsic);
   std::vector<cv::Mat> TrackMatrices = Calibrator->LoadMatricesFromDirectory(inputTracking);
@@ -86,9 +90,32 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
     SortedFlippedTrackMatrices.push_back(FlippedTrackMatrices[indexes[i]]);
   }
 
-
-
-  cv::Mat CamToMarker = Calibrator->Calibrate( SortedFlippedTrackMatrices, SortedExtMatrices);
+  std::vector<double> Residuals;
+  cv::Mat CamToMarker = Calibrator->Calibrate( SortedFlippedTrackMatrices, SortedExtMatrices, 
+      &Residuals);
   std::cout << "Camera to Marker Matrix = " << std::endl << CamToMarker << std::endl;
-  return EXIT_SUCCESS;
+
+  std::cout << "Rotational Residual = " << Residuals [0] << std::endl ;
+  std::cout << "Translational Residual = " << Residuals [1] << std::endl ;
+
+  int ok = EXIT_SUCCESS;
+  double precision = 1e-3;
+
+  cv::Scalar Sum = cv::sum(CamToMarker - ResultMatrix);
+  if ( Sum[0] > precision )
+  {
+    ok = EXIT_FAILURE;
+    std::cout << "Matrix Res FAIL: " << Sum[0] << " > "  << precision << std::endl;
+  }
+  if ( ( Residuals[0] - ResultResiduals[0]) > precision )
+  {
+    ok = EXIT_FAILURE;
+    std::cout <<  "Rotational Res FAIL: " << Residuals[0] - ResultResiduals[0] << " > "  << precision << std::endl;
+  }
+  if ( ( Residuals[1] - ResultResiduals[1]) > precision )
+  {
+    ok = EXIT_FAILURE;
+    std::cout << "Tran Res FAIL: " << Residuals[1] - ResultResiduals[1] << " > "  << precision << std::endl;
+  }
+  return ok;
 }
