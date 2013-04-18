@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.12 *****
+@echo ***** NifTK Automated Build Script - v.13 *****
 @echo. 
 
 @REM ***** Attempt to enable Command extensions *****
@@ -7,7 +7,7 @@
 @REM *****  Setting localised variables - Change these to match your system!!  *****
 @set "VS_LOCATION=c:\Program Files (x86)\Microsoft Visual Studio 10.0"
 @set "CMAKE_LOCATION=c:\Program Files\CMake_2.8.9-git\bin"
-@set "BUILD_LOCATION=d:\NifTK_automated"
+@set "BUILD_LOCATION=d:\a"
 @set "PUTTY_LOCATION=c:\Program Files (x86)\PuTTY\"
 @set "OPENSSL_LOCATION=c:\OpenSSL-Win64\bin\"
 
@@ -80,7 +80,15 @@
     )
 	
 @REM *****  Configure the current build path  *****
-@set "BUILDPATH=%BUILD_LOCATION%\NifTK-%BRANCH%-%BCONF%-%DATESTAMP%"
+
+@REM First shorten the branch name and buildconf
+@set BR=%BRANCH%
+@set BR=%BR:~0,3%
+
+@set BC=%BCONF%
+@set BC=%BC:~0,3%
+
+@set "BUILDPATH=%BUILD_LOCATION%\%BR%-%BC%-%DATESTAMP%"
 @REM @echo %BUILDPATH%
 
 @REM *****  Configure the current VS Config Script  *****
@@ -97,7 +105,7 @@
 @REM *****  Cleaning off the local build folder  *****
 @echo Cleaning the previous builds....
 @REM @echo Build Location: %BUILD_LOCATION%
-@FOR /D %%X in ("%BUILD_LOCATION%\NifTK-%BRANCH%-%BCONF%-*") DO @(
+@FOR /D %%X in ("%BUILD_LOCATION%\%BR%-%BC%-*") DO @(
   @rd /s /q %%X
   @if exist [%%X] rd /s /q %%X
 )
@@ -168,9 +176,9 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 @set PATHSTRING=%PATHSTRING:PATH=%
 @set PATHSTRING=%PATHSTRING:~1,-2%
 @if ["%BTYPE%"] == ["x64"] (
-  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\SysWOW64;%SystemRoot%\SysWOW64\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib\%BCONF%
+  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\SysWOW64;%SystemRoot%\SysWOW64\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
 ) else (
-  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib\%BCONF%
+  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
 )
 
 @echo.
