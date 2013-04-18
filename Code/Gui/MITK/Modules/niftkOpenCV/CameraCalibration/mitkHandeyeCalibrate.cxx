@@ -249,11 +249,31 @@ std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromDirectory (const std::str
 
   if (myMatrices.size() == 0)
   {
-    throw std::logic_error("No images found in directory!");
+    throw std::logic_error("No Matrices found in directory!");
   }
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
 }
+//------------------------------------------------------------------------------
+void HandeyeCalibrate::LoadResult (const std::string& FileName, cv::Mat& result, 
+    std::vector<double>& residuals)
+{
+  std::ifstream fin(FileName.c_str());
+  double temp;
+  fin >> temp;
+  residuals.push_back(temp);
+  fin >> temp;
+  residuals.push_back(temp);
+  for ( int row = 0 ; row < 4 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 4 ; col ++ ) 
+    {
+      fin >> result.at<double>(row,col);
+    }
+  }
+
+}
+
 
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromExtrinsicFile (const std::string& fullFileName)

@@ -72,6 +72,12 @@ public:
    */
   std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
 
+  /**
+   * \brief loads a result file into a residual vector and matrix
+   */
+  void LoadResult(const std::string& Filename, cv::Mat& Result,
+      std::vector<double>& residuals);
+
 protected:
 
   HandeyeCalibrate();
