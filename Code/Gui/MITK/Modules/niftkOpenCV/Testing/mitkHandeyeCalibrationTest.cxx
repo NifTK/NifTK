@@ -33,91 +33,43 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
   std::string sort = argv[3];
   std::string result = argv[4];
 
-  std::vector<double> ResultResiduals;
-  cv::Mat ResultMatrix = cvCreateMat(4,4,CV_64FC1);
-  
   mitk::HandeyeCalibrate::Pointer Calibrator = mitk::HandeyeCalibrate::New();
-  mitk::LoadResult(result, ResultMatrix, ResultResiduals);
-  
-  std::vector<cv::Mat> ExtMatrices = mitk::LoadMatricesFromExtrinsicFile(inputExtrinsic);
-  std::vector<cv::Mat> TrackMatrices = mitk::LoadMatricesFromDirectory(inputTracking);
 
-  std::vector<cv::Mat> FlippedTrackMatrices = mitk::FlipMatrices(TrackMatrices);
-
-  std::vector<int> indexes;
-
-  if ( sort == "Distances" ) 
+  std::vector<double> Residuals;
+  if ( sort == "Distances" )
   {
-    indexes = mitk::SortMatricesByDistance(FlippedTrackMatrices);
-    std::cout << "Sorted by distances " << std::endl;
-    for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
-    {
-      std::cout << indexes[i] << " " ;
-    }
-    std::cout << std::endl;
+    Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,
+        true, false, true, false,result);
   }
   else 
   {
-    if ( sort == "Angles" )
+    if ( sort == "Angles" ) 
     {
-      indexes = mitk::SortMatricesByAngle(FlippedTrackMatrices);
-      std::cout << "Sorted by Angles " << std::endl;
-      for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
-      {
-        std::cout << indexes[i] << " " ;
-      }
-      std::cout << std::endl;
+      Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,
+        true, false, false, true,result);
     }
-    else
+    else 
     {
-      for ( unsigned int i = 0 ; i < FlippedTrackMatrices.size() ; i ++ )
-      {
-        indexes.push_back(i);
-      }
-      std::cout << "No Sorting" << std::endl;
-      for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
-      {
-        std::cout << indexes[i] << " " ;
-      }
-      std::cout << std::endl;
+      Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,
+        true, false, false, false,result);
     }
   }
-
-  std::vector<cv::Mat> SortedExtMatrices;
-  std::vector<cv::Mat> SortedFlippedTrackMatrices;
-
-  for ( unsigned int i = 0 ; i < indexes.size() ; i ++ )
-  {
-    SortedExtMatrices.push_back(ExtMatrices[indexes[i]]);
-    SortedFlippedTrackMatrices.push_back(FlippedTrackMatrices[indexes[i]]);
-  }
-
-  std::vector<double> Residuals;
-  cv::Mat CamToMarker = Calibrator->Calibrate( SortedFlippedTrackMatrices, SortedExtMatrices, 
-      &Residuals);
-  std::cout << "Camera to Marker Matrix = " << std::endl << CamToMarker << std::endl;
-
-  std::cout << "Rotational Residual = " << Residuals [0] << std::endl ;
-  std::cout << "Translational Residual = " << Residuals [1] << std::endl ;
 
   int ok = EXIT_SUCCESS;
   double precision = 1e-3;
 
-  cv::Scalar Sum = cv::sum(CamToMarker - ResultMatrix);
-  if ( Sum[0] > precision )
+  for ( unsigned int i = 0 ; i < Residuals.size() ; i ++ )
   {
-    ok = EXIT_FAILURE;
-    std::cout << "Matrix Res FAIL: " << Sum[0] << " > "  << precision << std::endl;
+    if ( fabs(Residuals[i]) > precision )
+    {
+      ok = EXIT_FAILURE;
+      std::cout << "FAIL: " << i << " " << Residuals[i] << " > "  << precision << std::endl;
+    }
+    else
+    {
+      std::cout << "PASS: " << i << " " << Residuals[i] << " < "  << precision << std::endl;
+    }
   }
-  if ( ( Residuals[0] - ResultResiduals[0]) > precision )
-  {
-    ok = EXIT_FAILURE;
-    std::cout <<  "Rotational Res FAIL: " << Residuals[0] - ResultResiduals[0] << " > "  << precision << std::endl;
-  }
-  if ( ( Residuals[1] - ResultResiduals[1]) > precision )
-  {
-    ok = EXIT_FAILURE;
-    std::cout << "Tran Res FAIL: " << Residuals[1] - ResultResiduals[1] << " > "  << precision << std::endl;
-  }
+
   return ok;
 }

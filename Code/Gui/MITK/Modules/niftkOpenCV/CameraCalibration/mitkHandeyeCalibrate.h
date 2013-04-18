@@ -20,7 +20,6 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
-#include <cv.h>
 
 namespace mitk {
 
@@ -36,13 +35,19 @@ public:
 
   mitkClassMacro(HandeyeCalibrate, itk::Object);
   itkNewMacro(HandeyeCalibrate);
-
+  
   /**
-   * \brief Calibration function that returns the reprojection error (squared error).
+   * \brief Calibration function that returns the residual errors, rotation and 
+   * translational. If a ground truth solution is passed it returns a vector of 
+   * differences for testing.
    */
-  cv::Mat Calibrate(const std::vector<cv::Mat> MarkerToWorld,
-      const std::vector <cv::Mat> GridToCamera, 
-      std::vector<double>* Residuals = NULL);
+  std::vector<double> Calibrate (const std::string& TrackingFileDirectory,
+      const std::string& ExtrinsicFileDirectoryOrFile,
+      bool FlipTracking = true,
+      bool FlipExtrinsic = false,
+      bool SortByDistance = false,
+      bool SortByAngle = false,
+      const std::string GroundTruthSolution = "");
 
 protected:
 

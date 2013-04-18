@@ -39,7 +39,7 @@ HandeyeCalibrate::~HandeyeCalibrate()
 
 
 //-----------------------------------------------------------------------------
-cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld, 
+/*cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld, 
     const std::vector<cv::Mat> GridToCamera, std::vector<double>* residuals)
 {
   if ( MarkerToWorld.size() != GridToCamera.size() )
@@ -49,7 +49,84 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
     return empty;
   }
   int NumberOfViews = MarkerToWorld.size();
+  */
+std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileDirectory,
+  const std::string& ExtrinsicFileDirectoryOrFile,
+  bool FlipTracking,
+  bool FlipExtrinsic,
+  bool SortByDistance,
+  bool SortByAngle,
+  const std::string GroundTruthSolution)
+{
+ 
+  std::vector<cv::Mat> MarkerToWorld = mitk::LoadMatricesFromDirectory(TrackingFileDirectory);
+  std::vector<cv::Mat> GridToCamera;
+  std::vector<double> residuals;
+  if ( niftk::DirectoryExists ( ExtrinsicFileDirectoryOrFile ))
+  {
+    GridToCamera = mitk::LoadOpenCVMatricesFromDirectory(ExtrinsicFileDirectoryOrFile);
+  }
+  else
+  {
+    GridToCamera = mitk::LoadMatricesFromExtrinsicFile(ExtrinsicFileDirectoryOrFile);
+  }
+ 
+  if ( MarkerToWorld.size() != GridToCamera.size() )
+  {
+    std::cerr << "ERROR: Called HandeyeCalibrate with unequal number of views and tracking matrices" << std::endl;
+    return residuals;
+  }
+  int NumberOfViews = MarkerToWorld.size();
   
+ 
+  if ( FlipTracking )
+  {
+    MarkerToWorld = mitk::FlipMatrices(MarkerToWorld);
+  }
+  if ( FlipExtrinsic ) 
+  {
+    GridToCamera = mitk::FlipMatrices(GridToCamera);
+  }
+
+  std::vector<int> indexes;
+  //if SortByDistance and SortByAngle are both true, we'll sort by distance only
+  if ( SortByDistance ) 
+  {
+    indexes = mitk::SortMatricesByDistance(MarkerToWorld);
+    std::cout << "Sorted by distances " << std::endl;
+  }
+  else
+  {
+    if ( SortByAngle )
+    {
+      indexes = mitk::SortMatricesByAngle(MarkerToWorld);
+      std::cout << "Sorted by distances " << std::endl;
+    }
+    else
+    {
+      for ( unsigned int i = 0 ; i < MarkerToWorld.size() ; i ++ )
+      {
+        indexes.push_back(i);
+      }
+      std::cout << "No Sorting" << std::endl;
+    }
+  }
+
+  for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
+  {
+    std::cout << indexes[i] << " " ;
+  }
+  std::cout << std::endl;
+
+  std::vector<cv::Mat> SortedGridToCamera;
+  std::vector<cv::Mat> SortedMarkerToWorld;
+
+  for ( unsigned int i = 0 ; i < indexes.size() ; i ++ )
+  {
+    SortedGridToCamera.push_back(GridToCamera[indexes[i]]);
+    SortedMarkerToWorld.push_back(MarkerToWorld[indexes[i]]);
+  }
+
   cv::Mat A = cvCreateMat ( 3 * (NumberOfViews - 1), 3, CV_64FC1 );
   cv::Mat b = cvCreateMat ( 3 * (NumberOfViews - 1), 1, CV_64FC1 );
 
@@ -57,8 +134,8 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   {
     cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
     cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
-    mat1 = MarkerToWorld[i+1].inv() * MarkerToWorld[i];
-    mat2 = GridToCamera[i+1] * GridToCamera[i].inv();
+    mat1 = SortedMarkerToWorld[i+1].inv() * SortedMarkerToWorld[i];
+    mat2 = SortedGridToCamera[i+1] * SortedGridToCamera[i].inv();
 
     cv::Mat rotationMat1 = cvCreateMat(3,3,CV_64FC1);
     cv::Mat rotationMat2 = cvCreateMat(3,3,CV_64FC1);
@@ -112,10 +189,7 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::mulTransposed (Error, ErrorTransMult, true);
       
   double RotationResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
-  if ( residuals != NULL )
-  {
-    residuals->push_back(RotationResidual);
-  }
+  residuals.push_back(RotationResidual);
   
   cv::Mat pcg = 2 * pcgPrime / ( sqrt(1 + cv::norm(pcgPrime) * cv::norm(pcgPrime)) );
   cv::Mat id3 = cvCreateMat(3,3,CV_64FC1);
@@ -155,8 +229,8 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   {
     cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
     cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
-    mat1 = MarkerToWorld[i+1].inv() * MarkerToWorld[i];
-    mat2 = GridToCamera[i+1] * GridToCamera[i].inv();
+    mat1 = SortedMarkerToWorld[i+1].inv() * SortedMarkerToWorld[i];
+    mat2 = SortedGridToCamera[i+1] * SortedGridToCamera[i].inv();
 
     A.at<double>(i*3+0,0)=mat1.at<double>(0,0) - 1.0;
     A.at<double>(i*3+0,1)=mat1.at<double>(0,1) - 0.0;
@@ -193,10 +267,7 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::mulTransposed (Error, ErrorTransMult, true);
       
   double TransResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
-  if ( residuals != NULL )
-  {
-    residuals->push_back(TransResidual);
-  }
+  residuals.push_back(TransResidual);
 
   cv::Mat CameraToMarker = cvCreateMat(4,4,CV_64FC1);
   for ( int row = 0 ; row < 3 ; row ++ ) 
@@ -215,7 +286,23 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
     CameraToMarker.at<double>(3,col) = 0.0;
   }
   CameraToMarker.at<double>(3,3)=1.0;
-  return CameraToMarker;
+  std::cout << "Camera To Marker Matrix = " << std::endl << CameraToMarker << std::endl;
+  std::cout << "Rotational Residual = " << residuals [0] << std::endl ;
+  std::cout << "Translational Residual = " << residuals [1] << std::endl ;
+
+  if ( GroundTruthSolution.length() > 0  )  
+  {
+    std::vector<double> ResultResiduals;
+    cv::Mat ResultMatrix = cvCreateMat(4,4,CV_64FC1);
+    mitk::LoadResult(GroundTruthSolution, ResultMatrix, ResultResiduals);
+    residuals[0] -= ResultResiduals[0];
+    residuals[1] -= ResultResiduals[1];
+    cv::Scalar Sum = cv::sum(CameraToMarker - ResultMatrix);
+    residuals.push_back(Sum[0]);
+  }
+
+
+  return residuals;
 
 }
   
