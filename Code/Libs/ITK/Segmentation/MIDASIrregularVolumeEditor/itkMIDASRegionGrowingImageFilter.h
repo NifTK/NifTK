@@ -220,6 +220,42 @@ private:
   MIDASRegionGrowingImageFilter(const Self&); // purposely not implemented
   void operator=(const Self&); // purposely not implemented
 
+	/**
+	 * \brief The main region growing logic is here, where we decide whether to add the nextImgIdx to a stack.
+	 * \param[In] r_stack current stack of pixels under consideration, initialised by the available seeds.
+	 * \param[In] currentImgIdx the current location being considered
+	 * \param[In] nextImgIdx the next pixel
+	 * \param[Out] true if the pixel should be added and false otherwise
+	 */
+	void ConditionalAddPixel(
+			std::stack<typename OutputImageType::IndexType> &r_stack,
+			const typename OutputImageType::IndexType &currentImgIdx,
+			const typename OutputImageType::IndexType &nextImgIdx,
+			const bool &isFullyConnected
+			);
+
+	/**
+	 * \brief Will return true if index1 and index2 are joined along an edge rather than a diagonal, and false otherwise.
+	 * (Assuming the pixels are next to each other, and not miles apart).
+	 */
+	bool IsFullyConnected(
+			const typename OutputImageType::IndexType &index1,
+			const typename OutputImageType::IndexType &index2
+			);
+
+	/**
+	 * \brief Will return true if index1 and index2 cross a contour line contained within contours.
+	 * \param contours a vector of contour lines specified as points
+	 * \param index1 an image index (location in voxels)
+	 * \param index2 an image index (location in voxels), assumed to be next to index1
+	 * \return true if index1 and index2 would appear to cross a contour line.
+	 */
+	bool IsCrossingLine(
+			const ParametricPathVectorType* contours,
+			const typename OutputImageType::IndexType &index1,
+			const typename OutputImageType::IndexType &index2
+			);
+
 	InputPixelType                         m_LowerThreshold;
 	InputPixelType                         m_UpperThreshold;
 	OutputPixelType                        m_ForegroundValue;
@@ -240,42 +276,6 @@ private:
 	bool                                   m_EraseFullSlice;
 	OutputImageIndexType                   m_PropMask;
 	bool                                   m_UsePropMaskMode;
-
-	/**
-	 * \brief The main region growing logic is here, where we decide whether to add the nextImgIdx to a stack.
-	 * \param[In] r_stack current stack of pixels under consideration, initialised by the available seeds.
-	 * \param[In] currentImgIdx the current location being considered
-	 * \param[In] nextImgIdx the next pixel
-	 * \param[Out] true if the pixel should be added and false otherwise
-	 */
-	void ConditionalAddPixel(
-	    std::stack<typename OutputImageType::IndexType> &r_stack,
-	    const typename OutputImageType::IndexType &currentImgIdx,
-	    const typename OutputImageType::IndexType &nextImgIdx,
-	    const bool &isFullyConnected
-	    );
-
-	/**
-	 * \brief Will return true if index1 and index2 are joined along an edge rather than a diagonal, and false otherwise.
-	 * (Assuming the pixels are next to each other, and not miles apart).
-	 */
-	bool IsFullyConnected(
-	    const typename OutputImageType::IndexType &index1,
-	    const typename OutputImageType::IndexType &index2
-	    );
-
-	/**
-	 * \brief Will return true if index1 and index2 cross a contour line contained within contours.
-	 * \param contours a vector of contour lines specified as points
-	 * \param index1 an image index (location in voxels)
-	 * \param index2 an image index (location in voxels), assumed to be next to index1
-	 * \return true if index1 and index2 would appear to cross a contour line.
-	 */
-	bool IsCrossingLine(
-			const ParametricPathVectorType* contours,
-	    const typename OutputImageType::IndexType &index1,
-	    const typename OutputImageType::IndexType &index2
-	    );
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION
