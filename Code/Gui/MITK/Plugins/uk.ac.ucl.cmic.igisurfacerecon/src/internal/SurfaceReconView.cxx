@@ -101,8 +101,8 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 //-----------------------------------------------------------------------------
 void SurfaceReconView::UpdateNodeNameComboBox()
 {
-  mitk::DataStorage* storage = GetDataStorage();
-  if (storage)
+  mitk::DataStorage::Pointer storage = GetDataStorage();
+  if (storage.IsNotNull())
   {
     // leave the editable string part intact!
     // it's extremely annoying having that reset all the time while trying to input something.
@@ -183,10 +183,31 @@ void SurfaceReconView::UpdateNodeNameComboBox()
 //-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
-  mitk::DataStorage* storage = this->GetDataStorage();
+  mitk::DataStorage::Pointer storage = GetDataStorage();
+  if (storage.IsNotNull())
+  {
+    std::string leftText  = LeftChannelNodeNameComboBox->currentText().toStdString();
+    std::string rightText = RightChannelNodeNameComboBox->currentText().toStdString();
 
-  // Extract images from the correct data node.
+    const mitk::DataNode::Pointer leftNode  = storage->GetNamedNode(leftText);
+    const mitk::DataNode::Pointer rightNode = storage->GetNamedNode(rightText);
 
-  // Then delagate everything to class outside of plugin, so we can unit test it.
-  m_SurfaceReconstruction->Run(storage, NULL, NULL);
+    if (leftNode.IsNotNull() && rightNode.IsNotNull())
+    {
+      mitk::BaseData::Pointer leftData  = leftNode->GetData();
+      mitk::BaseData::Pointer rightData = rightNode->GetData();
+
+      if (leftData.IsNotNull() && rightData.IsNotNull())
+      {
+        mitk::Image::Pointer leftImage  = dynamic_cast<mitk::Image*>(leftData.GetPointer());
+        mitk::Image::Pointer rightImage = dynamic_cast<mitk::Image*>(rightData.GetPointer());
+
+        if (leftImage.IsNotNull() && rightImage.IsNotNull())
+        {
+          // Then delagate everything to class outside of plugin, so we can unit test it.
+          m_SurfaceReconstruction->Run(storage, leftImage, rightImage);
+        }
+      }
+    }
+  }
 }
