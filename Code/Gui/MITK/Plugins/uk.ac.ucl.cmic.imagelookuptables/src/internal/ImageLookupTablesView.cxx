@@ -278,7 +278,7 @@ void ImageLookupTablesView::Activated()
   if (this->IsCurrentSelectionValid())
   {
     QList<mitk::DataNode::Pointer> nodes = this->GetCurrentSelection();
-    if (this->IsSelectionValid(nodes) && nodes.count() == 1)
+    if (this->IsSelectionValid(nodes))
     {
       this->Register(nodes[0]);
     }
