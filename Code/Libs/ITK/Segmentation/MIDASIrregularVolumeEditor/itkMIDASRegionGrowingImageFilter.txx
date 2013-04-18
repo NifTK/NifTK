@@ -71,6 +71,7 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 template<class TInputImage, class TOutputImage, class TPointSet>
 bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 ::IsCrossingLine(
+  const ParametricPathVectorType* contours,
   const typename OutputImageType::IndexType &index1,
   const typename OutputImageType::IndexType &index2
 )
@@ -78,11 +79,11 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 
   bool result = false;
   
-  if (m_ManualContours != NULL && m_ManualContours->size() > 0)
+  if (contours != NULL && contours->size() > 0)
   {
-    for (unsigned long int contourCounter = 0; contourCounter < m_ManualContours->size(); contourCounter++)
+    for (unsigned long int contourCounter = 0; contourCounter < contours->size(); contourCounter++)
     {
-      ParametricPathPointer path = (*m_ManualContours)[contourCounter];
+      ParametricPathPointer path = (*contours)[contourCounter];
       const ParametricPathVertexListType* list = path->GetVertexList();
       
       if (list != NULL && list->Size() > 1)
@@ -168,7 +169,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
              ) 
           || (this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageBorderValue
               && isFullyConnected
-              && !this->IsCrossingLine(currentImgIdx, nextImgIdx)
+              && !this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)
              )
          )
      ) 
