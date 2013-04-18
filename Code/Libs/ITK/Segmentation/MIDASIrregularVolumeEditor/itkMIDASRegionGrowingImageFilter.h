@@ -241,6 +241,13 @@ private:
 	OutputImageIndexType                   m_PropMask;
 	bool                                   m_UsePropMaskMode;
 
+	/**
+	 * \brief The main region growing logic is here, where we decide whether to add the nextImgIdx to a stack.
+	 * \param[In] r_stack current stack of pixels under consideration, initialised by the available seeds.
+	 * \param[In] currentImgIdx the current location being considered
+	 * \param[In] nextImgIdx the next pixel
+	 * \param[Out] true if the pixel should be added and false otherwise
+	 */
 	void ConditionalAddPixel(
 	    std::stack<typename OutputImageType::IndexType> &r_stack,
 	    const typename OutputImageType::IndexType &currentImgIdx,
@@ -248,11 +255,18 @@ private:
 	    const bool &isFullyConnected
 	    );
 
+	/**
+	 * \brief Will return true if index1 and index2 are joined along an edge rather than a diagonal, and false otherwise.
+	 * (Assuming the pixels are next to each other, and not miles apart).
+	 */
 	bool IsFullyConnected(
 	    const typename OutputImageType::IndexType &index1,
 	    const typename OutputImageType::IndexType &index2
 	    );
 
+	/**
+	 * \brief Will return true if index1 and index2 cross a contour line, given by m_ManualContours.
+	 */
 	bool IsCrossingLine(
 	    const typename OutputImageType::IndexType &index1,
 	    const typename OutputImageType::IndexType &index2
