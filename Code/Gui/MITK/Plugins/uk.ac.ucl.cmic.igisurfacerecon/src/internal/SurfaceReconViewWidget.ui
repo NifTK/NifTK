@@ -6,79 +6,200 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>756</width>
-    <height>274</height>
+    <width>630</width>
+    <height>662</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="formLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>20</y>
-     <width>651</width>
-     <height>181</height>
-    </rect>
+  <layout class="QFormLayout" name="formLayout_2">
+   <property name="fieldGrowthPolicy">
+    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
    </property>
-   <layout class="QFormLayout" name="formLayout">
-    <property name="sizeConstraint">
-     <enum>QLayout::SetMinimumSize</enum>
-    </property>
-    <property name="fieldGrowthPolicy">
-     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-    </property>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label">
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="label_4">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>1) Choose two nodes in your data storage that hold the left and right image you want to process.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>  Left channel:</string>
+     </property>
+     <property name="buddy">
+      <cstring>LeftChannelNodeNameComboBox</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="LeftChannelNodeNameComboBox">
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+     <item>
       <property name="text">
-       <string>Left channel:</string>
+       <string notr="true">choose or edit node name</string>
       </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QComboBox" name="LeftChannelNodeNameComboBox">
-      <property name="editable">
-       <bool>true</bool>
-      </property>
-      <item>
-       <property name="text">
-        <string notr="true">node name</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_2">
+     </item>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>  Right channel:</string>
+     </property>
+     <property name="buddy">
+      <cstring>RightChannelNodeNameComboBox</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="RightChannelNodeNameComboBox">
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+     <property name="insertPolicy">
+      <enum>QComboBox::NoInsert</enum>
+     </property>
+     <item>
       <property name="text">
-       <string>Right channel:</string>
+       <string notr="true">choose or edit node name</string>
       </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="RightChannelNodeNameComboBox">
-      <property name="editable">
-       <bool>true</bool>
-      </property>
-      <property name="insertPolicy">
-       <enum>QComboBox::NoInsert</enum>
-      </property>
-      <item>
-       <property name="text">
-        <string notr="true">node name</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="DoItButton">
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>  Method:</string>
+     </property>
+     <property name="buddy">
+      <cstring>MethodComboBox</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="MethodComboBox">
+     <item>
       <property name="text">
-       <string>DO IT NOW</string>
+       <string>Sequential Quasi Dense Matching</string>
       </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+     </item>
+     <item>
+      <property name="text">
+       <string>Parallel Quasi Dense Matching</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Real-time Quasi Dense Matching</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="2">
+    <widget class="QLabel" name="label_7">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>3) Type a name for the result node. If it does not exist it is created. If it exists a point cloud is attached to it.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>  Output node:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLineEdit" name="OutputNodeNameLineEdit">
+     <property name="text">
+      <string>stereo matching output</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0" colspan="2">
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0" colspan="2">
+    <widget class="QLabel" name="label_5">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>4) Click the button to process images. There is no continous update.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1">
+    <widget class="QPushButton" name="DoItButton">
+     <property name="text">
+      <string>DO IT NOW</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <widget class="QLabel" name="label_8">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>2) Choose a method for processing. These differ in speed, suitability for high-resolution images, noise susceptibility, reconstruction consistency, ...</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

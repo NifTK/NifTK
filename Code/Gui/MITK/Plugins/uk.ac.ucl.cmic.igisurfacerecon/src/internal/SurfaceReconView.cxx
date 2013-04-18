@@ -204,8 +204,16 @@ void SurfaceReconView::DoSurfaceReconstruction()
 
         if (leftImage.IsNotNull() && rightImage.IsNotNull())
         {
-          // Then delagate everything to class outside of plugin, so we can unit test it.
-          m_SurfaceReconstruction->Run(storage, leftImage, rightImage);
+          try
+          {
+            // Then delagate everything to class outside of plugin, so we can unit test it.
+            m_SurfaceReconstruction->Run(storage, leftImage, rightImage);
+          }
+          catch (const std::exception& e)
+          {
+            std::cerr << "Whoops... something went wrong with surface reconstruction: " << e.what() << std::endl;
+            // FIXME: show an error message on the plugin panel somewhere?
+          }
         }
       }
     }

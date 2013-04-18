@@ -18,6 +18,8 @@ set(CPP_FILES
   DataSources/mitkIGIDataSource.cxx
   DataSources/mitkIGIOpenCVDataType.cxx
   SurfaceReconstruction/mitkSurfaceReconstruction.cxx
+  SurfaceReconstruction/SequentialCpuQds.cxx
+  SurfaceReconstruction/SequentialCpuQds.h
   TrackedImage/mitkTrackedImageCommand.cxx
   TrackedPointer/mitkTrackedPointerCommand.cxx
 )

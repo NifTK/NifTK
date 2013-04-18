@@ -21,7 +21,13 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
-namespace mitk {
+namespace mitk 
+{
+
+
+// forward-decl
+class SequentialCpuQds;
+
 
 /**
  * \class SurfaceReconstruction
@@ -29,6 +35,16 @@ namespace mitk {
  */
 class NIFTKIGI_EXPORT SurfaceReconstruction : public itk::Object
 {
+public:
+  // The order of these should match the entries in SurfaceReconViewWidget::MethodComboBox,
+  // or better the other way around: combobox needs to match this order.
+  enum Method
+  {
+    SEQUENTIAL_CPU,
+    PYRAMID_PARALLEL_CPU,
+    PYRAMID_PARALLEL_CUDA
+  };
+
 public:
 
   mitkClassMacro(SurfaceReconstruction, itk::Object);
@@ -39,7 +55,8 @@ public:
    */
   void Run(const mitk::DataStorage::Pointer dataStorage,
            const mitk::Image::Pointer image1,
-           const mitk::Image::Pointer image2);
+           const mitk::Image::Pointer image2,
+           Method method = SEQUENTIAL_CPU);
 
 protected:
 
@@ -50,6 +67,7 @@ protected:
   SurfaceReconstruction& operator=(const SurfaceReconstruction&); // Purposefully not implemented.
 
 private:
+  SequentialCpuQds*    m_SequentialCpuQds;
 
 }; // end class
 
