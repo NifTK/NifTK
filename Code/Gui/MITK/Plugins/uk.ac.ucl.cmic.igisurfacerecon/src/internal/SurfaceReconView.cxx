@@ -104,43 +104,60 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 
     bool  wasModified = false;
 
+    std::set<std::string>   nodeNamesLeftToAdd;
+
+    mitk::DataStorage::SetOfObjects::ConstPointer allNodes = storage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator i = allNodes->Begin(); i != allNodes->End(); ++i)
+    {
+      const mitk::DataNode::Pointer node = i->Value();
+      assert(node.IsNotNull());
+
+      std::string nodeName = node->GetName();
+      if (!nodeName.empty())
+      {
+        mitk::BaseData::Pointer data = node->GetData();
+        if (data.IsNotNull())
+        {
+          mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(data.GetPointer());
+          if (imageInNode.IsNotNull())
+          {
+            nodeNamesLeftToAdd.insert(nodeName);
+          }
+        }
+      }
+    }
+
     // for all elements that currently are in the combo box
     // check whether there still is a node with that name.
-    for (int i = 0; i < LeftChannelNodeNameComboBox->count(); )
+    for (int i = 0; i < LeftChannelNodeNameComboBox->count(); ++i)
     {
       QString itemName = LeftChannelNodeNameComboBox->itemText(i);
       // for now, both left and right have to have the same node names.
       assert(RightChannelNodeNameComboBox->itemText(i) == itemName);
 
-      if (storage->GetNamedNode(itemName.toStdString()) == 0)
+      std::set<std::string>::iterator ni = nodeNamesLeftToAdd.find(itemName.toStdString());
+      if (ni == nodeNamesLeftToAdd.end())
       {
-        // no node with that name (anymore)
-        // so drop it from the list.
+        // the node name currently in the combobox is not in data storage
+        // so we need to drop it from the combobox
         LeftChannelNodeNameComboBox->removeItem(i);
         RightChannelNodeNameComboBox->removeItem(i);
         wasModified = true;
       }
       else
-        ++i;
+      {
+        // name is still in data-storage
+        // so remove it from the to-be-added list
+        nodeNamesLeftToAdd.erase(ni);
+      }
     }
 
-    mitk::DataStorage::SetOfObjects::ConstPointer allNodes = storage->GetAll();
-    // once here, we made sure that only the combobox has items only that exist in data-storage.
-    // that means, data-storage has at least the same amount of nodes as there are combobox items.
-    assert(allNodes->Size() >= LeftChannelNodeNameComboBox->count());
-
-    if (allNodes->Size() > LeftChannelNodeNameComboBox->count())
+    for (std::set<std::string>::const_iterator i = nodeNamesLeftToAdd.begin(); i != nodeNamesLeftToAdd.end(); ++i)
     {
-      for (mitk::DataStorage::SetOfObjects::ConstIterator i = allNodes->Begin(); i != allNodes->End(); ++i)
-      {
-        std::string nodeName = i->Value()->GetName();
-        if (!nodeName.empty())
-        {
-          LeftChannelNodeNameComboBox->addItem(QString::fromStdString(nodeName));
-          RightChannelNodeNameComboBox->addItem(QString::fromStdString(nodeName));
-          wasModified = true;
-        }
-      }
+      QString s = QString::fromStdString(*i);
+      LeftChannelNodeNameComboBox->addItem(s);
+      RightChannelNodeNameComboBox->addItem(s);
+      wasModified = true;
     }
 
     // put original text in only if we modified the combobox.
