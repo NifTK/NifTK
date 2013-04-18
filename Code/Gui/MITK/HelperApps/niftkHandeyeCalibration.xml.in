@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Handeye Calibration</title>
+  <description><![CDATA[Determines the hand eye calibration for a tracked object, using the tracking and extrinsic matrices]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>extrinsicInputDirectory</name>
+      <longflag>extrinisicDirectory</longflag>
+      <description>The directory containing the extrinisic camera matrices.</description>
+      <label>Extrinsic matrix input directory</label>
+    </directory>
+    <file>
+      <name>extrinsicInputFile</name>
+      <longflag>extrinsicFile</longflag>
+      <description>Alternatively, the extrinsic poses can be read from a file</description>
+      <label>Extrinsic matrix input file</label>
+    </file>
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+    <file fileExtensions="*.txt">
+      <name>outputCalibrationData</name>
+      <longflag>output</longflag>
+      <description>Output file for calibration data</description>
+      <label>Output calibration data filename</label>
+      <default>calib.txt</default>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <integer>
+      <name>xCorners</name>
+      <longflag>xcorners</longflag>
+      <description>The number of internal corners in the horizontal (x) direction.</description>
+      <label>Corners in horizontal direction</label>
+      <default>14</default>
+      <constraints>
+        <minimum>5</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>yCorners</name>
+      <longflag>ycorners</longflag>
+      <description>The number of internal corners in the vertical (y) direction.</description>
+      <label>Corners in vertical direction</label>
+      <default>10</default>
+      <constraints>
+        <minimum>5</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <float>
+      <name>size</name>
+      <longflag>squaresize</longflag>
+      <description>The size of each square edge in millimetres.</description>
+      <label>Square size (mm)</label>
+      <default>3</default>
+      <constraints>
+        <minimum>0.1</minimum>
+        <maximum>100</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    
+    <boolean>
+      <name>writeImages</name>
+      <longflag>writeImages</longflag>
+      <description>Write chessboard images containing the detected corners</description>
+      <label>Write images</label>
+      <default>0</default>
+    </boolean>
+    
+  </parameters>
+  
+</executable>

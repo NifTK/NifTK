@@ -81,6 +81,7 @@ IF(SlicerExecutionModel_FOUND)
       niftkTrackLapUSProbe
       niftkProject3DPointsToStereoPair
       niftkRegisterProbeModelToStereoPair
+      niftkHandeyeCalibration
     )
   ENDIF()  
 
