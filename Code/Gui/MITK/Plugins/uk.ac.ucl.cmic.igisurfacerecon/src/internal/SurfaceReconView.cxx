@@ -94,6 +94,13 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 
   // not sure if enum'ing the storage here is a good idea
   // FIXME: we should register a listener on the data-storage instead?
+  UpdateNodeNameComboBox();
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::UpdateNodeNameComboBox()
+{
   mitk::DataStorage* storage = GetDataStorage();
   if (storage)
   {

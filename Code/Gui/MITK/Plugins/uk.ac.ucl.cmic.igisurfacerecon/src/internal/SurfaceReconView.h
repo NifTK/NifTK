@@ -66,6 +66,8 @@ protected slots:
    */
   void DoSurfaceReconstruction();
 
+  void UpdateNodeNameComboBox();
+
 protected:
 
 private slots:
