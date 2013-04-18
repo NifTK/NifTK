@@ -532,6 +532,63 @@ cv::Point3d IterativeTriangulatePoint(
     const cv::Point3d& u2
     );
 
+/**
+ ** \brief Returns the angular distance between two rotation matrices
+ **/
+double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
+ /**
+ * \brief Converts a 3x3 rotation matrix to a quaternion
+ */
+cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
+ /**
+ * \brief Returns -1.0 if value < 0 or 1.0 if value >= 0
+ */
+double ModifiedSignum(double value);
+ /**
+ * \brief Returns 0.0 of value < 0 or sqrt(value) if value >= 0
+ */
+double SafeSQRT(double value);
+
+ /**
+ * \brief Read a set of matrices, stored as plain text, 4x4 matrices from a directory and 
+ * put them in a vector of 4x4 cvMats
+ */
+std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName);
+
+ /**
+  * \brief Read a set of matrices, stored in openCV xml matrix format from a directory and 
+  * put them in a vector of 4x4 cvMats
+  */
+std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName);
+
+ /**
+  * \brief Load a set of matrices from a file describing the 
+  * extrinsic parameters of a standard camera calibration
+  */
+std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
+
+ /**
+ * \brief Flips the matrices in the vector from left handed coordinate 
+ * system to right handed and vice versa
+ */
+std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices);
+
+ /**
+ * \brief Sorts the matrices based on the translations , and returns the order
+ */
+std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> Matrices);
+ 
+/**
+  * \brief Sorts the matrices based on the rotations, and returns the order
+  */
+std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
+
+ /**
+  * \brief loads a result file into a residual vector and matrix
+  */
+void LoadResult(const std::string& Filename, cv::Mat& Result,
+      std::vector<double>& residuals);
+
 } // end namespace
 
 #endif // MITKCAMERACALIBRATIONFACADE_H

@@ -19,6 +19,8 @@
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkHandeyeCalibrate.h>
+#include <mitkCameraCalibrationFacade.h>
+
 
 /**
  * Runs ICP registration a known data set and checks the error
@@ -35,18 +37,18 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
   cv::Mat ResultMatrix = cvCreateMat(4,4,CV_64FC1);
   
   mitk::HandeyeCalibrate::Pointer Calibrator = mitk::HandeyeCalibrate::New();
-  Calibrator->LoadResult(result, ResultMatrix, ResultResiduals);
+  mitk::LoadResult(result, ResultMatrix, ResultResiduals);
   
-  std::vector<cv::Mat> ExtMatrices = Calibrator->LoadMatricesFromExtrinsicFile(inputExtrinsic);
-  std::vector<cv::Mat> TrackMatrices = Calibrator->LoadMatricesFromDirectory(inputTracking);
+  std::vector<cv::Mat> ExtMatrices = mitk::LoadMatricesFromExtrinsicFile(inputExtrinsic);
+  std::vector<cv::Mat> TrackMatrices = mitk::LoadMatricesFromDirectory(inputTracking);
 
-  std::vector<cv::Mat> FlippedTrackMatrices = Calibrator->FlipMatrices(TrackMatrices);
+  std::vector<cv::Mat> FlippedTrackMatrices = mitk::FlipMatrices(TrackMatrices);
 
   std::vector<int> indexes;
 
   if ( sort == "Distances" ) 
   {
-    indexes = Calibrator->SortMatricesByDistance(FlippedTrackMatrices);
+    indexes = mitk::SortMatricesByDistance(FlippedTrackMatrices);
     std::cout << "Sorted by distances " << std::endl;
     for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
     {
@@ -58,7 +60,7 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
   {
     if ( sort == "Angles" )
     {
-      indexes = Calibrator->SortMatricesByAngle(FlippedTrackMatrices);
+      indexes = mitk::SortMatricesByAngle(FlippedTrackMatrices);
       std::cout << "Sorted by Angles " << std::endl;
       for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
       {
