@@ -41,7 +41,8 @@ public:
    * \brief Calibration function that returns the reprojection error (squared error).
    */
   cv::Mat Calibrate(const std::vector<cv::Mat> MarkerToWorld,
-      const std::vector <cv::Mat> GridToCamera);
+      const std::vector <cv::Mat> GridToCamera, 
+      std::vector<double>* Residuals = NULL);
 
   /**
    * \brief Read a set of matrices from a directory and 
@@ -78,6 +79,24 @@ protected:
 
   HandeyeCalibrate(const HandeyeCalibrate&); // Purposefully not implemented.
   HandeyeCalibrate& operator=(const HandeyeCalibrate&); // Purposefully not implemented.
+
+private:
+  /**
+   * \brief Returns the angular distance between two rotation matrices
+   */
+  double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
+  /**
+   * \brief Converts a 3x3 rotation matrix to a quaternion
+   */
+  cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
+  /**
+   * \brief Returns -1.0 if value < 0 or 1.0 if value >= 0
+   */
+  double ModifiedSignum(double value);
+  /**
+   * \brief Returns 0.0 of value < 0 or sqrt(value) if value >= 0
+   */
+  double SafeSQRT(double value);
 
 }; // end class
 

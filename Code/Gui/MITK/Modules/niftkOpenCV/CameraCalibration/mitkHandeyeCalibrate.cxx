@@ -40,7 +40,7 @@ HandeyeCalibrate::~HandeyeCalibrate()
 
 //-----------------------------------------------------------------------------
 cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld, 
-    const std::vector<cv::Mat> GridToCamera)
+    const std::vector<cv::Mat> GridToCamera, std::vector<double>* residuals)
 {
   if ( MarkerToWorld.size() != GridToCamera.size() )
   {
@@ -112,6 +112,10 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::mulTransposed (Error, ErrorTransMult, true);
       
   double RotationResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
+  if ( residuals != NULL )
+  {
+    residuals->push_back(RotationResidual);
+  }
   
   cv::Mat pcg = 2 * pcgPrime / ( sqrt(1 + cv::norm(pcgPrime) * cv::norm(pcgPrime)) );
   cv::Mat id3 = cvCreateMat(3,3,CV_64FC1);
@@ -189,9 +193,10 @@ cv::Mat HandeyeCalibrate::Calibrate(const std::vector<cv::Mat>  MarkerToWorld,
   cv::mulTransposed (Error, ErrorTransMult, true);
       
   double TransResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
-
-  std::cout << "Rotational Residual = " << RotationResidual << std::endl;
-  std::cout << "Translation Residual = " << TransResidual << std::endl ;
+  if ( residuals != NULL )
+  {
+    residuals->push_back(TransResidual);
+  }
 
   cv::Mat CameraToMarker = cvCreateMat(4,4,CV_64FC1);
   for ( int row = 0 ; row < 3 ; row ++ ) 
@@ -227,7 +232,6 @@ std::vector<cv::Mat> HandeyeCalibrate::LoadMatricesFromDirectory (const std::str
     {
       cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
       std::ifstream fin(files[i].c_str());
-      std::cout << "Reading Matrix from " << files[i].c_str() << std::endl;
       for ( int row = 0 ; row < 4 ; row ++ ) 
       {
         for ( int col = 0 ; col < 4 ; col ++ ) 
@@ -385,6 +389,122 @@ std::vector<int> HandeyeCalibrate::SortMatricesByDistance(const std::vector<cv::
   }
   return index;
 }
- 
+//-----------------------------------------------------------------------------
+std::vector<int> HandeyeCalibrate::SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
+{
+  int NumberOfViews = Matrices.size();
 
+  std::vector<int> used;
+  std::vector<int> index;
+  for ( int i = 0 ; i < NumberOfViews ; i++ )
+  {
+    used.push_back(i);
+    index.push_back(0);
+  }
+
+  int counter = 0;
+  int startIndex = 0;
+  double distance = 1e-10;
+
+  while ( fabs(distance) > 0.0 ) 
+  {
+    cv::Mat t1 = cvCreateMat(3,3,CV_64FC1);
+    cv::Mat t2 = cvCreateMat(3,3,CV_64FC1);
+    
+    for ( int row = 0 ; row < 3 ; row ++ )
+    {
+      for ( int col = 0 ; col < 3 ; col ++ )
+      {
+        t1.at<double>(row,col) = Matrices[startIndex].at<double>(row,col);
+      }
+    }
+    used [startIndex] = 0 ;
+    index [counter] = startIndex;
+    counter++;
+    distance = 0.0;
+    int CurrentIndex=0;
+    for ( int i = 0 ; i < NumberOfViews ; i ++ )
+    {
+      if ( ( startIndex != i ) && ( used[i] != 0 ))
+      {
+        for ( int row = 0 ; row < 3 ; row ++ )
+        {
+          for ( int col = 0 ; col < 3 ; col ++ )
+          {
+            t2.at<double>(row,col) = Matrices[i].at<double>(row,col);
+          }
+        }
+        double d = AngleBetweenMatrices(t1,t2);
+        if ( d > distance ) 
+        {
+          distance = d;
+          CurrentIndex=i;
+        }
+      }
+    }
+    if ( counter < NumberOfViews )
+    {
+      index[counter] = CurrentIndex;
+    }
+    startIndex = CurrentIndex;
+
+    
+  }
+  return index;
+}
+
+//-----------------------------------------------------------------------------
+double HandeyeCalibrate::AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
+{
+  //turn them into quaternions first
+  cv::Mat q1 = DirectionCosineToQuaternion(Mat1);
+  cv::Mat q2 = DirectionCosineToQuaternion(Mat2);
+  
+  return 2 * acos (q1.at<double>(3,0) * q2.at<double>(3,0) 
+      + q1.at<double>(0,0) * q2.at<double>(0,0)
+      + q1.at<double>(1,0) * q2.at<double>(1,0)
+      + q1.at<double>(2,0) * q2.at<double>(2,0));
+
+}
+
+//-----------------------------------------------------------------------------
+cv::Mat HandeyeCalibrate::DirectionCosineToQuaternion(cv::Mat dc_Matrix)
+{
+  cv::Mat q = cvCreateMat(4,1,CV_64FC1);
+  q.at<double>(0,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) -
+      dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
+    ModifiedSignum ( dc_Matrix.at<double>(1,2) - dc_Matrix.at<double>(2,1));
+
+  q.at<double>(1,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) +
+      dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
+    ModifiedSignum ( dc_Matrix.at<double>(2,0) - dc_Matrix.at<double>(0,2));
+
+  q.at<double>(2,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) -
+      dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) ) *
+    ModifiedSignum ( dc_Matrix.at<double>(0,1) - dc_Matrix.at<double>(1,0));
+
+  q.at<double>(3,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) +
+      dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) );
+  
+  return q;
+}
+
+//-----------------------------------------------------------------------------
+double HandeyeCalibrate::ModifiedSignum(double value)
+{
+  if ( value < 0.0 ) 
+  {
+    return -1.0;
+  }
+  return 1.0;
+}
+//-----------------------------------------------------------------------------
+double HandeyeCalibrate::SafeSQRT(double value)
+{
+  if ( value < 0 )
+  {
+    return 0.0;
+  }
+  return sqrt(value);
+}
 } // end namespace
