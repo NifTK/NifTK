@@ -265,9 +265,14 @@ private:
 	    );
 
 	/**
-	 * \brief Will return true if index1 and index2 cross a contour line, given by m_ManualContours.
+	 * \brief Will return true if index1 and index2 cross a contour line contained within contours.
+	 * \param contours a vector of contour lines specified as points
+	 * \param index1 an image index (location in voxels)
+	 * \param index2 an image index (location in voxels), assumed to be next to index1
+	 * \return true if index1 and index2 would appear to cross a contour line.
 	 */
 	bool IsCrossingLine(
+			const ParametricPathVectorType* contours,
 	    const typename OutputImageType::IndexType &index1,
 	    const typename OutputImageType::IndexType &index2
 	    );
