@@ -28,6 +28,8 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
 {
   std::string inputExtrinsic = argv[1];
   std::string inputTracking = argv[2];
+  std::string sort = argv[3];
+  std::string result = argv[4];
 
   mitk::HandeyeCalibrate::Pointer Calibrator = mitk::HandeyeCalibrate::New();
   
@@ -36,39 +38,57 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
 
   std::vector<cv::Mat> FlippedTrackMatrices = Calibrator->FlipMatrices(TrackMatrices);
 
-/*  for ( unsigned int i = 0 ; i < TrackMatrices.size() ; i ++ )
-  {
-    std::cout << "Extrinsic Matrix Number " << i << std::endl;
-    for ( int row = 0 ; row < 4 ; row ++ )
-    {
-      for ( int col = 0 ; col < 4 ; col ++ )
-      {
-        std::cout << ExtMatrices[i].at<double>(row,col) << " ";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << "Tracking: "<< std::endl;
-    for ( int row = 0 ; row < 4 ; row ++ )
-    {
-      for ( int col = 0 ; col < 4 ; col ++ )
-      {
-        std::cout << FlippedTrackMatrices[i].at<double>(row,col) << " ";
-      }
-      std::cout << std::endl;
-    }
+  std::vector<int> indexes;
 
-      std::cout << std::endl;
-  }*/
-
-  std::vector<int> indexes = Calibrator->SortMatricesByDistance(FlippedTrackMatrices);
-  std::cout << "Sorted by distances " << std::endl;
-  for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
+  if ( sort == "Distances" ) 
   {
-    std::cout << indexes[i] << " " ;
+    indexes = Calibrator->SortMatricesByDistance(FlippedTrackMatrices);
+    std::cout << "Sorted by distances " << std::endl;
+    for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
+    {
+      std::cout << indexes[i] << " " ;
+    }
+    std::cout << std::endl;
   }
-  std::cout << std::endl;
+  else 
+  {
+    if ( sort == "Angles" )
+    {
+      indexes = Calibrator->SortMatricesByAngle(FlippedTrackMatrices);
+      std::cout << "Sorted by Angles " << std::endl;
+      for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
+      {
+        std::cout << indexes[i] << " " ;
+      }
+      std::cout << std::endl;
+    }
+    else
+    {
+      for ( unsigned int i = 0 ; i < FlippedTrackMatrices.size() ; i ++ )
+      {
+        indexes.push_back(i);
+      }
+      std::cout << "No Sorting" << std::endl;
+      for ( unsigned int i = 0 ; i < indexes.size() ; i++ )
+      {
+        std::cout << indexes[i] << " " ;
+      }
+      std::cout << std::endl;
+    }
+  }
 
-  cv::Mat CamToMarker = Calibrator->Calibrate( FlippedTrackMatrices, ExtMatrices);
+  std::vector<cv::Mat> SortedExtMatrices;
+  std::vector<cv::Mat> SortedFlippedTrackMatrices;
+
+  for ( unsigned int i = 0 ; i < indexes.size() ; i ++ )
+  {
+    SortedExtMatrices.push_back(ExtMatrices[indexes[i]]);
+    SortedFlippedTrackMatrices.push_back(FlippedTrackMatrices[indexes[i]]);
+  }
+
+
+
+  cv::Mat CamToMarker = Calibrator->Calibrate( SortedFlippedTrackMatrices, SortedExtMatrices);
   std::cout << "Camera to Marker Matrix = " << std::endl << CamToMarker << std::endl;
   return EXIT_SUCCESS;
 }
