@@ -54,9 +54,9 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   surfaceNode->SetData(surface);
 
   mitk::Point3D tip;
-  tip[0] = 1564;
-  tip[1] = 1904;
-  tip[2] = 2244;
+  tip[0] = 0;
+  tip[1] = 1;
+  tip[2] = 2;
 
   mitk::TrackedPointerCommand::Pointer command = mitk::TrackedPointerCommand::New();
   command->Update(
@@ -67,9 +67,9 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
       );
 
   mitk::Point3D expectedTip;
-  expectedTip[0] = 0;
-  expectedTip[0] = 0;
-  expectedTip[0] = 0;
+  expectedTip[0] = 1564;
+  expectedTip[1] = 1904;
+  expectedTip[2] = 2244;
 
   // Check that the point came out in the right place.
   MITK_TEST_CONDITION_REQUIRED(tip[0] == expectedTip[0], ".. Testing x=" << expectedTip[0] << ", but got " << tip[0]);
@@ -77,10 +77,11 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   MITK_TEST_CONDITION_REQUIRED(tip[2] == expectedTip[2], ".. Testing z=" << expectedTip[2] << ", but got " << tip[2]);
 
   // Check that the matrix was set onto the surface.
-  // We don't need to check the actual matrix, as that is implicit in the point calculation.
-  vtkLinearTransform *surfaceGeometryTransform = surface->GetGeometry()->GetVtkTransform();
+  vtkLinearTransform *surfaceGeometryTransform = surface->GetTimeSlicedGeometry()->GetVtkTransform();
   vtkSmartPointer<vtkMatrix4x4> surfaceGeometryTransformMatrix = vtkMatrix4x4::New();
   surfaceGeometryTransform->GetMatrix(surfaceGeometryTransformMatrix);
+
+  std::cerr << "Matt, surface matrix=" << *surfaceGeometryTransformMatrix << std::endl;
 
   for (int i = 0; i < 4; i++)
   {

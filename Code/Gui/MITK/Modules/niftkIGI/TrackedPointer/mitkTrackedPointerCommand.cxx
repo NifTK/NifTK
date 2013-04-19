@@ -68,14 +68,13 @@ void TrackedPointerCommand::Update(
   vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
   combinedTransform->Identity();
 
-  combinedTransform->Multiply4x4(pointerToWorldTransform, tipToPointerTransform, combinedTransform);
+  combinedTransform->Multiply4x4(tipToPointerTransform, pointerToWorldTransform, combinedTransform);
 
   mitk::TimeSlicedGeometry::Pointer surfaceGeometry = surface->GetTimeSlicedGeometry();
-  surfaceGeometry->SetIdentity();
-  surfaceGeometry->Compose(combinedTransform);
+  surfaceGeometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
 
-  double coordinateIn[3] = {0, 0, 0};
-  double coordinateOut[3] = {0, 0, 0};
+  double coordinateIn[4] = {0, 0, 0, 1};
+  double coordinateOut[4] = {0, 0, 0, 1};
 
   coordinateIn[0] = tipCoordinate[0];
   coordinateIn[1] = tipCoordinate[1];
