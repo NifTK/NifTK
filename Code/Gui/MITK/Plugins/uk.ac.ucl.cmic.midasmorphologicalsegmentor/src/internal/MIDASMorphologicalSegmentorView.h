@@ -71,7 +71,7 @@ public:
 protected slots:
  
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+  void OnCreateNewSegmentationButtonPressed();
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when thresholding sliders or spin boxes changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);

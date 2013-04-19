@@ -208,7 +208,7 @@ bool MITKSegmentationView::CanStartSegmentationForBinaryNode(const mitk::DataNod
   return IsNodeASegmentationImage(node);
 }
 
-mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
+void MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   // Compare with MIDASGeneralSegmentorView and MIDASMorphologicalSegmentorView. In the MIDAS
@@ -227,12 +227,12 @@ mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
 
     this->WaitCursorOn();
 
-    newSegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
+    newSegmentation = CreateNewSegmentation(m_DefaultSegmentationColor);
 
     // The above method returns NULL if the user exited the colour selection dialog box.
     if (newSegmentation.IsNull())
     {
-      return NULL;
+      return;
     }
 
     // Apply preference values.
@@ -256,8 +256,8 @@ mitk::DataNode* MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
 
   } // end if we have a reference image.
 
-  // And... relax.
-  return newSegmentation;
+  // Finally, select the new segmentation node.
+  this->SetCurrentSelection(newSegmentation);
 }
 
 void MITKSegmentationView::RetrievePreferenceValues()
