@@ -100,7 +100,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
     if ( SortByAngle )
     {
       indexes = mitk::SortMatricesByAngle(MarkerToWorld);
-      std::cout << "Sorted by distances " << std::endl;
+      std::cout << "Sorted by angles " << std::endl;
     }
     else
     {
