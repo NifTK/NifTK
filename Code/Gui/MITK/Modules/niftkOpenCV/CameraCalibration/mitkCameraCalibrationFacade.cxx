@@ -920,7 +920,7 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
           CV_MAT_ELEM(leftCameraWorldNormalsIn3D, float, i, 0) * CV_MAT_ELEM(leftCameraPositionToFocalPointUnitVector, float, 0, 0)
         + CV_MAT_ELEM(leftCameraWorldNormalsIn3D, float, i, 1) * CV_MAT_ELEM(leftCameraPositionToFocalPointUnitVector, float, 0, 1)
         + CV_MAT_ELEM(leftCameraWorldNormalsIn3D, float, i, 2) * CV_MAT_ELEM(leftCameraPositionToFocalPointUnitVector, float, 0, 2)
-        ;
+       ;
 
     if (cosAngleBetweenTwoVectors < -0.1)
     {
@@ -1466,9 +1466,9 @@ std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectory
     {
       cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
       std::ifstream fin(files[i].c_str());
-      for ( int row = 0 ; row < 4 ; row ++ ) 
+      for ( int row = 0; row < 4; row ++ )
       {
-        for ( int col = 0 ; col < 4 ; col ++ ) 
+        for ( int col = 0; col < 4; col ++ )
         {
           fin >> Matrix.at<double>(row,col);
         }
@@ -1528,7 +1528,7 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
 }
 
 //------------------------------------------------------------------------------
-void LoadResult (const std::string& FileName, cv::Mat& result, 
+void LoadResult (const std::string& FileName, cv::Mat& result,
     std::vector<double>& residuals)
 {
   std::ifstream fin(FileName.c_str());
@@ -1537,9 +1537,9 @@ void LoadResult (const std::string& FileName, cv::Mat& result,
   residuals.push_back(temp);
   fin >> temp;
   residuals.push_back(temp);
-  for ( int row = 0 ; row < 4 ; row ++ ) 
+  for ( int row = 0; row < 4; row ++ )
   {
-    for ( int col = 0 ; col < 4 ; col ++ ) 
+    for ( int col = 0; col < 4; col ++ )
     {
       fin >> result.at<double>(row,col);
     }
@@ -1566,24 +1566,24 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
     TranslationVector.at<double>(0,0) = temp_d[3];
     TranslationVector.at<double>(1,0) = temp_d[4];
     TranslationVector.at<double>(2,0) = temp_d[5];
-    
+   
     cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
     cv::Mat RotationMatrix = cvCreateMat(3,3,CV_64FC1);
     cv::Rodrigues (RotationVector, RotationMatrix);
 
-    for ( int row = 0 ; row < 3 ; row ++ ) 
+    for ( int row = 0; row < 3; row ++ )
     {
-      for ( int col = 0 ; col < 3 ; col ++ ) 
+      for ( int col = 0; col < 3; col ++ )
       {
         Matrix.at<double>(row,col) = RotationMatrix.at<double>(row,col);
       }
     }
-   
-    for ( int row = 0 ; row < 3 ; row ++ )
+  
+    for ( int row = 0; row < 3; row ++ )
     {
       Matrix.at<double>(row,3) = TranslationVector.at<double>(row,0);
     }
-    for ( int col = 0 ; col < 3 ; col ++ ) 
+    for ( int col = 0; col < 3; col ++ )
     {
       Matrix.at<double>(3,col) = 0.0;
     }
@@ -1596,9 +1596,9 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
 {
-  
+ 
   std::vector<cv::Mat>  OutMatrices;
-  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ )
+  for ( unsigned int i = 0; i < Matrices.size(); i ++ )
   {
     cv::Mat FlipMat = cvCreateMat(4,4,CV_64FC1);
     FlipMat.at<double>(0,0) = Matrices[i].at<double>(0,0);
@@ -1632,7 +1632,7 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
 
   std::vector<int> used;
   std::vector<int> index;
-  for ( int i = 0 ; i < NumberOfViews ; i++ )
+  for ( int i = 0; i < NumberOfViews; i++ )
   {
     used.push_back(i);
     index.push_back(0);
@@ -1642,30 +1642,30 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
   int startIndex = 0;
   double distance = 1e-10;
 
-  while ( fabs(distance) > 0 ) 
+  while ( fabs(distance) > 0 )
   {
     cv::Mat t1 = cvCreateMat(3,1,CV_64FC1);
     cv::Mat t2 = cvCreateMat(3,1,CV_64FC1);
-    
-    for ( int row = 0 ; row < 3 ; row ++ )
+   
+    for ( int row = 0; row < 3; row ++ )
     {
       t1.at<double>(row,0) = Matrices[startIndex].at<double>(row,3);
     }
-    used [startIndex] = 0 ;
+    used [startIndex] = 0;
     index [counter] = startIndex;
     counter++;
     distance = 0.0;
     int CurrentIndex=0;
-    for ( int i = 0 ; i < NumberOfViews ; i ++ )
+    for ( int i = 0; i < NumberOfViews; i ++ )
     {
       if ( ( startIndex != i ) && ( used[i] != 0 ))
       {
-        for ( int row = 0 ; row < 3 ; row ++ )
+        for ( int row = 0; row < 3; row ++ )
         {
           t2.at<double>(row,0) = Matrices[i].at<double>(row,3);
         }
         double d = cv::norm(t1-t2);
-        if ( d > distance ) 
+        if ( d > distance )
         {
           distance = d;
           CurrentIndex=i;
@@ -1678,7 +1678,7 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
     }
     startIndex = CurrentIndex;
 
-    
+   
   }
   return index;
 }
@@ -1689,7 +1689,7 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
 
   std::vector<int> used;
   std::vector<int> index;
-  for ( int i = 0 ; i < NumberOfViews ; i++ )
+  for ( int i = 0; i < NumberOfViews; i++ )
   {
     used.push_back(i);
     index.push_back(0);
@@ -1699,36 +1699,36 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
   int startIndex = 0;
   double distance = 1e-10;
 
-  while ( fabs(distance) > 0.0 ) 
+  while ( fabs(distance) > 0.0 )
   {
     cv::Mat t1 = cvCreateMat(3,3,CV_64FC1);
     cv::Mat t2 = cvCreateMat(3,3,CV_64FC1);
-    
-    for ( int row = 0 ; row < 3 ; row ++ )
+   
+    for ( int row = 0; row < 3; row ++ )
     {
-      for ( int col = 0 ; col < 3 ; col ++ )
+      for ( int col = 0; col < 3; col ++ )
       {
         t1.at<double>(row,col) = Matrices[startIndex].at<double>(row,col);
       }
     }
-    used [startIndex] = 0 ;
+    used [startIndex] = 0;
     index [counter] = startIndex;
     counter++;
     distance = 0.0;
     int CurrentIndex=0;
-    for ( int i = 0 ; i < NumberOfViews ; i ++ )
+    for ( int i = 0; i < NumberOfViews; i ++ )
     {
       if ( ( startIndex != i ) && ( used[i] != 0 ))
       {
-        for ( int row = 0 ; row < 3 ; row ++ )
+        for ( int row = 0; row < 3; row ++ )
         {
-          for ( int col = 0 ; col < 3 ; col ++ )
+          for ( int col = 0; col < 3; col ++ )
           {
             t2.at<double>(row,col) = Matrices[i].at<double>(row,col);
           }
         }
         double d = AngleBetweenMatrices(t1,t2);
-        if ( d > distance ) 
+        if ( d > distance )
         {
           distance = d;
           CurrentIndex=i;
@@ -1741,7 +1741,7 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
     }
     startIndex = CurrentIndex;
 
-    
+   
   }
   return index;
 }
@@ -1752,8 +1752,8 @@ double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
   //turn them into quaternions first
   cv::Mat q1 = DirectionCosineToQuaternion(Mat1);
   cv::Mat q2 = DirectionCosineToQuaternion(Mat2);
-  
-  return 2 * acos (q1.at<double>(3,0) * q2.at<double>(3,0) 
+ 
+  return 2 * acos (q1.at<double>(3,0) * q2.at<double>(3,0)
       + q1.at<double>(0,0) * q2.at<double>(0,0)
       + q1.at<double>(1,0) * q2.at<double>(1,0)
       + q1.at<double>(2,0) * q2.at<double>(2,0));
@@ -1778,14 +1778,14 @@ cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
 
   q.at<double>(3,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) +
       dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) );
-  
+ 
   return q;
 }
 
 //-----------------------------------------------------------------------------
 double ModifiedSignum(double value)
 {
-  if ( value < 0.0 ) 
+  if ( value < 0.0 )
   {
     return -1.0;
   }

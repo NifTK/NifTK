@@ -23,7 +23,7 @@ int main(int argc, char** argv)
   int returnStatus = EXIT_FAILURE;
   std::vector<double> ReprojectionError;
 
-  if ( trackingInputDirectory.length() == 0 || 
+  if ( trackingInputDirectory.length() == 0 ||
     ! ( ( extrinsicInputDirectory.length() == 0 ) != ( extrinsicInputFile.length() == 0 )) )
   {
     std::cout << trackingInputDirectory.length() << " " << extrinsicInputDirectory.length() << " " << extrinsicInputFile.length() << std::endl;
