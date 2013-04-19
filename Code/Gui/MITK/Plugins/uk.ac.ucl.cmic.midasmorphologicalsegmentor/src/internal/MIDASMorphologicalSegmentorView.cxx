@@ -78,7 +78,7 @@ void MIDASMorphologicalSegmentorView::ClosePart()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
+void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
@@ -108,12 +108,12 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
     }
     else
     {
-      newSegmentation = QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(m_DefaultSegmentationColor);
+      newSegmentation = CreateNewSegmentation(m_DefaultSegmentationColor);
 
       // The above method returns NULL if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())
       {
-        return NULL;
+        return;
       }
     }
 
@@ -236,8 +236,8 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPr
 
   } // end if we have a reference image
 
-  // And... relax.
-  return newSegmentation;
+  // Finally, select the new segmentation node.
+  this->SetCurrentSelection(newSegmentation);
 }
 
 

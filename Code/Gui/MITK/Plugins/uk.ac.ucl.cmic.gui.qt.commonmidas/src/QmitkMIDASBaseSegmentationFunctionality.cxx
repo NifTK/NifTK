@@ -89,6 +89,16 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
 
 
 //-----------------------------------------------------------------------------
+void QmitkMIDASBaseSegmentationFunctionality::Activated()
+{
+  QmitkBaseView::Activated();
+
+  berry::IWorkbenchPart::Pointer nullPart;
+  this->OnSelectionChanged(nullPart, this->GetCurrentSelection());
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::Visible()
 {
   QmitkBaseView::Visible();
@@ -190,7 +200,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
+void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*part*/, const QList<mitk::DataNode::Pointer> &nodes)
 {
   // By default, assume we are not going to enable the controls.
   bool valid = false;
@@ -395,7 +405,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFrom
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentationButtonPressed(QColor &defaultColor)
+mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::CreateNewSegmentation(QColor &defaultColor)
 {
   mitk::DataNode::Pointer emptySegmentation = NULL;
 
@@ -431,7 +441,6 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::OnCreateNewSegmentation
             {
               this->ApplyDisplayOptions(emptySegmentation);
               this->GetDataStorage()->Add(emptySegmentation, referenceNode); // add as a child, because the segmentation "derives" from the original
-
             } // have got a new segmentation
           }
           catch (std::bad_alloc&)
@@ -644,8 +653,8 @@ int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
 {
-  mitk::DataNode::Pointer referenceDataNode = this->GetReferenceNodeFromToolManager();
-  this->FireNodeSelected(referenceDataNode);
+  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
+  this->SetCurrentSelection(referenceImageNode);
 }
 
 
