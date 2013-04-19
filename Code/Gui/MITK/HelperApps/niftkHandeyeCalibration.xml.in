@@ -46,50 +46,35 @@
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
     
-    <integer>
-      <name>xCorners</name>
-      <longflag>xcorners</longflag>
-      <description>The number of internal corners in the horizontal (x) direction.</description>
-      <label>Corners in horizontal direction</label>
-      <default>14</default>
-      <constraints>
-        <minimum>5</minimum>
-        <maximum>100</maximum>
-        <step>1</step>
-      </constraints>
-    </integer>
-
-    <integer>
-      <name>yCorners</name>
-      <longflag>ycorners</longflag>
-      <description>The number of internal corners in the vertical (y) direction.</description>
-      <label>Corners in vertical direction</label>
-      <default>10</default>
-      <constraints>
-        <minimum>5</minimum>
-        <maximum>100</maximum>
-        <step>1</step>
-      </constraints>
-    </integer>
-
-    <float>
-      <name>size</name>
-      <longflag>squaresize</longflag>
-      <description>The size of each square edge in millimetres.</description>
-      <label>Square size (mm)</label>
-      <default>3</default>
-      <constraints>
-        <minimum>0.1</minimum>
-        <maximum>100</maximum>
-        <step>0.1</step>
-      </constraints>
-    </float>
-    
     <boolean>
-      <name>writeImages</name>
-      <longflag>writeImages</longflag>
-      <description>Write chessboard images containing the detected corners</description>
-      <label>Write images</label>
+      <name>DontFlipTracking</name>
+      <longflag>DontFlipTracking</longflag>
+      <description>Don't Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Dont Flip the tracking matrices</label>
+      <default>0</default>
+    </boolean>
+   
+    <boolean>
+      <name>FlipExtrinsics</name>
+      <longflag>FlipExtrinsics</longflag>
+      <description>Flip the extrinsic matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the extrinsic matrices</label>
+      <default>0</default>
+    </boolean>
+ 
+    <boolean>
+      <name>DontSortByDistance</name>
+      <longflag>DontSortByDistance</longflag>
+      <description>Don't sort the tracking matrices by distance before inversion</description>
+      <label>Dont sort the tracking matrices by distance</label>
+      <default>0</default>
+    </boolean>
+ 
+    <boolean>
+      <name>SortByAngle</name>
+      <longflag>SortByAngle</longflag>
+      <description>Sort the tracking matrices by angular distance before inversion</description>
+      <label>Sort the tracking matrices by angular distance</label>
       <default>0</default>
     </boolean>
     

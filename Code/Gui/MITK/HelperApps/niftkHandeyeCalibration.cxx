@@ -30,11 +30,11 @@ int main(int argc, char** argv)
     commandLine.getOutput()->usage(commandLine);
     return returnStatus;
   }
-  
-  bool FlipTracking = true;
-  bool FlipExtrin = false;
-  bool SortByDistance = true;
-  bool SortByAngle = false;
+ 
+  bool FlipTracking = ! DontFlipTracking;
+  bool FlipExtrin = FlipExtrinsics;
+  bool SortByDistance = ! ( DontSortByDistance || SortByAngle );
+
   try
   {
     mitk::HandeyeCalibrate::Pointer calibrationObject = mitk::HandeyeCalibrate::New();
