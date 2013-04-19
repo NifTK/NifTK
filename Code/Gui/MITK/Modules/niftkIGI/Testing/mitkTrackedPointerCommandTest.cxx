@@ -81,8 +81,6 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   vtkSmartPointer<vtkMatrix4x4> surfaceGeometryTransformMatrix = vtkMatrix4x4::New();
   surfaceGeometryTransform->GetMatrix(surfaceGeometryTransformMatrix);
 
-  std::cerr << "Matt, surface matrix=" << *surfaceGeometryTransformMatrix << std::endl;
-
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
