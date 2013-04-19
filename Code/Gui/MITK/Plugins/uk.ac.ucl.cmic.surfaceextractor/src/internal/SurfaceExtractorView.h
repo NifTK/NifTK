@@ -19,10 +19,11 @@
 
 #include <berryQtViewPart.h>
 #include <berryIBerryPreferences.h>
-#include <QmitkAbstractView.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkImageToSurfaceFilter.h>
+
+#include <QmitkBaseView.h>
 
 class QWidget;
 class QEvent;
@@ -33,7 +34,7 @@ class SurfaceExtractorViewPrivate;
  * \brief Provides a simple GUI to extract the surface of 3D volumes.
  * \ingroup uk_ac_ucl_cmic_surfaceextractor_internal
  */
-class SurfaceExtractorView : public QmitkAbstractView
+class SurfaceExtractorView : public QmitkBaseView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)

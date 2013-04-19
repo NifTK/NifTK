@@ -505,10 +505,7 @@ void SurfaceExtractorView::createSurfaceNode()
   d->referenceNode->SetSelected(false);
   d->surfaceNode->SetSelected(true);
 
-  QList<mitk::DataNode::Pointer> selectedNodes;
-  selectedNodes.push_back(d->surfaceNode);
-  berry::IWorkbenchPart::Pointer nullPart;
-  OnSelectionChanged(nullPart, selectedNodes);
+  this->SetCurrentSelection(d->surfaceNode);
 }
 
 void SurfaceExtractorView::updateSurfaceNode()
