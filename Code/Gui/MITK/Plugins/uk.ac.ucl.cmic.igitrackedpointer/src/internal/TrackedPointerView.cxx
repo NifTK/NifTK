@@ -133,11 +133,13 @@ void TrackedPointerView::OnTipToProbeChanged()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnUpdate(const ctkEvent& event)
 {
+  Q_UNUSED(event);
+
   mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
 
   mitk::Point3D tipCoordinate;
-  double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
+  const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
   tipCoordinate[0] = currentCoordinateInModelCoordinates[0];
   tipCoordinate[1] = currentCoordinateInModelCoordinates[1];
   tipCoordinate[2] = currentCoordinateInModelCoordinates[2];
