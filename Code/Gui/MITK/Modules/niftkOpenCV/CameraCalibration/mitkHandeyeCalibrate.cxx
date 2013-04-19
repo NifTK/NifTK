@@ -51,6 +51,11 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   std::vector<cv::Mat> MarkerToWorld = mitk::LoadMatricesFromDirectory(TrackingFileDirectory);
   std::vector<cv::Mat> GridToCamera;
   std::vector<double> residuals;
+  //init residuals with negative number to stop unit test passing
+  //if Load result and calibration both produce zero.
+  residuals.push_back(-100.0);
+  residuals.push_back(-100.0);
+
   if ( niftk::DirectoryExists ( ExtrinsicFileDirectoryOrFile ))
   {
     GridToCamera = mitk::LoadOpenCVMatricesFromDirectory(ExtrinsicFileDirectoryOrFile);
@@ -178,7 +183,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   cv::mulTransposed (Error, ErrorTransMult, true);
      
   double RotationResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
-  residuals.push_back(RotationResidual);
+  residuals[0] = RotationResidual;
  
   cv::Mat pcg = 2 * pcgPrime / ( sqrt(1 + cv::norm(pcgPrime) * cv::norm(pcgPrime)) );
   cv::Mat id3 = cvCreateMat(3,3,CV_64FC1);
@@ -256,7 +261,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   cv::mulTransposed (Error, ErrorTransMult, true);
      
   double TransResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
-  residuals.push_back(TransResidual);
+  residuals[1] = TransResidual;
 
   cv::Mat CameraToMarker = cvCreateMat(4,4,CV_64FC1);
   for ( int row = 0; row < 3; row ++ )
@@ -289,7 +294,6 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
     cv::Scalar Sum = cv::sum(CameraToMarker - ResultMatrix);
     residuals.push_back(Sum[0]);
   }
-
 
   return residuals;
 
