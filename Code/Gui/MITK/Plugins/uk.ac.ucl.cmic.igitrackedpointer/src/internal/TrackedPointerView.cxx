@@ -76,6 +76,12 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
 
+    m_Controls->m_TipOriginSpinBoxes->setSingleStep(0.01);
+    m_Controls->m_TipOriginSpinBoxes->setDecimals(2);
+    m_Controls->m_TipOriginSpinBoxes->setMinimum(-10000);
+    m_Controls->m_TipOriginSpinBoxes->setMaximum(10000);
+    m_Controls->m_TipOriginSpinBoxes->setCoordinates(0,0,0);
+
     connect(m_Controls->m_TipToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnTipToProbeChanged()));
 
     RetrievePreferenceValues();
@@ -127,14 +133,23 @@ void TrackedPointerView::OnTipToProbeChanged()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnUpdate(const ctkEvent& event)
 {
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  Q_UNUSED(event);
+
   mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
 
+  mitk::Point3D tipCoordinate;
+  const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
+  tipCoordinate[0] = currentCoordinateInModelCoordinates[0];
+  tipCoordinate[1] = currentCoordinateInModelCoordinates[1];
+  tipCoordinate[2] = currentCoordinateInModelCoordinates[2];
+
   mitk::TrackedPointerCommand::Pointer command = mitk::TrackedPointerCommand::New();
-  command->Update(dataStorage,
-                  surfaceNode,
+  command->Update(m_TipToProbeTransform,
                   probeToWorldTransform,
-                  m_TipToProbeTransform
+                  surfaceNode,             // The Geometry on this gets updated.
+                  tipCoordinate            // This gets updated.
                   );
+
+  this->SetViewToCoordinate(tipCoordinate);
 }

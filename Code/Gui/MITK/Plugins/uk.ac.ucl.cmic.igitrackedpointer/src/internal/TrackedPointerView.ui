@@ -19,6 +19,16 @@
      <item>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
+        <widget class="QLabel" name="m_TipOriginLabel">
+         <property name="text">
+          <string>tip origin</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="ctkCoordinatesWidget" name="m_TipOriginSpinBoxes" native="true"/>
+       </item>
+       <item row="1" column="0">
         <widget class="QLabel" name="m_TipToProbeLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -31,10 +41,10 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <widget class="ctkPathLineEdit" name="m_TipToProbeCalibrationFile" native="true"/>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="m_ProbeSurfaceLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -47,10 +57,10 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode" native="true"/>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="m_ProbeToWorldLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -63,7 +73,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode" native="true"/>
        </item>
       </layout>
@@ -96,6 +106,12 @@
    <class>ctkPathLineEdit</class>
    <extends>QWidget</extends>
    <header>ctkPathLineEdit.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCoordinatesWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">ctkCoordinatesWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

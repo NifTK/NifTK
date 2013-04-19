@@ -156,6 +156,12 @@ protected:
    */
   void FocusOnCurrentWindow();
 
+  /**
+   * \brief Gets the current render window, and sets it to the given coordinate, specified in millimetres.
+   * \param coordinate specified in millimetres.
+   */
+  void SetViewToCoordinate(const mitk::Point3D &coordinate);
+
 private:
 
   void onNodeAddedInternal(const mitk::DataNode*);

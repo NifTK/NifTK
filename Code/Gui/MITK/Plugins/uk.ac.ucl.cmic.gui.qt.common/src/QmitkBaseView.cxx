@@ -344,6 +344,20 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
 
 
 //-----------------------------------------------------------------------------
+void QmitkBaseView::SetViewToCoordinate(const mitk::Point3D &coordinate)
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  if (renderWindowPart != NULL)
+  {
+    renderWindowPart->SetSelectedPosition(coordinate, "axial");
+    renderWindowPart->SetSelectedPosition(coordinate, "sagittal");
+    renderWindowPart->SetSelectedPosition(coordinate, "coronal");
+    renderWindowPart->SetSelectedPosition(coordinate, "3d");
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkBaseView::FocusOnCurrentWindow()
 {
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
