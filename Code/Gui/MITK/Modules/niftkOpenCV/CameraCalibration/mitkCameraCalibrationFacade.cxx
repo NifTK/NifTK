@@ -1036,28 +1036,34 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     const cv::Mat& rightToLeftTranslationVector
     )
 {
-  int numberOfPoints = inputUndistortedPoints.size();
   std::vector< cv::Point3f > outputPoints;
+  int numberOfPoints = inputUndistortedPoints.size();
 
-  cv::Mat K1      = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat K2      = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LRot  = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LInv  = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat K1Inv   = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat K2Inv   = cv::Mat(3, 3, CV_64FC1);
-
-  cv::Rodrigues(rightToLeftRotationVector, R2LRot);
-  R2LInv = R2LRot.inv();
+  cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat R2LRot32 = cv::Mat(3, 3, CV_32FC1);
+  cv::Mat R2LRot64 = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat R2LTrn64 = cv::Mat(1, 3, CV_64FC1);
+  cv::Mat R2LInv   = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat K2Inv    = cv::Mat(3, 3, CV_64FC1);
 
   // Copy data into cv::Mat data types.
+  // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
+  // These triangulation routines need 64 bit data.
+  cv::Rodrigues(rightToLeftRotationVector, R2LRot32);
   for (int i = 0; i < 3; i++)
   {
     for (int j = 0; j < 3; j++)
     {
-      K1.at<double>(i,j) = leftCameraIntrinsicParams.at<double>(i,j);
-      K2.at<double>(i,j) = rightCameraIntrinsicParams.at<double>(i,j);
+      K1.at<double>(i,j) = leftCameraIntrinsicParams.at<float>(i,j);
+      K2.at<double>(i,j) = rightCameraIntrinsicParams.at<float>(i,j);
+      R2LRot64.at<double>(i,j) = R2LRot32.at<float>(i,j);
     }
+    R2LTrn64.at<double>(0,i) = rightToLeftTranslationVector.at<float>(0,i);
   }
+
+  R2LInv = R2LRot64.inv();
 
   // We invert the intrinsic params, so we can convert from pixels to normalised image coordinates.
   K1Inv = K1.inv();
@@ -1120,12 +1126,12 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     rhsRay.at<double>(2,0) = p2normalised.at<double>(2,0) / VNorm;
 
     // Rotate unit vector by rotation matrix between left and right camera.
-    rhsRayTransformed = R2LRot * rhsRay;
+    rhsRayTransformed = R2LRot64 * rhsRay;
 
     // Origin of RH camera, in LH normalised coordinates.
-    Q0.x = rightToLeftTranslationVector.at<double>(0,0);
-    Q0.y = rightToLeftTranslationVector.at<double>(0,1);
-    Q0.z = rightToLeftTranslationVector.at<double>(0,2);
+    Q0.x = R2LTrn64.at<double>(0,0);
+    Q0.y = R2LTrn64.at<double>(0,1);
+    Q0.z = R2LTrn64.at<double>(0,2);
 
     // Create unit vector along right hand camera line, but in LH coordinate frame.
     v.x = rhsRayTransformed.at<double>(0,0);
@@ -1171,34 +1177,7 @@ std::vector< cv::Point3f > TriangulatePointPairs(
       midPoint.z = (Psc.z + Qtc.z)/2.0;
 
       outputPoints.push_back(midPoint);
-
-      /*
-      std::cerr << "Matt, l=(" << inputUndistortedPoints[i].first.x \
-          << ", " << inputUndistortedPoints[i].first.y \
-          << "), r=(" << inputUndistortedPoints[i].second.x \
-          << ", " << inputUndistortedPoints[i].second.y \
-          << "), 3D=" << midPoint.x \
-          << ", " << midPoint.y \
-          << ", " << midPoint.z \
-          << std::endl;
-      */
     }
-
-    // Method 2. SVD it - I tested this, and the numbers came out the same.
-    /*
-    cv::Matx32d A(u.x, -v.x,
-                  u.y, -v.y,
-                  u.z, -v.z
-                 );
-
-    cv::Matx31d B(Q0.x - P0x,
-                  Q0.y - P0y,
-                  Q0.z - P0z
-                 );
-
-    cv::Mat_<double> X;
-    cv::solve(A,B,X,cv::DECOMP_SVD);
-    */
   }
   return outputPoints;
 }

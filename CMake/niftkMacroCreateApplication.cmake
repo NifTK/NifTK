@@ -54,6 +54,7 @@ MACRO(NIFTK_CREATE_APPLICATION)
     ${curl_LIBRARY_DIR}
     ${Boost_LIBRARY_DIRS}
     ${zlib_LIBRARY_DIR}
+    ${aruco_DIR}/lib
   )
   
   #############################################################################
