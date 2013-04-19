@@ -272,17 +272,8 @@ void ImageLookupTablesView::Activated()
 {
   QmitkBaseView::Activated();
 
-  // Try finding the specifically selected view.
-  // Note: I did not call this->FireNodeSelected as i don't want this view to affect the current selection.
-  //       Also, I don't think we should search the DataStorage and hunt for an image, for the same reason.
-  if (this->IsCurrentSelectionValid())
-  {
-    QList<mitk::DataNode::Pointer> nodes = this->GetCurrentSelection();
-    if (this->IsSelectionValid(nodes))
-    {
-      this->Register(nodes[0]);
-    }
-  }
+  berry::IWorkbenchPart::Pointer nullPart;
+  this->OnSelectionChanged(nullPart, this->GetCurrentSelection());
 }
 
 
