@@ -36,12 +36,14 @@ public:
   itkNewMacro(TrackedPointerCommand);
 
   /**
-   * \brief Write My Documentation
+   * \brief Takes a surface representing a tracked pointer, updates the surface's geometry, and calculates the pointer position.
    */
-  void Update(const mitk::DataStorage::Pointer dataStorage,
-           const mitk::DataNode::Pointer surfaceNode,
-           const mitk::DataNode::Pointer pointerToWorldNode,
-           const vtkMatrix4x4* tipToPointerTransform);
+  void Update(
+      const vtkMatrix4x4* tipToPointerTransform,
+      const mitk::DataNode::Pointer pointerToWorldNode,
+      mitk::DataNode::Pointer surfaceNode,
+      mitk::Point3D& tipCoordinate
+      );
 
 protected:
 
