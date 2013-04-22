@@ -16,6 +16,7 @@
 #include "SequentialCpuQds.h"
 #include <opencv2/core/core_c.h>
 #include <mitkImageReadAccessor.h>
+#include "../Conversion/mitkImageConversion.h"
 
 
 namespace mitk 
@@ -111,6 +112,14 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
           m_SequentialCpuQds = new SequentialCpuQds(width, height);
 
         m_SequentialCpuQds->Process(&leftIpl, &rightIpl);
+
+
+        IplImage* dispimg = m_SequentialCpuQds->CreateDisparityImage();
+        mitk::Image::Pointer imgData4Node = CreateMitkImage(dispimg);
+        cvReleaseImage(&dispimg);
+
+        outputNode->SetData(imgData4Node);
+
         break;
       }
 

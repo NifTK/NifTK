@@ -92,6 +92,7 @@ public:
   int GetWidth() const;
   int GetHeight() const;
 
+  // caller needs to clean up
   IplImage* CreateDisparityImage() const;
 
 

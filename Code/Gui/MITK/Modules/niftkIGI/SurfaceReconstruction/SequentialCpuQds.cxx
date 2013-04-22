@@ -155,6 +155,41 @@ IplImage* SequentialCpuQds::CreateDisparityImage() const
 {
   IplImage* dispimg = cvCreateImage(cvSize(GetWidth(), GetHeight()), IPL_DEPTH_8U, 4);
 
+  // gil view that wraps the ipl image
+  BOOST_AUTO(dst, boost::gil::interleaved_view(dispimg->width, dispimg->height, (boost::gil::rgba8_pixel_t*) dispimg->imageData, dispimg->widthStep));
+
+  for (int y = 0; y < dispimg->height; ++y)
+  {
+    for (int x = 0; x < dispimg->width; ++x)
+    {
+      // two-channel pixel in the refmap. values point into the right image.
+      const boost::gil::dev2n16c_pixel_t& r = boost::gil::const_view(m_LeftRefMap)(x, y);
+
+      // output rgba pixel
+      BOOST_AUTO(& p, dst(x, y));
+
+      if (r[0] <= 0)
+      {
+        p[0] = 255;
+        p[1] = 0;
+        p[2] = 0;
+        p[3] = 255;
+        continue;
+      }
+
+      float   dx = x - r[0];
+      float   dy = y - r[1];
+      float   d = std::sqrt(dx*dx + dy*dy);
+      d = std::max(d, 0.0f);
+      d = std::min(d, (float) m_MaxDisparity);
+
+      float   sd = /*255 -*/ 255.0f * (std::min(d - 0, (float) m_MaxDisparity) / ((float) m_MaxDisparity - 0));
+      p[0] = (unsigned char) sd;
+      p[1] = (unsigned char) sd;
+      p[2] = (unsigned char) sd;
+      p[3] = 255;
+    }
+  }
 
   return dispimg;
 }
