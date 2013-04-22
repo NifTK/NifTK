@@ -155,10 +155,10 @@ static float zncc_c1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray
 //-----------------------------------------------------------------------------
 static bool CheckBorder(const Match& m, int bx, int by, int w, int h)
 {
-  assert(m.p0.x > 0);
-  assert(m.p0.y > 0);
-  assert(m.p1.x > 0);
-  assert(m.p1.y > 0);
+  assert(m.p0.x >= 0);
+  assert(m.p0.y >= 0);
+  assert(m.p1.x >= 0);
+  assert(m.p1.y >= 0);
 
   if ((m.p0.x < bx    ) || 
       (m.p0.x > w - bx) || 
@@ -233,6 +233,9 @@ SequentialCpuQds::SequentialCpuQds(int width, int height)
   m_RightIntegral.recreate(width + 1, height + 1);
   m_LeftSquaredIntegral.recreate(width + 1, height + 1);
   m_RightSquaredIntegral.recreate(width + 1, height + 1);
+
+  m_LeftTexture.recreate(width, height);
+  m_RightTexture.recreate(width, height);
 
   m_LeftRefMap.recreate(width, height);
   m_RightRefMap.recreate(width, height);
@@ -357,15 +360,21 @@ void SequentialCpuQds::QuasiDensePropagation()
     {
       // Calculate correlation and store match in Seeds.
       Match m;
+      // FIXME: check for negative coords! our guestimate in InitSparseFeatures() might have pushed these off
       m.p0 = RefPoint(m_SparseFeaturesLeft[i].x,  m_SparseFeaturesLeft[i].y);
       m.p1 = RefPoint(m_SparseFeaturesRight[i].x, m_SparseFeaturesRight[i].y);
 
       // Check if too close to boundary.
       if (!CheckBorder(m, m_PropagationParams.BorderX, m_PropagationParams.BorderY, m_LeftImg.width(), m_LeftImg.height()))
+      {
         continue;
+      }
 
       // Calculate the correlation threshold
-//      m.corr = iZNCC_c1(m.p0, m.p1, m_PropagationParams.WinSizeX, m_PropagationParams.WinSizeY);
+      m.corr = zncc_c1(m.p0.x, m.p0.y, m.p1.x, m.p1.y, m_PropagationParams.WinSizeX, 
+                       boost::gil::const_view(m_LeftImg), boost::gil::const_view(m_RightImg),
+                       boost::gil::const_view(m_LeftIntegral), boost::gil::const_view(m_RightIntegral),
+                       boost::gil::const_view(m_LeftSquaredIntegral), boost::gil::const_view(m_RightSquaredIntegral));
 
       // Can we add it to the list
       if (m.corr > m_PropagationParams.Ct)
