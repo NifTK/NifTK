@@ -36,6 +36,8 @@
 #include "mitkBoundingObject.h"
 #include "mitkAffineInteractor3D.h"
 
+#include "mitkAffineTransformer.h"
+
 #include "ui_AffineTransformViewControls.h"
 #include "AffineTransformInteractor3D.h"
 
@@ -80,23 +82,23 @@ class AffineTransformView : public QmitkBaseView
   
   public:  
 
-    /// \brief Simply stores the view name = "uk.ac.ucl.cmic.affinetransformview"
-    static const std::string VIEW_ID;
+    ///// \brief Simply stores the view name = "uk.ac.ucl.cmic.affinetransformview"
+    //static const std::string VIEW_ID;
 
-    /// \brief See class introduction.
-    static const std::string INITIAL_TRANSFORM_KEY;
+    ///// \brief See class introduction.
+    //static const std::string INITIAL_TRANSFORM_KEY;
 
-    /// \brief See class introduction.
-    static const std::string INCREMENTAL_TRANSFORM_KEY;
+    ///// \brief See class introduction.
+    //static const std::string INCREMENTAL_TRANSFORM_KEY;
 
-    /// \brief See class introduction.
-    static const std::string PRELOADED_TRANSFORM_KEY;
+    ///// \brief See class introduction.
+    //static const std::string PRELOADED_TRANSFORM_KEY;
 
-    /// \brief See class introduction.
-    static const std::string DISPLAYED_TRANSFORM_KEY;
+    ///// \brief See class introduction.
+    //static const std::string DISPLAYED_TRANSFORM_KEY;
 
-    /// \brief See class introduction.
-    static const std::string DISPLAYED_PARAMETERS_KEY;
+    ///// \brief See class introduction.
+    //static const std::string DISPLAYED_PARAMETERS_KEY;
 
     AffineTransformView();
     virtual ~AffineTransformView();
@@ -145,7 +147,7 @@ class AffineTransformView : public QmitkBaseView
   protected:
 
     /** \brief Computes a new linear transform (as 4x4 transform matrix) from the parameters set through the UI. */
-    virtual vtkSmartPointer<vtkMatrix4x4> ComputeTransformFromParameters(void) const;
+    //virtual vtkSmartPointer<vtkMatrix4x4> ComputeTransformFromParameters(void) const;
 
     /// \see QmitkAbstractView::OnSelectionChanged.
     virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
@@ -153,31 +155,25 @@ class AffineTransformView : public QmitkBaseView
   private:
 
     /** Enables or Disables all the controls. */
-    void _SetControlsEnabled(bool isEnabled);
+    void SetControlsEnabled(bool isEnabled);
 
     /** Sets the controls to the values given in the specific parameters property. */
-    void _SetControls(mitk::AffineTransformParametersDataNodeProperty &parametersProperty);
+    void SetValuesOnUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
 
     /** Gets the values from the controls and stores them on the specified parametersProperty. */
-    void _GetControls(mitk::AffineTransformParametersDataNodeProperty &parametersProperty);
+    void GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
 
     /** Sets the controls to the Identity, and doesn't update anything else. */
-    void _ResetControls();
+    void ResetControls();
 
-    /** Called by _InitialiseNodeProperties to initialise (to Identity) a specified transform property on a node. */
-    void _InitialiseTransformProperty(std::string name, mitk::DataNode& node);
+    ///** Called by _UpdateTransformationGeometry to set new transformations in the right properties of the node. */
+    //void _UpdateNodeProperties(
+    //    const vtkSmartPointer<vtkMatrix4x4> displayedTransformFromParameters,
+    //    const vtkSmartPointer<vtkMatrix4x4> incrementalTransformToBeComposed,
+    //    mitk::DataNode& node);
 
-    /** Called by OnSelectionChanged to setup a node with default transformation properties, if it doesn't already have them. */
-    void _InitialiseNodeProperties(mitk::DataNode& node);
-
-    /** Called by _UpdateTransformationGeometry to set new transformations in the right properties of the node. */
-    void _UpdateNodeProperties(
-        const vtkSmartPointer<vtkMatrix4x4> displayedTransformFromParameters,
-        const vtkSmartPointer<vtkMatrix4x4> incrementalTransformToBeComposed,
-        mitk::DataNode& node);
-
-    /** Called by _UpdateNodeProperties to update a transform property on a given node. */
-    void _UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node);
+    ///** Called by _UpdateNodeProperties to update a transform property on a given node. */
+    //void _UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node);
 
     /** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
     void _ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode& node);
@@ -196,10 +192,10 @@ class AffineTransformView : public QmitkBaseView
      * <li>Undo of CoR</li>
      * <ol>
      */
-    void _UpdateTransformDisplay();
+    void UpdateTransformDisplay();
 
-    /** \brief Updates the transform on the current node, and it's children. */
-    void _UpdateTransformationGeometry();
+    ///** \brief Updates the transform on the current node, and it's children. */
+    //void _UpdateTransformationGeometry();
 
     /** \brief Applies a re-sampling to the current node. */
     void _ApplyResampleToCurrentNode();
@@ -232,6 +228,8 @@ private:
     vtkLegendScaleActor                   * m_legendActor;
     vtkAxesActor                          * m_axesActor;
     CustomVTKAxesActor                    * m_customAxesActor;
+
+    mitk::AffineTransformer::Pointer        m_AffineTransformer;
 };
 
 #endif // AffineTransformView_h

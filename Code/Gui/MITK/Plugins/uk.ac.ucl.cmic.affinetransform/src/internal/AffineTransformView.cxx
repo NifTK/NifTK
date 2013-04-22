@@ -73,12 +73,6 @@
 
 #include <itkImageFileWriter.h>
 
-const std::string AffineTransformView::VIEW_ID                   = "uk.ac.ucl.cmic.affinetransformview";
-const std::string AffineTransformView::INITIAL_TRANSFORM_KEY     = "niftk.initaltransform";
-const std::string AffineTransformView::INCREMENTAL_TRANSFORM_KEY = "niftk.incrementaltransform";
-const std::string AffineTransformView::PRELOADED_TRANSFORM_KEY   = "niftk.preloadedtransform";
-const std::string AffineTransformView::DISPLAYED_TRANSFORM_KEY   = "niftk.displayedtransform";
-const std::string AffineTransformView::DISPLAYED_PARAMETERS_KEY  = "niftk.displayedtransformparameters";
 
 AffineTransformView::AffineTransformView()
 {
@@ -111,6 +105,8 @@ AffineTransformView::AffineTransformView()
     if (globalInteractor->GetStateMachineFactory()->LoadBehaviorString(qContents.toStdString()))
       qDebug() <<"Loaded the state-machine correctly!";
   }
+
+  m_AffineTransformer = mitk::AffineTransformer::New();
 }
 
 AffineTransformView::~AffineTransformView()
@@ -179,7 +175,7 @@ void AffineTransformView::SetFocus()
 {
 }
 
-void AffineTransformView::_SetControlsEnabled(bool isEnabled)
+void AffineTransformView::SetControlsEnabled(bool isEnabled)
 {
   m_Controls->rotationSpinBoxX->setEnabled(isEnabled);
   m_Controls->rotationSpinBoxY->setEnabled(isEnabled);
@@ -201,96 +197,32 @@ void AffineTransformView::_SetControlsEnabled(bool isEnabled)
   m_Controls->affineTransformDisplay->setEnabled(isEnabled);
 }
 
-void AffineTransformView::_InitialiseTransformProperty(std::string name, mitk::DataNode& node)
-{
-  mitk::AffineTransformDataNodeProperty::Pointer transform
-    = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node.GetProperty(name.c_str()));
-
-  if (transform.IsNull())
-  {
-    transform = mitk::AffineTransformDataNodeProperty::New();
-    transform->Identity();
-    node.SetProperty(name.c_str(), transform);
-  }
-}
-
-void AffineTransformView::_InitialiseNodeProperties(mitk::DataNode& node)
-{
-  // Make sure the node has the specified properties listed below, and if not create defaults.
-  _InitialiseTransformProperty(INCREMENTAL_TRANSFORM_KEY, node);
-  _InitialiseTransformProperty(PRELOADED_TRANSFORM_KEY, node);
-  _InitialiseTransformProperty(DISPLAYED_TRANSFORM_KEY, node);
-
-  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty
-    = dynamic_cast<mitk::AffineTransformParametersDataNodeProperty*>(node.GetProperty(DISPLAYED_PARAMETERS_KEY.c_str()));
-  if (affineTransformParametersProperty.IsNull())
-  {
-    affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
-    affineTransformParametersProperty->Identity();
-    node.SetProperty(DISPLAYED_PARAMETERS_KEY.c_str(), affineTransformParametersProperty);
-  }
-
-  // In addition, if we have not already done so, we take any existing geometry,
-  // and store it back on the node as the "Initial" geometry.
-  mitk::AffineTransformDataNodeProperty::Pointer transform
-    = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node.GetProperty(INITIAL_TRANSFORM_KEY.c_str()));
-  if (transform.IsNull())
-  {
-    transform = mitk::AffineTransformDataNodeProperty::New();
-    transform->SetTransform(*(const_cast<const vtkMatrix4x4*>(node.GetData()->GetGeometry()->GetVtkTransform()->GetMatrix())));
-    node.SetProperty(INITIAL_TRANSFORM_KEY.c_str(), transform);
-  }
-
-  mitk::BaseData *data = node.GetData();
-  if ( data == NULL )
-  {
-    MITK_ERROR << "No data object present!";
-  }
-}
-
 void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   if (nodes.size() != 1)
   {
-    this->_SetControlsEnabled(false);
+    this->SetControlsEnabled(false);
     return;
   }
 
   if (nodes[0].IsNull())
   {
-    this->_SetControlsEnabled(false);
+    this->SetControlsEnabled(false);
     return;
   }
 
-  // Store the current node as a member variable.
-  msp_DataOwnerNode = nodes[0];
+  if (m_AffineTransformer.IsNull())
+    return;
 
-  // Initialise the selected node.
-  this->_InitialiseNodeProperties(*(msp_DataOwnerNode.GetPointer()));
-  
-  // Initialise all of the selected nodes children.
-  mitk::DataStorage::SetOfObjects::ConstPointer children = this->GetDataStorage()->GetDerivations(msp_DataOwnerNode.GetPointer());
-  for (unsigned int i = 0; i < children->Size(); i++)
-  {
-    this->_InitialiseNodeProperties(*(children->GetElement(i)));
-  }
+  // Set the current node pointer into the transformer class
+  m_AffineTransformer->OnNodeChanged(nodes[0]);
 
-  // Initialise the centre of rotation member variable.
-  typedef itk::Point<mitk::ScalarType, 3> PointType;
-  PointType centrePoint = msp_DataOwnerNode->GetData()->GetGeometry()->GetCenter();
-  m_CentreOfRotation[0] = centrePoint[0];
-  m_CentreOfRotation[1] = centrePoint[1];
-  m_CentreOfRotation[2] = centrePoint[2];
+  // Update the controls on the UI based on the datanode's properties
+  SetValuesOnUI(m_AffineTransformer->GetCurrentTransformParameters());
 
-  MITK_DEBUG << "OnSelectionChanged, set centre to " << m_CentreOfRotation[0] << ", " << m_CentreOfRotation[1] << ", " << m_CentreOfRotation[2] << std::endl;
-
-  // Sets the GUI to the current transform parameters
-  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty
-    = dynamic_cast<mitk::AffineTransformParametersDataNodeProperty*>(nodes[0]->GetProperty(DISPLAYED_PARAMETERS_KEY.c_str()));
-  _SetControls(*(affineTransformParametersProperty.GetPointer()));
-
-  _UpdateTransformDisplay();
-  this->_SetControlsEnabled(true);
+  // Update the matrix on the UI
+  UpdateTransformDisplay();
+  this->SetControlsEnabled(true);
 
   // Final check, only enable resample button, if current selection is an image.
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(msp_DataOwnerNode->GetData());
@@ -304,9 +236,9 @@ void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part
   }
 }
 
-void AffineTransformView::_SetControls(mitk::AffineTransformParametersDataNodeProperty &parametersProperty)
+void AffineTransformView::SetValuesOnUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
 {
-  mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty.GetAffineTransformParameters();
+  mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
 
   m_Controls->rotationSpinBoxX->setValue(params[0]);
   m_Controls->rotationSpinBoxY->setValue(params[1]);
@@ -334,9 +266,9 @@ void AffineTransformView::_SetControls(mitk::AffineTransformParametersDataNodePr
   }
 }
 
-void AffineTransformView::_GetControls(mitk::AffineTransformParametersDataNodeProperty &parametersProperty)
+void AffineTransformView::GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
 {
-  mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty.GetAffineTransformParameters();
+  mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
 
   params[0] = m_Controls->rotationSpinBoxX->value();
   params[1] = m_Controls->rotationSpinBoxY->value();
@@ -363,199 +295,79 @@ void AffineTransformView::_GetControls(mitk::AffineTransformParametersDataNodePr
     params[12] = 0;
   }
 
-  parametersProperty.SetAffineTransformParameters(params);
+  parametersProperty->SetAffineTransformParameters(params);
 }
 
-void AffineTransformView::_ResetControls()
+void AffineTransformView::ResetControls()
 {
+  // Reset transformation parameters to identity
   mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
   affineTransformParametersProperty->Identity();
-  _SetControls(*(affineTransformParametersProperty.GetPointer()));
+
+  // Update the UI
+  SetValuesOnUI(affineTransformParametersProperty);
+
+  // Update the transformer
+  m_AffineTransformer->OnParametersChanged(affineTransformParametersProperty);
 }
 
-vtkSmartPointer<vtkMatrix4x4> AffineTransformView::ComputeTransformFromParameters() const {
 
-	vtkSmartPointer<vtkMatrix4x4> sp_inc, sp_tmp, sp_swap;
-	double incVals[4][4], partInc[4][4], result[4][4];
-	int cInd;
-
-	vtkMatrix4x4::Identity(&incVals[0][0]);
-
-	if (m_Controls->centreRotationRadioButton->isChecked()) {
-		MITK_DEBUG << "Transform applied wrt. ("
-				<< m_CentreOfRotation[0] << ", "
-				<< m_CentreOfRotation[1] << ", "
-				<< m_CentreOfRotation[2] << ")\n";
-
-		for (cInd = 0; cInd < 3; cInd++)
-			incVals[cInd][3] = -m_CentreOfRotation[cInd];
-	}
-
-	vtkMatrix4x4::Identity(&partInc[0][0]);
-	partInc[0][0] = m_Controls->scalingSpinBoxX->value()/100.0;
-	partInc[1][1] = m_Controls->scalingSpinBoxY->value()/100.0;
-	partInc[2][2] = m_Controls->scalingSpinBoxZ->value()/100.0;
-	vtkMatrix4x4::Multiply4x4(&partInc[0][0], &incVals[0][0], &result[0][0]);
-	std::copy(&result[0][0], &result[0][0] + 16, &incVals[0][0]);
-
-	vtkMatrix4x4::Identity(&partInc[0][0]);
-	partInc[0][1] = m_Controls->shearSpinBoxXY->value();
-	partInc[0][2] = m_Controls->shearSpinBoxXZ->value();
-	partInc[1][2] = m_Controls->shearSpinBoxYZ->value();
-	vtkMatrix4x4::Multiply4x4(&partInc[0][0], &incVals[0][0], &result[0][0]);
-	std::copy(&result[0][0], &result[0][0] + 16, &incVals[0][0]);
-
-	{
-		double calpha, salpha, alpha;
-
-		alpha = NIFTK_PI*m_Controls->rotationSpinBoxX->value()/180;
-		calpha = cos(alpha);
-		salpha = sin(alpha);
-
-		vtkMatrix4x4::Identity(&partInc[0][0]);
-		partInc[1][1] = calpha;
-		partInc[1][2] = salpha;
-		partInc[2][1] = -salpha;
-		partInc[2][2] = calpha;
-		vtkMatrix4x4::Multiply4x4(&partInc[0][0], &incVals[0][0], &result[0][0]);
-
-		alpha = NIFTK_PI*m_Controls->rotationSpinBoxY->value()/180.0;
-		calpha = cos(alpha);
-		salpha = sin(alpha);
-
-		vtkMatrix4x4::Identity(&partInc[0][0]);
-		partInc[0][0] = calpha;
-		partInc[0][2] = salpha;
-		partInc[2][0] = -salpha;
-		partInc[2][2] = calpha;
-		vtkMatrix4x4::Multiply4x4(&partInc[0][0], &result[0][0], &incVals[0][0]);
-
-		alpha = NIFTK_PI*m_Controls->rotationSpinBoxZ->value()/180.0;
-		calpha = cos(alpha);
-		salpha = sin(alpha);
-
-		vtkMatrix4x4::Identity(&partInc[0][0]);
-		partInc[0][0] = calpha;
-		partInc[0][1] = salpha;
-		partInc[1][0] = -salpha;
-		partInc[1][1] = calpha;
-		vtkMatrix4x4::Multiply4x4(&partInc[0][0], &incVals[0][0], &result[0][0]);
-
-		std::copy(&result[0][0], &result[0][0] + 16, &incVals[0][0]);
-	}
-
-	incVals[0][3] += m_Controls->translationSpinBoxX->value();
-	incVals[1][3] += m_Controls->translationSpinBoxY->value();
-	incVals[2][3] += m_Controls->translationSpinBoxZ->value();
-
-	if (m_Controls->centreRotationRadioButton->isChecked()) {
-		for (cInd = 0; cInd < 3; cInd++) incVals[cInd][3] += m_CentreOfRotation[cInd];
-	}
-
-	sp_inc = vtkSmartPointer<vtkMatrix4x4>::New();
-	std::copy(&incVals[0][0], &incVals[0][0] + 4*4, &sp_inc->Element[0][0]);
-
-	return sp_inc;
-}
-
-void AffineTransformView::_UpdateTransformDisplay() {
-
+void AffineTransformView::UpdateTransformDisplay() 
+{
   // This method gets a 4x4 matrix corresponding to the current transform, given by the current values
   // in all the rotation, translation, scaling and shearing widgets, and outputs the matrix in the GUI.
   // It does not actually change, or recompute, or transform anything. So we are just saying
   // "update the displayed view of the transformation".
-	vtkSmartPointer<vtkMatrix4x4> sp_Transform = this->ComputeTransformFromParameters();
-	for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
-		m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(sp_Transform->Element[rInd][cInd])));
+  vtkSmartPointer<vtkMatrix4x4> sp_Transform = m_AffineTransformer->GetCurrentTransformMatrix();
 
+  for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
+    m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(sp_Transform->Element[rInd][cInd])));
 }
 
-void AffineTransformView::OnParameterChanged(const double) {
-  _UpdateTransformDisplay();
-  _UpdateTransformationGeometry();
-}
-
-void AffineTransformView::OnParameterChanged(const bool) {
-  _UpdateTransformDisplay();
-  _UpdateTransformationGeometry();
-}
-
-void AffineTransformView::_UpdateNodeProperties(
-    const vtkSmartPointer<vtkMatrix4x4> displayedTransformFromParameters,
-    const vtkSmartPointer<vtkMatrix4x4> incrementalTransformToBeComposed,
-    mitk::DataNode& node)
+void AffineTransformView::OnParameterChanged(const double) 
 {
-  _UpdateTransformProperty(DISPLAYED_TRANSFORM_KEY, displayedTransformFromParameters, node);
-  _UpdateTransformProperty(INCREMENTAL_TRANSFORM_KEY, incrementalTransformToBeComposed, node);
+  // Collect the parameters from the UI then send them to the AffineTransformer
+  mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
+  GetValuesFromUI(parametersProperty);
 
-  // Get the parameters from the controls, and store on node.
-  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
-  this->_GetControls(*affineTransformParametersProperty);
-  node.ReplaceProperty(DISPLAYED_PARAMETERS_KEY.c_str(), affineTransformParametersProperty);
+  // Pass the parameters to the transformer
+  m_AffineTransformer->OnParametersChanged(parametersProperty);
 
-  // Compose the transform with the current geometry, and force modified flags to make sure we get a re-rendering.
-  node.GetData()->GetGeometry()->Compose( incrementalTransformToBeComposed );
-  node.GetData()->Modified();
-  node.Modified();
+  // Update the matrices
+  m_AffineTransformer->UpdateTransformationGeometry();
+
+  // Update the views
+  QmitkAbstractView::RequestRenderWindowUpdate();
+
+  // Update the matrix on the UI
+  UpdateTransformDisplay();
 }
 
-void AffineTransformView::_UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node)
+void AffineTransformView::OnParameterChanged(const bool) 
 {
-  mitk::AffineTransformDataNodeProperty::Pointer property = mitk::AffineTransformDataNodeProperty::New();
-  property->SetTransform((*(transform.GetPointer())));
-  node.ReplaceProperty(name.c_str(), property);
+  m_AffineTransformer->SetRotateAroundCenter(m_Controls->centreRotationRadioButton->isChecked());
+  m_AffineTransformer->UpdateTransformationGeometry();
+
+  // Update the views
+  QmitkAbstractView::RequestRenderWindowUpdate();
+
+  // Update the matrix on the UI
+  UpdateTransformDisplay();
 }
 
-void AffineTransformView::OnResetTransformPushed() {
-  _ResetControls();
-  _UpdateTransformDisplay();
-  _UpdateTransformationGeometry();
-}
-
-void AffineTransformView::_UpdateTransformationGeometry()
+void AffineTransformView::OnResetTransformPushed() 
 {
-  /**************************************************************
-   * This is the main method composing and calculating matrices.
-   **************************************************************/
-  if (msp_DataOwnerNode.IsNotNull())
-  {
-    vtkSmartPointer<vtkMatrix4x4> sp_TransformDisplayed = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(DISPLAYED_TRANSFORM_KEY.c_str(), *(msp_DataOwnerNode.GetPointer()));
-    vtkSmartPointer<vtkMatrix4x4> sp_TransformPreLoaded = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(PRELOADED_TRANSFORM_KEY.c_str(), *(msp_DataOwnerNode.GetPointer()));
+  // Reset the transformation parameters
+  ResetControls();
 
-    vtkSmartPointer<vtkMatrix4x4> sp_InvertedDisplayedTransform = vtkMatrix4x4::New();
-    vtkMatrix4x4::Invert(sp_TransformDisplayed, sp_InvertedDisplayedTransform);
+  // Update the transformer
+  m_AffineTransformer->UpdateTransformationGeometry();
 
-    vtkSmartPointer<vtkMatrix4x4> sp_InvertedTransformPreLoaded = vtkMatrix4x4::New();
-    vtkMatrix4x4::Invert(sp_TransformPreLoaded, sp_InvertedTransformPreLoaded);
+  // Update the views
+  QmitkAbstractView::RequestRenderWindowUpdate();
 
-    vtkSmartPointer<vtkMatrix4x4> sp_NewTransformAccordingToParameters = this->ComputeTransformFromParameters();
-
-    vtkSmartPointer<vtkMatrix4x4> sp_InvertedTransforms = vtkMatrix4x4::New();
-    vtkSmartPointer<vtkMatrix4x4> sp_TransformsBeforeAffine = vtkMatrix4x4::New();
-    vtkSmartPointer<vtkMatrix4x4> sp_FinalAffineTransform = vtkMatrix4x4::New();
-
-    vtkMatrix4x4::Multiply4x4(sp_InvertedTransformPreLoaded, sp_InvertedDisplayedTransform, sp_InvertedTransforms);
-    vtkMatrix4x4::Multiply4x4(sp_TransformPreLoaded, sp_InvertedTransforms, sp_TransformsBeforeAffine);
-    vtkMatrix4x4::Multiply4x4(sp_NewTransformAccordingToParameters, sp_TransformsBeforeAffine, sp_FinalAffineTransform);
-
-    this->_UpdateNodeProperties(
-        sp_NewTransformAccordingToParameters,
-        sp_FinalAffineTransform,
-        *(msp_DataOwnerNode.GetPointer())
-        );
-
-    mitk::DataStorage::SetOfObjects::ConstPointer children = this->GetDataStorage()->GetDerivations(msp_DataOwnerNode.GetPointer());
-    for (unsigned int i = 0; i < children->Size(); i++)
-    {
-      this->_UpdateNodeProperties(
-          sp_NewTransformAccordingToParameters,
-          sp_FinalAffineTransform,
-          *(children->GetElement(i))
-          );
-    }
-
-    QmitkAbstractView::RequestRenderWindowUpdate();
-  }
+  // Update the matrix on the UI
+  UpdateTransformDisplay();
 }
 
 void AffineTransformView::_ApplyLoadedTransformToNode(

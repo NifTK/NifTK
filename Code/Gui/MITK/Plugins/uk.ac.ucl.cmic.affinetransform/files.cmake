@@ -20,6 +20,7 @@ set(INTERNAL_CPP_FILES
   AffineTransformViewActivator.cxx
   AffineTransformView.cxx
   AffineTransformInteractor3D.cxx
+  mitkAffineTransformer.cxx
 )
 
 set(UI_FILES
@@ -30,6 +31,7 @@ set(MOC_H_FILES
   src/internal/AffineTransformViewActivator.h
   src/internal/AffineTransformInteractor3D.h
   src/internal/AffineTransformView.h
+  src/internal/mitkAffineTransformer.h
 )
 
 # list of resource files which can be used by the plug-in
