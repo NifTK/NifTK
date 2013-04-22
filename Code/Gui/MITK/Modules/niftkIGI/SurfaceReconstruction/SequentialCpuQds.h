@@ -16,31 +16,12 @@
 #define mitkSequentialCpuQds_h
 
 #include "niftkIGIExports.h"
+#include "QDSCommon.h"
 #include <opencv2/core/types_c.h>
 // FIXME: typedefs.hpp should be enough! but there seem to be some issues...
-#include <boost/gil/typedefs.hpp>
+//#include <boost/gil/typedefs.hpp>
 #include <boost/gil/gil_all.hpp>
 #include <vector>
-
-
-// the ancient version of boost that comes with mitk does not have
-// a 64-bit floating point pixel format.
-// so define this, based on my hacked boost version:
-//  https://bitbucket.org/bruelltuete/boost/commits/27198c44596696d1bb1ae686c828efa82b08fd9f
-namespace boost 
-{ 
-namespace gil 
-{
-
-struct double_zero { static float apply() { return 0.0; } };
-struct double_one  { static float apply() { return 1.0; } };
-
-typedef scoped_channel_value<double, double_zero, double_one> bits64f;
-
-GIL_DEFINE_BASE_TYPEDEFS(64f,gray)
-
-}
-}
 
 
 namespace mitk 
