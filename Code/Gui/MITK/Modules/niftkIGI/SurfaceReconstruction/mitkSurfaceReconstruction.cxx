@@ -32,12 +32,13 @@ SurfaceReconstruction::SurfaceReconstruction()
 //-----------------------------------------------------------------------------
 SurfaceReconstruction::~SurfaceReconstruction()
 {
-
+  delete m_SequentialCpuQds;
 }
 
 
 //-----------------------------------------------------------------------------
 void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
+                                mitk::DataNode::Pointer outputNode,
                                 const mitk::Image::Pointer image1,
                                 const mitk::Image::Pointer image2,
                                 Method method)

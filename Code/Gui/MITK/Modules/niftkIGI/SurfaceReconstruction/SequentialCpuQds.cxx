@@ -327,23 +327,6 @@ void SequentialCpuQds::InitSparseFeatures()
 //-----------------------------------------------------------------------------
 void SequentialCpuQds::QuasiDensePropagation()
 {
-#if 0
-	int x,y,i,wx,wy,off;
-
-
-	// for fast processing initialize some pointers to the data 
-	data0 = (unsigned char *)imgL->imageData;
-	data1 = (unsigned char *)imgR->imageData;
-	sum0  = (__int32*)mIntegralImage[0]->imageData;
-	sum1  = (__int32*)mIntegralImage[1]->imageData;
-	ssum0 = (double*)mIntegralImageSq[0]->imageData;
-	ssum1 = (double*)mIntegralImageSq[1]->imageData;
-
-	Step = imgL->widthStep;
-	Steps = mIntegralImage[0]->width;
-
-#endif
-
   // we keep view objects around, for easier writing
   boost::gil::dev2n16_view_t      leftRef  = boost::gil::view(m_LeftRefMap);
   boost::gil::dev2n16_view_t      rightRef = boost::gil::view(m_RightRefMap);
@@ -496,6 +479,12 @@ void SequentialCpuQds::Process(const IplImage* left, const IplImage* right)
   assert(left->nChannels == right->nChannels);
   assert(left->width  == right->width);
   assert(left->height == right->height);
+
+  if ((left->width  != GetWidth()) ||
+      (left->height != GetHeight()))
+  {
+    throw std::runtime_error("Image size does not match");
+  }
 
   // the opencv channel layout is BGR by default
   // but lucky us, the greyscale conversion is not weighted

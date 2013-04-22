@@ -54,6 +54,7 @@ public:
    * \brief Write My Documentation
    */
   void Run(const mitk::DataStorage::Pointer dataStorage,
+           mitk::DataNode::Pointer outputNode,
            const mitk::Image::Pointer image1,
            const mitk::Image::Pointer image2,
            Method method = SEQUENTIAL_CPU);

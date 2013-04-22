@@ -204,10 +204,28 @@ void SurfaceReconView::DoSurfaceReconstruction()
 
         if (leftImage.IsNotNull() && rightImage.IsNotNull())
         {
+          // if our output node exists already then we recycle it, of course.
+          // it may not be tagged as "derived" from the correct source nodes
+          // but that shouldn't be a problem here.
+
+          std::string               outputName = OutputNodeNameLineEdit->text().toStdString();
+          mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputName);
+          if (outputNode.IsNull())
+          {
+            outputNode = mitk::DataNode::New();
+            outputNode->SetName(outputName);
+
+            mitk::DataStorage::SetOfObjects::Pointer   nodeParents = mitk::DataStorage::SetOfObjects::New();
+            nodeParents->push_back(leftNode);
+            nodeParents->push_back(rightNode);
+
+            storage->Add(outputNode, nodeParents);
+          }
+
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
-            m_SurfaceReconstruction->Run(storage, leftImage, rightImage);
+            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage);
           }
           catch (const std::exception& e)
           {
