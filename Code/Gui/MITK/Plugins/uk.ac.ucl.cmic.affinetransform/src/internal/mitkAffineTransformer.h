@@ -86,17 +86,14 @@ public:
   /** \brief Slot for all changes to transformation parameters. */
   void OnParametersChanged(mitk::AffineTransformParametersDataNodeProperty::Pointer paramsProperty);
 
-  /** \brief Slot for radio button state changes. */
-  void OnParameterChanged(const bool);
-
   /** \brief Slot for reset button that resets the parameter controls, and updates node geometry accordingly. */
   void OnResetTransformPushed();
 
   /** \brief Slot for saving transform to disk. */
-  void OnSaveTransformPushed();
+  void OnSaveTransform(std::string filename);
 
   /** \brief Slot for loading transform from disk. */
-  void OnLoadTransformPushed();
+  void OnLoadTransform(std::string filename);
 
   /** \brief Slot for loading transform from disk. */
   void OnApplyTransformPushed();
@@ -119,7 +116,7 @@ public:
   void UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node);
 
   /** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
-  void ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode& node);
+  void ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode::Pointer node);
 
   /** \brief Applies a re-sampling to the current node. */
   void ApplyResampleToCurrentNode();

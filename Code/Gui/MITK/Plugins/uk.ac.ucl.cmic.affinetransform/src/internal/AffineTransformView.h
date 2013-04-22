@@ -82,24 +82,6 @@ class AffineTransformView : public QmitkBaseView
   
   public:  
 
-    ///// \brief Simply stores the view name = "uk.ac.ucl.cmic.affinetransformview"
-    //static const std::string VIEW_ID;
-
-    ///// \brief See class introduction.
-    //static const std::string INITIAL_TRANSFORM_KEY;
-
-    ///// \brief See class introduction.
-    //static const std::string INCREMENTAL_TRANSFORM_KEY;
-
-    ///// \brief See class introduction.
-    //static const std::string PRELOADED_TRANSFORM_KEY;
-
-    ///// \brief See class introduction.
-    //static const std::string DISPLAYED_TRANSFORM_KEY;
-
-    ///// \brief See class introduction.
-    //static const std::string DISPLAYED_PARAMETERS_KEY;
-
     AffineTransformView();
     virtual ~AffineTransformView();
 
@@ -129,6 +111,8 @@ class AffineTransformView : public QmitkBaseView
     /** \brief Slot for resampling the current image. */
     void OnResampleTransformPushed();
 
+    //************************************************************************************************************************
+
     /** \brief Slot for switching between interactive and regular transformation editing */
     void OnInteractiveModeToggled(bool on);
 
@@ -144,10 +128,9 @@ class AffineTransformView : public QmitkBaseView
     /** \brief Slot for swithcing the main axis of translation / rotation */
     void OnAxisChanged(bool on);
 
-  protected:
+    //************************************************************************************************************************
 
-    /** \brief Computes a new linear transform (as 4x4 transform matrix) from the parameters set through the UI. */
-    //virtual vtkSmartPointer<vtkMatrix4x4> ComputeTransformFromParameters(void) const;
+  protected:
 
     /// \see QmitkAbstractView::OnSelectionChanged.
     virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
@@ -166,41 +149,28 @@ class AffineTransformView : public QmitkBaseView
     /** Sets the controls to the Identity, and doesn't update anything else. */
     void ResetControls();
 
-    ///** Called by _UpdateTransformationGeometry to set new transformations in the right properties of the node. */
-    //void _UpdateNodeProperties(
-    //    const vtkSmartPointer<vtkMatrix4x4> displayedTransformFromParameters,
-    //    const vtkSmartPointer<vtkMatrix4x4> incrementalTransformToBeComposed,
-    //    mitk::DataNode& node);
-
-    ///** Called by _UpdateNodeProperties to update a transform property on a given node. */
-    //void _UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node);
-
-    /** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
-    void _ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode& node);
-
-
     /**
-     * \brief Updates the displayed transform with the values from the spin-box controls.
-     *
-     * Uses the conventions of Ext/ITK/RegistrationToolbox/Transforms/itkEulerAffineTransform.txx / Ext/ITK/2D3DToolbox/Transforms/itkAffineTransform2D3D.txx:<br>
-     * <ol>
-     * <li>Change of CoR</li>
-     * <li>Shears</li>
-     * <li>Scaling</li>
-     * <li>Rotations: \f$R = R_x\cdot R_y\cdot R_z\f$</li>
-     * <li>Translation</li>
-     * <li>Undo of CoR</li>
-     * <ol>
-     */
+    * \brief Updates the displayed transform with the values from the spin-box controls.
+    *
+    * Uses the conventions of Ext/ITK/RegistrationToolbox/Transforms/itkEulerAffineTransform.txx / Ext/ITK/2D3DToolbox/Transforms/itkAffineTransform2D3D.txx:<br>
+    * <ol>
+    * <li>Change of CoR</li>
+    * <li>Shears</li>
+    * <li>Scaling</li>
+    * <li>Rotations: \f$R = R_x\cdot R_y\cdot R_z\f$</li>
+    * <li>Translation</li>
+    * <li>Undo of CoR</li>
+    * <ol>
+    */
     void UpdateTransformDisplay();
 
-    ///** \brief Updates the transform on the current node, and it's children. */
-    //void _UpdateTransformationGeometry();
+    ///** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
+    //void _ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode& node);
 
-    /** \brief Applies a re-sampling to the current node. */
-    void _ApplyResampleToCurrentNode();
+    ///** \brief Applies a re-sampling to the current node. */
+    //void _ApplyResampleToCurrentNode();
 
-    //
+    //************************************************************************************************************************
     virtual void CreateNewBoundingObject(mitk::DataNode::Pointer);
 
     virtual void AddBoundingObjectToNode(mitk::DataNode::Pointer, bool fit);
@@ -208,8 +178,17 @@ class AffineTransformView : public QmitkBaseView
     virtual void RemoveBoundingObjectFromNode();
 
     bool DisplayLegends(bool legendsON);
+    //************************************************************************************************************************
+
 
 private:
+    Ui::AffineTransformWidget             * m_Controls;
+    double                                  m_CentreOfRotation[3];
+    mitk::DataNode::Pointer                 msp_DataOwnerNode;
+    mitk::AffineTransformer::Pointer        m_AffineTransformer;
+
+
+    //************************************************************************************************************************
     bool                                    m_inInteractiveMode;
     bool                                    m_rotationMode;
     bool                                    m_legendAdded;
@@ -218,18 +197,12 @@ private:
     mitk::WeakPointer<mitk::BaseData>       m_currentDataObject;
     mitk::BoundingObject::Pointer           m_boundingObject;
     mitk::DataNode::Pointer                 m_boundingObjectNode;
-
-    Ui::AffineTransformWidget             * m_Controls;
-    double                                  m_CentreOfRotation[3];
-    mitk::DataNode::Pointer                 msp_DataOwnerNode;
-    
     AffineTransformInteractor3D::Pointer    m_AffineInteractor3D;
     //mitk::AffineInteractor3D::Pointer       m_AffineInteractor;
     vtkLegendScaleActor                   * m_legendActor;
     vtkAxesActor                          * m_axesActor;
     CustomVTKAxesActor                    * m_customAxesActor;
-
-    mitk::AffineTransformer::Pointer        m_AffineTransformer;
+    //************************************************************************************************************************
 };
 
 #endif // AffineTransformView_h
