@@ -27,6 +27,7 @@
 #include <list>
 #include <set>
 #include "mitkIGIDataType.h"
+#include "itkNifTKMacro.h"
 
 namespace mitk {
 
@@ -61,46 +62,46 @@ public:
   /**
    * \brief Sets the identifier, which is just a tag to identify the tool by (i.e. item number in a list).
    */
-  itkSetMacro(Identifier, int);
-  itkGetConstMacro(Identifier, int);
+  itkThreadSafeSetMacro(Identifier, int);
+  itkThreadSafeGetConstMacro(Identifier, int);
 
   /**
    * \brief Sets a name, useful for display purposes.
    */
-  itkSetMacro(Name, std::string);
-  itkGetConstMacro(Name, std::string);
+  itkThreadSafeSetMacro(Name, std::string);
+  itkThreadSafeGetConstMacro(Name, std::string);
 
   /**
    * \brief Sets a type, useful for display purposes.
    */
-  itkSetMacro(Type, std::string);
-  itkGetConstMacro(Type, std::string);
+  itkThreadSafeSetMacro(Type, std::string);
+  itkThreadSafeGetConstMacro(Type, std::string);
 
   /**
    * \brief Sets a status message, useful for display purposes.
    */
-  itkSetMacro(Status, std::string);
-  itkGetConstMacro(Status, std::string);
+  itkThreadSafeSetMacro(Status, std::string);
+  itkThreadSafeGetConstMacro(Status, std::string);
 
   /**
    * \brief Sets a description, useful for display purposes.
    */
-  itkSetMacro(Description, std::string);
-  itkGetConstMacro(Description, std::string);
+  itkThreadSafeSetMacro(Description, std::string);
+  itkThreadSafeGetConstMacro(Description, std::string);
 
   /**
   * \brief A single source can have multiple tools attached
   */
-  itkSetMacro(NumberOfTools, int);
-  itkGetConstMacro(NumberOfTools, int);
+  itkThreadSafeSetMacro(NumberOfTools, int);
+  itkThreadSafeGetConstMacro(NumberOfTools, int);
   
   /**
    * \brief Sets the time tolerance for checking data, implemented in nano-seconds, but
    * in practice platforms such as Windows do not properly store nano-seconds,
    * so the best you can probably rely on is milliseconds.
    */
-  itkSetMacro(TimeStampTolerance, unsigned long int);
-  itkGetConstMacro(TimeStampTolerance, unsigned long int);
+  itkThreadSafeSetMacro(TimeStampTolerance, unsigned long int);
+  itkThreadSafeGetConstMacro(TimeStampTolerance, unsigned long int);
 
   /**
    * \brief Sets the data storage, as each data source can put items into the storage.
@@ -112,28 +113,27 @@ public:
    * \brief Sets the file name prefix, for where to save data, as each
    * source can decide where and how to dump data to disk.
    */
-  itkSetMacro(SavePrefix, std::string);
-  itkGetConstMacro(SavePrefix, std::string);
+  itkThreadSafeSetMacro(SavePrefix, std::string);
+  itkThreadSafeGetConstMacro(SavePrefix, std::string);
 
   /**
    * \brief Returns true if we are saving messages and false otherwise.
    */
-  // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!
-  itkGetMacro(SavingMessages, bool);
+  itkThreadSafeGetConstMacro(SavingMessages, bool);
   virtual void SetSavingMessages(bool isSaving);
 
   /**
    * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously immediately.
    */
-  itkSetMacro(SaveInBackground, bool);
-  itkGetConstMacro(SaveInBackground, bool);
+  itkThreadSafeSetMacro(SaveInBackground, bool);
+  itkThreadSafeGetConstMacro(SaveInBackground, bool);
 
   /**
    * \brief If set to true, we save when the data is received, and if false, only when we
    * update the GUI, which may be at a different refresh rate to the incoming data.
    */
-  itkSetMacro(SaveOnReceipt, bool);
-  itkGetConstMacro(SaveOnReceipt, bool);
+  itkThreadSafeSetMacro(SaveOnReceipt, bool);
+  itkThreadSafeGetConstMacro(SaveOnReceipt, bool);
 
   /**
    * \brief Each time ProcessData is called, we store a field to denote if all was well, and this method will retrieve the most recent.

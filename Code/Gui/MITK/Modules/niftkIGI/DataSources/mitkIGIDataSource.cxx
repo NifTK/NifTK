@@ -72,9 +72,9 @@ IGIDataSource::~IGIDataSource()
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetSavingMessages(bool isSaving)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
   this->m_SavingMessages = isSaving;
   this->Modified();
-
   SaveStateChanged.Send();
 }
 
