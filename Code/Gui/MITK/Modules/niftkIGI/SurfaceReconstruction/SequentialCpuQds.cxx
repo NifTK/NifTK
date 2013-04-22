@@ -309,9 +309,9 @@ void SequentialCpuQds::QuasiDensePropagation()
         }
 
         // For all candidate matches.
-        for (int wy= -m_PropagationParams.Dg; wy <= m_PropagationParams.Dg; ++wy)
+        for (int wy = -m_PropagationParams.Dg; wy <= m_PropagationParams.Dg; ++wy)
         {
-          for (int wx= -m_PropagationParams.Dg; wx <= m_PropagationParams.Dg; ++wx)
+          for (int wx = -m_PropagationParams.Dg; wx <= m_PropagationParams.Dg; ++wx)
           {
             RefPoint p1(m.p1.x + x + wx, m.p1.y + y + wy);
 
@@ -416,7 +416,7 @@ void SequentialCpuQds::Process(const IplImage* left, const IplImage* right)
   BuildTextureDescriptor(boost::gil::const_view(m_LeftImg),  boost::gil::view(m_LeftTexture));
   BuildTextureDescriptor(boost::gil::const_view(m_RightImg), boost::gil::view(m_RightTexture));
 
-  // generate the intergal images for fast variable window correlation calculations
+  // generate the integral images for fast variable window correlation calculations
   cvIntegral(&m_LeftIpl,  &m_LeftIntegralIpl,  &m_LeftSquaredIntegralIpl);
   cvIntegral(&m_RightIpl, &m_RightIntegralIpl, &m_RightSquaredIntegralIpl);
 

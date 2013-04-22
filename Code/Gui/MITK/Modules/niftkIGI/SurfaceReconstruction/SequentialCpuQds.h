@@ -23,6 +23,10 @@
 #include <boost/gil/gil_all.hpp>
 #include <vector>
 
+#ifndef NIFTKIGI_EXPORT
+#define NIFTKIGI_EXPORT
+#endif
+
 
 namespace mitk 
 {
