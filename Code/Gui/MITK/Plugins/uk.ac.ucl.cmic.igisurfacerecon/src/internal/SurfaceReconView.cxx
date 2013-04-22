@@ -59,6 +59,8 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
   this->RetrievePreferenceValues();
+
+  UpdateNodeNameComboBox();
 }
 
 
