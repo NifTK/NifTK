@@ -82,16 +82,42 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
     IplImage  leftIpl;
     cvInitImageHeader(&leftIpl, cvSize(width, height), IPL_DEPTH_8U, numComponents);
     cvSetData(&leftIpl, const_cast<void*>(leftPtr), bytesPerRow);
+    IplImage  rightIpl;
+    cvInitImageHeader(&rightIpl, cvSize(width, height), IPL_DEPTH_8U, numComponents);
+    cvSetData(&rightIpl, const_cast<void*>(rightPtr), bytesPerRow);
 
 
     switch (method)
     {
       case SEQUENTIAL_CPU:
+      {
+        if (m_SequentialCpuQds != 0)
+        {
+          // internal buffers of SeqQDS are fixed during construction
+          // but our input images can vary in size
+          if ((m_SequentialCpuQds->GetWidth()  != width) ||
+              (m_SequentialCpuQds->GetHeight() != height))
+          {
+            // will be recreated below, with the correct dimensions
+            delete m_SequentialCpuQds;
+            m_SequentialCpuQds = 0;
+          }
+        }
+
+        // may not have been created before
+        // or may have been deleted above in the size check
+        if (m_SequentialCpuQds == 0)
+          m_SequentialCpuQds = new SequentialCpuQds(width, height);
+
+        m_SequentialCpuQds->Process(&leftIpl, &rightIpl);
         break;
+      }
 
       default:
         throw std::logic_error("Method not implemented");
     }
+
+    // FIXME: convert disparity image to point cloud
   }
   catch (const mitk::Exception& e)
   {
