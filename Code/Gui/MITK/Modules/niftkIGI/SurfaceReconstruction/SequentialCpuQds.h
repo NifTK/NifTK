@@ -92,6 +92,8 @@ public:
   int GetWidth() const;
   int GetHeight() const;
 
+  IplImage* CreateDisparityImage() const;
+
 
 private:
   SequentialCpuQds(const SequentialCpuQds& copyme);

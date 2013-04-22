@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Conversion/mitkImageConversion.cxx
   DataSources/mitkIGITestDataUtils.cxx
   DataSources/mitkIGIDataType.cxx
   DataSources/mitkIGIDataSource.cxx

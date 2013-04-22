@@ -151,6 +151,16 @@ int SequentialCpuQds::GetHeight() const
 
 
 //-----------------------------------------------------------------------------
+IplImage* SequentialCpuQds::CreateDisparityImage() const
+{
+  IplImage* dispimg = cvCreateImage(cvSize(GetWidth(), GetHeight()), IPL_DEPTH_8U, 4);
+
+
+  return dispimg;
+}
+
+
+//-----------------------------------------------------------------------------
 void SequentialCpuQds::InitSparseFeatures()
 {
   CvSize  templateSize = cvSize((m_LeftIpl.width / 72) | 0x1, (m_LeftIpl.width / 72) | 0x1);
