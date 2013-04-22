@@ -29,7 +29,6 @@
 #include <mitkBaseRenderer.h>
 #include <mitkSegTool2D.h>
 #include <mitkVtkResliceInterpolationProperty.h>
-#include <mitkPointSet.h>
 #include <mitkToolManager.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkStateMachine.h>
@@ -94,7 +93,7 @@ void QmitkMIDASBaseSegmentationFunctionality::Activated()
   QmitkBaseView::Activated();
 
   berry::IWorkbenchPart::Pointer nullPart;
-  this->OnSelectionChanged(nullPart, this->GetCurrentSelection());
+  this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
 }
 
 
