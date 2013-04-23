@@ -37,15 +37,15 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_SavePrefix("")
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
-, m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
+, m_TimeStampTolerance(1000000000)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_ActualTimeStamp = igtl::TimeStamp::New();
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
-  m_SubTools.clear();
+  m_SubSources.clear();
 }
 
 
@@ -529,27 +529,27 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
+void IGIDataSource::SetSubSources(const std::list<std::string>& inStringList)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-  m_SubTools = inStringList;
+  m_SubSources = inStringList;
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-std::list<std::string> IGIDataSource::GetSubToolList ()
+std::list<std::string> IGIDataSource::GetSubSources () const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-  return m_SubTools;
+  return m_SubSources;
 }
 
 
 //-----------------------------------------------------------------------------
-int IGIDataSource::GetNumberOfTools() const
+int IGIDataSource::GetNumberOfSubSources() const
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-  return m_SubTools.size();
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);  
+  return m_SubSources.size();
 }
 
 

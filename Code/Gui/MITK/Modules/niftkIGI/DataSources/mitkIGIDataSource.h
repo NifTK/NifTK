@@ -49,7 +49,7 @@ public:
   mitkClassMacro(IGIDataSource, itk::Object);
 
   /**
-   * \brief Each tool should signal when the status has updated by
+   * \brief Each source should signal when the status has updated by
    * emitting its internal identifier, so that for example the GUI can redraw.
    */
   Message1<int> DataSourceStatusUpdated;
@@ -60,7 +60,7 @@ public:
   Message<> SaveStateChanged;
 
   /**
-   * \brief Sets the identifier, which is just a tag to identify the tool by (i.e. item number in a list).
+   * \brief Sets the identifier, which is just a tag to identify the source by (i.e. item number in a list).
    */
   itkThreadSafeSetMacro(Identifier, int);
   itkThreadSafeGetConstMacro(Identifier, int);
@@ -89,11 +89,6 @@ public:
   itkThreadSafeSetMacro(Description, std::string);
   itkThreadSafeGetConstMacro(Description, std::string);
 
-  /**
-   * \brief A single source can have multiple tools attached, so we retrieve the number, based on the number of sub-tools registered.
-   */
-  int GetNumberOfTools() const;
-  
   /**
    * \brief Sets the time tolerance for checking data, implemented in nano-seconds, but
    * in practice platforms such as Windows do not properly store nano-seconds,
@@ -162,7 +157,7 @@ public:
   itkGetMacro(ActualData, mitk::IGIDataType::Pointer);
 
   /**
-   * \brief Tools can have an optional Initialize function to perform any setup after construction,
+   * \brief Sources can have an optional Initialize function to perform any setup after construction,
    * with this class providing a default, do-nothing implementation.
    */
   virtual void Initialize() {};
@@ -224,9 +219,19 @@ public:
   double GetCurrentTimeLag(const igtlUint64& nowTime );
 
   /**
-   * \brief Get the subtool list
+   * \brief Get the list of sub sources.
    */
-  std::list<std::string>  GetSubToolList ( ) ;
+  std::list<std::string>  GetSubSources ( ) const;
+
+  /**
+   * \brief Set the list of sub source names.
+   */
+  void SetSubSources(const std::list<std::string>& sourceNames);
+
+  /**
+   * \brief Get the number of sub sources.
+   */
+  int GetNumberOfSubSources() const;
 
 protected:
 
@@ -267,11 +272,6 @@ protected:
   virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
   /**
-   * \brief Function to set the list of sub tools
-   */
-  void SetToolStringList ( std::list<std::string> );
-
-  /**
    * \brief Derived classes request a node for a given name. If the node does not exist, it will
    * be created with some default properties.
    * \param name if supplied the node will be assigned that name, and if empty, the node
@@ -308,7 +308,7 @@ private:
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   mitk::IGIDataType*                              m_ActualData;
   unsigned long int                               m_TimeStampTolerance;
-  std::list<std::string>                          m_SubTools;
+  std::list<std::string>                          m_SubSources;
 }; // end class
 
 } // end namespace

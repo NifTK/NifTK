@@ -133,7 +133,7 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
     }
     if ( stringList.size() > 0 )
     {
-      this->SetToolStringList(stringList);
+      this->SetSubSources(stringList);
     }
     this->ProcessClientInfo(clientInfo);
   }

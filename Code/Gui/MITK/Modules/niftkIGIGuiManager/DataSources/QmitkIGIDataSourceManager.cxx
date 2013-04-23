@@ -539,6 +539,7 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
 {
+  /*
   int rowNumber = this->GetSourceNumberFromIdentifier(toolIdentifier);
 
   if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
@@ -548,12 +549,12 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
     std::string device = m_Sources[rowNumber]->GetName();
     std::string description = m_Sources[rowNumber]->GetDescription();
 
-    int SubTools = m_Sources[rowNumber]->GetNumberOfTools();
+    std::list<std::string> subSources = m_Sources[rowNumber]->GetSubSources();
+    int numberOfSubSources = subSources.size();
 
-    std::list<std::string> ToolList = m_Sources[rowNumber]->GetSubToolList();
-    std::string Tool;
+    std::string subSource;
     int index=0;
-    if ( SubTools > 0 )
+    if ( numberOfSubSources > 0 )
     {
       foreach ( Tool, ToolList )
       {
@@ -643,24 +644,23 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
 
     m_TableWidget->show();
   }
+  */
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
+
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
   emit UpdateGuiStart(idNow);
-
+/*
   if (m_Sources.size() > 0)
   {
     foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
     {
-      // Work out row number of source.
-      int rowNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
-
       // First tell each source to update data.
       // For example, sources could copy to data storage.
       bool isValid = source->ProcessData(idNow);
@@ -670,36 +670,51 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       float rate = source->GetFrameRate();
       double lag = source->GetCurrentTimeLag(idNow);
 
-      // Update the frame rate number.
-      QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
-      frameRateItem->setTextAlignment(Qt::AlignCenter);
-      frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 4, frameRateItem);
-
-      // Update the lag number.
-      QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-      lagItem->setTextAlignment(Qt::AlignCenter);
-      lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 5, lagItem);
-
-      // Update the status text.
-      m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
-
-      // Update the status icon.
-      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
-      if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
+      // Sources can have multiple sub-tools, so work out how many need updating.
+      int sourceNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
+      int numberOfSubTools = source->GetSubSources().size();
+      int rowsToUpdate = 1;
+      if (numberOfSubTools > 0)
       {
-        // Highlight that current row is in error.
-        QPixmap pix(22, 22);
-        pix.fill(m_ErrorColour);
-        tItem->setIcon(pix);
+        rowsToUpdate = numberOfSubTools;
       }
-      else
+
+      // Update each row.
+      for (int i = 0; i < rowsToUpdate; i++)
       {
-        // Highlight that current row is OK.
-        QPixmap pix(22, 22);
-        pix.fill(m_OKColour);
-        tItem->setIcon(pix);
+        int rowNumber = sourceNumber + i;
+
+        // Update the frame rate number.
+        QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
+        frameRateItem->setTextAlignment(Qt::AlignCenter);
+        frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        m_TableWidget->setItem(rowNumber, 4, frameRateItem);
+
+        // Update the lag number.
+        QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+        lagItem->setTextAlignment(Qt::AlignCenter);
+        lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        m_TableWidget->setItem(rowNumber, 5, lagItem);
+
+        // Update the status text.
+        m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
+
+        // Update the status icon.
+        QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+        if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
+        {
+          // Highlight that current row is in error.
+          QPixmap pix(22, 22);
+          pix.fill(m_ErrorColour);
+          tItem->setIcon(pix);
+        }
+        else
+        {
+          // Highlight that current row is OK.
+          QPixmap pix(22, 22);
+          pix.fill(m_OKColour);
+          tItem->setIcon(pix);
+        }
       }
     }
 
@@ -717,7 +732,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     // Try to encourage rest of event loop to process before the timer swamps it.
     QCoreApplication::processEvents();
   }
-
+  */
   emit UpdateGuiEnd(idNow);
 }
 
