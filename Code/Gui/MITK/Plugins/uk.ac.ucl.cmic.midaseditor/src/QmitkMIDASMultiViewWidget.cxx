@@ -91,14 +91,12 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_SelectedViewIndex(0)
 , m_DefaultNumberOfRows(defaultNumberOfRows)
 , m_DefaultNumberOfColumns(defaultNumberOfColumns)
-, m_InteractionEnabled(false)
 , m_Show2DCursors(false)
 , m_Show3DViewInOrthoview(false)
 , m_RememberViewSettingsPerOrientation(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
-, m_InteractorsEnabled(false)
 {
   assert(visibilityManager);
 
@@ -373,6 +371,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->SetBackgroundColor(m_BackgroundColour);
   widget->SetDisplay3DViewInOrthoView(m_Show3DViewInOrthoview);
   widget->SetRememberViewSettingsPerOrientation(m_RememberViewSettingsPerOrientation);
+  widget->SetDisplayInteractionEnabled(true);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));

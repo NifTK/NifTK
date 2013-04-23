@@ -409,7 +409,6 @@ private:
   int                                            m_NumberOfColumnsInNonThumbnailMode;
   int                                            m_NumberOfRowsBeforeSegmentationMode;
   int                                            m_NumberOfColumnsBeforeSegmentationMode;
-  bool                                           m_InteractionEnabled;
   bool                                           m_Show2DCursors;
   bool                                           m_Show3DViewInOrthoview;
   QColor                                         m_BackgroundColour;
@@ -417,7 +416,6 @@ private:
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
-  bool                                           m_InteractorsEnabled;
   double                                         m_PreviousMagnificationFactor;
 };
 
