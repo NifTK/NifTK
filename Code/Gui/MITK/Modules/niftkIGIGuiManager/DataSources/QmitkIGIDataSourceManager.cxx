@@ -325,116 +325,6 @@ int QmitkIGIDataSourceManager::GetIdentifierFromSourceNumber(int sourceNumber)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
-{
-  int rowNumber = this->GetSourceNumberFromIdentifier(toolIdentifier);
-
-  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
-  {
-    std::string status = m_Sources[rowNumber]->GetStatus();
-    std::string type = m_Sources[rowNumber]->GetType();
-    std::string device = m_Sources[rowNumber]->GetName();
-    std::string description = m_Sources[rowNumber]->GetDescription();
-
-    int SubTools = m_Sources[rowNumber]->GetNumberOfTools();
-
-    std::list<std::string> ToolList = m_Sources[rowNumber]->GetSubToolList();
-    std::string Tool;
-    int index=0;
-    if ( SubTools > 0 ) 
-    {
-      foreach ( Tool, ToolList ) 
-      {
-        //this is horrible
-        int thisType = -1;
-        if ( type == "Tracker" || type == "Imager" ) 
-        {
-
-          if ( type == "Tracker" ) 
-          {
-            thisType = 0 ; 
-          }
-          if ( type == "Imager" ) 
-          {
-            thisType = 1;
-          }
-          
-          mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
-          QmitkIGINiftyLinkDataSource::Pointer NLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
-          bool ToolAlreadyAdded = false; 
-          for (int i = 0 ; i <  (int)m_Sources.size() ; i ++ )
-          {
-            //FIXME Tools with the same name being tracked by a different tracker 
-            //(on a separate port) will confuse this
-            if ( m_Sources[i]->GetDescription() == Tool  )
-            {
-              ToolAlreadyAdded = true;
-            }
-          }
-          
-          if ( ! ToolAlreadyAdded ) 
-          {
-            if ( index == 0 ) 
-            {
-              description=Tool;
-              NLSource->SetDescription(Tool);
-            }
-            else
-            {
-              int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
-
-              int tempRowNumber = this->GetSourceNumberFromIdentifier(tempToolIdentifier);
-              if ( type == "Tracker" ) 
-              {
-                mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
-                QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
-                QmitkIGITrackerTool* TrackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
-                m_Sources[tempRowNumber]->SetDescription(Tool);
-                TrackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
-              }
-              else
-              {
-                m_Sources[tempRowNumber]->SetType(type);
-                m_Sources[tempRowNumber]->SetName(device);
-                m_Sources[tempRowNumber]->SetDescription(Tool);
-              }
-            }
-          }
-        }
-        index++;
-      }
-    }
-    else 
-    {
-      qDebug() << "there are no sub tools";
-    }
-
-    std::vector<std::string> fields;
-    fields.push_back(status);
-    fields.push_back(type);
-    fields.push_back(device);
-    fields.push_back(description);
-
-    if (rowNumber == m_TableWidget->rowCount())
-    {
-      m_TableWidget->insertRow(rowNumber);
-    }
-
-    for (unsigned int i = 0; i < fields.size(); i++)
-    {
-      QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
-      item->setTextAlignment(Qt::AlignCenter);
-      item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-
-      m_TableWidget->setItem(rowNumber, i, item);
-    }
-
-    m_TableWidget->show();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnAddSource()
 {
   int sourceType = m_SourceSelectComboBox->currentIndex();
@@ -641,6 +531,117 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
   else
   {
     this->PrintStatusMessage(QString("ERROR:For class ") + QString::fromStdString(classname) + ", could not create GUI class " + QString::fromStdString(guiClassname));
+  }
+}
+
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
+{
+  int rowNumber = this->GetSourceNumberFromIdentifier(toolIdentifier);
+
+  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
+  {
+    std::string status = m_Sources[rowNumber]->GetStatus();
+    std::string type = m_Sources[rowNumber]->GetType();
+    std::string device = m_Sources[rowNumber]->GetName();
+    std::string description = m_Sources[rowNumber]->GetDescription();
+
+    int SubTools = m_Sources[rowNumber]->GetNumberOfTools();
+
+    std::list<std::string> ToolList = m_Sources[rowNumber]->GetSubToolList();
+    std::string Tool;
+    int index=0;
+    if ( SubTools > 0 )
+    {
+      foreach ( Tool, ToolList )
+      {
+        //this is horrible
+        int thisType = -1;
+        if ( type == "Tracker" || type == "Imager" )
+        {
+
+          if ( type == "Tracker" )
+          {
+            thisType = 0 ;
+          }
+          if ( type == "Imager" )
+          {
+            thisType = 1;
+          }
+
+          mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
+          QmitkIGINiftyLinkDataSource::Pointer NLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
+          bool ToolAlreadyAdded = false;
+          for (int i = 0 ; i <  (int)m_Sources.size() ; i ++ )
+          {
+            //FIXME Tools with the same name being tracked by a different tracker
+            //(on a separate port) will confuse this
+            if ( m_Sources[i]->GetDescription() == Tool  )
+            {
+              ToolAlreadyAdded = true;
+            }
+          }
+
+          if ( ! ToolAlreadyAdded )
+          {
+            if ( index == 0 )
+            {
+              description=Tool;
+              NLSource->SetDescription(Tool);
+            }
+            else
+            {
+              int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
+
+              int tempRowNumber = this->GetSourceNumberFromIdentifier(tempToolIdentifier);
+              if ( type == "Tracker" )
+              {
+                mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
+                QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
+                QmitkIGITrackerTool* TrackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
+                m_Sources[tempRowNumber]->SetDescription(Tool);
+                TrackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
+              }
+              else
+              {
+                m_Sources[tempRowNumber]->SetType(type);
+                m_Sources[tempRowNumber]->SetName(device);
+                m_Sources[tempRowNumber]->SetDescription(Tool);
+              }
+            }
+          }
+        }
+        index++;
+      }
+    }
+    else
+    {
+      qDebug() << "there are no sub tools";
+    }
+
+    std::vector<std::string> fields;
+    fields.push_back(status);
+    fields.push_back(type);
+    fields.push_back(device);
+    fields.push_back(description);
+
+    if (rowNumber == m_TableWidget->rowCount())
+    {
+      m_TableWidget->insertRow(rowNumber);
+    }
+
+    for (unsigned int i = 0; i < fields.size(); i++)
+    {
+      QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
+      item->setTextAlignment(Qt::AlignCenter);
+      item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+      m_TableWidget->setItem(rowNumber, i, item);
+    }
+
+    m_TableWidget->show();
   }
 }
 
