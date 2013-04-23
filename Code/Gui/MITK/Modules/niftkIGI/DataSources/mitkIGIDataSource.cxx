@@ -39,7 +39,6 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_ActualTimeStamp(0)
 , m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
-, m_NumberOfTools(0)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_ActualTimeStamp = igtl::TimeStamp::New();
@@ -85,7 +84,6 @@ igtlUint64 IGIDataSource::GetFirstTimeStamp() const
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   igtlUint64 timeStamp = 0;
-
   if (m_Buffer.size() > 0)
   {
     timeStamp = m_Buffer.front()->GetTimeStampInNanoSeconds();
@@ -101,7 +99,6 @@ igtlUint64 IGIDataSource::GetLastTimeStamp() const
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   igtlUint64 timeStamp = 0;
-
   if (m_Buffer.size() > 0)
   {
     timeStamp = m_Buffer.back()->GetTimeStampInNanoSeconds();
@@ -144,7 +141,6 @@ void IGIDataSource::ClearBuffer()
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   unsigned long int bufferSizeBefore = m_Buffer.size();
-
   m_Buffer.clear();
 
   unsigned long int bufferSizeAfter = m_Buffer.size();
@@ -535,14 +531,25 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
 {
-  this->m_SubTools = inStringList;
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+  m_SubTools = inStringList;
+  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
 std::list<std::string> IGIDataSource::GetSubToolList ()
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
   return m_SubTools;
+}
+
+
+//-----------------------------------------------------------------------------
+int IGIDataSource::GetNumberOfTools() const
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+  return m_SubTools.size();
 }
 
 

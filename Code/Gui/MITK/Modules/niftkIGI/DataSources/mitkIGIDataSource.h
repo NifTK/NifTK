@@ -90,10 +90,9 @@ public:
   itkThreadSafeGetConstMacro(Description, std::string);
 
   /**
-  * \brief A single source can have multiple tools attached
-  */
-  itkThreadSafeSetMacro(NumberOfTools, int);
-  itkThreadSafeGetConstMacro(NumberOfTools, int);
+   * \brief A single source can have multiple tools attached, so we retrieve the number, based on the number of sub-tools registered.
+   */
+  int GetNumberOfTools() const;
   
   /**
    * \brief Sets the time tolerance for checking data, implemented in nano-seconds, but
@@ -308,7 +307,6 @@ private:
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   unsigned long int                               m_TimeStampTolerance;
   mitk::IGIDataType*                              m_ActualData;
-  int                                             m_NumberOfTools;
   std::set<mitk::DataNode::Pointer>               m_DataNodes;
   std::list<std::string>                          m_SubTools;
 }; // end class
