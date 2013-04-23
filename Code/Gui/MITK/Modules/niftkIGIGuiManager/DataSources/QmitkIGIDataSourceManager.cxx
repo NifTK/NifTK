@@ -281,6 +281,22 @@ bool QmitkIGIDataSourceManager::IsPortSpecificType()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnCurrentIndexChanged(int indexNumber)
+{
+  Q_UNUSED(indexNumber);
+
+  if (this->IsPortSpecificType())
+  {
+    m_PortNumberSpinBox->setEnabled(true);
+  }
+  else
+  {
+    m_PortNumberSpinBox->setEnabled(false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 int QmitkIGIDataSourceManager::GetRowNumberFromIdentifier(int identifier)
 {
   int rowNumber = -1;
@@ -414,22 +430,6 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
     }
 
     m_TableWidget->show();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnCurrentIndexChanged(int indexNumber)
-{
-  Q_UNUSED(indexNumber);
-
-  if (this->IsPortSpecificType())
-  {
-    m_PortNumberSpinBox->setEnabled(true);
-  }
-  else
-  {
-    m_PortNumberSpinBox->setEnabled(false);
   }
 }
 
