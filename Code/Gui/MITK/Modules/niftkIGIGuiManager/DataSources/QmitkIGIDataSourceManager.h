@@ -233,15 +233,15 @@ private:
 
   /**
    * m_Sources is ordered, and MUST correspond to the order in the display QTableWidget,
-   * so this returns the row number or -1 if not found.
+   * so this returns the source number or -1 if not found.
    */
-  int GetRowNumberFromIdentifier(int toolIdentifier);
+  int GetSourceNumberFromIdentifier(int sourceIdentifier);
 
   /**
    * m_Sources is ordered, and MUST correspond to the order in the display QTableWidget,
    * so this returns the identifier or -1 if not found.
    */
-  int GetIdentifierFromRowNumber(int rowNumber);
+  int GetIdentifierFromSourceNumber(int sourceNumber);
 
   /**
    * \brief Works out the table row, then updates the fields in the GUI.

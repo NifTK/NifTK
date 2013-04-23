@@ -297,28 +297,28 @@ void QmitkIGIDataSourceManager::OnCurrentIndexChanged(int indexNumber)
 
 
 //-----------------------------------------------------------------------------
-int QmitkIGIDataSourceManager::GetRowNumberFromIdentifier(int identifier)
+int QmitkIGIDataSourceManager::GetSourceNumberFromIdentifier(int identifier)
 {
-  int rowNumber = -1;
+  int sourceNumber = -1;
   for (unsigned int i = 0; i < m_Sources.size(); i++)
   {
     if (m_Sources[i].IsNotNull() && m_Sources[i]->GetIdentifier() == identifier)
     {
-      rowNumber = i;
+      sourceNumber = i;
       break;
     }
   }
-  return rowNumber;
+  return sourceNumber;
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkIGIDataSourceManager::GetIdentifierFromRowNumber(int rowNumber)
+int QmitkIGIDataSourceManager::GetIdentifierFromSourceNumber(int sourceNumber)
 {
   int identifier = -1;
-  if (rowNumber < m_TableWidget->rowCount() && rowNumber < (int)m_Sources.size())
+  if (sourceNumber < (int)m_Sources.size())
   {
-    identifier = m_Sources[rowNumber]->GetIdentifier();
+    identifier = m_Sources[sourceNumber]->GetIdentifier();
   }
   return identifier;
 }
@@ -327,7 +327,7 @@ int QmitkIGIDataSourceManager::GetIdentifierFromRowNumber(int rowNumber)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
 {
-  int rowNumber = this->GetRowNumberFromIdentifier(toolIdentifier);
+  int rowNumber = this->GetSourceNumberFromIdentifier(toolIdentifier);
 
   if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
   {
@@ -383,7 +383,7 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
             {
               int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
 
-              int tempRowNumber = this->GetRowNumberFromIdentifier(tempToolIdentifier);
+              int tempRowNumber = this->GetSourceNumberFromIdentifier(tempToolIdentifier);
               if ( type == "Tracker" ) 
               {
                 mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
@@ -658,7 +658,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
     {
       // Work out row number of source.
-      int rowNumber = this->GetRowNumberFromIdentifier(source->GetIdentifier());
+      int rowNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
 
       // First tell each source to update data.
       // For example, sources could copy to data storage.
