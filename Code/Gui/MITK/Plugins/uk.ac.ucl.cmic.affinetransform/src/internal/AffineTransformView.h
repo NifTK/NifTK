@@ -49,29 +49,6 @@
  * scale and shear an mitk::DataNode's index to world geometry, which can be applied
  * to images, surfaces and meshes alike.  However, the Resample button only applies to images.
  *
- * This class stores several AffineTransformDataNodeProperty on each data node:
- * <pre>
- * 1. The "Initial" transformation     = The transformation that was on the object, before this view added anything.
- *                                       So, if you load an image from file, this transformation is a copy of the geometry implied by the image header.
- *
- * 2. The "Incremental" transformation = Firstly, the dataNode->GetData()->GetGeometry() can only be composed with.
- *                                       So, we always have to calculate, for any change, the delta to be composed onto the existing transformation.
- *
- * 3. The "Pre-Loaded" transformation  = A transformation loaded from file.
- *                                       Loading a transformation from file also resets the GUI parameters.
- *                                       So, if you then add a rotation of 10 degrees about X axis, it is performed AFTER the transformation loaded from file.
- *
- * 4. The "Displayed" transformation   = The transformation that matches the GUI display.
- *                                       So, if you then add a rotation of 10 degrees about X axis, this transformation is just that.
- *
- * </pre>
- * and additionally a single AffineTransformParametersDataNodeProperty:
- * <pre>
- * 1. The "Displayed" parameters to match the "Displayed" transformation above.
- * </pre>
- * At no point are parameters derived or extracted from the affine transformation matrix,
- * as this is ambiguous and prone to numerical instability.
- *
  * \ingroup uk_ac_ucl_cmic_affinetransform_internal
  */
 class AffineTransformView : public QmitkBaseView
@@ -108,6 +85,21 @@ class AffineTransformView : public QmitkBaseView
     /** \brief Slot for resampling the current image. */
     void OnResampleTransformPushed();
 
+    /** \brief Slot for updating the direction cosines of the current image */
+    void OnApplyTransformPushed();
+
+    /** \brief Slot for keeping the rotation sliders and spinboxes in synch*/
+    void OnRotationValueChanged();
+
+    /** \brief Slot for keeping the translation sliders and spinboxes in synch*/
+    void OnTranslationValueChanged();
+
+    /** \brief Slot for keeping the scaling sliders and spinboxes in synch*/
+    void OnScalingValueChanged();
+
+    /** \brief Slot for keeping the shearing sliders and spinboxes in synch*/
+    void OnShearingValueChanged();
+
     //************************************************************************************************************************
 
     /** \brief Slot for switching between interactive and regular transformation editing */
@@ -138,13 +130,13 @@ class AffineTransformView : public QmitkBaseView
     void SetControlsEnabled(bool isEnabled);
 
     /** Sets the controls to the values given in the specific parameters property. */
-    void SetValuesOnUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
+    void SetUIValues(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
+
+    /** Sets the controls to the Identity. */
+    void ResetUIValues();
 
     /** Gets the values from the controls and stores them on the specified parametersProperty. */
     void GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
-
-    /** Sets the controls to the Identity, and updates the transformer. */
-    void ResetTransformation();
 
     /**
     * \brief Updates the displayed transform with the values from the spin-box controls.
@@ -161,6 +153,9 @@ class AffineTransformView : public QmitkBaseView
     */
     void UpdateTransformDisplay();
 
+     /** Resets the transformer. */
+    void ResetAffineTransformer();
+
     //************************************************************************************************************************
     virtual void CreateNewBoundingObject(mitk::DataNode::Pointer);
 
@@ -175,7 +170,7 @@ class AffineTransformView : public QmitkBaseView
 private:
     Ui::AffineTransformWidget             * m_Controls;
     double                                  m_CentreOfRotation[3];
-    mitk::DataNode::Pointer                 msp_DataOwnerNode;
+    //mitk::DataNode::Pointer                 msp_DataOwnerNode;
     mitk::AffineTransformer::Pointer        m_AffineTransformer;
 
 

@@ -31,7 +31,30 @@ namespace mitk {
  * \brief Class to contain all the ITK/MITK logic for the Affine Transformation Plugin,
  * to separate from AffineTransformationView to make unit testing easier.
  *
+ * This class stores several AffineTransformDataNodeProperty on each data node:
+ * <pre>
+ * 1. The "Initial" transformation     = The transformation that was on the object, before this view added anything.
+ *                                       So, if you load an image from file, this transformation is a copy of the geometry implied by the image header.
+ *
+ * 2. The "Incremental" transformation = Firstly, the dataNode->GetData()->GetGeometry() can only be composed with.
+ *                                       So, we always have to calculate, for any change, the delta to be composed onto the existing transformation.
+ *
+ * 3. The "Pre-Loaded" transformation  = A transformation loaded from file.
+ *                                       Loading a transformation from file also resets the GUI parameters.
+ *                                       So, if you then add a rotation of 10 degrees about X axis, it is performed AFTER the transformation loaded from file.
+ *
+ * 4. The "Displayed" transformation   = The transformation that matches the GUI display.
+ *                                       So, if you then add a rotation of 10 degrees about X axis, this transformation is just that.
+ *
+ * </pre>
+ * and additionally a single AffineTransformParametersDataNodeProperty:
+ * <pre>
+ * 1. The "Displayed" parameters to match the "Displayed" transformation above.
+ * </pre>
+ * At no point are parameters derived or extracted from the affine transformation matrix,
+ * as this is ambiguous and prone to numerical instability.
  */
+
 class AffineTransformer : public itk::Object
 {
 
@@ -60,6 +83,7 @@ public:
   mitkClassMacro(AffineTransformer, itk::Object);
   itkNewMacro(AffineTransformer);
 
+  /// Get / Set the "RotateAroundCenter" flag
   itkGetMacro(RotateAroundCenter, bool);
   itkSetMacro(RotateAroundCenter, bool);
 

@@ -77,7 +77,7 @@
 AffineTransformView::AffineTransformView()
 {
   m_Controls = NULL;
-  msp_DataOwnerNode = NULL;
+  //msp_DataOwnerNode = NULL;
   m_AffineInteractor3D = NULL;
   m_customAxesActor = NULL;
   m_legendActor = NULL;
@@ -90,8 +90,6 @@ AffineTransformView::AffineTransformView()
 
   QFile xmlDesc;
   xmlDesc.setFileName(":/AffineTransform/AffineTransformInteractorSM.xml");
-  //qDebug() <<xmlDesc.exists();
-
   if (xmlDesc.exists() && xmlDesc.open(QIODevice::ReadOnly))
   {
     // Make a text stream on the doco  
@@ -106,7 +104,12 @@ AffineTransformView::AffineTransformView()
       qDebug() <<"Loaded the state-machine correctly!";
   }
 
+  // Instanciate affine transformer
   m_AffineTransformer = mitk::AffineTransformer::New();
+
+  // Pass the data storage pointer to it
+  if (m_AffineTransformer.IsNotNull())
+    m_AffineTransformer->SetDataStorage(this->GetDataStorage());
 }
 
 //-----------------------------------------------------------------------------
@@ -149,19 +152,36 @@ void AffineTransformView::CreateQtPartControl( QWidget *parent )
     connect(m_Controls->loadButton, SIGNAL(clicked()), this, SLOT(OnLoadTransformPushed()));
     connect(m_Controls->saveButton, SIGNAL(clicked()), this, SLOT(OnSaveTransformPushed()));
 
-    connect(m_Controls->rotationSpinBoxX, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->rotationSpinBoxY, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->rotationSpinBoxZ, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->shearSpinBoxXY, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->shearSpinBoxXZ, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->shearSpinBoxYZ, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->translationSpinBoxX, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->translationSpinBoxY, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->translationSpinBoxZ, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->scalingSpinBoxX, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->scalingSpinBoxY, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->scalingSpinBoxZ, SIGNAL(valueChanged(double)), this, SLOT(OnParameterChanged(double)));
-    connect(m_Controls->centreRotationRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnParameterChanged(bool)));
+    connect(m_Controls->rotationSpinBoxX, SIGNAL(valueChanged(double)), this, SLOT(OnRotationValueChanged()));
+    connect(m_Controls->rotationSliderX, SIGNAL(valueChanged(int)), this, SLOT(OnRotationValueChanged()));
+    connect(m_Controls->rotationSpinBoxY, SIGNAL(valueChanged(double)), this, SLOT(OnRotationValueChanged()));
+    connect(m_Controls->rotationSliderY, SIGNAL(valueChanged(int)), this, SLOT(OnRotationValueChanged()));
+    connect(m_Controls->rotationSpinBoxZ, SIGNAL(valueChanged(double)), this, SLOT(OnRotationValueChanged()));
+    connect(m_Controls->rotationSliderZ, SIGNAL(valueChanged(int)), this, SLOT(OnRotationValueChanged()));
+
+    connect(m_Controls->shearingSpinBoxXY, SIGNAL(valueChanged(double)), this, SLOT(OnShearingValueChanged()));
+    connect(m_Controls->shearingSliderXY, SIGNAL(valueChanged(int)), this, SLOT(OnShearingValueChanged()));
+    connect(m_Controls->shearingSpinBoxXZ, SIGNAL(valueChanged(double)), this, SLOT(OnShearingValueChanged()));
+    connect(m_Controls->shearingSliderXZ, SIGNAL(valueChanged(int)), this, SLOT(OnShearingValueChanged()));
+    connect(m_Controls->shearingSpinBoxYZ, SIGNAL(valueChanged(double)), this, SLOT(OnShearingValueChanged()));
+    connect(m_Controls->shearingSliderYZ, SIGNAL(valueChanged(int)), this, SLOT(OnShearingValueChanged()));
+
+    connect(m_Controls->translationSpinBoxX, SIGNAL(valueChanged(double)), this, SLOT(OnTranslationValueChanged()));
+    connect(m_Controls->translationSliderX, SIGNAL(valueChanged(int)), this, SLOT(OnTranslationValueChanged()));
+    connect(m_Controls->translationSpinBoxY, SIGNAL(valueChanged(double)), this, SLOT(OnTranslationValueChanged()));
+    connect(m_Controls->translationSliderY, SIGNAL(valueChanged(int)), this, SLOT(OnTranslationValueChanged()));
+    connect(m_Controls->translationSpinBoxZ, SIGNAL(valueChanged(double)), this, SLOT(OnTranslationValueChanged()));
+    connect(m_Controls->translationSliderZ, SIGNAL(valueChanged(int)), this, SLOT(OnTranslationValueChanged()));
+
+    connect(m_Controls->scalingSpinBoxX, SIGNAL(valueChanged(double)), this, SLOT(OnScalingValueChanged()));
+    connect(m_Controls->scalingSliderX, SIGNAL(valueChanged(int)), this, SLOT(OnScalingValueChanged()));
+    connect(m_Controls->scalingSpinBoxY, SIGNAL(valueChanged(double)), this, SLOT(OnScalingValueChanged()));
+    connect(m_Controls->scalingSliderY, SIGNAL(valueChanged(int)), this, SLOT(OnScalingValueChanged()));
+    connect(m_Controls->scalingSpinBoxZ, SIGNAL(valueChanged(double)), this, SLOT(OnScalingValueChanged()));
+    connect(m_Controls->scalingSliderZ, SIGNAL(valueChanged(int)), this, SLOT(OnScalingValueChanged()));
+
+    connect(m_Controls->centreRotationRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnParameterChanged()));
+    connect(m_Controls->applyButton, SIGNAL(clicked()), this, SLOT(OnApplyTransformPushed()));
 
     connect(m_Controls->checkBox_Interactive, SIGNAL(toggled(bool )), this, SLOT(OnInteractiveModeToggled(bool )));
     connect(m_Controls->radioButton_translate, SIGNAL(toggled(bool )), this, SLOT(OnRotationToggled(bool )));
@@ -170,12 +190,9 @@ void AffineTransformView::CreateQtPartControl( QWidget *parent )
     connect(m_Controls->radioButton_001, SIGNAL(toggled(bool )), this, SLOT(OnAxisChanged(bool )));
     connect(m_Controls->radioButton_010, SIGNAL(toggled(bool )), this, SLOT(OnAxisChanged(bool )));
     connect(m_Controls->radioButton_100, SIGNAL(toggled(bool )), this, SLOT(OnAxisChanged(bool )));
-  }
-}
 
-//-----------------------------------------------------------------------------
-void AffineTransformView::SetFocus()
-{
+    SetControlsEnabled(false);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -184,21 +201,298 @@ void AffineTransformView::SetControlsEnabled(bool isEnabled)
   m_Controls->rotationSpinBoxX->setEnabled(isEnabled);
   m_Controls->rotationSpinBoxY->setEnabled(isEnabled);
   m_Controls->rotationSpinBoxZ->setEnabled(isEnabled);
-  m_Controls->shearSpinBoxXY->setEnabled(isEnabled);
-  m_Controls->shearSpinBoxXZ->setEnabled(isEnabled);
-  m_Controls->shearSpinBoxYZ->setEnabled(isEnabled);
+  
+  m_Controls->rotationSliderX->setEnabled(isEnabled);
+  m_Controls->rotationSliderY->setEnabled(isEnabled);
+  m_Controls->rotationSliderZ->setEnabled(isEnabled);
+
+  m_Controls->shearingSpinBoxXY->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxXZ->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxYZ->setEnabled(isEnabled);
+
+  m_Controls->shearingSliderXY->setEnabled(isEnabled);
+  m_Controls->shearingSliderXZ->setEnabled(isEnabled);
+  m_Controls->shearingSliderYZ->setEnabled(isEnabled);
+
   m_Controls->translationSpinBoxX->setEnabled(isEnabled);
   m_Controls->translationSpinBoxY->setEnabled(isEnabled);
   m_Controls->translationSpinBoxZ->setEnabled(isEnabled);
+
+  m_Controls->translationSliderX->setEnabled(isEnabled);
+  m_Controls->translationSliderY->setEnabled(isEnabled);
+  m_Controls->translationSliderZ->setEnabled(isEnabled);
+
   m_Controls->scalingSpinBoxX->setEnabled(isEnabled);
   m_Controls->scalingSpinBoxY->setEnabled(isEnabled);
   m_Controls->scalingSpinBoxZ->setEnabled(isEnabled);
+
+  m_Controls->scalingSliderX->setEnabled(isEnabled);
+  m_Controls->scalingSliderY->setEnabled(isEnabled);
+  m_Controls->scalingSliderZ->setEnabled(isEnabled);
+
   m_Controls->centreRotationRadioButton->setEnabled(isEnabled);
   m_Controls->resampleButton->setEnabled(isEnabled);
   m_Controls->saveButton->setEnabled(isEnabled);
   m_Controls->loadButton->setEnabled(isEnabled);
   m_Controls->resetButton->setEnabled(isEnabled);
   m_Controls->affineTransformDisplay->setEnabled(isEnabled);
+  m_Controls->applyButton->setEnabled(isEnabled);
+}
+
+//-----------------------------------------------------------------------------
+void AffineTransformView::OnRotationValueChanged()
+{
+  // Get current values from the UI
+  double spboxVal  = 0.0;
+  double sliderVal = 0.0;
+
+  // Get the sender's name
+  QString sender = QObject::sender()->objectName();
+
+  // Update UI accordingly
+  if (sender == QString("rotationSliderX"))
+  {
+    spboxVal  = m_Controls->rotationSpinBoxX->value();
+    sliderVal = (double)m_Controls->rotationSliderX->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->rotationSpinBoxX->setValue(sliderVal);
+  }
+  else if (sender == QString("rotationSliderY"))
+  {
+    spboxVal  = m_Controls->rotationSpinBoxY->value();
+    sliderVal = (double)m_Controls->rotationSliderY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->rotationSpinBoxY->setValue(sliderVal);
+  }
+  else if (sender == QString("rotationSliderZ"))
+  {
+    spboxVal  = m_Controls->rotationSpinBoxZ->value();
+    sliderVal = (double)m_Controls->rotationSliderZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->rotationSpinBoxZ->setValue(sliderVal);
+  }
+  else if (sender == QString("rotationSpinBoxX"))
+  {
+    spboxVal  = m_Controls->rotationSpinBoxX->value();
+    sliderVal = (double)m_Controls->rotationSliderX->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->rotationSliderX->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("rotationSpinBoxY"))
+  {
+    spboxVal  = m_Controls->rotationSpinBoxY->value();
+    sliderVal = (double)m_Controls->rotationSliderY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->rotationSliderY->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("rotationSpinBoxZ"))
+  {
+    spboxVal  = m_Controls->rotationSpinBoxZ->value();
+    sliderVal = (double)m_Controls->rotationSliderZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->rotationSliderZ->setValue(spboxVal * 100);
+  }
+
+  OnParameterChanged();
+}
+
+//-----------------------------------------------------------------------------
+void AffineTransformView::OnTranslationValueChanged()
+{
+  // Get current values from the UI
+  double spboxVal  = 0.0;
+  double sliderVal = 0.0;
+
+  // Get the sender's name
+  QString sender = QObject::sender()->objectName();
+
+  // Update UI accordingly
+  if (sender == QString("translationSliderX"))
+  {
+    spboxVal  = m_Controls->translationSpinBoxX->value();
+    sliderVal = (double)m_Controls->translationSliderX->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->translationSpinBoxX->setValue(sliderVal);
+  }
+  else if (sender == QString("translationSliderY"))
+  {
+    spboxVal  = m_Controls->translationSpinBoxY->value();
+    sliderVal = (double)m_Controls->translationSliderY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->translationSpinBoxY->setValue(sliderVal);
+  }
+  else if (sender == QString("translationSliderZ"))
+  {
+    spboxVal  = m_Controls->translationSpinBoxZ->value();
+    sliderVal = (double)m_Controls->translationSliderZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->translationSpinBoxZ->setValue(sliderVal);
+  }
+  else if (sender == QString("translationSpinBoxX"))
+  {
+    spboxVal  = m_Controls->translationSpinBoxX->value();
+    sliderVal = (double)m_Controls->translationSliderX->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->translationSliderX->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("translationSpinBoxY"))
+  {
+    spboxVal  = m_Controls->translationSpinBoxY->value();
+    sliderVal = (double)m_Controls->translationSliderY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->translationSliderY->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("translationSpinBoxZ"))
+  {
+    spboxVal  = m_Controls->translationSpinBoxZ->value();
+    sliderVal = (double)m_Controls->translationSliderZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->translationSliderZ->setValue(spboxVal * 100);
+  }
+
+  OnParameterChanged();
+}
+
+//-----------------------------------------------------------------------------
+void AffineTransformView::OnScalingValueChanged()
+{
+  // Get current values from the UI
+  double spboxVal  = 0.0;
+  double sliderVal = 0.0;
+
+  // Get the sender's name
+  QString sender = QObject::sender()->objectName();
+
+  // Update UI accordingly
+  if (sender == QString("scalingSliderX"))
+  {
+    spboxVal  = m_Controls->scalingSpinBoxX->value();
+    sliderVal = (double)m_Controls->scalingSliderX->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->scalingSpinBoxX->setValue(sliderVal);
+  }
+  else if (sender == QString("scalingSliderY"))
+  {
+    spboxVal  = m_Controls->scalingSpinBoxY->value();
+    sliderVal = (double)m_Controls->scalingSliderY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->scalingSpinBoxY->setValue(sliderVal);
+  }
+  else if (sender == QString("scalingSliderZ"))
+  {
+    spboxVal  = m_Controls->scalingSpinBoxZ->value();
+    sliderVal = (double)m_Controls->scalingSliderZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->scalingSpinBoxZ->setValue(sliderVal);
+  }
+  else if (sender == QString("scalingSpinBoxX"))
+  {
+    spboxVal  = m_Controls->scalingSpinBoxX->value();
+    sliderVal = (double)m_Controls->scalingSliderX->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->scalingSliderX->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("scalingSpinBoxY"))
+  {
+    spboxVal  = m_Controls->scalingSpinBoxY->value();
+    sliderVal = (double)m_Controls->scalingSliderY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->scalingSliderY->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("scalingSpinBoxZ"))
+  {
+    spboxVal  = m_Controls->scalingSpinBoxZ->value();
+    sliderVal = (double)m_Controls->scalingSliderZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->scalingSliderZ->setValue(spboxVal * 100);
+  }
+
+  OnParameterChanged();
+}
+
+//-----------------------------------------------------------------------------
+void AffineTransformView::OnShearingValueChanged()
+{
+  // Get current values from the UI
+  double spboxVal  = 0.0;
+  double sliderVal = 0.0;
+
+  // Get the sender's name
+  QString sender = QObject::sender()->objectName();
+
+  // Update UI accordingly
+  if (sender == QString("shearingSliderXY"))
+  {
+    spboxVal  = m_Controls->shearingSpinBoxXY->value();
+    sliderVal = (double)m_Controls->shearingSliderXY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->shearingSpinBoxXY->setValue(sliderVal);
+  }
+  else if (sender == QString("shearingSliderXZ"))
+  {
+    spboxVal  = m_Controls->shearingSpinBoxXZ->value();
+    sliderVal = (double)m_Controls->shearingSliderXZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->shearingSpinBoxXZ->setValue(sliderVal);
+  }
+  else if (sender == QString("shearingSliderYZ"))
+  {
+    spboxVal  = m_Controls->shearingSpinBoxYZ->value();
+    sliderVal = (double)m_Controls->shearingSliderYZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->shearingSpinBoxYZ->setValue(sliderVal);
+  }
+  else if (sender == QString("shearingSpinBoxXY"))
+  {
+    spboxVal  = m_Controls->shearingSpinBoxXY->value();
+    sliderVal = (double)m_Controls->shearingSliderXY->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->shearingSliderXY->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("shearingSpinBoxXZ"))
+  {
+    spboxVal  = m_Controls->shearingSpinBoxXZ->value();
+    sliderVal = (double)m_Controls->shearingSliderXZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->shearingSliderXZ->setValue(spboxVal * 100);
+  }
+  else if (sender == QString("shearingSpinBoxXZ"))
+  {
+    spboxVal  = m_Controls->shearingSpinBoxXZ->value();
+    sliderVal = (double)m_Controls->shearingSliderXZ->value() / 100.0;
+
+    if (spboxVal != sliderVal)
+      m_Controls->shearingSliderXZ->setValue(spboxVal * 100);
+  }
+
+  OnParameterChanged();
+}
+//-----------------------------------------------------------------------------
+void AffineTransformView::SetFocus()
+{
 }
 
 //-----------------------------------------------------------------------------
@@ -223,14 +517,14 @@ void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part
   m_AffineTransformer->OnNodeChanged(nodes[0]);
 
   // Update the controls on the UI based on the datanode's properties
-  SetValuesOnUI(m_AffineTransformer->GetCurrentTransformParameters());
+  SetUIValues(m_AffineTransformer->GetCurrentTransformParameters());
 
   // Update the matrix on the UI
   UpdateTransformDisplay();
   this->SetControlsEnabled(true);
 
   // Final check, only enable resample button, if current selection is an image.
-  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(msp_DataOwnerNode->GetData());
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(nodes[0]->GetData());
   if (image.IsNotNull())
   {
     m_Controls->resampleButton->setEnabled(true);
@@ -242,7 +536,7 @@ void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part
 }
 
 //-----------------------------------------------------------------------------
-void AffineTransformView::SetValuesOnUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
+void AffineTransformView::SetUIValues(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
 {
   mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
 
@@ -258,9 +552,9 @@ void AffineTransformView::SetValuesOnUI(mitk::AffineTransformParametersDataNodeP
   m_Controls->scalingSpinBoxY->setValue(params[7]);
   m_Controls->scalingSpinBoxZ->setValue(params[8]);
 
-  m_Controls->shearSpinBoxXY->setValue(params[9]);
-  m_Controls->shearSpinBoxXZ->setValue(params[10]);
-  m_Controls->shearSpinBoxYZ->setValue(params[11]);
+  m_Controls->shearingSpinBoxXY->setValue(params[9]);
+  m_Controls->shearingSpinBoxXZ->setValue(params[10]);
+  m_Controls->shearingSpinBoxYZ->setValue(params[11]);
 
   if (params[12] != 0)
   {
@@ -289,9 +583,9 @@ void AffineTransformView::GetValuesFromUI(mitk::AffineTransformParametersDataNod
   params[7] = m_Controls->scalingSpinBoxY->value();
   params[8] = m_Controls->scalingSpinBoxZ->value();
 
-  params[9] = m_Controls->shearSpinBoxXY->value();
-  params[10] = m_Controls->shearSpinBoxXZ->value();
-  params[11] = m_Controls->shearSpinBoxYZ->value();
+  params[9] = m_Controls->shearingSpinBoxXY->value();
+  params[10] = m_Controls->shearingSpinBoxXZ->value();
+  params[11] = m_Controls->shearingSpinBoxYZ->value();
 
   if (m_Controls->centreRotationRadioButton->isChecked())
   {
@@ -339,7 +633,10 @@ void AffineTransformView::OnParameterChanged()
 void AffineTransformView::OnResetTransformPushed() 
 {
   // Reset the transformation parameters
-  ResetTransformation();
+  ResetUIValues();
+
+  // Reset the transformer object
+  ResetAffineTransformer();
 
   // Update the views
   QmitkAbstractView::RequestRenderWindowUpdate();
@@ -349,14 +646,29 @@ void AffineTransformView::OnResetTransformPushed()
 }
 
 //-----------------------------------------------------------------------------
-void AffineTransformView::ResetTransformation()
+void AffineTransformView::ResetUIValues()
 {
   // Reset transformation parameters to identity
   mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
   affineTransformParametersProperty->Identity();
 
   // Update the UI
-  SetValuesOnUI(affineTransformParametersProperty);
+  SetUIValues(affineTransformParametersProperty);
+
+  // Update the matrix view
+  vtkSmartPointer<vtkMatrix4x4> identity = vtkMatrix4x4::New();
+  identity->Identity();
+
+  for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
+    m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(identity->Element[rInd][cInd])));
+}
+
+//-----------------------------------------------------------------------------
+void AffineTransformView::ResetAffineTransformer()
+{
+  // Reset transformation parameters to identity
+  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
+  affineTransformParametersProperty->Identity();
 
   // Update the transformer
   m_AffineTransformer->OnParametersChanged(affineTransformParametersProperty);
@@ -371,15 +683,14 @@ void AffineTransformView::OnLoadTransformPushed()
   {
     m_AffineTransformer->OnLoadTransform(fileName.toStdString());
   }
+
+  // Why do we need this??????????????????
   OnResetTransformPushed();
 }
 
 //-----------------------------------------------------------------------------
 void AffineTransformView::OnSaveTransformPushed() 
 {
-
-  assert(msp_DataOwnerNode);
-
   QString fileName;
   fileName = QFileDialog::getSaveFileName(NULL, tr("Destination for transform"), QString(), tr("ITK affine transform file (*.tfm *.txt);;Any file (*)"));
   if (fileName.length() > 0) 
@@ -395,8 +706,28 @@ void AffineTransformView::OnResampleTransformPushed()
   m_AffineTransformer->OnResampleTransform();
 
   // Then reset the parameters.
-  ResetTransformation();
+  ResetUIValues();
   UpdateTransformDisplay();
+
+  // Reset the AffineTransformer itself
+  ResetAffineTransformer();
+
+  // And update the views
+  QmitkAbstractView::RequestRenderWindowUpdate();
+}
+
+//-----------------------------------------------------------------------------
+void AffineTransformView::OnApplyTransformPushed()
+{
+  // Apply the transformation onto the current image
+  m_AffineTransformer->OnApplyTransform();
+
+  // Then reset the parameters.
+  ResetUIValues();
+  UpdateTransformDisplay();
+
+  // Reset the AffineTransformer itself
+  ResetAffineTransformer();
   
   // And update the views
   QmitkAbstractView::RequestRenderWindowUpdate();
@@ -518,22 +849,22 @@ void AffineTransformView::RemoveBoundingObjectFromNode()
 
 void AffineTransformView::OnInteractiveModeToggled(bool on)
 {
-  if (on)
-  {
-    m_inInteractiveMode = true;
+  //if (on)
+  //{
+  //  m_inInteractiveMode = true;
 
-    //this->GetDataManagerSelection().at(0)->IsVisible
-    if (msp_DataOwnerNode->IsVisible(0))
-      this->CreateNewBoundingObject(msp_DataOwnerNode);
+  //  //this->GetDataManagerSelection().at(0)->IsVisible
+  //  if (msp_DataOwnerNode->IsVisible(0))
+  //    this->CreateNewBoundingObject(msp_DataOwnerNode);
 
-    this->DisplayLegends(true);
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-  }
-  else
-     m_inInteractiveMode = false;
+  //  this->DisplayLegends(true);
+  //  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  //}
+  //else
+  //   m_inInteractiveMode = false;
 
-    //if (msp_DataOwnerNode->IsVisible(0) && m_inInteractiveMode)
-    //this->CreateNewBoundingObject(msp_DataOwnerNode);
+  //  //if (msp_DataOwnerNode->IsVisible(0) && m_inInteractiveMode)
+  //  //this->CreateNewBoundingObject(msp_DataOwnerNode);
 }
 
 void AffineTransformView::OnRotationToggled(bool on)
@@ -597,11 +928,11 @@ void AffineTransformView::OnAxisChanged(bool on)
 
 void AffineTransformView::OnTransformReady()
 {
-  mitk::Geometry3D::Pointer geom = msp_DataOwnerNode->GetData()->GetGeometry();
-  vtkMatrix4x4 * currentMat = geom->GetVtkTransform()->GetMatrix();
+  //mitk::Geometry3D::Pointer geom = msp_DataOwnerNode->GetData()->GetGeometry();
+  //vtkMatrix4x4 * currentMat = geom->GetVtkTransform()->GetMatrix();
 
-  for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
-		m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(currentMat->Element[rInd][cInd])));
+  //for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
+		//m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(currentMat->Element[rInd][cInd])));
 
 }
 

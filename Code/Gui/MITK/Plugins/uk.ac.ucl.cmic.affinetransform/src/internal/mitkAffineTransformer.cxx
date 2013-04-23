@@ -22,6 +22,7 @@
 
 #include "ConversionUtils.h"
 
+// ITK
 #include <itkResampleImageFilter.h>
 #include <itkVectorResampleImageFilter.h>
 #include <itkLinearInterpolateImageFunction.h>
@@ -33,7 +34,6 @@
 #include <itkRGBPixel.h>
 #include <itkTransformFileReader.h>
 #include <itkTransformFileWriter.h>
-
 
 // STL
 #include <cmath>
@@ -277,7 +277,12 @@ vtkSmartPointer<vtkMatrix4x4> AffineTransformer::GetTransformMatrixFromNode(std:
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> AffineTransformer::GetCurrentTransformMatrix() const
 {
-  vtkSmartPointer<vtkMatrix4x4> transform = this->ComputeTransformFromParameters();
+  vtkSmartPointer<vtkMatrix4x4> transform = vtkMatrix4x4::New();
+  transform->Identity();
+  
+  if (m_CurrDispTransfProp.IsNotNull())
+    transform = this->ComputeTransformFromParameters();
+  
   return transform;
 }
 
@@ -487,8 +492,9 @@ void AffineTransformer::OnParametersChanged(mitk::AffineTransformParametersDataN
 /** \brief Slot for saving transform to disk. */
 void AffineTransformer::OnSaveTransform(std::string fileName)
 {
-  assert(m_CurrentDataNode);
-  
+  if (m_CurrentDataNode.IsNull())
+    return;
+
   itk::TransformFileWriter::Pointer sp_writer;
   sp_writer = itk::TransformFileWriter::New();
   sp_writer->SetFileName(fileName.c_str());
@@ -512,7 +518,9 @@ void AffineTransformer::OnSaveTransform(std::string fileName)
 /** \brief Slot for loading transform from disk. */
 void AffineTransformer::OnLoadTransform(std::string fileName)
 {
-  assert(m_CurrentDataNode);
+  if (m_CurrentDataNode.IsNull())
+    return;
+
   itk::TransformFileReader::Pointer sp_transformIO;
 
   try 
@@ -549,16 +557,42 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
 }
 
 //-----------------------------------------------------------------------------
-/** \brief Slot for loading transform from disk. */
+/** \brief Slot for applying the current transformation onto the datanode. */
 void AffineTransformer::OnApplyTransform()
 {
+  if (m_CurrentDataNode.IsNull())
+    return;
+
+  // Reset the geometry, in a similar fashion to when we load a new transformation.
+  vtkSmartPointer<vtkMatrix4x4> total = m_CurrentDataNode->GetData()->GetGeometry()->GetVtkTransform()->GetMatrix();
+  vtkSmartPointer<vtkMatrix4x4> totalInverted = vtkMatrix4x4::New();
+  vtkMatrix4x4::Invert(total, totalInverted);
+  m_CurrentDataNode->GetData()->GetGeometry()->Compose( totalInverted );
+
+  vtkSmartPointer<vtkMatrix4x4> initial = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
+  m_CurrentDataNode->GetData()->GetGeometry()->Compose( initial );
+
+  // Update the geometry according to current GUI parameters, which represent the "current" transformation.
+  vtkSmartPointer<vtkMatrix4x4> sp_transformFromParams = this->ComputeTransformFromParameters();
+  vtkSmartPointer<vtkMatrix4x4> sp_transformPreLoaded = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(PRELOADED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
+  vtkSmartPointer<vtkMatrix4x4> sp_combinedTransform = vtkMatrix4x4::New();
+  vtkMatrix4x4::Multiply4x4(sp_transformFromParams, sp_transformPreLoaded, sp_combinedTransform);
+
+  m_CurrentDataNode->GetData()->GetGeometry()->Compose(sp_combinedTransform);
+
+  vtkSmartPointer<vtkMatrix4x4> identity = vtkMatrix4x4::New();
+  identity->Identity();
+  mitk::AffineTransformDataNodeProperty::StoreTransformInNode(INCREMENTAL_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
+  mitk::AffineTransformDataNodeProperty::StoreTransformInNode(PRELOADED_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
+  mitk::AffineTransformDataNodeProperty::StoreTransformInNode(DISPLAYED_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
 }
 
 //-----------------------------------------------------------------------------
 /** \brief Slot for resampling the current image. */
 void AffineTransformer::OnResampleTransform()
 {
-  assert(m_CurrentDataNode.IsNotNull());
+  if (m_CurrentDataNode.IsNull())
+    return;
 
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_CurrentDataNode->GetData());
   assert(image);
@@ -717,8 +751,8 @@ void AffineTransformer::ApplyResampleToCurrentNode()
   vtkSmartPointer<vtkMatrix4x4> sp_transformPreLoaded = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(PRELOADED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
   vtkSmartPointer<vtkMatrix4x4> sp_combinedTransform = vtkMatrix4x4::New();
   vtkMatrix4x4::Multiply4x4(sp_transformFromParams, sp_transformPreLoaded, sp_combinedTransform);
-  vtkSmartPointer<vtkMatrix4x4> sp_incTransform = vtkMatrix4x4::New();
-  vtkMatrix4x4::Invert(sp_combinedTransform, sp_incTransform);
+  //vtkSmartPointer<vtkMatrix4x4> sp_incTransform = vtkMatrix4x4::New();
+  //vtkMatrix4x4::Invert(sp_combinedTransform, sp_incTransform);
 
   try 
   {
