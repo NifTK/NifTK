@@ -268,11 +268,13 @@ void SurfaceExtractorView::CreateQtPartControl(QWidget *parent)
 
     // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
     CreateConnections();
-
-    QList<mitk::DataNode::Pointer> selectedNodes = GetDataManagerSelection();
-    berry::IWorkbenchPart::Pointer nullPart;
-    OnSelectionChanged(nullPart, selectedNodes);
   }
+}
+
+void SurfaceExtractorView::Activated()
+{
+  berry::IWorkbenchPart::Pointer nullPart;
+  OnSelectionChanged(nullPart, this->GetDataManagerSelection());
 }
 
 void SurfaceExtractorView::onValueChanged()
