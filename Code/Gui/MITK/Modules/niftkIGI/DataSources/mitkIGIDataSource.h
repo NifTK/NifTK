@@ -316,7 +316,6 @@ private:
   int                                             m_NumberOfTools;
   std::set<mitk::DataNode::Pointer>               m_DataNodes;
   std::list<std::string>                          m_SubTools;
-  std::list<std::string>::iterator                m_SubToolsIterator;
   bool                                            m_SuccessfullyProcessing;
 
 }; // end class

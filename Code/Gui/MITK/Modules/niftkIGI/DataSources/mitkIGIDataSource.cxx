@@ -48,7 +48,6 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
   m_SubTools.clear();
-  m_SubToolsIterator = m_SubTools.begin();
 }
 
 
