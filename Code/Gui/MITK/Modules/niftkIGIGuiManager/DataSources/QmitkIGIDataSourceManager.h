@@ -37,8 +37,7 @@ class QTimer;
  * \class QmitkIGIDataSourceManager
  * \brief Class to manage a list of QmitkIGIDataSources (trackers, ultra-sound machines, video etc).
  *
- * The SurgicalGuidanceView creates this widget to manage its tools. This widget acts like
- * a widget factory, setting up sockets, creating the appropriate widget, and instantiating
+ * This widget acts like a widget factory, setting up sources, instantiating
  * the appropriate GUI, and loading it into the grid layout owned by this widget.
  */
 class NIFTKIGIGUIMANAGER_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_QmitkIGIDataSourceManager, public itk::Object
@@ -68,7 +67,7 @@ public:
    */
   void setupUi(QWidget* parent);
 
-  /*
+  /**
    * \brief Set the Data Storage, and also sets it into any registered tools.
    * \param dataStorage An MITK DataStorage, which is set onto any registered tools.
    */

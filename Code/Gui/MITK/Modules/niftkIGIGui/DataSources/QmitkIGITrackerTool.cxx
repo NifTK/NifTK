@@ -125,21 +125,15 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
     }
     //A single source can have multiple tracked tools. 
     QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->GetTrackerTools();
-    QString tool;
-    this->SetNumberOfTools(trackerTools.length());
-    std::list<std::string> StringList;
+    std::list<std::string> stringList;
 
-
-    foreach (tool , trackerTools)
+    foreach (QString tool , trackerTools)
     {
-      std::string String;
-      String = tool.toStdString();
-      StringList.push_back(String);
-      
+      stringList.push_back(tool.toStdString());
     }
-    if ( StringList.size() > 0 ) 
+    if ( stringList.size() > 0 )
     {
-      this->SetToolStringList(StringList);
+      this->SetToolStringList(stringList);
     }
     this->ProcessClientInfo(clientInfo);
   }
