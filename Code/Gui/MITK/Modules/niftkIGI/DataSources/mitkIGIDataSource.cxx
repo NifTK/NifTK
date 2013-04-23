@@ -40,7 +40,6 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
 , m_NumberOfTools(0)
-, m_SuccessfullyProcessing(false)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_ActualTimeStamp = igtl::TimeStamp::New();
@@ -495,8 +494,6 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
   {
     MITK_DEBUG << "IGIDataSource::ProcessData did not process data at requestedTimeStamp=" << requestedTimeStamp << ", as the data was NULL" << std::endl;
   }
-
-  m_SuccessfullyProcessing = result;
   return result;
 }
 

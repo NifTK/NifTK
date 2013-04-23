@@ -662,12 +662,11 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
       // First tell each source to update data.
       // For example, sources could copy to data storage.
-      source->ProcessData(idNow);
+      bool isValid = source->ProcessData(idNow);
 
       // Now calculate the stats.
       source->UpdateFrameRate();
       float rate = source->GetFrameRate();
-      bool isValid = source->GetSuccessfullyProcessing();
       double lag = source->GetCurrentTimeLag(idNow);
 
       // Update the frame rate number.
