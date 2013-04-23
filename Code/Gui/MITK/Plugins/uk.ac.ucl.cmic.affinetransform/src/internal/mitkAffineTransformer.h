@@ -86,20 +86,17 @@ public:
   /** \brief Slot for all changes to transformation parameters. */
   void OnParametersChanged(mitk::AffineTransformParametersDataNodeProperty::Pointer paramsProperty);
 
-  /** \brief Slot for reset button that resets the parameter controls, and updates node geometry accordingly. */
-  void OnResetTransformPushed();
-
   /** \brief Slot for saving transform to disk. */
   void OnSaveTransform(std::string filename);
 
   /** \brief Slot for loading transform from disk. */
   void OnLoadTransform(std::string filename);
 
-  /** \brief Slot for loading transform from disk. */
-  void OnApplyTransformPushed();
+  /** \brief Slot for updating the direction cosines with the current transformation. */
+  void OnApplyTransform(); //BIG TODO
 
   /** \brief Slot for resampling the current image. */
-  void OnResampleTransformPushed();
+  void OnResampleTransform();
 
     /** Called by _InitialiseNodeProperties to initialise (to Identity) a specified transform property on a node. */
   void InitialiseTransformProperty(std::string name, mitk::DataNode::Pointer node);
@@ -113,25 +110,13 @@ public:
                             mitk::DataNode::Pointer);
 
   /** Called by _UpdateNodeProperties to update a transform property on a given node. */
-  void UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node);
+  void UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode::Pointer node);
 
   /** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
   void ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode::Pointer node);
 
   /** \brief Applies a re-sampling to the current node. */
   void ApplyResampleToCurrentNode();
-
-  /// \brief Updates the transform on the current node, and it's children.
-  void UpdateTransformationGeometry();
-
-  /// \brief Copies the final image out of the pipeline, and then disconnects the pipeline to stop it updating.
-  void FinalizeTransformation();
-
-  /// \brief Clears both images of the working data.
-  void ClearWorkingData();
-
-  /// \brief Removes the images we are using for editing during connection breaker from the DataStorage
-  void RemoveWorkingData();
 
 protected:
 
@@ -144,7 +129,13 @@ protected:
   /// \brief Computes a new linear transform (as 4x4 transform matrix) from the parameters set through the UI.
   virtual vtkSmartPointer<vtkMatrix4x4> ComputeTransformFromParameters(void) const;
 
+  /// \brief Updates the transform on the current node, and it's children.
+  void UpdateTransformationGeometry();
+
 private:
+  /// \brief This member stores the actual transformation paramters updated from the UI
+  mitk::AffineTransformParametersDataNodeProperty::Pointer m_CurrDispTransfProp;
+
   /// \brief This class needs a DataStorage to work.
   mitk::DataStorage::Pointer m_DataStorage;
 

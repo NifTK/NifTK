@@ -232,7 +232,8 @@ namespace mitk
 AffineTransformer::AffineTransformer()
   : m_RotateAroundCenter(false),
     m_DataStorage(0),
-    m_CurrentDataNode(0)
+    m_CurrentDataNode(0),
+    m_CurrDispTransfProp(0)
 {
 }
 
@@ -315,9 +316,9 @@ void AffineTransformer::OnNodeChanged(mitk::DataNode::Pointer node)
 //-----------------------------------------------------------------------------
 void AffineTransformer::UpdateTransformationGeometry()
 {
-    /**************************************************************
-   * This is the main method composing and calculating matrices.
-   **************************************************************/
+  /**************************************************************
+  * This is the main method composing and calculating matrices.
+  **************************************************************/
   if (m_CurrentDataNode.IsNotNull())
   {
     vtkSmartPointer<vtkMatrix4x4> transformDisplayed = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(DISPLAYED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
@@ -345,11 +346,7 @@ void AffineTransformer::UpdateTransformationGeometry()
     
     for (unsigned int i = 0; i < children->Size(); i++)
     {
-      this->UpdateNodeProperties(
-          newTransformAccordingToParameters,
-          finalAffineTransform,
-          children->GetElement(i)
-          );
+      this->UpdateNodeProperties(newTransformAccordingToParameters, finalAffineTransform, children->GetElement(i));
     }
   }
 }
@@ -470,6 +467,7 @@ void AffineTransformer::OnParametersChanged(mitk::AffineTransformParametersDataN
   m_Shearing[1]    = params[10];
   m_Shearing[2]    = params[11];
 
+  // Update the "rotate around center" flag
   if (params[12] == 1)
   {
     m_RotateAroundCenter = true;
@@ -478,6 +476,11 @@ void AffineTransformer::OnParametersChanged(mitk::AffineTransformParametersDataN
   {
     m_RotateAroundCenter = false;
   }
+
+  // Store the property as it will be used
+  m_CurrDispTransfProp = paramsProperty;
+
+  this->UpdateTransformationGeometry();
 }
 
 //-----------------------------------------------------------------------------
@@ -536,8 +539,6 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
       this->ApplyLoadedTransformToNode(transformFromFile, children->GetElement(i));
     }
 
-    OnResetTransformPushed();
-
     MITK_DEBUG << "Applied transform from file: success";
 
   } 
@@ -549,14 +550,51 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
 
 //-----------------------------------------------------------------------------
 /** \brief Slot for loading transform from disk. */
-void AffineTransformer::OnApplyTransformPushed()
+void AffineTransformer::OnApplyTransform()
 {
 }
 
 //-----------------------------------------------------------------------------
 /** \brief Slot for resampling the current image. */
-void AffineTransformer::OnResampleTransformPushed()
+void AffineTransformer::OnResampleTransform()
 {
+  assert(m_CurrentDataNode.IsNotNull());
+
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_CurrentDataNode->GetData());
+  assert(image);
+
+  if (image.IsNotNull())
+  {
+    std::stringstream message;
+    std::string name;
+    message << "Performing image processing for image ";
+
+    if (m_CurrentDataNode->GetName(name)) 
+    {
+      // a property called "name" was found for this DataNode
+      message << "'" << name << "'";
+    }
+    message << ".";
+    MITK_DEBUG << message.str();
+
+    // Reset the geometry, in a similar fashion to when we load a new transformation.
+    vtkSmartPointer<vtkMatrix4x4> total = m_CurrentDataNode->GetData()->GetGeometry()->GetVtkTransform()->GetMatrix();
+    vtkSmartPointer<vtkMatrix4x4> totalInverted = vtkMatrix4x4::New();
+    vtkMatrix4x4::Invert(total, totalInverted);
+    m_CurrentDataNode->GetData()->GetGeometry()->Compose( totalInverted );
+
+    vtkSmartPointer<vtkMatrix4x4> initial = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
+    m_CurrentDataNode->GetData()->GetGeometry()->Compose( initial );
+
+    // Do the resampling, according to current GUI parameters, which represent the "current" transformation.
+    ApplyResampleToCurrentNode();
+
+    vtkSmartPointer<vtkMatrix4x4> identity = vtkMatrix4x4::New();
+    identity->Identity();
+    mitk::AffineTransformDataNodeProperty::StoreTransformInNode(INCREMENTAL_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
+    mitk::AffineTransformDataNodeProperty::StoreTransformInNode(PRELOADED_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
+    mitk::AffineTransformDataNodeProperty::StoreTransformInNode(DISPLAYED_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -616,14 +654,27 @@ void AffineTransformer::InitialiseNodeProperties(mitk::DataNode::Pointer node)
 /** Called by _UpdateTransformationGeometry to set new transformations in the right properties of the node. */
 void AffineTransformer::UpdateNodeProperties(const vtkSmartPointer<vtkMatrix4x4> displayedTransformFromParameters,
                           const vtkSmartPointer<vtkMatrix4x4> incrementalTransformToBeComposed,
-                          mitk::DataNode::Pointer)
+                          mitk::DataNode::Pointer node)
 {
+  UpdateTransformProperty(DISPLAYED_TRANSFORM_KEY, displayedTransformFromParameters, node);
+  UpdateTransformProperty(INCREMENTAL_TRANSFORM_KEY, incrementalTransformToBeComposed, node);
+
+  // Update the node with the currently displayed transform properties
+  node->ReplaceProperty(DISPLAYED_PARAMETERS_KEY.c_str(), m_CurrDispTransfProp);
+
+  // Compose the transform with the current geometry, and force modified flags to make sure we get a re-rendering.
+  node->GetData()->GetGeometry()->Compose( incrementalTransformToBeComposed );
+  node->GetData()->Modified();
+  node->Modified();
 }
 
 //-----------------------------------------------------------------------------
 /** Called by _UpdateNodeProperties to update a transform property on a given node. */
-void AffineTransformer::UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode& node)
+void AffineTransformer::UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode::Pointer node)
 {
+  mitk::AffineTransformDataNodeProperty::Pointer property = mitk::AffineTransformDataNodeProperty::New();
+  property->SetTransform((*(transform.GetPointer())));
+  node->ReplaceProperty(name.c_str(), property);
 }
 
 //-----------------------------------------------------------------------------
@@ -770,82 +821,5 @@ void AffineTransformer::ApplyResampleToCurrentNode()
   image->Modified();
   m_CurrentDataNode->Modified();
 }
-
-//-----------------------------------------------------------------------------
-void AffineTransformer::FinalizeTransformation()
-{
-  //mitk::DataNode::Pointer workingDataNode = this->GetToolManager()->GetWorkingData(0);
-  //if (workingDataNode.IsNotNull())
-  //{
-  //  mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage().GetPointer(), workingDataNode, true);
-  //  if (parent.IsNotNull())
-  //  {
-  //    mitk::Image::Pointer outputImage = mitk::Image::New();
-  //    mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager(0);
-
-  //    try
-  //    {
-  //      AccessFixedDimensionByItk_n(referenceImage, FinalizeITKPipeline, 3, (outputImage));
-  //    }
-  //    catch(const mitk::AccessByItkException& e)
-  //    {
-  //      MITK_ERROR << "Caught exception, so finalize pipeline" << e.what();
-  //    }
-  //    this->RemoveWorkingData();
-  //    this->DestroyPipeline();
-
-  //    parent->SetData( outputImage );
-  //    parent->ReplaceProperty(AffineTransformer::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(true));
-
-  //    UpdateVolumeProperty(outputImage, parent);
-  //  }
-  //}
-}
-
-
-//-----------------------------------------------------------------------------
-void AffineTransformer::ClearWorkingData()
-{
-  //for (unsigned int i = 0; i < 4; i++)
-  //{
-  //  mitk::Image::Pointer image = this->GetWorkingImageFromToolManager(i);
-  //  mitk::DataNode::Pointer node = this->GetToolManager()->GetWorkingData(i);
-
-  //  if (image.IsNotNull() && node.IsNotNull())
-  //  {
-  //    try
-  //    {
-  //      AccessFixedDimensionByItk(image, ClearITKImage, 3);
-
-  //      image->Modified();
-  //      node->Modified();
-  //    }
-  //    catch(const mitk::AccessByItkException& e)
-  //    {
-  //      MITK_ERROR << "AffineTransformer::ClearWorkingData: i=" << i << ", caught exception, so abandoning clearing the segmentation image:" << e.what();
-  //    }
-  //  }
-  //}
-}
-
-
-//-----------------------------------------------------------------------------
-void AffineTransformer::RemoveWorkingData()
-{
-  //mitk::ToolManager* toolManager = this->GetToolManager();
-
-  //mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
-
-  //for (unsigned int i = 0; i < workingData.size(); i++)
-  //{
-  //  mitk::DataNode* node = workingData[i];
-  //  this->GetDataStorage()->Remove(node);
-  //}
-
-  //mitk::ToolManager::DataVectorType emptyWorkingDataArray;
-  //toolManager->SetWorkingData(emptyWorkingDataArray);
-  //toolManager->ActivateTool(-1);
-}
-
 
 } // end namespace

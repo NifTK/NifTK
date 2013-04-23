@@ -94,10 +94,7 @@ class AffineTransformView : public QmitkBaseView
     virtual void SetFocus();
 
     /** \brief Slot for all changes to transformation parameters. */
-    void OnParameterChanged(const double);
-
-    /** \brief Slot for radio button state changes. */
-    void OnParameterChanged(const bool);
+    void OnParameterChanged();
 
     /** \brief Slot for reset button that resets the parameter controls, and updates node geometry accordingly. */
     void OnResetTransformPushed();
@@ -146,8 +143,8 @@ class AffineTransformView : public QmitkBaseView
     /** Gets the values from the controls and stores them on the specified parametersProperty. */
     void GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
 
-    /** Sets the controls to the Identity, and doesn't update anything else. */
-    void ResetControls();
+    /** Sets the controls to the Identity, and updates the transformer. */
+    void ResetTransformation();
 
     /**
     * \brief Updates the displayed transform with the values from the spin-box controls.
@@ -163,12 +160,6 @@ class AffineTransformView : public QmitkBaseView
     * <ol>
     */
     void UpdateTransformDisplay();
-
-    ///** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
-    //void _ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode& node);
-
-    ///** \brief Applies a re-sampling to the current node. */
-    //void _ApplyResampleToCurrentNode();
 
     //************************************************************************************************************************
     virtual void CreateNewBoundingObject(mitk::DataNode::Pointer);

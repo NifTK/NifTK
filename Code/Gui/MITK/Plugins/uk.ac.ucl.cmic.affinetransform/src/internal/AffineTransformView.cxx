@@ -73,7 +73,7 @@
 
 #include <itkImageFileWriter.h>
 
-
+//-----------------------------------------------------------------------------
 AffineTransformView::AffineTransformView()
 {
   m_Controls = NULL;
@@ -109,6 +109,7 @@ AffineTransformView::AffineTransformView()
   m_AffineTransformer = mitk::AffineTransformer::New();
 }
 
+//-----------------------------------------------------------------------------
 AffineTransformView::~AffineTransformView()
 {
   if (m_Controls != NULL)
@@ -121,6 +122,7 @@ AffineTransformView::~AffineTransformView()
   }
 }
 
+//-----------------------------------------------------------------------------
 void AffineTransformView::CreateQtPartControl( QWidget *parent )
 {
   if (!m_Controls)
@@ -171,10 +173,12 @@ void AffineTransformView::CreateQtPartControl( QWidget *parent )
   }
 }
 
+//-----------------------------------------------------------------------------
 void AffineTransformView::SetFocus()
 {
 }
 
+//-----------------------------------------------------------------------------
 void AffineTransformView::SetControlsEnabled(bool isEnabled)
 {
   m_Controls->rotationSpinBoxX->setEnabled(isEnabled);
@@ -197,6 +201,7 @@ void AffineTransformView::SetControlsEnabled(bool isEnabled)
   m_Controls->affineTransformDisplay->setEnabled(isEnabled);
 }
 
+//-----------------------------------------------------------------------------
 void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   if (nodes.size() != 1)
@@ -236,6 +241,7 @@ void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part
   }
 }
 
+//-----------------------------------------------------------------------------
 void AffineTransformView::SetValuesOnUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
 {
   mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
@@ -266,6 +272,7 @@ void AffineTransformView::SetValuesOnUI(mitk::AffineTransformParametersDataNodeP
   }
 }
 
+//-----------------------------------------------------------------------------
 void AffineTransformView::GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
 {
   mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
@@ -298,20 +305,7 @@ void AffineTransformView::GetValuesFromUI(mitk::AffineTransformParametersDataNod
   parametersProperty->SetAffineTransformParameters(params);
 }
 
-void AffineTransformView::ResetControls()
-{
-  // Reset transformation parameters to identity
-  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
-  affineTransformParametersProperty->Identity();
-
-  // Update the UI
-  SetValuesOnUI(affineTransformParametersProperty);
-
-  // Update the transformer
-  m_AffineTransformer->OnParametersChanged(affineTransformParametersProperty);
-}
-
-
+//-----------------------------------------------------------------------------
 void AffineTransformView::UpdateTransformDisplay() 
 {
   // This method gets a 4x4 matrix corresponding to the current transform, given by the current values
@@ -324,7 +318,8 @@ void AffineTransformView::UpdateTransformDisplay()
     m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(sp_Transform->Element[rInd][cInd])));
 }
 
-void AffineTransformView::OnParameterChanged(const double) 
+//-----------------------------------------------------------------------------
+void AffineTransformView::OnParameterChanged() 
 {
   // Collect the parameters from the UI then send them to the AffineTransformer
   mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
@@ -333,9 +328,6 @@ void AffineTransformView::OnParameterChanged(const double)
   // Pass the parameters to the transformer
   m_AffineTransformer->OnParametersChanged(parametersProperty);
 
-  // Update the matrices
-  m_AffineTransformer->UpdateTransformationGeometry();
-
   // Update the views
   QmitkAbstractView::RequestRenderWindowUpdate();
 
@@ -343,25 +335,11 @@ void AffineTransformView::OnParameterChanged(const double)
   UpdateTransformDisplay();
 }
 
-void AffineTransformView::OnParameterChanged(const bool) 
-{
-  m_AffineTransformer->SetRotateAroundCenter(m_Controls->centreRotationRadioButton->isChecked());
-  m_AffineTransformer->UpdateTransformationGeometry();
-
-  // Update the views
-  QmitkAbstractView::RequestRenderWindowUpdate();
-
-  // Update the matrix on the UI
-  UpdateTransformDisplay();
-}
-
+//-----------------------------------------------------------------------------
 void AffineTransformView::OnResetTransformPushed() 
 {
   // Reset the transformation parameters
-  ResetControls();
-
-  // Update the transformer
-  m_AffineTransformer->UpdateTransformationGeometry();
+  ResetTransformation();
 
   // Update the views
   QmitkAbstractView::RequestRenderWindowUpdate();
@@ -370,6 +348,21 @@ void AffineTransformView::OnResetTransformPushed()
   UpdateTransformDisplay();
 }
 
+//-----------------------------------------------------------------------------
+void AffineTransformView::ResetTransformation()
+{
+  // Reset transformation parameters to identity
+  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
+  affineTransformParametersProperty->Identity();
+
+  // Update the UI
+  SetValuesOnUI(affineTransformParametersProperty);
+
+  // Update the transformer
+  m_AffineTransformer->OnParametersChanged(affineTransformParametersProperty);
+}
+
+//-----------------------------------------------------------------------------
 void AffineTransformView::OnLoadTransformPushed()
 {
   QString fileName;
@@ -378,9 +371,10 @@ void AffineTransformView::OnLoadTransformPushed()
   {
     m_AffineTransformer->OnLoadTransform(fileName.toStdString());
   }
+  OnResetTransformPushed();
 }
 
-
+//-----------------------------------------------------------------------------
 void AffineTransformView::OnSaveTransformPushed() 
 {
 
@@ -394,49 +388,17 @@ void AffineTransformView::OnSaveTransformPushed()
   }
 }
 
-
+//-----------------------------------------------------------------------------
 void AffineTransformView::OnResampleTransformPushed() 
 {
+  // Resample the datanode
+  m_AffineTransformer->OnResampleTransform();
 
-  assert(msp_DataOwnerNode.IsNotNull());
-
-  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(msp_DataOwnerNode->GetData());
-  assert(image);
-
-  if (image.IsNotNull())
-  {
-    std::stringstream message;
-    std::string name;
-    message << "Performing image processing for image ";
-    if (msp_DataOwnerNode->GetName(name)) {
-      // a property called "name" was found for this DataNode
-      message << "'" << name << "'";
-    }
-    message << ".";
-    MITK_DEBUG << message.str();
-
-    // Reset the geometry, in a similar fashion to when we load a new transformation.
-    vtkSmartPointer<vtkMatrix4x4> total = msp_DataOwnerNode->GetData()->GetGeometry()->GetVtkTransform()->GetMatrix();
-    vtkSmartPointer<vtkMatrix4x4> totalInverted = vtkMatrix4x4::New();
-    vtkMatrix4x4::Invert(total, totalInverted);
-    msp_DataOwnerNode->GetData()->GetGeometry()->Compose( totalInverted );
-
-    vtkSmartPointer<vtkMatrix4x4> initial = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(msp_DataOwnerNode.GetPointer()));
-    msp_DataOwnerNode->GetData()->GetGeometry()->Compose( initial );
-
-    // Do the resampling, according to current GUI parameters, which represent the "current" transformation.
-    _ApplyResampleToCurrentNode();
-
-    vtkSmartPointer<vtkMatrix4x4> identity = vtkMatrix4x4::New();
-    identity->Identity();
-    mitk::AffineTransformDataNodeProperty::StoreTransformInNode(INCREMENTAL_TRANSFORM_KEY, *(identity.GetPointer()), *(msp_DataOwnerNode.GetPointer()));
-    mitk::AffineTransformDataNodeProperty::StoreTransformInNode(PRELOADED_TRANSFORM_KEY, *(identity.GetPointer()), *(msp_DataOwnerNode.GetPointer()));
-    mitk::AffineTransformDataNodeProperty::StoreTransformInNode(DISPLAYED_TRANSFORM_KEY, *(identity.GetPointer()), *(msp_DataOwnerNode.GetPointer()));
-
-    // Then reset the parameters.
-    _ResetControls();
-    _UpdateTransformDisplay();
-  }
+  // Then reset the parameters.
+  ResetTransformation();
+  UpdateTransformDisplay();
+  
+  // And update the views
   QmitkAbstractView::RequestRenderWindowUpdate();
 }
 
