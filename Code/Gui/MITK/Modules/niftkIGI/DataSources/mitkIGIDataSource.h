@@ -288,6 +288,7 @@ private:
   bool DoSaveData(mitk::IGIDataType* data);
 
   itk::FastMutexLock::Pointer                     m_Mutex;
+  std::set<mitk::DataNode::Pointer>               m_DataNodes;
   mitk::DataStorage*                              m_DataStorage;
   int                                             m_Identifier;
   float                                           m_FrameRate;
@@ -305,9 +306,8 @@ private:
   std::list<mitk::IGIDataType::Pointer>::iterator m_FrameRateBufferIterator;
   igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
-  unsigned long int                               m_TimeStampTolerance;
   mitk::IGIDataType*                              m_ActualData;
-  std::set<mitk::DataNode::Pointer>               m_DataNodes;
+  unsigned long int                               m_TimeStampTolerance;
   std::list<std::string>                          m_SubTools;
 }; // end class
 
