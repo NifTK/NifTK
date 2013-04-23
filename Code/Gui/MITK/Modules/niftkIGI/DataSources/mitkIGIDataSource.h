@@ -153,13 +153,13 @@ public:
   /**
    * \brief Get the time stamp of the most recently requested time-point.
    */
-  igtlUint64 GetRequestedTimeStamp() const { return GetTimeInNanoSeconds(m_RequestedTimeStamp); }
+  igtlUint64 GetRequestedTimeStamp() const;
 
   /**
    * \brief This is calculated internally, and represents the time-stamp of the "current" message,
-   * which may be before or after that returned by GetRequestedTimeStamp()..
+   * which may be before or after that returned by GetRequestedTimeStamp(), depending on available data.
    */
-  igtlUint64 GetActualTimeStamp() const { return GetTimeInNanoSeconds(m_ActualTimeStamp); }
+  igtlUint64 GetActualTimeStamp() const;
 
   /**
    * \brief Returns the current data item that corresponds to the GetActualTimeStamp(),
@@ -180,7 +180,8 @@ public:
 
   /**
    * \brief Iterates through the buffer, clearing data, up to either the current time-stamp,
-   * or if we are saving data, until we hit a piece of data that has not yet been saved.
+   * or if we are saving data, until we hit a piece of data that has not yet been saved,
+   * as the save method may be called from another thread.
    */
   void CleanBuffer();
 

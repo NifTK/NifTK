@@ -73,8 +73,10 @@ IGIDataSource::~IGIDataSource()
 void IGIDataSource::SetSavingMessages(bool isSaving)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   this->m_SavingMessages = isSaving;
   this->Modified();
+
   SaveStateChanged.Send();
 }
 
@@ -112,6 +114,24 @@ igtlUint64 IGIDataSource::GetLastTimeStamp() const
 
 
 //-----------------------------------------------------------------------------
+igtlUint64 IGIDataSource::GetRequestedTimeStamp() const
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  return GetTimeInNanoSeconds(m_RequestedTimeStamp);
+}
+
+
+//-----------------------------------------------------------------------------
+igtlUint64 IGIDataSource::GetActualTimeStamp() const
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  return GetTimeInNanoSeconds(m_ActualTimeStamp);
+}
+
+
+//-----------------------------------------------------------------------------
 unsigned long int IGIDataSource::GetBufferSize() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
@@ -131,7 +151,6 @@ void IGIDataSource::ClearBuffer()
 
   unsigned long int bufferSizeAfter = m_Buffer.size();
   MITK_INFO << this->GetName() << ": Clear operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
-
 }
 
 
