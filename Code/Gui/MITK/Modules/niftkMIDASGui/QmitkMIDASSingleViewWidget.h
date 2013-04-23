@@ -236,6 +236,12 @@ public:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
+  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
+  void SetDisplayInteractionEnabled(bool enabled);
+
+  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
+  bool IsDisplayInteractionEnabled() const;
+
   /// \brief Returns the current intersection point of the 3 orthogonal planes.
   mitk::Point3D GetSelectedPosition() const;
 

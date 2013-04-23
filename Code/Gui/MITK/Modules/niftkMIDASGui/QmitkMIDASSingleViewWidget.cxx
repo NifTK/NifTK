@@ -342,6 +342,16 @@ bool QmitkMIDASSingleViewWidget::GetNavigationControllerEventListening() const
   return m_NavigationControllerEventListening;
 }
 
+void QmitkMIDASSingleViewWidget::SetDisplayInteractionEnabled(bool enabled)
+{
+  m_MultiWidget->SetDisplayInteractionEnabled(enabled);
+}
+
+bool QmitkMIDASSingleViewWidget::IsDisplayInteractionEnabled() const
+{
+  return m_MultiWidget->IsDisplayInteractionEnabled();
+}
+
 void QmitkMIDASSingleViewWidget::RequestUpdate()
 {
   m_MultiWidget->RequestUpdate();

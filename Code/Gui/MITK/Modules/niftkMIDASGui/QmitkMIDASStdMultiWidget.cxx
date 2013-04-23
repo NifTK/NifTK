@@ -199,27 +199,12 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   // mitk::DisplayInteractor. This line decreases the reference counter of the mouse mode switcher
   // so that it is destructed and it unregisters and destructs its display interactor as well.
   m_MouseModeSwitcher = 0;
-
-  std::vector<mitk::SliceNavigationController*> sliceNavigationControllers(3);
-  sliceNavigationControllers[0] = GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-  sliceNavigationControllers[1] = GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
-  sliceNavigationControllers[2] = GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
-
-  // Here we create our own display interactor...
-  m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(sliceNavigationControllers);
-  m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml");
-  m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
-
-  // ... and register it as listener via the micro services.
-  mitk::ServiceProperties props;
-  props["name"] = std::string("DisplayInteractor");
-  m_DisplayInteractorService = mitk::GetModuleContext()->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
 }
 
 QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
 {
-  // Unregister the display interactor.
-  m_DisplayInteractorService.Unregister();
+  // Release the display interactor.
+  this->SetDisplayInteractionEnabled(false);
 
   if (mitkWidget1 != NULL && m_AxialSliceTag != 0)
   {
@@ -1755,7 +1740,6 @@ void QmitkMIDASStdMultiWidget::MoveBy(QmitkRenderWindow *renderWindow, double ho
     shift[0] = horizontalShift;
     shift[1] = verticalShift;
 
-    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
     displayGeometry->MoveBy(shift);
   }
 }
@@ -1812,4 +1796,43 @@ int QmitkMIDASStdMultiWidget::GetSliceUpDirection(MIDASOrientation orientation) 
     result = mitk::GetUpDirection(m_Geometry, orientation);
   }
   return result;
+}
+
+void QmitkMIDASStdMultiWidget::SetDisplayInteractionEnabled(bool enabled)
+{
+  if (enabled == this->IsDisplayInteractionEnabled())
+  {
+    // Already enabled/disabled.
+    return;
+  }
+
+  if (enabled)
+  {
+    std::vector<mitk::SliceNavigationController*> sliceNavigationControllers(3);
+    sliceNavigationControllers[0] = GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+    sliceNavigationControllers[1] = GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+    sliceNavigationControllers[2] = GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+
+    // Here we create our own display interactor...
+    m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(sliceNavigationControllers);
+    m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml");
+    m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
+
+    // ... and register it as listener via the micro services.
+    mitk::ServiceProperties props;
+    props["name"] = std::string("DisplayInteractor");
+    m_DisplayInteractorService = mitk::GetModuleContext()->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
+  }
+  else
+  {
+    // Unregister the display interactor service.
+    m_DisplayInteractorService.Unregister();
+    // Release the display interactor to let it be desctructed.
+    m_DisplayInteractor = 0;
+  }
+}
+
+bool QmitkMIDASStdMultiWidget::IsDisplayInteractionEnabled() const
+{
+  return m_DisplayInteractor.IsNotNull();
 }
