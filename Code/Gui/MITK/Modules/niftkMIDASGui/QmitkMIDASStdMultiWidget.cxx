@@ -1808,13 +1808,19 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionEnabled(bool enabled)
 
   if (enabled)
   {
+    std::vector<mitk::BaseRenderer*> renderers(4);
+    for (unsigned i = 0; i < 4; ++i)
+    {
+      renderers[i] = m_RenderWindows[i]->GetRenderer();
+    }
+
     std::vector<mitk::SliceNavigationController*> sliceNavigationControllers(3);
     sliceNavigationControllers[0] = GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
     sliceNavigationControllers[1] = GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
     sliceNavigationControllers[2] = GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
 
     // Here we create our own display interactor...
-    m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(sliceNavigationControllers);
+    m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers, sliceNavigationControllers);
     m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml");
     m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
 

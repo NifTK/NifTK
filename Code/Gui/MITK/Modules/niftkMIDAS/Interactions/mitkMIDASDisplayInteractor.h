@@ -24,6 +24,7 @@
 
 namespace mitk
 {
+  class BaseRenderer;
   class SliceNavigationController;
 
   /**
@@ -50,8 +51,8 @@ namespace mitk
   {
   public:
     mitkClassMacro(MIDASDisplayInteractor, EventStateMachine)
-    // MIDAS customisation: slice navigation controllers passed as arguments
-    mitkNewMacro1Param(Self, const std::vector<mitk::SliceNavigationController*>&);
+    // MIDAS customisation: renderers and slice navigation controllers passed as arguments
+    mitkNewMacro2Param(Self, const std::vector<mitk::BaseRenderer*>&, const std::vector<mitk::SliceNavigationController*>&);
 
     /**
      * By this function the Observer gets notifier about new events.
@@ -63,7 +64,7 @@ namespace mitk
 
   protected:
     // MIDAS customisation: slice navigation controllers passed as arguments
-    MIDASDisplayInteractor(const std::vector<mitk::SliceNavigationController*>& sliceNavigationControllers);
+    MIDASDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers, const std::vector<mitk::SliceNavigationController*>& sliceNavigationControllers);
     virtual ~MIDASDisplayInteractor();
     /**
      * Derived function.
@@ -181,11 +182,14 @@ namespace mitk
 
     // MIDAS customisation: slice navigation controllers for zooming around the crosshair
     /**
+     * Renderers of the MIDASStdMultiWidget that this display interactor belongs to.
+     */
+    std::vector<mitk::BaseRenderer*> m_Renderers;
+
+    /**
      * Slice navigation controllers of the MIDASStdMultiWidget that this display interactor belongs to.
-     * At start of the zooming the crosshair has to
      */
     std::vector<mitk::SliceNavigationController*> m_SliceNavigationControllers;
-
   };
 }
 #endif
