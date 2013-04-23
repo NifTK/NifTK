@@ -1258,25 +1258,36 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
 
       m_BlockDisplayGeometryEvents = true;
 
+      double xShift, yShift, zShift;
       if (renderWindow == this->GetRenderWindow1())
       {
         this->MoveBy(this->GetRenderWindow2(), -verticalShift, 0.0);
         this->MoveBy(this->GetRenderWindow3(), horizontalShift, 0.0);
+        xShift = horizontalShift;
+        yShift = verticalShift;
+        zShift = 0.0;
       }
       else if (renderWindow == this->GetRenderWindow2())
       {
         this->MoveBy(this->GetRenderWindow1(), 0.0, -horizontalShift);
         this->MoveBy(this->GetRenderWindow3(), 0.0, verticalShift);
+        xShift = 0.0;
+        yShift = -horizontalShift;
+        zShift = verticalShift;
       }
       else if (renderWindow == this->GetRenderWindow3())
       {
         this->MoveBy(this->GetRenderWindow1(), horizontalShift, 0.0);
         this->MoveBy(this->GetRenderWindow2(), 0.0, verticalShift);
+        xShift = horizontalShift;
+        yShift = 0.0;
+        zShift = verticalShift;
       }
 
       m_BlockDisplayGeometryEvents = false;
 
       this->RequestUpdate();
+      emit OriginChanged(xShift, yShift, zShift);
     }
   }
 }
@@ -1380,13 +1391,12 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation ori
 {
   int sliceNumber = 0;
 
-  const mitk::Geometry3D *geometry = m_Geometry;
-  if (geometry != NULL)
+  if (m_Geometry != NULL)
   {
     mitk::Index3D voxelPoint;
     mitk::Point3D millimetrePoint = this->GetCrossPosition();
 
-    geometry->WorldToIndex(millimetrePoint, voxelPoint);
+    m_Geometry->WorldToIndex(millimetrePoint, voxelPoint);
 
     int axis = m_OrientationToAxisMap[orientation];
     sliceNumber = voxelPoint[axis];
@@ -1741,6 +1751,26 @@ void QmitkMIDASStdMultiWidget::MoveBy(QmitkRenderWindow *renderWindow, double ho
     shift[1] = verticalShift;
 
     displayGeometry->MoveBy(shift);
+  }
+}
+
+void QmitkMIDASStdMultiWidget::MoveBy(double xShift, double yShift, double zShift)
+{
+  if (xShift != 0.0 || yShift != 0.0 || zShift != 0.0)
+  {
+    // horizontal movement in axial <-> horizontal movement in coronal
+    // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
+    // vertical movement in sagittal <-> vertical movement in coronal
+
+    m_BlockDisplayGeometryEvents = true;
+
+    this->MoveBy(this->GetRenderWindow1(), xShift, yShift);
+    this->MoveBy(this->GetRenderWindow2(), -yShift, zShift);
+    this->MoveBy(this->GetRenderWindow3(), xShift, zShift);
+
+    m_BlockDisplayGeometryEvents = false;
+
+    this->RequestUpdate();
   }
 }
 

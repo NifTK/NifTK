@@ -191,6 +191,9 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
+  /// \brief Moves the images by the given shift.
+  void MoveBy(double xShift, double yShift, double zShift);
+
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   double GetMagnificationFactor() const;
 
@@ -233,6 +236,7 @@ signals:
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void OriginChanged(double xShift, double yShift, double zShift);
   void MagnificationFactorChanged(double magnificationFactor);
 
 protected slots:
