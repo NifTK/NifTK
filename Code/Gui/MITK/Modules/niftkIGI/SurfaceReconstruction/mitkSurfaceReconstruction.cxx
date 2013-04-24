@@ -75,11 +75,11 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
     const void* leftPtr = leftReadAccess.GetData();
     const void* rightPtr = rightReadAccess.GetData();
 
-    // FIXME: number of channels???
-    int numComponents = 4;
+    int numComponents = image1->GetPixelType().GetNumberOfComponents();
+    assert(image2->GetPixelType().GetNumberOfComponents() == numComponents);
 
     // mitk images are tightly packed (i hope)
-    int bytesPerRow = width * numComponents;
+    int bytesPerRow = width * numComponents * (image1->GetPixelType().GetBitsPerComponent() / 8);
 
     IplImage  leftIpl;
     cvInitImageHeader(&leftIpl, cvSize(width, height), IPL_DEPTH_8U, numComponents);

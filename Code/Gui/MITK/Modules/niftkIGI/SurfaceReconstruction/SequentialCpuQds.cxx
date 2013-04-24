@@ -18,10 +18,15 @@
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/video/tracking.hpp>
+#include <boost/typeof/typeof.hpp>
+#include <boost/static_assert.hpp>
 
 #ifdef _OMP
 #include <omp.h>
 #endif
+
+
+BOOST_STATIC_ASSERT((sizeof(mitk::RefPoint) == sizeof(boost::gil::dev2n16_pixel_t)));
 
 
 namespace mitk 
@@ -198,7 +203,7 @@ IplImage* SequentialCpuQds::CreateDisparityImage() const
 //-----------------------------------------------------------------------------
 void SequentialCpuQds::InitSparseFeatures()
 {
-  CvSize  templateSize = cvSize((m_LeftIpl.width / 72) | 0x1, (m_LeftIpl.width / 72) | 0x1);
+  CvSize  templateSize = cvSize((m_LeftIpl.width / 36) | 0x1, (m_LeftIpl.width / 36) | 0x1);
   double  minSeparationDistance = m_LeftIpl.width / 36;
 
   m_SparseFeaturesLeft.resize(NUM_MAX_FEATURES);
@@ -224,7 +229,21 @@ void SequentialCpuQds::InitSparseFeatures()
   cvCalcOpticalFlowPyrLK(&m_LeftIpl, &m_RightIpl, 0, 0,
       &m_SparseFeaturesLeft[0], &m_SparseFeaturesRight[0], foundNumFeatures,
       templateSize, 3, &m_FeatureStatus[0], 0,
-      cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.0003), CV_LKFLOW_INITIAL_GUESSES);
+      cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.0003), 0 | CV_LKFLOW_INITIAL_GUESSES);
+
+#ifndef NDEBUG
+  // help with debugging this
+  // throw out all failed points, otherwise it's a mess trying to figure out which features were tracked and which were not
+  for (int i = m_SparseFeaturesLeft.size() - 1; i >= 0; --i)
+  {
+    if (m_FeatureStatus[i] == 0)
+    {
+      m_SparseFeaturesLeft.erase(m_SparseFeaturesLeft.begin() + i);
+      m_SparseFeaturesRight.erase(m_SparseFeaturesRight.begin() + i);
+      m_FeatureStatus.erase(m_FeatureStatus.begin() + i);
+    }
+  }
+#endif
 }
 
 
