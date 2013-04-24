@@ -46,6 +46,7 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
   m_SubSources.clear();
+  m_SubSources.push_back("IGIDataSource");
 }
 
 
@@ -279,14 +280,26 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 //-----------------------------------------------------------------------------
 double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 {
-  double lag = 0;
+  assert(m_SubSources.size() > 0);
+  return this->GetCurrentTimeLag(nowTime, m_SubSources.front());
+}
 
-  if (m_ActualData != NULL)
+
+//-----------------------------------------------------------------------------
+double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime, const std::string& name)
+{
+  double lag = 0;
+  igtlUint64 dataTime = 0;
+
+  if (m_SubSourcesLastTimeStamp.find(name) != m_SubSourcesLastTimeStamp.end())
   {
-    igtlUint64 dataTime = m_ActualData->GetTimeStampInNanoSeconds();
     lag = (double)nowTime - (double)dataTime;
+    lag /= 1000000000.0;
   }
-  lag /= 1000000000.0;
+  else
+  {
+    MITK_ERROR << "IGIDataSource::GetCurrentTimeLag: cannot find sub-source called:" << name << std::endl;
+  }
   return lag;
 }
 
@@ -385,6 +398,17 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
+  assert(m_SubSources.size() > 0);
+
+  std::map<std::string, igtlUint64> map;
+  map.insert(std::pair<std::string, igtlUint64>(m_SubSources.front(), data->GetTimeStampInNanoSeconds()));
+  return this->AddData(data, map);
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSource::AddData(mitk::IGIDataType* data, const std::map<std::string, igtlUint64>& timeStamps)
+{
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   bool result = false;
@@ -402,6 +426,15 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
     data->SetFrameId(m_CurrentFrameId++);
 
     m_Buffer.push_back(data);
+
+    if (timeStamps.size() > 0)
+    {
+      std::map<std::string, igtlUint64>::const_iterator iter;
+      for (iter = timeStamps.begin(); iter != timeStamps.end(); iter++)
+      {
+        m_SubSourcesLastTimeStamp.insert(std::pair<std::string, igtlUint64>((*iter).first, (*iter).second));
+      }
+    }
 
     if (m_Buffer.size() == 1)
     {
