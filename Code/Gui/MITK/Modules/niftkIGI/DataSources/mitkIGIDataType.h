@@ -41,14 +41,11 @@ public:
   mitkClassMacro(IGIDataType, itk::Object);
   itkNewMacro(IGIDataType);
 
-  itkSetMacro(DataSource, std::string);
-  itkGetMacro(DataSource, std::string);
-
   igtlUint64 GetTimeStampInNanoSeconds() const;
   void SetTimeStampInNanoSeconds(const igtlUint64& time);
 
-  itkSetMacro(Duration, unsigned long int);
-  itkGetMacro(Duration, unsigned long int);
+  itkSetMacro(Duration, igtlUint64);
+  itkGetMacro(Duration, igtlUint64);
 
   itkSetMacro(FrameId, unsigned long int);
   itkGetMacro(FrameId, unsigned long int);
@@ -77,9 +74,8 @@ protected:
 
 private:
 
-  std::string m_DataSource;
   igtl::TimeStamp::Pointer m_TimeStamp;
-  unsigned long int m_Duration;
+  igtlUint64 m_Duration;
   unsigned long int m_FrameId;
   bool m_IsSaved;
   bool m_ShouldBeSaved;

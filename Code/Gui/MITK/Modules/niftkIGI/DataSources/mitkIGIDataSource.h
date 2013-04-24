@@ -107,8 +107,8 @@ public:
    * in practice platforms such as Windows do not properly store nano-seconds,
    * so the best you can probably rely on is milliseconds.
    */
-  itkThreadSafeSetMacro(TimeStampTolerance, unsigned long int);
-  itkThreadSafeGetConstMacro(TimeStampTolerance, unsigned long int);
+  itkThreadSafeSetMacro(TimeStampTolerance, igtlUint64);
+  itkThreadSafeGetConstMacro(TimeStampTolerance, igtlUint64);
 
   /**
    * \brief Sets the file name prefix, for where to save data, as each
@@ -323,7 +323,7 @@ private:
   igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   mitk::IGIDataType*                              m_ActualData;
-  unsigned long int                               m_TimeStampTolerance;
+  igtlUint64                                      m_TimeStampTolerance;
   std::list<std::string>                          m_SubSources;
   std::map<std::string, igtlUint64>               m_SubSourcesLastTimeStamp;
 }; // end class
