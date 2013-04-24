@@ -74,6 +74,9 @@ const std::string mitk::MIDASTool::MIDAS_KEYPRESS_STATE_MACHINE_XML = std::strin
     "           <transition NAME=\"keyPressC\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4003\">"
     "             <action ID=\"350012\" />"
     "           </transition>"
+    "           <transition NAME=\"mouseButtonLeftDoubleClick\" NEXT_STATE_ID=\"1\" EVENT_ID=\"8\">"
+    "             <action ID=\"350013\" />"
+    "           </transition>"
     "         </state>"
     "      </stateMachine>"
   );

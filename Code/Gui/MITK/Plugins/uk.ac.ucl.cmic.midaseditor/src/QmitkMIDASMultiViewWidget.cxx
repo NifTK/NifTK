@@ -97,6 +97,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
+, m_SingleWindowLayout(MIDAS_VIEW_CORONAL)
+, m_MultiWindowLayout(MIDAS_VIEW_ORTHO)
 {
   assert(visibilityManager);
 
@@ -408,6 +410,28 @@ void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(MIDASDefaultInterpol
 void QmitkMIDASMultiViewWidget::SetDefaultViewType(MIDASView midasView)
 {
   m_VisibilityManager->SetDefaultViewType(midasView);
+  if (::IsSingleWindowLayout(midasView))
+  {
+    this->SetDefaultSingleWindowLayout(midasView);
+  }
+  else
+  {
+    this->SetDefaultMultiWindowLayout(midasView);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetDefaultSingleWindowLayout(MIDASView midasView)
+{
+  m_SingleWindowLayout = midasView;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetDefaultMultiWindowLayout(MIDASView midasView)
+{
+  m_MultiWindowLayout = midasView;
 }
 
 
@@ -882,7 +906,7 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
   }
   if (found)
   {
-    std::vector<QmitkRenderWindow*> renderWindows = view->GetSelectedRenderWindows();
+    std::vector<QmitkRenderWindow*> renderWindows = view->GetVisibleRenderWindows();
     if (renderWindows.size() == 1 && renderWindow == renderWindows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
     {
       // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
@@ -1323,7 +1347,7 @@ void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView midasView)
 void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
-  std::vector<QmitkRenderWindow*> renderWindows = this->m_SingleViewWidgets[selectedViewIndex]->GetSelectedRenderWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = this->m_SingleViewWidgets[selectedViewIndex]->GetVisibleRenderWindows();
 
   if (renderWindows.size() > 0)
   {
@@ -1393,6 +1417,50 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
+{
+  QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
+  MIDASView midasView = selectedView->GetView();
+
+  if (::IsSingleWindowLayout(midasView))
+  {
+    this->SwitchMIDASView(m_MultiWindowLayout);
+  }
+  else
+  {
+    QmitkRenderWindow* selectedRenderWindow = selectedView->GetSelectedRenderWindow();
+    mitk::BaseRenderer* renderer = selectedRenderWindow->GetRenderer();
+    std::string rendererName = renderer->GetName();
+    MIDASView nextMidasView;
+    if (rendererName == "stdmulti.widget1")
+    {
+      nextMidasView = MIDAS_VIEW_AXIAL;
+    }
+    else if (rendererName == "stdmulti.widget2")
+    {
+      nextMidasView = MIDAS_VIEW_SAGITTAL;
+    }
+    else if (rendererName == "stdmulti.widget3")
+    {
+      nextMidasView = MIDAS_VIEW_CORONAL;
+    }
+    else if (rendererName == "stdmulti.widget4")
+    {
+      nextMidasView = MIDAS_VIEW_3D;
+    }
+    else
+    {
+      MITK_INFO << "QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout() unknown renderer name: " << rendererName << std::endl;
+    }
+    this->SwitchMIDASView(nextMidasView);
+  }
+
+  m_MIDASOrientationWidget->SetToView(midasView);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
@@ -1419,6 +1487,15 @@ void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
         viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetCoronalWindow());
       }
     }
+  }
+
+  if (::IsSingleWindowLayout(midasView))
+  {
+    m_SingleWindowLayout = midasView;
+  }
+  else
+  {
+    m_MultiWindowLayout = midasView;
   }
 }
 
@@ -1535,23 +1612,11 @@ int QmitkMIDASMultiViewWidget::GetSelectedViewIndex() const
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
+QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetSelectedRenderWindow() const
 {
   // NOTE: This MUST always return not-null.
-
-  QmitkRenderWindow *window = NULL;
-  std::vector<QmitkRenderWindow*> selectedRenderWindows;
-
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
-
-  selectedRenderWindows = selectedView->GetSelectedRenderWindows();
-  if (selectedRenderWindows.size() == 0)
-  {
-    selectedRenderWindows = selectedView->GetRenderWindows();
-  }
-  window = selectedRenderWindows[0];
-
-  return window;
+  return selectedView->GetSelectedRenderWindow();
 }
 
 

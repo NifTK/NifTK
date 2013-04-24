@@ -107,6 +107,12 @@ public:
   /// \brief Sets the default view (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
   void SetDefaultViewType(MIDASView midasView);
 
+  /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultSingleWindowLayout(MIDASView midasView);
+
+  /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultMultiWindowLayout(MIDASView midasView);
+
   /// \brief Sets the default drop type checkbox.
   void SetDropTypeWidget(MIDASDropType dropType);
 
@@ -176,6 +182,9 @@ public:
   /// \brief Switch to Coronal.
   bool SwitchToCoronal();
 
+  /// \brief Switch the from single window to multiple windows or back
+  bool ToggleMultiWindowLayout();
+
   /// \brief Sets whether the interaction is enabled, and a single viewer.
   void SetMIDASSegmentationMode(bool enabled);
 
@@ -200,7 +209,7 @@ public:
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
    */
-  virtual QmitkRenderWindow* GetActiveRenderWindow() const;
+  virtual QmitkRenderWindow* GetSelectedRenderWindow() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetRenderWindows(), where we return all render windows for all widgets.
@@ -420,6 +429,8 @@ private:
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
   double                                         m_PreviousMagnificationFactor;
+  MIDASView                                      m_SingleWindowLayout;
+  MIDASView                                      m_MultiWindowLayout;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

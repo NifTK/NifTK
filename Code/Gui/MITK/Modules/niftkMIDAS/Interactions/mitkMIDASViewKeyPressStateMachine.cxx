@@ -31,6 +31,7 @@ MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char * stateM
   CONNECT_ACTION( 350003, SwitchToAxial );
   CONNECT_ACTION( 350004, SwitchToSagittal );
   CONNECT_ACTION( 350005, SwitchToCoronal );
+  CONNECT_ACTION( 350013, ToggleMultiWindowLayout );
 }
 
 
@@ -45,6 +46,7 @@ float MIDASViewKeyPressStateMachine::CanHandleEvent(const StateEvent *event) con
           || event->GetId() == 4013 // Q
           || event->GetId() == 4016 // W
           || event->GetId() == 19   // E
+          || event->GetId() == 8    // left mouse button double click
           )
       )
   {
@@ -89,6 +91,12 @@ bool MIDASViewKeyPressStateMachine::SwitchToSagittal(Action*, const StateEvent*)
 bool MIDASViewKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToCoronal();
+}
+
+//-----------------------------------------------------------------------------
+bool MIDASViewKeyPressStateMachine::ToggleMultiWindowLayout(Action*, const StateEvent*)
+{
+  return m_Responder->ToggleMultiWindowLayout();
 }
 
 } // end namespace
