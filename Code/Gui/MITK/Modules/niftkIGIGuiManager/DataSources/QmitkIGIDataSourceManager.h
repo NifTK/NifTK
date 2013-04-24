@@ -261,7 +261,12 @@ private:
    *
    * \see OnUpdateGui
    */
-  void UpdateToolDisplay(int toolIdentifier);
+  void UpdateSourceView(int sourceIdentifier);
+
+  /**
+   * \brief Called by UpdateSourceView to actually instantiate the extra rows needed dynamically.
+   */
+  void InstantiateRelatedSources(const int& rowNumber);
 
   /**
    * \brief Adds a message to the QmitkIGIDataSourceManager console.

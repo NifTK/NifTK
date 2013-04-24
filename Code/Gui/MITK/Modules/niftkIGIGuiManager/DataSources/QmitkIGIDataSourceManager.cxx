@@ -389,12 +389,12 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
   source->SetIdentifier(m_NextSourceIdentifier);
   m_Sources.push_back(source);
 
-  // Registers this class as a listener to any status updates and connects to UpdateToolDisplay.
+  // Registers this class as a listener to any status updates and connects to UpdateSourceView.
   // This means that regardless of the tool type, this class will receive a signal, and then
   // callback to the tool to ask for the necessary data to update the GUI row.
   source->DataSourceStatusUpdated
     += mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
-        this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
+        this, &QmitkIGIDataSourceManager::UpdateSourceView );
 
   // Force an update.
   source->DataSourceStatusUpdated.Send(m_NextSourceIdentifier);
@@ -434,7 +434,7 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   // De-registers this class as a listener to this source.
   source->DataSourceStatusUpdated
     -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
-        this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
+        this, &QmitkIGIDataSourceManager::UpdateSourceView );
 
   // FIXME: The list of RelatedSources is kept in mitkIGIDataSource, so the idea of having
   // linked sources is not unique to network tools. So we either move the "related sources"
@@ -462,7 +462,7 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
           {
             tempSource->DataSourceStatusUpdated
              -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
-             this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
+             this, &QmitkIGIDataSourceManager::UpdateSourceView );
 
             m_TableWidget->removeRow(i);
             m_TableWidget->update();
@@ -551,114 +551,132 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
+void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
 {
-  /*
-  int rowNumber = this->GetSourceNumberFromIdentifier(toolIdentifier);
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  if (rowNumber >= 0 && rowNumber <  (int)m_Sources.size())
+  // This method should only be called from UpdateSourceView, so we are assuming rowNumber is a valid array index.
+  std::string type = m_Sources[rowNumber]->GetType();
+  std::string description = m_Sources[rowNumber]->GetDescription();
+  std::string device = m_Sources[rowNumber]->GetName();
+  std::list<std::string> subSources = m_Sources[rowNumber]->GetRelatedSources();
+  int numberOfSubSources = subSources.size();
+
+  std::string subSource;
+  int index=0;
+
+  if ( numberOfSubSources > 0 )
   {
-    std::string status = m_Sources[rowNumber]->GetStatus();
-    std::string type = m_Sources[rowNumber]->GetType();
-    std::string device = m_Sources[rowNumber]->GetName();
-    std::string description = m_Sources[rowNumber]->GetDescription();
-
-    std::list<std::string> subSources = m_Sources[rowNumber]->GetSubSources();
-    int numberOfSubSources = subSources.size();
-
-    std::string subSource;
-    int index=0;
-    if ( numberOfSubSources > 0 )
+    foreach ( subSource, subSources )
     {
-      foreach ( Tool, ToolList )
+      //this is horrible
+      int thisType = -1;
+      if ( type == "Tracker" || type == "Imager" )
       {
-        //this is horrible
-        int thisType = -1;
-        if ( type == "Tracker" || type == "Imager" )
+
+        if ( type == "Tracker" )
         {
+          thisType = 0 ;
+        }
+        if ( type == "Imager" )
+        {
+          thisType = 1;
+        }
 
-          if ( type == "Tracker" )
+        mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
+        QmitkIGINiftyLinkDataSource::Pointer NLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
+        bool ToolAlreadyAdded = false;
+        for (int i = 0 ; i <  (int)m_Sources.size() ; i ++ )
+        {
+          //FIXME Tools with the same name being tracked by a different tracker
+          //(on a separate port) will confuse this
+          if ( m_Sources[i]->GetDescription() == subSource  )
           {
-            thisType = 0 ;
+            ToolAlreadyAdded = true;
           }
-          if ( type == "Imager" )
-          {
-            thisType = 1;
-          }
+        }
 
-          mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
-          QmitkIGINiftyLinkDataSource::Pointer NLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
-          bool ToolAlreadyAdded = false;
-          for (int i = 0 ; i <  (int)m_Sources.size() ; i ++ )
+        if ( ! ToolAlreadyAdded )
+        {
+          if ( index == 0 )
           {
-            //FIXME Tools with the same name being tracked by a different tracker
-            //(on a separate port) will confuse this
-            if ( m_Sources[i]->GetDescription() == Tool  )
+            description=subSource;
+            NLSource->SetDescription(subSource);
+          }
+          else
+          {
+            int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
+
+            int tempRowNumber = this->GetSourceNumberFromIdentifier(tempToolIdentifier);
+            if ( type == "Tracker" )
             {
-              ToolAlreadyAdded = true;
-            }
-          }
-
-          if ( ! ToolAlreadyAdded )
-          {
-            if ( index == 0 )
-            {
-              description=Tool;
-              NLSource->SetDescription(Tool);
+              mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
+              QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
+              QmitkIGITrackerTool* TrackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
+              m_Sources[tempRowNumber]->SetDescription(subSource);
+              TrackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
             }
             else
             {
-              int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
-
-              int tempRowNumber = this->GetSourceNumberFromIdentifier(tempToolIdentifier);
-              if ( type == "Tracker" )
-              {
-                mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
-                QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
-                QmitkIGITrackerTool* TrackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
-                m_Sources[tempRowNumber]->SetDescription(Tool);
-                TrackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
-              }
-              else
-              {
-                m_Sources[tempRowNumber]->SetType(type);
-                m_Sources[tempRowNumber]->SetName(device);
-                m_Sources[tempRowNumber]->SetDescription(Tool);
-              }
+              m_Sources[tempRowNumber]->SetType(type);
+              m_Sources[tempRowNumber]->SetName(device);
+              m_Sources[tempRowNumber]->SetDescription(subSource);
             }
           }
         }
-        index++;
       }
+      index++;
     }
-    else
-    {
-      qDebug() << "there are no sub tools";
-    }
-
-    std::vector<std::string> fields;
-    fields.push_back(status);
-    fields.push_back(type);
-    fields.push_back(device);
-    fields.push_back(description);
-
-    if (rowNumber == m_TableWidget->rowCount())
-    {
-      m_TableWidget->insertRow(rowNumber);
-    }
-
-    for (unsigned int i = 0; i < fields.size(); i++)
-    {
-      QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
-      item->setTextAlignment(Qt::AlignCenter);
-      item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-
-      m_TableWidget->setItem(rowNumber, i, item);
-    }
-
-    m_TableWidget->show();
   }
-  */
+  else
+  {
+    qDebug() << "there are no sub tools";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::UpdateSourceView(int sourceIdentifier)
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  // Assumption:
+  // rowNumber == sourceNumber, i.e. same thing, and should be a valid array index into m_Sources.
+
+  int rowNumber = this->GetSourceNumberFromIdentifier(sourceIdentifier);
+  assert(rowNumber >= 0);
+  assert(rowNumber < (int)m_Sources.size());
+
+  std::string status = m_Sources[rowNumber]->GetStatus();
+  std::string type = m_Sources[rowNumber]->GetType();
+  std::string device = m_Sources[rowNumber]->GetName();
+  std::string description = m_Sources[rowNumber]->GetDescription();
+
+  // If we have related sources then, add the necessary rows to the sources.
+  // Note: this->AddSource is called from within this->InstantiateRelatedSources
+  // which will itself force UpdateSourceView and end up back here, with a deeper call stack.
+  this->InstantiateRelatedSources(rowNumber);
+
+  std::vector<std::string> fields;
+  fields.push_back(status);
+  fields.push_back(type);
+  fields.push_back(device);
+  fields.push_back(description);
+
+  if (rowNumber == m_TableWidget->rowCount())
+  {
+    m_TableWidget->insertRow(rowNumber);
+  }
+
+  for (unsigned int i = 0; i < fields.size(); i++)
+  {
+    QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
+    item->setTextAlignment(Qt::AlignCenter);
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+    m_TableWidget->setItem(rowNumber, i, item);
+  }
+  m_TableWidget->show();
 }
 
 
