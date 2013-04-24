@@ -18,7 +18,6 @@
 #include "niftkIGIGuiManagerExports.h"
 #include "ui_QmitkIGIDataSourceManager.h"
 #include <itkObject.h>
-#include <itkFastMutexLock.h>
 #include <QWidget>
 #include <QList>
 #include <QGridLayout>
@@ -215,7 +214,6 @@ private slots:
 
 private:
 
-  itk::FastMutexLock::Pointer               m_Mutex;
   mitk::DataStorage                        *m_DataStorage;
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;

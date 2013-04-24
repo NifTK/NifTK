@@ -327,8 +327,6 @@ int QmitkIGIDataSourceManager::GetIdentifierFromSourceNumber(int sourceNumber)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnAddSource()
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   mitk::IGIDataSource::SourceTypeEnum sourceType =
       static_cast<mitk::IGIDataSource::SourceTypeEnum>(
           m_SourceSelectComboBox->itemData(m_SourceSelectComboBox->currentIndex()).toInt()
@@ -352,8 +350,6 @@ void QmitkIGIDataSourceManager::OnAddSource()
 //------------------------------------------------
 int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourceType, int portNumber, NiftyLinkSocketObject* socket)
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   mitk::IGIDataSource::Pointer source = NULL;
 
   if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER || sourceType == mitk::IGIDataSource::SOURCE_TYPE_IMAGER)
@@ -424,8 +420,6 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRemoveSource()
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   if (m_TableWidget->rowCount() == 0)
     return;
 
@@ -506,8 +500,6 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   QmitkIGIDataSourceGui* sourceGui = NULL;
 
   mitk::IGIDataSource* source = m_Sources[row];
@@ -558,8 +550,6 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   // This method should only be called from UpdateSourceView, so we are assuming rowNumber is a valid array index.
   mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
   mitk::IGIDataSource::SourceTypeEnum sourceType = m_Sources[rowNumber]->GetSourceType();
@@ -633,8 +623,6 @@ void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::UpdateSourceView(int sourceIdentifier)
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   // Assumption:
   // rowNumber == sourceNumber, i.e. same thing, and should be a valid array index into m_Sources.
 
@@ -678,9 +666,6 @@ void QmitkIGIDataSourceManager::UpdateSourceView(int sourceIdentifier)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
-
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
