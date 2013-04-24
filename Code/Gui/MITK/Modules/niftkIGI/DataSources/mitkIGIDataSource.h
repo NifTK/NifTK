@@ -153,7 +153,7 @@ public:
   /**
    * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
    */
-  virtual void UpdateFrameRate();
+  virtual float UpdateFrameRate();
 
   /**
    * \brief Get the time stamp of the most recently requested time-point.
@@ -286,6 +286,14 @@ private:
    * and then stamps it the data object with the save status and filename.
    */
   bool DoSaveData(mitk::IGIDataType* data);
+
+  /**
+   * \brief Private method that checks the ActualData timestamp.
+   *
+   * Its a separate method, so it can be called as a private method from
+   * within this class, and hence there is no locking of the class m_Mutex.
+   */
+  bool IsWithinTimeTolerance() const;
 
   itk::FastMutexLock::Pointer                     m_Mutex;
   std::set<mitk::DataNode::Pointer>               m_DataNodes;

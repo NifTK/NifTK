@@ -542,7 +542,7 @@ void QmitkIGITrackerTool::GetCurrentTipPosition()
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
 
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
-  mitk::IGIDataType* data = this->RequestData(idNow);
+  mitk::IGIDataType* data = NULL; // Matt: temporary comment this out. this->RequestData(idNow);
 
   if (data != NULL)
   {

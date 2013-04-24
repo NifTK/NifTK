@@ -662,9 +662,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       float rate = 0;
       double lag = 0;
 
-//      isValid = source->ProcessData(idNow);
-      source->UpdateFrameRate();
-      rate = source->GetFrameRate();
+      isValid = source->ProcessData(idNow);
+      rate = source->UpdateFrameRate();
       lag = source->GetCurrentTimeLag(idNow);
 
       // Update the frame rate number.
