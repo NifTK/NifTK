@@ -57,12 +57,6 @@ public:
   mitkClassMacro(IGIDataSource, itk::Object);
 
   /**
-   * \brief Each source should signal when the status has updated by
-   * emitting its internal identifier, so that for example the GUI can redraw.
-   */
-  Message1<int> DataSourceStatusUpdated;
-
-  /**
    * \brief Sources can have an optional Initialize function to perform any setup after construction,
    * with this class providing a default, do-nothing implementation.
    */

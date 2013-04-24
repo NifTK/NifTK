@@ -28,10 +28,12 @@
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
+#include "QmitkIGIDataSource.h"
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
+class QGridLayout;
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -172,6 +174,18 @@ private slots:
   void OnUpdateGui();
 
   /**
+   * \brief Works out the table row, then updates the fields in the GUI.
+   *
+   * In comparison with OnUpdateGui, this method is just for updating the table
+   * of available sources. Importantly, there is a use case where we need to dynamically
+   * add rows. When a tool (typically a networked tool) provides information that
+   * there should be additional related sources, we have to dynamically create them.
+   *
+   * \see OnUpdateGui
+   */
+  void OnUpdateSourceView(const int& sourceIdentifier);
+
+  /**
    * \brief Tells each data source to clean data, see mitk::IGIDataSource::CleanData().
    */
   void OnCleanData();
@@ -218,7 +232,7 @@ private:
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
   QSet<int>                                 m_PortsInUse;
-  std::vector<mitk::IGIDataSource::Pointer> m_Sources;
+  std::vector<QmitkIGIDataSource::Pointer>  m_Sources;
   unsigned int                              m_NextSourceIdentifier;
 
   QColor                                    m_ErrorColour;
@@ -248,18 +262,6 @@ private:
    * so this returns the identifier or -1 if not found.
    */
   int GetIdentifierFromSourceNumber(int sourceNumber);
-
-  /**
-   * \brief Works out the table row, then updates the fields in the GUI.
-   *
-   * In comparison with OnUpdateGui, this method is just for updating the table
-   * of available sources. Importantly, there is a use case where we need to dynamically
-   * add rows. When a tool (typically a networked tool) provides information that
-   * there should be additional related sources, we have to dynamically create them.
-   *
-   * \see OnUpdateGui
-   */
-  void UpdateSourceView(int sourceIdentifier);
 
   /**
    * \brief Called by UpdateSourceView to actually instantiate the extra rows needed dynamically.

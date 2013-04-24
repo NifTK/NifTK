@@ -47,6 +47,18 @@ public:
    */
   virtual void SetSavingInterval(int seconds);
 
+  /**
+   * \brief To force the DataSourceStatusUpdated signal.
+   */
+  void EmitDataSourceStatusUpdatedSignal();
+
+signals:
+
+  /**
+   * \brief Signal for when the data source has updated to tell the GUI to redraw.
+   */
+  void DataSourceStatusUpdated(int);
+
 protected:
 
   QmitkIGIDataSource(mitk::DataStorage* storage); // Purposefully hidden.

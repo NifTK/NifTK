@@ -74,7 +74,7 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
   // Must delete the current GUI before the sources.
   this->DeleteCurrentGuiWidget();
 
-  // smart pointers should delete the sources, and each source should delete its data.
+  // Smart pointers delete each source.
   m_Sources.clear();
 }
 
@@ -146,7 +146,7 @@ void QmitkIGIDataSourceManager::SetDataStorage(mitk::DataStorage* dataStorage)
 {
   m_DataStorage = dataStorage;
 
-  foreach (mitk::IGIDataSource *source, m_Sources)
+  foreach (QmitkIGIDataSource *source, m_Sources)
   {
     source->SetDataStorage(dataStorage);
   }
@@ -350,7 +350,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
 //------------------------------------------------
 int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourceType, int portNumber, NiftyLinkSocketObject* socket)
 {
-  mitk::IGIDataSource::Pointer source = NULL;
+  QmitkIGIDataSource::Pointer source = NULL;
 
   if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER || sourceType == mitk::IGIDataSource::SOURCE_TYPE_IMAGER)
   {
@@ -388,20 +388,18 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
   source->SetSourceType(sourceType);
   source->SetIdentifier(m_NextSourceIdentifier);
 
-  m_Sources.push_back(source);
-
-  // Registers this class as a listener to any status updates and connects to UpdateSourceView.
-  // This means that regardless of the tool type, this class will receive a signal, and then
-  // callback to the tool to ask for the necessary data to update the GUI row.
-  source->DataSourceStatusUpdated
-    += mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
-        this, &QmitkIGIDataSourceManager::UpdateSourceView );
-
-  // Force an update.
-  source->DataSourceStatusUpdated.Send(m_NextSourceIdentifier);
-
   // Increase this so that tools always have new identifier, regardless of what row of the table they are in.
   m_NextSourceIdentifier++;
+
+  m_Sources.push_back(source);
+
+  // Registers this class as a listener to any status updates and connects to OnUpdateSourceView.
+  // This means that regardless of the tool type, this class will receive a signal, and then
+  // callback to the tool to ask for the necessary data to update the GUI row.
+  connect(source.GetPointer(), SIGNAL(DataSourceStatusUpdated(int)), this, SLOT(OnUpdateSourceView(int)));
+
+  // Force an update.
+  this->OnUpdateSourceView(source->GetIdentifier());
 
    // Launch timers
   if (!m_GuiUpdateTimer->isActive())
@@ -412,7 +410,6 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
   {
     m_ClearDownTimer->start();
   }
-
   return source->GetIdentifier();
 }
 
@@ -428,12 +425,10 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   if (rowIndex < 0)
     rowIndex = m_TableWidget->rowCount()-1;
 
-  mitk::IGIDataSource::Pointer source = m_Sources[rowIndex];
+  QmitkIGIDataSource::Pointer source = m_Sources[rowIndex];
 
-  // De-registers this class as a listener to this source.
-  source->DataSourceStatusUpdated
-    -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
-        this, &QmitkIGIDataSourceManager::UpdateSourceView );
+  // Disconnect from signal.
+  disconnect(source, 0, this, 0);
 
   // FIXME: The list of RelatedSources is kept in mitkIGIDataSource, so the idea of having
   // linked sources is not unique to network tools. So we either move the "related sources"
@@ -452,16 +447,14 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
     {
       if ( i != rowIndex ) 
       {
-        mitk::IGIDataSource::Pointer tempSource = m_Sources[i];
+        QmitkIGIDataSource::Pointer tempSource = m_Sources[i];
         QmitkIGINiftyLinkDataSource::Pointer tempNiftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(tempSource.GetPointer());
         if ( tempNiftyLinkSource.IsNotNull() ) 
         {
           int tempPortNumber = tempNiftyLinkSource->GetPort();
           if ( tempPortNumber == portNumber ) 
           {
-            tempSource->DataSourceStatusUpdated
-             -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
-             this, &QmitkIGIDataSourceManager::UpdateSourceView );
+            disconnect(tempSource, 0, this, 0);
 
             m_TableWidget->removeRow(i);
             m_TableWidget->update();
@@ -551,7 +544,7 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
 {
   // This method should only be called from UpdateSourceView, so we are assuming rowNumber is a valid array index.
-  mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
+  QmitkIGIDataSource::Pointer source = m_Sources[rowNumber];
   mitk::IGIDataSource::SourceTypeEnum sourceType = m_Sources[rowNumber]->GetSourceType();
   std::string type = m_Sources[rowNumber]->GetType();
   std::string description = m_Sources[rowNumber]->GetDescription();
@@ -595,7 +588,7 @@ void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
 
             if ( sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER )
             {
-              mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
+              QmitkIGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
               QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
               QmitkIGITrackerTool* trackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
               m_Sources[tempRowNumber]->SetDescription(subSource);
@@ -621,7 +614,7 @@ void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::UpdateSourceView(int sourceIdentifier)
+void QmitkIGIDataSourceManager::OnUpdateSourceView(const int& sourceIdentifier)
 {
   // Assumption:
   // rowNumber == sourceNumber, i.e. same thing, and should be a valid array index into m_Sources.
@@ -676,7 +669,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     // Iterate over all sources, so where we have linked sources,
     // such as a tracker, tracking multiple tools, we have one row for
     // each tool. So each tool is a separate source.
-    foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+    foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
     {
       // Work out the sourceNumber == rowNumber.
       int rowNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
@@ -751,7 +744,7 @@ void QmitkIGIDataSourceManager::OnCleanData()
   }
 
   // If we are active, then simply ask each buffer to clean up in turn.
-  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
   {
     source->CleanBuffer();
   }
@@ -781,7 +774,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   QDir directory(baseDirectory + QDir::separator() + formattedTime);
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
 
-  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
   {
     source->ClearBuffer();
     source->SetSavePrefix(directory.absolutePath().toStdString());
@@ -798,7 +791,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRecordStop()
 {
-  foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
+  foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
   {
     source->SetSavingMessages(false);
   }

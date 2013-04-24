@@ -25,7 +25,6 @@
   virtual type Get##name () const \
   { \
     itkDebugMacro("returning " << #name " of " << this->m_##name ); \
-    itk::MutexLockHolder<itk::FastMutexLock> lock(*this->m_Mutex); \
     return this->m_##name; \
   }
 
