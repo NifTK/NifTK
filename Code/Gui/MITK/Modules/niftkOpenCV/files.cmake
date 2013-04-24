@@ -27,6 +27,7 @@ set(CPP_FILES
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
   CameraCalibration/mitkCorrectImageDistortion.cxx
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
+  CameraCalibration/mitkHandeyeCalibrate.cxx
   Registration/mitkRegistrationHelper.cxx
   Registration/mitkStereoImageToModelMetric.cxx
   Registration/mitkStereoImageToModelSSD.cxx

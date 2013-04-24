@@ -39,7 +39,7 @@ set(PROJECT_PLUGINS
   Plugins/it.unito.cim.intensityprofile:ON
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
-  Plugins/uk.ac.ucl.cmic.igitagtracker:OFF
+  Plugins/uk.ac.ucl.cmic.igitagtracker:ON
   Plugins/uk.ac.ucl.cmic.igisurfacerecon:OFF
   Plugins/uk.ac.ucl.cmic.igitrackedimage:OFF
   Plugins/uk.ac.ucl.cmic.igitrackedpointer:OFF

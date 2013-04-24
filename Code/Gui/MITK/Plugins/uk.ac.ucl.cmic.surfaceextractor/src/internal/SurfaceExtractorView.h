@@ -50,6 +50,11 @@ public:
 
 protected:
 
+  /**
+   * \see mitk::ILifecycleAwarePart::PartActivated
+   */
+  virtual void Activated();
+
   /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);
 

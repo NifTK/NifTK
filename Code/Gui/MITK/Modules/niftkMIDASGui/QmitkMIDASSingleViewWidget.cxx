@@ -122,6 +122,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(PositionChanged(QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkRenderWindow*,mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
+  connect(m_MultiWidget, SIGNAL(OriginChanged(double, double, double)), this, SLOT(OnOriginChanged(double, double, double)));
   connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(double)), this, SLOT(OnMagnificationFactorChanged(double)));
 }
 
@@ -138,6 +139,11 @@ void QmitkMIDASSingleViewWidget::OnNodesDropped(QmitkMIDASStdMultiWidget *widget
 void QmitkMIDASSingleViewWidget::OnPositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
 {
   emit PositionChanged(this, window, voxelLocation, millimetreLocation, sliceNumber, orientation);
+}
+
+void QmitkMIDASSingleViewWidget::OnOriginChanged(double xShift, double yShift, double zShift)
+{
+  emit OriginChanged(this, xShift, yShift, zShift);
 }
 
 void QmitkMIDASSingleViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
@@ -342,6 +348,16 @@ bool QmitkMIDASSingleViewWidget::GetNavigationControllerEventListening() const
   return m_NavigationControllerEventListening;
 }
 
+void QmitkMIDASSingleViewWidget::SetDisplayInteractionEnabled(bool enabled)
+{
+  m_MultiWidget->SetDisplayInteractionEnabled(enabled);
+}
+
+bool QmitkMIDASSingleViewWidget::IsDisplayInteractionEnabled() const
+{
+  return m_MultiWidget->IsDisplayInteractionEnabled();
+}
+
 void QmitkMIDASSingleViewWidget::RequestUpdate()
 {
   m_MultiWidget->RequestUpdate();
@@ -542,6 +558,11 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
       this->m_ViewInitialised[Index(view)] = true;
     }
   } // end view != MIDAS_VIEW_UNKNOWN
+}
+
+void QmitkMIDASSingleViewWidget::MoveBy(double xShift, double yShift, double zShift)
+{
+  this->m_MultiWidget->MoveBy(xShift, yShift, zShift);
 }
 
 double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const

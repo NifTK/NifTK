@@ -18,7 +18,6 @@ SET(MY_APP_NAME NiftyMIDAS)
 SET(_exclude_plugins
   org.mitk.gui.qt.pointsetinteraction
   org.mitk.gui.qt.stdmultiwidgeteditor
-  org.mitk.gui.qt.volumevisualization
   it.unito.cim.intensityprofile 
   uk.ac.ucl.cmic.breastsegmentation
   uk.ac.ucl.cmic.gui.qt.niftyview

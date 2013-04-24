@@ -26,11 +26,12 @@
 #include <mitkSliceNavigationController.h>
 #include <mitkStandaloneDataStorage.h>
 
-mitk::MIDASDisplayInteractor::MIDASDisplayInteractor(const std::vector<mitk::SliceNavigationController*>& sliceNavigationControllers)
+mitk::MIDASDisplayInteractor::MIDASDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers, const std::vector<mitk::SliceNavigationController*>& sliceNavigationControllers)
 : m_IndexToSliceModifier(4)
 , m_AutoRepeat(false)
 , m_AlwaysReact(false)
-,  m_ZoomFactor(2)
+, m_ZoomFactor(2)
+, m_Renderers(renderers)
 , m_SliceNavigationControllers(sliceNavigationControllers)
 {
   // MIDAS customisation:
@@ -54,7 +55,11 @@ void mitk::MIDASDisplayInteractor::Notify(InteractionEvent* interactionEvent, bo
   // the event is passed to the state machine interface to be handled
   if (!isHandled || m_AlwaysReact)
   {
-    this->HandleEvent(interactionEvent, NULL);
+    mitk::BaseRenderer* sender = interactionEvent->GetSender();
+    if (std::find(m_Renderers.begin(), m_Renderers.end(), sender) != m_Renderers.end())
+    {
+      this->HandleEvent(interactionEvent, NULL);
+    }
   }
 }
 
@@ -86,6 +91,7 @@ bool mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* i
   // In the MIDASStdMultiWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
+  // This crashes if the DnD display is closed and reopened.
   m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);
   m_SliceNavigationControllers[1]->SelectSliceByPoint(positionInWorld);
   m_SliceNavigationControllers[2]->SelectSliceByPoint(positionInWorld);

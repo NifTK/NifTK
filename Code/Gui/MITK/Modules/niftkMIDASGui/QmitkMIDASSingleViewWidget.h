@@ -224,6 +224,9 @@ public:
   /// \brief In contrast to SetView this method does as little as possible, to be analagous to just switching the orientation.
   void SwitchView(MIDASView view);
 
+  /// \brief Moves the images by the given shift.
+  void MoveBy(double xShift, double yShift, double zShift);
+
   /// \brief Set the current magnification factor.
   void SetMagnificationFactor(double magnificationFactor);
 
@@ -235,6 +238,12 @@ public:
 
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
+
+  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
+  void SetDisplayInteractionEnabled(bool enabled);
+
+  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
+  bool IsDisplayInteractionEnabled() const;
 
   /// \brief Returns the current intersection point of the 3 orthogonal planes.
   mitk::Point3D GetSelectedPosition() const;
@@ -262,6 +271,7 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void OriginChanged(QmitkMIDASSingleViewWidget *widget, double xShift, double yShift, double zShift);
   void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, double magnificationFactor);
 
 protected slots:
@@ -269,6 +279,7 @@ protected slots:
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   virtual void OnPositionChanged(QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  virtual void OnOriginChanged(double xShift, double yShift, double zShift);
   virtual void OnMagnificationFactorChanged(double magnificationFactor);
 
 private:

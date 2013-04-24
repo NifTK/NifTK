@@ -269,6 +269,9 @@ protected slots:
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
+  /// \brief Called when the origin is changed by moving in a renderer window.
+  void OnOriginChanged(QmitkMIDASSingleViewWidget *widget, double xShift, double yShift, double zShift);
+
   /// \brief Called when the magnification is changed by zooming in a renderer window.
   void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *view, double magnificationFactor);
 
@@ -409,7 +412,6 @@ private:
   int                                            m_NumberOfColumnsInNonThumbnailMode;
   int                                            m_NumberOfRowsBeforeSegmentationMode;
   int                                            m_NumberOfColumnsBeforeSegmentationMode;
-  bool                                           m_InteractionEnabled;
   bool                                           m_Show2DCursors;
   bool                                           m_Show3DViewInOrthoview;
   QColor                                         m_BackgroundColour;
@@ -417,7 +419,6 @@ private:
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
-  bool                                           m_InteractorsEnabled;
   double                                         m_PreviousMagnificationFactor;
 };
 
