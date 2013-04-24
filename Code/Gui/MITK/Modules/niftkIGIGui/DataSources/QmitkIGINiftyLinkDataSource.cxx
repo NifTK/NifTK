@@ -123,7 +123,7 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
   QString descr = QString("Address=") +  clientInfo->GetClientIP()
       + QString(":") + clientInfo->GetClientPort();
   
-  //Don't set description for trackers
+  // Don't set description for trackers
   if ( clientInfo->GetDeviceType() != "Tracker" ) 
     this->SetDescription(descr.toStdString());
 

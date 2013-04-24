@@ -264,6 +264,11 @@ private:
   int GetIdentifierFromSourceNumber(int sourceNumber);
 
   /**
+   * \brief
+   */
+  void UpdateSourceView(const int& sourceIdentifier, bool instantiateRelatedSources);
+
+  /**
    * \brief Called by UpdateSourceView to actually instantiate the extra rows needed dynamically.
    */
   void InstantiateRelatedSources(const int& rowNumber);
