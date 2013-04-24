@@ -882,7 +882,7 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
   }
   if (found)
   {
-    std::vector<QmitkRenderWindow*> renderWindows = view->GetSelectedRenderWindows();
+    std::vector<QmitkRenderWindow*> renderWindows = view->GetVisibleRenderWindows();
     if (renderWindows.size() == 1 && renderWindow == renderWindows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
     {
       // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
@@ -1323,7 +1323,7 @@ void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView midasView)
 void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
-  std::vector<QmitkRenderWindow*> renderWindows = this->m_SingleViewWidgets[selectedViewIndex]->GetSelectedRenderWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = this->m_SingleViewWidgets[selectedViewIndex]->GetVisibleRenderWindows();
 
   if (renderWindows.size() > 0)
   {
@@ -1393,9 +1393,21 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::SwitchWindowLayout()
+bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::SwitchWindowLayout()" << std::endl;
+  MIDASView midasView = m_SingleViewWidgets[this->GetSelectedViewIndex()]->GetView();
+
+  if (::IsSingleWindowLayout(midasView))
+  {
+    // TODO Add functionality here.
+  }
+  else
+  {
+    // TODO Add functionality here.
+    this->GetActiveRenderWindow();
+  }
+
+  m_MIDASOrientationWidget->SetToView(midasView);
   return true;
 }
 
@@ -1548,16 +1560,16 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
   // NOTE: This MUST always return not-null.
 
   QmitkRenderWindow *window = NULL;
-  std::vector<QmitkRenderWindow*> selectedRenderWindows;
+  std::vector<QmitkRenderWindow*> visibleRenderWindows;
 
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
 
-  selectedRenderWindows = selectedView->GetSelectedRenderWindows();
-  if (selectedRenderWindows.size() == 0)
+  visibleRenderWindows = selectedView->GetVisibleRenderWindows();
+  if (visibleRenderWindows.size() == 0)
   {
-    selectedRenderWindows = selectedView->GetRenderWindows();
+    visibleRenderWindows = selectedView->GetRenderWindows();
   }
-  window = selectedRenderWindows[0];
+  window = visibleRenderWindows[0];
 
   return window;
 }

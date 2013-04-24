@@ -146,14 +146,16 @@ public:
   /// \brief Returns true if this widget is selected and false otherwise.
   bool IsSelected() const;
 
-  /// \brief More specific, will put the border round just the selected window,
-  /// but still the whole of this widget is considered "selected".
+  /// \brief Returns the selected window, that is the one with the coloured border.
+  QmitkRenderWindow* GetSelectedRenderWindow() const;
+
+  /// \brief Selects the render window and puts put a coloured border round it.
   void SetSelectedRenderWindow(QmitkRenderWindow* renderWindow);
 
   /// \brief Returns the specifically selected render window, which may be 1 if the viewer is
   /// showing a single axial, coronal or sagittal plane, or may be up to 4 if the viewer
   /// is displaying the ortho view.
-  std::vector<QmitkRenderWindow*> GetSelectedRenderWindows() const;
+  std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
   std::vector<QmitkRenderWindow*> GetRenderWindows() const;

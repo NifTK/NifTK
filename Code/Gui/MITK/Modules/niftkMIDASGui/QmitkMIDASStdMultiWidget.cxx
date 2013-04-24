@@ -320,6 +320,28 @@ bool QmitkMIDASStdMultiWidget::IsSelected() const
   return m_IsSelected;
 }
 
+QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetSelectedRenderWindow() const
+{
+  QmitkRenderWindow* selectedRenderWindow = 0;
+  if (m_RectangleRendering1->IsEnabled())
+  {
+    selectedRenderWindow = this->GetRenderWindow1();
+  }
+  else if (m_RectangleRendering2->IsEnabled())
+  {
+    selectedRenderWindow = this->GetRenderWindow2();
+  }
+  else if (m_RectangleRendering3->IsEnabled())
+  {
+    selectedRenderWindow = this->GetRenderWindow3();
+  }
+  else if (m_RectangleRendering4->IsEnabled())
+  {
+    selectedRenderWindow = this->GetRenderWindow4();
+  }
+  return selectedRenderWindow;
+}
+
 void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   // When we "Select", the selection is at the level of the QmitkMIDASStdMultiWidget
@@ -368,27 +390,27 @@ void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* render
   this->ForceImmediateUpdate();
 }
 
-std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetSelectedRenderWindows() const
+std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetVisibleRenderWindows() const
 {
-  std::vector<QmitkRenderWindow*> selectedRenderWindows;
+  std::vector<QmitkRenderWindow*> renderWindows;
 
   if (m_RectangleRendering1->IsEnabled())
   {
-    selectedRenderWindows.push_back(this->GetRenderWindow1());
+    renderWindows.push_back(this->GetRenderWindow1());
   }
   if (m_RectangleRendering2->IsEnabled())
   {
-    selectedRenderWindows.push_back(this->GetRenderWindow2());
+    renderWindows.push_back(this->GetRenderWindow2());
   }
   if (m_RectangleRendering3->IsEnabled())
   {
-    selectedRenderWindows.push_back(this->GetRenderWindow3());
+    renderWindows.push_back(this->GetRenderWindow3());
   }
   if (m_RectangleRendering4->IsEnabled())
   {
-    selectedRenderWindows.push_back(this->GetRenderWindow4());
+    renderWindows.push_back(this->GetRenderWindow4());
   }
-  return selectedRenderWindows;
+  return renderWindows;
 }
 
 void QmitkMIDASStdMultiWidget::RequestUpdate()

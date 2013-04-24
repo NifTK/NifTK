@@ -170,14 +170,19 @@ bool QmitkMIDASSingleViewWidget::IsSelected() const
   return m_MultiWidget->IsSelected();
 }
 
+QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetSelectedRenderWindow() const
+{
+  return m_MultiWidget->GetSelectedRenderWindow();
+}
+
 void QmitkMIDASSingleViewWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   m_MultiWidget->SetSelectedRenderWindow(renderWindow);
 }
 
-std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetSelectedRenderWindows() const
+std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetVisibleRenderWindows() const
 {
-  return m_MultiWidget->GetSelectedRenderWindows();
+  return m_MultiWidget->GetVisibleRenderWindows();
 }
 
 std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetRenderWindows() const

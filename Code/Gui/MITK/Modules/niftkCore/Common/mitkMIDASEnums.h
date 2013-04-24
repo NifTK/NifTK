@@ -69,6 +69,27 @@ enum MIDASView
   MIDAS_VIEW_AX_SAG_V = 14
 };
 
+
+/*!
+ * \brief Returns true if the view contains only one window, otherwise false.
+ */
+inline bool IsSingleWindowLayout(MIDASView midasView)
+{
+  return midasView == MIDAS_VIEW_AXIAL ||
+      midasView == MIDAS_VIEW_SAGITTAL ||
+      midasView == MIDAS_VIEW_CORONAL ||
+      midasView == MIDAS_VIEW_3D;
+}
+
+
+/*!
+ * \brief Returns true if the view contains multiple windows, otherwise false.
+ */
+inline bool IsMultiWindowLayout(MIDASView midasView)
+{
+  return !IsSingleWindowLayout(midasView);
+}
+
 /*!
  * \brief The number of the possible views.
  */

@@ -53,7 +53,7 @@ public:
   virtual bool SwitchToCoronal() = 0;
 
   /// \brief Switch window layout.
-  virtual bool SwitchWindowLayout() = 0;
+  virtual bool ToggleMultiWindowLayout() = 0;
 };
 
 } // end namespace

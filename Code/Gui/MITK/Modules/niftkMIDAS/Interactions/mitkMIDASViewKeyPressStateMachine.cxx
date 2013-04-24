@@ -31,7 +31,7 @@ MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char * stateM
   CONNECT_ACTION( 350003, SwitchToAxial );
   CONNECT_ACTION( 350004, SwitchToSagittal );
   CONNECT_ACTION( 350005, SwitchToCoronal );
-  CONNECT_ACTION( 350013, SwitchWindowLayout );
+  CONNECT_ACTION( 350013, ToggleMultiWindowLayout );
 }
 
 
@@ -94,9 +94,9 @@ bool MIDASViewKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
 }
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::SwitchWindowLayout(Action*, const StateEvent*)
+bool MIDASViewKeyPressStateMachine::ToggleMultiWindowLayout(Action*, const StateEvent*)
 {
-  return m_Responder->SwitchWindowLayout();
+  return m_Responder->ToggleMultiWindowLayout();
 }
 
 } // end namespace
