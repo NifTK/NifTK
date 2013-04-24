@@ -56,22 +56,19 @@ public:
   {
     // Note that the scaling changes the scale factor *and* the origin,
     // while the moving changes the origin only.
-    mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
-    double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
 
-    // Zooming the image.
-    if (scaleFactor != m_LastScaleFactor)
+    mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
+    if (origin != m_LastOrigin)
     {
       m_StdMultiWidget->OnOriginChanged(m_RenderWindow);
-      m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow);
       m_LastOrigin = origin;
-      m_LastScaleFactor = scaleFactor;
     }
-    // Moving the image. Note the "else" keyword.
-    else if (origin != m_LastOrigin)
+
+    double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
+    if (scaleFactor != m_LastScaleFactor)
     {
-      m_StdMultiWidget->OnOriginChanged(m_RenderWindow, origin[0] - m_LastOrigin[0], origin[1] - m_LastOrigin[1]);
-      m_LastOrigin = origin;
+      m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow);
+      m_LastScaleFactor = scaleFactor;
     }
   }
 
@@ -186,6 +183,11 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::New();
   onCoronalSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASStdMultiWidget::OnCoronalSliceChanged );
   m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
+
+  // The image centre is at the middle of the display at the beginning.
+  m_Centre[0] = 0.5;
+  m_Centre[1] = 0.5;
+  m_Centre[2] = 0.5;
 
   // Listen to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
@@ -1239,57 +1241,74 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
   return result;
 }
 
-void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, double horizontalShift, double verticalShift)
+void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow)
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    // Remembering the origin per render window.
-    mitk::BaseRenderer* baseRenderer = renderWindow->GetRenderer();
-    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
-    const mitk::Vector2D& origin = displayGeometry->GetOriginInMM();
-    m_Origins[renderWindow] = origin;
+    mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
 
-    // If the image was shifted we shift it in the two other render windows accordingly.
-    if (horizontalShift != 0.0 || verticalShift != 0.0)
+    mitk::ScalarType scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+    const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
+
+    const mitk::Vector2D& origin = displayGeometry->GetOriginInDisplayUnits();
+    mitk::Vector2D imageSize;
+    imageSize[0] = worldGeometry->GetExtent(0);
+    imageSize[1] = worldGeometry->GetExtent(1);
+    mitk::Vector2D imageSizeScaled = imageSize / scaleFactor;
+    mitk::Vector2D imageCentre = imageSizeScaled / 2 - origin;
+    mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
+    mitk::Vector2D centre2D;
+    centre2D[0] = imageCentre[0] / displaySize[0];
+    centre2D[1] = imageCentre[1] / displaySize[1];
+
+    if (renderWindow == this->GetRenderWindow1())
     {
-      // horizontal movement in axial <-> horizontal movement in coronal
-      // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
-      // vertical movement in sagittal <-> vertical movement in coronal
-
-      m_BlockDisplayGeometryEvents = true;
-
-      double xShift, yShift, zShift;
-      if (renderWindow == this->GetRenderWindow1())
-      {
-        this->MoveBy(this->GetRenderWindow2(), -verticalShift, 0.0);
-        this->MoveBy(this->GetRenderWindow3(), horizontalShift, 0.0);
-        xShift = horizontalShift;
-        yShift = verticalShift;
-        zShift = 0.0;
-      }
-      else if (renderWindow == this->GetRenderWindow2())
-      {
-        this->MoveBy(this->GetRenderWindow1(), 0.0, -horizontalShift);
-        this->MoveBy(this->GetRenderWindow3(), 0.0, verticalShift);
-        xShift = 0.0;
-        yShift = -horizontalShift;
-        zShift = verticalShift;
-      }
-      else if (renderWindow == this->GetRenderWindow3())
-      {
-        this->MoveBy(this->GetRenderWindow1(), horizontalShift, 0.0);
-        this->MoveBy(this->GetRenderWindow2(), 0.0, verticalShift);
-        xShift = horizontalShift;
-        yShift = 0.0;
-        zShift = verticalShift;
-      }
-
-      m_BlockDisplayGeometryEvents = false;
-
-      this->RequestUpdate();
-      emit OriginChanged(xShift, yShift, zShift);
+      m_Centre[0] = centre2D[0];
+      m_Centre[1] = centre2D[1];
     }
+    else if (renderWindow == this->GetRenderWindow2())
+    {
+      m_Centre[1] = 1.0 - centre2D[0];
+      m_Centre[2] = centre2D[1];
+    }
+    else if (renderWindow == this->GetRenderWindow3())
+    {
+      m_Centre[0] = centre2D[0];
+      m_Centre[2] = centre2D[1];
+    }
+
+    // horizontal movement in axial <-> horizontal movement in coronal
+    // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
+    // vertical movement in sagittal <-> vertical movement in coronal
+
+    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+    for (int i = 0; i < 3; ++i)
+    {
+      QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
+      if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
+      {
+        mitk::Vector2D origin = this->ComputeOrigin(otherRenderWindow, m_Centre);
+        this->SetOrigin(otherRenderWindow, origin);
+      }
+    }
+
+    this->RequestUpdate();
+    emit CentreChanged(m_Centre);
   }
+}
+
+void QmitkMIDASStdMultiWidget::SetOrigin(QmitkRenderWindow *renderWindow, const mitk::Vector2D& origin)
+{
+  mitk::Vector2D originInMM;
+
+  mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+
+  displayGeometry->DisplayToWorld(origin, originInMM);
+
+  m_BlockDisplayGeometryEvents = true;
+  displayGeometry->SetOriginInMM(originInMM);
+  m_BlockDisplayGeometryEvents = false;
 }
 
 void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWindow)
@@ -1304,8 +1323,6 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
       // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
       // that corresponds to the rules given at the top of the header file.
 
-      m_BlockDisplayGeometryEvents = true;
-
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
       {
@@ -1316,8 +1333,6 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
           this->ZoomDisplayAboutCrosshair(otherRenderWindow, zoomScaleFactor);
         }
       }
-
-      m_BlockDisplayGeometryEvents = false;
 
       m_MagnificationFactor = magnificationFactor;
       this->RequestUpdate();
@@ -1425,6 +1440,78 @@ unsigned int QmitkMIDASStdMultiWidget::GetTime() const
   return snc->GetTime()->GetPos();
 }
 
+const mitk::Vector3D& QmitkMIDASStdMultiWidget::GetCentre() const
+{
+  return m_Centre;
+}
+
+void QmitkMIDASStdMultiWidget::SetCentre(const mitk::Vector3D& centre)
+{
+  if (m_Centre == centre)
+  {
+    return;
+  }
+
+  m_Centre = centre;
+
+  // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+  for (int i = 0; i < 3; ++i)
+  {
+    QmitkRenderWindow* renderWindow = m_RenderWindows[i];
+    if (renderWindow->isVisible())
+    {
+      mitk::Vector2D origin = this->ComputeOrigin(renderWindow, m_Centre);
+      this->SetOrigin(renderWindow, origin);
+    }
+  }
+
+  this->RequestUpdate();
+  emit CentreChanged(m_Centre);
+}
+
+mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector3D& centre)
+{
+  mitk::Vector2D centre2D;
+  if (renderWindow == this->GetRenderWindow1())
+  {
+    centre2D[0] = centre[0];
+    centre2D[1] = centre[1];
+  }
+  else if (renderWindow == this->GetRenderWindow2())
+  {
+    centre2D[0] = 1.0 - centre[1];
+    centre2D[1] = centre[2];
+  }
+  else if (renderWindow == this->GetRenderWindow3())
+  {
+    centre2D[0] = centre[0];
+    centre2D[1] = centre[2];
+  }
+
+  return this->ComputeOrigin(renderWindow, centre2D);
+}
+
+mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& centre2D)
+{
+  mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+  mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
+  const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
+
+  mitk::Vector2D imageSize;
+  imageSize[0] = worldGeometry->GetExtent(0);
+  imageSize[1] = worldGeometry->GetExtent(1);
+  mitk::ScalarType scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+
+  mitk::Vector2D imageSizeScaled = imageSize / (2 * scaleFactor);
+  mitk::Vector2D centreInPixel;
+  centreInPixel[0] = centre2D[0] * displaySize[0];
+  centreInPixel[1] = centre2D[1] * displaySize[1];
+  mitk::Vector2D origin = imageSizeScaled - centreInPixel;
+
+  return origin;
+}
+
 double QmitkMIDASStdMultiWidget::GetMagnificationFactor() const
 {
   return m_MagnificationFactor;
@@ -1442,8 +1529,6 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
   // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
   // that corresponds to the rules given at the top of the header file.
 
-  m_BlockDisplayGeometryEvents = true;
-
   // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
   for (int i = 0; i < 3; ++i)
   {
@@ -1454,8 +1539,6 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
       this->ZoomDisplayAboutCrosshair(renderWindow, zoomScaleFactor);
     }
   }
-
-  m_BlockDisplayGeometryEvents = false;
 
   m_MagnificationFactor = magnificationFactor;
   this->RequestUpdate();
@@ -1713,13 +1796,10 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *rend
   if (renderWindow != NULL)
   {
     // I'm using assert statements, because fundamentally, if the render window exists, so should all the other objects.
-    mitk::SliceNavigationController* sliceNavigationController = renderWindow->GetSliceNavigationController();
-    assert(sliceNavigationController);
+    mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+    assert(renderer);
 
-    mitk::BaseRenderer* baseRenderer = sliceNavigationController->GetRenderer();
-    assert(baseRenderer);
-
-    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
+    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
     assert(displayGeometry);
 
     const mitk::Point3D& crossPosition = this->GetCrossPosition();
@@ -1730,47 +1810,12 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *rend
     displayGeometry->Map(crossPosition, projectedCentreInMillimeters);
     displayGeometry->WorldToDisplay(projectedCentreInMillimeters, projectedCentreInPixels);
 
-    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
-    displayGeometry->Zoom(scaleFactor, projectedCentreInPixels);
-  }
-}
-
-void QmitkMIDASStdMultiWidget::MoveBy(QmitkRenderWindow *renderWindow, double horizontalShift, double verticalShift)
-{
-  if (renderWindow != NULL)
-  {
-    // I'm using assert statements, because fundamentally, if the render window exists, so should all the other objects.
-    mitk::BaseRenderer* baseRenderer = renderWindow->GetRenderer();
-    assert(baseRenderer);
-
-    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
-    assert(displayGeometry);
-
-    mitk::Vector2D shift;
-    shift[0] = horizontalShift;
-    shift[1] = verticalShift;
-
-    displayGeometry->MoveBy(shift);
-  }
-}
-
-void QmitkMIDASStdMultiWidget::MoveBy(double xShift, double yShift, double zShift)
-{
-  if (xShift != 0.0 || yShift != 0.0 || zShift != 0.0)
-  {
-    // horizontal movement in axial <-> horizontal movement in coronal
-    // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
-    // vertical movement in sagittal <-> vertical movement in coronal
-
     m_BlockDisplayGeometryEvents = true;
 
-    this->MoveBy(this->GetRenderWindow1(), xShift, yShift);
-    this->MoveBy(this->GetRenderWindow2(), -yShift, zShift);
-    this->MoveBy(this->GetRenderWindow3(), xShift, zShift);
+    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
+    displayGeometry->Zoom(scaleFactor, projectedCentreInPixels);
 
     m_BlockDisplayGeometryEvents = false;
-
-    this->RequestUpdate();
   }
 }
 
