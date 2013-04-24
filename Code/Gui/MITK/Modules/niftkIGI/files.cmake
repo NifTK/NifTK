@@ -17,4 +17,7 @@ set(CPP_FILES
   DataSources/mitkIGIDataType.cxx
   DataSources/mitkIGIDataSource.cxx
   DataSources/mitkIGIOpenCVDataType.cxx
+  SurfaceReconstruction/mitkSurfaceReconstruction.cxx
+  TrackedImage/mitkTrackedImageCommand.cxx
+  TrackedPointer/mitkTrackedPointerCommand.cxx
 )

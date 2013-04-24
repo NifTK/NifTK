@@ -17,6 +17,9 @@
 
 #include "QmitkBaseView.h"
 #include <service/event/ctkEvent.h>
+#include <mitkDataNode.h>
+#include "ui_TagTrackerViewControls.h"
+#include <cv.h>
 
 /**
  * \class TagTrackerView
@@ -38,6 +41,11 @@ public:
    * \brief Static view ID = uk.ac.ucl.cmic.igitagtracker
    */
   static const std::string VIEW_ID;
+
+  /**
+   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
+   */
+  static const std::string NODE_ID;
 
   /**
    * \brief Returns the view ID.
@@ -64,9 +72,19 @@ protected:
 private slots:
   
   /**
-   * \brief We listen to the event bus to trigger updates.
+   * \brief We can listen to the event bus to trigger updates.
    */
   void OnUpdate(const ctkEvent& event);
+
+  /**
+   * \brief Or we can listed to a manual update button.
+   */
+  void OnManualUpdate();
+
+  /**
+   * \brief If any of the matrix file names change, we try to reload all matrices.
+   */
+  void OnFileNameChanged();
 
 private:
 
@@ -79,6 +97,29 @@ private:
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
    */
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+
+  /**
+   * \brief Loads a matrix.
+   */
+  void LoadMatrix(const QString& fileName, CvMat*& matrixToWriteTo);
+
+  /**
+   * \brief Main method to update tag positions.
+   */
+  void UpdateTags();
+
+  /** The Widgets. */
+  Ui::TagTrackerViewControls *m_Controls;
+
+  /** The Member Variables. */
+  CvMat *m_LeftIntrinsicMatrix;
+  CvMat *m_RightIntrinsicMatrix;
+  CvMat *m_RightToLeftRotationVector;
+  CvMat *m_RightToLeftTranslationVector;
+  bool m_ListenToEventBusPulse;
+  bool m_MonoLeftCameraOnly;
+  float m_MinSize;
+  float m_MaxSize;
 };
 
 #endif // TagTrackerView_h

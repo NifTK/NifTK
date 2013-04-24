@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef IMAGELOOKUPTABLESVIEWACTIVATOR_H
-#define IMAGELOOKUPTABLESVIEWACTIVATOR_H
+#ifndef ImageLookupTablesViewActivator_h
+#define ImageLookupTablesViewActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -37,6 +37,6 @@ public:
 
 }; // ImageLookupTablesViewActivator
 
-}
+} // end namespace
 
-#endif // IMAGELOOKUPTABLESVIEWACTIVATOR_H
+#endif

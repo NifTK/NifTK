@@ -24,7 +24,11 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include "video/sdiinput.h"
+#include "video/compress.h"
 #include <Mmsystem.h>
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cuda_gl_interop.h>
 
 
 // FIXME: this needs tidying up
@@ -40,6 +44,8 @@ struct QmitkIGINVidiaDataSourceImpl
   //  is never ever current to any thread and hence can be shared with new widgets while capture-context
   //  is happily working away. and tada it works :)
   QGLWidget*              oglshare;
+
+  CUcontext               cuContext;
 
   enum CaptureState
   {
@@ -59,13 +65,13 @@ struct QmitkIGINVidiaDataSourceImpl
   video::StreamFormat     format;
   int                     streamcount;
 
-  video::FrameInfo      last_successful_frame;
-
   // we keep our own copy of the texture ids (instead of relying on sdiin)
   //  so that another thread can easily get these
   // SDIInput is actively enforcing an opengl context check that's incompatible
   //  with the current threading situation
   int                     textureids[4];
+
+  video::Compressor*      compressor;
 
   volatile IplImage*      copyoutasap;
   QWaitCondition          copyoutfinished;
@@ -83,10 +89,18 @@ struct QmitkIGINVidiaDataSourceImpl
   // see QmitkIGINVidiaDataSource::GrabData().
   DWORD     m_LastSuccessfulFrame;
 
+  // used to detect whether record has stopped or not.
+  // there's no notification when the user clicked stop-record.
+  // QmitkIGINVidiaDataSource::GrabData(), bottom
+  bool  m_WasSavingMessagesPreviously;
+
+  // used in a log file to correlate times stamps, frame index and sequence number
+  unsigned int    m_NumFramesCompressed;
+
 public:
   QmitkIGINVidiaDataSourceImpl()
-    : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), lock(QMutex::Recursive), 
-      current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0)
+    : sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
+      current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), m_WasSavingMessagesPreviously(false), m_NumFramesCompressed(0)
   {
     std::memset(&textureids[0], 0, sizeof(textureids));
     // we create the opengl widget on the ui thread once
@@ -101,7 +115,34 @@ public:
     assert(oglshare->isValid());
     assert(oglwin->isSharing());
 
-    last_successful_frame.sequence_number = 0;
+    // we need to activate our capture context once for cuda setup
+    QGLContext* prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
+    oglwin->makeCurrent();
+
+    // Find out which gpu is rendering our window.
+    // We need to know because this is where the video comes in
+    // and on which we do compression.
+    int           cudadevices[10];
+    unsigned int  actualcudadevices = 0;
+    // note that zero is a valid device index
+    std::memset(&cudadevices[0], -1, sizeof(cudadevices));
+    if (cudaGLGetDevices(&actualcudadevices, &cudadevices[0], sizeof(cudadevices) / sizeof(cudadevices[0]), cudaGLDeviceListAll) == cudaSuccess)
+    {
+      if (cuCtxCreate(&cuContext, CU_CTX_SCHED_AUTO, cudadevices[0]) == CUDA_SUCCESS)
+      {
+        cuCtxGetCurrent(&cuContext);
+        // FIXME: do we need to pop the current context? is it leaking to the caller somehow?
+        CUcontext oldctx;
+        cuCtxPopCurrent(&oldctx);
+      }
+    }
+    // else case is not very interesting: we could be running this on non-nvidia hardware
+    // but we'll only know once we start enumerating sdi devices during QmitkIGINVidiaDataSource::GrabData()
+
+    if (prevctx)
+      prevctx->makeCurrent();
+    else
+      oglwin->doneCurrent();
   }
 
   ~QmitkIGINVidiaDataSourceImpl()
@@ -121,16 +162,24 @@ public:
       // we need the capture context for proper cleanup
       oglwin->makeCurrent();
 
+      delete compressor;
       delete sdiin;
       // we do not own sdidev!
       sdidev = 0;
     
       if (ctx)
         ctx->makeCurrent();
+      else
+        oglwin->doneCurrent();
     }
     catch (...)
     {
         std::cerr << "sdi cleanup threw exception" << std::endl;
+    }
+
+    if (cuContext)
+    {
+      cuCtxDestroy(cuContext);
     }
 
     delete oglshare;
@@ -155,6 +204,11 @@ public:
     delete sdiin;
     sdiin = 0;
     format = video::StreamFormat();
+    // even though this pimpl class doesnt use the compressor directly
+    // we should cleanup anyway.
+    // so that whenever video dies we get a new file (because format could differ!)
+    delete compressor;
+    compressor = 0;
 
     // find our capture card
     for (int i = 0; ; ++i)
@@ -187,7 +241,7 @@ public:
 
       if (format.format != video::StreamFormat::PF_NONE)
       {
-        sdiin = new video::SDIInput(sdidev, video::SDIInput::DO_NOTHING_SPECIAL, format.get_refreshrate());
+        sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS, format.get_refreshrate());
       }
     }
 
@@ -472,12 +526,8 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSource::GetRgbaImage(unsigned int se
 void QmitkIGINVidiaDataSource::GrabData()
 {
   assert(m_Pimpl != 0);
-
   assert(m_GrabbingThread == (QmitkIGILocalDataSourceGrabbingThread*) QThread::currentThread());
 
-
-  // FIXME: currently the grabbing thread's sole purpose is to call into this method
-  //        so we could just block it here with a while loop and do our capture stuff
 
   QMutexLocker    l(&m_Pimpl->lock);
 
@@ -589,21 +639,16 @@ void QmitkIGINVidiaDataSource::GrabData()
 
       igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
 
-      // Aim of this method is to do something like when a NiftyLink message comes in.
       mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
-
       wrapper->SetValues(1, fi.sequence_number, fi.arrival_time);
-
       wrapper->SetDataSource("QmitkIGINVidiaDataSource");
       wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
       wrapper->SetDuration(1000000000); // nanoseconds
 
+      // under certain circumstances, this might call back into SaveData()
       this->AddData(wrapper.GetPointer());
 
       this->SetStatus("Grabbing");
-
-      // We signal every time we receive data, rather than at the GUI refresh rate, otherwise video looks very odd.
-      //emit UpdateDisplay();
     }
   }
   // capture() might throw if the capture setup has become invalid
@@ -634,6 +679,17 @@ void QmitkIGINVidiaDataSource::GrabData()
     }
     m_Pimpl->copyoutasap = 0;
     m_Pimpl->copyoutfinished.wakeOne();
+  }
+
+  // because there's currently no notification when the user clicked stop-record
+  // we need to check this way to clean up the compressor.
+  if (m_Pimpl->m_WasSavingMessagesPreviously && !GetSavingMessages())
+  {
+    delete m_Pimpl->compressor;
+    m_Pimpl->compressor = 0;
+    m_Pimpl->m_WasSavingMessagesPreviously = false;
+
+    m_FrameMapLogFile.close();
   }
 }
 
@@ -667,9 +723,11 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           return false;
         }
 
+        // subimagheight counts for both fields, stacked on top of each other...
         int   subimagheight = frame.first->height / streamcount;
         IplImage  subimg;
-        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, frame.first->nChannels);
+        // ...while subimg will have half the height only, i.e. the top field only
+        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight / 2), IPL_DEPTH_8U, frame.first->nChannels);
         cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
 
         // Check if we already have an image on the node.
@@ -694,6 +752,12 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         if (imageInNode.IsNull())
         {
           mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
+          // our image is only half the pixel height!
+          // so tell the renderer/mitk/whatever that each pixel is actually two units tall
+          mitk::Vector3D  s = convertedImage->GetGeometry()->GetSpacing();
+          s[1] *= 2;
+          convertedImage->GetGeometry()->SetSpacing(s);
+
           node->SetData(convertedImage);
         }
         else
@@ -749,13 +813,118 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 //-----------------------------------------------------------------------------
 bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& outputFileName)
 {
+  assert(m_Pimpl != 0);
+  assert(m_GrabbingThread == (QmitkIGILocalDataSourceGrabbingThread*) QThread::currentThread());
+
   bool success = false;
   outputFileName = "";
 
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
   if (dataType.IsNotNull())
   {
-    // To do.
+    QMutexLocker    l(&m_Pimpl->lock);
+
+    // make sure nobody messes around with contexts
+    assert(QGLContext::currentContext() == m_Pimpl->oglwin->context());
+
+    // no record-stop-notification work around
+    m_Pimpl->m_WasSavingMessagesPreviously = true;
+
+    if (m_Pimpl->compressor == 0)
+    {
+      CUresult r = cuCtxPushCurrent(m_Pimpl->cuContext);
+      // die straight away
+      if (r != CUDA_SUCCESS)
+        return false;
+
+      std::pair<int, int> dim = m_Pimpl->get_capture_dimensions();
+
+      // FIXME: use qt for this
+      SYSTEMTIME  now;
+      GetSystemTime(&now);
+
+      std::string directoryPath = GetSavePrefix() + '/' + "QmitkIGINVidiaDataSource";
+      QDir directory(QString::fromStdString(directoryPath));
+      if (directory.mkpath(QString::fromStdString(directoryPath)))
+      {
+        std::ostringstream    filename;
+        filename << directoryPath << "/capture-" 
+          << now.wYear << '_' << now.wMonth << '_' << now.wDay << '-' << now.wHour << '_' << now.wMinute << '_' << now.wSecond;
+
+        std::string filenamebase = filename.str();
+
+        // we need a map for frame number -> wall clock
+        assert(!m_FrameMapLogFile.is_open());
+        m_FrameMapLogFile.open((filenamebase + ".framemap.log").c_str());
+        if (!m_FrameMapLogFile.is_open())
+        {
+          // should we continue if we dont have a frame map?
+          std::cerr << "WARNING: could not create frame map file!" << std::endl;
+        }
+        else
+        {
+          // dump a header line
+          m_FrameMapLogFile << "#framenumber sequencenumber channel timestamp" << std::endl;
+        }
+
+        // also keep sdi logs
+        m_Pimpl->sdiin->set_log_filename(filenamebase + ".sdicapture.log");
+
+        // when we get a new compressor we want to start counting from zero again
+        m_Pimpl->m_NumFramesCompressed = 0;
+
+        m_Pimpl->compressor = new video::Compressor(dim.first, dim.second, m_Pimpl->format.refreshrate * m_Pimpl->streamcount, filenamebase + ".264");
+      }
+    }
+    else
+    {
+      // we have compressor already so context should be all set up
+      // check it!
+      CUcontext ctx = 0;
+      CUresult r = cuCtxGetCurrent(&ctx);
+      // if for any reason we cant interact with cuda then there's no use of trying to do anything else
+      if (r != CUDA_SUCCESS)
+        return false;
+      assert(ctx == m_Pimpl->cuContext);
+    }
+
+    // find out which ringbuffer slot the request sequence number is in, if any
+    unsigned int requestedSN = dataType->GetSequenceNumber();
+    std::map<unsigned int, int>::iterator sloti = m_Pimpl->sn2slot_map.find(requestedSN);
+    if (sloti != m_Pimpl->sn2slot_map.end())
+    {
+      // sanity check
+      assert(m_Pimpl->slot2sn_map.find(sloti->second)->second == requestedSN);
+
+      // compress each stream
+      for (int i = 0; i < m_Pimpl->streamcount; ++i)
+      {
+        int tid = m_Pimpl->sdiin->get_texture_id(i, sloti->second);
+        assert(tid != 0);
+        // would need to do prepare() only once
+        // but more often is ok too
+        m_Pimpl->compressor->preparetexture(tid);
+        m_Pimpl->compressor->compresstexture(tid);
+
+        if (m_FrameMapLogFile.is_open())
+        {
+          m_FrameMapLogFile 
+            << m_Pimpl->m_NumFramesCompressed << '\t' 
+            << requestedSN << '\t'
+            << i << '\t'
+            << dataType->GetTimeStampInNanoSeconds() << '\t'
+            << std::endl;
+        }
+
+        m_Pimpl->m_NumFramesCompressed++;
+      }
+
+      success = true;
+    }
+    else
+    {
+      assert(false);
+    }
   }
 
   return success;

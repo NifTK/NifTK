@@ -16,16 +16,21 @@
 #define QMITKMIDASSTDMULTIWIDGET_H
 
 #include <niftkMIDASGuiExports.h>
-#include "mitkMIDASEnums.h"
-#include <QColor>
-#include <mitkDataStorage.h>
-#include <mitkDataNode.h>
-#include <mitkSliceNavigationController.h>
-#include <mitkGeometry3D.h>
-#include <QmitkStdMultiWidget.h>
+
 #include <itkConversionUtils.h>
 
+#include <QColor>
+
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkGeometry3D.h>
+#include <mitkSliceNavigationController.h>
+#include <mitkVector.h>
+#include <QmitkStdMultiWidget.h>
+
 #include <mitkMIDASDisplayInteractor.h>
+
+#include "mitkMIDASEnums.h"
 
 class vtkCamera;
 
@@ -186,6 +191,9 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
+  /// \brief Moves the images by the given shift.
+  void MoveBy(double xShift, double yShift, double zShift);
+
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   double GetMagnificationFactor() const;
 
@@ -217,11 +225,18 @@ public:
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
+  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
+  void SetDisplayInteractionEnabled(bool enabled);
+
+  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
+  bool IsDisplayInteractionEnabled() const;
+
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void OriginChanged(double xShift, double yShift, double zShift);
   void MagnificationFactorChanged(double magnificationFactor);
 
 protected slots:
@@ -255,12 +270,26 @@ private:
   /// \brief Scales a specific render window about it's centre.
   void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
 
+  /// \brief Scales a specific render window about the crosshair.
+  void ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor);
+
+  /// \brief Moves the image in a specific render window.
+  void MoveBy(QmitkRenderWindow *renderWindow, double horizontalShift, double verticalShift);
+
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *renderWindow, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
+  /// \brief Adds a display geometry observer to the render window. Used to synchronise zooming and moving.
   void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+
+  /// \brief Removes a display geometry observer from the render window. Used to synchronise zooming and moving.
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
+  /// \brief Called when the origin of the display geometry of the render window has changed.
+  /// If it was because of zooming then the shift is zero.
+  void OnOriginChanged(QmitkRenderWindow *renderWindow, double horizontalShift = 0.0, double verticalShift = 0.0);
+
+  /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
 
   QmitkRenderWindow*    m_RenderWindows[4];
@@ -276,6 +305,7 @@ private:
   bool                  m_Display3DViewInOrthoView;
   MIDASView             m_View;
   double                m_MagnificationFactor;
+  std::map<QmitkRenderWindow*, mitk::Vector2D> m_Origins;
   vtkCamera*            m_Cameras[4];
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;

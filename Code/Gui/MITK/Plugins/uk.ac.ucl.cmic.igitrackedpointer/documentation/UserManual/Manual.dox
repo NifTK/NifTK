@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igitrackedpointer} The Tracked Pointer View
+
+\image html icon.png "The Icon for Tracked Pointer View"
+
+\section TrackedPointerIntro Introduction
+
+Do an introduction here.
+
+\section TrackedPointerUsage Usage
+
+Put all usage information here.
+
+\section TrackedPointerPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section TrackedPointerReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+

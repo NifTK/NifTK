@@ -234,11 +234,15 @@ const std::string mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML = std
 "      </stateMachine>"
 );
 
+
+//-----------------------------------------------------------------------------
 mitk::MIDASTool::~MIDASTool()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::MIDASTool::MIDASTool(const char* type) :
     FeedbackContourTool(type)
 , m_AddToPointSetInteractor(NULL)
@@ -249,11 +253,15 @@ mitk::MIDASTool::MIDASTool(const char* type) :
 {
 }
 
+
+//-----------------------------------------------------------------------------
 const char* mitk::MIDASTool::GetGroup() const
 {
   return "MIDAS";
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::Activated()
 {
   Superclass::Activated();
@@ -299,6 +307,8 @@ void mitk::MIDASTool::Activated()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::Deactivated()
 {
   Superclass::Deactivated();
@@ -318,6 +328,7 @@ void mitk::MIDASTool::Deactivated()
   {
     pointSet->RemoveObserver(m_SeedsChangedTag);
   }
+  m_AddToPointSetInteractor = NULL;
 
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
@@ -338,17 +349,23 @@ void mitk::MIDASTool::Deactivated()
   m_DisplayInteractorConfigs.clear();
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::RenderCurrentWindow(const PositionEvent& positionEvent)
 {
   assert( positionEvent.GetSender()->GetRenderWindow() );
   mitk::RenderingManager::GetInstance()->RequestUpdate( positionEvent.GetSender()->GetRenderWindow() );
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::RenderAllWindows()
 {
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode)
 {
   // Get the current segmented volume
@@ -376,6 +393,8 @@ void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& p
   } // end if working data exists
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value)
 {
   assert(m_ToolManager);
@@ -386,6 +405,8 @@ void mitk::MIDASTool::UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNu
   workingNode->ReplaceProperty(name.c_str(), mitk::BoolProperty::New(value));
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::OnSeedsModified()
 {
   if (m_IsActivated)
@@ -409,6 +430,8 @@ void mitk::MIDASTool::OnSeedsModified()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
 {
   // See StateMachine.xml for event Ids.

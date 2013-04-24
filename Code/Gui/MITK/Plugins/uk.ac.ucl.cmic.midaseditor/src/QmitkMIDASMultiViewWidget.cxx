@@ -91,14 +91,12 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_SelectedViewIndex(0)
 , m_DefaultNumberOfRows(defaultNumberOfRows)
 , m_DefaultNumberOfColumns(defaultNumberOfColumns)
-, m_InteractionEnabled(false)
 , m_Show2DCursors(false)
 , m_Show3DViewInOrthoview(false)
 , m_RememberViewSettingsPerOrientation(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
-, m_InteractorsEnabled(false)
 {
   assert(visibilityManager);
 
@@ -373,10 +371,12 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->SetBackgroundColor(m_BackgroundColour);
   widget->SetDisplay3DViewInOrthoView(m_Show3DViewInOrthoview);
   widget->SetRememberViewSettingsPerOrientation(m_RememberViewSettingsPerOrientation);
+  widget->SetDisplayInteractionEnabled(true);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(PositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
+  connect(widget, SIGNAL(OriginChanged(QmitkMIDASSingleViewWidget*, double, double, double)), this, SLOT(OnOriginChanged(QmitkMIDASSingleViewWidget*, double, double, double)));
   connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 
   return widget;
@@ -889,6 +889,22 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
       bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnOriginChanged(QmitkMIDASSingleViewWidget *widget, double xShift, double yShift, double zShift)
+{
+  if (this->m_MIDASBindWidget->IsGeometryBound())
+  {
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (m_SingleViewWidgets[i] != widget)
+      {
+        m_SingleViewWidgets[i]->MoveBy(xShift, yShift, zShift);
+      }
     }
   }
 }

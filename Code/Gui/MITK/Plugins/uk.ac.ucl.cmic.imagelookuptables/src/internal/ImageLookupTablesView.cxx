@@ -268,6 +268,16 @@ bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer
 
 
 //-----------------------------------------------------------------------------
+void ImageLookupTablesView::Activated()
+{
+  QmitkBaseView::Activated();
+
+  berry::IWorkbenchPart::Pointer nullPart;
+  this->OnSelectionChanged(nullPart, this->GetCurrentSelection());
+}
+
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
 {
   if (node.IsNotNull())

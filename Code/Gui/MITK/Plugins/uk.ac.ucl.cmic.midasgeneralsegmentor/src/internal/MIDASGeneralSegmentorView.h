@@ -221,7 +221,7 @@ protected slots:
   /// \brief Qt slot called when the user hits the button "New segmentation",
   /// creating new working data such as a region growing image, contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+  void OnCreateNewSegmentationButtonPressed();
 
   /// \brief Qt slot called from the ToolManager when a segmentation tool is activated.
   virtual void OnToolSelected(int id);
