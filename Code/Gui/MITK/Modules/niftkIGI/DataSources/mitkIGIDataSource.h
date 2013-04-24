@@ -60,18 +60,14 @@ public:
   Message1<int> DataSourceStatusUpdated;
 
   /**
-   * \brief Indicate to all listeners that this object has changed whether or not it is saving messages.
-   */
-  Message<> SaveStateChanged;
-
-  /**
    * \brief Sets the data storage, as each data source can put items into the storage.
+   * This method is not thread safe, so should only be called once at startup.
    */
   itkSetObjectMacro(DataStorage, mitk::DataStorage);
   itkGetConstMacro(DataStorage, mitk::DataStorage*);
 
   /**
-   * \brief Sets the identifier, which is just a tag to uniquely identify the source by (i.e. item number in a list).
+   * \brief Sets the identifier, which is just a tag to uniquely identify the source by (i.e. item number in a list for example).
    */
   itkThreadSafeSetMacro(Identifier, int);
   itkThreadSafeGetConstMacro(Identifier, int);
@@ -116,13 +112,13 @@ public:
   itkThreadSafeGetConstMacro(SavePrefix, std::string);
 
   /**
-   * \brief Returns true if we are saving messages and false otherwise.
+   * \brief Sets whether we are currently saving messages.
    */
+  itkThreadSafeSetMacro(SavingMessages, bool);
   itkThreadSafeGetConstMacro(SavingMessages, bool);
-  virtual void SetSavingMessages(bool isSaving);
 
   /**
-   * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously immediately.
+   * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously.
    */
   itkThreadSafeSetMacro(SaveInBackground, bool);
   itkThreadSafeGetConstMacro(SaveInBackground, bool);
@@ -150,8 +146,9 @@ public:
   igtlUint64 GetRequestedTimeStamp() const;
 
   /**
-   * \brief This is calculated internally, and represents the time-stamp of the "current" message,
-   * which may be before or after that returned by GetRequestedTimeStamp(), depending on available data.
+   * \brief This is calculated internally, and represents the time-stamp of the "closest" message to the,
+   * most recently requested time stamp, and hence may be before or after that returned by GetRequestedTimeStamp(),
+   * depending on the available data.
    */
   igtlUint64 GetActualTimeStamp() const;
 
