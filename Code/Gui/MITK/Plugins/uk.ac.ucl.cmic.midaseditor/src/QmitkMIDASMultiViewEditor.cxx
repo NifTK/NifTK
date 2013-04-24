@@ -285,7 +285,7 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
 //-----------------------------------------------------------------------------
 QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveQmitkRenderWindow() const
 {
-  return d->m_MIDASMultiViewWidget->GetActiveRenderWindow();
+  return d->m_MIDASMultiViewWidget->GetSelectedRenderWindow();
 }
 
 

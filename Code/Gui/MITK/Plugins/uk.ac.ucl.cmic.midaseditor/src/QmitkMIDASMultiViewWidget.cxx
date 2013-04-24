@@ -1401,12 +1401,10 @@ bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
   if (::IsSingleWindowLayout(midasView))
   {
     // TODO Add functionality here.
-    this->GetActiveRenderWindow();
+
   }
   else
   {
-    MITK_INFO << "QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout(): " << std::endl;
-
     QmitkRenderWindow* selectedRenderWindow = selectedView->GetSelectedRenderWindow();
     mitk::BaseRenderer* renderer = selectedRenderWindow->GetRenderer();
     std::string rendererName = renderer->GetName();
@@ -1582,23 +1580,11 @@ int QmitkMIDASMultiViewWidget::GetSelectedViewIndex() const
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetActiveRenderWindow() const
+QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetSelectedRenderWindow() const
 {
   // NOTE: This MUST always return not-null.
-
-  QmitkRenderWindow *window = NULL;
-  std::vector<QmitkRenderWindow*> visibleRenderWindows;
-
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
-
-  visibleRenderWindows = selectedView->GetVisibleRenderWindows();
-  if (visibleRenderWindows.size() == 0)
-  {
-    visibleRenderWindows = selectedView->GetRenderWindows();
-  }
-  window = visibleRenderWindows[0];
-
-  return window;
+  return selectedView->GetSelectedRenderWindow();
 }
 
 

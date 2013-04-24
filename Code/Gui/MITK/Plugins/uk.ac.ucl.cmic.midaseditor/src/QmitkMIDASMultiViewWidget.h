@@ -203,7 +203,7 @@ public:
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
    */
-  virtual QmitkRenderWindow* GetActiveRenderWindow() const;
+  virtual QmitkRenderWindow* GetSelectedRenderWindow() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetRenderWindows(), where we return all render windows for all widgets.
