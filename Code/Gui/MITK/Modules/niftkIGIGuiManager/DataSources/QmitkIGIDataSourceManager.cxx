@@ -348,7 +348,6 @@ void QmitkIGIDataSourceManager::OnAddSource()
   this->UpdateSourceView(identifier, false);
 
   // Launch timers
-  /*
   if (!m_GuiUpdateTimer->isActive())
   {
     m_GuiUpdateTimer->start();
@@ -357,7 +356,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
   {
     m_ClearDownTimer->start();
   }
-  */
+
   return;
 }
 
@@ -659,12 +658,14 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
       // First tell each source to update data.
       // For example, sources could copy to data storage.
-      bool isValid = source->ProcessData(idNow);
+      bool isValid = false;
+      float rate = 0;
+      double lag = 0;
 
-      // Now calculate the stats.
+//      isValid = source->ProcessData(idNow);
       source->UpdateFrameRate();
-      float rate = source->GetFrameRate();
-      double lag = source->GetCurrentTimeLag(idNow);
+      rate = source->GetFrameRate();
+      lag = source->GetCurrentTimeLag(idNow);
 
       // Update the frame rate number.
       QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
