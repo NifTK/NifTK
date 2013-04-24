@@ -1429,27 +1429,21 @@ bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
   }
   else
   {
-    QmitkRenderWindow* selectedRenderWindow = selectedView->GetSelectedRenderWindow();
-    std::string rendererName = selectedRenderWindow->GetRenderer()->GetName();
-    if (rendererName == "stdmulti.widget1")
+    switch (selectedView->GetOrientation())
     {
+    case MIDAS_ORIENTATION_AXIAL:
       nextMidasView = MIDAS_VIEW_AXIAL;
-    }
-    else if (rendererName == "stdmulti.widget2")
-    {
+      break;
+    case MIDAS_ORIENTATION_SAGITTAL:
       nextMidasView = MIDAS_VIEW_SAGITTAL;
-    }
-    else if (rendererName == "stdmulti.widget3")
-    {
+      break;
+    case MIDAS_ORIENTATION_CORONAL:
       nextMidasView = MIDAS_VIEW_CORONAL;
-    }
-    else if (rendererName == "stdmulti.widget4")
-    {
+      break;
+    case MIDAS_ORIENTATION_UNKNOWN:
       nextMidasView = MIDAS_VIEW_3D;
-    }
-    else
-    {
-      MITK_INFO << "QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout() unknown renderer name: " << rendererName << std::endl;
+      break;
+    default:
       nextMidasView = MIDAS_VIEW_CORONAL;
     }
   }
