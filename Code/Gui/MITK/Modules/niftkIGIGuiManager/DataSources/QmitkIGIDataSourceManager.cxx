@@ -258,8 +258,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
   connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
-  connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()) );
-  connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()) );
+  connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 }
@@ -348,7 +348,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
   this->UpdateSourceView(identifier, false);
 
   // Launch timers
-/*
+  /*
   if (!m_GuiUpdateTimer->isActive())
   {
     m_GuiUpdateTimer->start();
@@ -357,7 +357,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
   {
     m_ClearDownTimer->start();
   }
-*/
+  */
   return;
 }
 
@@ -406,7 +406,7 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
   m_NextSourceIdentifier++;
   m_Sources.push_back(source);
 
-  connect(source.GetPointer(), SIGNAL(DataSourceStatusUpdated(int)), this, SLOT(OnUpdateSourceView(int)));
+  connect(source.GetPointer(), SIGNAL(DataSourceStatusUpdated(int)), this, SLOT(OnUpdateSourceView(int)), Qt::QueuedConnection);
 
   return source->GetIdentifier();
 }

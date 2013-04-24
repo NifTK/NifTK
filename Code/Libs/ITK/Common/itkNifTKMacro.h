@@ -38,7 +38,6 @@
     itkDebugMacro("setting " #name " to " << _arg); \
     if (this->m_##name != _arg) \
       { \
-      itk::MutexLockHolder<itk::FastMutexLock> lock(*this->m_Mutex); \
       this->m_##name = _arg; \
       this->Modified(); \
       } \
