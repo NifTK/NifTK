@@ -122,7 +122,9 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
       delete clientInfo;
       return;
     }
-    //A single source can have multiple tracked tools. 
+
+    // A single source can have multiple tracked tools. However, we only receive one "Client Info" message.
+    // Subsequently we get a separate message for each tool, so they are set up as separate sources, linked to the same port.
     QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->GetTrackerTools();
     std::list<std::string> stringList;
 
@@ -132,7 +134,7 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
     }
     if ( stringList.size() > 0 )
     {
-      this->SetSubSources(stringList);
+      this->SetRelatedSources(stringList);
     }
     this->ProcessClientInfo(clientInfo);
   }

@@ -40,11 +40,6 @@ namespace mitk {
  * igtl::TimeStamp object. You should only ever expose a copy of this data, or an equivalent
  * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the
  * timestamp and set the time to TAI for example.
- *
- * This class can manage sub-sources. For example, a "tracker" source could be sending data
- * for 3 tracked objects. So we have called these "sub-sources". With 3 tracked objects
- * we have 3 "sub-sources". By default, this class contains one sub-source, representing data
- * from a single source. For example, this might be suitable for a video frame grabber.
  */
 class NIFTKIGI_EXPORT IGIDataSource : public itk::Object
 {
@@ -200,14 +195,6 @@ public:
   /**
    * \brief Add data to the buffer, derived classes can decide to reject the data,
    * so returns true if added and false otherwise.
-   * \param data a wrapper class containing any kind of data.
-   * \param timeStamps this class can manage sub-source, so this parameter is a map of source name and time-stamp.
-   */
-  bool AddData(mitk::IGIDataType* data, const std::map<std::string, igtlUint64>& timeStamps);
-
-  /**
-   * \brief Add data to the buffer, derived classes can decide to reject the data,
-   * so returns true if added and false otherwise.
    */
   bool AddData(mitk::IGIDataType* data);
 
@@ -224,25 +211,14 @@ public:
   double GetCurrentTimeLag(const igtlUint64& nowTime );
 
   /**
-   * \brief Returns the difference between the nowTime and the most recent data from the source.
-   * \param name the sub-source name.
-   */
-  double GetCurrentTimeLag(const igtlUint64& nowTime, const std::string& name);
-
-  /**
-   * \brief Get the list of sub sources.
-   */
-  std::list<std::string>  GetSubSources ( ) const;
-
-  /**
-   * \brief Get the number of sub sources, which returns the size of the list returned by GetSubSources().
-   */
-  int GetNumberOfSubSources() const;
-
-  /**
    * \brief Returns true if the current data frame is within time tolerances and false otherwise.
    */
   bool IsCurrentWithinTimeTolerance() const;
+
+  /**
+   * \brief Returns the list of related sources.
+   */
+  std::list<std::string> GetRelatedSources();
 
 protected:
 
@@ -291,9 +267,9 @@ protected:
   mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string());
 
   /**
-   * \brief Set the list of sub source names.
+   * \brief Sets the list of related sources.
    */
-  void SetSubSources(const std::list<std::string>& sourceNames);
+  void SetRelatedSources(const std::list<std::string>& listOfSourceNames);
 
 private:
 
@@ -324,8 +300,7 @@ private:
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   mitk::IGIDataType*                              m_ActualData;
   igtlUint64                                      m_TimeStampTolerance;
-  std::list<std::string>                          m_SubSources;
-  std::map<std::string, igtlUint64>               m_SubSourcesLastTimeStamp;
+  std::list<std::string>                          m_RelatedSources;
 }; // end class
 
 } // end namespace

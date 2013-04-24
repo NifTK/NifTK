@@ -45,8 +45,6 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
-  m_SubSources.clear();
-  m_SubSources.push_back("IGIDataSource");
 }
 
 
@@ -271,28 +269,15 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 //-----------------------------------------------------------------------------
 double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 {
-  assert(m_SubSources.size() > 0);
-
-  return this->GetCurrentTimeLag(nowTime, m_SubSources.front());
-}
-
-
-//-----------------------------------------------------------------------------
-double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime, const std::string& name)
-{
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   double lag = 0;
-  igtlUint64 dataTime = 0;
 
-  if (m_SubSourcesLastTimeStamp.find(name) != m_SubSourcesLastTimeStamp.end())
+  if (m_ActualData != NULL)
   {
+    igtlUint64 dataTime = m_ActualData->GetTimeStampInNanoSeconds();
     lag = (double)nowTime - (double)dataTime;
     lag /= 1000000000.0;
-  }
-  else
-  {
-    MITK_ERROR << "IGIDataSource::GetCurrentTimeLag: cannot find sub-source called:" << name << std::endl;
   }
   return lag;
 }
@@ -395,19 +380,7 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
-  assert(m_SubSources.size() > 0);
-
-  std::map<std::string, igtlUint64> map;
-  map.insert(std::pair<std::string, igtlUint64>(m_SubSources.front(), data->GetTimeStampInNanoSeconds()));
-  return this->AddData(data, map);
-}
-
-
-//-----------------------------------------------------------------------------
-bool IGIDataSource::AddData(mitk::IGIDataType* data, const std::map<std::string, igtlUint64>& timeStamps)
-{
   assert(data);
-  assert(timeStamps.size() > 0);
 
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -418,12 +391,6 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data, const std::map<std::string,
     data->SetShouldBeSaved(this->GetSavingMessages());
     data->SetIsSaved(false);
     data->SetFrameId(m_CurrentFrameId++);
-
-    std::map<std::string, igtlUint64>::const_iterator iter;
-    for (iter = timeStamps.begin(); iter != timeStamps.end(); iter++)
-    {
-      m_SubSourcesLastTimeStamp.insert(std::pair<std::string, igtlUint64>((*iter).first, (*iter).second));
-    }
 
     m_Buffer.push_back(data);
 
@@ -556,30 +523,20 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::SetSubSources(const std::list<std::string>& inStringList)
+void IGIDataSource::SetRelatedSources(const std::list<std::string>& listOfSourceNames)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  m_SubSources = inStringList;
-  this->Modified();
+  m_RelatedSources = listOfSourceNames;
 }
 
 
 //-----------------------------------------------------------------------------
-std::list<std::string> IGIDataSource::GetSubSources () const
+std::list<std::string> IGIDataSource::GetRelatedSources()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  return m_SubSources;
-}
-
-
-//-----------------------------------------------------------------------------
-int IGIDataSource::GetNumberOfSubSources() const
-{
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);  
-
-  return m_SubSources.size();
+  return m_RelatedSources;
 }
 
 
