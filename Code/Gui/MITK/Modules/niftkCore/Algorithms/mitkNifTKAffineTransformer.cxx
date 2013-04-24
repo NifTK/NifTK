@@ -228,18 +228,21 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 AffineTransformer::AffineTransformer()
-  : m_RotateAroundCenter(false),
+  : m_CurrDispTransfProp(0),
     m_DataStorage(0),
     m_CurrentDataNode(0),
-    m_CurrDispTransfProp(0)
+    m_RotateAroundCenter(false)
 {
+  memset(&m_Translation, 0, sizeof(double)*3);
+  memset(&m_Rotation, 0, sizeof(double)*3);
+  memset(&m_Scaling, 0, sizeof(double)*3);
+  memset(&m_Scaling, 0, sizeof(double)*3);
 }
 
 //-----------------------------------------------------------------------------
 AffineTransformer::~AffineTransformer()
 {
 }
-
 
 //-----------------------------------------------------------------------------
 void AffineTransformer::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
