@@ -107,6 +107,12 @@ public:
   /// \brief Sets the default view (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
   void SetDefaultViewType(MIDASView midasView);
 
+  /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultSingleWindowLayout(MIDASView midasView);
+
+  /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultMultiWindowLayout(MIDASView midasView);
+
   /// \brief Sets the default drop type checkbox.
   void SetDropTypeWidget(MIDASDropType dropType);
 
@@ -423,6 +429,8 @@ private:
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
   double                                         m_PreviousMagnificationFactor;
+  MIDASView                                      m_SingleWindowLayout;
+  MIDASView                                      m_MultiWindowLayout;
 };
 
 #endif /*QMITKMIDASMULTIWIDGET_H_*/

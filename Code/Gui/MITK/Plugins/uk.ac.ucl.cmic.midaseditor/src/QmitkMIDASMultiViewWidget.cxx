@@ -97,6 +97,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
+, m_SingleWindowLayout(MIDAS_VIEW_CORONAL)
+, m_MultiWindowLayout(MIDAS_VIEW_ORTHO)
 {
   assert(visibilityManager);
 
@@ -408,6 +410,28 @@ void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(MIDASDefaultInterpol
 void QmitkMIDASMultiViewWidget::SetDefaultViewType(MIDASView midasView)
 {
   m_VisibilityManager->SetDefaultViewType(midasView);
+  if (::IsSingleWindowLayout(midasView))
+  {
+    this->SetDefaultSingleWindowLayout(midasView);
+  }
+  else
+  {
+    this->SetDefaultMultiWindowLayout(midasView);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetDefaultSingleWindowLayout(MIDASView midasView)
+{
+  m_SingleWindowLayout = midasView;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetDefaultMultiWindowLayout(MIDASView midasView)
+{
+  m_MultiWindowLayout = midasView;
 }
 
 
@@ -1400,8 +1424,7 @@ bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
 
   if (::IsSingleWindowLayout(midasView))
   {
-    // TODO Add functionality here.
-
+    this->SwitchMIDASView(m_MultiWindowLayout);
   }
   else
   {
@@ -1464,6 +1487,15 @@ void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
         viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetCoronalWindow());
       }
     }
+  }
+
+  if (::IsSingleWindowLayout(midasView))
+  {
+    m_SingleWindowLayout = midasView;
+  }
+  else
+  {
+    m_MultiWindowLayout = midasView;
   }
 }
 

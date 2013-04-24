@@ -220,6 +220,7 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     d->m_MIDASMultiViewWidget->SetSliceSelectTracking(sliceSelectTracking);
     d->m_MIDASMultiViewWidget->SetMagnificationSelectTracking(magnificationSelectTracking);
     d->m_MIDASMultiViewWidget->SetTimeSelectTracking(timeSelectTracking);
+    d->m_MIDASMultiViewWidget->SetDefaultViewType(defaultView);
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
 
