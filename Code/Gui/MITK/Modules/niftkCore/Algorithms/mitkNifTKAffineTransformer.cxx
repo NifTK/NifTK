@@ -12,12 +12,11 @@
 
 =============================================================================*/
 
-#include "mitkAffineTransformer.h"
+#include "mitkNifTKAffineTransformer.h"
 #include <mitkDataNode.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkITKImageImport.h>
-
 #include "mitkDataStorageUtils.h"
 
 #include "ConversionUtils.h"

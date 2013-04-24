@@ -36,7 +36,7 @@
 #include "mitkBoundingObject.h"
 #include "mitkAffineInteractor3D.h"
 
-#include "mitkAffineTransformer.h"
+#include "mitkNifTKAffineTransformer.h"
 
 #include "ui_AffineTransformViewControls.h"
 #include "AffineTransformInteractor3D.h"

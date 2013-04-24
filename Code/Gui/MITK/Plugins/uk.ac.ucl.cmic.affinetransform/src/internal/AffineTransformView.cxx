@@ -32,17 +32,10 @@
 #include <cassert>
 
 // ITK
-#include <itkResampleImageFilter.h>
-#include <itkVectorResampleImageFilter.h>
-#include <itkLinearInterpolateImageFunction.h>
-#include <itkVectorLinearInterpolateImageFunction.h>
 #include <itkAffineTransform.h>
 #include <itkImage.h>
-#include <itkImageFileWriter.h>
 #include <itkRGBAPixel.h>
 #include <itkRGBPixel.h>
-#include <itkTransformFileReader.h>
-#include <itkTransformFileWriter.h>
 #include <itkPoint.h>
 #include <itkBoundingBox.h>
 
@@ -59,19 +52,18 @@
 #include <mitkVector.h> // for PointType;
 #include <mitkIDataStorageService.h>
 #include <mitkRenderingManager.h>
-#include "mitkAffineInteractor3D.h"
 #include <mitkEllipsoid.h>
 #include <mitkCylinder.h>
 #include <mitkCone.h>
 #include <mitkCuboid.h>
+
+//#include "mitkAffineInteractor3D.h"
 
 // NIFTK
 #include "AffineTransformView.h"
 #include "mitkAffineTransformDataNodeProperty.h"
 #include "mitkAffineTransformParametersDataNodeProperty.h"
 #include "ConversionUtils.h"
-
-#include <itkImageFileWriter.h>
 
 //-----------------------------------------------------------------------------
 AffineTransformView::AffineTransformView()
@@ -146,6 +138,14 @@ void AffineTransformView::CreateQtPartControl( QWidget *parent )
     styleSheet.append(QString::number(colour.blue()));
     styleSheet.append(")");
     m_Controls->affineTransformDisplay->setStyleSheet(styleSheet);
+
+    // Set the column width
+    for (int i= 0; i < m_Controls->affineTransformDisplay->columnCount(); i++)
+      m_Controls->affineTransformDisplay->setColumnWidth(i, 60);
+
+    // Set the row height
+    for (int i= 0; i < m_Controls->affineTransformDisplay->rowCount(); i++)
+      m_Controls->affineTransformDisplay->setRowHeight(i, 23);
 
     connect(m_Controls->resetButton, SIGNAL(clicked()), this, SLOT(OnResetTransformPushed()));
     connect(m_Controls->resampleButton, SIGNAL(clicked()), this, SLOT(OnResampleTransformPushed()));

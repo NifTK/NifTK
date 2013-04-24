@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKAFFINETRANSFORMER_H
-#define MITKAFFINETRANSFORMER_H
+#ifndef MITKNIFTKAFFINETRANSFORMER_H
+#define MITKNIFTKAFFINETRANSFORMER_H
 
 #include <itkObject.h>
 #include <mitkBaseData.h>
@@ -24,6 +24,8 @@
 #include <vtkLinearTransform.h>
 #include <mitkAffineTransformParametersDataNodeProperty.h>
 #include <mitkAffineTransformDataNodeProperty.h>
+
+#include "niftkCoreExports.h"
 
 namespace mitk {
 
@@ -55,7 +57,7 @@ namespace mitk {
  * as this is ambiguous and prone to numerical instability.
  */
 
-class AffineTransformer : public itk::Object
+class NIFTKCORE_EXPORT AffineTransformer : public itk::Object
 {
 
 public:
@@ -166,7 +168,7 @@ private:
   /// \brief Pointer to the current data node
   mitk::DataNode::Pointer    m_CurrentDataNode;
 
-  // \brief Flag to set rotation around center
+  /// \brief Flag to set rotation around center
   bool                       m_RotateAroundCenter;
 
   /// \brief Stores the coordinates of the center of rotation

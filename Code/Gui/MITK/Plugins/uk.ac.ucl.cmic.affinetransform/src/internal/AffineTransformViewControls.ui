@@ -9,14 +9,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>752</height>
+    <width>260</width>
+    <height>670</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>300</width>
-    <height>454</height>
+    <width>260</width>
+    <height>670</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -35,8 +35,8 @@
   <property name="locale">
    <locale language="English" country="UnitedKingdom"/>
   </property>
-  <layout class="QGridLayout" name="gridLayout_8">
-   <item row="0" column="0" colspan="2">
+  <layout class="QGridLayout" name="gridLayout_4">
+   <item row="0" column="0">
     <widget class="QGroupBox" name="rotationGroupBox">
      <property name="title">
       <string>Rotation (deg)</string>
@@ -180,7 +180,7 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
       <string>Translation</string>
@@ -336,7 +336,7 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="2" column="0">
     <widget class="QGroupBox" name="groupBox_5">
      <property name="title">
       <string>Scaling (%)</string>
@@ -510,7 +510,7 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="0" colspan="2">
+   <item row="3" column="0">
     <widget class="QGroupBox" name="groupBox_6">
      <property name="title">
       <string>Shearing</string>
@@ -676,37 +676,37 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <layout class="QGridLayout" name="gridLayout_4">
-     <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
       <widget class="QLabel" name="transformMatrixLabel">
        <property name="text">
         <string>Transform</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item>
       <widget class="QRadioButton" name="centreRotationRadioButton">
        <property name="text">
         <string>About centre</string>
        </property>
       </widget>
      </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>80</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
    </item>
-   <item row="4" column="1">
-    <spacer name="horizontalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>135</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="5" column="0" colspan="2">
+   <item row="5" column="0">
     <widget class="QTableWidget" name="affineTransformDisplay">
      <property name="enabled">
       <bool>false</bool>
@@ -778,7 +778,7 @@
      <column/>
     </widget>
    </item>
-   <item row="6" column="0" colspan="2">
+   <item row="6" column="0">
     <layout class="QGridLayout" name="gridLayout_3">
      <item row="0" column="0">
       <widget class="QPushButton" name="resetButton">
@@ -817,7 +817,7 @@
      </item>
     </layout>
    </item>
-   <item row="7" column="0" colspan="2">
+   <item row="7" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Interactive</string>
@@ -970,17 +970,12 @@
   </layout>
   <zorder>groupBox</zorder>
   <zorder>affineTransformDisplay</zorder>
-  <zorder></zorder>
-  <zorder></zorder>
-  <zorder></zorder>
   <zorder>rotationGroupBox</zorder>
   <zorder>groupBox_4</zorder>
   <zorder>groupBox_5</zorder>
   <zorder>groupBox_6</zorder>
   <zorder></zorder>
-  <zorder></zorder>
   <zorder>horizontalSpacer_2</zorder>
-  <zorder>applyButton</zorder>
  </widget>
  <tabstops>
   <tabstop>rotationSpinBoxX</tabstop>
