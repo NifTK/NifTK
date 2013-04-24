@@ -122,7 +122,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(PositionChanged(QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkRenderWindow*,mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
-  connect(m_MultiWidget, SIGNAL(OriginChanged(double, double, double)), this, SLOT(OnOriginChanged(double, double, double)));
+  connect(m_MultiWidget, SIGNAL(CentreChanged(const mitk::Vector3D&)), this, SLOT(OnCentreChanged(const mitk::Vector3D&)));
   connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(double)), this, SLOT(OnMagnificationFactorChanged(double)));
 }
 
@@ -141,9 +141,9 @@ void QmitkMIDASSingleViewWidget::OnPositionChanged(QmitkRenderWindow *window, mi
   emit PositionChanged(this, window, voxelLocation, millimetreLocation, sliceNumber, orientation);
 }
 
-void QmitkMIDASSingleViewWidget::OnOriginChanged(double xShift, double yShift, double zShift)
+void QmitkMIDASSingleViewWidget::OnCentreChanged(const mitk::Vector3D& centre)
 {
-  emit OriginChanged(this, xShift, yShift, zShift);
+  emit CentreChanged(this, centre);
 }
 
 void QmitkMIDASSingleViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
@@ -560,9 +560,14 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
   } // end view != MIDAS_VIEW_UNKNOWN
 }
 
-void QmitkMIDASSingleViewWidget::MoveBy(double xShift, double yShift, double zShift)
+const mitk::Vector3D& QmitkMIDASSingleViewWidget::GetCentre() const
 {
-  this->m_MultiWidget->MoveBy(xShift, yShift, zShift);
+  return m_MultiWidget->GetCentre();
+}
+
+void QmitkMIDASSingleViewWidget::SetCentre(const mitk::Vector3D& centre)
+{
+  this->m_MultiWidget->SetCentre(centre);
 }
 
 double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const

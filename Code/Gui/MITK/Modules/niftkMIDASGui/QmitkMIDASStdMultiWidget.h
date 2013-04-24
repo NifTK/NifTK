@@ -191,18 +191,22 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
-  /// \brief Moves the images by the given shift.
-  void MoveBy(double xShift, double yShift, double zShift);
+  /// \brief Gets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
+  const mitk::Vector3D& GetCentre() const;
+
+  /// \brief Sets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
+  void SetCentre(const mitk::Vector3D& centre);
 
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   double GetMagnificationFactor() const;
 
   /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   void SetMagnificationFactor(double magnificationFactor);
-  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
   double FitMagnificationFactor();
+
+  /// \brief Computes the magnification factor of a render window.
   double ComputeMagnificationFactor(QmitkRenderWindow* renderWindow);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
@@ -236,7 +240,7 @@ signals:
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
-  void OriginChanged(double xShift, double yShift, double zShift);
+  void CentreChanged(const mitk::Vector3D& centre);
   void MagnificationFactorChanged(double magnificationFactor);
 
 protected slots:
@@ -267,14 +271,14 @@ private:
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible);
 
+  // \brief Sets the origin of the display geometry of the render window
+  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMM);
+
   /// \brief Scales a specific render window about it's centre.
   void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
 
   /// \brief Scales a specific render window about the crosshair.
   void ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor);
-
-  /// \brief Moves the image in a specific render window.
-  void MoveBy(QmitkRenderWindow *renderWindow, double horizontalShift, double verticalShift);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *renderWindow, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
@@ -286,11 +290,19 @@ private:
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  /// If it was because of zooming then the shift is zero.
-  void OnOriginChanged(QmitkRenderWindow *renderWindow, double horizontalShift = 0.0, double verticalShift = 0.0);
+  void OnOriginChanged(QmitkRenderWindow *renderWindow);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
+
+  /// \brief Computes the origin for a render window from the image centre.
+  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector3D& centre);
+
+  /// \brief Computes the origin for a render window from the image centre.
+  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& centre2D);
+
+  /// \brief Computes the scale factor for a render window from a magnification factor.
+  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
 
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
@@ -304,8 +316,8 @@ private:
   bool                  m_Display2DCursorsGlobally;
   bool                  m_Display3DViewInOrthoView;
   MIDASView             m_View;
+  mitk::Vector3D        m_Centre;
   double                m_MagnificationFactor;
-  std::map<QmitkRenderWindow*, mitk::Vector2D> m_Origins;
   vtkCamera*            m_Cameras[4];
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;

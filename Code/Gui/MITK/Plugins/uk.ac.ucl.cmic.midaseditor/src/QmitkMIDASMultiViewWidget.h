@@ -269,8 +269,8 @@ protected slots:
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
   void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
 
-  /// \brief Called when the origin is changed by moving in a renderer window.
-  void OnOriginChanged(QmitkMIDASSingleViewWidget *widget, double xShift, double yShift, double zShift);
+  /// \brief Called when the centre is changed by moving or zooming in a renderer window.
+  void OnCentreChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& centre);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
   void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *view, double magnificationFactor);
