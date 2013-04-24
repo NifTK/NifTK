@@ -1420,18 +1420,17 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
 {
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
-  MIDASView midasView = selectedView->GetView();
+  MIDASView currentMidasView = selectedView->GetView();
+  MIDASView nextMidasView;
 
-  if (::IsSingleWindowLayout(midasView))
+  if (::IsSingleWindowLayout(currentMidasView))
   {
-    this->SwitchMIDASView(m_MultiWindowLayout);
+    nextMidasView = m_MultiWindowLayout;
   }
   else
   {
     QmitkRenderWindow* selectedRenderWindow = selectedView->GetSelectedRenderWindow();
-    mitk::BaseRenderer* renderer = selectedRenderWindow->GetRenderer();
-    std::string rendererName = renderer->GetName();
-    MIDASView nextMidasView;
+    std::string rendererName = selectedRenderWindow->GetRenderer()->GetName();
     if (rendererName == "stdmulti.widget1")
     {
       nextMidasView = MIDAS_VIEW_AXIAL;
@@ -1451,11 +1450,13 @@ bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
     else
     {
       MITK_INFO << "QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout() unknown renderer name: " << rendererName << std::endl;
+      nextMidasView = MIDAS_VIEW_CORONAL;
     }
-    this->SwitchMIDASView(nextMidasView);
   }
 
-  m_MIDASOrientationWidget->SetToView(midasView);
+  this->SwitchMIDASView(nextMidasView);
+  m_MIDASOrientationWidget->SetToView(nextMidasView);
+
   return true;
 }
 
