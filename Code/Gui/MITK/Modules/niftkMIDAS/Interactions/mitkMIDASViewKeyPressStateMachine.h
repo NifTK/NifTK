@@ -60,6 +60,9 @@ protected:
   /// \brief Switch the current view to Coronal, simply passing method onto the MIDASViewKeyPressResponder
   bool SwitchToCoronal(Action*, const StateEvent*);
 
+  /// \brief Switch the current view to/from a multiple window layout
+  bool SwitchWindowLayout(Action*, const StateEvent*);
+
 private:
 
   /// \brief the object that gets called, specified in constructor.

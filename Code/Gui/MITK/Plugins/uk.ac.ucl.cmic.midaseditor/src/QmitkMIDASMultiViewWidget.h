@@ -176,6 +176,9 @@ public:
   /// \brief Switch to Coronal.
   bool SwitchToCoronal();
 
+  /// \brief Switch to/from multiple window layout.
+  bool SwitchWindowLayout();
+
   /// \brief Sets whether the interaction is enabled, and a single viewer.
   void SetMIDASSegmentationMode(bool enabled);
 

@@ -1393,6 +1393,14 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::SwitchWindowLayout()
+{
+  MITK_INFO << "QmitkMIDASMultiViewWidget::SwitchWindowLayout()" << std::endl;
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
