@@ -140,10 +140,10 @@ public:
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
   bool GetDisplay3DViewInOrthoView() const;
 
-  /// \brief Sets a flag to determin if we remember the view settings such as slice, magnification, time step when we switch between views axial, coronal, sagittal.
+  /// \brief Sets a flag to determin if we remember the view settings such as slice, centre, magnification, time step when we switch between views axial, coronal, sagittal.
   void SetRememberViewSettingsPerOrientation(bool remember);
 
-  /// \brief Get the flag to determin if we remember the view settings such as slice, magnification, time step when we switch between views axial, coronal, sagittal.
+  /// \brief Get the flag to determin if we remember the view settings such as slice, centre, magnification, time step when we switch between views axial, coronal, sagittal.
   bool GetRememberViewSettingsPerOrientation() const;
 
   /// \brief Sets the background colour.
@@ -325,8 +325,9 @@ private:
 
   int                                  m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int                                  m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
-  double                               m_MagnificationFactors[MIDAS_VIEW_NUMBER * 2];           // Two each for view. Unbound, then bound, alternatingly.
-  bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
+  mitk::Vector3D                       m_Centres[MIDAS_VIEW_NUMBER * 2];                 // Two each for view. Unbound, then bound, alternatingly.
+  double                               m_MagnificationFactors[MIDAS_VIEW_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
+  bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2];         // Two each for view. Unbound, then bound, alternatingly.
 
   bool                                 m_NavigationControllerEventListening;
   bool                                 m_RememberViewSettingsPerOrientation;
