@@ -18,6 +18,7 @@
 #include "niftkIGIGuiManagerExports.h"
 #include "ui_QmitkIGIDataSourceManager.h"
 #include <itkObject.h>
+#include <itkFastMutexLock.h>
 #include <QWidget>
 #include <QList>
 #include <QGridLayout>
@@ -162,6 +163,12 @@ private slots:
 
   /**
    * \brief Updates the whole rendered scene, based on the available messages.
+   *
+   * More specifically, this method is called on a timer, and determines the
+   * effective refresh rate of the data storage, and hence of the screen,
+   * and also the widgets of the QmitkDataSourceManager itself. This method
+   * assumes that all the data sources are instantiated, and the right number
+   * of rows exists in the table.
    */
   void OnUpdateGui();
 
@@ -208,6 +215,7 @@ private slots:
 
 private:
 
+  itk::FastMutexLock::Pointer               m_Mutex;
   mitk::DataStorage                        *m_DataStorage;
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
@@ -245,6 +253,13 @@ private:
 
   /**
    * \brief Works out the table row, then updates the fields in the GUI.
+   *
+   * In comparison with OnUpdateGui, this method is just for updating the table
+   * of available sources. Importantly, there is a use case where we need to dynamically
+   * add rows. When a tool (typically a networked tool) provides information that
+   * there should be additional related sources, we have to dynamically create them.
+   *
+   * \see OnUpdateGui
    */
   void UpdateToolDisplay(int toolIdentifier);
 

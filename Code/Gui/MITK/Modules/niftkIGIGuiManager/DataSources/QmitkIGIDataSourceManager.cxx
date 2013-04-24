@@ -327,6 +327,8 @@ int QmitkIGIDataSourceManager::GetIdentifierFromSourceNumber(int sourceNumber)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnAddSource()
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   int sourceType = m_SourceSelectComboBox->currentIndex();
   int portNumber = m_PortNumberSpinBox->value();
 
@@ -347,7 +349,8 @@ void QmitkIGIDataSourceManager::OnAddSource()
 //------------------------------------------------
 int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLinkSocketObject* socket)
 {
-  
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   mitk::IGIDataSource::Pointer source = NULL;
 
   if (sourceType == 0 || sourceType == 1)
@@ -416,6 +419,8 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRemoveSource()
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   if (m_TableWidget->rowCount() == 0)
     return;
 
@@ -431,13 +436,19 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
     -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
         this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
 
+  // FIXME: The list of RelatedSources is kept in mitkIGIDataSource, so the idea of having
+  // linked sources is not unique to network tools. So we either move the "related sources"
+  // down the class hierarchy, so that it only applies to networked tools, or we generalise
+  // this to destroy any related data source.
+
   // If it is a networked tool, removes the port number from our list of "ports in use".
   QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(source.GetPointer());
   if (niftyLinkSource.IsNotNull())
   {
+
     int portNumber = niftyLinkSource->GetPort();
-    //scan through the other source looking for any others using the same port, 
-    //and kill them as well
+
+    // Scan through the other source looking for any others using the same port, and kill them as well
     for ( int i = 0 ; i < m_TableWidget->rowCount() ; i ++ )
     {
       if ( i != rowIndex ) 
@@ -452,9 +463,11 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
             tempSource->DataSourceStatusUpdated
              -= mitk::MessageDelegate1<QmitkIGIDataSourceManager, int>(
              this, &QmitkIGIDataSourceManager::UpdateToolDisplay );
+
             m_TableWidget->removeRow(i);
             m_TableWidget->update();
             m_Sources.erase(m_Sources.begin() + i);
+
             if ( i < rowIndex ) 
             {
               rowIndex--;
@@ -488,6 +501,8 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   QmitkIGIDataSourceGui* sourceGui = NULL;
 
   mitk::IGIDataSource* source = m_Sources[row];
@@ -533,7 +548,6 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
     this->PrintStatusMessage(QString("ERROR:For class ") + QString::fromStdString(classname) + ", could not create GUI class " + QString::fromStdString(guiClassname));
   }
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -652,15 +666,23 @@ void QmitkIGIDataSourceManager::UpdateToolDisplay(int toolIdentifier)
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
 
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
   emit UpdateGuiStart(idNow);
-/*
+
   if (m_Sources.size() > 0)
   {
+    // Iterate over all sources, so where we have linked sources,
+    // such as a tracker, tracking multiple tools, we have one row for
+    // each tool. So each tool is a separate source.
     foreach ( mitk::IGIDataSource::Pointer source, m_Sources )
     {
+      // Work out the sourceNumber == rowNumber.
+      int rowNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
+
       // First tell each source to update data.
       // For example, sources could copy to data storage.
       bool isValid = source->ProcessData(idNow);
@@ -670,51 +692,36 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       float rate = source->GetFrameRate();
       double lag = source->GetCurrentTimeLag(idNow);
 
-      // Sources can have multiple sub-tools, so work out how many need updating.
-      int sourceNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
-      int numberOfSubTools = source->GetSubSources().size();
-      int rowsToUpdate = 1;
-      if (numberOfSubTools > 0)
+      // Update the frame rate number.
+      QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
+      frameRateItem->setTextAlignment(Qt::AlignCenter);
+      frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(rowNumber, 4, frameRateItem);
+
+      // Update the lag number.
+      QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+      lagItem->setTextAlignment(Qt::AlignCenter);
+      lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(rowNumber, 5, lagItem);
+
+      // Update the status text.
+      m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
+
+      // Update the status icon.
+      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+      if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
       {
-        rowsToUpdate = numberOfSubTools;
+        // Highlight that current row is in error.
+        QPixmap pix(22, 22);
+        pix.fill(m_ErrorColour);
+        tItem->setIcon(pix);
       }
-
-      // Update each row.
-      for (int i = 0; i < rowsToUpdate; i++)
+      else
       {
-        int rowNumber = sourceNumber + i;
-
-        // Update the frame rate number.
-        QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
-        frameRateItem->setTextAlignment(Qt::AlignCenter);
-        frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        m_TableWidget->setItem(rowNumber, 4, frameRateItem);
-
-        // Update the lag number.
-        QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-        lagItem->setTextAlignment(Qt::AlignCenter);
-        lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        m_TableWidget->setItem(rowNumber, 5, lagItem);
-
-        // Update the status text.
-        m_TableWidget->item(rowNumber, 0)->setText(QString::fromStdString(source->GetStatus()));
-
-        // Update the status icon.
-        QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
-        if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
-        {
-          // Highlight that current row is in error.
-          QPixmap pix(22, 22);
-          pix.fill(m_ErrorColour);
-          tItem->setIcon(pix);
-        }
-        else
-        {
-          // Highlight that current row is OK.
-          QPixmap pix(22, 22);
-          pix.fill(m_OKColour);
-          tItem->setIcon(pix);
-        }
+        // Highlight that current row is OK.
+        QPixmap pix(22, 22);
+        pix.fill(m_OKColour);
+        tItem->setIcon(pix);
       }
     }
 
@@ -732,7 +739,6 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     // Try to encourage rest of event loop to process before the timer swamps it.
     QCoreApplication::processEvents();
   }
-  */
   emit UpdateGuiEnd(idNow);
 }
 
