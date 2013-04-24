@@ -143,9 +143,10 @@ void IGIDataSource::CleanBuffer()
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   unsigned int approxDoubleTheFrameRate = 1;
-  if (this->GetFrameRate() > 0)
+  unsigned int frameRate = this->GetFrameRate();
+  if (frameRate > 0)
   {
-    approxDoubleTheFrameRate = (int)(this->GetFrameRate() * 2);
+    approxDoubleTheFrameRate = (int)(frameRate * 2);
   }
 
   // Don't forget that frame rate can deteriorate to zero if no data is arriving.
@@ -248,6 +249,8 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 //-----------------------------------------------------------------------------
 bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   bool result = false;
 
   igtlUint64 requestedTimeStamp = GetTimeInNanoSeconds(m_RequestedTimeStamp);
@@ -269,6 +272,7 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 {
   assert(m_SubSources.size() > 0);
+
   return this->GetCurrentTimeLag(nowTime, m_SubSources.front());
 }
 
@@ -276,6 +280,8 @@ double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 //-----------------------------------------------------------------------------
 double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime, const std::string& name)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   double lag = 0;
   igtlUint64 dataTime = 0;
 
@@ -339,6 +345,7 @@ void IGIDataSource::UpdateFrameRate()
 unsigned long int IGIDataSource::SaveBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   unsigned long int numberSaved = 0;
 
   std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
@@ -363,6 +370,8 @@ unsigned long int IGIDataSource::SaveBuffer()
 //-----------------------------------------------------------------------------
 bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   bool result = false;
 
   std::string fileName = "";
@@ -397,15 +406,12 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 //-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data, const std::map<std::string, igtlUint64>& timeStamps)
 {
+  assert(data);
+  assert(timeStamps.size() > 0);
+
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   bool result = false;
-
-  if (data == NULL)
-  {
-    MITK_ERROR << "IGIDataSource::AddData is receiving NULL data. This is not allowed!" << std::endl;
-    return false;
-  }
 
   if (this->CanHandleData(data))
   {
@@ -413,16 +419,13 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data, const std::map<std::string,
     data->SetIsSaved(false);
     data->SetFrameId(m_CurrentFrameId++);
 
-    m_Buffer.push_back(data);
-
-    if (timeStamps.size() > 0)
+    std::map<std::string, igtlUint64>::const_iterator iter;
+    for (iter = timeStamps.begin(); iter != timeStamps.end(); iter++)
     {
-      std::map<std::string, igtlUint64>::const_iterator iter;
-      for (iter = timeStamps.begin(); iter != timeStamps.end(); iter++)
-      {
-        m_SubSourcesLastTimeStamp.insert(std::pair<std::string, igtlUint64>((*iter).first, (*iter).second));
-      }
+      m_SubSourcesLastTimeStamp.insert(std::pair<std::string, igtlUint64>((*iter).first, (*iter).second));
     }
+
+    m_Buffer.push_back(data);
 
     if (m_Buffer.size() == 1)
     {
@@ -430,10 +433,9 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data, const std::map<std::string,
       m_FrameRateBufferIterator = m_BufferIterator;
     }
 
-    // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!
-    if (   m_SavingMessages     // recording/saving is turned on.
-        && !m_SaveInBackground  // we are doing it immediately as opposed to some background thread.
-        && m_SaveOnReceipt      // we are saving every message that came in, regardless of display refresh rate.
+    if (   this->GetSavingMessages()     // recording/saving is turned on.
+        && !this->GetSaveInBackground()  // we are doing it immediately as opposed to some background thread.
+        && this->GetSaveOnReceipt()      // we are saving every message that came in, regardless of display refresh rate.
         )
     {
       result = this->DoSaveData(data);
@@ -450,6 +452,8 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data, const std::map<std::string,
 //-----------------------------------------------------------------------------
 bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   bool result = false;
   bool saveResult = false;
 
@@ -462,9 +466,9 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
       try
       {
         // Decide if we are saving data
-        if (   data->GetShouldBeSaved() // when the data was received it was stamped as save=true
-            && !m_SaveInBackground      // we are doing it immediately as opposed to some background thread.
-            && !m_SaveOnReceipt         // we only save the data that was shown on the display.
+        if (   data->GetShouldBeSaved()      // when the data was received it was stamped as save=true
+            && !this->GetSaveInBackground()  // we are doing it immediately as opposed to some background thread.
+            && !this->GetSaveOnReceipt()     // we only save the data that was shown on the display.
             )
         {
 
@@ -518,7 +522,9 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
 {
-  if (m_DataStorage == NULL)
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  if (this->GetDataStorage() == NULL)
   {
     mitkThrow() << "m_DataStorage is NULL.";
   }
@@ -553,6 +559,7 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
 void IGIDataSource::SetSubSources(const std::list<std::string>& inStringList)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   m_SubSources = inStringList;
   this->Modified();
 }
@@ -562,6 +569,7 @@ void IGIDataSource::SetSubSources(const std::list<std::string>& inStringList)
 std::list<std::string> IGIDataSource::GetSubSources () const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   return m_SubSources;
 }
 
@@ -570,6 +578,7 @@ std::list<std::string> IGIDataSource::GetSubSources () const
 int IGIDataSource::GetNumberOfSubSources() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);  
+
   return m_SubSources.size();
 }
 

@@ -60,6 +60,12 @@ public:
   Message1<int> DataSourceStatusUpdated;
 
   /**
+   * \brief Sources can have an optional Initialize function to perform any setup after construction,
+   * with this class providing a default, do-nothing implementation.
+   */
+  virtual void Initialize() {};
+
+  /**
    * \brief Sets the data storage, as each data source can put items into the storage.
    * This method is not thread safe, so should only be called once at startup.
    */
@@ -133,7 +139,13 @@ public:
   /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
    */
-  itkGetConstMacro(FrameRate, float);
+  itkThreadSafeGetConstMacro(FrameRate, float);
+
+  /**
+   * \brief Returns the current data item that corresponds to the GetActualTimeStamp(),
+   * with no searching to find a new one, and no updating of any buffer pointers or timestamps.
+   */
+  itkThreadSafeGetConstMacro(ActualData, mitk::IGIDataType::Pointer);
 
   /**
    * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
@@ -151,18 +163,6 @@ public:
    * depending on the available data.
    */
   igtlUint64 GetActualTimeStamp() const;
-
-  /**
-   * \brief Returns the current data item that corresponds to the GetActualTimeStamp(),
-   * with no searching to find a new one, and no updating of any buffer pointers or timestamps.
-   */
-  itkGetMacro(ActualData, mitk::IGIDataType::Pointer);
-
-  /**
-   * \brief Sources can have an optional Initialize function to perform any setup after construction,
-   * with this class providing a default, do-nothing implementation.
-   */
-  virtual void Initialize() {};
 
   /**
    * \brief Clears the internal buffer, which means completely destroying all the contents.
@@ -219,11 +219,6 @@ public:
   bool ProcessData(igtlUint64 requestedTimeStamp);
 
   /**
-   * \brief Returns true if the current data frame is within time tolerances and false otherwise.
-   */
-  bool IsCurrentWithinTimeTolerance() const;
-
-  /**
    * \brief Returns the difference between the nowTime and the most recent data from the source.
    */
   double GetCurrentTimeLag(const igtlUint64& nowTime );
@@ -243,6 +238,11 @@ public:
    * \brief Get the number of sub sources, which returns the size of the list returned by GetSubSources().
    */
   int GetNumberOfSubSources() const;
+
+  /**
+   * \brief Returns true if the current data frame is within time tolerances and false otherwise.
+   */
+  bool IsCurrentWithinTimeTolerance() const;
 
 protected:
 
