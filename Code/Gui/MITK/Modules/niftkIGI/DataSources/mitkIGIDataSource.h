@@ -46,6 +46,14 @@ class NIFTKIGI_EXPORT IGIDataSource : public itk::Object
 
 public:
 
+  enum SourceTypeEnum {
+    SOURCE_TYPE_UNKNOWN,
+    SOURCE_TYPE_TRACKER,
+    SOURCE_TYPE_IMAGER,
+    SOURCE_TYPE_FRAME_GRABBER,
+    SOURCE_TYPE_NVIDIA_SDI
+  };
+
   mitkClassMacro(IGIDataSource, itk::Object);
 
   /**
@@ -74,13 +82,19 @@ public:
   itkThreadSafeGetConstMacro(Identifier, int);
 
   /**
+   * \brief Sets the source type as determined by the front end. This is a system identifier, and should not be set by the user.
+   */
+  itkThreadSafeSetMacro(SourceType, SourceTypeEnum);
+  itkThreadSafeGetConstMacro(SourceType, SourceTypeEnum);
+
+  /**
    * \brief Sets a name, useful for display purposes.
    */
   itkThreadSafeSetMacro(Name, std::string);
   itkThreadSafeGetConstMacro(Name, std::string);
 
   /**
-   * \brief Sets a type, useful for display purposes.
+   * \brief Sets a type, useful for display purposes. This can be set by the user.
    */
   itkThreadSafeSetMacro(Type, std::string);
   itkThreadSafeGetConstMacro(Type, std::string);
@@ -283,6 +297,7 @@ private:
   std::set<mitk::DataNode::Pointer>               m_DataNodes;
   mitk::DataStorage*                              m_DataStorage;
   int                                             m_Identifier;
+  SourceTypeEnum                                  m_SourceType;
   float                                           m_FrameRate;
   unsigned long int                               m_CurrentFrameId;
   std::string                                     m_Name;

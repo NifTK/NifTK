@@ -240,12 +240,12 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 
   m_Frame->setContentsMargins(0, 0, 0, 0);
 
-  m_SourceSelectComboBox->addItem("networked tracker");
-  m_SourceSelectComboBox->addItem("networked ultrasonix scanner");
-  m_SourceSelectComboBox->addItem("local frame grabber");
+  m_SourceSelectComboBox->addItem("networked tracker", mitk::IGIDataSource::SOURCE_TYPE_TRACKER);
+  m_SourceSelectComboBox->addItem("networked ultrasonix scanner", mitk::IGIDataSource::SOURCE_TYPE_IMAGER);
+  m_SourceSelectComboBox->addItem("local frame grabber", mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER);
 
 #ifdef _USE_NVAPI
-  m_SourceSelectComboBox->addItem("local NVidia SDI");
+  m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
 #endif
 
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
@@ -329,7 +329,10 @@ void QmitkIGIDataSourceManager::OnAddSource()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  int sourceType = m_SourceSelectComboBox->currentIndex();
+  mitk::IGIDataSource::SourceTypeEnum sourceType =
+      static_cast<mitk::IGIDataSource::SourceTypeEnum>(
+          m_SourceSelectComboBox->itemData(m_SourceSelectComboBox->currentIndex()).toInt()
+          );
   int portNumber = m_PortNumberSpinBox->value();
 
   if (this->IsPortSpecificType())
@@ -347,20 +350,20 @@ void QmitkIGIDataSourceManager::OnAddSource()
 
 
 //------------------------------------------------
-int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLinkSocketObject* socket)
+int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourceType, int portNumber, NiftyLinkSocketObject* socket)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   mitk::IGIDataSource::Pointer source = NULL;
 
-  if (sourceType == 0 || sourceType == 1)
+  if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER || sourceType == mitk::IGIDataSource::SOURCE_TYPE_IMAGER)
   {
     QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = NULL;
-    if (sourceType == 0)
+    if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER)
     {
       niftyLinkSource = QmitkIGITrackerTool::New(m_DataStorage, socket);
     }
-    else if (sourceType == 1)
+    else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_IMAGER)
     {
       niftyLinkSource = QmitkIGIUltrasonixTool::New(m_DataStorage, socket);
     }
@@ -371,12 +374,12 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
     }
     source = niftyLinkSource;
   }
-  else if (sourceType == 2)
+  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER)
   {
     source = QmitkIGIOpenCVDataSource::New(m_DataStorage);
   }
 #ifdef _USE_NVAPI
-  else if (sourceType == 3)
+  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI)
   {
     source = QmitkIGINVidiaDataSource::New(m_DataStorage);
   }
@@ -386,7 +389,9 @@ int QmitkIGIDataSourceManager::AddSource(int sourceType, int portNumber, NiftyLi
     std::cerr << "Matt, not implemented yet" << std::endl;
   }
 
+  source->SetSourceType(sourceType);
   source->SetIdentifier(m_NextSourceIdentifier);
+
   m_Sources.push_back(source);
 
   // Registers this class as a listener to any status updates and connects to UpdateSourceView.
@@ -556,6 +561,8 @@ void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   // This method should only be called from UpdateSourceView, so we are assuming rowNumber is a valid array index.
+  mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
+  mitk::IGIDataSource::SourceTypeEnum sourceType = m_Sources[rowNumber]->GetSourceType();
   std::string type = m_Sources[rowNumber]->GetType();
   std::string description = m_Sources[rowNumber]->GetDescription();
   std::string device = m_Sources[rowNumber]->GetName();
@@ -569,52 +576,40 @@ void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
   {
     foreach ( subSource, subSources )
     {
-      //this is horrible
-      int thisType = -1;
-      if ( type == "Tracker" || type == "Imager" )
+      if ( sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER || sourceType == mitk::IGIDataSource::SOURCE_TYPE_IMAGER)
       {
+        QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
+        bool toolAlreadyAdded = false;
 
-        if ( type == "Tracker" )
-        {
-          thisType = 0 ;
-        }
-        if ( type == "Imager" )
-        {
-          thisType = 1;
-        }
-
-        mitk::IGIDataSource::Pointer source = m_Sources[rowNumber];
-        QmitkIGINiftyLinkDataSource::Pointer NLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
-        bool ToolAlreadyAdded = false;
         for (int i = 0 ; i <  (int)m_Sources.size() ; i ++ )
         {
-          //FIXME Tools with the same name being tracked by a different tracker
-          //(on a separate port) will confuse this
+          // FIXME Tools with the same name being tracked by a different tracker
+          // (on a separate port) will confuse this
           if ( m_Sources[i]->GetDescription() == subSource  )
           {
-            ToolAlreadyAdded = true;
+            toolAlreadyAdded = true;
           }
         }
 
-        if ( ! ToolAlreadyAdded )
+        if ( ! toolAlreadyAdded )
         {
           if ( index == 0 )
           {
-            description=subSource;
-            NLSource->SetDescription(subSource);
+            description = subSource;
+            niftyLinkSource->SetDescription(subSource);
           }
           else
           {
-            int tempToolIdentifier = AddSource (thisType, NLSource->GetPort(), NLSource->GetSocket());
-
+            int tempToolIdentifier = AddSource (sourceType, niftyLinkSource->GetPort(), niftyLinkSource->GetSocket());
             int tempRowNumber = this->GetSourceNumberFromIdentifier(tempToolIdentifier);
-            if ( type == "Tracker" )
+
+            if ( sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER )
             {
               mitk::IGIDataSource::Pointer tempsource = m_Sources[tempRowNumber];
               QmitkIGINiftyLinkDataSource::Pointer tempNLSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(tempsource.GetPointer());
-              QmitkIGITrackerTool* TrackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
+              QmitkIGITrackerTool* trackerTool = dynamic_cast<QmitkIGITrackerTool*>(tempNLSource.GetPointer());
               m_Sources[tempRowNumber]->SetDescription(subSource);
-              TrackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
+              trackerTool->ProcessInitString(dynamic_cast<QmitkIGITrackerTool*>(source.GetPointer())->GetInitString());
             }
             else
             {

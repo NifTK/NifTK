@@ -186,7 +186,7 @@ private slots:
    * \brief Adds a data source to the table.
    * \return the added tool's identifier
    */
-  int AddSource(int sourcetype , int portnumber, NiftyLinkSocketObject* socket=NULL);
+  int AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourcetype, int portnumber, NiftyLinkSocketObject* socket=NULL);
 
   /**
    * \brief Removes a data source from the table, and completely destroys it.
