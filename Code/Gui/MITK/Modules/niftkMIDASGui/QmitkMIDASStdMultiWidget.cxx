@@ -12,19 +12,13 @@
 
 =============================================================================*/
 
+#include "QmitkMIDASStdMultiWidget.h"
+
 #include <cmath>
-#include <itkConversionUtils.h>
 #include <itkMatrix.h>
-#include <itkSpatialOrientationAdapter.h>
-#include <vtkCamera.h>
 #include <vtkRenderWindow.h>
-#include <vtkMatrix4x4.h>
-#include <vtkLinearTransform.h>
-#include <QmitkMIDASStdMultiWidget.h>
 #include <QmitkRenderWindow.h>
-#include <QStackedLayout>
 #include <QGridLayout>
-#include <QFrame>
 #include <mitkMIDASOrientationUtils.h>
 
 #include <mitkGetModuleContext.h>
@@ -148,12 +142,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->mitkWidget3->setAcceptDrops(true);
   this->mitkWidget4->setAcceptDrops(true);
 
-  // Create 4 cameras for temporary storage.
-  for (unsigned int i = 0; i < 4; i++)
-  {
-    m_Cameras[i] = vtkCamera::New();
-  }
-
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
   this->m_CornerAnnotaions[0].cornerText->SetText(0, "");
   this->m_CornerAnnotaions[1].cornerText->SetText(0, "");
@@ -222,14 +210,6 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
   if (mitkWidget3 != NULL && m_CoronalSliceTag != 0)
   {
     mitkWidget3->GetSliceNavigationController()->RemoveObserver(m_CoronalSliceTag);
-  }
-
-  for (unsigned int i = 0; i < 4; i++)
-  {
-    if (m_Cameras[i] != NULL)
-    {
-      m_Cameras[i]->Delete();
-    }
   }
 
   // Stop listening to the display geometry changes so we raise an event when
@@ -1841,32 +1821,6 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *rend
     displayGeometry->Zoom(scaleFactor, focusInPixels);
 
     m_BlockDisplayGeometryEvents = false;
-  }
-}
-
-void QmitkMIDASStdMultiWidget::StoreCameras()
-{
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
-  for (unsigned int i = 0; i < renderWindows.size(); i++)
-  {
-    vtkCamera* camera = renderWindows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
-    this->m_Cameras[i]->SetPosition(camera->GetPosition());
-    this->m_Cameras[i]->SetFocalPoint(camera->GetFocalPoint());
-    this->m_Cameras[i]->SetViewUp(camera->GetViewUp());
-    this->m_Cameras[i]->SetClippingRange(camera->GetClippingRange());
-  }
-}
-
-void QmitkMIDASStdMultiWidget::RestoreCameras()
-{
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
-  for (unsigned int i = 0; i < renderWindows.size(); i++)
-  {
-    vtkCamera* camera = renderWindows[i]->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
-    camera->SetPosition(this->m_Cameras[i]->GetPosition());
-    camera->SetFocalPoint(this->m_Cameras[i]->GetFocalPoint());
-    camera->SetViewUp(this->m_Cameras[i]->GetViewUp());
-    camera->SetClippingRange(this->m_Cameras[i]->GetClippingRange());
   }
 }
 
