@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIDATASOURCEGUI_H
-#define QMITKIGIDATASOURCEGUI_H
+#ifndef QmitkIGIDataSourceGui_h
+#define QmitkIGIDataSourceGui_h
 
 #include "niftkIGIGuiExports.h"
 #include <itkObject.h>

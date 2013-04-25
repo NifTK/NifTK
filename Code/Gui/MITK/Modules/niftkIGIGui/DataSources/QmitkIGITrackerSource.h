@@ -85,4 +85,3 @@ private:
 }; // end class
 
 #endif
-

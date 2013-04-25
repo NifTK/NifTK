@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIGIDATATYPE_H
-#define MITKIGIDATATYPE_H
+#ifndef mitkIGIDataType_h
+#define mitkIGIDataType_h
 
 #include "niftkIGIExports.h"
 #include <mitkDataStorage.h>
@@ -84,4 +84,4 @@ private:
 
 } // end namespace
 
-#endif // MITKIGIDATATYPE_H
+#endif

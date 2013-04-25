@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIULTRASONIXTOOL_H
-#define QMITKIGIULTRASONIXTOOL_H
+#ifndef QMitkIGIUltrasonixTool_h
+#define QMitkIGIUltrasonixTool_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkQImageToMitkImageFilter.h"

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIULTRASONIXTOOLGUI_H
-#define QMITKIGIULTRASONIXTOOLGUI_H
+#ifndef QmitkIGIOpenCVDataSourceGui_h
+#define QmitkIGIOpenCVDataSourceGui_h
 
 #include "niftkIGIGuiExports.h"
 #include <QWidget>

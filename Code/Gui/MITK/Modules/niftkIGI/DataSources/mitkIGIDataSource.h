@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIGIDATASOURCE_H
-#define MITKIGIDATASOURCE_H
+#ifndef mitkIGIDataSource_h
+#define mitkIGIDataSource_h
 
 #include "niftkIGIExports.h"
 #include <NiftyLinkUtils.h>
@@ -337,4 +337,3 @@ private:
 } // end namespace
 
 #endif
-

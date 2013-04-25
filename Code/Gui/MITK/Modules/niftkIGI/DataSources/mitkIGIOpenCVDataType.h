@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIGIOPENCVDATATYPE_H
-#define MITKIGIOPENCVDATATYPE_H
+#ifndef mitkIGIOpenCVDataType_h
+#define mitkIGIOpenCVDataType_h
 
 #include "niftkIGIExports.h"
 #include "mitkIGIDataType.h"
@@ -59,4 +59,4 @@ private:
 
 } // end namespace
 
-#endif // MITKIGIDATATYPE_H
+#endif

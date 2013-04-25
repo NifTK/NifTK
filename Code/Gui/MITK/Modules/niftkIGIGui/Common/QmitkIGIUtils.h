@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIUTILS_H
-#define QMITKIGIUTILS_H
+#ifndef QmitkIGIUtils_h
+#define QmitkIGIUtils_h
 
 #include "niftkIGIGuiExports.h"
 #include <mitkSurface.h>

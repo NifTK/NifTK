@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGITRACKERTOOL_H
-#define QMITKIGITRACKERTOOL_H
+#ifndef QmitkIGITrackerTool_h
+#define QmitkIGITrackerTool_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGINiftyLinkDataSource.h"

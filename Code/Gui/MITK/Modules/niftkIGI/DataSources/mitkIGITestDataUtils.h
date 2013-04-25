@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIGITESTDATAUTILS_H
-#define MITKIGITESTDATAUTILS_H
+#ifndef mitkIGITestDataUtils_h
+#define mitkIGITestDataUtils_h
 
 #include "niftkIGIExports.h"
 #include <mitkVector.h>
@@ -53,5 +53,4 @@ mitk::DataNode::Pointer CreateConeRepresentation(
 
 } // end namespace
 
-#endif // MITKIGITESTDATAUTILS_H
-
+#endif

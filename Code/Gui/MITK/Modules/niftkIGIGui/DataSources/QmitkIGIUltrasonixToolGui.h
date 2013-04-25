@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIULTRASONIXTOOLGUI_H
-#define QMITKIGIULTRASONIXTOOLGUI_H
+#ifndef QMitkIGIUltrasonixToolGui_h
+#define QMitkIGIUltrasonixToolGui_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGINiftyLinkDataSourceGui.h"

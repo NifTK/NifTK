@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKQIMAGETOMITKIMAGEFILTER_H
-#define QMITKQIMAGETOMITKIMAGEFILTER_H
+#ifndef QmitkQImageToMitkImageFilter_h
+#define QmitkQImageToMitkImageFilter_h
 
 #include <mitkCommon.h>
 #include <mitkImageSource.h>
@@ -78,6 +78,4 @@ private:
     static mitk::Image::Pointer Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage);
 };
 
-#endif // QMITKQIMAGETOMITKIMAGEFILTER_H
-
-
+#endif

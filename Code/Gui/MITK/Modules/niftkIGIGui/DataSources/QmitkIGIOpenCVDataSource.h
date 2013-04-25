@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIGIOPENCVDATASOURCE_H
-#define MITKIGIOPENCVDATASOURCE_H
+#ifndef QmitkIGIOpenCVDataSource_h
+#define QmitkIGIOpenCVDataSource_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGILocalDataSource.h"
@@ -110,4 +110,3 @@ private:
 Q_DECLARE_METATYPE(mitk::VideoSource*)
 
 #endif
-
