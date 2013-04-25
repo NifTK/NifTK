@@ -224,7 +224,7 @@ function run_batch_job()
     sge_cluster="YES"
     
     if [ "_${SGE_MEM}" != "_" ]; then
-      mem_arg=" -l vf=$SGE_MEM -l h_vmem=$SGE_MEM "
+      mem_arg=" -l vf=$SGE_MEM -l h_vmem=$SGE_MEM -l tmem=$SGE_MEM"
     else
       mem_arg=" "
     fi
