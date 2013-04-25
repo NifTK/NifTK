@@ -57,18 +57,21 @@ public:
     // Note that the scaling changes the scale factor *and* the origin,
     // while the moving changes the origin only.
 
-    mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
-    if (origin != m_LastOrigin)
-    {
-      m_StdMultiWidget->OnOriginChanged(m_RenderWindow);
-      m_LastOrigin = origin;
-    }
+    bool updateOtherRenderWindows = true;
 
     double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
     if (scaleFactor != m_LastScaleFactor)
     {
+      updateOtherRenderWindows = false;
       m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow);
       m_LastScaleFactor = scaleFactor;
+    }
+
+    mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
+    if (origin != m_LastOrigin)
+    {
+      m_StdMultiWidget->OnOriginChanged(m_RenderWindow, updateOtherRenderWindows);
+      m_LastOrigin = origin;
     }
   }
 
@@ -1263,7 +1266,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
   return result;
 }
 
-void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow)
+void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, bool updateOtherRenderWindows)
 {
   if (!m_BlockDisplayGeometryEvents)
   {
@@ -1304,14 +1307,17 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow)
     // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
     // vertical movement in sagittal <-> vertical movement in coronal
 
-    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-    for (int i = 0; i < 3; ++i)
+    if (updateOtherRenderWindows)
     {
-      QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
-      if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
+      // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+      for (int i = 0; i < 3; ++i)
       {
-        mitk::Vector2D origin = this->ComputeOrigin(otherRenderWindow, m_Centre);
-        this->SetOrigin(otherRenderWindow, origin);
+        QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
+        if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
+        {
+          mitk::Vector2D origin = this->ComputeOrigin(otherRenderWindow, m_Centre);
+          this->SetOrigin(otherRenderWindow, origin);
+        }
       }
     }
 
@@ -1616,12 +1622,12 @@ double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* r
   }
 
   // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
-  mitk::Point2D scaleFactorPixPerVoxel;
-  mitk::Point2D scaleFactorPixPerMillimetres;
-  this->GetScaleFactors(renderWindow, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+  mitk::Point2D scaleFactorPixelPerVoxel;
+  mitk::Point2D scaleFactorPixelPerMM;
+  this->GetScaleFactors(renderWindow, scaleFactorPixelPerVoxel, scaleFactorPixelPerMM);
 
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
-  double scaleFactor = std::max(scaleFactorPixPerVoxel[0], scaleFactorPixPerVoxel[1]);
+  double scaleFactor = std::max(scaleFactorPixelPerVoxel[0], scaleFactorPixelPerVoxel[1]);
 
   double magnificationFactor = scaleFactor - 1.0;
   if (magnificationFactor < 0.0)
@@ -1669,13 +1675,10 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
 
   if (renderWindow != NULL)
   {
-    mitk::SliceNavigationController* sliceNavigationController = renderWindow->GetSliceNavigationController();
-    assert(sliceNavigationController);
+    mitk::BaseRenderer::Pointer renderer = renderWindow->GetRenderer();
+    assert(renderer);
 
-    mitk::BaseRenderer::Pointer baseRenderer = sliceNavigationController->GetRenderer();
-    assert(baseRenderer);
-
-    mitk::DisplayGeometry::Pointer displayGeometry = baseRenderer->GetDisplayGeometry();
+    mitk::DisplayGeometry::Pointer displayGeometry = renderer->GetDisplayGeometry();
     assert(displayGeometry);
 
     const mitk::Geometry3D *geometry = renderWindow->GetSliceNavigationController()->GetInputWorldGeometry();
@@ -1826,16 +1829,16 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *rend
 
     const mitk::Point3D& crossPosition = this->GetCrossPosition();
 
-    mitk::Point2D projectedCentreInMillimeters;
-    mitk::Point2D projectedCentreInPixels;
+    mitk::Point2D focusInMM;
+    mitk::Point2D focusInPixels;
 
-    displayGeometry->Map(crossPosition, projectedCentreInMillimeters);
-    displayGeometry->WorldToDisplay(projectedCentreInMillimeters, projectedCentreInPixels);
+    displayGeometry->Map(crossPosition, focusInMM);
+    displayGeometry->WorldToDisplay(focusInMM, focusInPixels);
 
     m_BlockDisplayGeometryEvents = true;
 
     // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
-    displayGeometry->Zoom(scaleFactor, projectedCentreInPixels);
+    displayGeometry->Zoom(scaleFactor, focusInPixels);
 
     m_BlockDisplayGeometryEvents = false;
   }
