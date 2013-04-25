@@ -65,6 +65,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_LayoutForDropWidgets(NULL)
 , m_LayoutForRenderWindows(NULL)
 , m_MIDASOrientationWidget(NULL)
+, m_Show2DCursorsCheckBox(NULL)
 , m_MIDASSlidersWidget(NULL)
 , m_MIDASBindWidget(NULL)
 , m_1x1LayoutButton(NULL)
@@ -202,6 +203,9 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   m_MIDASOrientationWidget = new QmitkMIDASOrientationWidget(m_ControlsContainerWidget);
 
+  m_Show2DCursorsCheckBox = new QCheckBox(m_ControlsContainerWidget);
+  m_Show2DCursorsCheckBox->setText("show cursors");
+
   m_MIDASBindWidget = new QmitkMIDASBindWidget(m_ControlsContainerWidget);
 
   m_1x1LayoutButton = new QPushButton(m_ControlsContainerWidget);
@@ -281,11 +285,12 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_LayoutForLayoutWidgets->addWidget(m_ColumnsLabel,     3, 0);
   m_LayoutForLayoutWidgets->addWidget(m_ColumnsSpinBox,   3, 1);
 
-  m_LayoutForTopControls->addWidget(m_MIDASSlidersWidget,     0, 0);
-  m_LayoutForTopControls->addLayout(m_LayoutForLayoutWidgets, 0, 1);
-  m_LayoutForTopControls->addWidget(m_MIDASOrientationWidget, 0, 2);
-  m_LayoutForTopControls->addLayout(m_LayoutForDropWidgets,   0, 3);
-  m_LayoutForTopControls->addWidget(m_MIDASBindWidget,        0, 4);
+  m_LayoutForTopControls->addWidget(m_MIDASSlidersWidget,     0, 0, 2, 1);
+  m_LayoutForTopControls->addLayout(m_LayoutForLayoutWidgets, 0, 1, 2, 1);
+  m_LayoutForTopControls->addWidget(m_MIDASOrientationWidget, 0, 2, 1, 1);
+  m_LayoutForTopControls->addLayout(m_LayoutForDropWidgets,   0, 3, 2, 1);
+  m_LayoutForTopControls->addWidget(m_MIDASBindWidget,        0, 4, 2, 1);
+  m_LayoutForTopControls->addWidget(m_Show2DCursorsCheckBox,  1, 2, 1, 1);
 
   m_LayoutForTopControls->setColumnMinimumWidth(0, 50);
   m_LayoutForTopControls->setColumnStretch(0, 5);
@@ -330,6 +335,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_RowsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnRowsSliderValueChanged(int)));
   connect(m_ColumnsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnColumnsSliderValueChanged(int)));
   connect(m_MIDASOrientationWidget, SIGNAL(ViewChanged(MIDASView)), this, SLOT(OnOrientationSelected(MIDASView)));
+  connect(m_Show2DCursorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnShow2DCursorsCheckBoxToggled(bool)));
   connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropSingleRadioButtonToggled(bool)));
   connect(m_DropMultipleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropMultipleRadioButtonToggled(bool)));
   connect(m_DropThumbnailRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropThumbnailRadioButtonToggled(bool)));
@@ -488,6 +494,11 @@ void QmitkMIDASMultiViewWidget::SetShowMagnificationSlider(bool visible)
 void QmitkMIDASMultiViewWidget::SetShow2DCursors(bool visible)
 {
   m_Show2DCursors = visible;
+
+  bool wasBlocked = m_Show2DCursorsCheckBox->blockSignals(true);
+  m_Show2DCursorsCheckBox->setChecked(visible);
+  m_Show2DCursorsCheckBox->blockSignals(wasBlocked);
+
   this->Update2DCursorVisibility();
 }
 
@@ -582,6 +593,7 @@ void QmitkMIDASMultiViewWidget::EnableWidgets(bool enabled)
   this->EnableLayoutWidgets(enabled);
   this->EnableOrientationWidgets(enabled);
   this->EnableBindWidgets(enabled);
+  m_Show2DCursorsCheckBox->setEnabled(enabled);
 }
 
 
@@ -598,6 +610,7 @@ void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
     this->EnableLayoutWidgets(false);
     this->EnableOrientationWidgets(false);
     this->EnableBindWidgets(false);
+    m_Show2DCursorsCheckBox->setEnabled(false);
     this->SetLayoutSize(m_MaxRows, m_MaxCols, true);
   }
   else
@@ -606,6 +619,7 @@ void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
     this->EnableLayoutWidgets(true);
     this->EnableOrientationWidgets(true);
     this->EnableBindWidgets(true);
+    m_Show2DCursorsCheckBox->setEnabled(true);
     this->SetLayoutSize(m_NumberOfRowsInNonThumbnailMode, m_NumberOfColumnsInNonThumbnailMode, false);
   }
 }
@@ -629,6 +643,7 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
     this->m_NumberOfColumnsBeforeSegmentationMode = m_ColumnsSpinBox->value();
     this->EnableLayoutWidgets(false);
     this->EnableBindWidgets(false);
+    m_Show2DCursorsCheckBox->setEnabled(false);
     this->SetLayoutSize(1, 1, false);
     this->SetSelectedViewIndex(0);
     this->UpdateFocusManagerToSelectedView();
@@ -637,6 +652,7 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
   {
     this->EnableLayoutWidgets(true);
     this->EnableBindWidgets(true);
+    m_Show2DCursorsCheckBox->setEnabled(true);
     this->SetLayoutSize(m_NumberOfRowsBeforeSegmentationMode, m_NumberOfColumnsBeforeSegmentationMode, false);
   }
 }
@@ -1341,6 +1357,13 @@ void QmitkMIDASMultiViewWidget::OnOrientationSelected(MIDASView midasView)
     // (or indeed anything that's listening to the FocusManager).
     this->UpdateFocusManagerToSelectedView();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnShow2DCursorsCheckBoxToggled(bool checked)
+{
+  this->SetShow2DCursors(checked);
 }
 
 

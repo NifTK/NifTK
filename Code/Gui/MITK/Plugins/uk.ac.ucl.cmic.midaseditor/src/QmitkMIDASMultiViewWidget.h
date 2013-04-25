@@ -257,8 +257,6 @@ public:
 
 signals:
 
-public slots:
-
 protected slots:
 
   // Qt slots, connected to Qt GUI elements.
@@ -272,6 +270,7 @@ protected slots:
   void OnRowsSliderValueChanged(int);
   void OnColumnsSliderValueChanged(int);
   void OnOrientationSelected(MIDASView midasView);
+  void OnShow2DCursorsCheckBoxToggled(bool);
   void OnDropSingleRadioButtonToggled(bool);
   void OnDropMultipleRadioButtonToggled(bool);
   void OnDropThumbnailRadioButtonToggled(bool);
@@ -384,6 +383,7 @@ private:
 
   // Widgets
   QmitkMIDASOrientationWidget                   *m_MIDASOrientationWidget;
+  QCheckBox                                     *m_Show2DCursorsCheckBox;
   QmitkMIDASSlidersWidget                       *m_MIDASSlidersWidget;
   QmitkMIDASBindWidget                          *m_MIDASBindWidget;
   QPushButton                                   *m_1x1LayoutButton;
