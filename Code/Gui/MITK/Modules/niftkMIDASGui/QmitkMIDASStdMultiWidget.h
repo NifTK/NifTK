@@ -17,7 +17,7 @@
 
 #include <niftkMIDASGuiExports.h>
 
-#include <itkConversionUtils.h>
+//#include <itkConversionUtils.h>
 
 #include <QColor>
 
@@ -320,7 +320,6 @@ private:
   MIDASView             m_View;
   mitk::Vector3D        m_Centre;
   double                m_MagnificationFactor;
-  vtkCamera*            m_Cameras[4];
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
 
