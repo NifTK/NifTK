@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "SurgicalGuidanceViewPreferencePage.h"
+#include "DataSourcesViewPreferencePage.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -32,10 +32,10 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string SurgicalGuidanceViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.surgicalguidance");
+const std::string DataSourcesViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igidatasources");
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceViewPreferencePage::SurgicalGuidanceViewPreferencePage()
+DataSourcesViewPreferencePage::DataSourcesViewPreferencePage()
 : m_MainControl(0)
 , m_FramesPerSecondSpinBox(0)
 , m_ClearDataSpinBox(0)
@@ -44,13 +44,13 @@ SurgicalGuidanceViewPreferencePage::SurgicalGuidanceViewPreferencePage()
 , m_SaveOnReceive(0)
 , m_SaveInBackground(0)
 , m_Initializing(false)
-, m_SurgicalGuidanceViewPreferencesNode(0)
+, m_DataSourcesViewPreferencesNode(0)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceViewPreferencePage::SurgicalGuidanceViewPreferencePage(const SurgicalGuidanceViewPreferencePage& other)
+DataSourcesViewPreferencePage::DataSourcesViewPreferencePage(const DataSourcesViewPreferencePage& other)
 : berry::Object(), QObject()
 {
   Q_UNUSED(other)
@@ -59,20 +59,20 @@ SurgicalGuidanceViewPreferencePage::SurgicalGuidanceViewPreferencePage(const Sur
 
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceViewPreferencePage::~SurgicalGuidanceViewPreferencePage()
+DataSourcesViewPreferencePage::~DataSourcesViewPreferencePage()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::Init(berry::IWorkbench::Pointer )
+void DataSourcesViewPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-QGridLayout* SurgicalGuidanceViewPreferencePage::CreateColourButtonLayout(QPushButton*& button, QPushButton*& resetButton)
+QGridLayout* DataSourcesViewPreferencePage::CreateColourButtonLayout(QPushButton*& button, QPushButton*& resetButton)
 {
   resetButton = new QPushButton;
   resetButton->setText("reset");
@@ -90,7 +90,7 @@ QGridLayout* SurgicalGuidanceViewPreferencePage::CreateColourButtonLayout(QPushB
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::CreateQtControl(QWidget* parent)
+void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
@@ -98,7 +98,7 @@ void SurgicalGuidanceViewPreferencePage::CreateQtControl(QWidget* parent)
     = berry::Platform::GetServiceRegistry()
       .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
-  m_SurgicalGuidanceViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_DataSourcesViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;
@@ -162,42 +162,42 @@ void SurgicalGuidanceViewPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* SurgicalGuidanceViewPreferencePage::GetQtControl() const
+QWidget* DataSourcesViewPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool SurgicalGuidanceViewPreferencePage::PerformOk()
+bool DataSourcesViewPreferencePage::PerformOk()
 {
-  m_SurgicalGuidanceViewPreferencesNode->Put("error colour style sheet", m_ColorStyleSheet[0].toStdString());
-  m_SurgicalGuidanceViewPreferencesNode->PutByteArray("error colour", m_Color[0]);
-  m_SurgicalGuidanceViewPreferencesNode->Put("warning colour style sheet", m_ColorStyleSheet[1].toStdString());
-  m_SurgicalGuidanceViewPreferencesNode->PutByteArray("warning colour", m_Color[1]);
-  m_SurgicalGuidanceViewPreferencesNode->Put("ok colour style sheet", m_ColorStyleSheet[2].toStdString());
-  m_SurgicalGuidanceViewPreferencesNode->PutByteArray("ok colour", m_Color[2]);
-  m_SurgicalGuidanceViewPreferencesNode->PutInt("refresh rate", m_FramesPerSecondSpinBox->value());
-  m_SurgicalGuidanceViewPreferencesNode->PutInt("clear data rate", m_ClearDataSpinBox->value());
-  m_SurgicalGuidanceViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory().toStdString());
-  m_SurgicalGuidanceViewPreferencesNode->PutBool("save on receive", m_SaveOnReceive->isChecked());
-  m_SurgicalGuidanceViewPreferencesNode->PutBool("save in background", m_SaveInBackground->isChecked());
+  m_DataSourcesViewPreferencesNode->Put("error colour style sheet", m_ColorStyleSheet[0].toStdString());
+  m_DataSourcesViewPreferencesNode->PutByteArray("error colour", m_Color[0]);
+  m_DataSourcesViewPreferencesNode->Put("warning colour style sheet", m_ColorStyleSheet[1].toStdString());
+  m_DataSourcesViewPreferencesNode->PutByteArray("warning colour", m_Color[1]);
+  m_DataSourcesViewPreferencesNode->Put("ok colour style sheet", m_ColorStyleSheet[2].toStdString());
+  m_DataSourcesViewPreferencesNode->PutByteArray("ok colour", m_Color[2]);
+  m_DataSourcesViewPreferencesNode->PutInt("refresh rate", m_FramesPerSecondSpinBox->value());
+  m_DataSourcesViewPreferencesNode->PutInt("clear data rate", m_ClearDataSpinBox->value());
+  m_DataSourcesViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory().toStdString());
+  m_DataSourcesViewPreferencesNode->PutBool("save on receive", m_SaveOnReceive->isChecked());
+  m_DataSourcesViewPreferencesNode->PutBool("save in background", m_SaveInBackground->isChecked());
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::PerformCancel()
+void DataSourcesViewPreferencePage::PerformCancel()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::Update()
+void DataSourcesViewPreferencePage::Update()
 {
-  m_ColorStyleSheet[0] = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("error colour style sheet", ""));
-  m_Color[0] = m_SurgicalGuidanceViewPreferencesNode->GetByteArray("error colour", "");
+  m_ColorStyleSheet[0] = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("error colour style sheet", ""));
+  m_Color[0] = m_DataSourcesViewPreferencesNode->GetByteArray("error colour", "");
 
   if (m_ColorStyleSheet[0]=="" || m_Color[0]=="")
   {
@@ -208,8 +208,8 @@ void SurgicalGuidanceViewPreferencePage::Update()
     m_ColorPushButton[0]->setStyleSheet(m_ColorStyleSheet[0]);
   }
 
-  m_ColorStyleSheet[1] = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("warning colour style sheet", ""));
-  m_Color[1] = m_SurgicalGuidanceViewPreferencesNode->GetByteArray("warning colour", "");
+  m_ColorStyleSheet[1] = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("warning colour style sheet", ""));
+  m_Color[1] = m_DataSourcesViewPreferencesNode->GetByteArray("warning colour", "");
 
   if (m_ColorStyleSheet[1]=="" || m_Color[1]=="")
   {
@@ -220,8 +220,8 @@ void SurgicalGuidanceViewPreferencePage::Update()
     m_ColorPushButton[1]->setStyleSheet(m_ColorStyleSheet[1]);
   }
 
-  m_ColorStyleSheet[2] = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("ok colour style sheet", ""));
-  m_Color[2] = m_SurgicalGuidanceViewPreferencesNode->GetByteArray("ok colour", "");
+  m_ColorStyleSheet[2] = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("ok colour style sheet", ""));
+  m_Color[2] = m_DataSourcesViewPreferencesNode->GetByteArray("ok colour", "");
 
   if (m_ColorStyleSheet[2]=="" || m_Color[2]=="")
   {
@@ -232,10 +232,10 @@ void SurgicalGuidanceViewPreferencePage::Update()
     m_ColorPushButton[2]->setStyleSheet(m_ColorStyleSheet[2]);
   }
 
-  m_FramesPerSecondSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE));
-  m_ClearDataSpinBox->setValue(m_SurgicalGuidanceViewPreferencesNode->GetInt("clear data rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE));
+  m_FramesPerSecondSpinBox->setValue(m_DataSourcesViewPreferencesNode->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE));
+  m_ClearDataSpinBox->setValue(m_DataSourcesViewPreferencesNode->GetInt("clear data rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE));
 
-  QString path = QString::fromStdString(m_SurgicalGuidanceViewPreferencesNode->Get("output directory prefix", ""));
+  QString path = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("output directory prefix", ""));
 
   if (path == "")
   {
@@ -243,34 +243,34 @@ void SurgicalGuidanceViewPreferencePage::Update()
   }
   m_DirectoryPrefix->setDirectory(path);
 
-  m_SaveOnReceive->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save on receive", QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT));
-  m_SaveInBackground->setChecked(m_SurgicalGuidanceViewPreferencesNode->GetBool("save in background", QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND));
+  m_SaveOnReceive->setChecked(m_DataSourcesViewPreferencesNode->GetBool("save on receive", QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT));
+  m_SaveInBackground->setChecked(m_DataSourcesViewPreferencesNode->GetBool("save in background", QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND));
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnErrorColourChanged()
+void DataSourcesViewPreferencePage::OnErrorColourChanged()
 {
   this->OnColourChanged(0);
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnWarningColourChanged()
+void DataSourcesViewPreferencePage::OnWarningColourChanged()
 {
   this->OnColourChanged(1);
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnOKColourChanged()
+void DataSourcesViewPreferencePage::OnOKColourChanged()
 {
   this->OnColourChanged(2);
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnColourChanged(int buttonIndex)
+void DataSourcesViewPreferencePage::OnColourChanged(int buttonIndex)
 {
   QColor colour = QColorDialog::getColor();
   if (colour.isValid())
@@ -297,7 +297,7 @@ void SurgicalGuidanceViewPreferencePage::OnColourChanged(int buttonIndex)
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnResetErrorColour()
+void DataSourcesViewPreferencePage::OnResetErrorColour()
 {
   QColor color = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
   this->OnResetColour(0, color);
@@ -305,7 +305,7 @@ void SurgicalGuidanceViewPreferencePage::OnResetErrorColour()
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnResetWarningColour()
+void DataSourcesViewPreferencePage::OnResetWarningColour()
 {
   QColor color = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
   this->OnResetColour(1, color);
@@ -313,7 +313,7 @@ void SurgicalGuidanceViewPreferencePage::OnResetWarningColour()
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnResetOKColour()
+void DataSourcesViewPreferencePage::OnResetOKColour()
 {
   QColor color = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
   this->OnResetColour(2, color);
@@ -321,7 +321,7 @@ void SurgicalGuidanceViewPreferencePage::OnResetOKColour()
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceViewPreferencePage::OnResetColour(int buttonIndex, QColor &colorValue)
+void DataSourcesViewPreferencePage::OnResetColour(int buttonIndex, QColor &colorValue)
 {
   m_Color[buttonIndex] = (QString("%1").arg(colorValue.name())).toStdString();
   m_ColorStyleSheet[buttonIndex] = QString("background-color: rgb(%1,%2,%3)").arg(colorValue.red()).arg(colorValue.green()).arg(colorValue.blue());

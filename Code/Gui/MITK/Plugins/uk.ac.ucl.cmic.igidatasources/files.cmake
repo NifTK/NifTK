@@ -17,18 +17,18 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  uk_ac_ucl_cmic_surgicalguidance_Activator.cxx
-  SurgicalGuidanceView.cxx
-  SurgicalGuidanceViewPreferencePage.cxx
+  DataSourcesViewActivator.cxx
+  DataSourcesView.cxx
+  DataSourcesViewPreferencePage.cxx
 )
 
 set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/uk_ac_ucl_cmic_surgicalguidance_Activator.h
-  src/internal/SurgicalGuidanceView.h
-  src/internal/SurgicalGuidanceViewPreferencePage.h
+  src/internal/DataSourcesViewActivator.h
+  src/internal/DataSourcesView.h
+  src/internal/DataSourcesViewPreferencePage.h
 )
 
 # list of resource files which can be used by the plug-in
@@ -43,7 +43,7 @@ set(CACHED_RESOURCE_FILES
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-  resources/SurgicalGuidance.qrc
+  resources/DataSourcesView.qrc
 )
 
 set(CPP_FILES )

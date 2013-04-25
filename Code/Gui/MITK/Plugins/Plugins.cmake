@@ -52,5 +52,5 @@ set(PROJECT_PLUGINS
   
 # Plugins listed after 'commonlegacy' depend on it, and this list must be as short as possible.
   Plugins/uk.ac.ucl.cmic.gui.qt.commonlegacy:ON           
-  Plugins/uk.ac.ucl.cmic.surgicalguidance:ON  
+  Plugins/uk.ac.ucl.cmic.igidatasources:ON  
 )

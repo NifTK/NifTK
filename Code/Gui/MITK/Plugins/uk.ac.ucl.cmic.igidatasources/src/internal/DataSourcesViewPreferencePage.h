@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED
-#define _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED
+#ifndef DataSourcesViewPreferencePage_h
+#define DataSourcesViewPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -30,24 +30,26 @@ class QRadioButton;
 class ctkDirectoryButton;
 
 /**
- * \class SurgicalGuidanceViewPreferencePage
+ * \class DataSourcesViewPreferencePage
  * \brief Preferences page for the surgical guidance plugin with choices for colours, default paths to save data etc.
- * \ingroup uk_ac_ucl_cmic_surgicalguidance_internal
+ * \ingroup uk_ac_ucl_cmic_igidatasources_internal
  *
  */
-class SurgicalGuidanceViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class DataSourcesViewPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
 
-  /// \brief Stores the name of the preferences node.
+  /**
+   * \brief Stores the name of the preferences node.
+   */
   static const std::string PREFERENCES_NODE_NAME;
 
-  SurgicalGuidanceViewPreferencePage();
-  SurgicalGuidanceViewPreferencePage(const SurgicalGuidanceViewPreferencePage& other);
-  ~SurgicalGuidanceViewPreferencePage();
+  DataSourcesViewPreferencePage();
+  DataSourcesViewPreferencePage(const DataSourcesViewPreferencePage& other);
+  ~DataSourcesViewPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -55,19 +57,19 @@ public:
 
   QWidget* GetQtControl() const;
 
-  ///
-  /// \see IPreferencePage::PerformOk()
-  ///
+  /**
+   * \see IPreferencePage::PerformOk()
+   */
   virtual bool PerformOk();
 
-  ///
-  /// \see IPreferencePage::PerformCancel()
-  ///
+  /**
+   * \see IPreferencePage::PerformCancel()
+   */
   virtual void PerformCancel();
 
-  ///
-  /// \see IPreferencePage::Update()
-  ///
+  /**
+   * \see IPreferencePage::Update()
+   */
   virtual void Update();
 
 private slots:
@@ -104,8 +106,8 @@ private:
 
   bool m_Initializing;
 
-  berry::IPreferences::Pointer m_SurgicalGuidanceViewPreferencesNode;
+  berry::IPreferences::Pointer m_DataSourcesViewPreferencesNode;
 };
 
-#endif /* _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED */
+#endif // DataSourcesViewPreferencePage_h
 

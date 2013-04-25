@@ -13,36 +13,36 @@
 =============================================================================*/
 
 // Qmitk
-#include "SurgicalGuidanceView.h"
+#include "DataSourcesView.h"
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
-#include "uk_ac_ucl_cmic_surgicalguidance_Activator.h"
+#include "DataSourcesViewActivator.h"
 
-const std::string SurgicalGuidanceView::VIEW_ID = "uk.ac.ucl.cmic.surgicalguidance";
+const std::string DataSourcesView::VIEW_ID = "uk.ac.ucl.cmic.igidatasources";
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceView::SurgicalGuidanceView()
+DataSourcesView::DataSourcesView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-SurgicalGuidanceView::~SurgicalGuidanceView()
+DataSourcesView::~DataSourcesView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-std::string SurgicalGuidanceView::GetViewID() const
+std::string DataSourcesView::GetViewID() const
 {
   return VIEW_ID;
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
+void DataSourcesView::CreateQtPartControl( QWidget *parent )
 {
   m_DataSourceManager = QmitkIGIDataSourceManager::New();
   m_DataSourceManager->setupUi(parent);
@@ -53,7 +53,7 @@ void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
 
   connect(m_DataSourceManager, SIGNAL(UpdateGuiEnd(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
 
-  ctkPluginContext* context = mitk::uk_ac_ucl_cmic_surgicalguidance_Activator::getContext();
+  ctkPluginContext* context = mitk::DataSourcesViewActivator::getContext();
   ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
   if (ref)
   {
@@ -64,14 +64,14 @@ void SurgicalGuidanceView::CreateQtPartControl( QWidget *parent )
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::SetFocus()
+void DataSourcesView::SetFocus()
 {
   m_DataSourceManager->setFocus();
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::RetrievePreferenceValues()
+void DataSourcesView::RetrievePreferenceValues()
 {
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
@@ -134,14 +134,14 @@ void SurgicalGuidanceView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::OnPreferencesChanged(const berry::IBerryPreferences*)
+void DataSourcesView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void SurgicalGuidanceView::OnUpdateGuiEnd(igtlUint64 timeStamp)
+void DataSourcesView::OnUpdateGuiEnd(igtlUint64 timeStamp)
 {
   ctkDictionary properties;
   properties["timeStamp"] = timeStamp;

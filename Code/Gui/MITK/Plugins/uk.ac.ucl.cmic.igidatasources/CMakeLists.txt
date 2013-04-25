@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_surgicalguidance)
+project(uk_ac_ucl_cmic_igidatasources)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE SURGICALGUIDANCE_EXPORT
+  EXPORT_DIRECTIVE IGIDATASOURCES_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES niftkIGIGuiManager
 )
