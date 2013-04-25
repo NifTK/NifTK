@@ -70,6 +70,9 @@ private:
 
   MIDASView m_CurrentView;
   QButtonGroup *m_ButtonGroup;
+
+  static MIDASView s_Views[];
+  static int const s_ViewsSize;
 };
 
 #endif
