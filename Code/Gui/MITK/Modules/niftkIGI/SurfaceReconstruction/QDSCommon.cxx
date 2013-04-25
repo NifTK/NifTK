@@ -20,7 +20,7 @@
 #endif
 
 
-namespace mitk
+namespace niftk
 {
 
 

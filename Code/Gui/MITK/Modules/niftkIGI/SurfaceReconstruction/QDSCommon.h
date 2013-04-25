@@ -39,7 +39,7 @@ GIL_DEFINE_BASE_TYPEDEFS(64f,gray)
 }
 
 
-namespace mitk
+namespace niftk
 {
 
 

@@ -16,7 +16,7 @@
 #define SurfaceReconView_h
 
 #include "QmitkBaseView.h"
-#include "mitkSurfaceReconstruction.h"
+#include "SurfaceReconstruction.h"
 #include <service/event/ctkEvent.h>
 #include "ui_SurfaceReconViewWidget.h"
 
@@ -92,7 +92,7 @@ private:
   /**
    * \brief Delegate all functionality to this class, so we can unit test it outside of the plugin.
    */
-  mitk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
+  niftk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
 };
 
 #endif // SurfaceReconView_h

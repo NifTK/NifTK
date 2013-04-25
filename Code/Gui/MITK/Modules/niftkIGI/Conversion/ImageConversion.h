@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef mitkImageConversion_h
-#define mitkImageConversion_h
+#ifndef niftkImageConversion_h
+#define niftkImageConversion_h
 
 #include "niftkIGIExports.h"
 #include <mitkITKImageImport.txx>
 #include <opencv2/core/types_c.h>
 
 
-namespace mitk
+namespace niftk
 {
 
 
@@ -31,4 +31,4 @@ mitk::Image::Pointer NIFTKIGI_EXPORT CreateRGBAMitkImage(const IplImage* image);
 } // namespace
 
 
-#endif // mitkImageConversion_h
+#endif // niftkImageConversion_h

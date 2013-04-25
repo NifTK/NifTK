@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkSurfaceReconstruction_h
-#define mitkSurfaceReconstruction_h
+#ifndef niftkSurfaceReconstruction_h
+#define niftkSurfaceReconstruction_h
 
 #include "niftkIGIExports.h"
 #include <mitkDataStorage.h>
@@ -21,7 +21,8 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
-namespace mitk 
+
+namespace niftk 
 {
 
 
@@ -74,4 +75,4 @@ private:
 
 } // end namespace
 
-#endif
+#endif // niftkSurfaceReconstruction_h

@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "mitkSurfaceReconstruction.h"
+#include "SurfaceReconstruction.h"
 #include "SequentialCpuQds.h"
 #include <opencv2/core/core_c.h>
 #include <mitkImageReadAccessor.h>
-#include "../Conversion/mitkImageConversion.h"
+#include "../Conversion/ImageConversion.h"
 
 
-namespace mitk 
+namespace niftk 
 {
 
 //-----------------------------------------------------------------------------

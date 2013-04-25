@@ -26,10 +26,10 @@
 #endif
 
 
-BOOST_STATIC_ASSERT((sizeof(mitk::RefPoint) == sizeof(boost::gil::dev2n16_pixel_t)));
+BOOST_STATIC_ASSERT((sizeof(niftk::RefPoint) == sizeof(boost::gil::dev2n16_pixel_t)));
 
 
-namespace mitk 
+namespace niftk 
 {
 
 

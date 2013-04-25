@@ -27,7 +27,7 @@ const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
 {
-  m_SurfaceReconstruction = mitk::SurfaceReconstruction::New();
+  m_SurfaceReconstruction = niftk::SurfaceReconstruction::New();
 }
 
 

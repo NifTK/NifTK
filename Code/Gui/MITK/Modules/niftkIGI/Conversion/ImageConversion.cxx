@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#include "mitkImageConversion.h"
+#include "ImageConversion.h"
 #include <mitkITKImageImport.txx>
 #include <itkImportImageFilter.h>
 #include <itkRGBPixel.h>
 
 
-namespace mitk
+namespace niftk
 {
 
 
