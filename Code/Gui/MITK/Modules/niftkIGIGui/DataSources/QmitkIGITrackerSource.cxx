@@ -16,9 +16,13 @@
 #include <QFile>
 #include <QDir>
 #include <QString>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 #include <mitkDataNode.h>
+#include <NiftyLinkMessage.h>
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
+#include "mitkCoordinateAxesData.h"
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSource::QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
@@ -135,12 +139,101 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
   if (dataType.IsNotNull())
   {
 
-    NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
-    if (pointerToMessage != NULL)
+    NiftyLinkMessage* msg = dataType->GetMessage();
+    if (msg != NULL)
     {
-      this->HandleTrackerData(pointerToMessage);
-      this->DisplayTrackerData(pointerToMessage);
-      result = true;
+      if (msg->GetMessageType() == QString("TRANSFORM")
+        || msg->GetMessageType() == QString("TDATA")
+        )
+      {
+
+        QString matrixAsString = "";
+        QString nodeName = "";
+        igtl::Matrix4x4 matrix;
+
+        QString header;
+        header.append("Message from: ");
+        header.append(msg->GetHostName());
+        header.append(", messageId=");
+        header.append(QString::number(msg->GetId()));
+        header.append("\n");
+
+        if (msg->GetMessageType() == QString("TRANSFORM"))
+        {
+          NiftyLinkTransformMessage* trMsg;
+          trMsg = static_cast<NiftyLinkTransformMessage*>(msg);
+
+          if (trMsg != NULL)
+          {
+            nodeName = trMsg->GetHostName();
+
+            trMsg->GetMatrix(matrix);
+            matrixAsString = trMsg->GetMatrixAsString();
+          }
+        }
+        else if (msg->GetMessageType() == QString("TDATA"))
+        {
+          NiftyLinkTrackingDataMessage* trMsg;
+          trMsg = static_cast<NiftyLinkTrackingDataMessage*>(msg);
+
+          if (trMsg != NULL)
+          {
+            header.append(", toolId=");
+            header.append(trMsg->GetTrackerToolName());
+            header.append("\n");
+
+            nodeName = trMsg->GetTrackerToolName();
+
+            trMsg->GetMatrix(matrix);
+            matrixAsString = trMsg->GetMatrixAsString();
+          }
+        }
+
+        if (nodeName.length() == 0)
+        {
+          MITK_ERROR << "QmitkIGITrackerSource::HandleTrackerData: Can't work out a node name, aborting" << std::endl;
+          return result;
+        }
+
+        // Get Data Node.
+        nodeName.append(" tracker");
+        mitk::DataNode::Pointer node = this->GetDataNode(nodeName.toStdString());
+        if (node.IsNull())
+        {
+          MITK_ERROR << "Can't find mitk::DataNode with name " << nodeName.toStdString() << std::endl;
+          return result;
+        }
+
+        // Set up vtkMatrix, with transform.
+        vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkMatrix4x4::New();
+        for (int i = 0; i < 4; i++)
+        {
+          for (int j = 0; j < 4; j++)
+          {
+            vtkMatrix->SetElement(i,j, matrix[i][j]);
+          }
+        }
+
+        // Extract transformation from node, and put it on the coordinateAxes object.
+        mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+        if (coordinateAxes.IsNull())
+        {
+          coordinateAxes = mitk::CoordinateAxesData::New();
+          node->SetData(coordinateAxes);
+        }
+        coordinateAxes->SetVtkMatrix(*vtkMatrix);
+
+        // And output a status message to console.
+        matrixAsString.append("\n");
+        QString statusMessage = header + matrixAsString;
+
+        emit StatusUpdate(statusMessage);
+        result = true;
+      }
+      else
+      {
+        MITK_ERROR << "QmitkIGITrackerSource::Update is receiving messages that are not tracker messages ... this is wrong!" << std::endl;
+      }
     }
     else
     {
@@ -148,81 +241,6 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
     }
   }
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerSource::HandleTrackerData(NiftyLinkMessage* msg)
-{
-  if (msg->GetMessageType() == QString("TDATA"))
-  {
-    NiftyLinkTrackingDataMessage* trMsg;
-    trMsg = static_cast<NiftyLinkTrackingDataMessage*>(msg);
-
-    QString toolName = trMsg->GetTrackerToolName();
-
-    mitk::DataStorage* ds = this->GetDataStorage();
-    if (ds == NULL)
-    {
-      QString message("ERROR: QmitkIGITrackerSource, DataStorage Access Error: Could not access DataStorage!");
-      emit StatusUpdate(message);
-      return;
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerSource::DisplayTrackerData(NiftyLinkMessage* msg)
-{
-  if (msg->GetMessageType() == QString("TRANSFORM"))
-  {
-    NiftyLinkTransformMessage* trMsg;
-    trMsg = static_cast<NiftyLinkTransformMessage*>(msg);
-
-    if (trMsg != NULL)
-    {
-      // Print stuff
-      QString header;
-      header.append("Message from: ");
-      header.append(trMsg->GetHostName());
-      header.append(", messageId=");
-      header.append(QString::number(trMsg->GetId()));
-      header.append("\n");
-
-      QString matrix = trMsg->GetMatrixAsString();
-      matrix.append("\n");
-
-      QString message = header + matrix;
-
-      emit StatusUpdate(message);
-    }
-  }
-  else if (msg->GetMessageType() == QString("TDATA"))
-  {
-    NiftyLinkTrackingDataMessage* trMsg;
-    trMsg = static_cast<NiftyLinkTrackingDataMessage*>(msg);
-
-    if (trMsg != NULL)
-    {
-      // Print stuff
-      QString header;
-      header.append("Message from: ");
-      header.append(trMsg->GetHostName());
-      header.append(", messageId=");
-      header.append(QString::number(trMsg->GetId()));
-      header.append(", toolId=");
-      header.append(trMsg->GetTrackerToolName());
-      header.append("\n");
-
-      QString matrix = trMsg->GetMatrixAsString();
-      matrix.append("\n");
-
-      QString message = header + matrix;
-
-      emit StatusUpdate(message);
-    }
-  }
 }
 
 

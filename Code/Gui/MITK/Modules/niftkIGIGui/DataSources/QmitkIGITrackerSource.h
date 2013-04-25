@@ -71,17 +71,6 @@ protected slots:
 
 private:
 
-  /**
-   * \brief Takes a message and extracts a matrix/transform and applies it.
-   */
-  void HandleTrackerData(NiftyLinkMessage* msg);
-
-  /**
-   * \brief Used to feedback a message of either coordinates, or matrices to
-   * the GUI consolve via the StatusUpdate method, and also writes to console.
-   */
-  void DisplayTrackerData(NiftyLinkMessage* msg);
-  
 }; // end class
 
 #endif
