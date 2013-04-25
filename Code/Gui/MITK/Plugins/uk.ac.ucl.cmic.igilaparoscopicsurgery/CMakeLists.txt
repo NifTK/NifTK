@@ -12,14 +12,10 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(niftkIGIGui
-  EXPORT_DEFINE NIFTKIGIGUI_EXPORT
-  INCLUDE_DIRS Common DataSources LaparoscopicSurgery
-  DEPENDS MitkExt QmitkExt MitkIGTUI niftkCore niftkIGI
-  PACKAGE_DEPENDS QT QVTK CTK
-  QT_MODULE 
-)
+project(uk_ac_ucl_cmic_igilaparoscopicsurgery)
 
-IF(BUILD_TESTING)  
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE IGILAPAROSCOPICSURGERY_EXPORT
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDENCIES niftkIGIGui
+)

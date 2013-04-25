@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igilaparoscopicsurgery"
+          name="Laparoscopic Surgery"
+          class="LaparoscopicSurgeryView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.LaparoscopicSurgeryViewPreferencePage" name="Laparoscopic Surgery" class="LaparoscopicSurgeryViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.LaparoscopicSurgeryViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>
