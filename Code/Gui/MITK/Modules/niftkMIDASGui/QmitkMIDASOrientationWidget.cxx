@@ -34,7 +34,6 @@ void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
   Ui_QmitkMIDASOrientationWidget::setupUi(parent);
   m_MultiWindowComboBox->addItem("other");
   m_MultiWindowComboBox->addItem("2x2");
-  m_MultiWindowComboBox->addItem("3D");
   m_MultiWindowComboBox->addItem("3H");
   m_MultiWindowComboBox->addItem("3V");
 
@@ -99,8 +98,7 @@ void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
     this->m_CoronalWindowRadioButton->setChecked(true);
     break;
   case MIDAS_VIEW_3D:
-    this->m_MultiWindowRadioButton->setChecked(true);
-    this->m_MultiWindowComboBox->setCurrentIndex(2);
+    this->m_3DWindowRadioButton->setChecked(true);
     break;
   case MIDAS_VIEW_ORTHO:
     this->m_MultiWindowRadioButton->setChecked(true);
@@ -108,11 +106,11 @@ void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
     break;
   case MIDAS_VIEW_3H:
     this->m_MultiWindowRadioButton->setChecked(true);
-    this->m_MultiWindowComboBox->setCurrentIndex(3);
+    this->m_MultiWindowComboBox->setCurrentIndex(2);
     break;
   case MIDAS_VIEW_3V:
     this->m_MultiWindowRadioButton->setChecked(true);
-    this->m_MultiWindowComboBox->setCurrentIndex(4);
+    this->m_MultiWindowComboBox->setCurrentIndex(3);
     break;
   default:
     qWarning() << "QmitkMIDASOrientationWidget::SetToView, unrecognised view, can't set radio button";
@@ -199,13 +197,9 @@ void QmitkMIDASOrientationWidget::OnMultiWindowComboBoxIndexChanged(int index)
     }
     else if (index == 2)
     {
-      this->SetToView(MIDAS_VIEW_3D);
-    }
-    else if (index == 3)
-    {
       this->SetToView(MIDAS_VIEW_3H);
     }
-    else if (index == 4)
+    else if (index == 3)
     {
       this->SetToView(MIDAS_VIEW_3V);
     }
