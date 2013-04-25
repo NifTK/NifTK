@@ -28,8 +28,6 @@ QmitkIGIDataSourceGui::~QmitkIGIDataSourceGui()
   m_ReferenceCountLock.Lock();
   m_ReferenceCount = 0; // otherwise ITK will complain in LightObject's destructor
   m_ReferenceCountLock.Unlock();
-
-  // We don't own m_Tool or m_StdMultiWidget, so don't delete them.
 }
 
 

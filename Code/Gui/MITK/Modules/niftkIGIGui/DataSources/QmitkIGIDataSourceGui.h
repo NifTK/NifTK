@@ -21,8 +21,6 @@
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 
-class QmitkStdMultiWidget;
-
 /**
  * \class QmitkIGIDataSourceGui
  * \brief Base class for the GUI belonging to an IGI Tool.
@@ -44,16 +42,6 @@ public:
    * \brief Retrieves the source that this GUI will operate on.
    */
   itkGetConstMacro(Source, mitk::IGIDataSource*);
-
-  /**
-   * \brief Sets the StdMultiWidget.
-   */
-  itkSetObjectMacro(StdMultiWidget, QmitkStdMultiWidget);
-
-  /**
-   * \brief Gets the StdMultiWidget.
-   */
-  itkGetConstMacro(StdMultiWidget, QmitkStdMultiWidget*);
 
   /**
    * \brief ToolGui can have an optional Initialize function to perform any setup.
@@ -80,7 +68,6 @@ protected:
 private:
 
   mitk::IGIDataSource *m_Source;
-  QmitkStdMultiWidget *m_StdMultiWidget;
 
 }; // end class
 

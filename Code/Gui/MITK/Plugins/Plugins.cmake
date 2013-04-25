@@ -32,19 +32,20 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyreg:ON                      # Must be after the xnat plugin
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
   Plugins/uk.ac.ucl.cmic.breastsegmentation:OFF           # Under development
-  Plugins/uk.ac.ucl.cmic.singlewidgeteditor:ON            # Under development
- 
+  Plugins/uk.ac.ucl.cmic.singlewidgeteditor:ON
+
 # This 'common' plugin is our preferred base class for things that can't just derive from MITK.  
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
   Plugins/it.unito.cim.intensityprofile:ON
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
+  Plugins/uk.ac.ucl.cmic.igidatasources:ON
   Plugins/uk.ac.ucl.cmic.igitagtracker:ON
   Plugins/uk.ac.ucl.cmic.igisurfacerecon:OFF
   Plugins/uk.ac.ucl.cmic.igitrackedimage:OFF
   Plugins/uk.ac.ucl.cmic.igitrackedpointer:OFF
   Plugins/uk.ac.ucl.cmic.igilaparoscopicsurgery:ON
-  
+
 # This 'commonmidas' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.  
   Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON            
   Plugins/uk.ac.ucl.cmic.mitksegmentation:ON  
@@ -53,5 +54,4 @@ set(PROJECT_PLUGINS
   
 # Plugins listed after 'commonlegacy' depend on it, and this list must be as short as possible.
   Plugins/uk.ac.ucl.cmic.gui.qt.commonlegacy:ON           
-  Plugins/uk.ac.ucl.cmic.igidatasources:ON  
 )

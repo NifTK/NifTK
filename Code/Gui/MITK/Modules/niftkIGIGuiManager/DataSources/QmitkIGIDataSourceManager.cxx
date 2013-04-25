@@ -524,7 +524,6 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
     m_GridLayoutClientControls->setSpacing(0);
     m_GridLayoutClientControls->setContentsMargins(0, 0, 0, 0);
 
-    sourceGui->SetStdMultiWidget(this->GetStdMultiWidget());
     sourceGui->SetDataSource(source);
     sourceGui->Initialize(NULL);
 

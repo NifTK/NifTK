@@ -46,7 +46,6 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
 {
   m_DataSourceManager = QmitkIGIDataSourceManager::New();
   m_DataSourceManager->setupUi(parent);
-  m_DataSourceManager->SetStdMultiWidget(this->GetActiveStdMultiWidget());
   m_DataSourceManager->SetDataStorage(this->GetDataStorage());
 
   this->RetrievePreferenceValues();

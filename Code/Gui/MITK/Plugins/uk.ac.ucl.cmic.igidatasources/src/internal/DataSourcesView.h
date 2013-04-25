@@ -25,7 +25,7 @@
  * \brief User interface to provide Image Guided Surgery functionality.
  * \ingroup uk_ac_ucl_cmic_igidatasources_internal
 */
-class DataSourcesView : public QmitkBaseLegacyView
+class DataSourcesView : public QmitkBaseView
 {  
   /**
    * this is needed for all Qt objects that should have a Qt meta-object
