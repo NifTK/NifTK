@@ -137,12 +137,18 @@ float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view
   s0 = std::sqrt(s0 - wa * m0 * m0);
   s1 = std::sqrt(s1 - wa * m1 * m1);
 
-  // FIXME: is this supposed to happen??
-  //        i suddenly get all sorts of weird errors because of this, never seen this before
-  if (s0 <= 0)
+  // we need to check for these specifically otherwise the final eq blows up
+  if ((s0 <= 0) || (s1 <= 0))
+  {
+    // if stddev is zero then we have flat-line input
+    // if both are flat then we have perfect correlation
+    if ((s0 <= 0) && (s1 <= 0))
+    {
+      return 1;
+    }
+    // otherwise, don't know actually...
     return 0;
-  if (s1 <= 0)
-    return 0;
+  }
 
   float zncc = 0;
   for (y = -w; y <= w; ++y, oy1 += Step, oy0 += Step)
