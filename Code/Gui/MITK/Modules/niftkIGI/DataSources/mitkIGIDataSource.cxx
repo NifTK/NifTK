@@ -393,7 +393,7 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 
   if (this->CanHandleData(data))
   {
-    data->SetShouldBeSaved(this->GetSavingMessages());
+    data->SetShouldBeSaved(m_SavingMessages);
     data->SetIsSaved(false);
     data->SetFrameId(m_CurrentFrameId++);
 
