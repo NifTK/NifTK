@@ -32,8 +32,6 @@
 
 #include "mitkMIDASEnums.h"
 
-class vtkCamera;
-
 class QGridLayout;
 class QStackedLayout;
 class DisplayGeometryModificationCommand;
@@ -219,12 +217,6 @@ public:
 
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
-
-  /// \brief Temporarily stores the camera position.
-  void StoreCameras();
-
-  /// \brief Reverts the camera position back to the stored camera position.
-  void RestoreCameras();
 
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
   ///
