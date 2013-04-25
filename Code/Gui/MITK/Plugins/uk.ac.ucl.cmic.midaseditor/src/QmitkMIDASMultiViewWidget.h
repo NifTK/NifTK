@@ -167,6 +167,9 @@ public:
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches sagittal.
   void SetSelectedWindowToCoronal();
 
+  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches 3D.
+  void SetSelectedWindowTo3D();
+
   /// \brief Move anterior a slice.
   bool MoveAnterior();
 
@@ -181,6 +184,9 @@ public:
 
   /// \brief Switch to Coronal.
   bool SwitchToCoronal();
+
+  /// \brief Switch to 3D.
+  bool SwitchTo3D();
 
   /// \brief Switch the from single window to multiple windows or back
   bool ToggleMultiWindowLayout();
