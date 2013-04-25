@@ -187,7 +187,7 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
       NiftyLinkImageMessage* imgMsg = static_cast<NiftyLinkImageMessage*>(pointerToMessage);
       if (imgMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGIUltrasonixTool");
+        QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGIUltrasonixTool");
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {

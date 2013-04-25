@@ -239,7 +239,7 @@ bool QmitkIGIOpenCVDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     const IplImage* imageFrame = dataType->GetImage();
     if (imageFrame != NULL)
     {
-      QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+      QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
       QDir directory(directoryPath);
       if (directory.mkpath(directoryPath))
       {

@@ -191,6 +191,16 @@ public:
   unsigned long int GetBufferSize() const;
 
   /**
+   * \brief Atomic method to do all the setup required while holding one mutex lock, to instigate recording.
+   */
+  void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
+
+  /**
+   * \brief Stops recording, but does not reset the SaveInBackground flag or the SaveOnReceipt flag.
+   */
+  void StopRecording();
+
+  /**
    * \brief Returns the first time stamp, or 0 if the buffer is empty.
    */
   igtlUint64 GetFirstTimeStamp() const;
@@ -279,6 +289,12 @@ protected:
    */
   void SetRelatedSources(const std::list<std::string>& listOfSourceNames);
 
+  /**
+   * \brief So derived classes can access it without using the threadsafe Getters.
+   */
+  std::string m_SavePrefix;
+  std::string m_Description;
+
 private:
 
   /**
@@ -305,11 +321,9 @@ private:
   std::string                                     m_Name;
   std::string                                     m_Type;
   std::string                                     m_Status;
-  std::string                                     m_Description;
   bool                                            m_SavingMessages;
   bool                                            m_SaveOnReceipt;
   bool                                            m_SaveInBackground;
-  std::string                                     m_SavePrefix;
   std::list<mitk::IGIDataType::Pointer>           m_Buffer;
   std::list<mitk::IGIDataType::Pointer>::iterator m_BufferIterator;
   std::list<mitk::IGIDataType::Pointer>::iterator m_FrameRateBufferIterator;

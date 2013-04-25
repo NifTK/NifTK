@@ -542,7 +542,7 @@ void QmitkIGITrackerTool::GetCurrentTipPosition()
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
 
   igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
-  mitk::IGIDataType* data = NULL; // Matt: temporary comment this out. this->RequestData(idNow);
+  mitk::IGIDataType* data = this->RequestData(idNow);
 
   if (data != NULL)
   {
@@ -913,7 +913,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
       NiftyLinkTrackingDataMessage* trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->GetDescription());
+        QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->m_Description);
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {

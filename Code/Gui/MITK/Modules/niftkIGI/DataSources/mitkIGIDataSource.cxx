@@ -22,7 +22,9 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
-: m_Mutex(itk::FastMutexLock::New())
+: m_SavePrefix("")
+, m_Description("")
+, m_Mutex(itk::FastMutexLock::New())
 , m_DataStorage(storage)
 , m_Identifier(-1)
 , m_SourceType(SOURCE_TYPE_UNKNOWN)
@@ -31,11 +33,9 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_Name("")
 , m_Type("")
 , m_Status("")
-, m_Description("")
 , m_SavingMessages(false)
 , m_SaveOnReceipt(true)
 , m_SaveInBackground(false)
-, m_SavePrefix("")
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
 , m_ActualData(NULL)
@@ -127,12 +127,7 @@ unsigned long int IGIDataSource::GetBufferSize() const
 void IGIDataSource::ClearBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
-  unsigned long int bufferSizeBefore = m_Buffer.size();
   m_Buffer.clear();
-
-  unsigned long int bufferSizeAfter = m_Buffer.size();
-  MITK_INFO << this->GetName() << ": Clear operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
 }
 
 
@@ -379,6 +374,28 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
   }
 
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt)
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+  m_Buffer.clear();
+  m_SavePrefix = directoryPrefix;
+  m_SavingMessages = true;
+  m_SaveInBackground = saveInBackground;
+  m_SaveOnReceipt = saveOnReceipt;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopRecording()
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+  m_SavingMessages = false;
+  this->Modified();
 }
 
 

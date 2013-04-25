@@ -759,11 +759,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 
   foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
   {
-    source->ClearBuffer();
-    source->SetSavePrefix(directory.absolutePath().toStdString());
-    source->SetSavingMessages(true);
-    source->SetSaveInBackground(this->m_SaveInBackground);
-    source->SetSaveOnReceipt(this->m_SaveOnReceipt);
+    source->StartRecording(directory.absolutePath().toStdString(), this->m_SaveInBackground, this->m_SaveOnReceipt);
   }
 
   m_RecordPushButton->setEnabled(false);
@@ -776,7 +772,7 @@ void QmitkIGIDataSourceManager::OnRecordStop()
 {
   foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
   {
-    source->SetSavingMessages(false);
+    source->StopRecording();
   }
 
   m_RecordPushButton->setEnabled(true);
