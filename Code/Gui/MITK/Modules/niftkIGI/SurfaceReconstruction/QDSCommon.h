@@ -43,7 +43,16 @@ namespace niftk
 {
 
 
+/**
+ * This is some kind of corner detector.
+ * If the output image has a low/zero value for a given pixel then the same pixel coordinate in your input
+ * image will have little to no texture suitable for tracking/matching.
+ *
+ * @throws std::runtime_error if src and dst dimensions are different
+ */
 void NIFTKIGI_EXPORT BuildTextureDescriptor(const boost::gil::gray8c_view_t src, const boost::gil::gray8_view_t dst);
+
+
 float NIFTKIGI_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view_t img0, boost::gil::gray8c_view_t img1, boost::gil::gray32sc_view_t integral0, boost::gil::gray32sc_view_t integral1, boost::gil::gray64fc_view_t square0, boost::gil::gray64fc_view_t square1);
 
 } // namespace

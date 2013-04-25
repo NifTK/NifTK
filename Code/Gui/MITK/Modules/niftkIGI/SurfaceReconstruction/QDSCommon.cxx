@@ -27,7 +27,10 @@ namespace niftk
 //-----------------------------------------------------------------------------
 void BuildTextureDescriptor(const boost::gil::gray8c_view_t src, const boost::gil::gray8_view_t dst)
 {
-  assert(src.dimensions() == dst.dimensions());
+  if (src.dimensions() != dst.dimensions())
+  {
+    throw std::runtime_error("Input image dimensions does not match output image");
+  }
 
   // filled only to put a defined value along the image edge which is not processed by the loop below.
   // this shouldnt be necessary though because the propagation stays away from the border anyway.
