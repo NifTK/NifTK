@@ -66,8 +66,10 @@ void QmitkIGITrackerSource::InterpretMessage(NiftyLinkMessage::Pointer msg)
       }
       if ( stringList.size() > 0 )
       {
+        this->SetDescription(stringList.front());
         this->SetRelatedSources(stringList);
       }
+
       this->ProcessClientInfo(clientInfo);
     }
     else
