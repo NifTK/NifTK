@@ -19,8 +19,6 @@
 #include "QmitkIGIDataSourceMacro.h"
 #include <QCoreApplication>
 
-//NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixTool, "IGI Ultrasonix Tool");
-
 const std::string QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME = std::string("Ultrasonix image");
 
 //-----------------------------------------------------------------------------
