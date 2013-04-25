@@ -292,7 +292,7 @@ private:
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  void OnOriginChanged(QmitkRenderWindow *renderWindow);
+  void OnOriginChanged(QmitkRenderWindow *renderWindow, bool updateOtherRenderWindows);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
