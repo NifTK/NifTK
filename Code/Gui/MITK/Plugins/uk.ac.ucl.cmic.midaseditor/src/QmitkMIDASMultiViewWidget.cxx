@@ -1001,7 +1001,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
 
   MIDASView midasView = selectedView->GetView();
-  m_MIDASOrientationWidget->SetToView(midasView);
+  m_MIDASOrientationWidget->SetView(midasView);
 
   this->Update2DCursorVisibility();
   this->RequestUpdateAll();
@@ -1035,11 +1035,11 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
     MIDASView midasView = selectedView->GetView();
 
     bool slidersWidgetWasBlocked = m_MIDASSlidersWidget->BlockSignals(true);
-    bool orientationWidgetWasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
+    bool orientationWidgetWasBlocked = m_MIDASOrientationWidget->blockSignals(true);
 
     if (midasView != MIDAS_VIEW_UNKNOWN)
     {
-      m_MIDASOrientationWidget->SetToView(midasView);
+      m_MIDASOrientationWidget->SetView(midasView);
     }
     if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
@@ -1071,7 +1071,7 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
 
     m_MIDASSlidersWidget->BlockSignals(slidersWidgetWasBlocked);
-    m_MIDASOrientationWidget->BlockSignals(orientationWidgetWasBlocked);
+    m_MIDASOrientationWidget->blockSignals(orientationWidgetWasBlocked);
 
     this->Update2DCursorVisibility();
   }
@@ -1362,9 +1362,9 @@ bool QmitkMIDASMultiViewWidget::SwitchToAxial()
 {
   this->SetSelectedWindowToAxial();
 
-  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
-  m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_AXIAL);
-  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
+  bool wasBlocked = m_MIDASOrientationWidget->blockSignals(true);
+  m_MIDASOrientationWidget->SetView(MIDAS_VIEW_AXIAL);
+  m_MIDASOrientationWidget->blockSignals(wasBlocked);
   this->UpdateFocusManagerToSelectedView();
   return true;
 }
@@ -1382,9 +1382,9 @@ bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
 {
   this->SetSelectedWindowToSagittal();
 
-  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
-  m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_SAGITTAL);
-  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
+  bool wasBlocked = m_MIDASOrientationWidget->blockSignals(true);
+  m_MIDASOrientationWidget->SetView(MIDAS_VIEW_SAGITTAL);
+  m_MIDASOrientationWidget->blockSignals(wasBlocked);
   this->UpdateFocusManagerToSelectedView();
   return true;
 }
@@ -1402,9 +1402,9 @@ bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
 {
   this->SetSelectedWindowToCoronal();
 
-  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
-  m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_CORONAL);
-  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
+  bool wasBlocked = m_MIDASOrientationWidget->blockSignals(true);
+  m_MIDASOrientationWidget->SetView(MIDAS_VIEW_CORONAL);
+  m_MIDASOrientationWidget->blockSignals(wasBlocked);
   this->UpdateFocusManagerToSelectedView();
   return true;
 }
@@ -1422,9 +1422,9 @@ bool QmitkMIDASMultiViewWidget::SwitchTo3D()
 {
   this->SetSelectedWindowTo3D();
 
-  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
-  m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_3D);
-  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
+  bool wasBlocked = m_MIDASOrientationWidget->blockSignals(true);
+  m_MIDASOrientationWidget->SetView(MIDAS_VIEW_3D);
+  m_MIDASOrientationWidget->blockSignals(wasBlocked);
   this->UpdateFocusManagerToSelectedView();
   return true;
 }
@@ -1470,7 +1470,7 @@ bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
   }
 
   this->SwitchMIDASView(nextMidasView);
-  m_MIDASOrientationWidget->SetToView(nextMidasView);
+  m_MIDASOrientationWidget->SetView(nextMidasView);
 
   return true;
 }
