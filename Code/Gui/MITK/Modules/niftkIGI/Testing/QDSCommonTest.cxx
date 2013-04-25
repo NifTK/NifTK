@@ -14,10 +14,61 @@
 
 #include <mitkTestingMacros.h>
 #include "QDSCommon.h"
+#include <opencv2/core/types_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 
 
+template <typename A, typename B>
+bool AreImagesTheSame(const typename boost::gil::image<A, false>::const_view_t& a, const typename boost::gil::image<B, false>::const_view_t& b)
+{
+  if (a.dimensions() != b.dimensions())
+    return false;
 
-int QDSCommonTest(int /*argc*/, char* /*argv*/[])
+  // FIXME: check number of channels
+
+  for (int y = 0; y < a.height(); ++y)
+  {
+    for (int x = 0; x < a.width(); ++x)
+    {
+      BOOST_AUTO(ap, a(x, y));
+      BOOST_AUTO(bp, b(x, y));
+
+      if (ap[0] != bp[0])
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+template <typename P>
+void MakeGradientImage(typename boost::gil::image<P, false>::view_t dst)
+{
+  // this is like an integral image
+  boost::gil::fill_pixels(dst, P());
+  for (int y = 0; y < dst.height(); ++y)
+  {
+    for (int x = 0; x < dst.width(); ++x)
+    {
+      unsigned int  sum = 0;
+      // extremely naive implementation
+      for (int j = 0; j < y; ++j)
+      {
+        for (int i = 0; i < x; ++i)
+        {
+          sum += dst;
+        }
+      }
+
+      dst(x, y) = sum;
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void BuildTextureDescriptorTests()
 {
   boost::gil::gray8_image_t   tiny(0, 0);
   boost::gil::gray8_image_t   small(10, 10);
@@ -69,6 +120,93 @@ int QDSCommonTest(int /*argc*/, char* /*argv*/[])
     }
   }
   MITK_TEST_CONDITION(nonzerooutput == false, "BuildTextureDescriptor: feature-less input produces zero-value output");
+}
+
+
+void calcIntegralImages(boost::gil::gray8c_view_t img, boost::gil::gray32s_view_t integral, boost::gil::gray64f_view_t squared)
+{
+  IplImage  grayipl;
+  cvInitImageHeader(&grayipl, cvSize(img.width(), img.height()), IPL_DEPTH_8U, 1);
+  cvSetData(&grayipl, (void*) &img(0, 0)[0], (char*) &img(0, 1)[0] - (char*) &img(0, 0)[0]);
+
+  IplImage  integralipl;
+  cvInitImageHeader(&integralipl, cvSize(integral.width(), integral.height()), IPL_DEPTH_32S, 1);
+  cvSetData(&integralipl, &integral(0, 0)[0], (char*) &integral(0, 1)[0] - (char*) &integral(0, 0)[0]);
+
+  IplImage  squaredintegralipl;
+  cvInitImageHeader(&squaredintegralipl, cvSize(squared.width(), squared.height()), IPL_DEPTH_64F, 1);
+  cvSetData(&squaredintegralipl, &squared(0, 0)[0], (char*) &squared(0, 1)[0] - (char*) &squared(0, 0)[0]);
+
+  cvIntegral(&grayipl,  &integralipl,  &squaredintegralipl);
+}
+
+//-----------------------------------------------------------------------------
+void Zncc_C1Tests()
+{
+  // pre-requisite for zncc to work is that opencv generates the correct integral image
+  // question is: was this "inclusive" or "exclusive" scan... cant remember...
+
+  // we start with a uniformly gray image.
+  boost::gil::gray8_image_t   uniformgray(100, 100);
+  boost::gil::fill_pixels(boost::gil::view(uniformgray), boost::gil::gray8_pixel_t(1));
+//boost::gil::gray32s_image_t   expectedintegral(100+1, 100+1);
+  boost::gil::gray32s_image_t   grayopencvintegral(uniformgray.width() + 1, uniformgray.height() + 1);
+  boost::gil::gray64f_image_t   grayopencvsquaredintegral(grayopencvintegral.dimensions());
+
+
+  boost::gil::gray8_image_t   uniformblack(uniformgray.dimensions());
+  boost::gil::fill_pixels(boost::gil::view(uniformblack), boost::gil::gray8_pixel_t(0));
+  boost::gil::gray32s_image_t   blackopencvintegral(uniformblack.width() + 1, uniformblack.height() + 1);
+  boost::gil::gray64f_image_t   blackopencvsquaredintegral(blackopencvintegral.dimensions());
+
+  calcIntegralImages(boost::gil::const_view(uniformgray), boost::gil::view(grayopencvintegral), boost::gil::view(grayopencvsquaredintegral));
+  calcIntegralImages(boost::gil::const_view(uniformblack), boost::gil::view(blackopencvintegral), boost::gil::view(blackopencvsquaredintegral));
+
+
+  // check that our test method works
+  MITK_TEST_CONDITION_REQUIRED(
+    (AreImagesTheSame<boost::gil::gray8c_pixel_t, boost::gil::gray8c_pixel_t>
+      (boost::gil::const_view(uniformgray), boost::gil::const_view(uniformgray))), 
+      "Zncc_C1: pre-requisites: our test equipment works");
+//MITK_TEST_CONDITION_REQUIRED(
+//  (!AreImagesTheSame<boost::gil::gray8c_pixel_t, boost::gil::gray32sc_pixel_t>
+//    (boost::gil::const_view(uniformgray), boost::gil::const_view(expectedintegral))), 
+//    "Zncc_C1: pre-requisites: our test equipment works");
+
+  // FIXME: come up with a way to check it!
+//MITK_TEST_CONDITION(
+//  (!AreImagesTheSame<boost::gil::gray32sc_pixel_t, boost::gil::gray32sc_pixel_t>
+//    (boost::gil::const_view(expectedintegral), boost::gil::const_view(opencvintegral))), 
+//    "Zncc_C1: pre-requisites: integral image is what we expect");
+
+  // cross-correlation with itself
+  float uniform_zncc = niftk::Zncc_C1(
+                          uniformgray.width() / 2, uniformgray.height() / 2, 
+                          uniformgray.width() / 2, uniformgray.height() / 2, 3, 
+                          boost::gil::const_view(uniformgray), boost::gil::const_view(uniformgray), 
+                          boost::gil::const_view(grayopencvintegral), boost::gil::const_view(grayopencvintegral), 
+                          boost::gil::const_view(grayopencvsquaredintegral), boost::gil::const_view(grayopencvsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with itself");
+
+  // cross-correlation with an offset
+  uniform_zncc = niftk::Zncc_C1(
+                          uniformgray.width() / 2, uniformgray.height() / 2, 
+                          uniformblack.width() / 2, uniformblack.height() / 2, 3, 
+                          boost::gil::const_view(uniformgray), boost::gil::const_view(uniformblack), 
+                          boost::gil::const_view(grayopencvintegral), boost::gil::const_view(blackopencvintegral), 
+                          boost::gil::const_view(grayopencvsquaredintegral), boost::gil::const_view(blackopencvsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with offset");
+
+}
+
+
+int QDSCommonTest(int /*argc*/, char* /*argv*/[])
+{
+
+  BuildTextureDescriptorTests();
+
+  Zncc_C1Tests();
+
 
   return EXIT_SUCCESS;
 }
