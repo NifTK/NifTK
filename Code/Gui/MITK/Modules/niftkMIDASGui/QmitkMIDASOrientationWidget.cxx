@@ -32,45 +32,49 @@ QmitkMIDASOrientationWidget::~QmitkMIDASOrientationWidget()
 void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
 {
   Ui_QmitkMIDASOrientationWidget::setupUi(parent);
-  m_OtherOrientationComboBox->addItem("other");
-  m_OtherOrientationComboBox->addItem("2x2");
-  m_OtherOrientationComboBox->addItem("3D");
-  m_OtherOrientationComboBox->addItem("3H");
-  m_OtherOrientationComboBox->addItem("3V");
+  m_MultiWindowComboBox->addItem("other");
+  m_MultiWindowComboBox->addItem("2x2");
+  m_MultiWindowComboBox->addItem("3D");
+  m_MultiWindowComboBox->addItem("3H");
+  m_MultiWindowComboBox->addItem("3V");
 
-  m_AxialRadioButton->setChecked(true);
+  m_AxialWindowRadioButton->setChecked(true);
 
   m_ButtonGroup = new QButtonGroup(parent);
-  m_ButtonGroup->addButton(m_AxialRadioButton);
-  m_ButtonGroup->addButton(m_CoronalRadioButton);
-  m_ButtonGroup->addButton(m_SagittalRadioButton);
-  m_ButtonGroup->addButton(m_OtherRadioButton);
+  m_ButtonGroup->addButton(m_AxialWindowRadioButton);
+  m_ButtonGroup->addButton(m_SagittalWindowRadioButton);
+  m_ButtonGroup->addButton(m_CoronalWindowRadioButton);
+  m_ButtonGroup->addButton(m_3DWindowRadioButton);
+  m_ButtonGroup->addButton(m_MultiWindowRadioButton);
 
-  connect(m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialRadioButtonToggled(bool)));
-  connect(m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalRadioButtonToggled(bool)));
-  connect(m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalRadioButtonToggled(bool)));
-  connect(m_OtherRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOtherRadioButtonToggled(bool)));
-  connect(m_OtherOrientationComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnComboBoxIndexChanged(int)));
+  connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialWindowRadioButtonToggled(bool)));
+  connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalWindowRadioButtonToggled(bool)));
+  connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalWindowRadioButtonToggled(bool)));
+  connect(m_3DWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(On3DWindowRadioButtonToggled(bool)));
+  connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnMultiWindowRadioButtonToggled(bool)));
+  connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged(int)));
 }
 
 bool QmitkMIDASOrientationWidget::BlockSignals(bool block)
 {
-  bool wasBlocked = m_AxialRadioButton->signalsBlocked();
-  m_AxialRadioButton->blockSignals(block);
-  m_CoronalRadioButton->blockSignals(block);
-  m_SagittalRadioButton->blockSignals(block);
-  m_OtherRadioButton->blockSignals(block);
-  m_OtherOrientationComboBox->blockSignals(block);
+  bool wasBlocked = m_AxialWindowRadioButton->signalsBlocked();
+  m_AxialWindowRadioButton->blockSignals(block);
+  m_CoronalWindowRadioButton->blockSignals(block);
+  m_SagittalWindowRadioButton->blockSignals(block);
+  m_3DWindowRadioButton->blockSignals(block);
+  m_MultiWindowRadioButton->blockSignals(block);
+  m_MultiWindowComboBox->blockSignals(block);
   return wasBlocked;
 }
 
 void QmitkMIDASOrientationWidget::SetEnabled(bool enabled)
 {
-  m_AxialRadioButton->setEnabled(enabled);
-  m_CoronalRadioButton->setEnabled(enabled);
-  m_SagittalRadioButton->setEnabled(enabled);
-  m_OtherRadioButton->setEnabled(enabled);
-  m_OtherOrientationComboBox->setEnabled(enabled);
+  m_AxialWindowRadioButton->setEnabled(enabled);
+  m_SagittalWindowRadioButton->setEnabled(enabled);
+  m_CoronalWindowRadioButton->setEnabled(enabled);
+  m_3DWindowRadioButton->setEnabled(enabled);
+  m_MultiWindowRadioButton->setEnabled(enabled);
+  m_MultiWindowComboBox->setEnabled(enabled);
 }
 
 void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
@@ -86,29 +90,29 @@ void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
   switch(view)
   {
   case MIDAS_VIEW_AXIAL:
-    this->m_AxialRadioButton->setChecked(true);
+    this->m_AxialWindowRadioButton->setChecked(true);
     break;
   case MIDAS_VIEW_SAGITTAL:
-    this->m_SagittalRadioButton->setChecked(true);
+    this->m_SagittalWindowRadioButton->setChecked(true);
     break;
   case MIDAS_VIEW_CORONAL:
-    this->m_CoronalRadioButton->setChecked(true);
-    break;
-  case MIDAS_VIEW_ORTHO:
-    this->m_OtherRadioButton->setChecked(true);
-    this->m_OtherOrientationComboBox->setCurrentIndex(1);
+    this->m_CoronalWindowRadioButton->setChecked(true);
     break;
   case MIDAS_VIEW_3D:
-    this->m_OtherRadioButton->setChecked(true);
-    this->m_OtherOrientationComboBox->setCurrentIndex(2);
+    this->m_MultiWindowRadioButton->setChecked(true);
+    this->m_MultiWindowComboBox->setCurrentIndex(2);
+    break;
+  case MIDAS_VIEW_ORTHO:
+    this->m_MultiWindowRadioButton->setChecked(true);
+    this->m_MultiWindowComboBox->setCurrentIndex(1);
     break;
   case MIDAS_VIEW_3H:
-    this->m_OtherRadioButton->setChecked(true);
-    this->m_OtherOrientationComboBox->setCurrentIndex(3);
+    this->m_MultiWindowRadioButton->setChecked(true);
+    this->m_MultiWindowComboBox->setCurrentIndex(3);
     break;
   case MIDAS_VIEW_3V:
-    this->m_OtherRadioButton->setChecked(true);
-    this->m_OtherOrientationComboBox->setCurrentIndex(4);
+    this->m_MultiWindowRadioButton->setChecked(true);
+    this->m_MultiWindowComboBox->setCurrentIndex(4);
     break;
   default:
     qWarning() << "QmitkMIDASOrientationWidget::SetToView, unrecognised view, can't set radio button";
@@ -120,12 +124,12 @@ void QmitkMIDASOrientationWidget::SetToView(MIDASView view)
   this->BlockSignals(wasBlocked);
 }
 
-void QmitkMIDASOrientationWidget::OnAxialRadioButtonToggled(bool checked)
+void QmitkMIDASOrientationWidget::OnAxialWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
     bool wasBlocked = this->BlockSignals(true);
-    m_OtherOrientationComboBox->setCurrentIndex(0);
+    m_MultiWindowComboBox->setCurrentIndex(0);
     m_CurrentView = MIDAS_VIEW_AXIAL;
     this->BlockSignals(wasBlocked);
 
@@ -133,25 +137,12 @@ void QmitkMIDASOrientationWidget::OnAxialRadioButtonToggled(bool checked)
   }
 }
 
-void QmitkMIDASOrientationWidget::OnCoronalRadioButtonToggled(bool checked)
+void QmitkMIDASOrientationWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
     bool wasBlocked = this->BlockSignals(true);
-    m_OtherOrientationComboBox->setCurrentIndex(0);
-    m_CurrentView = MIDAS_VIEW_CORONAL;
-    this->BlockSignals(wasBlocked);
-
-    emit ViewChanged(m_CurrentView);
-  }
-}
-
-void QmitkMIDASOrientationWidget::OnSagittalRadioButtonToggled(bool checked)
-{
-  if (checked)
-  {
-    bool wasBlocked = this->BlockSignals(true);
-    m_OtherOrientationComboBox->setCurrentIndex(0);
+    m_MultiWindowComboBox->setCurrentIndex(0);
     m_CurrentView = MIDAS_VIEW_SAGITTAL;
     this->BlockSignals(wasBlocked);
 
@@ -159,36 +150,62 @@ void QmitkMIDASOrientationWidget::OnSagittalRadioButtonToggled(bool checked)
   }
 }
 
-void QmitkMIDASOrientationWidget::OnOtherRadioButtonToggled(bool checked)
+void QmitkMIDASOrientationWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->m_OtherOrientationComboBox->setCurrentIndex(1);
+    bool wasBlocked = this->BlockSignals(true);
+    m_MultiWindowComboBox->setCurrentIndex(0);
+    m_CurrentView = MIDAS_VIEW_CORONAL;
+    this->BlockSignals(wasBlocked);
+
+    emit ViewChanged(m_CurrentView);
   }
 }
 
-void QmitkMIDASOrientationWidget::OnComboBoxIndexChanged(int i)
+void QmitkMIDASOrientationWidget::On3DWindowRadioButtonToggled(bool checked)
 {
-  if (i == 0)
+  if (checked)
+  {
+    bool wasBlocked = this->BlockSignals(true);
+    m_MultiWindowComboBox->setCurrentIndex(0);
+    m_CurrentView = MIDAS_VIEW_3D;
+    this->BlockSignals(wasBlocked);
+
+    emit ViewChanged(m_CurrentView);
+  }
+}
+
+void QmitkMIDASOrientationWidget::OnMultiWindowRadioButtonToggled(bool checked)
+{
+  if (checked)
+  {
+    this->m_MultiWindowComboBox->setCurrentIndex(1);
+  }
+}
+
+void QmitkMIDASOrientationWidget::OnMultiWindowComboBoxIndexChanged(int index)
+{
+  if (index == 0)
   {
     // Force it back to what it was, as selecting "other" is not-valid.
     this->SetToView(m_CurrentView);
   }
   else
   {
-    if (i == 1)
+    if (index == 1)
     {
       this->SetToView(MIDAS_VIEW_ORTHO);
     }
-    else if (i == 2)
+    else if (index == 2)
     {
       this->SetToView(MIDAS_VIEW_3D);
     }
-    else if (i == 3)
+    else if (index == 3)
     {
       this->SetToView(MIDAS_VIEW_3H);
     }
-    else if (i == 4)
+    else if (index == 4)
     {
       this->SetToView(MIDAS_VIEW_3V);
     }

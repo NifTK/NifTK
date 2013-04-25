@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>180</width>
-    <height>86</height>
+    <width>104</width>
+    <height>66</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,8 +23,8 @@
    <property name="margin">
     <number>0</number>
    </property>
-   <item row="2" column="0" colspan="2">
-    <widget class="QRadioButton" name="m_CoronalRadioButton">
+   <item row="0" column="2">
+    <widget class="QRadioButton" name="m_SagittalWindowRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -32,10 +32,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view to coronal</string>
+      <string>switch the currently selected view to sagittal</string>
      </property>
      <property name="text">
-      <string>coronal</string>
+      <string>sag.</string>
      </property>
      <property name="iconSize">
       <size>
@@ -46,7 +46,7 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QRadioButton" name="m_OtherRadioButton">
+    <widget class="QRadioButton" name="m_MultiWindowRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -67,8 +67,8 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QRadioButton" name="m_SagittalRadioButton">
+   <item row="2" column="0" colspan="2">
+    <widget class="QRadioButton" name="m_CoronalWindowRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -76,10 +76,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view to sagittal</string>
+      <string>switch the currently selected view to coronal</string>
      </property>
      <property name="text">
-      <string>sagittal</string>
+      <string>cor.</string>
      </property>
      <property name="iconSize">
       <size>
@@ -89,21 +89,8 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QComboBox" name="m_OtherOrientationComboBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>choose from a variety of views</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QRadioButton" name="m_AxialRadioButton">
+    <widget class="QRadioButton" name="m_AxialWindowRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -114,13 +101,33 @@
       <string>switch the currently selected view to axial</string>
      </property>
      <property name="text">
-      <string>axial</string>
+      <string>ax.</string>
      </property>
      <property name="iconSize">
       <size>
        <width>0</width>
        <height>0</height>
       </size>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QComboBox" name="m_MultiWindowComboBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>choose from a variety of views</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QRadioButton" name="m_3DWindowRadioButton">
+     <property name="text">
+      <string>3D</string>
      </property>
     </widget>
    </item>

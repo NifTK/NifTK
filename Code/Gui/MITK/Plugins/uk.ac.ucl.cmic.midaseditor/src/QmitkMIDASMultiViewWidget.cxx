@@ -986,6 +986,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
         renderWindow = selectedView->GetCoronalWindow();
         break;
       case MIDAS_ORIENTATION_UNKNOWN:
+        renderWindow = selectedView->Get3DWindow();
         break;
       }
       break;
@@ -1417,6 +1418,26 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::SwitchTo3D()
+{
+  this->SetSelectedWindowTo3D();
+
+  bool wasBlocked = m_MIDASOrientationWidget->BlockSignals(true);
+  m_MIDASOrientationWidget->SetToView(MIDAS_VIEW_3D);
+  m_MIDASOrientationWidget->BlockSignals(wasBlocked);
+  this->UpdateFocusManagerToSelectedView();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetSelectedWindowTo3D()
+{
+  this->SwitchMIDASView(MIDAS_VIEW_3D);
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
 {
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
@@ -1570,17 +1591,21 @@ MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
 
-  if (this->m_MIDASOrientationWidget->m_AxialRadioButton->isChecked())
+  if (this->m_MIDASOrientationWidget->m_AxialWindowRadioButton->isChecked())
   {
     orientation = MIDAS_ORIENTATION_AXIAL;
   }
-  else if (this->m_MIDASOrientationWidget->m_SagittalRadioButton->isChecked())
+  else if (this->m_MIDASOrientationWidget->m_SagittalWindowRadioButton->isChecked())
   {
     orientation = MIDAS_ORIENTATION_SAGITTAL;
   }
-  else if (this->m_MIDASOrientationWidget->m_CoronalRadioButton->isChecked())
+  else if (this->m_MIDASOrientationWidget->m_CoronalWindowRadioButton->isChecked())
   {
     orientation = MIDAS_ORIENTATION_CORONAL;
+  }
+  else if (this->m_MIDASOrientationWidget->m_3DWindowRadioButton->isChecked())
+  {
+    orientation = MIDAS_ORIENTATION_UNKNOWN;
   }
 
   return orientation;

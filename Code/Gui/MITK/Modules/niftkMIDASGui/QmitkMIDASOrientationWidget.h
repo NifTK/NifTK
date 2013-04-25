@@ -59,13 +59,12 @@ signals:
 
 protected slots:
 
-  void OnAxialRadioButtonToggled(bool checked);
-  void OnCoronalRadioButtonToggled(bool checked);
-  void OnSagittalRadioButtonToggled(bool checked);
-  void OnOtherRadioButtonToggled(bool checked);
-  void OnComboBoxIndexChanged(int i);
-
-protected:
+  void OnAxialWindowRadioButtonToggled(bool checked);
+  void OnSagittalWindowRadioButtonToggled(bool checked);
+  void OnCoronalWindowRadioButtonToggled(bool checked);
+  void On3DWindowRadioButtonToggled(bool checked);
+  void OnMultiWindowRadioButtonToggled(bool checked);
+  void OnMultiWindowComboBoxIndexChanged(int index);
 
 private:
 
