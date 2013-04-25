@@ -20,8 +20,6 @@
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
 
-//NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
-
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSource::QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
 : QmitkIGINiftyLinkDataSource(storage, socket)
@@ -241,7 +239,7 @@ bool QmitkIGITrackerSource::SaveData(mitk::IGIDataType* data, std::string& outpu
       NiftyLinkTrackingDataMessage* trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->GetDescription());
+        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerSource") + QDir::separator() + QString::fromStdString(this->GetDescription());
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {

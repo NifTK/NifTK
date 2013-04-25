@@ -371,7 +371,7 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
     QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = NULL;
     if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER)
     {
-      niftyLinkSource = QmitkIGITrackerTool::New(m_DataStorage, socket);
+      niftyLinkSource = QmitkIGITrackerSource::New(m_DataStorage, socket);
     }
     else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_IMAGER)
     {

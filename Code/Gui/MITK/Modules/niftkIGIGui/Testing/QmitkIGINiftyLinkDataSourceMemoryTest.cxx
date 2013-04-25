@@ -36,7 +36,7 @@ int QmitkIGINiftyLinkDataSourceMemoryTest(int /*argc*/, char* /*argv*/[])
 
   // It gets added to the buffer of the data source.
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
-  QmitkIGITrackerTool::Pointer tool = QmitkIGITrackerTool::New(dataStorage, NULL);
+  QmitkIGITrackerSource::Pointer tool = QmitkIGITrackerSource::New(dataStorage, NULL);
   tool->AddData(dataType);
 
   // When we call delete, the tool should correctly tidy up all memory.
