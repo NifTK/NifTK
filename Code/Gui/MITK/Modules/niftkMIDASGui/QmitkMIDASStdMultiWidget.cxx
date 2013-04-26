@@ -51,12 +51,12 @@ public:
     // Note that the scaling changes the scale factor *and* the origin,
     // while the moving changes the origin only.
 
-    bool updateOtherRenderWindows = true;
+    bool beingPanned = true;
 
     double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
     if (scaleFactor != m_LastScaleFactor)
     {
-      updateOtherRenderWindows = false;
+      beingPanned = false;
       m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow);
       m_LastScaleFactor = scaleFactor;
     }
@@ -64,7 +64,7 @@ public:
     mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
     if (origin != m_LastOrigin)
     {
-      m_StdMultiWidget->OnOriginChanged(m_RenderWindow, updateOtherRenderWindows);
+      m_StdMultiWidget->OnOriginChanged(m_RenderWindow, beingPanned);
       m_LastOrigin = origin;
     }
   }
@@ -1246,7 +1246,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
   return result;
 }
 
-void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, bool updateOtherRenderWindows)
+void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, bool beingPanned)
 {
   if (!m_BlockDisplayGeometryEvents)
   {
@@ -1287,7 +1287,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
     // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
     // vertical movement in sagittal <-> vertical movement in coronal
 
-    if (updateOtherRenderWindows)
+    if (beingPanned)
     {
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
@@ -1302,7 +1302,10 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
     }
 
     this->RequestUpdate();
-    emit CentreChanged(m_Centre);
+    if (beingPanned)
+    {
+      emit CentreChanged(m_Centre);
+    }
   }
 }
 
@@ -1446,6 +1449,18 @@ unsigned int QmitkMIDASStdMultiWidget::GetTime() const
   assert(snc);
 
   return snc->GetTime()->GetPos();
+}
+
+void QmitkMIDASStdMultiWidget::SetCrossPosition(const mitk::Point3D& crossPosition)
+{
+  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  snc->SelectSliceByPoint(crossPosition);
+
+  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+  snc->SelectSliceByPoint(crossPosition);
+
+  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+  snc->SelectSliceByPoint(crossPosition);
 }
 
 const mitk::Vector3D& QmitkMIDASStdMultiWidget::GetCentre() const

@@ -935,6 +935,19 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
       m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
       m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
     }
+    mitk::Point3D selectedPosition = view->GetSelectedPosition();
+    mitk::Point3D crossPosition = view->GetCrossPosition();
+    if (m_MIDASBindWidget->AreCursorsBound())
+    {
+      for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+      {
+        if (m_SingleViewWidgets[i] != view)
+        {
+//          m_SingleViewWidgets[i]->SetSelectedPosition(selectedPosition);
+          m_SingleViewWidgets[i]->SetCrossPosition(selectedPosition);
+        }
+      }
+    }
   }
 }
 
@@ -1817,9 +1830,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedViewIndex(int selectedViewIndex)
         m_SingleViewWidgets[i]->SetSelected(false);
       }
 
-      if (  this->m_MIDASBindWidget->AreCursorsBound()
-          || (!this->m_MIDASBindWidget->AreCursorsBound() && i == selectedViewIndex)
-          )
+      if (i == selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
       }
@@ -1843,7 +1854,6 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 {
   bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
   bool requestedGeometryBound = this->m_MIDASBindWidget->IsGeometryBound();
-  int selectedViewIndex = this->GetSelectedViewIndex();
 
   if (currentGeometryBound != requestedGeometryBound)
   {
@@ -1854,22 +1864,14 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 
   if (this->m_MIDASBindWidget->AreCursorsBound())
   {
+    int selectedViewIndex = this->GetSelectedViewIndex();
+    QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
+    mitk::Point3D crossPosition = selectedView->GetSelectedPosition();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
-    }
-  }
-  else
-  {
-    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
-    {
-      if (i == selectedViewIndex)
+      if (i != selectedViewIndex)
       {
-        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(true);
-      }
-      else
-      {
-        m_SingleViewWidgets[i]->SetNavigationControllerEventListening(false);
+        m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
       }
     }
   }

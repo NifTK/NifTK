@@ -191,6 +191,9 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
+  /// \brief Sets the cross position.
+  void SetCrossPosition(const mitk::Point3D& crossPosition);
+
   /// \brief Gets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
   const mitk::Vector3D& GetCentre() const;
 
@@ -284,7 +287,7 @@ private:
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  void OnOriginChanged(QmitkRenderWindow *renderWindow, bool updateOtherRenderWindows);
+  void OnOriginChanged(QmitkRenderWindow *renderWindow, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
