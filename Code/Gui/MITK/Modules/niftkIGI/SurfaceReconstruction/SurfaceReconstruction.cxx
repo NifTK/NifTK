@@ -22,6 +22,12 @@
 namespace niftk 
 {
 
+
+const char*    SurfaceReconstruction::s_ImageIsUndistortedPropertyName  = "niftk.ImageIsUndistorted";
+const char*    SurfaceReconstruction::s_ImageIsRectifiedPropertyName    = "niftk.ImageIsRectified";
+const char*    SurfaceReconstruction::s_CameraCalibrationPropertyName   = "niftk.CameraCalibration";
+
+
 //-----------------------------------------------------------------------------
 SurfaceReconstruction::SurfaceReconstruction()
   : m_SequentialCpuQds(0)
@@ -42,7 +48,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                                 mitk::DataNode::Pointer outputNode,
                                 const mitk::Image::Pointer image1,
                                 const mitk::Image::Pointer image2,
-                                Method method)
+                                Method method,
+                                OutputType outputtype)
 {
   // sanity check
   assert(dataStorage.IsNotNull());
@@ -113,14 +120,20 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
 
         m_SequentialCpuQds->Process(&leftIpl, &rightIpl);
 
+        // FIXME: when there are more methods implemented we should refactor this stuff!
+        switch (outputtype)
+        {
+          case POINT_CLOUD:
+          case DISPARITY_IMAGE:
+          {
+            IplImage* dispimg = m_SequentialCpuQds->CreateDisparityImage();
+            mitk::Image::Pointer imgData4Node = CreateMitkImage(dispimg);
+            cvReleaseImage(&dispimg);
 
-        IplImage* dispimg = m_SequentialCpuQds->CreateDisparityImage();
-        mitk::Image::Pointer imgData4Node = CreateMitkImage(dispimg);
-        cvReleaseImage(&dispimg);
-
-        outputNode->SetData(imgData4Node);
-
-        break;
+            outputNode->SetData(imgData4Node);
+            break;
+          }
+        }
       }
 
       default:

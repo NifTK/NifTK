@@ -46,6 +46,20 @@ public:
     PYRAMID_PARALLEL_CUDA
   };
 
+
+  enum OutputType
+  {
+    POINT_CLOUD,
+    DISPARITY_IMAGE
+  };
+
+
+  // FIXME: i dont think this is the best place to keep these. i'm up for suggestions!
+  static const char*    s_ImageIsUndistortedPropertyName;   // mitk::BoolProperty
+  static const char*    s_ImageIsRectifiedPropertyName;     // mitk::BoolProperty
+  static const char*    s_CameraCalibrationPropertyName;    // mitk::CameraIntrinsicsProperty
+
+
 public:
 
   mitkClassMacro(SurfaceReconstruction, itk::Object);
@@ -58,7 +72,8 @@ public:
            mitk::DataNode::Pointer outputNode,
            const mitk::Image::Pointer image1,
            const mitk::Image::Pointer image2,
-           Method method = SEQUENTIAL_CPU);
+           Method method = SEQUENTIAL_CPU,
+           OutputType outputtype = POINT_CLOUD);
 
 protected:
 

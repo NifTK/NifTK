@@ -21,6 +21,7 @@
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include "SurfaceReconViewActivator.h"
+#include <mitkCameraIntrinsicsProperty.h>
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
@@ -183,6 +184,46 @@ void SurfaceReconView::UpdateNodeNameComboBox()
 
 
 //-----------------------------------------------------------------------------
+template <typename PropType>
+static void CopyProp(const mitk::DataNode::Pointer source, mitk::Image::Pointer target, const char* name)
+{
+  mitk::BaseProperty::Pointer baseProp = target->GetProperty(name);
+  if (baseProp.IsNull())
+  {
+    // none there yet, try to pull it from the datanode
+    baseProp = source->GetProperty(name);
+    if (baseProp.IsNotNull())
+    {
+      // check that it's the correct type
+      typename PropType::Pointer   prop = dynamic_cast<PropType*>(baseProp.GetPointer());
+      if (prop.IsNotNull())
+      {
+        // FIXME: copy? or simply ref the same object?
+        target->SetProperty(name, prop);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target)
+{
+  // we copy known meta-data properties to the images, but only if they dont exist yet.
+  // we'll not ever change the value of an existing property!
+
+  // calibration data
+  CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName);
+
+  // has the image been rectified?
+  CopyProp<mitk::BoolProperty>(source, target, niftk::SurfaceReconstruction::s_ImageIsRectifiedPropertyName);
+
+  // has the image been undistorted?
+  CopyProp<mitk::BoolProperty>(source, target, niftk::SurfaceReconstruction::s_ImageIsUndistortedPropertyName);
+}
+
+
+//-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
   mitk::DataStorage::Pointer storage = GetDataStorage();
@@ -224,10 +265,14 @@ void SurfaceReconView::DoSurfaceReconstruction()
             storage->Add(outputNode, nodeParents);
           }
 
+          CopyImagePropsIfNecessary(leftNode,  leftImage);
+          CopyImagePropsIfNecessary(rightNode, rightImage);
+
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
-            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage);
+            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, 
+                niftk::SurfaceReconstruction::SEQUENTIAL_CPU, niftk::SurfaceReconstruction::POINT_CLOUD);
           }
           catch (const std::exception& e)
           {

@@ -59,6 +59,8 @@ protected:
    */
   virtual void SetFocus();
 
+  static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
+
 protected slots:
 
   /**

@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
   INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer
-  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport
+  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport mitkCameraCalibration
   PACKAGE_DEPENDS ITK NiftyLink
 )
 
