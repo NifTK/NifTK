@@ -227,6 +227,12 @@ public:
   /// \brief In contrast to SetView this method does as little as possible, to be analagous to just switching the orientation.
   void SwitchView(MIDASView view);
 
+  /// \brief Get the current crosshair position.
+  const mitk::Point3D& GetCrossPosition() const;
+
+  /// \brief Set the current crosshair position.
+  void SetCrossPosition(const mitk::Point3D& crossPosition);
+
   /// \brief Get the current centre.
   const mitk::Vector3D& GetCentre() const;
 
