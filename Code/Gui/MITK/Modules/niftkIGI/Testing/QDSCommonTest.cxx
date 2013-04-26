@@ -179,6 +179,32 @@ void Zncc_C1Tests()
 //    (boost::gil::const_view(expectedintegral), boost::gil::const_view(opencvintegral))), 
 //    "Zncc_C1: pre-requisites: integral image is what we expect");
 
+
+  boost::gil::gray8_image_t   rampleftright(100, 100);
+  for (int y = 0; y < rampleftright.height(); ++y)
+  {
+    for (int x = 0; x < rampleftright.width(); ++x)
+    {
+      boost::gil::view(rampleftright)(x, y)[0] = x;
+    }
+  }
+  boost::gil::gray32s_image_t   rampleftrightintegral(rampleftright.width() + 1, rampleftright.height() + 1);
+  boost::gil::gray64f_image_t   rampleftrightsquaredintegral(rampleftrightintegral.dimensions());
+  calcIntegralImages(boost::gil::const_view(rampleftright), boost::gil::view(rampleftrightintegral), boost::gil::view(rampleftrightsquaredintegral));
+
+  boost::gil::gray8_image_t   ramprightleft(100, 100);
+  for (int y = 0; y < ramprightleft.height(); ++y)
+  {
+    for (int x = 0; x < ramprightleft.width(); ++x)
+    {
+      boost::gil::view(ramprightleft)(x, y)[0] = 255 - x;
+    }
+  }
+  boost::gil::gray32s_image_t   ramprightleftintegral(ramprightleft.width() + 1, ramprightleft.height() + 1);
+  boost::gil::gray64f_image_t   ramprightleftsquaredintegral(ramprightleftintegral.dimensions());
+  calcIntegralImages(boost::gil::const_view(ramprightleft), boost::gil::view(ramprightleftintegral), boost::gil::view(ramprightleftsquaredintegral));
+
+
   // cross-correlation with itself
   float uniform_zncc = niftk::Zncc_C1(
                           uniformgray.width() / 2, uniformgray.height() / 2, 
@@ -187,6 +213,32 @@ void Zncc_C1Tests()
                           boost::gil::const_view(grayopencvintegral), boost::gil::const_view(grayopencvintegral), 
                           boost::gil::const_view(grayopencvsquaredintegral), boost::gil::const_view(grayopencvsquaredintegral));
   MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with itself");
+
+  // ...big window
+  uniform_zncc = niftk::Zncc_C1(
+                          uniformgray.width() / 2, uniformgray.height() / 2, 
+                          uniformgray.width() / 2, uniformgray.height() / 2, 15, 
+                          boost::gil::const_view(uniformgray), boost::gil::const_view(uniformgray), 
+                          boost::gil::const_view(grayopencvintegral), boost::gil::const_view(grayopencvintegral), 
+                          boost::gil::const_view(grayopencvsquaredintegral), boost::gil::const_view(grayopencvsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with itself (big window)");
+
+  uniform_zncc = niftk::Zncc_C1(
+                          rampleftright.width() / 2, rampleftright.height() / 2, 
+                          rampleftright.width() / 2, rampleftright.height() / 2, 3, 
+                          boost::gil::const_view(rampleftright), boost::gil::const_view(rampleftright), 
+                          boost::gil::const_view(rampleftrightintegral), boost::gil::const_view(rampleftrightintegral), 
+                          boost::gil::const_view(rampleftrightsquaredintegral), boost::gil::const_view(rampleftrightsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with itself");
+
+  // ...big window
+  uniform_zncc = niftk::Zncc_C1(
+                          rampleftright.width() / 2, rampleftright.height() / 2, 
+                          rampleftright.width() / 2, rampleftright.height() / 2, 15, 
+                          boost::gil::const_view(rampleftright), boost::gil::const_view(rampleftright), 
+                          boost::gil::const_view(rampleftrightintegral), boost::gil::const_view(rampleftrightintegral), 
+                          boost::gil::const_view(rampleftrightsquaredintegral), boost::gil::const_view(rampleftrightsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with itself (big window)");
 
   // cross-correlation with an offset
   uniform_zncc = niftk::Zncc_C1(
@@ -197,6 +249,30 @@ void Zncc_C1Tests()
                           boost::gil::const_view(grayopencvsquaredintegral), boost::gil::const_view(blackopencvsquaredintegral));
   MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with offset");
 
+  uniform_zncc = niftk::Zncc_C1(
+                          uniformgray.width() / 2, uniformgray.height() / 2, 
+                          uniformblack.width() / 2, uniformblack.height() / 2, 15, 
+                          boost::gil::const_view(uniformgray), boost::gil::const_view(uniformblack), 
+                          boost::gil::const_view(grayopencvintegral), boost::gil::const_view(blackopencvintegral), 
+                          boost::gil::const_view(grayopencvsquaredintegral), boost::gil::const_view(blackopencvsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation with offset (big window)");
+
+  // cross-correlation with opposing ramps
+  uniform_zncc = niftk::Zncc_C1(
+                          rampleftright.width() / 2, rampleftright.height() / 2, 
+                          ramprightleft.width() / 2, ramprightleft.height() / 2, 3, 
+                          boost::gil::const_view(rampleftright), boost::gil::const_view(ramprightleft), 
+                          boost::gil::const_view(rampleftrightintegral), boost::gil::const_view(ramprightleftintegral), 
+                          boost::gil::const_view(rampleftrightsquaredintegral), boost::gil::const_view(ramprightleftsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(-1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation of inverted img");
+
+  uniform_zncc = niftk::Zncc_C1(
+                          rampleftright.width() / 2, rampleftright.height() / 2, 
+                          ramprightleft.width() / 2, ramprightleft.height() / 2, 15, 
+                          boost::gil::const_view(rampleftright), boost::gil::const_view(ramprightleft), 
+                          boost::gil::const_view(rampleftrightintegral), boost::gil::const_view(ramprightleftintegral), 
+                          boost::gil::const_view(rampleftrightsquaredintegral), boost::gil::const_view(ramprightleftsquaredintegral));
+  MITK_TEST_CONDITION((std::abs(-1.0f - uniform_zncc) < 0.0001f), "Zncc_C1: correlation of inverted img (big window)");
 }
 
 
