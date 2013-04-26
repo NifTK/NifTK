@@ -24,7 +24,7 @@
 
 /**
  * \class CameraCalibrationTest
- * \brief Test class for Camera Calibration, using data from our Viking 3D Stereo Laparoscope data.
+ * \brief Test class for Camera Calibration, using data from our Viking 3D Stereo Laparoscope.
  */
 class CameraCalibrationTest
 {

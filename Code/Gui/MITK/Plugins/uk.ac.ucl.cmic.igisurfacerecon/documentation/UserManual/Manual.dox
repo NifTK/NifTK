@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igisurfacerecon} The Surface Reconstruction View
+
+\image html icon.png "The Icon for Surface Reconstruction"
+
+\section SurfaceReconIntro Introduction
+
+Do an introduction here.
+
+\section SurfaceReconUsage Usage
+
+Put all usage information here.
+
+\section SurfaceReconPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section SurfaceReconReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+

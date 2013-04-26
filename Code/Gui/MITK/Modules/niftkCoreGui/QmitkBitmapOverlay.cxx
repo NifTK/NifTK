@@ -47,6 +47,7 @@ BitmapOverlay::BitmapOverlay()
 ,m_ImageDataNode(NULL)
 ,m_DataStorage(NULL)
 ,m_ImageInNode(NULL)
+,m_UsingNVIDIA(false)
 {
   m_RenderWindow        = NULL;
   m_BackRenderer        = vtkRenderer::New();
@@ -144,7 +145,16 @@ void BitmapOverlay::Enable()
     //if (!  m_ImageDataNode.IsNull() )
     if ( ! m_DataStorage.IsNull() )
     {
-      m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
+      m_ImageDataNode = m_DataStorage->GetNamedNode("NVIDIA SDI stream 0");
+      if ( m_ImageDataNode.IsNotNull() )
+      {
+        m_UsingNVIDIA=true;
+      }
+      else
+      {
+        m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
+        m_UsingNVIDIA=false;
+      }
       if ( ! m_ImageDataNode.IsNull() )
       {
         m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
@@ -164,7 +174,6 @@ void BitmapOverlay::Enable()
           m_FrontRenderer->InteractiveOff();
 
           SetupCamera();
-          SetupPosition();
 
          // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
           mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
@@ -219,7 +228,6 @@ void BitmapOverlay::NodeChanged (const mitk::DataNode * node)
          m_FrontRenderer->InteractiveOff();
 
          SetupCamera();
-         SetupPosition();
 
         // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
          mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
@@ -234,7 +242,16 @@ void BitmapOverlay::NodeAdded (const mitk::DataNode * node)
 {
   if ( m_ImageDataNode.IsNull() )
   {
-    m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
+    m_ImageDataNode = m_DataStorage->GetNamedNode("NVIDIA SDI stream 0");
+    if ( m_ImageDataNode.IsNotNull() )
+    {
+      m_UsingNVIDIA=true;
+    }
+    else
+    {
+      m_UsingNVIDIA=false;
+      m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
+    }
     if ( ! m_ImageDataNode.IsNull() )
     {
       mitk::Image::Pointer imageInNode; 
@@ -254,7 +271,6 @@ void BitmapOverlay::NodeAdded (const mitk::DataNode * node)
          m_FrontRenderer->InteractiveOff();
 
          SetupCamera();
-         SetupPosition();
 
        //  mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
          mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
@@ -284,7 +300,7 @@ void BitmapOverlay::NodeRemoved (const mitk::DataNode * node )
 void BitmapOverlay::SetupCamera()
 {
   // set the vtk camera in way that stretches the logo all over the renderwindow
-
+ // m_RenderWindow->Render();
   vtkImageData * image = m_BackActor->GetInput();
   m_BackCamera = m_BackRenderer->GetActiveCamera();
   m_FrontCamera = m_FrontRenderer->GetActiveCamera();
@@ -311,13 +327,20 @@ void BitmapOverlay::SetupCamera()
     position[cc]   = focalPoint[cc];
   }
 
-
-  m_BackCamera->SetViewUp (0,-1,0);
-  m_FrontCamera->SetViewUp (0,-1,0);
   int idx = 2;
   const double distanceToFocalPoint = 1000;
-  position[idx] = -distanceToFocalPoint;
-
+  if ( m_UsingNVIDIA )
+  {
+    m_BackCamera->SetViewUp (0,1,0);
+    m_FrontCamera->SetViewUp (0,1,0);
+    position[idx] = distanceToFocalPoint;
+  }
+  else
+  {
+    m_BackCamera->SetViewUp (0,-1,0);
+    m_FrontCamera->SetViewUp (0,-1,0);
+    position[idx] = -distanceToFocalPoint;
+  }
   m_BackCamera->ParallelProjectionOn();
   m_BackCamera->SetPosition (position);
   m_BackCamera->SetFocalPoint (focalPoint);
@@ -329,33 +352,11 @@ void BitmapOverlay::SetupCamera()
   int d2 = (idx + 2) % 3;
 
   double max = std::max(dimensions[d1],dimensions[d2]);
-
+  std::cerr << "Max = " << max << std::endl;
   m_BackCamera->SetParallelScale( max / 2 );
   m_FrontCamera->SetParallelScale( max / 2 );
 }
 
-void BitmapOverlay::SetupPosition()
-{ // Position and Scale of the logo
-
-  double newPos[4];
-  int dimensions[3];
-  vtkImageData * image = m_BackActor->GetInput();
-  image->GetDimensions(dimensions);
-  // normalize image dimensions
-  double max = std::max(dimensions[0],dimensions[1]);
-  double normX = dimensions[0] / max;
-  double normY = dimensions[1] / max;
-
-  double buffer = 0; // buffer to the boarder of the renderwindow
-
-  newPos[0] = (0 + buffer);
-  newPos[1] = (0 + buffer);
-  newPos[2] = 1.0 * normX;
-  newPos[3] = 1.0 * normY;
-
-  m_BackRenderer->SetViewport(newPos);
-  m_FrontRenderer->SetViewport(newPos);
-}
 
 void BitmapOverlay::SetOpacity(double opacity)
 {

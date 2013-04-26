@@ -65,7 +65,7 @@ if (BUILD_TESTING)
 
     ExternalProject_Add(${proj}
       ${${proj}_location_options}
-      UPDATE_COMMAND ""
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_DATA_TAR}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND ""

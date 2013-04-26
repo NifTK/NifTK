@@ -1,0 +1,18 @@
+/**
+  \defgroup uk_ac_ucl_cmic_igitrackedimage uk.ac.ucl.cmic.igitrackedimage Plugin
+  \ingroup CMICPlugins
+
+  \brief Plugin to provide a tracked image view, such as a tracked ultrasound probe. 
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_igitrackedimage_internal Internal
+  \ingroup uk_ac_ucl_cmic_igitrackedimage
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.igitrackedimage plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

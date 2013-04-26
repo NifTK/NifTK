@@ -73,8 +73,8 @@ public:
   /// \brief Stores the preference name for a simple on/off preference for whether we show the single, multiple, all checkbox.
   static const std::string MIDAS_SHOW_DROP_TYPE_WIDGETS;
 
-  /// \brief Stores the preference name for whether we show the 3D view in orthoview, as screen can get a bit cluttered.
-  static const std::string MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW;
+  /// \brief Stores the preference name for whether we show the 3D window in orthogonal (2x2) view, as screen can get a bit cluttered.
+  static const std::string MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW;
 
   /// \brief Stores the preference name for whether we show the 2D cursors as people may prefer them to always be off.
   static const std::string MIDAS_SHOW_2D_CURSORS;
@@ -124,7 +124,7 @@ private:
   QCheckBox   *m_ShowDropTypeWidgetsCheckBox;
   QCheckBox   *m_ShowLayoutButtonsCheckBox;
   QCheckBox   *m_ShowMagnificationSliderCheckBox;
-  QCheckBox   *m_Show3DInOrthoCheckBox;
+  QCheckBox   *m_Show3DWindowInOrthoViewCheckBox;
   QCheckBox   *m_Show2DCursorsCheckBox;
   QCheckBox   *m_RememberEachOrientationsViewSettings;
   QPushButton *m_BackgroundColourButton;

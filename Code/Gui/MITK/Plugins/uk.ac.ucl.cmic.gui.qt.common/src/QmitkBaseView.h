@@ -81,6 +81,17 @@ public:
   virtual bool IsVisible();
 
   /**
+   * \brief Selects the data node in this view and also in the data manager.
+   * It sets the "selected" property of the node. As a (positive) side effect
+   * of changing the data manager selection, the "selected" property of the
+   * previously selected nodes will be cleared.
+   */
+  void SetCurrentSelection(mitk::DataNode* dataNode);
+
+  /// \brief \see QmitkAbstractView::OnSelectionChanged.
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+
+  /**
    * \brief Retrieves a RenderWindow from the mitkRenderWindowPart.
    * \param id The name of the QmitkRenderWindow, such as "axial", "sagittal", "coronal".
    * \return QmitkRenderWindow* The render window or NULL if it can not be found.
@@ -155,6 +166,12 @@ protected:
    * \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
    */
   void FocusOnCurrentWindow();
+
+  /**
+   * \brief Gets the current render window, and sets it to the given coordinate, specified in millimetres.
+   * \param coordinate specified in millimetres.
+   */
+  void SetViewToCoordinate(const mitk::Point3D &coordinate);
 
 private:
 

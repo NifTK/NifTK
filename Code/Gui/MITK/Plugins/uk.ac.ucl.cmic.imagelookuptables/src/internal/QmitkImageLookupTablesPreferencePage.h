@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _QMITKIMAGELOOKUPTABLESPREFERENCE_PAGE_H_INCLUDED
-#define _QMITKIMAGELOOKUPTABLESPREFERENCE_PAGE_H_INCLUDED
+#ifndef QmitkImageLookupTablesPreferencePage_h
+#define QmitkImageLookupTablesPreferencePage_h
 
 #include "berryIQtPreferencePage.h"
 #include <berryIPreferences.h>
@@ -48,19 +48,19 @@ public:
 
   QWidget* GetQtControl() const;
 
-  ///
-  /// \see IPreferencePage::PerformOk()
-  ///
+  /**
+   * \see IPreferencePage::PerformOk()
+   */
   virtual bool PerformOk();
 
-  ///
-  /// \see IPreferencePage::PerformCancel()
-  ///
+  /**
+   * \see IPreferencePage::PerformCancel()
+   */
   virtual void PerformCancel();
 
-  ///
-  /// \see IPreferencePage::Update()
-  ///
+  /**
+   * \see IPreferencePage::Update()
+   */
   virtual void Update();
 
 protected slots:
@@ -74,5 +74,5 @@ protected:
   berry::IPreferences::Pointer m_ImageLookupTablesPreferencesNode;
 };
 
-#endif /* QMITKDATAMANAGERPREFERENCEPAGE_H_ */
+#endif
 

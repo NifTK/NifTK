@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igisurfacerecon"
+          name="Surface Reconstruction"
+          class="SurfaceReconView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.SurfaceReconViewPreferencePage" name="Surface Reconstruction" class="SurfaceReconViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.SurfaceReconViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

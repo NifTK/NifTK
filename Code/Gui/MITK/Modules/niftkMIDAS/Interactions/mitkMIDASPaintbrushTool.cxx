@@ -29,6 +29,13 @@
 #include "mitkMIDASPaintbrushToolEventInterface.h"
 #include "mitkPointUtils.h"
 
+// MicroServices
+#include "mitkGetModuleContext.h"
+#include "mitkModule.h"
+#include "mitkModuleRegistry.h"
+
+#include "mitkMIDASDisplayInteractor.h"
+
 const std::string mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType mitk::MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
 
@@ -75,11 +82,46 @@ void mitk::MIDASPaintbrushTool::Activated()
 {
   mitk::Tool::Activated();
   CursorSizeChanged.Send(m_CursorSize);
+
+  // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
+  // Note: this only affects InteractionEventObservers (formerly known as Listeners) all DataNode specific interaction will still be enabled
+  m_DisplayInteractorConfigs.clear();
+  std::list<mitk::ServiceReference> listEventObserver = GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
+  for (std::list<mitk::ServiceReference>::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
+  {
+    MIDASDisplayInteractor* displayInteractor = dynamic_cast<MIDASDisplayInteractor*>(
+                                                    GetModuleContext()->GetService<InteractionEventObserver>(*it));
+    if (displayInteractor != NULL)
+    {
+      // remember the original configuration
+      m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
+      // here the alternative configuration is loaded
+      displayInteractor->SetEventConfig("DisplayConfigMIDASPaintbrushTool.xml", GetModuleContext()->GetModule());
+    }
+  }
 }
 
 void mitk::MIDASPaintbrushTool::Deactivated()
 {
   mitk::Tool::Deactivated();
+
+  // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
+  // in new interaction framework
+  for (std::map<mitk::ServiceReference, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
+       it != m_DisplayInteractorConfigs.end(); ++it)
+  {
+    if (it->first)
+    {
+      MIDASDisplayInteractor* displayInteractor = static_cast<MIDASDisplayInteractor*>(
+                                               GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
+      if (displayInteractor != NULL)
+      {
+        // here the regular configuration is loaded again
+        displayInteractor->SetEventConfig(it->second);
+      }
+    }
+  }
+  m_DisplayInteractorConfigs.clear();
 }
 
 float mitk::MIDASPaintbrushTool::CanHandleEvent(const StateEvent *event) const

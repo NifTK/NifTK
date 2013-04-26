@@ -16,16 +16,21 @@
 #define QMITKMIDASSTDMULTIWIDGET_H
 
 #include <niftkMIDASGuiExports.h>
-#include "mitkMIDASEnums.h"
-#include <QColor>
-#include <mitkDataStorage.h>
-#include <mitkDataNode.h>
-#include <mitkSliceNavigationController.h>
-#include <mitkGeometry3D.h>
-#include <QmitkStdMultiWidget.h>
-#include <itkConversionUtils.h>
 
-class vtkCamera;
+//#include <itkConversionUtils.h>
+
+#include <QColor>
+
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkGeometry3D.h>
+#include <mitkSliceNavigationController.h>
+#include <mitkVector.h>
+#include <QmitkStdMultiWidget.h>
+
+#include <mitkMIDASDisplayInteractor.h>
+
+#include "mitkMIDASEnums.h"
 
 class QGridLayout;
 class QStackedLayout;
@@ -100,11 +105,11 @@ public:
   /// \brief Get the flag controlling 2D cursors global visibility.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  void SetDisplay3DViewInOrthoView(bool visible);
+  /// \brief If true, then nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
+  void SetShow3DWindowInOrthoView(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  bool GetDisplay3DViewInOrthoView() const;
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
+  bool GetShow3DWindowInOrthoView() const;
 
   /// \brief Set the view (layout), as the MIDAS functionality is only interested in
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
@@ -139,14 +144,16 @@ public:
   /// \brief Returns true if this widget is selected and false otherwise.
   bool IsSelected() const;
 
-  /// \brief More specific, will put the border round just the selected window,
-  /// but still the whole of this widget is considered "selected".
+  /// \brief Returns the selected window, that is the one with the coloured border.
+  QmitkRenderWindow* GetSelectedRenderWindow() const;
+
+  /// \brief Selects the render window and puts put a coloured border round it.
   void SetSelectedRenderWindow(QmitkRenderWindow* renderWindow);
 
   /// \brief Returns the specifically selected render window, which may be 1 if the viewer is
   /// showing a single axial, coronal or sagittal plane, or may be up to 4 if the viewer
   /// is displaying the ortho view.
-  std::vector<QmitkRenderWindow*> GetSelectedRenderWindows() const;
+  std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
   std::vector<QmitkRenderWindow*> GetRenderWindows() const;
@@ -184,15 +191,22 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
+  /// \brief Gets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
+  const mitk::Vector3D& GetCentre() const;
+
+  /// \brief Sets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
+  void SetCentre(const mitk::Vector3D& centre);
+
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   double GetMagnificationFactor() const;
 
   /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   void SetMagnificationFactor(double magnificationFactor);
-  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
   double FitMagnificationFactor();
+
+  /// \brief Computes the magnification factor of a render window.
   double ComputeMagnificationFactor(QmitkRenderWindow* renderWindow);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
@@ -204,22 +218,23 @@ public:
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
 
-  /// \brief Temporarily stores the camera position.
-  void StoreCameras();
-
-  /// \brief Reverts the camera position back to the stored camera position.
-  void RestoreCameras();
-
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
   ///
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
+
+  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
+  void SetDisplayInteractionEnabled(bool enabled);
+
+  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
+  bool IsDisplayInteractionEnabled() const;
 
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void CentreChanged(const mitk::Vector3D& centre);
   void MagnificationFactorChanged(double magnificationFactor);
 
 protected slots:
@@ -250,16 +265,38 @@ private:
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible);
 
+  // \brief Sets the origin of the display geometry of the render window
+  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMM);
+
   /// \brief Scales a specific render window about it's centre.
   void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
+
+  /// \brief Scales a specific render window about the crosshair.
+  void ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *renderWindow, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
 
+  /// \brief Adds a display geometry observer to the render window. Used to synchronise zooming and moving.
   void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+
+  /// \brief Removes a display geometry observer from the render window. Used to synchronise zooming and moving.
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
+  /// \brief Called when the origin of the display geometry of the render window has changed.
+  void OnOriginChanged(QmitkRenderWindow *renderWindow, bool updateOtherRenderWindows);
+
+  /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
+
+  /// \brief Computes the origin for a render window from the image centre.
+  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector3D& centre);
+
+  /// \brief Computes the origin for a render window from the image centre.
+  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& centre2D);
+
+  /// \brief Computes the scale factor for a render window from a magnification factor.
+  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
 
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
@@ -271,10 +308,10 @@ private:
   bool                  m_IsEnabled;
   bool                  m_Display2DCursorsLocally;
   bool                  m_Display2DCursorsGlobally;
-  bool                  m_Display3DViewInOrthoView;
+  bool                  m_Show3DWindowInOrthoView;
   MIDASView             m_View;
+  mitk::Vector3D        m_Centre;
   double                m_MagnificationFactor;
-  vtkCamera*            m_Cameras[4];
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
 
@@ -284,6 +321,14 @@ private:
   friend class DisplayGeometryModificationCommand;
 
   mitk::Geometry3D::Pointer m_CreatedGeometries[3];
+
+  mitk::MIDASDisplayInteractor::Pointer m_DisplayInteractor;
+
+  /**
+   * Reference to the service registration of the display interactor.
+   * It is needed to unregister the observer on unload.
+   */
+  mitk::ServiceRegistration m_DisplayInteractorService;
 };
 
 #endif

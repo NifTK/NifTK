@@ -29,6 +29,10 @@ public:
 
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
+  static ctkPluginContext* getContext();
+
+private:
+  static ctkPluginContext* m_PluginContext;
 
 }; // uk_ac_ucl_cmic_surgicalguidance_Activator
 

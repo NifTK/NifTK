@@ -52,9 +52,9 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
   ChangeLayout(true);
 
   std::vector<mitk::BaseRenderer*> renderers;
-  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetAxialWindow()->GetVtkRenderWindow()));
-  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetSagittalWindow()->GetVtkRenderWindow()));
-  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetCoronalWindow()->GetVtkRenderWindow()));
+  renderers.push_back(m_ViewerWidget->GetAxialWindow()->GetRenderer());
+  renderers.push_back(m_ViewerWidget->GetSagittalWindow()->GetRenderer());
+  renderers.push_back(m_ViewerWidget->GetCoronalWindow()->GetRenderer());
 
   m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
   m_NodeAddedSetter->SetRenderers(renderers);
@@ -434,7 +434,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       this->m_ViewerWidget->SetBoundGeometryActive(false);
       this->m_ViewerWidget->SetNavigationControllerEventListening(true);
       this->m_ViewerWidget->SetDisplay2DCursorsLocally(true);
-      this->m_ViewerWidget->SetDisplay3DViewInOrthoView(true);
+      this->m_ViewerWidget->SetShow3DWindowInOrthoView(true);
       if (!this->m_ViewerWidget->IsEnabled())
       {
         this->m_ViewerWidget->SetEnabled(true);
