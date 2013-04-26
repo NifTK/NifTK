@@ -2,7 +2,7 @@
 <plugin>
   
   <extension point="org.blueberry.ui.views">
-    <view id="uk.ac.ucl.cmic.igitrackedpointer"
+    <view id="uk.ac.ucl.cmic.igipointreg"
           name="Point Based Registration"
           class="PointRegView"
           icon="resources/icon.xpm" />
