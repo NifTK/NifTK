@@ -23,4 +23,5 @@ set(CPP_FILES
   SurfaceReconstruction/QDSCommon.cxx
   TrackedImage/mitkTrackedImageCommand.cxx
   TrackedPointer/mitkTrackedPointerCommand.cxx
+  PointBasedRegistration/mitkPointBasedRegistration.cxx
 )
