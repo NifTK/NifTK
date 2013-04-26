@@ -12,13 +12,10 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(niftkIGI
-  EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer PointBasedRegistration SurfaceBasedRegistration
-  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport niftkCore mitkCameraCalibration
-  PACKAGE_DEPENDS ITK NiftyLink
-)
+project(uk_ac_ucl_cmic_igisurfacereg)
 
-IF(BUILD_TESTING)
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()  
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE SURFACEREG_EXPORT
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDENCIES niftkIGIGui niftkCoreGui
+)

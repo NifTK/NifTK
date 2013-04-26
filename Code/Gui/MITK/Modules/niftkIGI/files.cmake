@@ -24,4 +24,5 @@ set(CPP_FILES
   TrackedImage/mitkTrackedImageCommand.cxx
   TrackedPointer/mitkTrackedPointerCommand.cxx
   PointBasedRegistration/mitkPointBasedRegistration.cxx
+  SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
 )

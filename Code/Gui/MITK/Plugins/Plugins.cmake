@@ -45,6 +45,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.igitrackedimage:OFF
   Plugins/uk.ac.ucl.cmic.igitrackedpointer:OFF
   Plugins/uk.ac.ucl.cmic.igipointreg:ON
+  Plugins/uk.ac.ucl.cmic.igisurfacereg:ON
 
 # This 'commonmidas' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.  
   Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON            
