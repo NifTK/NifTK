@@ -124,6 +124,10 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
         switch (outputtype)
         {
           case POINT_CLOUD:
+          {
+            break;
+          }
+
           case DISPARITY_IMAGE:
           {
             IplImage* dispimg = m_SequentialCpuQds->CreateDisparityImage();
