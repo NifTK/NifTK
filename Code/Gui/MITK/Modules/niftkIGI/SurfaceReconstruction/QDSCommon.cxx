@@ -76,7 +76,6 @@ void BuildTextureDescriptor(const boost::gil::gray8c_view_t src, const boost::gi
 
 //-----------------------------------------------------------------------------
 // NOTE: returns values in the range of [-1...+1]
-// FIXME: this needs proper unit-testing! desperately!
 float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view_t img0, boost::gil::gray8c_view_t img1, boost::gil::gray32sc_view_t integral0, boost::gil::gray32sc_view_t integral1, boost::gil::gray64fc_view_t square0, boost::gil::gray64fc_view_t square1)
 {
   // random variables used by code below
@@ -176,6 +175,7 @@ float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view
 }
 
 
+//-----------------------------------------------------------------------------
 CvPoint3D32f triangulate(
     float p0x, float p0y, 
     const CvMat& intrinsic_left, const CvScalar& distortion_left,
