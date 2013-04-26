@@ -137,11 +137,11 @@ public:
   /// \brief Get the flag controlling 2D cursors on/off.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  void SetDisplay3DViewInOrthoView(bool visible);
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  bool GetShow3DWindowInOrthoView() const;
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  bool GetDisplay3DViewInOrthoView() const;
+  /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  void SetShow3DWindowInOrthoView(bool enabled);
 
   /// \brief Sets a flag to determin if we remember the view settings such as slice, centre, magnification, time step when we switch between views axial, coronal, sagittal.
   void SetRememberViewSettingsPerOrientation(bool remember);

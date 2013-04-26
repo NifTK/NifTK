@@ -6,17 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>112</width>
-    <height>79</height>
+    <width>104</width>
+    <height>83</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>6</number>
-   </property>
    <property name="margin">
     <number>0</number>
    </property>
@@ -46,7 +43,7 @@
       <string>bind magnification across multiple views</string>
      </property>
      <property name="text">
-      <string>magnification</string>
+      <string>move&amp;&amp;zoom</string>
      </property>
     </widget>
    </item>

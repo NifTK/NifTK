@@ -240,14 +240,14 @@ bool QmitkMIDASSingleViewWidget::GetDisplay2DCursorsGlobally() const
   return m_MultiWidget->GetDisplay2DCursorsGlobally();
 }
 
-void QmitkMIDASSingleViewWidget::SetDisplay3DViewInOrthoView(bool visible)
+bool QmitkMIDASSingleViewWidget::GetShow3DWindowInOrthoView() const
 {
-  m_MultiWidget->SetDisplay3DViewInOrthoView(visible);
+  return m_MultiWidget->GetShow3DWindowInOrthoView();
 }
 
-bool QmitkMIDASSingleViewWidget::GetDisplay3DViewInOrthoView() const
+void QmitkMIDASSingleViewWidget::SetShow3DWindowInOrthoView(bool enabled)
 {
-  return m_MultiWidget->GetDisplay3DViewInOrthoView();
+  m_MultiWidget->SetShow3DWindowInOrthoView(enabled);
 }
 
 void QmitkMIDASSingleViewWidget::SetBackgroundColor(QColor color)

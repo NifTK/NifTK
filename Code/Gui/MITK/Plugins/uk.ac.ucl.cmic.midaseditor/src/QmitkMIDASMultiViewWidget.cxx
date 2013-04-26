@@ -93,7 +93,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DefaultNumberOfRows(defaultNumberOfRows)
 , m_DefaultNumberOfColumns(defaultNumberOfColumns)
 , m_Show2DCursors(false)
-, m_Show3DViewInOrthoview(false)
+, m_Show3DWindowInOrthoView(false)
 , m_RememberViewSettingsPerOrientation(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
@@ -377,7 +377,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->setVisible(false);
 
   widget->SetBackgroundColor(m_BackgroundColour);
-  widget->SetDisplay3DViewInOrthoView(m_Show3DViewInOrthoview);
+  widget->SetShow3DWindowInOrthoView(m_Show3DWindowInOrthoView);
   widget->SetRememberViewSettingsPerOrientation(m_RememberViewSettingsPerOrientation);
   widget->SetDisplayInteractionEnabled(true);
 
@@ -511,21 +511,21 @@ bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetShow3DViewInOrthoView(bool visible)
+bool QmitkMIDASMultiViewWidget::GetShow3DWindowInOrthoView() const
 {
-  m_Show3DViewInOrthoview = visible;
-  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
-  {
-    m_SingleViewWidgets[i]->SetDisplay3DViewInOrthoView(visible);
-  }
-  this->RequestUpdateAll();
+  return m_Show3DWindowInOrthoView;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::GetShow3DViewInOrthoView() const
+void QmitkMIDASMultiViewWidget::SetShow3DWindowInOrthoView(bool enabled)
 {
-  return m_Show3DViewInOrthoview;
+  m_Show3DWindowInOrthoView = enabled;
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    m_SingleViewWidgets[i]->SetShow3DWindowInOrthoView(enabled);
+  }
+  this->RequestUpdateAll();
 }
 
 
@@ -543,45 +543,35 @@ void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remem
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableSliderWidgets(bool enabled)
 {
-  m_MIDASSlidersWidget->SetEnabled(enabled);
+  m_MIDASSlidersWidget->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableOrientationWidgets(bool enabled)
 {
-  m_MIDASOrientationWidget->SetEnabled(enabled);
+  m_MIDASOrientationWidget->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableBindWidgets(bool enabled)
 {
-  m_MIDASBindWidget->SetEnabled(enabled);
+  m_MIDASBindWidget->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled)
 {
-  m_DropSingleRadioButton->setEnabled(enabled);
-  m_DropMultipleRadioButton->setEnabled(enabled);
-  m_DropThumbnailRadioButton->setEnabled(enabled);
-  m_DropAccumulateCheckBox->setEnabled(enabled);
+  m_LayoutForDropWidgets->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableLayoutWidgets(bool enabled)
 {
-  m_1x1LayoutButton->setEnabled(enabled);
-  m_1x2LayoutButton->setEnabled(enabled);
-  m_1x3LayoutButton->setEnabled(enabled);
-  m_2x2LayoutButton->setEnabled(enabled);
-  m_RowsSpinBox->setEnabled(enabled);
-  m_RowsLabel->setEnabled(enabled);
-  m_ColumnsSpinBox->setEnabled(enabled);
-  m_ColumnsLabel->setEnabled(enabled);
+  m_LayoutForLayoutWidgets->setEnabled(enabled);
 }
 
 
@@ -817,7 +807,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
 
   // Now the number of views has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
-  this->SetShow3DViewInOrthoView(this->m_Show3DViewInOrthoview);
+  this->SetShow3DWindowInOrthoView(this->m_Show3DWindowInOrthoView);
 
   // Make sure that if we are bound, we re-synch the geometry, or magnification.
   if (this->m_MIDASBindWidget->IsGeometryBound())

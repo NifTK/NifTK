@@ -31,9 +31,8 @@ int const QmitkMIDASOrientationWidget::s_MultiWindowViewNumber = sizeof(s_MultiW
 
 //-----------------------------------------------------------------------------
 QmitkMIDASOrientationWidget::QmitkMIDASOrientationWidget(QWidget *parent)
+: m_View(MIDAS_VIEW_UNKNOWN)
 {
-  // Somewhat arbitrary.
-  m_CurrentView = MIDAS_VIEW_UNKNOWN;
   setupUi(this);
 }
 
@@ -72,21 +71,15 @@ void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::SetEnabled(bool enabled)
+MIDASView QmitkMIDASOrientationWidget::GetView() const
 {
-  m_AxialWindowRadioButton->setEnabled(enabled);
-  m_SagittalWindowRadioButton->setEnabled(enabled);
-  m_CoronalWindowRadioButton->setEnabled(enabled);
-  m_3DWindowRadioButton->setEnabled(enabled);
-  m_MultiWindowRadioButton->setEnabled(enabled);
-  m_MultiWindowComboBox->setEnabled(enabled);
+  return m_View;
 }
-
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASOrientationWidget::SetView(MIDASView view)
 {
-  if (view == m_CurrentView)
+  if (view == m_View)
   {
     // Nothing to do.
     return;
@@ -138,7 +131,7 @@ void QmitkMIDASOrientationWidget::SetView(MIDASView view)
     break;
   }
 
-  m_CurrentView = view;
+  m_View = view;
   emit ViewChanged(view);
 }
 

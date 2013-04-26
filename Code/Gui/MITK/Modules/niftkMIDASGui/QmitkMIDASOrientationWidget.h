@@ -46,10 +46,10 @@ public:
   /// \brief Creates the GUI, called from within constructor.
   void setupUi(QWidget*);
 
-  /// \brief Calls setEnabled(enabled) on all contained widgets.
-  void SetEnabled(bool enabled);
+  /// \brief Gets the current view.
+  MIDASView GetView() const;
 
-  /// \brief Method to set the widget check-boxes to match the supplied view.
+  /// \brief Sets the widget controls to match the supplied view.
   void SetView(MIDASView view);
 
 signals:
@@ -80,7 +80,7 @@ protected slots:
 private:
 
   /// \brief Stores the currently selected window layout.
-  MIDASView m_CurrentView;
+  MIDASView m_View;
 
   /// \brief Stores the multiple window layouts in the same order as the combo box.
   static MIDASView s_MultiWindowViews[];

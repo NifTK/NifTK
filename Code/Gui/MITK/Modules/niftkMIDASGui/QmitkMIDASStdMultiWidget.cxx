@@ -92,7 +92,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_IsEnabled(false)
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
-, m_Display3DViewInOrthoView(false)
+, m_Show3DWindowInOrthoView(false)
 , m_View(MIDAS_VIEW_ORTHO)
 , m_MagnificationFactor(0.0)
 , m_Geometry(NULL)
@@ -508,15 +508,15 @@ bool QmitkMIDASStdMultiWidget::GetDisplay2DCursorsGlobally() const
   return m_Display2DCursorsGlobally;
 }
 
-void QmitkMIDASStdMultiWidget::SetDisplay3DViewInOrthoView(bool visible)
+void QmitkMIDASStdMultiWidget::SetShow3DWindowInOrthoView(bool visible)
 {
-  m_Display3DViewInOrthoView = visible;
+  m_Show3DWindowInOrthoView = visible;
   this->Update3DWindowVisibility();
 }
 
-bool QmitkMIDASStdMultiWidget::GetDisplay3DViewInOrthoView() const
+bool QmitkMIDASStdMultiWidget::GetShow3DWindowInOrthoView() const
 {
-  return m_Display3DViewInOrthoView;
+  return m_Show3DWindowInOrthoView;
 }
 
 void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
@@ -536,7 +536,7 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
       }
 
       bool visibleIn3DWindow = false;
-      if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Display3DViewInOrthoView)
+      if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Show3DWindowInOrthoView)
           || this->m_View == MIDAS_VIEW_3D)
       {
         visibleIn3DWindow = true;

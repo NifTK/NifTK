@@ -34,7 +34,7 @@ const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLO
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE("midas default drop type");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_WIDGETS("midas show drop type widgets");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS("midas show layout buttons");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW("midas show 3D view in ortho view");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW("midas show 3D window in ortho (2x2) view");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS("midas show 2D cursors");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER("midas show magnification slider");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION("midas remember each orientations view settings");
@@ -53,7 +53,7 @@ QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage
 , m_ShowDropTypeWidgetsCheckBox(NULL)
 , m_ShowLayoutButtonsCheckBox(NULL)
 , m_ShowMagnificationSliderCheckBox(NULL)
-, m_Show3DInOrthoCheckBox(NULL)
+, m_Show3DWindowInOrthoViewCheckBox(NULL)
 , m_Show2DCursorsCheckBox(NULL)
 , m_RememberEachOrientationsViewSettings(NULL)
 , m_BackgroundColourButton(NULL)
@@ -134,8 +134,8 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_ShowMagnificationSliderCheckBox = new QCheckBox(parent);
   formLayout->addRow("show magnification slider", m_ShowMagnificationSliderCheckBox);
 
-  m_Show3DInOrthoCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show 3D view in orthoview", m_Show3DInOrthoCheckBox);
+  m_Show3DWindowInOrthoViewCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show 3D view in orthoview", m_Show3DWindowInOrthoViewCheckBox);
 
   m_Show2DCursorsCheckBox = new QCheckBox(parent);
   formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
@@ -198,7 +198,7 @@ bool QmitkMIDASMultiViewEditorPreferencePage::PerformOk()
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_DROP_TYPE, m_DefaultDropType->currentIndex());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, m_ShowDropTypeWidgetsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_LAYOUT_BUTTONS, m_ShowLayoutButtonsCheckBox->isChecked());
-  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, m_Show3DInOrthoCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW, m_Show3DWindowInOrthoViewCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, m_RememberEachOrientationsViewSettings->isChecked());
@@ -237,7 +237,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
   m_DefaultDropType->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_DROP_TYPE, 0));
   m_ShowDropTypeWidgetsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
   m_ShowLayoutButtonsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_LAYOUT_BUTTONS, true));
-  m_Show3DInOrthoCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW, false));
+  m_Show3DWindowInOrthoViewCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW, false));
   m_Show2DCursorsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_2D_CURSORS, true));
   m_ShowMagnificationSliderCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, true));
   m_RememberEachOrientationsViewSettings->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, true));

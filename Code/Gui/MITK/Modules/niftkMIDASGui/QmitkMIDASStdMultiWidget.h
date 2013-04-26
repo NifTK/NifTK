@@ -105,11 +105,11 @@ public:
   /// \brief Get the flag controlling 2D cursors global visibility.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  void SetDisplay3DViewInOrthoView(bool visible);
+  /// \brief If true, then nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
+  void SetShow3DWindowInOrthoView(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  bool GetDisplay3DViewInOrthoView() const;
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
+  bool GetShow3DWindowInOrthoView() const;
 
   /// \brief Set the view (layout), as the MIDAS functionality is only interested in
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
@@ -308,7 +308,7 @@ private:
   bool                  m_IsEnabled;
   bool                  m_Display2DCursorsLocally;
   bool                  m_Display2DCursorsGlobally;
-  bool                  m_Display3DViewInOrthoView;
+  bool                  m_Show3DWindowInOrthoView;
   MIDASView             m_View;
   mitk::Vector3D        m_Centre;
   double                m_MagnificationFactor;

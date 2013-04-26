@@ -13,7 +13,8 @@
 =============================================================================*/
 
 #include "QmitkMIDASSlidersWidget.h"
-#include <QDebug>
+
+#include <mitkLogMacros.h>
 
 //-----------------------------------------------------------------------------
 QmitkMIDASSlidersWidget::QmitkMIDASSlidersWidget(QWidget *parent)
@@ -53,15 +54,6 @@ bool QmitkMIDASSlidersWidget::BlockSignals(bool block)
   m_SliceSelectionWidget->blockSignals(block);
   m_TimeSelectionWidget->blockSignals(block);
   return wasBlocked;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetEnabled(bool enabled)
-{
-  m_MagnificationFactorWidget->setEnabled(enabled);
-  m_SliceSelectionWidget->setEnabled(enabled);
-  m_TimeSelectionWidget->setEnabled(enabled);
 }
 
 

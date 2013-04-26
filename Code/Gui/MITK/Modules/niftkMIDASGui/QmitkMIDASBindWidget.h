@@ -39,9 +39,6 @@ public:
   /// \brief Calls setBlockSignals(block) on all contained widgets.
   void SetBlockSignals(bool block);
 
-  /// \brief Calls setEnabled(enabled) on all contained widgets.
-  void SetEnabled(bool enabled);
-
   /// \brief Method to set the widget check-boxes to match the supplied bind type, without emmitting signals.
   void SetToBindType(MIDASBindType bindType);
 

@@ -122,17 +122,17 @@ public:
   /// \brief Sets the visibility flag on the layout buttons.
   void SetShowLayoutButtons(bool visible);
 
-  /// \brief Sets the flag controlling the visibility of 2D cursors.
-  void SetShow2DCursors(bool visibile);
-
   /// \brief Returns the flag indicating whether we show 2D cursors.
   bool GetShow2DCursors() const;
 
-  /// \brief Sets the flag controlling whether we see the 3D window when in ortho view.
-  void SetShow3DViewInOrthoView(bool visible);
+  /// \brief Sets the flag controlling the visibility of 2D cursors.
+  void SetShow2DCursors(bool visibile);
 
-  /// \brief Gets the flag controlling whether we see the 3D window when in ortho view.
-  bool GetShow3DViewInOrthoView() const;
+  /// \brief Gets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
+  bool GetShow3DWindowInOrthoView() const;
+
+  /// \brief Sets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
+  void SetShow3DWindowInOrthoView(bool enabled);
 
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
@@ -428,7 +428,7 @@ private:
   int                                            m_NumberOfRowsBeforeSegmentationMode;
   int                                            m_NumberOfColumnsBeforeSegmentationMode;
   bool                                           m_Show2DCursors;
-  bool                                           m_Show3DViewInOrthoview;
+  bool                                           m_Show3DWindowInOrthoView;
   QColor                                         m_BackgroundColour;
   bool                                           m_RememberViewSettingsPerOrientation;
   bool                                           m_IsThumbnailMode;
