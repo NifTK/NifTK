@@ -578,7 +578,7 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
   } // end view != MIDAS_VIEW_UNKNOWN
 }
 
-const mitk::Point3D& QmitkMIDASSingleViewWidget::GetCrossPosition() const
+mitk::Point3D QmitkMIDASSingleViewWidget::GetCrossPosition() const
 {
   return m_MultiWidget->GetCrossPosition();
 }

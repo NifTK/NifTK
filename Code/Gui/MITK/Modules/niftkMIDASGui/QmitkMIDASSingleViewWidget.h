@@ -228,7 +228,7 @@ public:
   void SwitchView(MIDASView view);
 
   /// \brief Get the current crosshair position.
-  const mitk::Point3D& GetCrossPosition() const;
+  mitk::Point3D GetCrossPosition() const;
 
   /// \brief Set the current crosshair position.
   void SetCrossPosition(const mitk::Point3D& crossPosition);
