@@ -359,7 +359,7 @@ private:
   void UpdateBoundGeometry(bool isBoundNow);
 
   /// \brief Force all visible viewers to match the 'currently selected' viewers magnification.
-  void UpdateBoundMagnification(bool isBoundNow);
+  void UpdateBoundMagnification();
 
   void SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedWindow);
 

@@ -831,7 +831,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
   }
   if (this->m_MIDASBindWidget->IsMagnificationBound())
   {
-    this->UpdateBoundMagnification(true);
+    this->UpdateBoundMagnification();
   }
 }
 
@@ -1605,18 +1605,27 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::UpdateBoundMagnification(bool isBoundNow)
+void QmitkMIDASMultiViewWidget::UpdateBoundMagnification()
 {
-  if (isBoundNow)
-  {
-    int selectedViewIndex = this->GetSelectedViewIndex();
-    int magnification = m_SingleViewWidgets[selectedViewIndex]->GetMagnificationFactor();
+//  int selectedViewIndex = this->GetSelectedViewIndex();
+//  int magnification = m_SingleViewWidgets[selectedViewIndex]->GetMagnificationFactor();
 
-    QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
-    for (int i = 0; i < viewsToUpdate.size(); i++)
+//  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
+//  for (int i = 0; i < viewsToUpdate.size(); i++)
+//  {
+//    int viewIndex = viewsToUpdate[i];
+//    m_SingleViewWidgets[viewIndex]->SetMagnificationFactor(magnification);
+//  }
+  int selectedViewIndex = this->GetSelectedViewIndex();
+  QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
+  mitk::Vector3D centre = selectedView->GetCentre();
+  double magnification = selectedView->GetMagnificationFactor();
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (i != selectedViewIndex)
     {
-      int viewIndex = viewsToUpdate[i];
-      m_SingleViewWidgets[viewIndex]->SetMagnificationFactor(magnification);
+      m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
+      m_SingleViewWidgets[i]->SetCentre(centre);
     }
   }
 }
@@ -1860,8 +1869,6 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
     this->UpdateBoundGeometry(this->m_MIDASBindWidget->IsGeometryBound());
   }
 
-  this->UpdateBoundMagnification(this->m_MIDASBindWidget->IsMagnificationBound());
-
   if (this->m_MIDASBindWidget->AreCursorsBound())
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
@@ -1872,6 +1879,24 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
       if (i != selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
+      }
+    }
+  }
+
+  if (this->m_MIDASBindWidget->IsMagnificationBound())
+  {
+    //  this->UpdateBoundMagnification();
+
+    int selectedViewIndex = this->GetSelectedViewIndex();
+    QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
+    mitk::Vector3D centre = selectedView->GetCentre();
+    double magnification = selectedView->GetMagnificationFactor();
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (i != selectedViewIndex)
+      {
+        m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
+        m_SingleViewWidgets[i]->SetCentre(centre);
       }
     }
   }
