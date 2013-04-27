@@ -527,6 +527,9 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     // If we have a currently valid view/orientation, then store the current position, so we can switch back to it if necessary.
     this->StorePosition();
 
+    // Store the current cross position because the SetGeometry call resets it to the origin.
+    mitk::Point3D crossPosition = this->GetCrossPosition();
+
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
     this->m_MultiWidget->SetGeometry(this->m_ActiveGeometry); // Sets geometry on all 4 MITK views.
     this->m_MultiWidget->SetMIDASView(view, true);            // True to always rebuild layout.
@@ -536,6 +539,8 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
       this->m_MultiWidget->Fit();                             // Fits the MITK DisplayGeometry to the current widget size.
     }
 
+    // Restore the cross position.
+    m_MultiWidget->SetCrossPosition(crossPosition);
 
     // Now store the current view/orientation.
     MIDASOrientation orientation = this->GetOrientation();
