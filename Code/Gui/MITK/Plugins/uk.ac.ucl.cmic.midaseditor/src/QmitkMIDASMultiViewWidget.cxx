@@ -543,7 +543,6 @@ void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool remem
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableSliderWidgets(bool enabled)
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::EnableSliderWidgets(bool enabled) enabled: " << enabled << std::endl;
   m_MIDASSlidersWidget->setEnabled(enabled);
 }
 
@@ -565,7 +564,6 @@ void QmitkMIDASMultiViewWidget::EnableBindWidgets(bool enabled)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled)
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::EnableDropTypeWidgets(bool enabled) enabled: " << enabled << std::endl;
   m_LayoutForDropWidgets->setEnabled(enabled);
 }
 
@@ -588,7 +586,6 @@ void QmitkMIDASMultiViewWidget::EnableLayoutWidgets(bool enabled)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::EnableWidgets(bool enabled)
 {
-  MITK_INFO << "QmitkMIDASMultiViewWidget::EnableWidgets(bool enabled) enabled: " << enabled << std::endl;
   this->EnableDropTypeWidgets(enabled);
   this->EnableSliderWidgets(enabled);
   this->EnableLayoutWidgets(enabled);
@@ -605,7 +602,6 @@ void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
 
   if (enabled)
   {
-    MITK_INFO << "QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled) enabled: true" << std::endl;
     m_NumberOfRowsInNonThumbnailMode = m_RowsSpinBox->value();
     m_NumberOfColumnsInNonThumbnailMode = m_ColumnsSpinBox->value();
     this->EnableSliderWidgets(false);
@@ -617,7 +613,6 @@ void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
   }
   else
   {
-    MITK_INFO << "QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled) enabled: false" << std::endl;
     this->EnableSliderWidgets(true);
     this->EnableLayoutWidgets(true);
     this->EnableOrientationWidgets(true);
@@ -642,7 +637,6 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
 
   if (enabled)
   {
-    MITK_INFO << "QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled) enabled: " << enabled << std::endl;
     this->m_NumberOfRowsBeforeSegmentationMode = m_RowsSpinBox->value();
     this->m_NumberOfColumnsBeforeSegmentationMode = m_ColumnsSpinBox->value();
     this->EnableLayoutWidgets(false);
@@ -654,7 +648,6 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
   }
   else
   {
-    MITK_INFO << "QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled) enabled: " << enabled << std::endl;
     this->EnableLayoutWidgets(true);
     this->EnableBindWidgets(true);
     m_Show2DCursorsCheckBox->setEnabled(true);
@@ -995,7 +988,6 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
   // See also QmitkMIDASMultiViewVisibilityManager::OnNodesDropped which should trigger first.
   if (!this->m_DropThumbnailRadioButton->isChecked())
   {
-    MITK_INFO << "QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes) enable: true" << std::endl;
     this->EnableWidgets(true);
   }
 
@@ -1101,7 +1093,6 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setMaximum(maxTime);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setValue(currentTime);
 
-    MITK_INFO << "QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedRenderWindow) enable: true" << std::endl;
     m_MIDASSlidersWidget->m_SliceSelectionWidget->setEnabled(true);
     m_MIDASSlidersWidget->m_TimeSelectionWidget->setEnabled(true);
     m_MIDASSlidersWidget->m_MagnificationFactorWidget->setEnabled(true);
@@ -1512,7 +1503,8 @@ bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
     }
   }
 
-  this->SwitchMIDASView(nextMidasView);
+  // Note that we do not block the signals here, so this->SwitchMIDASView(nextMidasView) will
+  // be called.
   m_MIDASOrientationWidget->SetView(nextMidasView);
 
   return true;
