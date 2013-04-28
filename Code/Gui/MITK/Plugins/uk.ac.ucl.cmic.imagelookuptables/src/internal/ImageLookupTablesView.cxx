@@ -273,7 +273,7 @@ void ImageLookupTablesView::Activated()
   QmitkBaseView::Activated();
 
   berry::IWorkbenchPart::Pointer nullPart;
-  this->OnSelectionChanged(nullPart, this->GetCurrentSelection());
+  this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
 }
 
 
