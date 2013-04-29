@@ -700,7 +700,8 @@ if [ ${same} = true ] ; then
 else
 	patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
 fi
-dir_output=${patient}-${dir_output}
+dir_main=`pwd`
+dir_output="/tmp/${patient}-${dir_output}"
 
 # Create an output directory and copy data
 if [[ ! -d $dir_output ]] ; then
@@ -860,7 +861,7 @@ name_file=`basename ${OUTPUT_IMAGE}`
 name=${name_file%%.*};
 extension=${name_file#*.};
 if [ "${dir_file}" == "." ] ; then
-	dir_result="../"
+	dir_result="${dir_main}/"
 else
 	dir_result="${dir_file}/"
 fi
@@ -869,6 +870,8 @@ fi
 copyFileToDestination "filled.nii" "${dir_result}${name}.${extension}"
 execute_command_or_else_stop "fslcpgeom input_image.nii ${dir_result}${name}.${extension}"
 
+# Go to the main directory
+execute_command_or_else_stop "cd ${dir_main}"
 
 progressXML "1" "Finish"
 closeprogressXML ${OUTPUT_IMAGE}
