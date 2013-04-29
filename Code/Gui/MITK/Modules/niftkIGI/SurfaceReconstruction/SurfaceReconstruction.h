@@ -20,14 +20,25 @@
 #include <mitkImage.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <mitkGenericProperty.h>
+//#include <opencv2/core/core.hpp>
+#include <itkMatrix.h>
+
+
+// forward-decl
+namespace niftk 
+{
+class SequentialCpuQds;
+}
 
 
 namespace niftk 
 {
 
 
-// forward-decl
-class SequentialCpuQds;
+// used for stereo-rig transformation, i.e. between left and right camera
+// FIXME: sticking in an opencv matrix would be prefered
+typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> >    MatrixProperty;
 
 
 /**
@@ -55,9 +66,10 @@ public:
 
 
   // FIXME: i dont think this is the best place to keep these. i'm up for suggestions!
-  static const char*    s_ImageIsUndistortedPropertyName;   // mitk::BoolProperty
-  static const char*    s_ImageIsRectifiedPropertyName;     // mitk::BoolProperty
-  static const char*    s_CameraCalibrationPropertyName;    // mitk::CameraIntrinsicsProperty
+  static const char*    s_ImageIsUndistortedPropertyName;       // mitk::BoolProperty
+  static const char*    s_ImageIsRectifiedPropertyName;         // mitk::BoolProperty
+  static const char*    s_CameraCalibrationPropertyName;        // mitk::CameraIntrinsicsProperty
+  static const char*    s_StereoRigTransformationPropertyName;  // niftk::MatrixProperty
 
 
 public:

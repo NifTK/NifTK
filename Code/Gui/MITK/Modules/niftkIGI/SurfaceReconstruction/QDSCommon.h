@@ -19,6 +19,7 @@
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/core/types_c.h>
 #include <opencv2/core/core.hpp>
+#include <mitkCameraIntrinsics.h>
 
 
 // the ancient version of boost that comes with mitk does not have
@@ -62,21 +63,31 @@ float NIFTKIGI_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::
  * Triangulates a pixel-pair in two views.
  * I've had problems with OpenCV's cvTriangulatePoints() in the past, hence our own implementation here.
  */
+// FIXME: some of these overloads should go away! i just need to figure out first which ones are useful
 CvPoint3D32f triangulate(
-    float p0x, float p0y, 
+    float p0x, float p0y,
     const CvMat& intrinsic_left, const CvScalar& distortion_left,
-    float p1x, float p1y, 
+    float p1x, float p1y,
     const CvMat& intrinsic_right, const CvScalar& distortion_right,
     const CvMat& left2right_rotation, const CvMat& left2right_translation,
     float* err = 0
   );
 // overload for new opencv c++ types
 CvPoint3D32f triangulate(
-    float p0x, float p0y, 
+    float p0x, float p0y,
     const cv::Mat& intrinsic_left, const cv::Vec<float, 4>& distortion_left,
-    float p1x, float p1y, 
+    float p1x, float p1y,
     const cv::Mat& intrinsic_right, const cv::Vec<float, 4>& distortion_right,
     const cv::Mat& left2right_rotation, const cv::Mat& left2right_translation,
+    float* err = 0
+  );
+// for mitk stuff
+CvPoint3D32f triangulate(
+    float p0x, float p0y,
+    mitk::CameraIntrinsics::Pointer intrinsic_left,
+    float p1x, float p1y,
+    mitk::CameraIntrinsics::Pointer intrinsic_right,
+    const itk::Matrix<float, 4, 4>& left2right,//const cv::Mat& left2right_rotation, const cv::Mat& left2right_translation,
     float* err = 0
   );
 

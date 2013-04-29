@@ -296,6 +296,27 @@ void SurfaceReconView::LoadCalibration(const std::string& filename, mitk::Image:
 
 
 //-----------------------------------------------------------------------------
+void SurfaceReconView::LoadStereoRig(const std::string& filename, mitk::Image::Pointer img)
+{
+  assert(img.IsNotNull());
+
+  itk::Matrix<float, 4, 4>    txf;
+
+  if (false)//!filename.empty())
+  {
+
+  }
+  else
+  {
+    txf.SetIdentity();
+  }
+
+  niftk::MatrixProperty::Pointer  prop = niftk::MatrixProperty::New(txf);
+  img->SetProperty(niftk::SurfaceReconstruction::s_StereoRigTransformationPropertyName, prop);
+}
+
+
+//-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
   mitk::DataStorage::Pointer storage = GetDataStorage();
@@ -340,6 +361,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
           // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
           LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
           LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
+          LoadStereoRig(StereoRigTransformationPathLineEdit->text().toStdString(), rightImage);
 
           CopyImagePropsIfNecessary(leftNode,  leftImage);
           CopyImagePropsIfNecessary(rightNode, rightImage);

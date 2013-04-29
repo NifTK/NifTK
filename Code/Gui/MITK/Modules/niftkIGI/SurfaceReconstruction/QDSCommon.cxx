@@ -177,10 +177,8 @@ float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view
 
 //-----------------------------------------------------------------------------
 CvPoint3D32f triangulate(
-    float p0x, float p0y, 
-    const CvMat& intrinsic_left, const CvScalar& distortion_left,
-    float p1x, float p1y, 
-    const CvMat& intrinsic_right, const CvScalar& distortion_right,
+    float p0x, float p0y, const CvMat& intrinsic_left,  const CvScalar& distortion_left,
+    float p1x, float p1y, const CvMat& intrinsic_right, const CvScalar& distortion_right,
     const CvMat& left2right_rotation, const CvMat& left2right_translation,
     float* err
   )
@@ -272,10 +270,8 @@ CvPoint3D32f triangulate(
 
 //-----------------------------------------------------------------------------
 CvPoint3D32f triangulate(
-    float p0x, float p0y, 
-    const cv::Mat& intrinsic_left, const cv::Vec<float, 4>& distortion_left,
-    float p1x, float p1y, 
-    const cv::Mat& intrinsic_right, const cv::Vec<float, 4>& distortion_right,
+    float p0x, float p0y, const cv::Mat& intrinsic_left,  const cv::Vec<float, 4>& distortion_left,
+    float p1x, float p1y, const cv::Mat& intrinsic_right, const cv::Vec<float, 4>& distortion_right,
     const cv::Mat& left2right_rotation, const cv::Mat& left2right_translation,
     float* err
   )
@@ -284,6 +280,24 @@ CvPoint3D32f triangulate(
     p0x, p0y, (CvMat) intrinsic_left,  cvScalar(distortion_left[0],  distortion_left[1],  distortion_left[2],  distortion_left[3]),
     p1x, p1y, (CvMat) intrinsic_right, cvScalar(distortion_right[0], distortion_right[1], distortion_right[2], distortion_right[3]), 
     (CvMat) left2right_rotation, (CvMat) left2right_translation, err);
+}
+
+
+//-----------------------------------------------------------------------------
+CvPoint3D32f triangulate(
+    float p0x, float p0y, mitk::CameraIntrinsics::Pointer intrinsic_left,
+    float p1x, float p1y, mitk::CameraIntrinsics::Pointer intrinsic_right,
+    const itk::Matrix<float, 4, 4>& left2right,
+    float* err
+  )
+{
+  BOOST_STATIC_ASSERT((sizeof(mitk::Point4D) == sizeof(cv::Vec<float, 4>)));
+  return triangulate(
+    p0x, p0y, intrinsic_left->GetCameraMatrix(),  *((cv::Vec<float, 4>*) &intrinsic_left->GetDistorsionCoeffsAsPoint4D()),
+    p1x, p1y, intrinsic_right->GetCameraMatrix(), *((cv::Vec<float, 4>*) &intrinsic_right->GetDistorsionCoeffsAsPoint4D()),
+    cv::Mat(3, 3, CV_32F, (void*) left2right.GetVnlMatrix().data_block(), sizeof(float) * 4),
+    cv::Mat(1, 3, CV_32F, (void*) left2right.GetVnlMatrix().data_block(), sizeof(float) * 4),
+    err);
 }
 
 

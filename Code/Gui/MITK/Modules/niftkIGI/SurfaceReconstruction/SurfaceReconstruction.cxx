@@ -18,15 +18,17 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include "../Conversion/ImageConversion.h"
+#include <mitkPointSet.h>
 
 
 namespace niftk 
 {
 
 
-const char*    SurfaceReconstruction::s_ImageIsUndistortedPropertyName  = "niftk.ImageIsUndistorted";
-const char*    SurfaceReconstruction::s_ImageIsRectifiedPropertyName    = "niftk.ImageIsRectified";
-const char*    SurfaceReconstruction::s_CameraCalibrationPropertyName   = "niftk.CameraCalibration";
+const char*    SurfaceReconstruction::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
+const char*    SurfaceReconstruction::s_ImageIsRectifiedPropertyName        = "niftk.ImageIsRectified";
+const char*    SurfaceReconstruction::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
+const char*    SurfaceReconstruction::s_StereoRigTransformationPropertyName = "niftk.StereoRigTransformation";
 
 
 //-----------------------------------------------------------------------------
@@ -141,6 +143,24 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
               throw std::runtime_error("Image does not have a valid calibration which is required for point cloud output");
             }
 
+            mitk::BaseProperty::Pointer   rigbp = image1->GetProperty(niftk::SurfaceReconstruction::s_StereoRigTransformationPropertyName);
+            // FIXME: undecided whether both channels should have a stereo-rig transform, whether they need to match, or only one channel
+            if (rigbp.IsNull())
+            {
+              rigbp = image2->GetProperty(niftk::SurfaceReconstruction::s_StereoRigTransformationPropertyName);
+              if (rigbp.IsNull())
+              {
+                throw std::runtime_error("Images need a stereo-rig transformation for point cloud output");
+              }
+            }
+            niftk::MatrixProperty::Pointer  stereorig = dynamic_cast<niftk::MatrixProperty*>(rigbp.GetPointer());
+            if (stereorig.IsNull())
+            {
+              throw std::runtime_error("Images do not have a valid stereo-rig transformation which is required for point cloud output");
+            }
+
+            mitk::PointSet::Pointer   points = mitk::PointSet::New();
+
             for (int y = 0; y < height; ++y)
             {
               for (int x = 0; x < width; ++x)
@@ -148,15 +168,21 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                 CvPoint r = m_SequentialCpuQds->GetMatch(x, y);
                 if (r.x != 0)
                 {
-                  BOOST_STATIC_ASSERT((sizeof(mitk::Point4D) == sizeof(cv::Vec<float, 4>)));
+                  BOOST_STATIC_ASSERT((sizeof(CvPoint3D32f) == 3 * sizeof(float)));
+                  float  error = 0;
                   CvPoint3D32f p = niftk::triangulate(
-                                       x,   y, cam1->GetValue()->GetCameraMatrix(), *((cv::Vec<float, 4>*) &cam1->GetValue()->GetDistorsionCoeffsAsPoint4D()),
-                                     r.x, r.y, cam2->GetValue()->GetCameraMatrix(), *((cv::Vec<float, 4>*) &cam2->GetValue()->GetDistorsionCoeffsAsPoint4D()),
-                                     // FIXME
-                                     cv::Mat(4, 4, CV_32F), cv::Mat(4, 4, CV_32F));
+                                       x,   y, cam1->GetValue(),
+                                     r.x, r.y, cam2->GetValue(),
+                                     stereorig->GetValue(),
+                                     &error);
+                  if (error < 0.01)
+                  {
+                    points->InsertPoint(y * width + x, mitk::PointSet::PointType(&p.x));
+                  }
                 }
               }
             }
+            outputNode->SetData(points);
             break;
           }
 
