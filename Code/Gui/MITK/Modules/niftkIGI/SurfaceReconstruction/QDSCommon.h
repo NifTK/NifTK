@@ -62,6 +62,9 @@ float NIFTKIGI_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::
 /**
  * Triangulates a pixel-pair in two views.
  * I've had problems with OpenCV's cvTriangulatePoints() in the past, hence our own implementation here.
+ *
+ * @param left2right_rotation a 3x3 matrix, row-major?
+ * @param left2right_translation a 3x1 matrix (3 rows, 1 column)
  */
 // FIXME: some of these overloads should go away! i just need to figure out first which ones are useful
 CvPoint3D32f triangulate(

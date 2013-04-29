@@ -272,10 +272,28 @@ void SurfaceReconView::LoadCalibration(const std::string& filename, mitk::Image:
 
   mitk::CameraIntrinsics::Pointer    cam = mitk::CameraIntrinsics::New();
 
-  if (false)//!filename.empty())
+  if (!filename.empty())
   {
     // FIXME: we need to try different formats: plain text, opencv's xml
+    std::ifstream   file(filename.c_str());
+    if (!file.good())
+    {
+      throw std::runtime_error("Cannot open calibration file " + filename);
+    }
+    float   values[9 + 4];
+    for (int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
+    {
+      if (!file.good())
+      {
+        throw std::runtime_error("Cannot read enough data from calibration file " + filename);
+      }
+      file >> values[i];
+    }
+    file.close();
 
+    cam->SetFocalLength(values[0], values[4]);
+    cam->SetPrincipalPoint(values[2], values[5]);
+    cam->SetDistorsionCoeffs(values[9], values[10], values[11], values[12]);
   }
   else
   {
@@ -301,14 +319,41 @@ void SurfaceReconView::LoadStereoRig(const std::string& filename, mitk::Image::P
   assert(img.IsNotNull());
 
   itk::Matrix<float, 4, 4>    txf;
+  txf.SetIdentity();
 
-  if (false)//!filename.empty())
+  if (!filename.empty())
   {
+    std::ifstream   file(filename.c_str());
+    if (!file.good())
+    {
+      throw std::runtime_error("Cannot open stereo-rig file " + filename);
+    }
+    float   values[3 * 4];
+    for (int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
+    {
+      if (!file.good())
+      {
+        throw std::runtime_error("Cannot read enough data from stereo-rig file " + filename);
+      }
+      file >> values[i];
+    }
+    file.close();
 
+    // set rotation
+    for (int i = 0; i < 9; ++i)
+    {
+      txf.GetVnlMatrix()(i / 3, i % 3) = values[i];
+    }
+
+    // set translation
+    for (int i = 0; i < 3; ++i)
+    {
+      txf.GetVnlMatrix()(i, 3) = values[9 + i];
+    }
   }
   else
   {
-    txf.SetIdentity();
+    // no idea what to invent here...
   }
 
   niftk::MatrixProperty::Pointer  prop = niftk::MatrixProperty::New(txf);

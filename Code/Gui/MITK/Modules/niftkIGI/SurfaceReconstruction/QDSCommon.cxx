@@ -229,8 +229,8 @@ CvPoint3D32f triangulate(
   double DD = n_nmr * n_nml - (u[0] * right.x + u[1] * right.y + u[2] * right.z) * (u[0] * right.x + u[1] * right.y + u[2] * right.z);
 
   // FIXME: column vs row vector style matrix!
-  double  duT   =    u[0] * cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/ +    u[1] * cvmGet(&left2right_translation, 0, 1)/*stereorig.translation[1]*/ +    u[2] * cvmGet(&left2right_translation, 0, 2)/*stereorig.translation[2]*/;
-  double  dnmrT = right.x * cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/ + right.y * cvmGet(&left2right_translation, 0, 1)/*stereorig.translation[1]*/ + right.z * cvmGet(&left2right_translation, 0, 2)/*stereorig.translation[2]*/;
+  double  duT   =    u[0] * cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/ +    u[1] * cvmGet(&left2right_translation, 1, 0)/*stereorig.translation[1]*/ +    u[2] * cvmGet(&left2right_translation, 2, 0)/*stereorig.translation[2]*/;
+  double  dnmrT = right.x * cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/ + right.y * cvmGet(&left2right_translation, 1, 0)/*stereorig.translation[1]*/ + right.z * cvmGet(&left2right_translation, 2, 0)/*stereorig.translation[2]*/;
   double  dunmr = right.x * u[0] + right.y * u[1] + right.z * u[2];
 
   double NN1 = dunmr * dnmrT - n_nmr * duT;
@@ -245,9 +245,9 @@ CvPoint3D32f triangulate(
   X1[2] = left.z * Zl;
 
   double X2[3];
-  X2[0] = cvmGet(&left2right_rotation, 0, 0)/*stereorig.rotation[0]*/ * (right.x * Zr - cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/) + cvmGet(&left2right_rotation, 1, 0)/*stereorig.rotation[3]*/ * (right.y * Zr - cvmGet(&left2right_translation, 0, 1)/*stereorig.translation[1]*/) + cvmGet(&left2right_rotation, 2, 0)/*stereorig.rotation[6]*/ * (right.z * Zr - cvmGet(&left2right_translation, 0, 2)/*stereorig.translation[2]*/);
-  X2[1] = cvmGet(&left2right_rotation, 0, 1)/*stereorig.rotation[1]*/ * (right.x * Zr - cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/) + cvmGet(&left2right_rotation, 1, 1)/*stereorig.rotation[4]*/ * (right.y * Zr - cvmGet(&left2right_translation, 0, 1)/*stereorig.translation[1]*/) + cvmGet(&left2right_rotation, 2, 1)/*stereorig.rotation[7]*/ * (right.z * Zr - cvmGet(&left2right_translation, 0, 2)/*stereorig.translation[2]*/);
-  X2[2] = cvmGet(&left2right_rotation, 0, 2)/*stereorig.rotation[2]*/ * (right.x * Zr - cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/) + cvmGet(&left2right_rotation, 1, 2)/*stereorig.rotation[5]*/ * (right.y * Zr - cvmGet(&left2right_translation, 0, 1)/*stereorig.translation[1]*/) + cvmGet(&left2right_rotation, 2, 2)/*stereorig.rotation[8]*/ * (right.z * Zr - cvmGet(&left2right_translation, 0, 2)/*stereorig.translation[2]*/);
+  X2[0] = cvmGet(&left2right_rotation, 0, 0)/*stereorig.rotation[0]*/ * (right.x * Zr - cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/) + cvmGet(&left2right_rotation, 1, 0)/*stereorig.rotation[3]*/ * (right.y * Zr - cvmGet(&left2right_translation, 1, 0)/*stereorig.translation[1]*/) + cvmGet(&left2right_rotation, 2, 0)/*stereorig.rotation[6]*/ * (right.z * Zr - cvmGet(&left2right_translation, 2, 0)/*stereorig.translation[2]*/);
+  X2[1] = cvmGet(&left2right_rotation, 0, 1)/*stereorig.rotation[1]*/ * (right.x * Zr - cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/) + cvmGet(&left2right_rotation, 1, 1)/*stereorig.rotation[4]*/ * (right.y * Zr - cvmGet(&left2right_translation, 1, 0)/*stereorig.translation[1]*/) + cvmGet(&left2right_rotation, 2, 1)/*stereorig.rotation[7]*/ * (right.z * Zr - cvmGet(&left2right_translation, 2, 0)/*stereorig.translation[2]*/);
+  X2[2] = cvmGet(&left2right_rotation, 0, 2)/*stereorig.rotation[2]*/ * (right.x * Zr - cvmGet(&left2right_translation, 0, 0)/*stereorig.translation[0]*/) + cvmGet(&left2right_rotation, 1, 2)/*stereorig.rotation[5]*/ * (right.y * Zr - cvmGet(&left2right_translation, 1, 0)/*stereorig.translation[1]*/) + cvmGet(&left2right_rotation, 2, 2)/*stereorig.rotation[8]*/ * (right.z * Zr - cvmGet(&left2right_translation, 2, 0)/*stereorig.translation[2]*/);
 
   CvPoint3D32f  worldPointInLeftCam = cvPoint3D32f
   (
@@ -295,8 +295,8 @@ CvPoint3D32f triangulate(
   return triangulate(
     p0x, p0y, intrinsic_left->GetCameraMatrix(),  *((cv::Vec<float, 4>*) &intrinsic_left->GetDistorsionCoeffsAsPoint4D()),
     p1x, p1y, intrinsic_right->GetCameraMatrix(), *((cv::Vec<float, 4>*) &intrinsic_right->GetDistorsionCoeffsAsPoint4D()),
-    cv::Mat(3, 3, CV_32F, (void*) left2right.GetVnlMatrix().data_block(), sizeof(float) * 4),
-    cv::Mat(1, 3, CV_32F, (void*) left2right.GetVnlMatrix().data_block(), sizeof(float) * 4),
+    cv::Mat(3, 3, CV_32F, (void*) &left2right.GetVnlMatrix()(0, 0), sizeof(float) * 4),
+    cv::Mat(3, 1, CV_32F, (void*) &left2right.GetVnlMatrix()(0, 3), sizeof(float) * 4),
     err);
 }
 
