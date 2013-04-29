@@ -98,11 +98,14 @@ public:
   /// \brief Returns true if this widget is selected and false otherwise.
   bool IsSelected() const;
 
-  /// \brief More selective, will put the border round just the selected window, but still the whole widget is considered "selected".
+  /// \brief Returns the selected window, that is the one with the coloured border.
+  QmitkRenderWindow* GetSelectedRenderWindow() const;
+
+  /// \brief Selects the render window and puts put a coloured border round it.
   void SetSelectedRenderWindow(QmitkRenderWindow* renderWindow);
 
   /// \brief Returns the specifically selected sub-pane.
-  std::vector<QmitkRenderWindow*> GetSelectedRenderWindows() const;
+  std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
   std::vector<QmitkRenderWindow*> GetRenderWindows() const;
@@ -134,16 +137,16 @@ public:
   /// \brief Get the flag controlling 2D cursors on/off.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  void SetDisplay3DViewInOrthoView(bool visible);
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  bool GetShow3DWindowInOrthoView() const;
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  bool GetDisplay3DViewInOrthoView() const;
+  /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  void SetShow3DWindowInOrthoView(bool enabled);
 
-  /// \brief Sets a flag to determin if we remember the view settings such as slice, magnification, time step when we switch between views axial, coronal, sagittal.
+  /// \brief Sets a flag to determin if we remember the view settings such as slice, centre, magnification, time step when we switch between views axial, coronal, sagittal.
   void SetRememberViewSettingsPerOrientation(bool remember);
 
-  /// \brief Get the flag to determin if we remember the view settings such as slice, magnification, time step when we switch between views axial, coronal, sagittal.
+  /// \brief Get the flag to determin if we remember the view settings such as slice, centre, magnification, time step when we switch between views axial, coronal, sagittal.
   bool GetRememberViewSettingsPerOrientation() const;
 
   /// \brief Sets the background colour.
@@ -224,17 +227,35 @@ public:
   /// \brief In contrast to SetView this method does as little as possible, to be analagous to just switching the orientation.
   void SwitchView(MIDASView view);
 
-  /// \brief Set the current magnification factor.
-  void SetMagnificationFactor(double magnificationFactor);
+  /// \brief Get the current crosshair position.
+  mitk::Point3D GetCrossPosition() const;
+
+  /// \brief Set the current crosshair position.
+  void SetCrossPosition(const mitk::Point3D& crossPosition);
+
+  /// \brief Get the current centre.
+  const mitk::Vector3D& GetCentre() const;
+
+  /// \brief Set the current centre.
+  void SetCentre(const mitk::Vector3D& centre);
 
   /// \brief Get the current magnification factor.
   double GetMagnificationFactor() const;
+
+  /// \brief Set the current magnification factor.
+  void SetMagnificationFactor(double magnificationFactor);
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
 
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
+
+  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
+  void SetDisplayInteractionEnabled(bool enabled);
+
+  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
+  bool IsDisplayInteractionEnabled() const;
 
   /// \brief Returns the current intersection point of the 3 orthogonal planes.
   mitk::Point3D GetSelectedPosition() const;
@@ -262,6 +283,7 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   void PositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void CentreChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& centre);
   void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, double magnificationFactor);
 
 protected slots:
@@ -269,6 +291,7 @@ protected slots:
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   virtual void OnPositionChanged(QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  virtual void OnCentreChanged(const mitk::Vector3D& centre);
   virtual void OnMagnificationFactorChanged(double magnificationFactor);
 
 private:
@@ -311,8 +334,9 @@ private:
 
   int                                  m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int                                  m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
-  double                               m_MagnificationFactors[MIDAS_VIEW_NUMBER * 2];           // Two each for view. Unbound, then bound, alternatingly.
-  bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
+  mitk::Vector3D                       m_Centres[MIDAS_VIEW_NUMBER * 2];                 // Two each for view. Unbound, then bound, alternatingly.
+  double                               m_MagnificationFactors[MIDAS_VIEW_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
+  bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2];         // Two each for view. Unbound, then bound, alternatingly.
 
   bool                                 m_NavigationControllerEventListening;
   bool                                 m_RememberViewSettingsPerOrientation;

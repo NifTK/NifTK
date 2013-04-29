@@ -27,6 +27,7 @@
 #include <mitkLookupTableProperty.h>
 #include <mitkNamedLookupTableProperty.h>
 #include <mitkRenderingManager.h>
+#include <mitkRenderingModeProperty.h>
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include "QmitkImageLookupTablesPreferencePage.h"
@@ -273,7 +274,7 @@ void ImageLookupTablesView::Activated()
   QmitkBaseView::Activated();
 
   berry::IWorkbenchPart::Pointer nullPart;
-  this->OnSelectionChanged(nullPart, this->GetCurrentSelection());
+  this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
 }
 
 
@@ -495,13 +496,15 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 
     // and give to the node property.
     m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
-    m_CurrentNode->SetBoolProperty("use color", false);
+    mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
+    m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
     m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);
   }
   else
   {
     m_CurrentNode->SetProperty("LookupTable", 0);
-    m_CurrentNode->SetBoolProperty("use color", true);
+    mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LEVELWINDOW_COLOR);
+    m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
     m_CurrentNode->GetPropertyList()->DeleteProperty("LookupTableIndex");
   }
 

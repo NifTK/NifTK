@@ -48,14 +48,6 @@ void QmitkMIDASBindWidget::SetBlockSignals(bool block)
   m_BindGeometryCheckBox->blockSignals(block);
 }
 
-void QmitkMIDASBindWidget::SetEnabled(bool enabled)
-{
-  m_BindNoneCheckBox->setEnabled(enabled);
-  m_BindCursorsCheckBox->setEnabled(enabled);
-  m_BindMagnificationCheckBox->setEnabled(enabled);
-  m_BindGeometryCheckBox->setEnabled(enabled);
-}
-
 bool QmitkMIDASBindWidget::IsGeometryBound() const
 {
   if (m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION

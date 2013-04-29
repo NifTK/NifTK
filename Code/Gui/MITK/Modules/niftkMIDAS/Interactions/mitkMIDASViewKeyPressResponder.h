@@ -51,6 +51,9 @@ public:
 
   /// \brief Switch to Coronal.
   virtual bool SwitchToCoronal() = 0;
+
+  /// \brief Switch window layout.
+  virtual bool ToggleMultiWindowLayout() = 0;
 };
 
 } // end namespace

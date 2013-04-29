@@ -102,6 +102,10 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   }
   for (int i = 0; i < MIDAS_VIEW_NUMBER * 2; i++)
   {
+    for (int j = 0; j < 3; ++j)
+    {
+      m_Centres[i][j] = 0.5;
+    }
     m_MagnificationFactors[i] = m_MinimumMagnification;
     m_ViewInitialised[i] = false;
   }
@@ -122,6 +126,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(PositionChanged(QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkRenderWindow*,mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
+  connect(m_MultiWidget, SIGNAL(CentreChanged(const mitk::Vector3D&)), this, SLOT(OnCentreChanged(const mitk::Vector3D&)));
   connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(double)), this, SLOT(OnMagnificationFactorChanged(double)));
 }
 
@@ -140,9 +145,13 @@ void QmitkMIDASSingleViewWidget::OnPositionChanged(QmitkRenderWindow *window, mi
   emit PositionChanged(this, window, voxelLocation, millimetreLocation, sliceNumber, orientation);
 }
 
+void QmitkMIDASSingleViewWidget::OnCentreChanged(const mitk::Vector3D& centre)
+{
+  emit CentreChanged(this, centre);
+}
+
 void QmitkMIDASSingleViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
 {
-//  this->m_MagnificationFactors[Index(m_View)] = magnificationFactor;
   emit MagnificationFactorChanged(this, magnificationFactor);
 }
 
@@ -161,14 +170,19 @@ bool QmitkMIDASSingleViewWidget::IsSelected() const
   return m_MultiWidget->IsSelected();
 }
 
+QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetSelectedRenderWindow() const
+{
+  return m_MultiWidget->GetSelectedRenderWindow();
+}
+
 void QmitkMIDASSingleViewWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   m_MultiWidget->SetSelectedRenderWindow(renderWindow);
 }
 
-std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetSelectedRenderWindows() const
+std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetVisibleRenderWindows() const
 {
-  return m_MultiWidget->GetSelectedRenderWindows();
+  return m_MultiWidget->GetVisibleRenderWindows();
 }
 
 std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetRenderWindows() const
@@ -226,14 +240,14 @@ bool QmitkMIDASSingleViewWidget::GetDisplay2DCursorsGlobally() const
   return m_MultiWidget->GetDisplay2DCursorsGlobally();
 }
 
-void QmitkMIDASSingleViewWidget::SetDisplay3DViewInOrthoView(bool visible)
+bool QmitkMIDASSingleViewWidget::GetShow3DWindowInOrthoView() const
 {
-  m_MultiWidget->SetDisplay3DViewInOrthoView(visible);
+  return m_MultiWidget->GetShow3DWindowInOrthoView();
 }
 
-bool QmitkMIDASSingleViewWidget::GetDisplay3DViewInOrthoView() const
+void QmitkMIDASSingleViewWidget::SetShow3DWindowInOrthoView(bool enabled)
 {
-  return m_MultiWidget->GetDisplay3DViewInOrthoView();
+  m_MultiWidget->SetShow3DWindowInOrthoView(enabled);
 }
 
 void QmitkMIDASSingleViewWidget::SetBackgroundColor(QColor color)
@@ -342,6 +356,16 @@ bool QmitkMIDASSingleViewWidget::GetNavigationControllerEventListening() const
   return m_NavigationControllerEventListening;
 }
 
+void QmitkMIDASSingleViewWidget::SetDisplayInteractionEnabled(bool enabled)
+{
+  m_MultiWidget->SetDisplayInteractionEnabled(enabled);
+}
+
+bool QmitkMIDASSingleViewWidget::IsDisplayInteractionEnabled() const
+{
+  return m_MultiWidget->IsDisplayInteractionEnabled();
+}
+
 void QmitkMIDASSingleViewWidget::RequestUpdate()
 {
   m_MultiWidget->RequestUpdate();
@@ -352,27 +376,28 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   MIDASView view = m_View;
   MIDASOrientation orientation = m_Orientation;
 
-  int sliceNumber = this->GetSliceNumber(orientation);
-  int timeSliceNumber = this->GetTime();
-  double magnificationFactor = this->m_MultiWidget->GetMagnificationFactor();
-
-  m_SliceNumbers[Index(orientation)] = sliceNumber;
-  m_TimeSliceNumbers[Index(orientation)] = timeSliceNumber;
-  m_MagnificationFactors[Index(view)] = magnificationFactor;
+  m_SliceNumbers[Index(orientation)] = this->GetSliceNumber(orientation);
+  m_TimeSliceNumbers[Index(orientation)] = this->GetTime();
+  m_Centres[Index(view)] = m_MultiWidget->GetCentre();
+  m_MagnificationFactors[Index(view)] = m_MultiWidget->GetMagnificationFactor();
   m_ViewInitialised[Index(view)] = true;
 
   MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
       << ", current orientation=" << orientation \
       << ", view=" << view \
-      << ", so storing slice=" << sliceNumber \
-      << ", time=" << timeSliceNumber \
-      << ", magnification=" << magnificationFactor << std::endl;
+      << ", so storing slice=" << this->GetSliceNumber(orientation) \
+      << ", time=" << this->GetTime() \
+      << ", magnification=" << m_MultiWidget->GetMagnificationFactor() << std::endl;
 }
 
 void QmitkMIDASSingleViewWidget::ResetCurrentPosition()
 {
   m_SliceNumbers[Index(m_Orientation)] = 0;
   m_TimeSliceNumbers[Index(m_Orientation)] = 0;
+  for (int j = 0; j < 3; ++j)
+  {
+    m_Centres[Index(m_View)][j] = 0.5;
+  }
   m_MagnificationFactors[Index(m_View)] = this->m_MinimumMagnification;
   m_ViewInitialised[Index(m_View)] = false;
 }
@@ -386,6 +411,10 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
   }
   for (int i = 0; i < MIDAS_VIEW_NUMBER; i++)
   {
+    for (int j = 0; j < 3; ++j)
+    {
+      m_Centres[Index(i)][j] = 0.5;
+    }
     m_MagnificationFactors[Index(i)] = this->m_MinimumMagnification;
     m_ViewInitialised[Index(i)] = false;
   }
@@ -498,6 +527,9 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     // If we have a currently valid view/orientation, then store the current position, so we can switch back to it if necessary.
     this->StorePosition();
 
+    // Store the current cross position because the SetGeometry call resets it to the origin.
+    mitk::Point3D crossPosition = this->GetCrossPosition();
+
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
     this->m_MultiWidget->SetGeometry(this->m_ActiveGeometry); // Sets geometry on all 4 MITK views.
     this->m_MultiWidget->SetMIDASView(view, true);            // True to always rebuild layout.
@@ -507,6 +539,8 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
       this->m_MultiWidget->Fit();                             // Fits the MITK DisplayGeometry to the current widget size.
     }
 
+    // Restore the cross position.
+    m_MultiWidget->SetCrossPosition(crossPosition);
 
     // Now store the current view/orientation.
     MIDASOrientation orientation = this->GetOrientation();
@@ -514,7 +548,7 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     m_View = view;
 
     // Now, in MIDAS, which only shows 2D views, if we revert to a previous view,
-    // we should go back to the same slice, time, magnification.
+    // we should go back to the same slice, time, centre, magnification.
     bool hasBeenInitialised = m_ViewInitialised[Index(view)];
     if (this->m_RememberViewSettingsPerOrientation && hasBeenInitialised)
     {
@@ -523,6 +557,7 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
         this->SetSliceNumber(orientation, m_SliceNumbers[Index(orientation)]);
         this->SetTime(m_TimeSliceNumbers[Index(orientation)]);
       }
+      this->SetCentre(m_Centres[Index(view)]);
       this->SetMagnificationFactor(m_MagnificationFactors[Index(view)]);
     }
     else
@@ -535,13 +570,37 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
       unsigned int sliceNumber = this->GetSliceNumber(orientation);
       unsigned int timeStep = this->GetTime();
       double magnificationFactor = this->m_MultiWidget->FitMagnificationFactor();
+      const mitk::Vector3D& centre = m_MultiWidget->GetCentre();
+
+      // TODO what to do with the centre?
 
       this->SetSliceNumber(orientation, sliceNumber);
       this->SetTime(timeStep);
       this->SetMagnificationFactor(magnificationFactor);
+      this->SetCentre(centre);
       this->m_ViewInitialised[Index(view)] = true;
     }
   } // end view != MIDAS_VIEW_UNKNOWN
+}
+
+mitk::Point3D QmitkMIDASSingleViewWidget::GetCrossPosition() const
+{
+  return m_MultiWidget->GetCrossPosition();
+}
+
+void QmitkMIDASSingleViewWidget::SetCrossPosition(const mitk::Point3D& crossPosition)
+{
+  this->m_MultiWidget->SetCrossPosition(crossPosition);
+}
+
+const mitk::Vector3D& QmitkMIDASSingleViewWidget::GetCentre() const
+{
+  return m_MultiWidget->GetCentre();
+}
+
+void QmitkMIDASSingleViewWidget::SetCentre(const mitk::Vector3D& centre)
+{
+  this->m_MultiWidget->SetCentre(centre);
 }
 
 double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Handeye Calibration</title>
+  <description><![CDATA[Determines the hand eye calibration for a tracked object, using the tracking and extrinsic matrices]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>extrinsicInputDirectory</name>
+      <longflag>extrinisicDirectory</longflag>
+      <description>The directory containing the extrinisic camera matrices.</description>
+      <label>Extrinsic matrix input directory</label>
+    </directory>
+    <file>
+      <name>extrinsicInputFile</name>
+      <longflag>extrinsicFile</longflag>
+      <description>Alternatively, the extrinsic poses can be read from a file</description>
+      <label>Extrinsic matrix input file</label>
+    </file>
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+    <file fileExtensions="*.txt">
+      <name>outputCalibrationData</name>
+      <longflag>output</longflag>
+      <description>Output file for calibration data</description>
+      <label>Output calibration data filename</label>
+      <default>calib.txt</default>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <boolean>
+      <name>DontFlipTracking</name>
+      <longflag>DontFlipTracking</longflag>
+      <description>Don't Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Dont Flip the tracking matrices</label>
+      <default>0</default>
+    </boolean>
+   
+    <boolean>
+      <name>FlipExtrinsics</name>
+      <longflag>FlipExtrinsics</longflag>
+      <description>Flip the extrinsic matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the extrinsic matrices</label>
+      <default>0</default>
+    </boolean>
+ 
+    <boolean>
+      <name>DontSortByDistance</name>
+      <longflag>DontSortByDistance</longflag>
+      <description>Don't sort the tracking matrices by distance before inversion</description>
+      <label>Dont sort the tracking matrices by distance</label>
+      <default>0</default>
+    </boolean>
+ 
+    <boolean>
+      <name>SortByAngle</name>
+      <longflag>SortByAngle</longflag>
+      <description>Sort the tracking matrices by angular distance before inversion</description>
+      <label>Sort the tracking matrices by angular distance</label>
+      <default>0</default>
+    </boolean>
+    
+  </parameters>
+  
+</executable>
