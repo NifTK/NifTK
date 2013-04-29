@@ -22,6 +22,7 @@
 #include <service/event/ctkEvent.h>
 #include "SurfaceReconViewActivator.h"
 #include <mitkCameraIntrinsicsProperty.h>
+#include <QFileDialog>
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
@@ -46,10 +47,49 @@ std::string SurfaceReconView::GetViewID() const
 
 
 //-----------------------------------------------------------------------------
+void SurfaceReconView::LeftBrowseButtonClicked()
+{
+  // FIXME: this blocks timer delivery?
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+  if (!file.isEmpty())
+  {
+    LeftIntrinsicPathLineEdit->setText(file);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::RightBrowseButtonClicked()
+{
+  // FIXME: this blocks timer delivery?
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+  if (!file.isEmpty())
+  {
+    RightIntrinsicPathLineEdit->setText(file);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::StereoRigBrowseButtonClicked()
+{
+  // FIXME: this blocks timer delivery?
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Stereo Rig Calibration");
+  if (!file.isEmpty())
+  {
+    StereoRigTransformationPathLineEdit->setText(file);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 {
   setupUi(parent);
   connect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
+
+  connect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
+  connect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
 
   ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)

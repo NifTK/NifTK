@@ -70,6 +70,10 @@ protected slots:
 
   void UpdateNodeNameComboBox();
 
+  void LeftBrowseButtonClicked();
+  void RightBrowseButtonClicked();
+  void StereoRigBrowseButtonClicked();
+
 protected:
 
 private slots:

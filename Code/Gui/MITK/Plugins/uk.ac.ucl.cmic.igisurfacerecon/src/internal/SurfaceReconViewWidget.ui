@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>690</width>
-    <height>1202</height>
+    <width>832</width>
+    <height>1243</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,6 +78,145 @@
         <property name="wordWrap">
          <bool>true</bool>
         </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QGroupBox" name="calibrationgroupbox">
+        <property name="title">
+         <string>Show camera calibration options</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QWidget" name="calibrationdummypanel" native="true">
+           <layout class="QFormLayout" name="formLayout_7">
+            <property name="margin">
+             <number>0</number>
+            </property>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>Left intrinsic:</string>
+              </property>
+              <property name="buddy">
+               <cstring>LeftIntrinsicPathLineEdit</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Right intrinsic:</string>
+              </property>
+              <property name="buddy">
+               <cstring>RightIntrinsicPathLineEdit</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLineEdit" name="RightIntrinsicPathLineEdit"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="RightIntrinsicBrowseButton">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLineEdit" name="LeftIntrinsicPathLineEdit"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="LeftIntrinsicBrowseButton">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>Left-right transf.:</string>
+              </property>
+              <property name="buddy">
+               <cstring>StereoRigTransformationPathLineEdit</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLineEdit" name="StereoRigTransformationPathLineEdit"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="StereoRigTransformBrowseButton">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="6" column="0" colspan="2">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>Pick files that contain the corresponding camera calibration matrices. If you leave these empty then some more or less suitable values will be conjured up.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -235,6 +374,23 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>LeftChannelNodeNameComboBox</tabstop>
+  <tabstop>RightChannelNodeNameComboBox</tabstop>
+  <tabstop>calibrationgroupbox</tabstop>
+  <tabstop>LeftIntrinsicPathLineEdit</tabstop>
+  <tabstop>LeftIntrinsicBrowseButton</tabstop>
+  <tabstop>RightIntrinsicPathLineEdit</tabstop>
+  <tabstop>RightIntrinsicBrowseButton</tabstop>
+  <tabstop>StereoRigTransformationPathLineEdit</tabstop>
+  <tabstop>StereoRigTransformBrowseButton</tabstop>
+  <tabstop>OutputNodeNameLineEdit</tabstop>
+  <tabstop>outputoptionsgroupbox</tabstop>
+  <tabstop>GeneratePointCloudRadioBox</tabstop>
+  <tabstop>GenerateDisparityImageRadioBox</tabstop>
+  <tabstop>MethodComboBox</tabstop>
+  <tabstop>DoItButton</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -250,6 +406,22 @@
     <hint type="destinationlabel">
      <x>344</x>
      <y>571</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>calibrationgroupbox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>calibrationdummypanel</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>415</x>
+     <y>404</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>415</x>
+     <y>417</y>
     </hint>
    </hints>
   </connection>
