@@ -32,6 +32,7 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 #include "itkGDCMImageIO.h"
+#include "itkImageLinearIteratorWithIndex.h"
 
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
@@ -153,6 +154,14 @@ int main( int argc, char *argv[] )
   float iFile = 0.;
   float nFiles;
 
+  enum BreastSideType { 
+    UNKNOWN_BREAST_SIDE,
+    LEFT_BREAST_SIDE,
+    RIGHT_BREAST_SIDE,
+  };
+
+  BreastSideType breastSide = UNKNOWN_BREAST_SIDE;
+ 
 
   // Validate command line args
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -177,21 +186,6 @@ int main( int argc, char *argv[] )
   {
     dcmDirectoryOut = dcmDirectoryIn;
   }
-
-  dcmDirectoryIn  = dcmDirectoryIn;
-  dcmDirectoryOut = dcmDirectoryOut;
-
-  strAdd2Suffix = strAdd2Suffix;
-
-  flgOverwrite = flgOverwrite;
-
-  flgAnonymiseDICOMHeader = flgAnonymiseDICOMHeader;
-  flgAnonymiseImageLabel  = flgAnonymiseImageLabel;
-
-  labelWidth  = labelWidth;
-  labelHeight = labelHeight;
-
-  labelPosition  = labelPosition;
 
 
   std::cout << std::endl << "Examining directory: " 
@@ -325,19 +319,83 @@ int main( int argc, char *argv[] )
 		<< std::endl;
     }
 
-    // Set the label region to zero
-
     if ( flgAnonymiseImageLabel )
     {
+
+      // Determine if this is a left or right breast by calculating the CoM
+
       InputImageType::RegionType region;
-      InputImageType::SizeType size;
-      InputImageType::IndexType start;
+      InputImageType::SizeType   size;
+      InputImageType::IndexType  start;
+      InputImageType::IndexType  idx;
 
       region = image->GetLargestPossibleRegion();      
 
       size = region.GetSize();
 
+      start[0] = size[0];
+      start[1] = size[1];
+
       std::cout << "Image size: " << size << std::endl;
+
+      unsigned int iRow = 0;
+      unsigned int nRows = 5;
+      unsigned int rowSpacing = size[1]/( nRows + 1 );
+
+      float xMoment = 0.;
+      float xMomentSum = 0.;
+      float intensitySum = 0.;
+
+      typedef itk::ImageLinearIteratorWithIndex< InputImageType > LineIteratorType;
+
+      LineIteratorType itLinear( image, region );
+
+      itLinear.SetDirection( 0 );
+
+      while ( ! itLinear.IsAtEnd() )
+      {
+	// Skip initial set of rows
+
+	iRow = 0;
+	while ( ( ! itLinear.IsAtEnd() ) && ( iRow < rowSpacing ) )
+	{
+	  iRow++;
+	  itLinear.NextLine();
+	}
+
+	// Add next row to moment calculation
+
+	while ( ! itLinear.IsAtEndOfLine() )
+	{
+	  idx = itLinear.GetIndex();
+
+	  intensitySum += itLinear.Get();
+
+	  xMoment = idx[0]*itLinear.Get();
+	  xMomentSum += xMoment;
+
+	  ++itLinear;
+	}
+      }
+
+      xMoment = xMomentSum/intensitySum;
+
+      std::cout << "Center of mass in x: " << xMoment << std::endl;
+
+
+      if ( xMoment > static_cast<float>(size[0])/2. )
+      {
+	breastSide = RIGHT_BREAST_SIDE;
+	std::cout << "RIGHT breast (label on left-hand side)" << std::endl;
+      }
+      else 
+      {
+	breastSide = LEFT_BREAST_SIDE;
+	std::cout << "LEFT breast (label on right-hand side)" << std::endl;
+      }
+
+
+      // Set the label region to zero
 
       start[0] = size[0];
       start[1] = size[1];
@@ -345,25 +403,22 @@ int main( int argc, char *argv[] )
       size[0] = static_cast<unsigned int>( static_cast<float>(size[0]) * labelWidth/100. );
       size[1] = static_cast<unsigned int>( static_cast<float>(size[1]) * labelHeight/100. );
 
-      if ( labelPosition == std::string( "Top-Left" ) )
+      if ( labelPosition == std::string( "Upper" ) )
       {
-	start[0] = 0;
 	start[1] = 0;
       }
-      else if ( labelPosition == std::string( "Top-Right" ) )
+      else 
       {
-	start[0] -= size[0];
-	start[1] = 0;
-      }
-      else if ( labelPosition == std::string( "Bottom-Right" ) )
-      {
-	start[0] -= size[0];
 	start[1] -= size[1];
       }
-      else if ( labelPosition == std::string( "Bottom-Left" ) )
+
+      if ( breastSide == LEFT_BREAST_SIDE )
+      {
+	start[0] -= size[0];
+      }
+      else 
       {
 	start[0] = 0;
-	start[1] -= size[1];
       }
 
       region.SetSize( size );
