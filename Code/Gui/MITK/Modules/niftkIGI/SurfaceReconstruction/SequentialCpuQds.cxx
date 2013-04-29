@@ -156,6 +156,17 @@ int SequentialCpuQds::GetHeight() const
 
 
 //-----------------------------------------------------------------------------
+CvPoint SequentialCpuQds::GetMatch(int x, int y) const
+{
+  if ((x < 0) || (y < 0) || (x >= GetWidth()) || (y >= GetHeight()))
+    throw std::runtime_error("Ref coordinate out of bounds");
+
+  const boost::gil::dev2n16c_pixel_t& r = boost::gil::const_view(m_LeftRefMap)(x, y);
+  return cvPoint(r[0], r[1]);
+}
+
+
+//-----------------------------------------------------------------------------
 IplImage* SequentialCpuQds::CreateDisparityImage() const
 {
   IplImage* dispimg = cvCreateImage(cvSize(GetWidth(), GetHeight()), IPL_DEPTH_8U, 4);

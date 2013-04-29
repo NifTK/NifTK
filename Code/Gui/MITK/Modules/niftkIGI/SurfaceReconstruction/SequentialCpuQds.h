@@ -99,6 +99,7 @@ public:
   // caller needs to clean up
   IplImage* CreateDisparityImage() const;
 
+  CvPoint GetMatch(int x, int y) const;
 
 private:
   SequentialCpuQds(const SequentialCpuQds& copyme);

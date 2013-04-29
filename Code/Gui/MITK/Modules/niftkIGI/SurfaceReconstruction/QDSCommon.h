@@ -57,6 +57,10 @@ void NIFTKIGI_EXPORT BuildTextureDescriptor(const boost::gil::gray8c_view_t src,
 float NIFTKIGI_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view_t img0, boost::gil::gray8c_view_t img1, boost::gil::gray32sc_view_t integral0, boost::gil::gray32sc_view_t integral1, boost::gil::gray64fc_view_t square0, boost::gil::gray64fc_view_t square1);
 
 
+/**
+ * Triangulates a pixel-pair in two views.
+ * I've had problems with OpenCV's cvTriangulatePoints() in the past, hence our own implementation here.
+ */
 CvPoint3D32f triangulate(
     float p0x, float p0y, 
     const CvMat& intrinsic_left, const CvScalar& distortion_left,
