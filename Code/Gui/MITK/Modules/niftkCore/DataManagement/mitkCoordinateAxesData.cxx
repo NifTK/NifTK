@@ -118,6 +118,9 @@ void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
   if (geometry.IsNotNull())
   {
     geometry->SetIndexToWorldTransformByVtkMatrix(const_cast<vtkMatrix4x4*>(&matrix));
+    geometry->UpdateInformation();
+    geometry->Modified();
+    this->Modified();
   }
 }
 

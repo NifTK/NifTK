@@ -220,8 +220,11 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
         {
           coordinateAxes = mitk::CoordinateAxesData::New();
           node->SetData(coordinateAxes);
+          node->SetBoolProperty("show text", false);
+          node->SetIntProperty("size", 10);
         }
         coordinateAxes->SetVtkMatrix(*vtkMatrix);
+        node->Modified();
 
         // And output a status message to console.
         matrixAsString.append("\n");
