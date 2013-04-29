@@ -84,7 +84,7 @@
       <longflag>labelHeight</longflag>
       <description>The height of the label as a percentage of the image height.</description>
       <label>Label height (% of image)</label>
-      <default>40</default>
+      <default>100</default>
       <constraints>
         <minimum>0</minimum>
         <maximum>100</maximum>
